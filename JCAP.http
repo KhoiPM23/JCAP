@@ -1,0 +1,6 @@
+@JCAP_HostAddress = http://localhost:5254
+
+GET {{JCAP_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
