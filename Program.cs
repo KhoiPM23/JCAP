@@ -129,5 +129,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Tự động nạp dữ liệu mẫu (Seed Data)
+await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
+
 app.Run();
 

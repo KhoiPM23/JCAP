@@ -1,3 +1,4 @@
+using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
 using JCAP.Models;
@@ -33,7 +34,13 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<AuthResponseDto>.Fail("Email này đã được sử dụng.");
             }
 
-            var role = string.IsNullOrWhiteSpace(dto.Role) ? "Learner" : dto.Role;
+            // Ràng buộc bảo mật: Người dùng đăng ký công khai chỉ được phép mang vai trò Learner
+            if (!string.IsNullOrWhiteSpace(dto.Role) && !string.Equals(dto.Role, UserRoles.Learner, StringComparison.OrdinalIgnoreCase))
+            {
+                return ApiResponse<AuthResponseDto>.Fail($"Không thể đăng ký với vai trò '{dto.Role}'. Hệ thống chỉ cho phép đăng ký tài khoản với vai trò '{UserRoles.Learner}'.");
+            }
+
+            var role = UserRoles.Learner;
             if (!await _roleManager.RoleExistsAsync(role))
             {
                 await _roleManager.CreateAsync(new IdentityRole(role));
