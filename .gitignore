@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # Personal / Local Project Context
 JCAP_PROJECT_CONTEXT.md
+
+# App secrets - chỉ ignore file Local chứa secret thật (share qua Drive)
+appsettings.Local.json
+appsettings.*.Local.json
