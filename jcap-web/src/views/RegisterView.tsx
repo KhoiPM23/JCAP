@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-interface LoginViewProps {
-  onLoginSuccess?: () => void;
-  onSwitchToRegister?: () => void;
+interface RegisterViewProps {
+  onRegisterSuccess: () => void;
+  onSwitchToLogin: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({
-  onLoginSuccess,
-  onSwitchToRegister,
+export const RegisterView: React.FC<RegisterViewProps> = ({
+  onRegisterSuccess,
+  onSwitchToLogin,
 }) => {
-  const { login, loginWithGoogle, authError, clearAuthError } = useAuth();
+  const { register, loginWithGoogle, authError, clearAuthError } = useAuth();
 
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('N5');
-  const [showPassword, setShowPassword] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,22 +25,41 @@ export const LoginView: React.FC<LoginViewProps> = ({
     setClientError(null);
     clearAuthError();
 
-    if (!email.trim()) {
-      setClientError('Vui lòng nhập Email!');
+    if (!fullName.trim()) {
+      setClientError('Vui lòng nhập Họ và tên.');
       return;
     }
 
-    if (!password) {
-      setClientError('Vui lòng nhập Mật khẩu!');
+    if (!email.trim()) {
+      setClientError('Vui lòng nhập địa chỉ Email.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setClientError('Mật khẩu tối thiểu phải từ 6 ký tự trở lên.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setClientError('Mật khẩu xác nhận không khớp.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await login(email.trim(), password, selectedLevel);
-      onLoginSuccess?.();
+      await register({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+        confirmPassword,
+        jlptLevel: selectedLevel,
+        role: 'Learner',
+      });
+
+      onRegisterSuccess();
     } catch (err: any) {
-      setClientError(err.message || 'Đăng nhập thất bại.');
+      // Error is set in AuthContext or thrown
+      setClientError(err.message || 'Đăng ký tài khoản thất bại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -55,11 +75,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-bold border border-red-100">
             日
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">JCAP Platform</h1>
-          <p className="text-slate-500 text-sm mt-1">Luyện nói tiếng Nhật phản xạ cùng AI</p>
+          <h1 className="text-2xl font-bold text-slate-800">Tạo tài khoản JCAP</h1>
+          <p className="text-slate-500 text-sm mt-1">Đăng ký để bắt đầu luyện Kaiwa cùng AI</p>
         </div>
 
-        {/* Nút Đăng nhập bằng Google */}
+        {/* Nút Đăng ký bằng Google */}
         <button
           type="button"
           onClick={loginWithGoogle}
@@ -83,12 +103,12 @@ export const LoginView: React.FC<LoginViewProps> = ({
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Đăng nhập với Google</span>
+          <span>Đăng ký nhanh với Google</span>
         </button>
 
         <div className="relative flex items-center justify-center mb-5">
           <div className="border-t border-slate-200 w-full"></div>
-          <span className="bg-white px-3 text-xs text-slate-400 uppercase font-medium">hoặc đăng nhập bằng email</span>
+          <span className="bg-white px-3 text-xs text-slate-400 uppercase font-medium">hoặc đăng ký bằng email</span>
           <div className="border-t border-slate-200 w-full"></div>
         </div>
 
@@ -100,9 +120,24 @@ export const LoginView: React.FC<LoginViewProps> = ({
           </div>
         )}
 
-        {/* Form Đăng Nhập */}
+        {/* Form Đăng ký */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Ô nhập Email */}
+          {/* Họ và tên */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              Họ và tên
+            </label>
+            <input
+              type="text"
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
+              placeholder="Nguyễn Văn A"
+            />
+          </div>
+
+          {/* Địa chỉ Email */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Địa chỉ Email
@@ -112,78 +147,45 @@ export const LoginView: React.FC<LoginViewProps> = ({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-              placeholder="nhap-email@example.com"
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
+              placeholder="learner@example.com"
             />
           </div>
 
-          {/* Ô nhập Mật khẩu */}
+          {/* Mật khẩu */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Mật khẩu
             </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
-                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-              >
-                {showPassword ? (
-                  /* Icon Eye-Off (Mắt có dấu gạch chéo khi đang hiển thị mật khẩu) */
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
-                    />
-                  </svg>
-                ) : (
-                  /* Icon Eye (Mắt mở khi đang ẩn mật khẩu) */
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
+              placeholder="Tối thiểu 6 ký tự"
+            />
+          </div>
+
+          {/* Xác nhận mật khẩu */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              Xác nhận mật khẩu
+            </label>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
+              placeholder="Nhập lại mật khẩu"
+            />
           </div>
 
           {/* Chọn trình độ JLPT (N5 - N4 - N3) */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Trình độ JLPT mục tiêu
+              Trình độ JLPT hiện tại / mục tiêu
             </label>
             <div className="grid grid-cols-3 gap-2">
               {['N5', 'N4', 'N3'].map((level) => (
@@ -201,10 +203,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
                 </button>
               ))}
             </div>
-            <p className="text-xs text-slate-400 mt-1">AI sẽ điều chỉnh tốc độ nói và từ vựng theo cấp độ này.</p>
           </div>
 
-          {/* Nút bấm Đăng Nhập */}
+          {/* Nút bấm Tạo tài khoản */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -213,23 +214,23 @@ export const LoginView: React.FC<LoginViewProps> = ({
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Đang đăng nhập...</span>
+                <span>Đang tạo tài khoản...</span>
               </>
             ) : (
-              <span>Đăng nhập & Vào học ➔</span>
+              <span>Đăng ký tài khoản ➔</span>
             )}
           </button>
         </form>
 
-        {/* Chuyển sang màn hình Đăng ký */}
+        {/* Chuyển sang màn hình Đăng nhập */}
         <div className="mt-6 text-center text-sm text-slate-600">
-          Chưa có tài khoản?{' '}
+          Đã có tài khoản?{' '}
           <button
             type="button"
-            onClick={onSwitchToRegister}
+            onClick={onSwitchToLogin}
             className="text-red-600 font-bold hover:underline"
           >
-            Đăng ký ngay
+            Đăng nhập ngay
           </button>
         </div>
       </div>

@@ -36,6 +36,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -66,6 +67,7 @@ builder.Services.AddCors(options =>
 });
 
 // 5. Đăng ký Dependency Injection cho Services
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
@@ -119,8 +121,10 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger";
     });
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowAll");
 

@@ -483,3 +483,9 @@ $RECYCLE.BIN/
 
 # Personal / Local Project Context
 JCAP_PROJECT_CONTEXT.md
+
+# App secrets - không commit lên git, share nội bộ qua Drive
+appsettings.json
+appsettings.*.json
+# Ngoại lệ: giữ lại file example làm template cho team
+!appsettings.*.json.example
