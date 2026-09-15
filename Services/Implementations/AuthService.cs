@@ -1,7 +1,7 @@
 using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
-using JCAP.Models;
+using JCAP.Services.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

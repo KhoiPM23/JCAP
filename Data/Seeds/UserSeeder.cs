@@ -1,5 +1,5 @@
 using JCAP.Data.Static;
-using JCAP.Models;
+using JCAP.Services.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace JCAP.Data.Seeds

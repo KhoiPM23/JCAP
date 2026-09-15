@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace JCAP.Models
+namespace JCAP.Services.Models
 {
     public class ApplicationUser : IdentityUser
     {
