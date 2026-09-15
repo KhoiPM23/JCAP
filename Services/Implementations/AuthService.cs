@@ -8,6 +8,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+using System.Text.Json;
+using System.Net.Http.Headers;
+
 namespace JCAP.Services.Implementations
 {
     public class AuthService : Interfaces.IAuthService
@@ -15,15 +18,18 @@ namespace JCAP.Services.Implementations
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterDto dto)
@@ -138,6 +144,154 @@ namespace JCAP.Services.Implementations
             };
 
             return ApiResponse<AuthResponseDto>.Ok(response, "Lấy thông tin người dùng thành công.");
+        }
+
+        public string GetGoogleAuthUrl()
+        {
+            var clientId = _configuration["Authentication:Google:ClientId"]
+                ?? throw new InvalidOperationException("Google ClientId chưa được cấu hình.");
+            var redirectUri = _configuration["Authentication:Google:RedirectUri"]
+                ?? "http://localhost:5254/api/auth/google/callback";
+            var scope = Uri.EscapeDataString("openid email profile");
+            var encodedRedirectUri = Uri.EscapeDataString(redirectUri);
+
+            return $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={encodedRedirectUri}&response_type=code&scope={scope}&access_type=offline&prompt=select_account";
+        }
+
+        public async Task<ApiResponse<AuthResponseDto>> ProcessGoogleCallbackAsync(string code)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var clientId = _configuration["Authentication:Google:ClientId"]
+                    ?? throw new InvalidOperationException("Google ClientId chưa được cấu hình.");
+                var clientSecret = _configuration["Authentication:Google:ClientSecret"]
+                    ?? throw new InvalidOperationException("Google ClientSecret chưa được cấu hình.");
+                var redirectUri = _configuration["Authentication:Google:RedirectUri"]
+                    ?? "http://localhost:5254/api/auth/google/callback";
+
+                var tokenParams = new Dictionary<string, string>
+                {
+                    ["code"] = code,
+                    ["client_id"] = clientId,
+                    ["client_secret"] = clientSecret,
+                    ["redirect_uri"] = redirectUri,
+                    ["grant_type"] = "authorization_code"
+                };
+
+                var tokenResponse = await client.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(tokenParams));
+                if (!tokenResponse.IsSuccessStatusCode)
+                {
+                    var err = await tokenResponse.Content.ReadAsStringAsync();
+                    return ApiResponse<AuthResponseDto>.Fail($"Không thể trao đổi mã xác thực với Google: {err}");
+                }
+
+                var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+                using var tokenDoc = JsonDocument.Parse(tokenJson);
+                if (!tokenDoc.RootElement.TryGetProperty("access_token", out var accessTokenProp))
+                {
+                    return ApiResponse<AuthResponseDto>.Fail("Phản hồi từ Google không chứa access_token.");
+                }
+                var accessToken = accessTokenProp.GetString();
+
+                var userInfoRequest = new HttpRequestMessage(HttpMethod.Get, "https://www.googleapis.com/oauth2/v2/userinfo");
+                userInfoRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                var userInfoResponse = await client.SendAsync(userInfoRequest);
+                if (!userInfoResponse.IsSuccessStatusCode)
+                {
+                    return ApiResponse<AuthResponseDto>.Fail("Không thể lấy thông tin người dùng từ Google.");
+                }
+
+                var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
+                using var userInfoDoc = JsonDocument.Parse(userInfoJson);
+                var root = userInfoDoc.RootElement;
+                var googleId = root.GetProperty("id").GetString();
+                var email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null;
+                var name = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
+                var picture = root.TryGetProperty("picture", out var picProp) ? picProp.GetString() : null;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(googleId))
+                {
+                    return ApiResponse<AuthResponseDto>.Fail("Google không cung cấp thông tin tài khoản hợp lệ.");
+                }
+
+                // 1. Kiểm tra xem user đã liên kết Google Login chưa
+                var user = await _userManager.FindByLoginAsync("Google", googleId);
+                if (user == null)
+                {
+                    // 2. Kiểm tra xem đã có user nào dùng email này chưa
+                    user = await _userManager.FindByEmailAsync(email);
+                    if (user != null)
+                    {
+                        // Đã có tài khoản với email này -> liên kết thêm Google login
+                        await _userManager.AddLoginAsync(user, new UserLoginInfo("Google", googleId, "Google"));
+                    }
+                    else
+                    {
+                        // Tạo tài khoản mới với vai trò Learner
+                        var role = UserRoles.Learner;
+                        if (!await _roleManager.RoleExistsAsync(role))
+                        {
+                            await _roleManager.CreateAsync(new IdentityRole(role));
+                        }
+
+                        user = new ApplicationUser
+                        {
+                            UserName = email,
+                            Email = email,
+                            FullName = !string.IsNullOrWhiteSpace(name) ? name : email.Split('@')[0],
+                            ProfilePictureUrl = picture,
+                            Role = role,
+                            EmailConfirmed = true,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        var createResult = await _userManager.CreateAsync(user);
+                        if (!createResult.Succeeded)
+                        {
+                            var errors = createResult.Errors.Select(e => e.Description).ToList();
+                            return ApiResponse<AuthResponseDto>.Fail("Không thể tạo tài khoản từ Google.", errors);
+                        }
+
+                        await _userManager.AddToRoleAsync(user, role);
+                        await _userManager.AddLoginAsync(user, new UserLoginInfo("Google", googleId, "Google"));
+                    }
+                }
+
+                if (!user.IsActive)
+                {
+                    return ApiResponse<AuthResponseDto>.Fail("Tài khoản của bạn đã bị khóa.");
+                }
+
+                // Cập nhật ProfilePictureUrl nếu user chưa có
+                if (string.IsNullOrEmpty(user.ProfilePictureUrl) && !string.IsNullOrEmpty(picture))
+                {
+                    user.ProfilePictureUrl = picture;
+                    await _userManager.UpdateAsync(user);
+                }
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var userRole = roles.FirstOrDefault() ?? user.Role;
+
+                var (jwtToken, expiresAt) = GenerateJwtToken(user, userRole);
+
+                var response = new AuthResponseDto
+                {
+                    Token = jwtToken,
+                    UserId = user.Id,
+                    Email = user.Email!,
+                    FullName = user.FullName ?? string.Empty,
+                    Role = userRole,
+                    ExpiresAt = expiresAt
+                };
+
+                return ApiResponse<AuthResponseDto>.Ok(response, "Đăng nhập Google thành công.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<AuthResponseDto>.Fail($"Đã xảy ra lỗi khi xử lý đăng nhập Google: {ex.Message}");
+            }
         }
 
         private (string Token, DateTime ExpiresAt) GenerateJwtToken(ApplicationUser user, string role)

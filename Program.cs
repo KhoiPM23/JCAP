@@ -11,6 +11,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Nạp file appsettings.Local.json (chứa secret chạy local, file này được gitignore)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 // 1. Cấu hình DbContext kết nối SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -36,6 +39,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -66,6 +70,7 @@ builder.Services.AddCors(options =>
 });
 
 // 5. Đăng ký Dependency Injection cho Services
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
@@ -119,8 +124,10 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger";
     });
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowAll");
 

@@ -1,0 +1,36 @@
+# EditorConfig configuration for JCAP
+# https://EditorConfig.org
+
+root = true
+
+# All files default
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# / .NET files
+[*.cs]
+charset = utf-8
+indent_size = 4
+end_of_line = crlf
+
+# Project files & XML
+[*.{csproj,props,targets,xml,config,resx}]
+charset = utf-8
+indent_size = 2
+
+# Frontend files (React, TypeScript, JavaScript, CSS, HTML, JSON)
+[*.{js,jsx,ts,tsx,html,css,scss,json,svg}]
+charset = utf-8
+indent_size = 2
+end_of_line = lf
+
+# Markdown & Documentation
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = false
+insert_final_newline = true
+
