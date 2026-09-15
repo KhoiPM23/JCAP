@@ -65,6 +65,12 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Local Copilot upgrade workflow artifacts
+.github/upgrades/
+
+# Local GitHub and Copilot configuration
+.github/
+
 # Tye
 .tye/
 
