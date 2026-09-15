@@ -7,9 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="JCAP.Tests\**\*.cs" />
-    <EmbeddedResource Remove="JCAP.Tests\**\*" />
-    <None Remove="JCAP.Tests\**\*" />
+    <Compile Remove="JCAP.Tests\**" />
+    <EmbeddedResource Remove="JCAP.Tests\**" />
+    <Content Remove="JCAP.Tests\**" />
+    <None Remove="JCAP.Tests\**" />
   </ItemGroup>
 
   <ItemGroup>
