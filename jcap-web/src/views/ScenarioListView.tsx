@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // Cấu trúc dữ liệu của một Tình huống (Scenario)
 export interface Scenario {
@@ -80,10 +81,15 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Hiển thị số dư Credit giả lập */}
-            <div className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold border border-amber-200">
-              🪙 500 Credits
-            </div>
+            {/* Hiển thị số dư Credit giả lập - Bấm để chuyển đến trang Billing */}
+            <Link
+              to="/billing"
+              className="bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full text-xs font-bold border border-amber-200 transition-all flex items-center gap-1.5 shadow-sm hover:shadow active:scale-95 cursor-pointer"
+              title="Xem chi tiết số dư & nạp thêm Credits"
+            >
+              <span>🪙</span>
+              <span>500 Credits</span>
+            </Link>
             {/* Thông tin user */}
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-slate-800">{userEmail}</p>

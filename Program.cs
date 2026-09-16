@@ -1,7 +1,7 @@
 using JCAP.Data;
+using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
-using JCAP.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

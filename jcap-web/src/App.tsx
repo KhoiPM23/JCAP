@@ -14,6 +14,7 @@ import { ScenarioListView, type Scenario } from './views/ScenarioListView';
 import { RoleplayChatView } from './views/RoleplayChatView';
 import { PrivateRoute } from './components/PrivateRoute';
 import { AdminCreditPackagesView } from './views/admin/AdminCreditPackagesView';
+import { LearnerBillingView } from './views/learner/LearnerBillingView';
 
 // ============================================================
 // Route Wrappers: inject navigate callbacks vao cac View component
@@ -206,6 +207,14 @@ const AppRoutes: React.FC = () => {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/billing"
+        element={
+          <PrivateRoute>
+            <LearnerBillingView />
+          </PrivateRoute>
+        }
+      />
 
       {/* Root & wildcard: redirect theo trang thai dang nhap va role */}
       <Route path="/" element={<RootRedirect />} />
@@ -224,6 +233,6 @@ export const App: React.FC = () => (
       <AppRoutes />
     </AuthProvider>
   </BrowserRouter>
-);
+); 
 
 export default App;
