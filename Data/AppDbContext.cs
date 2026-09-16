@@ -1,3 +1,4 @@
+using JCAP.Models;
 using JCAP.Services.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +11,16 @@ namespace JCAP.Data
         {
         }
 
+        public DbSet<CreditPackage> CreditPackages { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Các cấu hình Fluent API sau này cho các Entity mới sẽ được đặt ở đây
+            modelBuilder.Entity<CreditPackage>(entity =>
+            {
+                entity.Property(e => e.Price).HasPrecision(18, 2);
+            });
         }
     }
 }

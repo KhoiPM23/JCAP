@@ -1,4 +1,6 @@
-﻿namespace JCAP.Models
+using JCAP.Services.Models;
+
+namespace JCAP.Models
 {
     public class CreditTransaction
     {
