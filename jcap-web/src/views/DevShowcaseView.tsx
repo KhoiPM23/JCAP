@@ -6,6 +6,8 @@ import { Toast, type ToastType } from '../components/ui/Toast';
 import { Header } from '../components/layout/Header';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { LearnerProfileView } from './LearnerProfileView';
+import { UpdateProfileView } from './UpdateProfileView';
 import type { User } from '../types/auth';
 
 interface ToastItem {
@@ -16,7 +18,8 @@ interface ToastItem {
 
 export const DevShowcaseView: React.FC = () => {
   // Navigation tabs for showcase
-  const [activeTab, setActiveTab] = useState<'components' | 'layout' | 'layouts-sim'>('components');
+  const [activeTab, setActiveTab] = useState<'components' | 'layout' | 'layouts-sim' | 'profile'>('components');
+  const [profileSubView, setProfileSubView] = useState<'view' | 'edit'>('view');
 
   // Modal demo state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,6 +102,15 @@ export const DevShowcaseView: React.FC = () => {
             }`}
           >
             3. Layouts Simulation (MainLayout, AuthLayout)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('profile')}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'profile' ? 'bg-[#0878EE] text-white shadow-sm' : 'text-[#71809A] hover:text-[#071A44]'
+            }`}
+          >
+            4. UC07 & UC08 Profile (View & Edit)
           </button>
         </div>
       </div>
@@ -466,6 +478,95 @@ export const DevShowcaseView: React.FC = () => {
                 </div>
               </div>
             </section>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 4: UC07 & UC08 PROFILE (VIEW & EDIT) */}
+        {/* ============================================================ */}
+        {activeTab === 'profile' && (
+          <div className="space-y-8">
+            {/* Control & Dev Session Banner */}
+            <div className="bg-white rounded-xl border border-[#E6EDF5] p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#071A44]">
+                  UC07 & UC08 — Hồ sơ học viên (Learner Profile)
+                </h2>
+                <p className="text-xs text-[#71809A] mt-1">
+                  Triển khai độc lập với backend, tái sử dụng toàn bộ Shared Layout Foundation (Button, Input, Toast, Header, Navbar, MainLayout).
+                </p>
+              </div>
+
+              {/* Sub-view switcher & Dev Session Activation */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex bg-[#F4F9FE] p-1 rounded-lg border border-[#E6EDF5]">
+                  <button
+                    type="button"
+                    onClick={() => setProfileSubView('view')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                      profileSubView === 'view'
+                        ? 'bg-[#0878EE] text-white shadow-sm'
+                        : 'text-[#71809A] hover:text-[#071A44]'
+                    }`}
+                  >
+                    Xem hồ sơ (UC07)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProfileSubView('edit')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                      profileSubView === 'edit'
+                        ? 'bg-[#0878EE] text-white shadow-sm'
+                        : 'text-[#71809A] hover:text-[#071A44]'
+                    }`}
+                  >
+                    Chỉnh sửa hồ sơ (UC08)
+                  </button>
+                </div>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    localStorage.setItem('jcap_user', JSON.stringify(sampleUser));
+                    localStorage.setItem('jcap_token', 'dev-mock-jwt-token');
+                    alert('Đã kích hoạt phiên học viên Dev! Bạn có thể mở trực tiếp tuyến đường /profile hoặc /profile/edit trên thanh địa chỉ.');
+                  }}
+                >
+                  ⚡ Kích hoạt phiên Dev cho route /profile
+                </Button>
+              </div>
+            </div>
+
+            {/* Direct Route Links Box */}
+            <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-900">
+              <div>
+                <strong>Kiểm tra tuyến đường thực tế (Được bọc bởi PrivateRoute & MainLayout):</strong>
+              </div>
+              <div className="flex items-center gap-4">
+                <a
+                  href="/profile"
+                  className="font-bold text-[#0878EE] hover:underline flex items-center gap-1"
+                >
+                  🔗 Mở /profile trong MainLayout ↗
+                </a>
+                <a
+                  href="/profile/edit"
+                  className="font-bold text-[#0878EE] hover:underline flex items-center gap-1"
+                >
+                  🔗 Mở /profile/edit trong MainLayout ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Embedded View/Edit Container */}
+            <div className="border border-[#E6EDF5] rounded-xl p-6 bg-[#F4F9FE]">
+              {profileSubView === 'view' ? (
+                <LearnerProfileView />
+              ) : (
+                <UpdateProfileView />
+              )}
+            </div>
           </div>
         )}
       </div>

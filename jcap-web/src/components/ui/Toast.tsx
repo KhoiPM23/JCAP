@@ -33,12 +33,12 @@ export const Toast: React.FC<ToastProps> = ({
 
   return (
     <div
-      className={`pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border ${borderColor} ${bgColor} shadow-lg ring-1 ring-black ring-opacity-5 mb-3 transition-all duration-300 transform translate-y-0 opacity-100`}
+      className={`pointer-events-auto w-[360px] sm:w-[420px] max-w-[calc(100vw-2rem)] min-w-[300px] overflow-hidden rounded-xl border ${borderColor} ${bgColor} shadow-lg ring-1 ring-black ring-opacity-5 mb-3 transition-all duration-300 transform translate-y-0 opacity-100`}
       role="alert"
     >
-      <div className="p-4">
+      <div className="p-4 sm:p-4.5">
         <div className="flex items-start">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 mt-0.5">
             {type === 'success' ? (
               <svg className={`h-5 w-5 ${iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -49,10 +49,10 @@ export const Toast: React.FC<ToastProps> = ({
               </svg>
             )}
           </div>
-          <div className="ml-3 w-0 flex-1 pt-0.5">
-            <p className={`text-sm font-medium ${textColor}`}>{message}</p>
+          <div className="ml-3.5 flex-1 min-w-0 pr-2">
+            <p className={`text-sm font-semibold leading-relaxed ${textColor}`}>{message}</p>
           </div>
-          <div className="ml-4 flex flex-shrink-0">
+          <div className="ml-2 flex flex-shrink-0">
             <button
               type="button"
               className={`inline-flex rounded-md ${bgColor} text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}

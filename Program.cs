@@ -72,6 +72,7 @@ builder.Services.AddCors(options =>
 // 5. Đăng ký Dependency Injection cho Services
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
