@@ -12,16 +12,46 @@ namespace JCAP.Data
         }
 
         public DbSet<CreditPackage> CreditPackages { get; set; } = null!;
+        public DbSet<CreditTransaction> CreditTransactions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // CreditPackage
             modelBuilder.Entity<CreditPackage>(entity =>
             {
-                entity.Property(e => e.Price).HasPrecision(18, 2);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Price)
+                    .HasPrecision(18, 2);
+            });
+
+            // CreditTransaction
+            modelBuilder.Entity<CreditTransaction>(entity =>
+            {
+                entity.Property(e => e.Type)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.PayOsOrderCode)
+                    .HasMaxLength(100);
+
+                // ApplicationUser 1 - N CreditTransaction
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
 }
-

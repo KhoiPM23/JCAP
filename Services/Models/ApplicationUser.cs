@@ -8,6 +8,7 @@ namespace JCAP.Services.Models
         public string Role { get; set; } = "Learner";
         public bool IsActive { get; set; } = true;
         public string? ProfilePictureUrl { get; set; }
+        public int CreditBalance { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
