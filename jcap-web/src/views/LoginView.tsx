@@ -10,7 +10,14 @@ export const LoginView: React.FC<LoginViewProps> = ({
   onLoginSuccess,
   onSwitchToRegister,
 }) => {
-  const { login, loginWithGoogle, authError, clearAuthError } = useAuth();
+  const {
+    login,
+    loginWithGoogle,
+    loginError,
+    googleError,
+    clearLoginError,
+    clearGoogleError,
+  } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +29,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setClientError(null);
-    clearAuthError();
+    clearLoginError();
+    clearGoogleError();
 
     if (!email.trim()) {
       setClientError('Vui lòng nhập Email!');
@@ -45,7 +53,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
     }
   };
 
-  const displayedError = clientError || authError;
+  const displayedError = clientError || loginError || googleError;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

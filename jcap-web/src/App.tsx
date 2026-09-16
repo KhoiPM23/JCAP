@@ -10,6 +10,7 @@ import {
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginView } from './views/LoginView';
 import { RegisterView } from './views/RegisterView';
+import { EmailVerificationPendingView } from './views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from './views/ScenarioListView';
 import { RoleplayChatView } from './views/RoleplayChatView';
 import { PrivateRoute } from './components/PrivateRoute';
@@ -40,8 +41,25 @@ const RegisterRoute: React.FC = () => {
   const navigate = useNavigate();
   return (
     <RegisterView
-      onRegisterSuccess={() => navigate('/scenarios', { replace: true })}
+      onRegisterSuccess={(email) => navigate('/email-verification-pending', { state: { email } })}
       onSwitchToLogin={() => navigate('/login')}
+    />
+  );
+};
+
+const EmailVerificationPendingRoute: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const email = (location.state as { email?: string } | null)?.email;
+
+  if (!email) {
+    return <Navigate to="/register" replace />;
+  }
+
+  return (
+    <EmailVerificationPendingView
+      email={email}
+      onBackToLogin={() => navigate('/login', { replace: true })}
     />
   );
 };
@@ -125,6 +143,14 @@ const AppRoutes: React.FC = () => {
         element={
           <PublicRoute>
             <RegisterRoute />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/email-verification-pending"
+        element={
+          <PublicRoute>
+            <EmailVerificationPendingRoute />
           </PublicRoute>
         }
       />

@@ -1,4 +1,4 @@
-import type { ApiResponse, AuthResponseDto, LoginPayload, RegisterPayload } from '../types/auth';
+import type { ApiResponse, AuthResponseDto, LoginPayload, RegisterPayload, RegisterResponseDto } from '../types/auth';
 
 const API_BASE = ''; // Trong Vite dev proxy, các request /api sẽ tự động chuyển tiếp tới backend http://localhost:5254
 
@@ -68,7 +68,7 @@ export const authService = {
   /**
    * Đăng ký tài khoản người dùng mới
    */
-  async register(payload: RegisterPayload): Promise<ApiResponse<AuthResponseDto>> {
+  async register(payload: RegisterPayload): Promise<ApiResponse<RegisterResponseDto>> {
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
@@ -84,7 +84,7 @@ export const authService = {
         }),
       });
 
-      return await parseResponse<AuthResponseDto>(response);
+      return await parseResponse<RegisterResponseDto>(response);
     } catch (err: any) {
       return {
         success: false,

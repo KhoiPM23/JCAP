@@ -32,7 +32,7 @@ namespace JCAP.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return BadRequest(ApiResponse<AuthResponseDto>.Fail("Dữ liệu không hợp lệ.", errors));
+                return BadRequest(ApiResponse<RegisterResponseDto>.Fail("Dữ liệu không hợp lệ.", errors));
             }
 
             var result = await _authService.RegisterAsync(dto);
@@ -42,6 +42,26 @@ namespace JCAP.Controllers
             }
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Xác minh email từ liên kết được gửi trong email đăng ký.
+        /// </summary>
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(
+            [FromQuery] string? userId,
+            [FromQuery] string? token)
+        {
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var result = await _authService.ConfirmEmailAsync(userId ?? string.Empty, token ?? string.Empty);
+
+            if (result.Success)
+            {
+                return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=true");
+            }
+
+            var errorMessage = Uri.EscapeDataString(result.Message);
+            return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=false&error={errorMessage}");
         }
 
         /// <summary>

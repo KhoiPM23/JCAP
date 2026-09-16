@@ -71,7 +71,9 @@ builder.Services.AddCors(options =>
 
 // 5. Đăng ký Dependency Injection cho Services
 builder.Services.AddHttpClient();
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

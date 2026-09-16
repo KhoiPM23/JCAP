@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface RegisterViewProps {
-  onRegisterSuccess: () => void;
+  onRegisterSuccess: (email: string) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -10,7 +10,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
   onRegisterSuccess,
   onSwitchToLogin,
 }) => {
-  const { register, loginWithGoogle, authError, clearAuthError } = useAuth();
+  const { register, loginWithGoogle, registerError, clearRegisterError } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -23,7 +23,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setClientError(null);
-    clearAuthError();
+    clearRegisterError();
 
     if (!fullName.trim()) {
       setClientError('Vui lòng nhập Họ và tên.');
@@ -47,7 +47,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
     try {
       setIsSubmitting(true);
-      await register({
+      const registrationResult = await register({
         fullName: fullName.trim(),
         email: email.trim(),
         password,
@@ -56,7 +56,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         role: 'Learner',
       });
 
-      onRegisterSuccess();
+      onRegisterSuccess(registrationResult.email);
     } catch (err: any) {
       // Error is set in AuthContext or thrown
       setClientError(err.message || 'Đăng ký tài khoản thất bại.');
@@ -65,7 +65,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
     }
   };
 
-  const displayedError = clientError || authError;
+  const displayedError = clientError || registerError;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
