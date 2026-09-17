@@ -167,7 +167,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           >
             Đăng nhập ngay
           </button>
-        </div>
+      </div>
     </div>
   );
 };
