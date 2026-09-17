@@ -10,8 +10,47 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const { user: authUser, logout } = useAuth();
-  const user = propUser !== undefined ? propUser : authUser;
+  const [currentUser, setCurrentUser] = React.useState<User | null>(propUser !== undefined ? propUser : authUser);
   const handleLogout = onLogout || logout;
+
+  React.useEffect(() => {
+    if (propUser !== undefined) {
+      setCurrentUser(propUser);
+      return;
+    }
+    const saved = localStorage.getItem('jcap_user');
+    if (saved) {
+      try {
+        setCurrentUser(JSON.parse(saved));
+      } catch {
+        setCurrentUser(authUser);
+      }
+    } else {
+      setCurrentUser(authUser);
+    }
+  }, [authUser, propUser]);
+
+  React.useEffect(() => {
+    const handleProfileUpdated = (event: any) => {
+      const detail = event.detail;
+      if (detail) {
+        setCurrentUser((prev) => ({
+          ...(prev || {}),
+          id: detail.id || prev?.id || '',
+          email: detail.email || prev?.email || '',
+          role: detail.role || prev?.role || 'Learner',
+          fullName: detail.fullName,
+          level: detail.jlptLevel,
+          avatarUrl: detail.profilePictureUrl,
+        }));
+      }
+    };
+
+    window.addEventListener('jcap_profile_updated', handleProfileUpdated);
+    return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
+  }, []);
+
+  const user = currentUser;
 
   return (
     <header className="h-[64px] bg-white border-b border-[#E6EDF5] flex items-center justify-between px-8 sticky top-0 z-40">
@@ -67,11 +106,22 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
             
             {/* Avatar Dropdown */}
             <div className="relative group cursor-pointer">
-              <div 
-                className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-[#0878EE] font-bold ring-2 ring-transparent group-hover:ring-[#0878EE] transition-all"
-              >
-                {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-              </div>
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName || user.email}
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-[#0878EE] transition-all"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div 
+                  className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-[#0878EE] font-bold ring-2 ring-transparent group-hover:ring-[#0878EE] transition-all"
+                >
+                  {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                </div>
+              )}
               
               {/* Dropdown menu */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-[#E6EDF5] hidden group-hover:block z-50">

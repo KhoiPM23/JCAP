@@ -11,10 +11,12 @@ import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
+import { LearnerProfileView } from '../views/LearnerProfileView';
+import { UpdateProfileView } from '../views/UpdateProfileView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
 
 // ============================================================
-// Route Wrappers (Preserved from original App.tsx)
+// Route Wrappers
 // ============================================================
 
 /** Redirects to /scenarios if already authenticated */
@@ -162,16 +164,14 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/chat" element={<ChatRoute />} />
         
-        {/* Placeholder for future UC07 View Profile */}
-        <Route path="/profile" element={
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-[#E6EDF5]">
-            <h2 className="text-xl font-semibold mb-4">Hồ sơ cá nhân</h2>
-            <p className="text-[#71809A]">Tính năng đang được phát triển (Phase 2 - UC07).</p>
-          </div>
-        } />
+        {/* UC07: Xem ho so hoc vien */}
+        <Route path="/profile" element={<LearnerProfileView />} />
+
+        {/* UC08: Cap nhat ho so hoc vien */}
+        <Route path="/profile/edit" element={<UpdateProfileView />} />
       </Route>
 
-      {/* Temporary Development-Only Showcase Route (Sprint 1 UI Foundation Review) */}
+      {/* Temporary Development-Only Showcase Route */}
       <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
 
       {/* Root & wildcard */}

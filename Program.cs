@@ -73,6 +73,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();

@@ -171,4 +171,3 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
     </div>
   );
 };
-
