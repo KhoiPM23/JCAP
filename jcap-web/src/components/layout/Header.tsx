@@ -40,8 +40,9 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           email: detail.email || prev?.email || '',
           role: detail.role || prev?.role || 'Learner',
           fullName: detail.fullName,
-          level: detail.jlptLevel,
-          avatarUrl: detail.profilePictureUrl,
+          level: detail.jlptLevel || detail.level,
+          avatarUrl: detail.profilePictureUrl || detail.avatarUrl,
+          creditBalance: detail.creditBalance !== undefined ? detail.creditBalance : prev?.creditBalance,
         }));
       }
     };
@@ -92,9 +93,20 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-[#D92D20] ring-2 ring-white"></span>
         </button>
 
-        {/* User Account Info */}
+        {/* User Account Info & Credit Badge */}
         {user && (
           <div className="flex items-center gap-3 border-l border-[#E6EDF5] pl-6">
+            {/* Credit Balance Badge */}
+            <Link
+              to="/credits"
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs group"
+              title="Nhấn để nạp thêm credit"
+            >
+              <span className="text-amber-600 group-hover:scale-110 transition-transform">🪙</span>
+              <span>{user.creditBalance ?? 0}</span>
+              <span className="hidden sm:inline text-amber-700 font-medium">Credits</span>
+            </Link>
+
             <div className="flex flex-col items-end hidden sm:flex">
               <span className="text-sm font-medium text-[#071A44]">{user.fullName || user.email}</span>
               {user.level && (
@@ -124,16 +136,27 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
               )}
               
               {/* Dropdown menu */}
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-[#E6EDF5] hidden group-hover:block z-50">
-                <Link to="/profile" className="block px-4 py-2 text-sm text-[#071A44] hover:bg-gray-50">
-                  Hồ sơ cá nhân
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl py-1.5 border border-[#E6EDF5] hidden group-hover:block z-50">
+                <div className="px-4 py-2 border-b border-gray-100 sm:hidden">
+                  <p className="text-xs font-semibold text-[#071A44] truncate">{user.fullName || user.email}</p>
+                  <p className="text-[11px] text-amber-600 font-bold mt-0.5">🪙 {user.creditBalance ?? 0} Credits</p>
+                </div>
+                <Link to="/profile" className="flex items-center gap-2 px-4 py-2 text-xs text-[#071A44] hover:bg-slate-50 transition-colors">
+                  <span>👤</span> Hồ sơ cá nhân
                 </Link>
+                <Link to="/credits" className="flex items-center gap-2 px-4 py-2 text-xs text-[#0878EE] font-medium hover:bg-blue-50 transition-colors">
+                  <span>🪙</span> Nạp thêm Credit
+                </Link>
+                <Link to="/credits/history" className="flex items-center gap-2 px-4 py-2 text-xs text-[#071A44] hover:bg-slate-50 transition-colors">
+                  <span>📋</span> Lịch sử giao dịch
+                </Link>
+                <div className="border-t border-gray-100 my-1"></div>
                 <button 
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-[#D92D20] hover:bg-red-50"
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs text-[#D92D20] hover:bg-red-50 transition-colors"
                 >
-                  Đăng xuất
+                  <span>🚪</span> Đăng xuất
                 </button>
               </div>
             </div>

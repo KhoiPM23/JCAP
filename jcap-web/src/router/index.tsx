@@ -13,6 +13,9 @@ import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
+import { CreditPackagesView } from '../views/CreditPackagesView';
+import { CreditHistoryView } from '../views/CreditHistoryView';
+import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
 
 // ============================================================
@@ -169,6 +172,15 @@ export const AppRouter: React.FC = () => {
 
         {/* UC08: Cap nhat ho so hoc vien */}
         <Route path="/profile/edit" element={<UpdateProfileView />} />
+
+        {/* UC11 & UC12: Danh sach goi & Mua credits */}
+        <Route path="/credits" element={<CreditPackagesView />} />
+
+        {/* UC13: Lich su giao dich credit */}
+        <Route path="/credits/history" element={<CreditHistoryView />} />
+
+        {/* Ket qua thanh toan PayOS */}
+        <Route path="/credits/payment-return" element={<PaymentReturnView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}
