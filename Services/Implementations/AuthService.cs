@@ -207,6 +207,87 @@ namespace JCAP.Services.Implementations
             return ApiResponse<AuthResponseDto>.Ok(response, "Lấy thông tin người dùng thành công.");
         }
 
+        public async Task<ApiResponse<string>> ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            const string genericMessage = "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi.";
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+
+            // Luôn trả cùng một thông báo để tránh lộ email đã đăng ký.
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Ok(string.Empty, genericMessage);
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var resetUrl = $"{frontendUrl.TrimEnd('/')}/reset-password" +
+                $"?token={Uri.EscapeDataString(token)}" +
+                $"&email={Uri.EscapeDataString(user.Email!)}";
+            var encodedResetUrl = System.Net.WebUtility.HtmlEncode(resetUrl);
+            var displayName = System.Net.WebUtility.HtmlEncode(user.FullName ?? user.Email);
+            var emailBody = $"""
+                <p>Xin chào {displayName},</p>
+                <p>JCAP đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+                <p><a href="{encodedResetUrl}">Đặt lại mật khẩu</a></p>
+                <p>Nếu bạn không gửi yêu cầu này, bạn có thể bỏ qua email.</p>
+                <p>Trân trọng,<br/>JCAP</p>
+                """;
+
+            try
+            {
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Đặt lại mật khẩu tài khoản JCAP",
+                    emailBody);
+            }
+            catch
+            {
+                // SmtpEmailService đã ghi log lỗi. Không thay đổi phản hồi để tránh dò email.
+            }
+
+            return ApiResponse<string>.Ok(string.Empty, genericMessage);
+        }
+
+        public async Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Fail("Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                return ApiResponse<string>.Fail(
+                    "Không thể đặt lại mật khẩu.",
+                    result.Errors.Select(error => error.Description).ToList());
+            }
+
+            return ApiResponse<string>.Ok(
+                string.Empty,
+                "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
+        }
+
+        public async Task<ApiResponse<string>> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Fail("Không tìm thấy tài khoản đang đăng nhập.");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                return ApiResponse<string>.Fail(
+                    "Không thể đổi mật khẩu.",
+                    result.Errors.Select(error => error.Description).ToList());
+            }
+
+            return ApiResponse<string>.Ok(string.Empty, "Đổi mật khẩu thành công.");
+        }
+
         public string GetGoogleAuthUrl()
         {
             var clientId = _configuration["Authentication:Google:ClientId"]

@@ -12,6 +12,9 @@ import { EmailVerificationPendingView } from '../views/EmailVerificationPendingV
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
+import { ForgotPasswordView } from '../views/ForgotPasswordView';
+import { ResetPasswordView } from '../views/ResetPasswordView';
+import { ChangePasswordView } from '../views/ChangePasswordView';
 
 // ============================================================
 // Route Wrappers (Preserved from original App.tsx)
@@ -30,8 +33,19 @@ const LoginRoute: React.FC = () => {
     <LoginView
       onLoginSuccess={() => navigate('/scenarios', { replace: true })}
       onSwitchToRegister={() => navigate('/register')}
+      onForgotPassword={() => navigate('/forgot-password')}
     />
   );
+};
+
+const ForgotPasswordRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <ForgotPasswordView onBackToLogin={() => navigate('/login')} />;
+};
+
+const ResetPasswordRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <ResetPasswordView onBackToLogin={() => navigate('/login')} />;
 };
 
 const RegisterRoute: React.FC = () => {
@@ -149,6 +163,22 @@ export const AppRouter: React.FC = () => {
             </PublicRoute>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordRoute />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordRoute />
+            </PublicRoute>
+          }
+        />
       </Route>
 
       {/* Protected routes wrapped in MainLayout */}
@@ -162,13 +192,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/chat" element={<ChatRoute />} />
         
-        {/* Placeholder for future UC07 View Profile */}
-        <Route path="/profile" element={
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-[#E6EDF5]">
-            <h2 className="text-xl font-semibold mb-4">Hồ sơ cá nhân</h2>
-            <p className="text-[#71809A]">Tính năng đang được phát triển (Phase 2 - UC07).</p>
-          </div>
-        } />
+        <Route path="/profile" element={<ChangePasswordView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route (Sprint 1 UI Foundation Review) */}

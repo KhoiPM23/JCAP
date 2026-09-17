@@ -89,6 +89,45 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
+        /// Tạo password reset token và gửi liên kết qua email.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var result = await _authService.ForgotPasswordAsync(dto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Đặt lại mật khẩu bằng token được tạo từ yêu cầu quên mật khẩu.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// Đổi mật khẩu của người dùng đang đăng nhập.
+        /// </summary>
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized(ApiResponse<string>.Fail("Chưa đăng nhập hoặc token không hợp lệ."));
+            }
+
+            var result = await _authService.ChangePasswordAsync(userId, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
         /// Lấy thông tin user hiện tại (yêu cầu Bearer Token qua header)
         /// </summary>
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
