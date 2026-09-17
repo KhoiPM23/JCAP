@@ -1,6 +1,7 @@
 using JCAP.DTOs.Auth;
 using JCAP.Models;
 using JCAP.Services.Implementations;
+using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -21,7 +22,8 @@ public class AuthServiceTests
             Email = "learner@example.com",
             FullName = "Nguyen Van A",
             Role = "Learner",
-            IsActive = true
+            IsActive = true,
+            EmailConfirmed = true
         };
 
         var userManagerMock = CreateUserManagerMock();
@@ -43,12 +45,14 @@ public class AuthServiceTests
         var configuration = CreateConfiguration();
 
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -138,12 +142,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -177,7 +183,8 @@ public class AuthServiceTests
             Email = "learner@example.com",
             FullName = "Nguyen Van A",
             Role = "Learner",
-            IsActive = true
+            IsActive = true,
+            EmailConfirmed = true
         };
 
         var userManagerMock = CreateUserManagerMock();
@@ -193,12 +200,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -242,12 +251,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {

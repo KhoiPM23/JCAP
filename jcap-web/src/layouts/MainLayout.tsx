@@ -4,11 +4,7 @@ import { Header } from '../components/layout/Header';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 
-export interface MainLayoutProps {
-  children?: React.ReactNode;
-}
-
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+export const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F9FE] font-sans text-[#071A44]">
       {/* Fixed Header */}
@@ -19,10 +15,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Sidebar Navigation */}
         <Navbar />
         
-        {/* Dynamic Content Outlet or Children */}
+        {/* Dynamic Content Outlet */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <main className="flex-1 p-8 overflow-y-auto">
-            {children || <Outlet />}
+            <Outlet />
           </main>
           
           {/* Footer (Included as requested for shared foundation) */}
