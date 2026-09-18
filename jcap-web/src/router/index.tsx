@@ -18,7 +18,9 @@ import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
-import { LearnerBillingView } from '../views/learner/LearnerBillingView';
+import { ForgotPasswordView } from '../views/ForgotPasswordView';
+import { ResetPasswordView } from '../views/ResetPasswordView';
+import { ChangePasswordView } from '../views/ChangePasswordView';
 
 // ============================================================
 // Route Wrappers
@@ -71,8 +73,19 @@ const LoginRoute: React.FC = () => {
         }
       }}
       onSwitchToRegister={() => navigate('/register')}
+      onForgotPassword={() => navigate('/forgot-password')}
     />
   );
+};
+
+const ForgotPasswordRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <ForgotPasswordView onBackToLogin={() => navigate('/login')} />;
+};
+
+const ResetPasswordRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <ResetPasswordView onBackToLogin={() => navigate('/login')} />;
 };
 
 const RegisterRoute: React.FC = () => {
@@ -205,6 +218,22 @@ export const AppRouter: React.FC = () => {
             </PublicRoute>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordRoute />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordRoute />
+            </PublicRoute>
+          }
+        />
       </Route>
 
       {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
@@ -234,11 +263,11 @@ export const AppRouter: React.FC = () => {
         {/* UC08: Cap nhat ho so hoc vien */}
         <Route path="/profile/edit" element={<UpdateProfileView />} />
 
+        {/* Doi mat khau tai khu vuc ho so */}
+        <Route path="/profile/change-password" element={<ChangePasswordView />} />
+
         {/* UC11 & UC12: Danh sach goi & Mua credits */}
         <Route path="/credits" element={<CreditPackagesView />} />
-
-        {/* Learner billing view */}
-        <Route path="/billing" element={<LearnerBillingView />} />
 
         {/* UC13: Lich su giao dich credit */}
         <Route path="/credits/history" element={<CreditHistoryView />} />

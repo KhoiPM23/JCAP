@@ -140,8 +140,18 @@ export const LearnerProfileView: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Button */}
-            <div className="flex justify-center md:justify-end pb-1">
+            {/* Account Actions */}
+            <div className="flex flex-col sm:flex-row justify-center md:justify-end gap-3 pb-1">
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/profile/change-password')}
+                className="shadow-sm"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2zm3-10V7a3 3 0 016 0v4H9z" />
+                </svg>
+                Đổi mật khẩu
+              </Button>
               <Button
                 variant="primary"
                 onClick={() => navigate('/profile/edit')}
