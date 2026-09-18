@@ -65,6 +65,12 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Local Copilot upgrade workflow artifacts
+.github/upgrades/
+
+# Local GitHub and Copilot configuration
+.github/
+
 # Tye
 .tye/
 
@@ -292,6 +298,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+dist/
 
 # Visual Studio 6 build log
 *.plg
@@ -481,5 +488,12 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Personal / Local Project Context
-JCAP_PROJECT_CONTEXT.md
+# App secrets - chỉ ignore file Local chứa secret thật (share qua Drive)
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Local AI working memory
+.ai-local/
+
+# Local VS Code settings
+.vscode/

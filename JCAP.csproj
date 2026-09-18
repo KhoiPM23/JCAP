@@ -4,16 +4,39 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Ngăn Visual Studio / MSBuild tự ý compile TypeScript của frontend jcap-web -->
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>None</TypeScriptToolsVersion>
+    <DefaultItemExcludes>$(DefaultItemExcludes);jcap-web\node_modules\**;jcap-web\dist\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
+    <!-- Loại trừ node_modules và dist để tránh lỗi IntelliSense và không làm nặng project -->
+    <Content Remove="jcap-web\node_modules\**;jcap-web\dist\**" />
+    <None Remove="jcap-web\node_modules\**;jcap-web\dist\**" />
+    <!-- Giữ mã nguồn jcap-web hiển thị trong Solution Explorer nhưng không copy vào thư mục bin -->
+    <Content Update="jcap-web\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <Compile Remove="JCAP.Tests\**" />
+    <EmbeddedResource Remove="JCAP.Tests\**" />
+    <Content Remove="JCAP.Tests\**" />
+    <None Remove="JCAP.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".github\upgrades\scenarios\nuget-package-upgrade\tasks\03-build-and-test\progress-details.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.18.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.31" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.31">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="payOS" Version="2.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
