@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 interface RegisterViewProps {
-  onRegisterSuccess: () => void;
+  onRegisterSuccess: (email: string) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -10,7 +12,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
   onRegisterSuccess,
   onSwitchToLogin,
 }) => {
-  const { register, loginWithGoogle, authError, clearAuthError } = useAuth();
+  const { register, loginWithGoogle, registerError, clearRegisterError } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setClientError(null);
-    clearAuthError();
+    clearRegisterError();
 
     if (!fullName.trim()) {
       setClientError('Vui lòng nhập Họ và tên.');
@@ -47,7 +49,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
     try {
       setIsSubmitting(true);
-      await register({
+      const registrationResult = await register({
         fullName: fullName.trim(),
         email: email.trim(),
         password,
@@ -56,7 +58,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         role: 'Learner',
       });
 
-      onRegisterSuccess();
+      onRegisterSuccess(registrationResult.email);
     } catch (err: any) {
       // Error is set in AuthContext or thrown
       setClientError(err.message || 'Đăng ký tài khoản thất bại.');
@@ -65,26 +67,18 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
     }
   };
 
-  const displayedError = clientError || authError;
+  const displayedError = clientError || registerError;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100 my-8">
+    <div className="p-8">
         {/* Tiêu đề & Logo */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-bold border border-red-100">
-            日
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">Tạo tài khoản JCAP</h1>
-          <p className="text-slate-500 text-sm mt-1">Đăng ký để bắt đầu luyện Kaiwa cùng AI</p>
+          <h1 className="text-2xl font-bold text-[#071A44]">Tạo tài khoản JCAP</h1>
+          <p className="text-[#71809A] text-sm mt-1">Đăng ký để bắt đầu luyện Kaiwa cùng AI</p>
         </div>
 
         {/* Nút Đăng ký bằng Google */}
-        <button
-          type="button"
-          onClick={loginWithGoogle}
-          className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl transition flex items-center justify-center gap-3 shadow-sm active:scale-[0.99] mb-5"
-        >
+        <Button type="button" variant="secondary" className="w-full gap-3 mb-5" onClick={loginWithGoogle}>
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
@@ -104,17 +98,17 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
             />
           </svg>
           <span>Đăng ký nhanh với Google</span>
-        </button>
+        </Button>
 
         <div className="relative flex items-center justify-center mb-5">
-          <div className="border-t border-slate-200 w-full"></div>
-          <span className="bg-white px-3 text-xs text-slate-400 uppercase font-medium">hoặc đăng ký bằng email</span>
-          <div className="border-t border-slate-200 w-full"></div>
+          <div className="border-t border-[#E6EDF5] w-full"></div>
+          <span className="bg-white px-3 text-xs text-[#71809A] uppercase font-medium whitespace-nowrap">hoặc đăng ký bằng email</span>
+          <div className="border-t border-[#E6EDF5] w-full"></div>
         </div>
 
         {/* Thông báo lỗi */}
         {displayedError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs flex items-start gap-2">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs flex items-start gap-2" role="alert">
             <span className="font-bold">⚠️</span>
             <span>{displayedError}</span>
           </div>
@@ -123,68 +117,20 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         {/* Form Đăng ký */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Họ và tên */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
-              Họ và tên
-            </label>
-            <input
-              type="text"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-              placeholder="Nguyễn Văn A"
-            />
-          </div>
+          <Input id="register-full-name" label="Họ và tên" type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nguyễn Văn A" />
 
           {/* Địa chỉ Email */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
-              Địa chỉ Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-              placeholder="learner@example.com"
-            />
-          </div>
+          <Input id="register-email" label="Địa chỉ Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="learner@example.com" />
 
           {/* Mật khẩu */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-              placeholder="Tối thiểu 6 ký tự"
-            />
-          </div>
+          <Input id="register-password" label="Mật khẩu" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" />
 
           {/* Xác nhận mật khẩu */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">
-              Xác nhận mật khẩu
-            </label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-100 outline-none transition text-sm"
-              placeholder="Nhập lại mật khẩu"
-            />
-          </div>
+          <Input id="register-confirm-password" label="Xác nhận mật khẩu" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu" />
 
           {/* Chọn trình độ JLPT (N5 - N4 - N3) */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-[#071A44] mb-1.5">
               Trình độ JLPT hiện tại / mục tiêu
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -195,8 +141,8 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
                   onClick={() => setSelectedLevel(level)}
                   className={`py-1.5 rounded-xl text-xs font-bold border transition ${
                     selectedLevel === level
-                      ? 'bg-red-600 text-white border-red-600 shadow-md shadow-red-200'
-                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    ? 'bg-[#0878EE] text-white border-[#0878EE] shadow-md shadow-blue-200'
+                    : 'bg-white text-[#71809A] border-[#E6EDF5] hover:bg-blue-50'
                   }`}
                 >
                   {level}
@@ -206,35 +152,22 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
           </div>
 
           {/* Nút bấm Tạo tài khoản */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold rounded-xl shadow-lg shadow-red-200 transition transform active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Đang tạo tài khoản...</span>
-              </>
-            ) : (
-              <span>Đăng ký tài khoản ➔</span>
-            )}
-          </button>
+          <Button type="submit" className="w-full mt-2" isLoading={isSubmitting}>
+            {isSubmitting ? 'Đang tạo tài khoản...' : 'Đăng ký tài khoản ➔'}
+          </Button>
         </form>
 
         {/* Chuyển sang màn hình Đăng nhập */}
-        <div className="mt-6 text-center text-sm text-slate-600">
+        <div className="mt-6 text-center text-sm text-[#71809A]">
           Đã có tài khoản?{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            className="text-red-600 font-bold hover:underline"
+            className="text-[#0878EE] font-bold hover:underline"
           >
             Đăng nhập ngay
           </button>
-        </div>
       </div>
     </div>
   );
 };
-

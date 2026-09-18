@@ -12,8 +12,8 @@ namespace JCAP.Data.Seeds
                 // 1. Seed tài khoản và vai trò
                 await UserSeeder.SeedAsync(services);
 
-                // 2. Về sau có thêm ScenarioSeeder, TopicSeeder... chỉ cần thêm 1 dòng ở đây:
-                // await ScenarioSeeder.SeedAsync(services);
+                // 2. Seed các gói credit mặc định
+                await CreditPackageSeeder.SeedAsync(services);
             }
             catch (Exception ex)
             {

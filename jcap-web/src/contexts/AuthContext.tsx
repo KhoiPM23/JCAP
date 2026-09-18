@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { User, RegisterPayload } from '../types/auth';
+import type { User, RegisterPayload, RegisterResponseDto } from '../types/auth';
 import { authService } from '../services/authService';
 
 export interface AuthContextType {
@@ -8,11 +8,15 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   userLevel: string;
-  authError: string | null;
-  clearAuthError: () => void;
+  loginError: string | null;
+  registerError: string | null;
+  googleError: string | null;
+  clearLoginError: () => void;
+  clearRegisterError: () => void;
+  clearGoogleError: () => void;
   setUserLevel: (level: string) => void;
   login: (email: string, password: string, level?: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<RegisterResponseDto>;
   logout: () => Promise<void>;
   loginWithGoogle: () => void;
 }
@@ -41,10 +45,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return !!localStorage.getItem('jcap_token');
   });
 
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
-  const clearAuthError = useCallback(() => {
-    setAuthError(null);
+  const clearLoginError = useCallback(() => {
+    setLoginError(null);
+  }, []);
+
+  const clearRegisterError = useCallback(() => {
+    setRegisterError(null);
+  }, []);
+
+  const clearGoogleError = useCallback(() => {
+    setGoogleError(null);
   }, []);
 
   // Hàm tiện ích lưu phiên đăng nhập đồng bộ vào cả React State và localStorage
@@ -88,12 +102,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let activeToken = token;
 
         if (googleError) {
-          setAuthError(decodeURIComponent(googleError));
+          setGoogleError(decodeURIComponent(googleError));
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         if (googleToken) {
           activeToken = googleToken;
+          setGoogleError(null);
           setToken(googleToken);
           localStorage.setItem('jcap_token', googleToken);
 
@@ -148,12 +163,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 3. Hàm Đăng nhập bằng Email & Password
   const login = async (email: string, password: string, level?: string) => {
-    setAuthError(null);
+    setLoginError(null);
     const res = await authService.login({ email, password });
 
     if (!res.success || !res.data) {
       const errorMsg = res.message || (res.errors && res.errors.length > 0 ? res.errors.join(', ') : 'Đăng nhập thất bại.');
-      setAuthError(errorMsg);
+      setLoginError(errorMsg);
       throw new Error(errorMsg);
     }
 
@@ -172,28 +187,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // 4. Hàm Đăng ký tài khoản
-  const register = async (payload: RegisterPayload) => {
-    setAuthError(null);
+  const register = async (payload: RegisterPayload): Promise<RegisterResponseDto> => {
+    setRegisterError(null);
     const res = await authService.register(payload);
 
     if (!res.success || !res.data) {
       const errorMsg = res.message || (res.errors && res.errors.length > 0 ? res.errors.join(', ') : 'Đăng ký thất bại.');
-      setAuthError(errorMsg);
+      setRegisterError(errorMsg);
       throw new Error(errorMsg);
     }
 
-    const { token: jwtToken, userId, email, fullName, role } = res.data;
-    const finalLevel = payload.jlptLevel || userLevel || 'N5';
-
-    const userData: User = {
-      id: userId,
-      email,
-      fullName,
-      role,
-      level: finalLevel,
-    };
-
-    saveSession(userData, jwtToken, finalLevel);
+    return res.data;
   };
 
   // 5. Ham Dang xuat
@@ -209,7 +213,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('jcap_user');
       setToken(null);
       setUser(null);
-      setAuthError(null);
+      setLoginError(null);
+      setRegisterError(null);
+      setGoogleError(null);
     }
   };
 
@@ -226,8 +232,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         userLevel,
-        authError,
-        clearAuthError,
+        loginError,
+        registerError,
+        googleError,
+        clearLoginError,
+        clearRegisterError,
+        clearGoogleError,
         setUserLevel,
         login,
         register,

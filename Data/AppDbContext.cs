@@ -17,7 +17,16 @@ namespace JCAP.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // CreditPackage
+            // ApplicationUser configuration
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.Property(e => e.JLPTLevel)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .HasDefaultValue("N5");
+            });
+
+            // CreditPackage configuration
             modelBuilder.Entity<CreditPackage>(entity =>
             {
                 entity.Property(e => e.Name)
@@ -28,7 +37,7 @@ namespace JCAP.Data
                     .HasPrecision(18, 2);
             });
 
-            // CreditTransaction
+            // CreditTransaction configuration
             modelBuilder.Entity<CreditTransaction>(entity =>
             {
                 entity.Property(e => e.Type)
