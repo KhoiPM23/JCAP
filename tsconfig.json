@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["jcap-web/src/**/*"],
+  "exclude": [
+    "jcap-web/node_modules",
+    "node_modules",
+    "bin",
+    "obj",
+    "jcap-web/dist"
+  ]
+}
+

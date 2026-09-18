@@ -17,6 +17,7 @@ import { CreditPackagesView } from '../views/CreditPackagesView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
+import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
@@ -25,10 +26,36 @@ import { ChangePasswordView } from '../views/ChangePasswordView';
 // Route Wrappers
 // ============================================================
 
-/** Redirects to /scenarios if already authenticated */
+/** Redirects if already authenticated (Admin -> /admin/credits/packages, Learner -> /scenarios) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  if (isAuthenticated) return <Navigate to="/scenarios" replace />;
+  const { isAuthenticated, user } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to={user?.role === 'Admin' ? '/admin/credits/packages' : '/scenarios'} replace />;
+  }
+  return <>{children}</>;
+};
+
+/** Protected route dành riêng cho Admin */
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-600 font-medium text-sm">Đang kiểm tra quyền Admin...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'Admin') {
+    return <Navigate to="/scenarios" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -36,7 +63,15 @@ const LoginRoute: React.FC = () => {
   const navigate = useNavigate();
   return (
     <LoginView
-      onLoginSuccess={() => navigate('/scenarios', { replace: true })}
+      onLoginSuccess={() => {
+        const savedUserStr = localStorage.getItem('jcap_user');
+        const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
+        if (savedUser?.role === 'Admin') {
+          navigate('/admin/credits/packages', { replace: true });
+        } else {
+          navigate('/scenarios', { replace: true });
+        }
+      }}
       onSwitchToRegister={() => navigate('/register')}
       onForgotPassword={() => navigate('/forgot-password')}
     />
@@ -94,12 +129,26 @@ const ScenarioRoute: React.FC = () => {
   };
 
   return (
-    <ScenarioListView
-      userEmail={user?.email || ''}
-      userLevel={userLevel || 'N5'}
-      onSelectScenario={handleSelectScenario}
-      onLogout={handleLogout}
-    />
+    <div>
+      {/* Banner nhanh cho Admin neu dang xem man hinh hoc vien */}
+      {user?.role === 'Admin' && (
+        <div className="bg-slate-900 text-white px-4 py-2 text-xs flex justify-between items-center">
+          <span>🛡️ Bạn đang đăng nhập với tư cách <strong>Admin ({user.email})</strong>.</span>
+          <button
+            onClick={() => navigate('/admin/credits/packages')}
+            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-semibold transition"
+          >
+            Vào Trang Quản Trị Gói Credit &rarr;
+          </button>
+        </div>
+      )}
+      <ScenarioListView
+        userEmail={user?.email || ''}
+        userLevel={userLevel || 'N5'}
+        onSelectScenario={handleSelectScenario}
+        onLogout={handleLogout}
+      />
+    </div>
   );
 };
 
@@ -121,8 +170,9 @@ const ChatRoute: React.FC = () => {
 };
 
 const RootRedirect: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  return <Navigate to={isAuthenticated ? '/scenarios' : '/login'} replace />;
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <Navigate to={user?.role === 'Admin' ? '/admin/credits/packages' : '/scenarios'} replace />;
 };
 
 // ============================================================
@@ -185,6 +235,16 @@ export const AppRouter: React.FC = () => {
           }
         />
       </Route>
+
+      {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
+      <Route
+        path="/admin/credits/packages"
+        element={
+          <AdminRoute>
+            <AdminCreditPackagesView />
+          </AdminRoute>
+        }
+      />
 
       {/* Protected routes wrapped in MainLayout */}
       <Route

@@ -1,16 +1,15 @@
 using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
-using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
 using System.Text.Json;
 using System.Net.Http.Headers;
+using JCAP.Models;
 
 namespace JCAP.Services.Implementations
 {
