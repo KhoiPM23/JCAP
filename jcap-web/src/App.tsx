@@ -5,7 +5,7 @@ import { AppRouter } from './router';
 
 // ============================================================
 // App root: BrowserRouter bọc ngoài cùng, AuthProvider bên trong
-// AppRouter sẽ chứa toàn bộ định tuyến và layouts của ứng dụng.
+// AppRouter điều phối toàn bộ định tuyến và layouts của ứng dụng.
 // ============================================================
 export const App: React.FC = () => (
   <BrowserRouter>

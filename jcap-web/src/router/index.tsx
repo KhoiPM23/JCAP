@@ -11,13 +11,18 @@ import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
+import { LearnerProfileView } from '../views/LearnerProfileView';
+import { UpdateProfileView } from '../views/UpdateProfileView';
+import { CreditPackagesView } from '../views/CreditPackagesView';
+import { CreditHistoryView } from '../views/CreditHistoryView';
+import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 
 // ============================================================
-// Route Wrappers (Preserved from original App.tsx)
+// Route Wrappers
 // ============================================================
 
 /** Redirects to /scenarios if already authenticated */
@@ -192,10 +197,26 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/chat" element={<ChatRoute />} />
         
-        <Route path="/profile" element={<ChangePasswordView />} />
+        {/* UC07: Xem ho so hoc vien */}
+        <Route path="/profile" element={<LearnerProfileView />} />
+
+        {/* UC08: Cap nhat ho so hoc vien */}
+        <Route path="/profile/edit" element={<UpdateProfileView />} />
+
+        {/* Doi mat khau tai khu vuc ho so */}
+        <Route path="/profile/change-password" element={<ChangePasswordView />} />
+
+        {/* UC11 & UC12: Danh sach goi & Mua credits */}
+        <Route path="/credits" element={<CreditPackagesView />} />
+
+        {/* UC13: Lich su giao dich credit */}
+        <Route path="/credits/history" element={<CreditHistoryView />} />
+
+        {/* Ket qua thanh toan PayOS */}
+        <Route path="/credits/payment-return" element={<PaymentReturnView />} />
       </Route>
 
-      {/* Temporary Development-Only Showcase Route (Sprint 1 UI Foundation Review) */}
+      {/* Temporary Development-Only Showcase Route */}
       <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
 
       {/* Root & wildcard */}
