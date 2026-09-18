@@ -40,7 +40,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Nếu đã có sẵn cả user và token từ localStorage thì không cần hiện màn hình loading xoay vòng
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('token') || urlParams.get('error')) return true;
+    const isGoogleCallback = window.location.pathname === '/scenarios' && urlParams.has('token');
+    const hasGoogleError = window.location.pathname === '/login' && urlParams.has('error');
+    if (isGoogleCallback || hasGoogleError) return true;
     if (localStorage.getItem('jcap_user') && localStorage.getItem('jcap_token')) return false;
     return !!localStorage.getItem('jcap_token');
   });
@@ -92,8 +94,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const googleToken = urlParams.get('token');
-        const googleError = urlParams.get('error');
+        const isGoogleCallback = window.location.pathname === '/scenarios' && urlParams.has('token');
+        const googleToken = isGoogleCallback ? urlParams.get('token') : null;
+        const googleError = window.location.pathname === '/login' ? urlParams.get('error') : null;
         const googleUserId = urlParams.get('userId');
         const googleEmail = urlParams.get('email');
         const googleFullName = urlParams.get('fullName');

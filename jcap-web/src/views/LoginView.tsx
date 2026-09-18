@@ -6,11 +6,13 @@ import { Input } from '../components/ui/Input';
 interface LoginViewProps {
   onLoginSuccess?: () => void;
   onSwitchToRegister?: () => void;
+  onForgotPassword?: () => void;
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({
   onLoginSuccess,
   onSwitchToRegister,
+  onForgotPassword,
 }) => {
   const {
     login,
@@ -117,6 +119,16 @@ export const LoginView: React.FC<LoginViewProps> = ({
             aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           >
             {showPassword ? '🙈' : '👁️'}
+          </button>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-xs font-semibold text-[#0878EE] hover:underline"
+          >
+            Quên mật khẩu?
           </button>
         </div>
 
