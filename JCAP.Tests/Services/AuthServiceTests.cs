@@ -1,6 +1,7 @@
 using JCAP.DTOs.Auth;
 using JCAP.Models;
 using JCAP.Services.Implementations;
+using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -21,7 +22,8 @@ public class AuthServiceTests
             Email = "learner@example.com",
             FullName = "Nguyen Van A",
             Role = "Learner",
-            IsActive = true
+            IsActive = true,
+            EmailConfirmed = true
         };
 
         var userManagerMock = CreateUserManagerMock();
@@ -43,12 +45,14 @@ public class AuthServiceTests
         var configuration = CreateConfiguration();
 
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -138,12 +142,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -177,7 +183,8 @@ public class AuthServiceTests
             Email = "learner@example.com",
             FullName = "Nguyen Van A",
             Role = "Learner",
-            IsActive = true
+            IsActive = true,
+            EmailConfirmed = true
         };
 
         var userManagerMock = CreateUserManagerMock();
@@ -193,12 +200,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -242,12 +251,14 @@ public class AuthServiceTests
         var roleManagerMock = CreateRoleManagerMock();
         var configuration = CreateConfiguration();
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        var emailServiceMock = new Mock<IEmailService>();
 
         var authService = new AuthService(
             userManagerMock.Object,
             roleManagerMock.Object,
             configuration,
-            httpClientFactoryMock.Object);
+            httpClientFactoryMock.Object,
+            emailServiceMock.Object);
 
         var loginDto = new LoginDto
         {
@@ -267,5 +278,125 @@ public class AuthServiceTests
                 It.IsAny<ApplicationUser>(),
                 It.IsAny<string>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_WithExistingUser_SendsResetEmail()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-001",
+            Email = "learner@example.com",
+            FullName = "Nguyen Van A",
+            IsActive = true
+        };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+        userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset token");
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
+
+        Assert.True(result.Success);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                user.Email,
+                "Đặt lại mật khẩu tài khoản JCAP",
+                It.Is<string>(body => body.Contains("reset-password") && body.Contains("reset%20token")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_WithUnknownEmail_ReturnsGenericSuccessWithoutSendingEmail()
+    {
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock
+            .Setup(x => x.FindByEmailAsync("unknown@example.com"))
+            .ReturnsAsync((ApplicationUser?)null);
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ForgotPasswordAsync(
+            new ForgotPasswordDto { Email = "unknown@example.com" });
+
+        Assert.True(result.Success);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ResetPasswordAsync_WithValidToken_ResetsPassword()
+    {
+        var user = new ApplicationUser { Id = "user-001", Email = "learner@example.com", IsActive = true };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+        userManagerMock
+            .Setup(x => x.ResetPasswordAsync(user, "valid-token", "NewPassword123"))
+            .ReturnsAsync(IdentityResult.Success);
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            new Mock<IEmailService>().Object);
+
+        var result = await authService.ResetPasswordAsync(new ResetPasswordDto
+        {
+            Email = user.Email,
+            Token = "valid-token",
+            NewPassword = "NewPassword123",
+            ConfirmPassword = "NewPassword123"
+        });
+
+        Assert.True(result.Success);
+        userManagerMock.Verify(
+            x => x.ResetPasswordAsync(user, "valid-token", "NewPassword123"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_WithValidCurrentPassword_ChangesPassword()
+    {
+        var user = new ApplicationUser { Id = "user-001", Email = "learner@example.com", IsActive = true };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
+        userManagerMock
+            .Setup(x => x.ChangePasswordAsync(user, "OldPassword123", "NewPassword123"))
+            .ReturnsAsync(IdentityResult.Success);
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            new Mock<IEmailService>().Object);
+
+        var result = await authService.ChangePasswordAsync(user.Id, new ChangePasswordDto
+        {
+            CurrentPassword = "OldPassword123",
+            NewPassword = "NewPassword123",
+            ConfirmPassword = "NewPassword123"
+        });
+
+        Assert.True(result.Success);
+        userManagerMock.Verify(
+            x => x.ChangePasswordAsync(user, "OldPassword123", "NewPassword123"),
+            Times.Once);
     }
 }

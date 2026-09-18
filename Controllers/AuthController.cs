@@ -32,7 +32,7 @@ namespace JCAP.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return BadRequest(ApiResponse<AuthResponseDto>.Fail("Dữ liệu không hợp lệ.", errors));
+                return BadRequest(ApiResponse<RegisterResponseDto>.Fail("Dữ liệu không hợp lệ.", errors));
             }
 
             var result = await _authService.RegisterAsync(dto);
@@ -42,6 +42,26 @@ namespace JCAP.Controllers
             }
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Xác minh email từ liên kết được gửi trong email đăng ký.
+        /// </summary>
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(
+            [FromQuery] string? userId,
+            [FromQuery] string? token)
+        {
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var result = await _authService.ConfirmEmailAsync(userId ?? string.Empty, token ?? string.Empty);
+
+            if (result.Success)
+            {
+                return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=true");
+            }
+
+            var errorMessage = Uri.EscapeDataString(result.Message);
+            return Redirect($"{frontendUrl.TrimEnd('/')}/login?confirmed=false&error={errorMessage}");
         }
 
         /// <summary>
@@ -66,6 +86,45 @@ namespace JCAP.Controllers
             }
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Tạo password reset token và gửi liên kết qua email.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var result = await _authService.ForgotPasswordAsync(dto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Đặt lại mật khẩu bằng token được tạo từ yêu cầu quên mật khẩu.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// Đổi mật khẩu của người dùng đang đăng nhập.
+        /// </summary>
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized(ApiResponse<string>.Fail("Chưa đăng nhập hoặc token không hợp lệ."));
+            }
+
+            var result = await _authService.ChangePasswordAsync(userId, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         /// <summary>

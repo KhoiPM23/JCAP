@@ -14,6 +14,10 @@ export interface AuthResponseDto {
   expiresAt: string;
 }
 
+export interface RegisterResponseDto {
+  email: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -37,5 +41,18 @@ export interface RegisterPayload {
   confirmPassword: string;
   role?: string;
   jlptLevel?: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 

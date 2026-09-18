@@ -1,15 +1,15 @@
 using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
-using JCAP.Models;
+using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
 using System.Text.Json;
 using System.Net.Http.Headers;
+using JCAP.Models;
 
 namespace JCAP.Services.Implementations
 {
@@ -19,31 +19,37 @@ namespace JCAP.Services.Implementations
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _emailService = emailService;
         }
 
-        public async Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterDto dto)
+        public async Task<ApiResponse<RegisterResponseDto>> RegisterAsync(RegisterDto dto)
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
-                return ApiResponse<AuthResponseDto>.Fail("Email này đã được sử dụng.");
+                return ApiResponse<RegisterResponseDto>.Fail(
+                    existingUser.EmailConfirmed
+                        ? "Email này đã được sử dụng."
+                        : "Email này đã được đăng ký nhưng chưa xác minh.");
             }
 
             // Ràng buộc bảo mật: Người dùng đăng ký công khai chỉ được phép mang vai trò Learner
             if (!string.IsNullOrWhiteSpace(dto.Role) && !string.Equals(dto.Role, UserRoles.Learner, StringComparison.OrdinalIgnoreCase))
             {
-                return ApiResponse<AuthResponseDto>.Fail($"Không thể đăng ký với vai trò '{dto.Role}'. Hệ thống chỉ cho phép đăng ký tài khoản với vai trò '{UserRoles.Learner}'.");
+                return ApiResponse<RegisterResponseDto>.Fail($"Không thể đăng ký với vai trò '{dto.Role}'. Hệ thống chỉ cho phép đăng ký tài khoản với vai trò '{UserRoles.Learner}'.");
             }
 
             var role = UserRoles.Learner;
@@ -58,31 +64,80 @@ namespace JCAP.Services.Implementations
                 Email = dto.Email,
                 FullName = dto.FullName,
                 Role = role,
-                EmailConfirmed = true // Tạm thời đặt true để có thể login test ngay
+                EmailConfirmed = false
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
-                return ApiResponse<AuthResponseDto>.Fail("Tạo tài khoản thất bại.", errors);
+                return ApiResponse<RegisterResponseDto>.Fail("Tạo tài khoản thất bại.", errors);
             }
 
             await _userManager.AddToRoleAsync(user, role);
 
-            var (token, expiresAt) = GenerateJwtToken(user, role);
+            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var backendUrl = _configuration["BackendUrl"] ?? "http://localhost:5254";
+            var confirmationUrl = $"{backendUrl.TrimEnd('/')}/api/auth/confirm-email" +
+                $"?userId={Uri.EscapeDataString(user.Id)}" +
+                $"&token={Uri.EscapeDataString(confirmationToken)}";
 
-            var response = new AuthResponseDto
+            var fullName = System.Net.WebUtility.HtmlEncode(user.FullName ?? user.Email);
+            var encodedConfirmationUrl = System.Net.WebUtility.HtmlEncode(confirmationUrl);
+            var emailBody = $"""
+                <p>Xin chào {fullName},</p>
+                <p>Cảm ơn bạn đã đăng ký tài khoản JCAP.</p>
+                <p>Vui lòng nhấn vào liên kết bên dưới để xác minh email:</p>
+                <p><a href="{encodedConfirmationUrl}">Xác minh email</a></p>
+                <p>Nếu bạn không thực hiện đăng ký này, bạn có thể bỏ qua email.</p>
+                <p>Trân trọng,<br/>JCAP</p>
+                """;
+
+            try
             {
-                Token = token,
-                UserId = user.Id,
-                Email = user.Email!,
-                FullName = user.FullName ?? string.Empty,
-                Role = role,
-                ExpiresAt = expiresAt
-            };
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Xác minh email tài khoản JCAP",
+                    emailBody);
+            }
+            catch
+            {
+                await _userManager.DeleteAsync(user);
+                return ApiResponse<RegisterResponseDto>.Fail(
+                    "Không thể gửi email xác minh. Vui lòng thử lại sau.");
+            }
 
-            return ApiResponse<AuthResponseDto>.Ok(response, "Đăng ký tài khoản thành công.");
+            return ApiResponse<RegisterResponseDto>.Ok(
+                new RegisterResponseDto { Email = user.Email! },
+                "Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.");
+        }
+
+        public async Task<ApiResponse<bool>> ConfirmEmailAsync(string userId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            {
+                return ApiResponse<bool>.Fail("Liên kết xác minh email không hợp lệ.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<bool>.Fail("Không tìm thấy tài khoản cần xác minh.");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return ApiResponse<bool>.Ok(true, "Email đã được xác minh trước đó.");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return ApiResponse<bool>.Fail("Liên kết xác minh email không hợp lệ hoặc đã hết hạn.", errors);
+            }
+
+            return ApiResponse<bool>.Ok(true, "Xác minh email thành công.");
         }
 
         public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto dto)
@@ -96,6 +151,11 @@ namespace JCAP.Services.Implementations
             if (!user.IsActive)
             {
                 return ApiResponse<AuthResponseDto>.Fail("Tài khoản của bạn đã bị khóa.");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                return ApiResponse<AuthResponseDto>.Fail("Email chưa được xác minh. Vui lòng kiểm tra email của bạn.");
             }
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
@@ -144,6 +204,87 @@ namespace JCAP.Services.Implementations
             };
 
             return ApiResponse<AuthResponseDto>.Ok(response, "Lấy thông tin người dùng thành công.");
+        }
+
+        public async Task<ApiResponse<string>> ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            const string genericMessage = "Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được gửi.";
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+
+            // Luôn trả cùng một thông báo để tránh lộ email đã đăng ký.
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Ok(string.Empty, genericMessage);
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+            var resetUrl = $"{frontendUrl.TrimEnd('/')}/reset-password" +
+                $"?token={Uri.EscapeDataString(token)}" +
+                $"&email={Uri.EscapeDataString(user.Email!)}";
+            var encodedResetUrl = System.Net.WebUtility.HtmlEncode(resetUrl);
+            var displayName = System.Net.WebUtility.HtmlEncode(user.FullName ?? user.Email);
+            var emailBody = $"""
+                <p>Xin chào {displayName},</p>
+                <p>JCAP đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+                <p><a href="{encodedResetUrl}">Đặt lại mật khẩu</a></p>
+                <p>Nếu bạn không gửi yêu cầu này, bạn có thể bỏ qua email.</p>
+                <p>Trân trọng,<br/>JCAP</p>
+                """;
+
+            try
+            {
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Đặt lại mật khẩu tài khoản JCAP",
+                    emailBody);
+            }
+            catch
+            {
+                // SmtpEmailService đã ghi log lỗi. Không thay đổi phản hồi để tránh dò email.
+            }
+
+            return ApiResponse<string>.Ok(string.Empty, genericMessage);
+        }
+
+        public async Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Fail("Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                return ApiResponse<string>.Fail(
+                    "Không thể đặt lại mật khẩu.",
+                    result.Errors.Select(error => error.Description).ToList());
+            }
+
+            return ApiResponse<string>.Ok(
+                string.Empty,
+                "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
+        }
+
+        public async Task<ApiResponse<string>> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null || !user.IsActive)
+            {
+                return ApiResponse<string>.Fail("Không tìm thấy tài khoản đang đăng nhập.");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                return ApiResponse<string>.Fail(
+                    "Không thể đổi mật khẩu.",
+                    result.Errors.Select(error => error.Description).ToList());
+            }
+
+            return ApiResponse<string>.Ok(string.Empty, "Đổi mật khẩu thành công.");
         }
 
         public string GetGoogleAuthUrl()

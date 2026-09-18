@@ -298,6 +298,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+dist/
 
 # Visual Studio 6 build log
 *.plg
@@ -490,3 +491,9 @@ $RECYCLE.BIN/
 # App secrets - chỉ ignore file Local chứa secret thật (share qua Drive)
 appsettings.Local.json
 appsettings.*.Local.json
+
+# Local AI working memory
+.ai-local/
+
+# Local VS Code settings
+.vscode/

@@ -1,4 +1,12 @@
-import type { ApiResponse, AuthResponseDto, LoginPayload, RegisterPayload } from '../types/auth';
+import type {
+  ApiResponse,
+  AuthResponseDto,
+  ChangePasswordPayload,
+  LoginPayload,
+  RegisterPayload,
+  RegisterResponseDto,
+  ResetPasswordPayload,
+} from '../types/auth';
 
 const API_BASE = ''; // Trong Vite dev proxy, các request /api sẽ tự động chuyển tiếp tới backend http://localhost:5254
 
@@ -68,7 +76,7 @@ export const authService = {
   /**
    * Đăng ký tài khoản người dùng mới
    */
-  async register(payload: RegisterPayload): Promise<ApiResponse<AuthResponseDto>> {
+  async register(payload: RegisterPayload): Promise<ApiResponse<RegisterResponseDto>> {
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
@@ -84,7 +92,7 @@ export const authService = {
         }),
       });
 
-      return await parseResponse<AuthResponseDto>(response);
+      return await parseResponse<RegisterResponseDto>(response);
     } catch (err: any) {
       return {
         success: false,
@@ -108,6 +116,60 @@ export const authService = {
 
       return await parseResponse<AuthResponseDto>(response);
     } catch (err: any) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend.',
+      };
+    }
+  },
+
+  async forgotPassword(email: string): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      return await parseResponse<string>(response);
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend.',
+      };
+    }
+  },
+
+  async resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      return await parseResponse<string>(response);
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend.',
+      };
+    }
+  },
+
+  async changePassword(payload: ChangePasswordPayload, token: string): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return await parseResponse<string>(response);
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ Backend.',

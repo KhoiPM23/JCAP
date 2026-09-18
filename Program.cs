@@ -1,4 +1,5 @@
 using JCAP.Data;
+using JCAP.DTOs.Credit;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
@@ -71,7 +72,12 @@ builder.Services.AddCors(options =>
 
 // 5. Đăng ký Dependency Injection cho Services
 builder.Services.AddHttpClient();
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOsSettings.SectionName));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ICreditService, CreditService>();
+builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
