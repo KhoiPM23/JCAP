@@ -143,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               fullName: res.data.fullName,
               role: res.data.role,
               level: savedLevel,
+              creditBalance: res.data.creditBalance,
             };
             saveSession(refreshedUser, activeToken, savedLevel);
           } else if (!res.success && (res.message?.includes('401') || res.message?.includes('hết hạn') || res.message?.includes('không hợp lệ'))) {
@@ -175,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error(errorMsg);
     }
 
-    const { token: jwtToken, userId, fullName, role } = res.data;
+    const { token: jwtToken, userId, fullName, role, creditBalance } = res.data;
     const finalLevel = level || userLevel || 'N5';
 
     const userData: User = {
@@ -184,6 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fullName,
       role,
       level: finalLevel,
+      creditBalance: creditBalance ?? 0,
     };
 
     saveSession(userData, jwtToken, finalLevel);

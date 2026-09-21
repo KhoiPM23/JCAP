@@ -97,6 +97,50 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
+        /// Tiếp tục nạp tiền cho đơn hàng đang ở trạng thái Pending
+        /// </summary>
+        [HttpPost("continue-payment/{orderCode}")]
+        [Authorize]
+        public async Task<IActionResult> ContinuePayment(long orderCode)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<PurchaseCreditResponseDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            var result = await _creditService.ContinuePaymentAsync(userId, orderCode);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Hủy đơn hàng đang ở trạng thái Pending
+        /// </summary>
+        [HttpPost("cancel-order/{orderCode}")]
+        [Authorize]
+        public async Task<IActionResult> CancelOrder(long orderCode)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<bool>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            var result = await _creditService.CancelOrderAsync(userId, orderCode);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Webhook IPN tiếp nhận thông báo thanh toán từ PayOS
         /// Bắt buộc xác thực chữ ký số HMAC-SHA256 và cơ chế Idempotency
         /// </summary>
