@@ -20,6 +20,9 @@ namespace JCAP.Data.Seeds
 
                 // 2. Seed các gói credit mặc định
                 await CreditPackageSeeder.SeedAsync(services);
+
+                // 3. Seed các kịch bản mẫu (Scenarios)
+                await ScenarioSeeder.SeedAsync(services);
             }
             catch (Exception ex)
             {
@@ -29,4 +32,3 @@ namespace JCAP.Data.Seeds
         }
     }
 }
-
