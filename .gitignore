@@ -491,8 +491,10 @@ $RECYCLE.BIN/
 # App secrets - chỉ ignore file Local chứa secret thật (share qua Drive)
 appsettings.Local.json
 appsettings.*.Local.json
+appsettings.Local.json.template
 
-# Local AI working memory
+# Local documentation & working memory
+Tài liệu/
 .ai-local/
 
 # Local VS Code settings

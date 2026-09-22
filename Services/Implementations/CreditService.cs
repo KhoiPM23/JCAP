@@ -306,12 +306,46 @@ namespace JCAP.Services.Implementations
         {
             var orderCodeStr = orderCode.ToString();
             var transaction = await _dbContext.CreditTransactions
-                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.PayOsOrderCode == orderCodeStr && t.UserId == userId);
 
             if (transaction == null)
             {
                 return ApiResponse<CreditTransactionDto>.Fail("Không tìm thấy giao dịch này.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            // Nếu đơn hàng đang Pending và PayOS được cấu hình, gọi trực tiếp API PayOS để chủ động đối soát
+            // (Hỗ trợ tốt cho môi trường Dev Local khi chưa cấu hình Webhook public ngrok/localtunnel)
+            if (transaction.Status == "Pending" && _payOSClient != null && _payOsSettings.IsConfigured)
+            {
+                try
+                {
+                    var paymentInfo = await _payOSClient.PaymentRequests.GetAsync(orderCode);
+                    var statusStr = paymentInfo?.Status.ToString()?.ToUpperInvariant();
+                    if (paymentInfo != null && statusStr == "PAID")
+                    {
+                        transaction.Status = "Paid";
+
+                        if (user != null)
+                        {
+                            user.CreditBalance += transaction.Amount;
+                            await _userManager.UpdateAsync(user);
+                        }
+
+                        await _dbContext.SaveChangesAsync();
+                        _logger.LogInformation("Xác minh đơn hàng #{OrderCode} thành công qua PayOS API direct check, đã cộng {Amount} credits cho User {UserId}", orderCode, transaction.Amount, userId);
+                    }
+                    else if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED"))
+                    {
+                        transaction.Status = "Cancelled";
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Không thể xác minh đơn hàng #{OrderCode} từ PayOS API.", orderCode);
+                }
             }
 
             var dto = new CreditTransactionDto
@@ -322,10 +356,163 @@ namespace JCAP.Services.Implementations
                 Description = transaction.Description,
                 PayOsOrderCode = transaction.PayOsOrderCode,
                 Status = transaction.Status,
-                CreatedAt = transaction.CreatedAt
+                CreatedAt = transaction.CreatedAt,
+                CurrentCreditBalance = user?.CreditBalance
             };
 
             return ApiResponse<CreditTransactionDto>.Ok(dto, "Lấy thông tin giao dịch thành công.");
+        }
+
+        public async Task<ApiResponse<PurchaseCreditResponseDto>> ContinuePaymentAsync(string userId, long orderCode)
+        {
+            var orderCodeStr = orderCode.ToString();
+            var transaction = await _dbContext.CreditTransactions
+                .FirstOrDefaultAsync(t => t.PayOsOrderCode == orderCodeStr && t.UserId == userId);
+
+            if (transaction == null)
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy đơn hàng cần tiếp tục nạp.");
+            }
+
+            if (transaction.Status == "Paid")
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã được thanh toán thành công trước đó.");
+            }
+
+            if (transaction.Status == "Cancelled")
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã bị hủy.");
+            }
+
+            // Chế độ 1: Mock Payment
+            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            {
+                transaction.Status = "Paid";
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    user.CreditBalance += transaction.Amount;
+                    await _userManager.UpdateAsync(user);
+                }
+                await _dbContext.SaveChangesAsync();
+
+                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                {
+                    Success = true,
+                    Message = $"Nạp thành công {transaction.Amount} credits (Chế độ Mock).",
+                    IsMock = true,
+                    AddedCredits = transaction.Amount,
+                    NewCreditBalance = user?.CreditBalance
+                }, "Thanh toán thành công (Mock).");
+            }
+
+            // Chế độ 2: PayOS Real Client
+            try
+            {
+                var paymentInfo = await _payOSClient.PaymentRequests.GetAsync(orderCode);
+                var statusStr = paymentInfo?.Status.ToString()?.ToUpperInvariant();
+
+                if (paymentInfo != null && statusStr == "PAID")
+                {
+                    transaction.Status = "Paid";
+                    var user = await _userManager.FindByIdAsync(userId);
+                    if (user != null)
+                    {
+                        user.CreditBalance += transaction.Amount;
+                        await _userManager.UpdateAsync(user);
+                    }
+                    await _dbContext.SaveChangesAsync();
+                    return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng đã được thanh toán thành công qua PayOS.");
+                }
+
+                var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var returnUrl = string.IsNullOrWhiteSpace(_payOsSettings.ReturnUrl)
+                    ? $"{frontendUrl}/credits/payment-return"
+                    : _payOsSettings.ReturnUrl;
+                var cancelUrl = string.IsNullOrWhiteSpace(_payOsSettings.CancelUrl)
+                    ? $"{frontendUrl}/credits"
+                    : _payOsSettings.CancelUrl;
+
+                int packagePrice = (int)(transaction.Amount * 333);
+                if (packagePrice < 10000) packagePrice = 20000;
+
+                string safeDescription = $"JCAP Nap {transaction.Amount}C";
+                if (safeDescription.Length > 25) safeDescription = safeDescription.Substring(0, 25);
+
+                var newOrderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                transaction.PayOsOrderCode = newOrderCode.ToString();
+                await _dbContext.SaveChangesAsync();
+
+                var paymentRequest = new CreatePaymentLinkRequest
+                {
+                    OrderCode = newOrderCode,
+                    Amount = packagePrice,
+                    Description = safeDescription,
+                    ReturnUrl = returnUrl,
+                    CancelUrl = cancelUrl,
+                    Items = new List<PaymentLinkItem>
+                    {
+                        new()
+                        {
+                            Name = $"Nạp {transaction.Amount} Credits",
+                            Quantity = 1,
+                            Price = packagePrice
+                        }
+                    }
+                };
+
+                var paymentLinkResult = await _payOSClient.PaymentRequests.CreateAsync(paymentRequest);
+
+                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                {
+                    Success = true,
+                    Message = "Tạo liên kết thanh toán PayOS mới thành công.",
+                    CheckoutUrl = paymentLinkResult.CheckoutUrl,
+                    OrderCode = newOrderCode,
+                    IsMock = false
+                }, "Khởi tạo thanh toán thành công.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tiếp tục thanh toán cho OrderCode: {OrderCode}", orderCode);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail($"Không thể tạo lại liên kết thanh toán: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> CancelOrderAsync(string userId, long orderCode)
+        {
+            var orderCodeStr = orderCode.ToString();
+            var transaction = await _dbContext.CreditTransactions
+                .FirstOrDefaultAsync(t => t.PayOsOrderCode == orderCodeStr && t.UserId == userId);
+
+            if (transaction == null)
+            {
+                return ApiResponse<bool>.Fail("Không tìm thấy đơn hàng cần hủy.");
+            }
+
+            if (transaction.Status == "Paid")
+            {
+                return ApiResponse<bool>.Fail("Đơn hàng này đã thanh toán thành công, không thể hủy.");
+            }
+
+            transaction.Status = "Cancelled";
+
+            if (_payOSClient != null && _payOsSettings.IsConfigured)
+            {
+                try
+                {
+                    await _payOSClient.PaymentRequests.CancelAsync(orderCode, "Người dùng hủy giao dịch");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Không thể hủy đơn hàng #{OrderCode} trên cổng PayOS.", orderCode);
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Hủy đơn hàng #{OrderCode} thành công cho User {UserId}", orderCode, userId);
+
+            return ApiResponse<bool>.Ok(true, "Hủy giao dịch thành công.");
         }
     }
 }

@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { creditService } from '../services/creditService';
+import { profileService } from '../services/profileService';
 import type { CreditPackage } from '../types/credit';
 
 export const CreditPackagesView: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const cancelParam = searchParams.get('cancel');
+  const statusParam = searchParams.get('status');
+
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [purchasingId, setPurchasingId] = useState<number | null>(null);
@@ -44,6 +49,18 @@ export const CreditPackagesView: React.FC = () => {
   useEffect(() => {
     loadPackages();
 
+    if (cancelParam === 'true' || statusParam === 'CANCELLED') {
+      setError('Yêu cầu thanh toán đã bị hủy. Bạn có thể chọn gói khác để thử lại.');
+    }
+
+    // Đồng bộ hồ sơ và số dư chuẩn từ máy chủ khi vào trang nạp tiền
+    profileService.getProfile().catch(() => {});
+    creditService.getHistory(1, 1).then((res) => {
+      if (res.success && res.data && res.data.currentCreditBalance !== undefined) {
+        setCurrentBalance(res.data.currentCreditBalance);
+      }
+    }).catch(() => {});
+
     const handleProfileUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<any>;
       if (customEvent.detail?.creditBalance !== undefined) {
@@ -53,7 +70,7 @@ export const CreditPackagesView: React.FC = () => {
 
     window.addEventListener('jcap_profile_updated', handleProfileUpdated);
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
-  }, []);
+  }, [cancelParam, statusParam]);
 
   const handlePurchase = async (pkg: CreditPackage) => {
     setPurchasingId(pkg.id);

@@ -9,6 +9,7 @@ namespace JCAP.DTOs.Credit
         public string? PayOsOrderCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public int? CurrentCreditBalance { get; set; }
     }
 
     public class CreditHistoryResponseDto

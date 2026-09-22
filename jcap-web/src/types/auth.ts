@@ -11,6 +11,7 @@ export interface AuthResponseDto {
   email: string;
   fullName: string;
   role: string;
+  creditBalance?: number;
   expiresAt: string;
 }
 
