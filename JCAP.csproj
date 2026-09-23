@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\upgrades\roleplay-model-contract.md" />
     <None Include=".github\upgrades\scenarios\nuget-package-upgrade\tasks\03-build-and-test\progress-details.md" />
   </ItemGroup>
 
