@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260923081515_AddScenarioContentTables")]
+    [Migration("20260922171220_AddScenarioContentTables")]
     partial class AddScenarioContentTables
     {
         /// <inheritdoc />
