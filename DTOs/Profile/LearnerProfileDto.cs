@@ -9,6 +9,7 @@ namespace JCAP.DTOs.Profile
         public string? ProfilePictureUrl { get; set; }
         public string JLPTLevel { get; set; } = "N5"; // N5, N4, N3
         public string Role { get; set; } = "Learner";
+        public int CreditBalance { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

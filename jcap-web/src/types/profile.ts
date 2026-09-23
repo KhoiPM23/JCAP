@@ -14,6 +14,7 @@ export interface LearnerProfile {
   profilePictureUrl?: string;
   jlptLevel: JLPTLevel;
   role: string;
+  creditBalance?: number;
   createdAt: string;
 }
 

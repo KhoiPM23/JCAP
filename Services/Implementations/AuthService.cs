@@ -176,6 +176,7 @@ namespace JCAP.Services.Implementations
                 Email = user.Email!,
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
+                CreditBalance = user.CreditBalance,
                 ExpiresAt = expiresAt
             };
 
@@ -200,6 +201,7 @@ namespace JCAP.Services.Implementations
                 Email = user.Email!,
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
+                CreditBalance = user.CreditBalance,
                 ExpiresAt = DateTime.UtcNow
             };
 
@@ -424,6 +426,7 @@ namespace JCAP.Services.Implementations
                     Email = user.Email!,
                     FullName = user.FullName ?? string.Empty,
                     Role = userRole,
+                    CreditBalance = user.CreditBalance,
                     ExpiresAt = expiresAt
                 };
 

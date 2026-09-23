@@ -146,7 +146,11 @@ class CreditService {
       });
 
       if (response.ok) {
-        return await response.json();
+        const result: ApiResponse<CreditTransaction> = await response.json();
+        if (result.success && result.data && result.data.currentCreditBalance !== undefined) {
+          this.updateLocalCreditBalance(result.data.currentCreditBalance);
+        }
+        return result;
       }
 
       const errData = await response.json().catch(() => null);
@@ -158,6 +162,64 @@ class CreditService {
       return {
         success: false,
         message: 'Không thể kết nối để xác minh đơn hàng.',
+      };
+    }
+  }
+
+  /**
+   * Tiếp tục thanh toán cho giao dịch đang ở trạng thái Pending
+   */
+  public async continuePayment(orderCode: number | string): Promise<ApiResponse<PurchaseCreditResponse>> {
+    try {
+      const response = await fetch(`${BASE_URL}/continue-payment/${orderCode}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        const result: ApiResponse<PurchaseCreditResponse> = await response.json();
+        if (result.success && result.data?.newCreditBalance !== undefined) {
+          this.updateLocalCreditBalance(result.data.newCreditBalance);
+        }
+        return result;
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Không thể tiếp tục thanh toán (${response.status})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ.',
+      };
+    }
+  }
+
+  /**
+   * Hủy đơn hàng giao dịch đang ở trạng thái Pending
+   */
+  public async cancelOrder(orderCode: number | string): Promise<ApiResponse<boolean>> {
+    try {
+      const response = await fetch(`${BASE_URL}/cancel-order/${orderCode}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Không thể hủy đơn hàng (${response.status})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ.',
       };
     }
   }

@@ -9,6 +9,7 @@ export const CreditHistoryView: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const pageSize = 10;
 
   const fetchHistory = async (page: number) => {
@@ -31,6 +32,48 @@ export const CreditHistoryView: React.FC = () => {
   useEffect(() => {
     fetchHistory(currentPage);
   }, [currentPage]);
+
+  const handleContinuePayment = async (orderCode?: string) => {
+    if (!orderCode) return;
+    setActionLoadingId(`continue-${orderCode}`);
+    try {
+      const res = await creditService.continuePayment(orderCode);
+      if (res.success && res.data) {
+        if (res.data.checkoutUrl) {
+          window.location.href = res.data.checkoutUrl;
+        } else if (res.data.isMock) {
+          await fetchHistory(currentPage);
+        }
+      } else {
+        alert(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi tiếp tục thanh toán.');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleCancelOrder = async (orderCode?: string) => {
+    if (!orderCode) return;
+    if (!window.confirm('Bạn có chắc chắn muốn hủy giao dịch nạp credit này không?')) {
+      return;
+    }
+
+    setActionLoadingId(`cancel-${orderCode}`);
+    try {
+      const res = await creditService.cancelOrder(orderCode);
+      if (res.success) {
+        await fetchHistory(currentPage);
+      } else {
+        alert(res.message || 'Không thể hủy đơn hàng này.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi hủy đơn hàng.');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     try {
@@ -163,11 +206,14 @@ export const CreditHistoryView: React.FC = () => {
                   <th className="py-3.5 px-6">Trạng Thái</th>
                   <th className="py-3.5 px-6">Diễn Giải</th>
                   <th className="py-3.5 px-6">Mã Đơn PayOS</th>
+                  <th className="py-3.5 px-6 text-center">Thao Tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E6EDF5]">
                 {data.transactions.map((tx: CreditTransaction) => {
                   const isPositive = tx.amount > 0;
+                  const isPending = tx.status.toLowerCase() === 'pending';
+
                   return (
                     <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-4 px-6 text-[#071A44] font-medium whitespace-nowrap">
@@ -194,6 +240,42 @@ export const CreditHistoryView: React.FC = () => {
                       </td>
                       <td className="py-4 px-6 text-[#71809A] font-mono text-[11px] whitespace-nowrap">
                         {tx.payOsOrderCode ? `#${tx.payOsOrderCode}` : '—'}
+                      </td>
+                      <td className="py-4 px-6 text-center whitespace-nowrap">
+                        {isPending && tx.payOsOrderCode ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              disabled={!!actionLoadingId}
+                              onClick={() => handleContinuePayment(tx.payOsOrderCode)}
+                              className="bg-[#0878EE] hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5"
+                              title="Tiếp tục sang cổng PayOS để hoàn tất nạp tiền"
+                            >
+                              {actionLoadingId === `continue-${tx.payOsOrderCode}` ? (
+                                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                              ) : (
+                                <span>💳</span>
+                              )}
+                              Tiếp tục nạp
+                            </button>
+                            <button
+                              type="button"
+                              disabled={!!actionLoadingId}
+                              onClick={() => handleCancelOrder(tx.payOsOrderCode)}
+                              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                              title="Hủy đơn nạp tiền này"
+                            >
+                              {actionLoadingId === `cancel-${tx.payOsOrderCode}` ? (
+                                <span className="w-3.5 h-3.5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
+                              ) : (
+                                <span>✕</span>
+                              )}
+                              Hủy
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[#71809A] text-[11px]">—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -234,3 +316,4 @@ export const CreditHistoryView: React.FC = () => {
     </div>
   );
 };
+
