@@ -77,6 +77,7 @@ builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOs
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
+builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();
