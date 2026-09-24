@@ -20,6 +20,10 @@ namespace JCAP.Data
         public DbSet<TargetVocabulary> TargetVocabularies { get; set; } = null!;
         public DbSet<TargetGrammar> TargetGrammars { get; set; } = null!;
 
+        // Shadowing related DbSets
+        public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
+        public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -173,6 +177,71 @@ namespace JCAP.Data
 
                 entity.Property(e => e.ExampleSentence)
                     .HasMaxLength(500);
+            });
+// ShadowingDialogue configuration
+            modelBuilder.Entity<ShadowingDialogue>(entity =>
+            {
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.JLPTLevel)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.SourceDescription)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.SpeakerRoleA_Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.SpeakerRoleB_Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => new { e.ScenarioId, e.JLPTLevel });
+
+                entity.HasOne(e => e.Scenario)
+                    .WithMany(s => s.ShadowingDialogues)
+                    .HasForeignKey(e => e.ScenarioId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(e => e.Sentences)
+                    .WithOne(e => e.ShadowingDialogue)
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ShadowingSentence configuration
+            modelBuilder.Entity<ShadowingSentence>(entity =>
+            {
+                entity.Property(e => e.SpeakerRole)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.JapaneseText)
+                    .IsRequired()
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.RomajiText)
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.VietnameseTranslation)
+                    .IsRequired()
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.NativeAudioUrl)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+
+                entity.HasIndex(e => new { e.ShadowingDialogueId, e.OrderIndex });
             });
         }
     }

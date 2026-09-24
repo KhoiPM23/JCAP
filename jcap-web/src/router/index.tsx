@@ -20,6 +20,9 @@ import { DevShowcaseView } from '../views/DevShowcaseView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
+import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
+import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
+import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 
 // ============================================================
@@ -238,6 +241,14 @@ export const AppRouter: React.FC = () => {
 
       {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
       <Route
+        path="/admin/shadowing"
+        element={
+          <AdminRoute>
+            <AdminShadowingListView />
+          </AdminRoute>
+        }
+      />
+      <Route
         path="/admin/credits/packages"
         element={
           <AdminRoute>
@@ -255,6 +266,8 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
+        <Route path="/shadowing" element={<LearnerShadowingListView />} />
+        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         <Route path="/chat" element={<ChatRoute />} />
         
         {/* UC07: Xem ho so hoc vien */}

@@ -11,5 +11,6 @@ namespace JCAP.Models
 
         // Navigation properties
         public ICollection<ScenarioLevelConfiguration> LevelConfigurations { get; set; } = new List<ScenarioLevelConfiguration>();
+        public ICollection<ShadowingDialogue> ShadowingDialogues { get; set; } = new List<ShadowingDialogue>();
     }
 }
