@@ -16,5 +16,7 @@ namespace JCAP.Models
         // Navigation properties
         public Scenario? Scenario { get; set; }
         public ICollection<Mission> Missions { get; set; } = new List<Mission>();
+        public ICollection<TargetVocabulary> TargetVocabularies { get; set; } = new List<TargetVocabulary>();
+        public ICollection<TargetGrammar> TargetGrammars { get; set; } = new List<TargetGrammar>();
     }
 }

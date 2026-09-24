@@ -33,22 +33,6 @@ namespace JCAP.Data.Seeds
                     Thumbnail = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624",
                     IsActive = true,
                     ScenarioCode = "SCN_RAMEN_01",
-                    TargetVocabularies = new List<TargetVocabulary>
-                    {
-                        new TargetVocabulary { Word = "ラーメン", Reading = "らーめん", Meaning = "Mì Ramen" },
-                        new TargetVocabulary { Word = "水", Reading = "みず", Meaning = "Nước lọc" },
-                        new TargetVocabulary { Word = "いくら", Reading = "いくら", Meaning = "Bao nhiêu tiền" },
-                        new TargetVocabulary { Word = "会計", Reading = "かいけい", Meaning = "Tính tiền / Thanh toán" },
-                        new TargetVocabulary { Word = "固さ", Reading = "かたさ", Meaning = "Độ cứng / dai của mì" },
-                        new TargetVocabulary { Word = "濃さ", Reading = "こさ", Meaning = "Độ đậm đà của nước dùng" },
-                        new TargetVocabulary { Word = "アレルギー", Reading = "あれるぎー", Meaning = "Dị ứng" }
-                    },
-                    TargetGrammars = new List<TargetGrammar>
-                    {
-                        new TargetGrammar { Pattern = "～をお願いします", Meaning = "Cho tôi xin / Cho tôi gọi...", ExampleSentence = "豚骨ラーメンをお願いします。" },
-                        new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...bao nhiêu tiền?", ExampleSentence = "ラーメンはいくらですか。" },
-                        new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể làm/chỉnh thành... cho tôi được không?", ExampleSentence = "麺をかためてもらえますか。" }
-                    },
                     LevelConfigurations = new List<ScenarioLevelConfiguration>
                     {
                         // N5 Level
@@ -60,6 +44,15 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Nhân viên quán mì - 店員",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "ラーメン", Reading = "らーめん", Meaning = "Mì Ramen" },
+                                new TargetVocabulary { Word = "水", Reading = "みず", Meaning = "Nước lọc" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～をお願いします", Meaning = "Cho tôi xin / Cho tôi gọi...", ExampleSentence = "豚骨ラーメンをお願いします。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission
@@ -104,6 +97,17 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Chủ cửa hàng - 店長",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "いくら", Reading = "いくら", Meaning = "Bao nhiêu tiền" },
+                                new TargetVocabulary { Word = "固さ", Reading = "かたさ", Meaning = "Độ cứng / dai của mì" },
+                                new TargetVocabulary { Word = "濃さ", Reading = "こさ", Meaning = "Độ đậm đà của nước dùng" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...bao nhiêu tiền?", ExampleSentence = "ラーメンはいくらですか。" },
+                                new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể làm/chỉnh thành... cho tôi được không?", ExampleSentence = "麺をかためてもらえますか。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission
@@ -148,6 +152,16 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Quản lý nhà hàng - 店長",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "会計", Reading = "かいけい", Meaning = "Tính tiền / Thanh toán" },
+                                new TargetVocabulary { Word = "アレルギー", Reading = "あれるぎー", Meaning = "Dị ứng" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...bao nhiêu tiền?", ExampleSentence = "ラーメンはいくらですか。" },
+                                new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể làm/chỉnh thành... cho tôi được không?", ExampleSentence = "麺をかためてもらえますか。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission
@@ -192,20 +206,6 @@ namespace JCAP.Data.Seeds
                     Thumbnail = "https://images.unsplash.com/photo-1521791136064-7986c2920216",
                     IsActive = true,
                     ScenarioCode = "SCN_BAITO_01",
-                    TargetVocabularies = new List<TargetVocabulary>
-                    {
-                        new TargetVocabulary { Word = "自己紹介", Reading = "じこしょうかい", Meaning = "Giới thiệu bản thân" },
-                        new TargetVocabulary { Word = "アルバイト", Reading = "あるばいと", Meaning = "Việc làm thêm" },
-                        new TargetVocabulary { Word = "志望動機", Reading = "しぼうどうき", Meaning = "Lý do ứng tuyển" },
-                        new TargetVocabulary { Word = "通勤", Reading = "つうきん", Meaning = "Đi làm (di chuyển)" },
-                        new TargetVocabulary { Word = "接客", Reading = "せっきゃく", Meaning = "Phục vụ khách hàng" }
-                    },
-                    TargetGrammars = new List<TargetGrammar>
-                    {
-                        new TargetGrammar { Pattern = "～と申します", Meaning = "Tôi tên là...", ExampleSentence = "グエンと申します。" },
-                        new TargetGrammar { Pattern = "～たことがあります", Meaning = "Đã từng làm...", ExampleSentence = "レジの経験があります。" },
-                        new TargetGrammar { Pattern = "～ように心がけております", Meaning = "Tôi luôn nỗ lực...", ExampleSentence = "丁寧な接客を心がけております。" }
-                    },
                     LevelConfigurations = new List<ScenarioLevelConfiguration>
                     {
                         // N5 Level
@@ -217,6 +217,15 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Người phỏng vấn - 面接官",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "自己紹介", Reading = "じこしょうかい", Meaning = "Giới thiệu bản thân" },
+                                new TargetVocabulary { Word = "アルバイト", Reading = "あるばいと", Meaning = "Việc làm thêm" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～と申します", Meaning = "Tôi tên là...", ExampleSentence = "グエンと申します。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission
@@ -261,6 +270,15 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Chủ cửa hàng tiện lợi - 店長",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "志望動機", Reading = "しぼうどうき", Meaning = "Lý do ứng tuyển" },
+                                new TargetVocabulary { Word = "通勤", Reading = "つうきん", Meaning = "Đi làm (di chuyển)" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～たことがあります", Meaning = "Đã từng làm...", ExampleSentence = "レジの経験があります。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission
@@ -305,6 +323,14 @@ namespace JCAP.Data.Seeds
                             AiPersona = "Quản lý nhân sự - 採用担当者",
                             CreditCost = 5,
                             Status = "Published",
+                            TargetVocabularies = new List<TargetVocabulary>
+                            {
+                                new TargetVocabulary { Word = "接客", Reading = "せっきゃく", Meaning = "Phục vụ khách hàng" }
+                            },
+                            TargetGrammars = new List<TargetGrammar>
+                            {
+                                new TargetGrammar { Pattern = "～ように心がけております", Meaning = "Tôi luôn nỗ lực...", ExampleSentence = "丁寧な接客を心がけております。" }
+                            },
                             Missions = new List<Mission>
                             {
                                 new Mission

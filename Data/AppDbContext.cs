@@ -89,15 +89,6 @@ namespace JCAP.Data
                     .HasForeignKey(e => e.ScenarioId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.TargetVocabularies)
-                    .WithOne(e => e.Scenario)
-                    .HasForeignKey(e => e.ScenarioId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasMany(e => e.TargetGrammars)
-                    .WithOne(e => e.Scenario)
-                    .HasForeignKey(e => e.ScenarioId)
-                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ScenarioLevelConfiguration configuration
@@ -128,6 +119,16 @@ namespace JCAP.Data
                     .HasDefaultValue("Draft");
 
                 entity.HasMany(e => e.Missions)
+                    .WithOne(e => e.ScenarioLevelConfiguration)
+                    .HasForeignKey(e => e.ScenarioLevelConfigurationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.TargetVocabularies)
+                    .WithOne(e => e.ScenarioLevelConfiguration)
+                    .HasForeignKey(e => e.ScenarioLevelConfigurationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.TargetGrammars)
                     .WithOne(e => e.ScenarioLevelConfiguration)
                     .HasForeignKey(e => e.ScenarioLevelConfigurationId)
                     .OnDelete(DeleteBehavior.Cascade);

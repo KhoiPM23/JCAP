@@ -11,7 +11,5 @@ namespace JCAP.Models
 
         // Navigation properties
         public ICollection<ScenarioLevelConfiguration> LevelConfigurations { get; set; } = new List<ScenarioLevelConfiguration>();
-        public ICollection<TargetVocabulary> TargetVocabularies { get; set; } = new List<TargetVocabulary>();
-        public ICollection<TargetGrammar> TargetGrammars { get; set; } = new List<TargetGrammar>();
     }
 }
