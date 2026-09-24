@@ -23,6 +23,9 @@ namespace JCAP.Data.Seeds
 
                 // 3. Seed các kịch bản mẫu (Scenarios)
                 await ScenarioSeeder.SeedAsync(services);
+
+                // 4. Seed bài hội thoại Shadowing mẫu (DEV SAMPLE / NON-PRODUCTION)
+                await ShadowingSeeder.SeedAsync(services);
             }
             catch (Exception ex)
             {
