@@ -10,6 +10,7 @@ import { LoginView } from '../views/LoginView';
 import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
+import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
@@ -255,6 +256,7 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
+        <Route path="/scenario-details/mock" element={<ScenarioDetailsView />} />
         <Route path="/chat" element={<ChatRoute />} />
         
         {/* UC07: Xem ho so hoc vien */}
