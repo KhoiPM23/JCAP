@@ -11,7 +11,6 @@ import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
-import { RoleplayChatView } from '../views/RoleplayChatView';
 import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
@@ -157,23 +156,6 @@ const ScenarioRoute: React.FC = () => {
   );
 };
 
-const ChatRoute: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const scenario = (location.state as { scenario?: Scenario } | null)?.scenario;
-
-  if (!scenario) {
-    return <Navigate to="/scenarios" replace />;
-  }
-
-  return (
-    <RoleplayChatView
-      scenario={scenario}
-      onBack={() => navigate('/scenarios')}
-    />
-  );
-};
-
 const RootRedirect: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -281,8 +263,6 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         <Route path="/shadowing" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
-        <Route path="/scenario-details/mock" element={<ScenarioDetailsView />} />
-        <Route path="/chat" element={<ChatRoute />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />
