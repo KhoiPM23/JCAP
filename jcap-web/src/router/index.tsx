@@ -10,6 +10,7 @@ import { LoginView } from '../views/LoginView';
 import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
+import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayChatView } from '../views/RoleplayChatView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
@@ -20,6 +21,9 @@ import { DevShowcaseView } from '../views/DevShowcaseView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
+import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
+import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
+import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
@@ -240,6 +244,14 @@ export const AppRouter: React.FC = () => {
 
       {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
       <Route
+        path="/admin/shadowing"
+        element={
+          <AdminRoute>
+            <AdminShadowingListView />
+          </AdminRoute>
+        }
+      />
+      <Route
         path="/admin/credits/packages"
         element={
           <AdminRoute>
@@ -257,6 +269,9 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
+        <Route path="/shadowing" element={<LearnerShadowingListView />} />
+        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
+        <Route path="/scenario-details/mock" element={<ScenarioDetailsView />} />
         <Route path="/chat" element={<ChatRoute />} />
 
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}

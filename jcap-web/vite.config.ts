@@ -7,6 +7,11 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/audio': {
+        target: 'http://localhost:5254',
+        changeOrigin: true,
+        secure: false,
+      },
       '/api': {
         target: 'http://localhost:5254',
         changeOrigin: true,

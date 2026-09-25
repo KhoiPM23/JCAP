@@ -4,6 +4,7 @@ using JCAP.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924165506_AddShadowingTables")]
+    partial class AddShadowingTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,68 +218,6 @@ namespace JCAP.Migrations
                     b.HasIndex("ScenarioLevelConfigurationId");
 
                     b.ToTable("Missions");
-                });
-
-            modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CompletedMissionsSummaryJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GeneralFeedbackText")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<int>("GrammarScore")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ImpressionScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("JLPTLevel")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<int>("OverallScore")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("PassStatus")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("RoleplaySessionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ScenarioTitle")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("VocabularyScore")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("RoleplaySessionId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("RoleplayResults");
                 });
 
             modelBuilder.Entity("JCAP.Models.Scenario", b =>
@@ -682,17 +623,6 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("ScenarioLevelConfiguration");
-                });
-
-            modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
-                {
-                    b.HasOne("JCAP.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
