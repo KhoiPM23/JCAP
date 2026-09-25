@@ -4,6 +4,7 @@ using JCAP.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260925163633_AddRoleplayResultTables")]
+    partial class AddRoleplayResultTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,36 +190,6 @@ namespace JCAP.Migrations
                     b.ToTable("CreditTransactions");
                 });
 
-            modelBuilder.Entity("JCAP.Models.Mission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CompletionCriteriaJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ScenarioLevelConfigurationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScenarioLevelConfigurationId");
-
-                    b.ToTable("Missions");
-                });
-
             modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
                 {
                     b.Property<int>("Id")
@@ -271,262 +244,12 @@ namespace JCAP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("RoleplaySessionId", "UserId")
                         .IsUnique();
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("RoleplayResults");
-                });
-
-            modelBuilder.Entity("JCAP.Models.Scenario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ScenarioCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Thumbnail")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Scenarios");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AiPersona")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreditCost")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("JLPTLevel")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<int>("ScenarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Draft");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScenarioId", "JLPTLevel")
-                        .IsUnique();
-
-                    b.ToTable("ScenarioLevelConfigurations");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("JLPTLevel")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<int>("ScenarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SourceDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("SpeakerRoleA_Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("SpeakerRoleB_Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScenarioId", "JLPTLevel");
-
-                    b.ToTable("ShadowingDialogues");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("JapaneseText")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("NativeAudioUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RomajiText")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("ShadowingDialogueId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SpeakerRole")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("VietnameseTranslation")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShadowingDialogueId", "OrderIndex");
-
-                    b.ToTable("ShadowingSentences");
-                });
-
-            modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ExampleSentence")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Meaning")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Pattern")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("ScenarioLevelConfigurationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScenarioLevelConfigurationId");
-
-                    b.ToTable("TargetGrammars");
-                });
-
-            modelBuilder.Entity("JCAP.Models.TargetVocabulary", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Meaning")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Reading")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("ScenarioLevelConfigurationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Word")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScenarioLevelConfigurationId");
-
-                    b.ToTable("TargetVocabularies");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -673,17 +396,6 @@ namespace JCAP.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JCAP.Models.Mission", b =>
-                {
-                    b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
-                        .WithMany("Missions")
-                        .HasForeignKey("ScenarioLevelConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ScenarioLevelConfiguration");
-                });
-
             modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
                 {
                     b.HasOne("JCAP.Models.ApplicationUser", "User")
@@ -693,61 +405,6 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
-                {
-                    b.HasOne("JCAP.Models.Scenario", "Scenario")
-                        .WithMany("LevelConfigurations")
-                        .HasForeignKey("ScenarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Scenario");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogue", b =>
-                {
-                    b.HasOne("JCAP.Models.Scenario", "Scenario")
-                        .WithMany("ShadowingDialogues")
-                        .HasForeignKey("ScenarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Scenario");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
-                {
-                    b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
-                        .WithMany("Sentences")
-                        .HasForeignKey("ShadowingDialogueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShadowingDialogue");
-                });
-
-            modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
-                {
-                    b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
-                        .WithMany("TargetGrammars")
-                        .HasForeignKey("ScenarioLevelConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ScenarioLevelConfiguration");
-                });
-
-            modelBuilder.Entity("JCAP.Models.TargetVocabulary", b =>
-                {
-                    b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
-                        .WithMany("TargetVocabularies")
-                        .HasForeignKey("ScenarioLevelConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ScenarioLevelConfiguration");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -799,27 +456,6 @@ namespace JCAP.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("JCAP.Models.Scenario", b =>
-                {
-                    b.Navigation("LevelConfigurations");
-
-                    b.Navigation("ShadowingDialogues");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
-                {
-                    b.Navigation("Missions");
-
-                    b.Navigation("TargetGrammars");
-
-                    b.Navigation("TargetVocabularies");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogue", b =>
-                {
-                    b.Navigation("Sentences");
                 });
 #pragma warning restore 612, 618
         }

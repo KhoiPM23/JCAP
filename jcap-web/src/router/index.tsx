@@ -25,6 +25,8 @@ import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingLis
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
+import { ConversationHistoryView } from '../views/ConversationHistoryView';
+import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 
 // ============================================================
 // Route Wrappers
@@ -263,6 +265,9 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         <Route path="/shadowing" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
+        {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
+        <Route path="/roleplay/results" element={<ConversationHistoryView />} />
+        <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />

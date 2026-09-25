@@ -12,6 +12,7 @@ namespace JCAP.Data
 
         public DbSet<CreditPackage> CreditPackages { get; set; } = null!;
         public DbSet<CreditTransaction> CreditTransactions { get; set; } = null!;
+        public DbSet<RoleplayResult> RoleplayResults { get; set; } = null!;
 
         // Scenario related DbSets
         public DbSet<Scenario> Scenarios { get; set; } = null!;
@@ -247,6 +248,34 @@ namespace JCAP.Data
                     .HasMaxLength(1000);
 
                 entity.HasIndex(e => new { e.ShadowingDialogueId, e.OrderIndex });
+            });
+
+            // Roleplay result configuration
+            modelBuilder.Entity<RoleplayResult>(entity =>
+            {
+                entity.HasIndex(e => new { e.RoleplaySessionId, e.UserId })
+                    .IsUnique();
+
+                entity.Property(e => e.ScenarioTitle)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.JLPTLevel)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.GeneralFeedbackText)
+                    .IsRequired()
+                    .HasMaxLength(4000);
+
+                entity.Property(e => e.CompletedMissionsSummaryJson)
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // RoleplaySession configuration
