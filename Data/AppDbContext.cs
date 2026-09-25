@@ -24,6 +24,11 @@ namespace JCAP.Data
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
 
+        // Roleplay Session related DbSets
+        public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
+        public DbSet<RoleplayMessage> RoleplayMessages { get; set; } = null!;
+        public DbSet<RoleplaySessionMission> RoleplaySessionMissions { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -242,6 +247,62 @@ namespace JCAP.Data
                     .HasMaxLength(1000);
 
                 entity.HasIndex(e => new { e.ShadowingDialogueId, e.OrderIndex });
+            });
+
+            // RoleplaySession configuration
+            modelBuilder.Entity<RoleplaySession>(entity =>
+            {
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasDefaultValue("Active");
+
+                entity.HasIndex(e => new { e.UserId, e.ScenarioLevelConfigurationId, e.Status });
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ScenarioLevelConfiguration)
+                    .WithMany(c => c.RoleplaySessions)
+                    .HasForeignKey(e => e.ScenarioLevelConfigurationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Messages)
+                    .WithOne(m => m.RoleplaySession)
+                    .HasForeignKey(m => m.RoleplaySessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.SessionMissions)
+                    .WithOne(sm => sm.RoleplaySession)
+                    .HasForeignKey(sm => sm.RoleplaySessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // RoleplayMessage configuration
+            modelBuilder.Entity<RoleplayMessage>(entity =>
+            {
+                entity.Property(e => e.Sender)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.JapaneseText)
+                    .IsRequired();
+
+                entity.HasIndex(e => new { e.RoleplaySessionId, e.CreatedAt });
+            });
+
+            // RoleplaySessionMission configuration
+            modelBuilder.Entity<RoleplaySessionMission>(entity =>
+            {
+                entity.HasIndex(e => new { e.RoleplaySessionId, e.MissionId })
+                    .IsUnique();
+
+                entity.HasOne(e => e.Mission)
+                    .WithMany(m => m.SessionMissions)
+                    .HasForeignKey(e => e.MissionId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

@@ -80,6 +80,8 @@ builder.Services.AddScoped<ICreditService, CreditService>();
 builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
+builder.Services.AddScoped<IAiRoleplayService, GeminiRoleplayService>();
+builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();
