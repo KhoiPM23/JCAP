@@ -114,26 +114,46 @@ export const RoleplayPracticeView: React.FC = () => {
     return session.messages.find((m) => m.id === selectedMessageId && m.sender === 'User') ?? null;
   }, [session, selectedMessageId]);
 
-  // 2. Gửi tin nhắn học viên
+  // 2. Gửi tin nhắn học viên (Optimistic UI update)
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = inputText.trim();
     if (!trimmed || isSending || !session) return;
 
+    const currentSessionId = session.sessionId || session.id || sessionId;
+    const tempId = Date.now();
+
+    // 1. Tạo tin nhắn tạm thời của User để hiển thị ngay lập tức trên UI
+    const optimisticUserMsg: RoleplayMessageDto = {
+      id: tempId,
+      sender: 'User',
+      japaneseText: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+
+    setSession((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        messages: [...prev.messages, optimisticUserMsg],
+      };
+    });
+
     setIsSending(true);
     setInputText('');
     setHint(null); // Đóng hint nếu đang mở
 
-    const currentSessionId = session.sessionId || session.id || sessionId;
     const res = await roleplayService.sendMessage(currentSessionId, trimmed);
 
     if (res.success && res.data) {
       const turn = res.data;
       setSession((prev) => {
         if (!prev) return null;
+        // Thay thế tin nhắn tạm bằng tin nhắn User thật từ backend và kèm theo tin nhắn phản hồi của AI
+        const filteredMessages = prev.messages.filter((m) => m.id !== tempId);
         return {
           ...prev,
-          messages: [...prev.messages, turn.userMessage, turn.aiMessage],
+          messages: [...filteredMessages, turn.userMessage, turn.aiMessage],
           missions: turn.updatedMissions,
           isNaturallyConcluded: turn.isNaturallyConcluded,
           creditBalance: turn.creditBalance ?? prev.creditBalance,
@@ -145,6 +165,15 @@ export const RoleplayPracticeView: React.FC = () => {
         setSelectedMessageId(turn.userMessage.id);
       }
     } else {
+      // Khi gửi thất bại: xóa tin nhắn tạm và khôi phục nội dung vào ô nhập liệu
+      setSession((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: prev.messages.filter((m) => m.id !== tempId),
+        };
+      });
+      setInputText(trimmed);
       alert(res.message || 'Gửi tin nhắn thất bại. Vui lòng thử lại.');
     }
 
