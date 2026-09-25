@@ -12,6 +12,7 @@ namespace JCAP.Data
 
         public DbSet<CreditPackage> CreditPackages { get; set; } = null!;
         public DbSet<CreditTransaction> CreditTransactions { get; set; } = null!;
+        public DbSet<RoleplayResult> RoleplayResults { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +56,33 @@ namespace JCAP.Data
                     .HasMaxLength(100);
 
                 // ApplicationUser 1 - N CreditTransaction
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<RoleplayResult>(entity =>
+            {
+                entity.HasIndex(e => new { e.RoleplaySessionId, e.UserId })
+                    .IsUnique();
+
+                entity.Property(e => e.ScenarioTitle)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.JLPTLevel)
+                    .IsRequired()
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.GeneralFeedbackText)
+                    .IsRequired()
+                    .HasMaxLength(4000);
+
+                entity.Property(e => e.CompletedMissionsSummaryJson)
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
+
                 entity.HasOne(e => e.User)
                     .WithMany()
                     .HasForeignKey(e => e.UserId)

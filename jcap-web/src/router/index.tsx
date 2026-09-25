@@ -21,6 +21,8 @@ import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView'
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
+import { ConversationHistoryView } from '../views/ConversationHistoryView';
+import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 
 // ============================================================
 // Route Wrappers
@@ -256,6 +258,10 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/chat" element={<ChatRoute />} />
+
+        {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
+        <Route path="/roleplay/results" element={<ConversationHistoryView />} />
+        <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />

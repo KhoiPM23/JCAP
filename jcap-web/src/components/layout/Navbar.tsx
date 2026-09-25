@@ -16,7 +16,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Trang chủ', path: '/', icon: HomeIcon },
     { name: 'Học tập', path: '/scenarios', icon: BookIcon },
     { name: 'Lịch học', path: '/schedule', icon: CalendarIcon },
-    { name: 'Phân tích', path: '/analytics', icon: ChartIcon },
+    { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon },
     { name: 'Hồ sơ', path: '/profile', icon: UserIcon },
     { name: 'Cài đặt', path: '/settings', icon: SettingsIcon },
   ];
