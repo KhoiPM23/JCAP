@@ -1,3 +1,13 @@
+export interface ScenarioListItem {
+  id: number;
+  title: string;
+  description: string;
+  thumbnail?: string;
+  isActive: boolean;
+  scenarioCode?: string;
+  supportedJLPTLevels: string[];
+}
+
 export interface ScenarioMission {
   id: number;
   content: string;
