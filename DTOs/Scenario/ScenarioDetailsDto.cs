@@ -8,6 +8,8 @@ public class ScenarioDetailsDto
     public string? Thumbnail { get; set; }
     public bool IsActive { get; set; }
     public string? ScenarioCode { get; set; }
+    public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
+    public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
     public List<ScenarioLevelConfigurationDto> LevelConfigurations { get; set; } = [];
 }
 
