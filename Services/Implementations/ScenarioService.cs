@@ -18,6 +18,33 @@ public class ScenarioService : IScenarioService
         _dbContext = dbContext;
     }
 
+    public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(CancellationToken cancellationToken = default)
+    {
+        var scenarios = await _dbContext.Scenarios
+            .AsNoTracking()
+            .Where(s => s.IsActive)
+            .Include(s => s.LevelConfigurations)
+            .OrderBy(s => s.Id)
+            .ToListAsync(cancellationToken);
+
+        var result = scenarios.Select(s => new ScenarioListDto
+        {
+            Id = s.Id,
+            Title = s.Title,
+            Description = s.Description,
+            Thumbnail = s.Thumbnail,
+            IsActive = s.IsActive,
+            ScenarioCode = s.ScenarioCode,
+            SupportedJLPTLevels = s.LevelConfigurations
+                .Where(lc => lc.Status == "Published")
+                .OrderBy(lc => lc.JLPTLevel)
+                .Select(lc => lc.JLPTLevel)
+                .ToList()
+        }).ToList();
+
+        return ApiResponse<List<ScenarioListDto>>.Ok(result, "Lấy danh sách scenarios thành công.");
+    }
+
     public async Task<ApiResponse<ScenarioDetailsDto>> GetDetailsAsync(
         int scenarioId,
         CancellationToken cancellationToken = default)
@@ -30,7 +57,7 @@ public class ScenarioService : IScenarioService
                 .ThenInclude(level => level.TargetVocabularies)
             .Include(s => s.LevelConfigurations.Where(level => level.Status == "Published"))
                 .ThenInclude(level => level.TargetGrammars)
-            .SingleOrDefaultAsync(scenario => scenario.Id == scenarioId && scenario.IsActive, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == scenarioId && s.IsActive, cancellationToken);
 
         if (scenario == null)
         {
@@ -54,6 +81,65 @@ public class ScenarioService : IScenarioService
         return ApiResponse<ScenarioDetailsDto>.Ok(response, "Lấy chi tiết scenario thành công.");
     }
 
+    public async Task<ApiResponse<List<string>>> GetSupportedLevelsAsync(
+        int scenarioId,
+        CancellationToken cancellationToken = default)
+    {
+        var scenario = await _dbContext.Scenarios
+            .AsNoTracking()
+            .Include(s => s.LevelConfigurations.Where(lc => lc.Status == "Published"))
+            .SingleOrDefaultAsync(s => s.Id == scenarioId && s.IsActive, cancellationToken);
+
+        if (scenario == null)
+        {
+            return ApiResponse<List<string>>.Fail("Không tìm thấy scenario hoặc scenario không còn hoạt động.");
+        }
+
+        var levels = scenario.LevelConfigurations
+            .Select(lc => lc.JLPTLevel)
+            .OrderBy(l => l)
+            .ToList();
+
+        return ApiResponse<List<string>>.Ok(levels, "Lấy danh sách JLPT levels hỗ trợ thành công.");
+    }
+
+    public async Task<ApiResponse<ScenarioLevelConfigurationDto>> GetLevelDetailsAsync(
+        int scenarioId,
+        string level,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(level))
+        {
+            return ApiResponse<ScenarioLevelConfigurationDto>.Fail("JLPT Level không được để trống.");
+        }
+
+        var normalizedLevel = level.Trim().ToUpperInvariant();
+
+        var scenario = await _dbContext.Scenarios
+            .AsNoTracking()
+            .Include(s => s.LevelConfigurations.Where(lc => lc.JLPTLevel.ToUpper() == normalizedLevel && lc.Status == "Published"))
+                .ThenInclude(lc => lc.Missions.OrderBy(m => m.Order))
+            .Include(s => s.LevelConfigurations.Where(lc => lc.JLPTLevel.ToUpper() == normalizedLevel && lc.Status == "Published"))
+                .ThenInclude(lc => lc.TargetVocabularies)
+            .Include(s => s.LevelConfigurations.Where(lc => lc.JLPTLevel.ToUpper() == normalizedLevel && lc.Status == "Published"))
+                .ThenInclude(lc => lc.TargetGrammars)
+            .SingleOrDefaultAsync(s => s.Id == scenarioId && s.IsActive, cancellationToken);
+
+        if (scenario == null)
+        {
+            return ApiResponse<ScenarioLevelConfigurationDto>.Fail("Không tìm thấy scenario hoặc scenario không còn hoạt động.");
+        }
+
+        var levelConfig = scenario.LevelConfigurations.FirstOrDefault();
+        if (levelConfig == null)
+        {
+            return ApiResponse<ScenarioLevelConfigurationDto>.Fail($"Cấu hình cho trình độ {normalizedLevel} không tồn tại hoặc chưa được phát hành.");
+        }
+
+        var response = MapLevel(levelConfig);
+        return ApiResponse<ScenarioLevelConfigurationDto>.Ok(response, $"Lấy chi tiết cấu hình trình độ {normalizedLevel} thành công.");
+    }
+
     private static ScenarioLevelConfigurationDto MapLevel(ScenarioLevelConfiguration level)
     {
         return new ScenarioLevelConfigurationDto
@@ -71,23 +157,23 @@ public class ScenarioService : IScenarioService
                 .Select(MapMission)
                 .ToList(),
             TargetVocabularies = level.TargetVocabularies
-                .OrderBy(vocabulary => vocabulary.Word)
-                .Select(vocabulary => new TargetVocabularyDto
+                .OrderBy(v => v.Word)
+                .Select(v => new TargetVocabularyDto
                 {
-                    Id = vocabulary.Id,
-                    Word = vocabulary.Word,
-                    Reading = vocabulary.Reading,
-                    Meaning = vocabulary.Meaning
+                    Id = v.Id,
+                    Word = v.Word,
+                    Reading = v.Reading,
+                    Meaning = v.Meaning
                 })
                 .ToList(),
             TargetGrammars = level.TargetGrammars
-                .OrderBy(grammar => grammar.Pattern)
-                .Select(grammar => new TargetGrammarDto
+                .OrderBy(g => g.Pattern)
+                .Select(g => new TargetGrammarDto
                 {
-                    Id = grammar.Id,
-                    Pattern = grammar.Pattern,
-                    Meaning = grammar.Meaning,
-                    ExampleSentence = grammar.ExampleSentence
+                    Id = g.Id,
+                    Pattern = g.Pattern,
+                    Meaning = g.Meaning,
+                    ExampleSentence = g.ExampleSentence
                 })
                 .ToList()
         };
