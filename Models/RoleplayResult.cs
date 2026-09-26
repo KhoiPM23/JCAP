@@ -16,5 +16,6 @@ namespace JCAP.Models
         public string CompletedMissionsSummaryJson { get; set; } = "[]";
         public DateTime CompletedAt { get; set; } = DateTime.UtcNow;
         public ApplicationUser? User { get; set; }
+        public RoleplaySession? RoleplaySession { get; set; }
     }
 }

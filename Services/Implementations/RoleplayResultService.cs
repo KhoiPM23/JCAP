@@ -59,6 +59,20 @@ namespace JCAP.Services.Implementations
                 Title = mission.Title
             }).ToList();
 
+            var session = await _dbContext.RoleplaySessions
+                .FirstOrDefaultAsync(item => item.Id == sessionId && item.UserId == userId);
+
+            if (session == null)
+            {
+                return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
+                    "Không tìm thấy phiên luyện tập hoặc bạn không có quyền hoàn tất phiên này.");
+            }
+
+            var completedAt = DateTime.UtcNow;
+            session.Status = "Completed";
+            session.CompletedAt ??= completedAt;
+            session.UpdatedAt = completedAt;
+
             var result = new RoleplayResult
             {
                 RoleplaySessionId = snapshot.SessionId,
@@ -72,7 +86,7 @@ namespace JCAP.Services.Implementations
                 PassStatus = MockScore >= PassThreshold,
                 GeneralFeedbackText = "Bạn đã duy trì hội thoại rõ ràng và hoàn thành tốt các mục tiêu chính. Hãy tiếp tục luyện cách diễn đạt tự nhiên hơn trong những lượt nói tiếp theo.",
                 CompletedMissionsSummaryJson = JsonSerializer.Serialize(completedMissions),
-                CompletedAt = DateTime.UtcNow
+                CompletedAt = session.CompletedAt.Value
             };
 
             _dbContext.RoleplayResults.Add(result);
@@ -90,6 +104,7 @@ namespace JCAP.Services.Implementations
                     sessionId);
 
                 _dbContext.Entry(result).State = EntityState.Detached;
+                _dbContext.Entry(session).State = EntityState.Detached;
                 var concurrentResult = await _dbContext.RoleplayResults
                     .AsNoTracking()
                     .FirstOrDefaultAsync(item =>

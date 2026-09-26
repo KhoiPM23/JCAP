@@ -33,6 +33,8 @@ namespace JCAP.Tests.Services
         public async Task CompleteSessionAsync_CreatesMockResultAndIsIdempotent()
         {
             using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.Add(CreateSession(10, "learner-1"));
+            await dbContext.SaveChangesAsync();
             var provider = new Mock<IRoleplaySessionSnapshotProvider>();
             provider
                 .Setup(item => item.GetCompletableSessionAsync(10, "learner-1"))
@@ -62,6 +64,9 @@ namespace JCAP.Tests.Services
             Assert.True(second.Data.IsExistingResult);
             Assert.Equal(first.Data.ResultId, second.Data.ResultId);
             Assert.Single(await dbContext.RoleplayResults.ToListAsync());
+            var completedSession = await dbContext.RoleplaySessions.SingleAsync();
+            Assert.Equal("Completed", completedSession.Status);
+            Assert.NotNull(completedSession.CompletedAt);
             provider.Verify(
                 item => item.GetCompletableSessionAsync(10, "learner-1"),
                 Times.Once);
@@ -90,12 +95,16 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task CompleteSessionAsync_AllowsMockScenarioForDifferentLearners()
+        public async Task CompleteSessionAsync_AllowsDifferentSessionsForDifferentLearners()
         {
             using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.AddRange(
+                CreateSession(1, "learner-1"),
+                CreateSession(2, "learner-2"));
+            await dbContext.SaveChangesAsync();
             var provider = new Mock<IRoleplaySessionSnapshotProvider>();
             provider
-                .Setup(item => item.GetCompletableSessionAsync(1, It.IsAny<string>()))
+                .Setup(item => item.GetCompletableSessionAsync(It.IsAny<int>(), It.IsAny<string>()))
                 .ReturnsAsync((int sessionId, string userId) => new RoleplaySessionSnapshot
                 {
                     SessionId = sessionId,
@@ -106,7 +115,7 @@ namespace JCAP.Tests.Services
 
             var service = CreateService(dbContext, provider.Object);
             var firstLearner = await service.CompleteSessionAsync("learner-1", 1);
-            var secondLearner = await service.CompleteSessionAsync("learner-2", 1);
+            var secondLearner = await service.CompleteSessionAsync("learner-2", 2);
 
             Assert.True(firstLearner.Success);
             Assert.True(secondLearner.Success);
@@ -168,6 +177,17 @@ namespace JCAP.Tests.Services
                 GeneralFeedbackText = "Mock feedback",
                 CompletedMissionsSummaryJson = "[]",
                 CompletedAt = completedAt
+            };
+        }
+
+        private static RoleplaySession CreateSession(int sessionId, string userId)
+        {
+            return new RoleplaySession
+            {
+                Id = sessionId,
+                UserId = userId,
+                ScenarioLevelConfigurationId = 1,
+                Status = "Active"
             };
         }
     }

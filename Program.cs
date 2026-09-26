@@ -78,7 +78,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
 builder.Services.AddScoped<IRoleplayResultService, RoleplayResultService>();
-builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, MockRoleplaySessionSnapshotProvider>();
+builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, RoleplaySessionSnapshotProvider>();
 builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();

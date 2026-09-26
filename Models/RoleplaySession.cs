@@ -17,5 +17,6 @@ namespace JCAP.Models
         public ScenarioLevelConfiguration? ScenarioLevelConfiguration { get; set; }
         public ICollection<RoleplayMessage> Messages { get; set; } = new List<RoleplayMessage>();
         public ICollection<RoleplaySessionMission> SessionMissions { get; set; } = new List<RoleplaySessionMission>();
+        public RoleplayResult? Result { get; set; }
     }
 }

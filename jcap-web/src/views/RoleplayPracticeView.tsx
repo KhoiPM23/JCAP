@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
+import { roleplayResultService } from '../services/roleplayResultService';
 import type {
   RoleplaySessionDetailsDto,
   RoleplayMessageDto,
@@ -209,12 +210,12 @@ export const RoleplayPracticeView: React.FC = () => {
     setIsEnding(true);
 
     const currentSessionId = session.sessionId || session.id || sessionId;
-    const res = await roleplayService.endSession(currentSessionId);
-    if (res.success) {
+    const res = await roleplayResultService.completeSession(currentSessionId);
+    if (res.success && res.data) {
       setShowEndModal(false);
-      navigate(`/scenarios/${session.scenarioId}`);
+      navigate(`/roleplay/results/${res.data.resultId}`);
     } else {
-      alert(res.message || 'Không thể kết thúc phiên.');
+      alert(res.message || 'Không thể hoàn tất và lưu kết quả phiên luyện tập.');
       setIsEnding(false);
     }
   };

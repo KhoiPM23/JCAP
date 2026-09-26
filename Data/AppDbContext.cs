@@ -253,7 +253,7 @@ namespace JCAP.Data
             // Roleplay result configuration
             modelBuilder.Entity<RoleplayResult>(entity =>
             {
-                entity.HasIndex(e => new { e.RoleplaySessionId, e.UserId })
+                entity.HasIndex(e => e.RoleplaySessionId)
                     .IsUnique();
 
                 entity.Property(e => e.ScenarioTitle)
@@ -275,6 +275,11 @@ namespace JCAP.Data
                 entity.HasOne(e => e.User)
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.RoleplaySession)
+                    .WithOne(e => e.Result)
+                    .HasForeignKey<RoleplayResult>(e => e.RoleplaySessionId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
