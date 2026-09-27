@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { creditService } from '../services/creditService';
+import { formatDateTime } from '../utils/dateUtils';
 import type { CreditTransaction, CreditHistoryResponse } from '../types/credit';
 
 export const CreditHistoryView: React.FC = () => {
@@ -75,20 +76,7 @@ export const CreditHistoryView: React.FC = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr: string) => formatDateTime(dateStr);
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -118,6 +106,11 @@ export const CreditHistoryView: React.FC = () => {
           </span>
         );
     }
+  };
+
+  const formatDescription = (desc?: string) => {
+    if (!desc) return '—';
+    return desc.replace(/Nạp gói Gói/gi, 'Nạp Gói').replace(/Nạp gói gói/gi, 'Nạp gói');
   };
 
   const getTypeLabel = (type: string) => {
@@ -236,7 +229,7 @@ export const CreditHistoryView: React.FC = () => {
                         {getStatusBadge(tx.status)}
                       </td>
                       <td className="py-4 px-6 text-[#475467] max-w-xs truncate">
-                        {tx.description || '—'}
+                        {formatDescription(tx.description)}
                       </td>
                       <td className="py-4 px-6 text-[#71809A] font-mono text-[11px] whitespace-nowrap">
                         {tx.payOsOrderCode ? `#${tx.payOsOrderCode}` : '—'}

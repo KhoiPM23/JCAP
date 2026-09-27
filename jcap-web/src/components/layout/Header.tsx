@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import type { User } from '../../types/auth';
 
 export interface HeaderProps {
@@ -13,13 +13,61 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const [currentUser, setCurrentUser] = React.useState<User | null>(propUser !== undefined ? propUser : authUser);
   const handleLogout = onLogout || logout;
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentQuery = searchParams.get('query') || searchParams.get('search') || '';
+  const [searchTerm, setSearchTerm] = React.useState(currentQuery);
+
+  React.useEffect(() => {
+    setSearchTerm(currentQuery);
+  }, [currentQuery]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    if (location.pathname === '/scenarios' || location.pathname === '/') {
+      const newParams = new URLSearchParams(searchParams);
+      if (value.trim()) {
+        newParams.set('query', value);
+      } else {
+        newParams.delete('query');
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = searchTerm.trim();
+    if (location.pathname !== '/scenarios') {
+      navigate(trimmed ? `/scenarios?query=${encodeURIComponent(trimmed)}` : '/scenarios');
+    } else {
+      const newParams = new URLSearchParams(searchParams);
+      if (trimmed) {
+        newParams.set('query', trimmed);
+      } else {
+        newParams.delete('query');
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
+    }
+  };
+
   React.useEffect(() => {
     if (propUser !== undefined) {
       setCurrentUser(propUser);
       return;
     }
     if (authUser) {
-      setCurrentUser(authUser);
+      setCurrentUser((prev) => {
+        if (!prev) return authUser;
+        return {
+          ...authUser,
+          creditBalance: authUser.creditBalance !== undefined ? authUser.creditBalance : prev.creditBalance,
+        };
+      });
     } else {
       const saved = localStorage.getItem('jcap_user');
       if (saved) {
@@ -65,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
       </div>
 
       {/* Center: Search */}
-      <div className="hidden md:flex flex-1 max-w-md mx-8">
+      <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8">
         <div className="relative w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-5 w-5 text-[#71809A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,14 +122,16 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           </div>
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border border-[#E6EDF5] rounded-lg leading-5 bg-gray-50 placeholder-[#71809A] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0878EE] focus:border-[#0878EE] sm:text-sm transition-colors"
             placeholder="Tìm kiếm khóa học, bài học..."
           />
         </div>
-      </div>
+      </form>
 
       {/* Right: Actions & User Info */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         {/* Notifications */}
         <button 
           type="button"
