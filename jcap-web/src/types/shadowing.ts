@@ -13,6 +13,9 @@ export interface ShadowingVocabularyItem {
   word: string;
   reading?: string | null;
   meaning: string;
+  wordClass?: string;
+  jlptLevel?: string;
+  exampleSentence?: string | null;
 }
 
 export interface ShadowingGrammarItem {
@@ -20,6 +23,7 @@ export interface ShadowingGrammarItem {
   pattern: string;
   meaning: string;
   exampleSentence?: string | null;
+  jlptLevel?: string;
 }
 
 export interface ShadowingDialogueItem {

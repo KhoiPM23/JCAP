@@ -265,8 +265,8 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
-        <Route path="/shadowing" element={<LearnerShadowingListView />} />
-        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
+        <Route path="/shadowing" element={<LearnerShadowingPracticeView />} />
+        <Route path="/shadowing/:id" element={<LearnerShadowingPracticeView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />

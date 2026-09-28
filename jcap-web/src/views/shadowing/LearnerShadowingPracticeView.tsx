@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { shadowingService } from '../../services/shadowingService';
 import type {
   ShadowingDialogueDetail,
+  ShadowingDialogueItem,
   ShadowingSentenceItem,
   ShadowingSentencePracticeResult,
   ShadowingAiAnalysisResult,
@@ -52,16 +53,190 @@ function calculateSimilarity(recognized: string, target: string): number {
   return Math.round(similarity * 100);
 }
 
+// Fallback high-fidelity content for N4, N5, N3
+const fallbackContent: Record<string, { vocab: ShadowingVocabularyItem[]; grammar: ShadowingGrammarItem[] }> = {
+  N4: {
+    vocab: [
+      {
+        id: 1,
+        word: 'クラブ紹介',
+        reading: 'クラブしょうかい',
+        meaning: 'Buổi giới thiệu các câu lạc bộ (sinh hoạt ngoại khóa, thể thao, văn hóa sinh viên)',
+        wordClass: 'Danh từ (N)',
+        jlptLevel: 'N4',
+        exampleSentence: 'クラブ紹介の日と時間を教えてください。',
+      },
+      {
+        id: 2,
+        word: '伝える',
+        reading: 'つたえる',
+        meaning: 'Truyền đạt, nhắn lại, thông báo cho ai đó',
+        wordClass: 'Động từ nhóm 2 (他動詞)',
+        jlptLevel: 'N4',
+        exampleSentence: '先生にクラブの用件を伝えておきます。',
+      },
+      {
+        id: 3,
+        word: 'いつでもどうぞ',
+        reading: 'いつでもどうぞ',
+        meaning: 'Bất cứ lúc nào cũng được ạ, xin mời / xin vui lòng',
+        wordClass: 'Cụm từ giao tiếp',
+        jlptLevel: 'N4',
+        exampleSentence: '質問があればいつでもどうぞ。',
+      },
+      {
+        id: 4,
+        word: '体育館',
+        reading: 'たいいくかん',
+        meaning: 'Nhà thi đấu thể dục thể thao',
+        wordClass: 'Danh từ (N)',
+        jlptLevel: 'N4',
+        exampleSentence: '来週、体育館でクラブ紹介を行います。',
+      },
+    ],
+    grammar: [
+      {
+        id: 1,
+        pattern: 'V-てもいい？ / V-てもいいですか',
+        meaning: 'Làm ... có được không? Dùng để xin phép đối phương làm một hành động nào đó. Thể ngắn thân mật dùng ～てもいい？',
+        jlptLevel: 'N4',
+        exampleSentence: 'クラブ紹介の日と時間を伝えてもいい？',
+      },
+      {
+        id: 2,
+        pattern: 'V-ています',
+        meaning: 'Đang thực hiện hành động hoặc biểu thị trạng thái kết quả của hành động kéo dài.',
+        jlptLevel: 'N4',
+        exampleSentence: '体育館で行っています。',
+      },
+      {
+        id: 3,
+        pattern: 'V-てよろしいですか',
+        meaning: 'Dạng kính ngữ lịch sự trang trọng của ～てもいいですか, dùng khi xin phép cấp trên hoặc khách hàng.',
+        jlptLevel: 'N4',
+        exampleSentence: '日程を確認させていただいてよろしいですか。',
+      },
+    ],
+  },
+  N5: {
+    vocab: [
+      {
+        id: 101,
+        word: 'カウンター席',
+        reading: 'カウンターせき',
+        meaning: 'Ghế ngồi tại quầy bar / quầy phục vụ',
+        wordClass: 'Danh từ (N)',
+        jlptLevel: 'N5',
+        exampleSentence: 'カウンター席でお願いします。',
+      },
+      {
+        id: 102,
+        word: '豚骨ラーメン',
+        reading: 'とんこつラーメン',
+        meaning: 'Mì Ramen hầm từ xương heo truyền thống Nhật Bản',
+        wordClass: 'Danh từ (N)',
+        jlptLevel: 'N5',
+        exampleSentence: '豚骨ラーメンを一つください。',
+      },
+      {
+        id: 103,
+        word: '硬め',
+        reading: 'かため',
+        meaning: 'Sợi mì được trụng chín vừa, giữ độ dai giòn',
+        wordClass: 'Tính từ đuôi な / Danh từ',
+        jlptLevel: 'N5',
+        exampleSentence: '麺は硬めでお願いします。',
+      },
+    ],
+    grammar: [
+      {
+        id: 101,
+        pattern: 'N + をお願いします',
+        meaning: 'Làm ơn cho tôi... / Xin vui lòng thực hiện N.',
+        jlptLevel: 'N5',
+        exampleSentence: 'カウンター席でお願いします。',
+      },
+      {
+        id: 102,
+        pattern: 'N + をください',
+        meaning: 'Hãy cho tôi N (gọi món, mua đồ).',
+        jlptLevel: 'N5',
+        exampleSentence: '豚骨ラーメンを一つください。',
+      },
+    ],
+  },
+  N3: {
+    vocab: [
+      {
+        id: 201,
+        word: 'リリース日程',
+        reading: 'リリースにってい',
+        meaning: 'Lịch trình phát hành / bàn giao sản phẩm phần mềm',
+        wordClass: 'Thuật ngữ IT (N)',
+        jlptLevel: 'N3',
+        exampleSentence: '来週のリリース日程について確認させていただけますか？',
+      },
+      {
+        id: 202,
+        word: 'テストフェーズ',
+        reading: 'テストフェーズ',
+        meaning: 'Giai đoạn kiểm thử phần mềm',
+        wordClass: 'Thuật ngữ IT (N)',
+        jlptLevel: 'N3',
+        exampleSentence: '現在テストフェーズに入っております。',
+      },
+      {
+        id: 203,
+        word: '重要度高',
+        reading: 'じゅうようどこう',
+        meaning: 'Mức độ ưu tiên cao / lỗi nghiêm trọng (High Priority Bug)',
+        wordClass: 'Thuật ngữ dự án',
+        jlptLevel: 'N3',
+        exampleSentence: '重要度高の課題はすべて解消済みです。',
+      },
+    ],
+    grammar: [
+      {
+        id: 201,
+        pattern: 'V-させていただけますか',
+        meaning: 'Cho phép tôi xin được... (khiêm nhường ngữ xin phép trang trọng trong công việc kinh doanh).',
+        jlptLevel: 'N3',
+        exampleSentence: '日程を確認させていただけますか？',
+      },
+      {
+        id: 202,
+        pattern: '～ており / ～ております',
+        meaning: 'Dạng khiêm nhường trang trọng của ～ています trong giao tiếp công sở Nhật.',
+        jlptLevel: 'N3',
+        exampleSentence: '予定通り進行しております。',
+      },
+      {
+        id: 203,
+        pattern: 'N + に向けて',
+        meaning: 'Hướng tới N / Chuẩn bị hướng đến mục tiêu N.',
+        jlptLevel: 'N3',
+        exampleSentence: '最終レビューに向けて準備を進めてください。',
+      },
+    ],
+  },
+};
+
 export const LearnerShadowingPracticeView: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const { id } = useParams<{ id?: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // Active JLPT level selector (N5, N4, N3 - default N4 as per prototype)
+  const initialLevel = (searchParams.get('level')?.toUpperCase() as 'N5' | 'N4' | 'N3') || 'N4';
+  const [selectedLevel, setSelectedLevel] = useState<'N5' | 'N4' | 'N3'>(initialLevel);
+
+  // Available dialogues in current level
+  const [availableDialogues, setAvailableDialogues] = useState<ShadowingDialogueItem[]>([]);
   const [dialogue, setDialogue] = useState<ShadowingDialogueDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Learner Role selection
+  // Learner Role selection: 'A' (Yuuri / Tân học sinh) or 'B' (Ran / Tiền bối)
   const roleParam = (searchParams.get('role')?.toUpperCase() as 'A' | 'B') || 'A';
   const [userRole, setUserRole] = useState<'A' | 'B'>(roleParam);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState<boolean>(false);
@@ -83,7 +258,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Audio Playback
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [audioPlaybackSpeed, setAudioPlaybackSpeed] = useState<number>(1.0);
+  const [audioPlaybackSpeed, setAudioPlaybackSpeed] = useState<number>(0.8); // Default 0.8x from prototype
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // MediaRecorder for user playback
@@ -115,21 +290,78 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Translations visibility toggles
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
 
-  // 1. Fetch dialogue detail
+  // 1. Fetch catalog and select dialogue
   useEffect(() => {
-    if (!id) return;
-    const fetchDetail = async () => {
+    const loadCatalogAndDialogue = async () => {
       setIsLoading(true);
-      const res = await shadowingService.getDetail(parseInt(id, 10));
-      if (res.success && res.data) {
-        setDialogue(res.data);
-      } else {
-        setErrorMessage(res.message || 'Không thể tải chi tiết bài học.');
+      setErrorMessage(null);
+
+      try {
+        // Fetch dialogues catalog for selectedLevel
+        const catalogRes = await shadowingService.getCatalog({ jlptLevel: selectedLevel });
+        let list: ShadowingDialogueItem[] = [];
+        if (catalogRes.success && catalogRes.data) {
+          list = catalogRes.data;
+          setAvailableDialogues(list);
+        }
+
+        // Determine which dialogue ID to load
+        let targetDialogueId: number | null = null;
+        if (id) {
+          targetDialogueId = parseInt(id, 10);
+        } else if (list.length > 0) {
+          targetDialogueId = list[0].id;
+        }
+
+        if (targetDialogueId) {
+          const detailRes = await shadowingService.getDetail(targetDialogueId);
+          if (detailRes.success && detailRes.data) {
+            setDialogue(detailRes.data);
+            if (detailRes.data.jlptLevel && (detailRes.data.jlptLevel !== selectedLevel)) {
+              setSelectedLevel(detailRes.data.jlptLevel as 'N5' | 'N4' | 'N3');
+            }
+          } else {
+            setErrorMessage(detailRes.message || 'Không thể tải chi tiết bài học.');
+          }
+        } else {
+          // If no dialogue exists for this level in DB yet, show notice
+          setErrorMessage(`Chưa có đoạn hội thoại mẫu nào cho trình độ ${selectedLevel}. Vui lòng chọn trình độ khác.`);
+        }
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Lỗi kết nối khi tải bài học.');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
-    fetchDetail();
-  }, [id]);
+
+    loadCatalogAndDialogue();
+  }, [id, selectedLevel]);
+
+  // Handle changing Level from dropdown
+  const handleLevelChange = (newLevel: 'N5' | 'N4' | 'N3') => {
+    setSelectedLevel(newLevel);
+    setSearchParams({ level: newLevel, role: userRole });
+    setCurrentSentenceIndex(0);
+    setSentenceResults(new Map());
+    setPracticeState('ready');
+    setCurrentRecognizedText('');
+    setAiAnalysisResult(null);
+  };
+
+  // Handle selecting another dialogue in same or different chapter
+  const handleSelectDialogue = async (targetId: number) => {
+    setIsLoading(true);
+    const detailRes = await shadowingService.getDetail(targetId);
+    if (detailRes.success && detailRes.data) {
+      setDialogue(detailRes.data);
+      setCurrentSentenceIndex(0);
+      setSentenceResults(new Map());
+      setPracticeState('ready');
+      setCurrentRecognizedText('');
+      setAiAnalysisResult(null);
+    }
+    setIsLoading(false);
+  };
 
   // Update session duration counter
   useEffect(() => {
@@ -169,12 +401,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     return (
       <div className="max-w-lg mx-auto mt-16 bg-white p-8 rounded-2xl border border-red-200 text-center space-y-4 shadow-sm">
         <p className="text-red-600 font-bold">{errorMessage || 'Không tìm thấy bài học.'}</p>
-        <button
-          onClick={() => navigate('/shadowing')}
-          className="bg-[#0878EE] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-[#0662C6]"
-        >
-          Quay lại Thư viện
-        </button>
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleLevelChange('N4')}
+            className="bg-[#0878EE] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-[#0662C6]"
+          >
+            Chuyển sang JLPT N4
+          </button>
+        </div>
       </div>
     );
   }
@@ -186,6 +420,15 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const opponentRole = userRole === 'A' ? 'B' : 'A';
   const opponentName = userRole === 'A' ? dialogue.speakerRoleB_Name : dialogue.speakerRoleA_Name;
   const learnerName = userRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name;
+
+  // Active Vocab & Grammar (prefer backend if present, else fallback)
+  const activeVocabs = (dialogue.targetVocabularies && dialogue.targetVocabularies.length > 0)
+    ? dialogue.targetVocabularies
+    : (fallbackContent[dialogue.jlptLevel]?.vocab || fallbackContent.N4.vocab);
+
+  const activeGrammars = (dialogue.targetGrammars && dialogue.targetGrammars.length > 0)
+    ? dialogue.targetGrammars
+    : (fallbackContent[dialogue.jlptLevel]?.grammar || fallbackContent.N4.grammar);
 
   // Toggle translation
   const toggleTranslation = (sentenceId: number) => {
@@ -215,7 +458,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Toggle speed (0.8x -> 1.0x -> 1.2x)
   const cyclePlaybackSpeed = () => {
-    const speeds = [1.0, 1.2, 0.8];
+    const speeds = [0.8, 1.0, 1.2];
     const nextIdx = (speeds.indexOf(audioPlaybackSpeed) + 1) % speeds.length;
     const nextSpeed = speeds[nextIdx];
     setAudioPlaybackSpeed(nextSpeed);
@@ -262,61 +505,70 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
       mediaRecorder.start();
     } catch {
-      // Browser mic error
-      setMicError('Vui lòng cấp quyền Microphone trên trình duyệt để ghi âm.');
+      // Non-fatal if microphone access for playback is denied
+    }
+
+    // 2. Setup SpeechRecognition (ja-JP)
+    if (!SpeechRec) {
+      setMicError('Trình duyệt hiện tại chưa hỗ trợ Web Speech API. Hãy sử dụng Google Chrome hoặc Microsoft Edge.');
+      // Fallback simulation for testing
+      simulateRecording();
       return;
     }
 
-    // 2. Setup Web Speech Recognition
-    if (SpeechRec) {
+    try {
       const recognition = new SpeechRec();
-      recognitionRef.current = recognition;
-      recognition.lang = 'ja-JP'; // Tiếng Nhật
+      recognition.lang = 'ja-JP';
       recognition.continuous = false;
       recognition.interimResults = false;
+      recognitionRef.current = recognition;
 
       recognition.onstart = () => {
         setPracticeState('listening');
       };
 
       recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript || '';
+        const transcript = event.results[0][0].transcript;
+        stopRecordingMedia();
         evaluateSpeech(transcript);
       };
 
       recognition.onerror = (event: any) => {
-        if (event.error === 'not-allowed') {
-          setMicError('Quyền truy cập Microphone bị từ chối.');
-        } else if (event.error === 'no-speech') {
-          evaluateSpeech('');
-        } else {
-          evaluateSpeech('');
-        }
         stopRecordingMedia();
+        if (event.error === 'not-allowed') {
+          setMicError('Vui lòng cấp quyền Microphone trên trình duyệt để ghi âm.');
+        } else if (event.error === 'no-speech') {
+          setMicError('Chưa nhận được giọng nói. Bạn hãy bấm nói lại rõ ràng hơn nhé.');
+        } else {
+          setMicError(`Lỗi nhận diện âm thanh: ${event.error}`);
+        }
+        setPracticeState('ready');
       };
 
       recognition.onend = () => {
         stopRecordingMedia();
       };
 
-      try {
-        recognition.start();
-      } catch (err) {
-        console.warn('Lỗi khởi động Web Speech API:', err);
-        setPracticeState('listening');
-      }
-    } else {
-      // Fallback if browser doesn't support Web Speech API
-      setPracticeState('listening');
-      setTimeout(() => {
-        evaluateSpeech(currentSentence?.japaneseText || '');
-        stopRecordingMedia();
-      }, 2800);
+      recognition.start();
+    } catch (err: any) {
+      setMicError(`Không thể khởi động microphone: ${err.message}`);
+      setPracticeState('ready');
     }
   };
 
+  // Fallback simulator if browser blocks Web Speech API
+  const simulateRecording = () => {
+    setPracticeState('listening');
+    setTimeout(() => {
+      stopRecordingMedia();
+      if (currentSentence) {
+        evaluateSpeech(currentSentence.japaneseText);
+      }
+    }, 2500);
+  };
+
   const stopRecordingMedia = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
     }
@@ -347,7 +599,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         score = Math.max(score, romajiSim);
       }
     } else {
-      // Empty input fallback rating
       score = 45;
     }
 
@@ -398,7 +649,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       setCurrentRecognizedText('');
       setMicError(null);
     } else {
-      // Completed all sentences
       handleFinishDialogue();
     }
   };
@@ -408,7 +658,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setPracticeState('completed');
     setIsCompletedModalOpen(true);
 
-    // Calculate metrics
     const resultsList = Array.from(sentenceResults.values());
     const totalScore = resultsList.reduce((acc, r) => acc + r.accuracyScore, 0);
     const avgScore = resultsList.length > 0 ? Math.round(totalScore / resultsList.length) : 85;
@@ -454,7 +703,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     if (res.success && res.data) {
       setAiAnalysisResult(res.data);
     } else {
-      setAiAnalysisError(res.message || 'Không thể mở khóa phân tích AI.');
+      setAiAnalysisError(res.message || 'Không thể tạo báo cáo AI. Hãy kiểm tra lại số dư Credit của bạn.');
     }
     setIsRequestingAi(false);
   };
@@ -463,6 +712,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const handleConfirmRoleChange = (newRole: 'A' | 'B') => {
     setIsRoleModalOpen(false);
     setUserRole(newRole);
+    setSearchParams({ level: selectedLevel, role: newRole });
     setCurrentSentenceIndex(0);
     setSentenceResults(new Map());
     setPracticeState('ready');
@@ -476,37 +726,198 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     : 92;
   const finalGreenCount = resultsArray.filter(r => r.evaluationTier === 'green').length;
   const finalYellowCount = resultsArray.filter(r => r.evaluationTier === 'yellow').length;
+  const finalRedCount = resultsArray.filter(r => r.evaluationTier === 'red').length;
+
+  // Render text with interactive underline keywords
+  const renderAnnotatedSentenceText = (text: string, isLightBackground: boolean = true) => {
+    // Check for target vocab words
+    for (const v of activeVocabs) {
+      if (text.includes(v.word)) {
+        const parts = text.split(v.word);
+        return (
+          <>
+            {parts[0]}
+            <span
+              className="annotation-term annotation-term-red"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTermDetail({
+                  category: 'TỪ VỰNG',
+                  heading: v.word,
+                  reading: v.reading || undefined,
+                  meaning: v.meaning,
+                  example: v.exampleSentence || undefined,
+                });
+              }}
+            >
+              {v.word}
+              <span className="term-tooltip bg-[#071A44] text-white p-2.5 rounded-xl shadow-xl border border-blue-400/30 text-left font-sans block pointer-events-none">
+                <span className="flex items-center justify-between text-[10px] font-bold mb-1">
+                  <span className="text-rose-300">Từ vựng · {v.jlptLevel || dialogue.jlptLevel}</span>
+                  {v.reading && <span className="text-blue-200">{v.reading}</span>}
+                </span>
+                <span className="text-xs font-semibold block text-white font-jp">{v.word}</span>
+                <span className="text-[11px] text-gray-200 block mt-0.5 font-normal">{v.meaning}</span>
+                <span className="text-[10px] text-amber-300 font-bold block mt-1 pt-1 border-t border-white/10">
+                  Nhấp để xem chi tiết →
+                </span>
+              </span>
+            </span>
+            {parts.slice(1).join(v.word)}
+          </>
+        );
+      }
+    }
+
+    // Check for grammar patterns
+    for (const g of activeGrammars) {
+      const cleanPattern = g.pattern.replace(/[Vv]-|\?|\/.*$/g, '').trim();
+      if (cleanPattern && text.includes(cleanPattern)) {
+        const parts = text.split(cleanPattern);
+        return (
+          <>
+            {parts[0]}
+            <span
+              className="annotation-term annotation-term-blue"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTermDetail({
+                  category: 'NGỮ PHÁP',
+                  heading: g.pattern,
+                  meaning: g.meaning,
+                  example: g.exampleSentence,
+                });
+              }}
+            >
+              {cleanPattern}
+              <span className="term-tooltip bg-[#071A44] text-white p-2.5 rounded-xl shadow-xl border border-blue-400/30 text-left font-sans block pointer-events-none">
+                <span className="flex items-center justify-between text-[10px] font-bold mb-1">
+                  <span className="text-sky-300">Ngữ pháp · {g.jlptLevel || dialogue.jlptLevel}</span>
+                  <span className="text-emerald-300">Trọng tâm</span>
+                </span>
+                <span className="text-xs font-semibold block text-white font-jp">{g.pattern}</span>
+                <span className="text-[11px] text-gray-200 block mt-0.5 font-normal">{g.meaning}</span>
+                <span className="text-[10px] text-amber-300 font-bold block mt-1 pt-1 border-t border-white/10">
+                  Nhấp để xem chi tiết →
+                </span>
+              </span>
+            </span>
+            {parts.slice(1).join(cleanPattern)}
+          </>
+        );
+      }
+    }
+
+    return text;
+  };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between selection:bg-[#0878EE] selection:text-white bg-[#F4F9FE] text-[#071A44] font-sans -mx-4 -my-6 sm:-mx-8">
-      {/* Top Navbar */}
-      <header className="w-full bg-[#F4F9FE]/90 backdrop-blur-md sticky top-0 z-40 py-2.5 border-b border-[#E6EDF5] px-6">
+    <div className="min-h-screen flex flex-col justify-between selection:bg-[#0878EE] selection:text-white bg-[#F4F9FE] text-[#071A44] font-sans -mx-4 -my-8 sm:-mx-8">
+      {/* Styles for interactive tooltips and pulse animations matching user's prototype */}
+      <style>{`
+        .annotation-term {
+          position: relative;
+          display: inline-block;
+          cursor: pointer;
+          border-bottom-width: 2px;
+          border-bottom-style: dashed;
+          padding: 0 2px;
+          transition: all 0.15s ease-in-out;
+        }
+        .annotation-term-red {
+          border-bottom-color: #F04438;
+        }
+        .annotation-term-red:hover {
+          background-color: rgba(240, 68, 56, 0.12);
+        }
+        .annotation-term-blue {
+          border-bottom-color: #38BDF8;
+        }
+        .annotation-term-blue:hover {
+          background-color: rgba(56, 189, 248, 0.18);
+        }
+        .annotation-term .term-tooltip {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          bottom: 125%;
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+          z-index: 60;
+          pointer-events: none;
+          min-width: 220px;
+          max-width: 280px;
+          width: max-content;
+        }
+        .annotation-term:hover .term-tooltip {
+          visibility: visible;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        @keyframes pulseRecord {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+          70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .pulse-recording-btn {
+          animation: pulseRecord 1.5s infinite;
+        }
+      `}</style>
+
+      {/* TOP HEADER: Breadcrumbs & Dynamic Level Selector */}
+      <header className="w-full bg-[#F4F9FE]/95 backdrop-blur-md sticky top-0 z-40 py-2.5 border-b border-[#E6EDF5] px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          {/* Brand & Level Select */}
           <div className="flex items-center gap-3">
-            <Link to="/shadowing" className="font-black text-[#0878EE] text-2xl tracking-wide leading-none">
+            <Link to="/shadowing" className="font-black text-[#0878EE] text-2xl tracking-wide leading-none select-none">
               JCAP
             </Link>
             <div className="h-4 w-px bg-[#E6EDF5] mx-1 hidden sm:block"></div>
-            {/* Level & Breadcrumbs */}
+
+            {/* Level & Curriculum Pills */}
             <div className="hidden sm:flex items-center gap-2 text-xs">
-              <span className="bg-white border border-[#E6EDF5] text-[#071A44] text-xs font-bold rounded-full px-3 py-1 shadow-xs">
-                JLPT {dialogue.jlptLevel}
-              </span>
+              <div className="relative inline-block">
+                <select
+                  value={selectedLevel}
+                  onChange={(e) => handleLevelChange(e.target.value as 'N5' | 'N4' | 'N3')}
+                  className="bg-white border border-[#BCDDFB] hover:border-[#0878EE] text-[#071A44] text-xs font-bold rounded-full px-3 py-1 pr-6 cursor-pointer focus:ring-[#0878EE] focus:border-[#0878EE] shadow-xs transition-colors"
+                >
+                  <option value="N5">JLPT N5</option>
+                  <option value="N4">JLPT N4</option>
+                  <option value="N3">JLPT N3</option>
+                </select>
+              </div>
+
               <span className="text-gray-300">/</span>
-              <span className="text-gray-700 font-semibold truncate max-w-[200px]">
-                {dialogue.scenarioTitle}
+              <span className="text-gray-700 font-semibold truncate max-w-[160px] xl:max-w-none">
+                {dialogue.scenarioTitle || (selectedLevel === 'N4' ? 'みんなの日本語 II' : selectedLevel === 'N5' ? 'みんなの日本語 I' : 'TRY! N3')}
               </span>
+
               <span className="text-gray-300">/</span>
-              <span className="text-[#0878EE] bg-[#0878EE]/10 px-2.5 py-0.5 rounded-full font-semibold truncate max-w-[220px]">
-                {dialogue.title}
-              </span>
+              {availableDialogues.length > 1 ? (
+                <select
+                  value={dialogue.id}
+                  onChange={(e) => handleSelectDialogue(Number(e.target.value))}
+                  className="text-[#0878EE] bg-[#0878EE]/10 px-2.5 py-0.5 rounded-full font-semibold border border-transparent hover:border-blue-200 cursor-pointer text-xs"
+                >
+                  {availableDialogues.map(d => (
+                    <option key={d.id} value={d.id}>{d.title}</option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-[#0878EE] bg-[#0878EE]/10 px-2.5 py-0.5 rounded-full font-semibold truncate max-w-[240px]">
+                  {dialogue.title}
+                </span>
+              )}
             </div>
           </div>
 
+          {/* Right Header Status */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsRoleModalOpen(true)}
-              className="text-xs font-bold text-[#0878EE] bg-blue-50 border border-[#BCDDFB] px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+              className="text-xs font-bold text-[#0878EE] bg-blue-50 border border-[#BCDDFB] px-3 py-1 rounded-full hover:bg-blue-100 transition-colors cursor-pointer"
             >
               Vai: {learnerName} ({userRole})
             </button>
@@ -514,8 +925,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl w-full mx-auto py-5 px-4 sm:px-6 flex-1 flex flex-col justify-between">
+      {/* MAIN WORKSPACE CONTENT */}
+      <main className="max-w-7xl w-full mx-auto py-4 px-4 sm:px-6 flex-1 flex flex-col justify-between">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* LEFT COLUMN: Campus Scene & Character Card */}
           <section className="lg:col-span-4 flex flex-col gap-4">
@@ -523,14 +934,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               {/* Back / End Buttons */}
               <div className="flex items-center justify-between mb-3">
                 <button
-                  onClick={() => navigate('/shadowing')}
-                  className="flex items-center gap-1.5 text-[#071A44] bg-[#F4F9FE] hover:bg-[#EBF3FB] border border-[#E6EDF5] px-3.5 py-1 rounded-full text-xs font-bold transition-all shadow-xs"
+                  onClick={() => {
+                    if (currentSentenceIndex > 0) {
+                      setCurrentSentenceIndex(prev => Math.max(0, prev - 1));
+                    }
+                  }}
+                  className="flex items-center gap-1.5 text-[#071A44] bg-[#F4F9FE] hover:bg-[#EBF3FB] border border-[#E6EDF5] px-3.5 py-1 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer"
                 >
-                  <span>←</span> Quay lại
+                  <span>←</span> Quay lại câu trước
                 </button>
                 <button
                   onClick={handleFinishDialogue}
-                  className="flex items-center gap-1.5 text-[#D92D20] hover:text-red-700 bg-white hover:bg-red-50/50 border border-red-200 font-extrabold text-xs px-3.5 py-1 rounded-full shadow-xs transition-all"
+                  className="flex items-center gap-1.5 text-[#D92D20] hover:text-red-700 bg-white hover:bg-red-50/50 border border-red-200 font-extrabold text-xs px-3.5 py-1 rounded-full shadow-xs transition-all cursor-pointer"
                 >
                   <span className="w-2 h-2 rounded-full border-2 border-[#D92D20] inline-block"></span>
                   Kết thúc
@@ -556,6 +971,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <rect fill="#FFF2E8" height="35" rx="2" stroke="#DDAA80" strokeWidth="1.5" width="36" x="52" y="10"></rect>
                     <polygon fill="#0878EE" points="46,10 70,-10 94,10"></polygon>
                     <circle cx="70" cy="26" fill="#FFFFFF" r="9" stroke="#809B89" strokeWidth="1.5"></circle>
+                    <line stroke="#333" strokeLinecap="round" strokeWidth="1.5" x1="70" x2="70" y1="26" y2="21"></line>
+                    <line stroke="#333" strokeLinecap="round" strokeWidth="1.5" x1="70" x2="75" y1="26" y2="26"></line>
                     <rect fill="#FFFFFF" height="14" rx="2" stroke="#DDAA80" width="34" x="53" y="52"></rect>
                     <text fill="#071A44" fontSize="6.5" fontWeight="900" textAnchor="middle" x="70" y="62">JCAP CAMPUS</text>
                   </g>
@@ -563,7 +980,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <circle cx="280" cy="138" fill="#58AB8A" r="16"></circle>
                 </svg>
                 <div className="absolute top-2 right-2 bg-white/95 text-[10px] font-bold text-[#0878EE] px-2.5 py-0.5 rounded-full shadow-xs border border-blue-100">
-                  Phòng luyện tập
+                  Khuôn viên trường
                 </div>
               </div>
 
@@ -581,7 +998,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 </div>
               </div>
 
-              {/* VAI CỦA BẠN */}
+              {/* VAI CỦA BẠN (Haruto Tanaka / Yuuri) */}
               <div className="mt-3.5 bg-[#F8FAFD] border border-[#E6EDF5] rounded-2xl px-3.5 py-2 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-[#071A44]">{learnerName} </span>
@@ -589,7 +1006,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setIsRoleModalOpen(true)}
-                  className="flex items-center gap-1 bg-white hover:bg-[#EEF6FE] text-[#0878EE] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#BCDDFB] shadow-2xs transition-all"
+                  className="flex items-center gap-1 bg-white hover:bg-[#EEF6FE] text-[#0878EE] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#BCDDFB] shadow-2xs transition-all cursor-pointer"
                 >
                   Đổi vai
                 </button>
@@ -617,16 +1034,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 {!isSituationCollapsed && (
                   <div className="space-y-3 pt-1">
                     <p className="text-xs leading-relaxed text-[#4A5D78] text-justify">
-                      {dialogue.scenarioLevelDescription || dialogue.scenarioDescription || dialogue.sourceDescription || 'Luyện tập phát âm theo ngữ cảnh hội thoại.'}
+                      {dialogue.scenarioLevelDescription || dialogue.scenarioDescription || dialogue.sourceDescription || 'Bạn là tân học sinh. Hãy lắng nghe và luyện phản xạ câu đối thoại chuẩn Tokyo với nhân vật.'}
                     </p>
 
-                    {dialogue.targetGrammars && dialogue.targetGrammars.length > 0 && (
+                    {activeGrammars.length > 0 && (
                       <div className="mt-2 space-y-1">
                         <span className="text-[10px] font-extrabold text-[#556987] uppercase tracking-wider block">
                           Mục tiêu ngữ pháp
                         </span>
                         <div className="flex flex-wrap items-center gap-1.5">
-                          {dialogue.targetGrammars.map(g => (
+                          {activeGrammars.map(g => (
                             <span
                               key={g.id}
                               onClick={() => setSelectedTermDetail({
@@ -649,13 +1066,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
               <div className="h-px bg-[#E6EDF5] my-3"></div>
 
-              {/* NỘI DUNG HỘI THOẠI BUTTONS */}
+              {/* NỘI DUNG HỘI THOẠI (Collapsible & 3 Study Buttons) */}
               <div className="space-y-1.5">
                 <div
                   className="flex items-center justify-between text-[#071A44] font-bold text-sm cursor-pointer select-none"
                   onClick={() => setIsDialogueContentCollapsed(!isDialogueContentCollapsed)}
                 >
-                  <span className="font-extrabold tracking-tight">Nội dung học tập</span>
+                  <span className="font-extrabold tracking-tight">Nội dung hội thoại</span>
                   <button className="w-6 h-6 rounded-full bg-[#F4F9FE] hover:bg-[#EEF6FE] border border-[#E6EDF5] text-[#556987] flex items-center justify-center text-xs">
                     {isDialogueContentCollapsed ? '▼' : '▲'}
                   </button>
@@ -665,21 +1082,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                       onClick={() => setStudyModalTab('dialogue')}
-                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all"
+                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
                     >
                       <span>💬</span>
                       <span>Hội thoại</span>
                     </button>
                     <button
                       onClick={() => setStudyModalTab('vocab')}
-                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all"
+                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
                     >
-                      <span>🏷️</span>
+                      <span>📖</span>
                       <span>Từ vựng</span>
                     </button>
                     <button
                       onClick={() => setStudyModalTab('grammar')}
-                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all"
+                      className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
                     >
                       <span>📐</span>
                       <span>Ngữ pháp</span>
@@ -714,19 +1131,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => playAudio(s.nativeAudioUrl, audioPlaybackSpeed)}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all"
+                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                             >
                               <span>🔊</span> Nghe lại
                             </button>
                             <button
                               onClick={() => toggleTranslation(s.id)}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all"
+                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                             >
                               <span>文A</span> Dịch
                             </button>
                             <button
                               onClick={cyclePlaybackSpeed}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-2 py-0.5 rounded-full shadow-2xs transition-all"
+                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs transition-all cursor-pointer"
                               title="Tốc độ đọc"
                             >
                               ⏱️ {audioPlaybackSpeed}x
@@ -735,7 +1152,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         </div>
 
                         <p className="text-base text-[#071A44] font-medium leading-relaxed">
-                          {s.japaneseText}
+                          {renderAnnotatedSentenceText(s.japaneseText, true)}
                         </p>
 
                         {showTranslations[s.id] && (
@@ -823,30 +1240,23 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                 onClick={() => toggleTranslation(s.id)}
                                 className="bg-[#14316D] hover:bg-[#1F4289] text-blue-100 hover:text-white border border-[#2B54A6] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                               >
-                                <span>文A</span>
-                                <span>Dịch</span>
+                                文A Dịch
                               </button>
                             </div>
 
                             <p className="text-lg sm:text-xl font-bold tracking-wide text-white leading-snug my-1 text-left">
-                              {s.japaneseText}
+                              {renderAnnotatedSentenceText(s.japaneseText, false)}
                             </p>
 
-                            {s.romajiText && (
-                              <p className="text-xs text-blue-200/80 font-mono mt-0.5 text-left">
-                                {s.romajiText}
-                              </p>
-                            )}
-
                             {showTranslations[s.id] && (
-                              <div className="pt-2 mt-1 text-xs text-blue-100 italic border-t border-[#1F4289] text-left">
+                              <div className="pt-2 mt-1 text-xs sm:text-sm text-blue-100 italic border-t border-[#1F4289] text-left">
                                 "{s.vietnameseTranslation}"
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="w-8 h-8 rounded-full bg-[#0878EE] text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full bg-[#071A44] text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 border border-blue-400/30 mt-1">
                           {userRole}
                         </div>
                       </div>
@@ -856,63 +1266,67 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               })}
             </div>
 
-            {/* Bottom Action Console */}
-            <div className="w-full mt-auto mb-2">
+            {/* ACTION CONSOLE (Recording & Evaluation) */}
+            <div className="w-full flex justify-center items-center relative z-10 mt-auto mb-2">
               <div
-                className="w-full rounded-[24px] border-2 border-dashed bg-white/80 backdrop-blur-xs py-4 px-6 flex flex-col items-center justify-center shadow-xs transition-all relative"
+                className="w-full rounded-[24px] border-2 border-dashed bg-white/80 backdrop-blur-xs py-4 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
               >
-                {/* 1. STATE READY */}
-                {practiceState === 'ready' && (
-                  <div className="flex flex-col items-center justify-center w-full space-y-2">
-                    <button
-                      onClick={startRecording}
-                      className="bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/25 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Bắt đầu nói (Nhấn để thu âm)"
-                    >
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.3"></path>
-                      </svg>
-                    </button>
-                    <span className="text-xs font-bold text-[#556987]">
-                      Bấm micro để bắt đầu phát âm câu {currentSentenceIndex + 1}/{sentences.length}
-                    </span>
+                {/* Error message */}
+                {micError && (
+                  <div className="w-full mb-3 p-2 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                    <span>⚠️ {micError}</span>
+                    <button onClick={() => setMicError(null)} className="font-bold text-red-500">×</button>
                   </div>
                 )}
 
-                {/* 2. STATE LISTENING */}
+                {/* State 1: Ready to record */}
+                {practiceState === 'ready' && (
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <button
+                      onClick={startRecording}
+                      className="bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
+                      title="Bắt đầu ghi âm và nói"
+                    >
+                      <span className="text-2xl">🎤</span>
+                    </button>
+                    <p className="text-xs text-[#71809A] mt-2 font-medium">Bấm vào micro và nói to câu hội thoại</p>
+                  </div>
+                )}
+
+                {/* State 2: Listening */}
                 {practiceState === 'listening' && (
                   <div className="flex flex-col items-center justify-center gap-2 w-full">
                     <button
                       onClick={stopRecordingManually}
-                      className="text-white px-8 py-2.5 rounded-full font-bold shadow-xl flex items-center gap-2.5 text-base animate-pulse cursor-pointer bg-gradient-to-r from-blue-600 to-blue-800"
+                      className="pulse-recording-btn bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-full font-bold shadow-xl flex items-center gap-3 text-base cursor-pointer"
                     >
-                      <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                        🎤
-                      </span>
-                      <span>Đang nghe bạn nói... (Bấm để kết thúc câu)</span>
+                      <span className="w-4 h-4 rounded-full bg-red-500 animate-ping inline-block"></span>
+                      <span>Đang nghe bạn nói... (Nhấn để chốt câu)</span>
                     </button>
-                    <p className="text-[11px] text-blue-600 font-medium">
-                      Web Speech API đang nhận diện giọng nói tiếng Nhật (ja-JP)...
+                    <p className="text-xs text-blue-600 font-semibold animate-pulse">
+                      Hệ thống đang phân tích ngữ âm tiếng Nhật trực tiếp...
                     </p>
                   </div>
                 )}
 
-                {/* 3. STATE EVALUATED */}
+                {/* State 3: Evaluated with 3-tier colors */}
                 {practiceState === 'evaluated' && (
-                  <div className="w-full bg-white px-5 py-3 rounded-[20px] border border-[#E6EDF5] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="w-full bg-white/95 px-5 py-3 rounded-[20px] border border-[#E6EDF5] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Badge & Info */}
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <div
-                        className={`w-12 h-12 rounded-2xl text-white font-black flex items-center justify-center text-lg shadow-sm ${
+                        className={`w-12 h-12 rounded-2xl text-white font-black flex items-center justify-center text-base shadow-sm ${
                           currentTier === 'green'
                             ? 'bg-[#12B76A]'
                             : currentTier === 'yellow'
                             ? 'bg-[#F79009]'
-                            : 'bg-[#F04438]'
+                            : 'bg-[#D92D20]'
                         }`}
                       >
                         {currentScore}%
                       </div>
+
                       <div className="text-left">
                         <div className="flex items-center gap-2">
                           <span
@@ -924,39 +1338,55 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                 : 'text-[#D92D20]'
                             }`}
                           >
-                            {currentTier === 'green' ? 'Xuất sắc! (とても良い)' : currentTier === 'yellow' ? 'Khá tốt (注意)' : 'Cần thử lại (もう一度)'}
+                            {currentTier === 'green'
+                              ? 'Xuất sắc! (とても良い)'
+                              : currentTier === 'yellow'
+                              ? 'Chưa chuẩn lắm (もう少し)'
+                              : 'Chưa chính xác (やり直しましょう)'}
                           </span>
-                          <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-200">
-                            {currentRecognizedText ? `Nhận diện: "${currentRecognizedText}"` : 'Đã thu âm'}
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              currentTier === 'green'
+                                ? 'bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]'
+                                : currentTier === 'yellow'
+                                ? 'bg-[#FFF9EB] text-[#B54708] border-[#FEEFC6]'
+                                : 'bg-[#FEF3F2] text-[#D92D20] border-[#FECDCA]'
+                            }`}
+                          >
+                            {currentTier === 'green'
+                              ? '🟢 Phát âm chuẩn'
+                              : currentTier === 'yellow'
+                              ? '🟡 Cần rèn thêm'
+                              : '🔴 Thử lại'}
                           </span>
                         </div>
-                        <p className="text-xs text-[#556987] font-medium mt-0.5">
-                          {currentFeedback}
-                        </p>
+                        <p className="text-[11px] text-[#556987] font-medium mt-0.5">{currentFeedback}</p>
+                        {currentRecognizedText && (
+                          <p className="text-[10px] text-gray-400 mt-0.5 italic">
+                            Giọng nhận diện: "{currentRecognizedText}"
+                          </p>
+                        )}
                       </div>
                     </div>
 
+                    {/* Actions */}
                     <div className="flex items-center justify-end gap-2.5 w-full sm:w-auto flex-shrink-0">
                       <button
                         onClick={handleRetryCurrentSentence}
-                        className="text-xs font-bold text-[#4A5D78] hover:text-[#0878EE] bg-white hover:bg-[#EEF6FE] border border-[#E6EDF5] px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                        className="text-xs font-bold text-[#4A5D78] hover:text-[#0878EE] bg-white hover:bg-[#EEF6FE] border border-[#E6EDF5] px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        🔄 Luyện lại câu
+                        <span>🔄</span>
+                        <span>Luyện lại câu</span>
                       </button>
+
                       <button
                         onClick={handleNextSentence}
-                        className="text-xs font-extrabold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                        className="text-xs font-extrabold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 transition-all transform hover:scale-102 cursor-pointer"
                       >
-                        <span>{currentSentenceIndex + 1 < sentences.length ? 'Chốt & Tiếp tục ➔' : 'Hoàn thành bài tập 🎉'}</span>
+                        <span>Chốt & Tiếp tục câu sau ➔</span>
                       </button>
                     </div>
                   </div>
-                )}
-
-                {micError && (
-                  <p className="text-xs text-red-500 font-medium mt-2">
-                    ⚠️ {micError}
-                  </p>
                 )}
               </div>
             </div>
@@ -964,104 +1394,159 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         </div>
       </main>
 
-      {/* MODAL 1: StudyCenterModal (Hội thoại / Từ vựng / Ngữ pháp) */}
+      {/* MODAL 1: StudyCenterModal (Modal Đoạn hội thoại / Từ vựng / Ngữ pháp) */}
       {studyModalTab && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071A44]/50 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071A44]/50 backdrop-blur-xs transition-all duration-200"
           onClick={() => setStudyModalTab(null)}
         >
           <div
-            className="bg-white rounded-[28px] max-w-2xl w-full max-h-[85vh] shadow-2xl border border-[#E6EDF5] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-[28px] max-w-2xl w-full max-h-[88vh] shadow-2xl border border-[#E6EDF5] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-5 py-4 border-b border-[#E6EDF5] bg-[#F4F9FE] flex items-center justify-between">
-              <h3 className="font-extrabold text-[#071A44] text-base sm:text-lg">
-                {studyModalTab === 'dialogue' && 'Toàn bộ Kịch bản Hội thoại'}
-                {studyModalTab === 'vocab' && 'Bảng Từ vựng Trọng tâm bài học'}
-                {studyModalTab === 'grammar' && 'Tổng hợp Ngữ pháp Mục tiêu'}
+            {/* Header */}
+            <div className="p-5 border-b border-[#E6EDF5] bg-[#F4F9FE] flex items-center justify-between">
+              <h3 className="font-extrabold text-[#071A44] text-lg">
+                {studyModalTab === 'dialogue' && 'Toàn bộ kịch bản Đoạn hội thoại'}
+                {studyModalTab === 'vocab' && 'Bảng Từ vựng trọng tâm'}
+                {studyModalTab === 'grammar' && 'Tổng hợp Ngữ pháp bài học'}
               </h3>
               <button
                 onClick={() => setStudyModalTab(null)}
-                className="w-8 h-8 rounded-full bg-white hover:bg-red-50 text-[#556987] hover:text-[#D92D20] border border-[#E6EDF5] flex items-center justify-center font-bold text-sm"
+                className="w-8 h-8 rounded-full bg-white hover:bg-red-50 text-[#556987] hover:text-[#D92D20] border border-[#E6EDF5] flex items-center justify-center font-bold text-sm transition-colors shadow-2xs"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm">
+            {/* Body */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm bg-white">
+              {/* Tab 1: Full Dialogue */}
               {studyModalTab === 'dialogue' && (
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   {sentences.map(s => (
-                    <div key={s.id} className="p-3 bg-[#F8FAFD] rounded-xl border border-[#E6EDF5]">
-                      <div className="flex items-center justify-between text-xs font-bold text-[#0878EE] mb-1">
-                        <span>Câu #{s.orderIndex} ({s.speakerRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name})</span>
-                        <button
-                          onClick={() => playAudio(s.nativeAudioUrl)}
-                          className="hover:underline text-[11px]"
+                    <div
+                      key={s.id}
+                      className={`flex items-start gap-2.5 ${s.speakerRole === userRole ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {s.speakerRole !== userRole && (
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0878EE] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-1">
+                          {s.speakerRole}
+                        </div>
+                      )}
+
+                      <div className={`flex flex-col max-w-[80%] ${s.speakerRole === userRole ? 'items-end' : 'items-start'}`}>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <button
+                            onClick={() => playAudio(s.nativeAudioUrl, 1.0)}
+                            className="bg-white hover:bg-blue-50 text-[#0878EE] border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs"
+                          >
+                            <span>🔊</span> Nghe
+                          </button>
+                          <span className="text-[10px] text-[#556987]">Câu {s.orderIndex}</span>
+                          <span className="font-bold text-xs text-[#071A44]">
+                            {s.speakerRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name}
+                          </span>
+                        </div>
+
+                        <div
+                          className={`p-3 rounded-2xl border text-sm ${
+                            s.speakerRole === userRole
+                              ? 'bg-[#EEF6FE] border-[#BCDDFB] text-right'
+                              : 'bg-[#F8FAFD] border-[#E6EDF5] text-left'
+                          }`}
                         >
-                          🔊 Nghe
-                        </button>
+                          <p className="font-semibold text-[#071A44] leading-relaxed">{s.japaneseText}</p>
+                          <p className="text-xs text-[#556987] mt-1 italic">"{s.vietnameseTranslation}"</p>
+                        </div>
                       </div>
-                      <p className="font-medium text-[#071A44] text-base">{s.japaneseText}</p>
-                      <p className="text-xs text-[#556987] mt-1 italic">{s.vietnameseTranslation}</p>
+
+                      {s.speakerRole === userRole && (
+                        <div className="w-8 h-8 rounded-full bg-[#071A44] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-1">
+                          {userRole}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
 
+              {/* Tab 2: Vocabularies */}
               {studyModalTab === 'vocab' && (
                 <div className="space-y-3">
-                  {dialogue.targetVocabularies && dialogue.targetVocabularies.length > 0 ? (
-                    dialogue.targetVocabularies.map(v => (
-                      <div
-                        key={v.id}
-                        onClick={() => setSelectedTermDetail({
-                          category: 'Từ vựng trọng tâm',
-                          heading: v.word,
-                          reading: v.reading || undefined,
-                          meaning: v.meaning,
-                        })}
-                        className="p-3.5 bg-[#F8FAFD] rounded-xl border border-[#BCDDFB] hover:border-[#0878EE] cursor-pointer transition-all"
-                      >
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-base text-[#071A44]">{v.word}</h4>
-                          {v.reading && <span className="text-xs text-[#556987]">【{v.reading}】</span>}
+                  {activeVocabs.map(v => (
+                    <div
+                      key={v.id}
+                      onClick={() => setSelectedTermDetail({
+                        category: 'TỪ VỰNG',
+                        heading: v.word,
+                        reading: v.reading || undefined,
+                        meaning: v.meaning,
+                        example: v.exampleSentence || undefined,
+                      })}
+                      className="border border-[#BCDDFB] rounded-2xl p-4 bg-[#F8FAFD] hover:border-[#0878EE] cursor-pointer transition-all shadow-2xs"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-base text-[#071A44]">{v.word}</h4>
+                            {v.reading && (
+                              <span className="text-xs text-[#556987]">【{v.reading}】</span>
+                            )}
+                          </div>
+                          {v.wordClass && (
+                            <span className="text-[11px] font-bold text-[#0878EE] bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-1">
+                              {v.wordClass}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-xs text-[#4A5D78] mt-1"><strong>Nghĩa:</strong> {v.meaning}</p>
+                        <span className="text-xs bg-[#0878EE]/10 text-[#0878EE] font-bold px-2 py-0.5 rounded-full">
+                          {v.jlptLevel || dialogue.jlptLevel}
+                        </span>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-xs text-[#71809A] italic">Chưa có danh sách từ vựng bổ sung cho bài học này.</p>
-                  )}
+                      <p className="text-xs text-[#4A5D78] mt-2 font-medium">
+                        <strong>Nghĩa:</strong> {v.meaning}
+                      </p>
+                      {v.exampleSentence && (
+                        <div className="mt-2 p-2 bg-white rounded-xl border border-[#E6EDF5] text-xs">
+                          <span className="text-[#071A44] font-medium">Ví dụ: {v.exampleSentence}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 
+              {/* Tab 3: Grammars */}
               {studyModalTab === 'grammar' && (
                 <div className="space-y-3">
-                  {dialogue.targetGrammars && dialogue.targetGrammars.length > 0 ? (
-                    dialogue.targetGrammars.map(g => (
-                      <div
-                        key={g.id}
-                        onClick={() => setSelectedTermDetail({
-                          category: 'Ngữ pháp mục tiêu',
-                          heading: g.pattern,
-                          meaning: g.meaning,
-                          example: g.exampleSentence || undefined,
-                        })}
-                        className="p-3.5 bg-[#F8FAFD] rounded-xl border border-[#BCDDFB] hover:border-[#0878EE] cursor-pointer transition-all"
-                      >
-                        <h4 className="font-bold text-sm text-[#0878EE]">{g.pattern}</h4>
-                        <p className="text-xs text-[#4A5D78] mt-1"><strong>Ý nghĩa:</strong> {g.meaning}</p>
-                        {g.exampleSentence && (
-                          <div className="mt-2 p-2 bg-white rounded-lg border border-[#E6EDF5] text-xs">
-                            <span className="font-medium text-[#071A44]">Ví dụ: {g.exampleSentence}</span>
-                          </div>
-                        )}
+                  {activeGrammars.map(g => (
+                    <div
+                      key={g.id}
+                      onClick={() => setSelectedTermDetail({
+                        category: 'NGỮ PHÁP',
+                        heading: g.pattern,
+                        meaning: g.meaning,
+                        example: g.exampleSentence,
+                      })}
+                      className="p-4 bg-[#F8FAFD] rounded-2xl border-2 border-dashed border-[#BCDDFB] hover:border-[#0878EE] cursor-pointer transition-all"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-sm sm:text-base text-[#0878EE]">{g.pattern}</h4>
+                        <span className="text-[11px] font-extrabold text-[#0878EE] bg-blue-50 border border-[#BCDDFB] px-2.5 py-0.5 rounded-full">
+                          {g.jlptLevel || dialogue.jlptLevel}
+                        </span>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-xs text-[#71809A] italic">Chưa có điểm ngữ pháp nào được gán cho bài học này.</p>
-                  )}
+                      <p className="text-xs text-[#4A5D78] mt-2 leading-relaxed">
+                        <strong>Ý nghĩa:</strong> {g.meaning}
+                      </p>
+                      {g.exampleSentence && (
+                        <div className="mt-2 p-2 bg-white rounded-lg border border-[#E6EDF5] text-xs">
+                          <span className="font-medium text-[#071A44]">Ví dụ: {g.exampleSentence}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -1069,7 +1554,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             <div className="p-4 border-t border-[#E6EDF5] bg-[#F4F9FE] flex justify-end">
               <button
                 onClick={() => setStudyModalTab(null)}
-                className="px-5 py-2 rounded-full bg-[#0878EE] text-white text-xs font-bold"
+                className="px-6 py-2 rounded-full bg-[#0878EE] text-white text-xs font-bold"
               >
                 Đóng
               </button>
@@ -1169,6 +1654,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 <div className="flex items-center justify-center gap-1.5 my-1 font-black text-sm text-[#071A44] leading-none">
                   <span className="text-emerald-600">{finalGreenCount} 🟢</span>
                   <span className="text-amber-500">{finalYellowCount} 🟡</span>
+                  {finalRedCount > 0 && <span className="text-red-500">{finalRedCount} 🔴</span>}
                 </div>
                 <span className="text-[10px] text-[#556987] bg-white border border-[#E6EDF5] font-semibold px-2 py-0.5 rounded-full inline-block mx-auto">
                   {sentences.length} câu hoàn tất
@@ -1249,13 +1735,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       <span className="text-emerald-600">{aiAnalysisResult.vowelClarityScore}%</span>
                     </div>
                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                      <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${aiAnalysisResult.vowelClarityScore}%` }}></div>
+                      <div className="bg-emerald-600 h-full rounded-full" style={{ width: `${aiAnalysisResult.vowelClarityScore}%` }}></div>
                     </div>
                   </div>
 
                   <div>
                     <div className="flex justify-between font-bold text-[#071A44] mb-1">
-                      <span>Trường âm (Long Vowels)</span>
+                      <span>Độ ngân trường âm (Long Vowels)</span>
                       <span className="text-amber-600">{aiAnalysisResult.longVowelPrecisionScore}%</span>
                     </div>
                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
@@ -1310,10 +1796,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 👤 Đổi sang vai khác ({opponentRole})
               </button>
               <button
-                onClick={() => navigate('/shadowing')}
+                onClick={() => {
+                  setIsCompletedModalOpen(false);
+                  navigate('/shadowing');
+                }}
                 className="w-full sm:w-auto text-xs font-extrabold text-white bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] px-6 py-2.5 rounded-full shadow-md transition-all cursor-pointer"
               >
-                Thư viện Shadowing ➔
+                Xong
               </button>
             </div>
           </div>
