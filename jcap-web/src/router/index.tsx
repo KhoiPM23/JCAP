@@ -23,6 +23,7 @@ import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
+import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
@@ -240,6 +241,16 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Interactive Shadowing Practice Room */}
+      <Route
+        path="/shadowing/:id/practice"
+        element={
+          <PrivateRoute>
+            <LearnerShadowingPracticeView />
           </PrivateRoute>
         }
       />

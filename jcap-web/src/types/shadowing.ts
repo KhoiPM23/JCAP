@@ -8,6 +8,20 @@ export interface ShadowingSentenceItem {
   nativeAudioUrl: string;
 }
 
+export interface ShadowingVocabularyItem {
+  id: number;
+  word: string;
+  reading?: string | null;
+  meaning: string;
+}
+
+export interface ShadowingGrammarItem {
+  id: number;
+  pattern: string;
+  meaning: string;
+  exampleSentence?: string | null;
+}
+
 export interface ShadowingDialogueItem {
   id: number;
   scenarioId: number;
@@ -23,13 +37,60 @@ export interface ShadowingDialogueItem {
 }
 
 export interface ShadowingDialogueDetail extends ShadowingDialogueItem {
+  scenarioDescription?: string | null;
+  scenarioLevelDescription?: string | null;
   sentences: ShadowingSentenceItem[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
 export interface ShadowingFilterParams {
   keyword?: string;
   jlptLevel?: string;
   scenarioId?: number;
+}
+
+export interface ShadowingSentencePracticeResult {
+  sentenceId: number;
+  orderIndex: number;
+  targetText: string;
+  recognizedText: string;
+  accuracyScore: number;
+  evaluationTier: 'green' | 'yellow' | 'red';
+  audioBlobUrl?: string;
+}
+
+export interface ShadowingSessionCompletePayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  overallAccuracyScore: number;
+  durationSeconds: number;
+  sentencesPracticed: number;
+  totalGreenSentences: number;
+  totalYellowSentences: number;
+  totalRedSentences: number;
+  sentenceResults: ShadowingSentencePracticeResult[];
+}
+
+export interface ShadowingAiAnalysisPayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  overallAccuracyScore: number;
+  durationSeconds: number;
+  sentenceResults: ShadowingSentencePracticeResult[];
+}
+
+export interface ShadowingAiAnalysisResult {
+  creditsDeducted: number;
+  remainingCreditBalance: number;
+  tokyoIntonationScore: number;
+  vowelClarityScore: number;
+  rhythmTempoScore: number;
+  pitchAccentScore: number;
+  longVowelPrecisionScore: number;
+  overallDiagnosis: string;
+  keyStrengths: string[];
+  improvementActionItems: string[];
 }
 
 export interface CreateShadowingSentencePayload {

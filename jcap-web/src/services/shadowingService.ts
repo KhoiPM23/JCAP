@@ -1,5 +1,12 @@
 import type { ApiResponse } from '../types/auth';
-import type { ShadowingDialogueItem, ShadowingDialogueDetail, ShadowingFilterParams } from '../types/shadowing';
+import type {
+  ShadowingDialogueItem,
+  ShadowingDialogueDetail,
+  ShadowingFilterParams,
+  ShadowingSessionCompletePayload,
+  ShadowingAiAnalysisPayload,
+  ShadowingAiAnalysisResult,
+} from '../types/shadowing';
 
 class ShadowingService {
   private getHeaders(): HeadersInit {
@@ -54,7 +61,7 @@ class ShadowingService {
         const err = await response.json().catch(() => null);
         return {
           success: false,
-          message: err?.message || `Không tìm thấy bài học Shadowing với Id = ${id}.`,
+          message: err?.message || `Không tìm thấy bài học Shadowing với Id = {id}.`,
         };
       }
 
@@ -63,6 +70,56 @@ class ShadowingService {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ backend để tải chi tiết bài học.',
+      };
+    }
+  }
+
+  public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<unknown>> {
+    try {
+      const response = await fetch('/api/shadowing/session/complete', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || 'Không thể lưu tiến trình buổi học Shadowing.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Lỗi mạng khi lưu kết quả Shadowing.',
+      };
+    }
+  }
+
+  public async requestAiAnalysis(payload: ShadowingAiAnalysisPayload): Promise<ApiResponse<ShadowingAiAnalysisResult>> {
+    try {
+      const response = await fetch('/api/shadowing/session/ai-analysis', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || 'Không thể thực hiện phân tích AI chuyên sâu.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Lỗi mạng khi gửi yêu cầu phân tích AI.',
       };
     }
   }

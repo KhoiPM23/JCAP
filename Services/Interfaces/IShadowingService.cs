@@ -9,5 +9,7 @@ namespace JCAP.Services.Interfaces
     {
         Task<ApiResponse<List<ShadowingDialogueListDto>>> GetLearnerCatalogAsync(string? keyword, string? jlptLevel, int? scenarioId);
         Task<ApiResponse<ShadowingDialogueDetailDto>> GetLearnerDetailAsync(int id);
+        Task<ApiResponse<ShadowingSessionCompleteResponseDto>> CompleteSessionAsync(string userId, ShadowingSessionCompleteDto dto);
+        Task<ApiResponse<ShadowingAiAnalysisResponseDto>> RequestAiAnalysisAsync(string userId, ShadowingAiAnalysisRequestDto dto);
     }
 }

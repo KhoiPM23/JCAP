@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Shadowing;
@@ -34,7 +35,7 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// UC-27: Lấy chi tiết bài học Shadowing kèm danh sách câu đối thoại và audio URL để nghe thử / chọn vai.
+        /// UC-27: Lấy chi tiết bài học Shadowing kèm ngữ cảnh kịch bản, từ vựng, ngữ pháp và danh sách câu đối thoại.
         /// </summary>
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResponse<ShadowingDialogueDetailDto>>> GetDetail(int id)
@@ -45,6 +46,53 @@ namespace JCAP.Controllers
                 return NotFound(result);
             }
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Lưu lại tiến trình hoàn thành buổi luyện tập Shadowing (không tính phí).
+        /// </summary>
+        [HttpPost("session/complete")]
+        public async Task<ActionResult<ApiResponse<ShadowingSessionCompleteResponseDto>>> CompleteSession(
+            [FromBody] ShadowingSessionCompleteDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Không xác định được danh tính người dùng."));
+            }
+
+            var result = await _shadowingService.CompleteSessionAsync(userId, request);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Yêu cầu phân tích phát âm AI chuyên sâu (tính phí 15 AI Credits).
+        /// </summary>
+        [HttpPost("session/ai-analysis")]
+        public async Task<ActionResult<ApiResponse<ShadowingAiAnalysisResponseDto>>> RequestAiAnalysis(
+            [FromBody] ShadowingAiAnalysisRequestDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<ShadowingAiAnalysisResponseDto>.Fail("Không xác định được danh tính người dùng."));
+            }
+
+            var result = await _shadowingService.RequestAiAnalysisAsync(userId, request);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }
 }
