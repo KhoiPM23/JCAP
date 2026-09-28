@@ -170,3 +170,52 @@ Example: feature/authentication-login
 ## **8. File Encoding Convention**
 
 > * All files created or modified in this project must be saved as **UTF-8 without signature (without BOM)** to ensure consistent encoding across agents and development environments.
+
+## **9. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
+
+### **FE-03: Scenario-Based AI Conversation Practice**
+1. **Multi-JLPT Level Structure (Approach A - Topic-First Hierarchy):**
+   - In "View Scenario List", scenarios are displayed independently by broad conversation topics (e.g., "At the Izakaya", "Job Interview", "Asking for Directions").
+   - Upon viewing a Scenario, the learner selects their target JLPT level (N5, N4, or N3).
+   - Each JLPT level possesses its own dedicated configuration (`ScenarioLevelDetail`):
+     - **Specific AI Persona & System Prompt** calibrated for that level's speech complexity.
+     - **Distinct Conversation Missions (Objectives/Tasks)** (e.g., N5 asks for simple price, N3 negotiates or asks for dietary recommendations).
+     - **Specific Target Vocabulary & Grammar** bounding linguistic scope.
+2. **Session Progression & Completion Criteria:**
+   - Conversation length is dynamic (not strictly turn-capped). Session completes when:
+     - All assigned conversation missions are completed ("ticked" off by AI).
+     - OR reaching a natural dialogue conclusion (e.g., AI cashier/waiter states: *"The dish has been served, thank you for waiting"*).
+3. **AI Responsibilities during Session:**
+   - Roleplay strictly according to the assigned Persona and difficulty level.
+   - Continuously evaluate learner responses and automatically track/tick off completed missions.
+   - Provide an **On-Demand Next-Turn Hint / Suggestion** (hidden by default; learner clicks a button to reveal when stuck).
+4. **Interaction Modes:**
+   - Dual-input support: Speech (Voice recording/STT) OR direct Text-based input.
+5. **Credit Deduction Strategies (Dual Mechanism Support):**
+   - The system supports both models for testing/evaluation:
+     - **Model 1 (Fixed Session Cost):** Deducts a predetermined credit amount upon initiating a session.
+     - **Model 2 (Turn-Based Cost):** Deducts credits per learner turn, with a low-balance warning notification before starting or when balance is critically low.
+6. **Session Resumption Rule:**
+   - Learners are allowed to resume an interrupted/unfinished conversation session.
+   - **Constraint:** Exactly ONE active unfinished session is preserved per Scenario (unified across JLPT levels of that scenario, not multiple drafts), solely for resumption purposes.
+7. **Post-Conversation Evaluation:**
+   - Content Assessment: Appropriateness of vocabulary and grammar used by the learner.
+   - Acoustic/Speech Quality Assessment: Fluency, clarity, pronunciation (when voice mode is used).
+   - Evaluation metrics serve as direct reference data for the Adaptive Learning Engine (recommending remedial vocabulary, grammar, and shadowing exercises).
+
+### **FE-04: Shadowing Module**
+1. **Content Provenance & Structure:**
+   - Dialogues are strictly fixed content extracted from textbooks (e.g., Minna no Nihongo) or native Japanese speaker videos.
+   - The AI **does NOT generate or hallucinate** shadowing dialogue; its role is strictly assessment.
+   - **Scenario Association:** Every shadowing content/dialogue is thematic and directly references the topic of an existing Scenario (1 Scenario topic $\rightarrow$ multiple Shadowing contents from diverse sources), tagged with a specific JLPT level.
+2. **Detailed Content Preview (UC-26b):**
+   - Dedicated **View Shadowing Content Details (UC-26b)** displaying full transcript, native audio preview, associated target vocabulary, and target grammar.
+3. **Role Selection & Locking Rule:**
+   - For multi-speaker dialogues (e.g., Speaker A & Speaker B), the learner selects their practicing role **prior to starting**.
+   - **Constraint:** Once the shadowing session starts, role switching is locked (to switch roles, the learner must restart/retry the session).
+4. **Session Resumption:**
+   - Similar to Scenarios, unfinished shadowing sessions can be resumed.
+5. **AI Assessment Scope:**
+   - Pronunciation assessment (Azure AI Speech) evaluating acoustic accuracy, fluency, completeness, and prosody/pitch accent against native reference audio.
+6. **Media Storage:**
+   - Native audio files (.mp3/.wav) and user recordings are stored via a cloud storage provider offering a free tier (e.g., Cloudinary / Supabase Storage / Azure Blob Storage).

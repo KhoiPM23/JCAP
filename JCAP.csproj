@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include=".github\upgrades\roleplay-model-contract.md" />
     <None Include=".github\upgrades\scenarios\nuget-package-upgrade\tasks\03-build-and-test\progress-details.md" />
   </ItemGroup>
 
@@ -36,8 +37,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="payOS" Version="2.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="jcap-web\src\mocks\" />
   </ItemGroup>
 
 </Project>

@@ -32,18 +32,34 @@ export const PaymentReturnView: React.FC = () => {
           const res = await creditService.verifyOrder(orderCodeParam);
           if (res.success && res.data) {
             setTransaction(res.data);
-            setIsSuccess(res.data.status === 'Paid' || statusParam === 'PAID');
+            const success = res.data.status === 'Paid' || statusParam === 'PAID';
+            setIsSuccess(success);
+            if (success) {
+              // Đồng bộ số dư mới nhất về Header và LocalStorage ngay lập tức
+              await creditService.getHistory(1, 1);
+            }
           } else {
-            // Trường hợp webhook có độ trễ nhẹ nhưng param trả về PAID
-            setIsSuccess(statusParam === 'PAID');
+            const success = statusParam === 'PAID';
+            setIsSuccess(success);
+            if (success) {
+              await creditService.getHistory(1, 1);
+            }
           }
         } catch {
-          setIsSuccess(statusParam === 'PAID');
+          const success = statusParam === 'PAID';
+          setIsSuccess(success);
+          if (success) {
+            await creditService.getHistory(1, 1);
+          }
         } finally {
           setIsLoading(false);
         }
       } else {
-        setIsSuccess(statusParam === 'PAID');
+        const success = statusParam === 'PAID';
+        setIsSuccess(success);
+        if (success) {
+          await creditService.getHistory(1, 1);
+        }
         setIsLoading(false);
       }
     };

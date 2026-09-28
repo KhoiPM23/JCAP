@@ -11,5 +11,7 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<CreditHistoryResponseDto>> GetHistoryAsync(string userId, int page = 1, int pageSize = 10);
         Task<ApiResponse<bool>> HandlePayOsWebhookAsync(Webhook webhook);
         Task<ApiResponse<CreditTransactionDto>> VerifyOrderAsync(string userId, long orderCode);
+        Task<ApiResponse<PurchaseCreditResponseDto>> ContinuePaymentAsync(string userId, long orderCode);
+        Task<ApiResponse<bool>> CancelOrderAsync(string userId, long orderCode);
     }
 }

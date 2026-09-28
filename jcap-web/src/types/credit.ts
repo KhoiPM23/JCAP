@@ -29,6 +29,7 @@ export interface CreditTransaction {
   payOsOrderCode?: string;
   status: string;
   createdAt: string;
+  currentCreditBalance?: number;
 }
 
 export interface CreditHistoryResponse {

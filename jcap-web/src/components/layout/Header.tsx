@@ -18,15 +18,17 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
       setCurrentUser(propUser);
       return;
     }
-    const saved = localStorage.getItem('jcap_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch {
-        setCurrentUser(authUser);
-      }
-    } else {
+    if (authUser) {
       setCurrentUser(authUser);
+    } else {
+      const saved = localStorage.getItem('jcap_user');
+      if (saved) {
+        try {
+          setCurrentUser(JSON.parse(saved));
+        } catch {
+          setCurrentUser(null);
+        }
+      }
     }
   }, [authUser, propUser]);
 
@@ -39,9 +41,9 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           id: detail.id || prev?.id || '',
           email: detail.email || prev?.email || '',
           role: detail.role || prev?.role || 'Learner',
-          fullName: detail.fullName,
-          level: detail.jlptLevel || detail.level,
-          avatarUrl: detail.profilePictureUrl || detail.avatarUrl,
+          fullName: detail.fullName !== undefined ? detail.fullName : prev?.fullName,
+          level: detail.jlptLevel || detail.level || prev?.level,
+          avatarUrl: detail.profilePictureUrl || detail.avatarUrl || prev?.avatarUrl,
           creditBalance: detail.creditBalance !== undefined ? detail.creditBalance : prev?.creditBalance,
         }));
       }

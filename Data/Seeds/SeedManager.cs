@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace JCAP.Data.Seeds
 {
     public static class SeedManager
@@ -9,11 +11,21 @@ namespace JCAP.Data.Seeds
 
             try
             {
+                // 0. Tự động áp dụng tất cả migrations chưa chạy khi khởi động ứng dụng
+                var context = services.GetRequiredService<AppDbContext>();
+                await context.Database.MigrateAsync();
+
                 // 1. Seed tài khoản và vai trò
                 await UserSeeder.SeedAsync(services);
 
                 // 2. Seed các gói credit mặc định
                 await CreditPackageSeeder.SeedAsync(services);
+
+                // 3. Seed các kịch bản mẫu (Scenarios)
+                await ScenarioSeeder.SeedAsync(services);
+
+                // 4. Seed bài hội thoại Shadowing mẫu (DEV SAMPLE / NON-PRODUCTION)
+                await ShadowingSeeder.SeedAsync(services);
             }
             catch (Exception ex)
             {
@@ -23,4 +35,3 @@ namespace JCAP.Data.Seeds
         }
     }
 }
-

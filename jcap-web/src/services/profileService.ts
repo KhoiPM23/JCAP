@@ -136,8 +136,10 @@ class ProfileService {
           fullName: profile.fullName,
           level: profile.jlptLevel,
           avatarUrl: profile.profilePictureUrl || undefined,
+          creditBalance: profile.creditBalance !== undefined ? profile.creditBalance : u.creditBalance,
         };
         localStorage.setItem('jcap_user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent('jcap_profile_updated', { detail: updatedUser }));
       } catch {
         // ignore
       }

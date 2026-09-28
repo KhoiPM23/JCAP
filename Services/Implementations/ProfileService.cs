@@ -81,6 +81,7 @@ namespace JCAP.Services.Implementations
                 ProfilePictureUrl = user.ProfilePictureUrl,
                 JLPTLevel = string.IsNullOrWhiteSpace(user.JLPTLevel) ? "N5" : user.JLPTLevel,
                 Role = user.Role ?? "Learner",
+                CreditBalance = user.CreditBalance,
                 CreatedAt = user.CreatedAt,
             };
         }
