@@ -77,8 +77,13 @@ builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOs
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
+builder.Services.AddScoped<IRoleplayResultService, RoleplayResultService>();
+builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, RoleplaySessionSnapshotProvider>();
+builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
+builder.Services.AddScoped<IAiRoleplayService, GeminiRoleplayService>();
+builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddControllers();

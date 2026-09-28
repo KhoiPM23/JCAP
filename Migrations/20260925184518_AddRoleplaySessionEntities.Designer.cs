@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260924165506_AddShadowingTables")]
-    partial class AddShadowingTables
+    [Migration("20260925184518_AddRoleplaySessionEntities")]
+    partial class AddRoleplaySessionEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -218,6 +218,183 @@ namespace JCAP.Migrations
                     b.HasIndex("ScenarioLevelConfigurationId");
 
                     b.ToTable("Missions");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplayMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FuriganaHtml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JapaneseText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LinguisticFeedbackJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RoleplaySessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("VietnameseMeaning")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleplaySessionId", "CreatedAt");
+
+                    b.ToTable("RoleplayMessages");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CompletedMissionsSummaryJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneralFeedbackText")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("GrammarScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImpressionScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("JLPTLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("OverallScore")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("PassStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RoleplaySessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScenarioTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("VocabularyScore")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("RoleplaySessionId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("RoleplayResults");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplaySession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreditDeducted")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsNaturallyConcluded")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ScenarioLevelConfigurationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Active");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScenarioLevelConfigurationId");
+
+                    b.HasIndex("UserId", "ScenarioLevelConfigurationId", "Status");
+
+                    b.ToTable("RoleplaySessions");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplaySessionMission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleplaySessionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MissionId");
+
+                    b.HasIndex("RoleplaySessionId", "MissionId")
+                        .IsUnique();
+
+                    b.ToTable("RoleplaySessionMissions");
                 });
 
             modelBuilder.Entity("JCAP.Models.Scenario", b =>
@@ -625,6 +802,66 @@ namespace JCAP.Migrations
                     b.Navigation("ScenarioLevelConfiguration");
                 });
 
+            modelBuilder.Entity("JCAP.Models.RoleplayMessage", b =>
+                {
+                    b.HasOne("JCAP.Models.RoleplaySession", "RoleplaySession")
+                        .WithMany("Messages")
+                        .HasForeignKey("RoleplaySessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RoleplaySession");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplayResult", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplaySession", b =>
+                {
+                    b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
+                        .WithMany("RoleplaySessions")
+                        .HasForeignKey("ScenarioLevelConfigurationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ScenarioLevelConfiguration");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplaySessionMission", b =>
+                {
+                    b.HasOne("JCAP.Models.Mission", "Mission")
+                        .WithMany("SessionMissions")
+                        .HasForeignKey("MissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.RoleplaySession", "RoleplaySession")
+                        .WithMany("SessionMissions")
+                        .HasForeignKey("RoleplaySessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mission");
+
+                    b.Navigation("RoleplaySession");
+                });
+
             modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
                 {
                     b.HasOne("JCAP.Models.Scenario", "Scenario")
@@ -731,6 +968,18 @@ namespace JCAP.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("JCAP.Models.Mission", b =>
+                {
+                    b.Navigation("SessionMissions");
+                });
+
+            modelBuilder.Entity("JCAP.Models.RoleplaySession", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("SessionMissions");
+                });
+
             modelBuilder.Entity("JCAP.Models.Scenario", b =>
                 {
                     b.Navigation("LevelConfigurations");
@@ -741,6 +990,8 @@ namespace JCAP.Migrations
             modelBuilder.Entity("JCAP.Models.ScenarioLevelConfiguration", b =>
                 {
                     b.Navigation("Missions");
+
+                    b.Navigation("RoleplaySessions");
 
                     b.Navigation("TargetGrammars");
 

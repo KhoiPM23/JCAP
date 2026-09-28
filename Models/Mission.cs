@@ -12,5 +12,6 @@ namespace JCAP.Models
 
         // Navigation property
         public ScenarioLevelConfiguration? ScenarioLevelConfiguration { get; set; }
+        public ICollection<RoleplaySessionMission> SessionMissions { get; set; } = new List<RoleplaySessionMission>();
     }
 }

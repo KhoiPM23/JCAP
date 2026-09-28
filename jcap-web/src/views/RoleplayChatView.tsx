@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Scenario } from './ScenarioListView';
+import { roleplayResultService } from '../services/roleplayResultService';
 
 interface Message {
   id: number;
@@ -15,6 +17,7 @@ interface RoleplayChatViewProps {
 }
 
 export const RoleplayChatView: React.FC<RoleplayChatViewProps> = ({ scenario, onBack }) => {
+  const navigate = useNavigate();
   // 1. Danh sách tin nhắn hội thoại ban đầu
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -28,6 +31,8 @@ export const RoleplayChatView: React.FC<RoleplayChatViewProps> = ({ scenario, on
   // 2. Trạng thái thu âm (Đang bật hay tắt mic)
   const [isRecording, setIsRecording] = useState(false);
   const [inputCustomText, setInputCustomText] = useState('');
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
 
   // 3. Hàm mô phỏng bấm Micro ghi âm
   const handleToggleMic = () => {
@@ -73,6 +78,22 @@ export const RoleplayChatView: React.FC<RoleplayChatViewProps> = ({ scenario, on
     setInputCustomText('');
   };
 
+  const handleCompleteSession = async () => {
+    setIsCompleting(true);
+    setCompleteError(null);
+
+    // Phase 1: dùng scenario.id làm mock session id. Khi module của Hoàng merge,
+    // thay giá trị này bằng id của RoleplaySession thật.
+    const response = await roleplayResultService.completeSession(scenario.id);
+    if (response.success && response.data) {
+      navigate(`/roleplay/results/${response.data.resultId}`);
+      return;
+    }
+
+    setCompleteError(response.message || 'Không thể hoàn tất phiên luyện tập.');
+    setIsCompleting(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
       {/* Header phòng luyện nói */}
@@ -98,8 +119,22 @@ export const RoleplayChatView: React.FC<RoleplayChatViewProps> = ({ scenario, on
           <span className="text-[11px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-bold border border-emerald-200">
             ● AI Đang trực tuyến
           </span>
+          <button
+            type="button"
+            onClick={handleCompleteSession}
+            disabled={isCompleting}
+            className="rounded-lg bg-[#0878EE] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCompleting ? 'Đang tổng kết...' : 'Kết thúc phiên'}
+          </button>
         </div>
       </header>
+
+      {completeError ? (
+        <div className="mx-auto mt-3 w-full max-w-2xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700">
+          {completeError}
+        </div>
+      ) : null}
 
       {/* Khung hiển thị các bong bóng chat */}
       <div className="flex-1 max-w-2xl w-full mx-auto p-4 space-y-4 overflow-y-auto">

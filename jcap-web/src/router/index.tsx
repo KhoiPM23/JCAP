@@ -10,7 +10,8 @@ import { LoginView } from '../views/LoginView';
 import { RegisterView } from '../views/RegisterView';
 import { EmailVerificationPendingView } from '../views/EmailVerificationPendingView';
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
-import { RoleplayChatView } from '../views/RoleplayChatView';
+import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
+import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
@@ -24,6 +25,8 @@ import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingLis
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
+import { ConversationHistoryView } from '../views/ConversationHistoryView';
+import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 
 // ============================================================
 // Route Wrappers
@@ -123,7 +126,7 @@ const ScenarioRoute: React.FC = () => {
   const { user, userLevel, logout } = useAuth();
 
   const handleSelectScenario = (scenario: Scenario) => {
-    navigate('/chat', { state: { scenario } });
+    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id } });
   };
 
   const handleLogout = async () => {
@@ -152,23 +155,6 @@ const ScenarioRoute: React.FC = () => {
         onLogout={handleLogout}
       />
     </div>
-  );
-};
-
-const ChatRoute: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const scenario = (location.state as { scenario?: Scenario } | null)?.scenario;
-
-  if (!scenario) {
-    return <Navigate to="/scenarios" replace />;
-  }
-
-  return (
-    <RoleplayChatView
-      scenario={scenario}
-      onBack={() => navigate('/scenarios')}
-    />
   );
 };
 
@@ -257,6 +243,16 @@ export const AppRouter: React.FC = () => {
         }
       />
 
+      {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}
+      <Route
+        path="/scenarios/practice/:sessionId"
+        element={
+          <PrivateRoute>
+            <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+
       {/* Protected routes wrapped in MainLayout */}
       <Route
         element={
@@ -266,9 +262,12 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
+        <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         <Route path="/shadowing" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
-        <Route path="/chat" element={<ChatRoute />} />
+        {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
+        <Route path="/roleplay/results" element={<ConversationHistoryView />} />
+        <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />
