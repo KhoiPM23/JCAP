@@ -38,3 +38,4 @@ namespace JCAP.DTOs.Shadowing
         public string? ExampleSentence { get; set; }
     }
 }
+

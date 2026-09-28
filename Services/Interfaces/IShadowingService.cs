@@ -13,3 +13,4 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<ShadowingAiAnalysisResponseDto>> RequestAiAnalysisAsync(string userId, ShadowingAiAnalysisRequestDto dto);
     }
 }
+

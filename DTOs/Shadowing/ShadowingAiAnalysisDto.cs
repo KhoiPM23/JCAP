@@ -30,3 +30,4 @@ namespace JCAP.DTOs.Shadowing
         public List<string> ImprovementActionItems { get; set; } = new List<string>();
     }
 }
+

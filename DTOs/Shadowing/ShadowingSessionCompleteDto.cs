@@ -35,3 +35,4 @@ namespace JCAP.DTOs.Shadowing
         public string SummaryFeedback { get; set; } = string.Empty;
     }
 }
+
