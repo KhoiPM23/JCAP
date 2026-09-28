@@ -8,10 +8,10 @@ export interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const handleLogout = onLogout || logout;
 
-  // Learner navigation items in exact order as specified
+  // Learner navigation items
   const navItems = [
     { name: 'Trang chủ', path: '/', icon: HomeIcon },
     { name: 'Học tập', path: '/scenarios', icon: BookIcon },
@@ -26,9 +26,67 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Trợ giúp', path: '/help', icon: HelpIcon },
   ];
 
+  // If user is Admin, render the Admin Sidebar matching mockup image media_1790526792509.png
+  if (user?.role === 'Admin') {
+    return (
+      <aside className="w-[210px] bg-white border-r border-[#E6EDF5] flex flex-col h-[calc(100vh-64px)] sticky top-[64px] z-30 font-sans">
+        <nav className="flex-1 py-5 px-3 flex flex-col gap-4 overflow-y-auto">
+          {/* 1. TỔNG QUAN */}
+          <div>
+            <div className="text-[10px] font-bold uppercase text-slate-400 px-3 tracking-wider mb-1.5">
+              TỔNG QUAN
+            </div>
+            <div className="flex flex-col gap-1">
+              <NavItem name="Dashboard Tổng quan" path="/admin/credits/packages" icon={GridIcon} forceActive={activePath === '/admin/credits/packages'} />
+            </div>
+          </div>
+
+          {/* 2. QUẢN TRỊ NỘI DUNG */}
+          <div>
+            <div className="text-[10px] font-bold uppercase text-slate-400 px-3 tracking-wider mb-1.5">
+              QUẢN TRỊ NỘI DUNG
+            </div>
+            <div className="flex flex-col gap-1">
+              <NavItem name="Kịch bản Hội thoại" path="/admin/scenarios" icon={ChatBubbleIcon} forceActive={activePath === '/admin/scenarios'} />
+              <NavItem name="Quản lý Shadowing" path="/admin/shadowing" icon={UsersTalkIcon} forceActive={activePath === '/admin/shadowing'} />
+              <NavItem name="Ngân hàng Câu thoại" path="/admin/scenarios" icon={ListLinesIcon} />
+              <NavItem name="Kho Âm thanh Bản xứ" path="/admin/shadowing" icon={AudioWavesIcon} />
+            </div>
+          </div>
+
+          {/* 3. HỆ THỐNG & NGƯỜI DÙNG */}
+          <div>
+            <div className="text-[10px] font-bold uppercase text-slate-400 px-3 tracking-wider mb-1.5">
+              HỆ THỐNG & NGƯỜI DÙNG
+            </div>
+            <div className="flex flex-col gap-1">
+              <NavItem name="Quản lý Học viên" path="/admin/users" icon={UsersGroupIcon} />
+              <NavItem name="Hồ sơ cá nhân" path="/profile" icon={UserIcon} forceActive={activePath === '/profile' || activePath === '/profile/edit'} />
+              <NavItem name="Cấu hình AI & Prompt" path="/admin/ai-config" icon={BrainGearIcon} />
+              <NavItem name="Cài đặt hệ thống" path="/admin/settings" icon={SettingsIcon} />
+            </div>
+          </div>
+        </nav>
+
+        {/* Bottom Logout Button */}
+        <div className="p-3 border-t border-[#E6EDF5]">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 rounded-xl h-[42px] transition-colors w-full text-left text-red-600 hover:bg-red-50 font-medium text-xs cursor-pointer"
+          >
+            <LogoutIcon className="w-5 h-5 text-red-600" />
+            <span className="font-bold text-sm">Đăng xuất</span>
+          </button>
+        </div>
+      </aside>
+    );
+  }
+
+  // Learner Sidebar
   return (
     <aside className="w-[174px] bg-white border-r border-[#E6EDF5] flex flex-col h-[calc(100vh-64px)] sticky top-[64px] z-30">
-      <nav className="flex-1 py-6 px-3 flex flex-col gap-2">
+      <nav className="flex-1 py-6 px-3 flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
           <NavItem key={item.path} {...item} forceActive={activePath === item.path} />
         ))}
@@ -163,6 +221,62 @@ function MicIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+    </svg>
+  );
+}
+
+function GridIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+}
+
+function ChatBubbleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+  );
+}
+
+function UsersTalkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
+}
+
+function ListLinesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
+    </svg>
+  );
+}
+
+function AudioWavesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.536a5 5 0 010-7.072m-2.828 9.9a9 9 0 010-12.728M12 3v18" />
+    </svg>
+  );
+}
+
+function UsersGroupIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  );
+}
+
+function BrainGearIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
     </svg>
   );
 }

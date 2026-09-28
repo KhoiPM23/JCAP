@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { creditService } from '../services/creditService';
+import { formatDateTime } from '../utils/dateUtils';
 import type { CreditTransaction } from '../types/credit';
 
 export const PaymentReturnView: React.FC = () => {
@@ -116,7 +117,7 @@ export const PaymentReturnView: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-[#71809A]">Thời gian giao dịch:</span>
                   <span className="text-[#071A44]">
-                    {new Date(transaction.createdAt).toLocaleString('vi-VN')}
+                    {formatDateTime(transaction.createdAt)}
                   </span>
                 </div>
               </>

@@ -89,6 +89,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  // Sync profile & credit updates from across the app into AuthContext user state
+  useEffect(() => {
+    const handleProfileUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<any>;
+      const detail = customEvent.detail;
+      if (detail) {
+        setUser((prev) => {
+          if (!prev) return null;
+          const updated: User = {
+            ...prev,
+            fullName: detail.fullName !== undefined ? detail.fullName : prev.fullName,
+            level: detail.jlptLevel || detail.level || prev.level,
+            avatarUrl: detail.profilePictureUrl || detail.avatarUrl || prev.avatarUrl,
+            creditBalance: detail.creditBalance !== undefined ? detail.creditBalance : prev.creditBalance,
+          };
+          localStorage.setItem('jcap_user', JSON.stringify(updated));
+          return updated;
+        });
+      }
+    };
+
+    window.addEventListener('jcap_profile_updated', handleProfileUpdated);
+    return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
+  }, []);
+
   // 2. Tự động khôi phục phiên đăng nhập hoặc xử lý callback từ Google OAuth
   useEffect(() => {
     const initAuth = async () => {

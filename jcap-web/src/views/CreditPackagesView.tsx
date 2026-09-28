@@ -72,6 +72,21 @@ export const CreditPackagesView: React.FC = () => {
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, [cancelParam, statusParam]);
 
+  // Find package with lowest cost per credit for "Tiết Kiệm Nhất" badge
+  const bestValuePkgId = React.useMemo(() => {
+    if (packages.length <= 1) return null;
+    let bestId = packages[0].id;
+    let minCost = packages[0].price / (packages[0].credits || 1);
+    packages.forEach((p) => {
+      const cost = p.price / (p.credits || 1);
+      if (cost < minCost) {
+        minCost = cost;
+        bestId = p.id;
+      }
+    });
+    return bestId;
+  }, [packages]);
+
   const handlePurchase = async (pkg: CreditPackage) => {
     setPurchasingId(pkg.id);
     setError(null);
@@ -192,10 +207,11 @@ export const CreditPackagesView: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {packages.map((pkg, index) => {
-            const isPopular = pkg.name.toLowerCase().includes('tiêu chuẩn') || index === 1;
-            const isBestValue = pkg.name.toLowerCase().includes('chuyên sâu') || index === 3;
+          {packages.map((pkg) => {
+            const nameLower = pkg.name.toLowerCase();
             const unitPrice = Math.round(pkg.price / (pkg.credits || 1));
+            const isPopular = nameLower.includes('tiêu chuẩn') || nameLower.includes('phổ biến');
+            const isBestValue = !isPopular && (pkg.id === bestValuePkgId || nameLower.includes('chuyên sâu') || nameLower.includes('tiết kiệm'));
 
             return (
               <div
