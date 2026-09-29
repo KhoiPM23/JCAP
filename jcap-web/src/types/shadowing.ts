@@ -26,10 +26,36 @@ export interface ShadowingGrammarItem {
   jlptLevel?: string;
 }
 
+export interface ShadowingTextbookItem {
+  id: string;
+  title: string;
+  japaneseTitle?: string;
+  level: 'N5' | 'N4' | 'N3';
+  coverImage?: string;
+  description: string;
+  publisher?: string;
+  totalChapters: number;
+  totalDialogues: number;
+}
+
+export interface ShadowingChapterItem {
+  id: string;
+  textbookId: string;
+  chapterNumber: number;
+  title: string;
+  japaneseTitle?: string;
+  description: string;
+  dialoguesCount: number;
+}
+
 export interface ShadowingDialogueItem {
   id: number;
   scenarioId: number;
   scenarioTitle: string;
+  textbookId?: string;
+  textbookTitle?: string;
+  chapterId?: string;
+  chapterTitle?: string;
   title: string;
   jlptLevel: 'N5' | 'N4' | 'N3';
   sourceDescription?: string | null;
