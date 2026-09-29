@@ -74,7 +74,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     {
         var levelConfig = await _dbContext.ScenarioLevelConfigurations
             .Include(c => c.Scenario)
-            .Include(c => c.Missions)
+            .Include(c => c.Missions.Where(m => m.IsActive))
             .FirstOrDefaultAsync(c => c.ScenarioId == scenarioId && c.JLPTLevel == jlptLevel, cancellationToken);
 
         if (levelConfig == null || levelConfig.Scenario == null)
@@ -103,32 +103,54 @@ public class RoleplaySessionService : IRoleplaySessionService
             _logger.LogInformation("Người dùng {UserId} hủy phiên dở dang {SessionId} để tạo phiên mới.", userId, existingActiveSession.Id);
         }
 
-        // Kiểm tra số dư Credit
+        // Kiểm tra số dư Credit (Miễn phí cho Admin khi trải nghiệm / kiểm thử hệ thống)
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
             return ApiResponse<RoleplaySessionDetailsDto>.Fail("Không tìm thấy thông tin tài khoản người dùng.");
         }
 
-        if (user.CreditBalance < levelConfig.CreditCost)
+        var isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+        if (!isAdmin)
+        {
+            try
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles != null && roles.Any(r => string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    isAdmin = true;
+                }
+            }
+            catch
+            {
+                // In case userManager mock does not have GetRolesAsync configured in tests
+            }
+        }
+
+        int creditDeducted = isAdmin ? 0 : levelConfig.CreditCost;
+
+        if (!isAdmin && user.CreditBalance < levelConfig.CreditCost)
         {
             return ApiResponse<RoleplaySessionDetailsDto>.Fail(
                 $"Số dư credit của bạn không đủ ({user.CreditBalance}/{levelConfig.CreditCost} credits). Vui lòng nạp thêm credit để bắt đầu luyện tập.");
         }
 
-        // Khấu trừ Credit theo Model A (Cố định theo phiên)
-        user.CreditBalance -= levelConfig.CreditCost;
-
-        var transaction = new CreditTransaction
+        // Khấu trừ Credit theo Model A (Cố định theo phiên) nếu không phải Admin
+        if (creditDeducted > 0)
         {
-            UserId = userId,
-            Amount = -levelConfig.CreditCost,
-            Type = "Deduct",
-            Status = "Paid",
-            Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
-            CreatedAt = DateTime.UtcNow
-        };
-        _dbContext.CreditTransactions.Add(transaction);
+            user.CreditBalance -= creditDeducted;
+
+            var transaction = new CreditTransaction
+            {
+                UserId = userId,
+                Amount = -creditDeducted,
+                Type = "Deduct",
+                Status = "Paid",
+                Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.CreditTransactions.Add(transaction);
+        }
 
         // Tạo RoleplaySession mới
         var newSession = new RoleplaySession
@@ -136,7 +158,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             UserId = userId,
             ScenarioLevelConfigurationId = levelConfig.Id,
             Status = "Active",
-            CreditDeducted = levelConfig.CreditCost,
+            CreditDeducted = creditDeducted,
             IsNaturallyConcluded = false,
             CreatedAt = DateTime.UtcNow
         };
@@ -144,7 +166,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         // Khởi tạo các Mission cho phiên
-        foreach (var mission in levelConfig.Missions.OrderBy(m => m.Order))
+        foreach (var mission in levelConfig.Missions.Where(m => m.IsActive).OrderBy(m => m.Order))
         {
             _dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
             {

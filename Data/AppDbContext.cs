@@ -153,6 +153,9 @@ namespace JCAP.Data
 
                 entity.Property(e => e.CompletionCriteriaJson)
                     .IsRequired();
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true);
             });
 
             // TargetVocabulary configuration
