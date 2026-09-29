@@ -254,6 +254,14 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
+        
+        {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
+        <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        
+        {/* Catch-all cho các route admin không tồn tại */}
+        <Route path="/admin/*" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">404 - Không tìm thấy trang</h2><p className="text-slate-500 mt-2">Trang quản trị này không tồn tại hoặc đã bị di dời.</p></div>} />
       </Route>
 
       {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}
