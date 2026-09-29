@@ -23,6 +23,10 @@ import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
+import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
+import { LearnerShadowingTextbookListView } from '../views/shadowing/LearnerShadowingTextbookListView';
+import { LearnerShadowingChapterListView } from '../views/shadowing/LearnerShadowingChapterListView';
+import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShadowingDialogueListView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
@@ -244,6 +248,24 @@ export const AppRouter: React.FC = () => {
         }
       />
 
+      {/* Interactive Shadowing Practice Room (FE Fullscreen matching Reference Image 2) */}
+      <Route
+        path="/shadowing/practice/:id"
+        element={
+          <PrivateRoute>
+            <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/shadowing/:id/practice"
+        element={
+          <PrivateRoute>
+            <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+
       {/* Protected routes wrapped in MainLayout */}
       <Route
         element={
@@ -254,8 +276,14 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
-        <Route path="/shadowing" element={<LearnerShadowingListView />} />
-        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
+        
+        {/* Shadowing Multi-step Flow: Level -> Textbook -> Chapter -> Dialogue */}
+        <Route path="/shadowing" element={<LearnerShadowingTextbookListView />} />
+        <Route path="/shadowing/textbooks/:textbookId" element={<LearnerShadowingChapterListView />} />
+        <Route path="/shadowing/textbooks/:textbookId/chapters/:chapterId" element={<LearnerShadowingDialogueListView />} />
+        <Route path="/shadowing/catalog" element={<LearnerShadowingListView />} />
+        <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
+        <Route path="/shadowing/:id" element={<Navigate to="/shadowing" replace />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
