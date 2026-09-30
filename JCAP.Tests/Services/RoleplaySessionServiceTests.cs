@@ -142,6 +142,38 @@ public class RoleplaySessionServiceTests
     }
 
     [Fact]
+    public async Task StartSessionAsync_FreeCredit_WhenUserIsAdmin()
+    {
+        // Arrange: Admin user with 0 credits should still be allowed to test scenarios without deduction
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, _) = SeedBasicScenario(dbContext);
+
+        var adminUser = new ApplicationUser { Id = "admin-tester", Role = "Admin", CreditBalance = 0 };
+        var userManagerMock = CreateUserManagerMock(adminUser);
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult
+            {
+                JapaneseText = "いらっしゃいませ！",
+                VietnameseMeaning = "Kính chào quý khách!"
+            });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Act
+        var result = await service.StartSessionAsync(adminUser.Id, 1, "N5", new StartRoleplaySessionRequestDto());
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(0, adminUser.CreditBalance); // Không bị trừ và không bị chặn
+        Assert.Empty(dbContext.CreditTransactions); // Không sinh transaction trừ tiền
+        Assert.Equal(0, result.Data.CreditBalance);
+        Assert.Equal("Active", result.Data.Status);
+    }
+
+    [Fact]
     public async Task StartSessionAsync_ResumesExistingActiveSession_WithoutDeductingCredit()
     {
         // Arrange

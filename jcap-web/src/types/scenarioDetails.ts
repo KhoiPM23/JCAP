@@ -56,3 +56,27 @@ export interface ScenarioDetails {
   scenarioCode?: string;
   levelConfigurations: ScenarioLevelConfiguration[];
 }
+
+export interface GeneratedLevelContent {
+  jlptLevel: string;
+  title: string;
+  description: string;
+  aiPersona: string;
+  missions: {
+    content: string;
+    order: number;
+    intent?: string;
+    target?: string;
+    conditions?: string[];
+  }[];
+  targetVocabularies: {
+    word: string;
+    reading?: string;
+    meaning: string;
+  }[];
+  targetGrammars: {
+    pattern: string;
+    meaning: string;
+    exampleSentence?: string;
+  }[];
+}

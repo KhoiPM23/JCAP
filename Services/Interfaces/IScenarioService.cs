@@ -12,7 +12,9 @@ public interface IScenarioService
 
     // Admin CRUD Operations (UC-22, UC-23, UC-24)
     Task<ApiResponse<List<ScenarioListDto>>> GetAllScenariosForAdminAsync(CancellationToken cancellationToken = default);
+    Task<ApiResponse<ScenarioDetailsDto>> GetAdminScenarioDetailsAsync(int scenarioId, CancellationToken cancellationToken = default);
     Task<ApiResponse<ScenarioDetailsDto>> CreateScenarioAsync(CreateScenarioDto dto, CancellationToken cancellationToken = default);
     Task<ApiResponse<ScenarioDetailsDto>> UpdateScenarioAsync(int id, UpdateScenarioDto dto, CancellationToken cancellationToken = default);
     Task<ApiResponse<bool>> DeleteScenarioAsync(int id, CancellationToken cancellationToken = default);
+    Task<ApiResponse<GeneratedLevelContentDto>> GenerateLevelContentAsync(GenerateScenarioLevelContentRequest request, CancellationToken cancellationToken = default);
 }

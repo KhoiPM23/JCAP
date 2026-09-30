@@ -11,11 +11,14 @@ import type {
   ShadowingGrammarItem,
 } from '../../types/shadowing';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const LearnerShadowingPracticeView: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   // Active JLPT level selector (N5, N4, N3 - default N4 as per prototype)
   const initialLevel = (searchParams.get('level')?.toUpperCase() as 'N5' | 'N4' | 'N3') || 'N4';
@@ -1377,7 +1380,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     </div>
                   </div>
                   <span className="text-[11px] font-bold text-[#B54708] bg-[#FFF9EB] border border-[#FEEFC6] px-2.5 py-1 rounded-full whitespace-nowrap flex-shrink-0">
-                    15 Credits
+                    {isAdmin ? '🛡️ Miễn phí (Admin)' : '15 Credits'}
                   </span>
                 </div>
 
@@ -1393,7 +1396,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   {isRequestingAi ? (
                     <span>⏳ Đang phân tích sóng âm & ngữ điệu...</span>
                   ) : (
-                    <span>Mở khóa báo cáo phân tích AI chuyên sâu (15 Credits)</span>
+                    <span>
+                      {isAdmin
+                        ? 'Mở khóa báo cáo phân tích AI chuyên sâu (Miễn phí Admin)'
+                        : 'Mở khóa báo cáo phân tích AI chuyên sâu (15 Credits)'}
+                    </span>
                   )}
                 </button>
               </div>
@@ -1405,7 +1412,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <h4 className="font-extrabold text-emerald-900 text-sm">Báo cáo phân tích AI Chuyên Sâu</h4>
                   </div>
                   <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-300">
-                    -15 Credits (Còn {aiAnalysisResult.remainingCreditBalance})
+                    {isAdmin
+                      ? '🛡️ Miễn phí (Admin)'
+                      : `-15 Credits (Còn ${aiAnalysisResult.remainingCreditBalance})`}
                   </span>
                 </div>
 

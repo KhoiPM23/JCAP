@@ -15,6 +15,7 @@ export interface AuthContextType {
   clearRegisterError: () => void;
   clearGoogleError: () => void;
   setUserLevel: (level: string) => void;
+  refreshUser: () => Promise<void>;
   login: (email: string, password: string, level?: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<RegisterResponseDto>;
   logout: () => Promise<void>;
@@ -89,6 +90,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  // Hàm làm mới thông tin người dùng và số dư credit từ máy chủ
+  const refreshUser = useCallback(async () => {
+    const activeToken = token || localStorage.getItem('jcap_token');
+    if (!activeToken) return;
+    try {
+      const res = await authService.getCurrentUser(activeToken);
+      if (res.success && res.data) {
+        const savedLevel = localStorage.getItem('jcap_level') || 'N5';
+        setUser((prev) => {
+          const refreshed: User = {
+            id: res.data.userId,
+            email: res.data.email,
+            fullName: res.data.fullName,
+            role: res.data.role,
+            level: savedLevel,
+            avatarUrl: prev?.avatarUrl,
+            creditBalance: res.data.creditBalance,
+          };
+          localStorage.setItem('jcap_user', JSON.stringify(refreshed));
+          return refreshed;
+        });
+      }
+    } catch (err) {
+      console.error('Lỗi làm mới thông tin phiên đăng nhập:', err);
+    }
+  }, [token]);
+
   // Sync profile & credit updates from across the app into AuthContext user state
   useEffect(() => {
     const handleProfileUpdated = (e: Event) => {
@@ -126,6 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const googleEmail = urlParams.get('email');
         const googleFullName = urlParams.get('fullName');
         const googleRole = urlParams.get('role');
+        const googleCreditBalance = urlParams.get('creditBalance');
 
         let activeToken = token;
 
@@ -142,19 +171,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           if (googleUserId && googleEmail) {
             const savedLevel = localStorage.getItem('jcap_level') || 'N5';
+            const parsedCredit = googleCreditBalance ? parseInt(googleCreditBalance, 10) : undefined;
             const googleUser: User = {
               id: decodeURIComponent(googleUserId),
               email: decodeURIComponent(googleEmail),
               fullName: decodeURIComponent(googleFullName || ''),
               role: decodeURIComponent(googleRole || 'Learner'),
               level: savedLevel,
+              creditBalance: parsedCredit !== undefined && !isNaN(parsedCredit) ? parsedCredit : undefined,
             };
             saveSession(googleUser, googleToken, savedLevel);
           }
 
           window.history.replaceState({}, document.title, window.location.pathname);
-          setIsLoading(false);
-          return;
         }
 
         // Xác thực ngầm (Silent Revalidation) với server
@@ -269,6 +298,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearRegisterError,
         clearGoogleError,
         setUserLevel,
+        refreshUser,
         login,
         register,
         logout,

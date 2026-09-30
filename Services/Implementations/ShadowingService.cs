@@ -178,15 +178,20 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<ShadowingAiAnalysisResponseDto>.Fail("Không tìm thấy thông tin tài khoản người dùng.");
             }
 
-            if (user.CreditBalance < AI_COST)
+            var isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+            if (!isAdmin && user.CreditBalance < AI_COST)
             {
                 return ApiResponse<ShadowingAiAnalysisResponseDto>.Fail(
                     $"Số dư credit của bạn không đủ ({user.CreditBalance}/{AI_COST} credits). Vui lòng nạp thêm credit để sử dụng tính năng phân tích phát âm AI chuyên sâu.");
             }
 
-            // Trừ credit
-            user.CreditBalance -= AI_COST;
-            await _context.SaveChangesAsync();
+            // Trừ credit (Miễn phí nếu là Admin)
+            if (!isAdmin)
+            {
+                user.CreditBalance -= AI_COST;
+                await _context.SaveChangesAsync();
+            }
 
             // Tính toán điểm chi tiết dựa trên kết quả phát âm thực tế
             int baseScore = Math.Clamp(dto.OverallAccuracyScore, 40, 100);

@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
               TỔNG QUAN
             </div>
             <div className="flex flex-col gap-1">
-              <NavItem name="Dashboard Tổng quan" path="/admin/credits/packages" icon={GridIcon} forceActive={activePath === '/admin/credits/packages'} />
+              <NavItem name="Dashboard Tổng quan" path="/admin/dashboard" icon={GridIcon} forceActive={activePath === '/admin' || activePath === '/admin/dashboard'} />
             </div>
           </div>
 
@@ -49,7 +49,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
             <div className="flex flex-col gap-1">
               <NavItem name="Kịch bản Hội thoại" path="/admin/scenarios" icon={ChatBubbleIcon} forceActive={activePath === '/admin/scenarios'} />
               <NavItem name="Quản lý Shadowing" path="/admin/shadowing" icon={UsersTalkIcon} forceActive={activePath === '/admin/shadowing'} />
-              <NavItem name="Ngân hàng Câu thoại" path="/admin/scenarios" icon={ListLinesIcon} />
               <NavItem name="Kho Âm thanh Bản xứ" path="/admin/shadowing" icon={AudioWavesIcon} />
             </div>
           </div>
@@ -61,6 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
             </div>
             <div className="flex flex-col gap-1">
               <NavItem name="Quản lý Học viên" path="/admin/users" icon={UsersGroupIcon} />
+              <NavItem name="Quản lý Gói Credit" path="/admin/credits/packages" icon={CoinCardIcon} forceActive={activePath === '/admin/credits/packages'} />
               <NavItem name="Hồ sơ cá nhân" path="/profile" icon={UserIcon} forceActive={activePath === '/profile' || activePath === '/profile/edit'} />
               <NavItem name="Cấu hình AI & Prompt" path="/admin/ai-config" icon={BrainGearIcon} />
               <NavItem name="Cài đặt hệ thống" path="/admin/settings" icon={SettingsIcon} />
@@ -277,6 +277,14 @@ function BrainGearIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  );
+}
+
+function CoinCardIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 }

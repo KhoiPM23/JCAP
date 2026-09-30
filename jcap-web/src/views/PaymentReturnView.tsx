@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
 import { formatDateTime } from '../utils/dateUtils';
 import type { CreditTransaction } from '../types/credit';
 
 export const PaymentReturnView: React.FC = () => {
+  const { user, refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -36,21 +38,30 @@ export const PaymentReturnView: React.FC = () => {
             const success = res.data.status === 'Paid' || statusParam === 'PAID';
             setIsSuccess(success);
             if (success) {
-              // Đồng bộ số dư mới nhất về Header và LocalStorage ngay lập tức
-              await creditService.getHistory(1, 1);
+              // Đồng bộ số dư mới nhất về Header và AuthContext ngay lập tức
+              await Promise.all([
+                creditService.getHistory(1, 1),
+                refreshUser(),
+              ]);
             }
           } else {
             const success = statusParam === 'PAID';
             setIsSuccess(success);
             if (success) {
-              await creditService.getHistory(1, 1);
+              await Promise.all([
+                creditService.getHistory(1, 1),
+                refreshUser(),
+              ]);
             }
           }
         } catch {
           const success = statusParam === 'PAID';
           setIsSuccess(success);
           if (success) {
-            await creditService.getHistory(1, 1);
+            await Promise.all([
+              creditService.getHistory(1, 1),
+              refreshUser(),
+            ]);
           }
         } finally {
           setIsLoading(false);
@@ -59,14 +70,17 @@ export const PaymentReturnView: React.FC = () => {
         const success = statusParam === 'PAID';
         setIsSuccess(success);
         if (success) {
-          await creditService.getHistory(1, 1);
+          await Promise.all([
+            creditService.getHistory(1, 1),
+            refreshUser(),
+          ]);
         }
         setIsLoading(false);
       }
     };
 
     verify();
-  }, [orderCodeParam, statusParam, cancelParam]);
+  }, [orderCodeParam, statusParam, cancelParam, refreshUser]);
 
   if (isLoading) {
     return (
@@ -102,6 +116,12 @@ export const PaymentReturnView: React.FC = () => {
 
           {/* Details Box */}
           <div className="bg-slate-50 border border-[#E6EDF5] rounded-xl p-4 mb-8 text-xs text-left space-y-2.5">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+              <span className="text-[#71809A]">Tài khoản thụ hưởng:</span>
+              <span className="font-semibold text-[#071A44] truncate max-w-[200px]" title={user?.fullName || user?.email}>
+                {user?.fullName || user?.email || 'Tài khoản JCAP'}
+              </span>
+            </div>
             {orderCodeParam && (
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                 <span className="text-[#71809A]">Mã đơn hàng PayOS:</span>
@@ -109,18 +129,26 @@ export const PaymentReturnView: React.FC = () => {
               </div>
             )}
             {transaction && (
-              <>
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-[#71809A]">Số credit được cộng:</span>
-                  <span className="font-bold text-emerald-600">+{transaction.amount} Credits</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#71809A]">Thời gian giao dịch:</span>
-                  <span className="text-[#071A44]">
-                    {formatDateTime(transaction.createdAt)}
-                  </span>
-                </div>
-              </>
+              <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                <span className="text-[#71809A]">Số credit được cộng:</span>
+                <span className="font-bold text-emerald-600">+{transaction.amount} Credits</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+              <span className="text-[#71809A]">Số dư ví tài khoản:</span>
+              <span className="font-extrabold text-[#0878EE] flex items-center gap-1">
+                <span>🪙</span>
+                <span>{user?.creditBalance ?? (transaction?.currentCreditBalance ?? '...')}</span>
+                <span>Credits</span>
+              </span>
+            </div>
+            {transaction && (
+              <div className="flex justify-between items-center">
+                <span className="text-[#71809A]">Thời gian giao dịch:</span>
+                <span className="text-[#071A44]">
+                  {formatDateTime(transaction.createdAt)}
+                </span>
+              </div>
             )}
           </div>
 

@@ -30,6 +30,46 @@ public class AdminScenarioController : ControllerBase
     }
 
     /// <summary>
+    /// GET /api/admin/scenarios/{id} - Lấy chi tiết kịch bản bao gồm cấu hình các level, mission, từ vựng, ngữ pháp.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+    {
+        if (id <= 0)
+        {
+            return BadRequest(ApiResponse<ScenarioDetailsDto>.Fail("Scenario ID không hợp lệ."));
+        }
+
+        var result = await _scenarioService.GetAdminScenarioDetailsAsync(id, cancellationToken);
+        if (!result.Success)
+        {
+            return NotFound(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// POST /api/admin/scenarios/generate-level-content - AI gợi ý nội dung (Vai AI, Nhiệm vụ, Từ vựng, Ngữ pháp) theo level.
+    /// </summary>
+    [HttpPost("generate-level-content")]
+    public async Task<IActionResult> GenerateLevelContent([FromBody] GenerateScenarioLevelContentRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ApiResponse<GeneratedLevelContentDto>.Fail("Dữ liệu yêu cầu không hợp lệ."));
+        }
+
+        var result = await _scenarioService.GenerateLevelContentAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// POST /api/admin/scenarios - UC-22: Tạo mới một kịch bản đàm thoại (Admin).
     /// </summary>
     [HttpPost]
