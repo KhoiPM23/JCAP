@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { scenarioService } from '../services/scenarioService';
 import type { ScenarioListItem } from '../types/scenarioDetails';
 
@@ -27,6 +28,8 @@ interface ScenarioListViewProps {
 export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
   onSelectScenario,
 }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
 
@@ -73,6 +76,23 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
 
   return (
     <div className="w-full">
+      {/* Banner thông báo chế độ xem trước dành riêng cho Admin */}
+      {user?.role === 'Admin' && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-900 px-4 py-2.5 rounded-xl text-xs font-medium mb-6">
+          <div className="flex items-center gap-2">
+            <span className="bg-[#0878EE] text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">Chế độ xem trước</span>
+            <span>Bạn đang xem thư viện kịch bản với giao diện của Học viên.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/scenarios')}
+            className="text-[#0878EE] hover:text-blue-900 font-bold underline transition cursor-pointer"
+          >
+            &larr; Quay lại Quản lý Kịch bản
+          </button>
+        </div>
+      )}
+
       {/* Tiêu đề trang & Bộ lọc theo Level */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>

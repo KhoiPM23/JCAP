@@ -10,6 +10,8 @@ namespace JCAP.Models
         // JSON column storing structured MissionCompletionCriteria (Intent, Target, Conditions)
         public string CompletionCriteriaJson { get; set; } = "{}";
 
+        public bool IsActive { get; set; } = true;
+
         // Navigation property
         public ScenarioLevelConfiguration? ScenarioLevelConfiguration { get; set; }
         public ICollection<RoleplaySessionMission> SessionMissions { get; set; } = new List<RoleplaySessionMission>();

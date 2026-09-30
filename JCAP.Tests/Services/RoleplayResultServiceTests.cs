@@ -143,6 +143,47 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task GetHistoryAsync_MarksPersistedTimestampAsUtc()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var persistedUtcValue = DateTime.SpecifyKind(
+                new DateTime(2026, 9, 28, 2, 30, 0),
+                DateTimeKind.Unspecified);
+            dbContext.RoleplayResults.Add(
+                CreateResult(10, "learner-1", true, persistedUtcValue));
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, Mock.Of<IRoleplaySessionSnapshotProvider>());
+            var response = await service.GetHistoryAsync("learner-1");
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            var item = Assert.Single(response.Data.Items);
+            Assert.Equal(DateTimeKind.Utc, item.CompletedAt.Kind);
+            Assert.Equal(persistedUtcValue, item.CompletedAt);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_MarksPersistedTimestampAsUtc()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var persistedUtcValue = DateTime.SpecifyKind(
+                new DateTime(2026, 9, 28, 2, 30, 0),
+                DateTimeKind.Unspecified);
+            var result = CreateResult(20, "learner-1", true, persistedUtcValue);
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, Mock.Of<IRoleplaySessionSnapshotProvider>());
+            var response = await service.GetDetailAsync("learner-1", result.Id);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            Assert.Equal(DateTimeKind.Utc, response.Data.CompletedAt.Kind);
+            Assert.Equal(persistedUtcValue, response.Data.CompletedAt);
+        }
+
+        [Fact]
         public async Task GetDetailAsync_DoesNotExposeAnotherLearnersResult()
         {
             using var dbContext = CreateInMemoryDbContext();

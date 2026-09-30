@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
+import { useAuth } from '../contexts/AuthContext';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 
@@ -16,6 +17,8 @@ export const ScenarioDetailsView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ scenarioId?: string }>();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   // Ưu tiên param trong URL > state > fallback 1
   const rawId = params.scenarioId || (location.state as { scenarioId?: number } | null)?.scenarioId;
@@ -301,7 +304,7 @@ export const ScenarioDetailsView: React.FC = () => {
                 <h2 className="mt-1 text-xl font-bold text-[#071A44]">JLPT {selectedLevel.jlptLevel}</h2>
               </div>
               <span className={`rounded-full border px-3 py-1 text-xs font-bold ${levelStyles[selectedLevel.jlptLevel]}`}>
-                🪙 {selectedLevel.creditCost} credits
+                {isAdmin ? '🛡️ Miễn phí (Admin)' : `🪙 ${selectedLevel.creditCost} credits`}
               </span>
             </div>
             <p className="mt-3 text-sm leading-6 text-[#71809A]">{selectedLevel.title}</p>
@@ -310,7 +313,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
                 <p className="font-semibold">Không thể bắt đầu:</p>
                 <p className="mt-0.5">{startError}</p>
-                {startError.includes('credit') && (
+                {startError.includes('credit') && !isAdmin && (
                   <Link
                     to="/credits"
                     className="mt-2 inline-block font-bold text-[#0878EE] hover:underline"
@@ -339,7 +342,9 @@ export const ScenarioDetailsView: React.FC = () => {
               )}
             </Button>
             <p className="mt-2 text-center text-[11px] text-[#71809A]">
-              * Hệ thống sẽ trừ {selectedLevel.creditCost} credits khi phiên hội thoại bắt đầu.
+              {isAdmin
+                ? '✨ Chế độ Quản trị viên: Không bị trừ credit khi trải nghiệm và kiểm thử kịch bản.'
+                : `* Hệ thống sẽ trừ ${selectedLevel.creditCost} credits khi phiên hội thoại bắt đầu.`}
             </p>
           </section>
 

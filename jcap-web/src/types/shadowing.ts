@@ -8,10 +8,54 @@ export interface ShadowingSentenceItem {
   nativeAudioUrl: string;
 }
 
+export interface ShadowingVocabularyItem {
+  id: number;
+  word: string;
+  reading?: string | null;
+  meaning: string;
+  wordClass?: string;
+  jlptLevel?: string;
+  exampleSentence?: string | null;
+}
+
+export interface ShadowingGrammarItem {
+  id: number;
+  pattern: string;
+  meaning: string;
+  exampleSentence?: string | null;
+  jlptLevel?: string;
+}
+
+export interface ShadowingTextbookItem {
+  id: string;
+  title: string;
+  japaneseTitle?: string;
+  level: 'N5' | 'N4' | 'N3';
+  coverImage?: string;
+  description: string;
+  publisher?: string;
+  totalChapters: number;
+  totalDialogues: number;
+}
+
+export interface ShadowingChapterItem {
+  id: string;
+  textbookId: string;
+  chapterNumber: number;
+  title: string;
+  japaneseTitle?: string;
+  description: string;
+  dialoguesCount: number;
+}
+
 export interface ShadowingDialogueItem {
   id: number;
   scenarioId: number;
   scenarioTitle: string;
+  textbookId?: string;
+  textbookTitle?: string;
+  chapterId?: string;
+  chapterTitle?: string;
   title: string;
   jlptLevel: 'N5' | 'N4' | 'N3';
   sourceDescription?: string | null;
@@ -23,13 +67,60 @@ export interface ShadowingDialogueItem {
 }
 
 export interface ShadowingDialogueDetail extends ShadowingDialogueItem {
+  scenarioDescription?: string | null;
+  scenarioLevelDescription?: string | null;
   sentences: ShadowingSentenceItem[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
 export interface ShadowingFilterParams {
   keyword?: string;
   jlptLevel?: string;
   scenarioId?: number;
+}
+
+export interface ShadowingSentencePracticeResult {
+  sentenceId: number;
+  orderIndex: number;
+  targetText: string;
+  recognizedText: string;
+  accuracyScore: number;
+  evaluationTier: 'green' | 'yellow' | 'red';
+  audioBlobUrl?: string;
+}
+
+export interface ShadowingSessionCompletePayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  overallAccuracyScore: number;
+  durationSeconds: number;
+  sentencesPracticed: number;
+  totalGreenSentences: number;
+  totalYellowSentences: number;
+  totalRedSentences: number;
+  sentenceResults: ShadowingSentencePracticeResult[];
+}
+
+export interface ShadowingAiAnalysisPayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  overallAccuracyScore: number;
+  durationSeconds: number;
+  sentenceResults: ShadowingSentencePracticeResult[];
+}
+
+export interface ShadowingAiAnalysisResult {
+  creditsDeducted: number;
+  remainingCreditBalance: number;
+  tokyoIntonationScore: number;
+  vowelClarityScore: number;
+  rhythmTempoScore: number;
+  pitchAccentScore: number;
+  longVowelPrecisionScore: number;
+  overallDiagnosis: string;
+  keyStrengths: string[];
+  improvementActionItems: string[];
 }
 
 export interface CreateShadowingSentencePayload {
@@ -60,3 +151,4 @@ export interface UpdateShadowingDialoguePayload {
   isActive: boolean;
   sentences: CreateShadowingSentencePayload[];
 }
+
