@@ -36,7 +36,7 @@ public class GeminiRoleplayService : IAiRoleplayService
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -89,7 +89,7 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -217,7 +217,7 @@ Trả về JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
