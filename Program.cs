@@ -82,7 +82,24 @@ builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, RoleplaySessionSnap
 builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
-builder.Services.AddScoped<IAiRoleplayService, GeminiRoleplayService>();
+builder.Services.AddScoped<GeminiRoleplayService>();
+builder.Services.AddScoped<GroqCloudRoleplayService>();
+builder.Services.AddScoped<IAiRoleplayService>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var activeProvider = config["AI:ActiveProvider"];
+    if (string.Equals(activeProvider, "Gemini", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(activeProvider, "Simulator", StringComparison.OrdinalIgnoreCase))
+    {
+        return sp.GetRequiredService<GeminiRoleplayService>();
+    }
+    var groqKey = config["GroqCloud:ApiKey"] ?? config["GrokqCloud:ApiKey"];
+    if (!string.IsNullOrWhiteSpace(groqKey))
+    {
+        return sp.GetRequiredService<GroqCloudRoleplayService>();
+    }
+    return sp.GetRequiredService<GeminiRoleplayService>();
+});
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 

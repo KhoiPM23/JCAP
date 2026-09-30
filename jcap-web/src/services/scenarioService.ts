@@ -1,6 +1,24 @@
 import type { ApiResponse } from '../types/auth';
 import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent } from '../types/scenarioDetails';
 
+export interface AiModelOption {
+  id: string;
+  displayName: string;
+  provider: string;
+  badge: string;
+  description: string;
+  isConfigured: boolean;
+}
+
+export interface AiStatusResponse {
+  modelId: string;
+  displayName: string;
+  provider?: string;
+  isReady: boolean;
+  mode: string;
+  availableModels?: AiModelOption[];
+}
+
 const API_BASE_URL = '/api/scenarios';
 
 export const scenarioService = {
@@ -99,6 +117,41 @@ export const scenarioService = {
     }
   },
 
+  async getAiStatus(): Promise<ApiResponse<AiStatusResponse>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch('/api/admin/scenarios/ai-status', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<AiStatusResponse> | null;
+      return result || { success: false, message: 'Không thể tải trạng thái AI.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối máy chủ khi lấy trạng thái AI.' };
+    }
+  },
+
+  async switchAiModel(modelId: string): Promise<ApiResponse<AiStatusResponse>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch('/api/admin/scenarios/ai-model', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ modelId }),
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<AiStatusResponse> | null;
+      return result || { success: false, message: 'Không thể chuyển đổi Model AI.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối máy chủ khi chuyển đổi Model AI.' };
+    }
+  },
+
   async createScenario(payload: any): Promise<ApiResponse<ScenarioDetails>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -155,7 +208,10 @@ export const scenarioService = {
   async generateLevelContent(
     scenarioTitle: string,
     scenarioDescription: string,
-    jlptLevel: string
+    jlptLevel: string,
+    missionCount: number = 3,
+    vocabularyCount: number = 3,
+    grammarCount: number = 3
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -165,7 +221,14 @@ export const scenarioService = {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ scenarioTitle, scenarioDescription, jlptLevel }),
+        body: JSON.stringify({
+          scenarioTitle,
+          scenarioDescription,
+          jlptLevel,
+          missionCount,
+          vocabularyCount,
+          grammarCount,
+        }),
       });
       const result = (await response.json().catch(() => null)) as ApiResponse<GeneratedLevelContent> | null;
       return result || { success: false, message: 'Không thể tạo gợi ý nội dung AI.' };

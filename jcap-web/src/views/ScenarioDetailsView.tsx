@@ -87,7 +87,9 @@ export const ScenarioDetailsView: React.FC = () => {
 
     if (forceRestart) {
       const confirmRestart = window.confirm(
-        'Bạn có chắc chắn muốn bỏ phiên đang dang dở và bắt đầu một phiên luyện tập hoàn toàn mới không? (Credit phiên mới sẽ được tính theo quy định)'
+        isAdmin
+          ? 'Bạn có chắc chắn muốn bỏ phiên kiểm thử đang dang dở và bắt đầu một phiên kiểm thử mới không?'
+          : 'Bạn có chắc chắn muốn bỏ phiên đang dang dở và bắt đầu một phiên luyện tập hoàn toàn mới không? (Credit phiên mới sẽ được tính theo quy định)'
       );
       if (!confirmRestart) return;
     }

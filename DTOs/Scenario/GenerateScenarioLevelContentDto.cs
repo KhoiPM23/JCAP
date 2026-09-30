@@ -11,6 +11,12 @@ public class GenerateScenarioLevelContentRequest
 
     [Required(ErrorMessage = "Trình độ JLPT không được để trống.")]
     public string JLPTLevel { get; set; } = "N5"; // N5, N4, N3
+
+    public int MissionCount { get; set; } = 3;
+
+    public int VocabularyCount { get; set; } = 3;
+
+    public int GrammarCount { get; set; } = 3;
 }
 
 public class GeneratedLevelContentDto

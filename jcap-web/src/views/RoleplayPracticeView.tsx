@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
   RoleplayMessageDto,
@@ -12,6 +13,8 @@ import type {
 
 export const RoleplayPracticeView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const { sessionId: rawSessionId } = useParams<{ sessionId: string }>();
   const sessionId = Number(rawSessionId);
 
@@ -324,16 +327,18 @@ export const RoleplayPracticeView: React.FC = () => {
             </button>
           </div>
 
-          {/* Credit balance pill */}
-          <Link
-            to="/credits"
-            className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
-            title="Số dư credit hiện tại"
-          >
-            <span>🪙</span>
-            <span>{session.creditBalance ?? 0}</span>
-            <span className="hidden sm:inline">Credits</span>
-          </Link>
+          {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
+          {!isAdmin && (
+            <Link
+              to="/credits"
+              className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+              title="Số dư credit hiện tại"
+            >
+              <span>🪙</span>
+              <span>{session.creditBalance ?? 0}</span>
+              <span className="hidden sm:inline">Credits</span>
+            </Link>
+          )}
 
           {/* Sidebar toggles on desktop */}
           <button
@@ -461,7 +466,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 <div className="space-y-2.5">
                   {session.missions.map((mission: RoleplayMissionDto) => (
                     <div
-                      key={mission.id}
+                      key={mission.missionId ?? mission.id ?? mission.order}
                       className={`flex gap-3 rounded-xl border p-3 transition ${
                         mission.isCompleted
                           ? 'border-emerald-200 bg-emerald-50/60'
@@ -1042,7 +1047,9 @@ export const RoleplayPracticeView: React.FC = () => {
 
             <p className="text-xs text-[#71809A] leading-relaxed">
               {session.isNaturallyConcluded
-                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và quay về thông tin kịch bản.'
+                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
+                : isAdmin
+                ? 'Nếu bạn kết thúc sớm, phiên kiểm thử kịch bản sẽ dừng lại tại đây và chuyển sang trang kết quả đánh giá.'
                 : 'Nếu bạn kết thúc sớm, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
             </p>
 
