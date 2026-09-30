@@ -14,16 +14,18 @@ export const AdminDashboardView: React.FC = () => {
   const [shadowingCount, setShadowingCount] = useState<number>(0);
   const [packageCount, setPackageCount] = useState<number>(0);
   const [recentScenarios, setRecentScenarios] = useState<ScenarioListItem[]>([]);
+  const [aiModelName, setAiModelName] = useState<string>('Gemini 3.1 Flash Lite');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        const [scenariosRes, shadowingRes, packagesRes] = await Promise.all([
+        const [scenariosRes, shadowingRes, packagesRes, aiStatusRes] = await Promise.all([
           scenarioService.getAdminScenarios().catch(() => ({ success: false, data: [] as ScenarioListItem[] })),
           adminShadowingService.getCatalog().catch(() => ({ success: false, data: [] as any[] })),
           creditService.getPackages().catch(() => ({ success: false, data: [] as any[] })),
+          scenarioService.getAiStatus().catch(() => ({ success: false, data: undefined })),
         ]);
 
         if (scenariosRes.success && scenariosRes.data) {
@@ -37,6 +39,10 @@ export const AdminDashboardView: React.FC = () => {
 
         if (packagesRes.success && packagesRes.data) {
           setPackageCount(packagesRes.data.length);
+        }
+
+        if (aiStatusRes.success && aiStatusRes.data?.displayName) {
+          setAiModelName(aiStatusRes.data.displayName);
         }
       } catch (err) {
         console.error('Lỗi khi tải dữ liệu dashboard:', err);
@@ -154,7 +160,7 @@ export const AdminDashboardView: React.FC = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Sẵn sàng
             </div>
-            <span className="text-xs text-slate-400 mt-1 block">Gemini 2.5 Flash</span>
+            <span className="text-xs text-slate-400 mt-1 block">{aiModelName}</span>
           </div>
           <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
             🤖

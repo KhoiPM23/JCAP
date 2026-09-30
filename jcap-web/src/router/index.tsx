@@ -253,7 +253,11 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
+        <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
+        <Route path="/admin/users" element={<AdminDashboardView />} />
+        <Route path="/admin/ai-config" element={<AdminDashboardView />} />
+        <Route path="/admin/settings" element={<AdminDashboardView />} />
       </Route>
 
       {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}

@@ -13,10 +13,62 @@ namespace JCAP.Controllers;
 public class AdminScenarioController : ControllerBase
 {
     private readonly IScenarioService _scenarioService;
+    private readonly IConfiguration _configuration;
 
-    public AdminScenarioController(IScenarioService scenarioService)
+    public AdminScenarioController(IScenarioService scenarioService, IConfiguration configuration)
     {
         _scenarioService = scenarioService;
+        _configuration = configuration;
+    }
+
+    /// <summary>
+    /// GET /api/admin/scenarios/ai-status - Lấy thông tin model AI đang cấu hình (Gemini, ChatGPT, Claude, v.v.).
+    /// </summary>
+    [HttpGet("ai-status")]
+    public IActionResult GetAiStatus()
+    {
+        var rawModel = _configuration["AI:Model"]
+            ?? _configuration["Gemini:Model"]
+            ?? _configuration["OpenAI:Model"]
+            ?? _configuration["Claude:Model"]
+            ?? "gemini-3.1-flash-lite";
+
+        var apiKey = _configuration["AI:ApiKey"]
+            ?? _configuration["Gemini:ApiKey"]
+            ?? _configuration["OpenAI:ApiKey"]
+            ?? _configuration["Claude:ApiKey"];
+
+        var displayName = FormatAiModelDisplayName(rawModel);
+
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            modelId = rawModel,
+            displayName,
+            isReady = true,
+            mode = string.IsNullOrWhiteSpace(apiKey) ? "Simulator" : "Live AI"
+        }));
+    }
+
+    private static string FormatAiModelDisplayName(string rawModel)
+    {
+        if (string.IsNullOrWhiteSpace(rawModel))
+        {
+            return "Gemini 3.1 Flash Lite";
+        }
+
+        var trimmed = rawModel.Trim();
+        var lower = trimmed.ToLowerInvariant();
+
+        if (lower.StartsWith("gpt-") || lower.StartsWith("chatgpt-") || lower.StartsWith("o1") || lower.StartsWith("o3") || lower.StartsWith("o4"))
+        {
+            return $"ChatGPT ({trimmed.ToUpperInvariant()})";
+        }
+
+        var parts = trimmed
+            .Split(['-', '_'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant());
+
+        return string.Join(" ", parts);
     }
 
     /// <summary>

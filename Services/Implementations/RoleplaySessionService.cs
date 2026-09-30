@@ -360,7 +360,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         };
         _dbContext.RoleplayMessages.Add(aiMessage);
 
-        // 5. Cập nhật các mission vừa hoàn thành
+        // 5. Cập nhật các mission vừa hoàn thành (tối đa 1 mission mỗi lượt nói theo thứ tự)
         var newlyCompletedIds = new List<int>();
         foreach (var missionId in turnResult.CompletedMissionIds)
         {
@@ -370,16 +370,18 @@ public class RoleplaySessionService : IRoleplaySessionService
                 sm.IsCompleted = true;
                 sm.CompletedAt = DateTime.UtcNow;
                 newlyCompletedIds.Add(missionId);
+                break;
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên
+        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
         }
 
-        if (turnResult.IsNaturallyConcluded)
+        bool allMissionsDone = session.SessionMissions.Count > 0 && session.SessionMissions.All(sm => sm.IsCompleted);
+        if (turnResult.IsNaturallyConcluded && allMissionsDone)
         {
             session.IsNaturallyConcluded = true;
         }

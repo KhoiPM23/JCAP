@@ -36,7 +36,7 @@ public class GeminiRoleplayService : IAiRoleplayService
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -47,12 +47,20 @@ public class GeminiRoleplayService : IAiRoleplayService
         try
         {
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
-            var userPrompt = @"Bạn hãy đóng vai nhân vật và nói câu mở đầu để bắt đầu cuộc trò chuyện với người học.
+            var firstMission = levelConfig.Missions?
+                .Where(m => m.IsActive)
+                .OrderBy(m => m.Order)
+                .FirstOrDefault();
+            var missionContext = firstMission != null
+                ? $"\nLưu ý: Nhiệm vụ đầu tiên của NGƯỜI HỌC là \"{firstMission.Content}\". Hãy đóng đúng vai của bạn ({levelConfig.AiPersona}) để mở lời tự nhiên và tạo cơ hội cho người học thực hiện nhiệm vụ này (tuyệt đối KHÔNG nói thay câu của người học)."
+                : "";
+
+            var userPrompt = $@"Bạn hãy đóng vai nhân vật ({levelConfig.AiPersona}) và nói câu mở đầu để bắt đầu cuộc trò chuyện với người học.{missionContext}
 Trả về định dạng JSON thuần túy theo cấu trúc:
-{
+{{
   ""replyJapanese"": ""Câu chào mở đầu bằng tiếng Nhật phù hợp với bối cảnh và persona"",
   ""replyVietnamese"": ""Dịch nghĩa tiếng Việt của câu chào""
-}";
+}}";
 
             var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
             if (!string.IsNullOrWhiteSpace(jsonResponse))
@@ -89,12 +97,14 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+
+        var orderedPending = pendingMissions.OrderBy(m => m.Order).ToList();
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             _logger.LogInformation("Gemini ApiKey chưa được cấu hình. Sử dụng Simulator cho lượt đối thoại.");
-            return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
+            return ProcessSimulatorTurn(scenario, levelConfig, userMessage, orderedPending);
         }
 
         try
@@ -107,10 +117,14 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
                 sbHistory.AppendLine($"[{msg.Sender}]: {msg.JapaneseText}");
             }
 
+            var currentMission = orderedPending.FirstOrDefault();
             var missionsDescription = new StringBuilder();
-            foreach (var m in pendingMissions)
+            foreach (var m in orderedPending)
             {
-                missionsDescription.AppendLine($"- Mission ID {m.Id}: {m.Content}. Tiêu chí hoàn thành (JSON): {m.CompletionCriteriaJson}");
+                var priorityTag = currentMission != null && m.Id == currentMission.Id
+                    ? "[NHIỆM VỤ HIỆN TẠI ĐANG XÉT]"
+                    : "[Nhiệm vụ tiếp theo sau đó]";
+                missionsDescription.AppendLine($"- {priorityTag} Mission ID {m.Id} (Bước {m.Order}): {m.Content}. Tiêu chí hoàn thành (JSON): {m.CompletionCriteriaJson}");
             }
 
             var userPrompt = $@"Lịch sử hội thoại gần nhất:
@@ -119,14 +133,18 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
 Câu nói vừa rồi của người học:
 ""{userMessage}""
 
-Danh sách các nhiệm vụ CHƯA hoàn thành:
+Danh sách các nhiệm vụ CHƯA hoàn thành của người học (theo thứ tự từng bước):
 {missionsDescription}
 
 Yêu cầu phân tích và trả về:
-1. replyJapanese: Câu thoại tiếp theo của bạn (đóng vai AI Persona, giữ đúng trình độ JLPT {levelConfig.JLPTLevel}).
+1. replyJapanese: Câu thoại tiếp theo của bạn (đóng vai {levelConfig.AiPersona}, giữ đúng trình độ JLPT {levelConfig.JLPTLevel}, dẫn dắt để người học thực hiện nhiệm vụ tiếp theo nếu còn).
 2. replyVietnamese: Bản dịch tiếng Việt tự nhiên của câu thoại đó.
-3. completedMissionIds: Mảng chứa các ID của mission mà câu nói của học viên đã thỏa mãn tiêu chí hoàn thành (nếu không có thì trả về mảng rỗng []).
-4. isNaturallyConcluded: true nếu câu thoại này kết thúc tự nhiên tình huống (ví dụ: đã xong việc mua hàng, đã chào tạm biệt, đã giải quyết xong mục tiêu), ngược lại false.
+3. completedMissionIds: Mảng chứa ID của nhiệm vụ mà câu nói VỪA RỒI của học viên (""{userMessage}"") đã trực tiếp và rõ ràng hoàn thành.
+   QUY TẮC NGHIÊM NGẶT KHI CHẤM NHIỆM VỤ:
+   - Chỉ chấm dựa trên câu nói vừa rồi của NGƯỜI HỌC, tuyệt đối không chấm dựa trên lời thoại của AI.
+   - Các nhiệm vụ diễn ra tuần tự từng bước. Mỗi lượt nói chỉ đánh dấu hoàn thành TỐI ĐA 1 nhiệm vụ (ưu tiên xét nhiệm vụ hiện tại Bước {currentMission?.Order ?? 1} trước).
+   - Tuyệt đối KHÔNG tự động đánh dấu hoàn thành tất cả nhiệm vụ hoặc các nhiệm vụ ở bước sau khi người học chưa thực sự nói nội dung của bước đó. Nếu câu nói chưa đạt yêu cầu của nhiệm vụ nào thì trả về mảng rỗng [].
+4. isNaturallyConcluded: Chỉ trả về true khi TẤT CẢ nhiệm vụ đã hoàn thành xong VÀ hai bên đã kết thúc/chào tạm biệt tự nhiên; nếu vẫn còn nhiệm vụ chưa xong thì bắt buộc trả về false.
 5. linguisticFeedback: Đánh giá cách dùng từ và ngữ pháp của câu nói người học vừa gửi:
    - status: ""Good"" (chuẩn xác), ""Warning"" (cần điều chỉnh nhỏ/sai trợ từ khẩu ngữ), ""Error"" (sai cấu trúc nặng).
    - summary: Tóm tắt đánh giá (ví dụ: ""Khá tốt • Cần điều chỉnh nhỏ"").
@@ -141,7 +159,7 @@ Trả về JSON thuần túy theo cấu trúc:
 {{
   ""replyJapanese"": ""..."",
   ""replyVietnamese"": ""..."",
-  ""completedMissionIds"": [1, 2],
+  ""completedMissionIds"": [],
   ""isNaturallyConcluded"": false,
   ""linguisticFeedback"": {{
     ""status"": ""Good"",
@@ -168,11 +186,27 @@ Trả về JSON thuần túy theo cấu trúc:
                 {
                     foreach (var elem in idsProp.EnumerateArray())
                     {
-                        if (elem.TryGetInt32(out var id) && pendingMissions.Any(m => m.Id == id))
+                        if (elem.TryGetInt32(out var id) && orderedPending.Any(m => m.Id == id) && !completedIds.Contains(id))
                         {
                             completedIds.Add(id);
                         }
                     }
+                }
+
+                // Guardrail: Đảm bảo hoàn thành theo từng bước, tối đa 1 nhiệm vụ mỗi lượt nói để không bao giờ tự động hoàn thành tràn lan tất cả nhiệm vụ cùng lúc
+                if (completedIds.Count > 1)
+                {
+                    completedIds = completedIds
+                        .OrderBy(id => orderedPending.First(m => m.Id == id).Order)
+                        .Take(1)
+                        .ToList();
+                }
+
+                // Chỉ cho phép kết thúc tự nhiên khi không còn nhiệm vụ nào chưa hoàn thành
+                var remainingCount = orderedPending.Count(m => !completedIds.Contains(m.Id));
+                if (remainingCount > 0)
+                {
+                    isConcluded = false;
                 }
 
                 LinguisticFeedbackDto? feedback = null;
@@ -206,7 +240,7 @@ Trả về JSON thuần túy theo cấu trúc:
             _logger.LogWarning(ex, "Lỗi khi gọi Gemini API cho lượt đối thoại. Tự động chuyển sang Simulator.");
         }
 
-        return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
+        return ProcessSimulatorTurn(scenario, levelConfig, userMessage, orderedPending);
     }
 
     public async Task<RoleplayHintDto> GenerateHintAsync(
@@ -217,7 +251,7 @@ Trả về JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -274,9 +308,24 @@ Trả về JSON thuần túy theo mẫu:
     {
         var sb = new StringBuilder();
         sb.AppendLine($"Bạn đang tham gia vào nền tảng luyện nói tiếng Nhật JCAP.");
-        sb.AppendLine($"Vai của bạn: {levelConfig.AiPersona}.");
+        sb.AppendLine($"Vai của bạn (AI Persona): {levelConfig.AiPersona}.");
         sb.AppendLine($"Trình độ JLPT mục tiêu của học viên: {levelConfig.JLPTLevel}.");
         sb.AppendLine($"Bối cảnh tình huống: {scenario.Title} - {levelConfig.Description}.");
+
+        var learnerMissions = levelConfig.Missions?
+            .Where(m => m.IsActive)
+            .OrderBy(m => m.Order)
+            .ToList();
+        if (learnerMissions != null && learnerMissions.Count > 0)
+        {
+            sb.AppendLine("Danh sách nhiệm vụ của NGƯỜI HỌC (User) trong tình huống này:");
+            foreach (var m in learnerMissions)
+            {
+                sb.AppendLine($"  {m.Order}. {m.Content}");
+            }
+            sb.AppendLine("Lưu ý vai trò: Các nhiệm vụ trên là việc NGƯỜI HỌC phải thực hiện. Bạn đóng vai đối phương để lắng nghe, phản hồi và dẫn dắt tự nhiên giúp người học thực hiện lần lượt từng nhiệm vụ. Tuyệt đối KHÔNG đóng thay vai của người học và KHÔNG nói thay câu của người học.");
+        }
+
         sb.AppendLine($"Quy tắc quan trọng (Guardrails):");
         sb.AppendLine($"- Luôn giữ vai một cách tự nhiên và chân thực, tuyệt đối không được phá vỡ vai nhân vật.");
         sb.AppendLine($"- Sử dụng từ ngữ và cấu trúc ngữ pháp phù hợp với cấp độ {levelConfig.JLPTLevel}.");
@@ -404,8 +453,9 @@ Trả về JSON thuần túy theo mẫu:
                        scenarioTitle.Contains("phỏng vấn", StringComparison.OrdinalIgnoreCase) ||
                        scenarioTitle.Contains("xin việc", StringComparison.OrdinalIgnoreCase);
         bool isRamen = scenarioTitle.Contains("ramen", StringComparison.OrdinalIgnoreCase) ||
-                       scenarioTitle.Contains("quán", StringComparison.OrdinalIgnoreCase) ||
-                       scenarioTitle.Contains("ăn", StringComparison.OrdinalIgnoreCase);
+                       scenarioTitle.Contains("quán ăn", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("quán mì", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("nhà hàng", StringComparison.OrdinalIgnoreCase);
 
         string jaReply;
         string viMeaning;
@@ -439,10 +489,10 @@ Trả về JSON thuần túy theo mẫu:
                 if (lowerMsg.Contains("頑張") || lowerMsg.Contains("がんば") || lowerMsg.Contains("努力") || lowerMsg.Contains("一生懸命") || lowerMsg.Contains("ありがとう") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("失礼"))
                 {
                     completedIds.Add(nextMission.Id);
+                    isNaturallyConcluded = orderedPending.Count <= 1;
                 }
                 jaReply = "素晴らしい意気込みですね！本日は面接にお越しいただき、誠にありがとうございました。採用結果は3日以内にご連絡いたします。";
                 viMeaning = "Tinh thần của bạn rất tuyệt vời! Cảm ơn bạn rất nhiều vì đã đến tham gia phỏng vấn hôm nay. Kết quả chúng tôi sẽ liên hệ trong vòng 3 ngày tới ạ.";
-                isNaturallyConcluded = true;
             }
             else
             {
@@ -486,7 +536,7 @@ Trả về JSON thuần túy theo mẫu:
             {
                 jaReply = "ありがとうございました！またのお越しをお待ちしております。";
                 viMeaning = "Cảm ơn quý khách rất nhiều! Hẹn gặp lại quý khách lần sau ạ.";
-                isNaturallyConcluded = true;
+                isNaturallyConcluded = pendingMissions.Count(m => !completedIds.Contains(m.Id)) == 0;
             }
             else if (lowerMsg.Contains("いくら") || lowerMsg.Contains("値段"))
             {
@@ -507,12 +557,17 @@ Trả về JSON thuần túy theo mẫu:
         else
         {
             var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
-            if (nextMission != null && userMessage.Trim().Length >= 6)
+            bool hasJapaneseChar = userMessage.Any(c =>
+                (c >= '\u3040' && c <= '\u309F') || // Hiragana
+                (c >= '\u30A0' && c <= '\u30FF') || // Katakana
+                (c >= '\u4E00' && c <= '\u9FAF'));  // Kanji
+            if (nextMission != null && hasJapaneseChar && userMessage.Trim().Length >= 4)
             {
                 completedIds.Add(nextMission.Id);
             }
 
-            if (pendingMissions.Count <= 1)
+            var remainingAfterTurn = pendingMissions.Count(m => !completedIds.Contains(m.Id));
+            if (remainingAfterTurn == 0 && pendingMissions.Count > 0)
             {
                 jaReply = "よく分かりました。本日の練習はこれで終了です。大変よくできました！";
                 viMeaning = "Tôi đã hiểu rõ. Buổi luyện tập hôm nay đến đây là kết thúc. Bạn đã làm rất tốt!";
