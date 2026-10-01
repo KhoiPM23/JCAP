@@ -484,6 +484,8 @@ export const ScenarioDetailsView: React.FC = () => {
                 <h3 className="text-base font-bold text-[#071A44]">
                   {confirmModal.isSwitchingLevel
                     ? 'Chuyển sang cấp độ mới?'
+                    : isAdmin
+                    ? 'Làm lại từ đầu phiên kiểm thử?'
                     : 'Làm lại từ đầu phiên luyện tập?'}
                 </h3>
                 <p className="text-xs text-[#71809A]">
@@ -539,7 +541,7 @@ export const ScenarioDetailsView: React.FC = () => {
             <p className="text-xs text-[#71809A] leading-relaxed">
               {confirmModal.isSwitchingLevel ? (
                 <>
-                  Bạn đang có phiên luyện tập dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu phiên mới ở cấp độ <strong>JLPT {confirmModal.targetLevel}</strong>, phiên dở dang cũ sẽ bị bỏ dở và credit phiên mới sẽ được tính theo quy định.
+                  Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu phiên mới ở cấp độ <strong>JLPT {confirmModal.targetLevel}</strong>, phiên dở dang cũ sẽ bị bỏ dở{!isAdmin && ' và credit phiên mới sẽ được tính theo quy định'}.
                 </>
               ) : (
                 <>

@@ -253,8 +253,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
+        <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
-        
         {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
         <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />

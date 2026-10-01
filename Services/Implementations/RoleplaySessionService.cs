@@ -375,13 +375,14 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên
+        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
         }
 
-        if (turnResult.IsNaturallyConcluded)
+        bool allMissionsDone = session.SessionMissions.Count > 0 && session.SessionMissions.All(sm => sm.IsCompleted);
+        if (turnResult.IsNaturallyConcluded && allMissionsDone)
         {
             session.IsNaturallyConcluded = true;
         }

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Roleplay;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +10,7 @@ namespace JCAP.Controllers
 {
     [ApiController]
     [Route("api/roleplay")]
-    [Authorize(Roles = "Learner")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Learner,Admin")]
     public class RoleplayController : ControllerBase
     {
         private readonly IRoleplayResultService _roleplayResultService;

@@ -99,6 +99,23 @@ export const scenarioService = {
     }
   },
 
+  async getAiStatus(): Promise<ApiResponse<{ modelId: string; displayName: string; isReady: boolean; mode: string }>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch('/api/admin/scenarios/ai-status', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<{ modelId: string; displayName: string; isReady: boolean; mode: string }> | null;
+      return result || { success: false, message: 'Không thể tải trạng thái AI.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối máy chủ khi lấy trạng thái AI.' };
+    }
+  },
+
   async createScenario(payload: any): Promise<ApiResponse<ScenarioDetails>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -155,7 +172,10 @@ export const scenarioService = {
   async generateLevelContent(
     scenarioTitle: string,
     scenarioDescription: string,
-    jlptLevel: string
+    jlptLevel: string,
+    missionCount: number = 3,
+    vocabularyCount: number = 3,
+    grammarCount: number = 3
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -165,7 +185,14 @@ export const scenarioService = {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ scenarioTitle, scenarioDescription, jlptLevel }),
+        body: JSON.stringify({
+          scenarioTitle,
+          scenarioDescription,
+          jlptLevel,
+          missionCount,
+          vocabularyCount,
+          grammarCount,
+        }),
       });
       const result = (await response.json().catch(() => null)) as ApiResponse<GeneratedLevelContent> | null;
       return result || { success: false, message: 'Không thể tạo gợi ý nội dung AI.' };
