@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using JCAP.DTOs.Roleplay;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
@@ -19,6 +20,16 @@ public class GeminiRoleplayService : IAiRoleplayService
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
+    private static readonly Regex ForeignLanguagePatternRegex = new(
+        @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(toi\s+muon|cho\s+toi|toi\s+la|em\s+la|xin\s+chao|cam\s+on|khong\s+co|co\s+the|lam\s+viec|thoi\s+gian|phuong\s+tien|di\s+lai|ca\s+dem|nghi\s+phep|muon\s+goi|mot\s+bat|1\s+bat|muon|goi|khong|duoc|tieng|viet|chao|ngay|tuan|phuong|phep|luong|hello|want|order|please|i\s+would\s+like)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static bool IsLikelyForeignOrVietnamese(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        return ForeignLanguagePatternRegex.IsMatch(text);
+    }
 
     public GeminiRoleplayService(
         HttpClient httpClient,
@@ -47,11 +58,11 @@ public class GeminiRoleplayService : IAiRoleplayService
         try
         {
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
-            var userPrompt = @"Bạn hãy đóng vai nhân vật và nói câu mở đầu để bắt đầu cuộc trò chuyện với người học.
-Trả về định dạng JSON thuần túy theo cấu trúc:
+            var userPrompt = @"Start the conversation as your persona with an appropriate opening line.
+Return strictly pure JSON matching:
 {
-  ""replyJapanese"": ""Câu chào mở đầu bằng tiếng Nhật phù hợp với bối cảnh và persona"",
-  ""replyVietnamese"": ""Dịch nghĩa tiếng Việt của câu chào""
+  ""replyJapanese"": ""Opening greeting in Japanese suitable for the persona and context"",
+  ""replyVietnamese"": ""Natural translation in Vietnamese""
 }";
 
             var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
@@ -113,41 +124,52 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
                 missionsDescription.AppendLine($"- Mission ID {m.Id}: {m.Content}. Tiêu chí hoàn thành (JSON): {m.CompletionCriteriaJson}");
             }
 
-            var userPrompt = $@"Lịch sử hội thoại gần nhất:
+            var userPrompt = $@"RECENT CONVERSATION HISTORY:
 {sbHistory}
 
-Câu nói vừa rồi của người học:
+LEARNER'S LATEST UTTERANCE:
 ""{userMessage}""
 
-Danh sách các nhiệm vụ CHƯA hoàn thành:
+PENDING MISSIONS:
 {missionsDescription}
 
-Yêu cầu phân tích và trả về:
-1. replyJapanese: Câu thoại tiếp theo của bạn (đóng vai AI Persona, giữ đúng trình độ JLPT {levelConfig.JLPTLevel}).
-2. replyVietnamese: Bản dịch tiếng Việt tự nhiên của câu thoại đó.
-3. completedMissionIds: Mảng chứa các ID của mission mà câu nói của học viên đã thỏa mãn tiêu chí hoàn thành (nếu không có thì trả về mảng rỗng []).
-4. isNaturallyConcluded: true nếu câu thoại này kết thúc tự nhiên tình huống (ví dụ: đã xong việc mua hàng, đã chào tạm biệt, đã giải quyết xong mục tiêu), ngược lại false.
-5. linguisticFeedback: Đánh giá cách dùng từ và ngữ pháp của câu nói người học vừa gửi:
-   - status: ""Good"" (chuẩn xác), ""Warning"" (cần điều chỉnh nhỏ/sai trợ từ khẩu ngữ), ""Error"" (sai cấu trúc nặng).
-   - summary: Tóm tắt đánh giá (ví dụ: ""Khá tốt • Cần điều chỉnh nhỏ"").
-   - details: Mảng các mục phân tích:
-     - type: ""success"" | ""warning"" | ""error""
-     - aspect: Tên khía cạnh (""Ngữ cảnh"", ""Trợ từ"", ""Văn phong"", ""Từ vựng"")
-     - comment: Lời nhận xét
-   - naturalAlternative: Câu nói tự nhiên hơn của người bản xứ (nếu có).
-   - culturalTip: Mẹo văn hóa thực tế của người Nhật trong tình huống này.
+TASK INSTRUCTIONS:
+1. FOREIGN / MIXED LANGUAGE CHECK (CRITICAL FIRST STEP):
+   - Check if the learner's message contains Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/foreign text.
+   - If ANY foreign words or non-Japanese sentences are detected:
+     * Even if they mentioned a dish or keyword (e.g. 'tonkotsu ramen', 'ramen'), you CANNOT understand them and CANNOT guess their intent. Treat the entire message as completely unintelligible foreign sounds.
+     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite incomprehension and ask for Japanese: '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。'
+     * replyVietnamese: 'Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?'
+     * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
+     * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
+2. NORMAL JAPANESE EVALUATION (Only if learner spoke entirely in Japanese/Romaji):
+   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}.
+   - replyVietnamese: Natural translation in Vietnamese.
+   - completedMissionIds: Array of Mission IDs satisfied in a contextually appropriate manner:
+     * On open-ended cues (e.g. ""Anything else?""), the learner is FREE to initiate ANY pending mission.
+     * Only reject if the learner blatantly ignores a specific direct question (steer them back in replyJapanese). Return [] if none.
+   - isNaturallyConcluded: Boolean (true if the conversation naturally ends, e.g. transaction finished, farewell exchanged).
+   - linguisticFeedback: Linguistic evaluation of the learner's utterance (MUST write all explanations/comments in Vietnamese):
+     * status: ""Good"" | ""Warning"" | ""Error""
+     * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"")
+     * details: Array of items:
+       - type: ""success"" | ""warning"" | ""error""
+       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Từ vựng"")
+       - comment: Specific constructive feedback in Vietnamese
+     * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
+     * culturalTip: Relevant practical cultural tip in Vietnamese
 
-Trả về JSON thuần túy theo cấu trúc:
+Return strictly pure JSON matching this schema:
 {{
   ""replyJapanese"": ""..."",
   ""replyVietnamese"": ""..."",
-  ""completedMissionIds"": [1, 2],
+  ""completedMissionIds"": [],
   ""isNaturallyConcluded"": false,
   ""linguisticFeedback"": {{
     ""status"": ""Good"",
-    ""summary"": ""Rất tốt • Chuẩn ngữ cảnh"",
+    ""summary"": ""..."",
     ""details"": [
-      {{ ""type"": ""success"", ""aspect"": ""Ngữ cảnh"", ""comment"": ""Đáp ứng đúng bối cảnh hội thoại."" }}
+      {{ ""type"": ""success"", ""aspect"": ""Ngữ cảnh"", ""comment"": ""..."" }}
     ],
     ""naturalAlternative"": ""..."",
     ""culturalTip"": ""...""
@@ -185,6 +207,43 @@ Trả về JSON thuần túy theo cấu trúc:
                     catch
                     {
                         // Fallback nếu parse feedback bị lỗi
+                    }
+                }
+
+                var isForeignLanguage = IsLikelyForeignOrVietnamese(userMessage);
+                if (isForeignLanguage)
+                {
+                    // Strict programmatic enforcement: clear completed missions
+                    completedIds.Clear();
+
+                    // If AI leaked a confirmation or echoed the item, sanitize to polite confusion
+                    if (ja.Contains("かしこまりました") || ja.Contains("承知") || ja.Contains("ですね") || ja.Contains("ですか") || !ja.Contains("日本語"))
+                    {
+                        ja = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                        vi = "Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?";
+                    }
+
+                    // Enforce Error status in feedback
+                    if (feedback == null)
+                    {
+                        feedback = new LinguisticFeedbackDto
+                        {
+                            Status = "Error",
+                            Summary = "Vui lòng sử dụng tiếng Nhật",
+                            Details = new List<LinguisticDetailItemDto>
+                            {
+                                new() { Type = "error", Aspect = "Ngôn ngữ", Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng không sử dụng tiếng Việt hoặc ngôn ngữ khác." }
+                            },
+                            CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+                        };
+                    }
+                    else
+                    {
+                        feedback.Status = "Error";
+                        if (string.IsNullOrWhiteSpace(feedback.Summary) || feedback.Summary.Contains("tốt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            feedback.Summary = "Vui lòng sử dụng tiếng Nhật";
+                        }
                     }
                 }
 
@@ -226,26 +285,27 @@ Trả về JSON thuần túy theo cấu trúc:
 
         try
         {
-            var systemPrompt = $"Bạn là trợ lý học tiếng Nhật giúp học viên gợi ý câu trả lời tiếp theo trong tình huống hội thoại cấp độ {levelConfig.JLPTLevel}.";
+            var systemPrompt = $"You are a supportive Japanese language tutor in the JCAP platform assisting a JLPT {levelConfig.JLPTLevel} learner.";
 
             var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
             var targetMissionText = nextMission != null
-                ? $"Nhiệm vụ cần đạt tiếp theo: {nextMission.Content}"
-                : "Tất cả nhiệm vụ đã xong, gợi ý câu chào kết thúc hoặc xác nhận.";
+                ? $"Next mission to achieve: {nextMission.Content}"
+                : "All missions completed; suggest a polite closing or confirmation.";
 
             var lastAiMessage = conversationHistory.LastOrDefault(m => m.Sender == "Ai")?.JapaneseText ?? "";
 
-            var userPrompt = $@"Tình huống: {scenario.Title} ({levelConfig.JLPTLevel})
-Câu vừa rồi của nhân vật AI: ""{lastAiMessage}""
-{targetMissionText}
+            var userPrompt = $@"CONTEXT:
+- Scenario: {scenario.Title} ({levelConfig.JLPTLevel})
+- AI's previous utterance: ""{lastAiMessage}""
+- Target goal: {targetMissionText}
 
-Hãy gợi ý cho học viên 1 câu tiếng Nhật tự nhiên, đúng ngữ pháp cấp độ {levelConfig.JLPTLevel} để phản hồi lại.
-Trả về JSON thuần túy theo mẫu:
+Suggest one natural, grammatically accurate Japanese response for the learner at JLPT {levelConfig.JLPTLevel}.
+Return strictly pure JSON:
 {{
-  ""japaneseSuggestion"": ""Câu tiếng Nhật mẫu"",
-  ""romajiOrReading"": ""Cách đọc Romaji hoặc Hiragana"",
-  ""vietnameseMeaning"": ""Ý nghĩa tiếng Việt"",
-  ""contextExplanation"": ""Giải thích ngắn gọn ngữ cảnh dùng câu này""
+  ""japaneseSuggestion"": ""Natural Japanese response sentence"",
+  ""romajiOrReading"": ""Romaji or Hiragana reading"",
+  ""vietnameseMeaning"": ""Meaning in Vietnamese"",
+  ""contextExplanation"": ""Brief explanation in Vietnamese of when and why to use this phrase""
 }}";
 
             var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
@@ -273,15 +333,26 @@ Trả về JSON thuần túy theo mẫu:
     private string BuildSystemInstruction(Scenario scenario, ScenarioLevelConfiguration levelConfig)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Bạn đang tham gia vào nền tảng luyện nói tiếng Nhật JCAP.");
-        sb.AppendLine($"Vai của bạn: {levelConfig.AiPersona}.");
-        sb.AppendLine($"Trình độ JLPT mục tiêu của học viên: {levelConfig.JLPTLevel}.");
-        sb.AppendLine($"Bối cảnh tình huống: {scenario.Title} - {levelConfig.Description}.");
-        sb.AppendLine($"Quy tắc quan trọng (Guardrails):");
-        sb.AppendLine($"- Luôn giữ vai một cách tự nhiên và chân thực, tuyệt đối không được phá vỡ vai nhân vật.");
-        sb.AppendLine($"- Sử dụng từ ngữ và cấu trúc ngữ pháp phù hợp với cấp độ {levelConfig.JLPTLevel}.");
-        sb.AppendLine($"- Trả lời súc tích, ngắn gọn (1 - 2 câu) như một cuộc trò chuyện trực tiếp ngoài đời thực.");
-        sb.AppendLine($"- Luôn trả về định dạng JSON thuần túy theo yêu cầu.");
+        sb.AppendLine("You are an authentic Japanese roleplay conversational partner in the JCAP platform.");
+        sb.AppendLine("[SCENARIO CONTEXT]");
+        sb.AppendLine($"- Title: {scenario.Title}");
+        sb.AppendLine($"- Role/Persona: {levelConfig.AiPersona}");
+        sb.AppendLine($"- Context: {levelConfig.Description}");
+        sb.AppendLine($"- Target JLPT Level: {levelConfig.JLPTLevel}");
+        sb.AppendLine("[CORE GUARDRAILS]");
+        sb.AppendLine($"- Roleplay fidelity: Stay in character naturally; never break persona.");
+        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"  * If the learner uses ANY non-Japanese words, Vietnamese text, or foreign language (e.g., 'toi muon', 'cho toi', 'hello', 'want', 'order'):");
+        sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
+        sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");
+        sb.AppendLine($"  * STRICTLY FORBIDDEN: NEVER say '...ですね', '...ですか', or 'かしこまりました' when foreign/mixed language is used.");
+        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
+        sb.AppendLine($"- Level matching: Use vocabulary and grammar strictly appropriate for JLPT {levelConfig.JLPTLevel}.");
+        sb.AppendLine($"- Brevity: Keep responses concise (1-2 sentences) simulating real-world spoken Japanese.");
+        sb.AppendLine($"- Non-preemption: NEVER mention, answer, or complete pending missions for the learner; wait for them to initiate.");
+        sb.AppendLine($"- Conversational cueing: Respond only to the current turn with open-ended cues, leaving space for the learner to drive the next mission.");
+        sb.AppendLine($"- Output format: Always return valid, pure JSON matching the requested schema.");
         return sb.ToString();
     }
 
