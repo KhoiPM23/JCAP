@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JCAP.Controllers
 {
     [ApiController]
+    [Route("api/admin/shadowing")]
     [Route("api/admin/[controller]")]
     [Authorize(Roles = "Admin")]
     public class AdminShadowingController : ControllerBase
