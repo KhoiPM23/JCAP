@@ -729,7 +729,7 @@ export const AdminShadowingListView: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex justify-center items-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8">
             <h2 className="text-lg font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">
-              {editingId ? `✏️ Chỉnh sửa Bài học Shadowing #${editingId}` : '✨ Thêm Bài Shadowing Mới (UC-30)'}
+              {editingId ? `✏️ Chỉnh sửa Bài học Shadowing #${editingId}` : '✨ Thêm Bài Shadowing Mới'}
             </h2>
 
             <form onSubmit={handleSaveForm} className="space-y-4 text-xs">

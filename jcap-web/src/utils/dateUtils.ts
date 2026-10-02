@@ -27,14 +27,24 @@ export function formatDateTime(
   const d = parseDateTime(dateInput);
   if (!d) return typeof dateInput === 'string' ? dateInput : '—';
 
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    ...options,
-  };
+  // dateStyle/timeStyle cannot be combined with granular fields such as
+  // day, month, hour, etc. Build one valid option set so format failures do
+  // not fall back to displaying the raw UTC value.
+  const usesStylePreset = options?.dateStyle !== undefined || options?.timeStyle !== undefined;
+  const defaultOptions: Intl.DateTimeFormatOptions = usesStylePreset
+    ? {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        ...options,
+      }
+    : {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Ho_Chi_Minh',
+        ...options,
+      };
 
   try {
     return d.toLocaleString('vi-VN', defaultOptions);
@@ -51,6 +61,7 @@ export function formatDateMedium(dateInput: string | Date | null | undefined): s
     return new Intl.DateTimeFormat('vi-VN', {
       dateStyle: 'medium',
       timeStyle: 'short',
+      timeZone: 'Asia/Ho_Chi_Minh',
     }).format(d);
   } catch {
     return typeof dateInput === 'string' ? dateInput : '—';
@@ -66,6 +77,7 @@ export function formatDateFull(dateInput: string | Date | null | undefined): str
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: 'Asia/Ho_Chi_Minh',
     }).format(d);
   } catch {
     return typeof dateInput === 'string' ? dateInput : '—';

@@ -26,6 +26,7 @@ export interface LinguisticDetailItemDto {
 }
 
 export interface LinguisticFeedbackDto {
+  evaluationSource?: 'AI' | 'Simulator' | string;
   status?: string;
   quickStatus?: string;
   summary: string;
