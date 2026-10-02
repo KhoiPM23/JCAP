@@ -15,6 +15,8 @@ namespace JCAP.DTOs.Shadowing
         public string? SourceDescription { get; set; }
         public string SpeakerRoleA_Name { get; set; } = string.Empty;
         public string SpeakerRoleB_Name { get; set; } = string.Empty;
+        public List<string> SpeakerRoles { get; set; } = new List<string>();
+        public string? SpeakerRolesJson { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<ShadowingSentenceDto> Sentences { get; set; } = new List<ShadowingSentenceDto>();
