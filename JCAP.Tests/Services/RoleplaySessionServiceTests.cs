@@ -335,5 +335,6 @@ public class RoleplaySessionServiceTests
         var dbUserMsg = await dbContext.RoleplayMessages.FirstAsync(m => m.Sender == "User");
         Assert.NotNull(dbUserMsg.LinguisticFeedbackJson);
         Assert.Contains("Khá tốt", dbUserMsg.LinguisticFeedbackJson);
+        Assert.Contains("\"evaluationSource\":\"AI\"", dbUserMsg.LinguisticFeedbackJson);
     }
 }

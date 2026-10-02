@@ -718,7 +718,7 @@ export const AdminScenarioListView: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại (Admin Catalog)</h1>
+          <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại</h1>
           <p className="text-slate-500 text-sm mt-1">
             Quản trị danh mục kịch bản roleplay, cấu hình trình độ JLPT.
           </p>
@@ -841,7 +841,7 @@ export const AdminScenarioListView: React.FC = () => {
                             onClick={() => handleDeleteScenario(item.id, item.title)}
                             className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer"
                           >
-                            🗑️ Soft Delete
+                            🗑️ Xóa
                           </button>
                         )}
                       </td>
