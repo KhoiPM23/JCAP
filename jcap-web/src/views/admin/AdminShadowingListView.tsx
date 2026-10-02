@@ -419,6 +419,10 @@ export const AdminShadowingListView: React.FC = () => {
     const selectedScenario = scenarios.find((s) => s.id === formScenarioId);
     const contextTitle = formTitle.trim() || selectedScenario?.title || 'Hội thoại giao tiếp đời sống';
 
+    const safeSentenceCount = Math.max(2, Math.min(12, Number(aiSentenceCount) || 4));
+    const safeVocabCount = Math.max(1, Math.min(8, Number(aiVocabCount) || 3));
+    const safeGrammarCount = Math.max(1, Math.min(5, Number(aiGrammarCount) || 2));
+
     setIsAiGenerating(true);
     const payload: GenerateShadowingDialoguePayload = {
       scenarioId: formScenarioId,
@@ -426,9 +430,9 @@ export const AdminShadowingListView: React.FC = () => {
       contextDescription: formContextDescription.trim() || selectedScenario?.description,
       jlptLevel: formLevel,
       speakerRoles: formSpeakerRoles,
-      sentenceCount: aiSentenceCount,
-      vocabCount: aiVocabCount,
-      grammarCount: aiGrammarCount,
+      sentenceCount: safeSentenceCount,
+      vocabCount: safeVocabCount,
+      grammarCount: safeGrammarCount,
       customInstructions: aiCustomInstructions.trim() || undefined,
     };
 
@@ -1024,100 +1028,18 @@ export const AdminShadowingListView: React.FC = () => {
   };
 
   const handleDownloadTemplate = (format: 'csv' | 'json') => {
-    if (format === 'csv') {
-      const bom = '\uFEFF';
-      const csvContent = `${bom}SpeakerRole,JapaneseText,RomajiText,VietnameseTranslation
-A,"いらっしゃいませ。ご注文はお決まりですか。","Irasshaimase. Gochuumon wa okimari desu ka.","Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?"
-B,"はい、ラーメンを一つお願いします。","Hai, raamen wo hitotsu onegai shimasu.","Vâng, xin cho tôi một tô mì ramen."
-A,"かしこまりました。少々お待ちください。","Kashikomarimashita. Shoushou omachi kudasai.","Tôi đã rõ. Xin quý khách vui lòng đợi một chút."
-B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
-`;
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'shadowing_dialogue_template.csv';
-      document.body.appendChild(link);
-      link.click();
+    const fileName = format === 'csv' ? 'shadowing_dialogue_template.csv' : 'shadowing_full_lesson_template.json';
+    const filePath = `/templates/${fileName}`;
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.setAttribute('download', fileName);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } else {
-      const jsonTemplate = {
-        $schema: 'https://jcap.jp/schemas/shadowing-import-v1.json',
-        title: 'Gọi món tại nhà hàng Nhật',
-        jlptLevel: 'N4',
-        scenarioCode: 'SCN_RAMEN_01',
-        contextDescription: 'Khách hàng vào quán ramen vào giờ trưa và gọi món với nhân viên.',
-        speakerRoles: ['Nhân viên', 'Khách hàng'],
-        sentences: [
-          {
-            orderIndex: 1,
-            speakerRole: 'A',
-            japaneseText: 'いらっしゃいませ。ご注文はお決まりですか。',
-            romajiText: 'Irasshaimase. Gochuumon wa okimari desu ka.',
-            vietnameseTranslation: 'Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?',
-            nativeAudioUrl: null,
-          },
-          {
-            orderIndex: 2,
-            speakerRole: 'B',
-            japaneseText: 'はい、ラーメンを一つお願いします。',
-            romajiText: 'Hai, raamen wo hitotsu onegai shimasu.',
-            vietnameseTranslation: 'Vâng, xin cho tôi một tô mì ramen.',
-            nativeAudioUrl: null,
-          },
-          {
-            orderIndex: 3,
-            speakerRole: 'A',
-            japaneseText: 'かしこまりました。少々お待ちください。',
-            romajiText: 'Kashikomarimashita. Shoushou omachi kudasai.',
-            vietnameseTranslation: 'Tôi đã rõ. Xin quý khách vui lòng đợi một chút.',
-            nativeAudioUrl: null,
-          },
-          {
-            orderIndex: 4,
-            speakerRole: 'B',
-            japaneseText: 'ありがとうございます。',
-            romajiText: 'Arigatou gozaimasu.',
-            vietnameseTranslation: 'Xin cảm ơn.',
-            nativeAudioUrl: null,
-          },
-        ],
-        targetVocabularies: [
-          {
-            word: '注文',
-            reading: 'ちゅうもん',
-            meaning: 'Gọi món',
-            jlptLevel: 'N4',
-          },
-          {
-            word: 'ラーメン',
-            reading: 'らーめん',
-            meaning: 'Mì ramen',
-            jlptLevel: 'N4',
-          },
-        ],
-        targetGrammars: [
-          {
-            pattern: '～お願いします',
-            meaning: 'Làm ơn / Xin hãy...',
-            exampleSentence: 'ラーメンを一つお願いします。',
-            jlptLevel: 'N4',
-          },
-        ],
-      };
-      const blob = new Blob([JSON.stringify(jsonTemplate, null, 2)], {
-        type: 'application/json;charset=utf-8;',
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'shadowing_full_lesson_template.json';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
+    }, 1000);
+    addToast(`Đang tải file mẫu: ${fileName}`, 'success');
   };
 
   // Submit Form
@@ -1638,7 +1560,8 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleSaveForm} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+            <form onSubmit={handleSaveForm} className="flex flex-col flex-1 min-h-0 overflow-hidden text-xs">
+              <div className="p-6 overflow-y-auto space-y-6 flex-1">
               {/* Embedded In-Form AI Assist Panel */}
               {isAiPanelOpen && (
                 <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-slate-50 border-2 border-indigo-200/90 rounded-2xl p-5 shadow-xs space-y-4">
@@ -1717,43 +1640,122 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số câu thoại</label>
-                        <select
-                          value={aiSentenceCount}
-                          onChange={(e) => setAiSentenceCount(parseInt(e.target.value, 10))}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
-                        >
-                          <option value={4}>4 câu</option>
-                          <option value={6}>6 câu</option>
-                          <option value={8}>8 câu</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Số câu thoại: 2 - 12 câu */}
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-indigo-100">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-bold text-slate-700 text-xs">Số câu thoại</label>
+                          <span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded">
+                            2 - 12 câu
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min={2}
+                            max={12}
+                            value={aiSentenceCount}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              setAiSentenceCount(isNaN(val) ? 4 : Math.max(2, Math.min(12, val)));
+                            }}
+                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs font-bold text-center focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <div className="flex items-center gap-1 flex-1">
+                            {[4, 6, 8].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                onClick={() => setAiSentenceCount(n)}
+                                className={`flex-1 py-1 text-[11px] font-semibold rounded-md border transition cursor-pointer ${
+                                  aiSentenceCount === n
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số từ vựng</label>
-                        <select
-                          value={aiVocabCount}
-                          onChange={(e) => setAiVocabCount(parseInt(e.target.value, 10))}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
-                        >
-                          <option value={2}>2 từ</option>
-                          <option value={3}>3 từ</option>
-                          <option value={4}>4 từ</option>
-                          <option value={5}>5 từ</option>
-                        </select>
+
+                      {/* Số từ vựng: 1 - 8 từ */}
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-indigo-100">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-bold text-slate-700 text-xs">Số từ vựng</label>
+                          <span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded">
+                            1 - 8 từ
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min={1}
+                            max={8}
+                            value={aiVocabCount}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              setAiVocabCount(isNaN(val) ? 3 : Math.max(1, Math.min(8, val)));
+                            }}
+                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs font-bold text-center focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <div className="flex items-center gap-1 flex-1">
+                            {[2, 3, 5].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                onClick={() => setAiVocabCount(n)}
+                                className={`flex-1 py-1 text-[11px] font-semibold rounded-md border transition cursor-pointer ${
+                                  aiVocabCount === n
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số ngữ pháp</label>
-                        <select
-                          value={aiGrammarCount}
-                          onChange={(e) => setAiGrammarCount(parseInt(e.target.value, 10))}
-                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
-                        >
-                          <option value={1}>1 mẫu</option>
-                          <option value={2}>2 mẫu</option>
-                          <option value={3}>3 mẫu</option>
-                        </select>
+
+                      {/* Số ngữ pháp: 1 - 5 mẫu */}
+                      <div className="bg-white/80 p-2.5 rounded-xl border border-indigo-100">
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-bold text-slate-700 text-xs">Số ngữ pháp</label>
+                          <span className="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-1.5 py-0.5 rounded">
+                            1 - 5 mẫu
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min={1}
+                            max={5}
+                            value={aiGrammarCount}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              setAiGrammarCount(isNaN(val) ? 2 : Math.max(1, Math.min(5, val)));
+                            }}
+                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs font-bold text-center focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <div className="flex items-center gap-1 flex-1">
+                            {[1, 2, 3].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                onClick={() => setAiGrammarCount(n)}
+                                className={`flex-1 py-1 text-[11px] font-semibold rounded-md border transition cursor-pointer ${
+                                  aiGrammarCount === n
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2174,7 +2176,7 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                             {s.nativeAudioUrl ? (
                               <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg">
                                 <span>🔊</span>
-                                <audio controls src={s.nativeAudioUrl} className="h-6 max-w-[180px]" />
+                                <audio controls src={s.nativeAudioUrl} className="h-8 w-64 sm:w-80 min-w-[240px]" />
                                 <button
                                   type="button"
                                   onClick={() => handleClearSentenceAudio(idx)}
@@ -2205,7 +2207,7 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                               </div>
                             ) : recordedAudioPreview?.index === idx ? (
                               <div className="flex items-center gap-2 bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-lg">
-                                <audio controls src={recordedAudioPreview.url} className="h-6 max-w-[150px]" />
+                                <audio controls src={recordedAudioPreview.url} className="h-8 w-64 sm:w-80 min-w-[240px]" />
                                 <button
                                   type="button"
                                   onClick={() => handleSaveRecordedAudio(idx)}
@@ -2625,23 +2627,29 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                   )}
                 </div>
               )}
+              </div>
 
-              {/* Form Footer */}
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100 transition cursor-pointer"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 bg-[#0878EE] hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-xs disabled:opacity-50 cursor-pointer"
-                >
-                  {isSubmitting ? 'Đang lưu bài học...' : editingId ? 'Lưu cập nhật' : 'Hoàn tất & Tạo bài học'}
-                </button>
+              {/* Form Footer (Sticky / Fixed at Bottom) */}
+              <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
+                <div className="text-[11px] text-slate-500 font-medium hidden sm:block">
+                  {editingId ? 'Đang chỉnh sửa bài học Shadowing' : 'Soạn thảo bài học Shadowing mới'}
+                </div>
+                <div className="flex items-center gap-3 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-5 py-2 bg-[#0878EE] hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-xs disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmitting ? 'Đang lưu bài học...' : editingId ? 'Lưu cập nhật' : 'Hoàn tất & Tạo bài học'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -2701,14 +2709,14 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                     </p>
                   </div>
                   <div className="pt-2 border-t border-emerald-100">
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadTemplate('csv')}
+                    <a
+                      href="/templates/shadowing_dialogue_template.csv"
+                      download="shadowing_dialogue_template.csv"
                       className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
                       <span>Tải file mẫu CSV</span>
-                    </button>
+                    </a>
                   </div>
                 </div>
 
@@ -2732,14 +2740,14 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                     </p>
                   </div>
                   <div className="pt-2 border-t border-purple-100">
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadTemplate('json')}
+                    <a
+                      href="/templates/shadowing_full_lesson_template.json"
+                      download="shadowing_full_lesson_template.json"
                       className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
                       <span>Tải file mẫu JSON</span>
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -3182,9 +3190,9 @@ B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
                           Vai {s.speakerRole}: {s.speakerRole === 'A' ? previewDialogue.speakerRoleA_Name : previewDialogue.speakerRoleB_Name}
                         </span>
                         {s.nativeAudioUrl ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] text-emerald-700 font-bold">Audio mẫu:</span>
-                            <audio controls src={s.nativeAudioUrl} className="h-6 max-w-[170px]" />
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-emerald-700 font-bold shrink-0">Audio mẫu:</span>
+                            <audio controls src={s.nativeAudioUrl} className="h-8 w-64 sm:w-80 min-w-[240px]" />
                           </div>
                         ) : (
                           <span className="text-slate-400 text-[11px] italic">Chưa gắn audio mẫu</span>
