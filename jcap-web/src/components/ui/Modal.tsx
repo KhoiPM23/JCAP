@@ -39,10 +39,10 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/40 transition-opacity"
+        className="fixed inset-0 bg-[#071A44]/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />

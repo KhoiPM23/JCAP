@@ -9,14 +9,6 @@ import type {
   ShadowingTextbookItem,
   ShadowingChapterItem,
 } from '../types/shadowing';
-import {
-  getMockTextbooks,
-  getMockTextbookById,
-  getMockChapters,
-  getMockChapterById,
-  getMockDialoguesByChapter,
-  getMockDialogueById,
-} from '../data/mockShadowingData';
 
 class ShadowingService {
   private getHeaders(): HeadersInit {
@@ -31,84 +23,9 @@ class ShadowingService {
   }
 
   /**
-   * Lấy danh sách giáo trình theo JLPT Level (N5, N4, N3)
+   * UC-25 & UC-26: Lấy danh mục bài học Shadowing thực tế từ Backend Database
+   * Đồng bộ 100% với các bài do Admin tạo từ trang quản trị.
    */
-  public async getTextbooks(level?: string): Promise<ApiResponse<ShadowingTextbookItem[]>> {
-    try {
-      const data = getMockTextbooks(level);
-      return {
-        success: true,
-        message: 'Tải danh sách giáo trình thành công.',
-        data,
-      };
-    } catch {
-      return {
-        success: false,
-        message: 'Không thể tải danh sách giáo trình tiếng Nhật.',
-      };
-    }
-  }
-
-  /**
-   * Lấy chi tiết một giáo trình
-   */
-  public async getTextbookById(id: string): Promise<ApiResponse<ShadowingTextbookItem>> {
-    const book = getMockTextbookById(id);
-    if (book) {
-      return {
-        success: true,
-        message: 'Tải thông tin giáo trình thành công.',
-        data: book,
-      };
-    }
-    return {
-      success: false,
-      message: `Không tìm thấy giáo trình với mã: ${id}`,
-    };
-  }
-
-  /**
-   * Lấy danh sách các Chapter thuộc một giáo trình
-   */
-  public async getChapters(textbookId: string): Promise<ApiResponse<ShadowingChapterItem[]>> {
-    const chapters = getMockChapters(textbookId);
-    return {
-      success: true,
-      message: 'Tải danh sách chương học thành công.',
-      data: chapters,
-    };
-  }
-
-  /**
-   * Lấy chi tiết một Chapter
-   */
-  public async getChapterById(textbookId: string, chapterId: string): Promise<ApiResponse<ShadowingChapterItem>> {
-    const chapter = getMockChapterById(textbookId, chapterId);
-    if (chapter) {
-      return {
-        success: true,
-        message: 'Tải thông tin chương học thành công.',
-        data: chapter,
-      };
-    }
-    return {
-      success: false,
-      message: `Không tìm thấy chương học với mã: ${chapterId}`,
-    };
-  }
-
-  /**
-   * Lấy danh sách Dialogue của một Chapter
-   */
-  public async getDialoguesByChapter(chapterId: string): Promise<ApiResponse<ShadowingDialogueDetail[]>> {
-    const dialogues = getMockDialoguesByChapter(chapterId);
-    return {
-      success: true,
-      message: 'Tải danh sách bài hội thoại thành công.',
-      data: dialogues,
-    };
-  }
-
   public async getCatalog(params?: ShadowingFilterParams): Promise<ApiResponse<ShadowingDialogueItem[]>> {
     try {
       const searchParams = new URLSearchParams();
@@ -122,39 +39,28 @@ class ShadowingService {
         headers: this.getHeaders(),
       });
 
-      if (response.ok) {
-        return await response.json();
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || `Lỗi tải danh mục bài học (${response.status}).`,
+          data: [],
+        };
       }
+
+      return await response.json();
     } catch {
-      // Fallback below
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ backend.',
+        data: [],
+      };
     }
-
-    // Fallback to mock data
-    const mockDialogues = [
-      getMockDialogueById(1401)!,
-      getMockDialogueById(1402)!,
-      getMockDialogueById(1403)!,
-      getMockDialogueById(1301)!,
-      getMockDialogueById(1501)!,
-      getMockDialogueById(3101)!,
-    ].filter(Boolean);
-
-    let filtered = mockDialogues;
-    if (params?.jlptLevel && params.jlptLevel !== 'ALL') {
-      filtered = filtered.filter(d => d.jlptLevel === params.jlptLevel);
-    }
-    if (params?.keyword) {
-      const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(d => d.title.toLowerCase().includes(kw) || d.scenarioTitle.toLowerCase().includes(kw));
-    }
-
-    return {
-      success: true,
-      message: 'Tải danh mục bài học thành công.',
-      data: filtered,
-    };
   }
 
+  /**
+   * UC-27: Lấy chi tiết bài học Shadowing kèm danh sách câu thoại thực tế từ Database
+   */
   public async getDetail(id: number): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
       const response = await fetch(`/api/shadowing/${id}`, {
@@ -162,31 +68,26 @@ class ShadowingService {
         headers: this.getHeaders(),
       });
 
-      if (response.ok) {
-        const json = await response.json();
-        if (json.success && json.data) {
-          return json;
-        }
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || `Không tìm thấy bài học Shadowing với Id = ${id}.`,
+        };
       }
-    } catch {
-      // Fallback below
-    }
 
-    const mockDetail = getMockDialogueById(id);
-    if (mockDetail) {
+      return await response.json();
+    } catch {
       return {
-        success: true,
-        message: 'Tải chi tiết bài học thành công.',
-        data: mockDetail,
+        success: false,
+        message: 'Không thể kết nối đến máy chủ backend để lấy bài học.',
       };
     }
-
-    return {
-      success: false,
-      message: `Không tìm thấy bài học Shadowing với Id = ${id}.`,
-    };
   }
 
+  /**
+   * Lưu lại tiến trình hoàn thành buổi luyện tập
+   */
   public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<unknown>> {
     try {
       const response = await fetch('/api/shadowing/session/complete', {
@@ -198,16 +99,22 @@ class ShadowingService {
       if (response.ok) {
         return await response.json();
       }
+      const err = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: err?.message || 'Không thể lưu kết quả buổi luyện tập.',
+      };
     } catch {
-      // Fallback simulation
+      return {
+        success: true,
+        message: 'Đã hoàn thành buổi luyện tập cục bộ.',
+      };
     }
-
-    return {
-      success: true,
-      message: 'Hoàn tất phiên luyện tập thành công (chế độ mô phỏng).',
-    };
   }
 
+  /**
+   * Yêu cầu phân tích phát âm AI chuyên sâu (15 credits)
+   */
   public async requestAiAnalysis(payload: ShadowingAiAnalysisPayload): Promise<ApiResponse<ShadowingAiAnalysisResult>> {
     try {
       const response = await fetch('/api/shadowing/session/ai-analysis', {
@@ -219,34 +126,34 @@ class ShadowingService {
       if (response.ok) {
         return await response.json();
       }
+      const err = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: err?.message || 'Không thể thực hiện phân tích AI.',
+      };
     } catch {
-      // Fallback simulation
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ AI.',
+      };
     }
+  }
 
-    // Mock AI Analysis result
-    return {
-      success: true,
-      message: 'Phân tích AI hoàn tất.',
-      data: {
-        creditsDeducted: 15,
-        remainingCreditBalance: 2980,
-        tokyoIntonationScore: 88,
-        vowelClarityScore: 92,
-        rhythmTempoScore: 85,
-        pitchAccentScore: 84,
-        longVowelPrecisionScore: 90,
-        overallDiagnosis: 'Phát âm tự nhiên, ngữ điệu chuẩn Tokyo. Nhịp điệu và trường âm duy trì ổn định qua các câu đối thoại.',
-        keyStrengths: [
-          'Trường âm (ー) và âm ngắt (っ) được xử lý chính xác, không bị dính chữ.',
-          'Ngữ điệu câu hỏi ～てもいい？ hạ giọng nhẹ và lên ở phách cuối rất tự nhiên.',
-          'Phát âm phụ âm k, s, t rõ nét, khớp nhịp điệu người bản xứ.',
-        ],
-        improvementActionItems: [
-          'Cần chú ý nối âm mượt mà hơn ở các cụm từ dài như 「体育館で行っています」.',
-          'Tốc độ đọc câu trả lời có thể tăng nhẹ 0.1x để đạt phản xạ giao tiếp tự nhiên nhất.',
-        ],
-      },
-    };
+  // Legacy stubs (nếu có view cũ cần gọi tạm thời)
+  public async getTextbooks(_level?: string): Promise<ApiResponse<ShadowingTextbookItem[]>> {
+    return { success: true, message: 'OK', data: [] };
+  }
+  public async getTextbookById(_id: string): Promise<ApiResponse<ShadowingTextbookItem>> {
+    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
+  }
+  public async getChapters(_textbookId: string): Promise<ApiResponse<ShadowingChapterItem[]>> {
+    return { success: true, message: 'OK', data: [] };
+  }
+  public async getChapterById(_textbookId: string, _chapterId: string): Promise<ApiResponse<ShadowingChapterItem>> {
+    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
+  }
+  public async getDialoguesByChapter(_chapterId: string): Promise<ApiResponse<ShadowingDialogueDetail[]>> {
+    return { success: true, message: 'OK', data: [] };
   }
 }
 
