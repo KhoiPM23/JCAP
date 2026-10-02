@@ -234,7 +234,7 @@ class AdminShadowingService {
       if (jlptLevel) params.append('jlptLevel', jlptLevel);
       const qs = params.toString() ? `?${params.toString()}` : '';
 
-      const response = await fetch(`/api/admin/shadowing/shared-vocabularies${qs}`, {
+      const response = await fetch(`/api/admin/vocabularies${qs}`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
@@ -255,7 +255,7 @@ class AdminShadowingService {
       if (jlptLevel) params.append('jlptLevel', jlptLevel);
       const qs = params.toString() ? `?${params.toString()}` : '';
 
-      const response = await fetch(`/api/admin/shadowing/shared-grammars${qs}`, {
+      const response = await fetch(`/api/admin/grammars${qs}`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
