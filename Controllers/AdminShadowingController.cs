@@ -187,26 +187,6 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Tìm kiếm / lấy danh sách từ vựng dùng chung trong kho Master Data.
-        /// </summary>
-        [HttpGet("shared-vocabularies")]
-        public async Task<ActionResult<ApiResponse<List<ShadowingVocabularyDto>>>> GetSharedVocabularies([FromQuery] string? keyword, [FromQuery] string? jlptLevel)
-        {
-            var result = await _adminService.GetSharedVocabulariesAsync(keyword, jlptLevel);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Tìm kiếm / lấy danh sách ngữ pháp dùng chung trong kho Master Data.
-        /// </summary>
-        [HttpGet("shared-grammars")]
-        public async Task<ActionResult<ApiResponse<List<ShadowingGrammarDto>>>> GetSharedGrammars([FromQuery] string? keyword, [FromQuery] string? jlptLevel)
-        {
-            var result = await _adminService.GetSharedGrammarsAsync(keyword, jlptLevel);
-            return Ok(result);
-        }
-
-        /// <summary>
         /// Tải về tệp mẫu CSV hoặc JSON với Content-Disposition attachment để trình duyệt luôn lưu đúng tên và đuôi file.
         /// </summary>
         [HttpGet("download-template")]
