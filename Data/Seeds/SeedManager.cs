@@ -26,6 +26,22 @@ namespace JCAP.Data.Seeds
 
                 // 4. Seed bài hội thoại Shadowing mẫu (DEV SAMPLE / NON-PRODUCTION)
                 await ShadowingSeeder.SeedAsync(services);
+
+                // 5. Chuẩn hóa diễn giải các giao dịch đã tạo trước đây trong DB
+                var oldTransactions = await context.CreditTransactions
+                    .Where(t => t.Description != null && (t.Description.Contains("Nạp gói Gói") || t.Description.Contains("Nạp gói gói")))
+                    .ToListAsync();
+
+                if (oldTransactions.Any())
+                {
+                    foreach (var tx in oldTransactions)
+                    {
+                        tx.Description = tx.Description!
+                            .Replace("Nạp gói Gói", "Nạp Gói")
+                            .Replace("Nạp gói gói", "Nạp gói");
+                    }
+                    await context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

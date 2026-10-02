@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { creditService } from '../services/creditService';
 import { profileService } from '../services/profileService';
@@ -7,6 +8,7 @@ import type { CreditPackage } from '../types/credit';
 
 export const CreditPackagesView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const cancelParam = searchParams.get('cancel');
   const statusParam = searchParams.get('status');
@@ -17,11 +19,14 @@ export const CreditPackagesView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentBalance, setCurrentBalance] = useState<number>(() => {
+    if (typeof user?.creditBalance === 'number') {
+      return user.creditBalance;
+    }
     try {
       const saved = localStorage.getItem('jcap_user');
       if (saved) {
         const u = JSON.parse(saved);
-        return u.creditBalance ?? 0;
+        if (typeof u.creditBalance === 'number') return u.creditBalance;
       }
     } catch {
       // ignore
@@ -46,6 +51,13 @@ export const CreditPackagesView: React.FC = () => {
     }
   };
 
+  // Tự động đồng bộ khi user trong AuthContext thay đổi
+  useEffect(() => {
+    if (typeof user?.creditBalance === 'number') {
+      setCurrentBalance(user.creditBalance);
+    }
+  }, [user?.creditBalance]);
+
   useEffect(() => {
     loadPackages();
 
@@ -54,23 +66,64 @@ export const CreditPackagesView: React.FC = () => {
     }
 
     // Đồng bộ hồ sơ và số dư chuẩn từ máy chủ khi vào trang nạp tiền
-    profileService.getProfile().catch(() => {});
     creditService.getHistory(1, 1).then((res) => {
-      if (res.success && res.data && res.data.currentCreditBalance !== undefined) {
+      if (res.success && res.data && typeof res.data.currentCreditBalance === 'number') {
         setCurrentBalance(res.data.currentCreditBalance);
+        creditService.updateLocalCreditBalance(res.data.currentCreditBalance);
+      }
+    }).catch(() => {});
+
+    profileService.getProfile().then((res) => {
+      if (res.success && res.data && typeof res.data.creditBalance === 'number') {
+        setCurrentBalance(res.data.creditBalance);
+        creditService.updateLocalCreditBalance(res.data.creditBalance);
       }
     }).catch(() => {});
 
     const handleProfileUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<any>;
-      if (customEvent.detail?.creditBalance !== undefined) {
-        setCurrentBalance(customEvent.detail.creditBalance);
+      const newBal = customEvent.detail?.creditBalance;
+      if (typeof newBal === 'number') {
+        setCurrentBalance(newBal);
       }
     };
 
     window.addEventListener('jcap_profile_updated', handleProfileUpdated);
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, [cancelParam, statusParam]);
+
+  // Số dư chuẩn hiển thị (ưu tiên currentBalance, rồi tới user trong AuthContext, rồi tới localStorage)
+  const displayBalance = useMemo(() => {
+    if (typeof currentBalance === 'number') {
+      return currentBalance;
+    }
+    if (typeof user?.creditBalance === 'number') {
+      return user.creditBalance;
+    }
+    try {
+      const saved = localStorage.getItem('jcap_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (typeof u.creditBalance === 'number') return u.creditBalance;
+      }
+    } catch {}
+    return 0;
+  }, [currentBalance, user?.creditBalance]);
+
+  // Find package with lowest cost per credit for "Tiết Kiệm Nhất" badge
+  const bestValuePkgId = React.useMemo(() => {
+    if (packages.length <= 1) return null;
+    let bestId = packages[0].id;
+    let minCost = packages[0].price / (packages[0].credits || 1);
+    packages.forEach((p) => {
+      const cost = p.price / (p.credits || 1);
+      if (cost < minCost) {
+        minCost = cost;
+        bestId = p.id;
+      }
+    });
+    return bestId;
+  }, [packages]);
 
   const handlePurchase = async (pkg: CreditPackage) => {
     setPurchasingId(pkg.id);
@@ -127,7 +180,7 @@ export const CreditPackagesView: React.FC = () => {
             <span className="text-xs uppercase tracking-wider text-blue-100 font-medium">Số dư hiện tại</span>
             <div className="text-3xl font-extrabold text-white mt-1 flex items-center gap-2">
               <span className="text-amber-300">🪙</span>
-              <span>{currentBalance}</span>
+              <span>{displayBalance}</span>
               <span className="text-sm font-normal text-blue-200">Credits</span>
             </div>
             <Link
@@ -192,10 +245,11 @@ export const CreditPackagesView: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {packages.map((pkg, index) => {
-            const isPopular = pkg.name.toLowerCase().includes('tiêu chuẩn') || index === 1;
-            const isBestValue = pkg.name.toLowerCase().includes('chuyên sâu') || index === 3;
+          {packages.map((pkg) => {
+            const nameLower = pkg.name.toLowerCase();
             const unitPrice = Math.round(pkg.price / (pkg.credits || 1));
+            const isPopular = nameLower.includes('tiêu chuẩn') || nameLower.includes('phổ biến');
+            const isBestValue = !isPopular && (pkg.id === bestValuePkgId || nameLower.includes('chuyên sâu') || nameLower.includes('tiết kiệm'));
 
             return (
               <div

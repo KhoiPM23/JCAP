@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { useAuth } from '../contexts/AuthContext';
+import { formatDateTime } from '../utils/dateUtils';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
 
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  }).format(new Date(value));
+const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
 
 const ScoreCard = ({ label, score, accent }: { label: string; score: number; accent: string }) => (
   <div className="rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_28px_rgba(7,26,68,0.05)]">
@@ -23,6 +21,8 @@ const ScoreCard = ({ label, score, accent }: { label: string; score: number; acc
 
 export const ConversationResultDetailView: React.FC = () => {
   const { resultId } = useParams();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const parsedResultId = Number(resultId);
   const [result, setResult] = useState<RoleplayResultDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,10 +74,10 @@ export const ConversationResultDetailView: React.FC = () => {
         <h1 className="text-2xl font-black text-[#071A44]">Không thể mở kết quả</h1>
         <p className="mt-3 text-sm leading-6 text-red-700">{error}</p>
         <Link
-          to="/roleplay/results"
+          to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
           className="mt-6 inline-flex rounded-xl bg-[#071A44] px-5 py-2.5 text-sm font-bold text-white"
         >
-          Quay lại lịch sử
+          {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
         </Link>
       </div>
     );
@@ -86,10 +86,10 @@ export const ConversationResultDetailView: React.FC = () => {
   return (
     <section className="mx-auto w-full max-w-5xl pb-10">
       <Link
-        to="/roleplay/results"
+        to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
         className="mb-5 inline-flex items-center text-sm font-bold text-[#52627A] transition hover:text-[#0878EE]"
       >
-        ← Quay lại lịch sử
+        ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
       </Link>
 
       <header className="relative overflow-hidden rounded-[30px] bg-[#071A44] px-7 py-8 text-white shadow-[0_24px_60px_rgba(7,26,68,0.2)] md:px-10 md:py-10">
@@ -111,7 +111,7 @@ export const ConversationResultDetailView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7FC2FF]">
-              UC-21 · Kết quả hội thoại
+              Kết quả hội thoại
             </p>
             <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
               {result.scenarioTitle}
@@ -177,11 +177,19 @@ export const ConversationResultDetailView: React.FC = () => {
       </div>
 
       <div className="mt-7 flex flex-wrap gap-3">
+        {isAdmin && (
+          <Link
+            to="/admin/scenarios"
+            className="rounded-xl bg-[#071A44] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800"
+          >
+            Quay về Quản lý Kịch bản (Admin)
+          </Link>
+        )}
         <Link
           to="/scenarios"
           className="rounded-xl bg-[#0878EE] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-600"
         >
-          Luyện tình huống khác
+          {isAdmin ? 'Kiểm thử kịch bản khác' : 'Luyện tình huống khác'}
         </Link>
         <Link
           to="/roleplay/results"

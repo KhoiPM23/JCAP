@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -57,6 +57,7 @@ export const AdminCreditPackagesView: React.FC = () => {
   // State Management
   // ============================================================================
   const [packages, setPackages] = useState<CreditPackage[]>([]);
+  const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,6 +68,11 @@ export const AdminCreditPackagesView: React.FC = () => {
   const [selectedPackage, setSelectedPackage] = useState<CreditPackage | null>(null);
   const [formData, setFormData] = useState<PackageFormData>(initialFormData);
   const [formValidationErrors, setFormValidationErrors] = useState<string[]>([]);
+
+  // Computed tab package lists
+  const activePackages = useMemo(() => packages.filter((p) => p.isActive), [packages]);
+  const inactivePackages = useMemo(() => packages.filter((p) => !p.isActive), [packages]);
+  const currentDisplayPackages = activeTab === 'active' ? activePackages : inactivePackages;
 
   // ============================================================================
   // Helper: Get Auth Token
@@ -287,18 +293,35 @@ export const AdminCreditPackagesView: React.FC = () => {
     }
   };
 
-  // Handle Soft Delete with window.confirm
+  // Handle Soft Delete / Deactivate
   const handleDelete = async (pkg: CreditPackage) => {
-    const isConfirmed = window.confirm('Are you sure you want to deactivate this package?');
+    const isConfirmed = window.confirm(`Bạn có chắc chắn muốn ẩn/ngừng hoạt động gói "${pkg.name}"? (Gói sẽ chuyển sang tab Gói Đã Ẩn)`);
     if (!isConfirmed) return;
 
     try {
       await deletePackageApi(pkg.id);
-      setSuccessMessage(`Đã vô hiệu hóa gói "${pkg.name}" thành công.`);
+      setSuccessMessage(`Đã ẩn gói "${pkg.name}" thành công (Đã chuyển sang tab Gói Đã Ẩn).`);
       await fetchPackages();
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không thể vô hiệu hóa gói credit.');
+      setErrorMessage(err.message || 'Không thể ẩn gói credit.');
+    }
+  };
+
+  // Handle Restore
+  const handleRestore = async (pkg: CreditPackage) => {
+    try {
+      await updatePackageApi(pkg.id, {
+        name: pkg.name,
+        credits: pkg.credits,
+        price: pkg.price,
+        isActive: true,
+      });
+      setSuccessMessage(`Đã khôi phục gói "${pkg.name}" hoạt động trở lại thành công.`);
+      await fetchPackages();
+      setTimeout(() => setSuccessMessage(null), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Không thể khôi phục gói credit.');
     }
   };
 
@@ -315,40 +338,16 @@ export const AdminCreditPackagesView: React.FC = () => {
   // ============================================================================
   return (
     <div className="p-6 max-w-7xl mx-auto font-sans text-slate-800">
-      {/* Top Admin Navigation Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900 text-white px-4 py-3 rounded-xl mb-6 shadow-sm text-xs gap-3">
-        <div className="flex items-center space-x-2">
-          <span className="bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">
-            Admin Portal
-          </span>
-          <span className="text-slate-300">
-            Xin chào, <strong>{user?.fullName || 'Quản trị viên'}</strong> ({user?.email || 'admin'})
-          </span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={() => navigate('/scenarios')}
-            className="text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition flex items-center"
-          >
-            &larr; Xem giao diện Học viên
-          </button>
-          <button
-            type="button"
-            onClick={async () => {
-              await logout();
-              navigate('/login', { replace: true });
-            }}
-            className="text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg border border-red-900/50 hover:bg-red-950/40 transition font-medium"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      </div>
-
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
         <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
+            <span>Hệ thống Quản trị</span>
+            <span>&gt;</span>
+            <span>Hệ thống &amp; Người dùng</span>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">Quản lý Gói Credit</span>
+          </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Quản Lý Gói Credit (Admin)
           </h1>
@@ -367,6 +366,7 @@ export const AdminCreditPackagesView: React.FC = () => {
           Thêm Gói Mới
         </button>
       </div>
+
 
       {/* Alert Messages */}
       {successMessage && (
@@ -397,6 +397,43 @@ export const AdminCreditPackagesView: React.FC = () => {
         </div>
       )}
 
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-slate-200 mb-6 gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('active')}
+          className={`flex items-center gap-2 px-5 py-3 font-semibold text-sm border-b-2 transition-all cursor-pointer ${
+            activeTab === 'active'
+              ? 'border-red-600 text-red-600 bg-red-50/50 rounded-t-lg'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
+        >
+          <span>Gói Đang Hoạt Động</span>
+          <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+            activeTab === 'active' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'
+          }`}>
+            {activePackages.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('inactive')}
+          className={`flex items-center gap-2 px-5 py-3 font-semibold text-sm border-b-2 transition-all cursor-pointer ${
+            activeTab === 'inactive'
+              ? 'border-amber-600 text-amber-700 bg-amber-50/50 rounded-t-lg'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+          }`}
+        >
+          <span>Gói Đã Ẩn</span>
+          <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+            activeTab === 'inactive' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'
+          }`}>
+            {inactivePackages.length}
+          </span>
+        </button>
+      </div>
+
       {/* Main Data Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {isLoading ? (
@@ -404,13 +441,19 @@ export const AdminCreditPackagesView: React.FC = () => {
             <div className="inline-block w-8 h-8 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin mb-3"></div>
             <p className="text-sm">Đang tải danh sách gói credit...</p>
           </div>
-        ) : packages.length === 0 ? (
+        ) : currentDisplayPackages.length === 0 ? (
           <div className="py-16 text-center text-slate-500">
             <svg className="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
-            <p className="text-base font-medium text-slate-600">Chưa có gói credit nào trong hệ thống</p>
-            <p className="text-sm mt-1">Bấm "Thêm Gói Mới" để tạo gói đầu tiên.</p>
+            <p className="text-base font-medium text-slate-600">
+              {activeTab === 'active'
+                ? 'Không có gói credit nào đang hoạt động.'
+                : 'Không có gói credit nào đã bị ẩn.'}
+            </p>
+            {activeTab === 'active' && (
+              <p className="text-sm mt-1">Bấm "Thêm Gói Mới" để tạo gói đầu tiên.</p>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -422,11 +465,11 @@ export const AdminCreditPackagesView: React.FC = () => {
                   <th className="py-3.5 px-4 text-right">Số Credits</th>
                   <th className="py-3.5 px-4 text-right">Giá Tiền (VND)</th>
                   <th className="py-3.5 px-4 text-center w-36">Trạng Thái</th>
-                  <th className="py-3.5 px-4 text-center w-36">Thao Tác</th>
+                  <th className="py-3.5 px-4 text-center w-44">Thao Tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {packages.map((pkg) => (
+                {currentDisplayPackages.map((pkg) => (
                   <tr key={pkg.id} className="hover:bg-slate-50 transition-colors">
                     {/* ID */}
                     <td className="py-3.5 px-4 text-center font-mono text-slate-500 text-xs">
@@ -453,12 +496,12 @@ export const AdminCreditPackagesView: React.FC = () => {
                       {pkg.isActive ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                           <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500"></span>
-                          Active
+                          Đang hoạt động
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                           <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span>
-                          Inactive
+                          Đã ẩn / Tắt
                         </span>
                       )}
                     </td>
@@ -472,19 +515,29 @@ export const AdminCreditPackagesView: React.FC = () => {
                       >
                         Sửa
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(pkg)}
-                        disabled={!pkg.isActive}
-                        className={`inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded border transition ${
-                          pkg.isActive
-                            ? 'text-red-700 bg-red-50 border-red-200 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300'
-                            : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed'
-                        }`}
-                        title={pkg.isActive ? 'Vô hiệu hóa gói' : 'Gói đã vô hiệu hóa'}
-                      >
-                        Xóa
-                      </button>
+
+                      {pkg.isActive ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(pkg)}
+                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded border transition text-red-700 bg-red-50 border-red-200 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+                          title="Tắt hoạt động và chuyển gói vào tab Đã ẩn"
+                        >
+                          Ẩn gói
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRestore(pkg)}
+                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded border transition text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                          title="Khôi phục gói hoạt động trở lại"
+                        >
+                          <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Khôi phục
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -653,4 +706,3 @@ export const AdminCreditPackagesView: React.FC = () => {
 };
 
 export default AdminCreditPackagesView;
-

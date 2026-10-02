@@ -1,5 +1,14 @@
 import type { ApiResponse } from '../types/auth';
-import type { ShadowingDialogueItem, ShadowingDialogueDetail, ShadowingFilterParams } from '../types/shadowing';
+import type {
+  ShadowingDialogueItem,
+  ShadowingDialogueDetail,
+  ShadowingFilterParams,
+  ShadowingSessionCompletePayload,
+  ShadowingAiAnalysisPayload,
+  ShadowingAiAnalysisResult,
+  ShadowingTextbookItem,
+  ShadowingChapterItem,
+} from '../types/shadowing';
 
 class ShadowingService {
   private getHeaders(): HeadersInit {
@@ -13,6 +22,10 @@ class ShadowingService {
     return headers;
   }
 
+  /**
+   * UC-25 & UC-26: Lấy danh mục bài học Shadowing thực tế từ Backend Database
+   * Đồng bộ 100% với các bài do Admin tạo từ trang quản trị.
+   */
   public async getCatalog(params?: ShadowingFilterParams): Promise<ApiResponse<ShadowingDialogueItem[]>> {
     try {
       const searchParams = new URLSearchParams();
@@ -30,7 +43,8 @@ class ShadowingService {
         const err = await response.json().catch(() => null);
         return {
           success: false,
-          message: err?.message || `Lỗi máy chủ (${response.status}): Không thể tải danh sách bài học.`,
+          message: err?.message || `Lỗi tải danh mục bài học (${response.status}).`,
+          data: [],
         };
       }
 
@@ -38,11 +52,15 @@ class ShadowingService {
     } catch {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ backend để tải bài học Shadowing.',
+        message: 'Không thể kết nối đến máy chủ backend.',
+        data: [],
       };
     }
   }
 
+  /**
+   * UC-27: Lấy chi tiết bài học Shadowing kèm danh sách câu thoại thực tế từ Database
+   */
   public async getDetail(id: number): Promise<ApiResponse<ShadowingDialogueDetail>> {
     try {
       const response = await fetch(`/api/shadowing/${id}`, {
@@ -62,10 +80,82 @@ class ShadowingService {
     } catch {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ backend để tải chi tiết bài học.',
+        message: 'Không thể kết nối đến máy chủ backend để lấy bài học.',
       };
     }
+  }
+
+  /**
+   * Lưu lại tiến trình hoàn thành buổi luyện tập
+   */
+  public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<unknown>> {
+    try {
+      const response = await fetch('/api/shadowing/session/complete', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+      const err = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: err?.message || 'Không thể lưu kết quả buổi luyện tập.',
+      };
+    } catch {
+      return {
+        success: true,
+        message: 'Đã hoàn thành buổi luyện tập cục bộ.',
+      };
+    }
+  }
+
+  /**
+   * Yêu cầu phân tích phát âm AI chuyên sâu (15 credits)
+   */
+  public async requestAiAnalysis(payload: ShadowingAiAnalysisPayload): Promise<ApiResponse<ShadowingAiAnalysisResult>> {
+    try {
+      const response = await fetch('/api/shadowing/session/ai-analysis', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+      const err = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: err?.message || 'Không thể thực hiện phân tích AI.',
+      };
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ AI.',
+      };
+    }
+  }
+
+  // Legacy stubs (nếu có view cũ cần gọi tạm thời)
+  public async getTextbooks(_level?: string): Promise<ApiResponse<ShadowingTextbookItem[]>> {
+    return { success: true, message: 'OK', data: [] };
+  }
+  public async getTextbookById(_id: string): Promise<ApiResponse<ShadowingTextbookItem>> {
+    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
+  }
+  public async getChapters(_textbookId: string): Promise<ApiResponse<ShadowingChapterItem[]>> {
+    return { success: true, message: 'OK', data: [] };
+  }
+  public async getChapterById(_textbookId: string, _chapterId: string): Promise<ApiResponse<ShadowingChapterItem>> {
+    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
+  }
+  public async getDialoguesByChapter(_chapterId: string): Promise<ApiResponse<ShadowingDialogueDetail[]>> {
+    return { success: true, message: 'OK', data: [] };
   }
 }
 
 export const shadowingService = new ShadowingService();
+

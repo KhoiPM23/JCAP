@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { formatDateMedium } from '../utils/dateUtils';
 import type {
   RoleplayResultHistoryResponse,
   RoleplayResultSummary,
@@ -10,11 +11,7 @@ type ResultFilter = 'all' | 'passed' | 'not-passed';
 
 const PAGE_SIZE = 8;
 
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
+const formatDate = (value: string) => formatDateMedium(value);
 
 const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => (
   <article className="group grid gap-5 rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_30px_rgba(7,26,68,0.05)] transition hover:-translate-y-0.5 hover:border-[#9EC8F7] hover:shadow-[0_18px_42px_rgba(7,26,68,0.09)] md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
@@ -100,7 +97,7 @@ export const ConversationHistoryView: React.FC = () => {
         <div className="absolute bottom-0 right-28 h-24 w-24 translate-y-1/2 rotate-12 rounded-3xl bg-[#0878EE]/25" />
         <div className="relative max-w-2xl">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-[#7FC2FF]">
-            UC-20 · Lịch sử hội thoại
+            Lịch sử hội thoại
           </p>
           <h1 className="text-3xl font-black tracking-tight md:text-4xl">Hành trình Kaiwa của bạn</h1>
           <p className="mt-3 text-sm leading-6 text-blue-100">

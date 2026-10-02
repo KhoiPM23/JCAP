@@ -10,20 +10,23 @@ namespace JCAP.Services.Implementations
 {
     public class RoleplayResultService : IRoleplayResultService
     {
-        private const int MockScore = 80;
         private const int PassThreshold = 60;
+        private const string LegacyMockFeedback = "Bạn đã duy trì hội thoại rõ ràng và hoàn thành tốt các mục tiêu chính. Hãy tiếp tục luyện cách diễn đạt tự nhiên hơn trong những lượt nói tiếp theo.";
 
         private readonly AppDbContext _dbContext;
         private readonly IRoleplaySessionSnapshotProvider _sessionSnapshotProvider;
+        private readonly IRoleplayEvaluationService _evaluationService;
         private readonly ILogger<RoleplayResultService> _logger;
 
         public RoleplayResultService(
             AppDbContext dbContext,
             IRoleplaySessionSnapshotProvider sessionSnapshotProvider,
+            IRoleplayEvaluationService evaluationService,
             ILogger<RoleplayResultService> logger)
         {
             _dbContext = dbContext;
             _sessionSnapshotProvider = sessionSnapshotProvider;
+            _evaluationService = evaluationService;
             _logger = logger;
         }
 
@@ -43,7 +46,10 @@ namespace JCAP.Services.Implementations
 
             if (existingResult != null)
             {
-                return BuildCompleteResponse(existingResult.Id, isExistingResult: true);
+                return BuildCompleteResponse(
+                    existingResult.Id,
+                    isExistingResult: true,
+                    isMockEvaluation: IsLegacyMockResult(existingResult));
             }
 
             var snapshot = await _sessionSnapshotProvider.GetCompletableSessionAsync(sessionId, userId);
@@ -60,12 +66,37 @@ namespace JCAP.Services.Implementations
             }).ToList();
 
             var session = await _dbContext.RoleplaySessions
+                .Include(item => item.Messages)
+                .Include(item => item.SessionMissions)
                 .FirstOrDefaultAsync(item => item.Id == sessionId && item.UserId == userId);
 
             if (session == null)
             {
                 return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
                     "Không tìm thấy phiên luyện tập hoặc bạn không có quyền hoàn tất phiên này.");
+            }
+
+            var userMessages = session.Messages
+                .Where(message => string.Equals(message.Sender, "User", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(message => message.CreatedAt)
+                .ToList();
+
+            if (userMessages.Count == 0)
+            {
+                return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
+                    "Bạn cần gửi ít nhất một câu hội thoại trước khi hoàn tất phiên luyện tập.");
+            }
+
+            var evaluation = _evaluationService.Evaluate(
+                userMessages.Select(message => message.LinguisticFeedbackJson),
+                session.SessionMissions.Count(mission => mission.IsCompleted),
+                session.SessionMissions.Count,
+                session.IsNaturallyConcluded);
+
+            if (evaluation == null)
+            {
+                return ApiResponse<CompleteRoleplaySessionResponseDto>.Fail(
+                    "Chưa đủ dữ liệu đánh giá từ Gemini. Vui lòng tiếp tục hội thoại và thử hoàn tất lại.");
             }
 
             var completedAt = DateTime.UtcNow;
@@ -79,12 +110,13 @@ namespace JCAP.Services.Implementations
                 UserId = userId,
                 ScenarioTitle = snapshot.ScenarioTitle,
                 JLPTLevel = snapshot.JLPTLevel,
-                OverallScore = MockScore,
-                GrammarScore = MockScore,
-                VocabularyScore = MockScore,
-                ImpressionScore = MockScore,
-                PassStatus = MockScore >= PassThreshold,
-                GeneralFeedbackText = "Bạn đã duy trì hội thoại rõ ràng và hoàn thành tốt các mục tiêu chính. Hãy tiếp tục luyện cách diễn đạt tự nhiên hơn trong những lượt nói tiếp theo.",
+                OverallScore = evaluation.OverallScore,
+                GrammarScore = evaluation.GrammarScore,
+                VocabularyScore = evaluation.VocabularyScore,
+                ImpressionScore = evaluation.ImpressionScore,
+                PassStatus = evaluation.AllMissionsCompleted
+                    && evaluation.OverallScore >= PassThreshold,
+                GeneralFeedbackText = evaluation.GeneralFeedbackText,
                 CompletedMissionsSummaryJson = JsonSerializer.Serialize(completedMissions),
                 CompletedAt = session.CompletedAt.Value
             };
@@ -94,7 +126,10 @@ namespace JCAP.Services.Implementations
             try
             {
                 await _dbContext.SaveChangesAsync();
-                return BuildCompleteResponse(result.Id, isExistingResult: false);
+                return BuildCompleteResponse(
+                    result.Id,
+                    isExistingResult: false,
+                    isMockEvaluation: false);
             }
             catch (DbUpdateException exception)
             {
@@ -112,7 +147,10 @@ namespace JCAP.Services.Implementations
 
                 if (concurrentResult != null)
                 {
-                    return BuildCompleteResponse(concurrentResult.Id, isExistingResult: true);
+                    return BuildCompleteResponse(
+                        concurrentResult.Id,
+                        isExistingResult: true,
+                        isMockEvaluation: IsLegacyMockResult(concurrentResult));
                 }
 
                 throw;
@@ -153,6 +191,11 @@ namespace JCAP.Services.Implementations
                     CompletedAt = result.CompletedAt
                 })
                 .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.CompletedAt = AsUtc(item.CompletedAt);
+            }
 
             return ApiResponse<RoleplayResultHistoryResponseDto>.Ok(new RoleplayResultHistoryResponseDto
             {
@@ -204,13 +247,24 @@ namespace JCAP.Services.Implementations
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
-                CompletedAt = result.CompletedAt
+                CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
+        }
+
+        private static DateTime AsUtc(DateTime value)
+        {
+            // SQL Server datetime2 does not preserve DateTime.Kind. Roleplay timestamps are
+            // stored in UTC, so restore the kind before JSON serialization to emit the "Z"
+            // suffix and prevent browsers from interpreting UTC values as local time.
+            return value.Kind == DateTimeKind.Utc
+                ? value
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
         private static ApiResponse<CompleteRoleplaySessionResponseDto> BuildCompleteResponse(
             int resultId,
-            bool isExistingResult)
+            bool isExistingResult,
+            bool isMockEvaluation)
         {
             var message = isExistingResult
                 ? "Phiên luyện tập đã được hoàn tất trước đó."
@@ -220,8 +274,20 @@ namespace JCAP.Services.Implementations
             {
                 ResultId = resultId,
                 IsExistingResult = isExistingResult,
-                IsMockEvaluation = true
+                IsMockEvaluation = isMockEvaluation
             }, message);
+        }
+
+        private static bool IsLegacyMockResult(RoleplayResult result)
+        {
+            return result.OverallScore == 80
+                && result.GrammarScore == 80
+                && result.VocabularyScore == 80
+                && result.ImpressionScore == 80
+                && string.Equals(
+                    result.GeneralFeedbackText,
+                    LegacyMockFeedback,
+                    StringComparison.Ordinal);
         }
     }
 }

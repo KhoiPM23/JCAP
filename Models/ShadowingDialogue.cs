@@ -9,11 +9,14 @@ namespace JCAP.Models
         public string? SourceDescription { get; set; }
         public string SpeakerRoleA_Name { get; set; } = string.Empty;
         public string SpeakerRoleB_Name { get; set; } = string.Empty;
+        public string? SpeakerRolesJson { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
         public Scenario Scenario { get; set; } = null!;
         public ICollection<ShadowingSentence> Sentences { get; set; } = new List<ShadowingSentence>();
+        public ICollection<ShadowingDialogueVocabulary> DialogueVocabularies { get; set; } = new List<ShadowingDialogueVocabulary>();
+        public ICollection<ShadowingDialogueGrammar> DialogueGrammars { get; set; } = new List<ShadowingDialogueGrammar>();
     }
 }

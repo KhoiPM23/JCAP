@@ -196,7 +196,8 @@ namespace JCAP.Controllers
                 $"&userId={Uri.EscapeDataString(data.UserId)}" +
                 $"&email={Uri.EscapeDataString(data.Email)}" +
                 $"&fullName={Uri.EscapeDataString(data.FullName)}" +
-                $"&role={Uri.EscapeDataString(data.Role)}";
+                $"&role={Uri.EscapeDataString(data.Role)}" +
+                $"&creditBalance={data.CreditBalance}";
 
             return Redirect(redirectUrl);
         }

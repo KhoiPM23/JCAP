@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
+import { formatDateTime } from '../utils/dateUtils';
 import type { CreditTransaction, CreditHistoryResponse } from '../types/credit';
 
 export const CreditHistoryView: React.FC = () => {
+  const { user, refreshUser } = useAuth();
   const [data, setData] = useState<CreditHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +22,7 @@ export const CreditHistoryView: React.FC = () => {
       const res = await creditService.getHistory(page, pageSize);
       if (res.success && res.data) {
         setData(res.data);
+        refreshUser();
       } else {
         setError(res.message || 'Không thể tải lịch sử giao dịch.');
       }
@@ -75,20 +79,7 @@ export const CreditHistoryView: React.FC = () => {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr: string) => formatDateTime(dateStr);
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -118,6 +109,11 @@ export const CreditHistoryView: React.FC = () => {
           </span>
         );
     }
+  };
+
+  const formatDescription = (desc?: string) => {
+    if (!desc) return '—';
+    return desc.replace(/Nạp gói Gói/gi, 'Nạp Gói').replace(/Nạp gói gói/gi, 'Nạp gói');
   };
 
   const getTypeLabel = (type: string) => {
@@ -155,7 +151,7 @@ export const CreditHistoryView: React.FC = () => {
             <div>
               <span className="text-[11px] uppercase tracking-wider text-amber-800 font-semibold block">Số dư hiện tại</span>
               <span className="text-xl font-extrabold text-amber-900">
-                {data?.currentCreditBalance ?? 0} <span className="text-xs font-normal">Credits</span>
+                {data?.currentCreditBalance ?? user?.creditBalance ?? 0} <span className="text-xs font-normal">Credits</span>
               </span>
             </div>
           </div>
@@ -236,7 +232,7 @@ export const CreditHistoryView: React.FC = () => {
                         {getStatusBadge(tx.status)}
                       </td>
                       <td className="py-4 px-6 text-[#475467] max-w-xs truncate">
-                        {tx.description || '—'}
+                        {formatDescription(tx.description)}
                       </td>
                       <td className="py-4 px-6 text-[#71809A] font-mono text-[11px] whitespace-nowrap">
                         {tx.payOsOrderCode ? `#${tx.payOsOrderCode}` : '—'}

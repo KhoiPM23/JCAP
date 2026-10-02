@@ -5,11 +5,21 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
+    <SpaRoot>jcap-web\</SpaRoot>
+    <SpaProxyServerUrl>http://localhost:5173</SpaProxyServerUrl>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+
     <!-- Ngăn Visual Studio / MSBuild tự ý compile TypeScript của frontend jcap-web -->
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>None</TypeScriptToolsVersion>
     <DefaultItemExcludes>$(DefaultItemExcludes);jcap-web\node_modules\**;jcap-web\dist\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <!-- Tự động cài đặt thư viện frontend (npm install) nếu node_modules chưa tồn tại -->
+  <Target Name="EnsureNpmInstall" BeforeTargets="Build" Condition="!Exists('$(SpaRoot)node_modules')">
+    <Message Importance="high" Text="Tự động cài đặt thư viện frontend (npm install) cho jcap-web..." />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" ContinueOnError="false" />
+  </Target>
 
   <ItemGroup>
     <!-- Loại trừ node_modules và dist để tránh lỗi IntelliSense và không làm nặng project -->
@@ -32,6 +42,7 @@
     <PackageReference Include="MailKit" Version="4.18.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.31" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.31">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
