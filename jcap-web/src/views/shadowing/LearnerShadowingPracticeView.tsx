@@ -33,15 +33,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [userRole, setUserRole] = useState<'A' | 'B'>(roleParam);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState<boolean>(false);
 
-  // Practice turn tracking: start at sentence index 0 (or sentence 2 if demonstrating active turn like image 2)
+  // Practice turn tracking: start at sentence index 0
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(0);
   const [sentenceResults, setSentenceResults] = useState<Map<number, ShadowingSentencePracticeResult>>(new Map());
   const [practiceStartTime] = useState<number>(Date.now());
   const [sessionDurationSeconds, setSessionDurationSeconds] = useState<number>(0);
 
   // Recording & State
-  type PracticeState = 'ready' | 'listening' | 'evaluated' | 'completed';
+  type PracticeState = 'ready' | 'listening' | 'evaluated' | 'opponent-speaking' | 'completed';
   const [practiceState, setPracticeState] = useState<PracticeState>('ready');
+  const [liveTranscript, setLiveTranscript] = useState<string>('');
   const [currentRecognizedText, setCurrentRecognizedText] = useState<string>('');
   const [currentScore, setCurrentScore] = useState<number>(85);
   const [currentTier, setCurrentTier] = useState<'green' | 'yellow' | 'red'>('green');
@@ -53,13 +54,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [audioPlaybackSpeed, setAudioPlaybackSpeed] = useState<number>(0.8); // Default 0.8x from prototype
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // MediaRecorder for user playback
+  // MediaRecorder & Playback for user recordings
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedAudioChunksRef = useRef<Blob[]>([]);
   const [recordedAudioUrls, setRecordedAudioUrls] = useState<Map<number, string>>(new Map());
+  const [playingUserAudioSentenceId, setPlayingUserAudioSentenceId] = useState<number | null>(null);
+  const userAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // Web Speech Recognition
+  // Web Speech Recognition & Auto-scroll
   const recognitionRef = useRef<any>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Modals & Slideovers
   const [isSituationCollapsed, setIsSituationCollapsed] = useState<boolean>(false);
@@ -98,29 +102,39 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             setSelectedLevel(res.data.jlptLevel);
           }
 
-          // Pre-populate Sentence 1 as completed if viewing Dialogue 1401 initially to match Image 2
-          if (targetId === 1401 && res.data.sentences.length > 2) {
-            const firstSentence = res.data.sentences[0];
-            const initialMap = new Map<number, ShadowingSentencePracticeResult>();
-            initialMap.set(firstSentence.id, {
-              sentenceId: firstSentence.id,
-              orderIndex: firstSentence.orderIndex,
-              targetText: firstSentence.japaneseText,
-              recognizedText: firstSentence.japaneseText,
-              accuracyScore: 96,
-              evaluationTier: 'green',
-            });
-            setSentenceResults(initialMap);
-            // In Image 2, the current active sentence is sentence index 2 (sentence #3: いいです、いつでもどうぞ...)
-            setCurrentSentenceIndex(2);
+          // Always start clean from Sentence 0 for true turn-by-turn progression
+          setCurrentSentenceIndex(0);
+          setSentenceResults(new Map());
+          setRecordedAudioUrls(new Map());
+          setLiveTranscript('');
+          setCurrentRecognizedText('');
+
+          // If first sentence belongs to opponent, trigger their turn
+          if (res.data.sentences.length > 0 && res.data.sentences[0].speakerRole !== userRole) {
+            setTimeout(() => {
+              playOpponentSentence(res.data.sentences[0]);
+            }, 600);
           } else {
-            setCurrentSentenceIndex(0);
+            setPracticeState('ready');
           }
         } else {
           // Fallback to mock dialogue 1401
           const fallback = getMockDialogueById(1401);
           if (fallback) {
             setDialogue(fallback);
+            setCurrentSentenceIndex(0);
+            setSentenceResults(new Map());
+            setRecordedAudioUrls(new Map());
+            setLiveTranscript('');
+            setCurrentRecognizedText('');
+
+            if (fallback.sentences.length > 0 && fallback.sentences[0].speakerRole !== userRole) {
+              setTimeout(() => {
+                playOpponentSentence(fallback.sentences[0]);
+              }, 600);
+            } else {
+              setPracticeState('ready');
+            }
           } else {
             setErrorMessage('Không thể tải bài học Shadowing.');
           }
@@ -133,7 +147,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     };
 
     loadDialogue();
-  }, [id]);
+  }, [id, userRole]);
 
   // Handle changing Level from dropdown in header
   const handleLevelChange = (newLevel: 'N5' | 'N4' | 'N3') => {
@@ -169,6 +183,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
       }
+      if (userAudioPlayerRef.current) {
+        userAudioPlayerRef.current.pause();
+      }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -179,11 +196,17 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           // ignore
         }
       }
+      stopRecordingMedia();
     };
   }, []);
 
+  // Auto-scroll to latest sentence when dialogue progresses
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentSentenceIndex, practiceState]);
+
   // Web Speech Synthesis for high-fidelity native Japanese audio playback
-  const speakJapanese = (text: string, rate: number = audioPlaybackSpeed) => {
+  const speakJapanese = (text: string, rate: number = audioPlaybackSpeed, onEnd?: () => void) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -192,17 +215,24 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
       if (jpVoice) utterance.voice = jpVoice;
-      utterance.onend = () => setIsPlayingAudio(false);
-      utterance.onerror = () => setIsPlayingAudio(false);
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        if (onEnd) onEnd();
+      };
+      utterance.onerror = () => {
+        setIsPlayingAudio(false);
+        if (onEnd) onEnd();
+      };
       setIsPlayingAudio(true);
       window.speechSynthesis.speak(utterance);
       return true;
     }
+    if (onEnd) onEnd();
     return false;
   };
 
   // Play audio sample: prefers real audio URL, falls back smoothly to SpeechSynthesis
-  const playAudio = (url?: string, text?: string, speed: number = audioPlaybackSpeed) => {
+  const playAudio = (url?: string, text?: string, speed: number = audioPlaybackSpeed, onEnd?: () => void) => {
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
     }
@@ -215,17 +245,28 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.playbackRate = speed;
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
-      audio.onended = () => setIsPlayingAudio(false);
+      audio.onended = () => {
+        setIsPlayingAudio(false);
+        if (onEnd) onEnd();
+      };
       audio.onerror = () => {
-        if (text) speakJapanese(text, speed);
-        else setIsPlayingAudio(false);
+        if (text) speakJapanese(text, speed, onEnd);
+        else {
+          setIsPlayingAudio(false);
+          if (onEnd) onEnd();
+        }
       };
       audio.play().catch(() => {
-        if (text) speakJapanese(text, speed);
-        else setIsPlayingAudio(false);
+        if (text) speakJapanese(text, speed, onEnd);
+        else {
+          setIsPlayingAudio(false);
+          if (onEnd) onEnd();
+        }
       });
     } else if (text) {
-      speakJapanese(text, speed);
+      speakJapanese(text, speed, onEnd);
+    } else {
+      if (onEnd) onEnd();
     }
   };
 
@@ -240,12 +281,158 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     }
   };
 
-  // Play user recorded audio
+  // Play user recorded audio (nghe lại giọng của người học cho từng câu đã lưu)
   const playUserRecording = (sentenceId: number) => {
     const url = recordedAudioUrls.get(sentenceId);
-    if (url) {
-      const audio = new Audio(url);
-      audio.play().catch(() => {});
+    if (!url) return;
+
+    if (playingUserAudioSentenceId === sentenceId) {
+      if (userAudioPlayerRef.current) {
+        userAudioPlayerRef.current.pause();
+      }
+      setPlayingUserAudioSentenceId(null);
+      return;
+    }
+
+    if (audioPlayerRef.current) audioPlayerRef.current.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
+
+    const audio = new Audio(url);
+    userAudioPlayerRef.current = audio;
+    setPlayingUserAudioSentenceId(sentenceId);
+
+    audio.onended = () => {
+      setPlayingUserAudioSentenceId(null);
+    };
+    audio.onerror = () => {
+      setPlayingUserAudioSentenceId(null);
+    };
+    audio.play().catch(() => {
+      setPlayingUserAudioSentenceId(null);
+    });
+  };
+
+  // Turn progression: Opponent speaks and auto-advances
+  const playOpponentSentence = (sentence: ShadowingSentenceItem) => {
+    setPracticeState('opponent-speaking');
+    playAudio(sentence.nativeAudioUrl, sentence.japaneseText, audioPlaybackSpeed, () => {
+      setTimeout(() => {
+        advanceAfterOpponent(sentence.orderIndex);
+      }, 700);
+    });
+  };
+
+  const advanceAfterOpponent = (currentOrderIndex: number) => {
+    if (!dialogue) return;
+    const currentIdx = dialogue.sentences.findIndex(s => s.orderIndex === currentOrderIndex);
+    const nextIdx = currentIdx + 1;
+    if (nextIdx < dialogue.sentences.length) {
+      setCurrentSentenceIndex(nextIdx);
+      const nextSentence = dialogue.sentences[nextIdx];
+      if (nextSentence.speakerRole !== userRole) {
+        setTimeout(() => {
+          playOpponentSentence(nextSentence);
+        }, 500);
+      } else {
+        setPracticeState('ready');
+        setLiveTranscript('');
+        setCurrentRecognizedText('');
+      }
+    } else {
+      handleFinishDialogue();
+    }
+  };
+
+  const handleSkipOpponentSpeech = () => {
+    if (audioPlayerRef.current) audioPlayerRef.current.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    setIsPlayingAudio(false);
+    if (currentSentence) {
+      advanceAfterOpponent(currentSentence.orderIndex);
+    }
+  };
+
+  // Text normalization & comparison for Japanese speech evaluation
+  const normalizeJapanese = (str: string): string => {
+    return str
+      .normalize('NFKC')
+      .replace(/[\s。、！？!?.,\-_~—「」『』()（）]/g, '')
+      .toLowerCase();
+  };
+
+  const compareJapaneseSpeech = (target: string, spoken: string) => {
+    const cleanTarget = normalizeJapanese(target);
+    const cleanSpoken = normalizeJapanese(spoken);
+
+    if (!cleanSpoken) {
+      return {
+        score: 50,
+        tier: 'red' as const,
+        feedback: 'Chưa phát hiện được giọng nói rõ ràng. Hãy bấm Micro và nói to câu tiếng Nhật mẫu nhé.',
+        similarity: 0,
+        hasSpoken: false,
+      };
+    }
+
+    if (cleanTarget === cleanSpoken) {
+      return {
+        score: 98,
+        tier: 'green' as const,
+        feedback: 'Hoàn hảo! Phát âm và trường âm chính xác 100% so với câu mẫu chuẩn Tokyo.',
+        similarity: 1.0,
+        hasSpoken: true,
+      };
+    }
+
+    const m = cleanTarget.length;
+    const n = cleanSpoken.length;
+    const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = cleanTarget[i - 1] === cleanSpoken[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+
+    const distance = dp[m][n];
+    const maxLen = Math.max(m, n);
+    const similarity = Math.max(0, 1 - distance / maxLen);
+
+    if (similarity >= 0.80) {
+      const score = Math.round(85 + (similarity - 0.80) * 65);
+      return {
+        score: Math.min(96, Math.max(85, score)),
+        tier: 'green' as const,
+        feedback: 'Xuất sắc! Ngữ điệu tự nhiên, trường âm chuẩn xác, khớp nhịp điệu bản xứ.',
+        similarity,
+        hasSpoken: true,
+      };
+    } else if (similarity >= 0.52) {
+      const score = Math.round(65 + (similarity - 0.52) * 68);
+      return {
+        score: Math.min(84, Math.max(65, score)),
+        tier: 'yellow' as const,
+        feedback: 'Khá tốt! Một số từ hoặc trợ từ chưa thật chuẩn xác, hãy nghe lại câu mẫu để hoàn thiện.',
+        similarity,
+        hasSpoken: true,
+      };
+    } else {
+      const score = Math.max(35, Math.round(similarity * 90));
+      return {
+        score: Math.min(64, score),
+        tier: 'red' as const,
+        feedback: 'Cần luyện thêm. Câu nói phát âm chưa rõ hoặc khác biệt nhiều so với câu mẫu.',
+        similarity,
+        hasSpoken: true,
+      };
     }
   };
 
@@ -257,12 +444,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     }));
   };
 
-  // Start Voice Recording (Learner sentence MVP flow)
+  // Start Voice Recording (CHỈ ghi âm khi tới câu của người học: speakerRole === userRole)
   const startRecording = async () => {
+    if (!currentSentence || currentSentence.speakerRole !== userRole) return;
+
     setMicError(null);
+    setLiveTranscript('');
     setCurrentRecognizedText('');
 
-    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (audioPlayerRef.current) audioPlayerRef.current.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
+    setPlayingUserAudioSentenceId(null);
 
     // 1. Setup MediaRecorder for voice playback if user has mic
     try {
@@ -272,35 +465,45 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       recordedAudioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
+        if (e.data && e.data.size > 0) {
           recordedAudioChunksRef.current.push(e.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(recordedAudioChunksRef.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        if (currentSentence) {
-          setRecordedAudioUrls(prev => new Map(prev).set(currentSentence.id, audioUrl));
+        if (recordedAudioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(recordedAudioChunksRef.current, { type: 'audio/webm' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          if (currentSentence && currentSentence.speakerRole === userRole) {
+            setRecordedAudioUrls(prev => new Map(prev).set(currentSentence.id, audioUrl));
+          }
         }
+        stream.getTracks().forEach(t => t.stop());
       };
 
-      mediaRecorder.start();
-    } catch {
-      // Microphone access denial is non-blocking for mock evaluation
+      mediaRecorder.start(100);
+    } catch (err: any) {
+      console.warn('Microphone access denied:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setMicError('Quyền truy cập micro đã bị từ chối.');
+      }
     }
 
-    // 2. Setup SpeechRecognition (ja-JP) or simulated recording
+    // 2. Setup SpeechRecognition (ja-JP) with Live Sync (interimResults = true)
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRec) {
       setPracticeState('listening');
       return;
     }
 
     try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
       const recognition = new SpeechRec();
       recognition.lang = 'ja-JP';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognitionRef.current = recognition;
 
       recognition.onstart = () => {
@@ -308,34 +511,43 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        stopRecordingMedia();
-        evaluateSpeech(transcript);
+        let interim = '';
+        let final = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        const liveText = (final + ' ' + interim).trim();
+        setLiveTranscript(liveText);
       };
 
-      recognition.onerror = () => {
-        stopRecordingMedia();
-        setPracticeState('listening');
+      recognition.onerror = (err: any) => {
+        console.warn('Recognition error:', err);
       };
 
       recognition.onend = () => {
-        stopRecordingMedia();
+        // Recognition ended
       };
 
       recognition.start();
-    } catch {
+    } catch (err) {
+      console.warn('Recognition start error:', err);
       setPracticeState('listening');
     }
   };
 
   const stopRecordingMedia = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      try {
+        mediaRecorderRef.current.stop();
+      } catch {}
     }
   };
 
-  // Stop recording manually (Learner triggers "Stop Recording" -> Mock Score = 85)
+  // Stop recording manually: evaluate speech transcript
   const stopRecordingManually = () => {
     if (recognitionRef.current) {
       try {
@@ -345,32 +557,30 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       }
     }
     stopRecordingMedia();
-    evaluateSpeech(currentSentence?.japaneseText || '');
+    const spoken = liveTranscript.trim();
+    evaluateSpeech(spoken);
   };
 
-  // Evaluate speech transcript (Default Mock Score = 85 as specified)
+  // Evaluate speech transcript by comparing with target text (CHỈ đánh giá câu của người học)
   const evaluateSpeech = (recognized: string) => {
-    if (!currentSentence) return;
-    setCurrentRecognizedText(recognized || currentSentence.japaneseText);
+    if (!currentSentence || currentSentence.speakerRole !== userRole) return;
+    const target = currentSentence.japaneseText;
+    const evaluation = compareJapaneseSpeech(target, recognized);
 
-    // Flow MVP Requirement: Mock Score = 85
-    const score = 85;
-    const tier: 'green' | 'yellow' | 'red' = 'green';
-    const feedback = 'Xuất sắc! Ngữ điệu tự nhiên, trường âm chuẩn xác, khớp nhịp điệu bản xứ.';
-
-    setCurrentScore(score);
-    setCurrentTier(tier);
-    setCurrentFeedback(feedback);
+    setCurrentRecognizedText(recognized || (evaluation.hasSpoken ? recognized : ''));
+    setCurrentScore(evaluation.score);
+    setCurrentTier(evaluation.tier);
+    setCurrentFeedback(evaluation.feedback);
     setPracticeState('evaluated');
 
     // Save sentence result in local map
     const resultItem: ShadowingSentencePracticeResult = {
       sentenceId: currentSentence.id,
       orderIndex: currentSentence.orderIndex,
-      targetText: currentSentence.japaneseText,
-      recognizedText: recognized || currentSentence.japaneseText,
-      accuracyScore: score,
-      evaluationTier: tier,
+      targetText: target,
+      recognizedText: recognized || target,
+      accuracyScore: evaluation.score,
+      evaluationTier: evaluation.tier,
     };
 
     setSentenceResults(prev => new Map(prev).set(currentSentence.id, resultItem));
@@ -379,6 +589,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Retry current sentence
   const handleRetryCurrentSentence = () => {
     setPracticeState('ready');
+    setLiveTranscript('');
     setCurrentRecognizedText('');
     setMicError(null);
   };
@@ -389,16 +600,20 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const nextIdx = currentSentenceIndex + 1;
     if (nextIdx < dialogue.sentences.length) {
       setCurrentSentenceIndex(nextIdx);
-      setPracticeState('ready');
+      setLiveTranscript('');
       setCurrentRecognizedText('');
       setMicError(null);
 
-      // If next sentence is System's turn, auto-play native audio
       const nextSentence = dialogue.sentences[nextIdx];
       if (nextSentence.speakerRole !== userRole) {
+        // Đối phương nói: tự động phát giọng đối phương, KHÔNG thu âm
+        setPracticeState('opponent-speaking');
         setTimeout(() => {
-          playAudio(nextSentence.nativeAudioUrl, nextSentence.japaneseText, audioPlaybackSpeed);
+          playOpponentSentence(nextSentence);
         }, 300);
+      } else {
+        // Lượt của người học: sẵn sàng ghi âm
+        setPracticeState('ready');
       }
     } else {
       handleFinishDialogue();
@@ -466,8 +681,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setSearchParams({ level: selectedLevel, role: newRole });
     setCurrentSentenceIndex(0);
     setSentenceResults(new Map());
-    setPracticeState('ready');
+    setRecordedAudioUrls(new Map());
+    setLiveTranscript('');
+    setCurrentRecognizedText('');
     setIsCompletedModalOpen(false);
+
+    if (dialogue && dialogue.sentences.length > 0) {
+      if (dialogue.sentences[0].speakerRole !== newRole) {
+        setPracticeState('opponent-speaking');
+        setTimeout(() => {
+          playOpponentSentence(dialogue.sentences[0]);
+        }, 500);
+      } else {
+        setPracticeState('ready');
+      }
+    }
   };
 
   if (isLoading) {
@@ -928,17 +1156,56 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   // Learner Bubble (MATCHES REFERENCE IMAGE 2 EXACTLY FOR BOTH ACTIVE & COMPLETED TURNS)
                   return (
                     <div key={s.id} className="flex flex-col items-end w-full">
-                      {/* Top Header: Yuuri 96% */}
+                      {/* LIVE SYNC: Displayed on/above the learner bubble during recording (Ảnh 3) */}
+                      {isCurrentActive && practiceState === 'listening' && (
+                        <div className="w-full max-w-xl mr-10 mb-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                          <div className="bg-[#071A44] text-white rounded-[20px] p-3.5 border border-cyan-400/40 shadow-xl flex flex-col items-center">
+                            <div className="flex items-center justify-between w-full mb-1.5 text-[11px] text-cyan-300 font-bold px-1">
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                Đang nhận diện giọng nói trực tiếp (Live Sync)
+                              </span>
+                              <span className="text-[10px] text-gray-400">ja-JP</span>
+                            </div>
+                            <div className="w-full bg-[#030D22] rounded-xl px-4 py-2.5 min-h-[42px] flex items-center justify-center border border-slate-700/60 text-center">
+                              <p className="text-base sm:text-lg font-bold text-cyan-300 font-jp tracking-wide">
+                                {liveTranscript ? (
+                                  <span>
+                                    {liveTranscript}
+                                    <span className="inline-block w-1.5 h-4 ml-1 bg-cyan-400 animate-pulse rounded-full align-middle"></span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-normal text-xs sm:text-sm italic">
+                                    Đang lắng nghe... Hãy nói: "{s.japaneseText}"
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Top Header: Yuuri */}
                       <div className="flex items-center gap-2 mb-1.5 text-xs pr-10">
                         <span className="font-bold text-[#071A44]">{learnerName}</span>
-                        <span className="font-bold text-[11px] px-2.5 py-0.5 rounded-full border bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]">
-                          {prevResult ? `${prevResult.accuracyScore}%` : '96%'}
-                        </span>
+                        {prevResult && (
+                          <span className={`font-bold text-[11px] px-2.5 py-0.5 rounded-full border ${
+                            prevResult.accuracyScore >= 85
+                              ? 'bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]'
+                              : prevResult.accuracyScore >= 65
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                            {prevResult.accuracyScore}%
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-start gap-2.5 justify-end w-full max-w-xl">
                         {/* Dark Navy Bubble */}
-                        <div className="rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between w-full bg-[#071A44] transition-all">
+                        <div className={`rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between w-full bg-[#071A44] transition-all ${
+                          isCurrentActive && practiceState === 'listening' ? 'ring-2 ring-cyan-400 shadow-cyan-500/20' : ''
+                        }`}>
                           {/* Top 3 Buttons */}
                           <div className="flex items-center gap-2 mb-2 w-full justify-end">
                             {/* 1. Mic Button */}
@@ -1006,12 +1273,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   );
                 }
               })}
+              {/* Anchor for auto-scrolling */}
+              <div ref={chatEndRef} />
             </div>
 
             {/* ACTION CONSOLE (Recording & Evaluation) */}
             <div className="w-full flex justify-center items-center relative z-10 mt-auto mb-2">
               <div
-                className="w-full rounded-[24px] border-2 border-dashed bg-white/80 backdrop-blur-xs py-4 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
+                className="w-full rounded-[24px] border-2 border-dashed bg-white/80 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
               >
                 {micError && (
@@ -1021,79 +1290,144 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   </div>
                 )}
 
-                {/* State 1: Ready to record (Circle blue mic button matching Image 2) */}
-                {practiceState === 'ready' && (
-                  <div className="flex flex-col items-center justify-center w-full">
-                    <button
-                      onClick={startRecording}
-                      className="bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Bấm vào micro và nói to câu hội thoại"
-                    >
-                      <span className="text-2xl">🎤</span>
-                    </button>
-                    <p className="text-xs text-[#71809A] mt-2 font-medium">Bấm vào micro và nói to câu hội thoại</p>
-                  </div>
-                )}
-
-                {/* State 2: Listening */}
-                {practiceState === 'listening' && (
-                  <div className="flex flex-col items-center justify-center gap-2 w-full">
-                    <button
-                      onClick={stopRecordingManually}
-                      className="pulse-recording-btn bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-full font-bold shadow-xl flex items-center gap-3 text-base cursor-pointer"
-                    >
-                      <span className="w-4 h-4 rounded-full bg-red-500 animate-ping inline-block"></span>
-                      <span>Đang nghe bạn nói... (Nhấn để chốt câu)</span>
-                    </button>
-                    <p className="text-xs text-blue-600 font-semibold animate-pulse">
-                      Hệ thống đang đối chiếu sóng âm chuẩn Tokyo...
-                    </p>
-                  </div>
-                )}
-
-                {/* State 3: Evaluated with Mock Score = 85 */}
-                {practiceState === 'evaluated' && (
-                  <div className="w-full bg-white/95 px-5 py-3 rounded-[20px] border border-[#E6EDF5] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <div className="w-12 h-12 rounded-2xl text-white font-black flex items-center justify-center text-base shadow-sm bg-[#12B76A]">
-                        {currentScore}%
+                {/* CHỈ THU ÂM CÂU CỦA NGƯỜI HỌC (userRole) - KHÔNG THU ÂM CÂU CỦA ĐỐI PHƯƠNG */}
+                {currentSentence?.speakerRole !== userRole ? (
+                  <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
+                        👩‍🏫
                       </div>
-
                       <div className="text-left">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-extrabold text-[#027A48]">
-                            Xuất sắc! (とても良い)
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]">
-                            🟢 Phát âm chuẩn
-                          </span>
+                          <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương) đang nói...</span>
+                          <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
                         </div>
-                        <p className="text-[11px] text-[#556987] font-medium mt-0.5">{currentFeedback}</p>
-                        {currentRecognizedText && (
-                          <p className="text-[10px] text-gray-400 mt-0.5 italic">
-                            Giọng nhận diện: "{currentRecognizedText}"
-                          </p>
-                        )}
+                        <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
+                          "{currentSentence?.japaneseText}"
+                        </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-end gap-2.5 w-full sm:w-auto flex-shrink-0">
-                      <button
-                        onClick={handleRetryCurrentSentence}
-                        className="text-xs font-bold text-[#4A5D78] hover:text-[#0878EE] bg-white hover:bg-[#EEF6FE] border border-[#E6EDF5] px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
-                      >
-                        <span>🔄</span>
-                        <span>Luyện lại câu</span>
-                      </button>
-
-                      <button
-                        onClick={handleNextSentence}
-                        className="text-xs font-extrabold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 transition-all transform hover:scale-102 cursor-pointer"
-                      >
-                        <span>Chốt & Tiếp tục câu sau ➔</span>
-                      </button>
+                    {/* Audio wave indicator */}
+                    <div className="flex items-center gap-1 my-0.5">
+                      <span className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce"></span>
+                      <span className="w-1 h-4 bg-blue-600 rounded-full animate-bounce [animation-delay:0.1s]"></span>
+                      <span className="w-1 h-5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                      <span className="w-1 h-3.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                      <span className="w-1 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                     </div>
+                    <button
+                      onClick={handleSkipOpponentSpeech}
+                      className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                    >
+                      <span>Sang lượt nói của bạn</span>
+                    </button>
+                    <p className="text-[11px] text-slate-400">
+                      * Câu của đối phương do hệ thống tự phát, bạn chỉ thu âm câu của chính mình ({learnerName}).
+                    </p>
                   </div>
+                ) : (
+                  <>
+                    {/* LƯỢT CỦA BẠN - State 1: Ready to record (Ảnh 1: Chỉ hiển thị nút ghi âm) */}
+                    {practiceState === 'ready' && (
+                      <div className="flex items-center justify-center w-full py-1">
+                        <button
+                          onClick={startRecording}
+                          className="group bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
+                          title="Bấm để ghi âm câu thoại của bạn"
+                        >
+                          {/* Refined minimalist mic icon */}
+                          <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                            <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+                            <line x1="12" y1="18" x2="12" y2="22" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* LƯỢT CỦA BẠN - State 2: Listening (Ảnh 2: Chỉ hiển thị nút "Dừng và Chấm điểm câu hỏi") */}
+                    {practiceState === 'listening' && (
+                      <div className="flex items-center justify-center w-full py-1">
+                        <button
+                          onClick={stopRecordingManually}
+                          className="pulse-recording-btn bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white px-7 py-2.5 rounded-full font-bold shadow-xl flex items-center gap-2.5 text-sm sm:text-base cursor-pointer transition-all transform hover:scale-102 active:scale-98"
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                          <span>Dừng và Chấm điểm câu hỏi</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* LƯỢT CỦA BẠN - State 3: Evaluated (Ảnh 4: Bố cục tinh gọn, không icon trước nút) */}
+                    {practiceState === 'evaluated' && (
+                      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 py-1">
+                        {/* Left: Score & Compact Feedback */}
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <div className={`w-11 h-11 rounded-2xl text-white font-black flex items-center justify-center text-sm shadow-sm flex-shrink-0 ${
+                            currentTier === 'green' ? 'bg-[#12B76A]' : currentTier === 'yellow' ? 'bg-amber-500' : 'bg-[#F04438]'
+                          }`}>
+                            {currentScore}%
+                          </div>
+
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-extrabold ${
+                                currentTier === 'green' ? 'text-[#027A48]' : currentTier === 'yellow' ? 'text-amber-700' : 'text-[#B42318]'
+                              }`}>
+                                {currentTier === 'green' ? 'Xuất sắc!' : currentTier === 'yellow' ? 'Khá tốt!' : 'Cần cải thiện'}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                currentTier === 'green'
+                                  ? 'bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]'
+                                  : currentTier === 'yellow'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-red-50 text-red-700 border-red-200'
+                              }`}>
+                                {currentTier === 'green' ? 'Phát âm chuẩn' : currentTier === 'yellow' ? 'Chú ý âm' : 'Cần luyện lại'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#556987] font-medium mt-0.5 line-clamp-1">
+                              {currentFeedback}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right: Actions without leading icons */}
+                        <div className="flex items-center justify-end gap-2.5 w-full md:w-auto flex-shrink-0">
+                          {/* 1. Nghe lại giọng bạn */}
+                          {currentSentence && recordedAudioUrls.has(currentSentence.id) && (
+                            <button
+                              onClick={() => playUserRecording(currentSentence.id)}
+                              className={`h-9 px-4 rounded-full text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                                playingUserAudioSentenceId === currentSentence.id
+                                  ? 'bg-cyan-100 text-cyan-800 border border-cyan-300 animate-pulse'
+                                  : 'text-[#0878EE] bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                              }`}
+                              title="Nghe lại giọng bạn vừa thu âm"
+                            >
+                              {playingUserAudioSentenceId === currentSentence.id ? 'Đang phát...' : 'Nghe lại giọng bạn'}
+                            </button>
+                          )}
+
+                          {/* 2. Luyện lại câu */}
+                          <button
+                            onClick={handleRetryCurrentSentence}
+                            className="h-9 px-4 rounded-full text-xs font-bold text-[#4A5D78] hover:text-[#0878EE] bg-white hover:bg-[#EEF6FE] border border-[#E6EDF5] transition-all shadow-2xs cursor-pointer"
+                          >
+                            Luyện lại câu
+                          </button>
+
+                          {/* 3. Chốt & Tiếp tục câu sau */}
+                          <button
+                            onClick={handleNextSentence}
+                            className="h-9 px-5 rounded-full text-xs font-extrabold text-white bg-[#0878EE] hover:bg-[#0662C6] transition-all shadow-sm transform hover:scale-102 active:scale-98 cursor-pointer"
+                          >
+                            Chốt & Tiếp tục câu sau
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
