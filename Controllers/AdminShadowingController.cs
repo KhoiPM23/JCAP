@@ -205,5 +205,51 @@ namespace JCAP.Controllers
             var result = await _adminService.GetSharedGrammarsAsync(keyword, jlptLevel);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Tải về tệp mẫu CSV hoặc JSON với Content-Disposition attachment để trình duyệt luôn lưu đúng tên và đuôi file.
+        /// </summary>
+        [HttpGet("download-template")]
+        [AllowAnonymous]
+        public IActionResult DownloadTemplate([FromQuery] string? type, [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment)
+        {
+            var isCsv = !string.Equals(type, "json", System.StringComparison.OrdinalIgnoreCase);
+            var fileName = isCsv ? "shadowing_dialogue_template.csv" : "shadowing_full_lesson_template.json";
+            var contentType = isCsv ? "text/csv; charset=utf-8" : "application/json; charset=utf-8";
+
+            var path1 = System.IO.Path.Combine(environment.ContentRootPath, "wwwroot", "templates", fileName);
+            var path2 = System.IO.Path.Combine(environment.ContentRootPath, "jcap-web", "public", "templates", fileName);
+
+            byte[] bytes;
+            if (System.IO.File.Exists(path1))
+            {
+                bytes = System.IO.File.ReadAllBytes(path1);
+            }
+            else if (System.IO.File.Exists(path2))
+            {
+                bytes = System.IO.File.ReadAllBytes(path2);
+            }
+            else
+            {
+                if (isCsv)
+                {
+                    var bom = new byte[] { 0xEF, 0xBB, 0xBF };
+                    var content = "SpeakerRole,JapaneseText,RomajiText,VietnameseTranslation\r\n" +
+                                  "A,\"いらっしゃいませ。ご注文はお決まりですか。\",\"Irasshaimase. Gochuumon wa okimari desu ka.\",\"Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?\"\r\n" +
+                                  "B,\"はい、ラーメンを一つお願いします。\",\"Hai, raamen wo hitotsu onegai shimasu.\",\"Vâng, xin cho tôi một tô mì ramen.\"\r\n" +
+                                  "A,\"かしこまりました。少々お待ちください。\",\"Kashikomarimashita. Shoushou omachi kudasai.\",\"Tôi đã rõ. Xin quý khách vui lòng đợi một chút.\"\r\n" +
+                                  "B,\"ありがとうございます。\",\"Arigatou gozaimasu.\",\"Xin cảm ơn.\"\r\n";
+                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
+                    bytes = bom.Concat(contentBytes).ToArray();
+                }
+                else
+                {
+                    var json = "{\n  \"$schema\": \"https://jcap.jp/schemas/shadowing-import-v1.json\",\n  \"title\": \"Gọi món tại nhà hàng Nhật\",\n  \"jlptLevel\": \"N4\",\n  \"scenarioCode\": \"SCN_RAMEN_01\",\n  \"contextDescription\": \"Khách hàng vào quán ramen vào giờ trưa và gọi món với nhân viên.\",\n  \"speakerRoles\": [\"Nhân viên\", \"Khách hàng\"],\n  \"sentences\": [\n    {\n      \"orderIndex\": 1,\n      \"speakerRole\": \"A\",\n      \"japaneseText\": \"いらっしゃいませ。ご注文はお決まりですか。\",\n      \"romajiText\": \"Irasshaimase. Gochuumon wa okimari desu ka.\",\n      \"vietnameseTranslation\": \"Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?\",\n      \"nativeAudioUrl\": null\n    }\n  ],\n  \"targetVocabularies\": [\n    {\n      \"word\": \"注文\",\n      \"reading\": \"ちゅうもん\",\n      \"meaning\": \"Gọi món\",\n      \"jlptLevel\": \"N4\"\n    }\n  ],\n  \"targetGrammars\": [\n    {\n      \"pattern\": \"～お願いします\",\n      \"meaning\": \"Làm ơn / Xin hãy...\",\n      \"exampleSentence\": \"ラーメンを一つお願いします。\",\n      \"jlptLevel\": \"N4\"\n    }\n  ]\n}";
+                    bytes = System.Text.Encoding.UTF8.GetBytes(json);
+                }
+            }
+
+            return File(bytes, contentType, fileName);
+        }
     }
 }
