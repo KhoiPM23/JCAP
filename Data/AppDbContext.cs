@@ -24,6 +24,8 @@ namespace JCAP.Data
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
+        public DbSet<ShadowingVocabulary> ShadowingVocabularies { get; set; } = null!;
+        public DbSet<ShadowingGrammar> ShadowingGrammars { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
@@ -209,6 +211,9 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(100);
 
+                entity.Property(e => e.SpeakerRolesJson)
+                    .HasMaxLength(2000);
+
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
 
@@ -226,6 +231,16 @@ namespace JCAP.Data
                     .WithOne(e => e.ShadowingDialogue)
                     .HasForeignKey(e => e.ShadowingDialogueId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.TargetVocabularies)
+                    .WithOne(e => e.ShadowingDialogue)
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.TargetGrammars)
+                    .WithOne(e => e.ShadowingDialogue)
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ShadowingSentence configuration
@@ -233,7 +248,7 @@ namespace JCAP.Data
             {
                 entity.Property(e => e.SpeakerRole)
                     .IsRequired()
-                    .HasMaxLength(10);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.JapaneseText)
                     .IsRequired()
@@ -247,10 +262,44 @@ namespace JCAP.Data
                     .HasMaxLength(500);
 
                 entity.Property(e => e.NativeAudioUrl)
-                    .IsRequired()
+                    .IsRequired(false)
                     .HasMaxLength(1000);
 
                 entity.HasIndex(e => new { e.ShadowingDialogueId, e.OrderIndex });
+            });
+
+            // ShadowingVocabulary configuration
+            modelBuilder.Entity<ShadowingVocabulary>(entity =>
+            {
+                entity.Property(e => e.Word)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Reading)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Meaning)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.HasIndex(e => e.ShadowingDialogueId);
+            });
+
+            // ShadowingGrammar configuration
+            modelBuilder.Entity<ShadowingGrammar>(entity =>
+            {
+                entity.Property(e => e.Pattern)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Meaning)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.ExampleSentence)
+                    .HasMaxLength(500);
+
+                entity.HasIndex(e => e.ShadowingDialogueId);
             });
 
             // Roleplay result configuration
