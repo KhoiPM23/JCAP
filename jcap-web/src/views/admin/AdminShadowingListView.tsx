@@ -1030,11 +1030,25 @@ export const AdminShadowingListView: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDownloadTemplate = (format: 'csv' | 'json') => {
+  const handleDownloadTemplate = async (format: 'csv' | 'json') => {
     const fileName = format === 'csv' ? 'shadowing_dialogue_template.csv' : 'shadowing_full_lesson_template.json';
-    const filePath = `/api/admin/shadowing/download-template?type=${format}`;
-    window.location.href = filePath;
-    addToast(`Đang tải file mẫu: ${fileName}`, 'success');
+    try {
+      const res = await fetch(`/api/admin/shadowing/download-template?type=${format}`);
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      addToast(`Đang tải file mẫu: ${fileName}`, 'success');
+    } catch {
+      window.location.href = `/api/admin/shadowing/download-template?type=${format}`;
+    }
   };
 
   // Submit Form
@@ -2810,6 +2824,10 @@ export const AdminShadowingListView: React.FC = () => {
                     <a
                       href="/api/admin/shadowing/download-template?type=csv"
                       download="shadowing_dialogue_template.csv"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDownloadTemplate('csv');
+                      }}
                       className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
@@ -2841,6 +2859,10 @@ export const AdminShadowingListView: React.FC = () => {
                     <a
                       href="/api/admin/shadowing/download-template?type=json"
                       download="shadowing_full_lesson_template.json"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDownloadTemplate('json');
+                      }}
                       className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
