@@ -12,7 +12,45 @@ import type {
   GenerateShadowingDialoguePayload,
   GeneratedShadowingDialogueResult,
 } from '../../types/shadowing';
+import { parseRFC4180CSV } from '../../utils/csvParser';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
+
+export interface ImportVocabItem {
+  word: string;
+  reading?: string | null;
+  meaning: string;
+  jlptLevel?: string;
+  matchedMasterId?: number;
+  status: 'matched' | 'missing';
+  action: 'create_new' | 'skip';
+}
+
+export interface ImportGrammarItem {
+  pattern: string;
+  meaning: string;
+  exampleSentence?: string | null;
+  jlptLevel?: string;
+  matchedMasterId?: number;
+  status: 'matched' | 'missing';
+  action: 'create_new' | 'skip';
+}
+
+export interface ImportPreviewData {
+  format: 'csv' | 'json';
+  title?: string;
+  jlptLevel?: 'N5' | 'N4' | 'N3';
+  scenarioId?: number;
+  scenarioCode?: string;
+  matchedScenarioTitle?: string;
+  scenarioWarning?: string;
+  contextDescription?: string;
+  speakerRoles?: string[];
+  sentences: CreateShadowingSentencePayload[];
+  targetVocabularies: ImportVocabItem[];
+  targetGrammars: ImportGrammarItem[];
+  errors: string[];
+  warnings: string[];
+}
 
 export const AdminShadowingListView: React.FC = () => {
   const [items, setItems] = useState<ShadowingDialogueItem[]>([]);
@@ -82,8 +120,9 @@ export const AdminShadowingListView: React.FC = () => {
   // Import File Modal State
   const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false);
   const [importFileName, setImportFileName] = useState<string>('');
-  const [importPreview, setImportPreview] = useState<any | null>(null);
+  const [importPreview, setImportPreview] = useState<ImportPreviewData | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [showImportGuide, setShowImportGuide] = useState<boolean>(false);
 
   // Delete modal state (UC-32 Soft Delete)
   const [deletingItem, setDeletingItem] = useState<ShadowingDialogueItem | null>(null);
@@ -562,49 +601,274 @@ export const AdminShadowingListView: React.FC = () => {
     setImportError(null);
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const content = event.target?.result as string;
-        if (file.name.endsWith('.json')) {
-          const parsed = JSON.parse(content);
-          if (!parsed.title && !parsed.sentences) {
-            throw new Error('Định dạng JSON cần có thuộc tính "title" hoặc "sentences".');
+        if (!content || !content.trim()) {
+          throw new Error('Tệp tải lên rỗng.');
+        }
+
+        // Ensure we have current master list for resolution
+        let currentVocabs = masterVocabList;
+        let currentGrammars = masterGrammarList;
+        if (currentVocabs.length === 0 || currentGrammars.length === 0) {
+          const [vRes, gRes] = await Promise.all([
+            adminShadowingService.getSharedVocabularies(undefined, 'ALL'),
+            adminShadowingService.getSharedGrammars(undefined, 'ALL'),
+          ]);
+          if (vRes.success && vRes.data) {
+            currentVocabs = vRes.data;
+            setMasterVocabList(vRes.data);
           }
-          setImportPreview({
-            title: parsed.title || file.name.replace(/\.[^/.]+$/, ''),
-            jlptLevel: parsed.jlptLevel || 'N5',
-            contextDescription: parsed.contextDescription || parsed.sourceDescription || '',
-            speakerRoles: parsed.speakerRoles || ['Vai A', 'Vai B'],
-            sentences: parsed.sentences || [],
-            targetVocabularies: parsed.targetVocabularies || [],
-            targetGrammars: parsed.targetGrammars || [],
-          });
-        } else if (file.name.endsWith('.csv')) {
-          const lines = content.split('\n').map((l) => l.trim()).filter(Boolean);
-          if (lines.length <= 1) throw new Error('Tệp CSV rỗng hoặc chỉ có dòng tiêu đề.');
-          const rows = lines.slice(1);
-          const parsedSentences = rows.map((r, idx) => {
-            const parts = r.split(',').map((p) => p.trim().replace(/^"|"$/g, ''));
-            return {
+          if (gRes.success && gRes.data) {
+            currentGrammars = gRes.data;
+            setMasterGrammarList(gRes.data);
+          }
+        }
+
+        if (file.name.toLowerCase().endsWith('.csv')) {
+          const rawRows = parseRFC4180CSV(content);
+          if (rawRows.length === 0) {
+            throw new Error('Tệp CSV rỗng.');
+          }
+
+          // Detect header row
+          let dataRows = rawRows;
+          const firstRow = rawRows[0].map((c) => c.toLowerCase());
+          const hasHeader = firstRow.some(
+            (c) =>
+              c.includes('role') ||
+              c.includes('speaker') ||
+              c.includes('japanese') ||
+              c.includes('vietnamese') ||
+              c.includes('tiếng')
+          );
+          if (hasHeader) {
+            if (rawRows.length <= 1) {
+              throw new Error('Tệp CSV chỉ chứa dòng tiêu đề (header), không có dữ liệu câu thoại.');
+            }
+            dataRows = rawRows.slice(1);
+          }
+
+          const errors: string[] = [];
+          const warnings: string[] = [];
+          const parsedSentences: CreateShadowingSentencePayload[] = [];
+
+          dataRows.forEach((rowCols, idx) => {
+            const rowNumber = hasHeader ? idx + 2 : idx + 1;
+            const speakerRole = (rowCols[0] || 'A').trim().toUpperCase();
+            const japaneseText = (rowCols[1] || '').trim();
+            const romajiText = (rowCols[2] || '').trim();
+            const vietnameseTranslation = (rowCols[3] || '').trim();
+
+            if (!japaneseText) {
+              errors.push(`Dòng ${rowNumber}: Câu tiếng Nhật không được để trống.`);
+            }
+            if (!vietnameseTranslation) {
+              errors.push(`Dòng ${rowNumber}: Bản dịch tiếng Việt không được để trống.`);
+            }
+
+            // Check role match against current form roles (A / B or role names)
+            if (
+              speakerRole !== 'A' &&
+              speakerRole !== 'B' &&
+              !formSpeakerRoles.some((r) => r.toUpperCase().includes(speakerRole))
+            ) {
+              warnings.push(`Dòng ${rowNumber}: Vai '${speakerRole}' có thể chưa khớp với cấu hình vai hiện tại của form.`);
+            }
+
+            parsedSentences.push({
               orderIndex: idx + 1,
-              speakerRole: parts[0] || 'A',
-              japaneseText: parts[1] || '',
-              romajiText: parts[2] || '',
-              vietnameseTranslation: parts[3] || '',
+              speakerRole: speakerRole || 'A',
+              japaneseText,
+              romajiText,
+              vietnameseTranslation,
               nativeAudioUrl: null,
-            };
+            });
           });
+
           setImportPreview({
-            title: file.name.replace(/\.[^/.]+$/, ''),
-            jlptLevel: 'N5',
-            contextDescription: 'Nhập từ tệp CSV',
-            speakerRoles: ['Vai A', 'Vai B'],
+            format: 'csv',
+            title: formTitle || 'Bài học hiện tại',
+            jlptLevel: formLevel,
+            contextDescription: formContextDescription,
+            speakerRoles: formSpeakerRoles,
             sentences: parsedSentences,
             targetVocabularies: [],
             targetGrammars: [],
+            errors,
+            warnings,
+          });
+        } else if (file.name.toLowerCase().endsWith('.json')) {
+          let parsed: any;
+          try {
+            parsed = JSON.parse(content);
+          } catch (e: any) {
+            throw new Error(`Cú pháp JSON không hợp lệ: ${e.message}`);
+          }
+
+          if (!parsed || typeof parsed !== 'object') {
+            throw new Error('Định dạng tệp JSON không hợp lệ (phải là đối tượng JSON).');
+          }
+
+          const errors: string[] = [];
+          const warnings: string[] = [];
+
+          // 1. JLPT validation
+          let resolvedLevel: 'N5' | 'N4' | 'N3' = formLevel;
+          if (parsed.jlptLevel) {
+            const lvl = String(parsed.jlptLevel).trim().toUpperCase();
+            if (lvl === 'N5' || lvl === 'N4' || lvl === 'N3') {
+              resolvedLevel = lvl as 'N5' | 'N4' | 'N3';
+            } else {
+              errors.push(`Cấp độ JLPT '${parsed.jlptLevel}' không hợp lệ (hệ thống chỉ hỗ trợ N5, N4, N3).`);
+            }
+          }
+
+          // 2. Scenario matching
+          let resolvedScenarioId: number | undefined = undefined;
+          let matchedScenarioTitle: string | undefined = undefined;
+          let scenarioWarning: string | undefined = undefined;
+
+          if (parsed.scenarioCode || parsed.scenarioId) {
+            const matched = scenarios.find(
+              (s) =>
+                (parsed.scenarioCode && s.scenarioCode === parsed.scenarioCode) ||
+                (parsed.scenarioId && s.id === Number(parsed.scenarioId))
+            );
+            if (matched) {
+              resolvedScenarioId = matched.id;
+              matchedScenarioTitle = `#${matched.id} - ${matched.title}`;
+            } else {
+              scenarioWarning = `Không tìm thấy kịch bản khớp với '${parsed.scenarioCode || parsed.scenarioId}'. Bạn sẽ cần chọn Kịch bản thủ công trên form sau khi nạp.`;
+              warnings.push(scenarioWarning);
+            }
+          } else {
+            scenarioWarning = 'Tệp JSON không chỉ định kịch bản cha. Kịch bản của form hiện tại sẽ được giữ nguyên.';
+          }
+
+          // 3. Sentences validation
+          const rawSentences: any[] = Array.isArray(parsed.sentences) ? parsed.sentences : [];
+          if (rawSentences.length === 0) {
+            errors.push('Tệp JSON không chứa danh sách câu thoại ("sentences").');
+          }
+
+          const parsedSentences: CreateShadowingSentencePayload[] = rawSentences.map((s, idx) => {
+            const rowNumber = idx + 1;
+            const speakerRole = (s.speakerRole || (idx % 2 === 0 ? 'A' : 'B')).trim().toUpperCase();
+            const japaneseText = (s.japaneseText || '').trim();
+            const romajiText = (s.romajiText || '').trim();
+            const vietnameseTranslation = (s.vietnameseTranslation || '').trim();
+            const nativeAudioUrl = s.nativeAudioUrl ? String(s.nativeAudioUrl).trim() : null;
+
+            if (!japaneseText) {
+              errors.push(`Câu thoại #${rowNumber}: Thuộc tính "japaneseText" không được để trống.`);
+            }
+            if (!vietnameseTranslation) {
+              errors.push(`Câu thoại #${rowNumber}: Thuộc tính "vietnameseTranslation" không được để trống.`);
+            }
+
+            return {
+              orderIndex: s.orderIndex || rowNumber,
+              speakerRole,
+              japaneseText,
+              romajiText,
+              vietnameseTranslation,
+              nativeAudioUrl,
+            };
+          });
+
+          // 4. Vocabularies matching
+          const rawVocabs: any[] = Array.isArray(parsed.targetVocabularies) ? parsed.targetVocabularies : [];
+          const resolvedVocabs: ImportVocabItem[] = rawVocabs.map((v) => {
+            const word = (v.word || '').trim();
+            const meaning = (v.meaning || '').trim();
+            const reading = v.reading ? String(v.reading).trim() : '';
+            const matched = currentVocabs.find(
+              (mv) =>
+                (v.id && mv.id === v.id) ||
+                (mv.word.trim().toLowerCase() === word.toLowerCase() &&
+                  mv.meaning.trim().toLowerCase() === meaning.toLowerCase())
+            );
+
+            if (matched) {
+              return {
+                word,
+                reading: reading || matched.reading || '',
+                meaning,
+                jlptLevel: v.jlptLevel || matched.jlptLevel || resolvedLevel,
+                matchedMasterId: matched.id,
+                status: 'matched' as const,
+                action: 'create_new' as const,
+              };
+            } else {
+              return {
+                word,
+                reading,
+                meaning,
+                jlptLevel: v.jlptLevel || resolvedLevel,
+                status: 'missing' as const,
+                action: 'create_new' as const,
+              };
+            }
+          });
+
+          // 5. Grammars matching
+          const rawGrammars: any[] = Array.isArray(parsed.targetGrammars) ? parsed.targetGrammars : [];
+          const resolvedGrammars: ImportGrammarItem[] = rawGrammars.map((g) => {
+            const pattern = (g.pattern || '').trim();
+            const meaning = (g.meaning || '').trim();
+            const exampleSentence = g.exampleSentence ? String(g.exampleSentence).trim() : '';
+            const matched = currentGrammars.find(
+              (mg) =>
+                (g.id && mg.id === g.id) ||
+                (mg.pattern.trim().toLowerCase() === pattern.toLowerCase() &&
+                  mg.meaning.trim().toLowerCase() === meaning.toLowerCase())
+            );
+
+            if (matched) {
+              return {
+                pattern,
+                meaning,
+                exampleSentence: exampleSentence || matched.exampleSentence || '',
+                jlptLevel: g.jlptLevel || matched.jlptLevel || resolvedLevel,
+                matchedMasterId: matched.id,
+                status: 'matched' as const,
+                action: 'create_new' as const,
+              };
+            } else {
+              return {
+                pattern,
+                meaning,
+                exampleSentence,
+                jlptLevel: g.jlptLevel || resolvedLevel,
+                status: 'missing' as const,
+                action: 'create_new' as const,
+              };
+            }
+          });
+
+          setImportPreview({
+            format: 'json',
+            title: parsed.title ? String(parsed.title).trim() : formTitle,
+            jlptLevel: resolvedLevel,
+            scenarioId: resolvedScenarioId,
+            scenarioCode: parsed.scenarioCode,
+            matchedScenarioTitle,
+            scenarioWarning,
+            contextDescription: parsed.contextDescription || parsed.sourceDescription || formContextDescription,
+            speakerRoles:
+              Array.isArray(parsed.speakerRoles) && parsed.speakerRoles.length > 0
+                ? parsed.speakerRoles
+                : formSpeakerRoles,
+            sentences: parsedSentences,
+            targetVocabularies: resolvedVocabs,
+            targetGrammars: resolvedGrammars,
+            errors,
+            warnings,
           });
         } else {
-          throw new Error('Chỉ hỗ trợ tệp .json hoặc .csv');
+          throw new Error('Định dạng tệp không được hỗ trợ. Vui lòng chọn tệp .json hoặc .csv.');
         }
       } catch (err: any) {
         setImportError(err.message || 'Lỗi đọc tệp.');
@@ -614,23 +878,107 @@ export const AdminShadowingListView: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const handleToggleVocabAction = (idx: number) => {
+    if (!importPreview) return;
+    setImportPreview((prev) => {
+      if (!prev) return null;
+      const nextVocabs = [...prev.targetVocabularies];
+      nextVocabs[idx] = {
+        ...nextVocabs[idx],
+        action: nextVocabs[idx].action === 'create_new' ? 'skip' : 'create_new',
+      };
+      return { ...prev, targetVocabularies: nextVocabs };
+    });
+  };
+
+  const handleToggleGrammarAction = (idx: number) => {
+    if (!importPreview) return;
+    setImportPreview((prev) => {
+      if (!prev) return null;
+      const nextGrammars = [...prev.targetGrammars];
+      nextGrammars[idx] = {
+        ...nextGrammars[idx],
+        action: nextGrammars[idx].action === 'create_new' ? 'skip' : 'create_new',
+      };
+      return { ...prev, targetGrammars: nextGrammars };
+    });
+  };
+
   const handleApplyImport = () => {
     if (!importPreview) return;
-    setEditingId(null);
-    setFormScenarioId(scenarios[0]?.id || 1);
-    setFormTitle(importPreview.title);
-    setFormLevel(importPreview.jlptLevel || 'N5');
-    setFormContextDescription(importPreview.contextDescription || '');
-    setFormSpeakerRoles(importPreview.speakerRoles || ['Vai A', 'Vai B']);
-    setFormIsActive(true);
-    setFormSentences(importPreview.sentences || []);
-    setFormVocabularies(importPreview.targetVocabularies || []);
-    setFormGrammars(importPreview.targetGrammars || []);
+    if (importPreview.errors.length > 0) {
+      alert('Tệp có chứa lỗi validation. Vui lòng kiểm tra và sửa các lỗi hiển thị màu đỏ trước khi áp dụng.');
+      return;
+    }
+
+    if (formSentences.length > 0) {
+      const confirmOverwrite = window.confirm(
+        `Form hiện tại đang có ${formSentences.length} câu đối thoại. Áp dụng tệp này sẽ thay thế danh sách câu thoại đó.\n\nBạn có chắc chắn muốn tiếp tục?`
+      );
+      if (!confirmOverwrite) return;
+    }
+
+    if (importPreview.format === 'csv') {
+      // CSV = Quick Dialogue Import
+      // ONLY replace sentences, preserve formTitle, formLevel, formScenarioId, formContextDescription, formSpeakerRoles, formVocabularies, formGrammars
+      setFormSentences(importPreview.sentences);
+      setMessage({
+        type: 'success',
+        text: `📥 Đã nạp thành công ${importPreview.sentences.length} câu đối thoại từ CSV vào bài học hiện tại!`,
+      });
+    } else {
+      // JSON = Full Lesson Import
+      if (importPreview.title) {
+        setFormTitle(importPreview.title);
+      }
+      if (importPreview.jlptLevel) {
+        setFormLevel(importPreview.jlptLevel);
+      }
+      if (importPreview.scenarioId) {
+        setFormScenarioId(importPreview.scenarioId);
+      }
+      if (importPreview.contextDescription) {
+        setFormContextDescription(importPreview.contextDescription);
+      }
+      if (importPreview.speakerRoles && importPreview.speakerRoles.length > 0) {
+        setFormSpeakerRoles(importPreview.speakerRoles);
+      }
+      setFormSentences(importPreview.sentences);
+
+      // Filter Vocabularies
+      const filteredVocabs: ShadowingVocabularyItem[] = importPreview.targetVocabularies
+        .filter((v) => v.action !== 'skip')
+        .map((v) => ({
+          id: v.matchedMasterId,
+          word: v.word,
+          reading: v.reading || '',
+          meaning: v.meaning,
+          jlptLevel: v.jlptLevel,
+        }));
+      setFormVocabularies(filteredVocabs);
+
+      // Filter Grammars
+      const filteredGrammars: ShadowingGrammarItem[] = importPreview.targetGrammars
+        .filter((g) => g.action !== 'skip')
+        .map((g) => ({
+          id: g.matchedMasterId,
+          pattern: g.pattern,
+          meaning: g.meaning,
+          exampleSentence: g.exampleSentence || '',
+          jlptLevel: g.jlptLevel,
+        }));
+      setFormGrammars(filteredGrammars);
+
+      setMessage({
+        type: 'success',
+        text: `📥 Đã nạp bài học hoàn chỉnh từ JSON ("${importFileName}") vào Form! Vui lòng rà soát và bấm "Hoàn tất & Tạo bài học".`,
+      });
+    }
+
     setIsImportModalOpen(false);
     setImportPreview(null);
     setIsFormOpen(true);
-    setMessage({ type: 'success', text: `📥 Đã nạp thành công dữ liệu từ tệp "${importFileName}" vào Form!` });
-    setTimeout(() => setMessage(null), 4000);
+    setTimeout(() => setMessage(null), 5000);
   };
 
   // Submit Form
@@ -1109,6 +1457,19 @@ export const AdminShadowingListView: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportPreview(null);
+                    setImportError(null);
+                    setImportFileName('');
+                    setIsImportModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-98 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700"
+                >
+                  <span>📂</span>
+                  <span>Nhập từ tệp</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
@@ -2146,72 +2507,445 @@ export const AdminShadowingListView: React.FC = () => {
       {/* 7. Import File Modal */}
       {isImportModalOpen && (
         <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">📂</span>
-                <h3 className="font-bold text-slate-900 text-sm">Nhập bài học Shadowing từ tệp</h3>
-              </div>
-              <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-
-            <p className="text-xs text-slate-500">
-              Hỗ trợ tệp định dạng <strong>.json</strong> (đầy đủ cấu trúc câu, từ vựng, ngữ pháp) hoặc <strong>.csv</strong> (danh sách câu thoại).
-            </p>
-
-            <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer">
-              <input
-                type="file"
-                accept=".json,.csv"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="shadowing-file-import-input"
-              />
-              <label htmlFor="shadowing-file-import-input" className="cursor-pointer space-y-2 block">
-                <span className="text-3xl block">📄</span>
-                <span className="text-xs font-bold text-blue-600 block">Chọn tệp từ máy tính của bạn</span>
-                <span className="text-[11px] text-slate-400 block">Hỗ trợ .json hoặc .csv</span>
-              </label>
-            </div>
-
-            {importError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
-                ⚠️ {importError}
-              </div>
-            )}
-
-            {importPreview && (
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-2">
-                <div className="font-bold text-slate-800 flex items-center justify-between">
-                  <span>Xem trước dữ liệu tệp:</span>
-                  <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[10px]">
-                    Hợp lệ
-                  </span>
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 my-4 max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#0878EE] flex items-center justify-center text-base font-bold shadow-2xs">
+                  📂
                 </div>
-                <div className="text-slate-600">
-                  <div>Tiêu đề: <strong>{importPreview.title}</strong> ({importPreview.jlptLevel})</div>
-                  <div>Số câu đối thoại: <strong>{importPreview.sentences.length} câu</strong></div>
-                  <div>Các vai: <strong>{importPreview.speakerRoles.join(', ')}</strong></div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Nhập bài học Shadowing từ tệp mẫu</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Hỗ trợ 2 định dạng: <strong>CSV</strong> (Nhập nhanh danh sách câu thoại) và <strong>JSON</strong> (Toàn bộ bài học).
+                  </p>
                 </div>
               </div>
-            )}
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
               <button
-                type="button"
                 onClick={() => setIsImportModalOpen(false)}
-                className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg transition text-sm cursor-pointer"
               >
-                Đóng
+                ✕
               </button>
-              <button
-                type="button"
-                onClick={handleApplyImport}
-                disabled={!importPreview}
-                className="px-4 py-2 bg-[#0878EE] hover:bg-blue-700 text-white font-bold rounded-xl transition disabled:opacity-50 cursor-pointer"
-              >
-                Áp dụng vào Form
-              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-5 text-xs flex-1">
+              {/* Cards: 2 Format Explanations & Download Templates */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Card CSV */}
+                <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">📄</span>
+                        <span className="font-bold text-emerald-900 text-xs">CSV — Nhập nhanh câu thoại</span>
+                      </div>
+                      <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300">
+                        Quick Dialogue
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Dùng khi bạn đã có bài học và muốn nhập nhanh nhiều câu thoại từ Excel hoặc Google Sheets.
+                      Kịch bản, JLPT, bối cảnh và vai nhân vật được kế thừa từ form hiện tại.
+                    </p>
+                    <p className="text-[10px] text-amber-700 bg-amber-50/80 p-2 rounded-lg border border-amber-200/70 mt-2 font-medium">
+                      ⚠️ <strong>Lưu ý mã hóa:</strong> Hãy lưu/xuất file CSV ở bảng mã <strong>UTF-8</strong> để tiếng Nhật và tiếng Việt hiển thị chính xác, không bị lỗi font.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-emerald-100">
+                    <a
+                      href="/templates/shadowing_dialogue_template.csv"
+                      download="shadowing_dialogue_template.csv"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs"
+                    >
+                      <span>📥</span>
+                      <span>Tải file mẫu CSV</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Card JSON */}
+                <div className="p-4 bg-purple-50/60 rounded-xl border border-purple-200 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">📦</span>
+                        <span className="font-bold text-purple-900 text-xs">JSON — Nhập toàn bộ bài học</span>
+                      </div>
+                      <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-300">
+                        Full Lesson
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Dùng khi bạn muốn nhập một bài học Shadowing hoàn chỉnh, bao gồm tiêu đề, kịch bản cha, cấp độ JLPT, vai đối thoại, danh sách câu thoại, từ vựng và ngữ pháp.
+                    </p>
+                    <p className="text-[10px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200/70 mt-2 font-medium">
+                      ℹ️ <strong>Master Data:</strong> Từ vựng & ngữ pháp sẽ tự động so khớp với kho Master Data để tái sử dụng. Các mục chưa có sẽ được gắn cảnh báo để bạn quyết định tạo mới hay bỏ qua.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-purple-100">
+                    <a
+                      href="/templates/shadowing_full_lesson_template.json"
+                      download="shadowing_full_lesson_template.json"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition shadow-2xs"
+                    >
+                      <span>📥</span>
+                      <span>Tải file mẫu JSON</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Collapsible Format Specifications Guide */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onClick={() => setShowImportGuide(!showImportGuide)}
+                  className="w-full px-4 py-2.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-slate-700 text-xs cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>📖</span>
+                    <span>Xem quy chuẩn dữ liệu tệp CSV & JSON</span>
+                  </span>
+                  <span>{showImportGuide ? '▲ Thu gọn' : '▼ Chi tiết'}</span>
+                </button>
+                {showImportGuide && (
+                  <div className="p-4 border-t border-slate-200 space-y-3 bg-slate-50/40 text-[11px] text-slate-600">
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-xs mb-1">1. Cấu trúc cột file CSV (Chuẩn RFC-4180):</h4>
+                      <p className="mb-1">Tệp CSV gồm 4 cột theo thứ tự:</p>
+                      <code className="block bg-slate-900 text-emerald-400 p-2 rounded font-mono text-[11px]">
+                        SpeakerRole,JapaneseText,RomajiText,VietnameseTranslation
+                      </code>
+                      <p className="mt-1 text-slate-500">
+                        • Nếu văn bản chứa dấu phẩy (,), hãy bọc trong dấu ngoặc kép ("..."). Cột tiếng Nhật và bản dịch tiếng Việt bắt buộc không được để trống.
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-xs mb-1">2. Cấu trúc tệp JSON (Full Lesson):</h4>
+                      <p className="mb-1">
+                        Chứa các trường: <code className="text-purple-700 font-mono">title</code>, <code className="text-purple-700 font-mono">jlptLevel</code> (N5/N4/N3), <code className="text-purple-700 font-mono">scenarioCode</code>, <code className="text-purple-700 font-mono">speakerRoles</code>, <code className="text-purple-700 font-mono">sentences</code>, <code className="text-purple-700 font-mono">targetVocabularies</code>, <code className="text-purple-700 font-mono">targetGrammars</code>.
+                      </p>
+                      <p className="text-slate-500">
+                        • Hệ thống không tự ý gán bài học vào kịch bản đầu tiên nếu không khớp mã.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Dropzone */}
+              <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:bg-slate-50/80 transition cursor-pointer relative">
+                <input
+                  type="file"
+                  accept=".json,.csv"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  id="shadowing-file-import-input"
+                />
+                <div className="space-y-2 pointer-events-none">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">
+                    📁
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-blue-600 block">
+                      {importFileName ? `Đã chọn: ${importFileName}` : 'Nhấn để chọn tệp hoặc kéo thả tệp vào đây'}
+                    </span>
+                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                      Chấp nhận tệp định dạng .csv hoặc .json (Tối đa 5MB)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* File Reading Error */}
+              {importError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+                  <span className="text-base">❌</span>
+                  <span>{importError}</span>
+                </div>
+              )}
+
+              {/* Validation Warnings */}
+              {importPreview && importPreview.warnings.length > 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs space-y-1">
+                  <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                    <span>⚠️</span>
+                    <span>Cảnh báo validation ({importPreview.warnings.length}):</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-0.5 pl-1 text-[11px]">
+                    {importPreview.warnings.map((w, idx) => (
+                      <li key={idx}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Validation Errors */}
+              {importPreview && importPreview.errors.length > 0 && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs space-y-1">
+                  <div className="font-bold flex items-center gap-1.5 text-red-900">
+                    <span>❌</span>
+                    <span>Có {importPreview.errors.length} lỗi validation cần sửa trong tệp trước khi áp dụng:</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-0.5 pl-1 text-[11px]">
+                    {importPreview.errors.map((err, idx) => (
+                      <li key={idx}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Detailed Preview Section */}
+              {importPreview && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-800 text-xs">Xem trước nội dung đã phân tích:</span>
+                      <span
+                        className={`px-2 py-0.5 rounded font-bold text-[10px] border ${
+                          importPreview.format === 'csv'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-purple-50 text-purple-800 border-purple-300'
+                        }`}
+                      >
+                        {importPreview.format === 'csv' ? '📄 CSV: Quick Dialogue' : '📦 JSON: Full Lesson'}
+                      </span>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                        importPreview.errors.length > 0
+                          ? 'bg-red-100 text-red-700'
+                          : importPreview.warnings.length > 0
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}
+                    >
+                      {importPreview.errors.length > 0
+                        ? `❌ ${importPreview.errors.length} lỗi`
+                        : importPreview.warnings.length > 0
+                        ? `⚠️ Hợp lệ (${importPreview.warnings.length} cảnh báo)`
+                        : '✅ Hoàn toàn hợp lệ'}
+                    </span>
+                  </div>
+
+                  {/* Metadata Card */}
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <div className="text-slate-500 text-[11px]">Tiêu đề bài học:</div>
+                      <div className="font-bold text-slate-800 text-xs mt-0.5">{importPreview.title || '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-slate-500 text-[11px]">Cấp độ JLPT:</div>
+                      <div className="font-bold text-[#0878EE] text-xs mt-0.5">{importPreview.jlptLevel || formLevel}</div>
+                    </div>
+                    <div>
+                      <div className="text-slate-500 text-[11px]">Kịch bản cha:</div>
+                      <div className="font-semibold text-slate-800 text-xs mt-0.5">
+                        {importPreview.format === 'csv' ? (
+                          <span className="text-slate-500 italic">Kế thừa từ form hiện tại (#{formScenarioId})</span>
+                        ) : importPreview.matchedScenarioTitle ? (
+                          <span className="text-emerald-700">✓ {importPreview.matchedScenarioTitle}</span>
+                        ) : (
+                          <span className="text-amber-700">⚠️ Chưa gán (chọn thủ công trên form)</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-slate-500 text-[11px]">Các vai nhân vật:</div>
+                      <div className="font-semibold text-slate-800 text-xs mt-0.5">
+                        {importPreview.speakerRoles?.join(' & ') || 'Vai A & Vai B'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sentences Table Preview */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-800 text-xs">
+                        Danh sách câu thoại ({importPreview.sentences.length} câu):
+                      </span>
+                    </div>
+                    <div className="max-h-56 overflow-y-auto border border-slate-200 rounded-xl bg-white">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px]">
+                            <th className="py-2 px-3 w-12 text-center">#</th>
+                            <th className="py-2 px-3 w-20">Vai</th>
+                            <th className="py-2 px-3">Câu tiếng Nhật</th>
+                            <th className="py-2 px-3">Romaji</th>
+                            <th className="py-2 px-3">Bản dịch tiếng Việt</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {importPreview.sentences.map((s, idx) => (
+                            <tr key={idx} className="hover:bg-slate-50/50">
+                              <td className="py-2 px-3 text-center font-mono text-slate-400 text-[11px]">
+                                {s.orderIndex || idx + 1}
+                              </td>
+                              <td className="py-2 px-3">
+                                <span className={`px-2 py-0.5 rounded font-bold text-[10px] border ${getRoleBadgeColor(s.speakerRole)}`}>
+                                  Vai {s.speakerRole}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 font-semibold text-slate-800">{s.japaneseText}</td>
+                              <td className="py-2 px-3 text-slate-500 font-mono text-[11px]">{s.romajiText || '—'}</td>
+                              <td className="py-2 px-3 text-slate-600">{s.vietnameseTranslation}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Target Vocabularies Preview (JSON only) */}
+                  {importPreview.format === 'json' && importPreview.targetVocabularies.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 text-xs">
+                          Từ vựng kèm theo ({importPreview.targetVocabularies.length} mục):
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          Nhấn vào trạng thái để bật/tắt quyền nạp từ vựng vào bài học
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        {importPreview.targetVocabularies.map((v, vIdx) => (
+                          <div
+                            key={vIdx}
+                            className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                          >
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-blue-700">{v.word}</span>
+                                {v.reading && <span className="text-slate-400 font-mono">({v.reading})</span>}
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-700">{v.meaning}</span>
+                                {v.jlptLevel && (
+                                  <span className="px-1.5 py-0.2 bg-blue-50 text-blue-600 rounded font-bold text-[10px] border border-blue-200">
+                                    {v.jlptLevel}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px]">
+                                {v.status === 'matched' ? (
+                                  <span className="text-emerald-700 font-medium">
+                                    ✓ Đã khớp Master Data #{v.matchedMasterId}
+                                  </span>
+                                ) : (
+                                  <span className="text-amber-700 font-medium">
+                                    ⚠️ Chưa có trong Master Data (sẽ tạo mới nếu chọn)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleVocabAction(vIdx)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                                v.action === 'create_new'
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-2xs'
+                                  : 'bg-slate-200 hover:bg-slate-300 text-slate-600'
+                              }`}
+                            >
+                              {v.action === 'create_new' ? '✓ Nạp từ này' : '✕ Bỏ qua'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Target Grammars Preview (JSON only) */}
+                  {importPreview.format === 'json' && importPreview.targetGrammars.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 text-xs">
+                          Ngữ pháp kèm theo ({importPreview.targetGrammars.length} mục):
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          Nhấn vào trạng thái để bật/tắt quyền nạp ngữ pháp vào bài học
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        {importPreview.targetGrammars.map((g, gIdx) => (
+                          <div
+                            key={gIdx}
+                            className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                          >
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-indigo-700">{g.pattern}</span>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-700">{g.meaning}</span>
+                                {g.jlptLevel && (
+                                  <span className="px-1.5 py-0.2 bg-indigo-50 text-indigo-600 rounded font-bold text-[10px] border border-indigo-200">
+                                    {g.jlptLevel}
+                                  </span>
+                                )}
+                              </div>
+                              {g.exampleSentence && (
+                                <div className="text-[11px] text-slate-400 italic">
+                                  Ví dụ: {g.exampleSentence}
+                                </div>
+                              )}
+                              <div className="text-[11px]">
+                                {g.status === 'matched' ? (
+                                  <span className="text-emerald-700 font-medium">
+                                    ✓ Đã khớp Master Data #{g.matchedMasterId}
+                                  </span>
+                                ) : (
+                                  <span className="text-amber-700 font-medium">
+                                    ⚠️ Chưa có trong Master Data (sẽ tạo mới nếu chọn)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleGrammarAction(gIdx)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                                g.action === 'create_new'
+                                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
+                                  : 'bg-slate-200 hover:bg-slate-300 text-slate-600'
+                              }`}
+                            >
+                              {g.action === 'create_new' ? '✓ Nạp mẫu này' : '✕ Bỏ qua'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50 rounded-b-2xl text-xs">
+              <span className="text-slate-500 text-[11px]">
+                ℹ️ Dữ liệu tệp sẽ được nạp trực tiếp vào Form để bạn xem lại và chỉnh sửa trước khi lưu.
+              </span>
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100 transition cursor-pointer"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyImport}
+                  disabled={!importPreview || importPreview.errors.length > 0}
+                  className="px-5 py-2 bg-[#0878EE] hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-xs disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Áp dụng vào Form
+                </button>
+              </div>
             </div>
           </div>
         </div>
