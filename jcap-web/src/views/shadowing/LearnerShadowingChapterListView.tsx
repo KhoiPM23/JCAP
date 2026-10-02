@@ -53,7 +53,7 @@ export const LearnerShadowingChapterListView: React.FC = () => {
       <div className="bg-white rounded-2xl border border-red-200 p-8 text-center space-y-3">
         <p className="text-red-600 font-bold">Không tìm thấy giáo trình này.</p>
         <Button variant="secondary" onClick={() => navigate('/shadowing')}>
-          ← Quay lại danh sách giáo trình
+          Quay lại danh sách giáo trình
         </Button>
       </div>
     );

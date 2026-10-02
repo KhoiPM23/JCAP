@@ -303,13 +303,11 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         
-        {/* Shadowing Multi-step Flow: Level -> Textbook -> Chapter -> Dialogue */}
-        <Route path="/shadowing" element={<LearnerShadowingTextbookListView />} />
-        <Route path="/shadowing/textbooks/:textbookId" element={<LearnerShadowingChapterListView />} />
-        <Route path="/shadowing/textbooks/:textbookId/chapters/:chapterId" element={<LearnerShadowingDialogueListView />} />
+        {/* Shadowing Flow: Real database catalog created by Admin */}
+        <Route path="/shadowing" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/catalog" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
-        <Route path="/shadowing/:id" element={<Navigate to="/shadowing" replace />} />
+        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
