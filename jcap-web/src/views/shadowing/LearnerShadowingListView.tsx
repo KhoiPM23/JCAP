@@ -3,15 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { shadowingService } from '../../services/shadowingService';
 import type { ShadowingDialogueItem } from '../../types/shadowing';
 import { Button } from '../../components/ui/Button';
+import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const LearnerShadowingListView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+
   const [items, setItems] = useState<ShadowingDialogueItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [keyword, setKeyword] = useState<string>('');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
+
+  // Role selection modal for quick start practice
+  const [selectedDialogueForRole, setSelectedDialogueForRole] = useState<ShadowingDialogueItem | null>(null);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -36,16 +44,42 @@ export const LearnerShadowingListView: React.FC = () => {
     return () => clearTimeout(timer);
   }, [keyword, selectedLevel]);
 
+  const handleStartPractice = (selectedRole: 'A' | 'B') => {
+    if (!selectedDialogueForRole) return;
+    const dialogueId = selectedDialogueForRole.id;
+    setSelectedDialogueForRole(null);
+    navigate(`/shadowing/practice/${dialogueId}?role=${selectedRole}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#071A44]">Thư viện Luyện nói Shadowing</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">🎙️</span>
+            <span className="text-xs font-bold text-[#0878EE] uppercase tracking-wider">
+              Luyện phát âm & Phản xạ tiếng Nhật
+            </span>
+          </div>
+          <h1 className="text-2xl font-black text-[#071A44] tracking-tight">
+            Thư viện Luyện nói Shadowing
+          </h1>
           <p className="text-sm text-[#71809A] mt-1">
-            Luyện tập phản xạ giao tiếp câu theo nhịp điệu phát âm chuẩn của người bản xứ.
+            Các bài học hội thoại thực tế được biên soạn giúp bạn luyện ngữ điệu, ngắt câu và phản xạ cùng người bản xứ.
           </p>
         </div>
+
+        {isAdmin && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/admin/shadowing')}
+            className="flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span>⚙️</span> Quản lý Shadowing (Admin)
+          </Button>
+        )}
       </div>
 
       {/* Filter Toolbar */}
@@ -58,7 +92,7 @@ export const LearnerShadowingListView: React.FC = () => {
           <input
             type="text"
             className="w-full pl-9 pr-3 py-2 border border-[#E6EDF5] rounded-lg text-sm text-[#071A44] placeholder-[#71809A] focus:outline-none focus:border-[#0878EE] focus:ring-1 focus:ring-[#0878EE]"
-            placeholder="Tìm kiếm bài thoại, kịch bản..."
+            placeholder="Tìm kiếm bài thoại, kịch bản ngữ cảnh..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
@@ -71,13 +105,13 @@ export const LearnerShadowingListView: React.FC = () => {
               key={lvl}
               type="button"
               onClick={() => setSelectedLevel(lvl)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 selectedLevel === lvl
                   ? 'bg-white text-[#0878EE] shadow-xs font-bold'
                   : 'text-[#71809A] hover:text-[#071A44]'
               }`}
             >
-              {lvl === 'ALL' ? 'Tất cả' : lvl}
+              {lvl === 'ALL' ? 'Tất cả trình độ' : `JLPT ${lvl}`}
             </button>
           ))}
         </div>
@@ -105,11 +139,13 @@ export const LearnerShadowingListView: React.FC = () => {
       ) : items.length === 0 ? (
         <div className="bg-white rounded-xl border border-[#E6EDF5] p-12 text-center space-y-3">
           <span className="text-4xl">🎙️</span>
-          <h3 className="text-lg font-semibold text-[#071A44]">Không tìm thấy bài hội thoại phù hợp</h3>
-          <p className="text-sm text-[#71809A] max-w-sm mx-auto">
-            Hãy thử tìm với từ khóa khác hoặc chuyển đổi cấp độ JLPT để khám phá thêm bài học.
+          <h3 className="text-lg font-semibold text-[#071A44]">Chưa có bài học Shadowing phù hợp</h3>
+          <p className="text-sm text-[#71809A] max-w-md mx-auto">
+            {keyword || selectedLevel !== 'ALL'
+              ? 'Hãy thử tìm với từ khóa khác hoặc chuyển đổi cấp độ JLPT để khám phá thêm bài học.'
+              : 'Hiện chưa có bài học nào trong hệ thống. Các bài học do Admin tạo sẽ tự động xuất hiện tại đây.'}
           </p>
-          {(keyword || selectedLevel !== 'ALL') && (
+          {(keyword || selectedLevel !== 'ALL') ? (
             <Button
               variant="secondary"
               size="sm"
@@ -120,6 +156,14 @@ export const LearnerShadowingListView: React.FC = () => {
             >
               Đặt lại bộ lọc
             </Button>
+          ) : isAdmin && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate('/admin/shadowing')}
+            >
+              Đến trang Quản lý Shadowing để tạo bài mới
+            </Button>
           )}
         </div>
       ) : (
@@ -127,7 +171,7 @@ export const LearnerShadowingListView: React.FC = () => {
           {items.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl border border-[#E6EDF5] shadow-xs hover:shadow-md transition-all p-6 flex flex-col justify-between"
+              className="bg-white rounded-2xl border border-[#E6EDF5] shadow-xs hover:shadow-md transition-all p-6 flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -142,8 +186,8 @@ export const LearnerShadowingListView: React.FC = () => {
                   >
                     JLPT {item.jlptLevel}
                   </span>
-                  <span className="text-xs text-[#71809A]">
-                    {item.totalSentences} câu thoại
+                  <span className="text-xs text-[#71809A] font-medium">
+                    {item.totalSentences} câu đối đáp
                   </span>
                 </div>
 
@@ -161,23 +205,48 @@ export const LearnerShadowingListView: React.FC = () => {
                   </p>
                 )}
 
-                <div className="bg-[#F4F9FE] rounded-lg p-2.5 mb-6 text-xs text-[#071A44] border border-[#E6EDF5] space-y-1">
-                  <p><span className="text-[#71809A]">Vai A:</span> <strong>{item.speakerRoleA_Name}</strong></p>
-                  <p><span className="text-[#71809A]">Vai B:</span> <strong>{item.speakerRoleB_Name}</strong></p>
+                <div className="bg-[#F4F9FE] rounded-xl p-3 mb-6 text-xs text-[#071A44] border border-[#E6EDF5] space-y-1.5">
+                  <p className="truncate"><span className="text-[#71809A]">Vai A:</span> <strong>{item.speakerRoleA_Name}</strong></p>
+                  <p className="truncate"><span className="text-[#71809A]">Vai B:</span> <strong>{item.speakerRoleB_Name}</strong></p>
                 </div>
               </div>
 
-              <Button
-                variant="primary"
-                className="w-full"
-                onClick={() => navigate(`/shadowing/${item.id}`)}
-              >
-                Xem chi tiết & Nghe thử ➔
-              </Button>
+              <div className="flex items-center gap-2 pt-2 border-t border-[#F0F4F8]">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => navigate(`/shadowing/dialogues/${item.id}`)}
+                >
+                  Xem chi tiết
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setSelectedDialogueForRole(item)}
+                >
+                  Luyện tập 
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Role Selection Modal for quick practice launch */}
+      {selectedDialogueForRole && (
+        <RoleSelectionModal
+          isOpen={true}
+          onClose={() => setSelectedDialogueForRole(null)}
+          dialogueId={selectedDialogueForRole.id}
+          dialogueTitle={selectedDialogueForRole.title}
+          roleAName={selectedDialogueForRole.speakerRoleA_Name}
+          roleBName={selectedDialogueForRole.speakerRoleB_Name}
+          onConfirm={handleStartPractice}
+        />
+      )}
     </div>
   );
 };
+
