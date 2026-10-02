@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { formatDateMedium } from '../utils/dateUtils';
 import type {
   RoleplayResultHistoryResponse,
   RoleplayResultSummary,
 } from '../types/roleplayResult';
-import { formatVietnamDateTime } from '../utils/dateTime';
 
 type ResultFilter = 'all' | 'passed' | 'not-passed';
 
 const PAGE_SIZE = 8;
 
-const formatDate = (value: string) =>
-  formatVietnamDateTime(value, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+const formatDate = (value: string) => formatDateMedium(value);
 
 const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => (
   <article className="group grid gap-5 rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_30px_rgba(7,26,68,0.05)] transition hover:-translate-y-0.5 hover:border-[#9EC8F7] hover:shadow-[0_18px_42px_rgba(7,26,68,0.09)] md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">

@@ -95,7 +95,7 @@ namespace JCAP.Services.Implementations
                     UserId = userId,
                     Amount = package.Credits,
                     Type = "TopUp",
-                    Description = $"Nạp gói {package.Name} (+{package.Credits} credits) [Mock]",
+                    Description = $"Nạp {package.Name} (+{package.Credits} credits) [Mock]",
                     PayOsOrderCode = null,
                     Status = "Paid",
                     CreatedAt = DateTime.UtcNow
@@ -135,7 +135,7 @@ namespace JCAP.Services.Implementations
                     UserId = userId,
                     Amount = package.Credits,
                     Type = "TopUp",
-                    Description = $"Nạp gói {package.Name} ({package.Credits} credits)",
+                    Description = $"Nạp {package.Name} ({package.Credits} credits)",
                     PayOsOrderCode = orderCode.ToString(),
                     Status = "Pending",
                     CreatedAt = DateTime.UtcNow

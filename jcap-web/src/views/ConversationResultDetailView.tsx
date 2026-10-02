@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { formatDateTime } from '../utils/dateUtils';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
-import { formatVietnamDateTime } from '../utils/dateTime';
 
-const formatDate = (value: string) =>
-  formatVietnamDateTime(value, {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  });
+const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
 
 const ScoreCard = ({ label, score, accent }: { label: string; score: number; accent: string }) => (
   <div className="rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_28px_rgba(7,26,68,0.05)]">

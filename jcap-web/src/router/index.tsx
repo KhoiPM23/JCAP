@@ -24,6 +24,7 @@ import { ResetPasswordView } from '../views/ResetPasswordView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
+import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
@@ -32,11 +33,11 @@ import { ConversationResultDetailView } from '../views/ConversationResultDetailV
 // Route Wrappers
 // ============================================================
 
-/** Redirects if already authenticated (Admin -> /admin/credits/packages, Learner -> /scenarios) */
+/** Redirects if already authenticated (Redirects to /scenarios home page) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'Admin' ? '/admin/credits/packages' : '/scenarios'} replace />;
+    return <Navigate to="/scenarios" replace />;
   }
   return <>{children}</>;
 };
@@ -70,13 +71,7 @@ const LoginRoute: React.FC = () => {
   return (
     <LoginView
       onLoginSuccess={() => {
-        const savedUserStr = localStorage.getItem('jcap_user');
-        const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
-        if (savedUser?.role === 'Admin') {
-          navigate('/admin/credits/packages', { replace: true });
-        } else {
-          navigate('/scenarios', { replace: true });
-        }
+        navigate('/scenarios', { replace: true });
       }}
       onSwitchToRegister={() => navigate('/register')}
       onForgotPassword={() => navigate('/forgot-password')}
@@ -136,18 +131,6 @@ const ScenarioRoute: React.FC = () => {
 
   return (
     <div>
-      {/* Banner nhanh cho Admin neu dang xem man hinh hoc vien */}
-      {user?.role === 'Admin' && (
-        <div className="bg-slate-900 text-white px-4 py-2 text-xs flex justify-between items-center">
-          <span>🛡️ Bạn đang đăng nhập với tư cách <strong>Admin ({user.email})</strong>.</span>
-          <button
-            onClick={() => navigate('/admin/credits/packages')}
-            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-semibold transition"
-          >
-            Vào Trang Quản Trị Gói Credit &rarr;
-          </button>
-        </div>
-      )}
       <ScenarioListView
         userEmail={user?.email || ''}
         userLevel={userLevel || 'N5'}
@@ -159,9 +142,9 @@ const ScenarioRoute: React.FC = () => {
 };
 
 const RootRedirect: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <Navigate to={user?.role === 'Admin' ? '/admin/credits/packages' : '/scenarios'} replace />;
+  return <Navigate to="/scenarios" replace />;
 };
 
 // ============================================================
@@ -226,6 +209,14 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
+      <Route
+        path="/admin/scenarios"
+        element={
+          <AdminRoute>
+            <AdminScenarioListView />
+          </AdminRoute>
+        }
+      />
       <Route
         path="/admin/shadowing"
         element={

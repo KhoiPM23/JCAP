@@ -18,11 +18,22 @@ public class ScenarioService : IScenarioService
         _dbContext = dbContext;
     }
 
-    public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(string? query = null, CancellationToken cancellationToken = default)
     {
-        var scenarios = await _dbContext.Scenarios
+        var scenariosQuery = _dbContext.Scenarios
             .AsNoTracking()
-            .Where(s => s.IsActive)
+            .Where(s => s.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var trimmedQuery = query.Trim();
+            scenariosQuery = scenariosQuery.Where(s =>
+                EF.Functions.Like(s.Title, $"%{trimmedQuery}%") ||
+                EF.Functions.Like(s.Description, $"%{trimmedQuery}%") ||
+                (s.ScenarioCode != null && EF.Functions.Like(s.ScenarioCode, $"%{trimmedQuery}%")));
+        }
+
+        var scenarios = await scenariosQuery
             .Include(s => s.LevelConfigurations)
             .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
@@ -208,5 +219,150 @@ public class ScenarioService : IScenarioService
         {
             return new MissionCompletionCriteria();
         }
+    }
+
+    public async Task<ApiResponse<List<ScenarioListDto>>> GetAllScenariosForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var scenarios = await _dbContext.Scenarios
+            .AsNoTracking()
+            .Include(s => s.LevelConfigurations)
+            .OrderByDescending(s => s.Id)
+            .ToListAsync(cancellationToken);
+
+        var result = scenarios.Select(s => new ScenarioListDto
+        {
+            Id = s.Id,
+            Title = s.Title,
+            Description = s.Description,
+            Thumbnail = s.Thumbnail,
+            IsActive = s.IsActive,
+            ScenarioCode = s.ScenarioCode,
+            SupportedJLPTLevels = s.LevelConfigurations
+                .OrderBy(lc => lc.JLPTLevel)
+                .Select(lc => lc.JLPTLevel)
+                .ToList()
+        }).ToList();
+
+        return ApiResponse<List<ScenarioListDto>>.Ok(result, "Lấy toàn bộ danh sách scenario (Admin) thành công.");
+    }
+
+    public async Task<ApiResponse<ScenarioDetailsDto>> CreateScenarioAsync(CreateScenarioDto dto, CancellationToken cancellationToken = default)
+    {
+        if (dto == null)
+        {
+            return ApiResponse<ScenarioDetailsDto>.Fail("Dữ liệu tạo kịch bản không hợp lệ.");
+        }
+
+        var scenario = new Scenario
+        {
+            Title = dto.Title.Trim(),
+            Description = dto.Description.Trim(),
+            Thumbnail = dto.Thumbnail?.Trim(),
+            ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant(),
+            IsActive = dto.IsActive
+        };
+
+        if (dto.LevelConfigurations != null && dto.LevelConfigurations.Count > 0)
+        {
+            foreach (var levelDto in dto.LevelConfigurations)
+            {
+                scenario.LevelConfigurations.Add(new ScenarioLevelConfiguration
+                {
+                    JLPTLevel = levelDto.JLPTLevel.Trim().ToUpperInvariant(),
+                    Title = levelDto.Title.Trim(),
+                    Description = levelDto.Description.Trim(),
+                    AiPersona = levelDto.AiPersona.Trim(),
+                    CreditCost = levelDto.CreditCost > 0 ? levelDto.CreditCost : 5,
+                    Status = string.IsNullOrWhiteSpace(levelDto.Status) ? "Published" : levelDto.Status.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        _dbContext.Scenarios.Add(scenario);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await GetDetailsAsync(scenario.Id, cancellationToken);
+    }
+
+    public async Task<ApiResponse<ScenarioDetailsDto>> UpdateScenarioAsync(int id, UpdateScenarioDto dto, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0 || dto == null)
+        {
+            return ApiResponse<ScenarioDetailsDto>.Fail("Thông tin cập nhật không hợp lệ.");
+        }
+
+        var scenario = await _dbContext.Scenarios
+            .Include(s => s.LevelConfigurations)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+
+        if (scenario == null)
+        {
+            return ApiResponse<ScenarioDetailsDto>.Fail($"Không tìm thấy kịch bản với ID = {id}.");
+        }
+
+        scenario.Title = dto.Title.Trim();
+        scenario.Description = dto.Description.Trim();
+        scenario.Thumbnail = dto.Thumbnail?.Trim();
+        scenario.ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant();
+        scenario.IsActive = dto.IsActive;
+
+        if (dto.LevelConfigurations != null)
+        {
+            foreach (var levelDto in dto.LevelConfigurations)
+            {
+                var normalizedLevel = levelDto.JLPTLevel.Trim().ToUpperInvariant();
+                var existingConfig = scenario.LevelConfigurations
+                    .FirstOrDefault(lc => lc.JLPTLevel.ToUpper() == normalizedLevel);
+
+                if (existingConfig != null)
+                {
+                    existingConfig.Title = levelDto.Title.Trim();
+                    existingConfig.Description = levelDto.Description.Trim();
+                    existingConfig.AiPersona = levelDto.AiPersona.Trim();
+                    existingConfig.CreditCost = levelDto.CreditCost;
+                    existingConfig.Status = levelDto.Status;
+                    existingConfig.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    scenario.LevelConfigurations.Add(new ScenarioLevelConfiguration
+                    {
+                        ScenarioId = scenario.Id,
+                        JLPTLevel = normalizedLevel,
+                        Title = levelDto.Title.Trim(),
+                        Description = levelDto.Description.Trim(),
+                        AiPersona = levelDto.AiPersona.Trim(),
+                        CreditCost = levelDto.CreditCost > 0 ? levelDto.CreditCost : 5,
+                        Status = string.IsNullOrWhiteSpace(levelDto.Status) ? "Published" : levelDto.Status.Trim(),
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return await GetDetailsAsync(scenario.Id, cancellationToken);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteScenarioAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+        {
+            return ApiResponse<bool>.Fail("Scenario ID không hợp lệ.");
+        }
+
+        var scenario = await _dbContext.Scenarios.FindAsync([id], cancellationToken);
+        if (scenario == null)
+        {
+            return ApiResponse<bool>.Fail($"Không tìm thấy kịch bản với ID = {id}.");
+        }
+
+        // Soft Delete (UC-24)
+        scenario.IsActive = false;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return ApiResponse<bool>.Ok(true, $"Đã vô hiệu hóa (xóa mềm) kịch bản '{scenario.Title}' thành công.");
     }
 }
