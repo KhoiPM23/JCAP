@@ -187,9 +187,9 @@ export const AdminScenarioListView: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại (Admin Catalog)</h1>
+          <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Quản trị danh mục kịch bản roleplay, cấu hình trình độ JLPT (UC-16, UC-22, UC-23, UC-24).
+            Quản trị danh mục kịch bản roleplay và cấu hình trình độ JLPT.
           </p>
         </div>
 
@@ -292,14 +292,14 @@ export const AdminScenarioListView: React.FC = () => {
                           onClick={() => handleOpenEditModal(item)}
                           className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
                         >
-                          ✏️ Sửa (UC-23)
+                          ✏️ Sửa
                         </button>
                         {item.isActive && (
                           <button
                             onClick={() => handleDeleteScenario(item.id, item.title)}
                             className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
                           >
-                            🗑️ Soft Delete (UC-24)
+                            🗑️ Xóa
                           </button>
                         )}
                       </td>
@@ -317,7 +317,7 @@ export const AdminScenarioListView: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-center items-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 animate-in fade-in zoom-in duration-200">
             <h2 className="text-xl font-bold text-[#071A44] mb-4">
-              {editingScenario ? `✏️ Chỉnh sửa Kịch bản #${editingScenario.id}` : '✨ Thêm Kịch bản Mới (UC-22)'}
+              {editingScenario ? `✏️ Chỉnh sửa Kịch bản #${editingScenario.id}` : '✨ Thêm Kịch bản Mới'}
             </h2>
 
             <form onSubmit={handleSubmitForm} className="space-y-4">

@@ -108,7 +108,7 @@ export const ConversationResultDetailView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7FC2FF]">
-              UC-21 · Kết quả hội thoại
+              Kết quả hội thoại
             </p>
             <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
               {result.scenarioTitle}

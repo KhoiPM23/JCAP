@@ -97,7 +97,7 @@ export const ConversationHistoryView: React.FC = () => {
         <div className="absolute bottom-0 right-28 h-24 w-24 translate-y-1/2 rotate-12 rounded-3xl bg-[#0878EE]/25" />
         <div className="relative max-w-2xl">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-[#7FC2FF]">
-            UC-20 · Lịch sử hội thoại
+            Lịch sử hội thoại
           </p>
           <h1 className="text-3xl font-black tracking-tight md:text-4xl">Hành trình Kaiwa của bạn</h1>
           <p className="mt-3 text-sm leading-6 text-blue-100">
