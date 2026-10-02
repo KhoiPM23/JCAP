@@ -154,6 +154,11 @@ namespace JCAP.Services.Implementations
                 })
                 .ToListAsync();
 
+            foreach (var item in items)
+            {
+                item.CompletedAt = AsUtc(item.CompletedAt);
+            }
+
             return ApiResponse<RoleplayResultHistoryResponseDto>.Ok(new RoleplayResultHistoryResponseDto
             {
                 Items = items,
@@ -204,8 +209,18 @@ namespace JCAP.Services.Implementations
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
-                CompletedAt = result.CompletedAt
+                CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
+        }
+
+        private static DateTime AsUtc(DateTime value)
+        {
+            // SQL Server datetime2 does not preserve DateTime.Kind. Roleplay timestamps are
+            // stored in UTC, so restore the kind before JSON serialization to emit the "Z"
+            // suffix and prevent browsers from interpreting UTC values as local time.
+            return value.Kind == DateTimeKind.Utc
+                ? value
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
         private static ApiResponse<CompleteRoleplaySessionResponseDto> BuildCompleteResponse(

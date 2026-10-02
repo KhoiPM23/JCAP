@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
   RoleplayMessageDto,
@@ -12,6 +13,8 @@ import type {
 
 export const RoleplayPracticeView: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const { sessionId: rawSessionId } = useParams<{ sessionId: string }>();
   const sessionId = Number(rawSessionId);
 
@@ -35,8 +38,9 @@ export const RoleplayPracticeView: React.FC = () => {
   const [hint, setHint] = useState<RoleplayHintDto | null>(null);
   const [isLoadingHint, setIsLoadingHint] = useState(false);
 
-  // Modal kết thúc
+  // Modal kết thúc & Modal rời phòng
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
 
   // Toast mock Flashcard
@@ -220,6 +224,16 @@ export const RoleplayPracticeView: React.FC = () => {
     }
   };
 
+  // 6. Tạm dừng và rời phòng (giữ nguyên trạng thái Active, không hoàn tất phiên)
+  const handleConfirmLeave = () => {
+    setShowLeaveModal(false);
+    if (session) {
+      navigate(`/scenarios/${session.scenarioId}`);
+    } else {
+      navigate('/scenarios');
+    }
+  };
+
   // 6. Mock toast thêm vào Flashcard
   const handleAddToFlashcard = (text: string) => {
     setToastMessage(`Đã thêm cụm từ "${text}" vào Flashcard ôn tập!`);
@@ -272,9 +286,9 @@ export const RoleplayPracticeView: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setShowEndModal(true)}
+            onClick={() => setShowLeaveModal(true)}
             className="inline-flex items-center gap-1 rounded-lg border border-[#E6EDF5] px-3 py-1.5 text-xs font-semibold text-[#71809A] transition hover:border-[#0878EE] hover:text-[#0878EE]"
-            title="Thoát phòng luyện tập"
+            title="Tạm dừng và rời phòng luyện tập"
           >
             <span>←</span>
             <span className="hidden sm:inline">Rời phòng</span>
@@ -324,16 +338,18 @@ export const RoleplayPracticeView: React.FC = () => {
             </button>
           </div>
 
-          {/* Credit balance pill */}
-          <Link
-            to="/credits"
-            className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
-            title="Số dư credit hiện tại"
-          >
-            <span>🪙</span>
-            <span>{session.creditBalance ?? 0}</span>
-            <span className="hidden sm:inline">Credits</span>
-          </Link>
+          {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
+          {!isAdmin && (
+            <Link
+              to="/credits"
+              className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+              title="Số dư credit hiện tại"
+            >
+              <span>🪙</span>
+              <span>{session.creditBalance ?? 0}</span>
+              <span className="hidden sm:inline">Credits</span>
+            </Link>
+          )}
 
           {/* Sidebar toggles on desktop */}
           <button
@@ -461,7 +477,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 <div className="space-y-2.5">
                   {session.missions.map((mission: RoleplayMissionDto) => (
                     <div
-                      key={mission.id}
+                      key={mission.missionId ?? mission.id ?? mission.order}
                       className={`flex gap-3 rounded-xl border p-3 transition ${
                         mission.isCompleted
                           ? 'border-emerald-200 bg-emerald-50/60'
@@ -1042,7 +1058,9 @@ export const RoleplayPracticeView: React.FC = () => {
 
             <p className="text-xs text-[#71809A] leading-relaxed">
               {session.isNaturallyConcluded
-                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và quay về thông tin kịch bản.'
+                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
+                : isAdmin
+                ? 'Nếu bạn kết thúc sớm, phiên kiểm thử kịch bản sẽ dừng lại tại đây và chuyển sang trang kết quả đánh giá.'
                 : 'Nếu bạn kết thúc sớm, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
             </p>
 
@@ -1066,6 +1084,61 @@ export const RoleplayPracticeView: React.FC = () => {
                 }`}
               >
                 {isEnding ? 'Đang kết thúc...' : 'Xác nhận kết thúc'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5. MODAL XÁC NHẬN TẠM DỪNG VÀ RỜI PHÒNG                      */}
+      {/* ============================================================ */}
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-lg bg-blue-100 text-[#0878EE]">
+                🚪
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#071A44]">Tạm dừng phiên luyện tập?</h3>
+                <p className="text-xs text-[#71809A]">
+                  Kịch bản: {session?.scenarioTitle} (JLPT {session?.level || session?.jlptLevel})
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-[#F8FAFC] p-3 text-xs space-y-1.5 border border-[#E6EDF5]">
+              <div className="flex justify-between">
+                <span className="text-[#71809A]">Tiến độ hiện tại:</span>
+                <span className="font-bold text-[#0878EE]">
+                  {completedMissionsCount} / {totalMissionsCount} nhiệm vụ đã xong
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#71809A]">Số lượt đã nói:</span>
+                <span className="font-medium text-[#071A44]">{session?.messages.length ?? 0} lượt</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#71809A] leading-relaxed">
+              Tiến độ bài học và toàn bộ hội thoại của bạn đã được <strong>tự động lưu</strong>. Bạn có thể quay lại tiếp tục luyện tập bất cứ lúc nào từ trang kịch bản mà không bị mất dữ liệu.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLeaveModal(false)}
+                className="rounded-xl border border-[#E6EDF5] bg-white px-4 py-2 text-xs font-semibold text-[#71809A] hover:bg-[#F8FAFC] transition"
+              >
+                Ở lại luyện tiếp
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLeave}
+                className="rounded-xl bg-[#0878EE] px-4 py-2 text-xs font-bold text-white hover:bg-[#0768D0] shadow-sm transition"
+              >
+                Tạm dừng & Rời phòng
               </button>
             </div>
           </div>
