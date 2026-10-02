@@ -50,79 +50,46 @@ interface ScenarioFormData {
   levels: Record<'N5' | 'N4' | 'N3', LevelConfigState>;
 }
 
-const createDefaultLevelsState = (scenarioTitle: string): Record<'N5' | 'N4' | 'N3', LevelConfigState> => ({
+const createDefaultLevelsState = (_scenarioTitle: string = ''): Record<'N5' | 'N4' | 'N3', LevelConfigState> => ({
   N5: {
     jlptLevel: 'N5',
-    enabled: true,
-    title: scenarioTitle ? `${scenarioTitle} (N5)` : 'Tình huống N5 Cơ bản',
-    description: scenarioTitle ? `Thực hành giao tiếp N5 cho ${scenarioTitle}` : 'Thực hành các mẫu câu và hội thoại tiếng Nhật sơ cấp N5.',
-    aiPersona: 'Nhân viên phục vụ / Người tiếp đón (nói tiếng Nhật cơ bản, chậm rãi và nhiệt tình)',
+    enabled: false,
+    title: '',
+    description: '',
+    aiPersona: '',
     creditCost: 5,
     status: 'Published',
-    missions: [
-      { order: 1, content: 'Bắt đầu cuộc trò chuyện bằng câu chào hỏi chuẩn mực', target: 'Chào hỏi ban đầu' },
-      { order: 2, content: 'Trình bày thông tin hoặc câu hỏi chủ đạo của tình huống', target: 'Nêu yêu cầu chính' },
-      { order: 3, content: 'Xác nhận lại sự việc và cảm ơn / chào tạm biệt lịch sự', target: 'Xác nhận & Cảm ơn' },
-    ],
-    targetVocabularies: [
-      { word: 'すみません', reading: 'すみません', meaning: 'Xin lỗi / Xin hỏi' },
-      { word: 'お願いします', reading: 'おねがいします', meaning: 'Làm ơn' },
-      { word: 'ありがとうございます', reading: 'ありがとうございます', meaning: 'Xin cảm ơn' },
-    ],
-    targetGrammars: [
-      { pattern: '～をください', meaning: 'Xin vui lòng cho tôi...', exampleSentence: 'これをください。' },
-      { pattern: '～はどこですか', meaning: '...ở đâu vậy?', exampleSentence: 'トイレはどこですか。' },
-    ],
+    missions: [],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
     isAiGenerating: false,
   },
   N4: {
     jlptLevel: 'N4',
-    enabled: true,
-    title: scenarioTitle ? `${scenarioTitle} (N4)` : 'Tình huống N4 Trung cấp',
-    description: scenarioTitle ? `Thực hành giao tiếp N4 cho ${scenarioTitle}` : 'Thực hành các tình huống giao tiếp tự nhiên và giải quyết vấn đề ở trình độ N4.',
-    aiPersona: 'Trưởng ca / Quản lý cửa hàng (giao tiếp tự nhiên, yêu cầu xử lý tình huống trung cấp)',
+    enabled: false,
+    title: '',
+    description: '',
+    aiPersona: '',
     creditCost: 5,
     status: 'Published',
-    missions: [
-      { order: 1, content: 'Trình bày bối cảnh chi tiết và lý do của sự việc', target: 'Giải thích nguyên nhân' },
-      { order: 2, content: 'Đưa ra câu hỏi về điều kiện, thời gian hoặc xin ý kiến tham vấn', target: 'Tham vấn ý kiến' },
-      { order: 3, content: 'Thương lượng chốt phương án và thống nhất các bước tiếp theo', target: 'Chốt phương án' },
-    ],
-    targetVocabularies: [
-      { word: '相談', reading: 'そうだん', meaning: 'Thảo luận, trao đổi' },
-      { word: '確認', reading: 'かくにん', meaning: 'Xác nhận' },
-      { word: '連絡', reading: 'れんらく', meaning: 'Liên lạc' },
-    ],
-    targetGrammars: [
-      { pattern: '～てもいいですか', meaning: 'Làm... có được không?', exampleSentence: '写真を撮ってもいいですか。' },
-      { pattern: '～たらどうですか', meaning: 'Nếu thử... thì sao?', exampleSentence: '先生に相談したらどうですか。' },
-    ],
+    missions: [],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
     isAiGenerating: false,
   },
   N3: {
     jlptLevel: 'N3',
     enabled: false,
-    title: scenarioTitle ? `${scenarioTitle} (N3)` : 'Tình huống N3 Thượng cấp',
-    description: scenarioTitle ? `Thực hành giao tiếp N3 cho ${scenarioTitle}` : 'Thực hành đàm thoại thương mại, văn cảnh phức tạp và sử dụng kính ngữ chuẩn mực ở trình độ N3.',
-    aiPersona: 'Giám đốc / Khách hàng VIP / Đối tác doanh nghiệp (sử dụng kính ngữ Keigo chuẩn mực)',
+    title: '',
+    description: '',
+    aiPersona: '',
     creditCost: 5,
     status: 'Published',
-    missions: [
-      { order: 1, content: 'Dùng kính ngữ Keigo mở đầu trang trọng và giới thiệu mục đích trao đổi', target: 'Mở đầu trang trọng bằng kính ngữ' },
-      { order: 2, content: 'Phân tích các phương án, giải quyết khiếu nại hoặc thảo luận đa chiều', target: 'Thảo luận sâu & Đối đáp linh hoạt' },
-      { order: 3, content: 'Tổng kết giải pháp thỏa đáng, thể hiện sự cam kết và bày tỏ lòng biết ơn', target: 'Chốt cam kết & Bày tỏ lòng biết ơn' },
-    ],
-    targetVocabularies: [
-      { word: '検討', reading: 'けんとう', meaning: 'Cân nhắc, xem xét' },
-      { word: '承知', reading: 'しょうち', meaning: 'Hiểu rõ / Chấp thuận' },
-      { word: 'ご配慮', reading: 'ごはいりょ', meaning: 'Sự quan tâm, chu đáo' },
-    ],
-    targetGrammars: [
-      { pattern: '～につきましては', meaning: 'Về vấn đề...', exampleSentence: '今後の進め方につきましてご相談がございます。' },
-      { pattern: '～させていただきます', meaning: 'Xin phép được...', exampleSentence: '確認させていただきます。' },
-    ],
+    missions: [],
+    targetVocabularies: [],
+    targetGrammars: [],
     isExpanded: false,
     isAiGenerating: false,
   },
@@ -170,6 +137,7 @@ export const AdminScenarioListView: React.FC = () => {
 
   const handleOpenAddModal = () => {
     setEditingScenario(null);
+    setError(null);
     setFormData({
       title: '',
       description: '',
@@ -183,6 +151,7 @@ export const AdminScenarioListView: React.FC = () => {
 
   const handleOpenEditModal = async (item: ScenarioListItem) => {
     setEditingScenario(item);
+    setError(null);
     setIsModalOpen(true);
     setIsLoadingDetails(true);
 
@@ -201,11 +170,6 @@ export const AdminScenarioListView: React.FC = () => {
       if (detailsRes.success && detailsRes.data) {
         const full = detailsRes.data;
         const loadedLevels = createDefaultLevelsState(full.title);
-
-        // Turn all to disabled first, then enable only levels present in DB
-        (['N5', 'N4', 'N3'] as const).forEach((lvl) => {
-          loadedLevels[lvl].enabled = false;
-        });
 
         full.levelConfigurations.forEach((lc) => {
           const lvl = lc.jlptLevel as 'N5' | 'N4' | 'N3';
@@ -244,11 +208,6 @@ export const AdminScenarioListView: React.FC = () => {
           }
         });
 
-        // If none found in DB, fallback enable N5
-        if (!Object.values(loadedLevels).some((l) => l.enabled)) {
-          loadedLevels['N5'].enabled = true;
-        }
-
         setFormData({
           title: full.title,
           description: full.description,
@@ -268,11 +227,6 @@ export const AdminScenarioListView: React.FC = () => {
   const handleToggleLevel = (lvl: 'N5' | 'N4' | 'N3') => {
     setFormData((prev) => {
       const current = prev.levels[lvl].enabled;
-      const otherEnabled = Object.entries(prev.levels).some(([k, v]) => k !== lvl && v.enabled);
-      if (current && !otherEnabled) {
-        alert('Phải giữ lại ít nhất 1 trình độ JLPT cho kịch bản.');
-        return prev;
-      }
       return {
         ...prev,
         levels: {
@@ -303,6 +257,11 @@ export const AdminScenarioListView: React.FC = () => {
       return;
     }
 
+    const currentLevel = formData.levels[lvl];
+    const targetMissionCount = Math.max(3, currentLevel.missions.length);
+    const targetVocabCount = Math.max(3, currentLevel.targetVocabularies.length);
+    const targetGrammarCount = Math.max(3, currentLevel.targetGrammars.length);
+
     setFormData((prev) => ({
       ...prev,
       levels: {
@@ -315,42 +274,152 @@ export const AdminScenarioListView: React.FC = () => {
       const res = await scenarioService.generateLevelContent(
         formData.title,
         formData.description,
-        lvl
+        lvl,
+        targetMissionCount,
+        targetVocabCount,
+        targetGrammarCount
       );
 
       if (res.success && res.data) {
         const gen = res.data;
-        setFormData((prev) => ({
-          ...prev,
-          levels: {
-            ...prev.levels,
-            [lvl]: {
-              ...prev.levels[lvl],
-              aiPersona: gen.aiPersona || prev.levels[lvl].aiPersona,
-              title: gen.title || prev.levels[lvl].title,
-              description: gen.description || prev.levels[lvl].description,
-              missions: gen.missions.map((m, idx) => ({
-                order: m.order || idx + 1,
-                content: m.content,
-                target: m.target || m.content,
-                intent: m.intent || 'CompleteMission',
-                conditions: m.conditions || [],
-              })),
-              targetVocabularies: gen.targetVocabularies.map((v) => ({
-                word: v.word,
-                reading: v.reading || '',
-                meaning: v.meaning,
-              })),
-              targetGrammars: gen.targetGrammars.map((g) => ({
-                pattern: g.pattern,
-                meaning: g.meaning,
-                exampleSentence: g.exampleSentence || '',
-              })),
-              isExpanded: true,
-              isAiGenerating: false,
+        setFormData((prev) => {
+          const prevLvl = prev.levels[lvl];
+
+          // Merge Missions: minimum 3, or fill empty slots if Admin added extra slots
+          const desiredMissionsLen = Math.max(3, prevLvl.missions.length);
+          const hasEmptyMissions = prevLvl.missions.some((m) => !m.content.trim()) || prevLvl.missions.length < desiredMissionsLen;
+          const genMissions: MissionItem[] = (gen.missions || []).map((m, idx) => ({
+            order: m.order || idx + 1,
+            content: m.content,
+            target: m.target || m.content,
+            intent: m.intent || 'CompleteMission',
+            conditions: m.conditions || [],
+          }));
+
+          let mergedMissions: MissionItem[];
+          if (prevLvl.missions.length > 0 && hasEmptyMissions) {
+            const existingContents = new Set(
+              prevLvl.missions.map((m) => m.content.trim().toLowerCase()).filter(Boolean)
+            );
+            const unusedGenMissions = genMissions.filter(
+              (gm) => !existingContents.has(gm.content.trim().toLowerCase())
+            );
+            let genIdx = 0;
+            mergedMissions = [];
+            for (let i = 0; i < desiredMissionsLen; i++) {
+              const existing = prevLvl.missions[i];
+              if (existing && existing.content.trim()) {
+                mergedMissions.push({ ...existing, order: i + 1 });
+              } else {
+                const pick = unusedGenMissions[genIdx++] || genMissions[i] || {
+                  order: i + 1,
+                  content: `Nhiệm vụ giao tiếp bước ${i + 1} cho "${formData.title}"`,
+                  target: `Mục tiêu số ${i + 1}`,
+                };
+                mergedMissions.push({ ...pick, order: i + 1 });
+              }
+            }
+          } else {
+            mergedMissions = genMissions.slice(0, desiredMissionsLen).map((m, idx) => ({
+              ...m,
+              order: idx + 1,
+            }));
+          }
+
+          // Merge Vocabularies: minimum 3, or fill empty slots if Admin added extra slots
+          const desiredVocabsLen = Math.max(3, prevLvl.targetVocabularies.length);
+          const hasEmptyVocabs =
+            prevLvl.targetVocabularies.some((v) => !v.word.trim()) ||
+            prevLvl.targetVocabularies.length < desiredVocabsLen;
+          const genVocabs: VocabularyItem[] = (gen.targetVocabularies || []).map((v) => ({
+            word: v.word,
+            reading: v.reading || '',
+            meaning: v.meaning,
+          }));
+
+          let mergedVocabs: VocabularyItem[];
+          if (prevLvl.targetVocabularies.length > 0 && hasEmptyVocabs) {
+            const existingWords = new Set(
+              prevLvl.targetVocabularies.map((v) => v.word.trim().toLowerCase()).filter(Boolean)
+            );
+            const unusedGenVocabs = genVocabs.filter(
+              (gv) => !existingWords.has(gv.word.trim().toLowerCase())
+            );
+            let genIdx = 0;
+            mergedVocabs = [];
+            for (let i = 0; i < desiredVocabsLen; i++) {
+              const existing = prevLvl.targetVocabularies[i];
+              if (existing && existing.word.trim()) {
+                mergedVocabs.push(existing);
+              } else {
+                const pick = unusedGenVocabs[genIdx++] || genVocabs[i] || {
+                  word: '',
+                  reading: '',
+                  meaning: '',
+                };
+                mergedVocabs.push(pick);
+              }
+            }
+          } else {
+            mergedVocabs = genVocabs.slice(0, desiredVocabsLen);
+          }
+
+          // Merge Grammars: minimum 3, or fill empty slots if Admin added extra slots
+          const desiredGrammarsLen = Math.max(3, prevLvl.targetGrammars.length);
+          const hasEmptyGrammars =
+            prevLvl.targetGrammars.some((g) => !g.pattern.trim()) ||
+            prevLvl.targetGrammars.length < desiredGrammarsLen;
+          const genGrammars: GrammarItem[] = (gen.targetGrammars || []).map((g) => ({
+            pattern: g.pattern,
+            meaning: g.meaning,
+            exampleSentence: g.exampleSentence || '',
+          }));
+
+          let mergedGrammars: GrammarItem[];
+          if (prevLvl.targetGrammars.length > 0 && hasEmptyGrammars) {
+            const existingPatterns = new Set(
+              prevLvl.targetGrammars.map((g) => g.pattern.trim().toLowerCase()).filter(Boolean)
+            );
+            const unusedGenGrammars = genGrammars.filter(
+              (gg) => !existingPatterns.has(gg.pattern.trim().toLowerCase())
+            );
+            let genIdx = 0;
+            mergedGrammars = [];
+            for (let i = 0; i < desiredGrammarsLen; i++) {
+              const existing = prevLvl.targetGrammars[i];
+              if (existing && existing.pattern.trim()) {
+                mergedGrammars.push(existing);
+              } else {
+                const pick = unusedGenGrammars[genIdx++] || genGrammars[i] || {
+                  pattern: '',
+                  meaning: '',
+                  exampleSentence: '',
+                };
+                mergedGrammars.push(pick);
+              }
+            }
+          } else {
+            mergedGrammars = genGrammars.slice(0, desiredGrammarsLen);
+          }
+
+          return {
+            ...prev,
+            levels: {
+              ...prev.levels,
+              [lvl]: {
+                ...prevLvl,
+                aiPersona: prevLvl.aiPersona.trim() || gen.aiPersona || prevLvl.aiPersona,
+                title: prevLvl.title.trim() || gen.title || prevLvl.title,
+                description: prevLvl.description.trim() || gen.description || prevLvl.description,
+                missions: mergedMissions,
+                targetVocabularies: mergedVocabs,
+                targetGrammars: mergedGrammars,
+                isExpanded: true,
+                isAiGenerating: false,
+              },
             },
-          },
-        }));
+          };
+        });
       } else {
         alert(res.message || 'Không thể tạo gợi ý AI lúc này.');
         setFormData((prev) => ({
@@ -632,6 +701,8 @@ export const AdminScenarioListView: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  const hasSelectedLevel = (['N5', 'N4', 'N3'] as const).some((lvl) => formData.levels[lvl].enabled);
+
   const filteredScenarios = scenarios.filter((item) => {
     if (!searchTerm.trim()) return true;
     const q = searchTerm.toLowerCase();
@@ -649,7 +720,7 @@ export const AdminScenarioListView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại (Admin Catalog)</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Quản trị danh mục kịch bản roleplay, cấu hình trình độ JLPT (UC-16, UC-22, UC-23, UC-24).
+            Quản trị danh mục kịch bản roleplay, cấu hình trình độ JLPT.
           </p>
         </div>
 
@@ -761,16 +832,16 @@ export const AdminScenarioListView: React.FC = () => {
                       <td className="py-4 px-6 text-right space-x-2">
                         <button
                           onClick={() => handleOpenEditModal(item)}
-                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
                         >
-                          ✏️ Sửa (UC-23)
+                          ✏️ Sửa
                         </button>
                         {item.isActive && (
                           <button
                             onClick={() => handleDeleteScenario(item.id, item.title)}
-                            className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                            className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer"
                           >
-                            🗑️ Soft Delete (UC-24)
+                            🗑️ Soft Delete
                           </button>
                         )}
                       </td>
@@ -791,7 +862,7 @@ export const AdminScenarioListView: React.FC = () => {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <h2 className="text-xl font-bold text-[#071A44]">
-                  {editingScenario ? `✏️ Chỉnh sửa Kịch bản #${editingScenario.id}` : '✨ Thêm Kịch bản Mới (UC-22)'}
+                  {editingScenario ? `✏️ Chỉnh sửa Kịch bản #${editingScenario.id}` : '✨ Thêm Kịch bản Mới'}
                 </h2>
                 {isLoadingDetails && (
                   <span className="text-xs text-[#0878EE] font-medium bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -826,7 +897,7 @@ export const AdminScenarioListView: React.FC = () => {
                       type="text"
                       value={formData.scenarioCode}
                       onChange={(e) => setFormData({ ...formData, scenarioCode: e.target.value })}
-                      placeholder="Ví dụ: SCN_RAMEN_01"
+                      placeholder="Ví dụ: SCN_01"
                       className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#0878EE] outline-none"
                     />
                   </div>
@@ -839,7 +910,7 @@ export const AdminScenarioListView: React.FC = () => {
                       required
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Ví dụ: Gọi món Ramen tại quán Nhật"
+                      placeholder="Nhập tiêu đề kịch bản giao tiếp..."
                       className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0878EE] outline-none"
                     />
                   </div>
@@ -910,6 +981,13 @@ export const AdminScenarioListView: React.FC = () => {
                       })}
                     </div>
                   </div>
+
+                  {/* Thông báo chữ đỏ khi chưa chọn trình độ JLPT nào */}
+                  {!hasSelectedLevel && (
+                    <p className="text-xs font-semibold text-red-600">
+                      Vui lòng chọn ít nhất 1 trình độ JLPT (N5, N4 hoặc N3) để cấu hình cho kịch bản.
+                    </p>
+                  )}
 
                   {/* Danh sách các Cards cấu hình cho từng Level */}
                   <div className="space-y-3">
@@ -1018,7 +1096,7 @@ export const AdminScenarioListView: React.FC = () => {
                                         },
                                       }));
                                     }}
-                                    placeholder="Ví dụ: Nhân viên phục vụ quán mì Ramen"
+                                    placeholder="Nhập vai trò của nhân vật AI trong tình huống này..."
                                     className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#0878EE] outline-none"
                                   />
                                 </div>
@@ -1039,7 +1117,7 @@ export const AdminScenarioListView: React.FC = () => {
                                         },
                                       }));
                                     }}
-                                    placeholder={`Ví dụ: Tình huống ${lvl} cho ${formData.title || 'bài học'}`}
+                                    placeholder={`Nhập tiêu đề cấu hình trình độ ${lvl}...`}
                                     className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#0878EE] outline-none"
                                   />
                                 </div>
@@ -1093,7 +1171,7 @@ export const AdminScenarioListView: React.FC = () => {
                                         type="text"
                                         value={mission.content}
                                         onChange={(e) => handleMissionChange(lvl, mIdx, e.target.value)}
-                                        placeholder="Ví dụ: Chào nhân viên và hỏi xem thực đơn (Menu)"
+                                        placeholder="Nhập nội dung nhiệm vụ cần hoàn thành..."
                                         className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-[#0878EE] outline-none"
                                       />
                                       <button
@@ -1134,14 +1212,14 @@ export const AdminScenarioListView: React.FC = () => {
                                         type="text"
                                         value={vocab.word}
                                         onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
-                                        placeholder="Từ vựng (vd: ラーメン)"
+                                        placeholder="Nhập từ vựng tiếng Nhật..."
                                         className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                       />
                                       <input
                                         type="text"
                                         value={vocab.reading || ''}
                                         onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
-                                        placeholder="Cách đọc (vd: らーめん)"
+                                        placeholder="Nhập cách đọc (Hiragana)..."
                                         className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                       />
                                       <div className="flex items-center gap-2">
@@ -1149,7 +1227,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={vocab.meaning}
                                           onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
-                                          placeholder="Ý nghĩa tiếng Việt"
+                                          placeholder="Nhập ý nghĩa tiếng Việt..."
                                           className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
                                         <button
@@ -1191,14 +1269,14 @@ export const AdminScenarioListView: React.FC = () => {
                                         type="text"
                                         value={grammar.pattern}
                                         onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
-                                        placeholder="Mẫu ngữ pháp (vd: ～をください)"
+                                        placeholder="Nhập mẫu ngữ pháp..."
                                         className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                       />
                                       <input
                                         type="text"
                                         value={grammar.meaning}
                                         onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
-                                        placeholder="Ý nghĩa ngữ pháp"
+                                        placeholder="Nhập ý nghĩa ngữ pháp..."
                                         className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                       />
                                       <div className="flex items-center gap-2">
@@ -1206,7 +1284,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={grammar.exampleSentence || ''}
                                           onChange={(e) => handleGrammarChange(lvl, gIdx, 'exampleSentence', e.target.value)}
-                                          placeholder="Câu ví dụ minh họa"
+                                          placeholder="Nhập câu ví dụ minh họa..."
                                           className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
                                         <button
@@ -1245,8 +1323,12 @@ export const AdminScenarioListView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 text-xs font-bold text-white bg-[#0878EE] hover:bg-blue-700 rounded-xl transition shadow cursor-pointer flex items-center gap-1.5"
+                  disabled={isSubmitting || !hasSelectedLevel}
+                  className={`px-5 py-2 text-xs font-bold text-white bg-[#0878EE] rounded-xl transition shadow flex items-center gap-1.5 ${
+                    isSubmitting || !hasSelectedLevel
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-blue-700 cursor-pointer'
+                  }`}
                 >
                   {isSubmitting ? (
                     <>
