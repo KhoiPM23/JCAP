@@ -3,7 +3,11 @@ import type {
   ShadowingDialogueItem,
   ShadowingDialogueDetail,
   CreateShadowingDialoguePayload,
-  UpdateShadowingDialoguePayload
+  UpdateShadowingDialoguePayload,
+  GenerateShadowingDialoguePayload,
+  GeneratedShadowingDialogueResult,
+  TranslateAssistPayload,
+  TranslateAssistResult,
 } from '../types/shadowing';
 
 class AdminShadowingService {
@@ -129,7 +133,7 @@ class AdminShadowingService {
         const err = await response.json().catch(() => null);
         return {
           success: false,
-          message: err?.message || 'Vô hiệu hóa bài học thất bại.',
+          message: err?.message || 'Không thể xóa bài học.',
         };
       }
 
@@ -137,7 +141,86 @@ class AdminShadowingService {
     } catch {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ backend.',
+        message: 'Không thể kết nối đến máy chủ backend để xóa bài học.',
+      };
+    }
+  }
+
+  public async generateDialogue(payload: GenerateShadowingDialoguePayload): Promise<ApiResponse<GeneratedShadowingDialogueResult>> {
+    try {
+      const response = await fetch('/api/admin/shadowing/generate-dialogue', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || 'Không thể tạo gợi ý bài hội thoại Shadowing từ AI.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Lỗi kết nối khi gọi AI tạo bài hội thoại Shadowing.',
+      };
+    }
+  }
+
+  public async translateAssist(payload: TranslateAssistPayload): Promise<ApiResponse<TranslateAssistResult>> {
+    try {
+      const response = await fetch('/api/admin/shadowing/translate-assist', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || 'Không thể hỗ trợ dịch thuật tự động.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Lỗi kết nối khi gọi hỗ trợ dịch thuật.',
+      };
+    }
+  }
+
+  public async uploadAudio(file: Blob | File): Promise<ApiResponse<string>> {
+    const token = localStorage.getItem('jcap_token');
+    const formData = new FormData();
+    formData.append('file', file, 'audio_record.webm');
+
+    try {
+      const response = await fetch('/api/admin/shadowing/upload-audio', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        return {
+          success: false,
+          message: err?.message || 'Tải tệp âm thanh thất bại.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ backend để tải âm thanh.',
       };
     }
   }

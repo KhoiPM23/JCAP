@@ -1,15 +1,16 @@
 export interface ShadowingSentenceItem {
   id: number;
   orderIndex: number;
-  speakerRole: 'A' | 'B';
+  speakerRole: string; // 'A' | 'B' | 'C' etc.
   japaneseText: string;
   romajiText?: string | null;
   vietnameseTranslation: string;
-  nativeAudioUrl: string;
+  nativeAudioUrl?: string | null;
+  audioDurationMs?: number | null;
 }
 
 export interface ShadowingVocabularyItem {
-  id: number;
+  id?: number;
   word: string;
   reading?: string | null;
   meaning: string;
@@ -19,7 +20,7 @@ export interface ShadowingVocabularyItem {
 }
 
 export interface ShadowingGrammarItem {
-  id: number;
+  id?: number;
   pattern: string;
   meaning: string;
   exampleSentence?: string | null;
@@ -61,6 +62,7 @@ export interface ShadowingDialogueItem {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   totalSentences: number;
   isActive: boolean;
   createdAt: string;
@@ -125,11 +127,12 @@ export interface ShadowingAiAnalysisResult {
 
 export interface CreateShadowingSentencePayload {
   orderIndex: number;
-  speakerRole: 'A' | 'B';
+  speakerRole: string;
   japaneseText: string;
   romajiText?: string | null;
   vietnameseTranslation: string;
-  nativeAudioUrl: string;
+  nativeAudioUrl?: string | null;
+  audioDurationMs?: number | null;
 }
 
 export interface CreateShadowingDialoguePayload {
@@ -139,7 +142,10 @@ export interface CreateShadowingDialoguePayload {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   sentences: CreateShadowingSentencePayload[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
 export interface UpdateShadowingDialoguePayload {
@@ -148,7 +154,42 @@ export interface UpdateShadowingDialoguePayload {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   isActive: boolean;
   sentences: CreateShadowingSentencePayload[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
+export interface GenerateShadowingDialoguePayload {
+  scenarioId?: number;
+  contextTitle: string;
+  contextDescription?: string;
+  jlptLevel: 'N5' | 'N4' | 'N3';
+  speakerRoles?: string[];
+  sentenceCount?: number;
+  vocabCount?: number;
+  grammarCount?: number;
+}
+
+export interface GeneratedShadowingDialogueResult {
+  title: string;
+  jlptLevel: 'N5' | 'N4' | 'N3';
+  contextDescription?: string;
+  speakerRoles: string[];
+  sentences: CreateShadowingSentencePayload[];
+  targetVocabularies: ShadowingVocabularyItem[];
+  targetGrammars: ShadowingGrammarItem[];
+}
+
+export interface TranslateAssistPayload {
+  text: string;
+  sourceLanguage: 'ja' | 'vi';
+  jlptLevel?: string;
+}
+
+export interface TranslateAssistResult {
+  japaneseText: string;
+  romajiText?: string | null;
+  vietnameseTranslation: string;
+}
