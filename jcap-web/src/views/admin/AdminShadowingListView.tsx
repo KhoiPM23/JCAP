@@ -10,6 +10,7 @@ import type {
   ShadowingVocabularyItem,
   ShadowingGrammarItem,
   GenerateShadowingDialoguePayload,
+  GeneratedShadowingDialogueResult,
 } from '../../types/shadowing';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
 
@@ -46,13 +47,28 @@ export const AdminShadowingListView: React.FC = () => {
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [activeFormTab, setActiveFormTab] = useState<'sentences' | 'vocab' | 'grammar'>('sentences');
 
-  // AI Assist State in Form
-  const [isAiModalOpen, setIsAiModalOpen] = useState<boolean>(false);
+  // AI Assist State embedded in Form (No isolated modal)
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState<boolean>(false);
   const [isAiGenerating, setIsAiGenerating] = useState<boolean>(false);
+  const [aiCustomInstructions, setAiCustomInstructions] = useState<string>('');
   const [aiSentenceCount, setAiSentenceCount] = useState<number>(4);
   const [aiVocabCount, setAiVocabCount] = useState<number>(3);
   const [aiGrammarCount, setAiGrammarCount] = useState<number>(2);
+  const [aiDraft, setAiDraft] = useState<GeneratedShadowingDialogueResult | null>(null);
   const [translatingIndex, setTranslatingIndex] = useState<{ index: number; dir: 'ja-vi' | 'vi-ja' } | null>(null);
+
+  // Shared Master Data Explorer State (JLPT priority but selectable all levels)
+  const [isVocabLibraryOpen, setIsVocabLibraryOpen] = useState<boolean>(false);
+  const [vocabSearchKeyword, setVocabSearchKeyword] = useState<string>('');
+  const [vocabFilterLevel, setVocabFilterLevel] = useState<string>('formLevel');
+  const [masterVocabList, setMasterVocabList] = useState<ShadowingVocabularyItem[]>([]);
+  const [isLoadingMasterVocabs, setIsLoadingMasterVocabs] = useState<boolean>(false);
+
+  const [isGrammarLibraryOpen, setIsGrammarLibraryOpen] = useState<boolean>(false);
+  const [grammarSearchKeyword, setGrammarSearchKeyword] = useState<string>('');
+  const [grammarFilterLevel, setGrammarFilterLevel] = useState<string>('formLevel');
+  const [masterGrammarList, setMasterGrammarList] = useState<ShadowingGrammarItem[]>([]);
+  const [isLoadingMasterGrammars, setIsLoadingMasterGrammars] = useState<boolean>(false);
 
   // Audio Recording State
   const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
@@ -136,11 +152,25 @@ export const AdminShadowingListView: React.FC = () => {
     setFormErrors([]);
     setActiveFormTab('sentences');
     setRecordedAudioPreview(null);
+    setIsAiPanelOpen(false);
+    setAiDraft(null);
+    setAiCustomInstructions('');
+    setIsVocabLibraryOpen(false);
+    setIsGrammarLibraryOpen(false);
+    setVocabFilterLevel('formLevel');
+    setGrammarFilterLevel('formLevel');
     setIsFormOpen(true);
   };
 
   const handleOpenEdit = async (item: ShadowingDialogueItem) => {
     setEditingId(item.id);
+    setIsAiPanelOpen(false);
+    setAiDraft(null);
+    setAiCustomInstructions('');
+    setIsVocabLibraryOpen(false);
+    setIsGrammarLibraryOpen(false);
+    setVocabFilterLevel('formLevel');
+    setGrammarFilterLevel('formLevel');
     setIsFormOpen(true);
     setIsSubmitting(true);
     setRecordedAudioPreview(null);
@@ -326,7 +356,7 @@ export const AdminShadowingListView: React.FC = () => {
     setTranslatingIndex(null);
   };
 
-  // AI Dialogue Full Generation
+  // AI Dialogue Full Generation (In-form Draft Workflow)
   const handleGenerateDialogue = async () => {
     const selectedScenario = scenarios.find((s) => s.id === formScenarioId);
     const contextTitle = formTitle.trim() || selectedScenario?.title || 'Hội thoại giao tiếp đời sống';
@@ -341,46 +371,122 @@ export const AdminShadowingListView: React.FC = () => {
       sentenceCount: aiSentenceCount,
       vocabCount: aiVocabCount,
       grammarCount: aiGrammarCount,
+      customInstructions: aiCustomInstructions.trim() || undefined,
     };
 
     const res = await adminShadowingService.generateDialogue(payload);
     setIsAiGenerating(false);
 
     if (res.success && res.data) {
-      const data = res.data;
-      if (!formTitle.trim()) {
-        setFormTitle(data.title || contextTitle);
-      }
-      if (data.contextDescription && !formContextDescription.trim()) {
-        setFormContextDescription(data.contextDescription);
-      }
-      if (data.speakerRoles && data.speakerRoles.length > 0) {
-        setFormSpeakerRoles(data.speakerRoles);
-      }
-      if (data.sentences && data.sentences.length > 0) {
-        setFormSentences(
-          data.sentences.map((s, idx) => ({
-            orderIndex: idx + 1,
-            speakerRole: s.speakerRole || 'A',
-            japaneseText: s.japaneseText,
-            romajiText: s.romajiText || '',
-            vietnameseTranslation: s.vietnameseTranslation,
-            nativeAudioUrl: null,
-          }))
-        );
-      }
-      if (data.targetVocabularies && data.targetVocabularies.length > 0) {
-        setFormVocabularies(data.targetVocabularies);
-      }
-      if (data.targetGrammars && data.targetGrammars.length > 0) {
-        setFormGrammars(data.targetGrammars);
-      }
-      setIsAiModalOpen(false);
-      setMessage({ type: 'success', text: `✨ AI đã tạo xong bài hội thoại mẫu gồm ${data.sentences.length} câu, từ vựng và ngữ pháp!` });
-      setTimeout(() => setMessage(null), 5000);
+      setAiDraft(res.data);
+      setMessage({
+        type: 'success',
+        text: `✨ AI đã tạo xong bản thảo gồm ${res.data.sentences.length} câu, từ vựng và ngữ pháp! Bạn hãy xem trước bên dưới và bấm "Áp dụng vào Form".`,
+      });
+      setTimeout(() => setMessage(null), 6000);
     } else {
       alert(res.message || 'Không thể tạo gợi ý nội dung từ AI.');
     }
+  };
+
+  const handleApplyAiDraft = () => {
+    if (!aiDraft) return;
+
+    if (!formTitle.trim() || formTitle.trim().length <= 3) {
+      setFormTitle(aiDraft.title);
+    }
+    if (!formContextDescription.trim() && aiDraft.contextDescription) {
+      setFormContextDescription(aiDraft.contextDescription);
+    }
+    if (aiDraft.speakerRoles && aiDraft.speakerRoles.length > 0) {
+      setFormSpeakerRoles(aiDraft.speakerRoles);
+    }
+    if (aiDraft.sentences && aiDraft.sentences.length > 0) {
+      setFormSentences(
+        aiDraft.sentences.map((s, idx) => ({
+          orderIndex: idx + 1,
+          speakerRole: s.speakerRole || (idx % 2 === 0 ? 'A' : 'B'),
+          japaneseText: s.japaneseText,
+          romajiText: s.romajiText || '',
+          vietnameseTranslation: s.vietnameseTranslation,
+          nativeAudioUrl: null,
+        }))
+      );
+    }
+    if (aiDraft.targetVocabularies && aiDraft.targetVocabularies.length > 0) {
+      setFormVocabularies(aiDraft.targetVocabularies);
+    }
+    if (aiDraft.targetGrammars && aiDraft.targetGrammars.length > 0) {
+      setFormGrammars(aiDraft.targetGrammars);
+    }
+
+    setAiDraft(null);
+    setIsAiPanelOpen(false);
+    setMessage({
+      type: 'success',
+      text: '✅ Đã áp dụng bản thảo AI vào form. Tất cả câu thoại, từ vựng và ngữ pháp đã có thể chỉnh sửa tự do!',
+    });
+    setTimeout(() => setMessage(null), 5000);
+  };
+
+  const handleDiscardAiDraft = () => {
+    setAiDraft(null);
+  };
+
+  // Shared Master Data Library Handlers
+  const fetchMasterVocabularies = async (keyword?: string, level?: string) => {
+    setIsLoadingMasterVocabs(true);
+    const targetLevel = level === 'formLevel' ? formLevel : level;
+    const res = await adminShadowingService.getSharedVocabularies(keyword, targetLevel);
+    if (res.success && res.data) {
+      setMasterVocabList(res.data);
+    }
+    setIsLoadingMasterVocabs(false);
+  };
+
+  const fetchMasterGrammars = async (keyword?: string, level?: string) => {
+    setIsLoadingMasterGrammars(true);
+    const targetLevel = level === 'formLevel' ? formLevel : level;
+    const res = await adminShadowingService.getSharedGrammars(keyword, targetLevel);
+    if (res.success && res.data) {
+      setMasterGrammarList(res.data);
+    }
+    setIsLoadingMasterGrammars(false);
+  };
+
+  const handleSelectMasterVocab = (v: ShadowingVocabularyItem) => {
+    if (formVocabularies.some((existing) => existing.word.trim().toLowerCase() === v.word.trim().toLowerCase())) {
+      alert(`Từ vựng "${v.word}" đã có trong bài học này.`);
+      return;
+    }
+    setFormVocabularies((prev) => [
+      ...prev,
+      {
+        id: v.id,
+        word: v.word,
+        reading: v.reading || '',
+        meaning: v.meaning,
+        wordClass: v.wordClass,
+        jlptLevel: v.jlptLevel,
+      },
+    ]);
+  };
+
+  const handleSelectMasterGrammar = (g: ShadowingGrammarItem) => {
+    if (formGrammars.some((existing) => existing.pattern.trim().toLowerCase() === g.pattern.trim().toLowerCase())) {
+      alert(`Ngữ pháp "${g.pattern}" đã có trong bài học này.`);
+      return;
+    }
+    setFormGrammars((prev) => [
+      ...prev,
+      {
+        id: g.id,
+        pattern: g.pattern,
+        meaning: g.meaning,
+        exampleSentence: g.exampleSentence || '',
+        jlptLevel: g.jlptLevel,
+      },
+    ]);
   };
 
   // Audio Recording Handlers
@@ -1005,11 +1111,15 @@ export const AdminShadowingListView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsAiModalOpen(true)}
-                  className="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-98"
+                  onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-98 ${
+                    isAiPanelOpen
+                      ? 'bg-indigo-700 text-white ring-2 ring-indigo-400'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                  }`}
                 >
                   <span>🤖</span>
-                  <span>AI Gợi ý nội dung</span>
+                  <span>{isAiPanelOpen ? 'Thu gọn AI Assist' : 'AI Trợ lý nội dung'}</span>
                 </button>
                 <button
                   onClick={() => setIsFormOpen(false)}
@@ -1022,6 +1132,260 @@ export const AdminShadowingListView: React.FC = () => {
 
             {/* Form Body */}
             <form onSubmit={handleSaveForm} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+              {/* Embedded In-Form AI Assist Panel */}
+              {isAiPanelOpen && (
+                <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-slate-50 border-2 border-indigo-200/90 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm shadow-2xs">
+                        🤖
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900 text-sm">AI Assist: Trợ lý tạo nội dung Shadowing</h3>
+                          <span className="bg-indigo-100 text-indigo-700 font-bold text-[10px] px-2 py-0.5 rounded-full border border-indigo-200">
+                            Bản nháp / Draft Mode
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          AI tự động phân tích bối cảnh, các vai nhân vật và sinh ra bộ hội thoại chuẩn ngữ điệu. Dữ liệu sẽ trở thành bản thảo để bạn xem trước trước khi áp dụng vào form.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAiPanelOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1 rounded-lg hover:bg-white cursor-pointer"
+                    >
+                      Thu gọn ✕
+                    </button>
+                  </div>
+
+                  {/* Context Auto-detection Info */}
+                  <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-indigo-100 grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                    <div>
+                      <span className="font-bold text-slate-700 block">Kịch bản cha:</span>
+                      <span className="text-indigo-900 font-medium truncate block">
+                        #{formScenarioId} - {scenarios.find((s) => s.id === formScenarioId)?.title || 'Chưa chọn'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-700 block">Cấp độ JLPT:</span>
+                      <span className="font-bold text-[#0878EE]">{formLevel}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-700 block">Các vai đối thoại:</span>
+                      <span className="text-slate-800 font-medium truncate block">
+                        {formSpeakerRoles.filter(Boolean).join(' & ') || 'Vai A & Vai B'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* AI Generation Settings */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1 text-xs">
+                        Chủ đề / Bối cảnh muốn AI tạo:
+                      </label>
+                      <input
+                        type="text"
+                        value={formTitle || scenarios.find((s) => s.id === formScenarioId)?.title || ''}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="Ví dụ: Đặt bàn ăn tối tại nhà hàng Tokyo..."
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1 text-xs flex items-center justify-between">
+                        <span>Chỉ dẫn bổ sung cho AI (Custom Instructions):</span>
+                        <span className="text-slate-400 font-normal text-[11px]">Tùy chọn</span>
+                      </label>
+                      <textarea
+                        value={aiCustomInstructions}
+                        onChange={(e) => setAiCustomInstructions(e.target.value)}
+                        placeholder="Ví dụ: Tạo hội thoại N4 tự nhiên, khoảng 6 câu, ưu tiên mẫu câu dùng trong nhà hàng khi gọi món và thanh toán tiền."
+                        rows={2}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số câu thoại</label>
+                        <select
+                          value={aiSentenceCount}
+                          onChange={(e) => setAiSentenceCount(parseInt(e.target.value, 10))}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
+                        >
+                          <option value={4}>4 câu</option>
+                          <option value={6}>6 câu</option>
+                          <option value={8}>8 câu</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số từ vựng</label>
+                        <select
+                          value={aiVocabCount}
+                          onChange={(e) => setAiVocabCount(parseInt(e.target.value, 10))}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
+                        >
+                          <option value={2}>2 từ</option>
+                          <option value={3}>3 từ</option>
+                          <option value={4}>4 từ</option>
+                          <option value={5}>5 từ</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-slate-700 font-bold mb-1 text-xs">Số ngữ pháp</label>
+                        <select
+                          value={aiGrammarCount}
+                          onChange={(e) => setAiGrammarCount(parseInt(e.target.value, 10))}
+                          className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs cursor-pointer"
+                        >
+                          <option value={1}>1 mẫu</option>
+                          <option value={2}>2 mẫu</option>
+                          <option value={3}>3 mẫu</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={handleGenerateDialogue}
+                      disabled={isAiGenerating}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-xl transition shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer active:scale-98"
+                    >
+                      {isAiGenerating ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          <span>AI đang sinh bản thảo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>✨</span>
+                          <span>{aiDraft ? 'Sinh lại bản thảo khác' : 'Sinh bản thảo với AI'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* AI Draft Preview & Review Section */}
+                  {aiDraft && (
+                    <div className="mt-4 pt-4 border-t-2 border-indigo-200/80 space-y-3 bg-white p-4 rounded-xl border border-indigo-100 shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 text-xs">📋 Xem trước bản thảo AI gợi ý:</span>
+                          <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded">
+                            {aiDraft.sentences.length} câu thoại • {aiDraft.targetVocabularies?.length || 0} từ • {aiDraft.targetGrammars?.length || 0} ngữ pháp
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleDiscardAiDraft}
+                          className="text-slate-400 hover:text-red-600 text-xs transition cursor-pointer"
+                        >
+                          Bỏ qua bản thảo ✕
+                        </button>
+                      </div>
+
+                      {/* Overwrite Warning Banner if form already has sentences */}
+                      {formSentences.length > 0 && (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px] flex items-start gap-2">
+                          <span className="text-base leading-none">⚠️</span>
+                          <div>
+                            <span className="font-bold">Lưu ý ghi đè:</span> Form của bạn hiện đã có <strong>{formSentences.length} câu thoại</strong>. Khi bạn bấm <strong>"Áp dụng vào Form"</strong>, các câu thoại hiện tại sẽ được thay thế bằng bản thảo AI này. Tất cả dữ liệu sau khi điền vẫn hoàn toàn có thể chỉnh sửa tự do trước khi tạo bài học.
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        <div className="text-xs text-slate-700">
+                          <strong>Tiêu đề:</strong> {aiDraft.title}
+                        </div>
+                        {aiDraft.contextDescription && (
+                          <div className="text-xs text-slate-600">
+                            <strong>Bối cảnh:</strong> {aiDraft.contextDescription}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sentences Preview */}
+                      <div className="max-h-52 overflow-y-auto space-y-2 pr-1 border border-slate-100 rounded-lg p-2 bg-slate-50/60">
+                        {aiDraft.sentences.map((s, idx) => (
+                          <div key={idx} className="p-2 bg-white rounded-lg border border-slate-200 text-xs space-y-0.5">
+                            <div className="flex items-center justify-between">
+                              <span className={`px-2 py-0.2 rounded font-bold text-[10px] border ${getRoleBadgeColor(s.speakerRole)}`}>
+                                Vai {s.speakerRole}
+                              </span>
+                            </div>
+                            <div className="font-bold text-slate-800">{s.japaneseText}</div>
+                            {s.romajiText && <div className="text-[10px] text-slate-400 font-mono">{s.romajiText}</div>}
+                            <div className="text-[11px] text-slate-600">{s.vietnameseTranslation}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Vocabs & Grammars Draft Tags */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        {aiDraft.targetVocabularies && aiDraft.targetVocabularies.length > 0 && (
+                          <div className="p-2 bg-blue-50/50 rounded-lg border border-blue-100">
+                            <span className="font-bold text-blue-900 block mb-1 text-[11px]">Từ vựng đề xuất:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {aiDraft.targetVocabularies.map((v, i) => (
+                                <span key={i} className="bg-white px-2 py-0.5 rounded border border-blue-200 text-[11px] text-blue-800">
+                                  {v.word} ({v.meaning})
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {aiDraft.targetGrammars && aiDraft.targetGrammars.length > 0 && (
+                          <div className="p-2 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                            <span className="font-bold text-indigo-900 block mb-1 text-[11px]">Ngữ pháp đề xuất:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {aiDraft.targetGrammars.map((g, i) => (
+                                <span key={i} className="bg-white px-2 py-0.5 rounded border border-indigo-200 text-[11px] text-indigo-800">
+                                  {g.pattern} ({g.meaning})
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Decision Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={handleDiscardAiDraft}
+                          className="px-3 py-1.5 border border-slate-300 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-100 cursor-pointer"
+                        >
+                          Hủy bản thảo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleGenerateDialogue}
+                          disabled={isAiGenerating}
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer"
+                        >
+                          🔄 Sinh bản thảo khác
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleApplyAiDraft}
+                          className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-xs flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>✅</span>
+                          <span>{formSentences.length > 0 ? 'Thay thế & Áp dụng vào Form' : 'Áp dụng vào Form'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               {formErrors.length > 0 && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 space-y-1">
                   {formErrors.map((err, idx) => (
@@ -1372,7 +1736,7 @@ export const AdminShadowingListView: React.FC = () => {
               {/* Tab 2: Vocabularies */}
               {activeFormTab === 'vocab' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-slate-800 text-xs">Từ vựng dùng chung (Shared Master Resources)</span>
@@ -1380,18 +1744,145 @@ export const AdminShadowingListView: React.FC = () => {
                       </div>
                       <p className="text-[11px] text-slate-500">Từ vựng được liên kết từ kho Master Data của hệ thống, tái sử dụng giữa Shadowing & Scenario.</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddVocab}
-                      className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer"
-                    >
-                      + Thêm từ vựng dùng chung
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const willOpen = !isVocabLibraryOpen;
+                          setIsVocabLibraryOpen(willOpen);
+                          if (willOpen && masterVocabList.length === 0) {
+                            fetchMasterVocabularies(vocabSearchKeyword, vocabFilterLevel);
+                          }
+                        }}
+                        className={`font-bold px-3 py-1.5 rounded-xl border transition cursor-pointer flex items-center gap-1.5 text-xs ${
+                          isVocabLibraryOpen
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        <span>🔍</span>
+                        <span>{isVocabLibraryOpen ? 'Đóng tra cứu kho' : 'Tra cứu kho Master Data'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddVocab}
+                        className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer text-xs"
+                      >
+                        + Thêm dòng từ vựng
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Master Vocab Explorer Drawer */}
+                  {isVocabLibraryOpen && (
+                    <div className="p-4 bg-blue-50/60 rounded-xl border border-blue-200 space-y-3">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-800 text-xs">Kho Từ vựng Master Data (Dùng chung)</span>
+                            <span className="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded font-semibold">
+                              Ưu tiên JLPT {formLevel}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500">
+                            Mặc định lọc theo cấp độ bài học ({formLevel}), nhưng bạn có thể tra cứu và chọn bất kỳ cấp độ nào.
+                          </p>
+                        </div>
+
+                        {/* Search & Filter Bar */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={vocabSearchKeyword}
+                            onChange={(e) => setVocabSearchKeyword(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                fetchMasterVocabularies(vocabSearchKeyword, vocabFilterLevel);
+                              }
+                            }}
+                            placeholder="Tìm từ vựng, ý nghĩa..."
+                            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs w-44"
+                          />
+                          <select
+                            value={vocabFilterLevel}
+                            onChange={(e) => {
+                              const newLvl = e.target.value;
+                              setVocabFilterLevel(newLvl);
+                              fetchMasterVocabularies(vocabSearchKeyword, newLvl);
+                            }}
+                            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 cursor-pointer"
+                          >
+                            <option value="formLevel">Ưu tiên {formLevel} (Mặc định)</option>
+                            <option value="ALL">Tất cả cấp độ (Mở rộng)</option>
+                            <option value="N5">Cấp độ N5</option>
+                            <option value="N4">Cấp độ N4</option>
+                            <option value="N3">Cấp độ N3</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => fetchMasterVocabularies(vocabSearchKeyword, vocabFilterLevel)}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs cursor-pointer"
+                          >
+                            Tìm
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Items List */}
+                      {isLoadingMasterVocabs ? (
+                        <div className="p-6 text-center text-slate-400 text-xs">
+                          <span className="inline-block animate-spin mr-1">⏳</span> Đang tải từ vựng từ kho Master Data...
+                        </div>
+                      ) : masterVocabList.length === 0 ? (
+                        <div className="p-6 text-center text-slate-400 text-xs bg-white rounded-lg border border-dashed border-slate-200">
+                          Chưa có kết quả nào. Hãy thử bấm "Tìm" hoặc đổi cấp độ lọc sang "Tất cả cấp độ".
+                        </div>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                          {masterVocabList.map((v, i) => {
+                            const isAdded = formVocabularies.some(
+                              (fv) => fv.word.trim().toLowerCase() === v.word.trim().toLowerCase()
+                            );
+                            return (
+                              <div
+                                key={i}
+                                className="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-xs hover:border-blue-300 transition"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-900">{v.word}</span>
+                                  {v.reading && <span className="text-slate-500 font-mono text-[11px]">({v.reading})</span>}
+                                  <span className="text-slate-400">•</span>
+                                  <span className="text-slate-700">{v.meaning}</span>
+                                  {v.jlptLevel && (
+                                    <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 rounded font-bold text-[10px] border border-blue-200">
+                                      {v.jlptLevel}
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectMasterVocab(v)}
+                                  disabled={isAdded}
+                                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer transition ${
+                                    isAdded
+                                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-2xs'
+                                  }`}
+                                >
+                                  {isAdded ? '✓ Đã chọn' : '+ Chọn vào bài'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {formVocabularies.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 border border-dashed border-slate-300 rounded-xl">
-                      Chưa liên kết từ vựng dùng chung. Bạn có thể thêm mới vào kho hoặc dùng AI Gợi ý nội dung.
+                      Chưa liên kết từ vựng dùng chung. Bạn có thể tra cứu từ kho Master Data, tự thêm dòng mới hoặc dùng AI Gợi ý nội dung.
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1435,7 +1926,7 @@ export const AdminShadowingListView: React.FC = () => {
               {/* Tab 3: Grammars */}
               {activeFormTab === 'grammar' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-slate-800 text-xs">Ngữ pháp dùng chung (Shared Master Resources)</span>
@@ -1443,18 +1934,151 @@ export const AdminShadowingListView: React.FC = () => {
                       </div>
                       <p className="text-[11px] text-slate-500">Mẫu ngữ pháp được liên kết từ kho Master Data của hệ thống, tái sử dụng giữa Shadowing & Scenario.</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddGrammar}
-                      className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer"
-                    >
-                      + Thêm ngữ pháp dùng chung
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const willOpen = !isGrammarLibraryOpen;
+                          setIsGrammarLibraryOpen(willOpen);
+                          if (willOpen && masterGrammarList.length === 0) {
+                            fetchMasterGrammars(grammarSearchKeyword, grammarFilterLevel);
+                          }
+                        }}
+                        className={`font-bold px-3 py-1.5 rounded-xl border transition cursor-pointer flex items-center gap-1.5 text-xs ${
+                          isGrammarLibraryOpen
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
+                        }`}
+                      >
+                        <span>🔍</span>
+                        <span>{isGrammarLibraryOpen ? 'Đóng tra cứu kho' : 'Tra cứu kho Master Data'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddGrammar}
+                        className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer text-xs"
+                      >
+                        + Thêm dòng ngữ pháp
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Master Grammar Explorer Drawer */}
+                  {isGrammarLibraryOpen && (
+                    <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-200 space-y-3">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-800 text-xs">Kho Ngữ pháp Master Data (Dùng chung)</span>
+                            <span className="text-[10px] text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded font-semibold">
+                              Ưu tiên JLPT {formLevel}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500">
+                            Mặc định lọc theo cấp độ bài học ({formLevel}), nhưng bạn có thể tra cứu và chọn bất kỳ cấp độ nào.
+                          </p>
+                        </div>
+
+                        {/* Search & Filter Bar */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={grammarSearchKeyword}
+                            onChange={(e) => setGrammarSearchKeyword(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                fetchMasterGrammars(grammarSearchKeyword, grammarFilterLevel);
+                              }
+                            }}
+                            placeholder="Tìm mẫu ngữ pháp, ý nghĩa..."
+                            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs w-44"
+                          />
+                          <select
+                            value={grammarFilterLevel}
+                            onChange={(e) => {
+                              const newLvl = e.target.value;
+                              setGrammarFilterLevel(newLvl);
+                              fetchMasterGrammars(grammarSearchKeyword, newLvl);
+                            }}
+                            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 cursor-pointer"
+                          >
+                            <option value="formLevel">Ưu tiên {formLevel} (Mặc định)</option>
+                            <option value="ALL">Tất cả cấp độ (Mở rộng)</option>
+                            <option value="N5">Cấp độ N5</option>
+                            <option value="N4">Cấp độ N4</option>
+                            <option value="N3">Cấp độ N3</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => fetchMasterGrammars(grammarSearchKeyword, grammarFilterLevel)}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs cursor-pointer"
+                          >
+                            Tìm
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Items List */}
+                      {isLoadingMasterGrammars ? (
+                        <div className="p-6 text-center text-slate-400 text-xs">
+                          <span className="inline-block animate-spin mr-1">⏳</span> Đang tải ngữ pháp từ kho Master Data...
+                        </div>
+                      ) : masterGrammarList.length === 0 ? (
+                        <div className="p-6 text-center text-slate-400 text-xs bg-white rounded-lg border border-dashed border-slate-200">
+                          Chưa có kết quả nào. Hãy thử bấm "Tìm" hoặc đổi cấp độ lọc sang "Tất cả cấp độ".
+                        </div>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                          {masterGrammarList.map((g, i) => {
+                            const isAdded = formGrammars.some(
+                              (fg) => fg.pattern.trim().toLowerCase() === g.pattern.trim().toLowerCase()
+                            );
+                            return (
+                              <div
+                                key={i}
+                                className="p-2 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-xs hover:border-indigo-300 transition"
+                              >
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-[#0878EE]">{g.pattern}</span>
+                                    <span className="text-slate-400">•</span>
+                                    <span className="text-slate-700">{g.meaning}</span>
+                                    {g.jlptLevel && (
+                                      <span className="px-1.5 py-0.2 bg-indigo-50 text-indigo-700 rounded font-bold text-[10px] border border-indigo-200">
+                                        {g.jlptLevel}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {g.exampleSentence && (
+                                    <div className="text-[11px] text-slate-400 italic">
+                                      Ví dụ: {g.exampleSentence}
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectMasterGrammar(g)}
+                                  disabled={isAdded}
+                                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer transition ${
+                                    isAdded
+                                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs'
+                                  }`}
+                                >
+                                  {isAdded ? '✓ Đã chọn' : '+ Chọn vào bài'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {formGrammars.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 border border-dashed border-slate-300 rounded-xl">
-                      Chưa liên kết ngữ pháp dùng chung. Bạn có thể thêm mới vào kho hoặc dùng AI Gợi ý nội dung.
+                      Chưa liên kết ngữ pháp dùng chung. Bạn có thể tra cứu từ kho Master Data, tự thêm dòng mới hoặc dùng AI Gợi ý nội dung.
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1517,104 +2141,7 @@ export const AdminShadowingListView: React.FC = () => {
         </div>
       )}
 
-      {/* 6. AI Generation Modal */}
-      {isAiModalOpen && (
-        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🤖</span>
-                <h3 className="font-bold text-slate-900 text-sm">AI Đề xuất nội dung bài hội thoại Shadowing</h3>
-              </div>
-              <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
 
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Hệ thống AI sẽ tự động phân tích bối cảnh kịch bản, các vai nhân vật và sinh ra bộ câu đối thoại chuẩn ngữ điệu Nhật Bản kèm từ vựng và ngữ pháp trọng tâm.
-            </p>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Chủ đề / Bối cảnh muốn tạo:</label>
-                <input
-                  type="text"
-                  value={formTitle || scenarios.find((s) => s.id === formScenarioId)?.title || ''}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="Ví dụ: Đặt bàn ăn tối tại nhà hàng Tokyo..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">Số câu thoại</label>
-                  <select
-                    value={aiSentenceCount}
-                    onChange={(e) => setAiSentenceCount(parseInt(e.target.value, 10))}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-                  >
-                    <option value={4}>4 câu</option>
-                    <option value={6}>6 câu</option>
-                    <option value={8}>8 câu</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">Số từ vựng</label>
-                  <select
-                    value={aiVocabCount}
-                    onChange={(e) => setAiVocabCount(parseInt(e.target.value, 10))}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-                  >
-                    <option value={2}>2 từ</option>
-                    <option value={3}>3 từ</option>
-                    <option value={4}>4 từ</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">Số ngữ pháp</label>
-                  <select
-                    value={aiGrammarCount}
-                    onChange={(e) => setAiGrammarCount(parseInt(e.target.value, 10))}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-                  >
-                    <option value={1}>1 mẫu</option>
-                    <option value={2}>2 mẫu</option>
-                    <option value={3}>3 mẫu</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => setIsAiModalOpen(false)}
-                className="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100"
-              >
-                Đóng
-              </button>
-              <button
-                type="button"
-                onClick={handleGenerateDialogue}
-                disabled={isAiGenerating}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition shadow-xs disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-              >
-                {isAiGenerating ? (
-                  <>
-                    <span className="animate-spin">⏳</span>
-                    <span>AI đang tạo bài học...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>✨</span>
-                    <span>Bắt đầu tạo hội thoại</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 7. Import File Modal */}
       {isImportModalOpen && (

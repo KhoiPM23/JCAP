@@ -28,5 +28,8 @@ namespace JCAP.DTOs.Shadowing.Admin
 
         [Range(1, 10)]
         public int GrammarCount { get; set; } = 2;
+
+        [MaxLength(1000)]
+        public string? CustomInstructions { get; set; }
     }
 }

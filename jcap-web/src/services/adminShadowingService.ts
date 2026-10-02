@@ -8,6 +8,8 @@ import type {
   GeneratedShadowingDialogueResult,
   TranslateAssistPayload,
   TranslateAssistResult,
+  ShadowingVocabularyItem,
+  ShadowingGrammarItem,
 } from '../types/shadowing';
 
 class AdminShadowingService {
@@ -222,6 +224,48 @@ class AdminShadowingService {
         success: false,
         message: 'Không thể kết nối đến máy chủ backend để tải âm thanh.',
       };
+    }
+  }
+
+  public async getSharedVocabularies(keyword?: string, jlptLevel?: string): Promise<ApiResponse<ShadowingVocabularyItem[]>> {
+    try {
+      const params = new URLSearchParams();
+      if (keyword) params.append('keyword', keyword);
+      if (jlptLevel) params.append('jlptLevel', jlptLevel);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+
+      const response = await fetch(`/api/admin/shadowing/shared-vocabularies${qs}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        return { success: false, message: 'Lỗi tải danh sách từ vựng dùng chung.' };
+      }
+      return await response.json();
+    } catch {
+      return { success: false, message: 'Không thể kết nối máy chủ.' };
+    }
+  }
+
+  public async getSharedGrammars(keyword?: string, jlptLevel?: string): Promise<ApiResponse<ShadowingGrammarItem[]>> {
+    try {
+      const params = new URLSearchParams();
+      if (keyword) params.append('keyword', keyword);
+      if (jlptLevel) params.append('jlptLevel', jlptLevel);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+
+      const response = await fetch(`/api/admin/shadowing/shared-grammars${qs}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        return { success: false, message: 'Lỗi tải danh sách ngữ pháp dùng chung.' };
+      }
+      return await response.json();
+    } catch {
+      return { success: false, message: 'Không thể kết nối máy chủ.' };
     }
   }
 }

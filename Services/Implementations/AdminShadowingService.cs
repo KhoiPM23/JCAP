@@ -341,7 +341,7 @@ namespace JCAP.Services.Implementations
                 try
                 {
                     var aiResult = await TryGenerateDialogueWithGeminiAsync(
-                        apiKey, model, title, desc, level, roles, sentenceCount, vocabCount, grammarCount, cancellationToken);
+                        apiKey, model, title, desc, level, roles, sentenceCount, vocabCount, grammarCount, request.CustomInstructions, cancellationToken);
                     if (aiResult != null && aiResult.Sentences.Count > 0)
                     {
                         return ApiResponse<GeneratedShadowingDialogueDto>.Ok(aiResult, $"Tạo bài hội thoại Shadowing AI ({model}) thành công.");
@@ -538,12 +538,16 @@ namespace JCAP.Services.Implementations
             int sentenceCount,
             int vocabCount,
             int grammarCount,
+            string? customInstructions,
             CancellationToken cancellationToken)
         {
             var httpClient = _httpClientFactory.CreateClient();
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
             var rolesDesc = string.Join(", ", roles.Select((r, idx) => $"Vai {(char)('A' + idx)}: {r}"));
+            var customNotes = !string.IsNullOrWhiteSpace(customInstructions)
+                ? $"\n- Chỉ dẫn bổ sung từ Admin: \"{customInstructions.Trim()}\""
+                : string.Empty;
 
             var prompt = $@"Bạn là chuyên gia sư phạm tiếng Nhật chuẩn JLPT {level}.
 Nhiệm vụ: Tạo một bài hội thoại Shadowing mẫu chất lượng cao dựa trên bối cảnh:
@@ -553,7 +557,7 @@ Nhiệm vụ: Tạo một bài hội thoại Shadowing mẫu chất lượng cao
 - Các vai đối thoại: {rolesDesc}
 - Số lượng câu đối thoại: {sentenceCount} câu
 - Số lượng từ vựng trọng tâm: {vocabCount} từ
-- Số lượng ngữ pháp trọng tâm: {grammarCount} mẫu
+- Số lượng ngữ pháp trọng tâm: {grammarCount} mẫu{customNotes}
 
 Yêu cầu:
 1. Các câu đối thoại luân phiên giữa các vai (A, B, C...).
@@ -949,7 +953,7 @@ Trả về duy nhất JSON thuần túy theo schema:
                 query = query.Where(v => v.Word.Contains(kw) || v.Meaning.Contains(kw) || (v.Reading != null && v.Reading.Contains(kw)));
             }
 
-            if (!string.IsNullOrWhiteSpace(jlptLevel))
+            if (!string.IsNullOrWhiteSpace(jlptLevel) && !jlptLevel.Equals("ALL", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(v => v.JLPTLevel == jlptLevel.Trim().ToUpper());
             }
@@ -962,7 +966,8 @@ Trả về duy nhất JSON thuần túy theo schema:
                     Id = v.Id,
                     Word = v.Word,
                     Reading = v.Reading,
-                    Meaning = v.Meaning
+                    Meaning = v.Meaning,
+                    JLPTLevel = v.JLPTLevel
                 })
                 .ToListAsync();
 
@@ -979,7 +984,7 @@ Trả về duy nhất JSON thuần túy theo schema:
                 query = query.Where(g => g.Pattern.Contains(kw) || g.Meaning.Contains(kw));
             }
 
-            if (!string.IsNullOrWhiteSpace(jlptLevel))
+            if (!string.IsNullOrWhiteSpace(jlptLevel) && !jlptLevel.Equals("ALL", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(g => g.JLPTLevel == jlptLevel.Trim().ToUpper());
             }
@@ -992,7 +997,8 @@ Trả về duy nhất JSON thuần túy theo schema:
                     Id = g.Id,
                     Pattern = g.Pattern,
                     Meaning = g.Meaning,
-                    ExampleSentence = g.ExampleSentence
+                    ExampleSentence = g.ExampleSentence,
+                    JLPTLevel = g.JLPTLevel
                 })
                 .ToListAsync();
 

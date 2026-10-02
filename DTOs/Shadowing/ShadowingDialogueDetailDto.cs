@@ -30,6 +30,7 @@ namespace JCAP.DTOs.Shadowing
         public string Word { get; set; } = string.Empty;
         public string? Reading { get; set; }
         public string Meaning { get; set; } = string.Empty;
+        public string? JLPTLevel { get; set; }
     }
 
     public class ShadowingGrammarDto
@@ -38,6 +39,7 @@ namespace JCAP.DTOs.Shadowing
         public string Pattern { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? ExampleSentence { get; set; }
+        public string? JLPTLevel { get; set; }
     }
 }
 

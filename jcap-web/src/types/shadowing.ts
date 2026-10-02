@@ -170,6 +170,7 @@ export interface GenerateShadowingDialoguePayload {
   sentenceCount?: number;
   vocabCount?: number;
   grammarCount?: number;
+  customInstructions?: string;
 }
 
 export interface GeneratedShadowingDialogueResult {
