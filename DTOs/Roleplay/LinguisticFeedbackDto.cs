@@ -3,6 +3,12 @@ namespace JCAP.DTOs.Roleplay;
 public class LinguisticFeedbackDto
 {
     /// <summary>
+    /// Nguồn tạo đánh giá. Giá trị "AI" được dùng cho Gemini; "Simulator"
+    /// chỉ phục vụ fallback phát triển và không được dùng để chấm điểm thật.
+    /// </summary>
+    public string EvaluationSource { get; set; } = "AI";
+
+    /// <summary>
     /// Trạng thái đánh giá nhanh: "Good" (Xanh lá), "Warning" (Chấm than vàng), "Error" (Đỏ)
     /// </summary>
     public string Status { get; set; } = "Good";

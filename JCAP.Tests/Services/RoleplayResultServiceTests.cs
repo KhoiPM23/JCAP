@@ -26,11 +26,12 @@ namespace JCAP.Tests.Services
             return new RoleplayResultService(
                 dbContext,
                 provider,
+                new RoleplayEvaluationService(),
                 new Mock<ILogger<RoleplayResultService>>().Object);
         }
 
         [Fact]
-        public async Task CompleteSessionAsync_CreatesMockResultAndIsIdempotent()
+        public async Task CompleteSessionAsync_CreatesAiScoredResultAndIsIdempotent()
         {
             using var dbContext = CreateInMemoryDbContext();
             dbContext.RoleplaySessions.Add(CreateSession(10, "learner-1"));
@@ -58,12 +59,17 @@ namespace JCAP.Tests.Services
             Assert.True(first.Success);
             Assert.NotNull(first.Data);
             Assert.False(first.Data.IsExistingResult);
-            Assert.True(first.Data.IsMockEvaluation);
+            Assert.False(first.Data.IsMockEvaluation);
             Assert.True(second.Success);
             Assert.NotNull(second.Data);
             Assert.True(second.Data.IsExistingResult);
             Assert.Equal(first.Data.ResultId, second.Data.ResultId);
             Assert.Single(await dbContext.RoleplayResults.ToListAsync());
+            var savedResult = await dbContext.RoleplayResults.SingleAsync();
+            Assert.Equal(92, savedResult.OverallScore);
+            Assert.Equal(90, savedResult.GrammarScore);
+            Assert.Equal(90, savedResult.VocabularyScore);
+            Assert.Equal(98, savedResult.ImpressionScore);
             var completedSession = await dbContext.RoleplaySessions.SingleAsync();
             Assert.Equal("Completed", completedSession.Status);
             Assert.NotNull(completedSession.CompletedAt);
@@ -92,6 +98,85 @@ namespace JCAP.Tests.Services
 
             Assert.False(response.Success);
             Assert.Empty(await dbContext.RoleplayResults.ToListAsync());
+        }
+
+        [Fact]
+        public async Task CompleteSessionAsync_RejectsSessionWithoutLearnerMessages()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.Add(new RoleplaySession
+            {
+                Id = 21,
+                UserId = "learner-1",
+                ScenarioLevelConfigurationId = 1,
+                Status = "Active"
+            });
+            await dbContext.SaveChangesAsync();
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider
+                .Setup(item => item.GetCompletableSessionAsync(21, "learner-1"))
+                .ReturnsAsync(new RoleplaySessionSnapshot
+                {
+                    SessionId = 21,
+                    UserId = "learner-1",
+                    ScenarioTitle = "Gọi món",
+                    JLPTLevel = "N5"
+                });
+
+            var service = CreateService(dbContext, provider.Object);
+            var response = await service.CompleteSessionAsync("learner-1", 21);
+
+            Assert.False(response.Success);
+            Assert.Contains("ít nhất một câu", response.Message);
+            Assert.Empty(await dbContext.RoleplayResults.ToListAsync());
+            Assert.Equal("Active", (await dbContext.RoleplaySessions.SingleAsync()).Status);
+        }
+
+        [Fact]
+        public async Task CompleteSessionAsync_RejectsSimulatorOnlyFeedback()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.Add(new RoleplaySession
+            {
+                Id = 22,
+                UserId = "learner-1",
+                ScenarioLevelConfigurationId = 1,
+                Status = "Active",
+                Messages =
+                [
+                    new RoleplayMessage
+                    {
+                        Sender = "User",
+                        JapaneseText = "ラーメンをください。",
+                        LinguisticFeedbackJson = """
+                        {
+                          "evaluationSource": "Simulator",
+                          "status": "Good",
+                          "summary": "Phản xạ tự nhiên • Đúng ngữ cảnh"
+                        }
+                        """
+                    }
+                ]
+            });
+            await dbContext.SaveChangesAsync();
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider
+                .Setup(item => item.GetCompletableSessionAsync(22, "learner-1"))
+                .ReturnsAsync(new RoleplaySessionSnapshot
+                {
+                    SessionId = 22,
+                    UserId = "learner-1",
+                    ScenarioTitle = "Gọi món",
+                    JLPTLevel = "N5"
+                });
+
+            var service = CreateService(dbContext, provider.Object);
+            var response = await service.CompleteSessionAsync("learner-1", 22);
+
+            Assert.False(response.Success);
+            Assert.Contains("Gemini", response.Message);
+            Assert.Empty(await dbContext.RoleplayResults.ToListAsync());
+            Assert.Equal("Active", (await dbContext.RoleplaySessions.SingleAsync()).Status);
         }
 
         [Fact]
@@ -228,7 +313,37 @@ namespace JCAP.Tests.Services
                 Id = sessionId,
                 UserId = userId,
                 ScenarioLevelConfigurationId = 1,
-                Status = "Active"
+                Status = "Active",
+                IsNaturallyConcluded = true,
+                Messages =
+                [
+                    new RoleplayMessage
+                    {
+                        Sender = "User",
+                        JapaneseText = "ラーメンをください。",
+                        LinguisticFeedbackJson = """
+                        {
+                          "evaluationSource": "AI",
+                          "status": "Good",
+                          "summary": "Rất tốt",
+                          "details": [
+                            { "type": "success", "aspect": "Ngữ pháp", "comment": "Cấu trúc câu chính xác." },
+                            { "type": "success", "aspect": "Từ vựng", "comment": "Dùng từ phù hợp." },
+                            { "type": "success", "aspect": "Ngữ cảnh", "comment": "Phản hồi đúng tình huống." }
+                          ]
+                        }
+                        """
+                    }
+                ],
+                SessionMissions =
+                [
+                    new RoleplaySessionMission
+                    {
+                        MissionId = 1,
+                        IsCompleted = true,
+                        CompletedAt = DateTime.UtcNow
+                    }
+                ]
             };
         }
     }
