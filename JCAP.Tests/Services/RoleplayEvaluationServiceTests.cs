@@ -18,10 +18,47 @@ public class RoleplayEvaluationServiceTests
         Assert.NotNull(result);
         Assert.Equal(90, result.GrammarScore);
         Assert.Equal(90, result.VocabularyScore);
-        Assert.Equal(98, result.ImpressionScore);
-        Assert.Equal(92, result.OverallScore);
+        Assert.Equal(92, result.ImpressionScore);
+        Assert.Equal(100, result.MissionProgressScore);
+        Assert.Equal(95, result.OverallScore);
+        Assert.True(result.AllMissionsCompleted);
         Assert.Equal(1, result.EvaluatedTurnCount);
         Assert.Contains("Điểm làm tốt", result.GeneralFeedbackText);
+    }
+
+    [Fact]
+    public void Evaluate_CapsOverallScoreAndMarksIncompleteMissions()
+    {
+        var result = _service.Evaluate(
+            [GoodFeedbackJson],
+            completedMissionCount: 2,
+            totalMissionCount: 3,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(90, result.GrammarScore);
+        Assert.Equal(90, result.VocabularyScore);
+        Assert.Equal(92, result.ImpressionScore);
+        Assert.Equal(67, result.MissionProgressScore);
+        Assert.Equal(59, result.OverallScore);
+        Assert.False(result.AllMissionsCompleted);
+        Assert.Contains("2/3", result.GeneralFeedbackText);
+        Assert.Contains("Chưa đạt", result.GeneralFeedbackText);
+    }
+
+    [Fact]
+    public void Evaluate_GivesZeroMissionContributionWhenNoMissionIsCompleted()
+    {
+        var result = _service.Evaluate(
+            [GoodFeedbackJson],
+            completedMissionCount: 0,
+            totalMissionCount: 3,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result.MissionProgressScore);
+        Assert.Equal(45, result.OverallScore);
+        Assert.False(result.AllMissionsCompleted);
     }
 
     [Fact]
@@ -36,8 +73,9 @@ public class RoleplayEvaluationServiceTests
         Assert.NotNull(result);
         Assert.Equal(78, result.GrammarScore);
         Assert.Equal(48, result.VocabularyScore);
-        Assert.Equal(46, result.ImpressionScore);
-        Assert.Equal(58, result.OverallScore);
+        Assert.Equal(62, result.ImpressionScore);
+        Assert.Equal(50, result.MissionProgressScore);
+        Assert.Equal(56, result.OverallScore);
         Assert.Contains("Điểm cần cải thiện", result.GeneralFeedbackText);
         Assert.Contains("Cách diễn đạt tự nhiên hơn", result.GeneralFeedbackText);
     }
@@ -54,8 +92,24 @@ public class RoleplayEvaluationServiceTests
         Assert.NotNull(result);
         Assert.Equal(65, result.GrammarScore);
         Assert.Equal(90, result.VocabularyScore);
-        Assert.Equal(93, result.ImpressionScore);
-        Assert.Equal(82, result.OverallScore);
+        Assert.Equal(72, result.ImpressionScore);
+        Assert.Equal(88, result.OverallScore);
+    }
+
+    [Fact]
+    public void Evaluate_DoesNotAwardGoodScoreWhenCategoryEvidenceIsMissing()
+    {
+        var result = _service.Evaluate(
+            [GoodButMissingCategoryFeedbackJson],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(65, result.GrammarScore);
+        Assert.Equal(90, result.VocabularyScore);
+        Assert.Equal(72, result.ImpressionScore);
+        Assert.Equal(88, result.OverallScore);
     }
 
     [Fact]
@@ -115,6 +169,17 @@ public class RoleplayEvaluationServiceTests
       "evaluationSource": "AI",
       "status": "Warning",
       "summary": "Khá tốt",
+      "details": [
+        { "type": "success", "aspect": "Từ vựng", "comment": "Dùng từ phù hợp." }
+      ]
+    }
+    """;
+
+    private const string GoodButMissingCategoryFeedbackJson = """
+    {
+      "evaluationSource": "AI",
+      "status": "Good",
+      "summary": "Rất tốt",
       "details": [
         { "type": "success", "aspect": "Từ vựng", "comment": "Dùng từ phù hợp." }
       ]

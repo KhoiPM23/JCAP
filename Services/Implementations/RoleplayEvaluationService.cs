@@ -10,6 +10,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
     private const int SuccessScore = 90;
     private const int WarningScore = 65;
     private const int ErrorScore = 30;
+    private const int IncompleteMissionScoreCap = 59;
+    private const double MissionProgressWeight = 0.50;
+    private const double GrammarWeight = 0.20;
+    private const double VocabularyWeight = 0.20;
+    private const double ImpressionWeight = 0.10;
+    private const double ImpressionLanguageWeight = 0.80;
+    private const double NaturalConclusionWeight = 0.20;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -56,19 +63,29 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         var impressionLanguageScore = AverageAndRound(feedbacks.Select(feedback =>
             GetCategoryScore(feedback, ImpressionAspects)));
 
-        var missionCompletionScore = totalMissionCount > 0
-            ? Math.Clamp(completedMissionCount * 100.0 / totalMissionCount, 0, 100)
+        var normalizedTotalMissionCount = Math.Max(totalMissionCount, 0);
+        var normalizedCompletedMissionCount = Math.Clamp(
+            completedMissionCount,
+            0,
+            normalizedTotalMissionCount);
+        var allMissionsCompleted = normalizedTotalMissionCount > 0
+            && normalizedCompletedMissionCount == normalizedTotalMissionCount;
+        var missionCompletionScore = normalizedTotalMissionCount > 0
+            ? normalizedCompletedMissionCount * 100.0 / normalizedTotalMissionCount
             : 0;
         var naturalConclusionScore = isNaturallyConcluded ? 100 : 0;
         var impressionScore = ClampAndRound(
-            missionCompletionScore * 0.60
-            + naturalConclusionScore * 0.20
-            + impressionLanguageScore * 0.20);
+            impressionLanguageScore * ImpressionLanguageWeight
+            + naturalConclusionScore * NaturalConclusionWeight);
 
-        var overallScore = ClampAndRound(
-            grammarScore * 0.35
-            + vocabularyScore * 0.35
-            + impressionScore * 0.30);
+        var calculatedOverallScore = ClampAndRound(
+            missionCompletionScore * MissionProgressWeight
+            + grammarScore * GrammarWeight
+            + vocabularyScore * VocabularyWeight
+            + impressionScore * ImpressionWeight);
+        var overallScore = allMissionsCompleted
+            ? calculatedOverallScore
+            : Math.Min(calculatedOverallScore, IncompleteMissionScoreCap);
 
         return new RoleplayEvaluationResult
         {
@@ -76,7 +93,14 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             GrammarScore = grammarScore,
             VocabularyScore = vocabularyScore,
             ImpressionScore = impressionScore,
-            GeneralFeedbackText = BuildGeneralFeedback(feedbacks, overallScore),
+            MissionProgressScore = ClampAndRound(missionCompletionScore),
+            AllMissionsCompleted = allMissionsCompleted,
+            GeneralFeedbackText = BuildGeneralFeedback(
+                feedbacks,
+                overallScore,
+                normalizedCompletedMissionCount,
+                normalizedTotalMissionCount,
+                allMissionsCompleted),
             EvaluatedTurnCount = feedbacks.Count
         };
     }
@@ -115,9 +139,14 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             .Select(detail => MapQualityScore(detail.Type))
             .ToList();
 
-        return detailScores.Count > 0
-            ? detailScores.Average()
-            : MapQualityScore(feedback.Status);
+        if (detailScores.Count > 0)
+        {
+            return detailScores.Average();
+        }
+
+        // Không có nhận xét đúng nhóm nghĩa là chưa đủ bằng chứng để trao điểm Good.
+        // Vẫn giữ Error/Warning từ AI, nhưng giới hạn Good ở mức Warning.
+        return Math.Min(MapQualityScore(feedback.Status), WarningScore);
     }
 
     private static bool MatchesAspect(
@@ -161,9 +190,16 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
 
     private static string BuildGeneralFeedback(
         IReadOnlyCollection<LinguisticFeedbackDto> feedbacks,
-        int overallScore)
+        int overallScore,
+        int completedMissionCount,
+        int totalMissionCount,
+        bool allMissionsCompleted)
     {
-        var overview = overallScore switch
+        var overview = !allMissionsCompleted
+            ? totalMissionCount > 0
+                ? $"Bạn chưa hoàn thành đủ nhiệm vụ ({completedMissionCount}/{totalMissionCount}), nên kết quả phiên này là Chưa đạt."
+                : "Phiên luyện tập chưa có nhiệm vụ hợp lệ, nên kết quả phiên này là Chưa đạt."
+            : overallScore switch
         {
             >= 85 => "Bạn giao tiếp rất tốt và duy trì hội thoại tự nhiên.",
             >= 70 => "Bạn giao tiếp khá tốt và đã xử lý phần lớn tình huống phù hợp.",

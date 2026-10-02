@@ -114,7 +114,8 @@ namespace JCAP.Services.Implementations
                 GrammarScore = evaluation.GrammarScore,
                 VocabularyScore = evaluation.VocabularyScore,
                 ImpressionScore = evaluation.ImpressionScore,
-                PassStatus = evaluation.OverallScore >= PassThreshold,
+                PassStatus = evaluation.AllMissionsCompleted
+                    && evaluation.OverallScore >= PassThreshold,
                 GeneralFeedbackText = evaluation.GeneralFeedbackText,
                 CompletedMissionsSummaryJson = JsonSerializer.Serialize(completedMissions),
                 CompletedAt = session.CompletedAt.Value

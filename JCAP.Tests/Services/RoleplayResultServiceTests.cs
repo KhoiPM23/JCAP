@@ -66,16 +66,55 @@ namespace JCAP.Tests.Services
             Assert.Equal(first.Data.ResultId, second.Data.ResultId);
             Assert.Single(await dbContext.RoleplayResults.ToListAsync());
             var savedResult = await dbContext.RoleplayResults.SingleAsync();
-            Assert.Equal(92, savedResult.OverallScore);
+            Assert.Equal(95, savedResult.OverallScore);
             Assert.Equal(90, savedResult.GrammarScore);
             Assert.Equal(90, savedResult.VocabularyScore);
-            Assert.Equal(98, savedResult.ImpressionScore);
+            Assert.Equal(92, savedResult.ImpressionScore);
+            Assert.True(savedResult.PassStatus);
             var completedSession = await dbContext.RoleplaySessions.SingleAsync();
             Assert.Equal("Completed", completedSession.Status);
             Assert.NotNull(completedSession.CompletedAt);
             provider.Verify(
                 item => item.GetCompletableSessionAsync(10, "learner-1"),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task CompleteSessionAsync_SavesIncompleteMissionResultAsFailed()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var session = CreateSession(11, "learner-1");
+            session.SessionMissions.Add(new RoleplaySessionMission
+            {
+                MissionId = 2,
+                IsCompleted = false
+            });
+            dbContext.RoleplaySessions.Add(session);
+            await dbContext.SaveChangesAsync();
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider
+                .Setup(item => item.GetCompletableSessionAsync(11, "learner-1"))
+                .ReturnsAsync(new RoleplaySessionSnapshot
+                {
+                    SessionId = 11,
+                    UserId = "learner-1",
+                    ScenarioTitle = "Gọi món tại quán Ramen",
+                    JLPTLevel = "N5",
+                    CompletedMissions =
+                    [
+                        new CompletedMissionSnapshot { MissionId = 1, Title = "Gọi một tô ramen" }
+                    ]
+                });
+
+            var service = CreateService(dbContext, provider.Object);
+            var response = await service.CompleteSessionAsync("learner-1", 11);
+
+            Assert.True(response.Success);
+            var savedResult = await dbContext.RoleplayResults.SingleAsync();
+            Assert.False(savedResult.PassStatus);
+            Assert.Equal(59, savedResult.OverallScore);
+            Assert.Contains("1/2", savedResult.GeneralFeedbackText);
+            Assert.Contains("Chưa đạt", savedResult.GeneralFeedbackText);
         }
 
         [Fact]
