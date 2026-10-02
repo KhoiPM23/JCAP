@@ -1,7 +1,7 @@
 using System.Text.Json;
 using JCAP.DTOs.Roleplay;
+using JCAP.Models;
 using JCAP.Services.Interfaces;
-using JCAP.Services.Models;
 
 namespace JCAP.Services.Implementations;
 

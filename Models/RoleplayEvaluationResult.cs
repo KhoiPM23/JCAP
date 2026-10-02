@@ -1,5 +1,9 @@
-namespace JCAP.Services.Models;
+namespace JCAP.Models;
 
+/// <summary>
+/// Kết quả tính điểm nội bộ của một phiên roleplay.
+/// Đây không phải EF Core entity và không được ánh xạ vào AppDbContext.
+/// </summary>
 public sealed class RoleplayEvaluationResult
 {
     public int OverallScore { get; init; }
