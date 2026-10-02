@@ -57,13 +57,12 @@ namespace JCAP.Data.Seeds
                             {
                                 new Mission
                                 {
-                                    Content = "Chào nhân viên và gọi 1 bát Tonkotsu Ramen",
+                                    Content = "Gọi 1 bát Tonkotsu Ramen",
                                     Order = 1,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Order Tonkotsu Ramen",
                                         "1 bowl of Tonkotsu Ramen",
-                                        "Learner greets the staff politely in Japanese.",
-                                        "Learner explicitly asks for 1 bowl of Tonkotsu Ramen."
+                                        "Learner asks for 1 bowl of Tonkotsu Ramen politely."
                                     )
                                 },
                                 new Mission
@@ -78,12 +77,12 @@ namespace JCAP.Data.Seeds
                                 },
                                 new Mission
                                 {
-                                    Content = "Cảm ơn và chào tạm biệt khi ra về",
+                                    Content = "Nói lời cảm ơn khi ra về",
                                     Order = 3,
                                     CompletionCriteriaJson = CreateCriteriaJson(
-                                        "Say thank you and goodbye",
+                                        "Express gratitude when leaving",
                                         "Staff member",
-                                        "Learner says thank you (Gochisousama / Arigatou) and goodbye."
+                                        "Learner says Gochisousama or Arigatou gozaimashita."
                                     )
                                 }
                             }
@@ -112,13 +111,12 @@ namespace JCAP.Data.Seeds
                             {
                                 new Mission
                                 {
-                                    Content = "Yêu cầu mì sợi cứng và nước dùng đậm đà",
+                                    Content = "Yêu cầu mì sợi cứng hoặc nước dùng đậm đà",
                                     Order = 1,
                                     CompletionCriteriaJson = CreateCriteriaJson(
-                                        "Customize noodle hardness and broth richness",
-                                        "Firm noodles and rich soup",
-                                        "Learner specifies hard noodles (Katame).",
-                                        "Learner specifies rich broth (Koime)."
+                                        "Customize noodle hardness or broth richness",
+                                        "Firm noodles or rich soup",
+                                        "Learner specifies hard noodles (Katame) OR rich broth (Koime)."
                                     )
                                 },
                                 new Mission
@@ -166,19 +164,28 @@ namespace JCAP.Data.Seeds
                             {
                                 new Mission
                                 {
-                                    Content = "Giải thích dị ứng hải sản và hỏi thành phần nước dùng",
+                                    Content = "Giải thích tình trạng dị ứng hải sản",
                                     Order = 1,
                                     CompletionCriteriaJson = CreateCriteriaJson(
-                                        "Explain allergy and ask ingredients",
-                                        "Seafood allergy & soup broth ingredients",
-                                        "Learner clearly explains seafood allergy in Japanese.",
-                                        "Learner asks if soup broth contains seafood."
+                                        "Explain seafood allergy",
+                                        "Seafood allergy",
+                                        "Learner clearly explains seafood allergy in Japanese."
                                     )
                                 },
                                 new Mission
                                 {
-                                    Content = "Đề nghị đổi nước dùng sang chanh đậu phụ hoặc rau củ",
+                                    Content = "Hỏi thành phần nước dùng",
                                     Order = 2,
+                                    CompletionCriteriaJson = CreateCriteriaJson(
+                                        "Ask soup ingredients",
+                                        "Soup broth ingredients",
+                                        "Learner asks if the soup contains seafood or fish broth."
+                                    )
+                                },
+                                new Mission
+                                {
+                                    Content = "Đề nghị đổi nước dùng sang đậu phụ hoặc rau củ",
+                                    Order = 3,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Request ingredient substitution",
                                         "Vegetable or tofu broth alternative",
@@ -188,7 +195,7 @@ namespace JCAP.Data.Seeds
                                 new Mission
                                 {
                                     Content = "Đánh giá chất lượng món ăn và khen ngợi",
-                                    Order = 3,
+                                    Order = 4,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Express gratitude and praise meal",
                                         "Restaurant manager & food quality",
@@ -230,13 +237,12 @@ namespace JCAP.Data.Seeds
                             {
                                 new Mission
                                 {
-                                    Content = "Giới thiệu bản thân cơ bản (Tên, Quốc tịch)",
+                                    Content = "Giới thiệu bản thân cơ bản (Tên hoặc Quốc tịch)",
                                     Order = 1,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Self introduction",
-                                        "Name and nationality",
-                                        "Learner states full name in Japanese.",
-                                        "Learner states nationality."
+                                        "Name or nationality",
+                                        "Learner states either their name or their nationality politely in Japanese."
                                     )
                                 },
                                 new Mission
@@ -283,7 +289,7 @@ namespace JCAP.Data.Seeds
                             {
                                 new Mission
                                 {
-                                    Content = "Nêu lý do ứng tuyển (志望動機)",
+                                    Content = "Nêu lý do ứng tuyển",
                                     Order = 1,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Explain application motivation",
@@ -293,13 +299,12 @@ namespace JCAP.Data.Seeds
                                 },
                                 new Mission
                                 {
-                                    Content = "Trình bày phương tiện di chuyển và thời gian đi từ nhà",
+                                    Content = "Trình bày phương tiện di chuyển hoặc thời gian đi lại",
                                     Order = 2,
                                     CompletionCriteriaJson = CreateCriteriaJson(
-                                        "Explain commute method and duration",
-                                        "Commute details",
-                                        "Learner specifies transportation method.",
-                                        "Learner specifies travel duration from home."
+                                        "Explain commute method or duration",
+                                        "Commute method or duration",
+                                        "Learner specifies either transportation method or travel duration from home."
                                     )
                                 },
                                 new Mission
@@ -345,12 +350,12 @@ namespace JCAP.Data.Seeds
                                 },
                                 new Mission
                                 {
-                                    Content = "Thỏa thuận về việc làm ca đêm và ngày lễ Tết",
+                                    Content = "Thỏa thuận về việc làm ca đêm hoặc ngày lễ Tết",
                                     Order = 2,
                                     CompletionCriteriaJson = CreateCriteriaJson(
                                         "Negotiate shift availability",
-                                        "Night shifts and holiday shifts",
-                                        "Learner discusses availability for night/holiday shifts."
+                                        "Night shifts or holiday shifts",
+                                        "Learner discusses availability for night shifts OR holiday/weekend shifts."
                                     )
                                 },
                                 new Mission

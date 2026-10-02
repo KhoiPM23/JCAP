@@ -40,10 +40,35 @@ export const LearnerShadowingDetailView: React.FC = () => {
     fetchDetail();
   }, [id]);
 
+  const speakJapanese = (text: string, onEnd?: () => void) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      const voices = window.speechSynthesis.getVoices();
+      const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+      if (jpVoice) utterance.voice = jpVoice;
+      utterance.onend = () => {
+        setPlayingSentenceId(null);
+        if (onEnd) onEnd();
+      };
+      utterance.onerror = () => {
+        setPlayingSentenceId(null);
+        if (onEnd) onEnd();
+      };
+      window.speechSynthesis.speak(utterance);
+      return true;
+    }
+    return false;
+  };
+
   const stopAudio = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
     setPlayingSentenceId(null);
     setIsSequentialPlaying(false);
@@ -52,29 +77,28 @@ export const LearnerShadowingDetailView: React.FC = () => {
   const playSentence = (sentence: ShadowingSentenceItem) => {
     stopAudio();
     setAudioError(null);
-
-    const audio = new Audio(sentence.nativeAudioUrl);
-    audioRef.current = audio;
     setPlayingSentenceId(sentence.id);
 
-    audio.onended = () => {
+    const onFinish = () => {
       setPlayingSentenceId(null);
       if (isSequentialPlaying && dialogue) {
         playNextSequential();
       }
     };
 
-    audio.onerror = () => {
-      setAudioError(`Không thể phát âm thanh của câu #${sentence.orderIndex}.`);
-      setPlayingSentenceId(null);
-      setIsSequentialPlaying(false);
-    };
-
-    audio.play().catch(() => {
-      setAudioError('Trình duyệt đã chặn tự động phát âm thanh.');
-      setPlayingSentenceId(null);
-      setIsSequentialPlaying(false);
-    });
+    if (sentence.nativeAudioUrl && (sentence.nativeAudioUrl.startsWith('http') || sentence.nativeAudioUrl.startsWith('/audio'))) {
+      const audio = new Audio(sentence.nativeAudioUrl);
+      audioRef.current = audio;
+      audio.onended = onFinish;
+      audio.onerror = () => {
+        speakJapanese(sentence.japaneseText, onFinish);
+      };
+      audio.play().catch(() => {
+        speakJapanese(sentence.japaneseText, onFinish);
+      });
+    } else {
+      speakJapanese(sentence.japaneseText, onFinish);
+    }
   };
 
   const playNextSequential = () => {
@@ -102,8 +126,7 @@ export const LearnerShadowingDetailView: React.FC = () => {
 
   const handleConfirmRole = (selectedRole: 'A' | 'B') => {
     setIsRoleModalOpen(false);
-    // TV4 -> TV5 Canonical Route Handoff
-    navigate(`/shadowing/${dialogue?.id}/practice?role=${selectedRole}`);
+    navigate(`/shadowing/practice/${dialogue?.id}?role=${selectedRole}`);
   };
 
   if (isLoading) {
@@ -187,7 +210,7 @@ export const LearnerShadowingDetailView: React.FC = () => {
             onClick={() => setIsRoleModalOpen(true)}
             className="whitespace-nowrap"
           >
-            Chọn vai luyện tập ➔
+            Chọn vai luyện tập
           </Button>
         </div>
       </div>

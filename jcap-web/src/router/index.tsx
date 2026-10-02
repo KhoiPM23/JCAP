@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PrivateRoute } from '../components/PrivateRoute';
 import { MainLayout } from '../layouts/MainLayout';
@@ -18,11 +18,16 @@ import { CreditPackagesView } from '../views/CreditPackagesView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
+import { AdminDashboardView } from '../views/admin/AdminDashboardView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
+import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
+import { LearnerShadowingTextbookListView } from '../views/shadowing/LearnerShadowingTextbookListView';
+import { LearnerShadowingChapterListView } from '../views/shadowing/LearnerShadowingChapterListView';
+import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShadowingDialogueListView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
@@ -33,17 +38,27 @@ import { ConversationResultDetailView } from '../views/ConversationResultDetailV
 // Route Wrappers
 // ============================================================
 
-/** Redirects if already authenticated (Redirects to /scenarios home page) */
+/** Redirects if already authenticated (Admin -> /admin/dashboard, Learner -> /scenarios) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   if (isAuthenticated) {
+    let userRole = user?.role;
+    if (!userRole) {
+      try {
+        const saved = localStorage.getItem('jcap_user');
+        if (saved) userRole = JSON.parse(saved).role;
+      } catch {}
+    }
+    if (userRole === 'Admin') {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return <Navigate to="/scenarios" replace />;
   }
   return <>{children}</>;
 };
 
 /** Protected route dành riêng cho Admin */
-const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
@@ -63,7 +78,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <Navigate to="/scenarios" replace />;
   }
 
-  return <>{children}</>;
+  return <>{children || <Outlet />}</>;
 };
 
 const LoginRoute: React.FC = () => {
@@ -71,6 +86,16 @@ const LoginRoute: React.FC = () => {
   return (
     <LoginView
       onLoginSuccess={() => {
+        try {
+          const saved = localStorage.getItem('jcap_user');
+          if (saved) {
+            const u = JSON.parse(saved);
+            if (u.role === 'Admin') {
+              navigate('/admin/dashboard', { replace: true });
+              return;
+            }
+          }
+        } catch {}
         navigate('/scenarios', { replace: true });
       }}
       onSwitchToRegister={() => navigate('/register')}
@@ -142,8 +167,16 @@ const ScenarioRoute: React.FC = () => {
 };
 
 const RootRedirect: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  let userRole = user?.role;
+  if (!userRole) {
+    try {
+      const saved = localStorage.getItem('jcap_user');
+      if (saved) userRole = JSON.parse(saved).role;
+    } catch {}
+  }
+  if (userRole === 'Admin') return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/scenarios" replace />;
 };
 
@@ -208,31 +241,28 @@ export const AppRouter: React.FC = () => {
         />
       </Route>
 
-      {/* Admin routes: chỉ dành riêng cho tài khoản Admin */}
+      {/* Admin routes: chỉ dành riêng cho tài khoản Admin, bọc trong MainLayout để luôn có Header và Navbar Sidebar */}
       <Route
-        path="/admin/scenarios"
         element={
           <AdminRoute>
-            <AdminScenarioListView />
+            <MainLayout />
           </AdminRoute>
         }
-      />
-      <Route
-        path="/admin/shadowing"
-        element={
-          <AdminRoute>
-            <AdminShadowingListView />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/credits/packages"
-        element={
-          <AdminRoute>
-            <AdminCreditPackagesView />
-          </AdminRoute>
-        }
-      />
+      >
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardView />} />
+        <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
+        <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
+        <Route path="/admin/audio" element={<AdminShadowingListView />} />
+        <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
+        {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
+        <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        
+        {/* Catch-all cho các route admin không tồn tại */}
+        <Route path="/admin/*" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">404 - Không tìm thấy trang</h2><p className="text-slate-500 mt-2">Trang quản trị này không tồn tại hoặc đã bị di dời.</p></div>} />
+      </Route>
 
       {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}
       <Route
@@ -240,6 +270,24 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Interactive Shadowing Practice Room (FE Fullscreen matching Reference Image 2) */}
+      <Route
+        path="/shadowing/practice/:id"
+        element={
+          <PrivateRoute>
+            <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/shadowing/:id/practice"
+        element={
+          <PrivateRoute>
+            <LearnerShadowingPracticeView />
           </PrivateRoute>
         }
       />
@@ -254,7 +302,11 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
+        
+        {/* Shadowing Flow: Real database catalog created by Admin */}
         <Route path="/shadowing" element={<LearnerShadowingListView />} />
+        <Route path="/shadowing/catalog" element={<LearnerShadowingListView />} />
+        <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />

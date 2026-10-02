@@ -338,40 +338,16 @@ export const AdminCreditPackagesView: React.FC = () => {
   // ============================================================================
   return (
     <div className="p-6 max-w-7xl mx-auto font-sans text-slate-800">
-      {/* Top Admin Navigation Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900 text-white px-4 py-3 rounded-xl mb-6 shadow-sm text-xs gap-3">
-        <div className="flex items-center space-x-2">
-          <span className="bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">
-            Admin Portal
-          </span>
-          <span className="text-slate-300">
-            Xin chào, <strong>{user?.fullName || 'Quản trị viên'}</strong> ({user?.email || 'admin'})
-          </span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={() => navigate('/scenarios')}
-            className="text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition flex items-center"
-          >
-            &larr; Xem giao diện Học viên
-          </button>
-          <button
-            type="button"
-            onClick={async () => {
-              await logout();
-              navigate('/login', { replace: true });
-            }}
-            className="text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg border border-red-900/50 hover:bg-red-950/40 transition font-medium"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      </div>
-
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
         <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
+            <span>Hệ thống Quản trị</span>
+            <span>&gt;</span>
+            <span>Hệ thống &amp; Người dùng</span>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">Quản lý Gói Credit</span>
+          </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Quản Lý Gói Credit (Admin)
           </h1>
@@ -390,6 +366,7 @@ export const AdminCreditPackagesView: React.FC = () => {
           Thêm Gói Mới
         </button>
       </div>
+
 
       {/* Alert Messages */}
       {successMessage && (

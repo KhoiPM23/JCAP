@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export interface NavbarProps {
@@ -9,25 +9,30 @@ export interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const currentPath = activePath ?? location.pathname;
+  const currentSearch = location.search;
   const handleLogout = onLogout || logout;
 
   // Learner navigation items
   const navItems = [
-    { name: 'Trang chủ', path: '/', icon: HomeIcon },
-    { name: 'Học tập', path: '/scenarios', icon: BookIcon },
-    { name: 'Shadowing', path: '/shadowing', icon: MicIcon },
-    { name: 'Lịch học', path: '/schedule', icon: CalendarIcon },
-    { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon },
-    { name: 'Hồ sơ', path: '/profile', icon: UserIcon },
-    { name: 'Cài đặt', path: '/settings', icon: SettingsIcon },
+    { name: 'Trang chủ', path: '/', icon: HomeIcon, matchPrefix: false },
+    { name: 'Học tập', path: '/scenarios', icon: BookIcon, matchPrefix: true },
+    { name: 'Shadowing', path: '/shadowing', icon: MicIcon, matchPrefix: true },
+    { name: 'Lịch học', path: '/schedule', icon: CalendarIcon, matchPrefix: true },
+    { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon, matchPrefix: true },
+    { name: 'Hồ sơ', path: '/profile', icon: UserIcon, matchPrefix: true },
+    { name: 'Cài đặt', path: '/settings', icon: SettingsIcon, matchPrefix: true },
   ];
 
   const bottomItems = [
-    { name: 'Trợ giúp', path: '/help', icon: HelpIcon },
+    { name: 'Trợ giúp', path: '/help', icon: HelpIcon, matchPrefix: true },
   ];
 
   // If user is Admin, render the Admin Sidebar matching mockup image media_1790526792509.png
   if (user?.role === 'Admin') {
+    const isAudioTab = currentPath.startsWith('/admin/audio') || (currentPath === '/admin/shadowing' && currentSearch.includes('tab=audio'));
+
     return (
       <aside className="w-[210px] bg-white border-r border-[#E6EDF5] flex flex-col h-[calc(100vh-64px)] sticky top-[64px] z-30 font-sans">
         <nav className="flex-1 py-5 px-3 flex flex-col gap-4 overflow-y-auto">
@@ -37,7 +42,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
               TỔNG QUAN
             </div>
             <div className="flex flex-col gap-1">
-              <NavItem name="Dashboard Tổng quan" path="/admin/credits/packages" icon={GridIcon} forceActive={activePath === '/admin/credits/packages'} />
+              <NavItem
+                name="Dashboard Tổng quan"
+                path="/admin/dashboard"
+                icon={GridIcon}
+                forceActive={currentPath === '/admin' || currentPath.startsWith('/admin/dashboard')}
+              />
             </div>
           </div>
 
@@ -47,10 +57,24 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
               QUẢN TRỊ NỘI DUNG
             </div>
             <div className="flex flex-col gap-1">
-              <NavItem name="Kịch bản Hội thoại" path="/admin/scenarios" icon={ChatBubbleIcon} forceActive={activePath === '/admin/scenarios'} />
-              <NavItem name="Quản lý Shadowing" path="/admin/shadowing" icon={UsersTalkIcon} forceActive={activePath === '/admin/shadowing'} />
-              <NavItem name="Ngân hàng Câu thoại" path="/admin/scenarios" icon={ListLinesIcon} />
-              <NavItem name="Kho Âm thanh Bản xứ" path="/admin/shadowing" icon={AudioWavesIcon} />
+              <NavItem
+                name="Kịch bản Hội thoại"
+                path="/admin/scenarios"
+                icon={ChatBubbleIcon}
+                forceActive={currentPath.startsWith('/admin/scenarios')}
+              />
+              <NavItem
+                name="Quản lý Shadowing"
+                path="/admin/shadowing"
+                icon={UsersTalkIcon}
+                forceActive={currentPath.startsWith('/admin/shadowing') && !isAudioTab}
+              />
+              <NavItem
+                name="Kho Âm thanh Bản xứ"
+                path="/admin/shadowing?tab=audio"
+                icon={AudioWavesIcon}
+                forceActive={isAudioTab}
+              />
             </div>
           </div>
 
@@ -60,10 +84,36 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
               HỆ THỐNG & NGƯỜI DÙNG
             </div>
             <div className="flex flex-col gap-1">
-              <NavItem name="Quản lý Học viên" path="/admin/users" icon={UsersGroupIcon} />
-              <NavItem name="Hồ sơ cá nhân" path="/profile" icon={UserIcon} forceActive={activePath === '/profile' || activePath === '/profile/edit'} />
-              <NavItem name="Cấu hình AI & Prompt" path="/admin/ai-config" icon={BrainGearIcon} />
-              <NavItem name="Cài đặt hệ thống" path="/admin/settings" icon={SettingsIcon} />
+              <NavItem
+                name="Quản lý Học viên"
+                path="/admin/users"
+                icon={UsersGroupIcon}
+                forceActive={currentPath.startsWith('/admin/users')}
+              />
+              <NavItem
+                name="Quản lý Gói Credit"
+                path="/admin/credits/packages"
+                icon={CoinCardIcon}
+                forceActive={currentPath.startsWith('/admin/credits')}
+              />
+              <NavItem
+                name="Hồ sơ cá nhân"
+                path="/profile"
+                icon={UserIcon}
+                forceActive={currentPath.startsWith('/profile')}
+              />
+              <NavItem
+                name="Cấu hình AI & Prompt"
+                path="/admin/ai-config"
+                icon={BrainGearIcon}
+                forceActive={currentPath.startsWith('/admin/ai-config')}
+              />
+              <NavItem
+                name="Cài đặt hệ thống"
+                path="/admin/settings"
+                icon={SettingsIcon}
+                forceActive={currentPath.startsWith('/admin/settings')}
+              />
             </div>
           </div>
         </nav>
@@ -88,26 +138,34 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     <aside className="w-[174px] bg-white border-r border-[#E6EDF5] flex flex-col h-[calc(100vh-64px)] sticky top-[64px] z-30">
       <nav className="flex-1 py-6 px-3 flex flex-col gap-2 overflow-y-auto">
         {navItems.map((item) => (
-          <NavItem key={item.path} {...item} forceActive={activePath === item.path} />
+          <NavItem
+            key={item.path}
+            {...item}
+            forceActive={item.matchPrefix ? currentPath.startsWith(item.path) : currentPath === item.path}
+          />
         ))}
       </nav>
 
       <div className="p-3 border-t border-[#E6EDF5] flex flex-col gap-2">
         {bottomItems.map((item) => (
-          <NavItem key={item.path} {...item} forceActive={activePath === item.path} />
+          <NavItem
+            key={item.path}
+            {...item}
+            forceActive={item.matchPrefix ? currentPath.startsWith(item.path) : currentPath === item.path}
+          />
         ))}
         <button
           type="button"
           onClick={handleLogout}
           className={`
             flex items-center gap-3 px-3 rounded-lg h-[42px] transition-colors w-full text-left
-            ${activePath === '/logout'
+            ${currentPath === '/logout'
               ? 'bg-[#0878EE] text-white font-medium'
               : 'text-[#71809A] hover:bg-red-50 hover:text-[#D92D20]'
             }
           `}
         >
-          <LogoutIcon className={`w-5 h-5 ${activePath === '/logout' ? 'text-white' : 'text-current'}`} />
+          <LogoutIcon className={`w-5 h-5 ${currentPath === '/logout' ? 'text-white' : 'text-current'}`} />
           <span className="text-sm font-medium">Đăng xuất</span>
         </button>
       </div>
@@ -130,9 +188,9 @@ const NavItem: React.FC<NavItemProps> = ({ name, path, icon: Icon, forceActive }
       className={({ isActive }) => {
         const active = forceActive !== undefined ? forceActive : isActive;
         return `
-          flex items-center gap-3 px-3 rounded-lg h-[42px] transition-colors
+          flex items-center gap-3 px-3 py-2.5 rounded-xl min-h-[42px] transition-colors
           ${active 
-            ? 'bg-[#0878EE] text-white font-medium' 
+            ? 'bg-[#0878EE] text-white font-semibold shadow-xs' 
             : 'text-[#71809A] hover:bg-blue-50 hover:text-[#0878EE]'
           }
         `;
@@ -142,8 +200,8 @@ const NavItem: React.FC<NavItemProps> = ({ name, path, icon: Icon, forceActive }
         const active = forceActive !== undefined ? forceActive : isActive;
         return (
           <>
-            <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-current'}`} />
-            <span className="text-sm">{name}</span>
+            <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-current'}`} />
+            <span className="text-sm leading-snug">{name}</span>
           </>
         );
       }}
@@ -277,6 +335,14 @@ function BrainGearIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  );
+}
+
+function CoinCardIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 }

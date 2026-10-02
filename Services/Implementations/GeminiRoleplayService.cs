@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using JCAP.DTOs.Roleplay;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
@@ -20,6 +21,16 @@ public class GeminiRoleplayService : IAiRoleplayService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    private static readonly Regex ForeignLanguagePatternRegex = new(
+        @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(toi\s+muon|cho\s+toi|toi\s+la|em\s+la|xin\s+chao|cam\s+on|khong\s+co|co\s+the|lam\s+viec|thoi\s+gian|phuong\s+tien|di\s+lai|ca\s+dem|nghi\s+phep|muon\s+goi|mot\s+bat|1\s+bat|muon|goi|khong|duoc|tieng|viet|chao|ngay|tuan|phuong|phep|luong|hello|want|order|please|i\s+would\s+like)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static bool IsLikelyForeignOrVietnamese(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        return ForeignLanguagePatternRegex.IsMatch(text);
+    }
+
     public GeminiRoleplayService(
         HttpClient httpClient,
         IConfiguration configuration,
@@ -36,7 +47,7 @@ public class GeminiRoleplayService : IAiRoleplayService
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -47,11 +58,11 @@ public class GeminiRoleplayService : IAiRoleplayService
         try
         {
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
-            var userPrompt = @"Bạn hãy đóng vai nhân vật và nói câu mở đầu để bắt đầu cuộc trò chuyện với người học.
-Trả về định dạng JSON thuần túy theo cấu trúc:
+            var userPrompt = @"Start the conversation as your persona with an appropriate opening line.
+Return strictly pure JSON matching:
 {
-  ""replyJapanese"": ""Câu chào mở đầu bằng tiếng Nhật phù hợp với bối cảnh và persona"",
-  ""replyVietnamese"": ""Dịch nghĩa tiếng Việt của câu chào""
+  ""replyJapanese"": ""Opening greeting in Japanese suitable for the persona and context"",
+  ""replyVietnamese"": ""Natural translation in Vietnamese""
 }";
 
             var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
@@ -89,12 +100,12 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             _logger.LogInformation("Gemini ApiKey chưa được cấu hình. Sử dụng Simulator cho lượt đối thoại.");
-            return ProcessSimulatorTurn(levelConfig, userMessage, pendingMissions);
+            return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
         }
 
         try
@@ -113,41 +124,52 @@ Trả về định dạng JSON thuần túy theo cấu trúc:
                 missionsDescription.AppendLine($"- Mission ID {m.Id}: {m.Content}. Tiêu chí hoàn thành (JSON): {m.CompletionCriteriaJson}");
             }
 
-            var userPrompt = $@"Lịch sử hội thoại gần nhất:
+            var userPrompt = $@"RECENT CONVERSATION HISTORY:
 {sbHistory}
 
-Câu nói vừa rồi của người học:
+LEARNER'S LATEST UTTERANCE:
 ""{userMessage}""
 
-Danh sách các nhiệm vụ CHƯA hoàn thành:
+PENDING MISSIONS:
 {missionsDescription}
 
-Yêu cầu phân tích và trả về:
-1. replyJapanese: Câu thoại tiếp theo của bạn (đóng vai AI Persona, giữ đúng trình độ JLPT {levelConfig.JLPTLevel}).
-2. replyVietnamese: Bản dịch tiếng Việt tự nhiên của câu thoại đó.
-3. completedMissionIds: Mảng chứa các ID của mission mà câu nói của học viên đã thỏa mãn tiêu chí hoàn thành (nếu không có thì trả về mảng rỗng []).
-4. isNaturallyConcluded: true nếu câu thoại này kết thúc tự nhiên tình huống (ví dụ: đã xong việc mua hàng, đã chào tạm biệt, đã giải quyết xong mục tiêu), ngược lại false.
-5. linguisticFeedback: Đánh giá cách dùng từ và ngữ pháp của câu nói người học vừa gửi:
-   - status: ""Good"" (chuẩn xác), ""Warning"" (cần điều chỉnh nhỏ/sai trợ từ khẩu ngữ), ""Error"" (sai cấu trúc nặng).
-   - summary: Tóm tắt đánh giá (ví dụ: ""Khá tốt • Cần điều chỉnh nhỏ"").
-   - details: Mảng các mục phân tích:
-     - type: ""success"" | ""warning"" | ""error""
-     - aspect: Tên khía cạnh (""Ngữ cảnh"", ""Trợ từ"", ""Văn phong"", ""Từ vựng"")
-     - comment: Lời nhận xét
-   - naturalAlternative: Câu nói tự nhiên hơn của người bản xứ (nếu có).
-   - culturalTip: Mẹo văn hóa thực tế của người Nhật trong tình huống này.
+TASK INSTRUCTIONS:
+1. FOREIGN / MIXED LANGUAGE CHECK (CRITICAL FIRST STEP):
+   - Check if the learner's message contains Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/foreign text.
+   - If ANY foreign words or non-Japanese sentences are detected:
+     * Even if they mentioned a dish or keyword (e.g. 'tonkotsu ramen', 'ramen'), you CANNOT understand them and CANNOT guess their intent. Treat the entire message as completely unintelligible foreign sounds.
+     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite incomprehension and ask for Japanese: '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。'
+     * replyVietnamese: 'Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?'
+     * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
+     * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
+2. NORMAL JAPANESE EVALUATION (Only if learner spoke entirely in Japanese/Romaji):
+   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}.
+   - replyVietnamese: Natural translation in Vietnamese.
+   - completedMissionIds: Array of Mission IDs satisfied in a contextually appropriate manner:
+     * On open-ended cues (e.g. ""Anything else?""), the learner is FREE to initiate ANY pending mission.
+     * Only reject if the learner blatantly ignores a specific direct question (steer them back in replyJapanese). Return [] if none.
+   - isNaturallyConcluded: Boolean (true if the conversation naturally ends, e.g. transaction finished, farewell exchanged).
+   - linguisticFeedback: Linguistic evaluation of the learner's utterance (MUST write all explanations/comments in Vietnamese):
+     * status: ""Good"" | ""Warning"" | ""Error""
+     * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"")
+     * details: Array of items:
+       - type: ""success"" | ""warning"" | ""error""
+       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Từ vựng"")
+       - comment: Specific constructive feedback in Vietnamese
+     * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
+     * culturalTip: Relevant practical cultural tip in Vietnamese
 
-Trả về JSON thuần túy theo cấu trúc:
+Return strictly pure JSON matching this schema:
 {{
   ""replyJapanese"": ""..."",
   ""replyVietnamese"": ""..."",
-  ""completedMissionIds"": [1, 2],
+  ""completedMissionIds"": [],
   ""isNaturallyConcluded"": false,
   ""linguisticFeedback"": {{
     ""status"": ""Good"",
-    ""summary"": ""Rất tốt • Chuẩn ngữ cảnh"",
+    ""summary"": ""..."",
     ""details"": [
-      {{ ""type"": ""success"", ""aspect"": ""Ngữ cảnh"", ""comment"": ""Đáp ứng đúng bối cảnh hội thoại."" }}
+      {{ ""type"": ""success"", ""aspect"": ""Ngữ cảnh"", ""comment"": ""..."" }}
     ],
     ""naturalAlternative"": ""..."",
     ""culturalTip"": ""...""
@@ -188,6 +210,43 @@ Trả về JSON thuần túy theo cấu trúc:
                     }
                 }
 
+                var isForeignLanguage = IsLikelyForeignOrVietnamese(userMessage);
+                if (isForeignLanguage)
+                {
+                    // Strict programmatic enforcement: clear completed missions
+                    completedIds.Clear();
+
+                    // If AI leaked a confirmation or echoed the item, sanitize to polite confusion
+                    if (ja.Contains("かしこまりました") || ja.Contains("承知") || ja.Contains("ですね") || ja.Contains("ですか") || !ja.Contains("日本語"))
+                    {
+                        ja = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                        vi = "Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?";
+                    }
+
+                    // Enforce Error status in feedback
+                    if (feedback == null)
+                    {
+                        feedback = new LinguisticFeedbackDto
+                        {
+                            Status = "Error",
+                            Summary = "Vui lòng sử dụng tiếng Nhật",
+                            Details = new List<LinguisticDetailItemDto>
+                            {
+                                new() { Type = "error", Aspect = "Ngôn ngữ", Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng không sử dụng tiếng Việt hoặc ngôn ngữ khác." }
+                            },
+                            CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+                        };
+                    }
+                    else
+                    {
+                        feedback.Status = "Error";
+                        if (string.IsNullOrWhiteSpace(feedback.Summary) || feedback.Summary.Contains("tốt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            feedback.Summary = "Vui lòng sử dụng tiếng Nhật";
+                        }
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
                     return new AiTurnResult
@@ -206,7 +265,7 @@ Trả về JSON thuần túy theo cấu trúc:
             _logger.LogWarning(ex, "Lỗi khi gọi Gemini API cho lượt đối thoại. Tự động chuyển sang Simulator.");
         }
 
-        return ProcessSimulatorTurn(levelConfig, userMessage, pendingMissions);
+        return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
     }
 
     public async Task<RoleplayHintDto> GenerateHintAsync(
@@ -217,7 +276,7 @@ Trả về JSON thuần túy theo cấu trúc:
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.8-flash";
+        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -226,26 +285,27 @@ Trả về JSON thuần túy theo cấu trúc:
 
         try
         {
-            var systemPrompt = $"Bạn là trợ lý học tiếng Nhật giúp học viên gợi ý câu trả lời tiếp theo trong tình huống hội thoại cấp độ {levelConfig.JLPTLevel}.";
+            var systemPrompt = $"You are a supportive Japanese language tutor in the JCAP platform assisting a JLPT {levelConfig.JLPTLevel} learner.";
 
             var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
             var targetMissionText = nextMission != null
-                ? $"Nhiệm vụ cần đạt tiếp theo: {nextMission.Content}"
-                : "Tất cả nhiệm vụ đã xong, gợi ý câu chào kết thúc hoặc xác nhận.";
+                ? $"Next mission to achieve: {nextMission.Content}"
+                : "All missions completed; suggest a polite closing or confirmation.";
 
             var lastAiMessage = conversationHistory.LastOrDefault(m => m.Sender == "Ai")?.JapaneseText ?? "";
 
-            var userPrompt = $@"Tình huống: {scenario.Title} ({levelConfig.JLPTLevel})
-Câu vừa rồi của nhân vật AI: ""{lastAiMessage}""
-{targetMissionText}
+            var userPrompt = $@"CONTEXT:
+- Scenario: {scenario.Title} ({levelConfig.JLPTLevel})
+- AI's previous utterance: ""{lastAiMessage}""
+- Target goal: {targetMissionText}
 
-Hãy gợi ý cho học viên 1 câu tiếng Nhật tự nhiên, đúng ngữ pháp cấp độ {levelConfig.JLPTLevel} để phản hồi lại.
-Trả về JSON thuần túy theo mẫu:
+Suggest one natural, grammatically accurate Japanese response for the learner at JLPT {levelConfig.JLPTLevel}.
+Return strictly pure JSON:
 {{
-  ""japaneseSuggestion"": ""Câu tiếng Nhật mẫu"",
-  ""romajiOrReading"": ""Cách đọc Romaji hoặc Hiragana"",
-  ""vietnameseMeaning"": ""Ý nghĩa tiếng Việt"",
-  ""contextExplanation"": ""Giải thích ngắn gọn ngữ cảnh dùng câu này""
+  ""japaneseSuggestion"": ""Natural Japanese response sentence"",
+  ""romajiOrReading"": ""Romaji or Hiragana reading"",
+  ""vietnameseMeaning"": ""Meaning in Vietnamese"",
+  ""contextExplanation"": ""Brief explanation in Vietnamese of when and why to use this phrase""
 }}";
 
             var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
@@ -273,15 +333,26 @@ Trả về JSON thuần túy theo mẫu:
     private string BuildSystemInstruction(Scenario scenario, ScenarioLevelConfiguration levelConfig)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Bạn đang tham gia vào nền tảng luyện nói tiếng Nhật JCAP.");
-        sb.AppendLine($"Vai của bạn: {levelConfig.AiPersona}.");
-        sb.AppendLine($"Trình độ JLPT mục tiêu của học viên: {levelConfig.JLPTLevel}.");
-        sb.AppendLine($"Bối cảnh tình huống: {scenario.Title} - {levelConfig.Description}.");
-        sb.AppendLine($"Quy tắc quan trọng (Guardrails):");
-        sb.AppendLine($"- Luôn giữ vai một cách tự nhiên và chân thực, tuyệt đối không được phá vỡ vai nhân vật.");
-        sb.AppendLine($"- Sử dụng từ ngữ và cấu trúc ngữ pháp phù hợp với cấp độ {levelConfig.JLPTLevel}.");
-        sb.AppendLine($"- Trả lời súc tích, ngắn gọn (1 - 2 câu) như một cuộc trò chuyện trực tiếp ngoài đời thực.");
-        sb.AppendLine($"- Luôn trả về định dạng JSON thuần túy theo yêu cầu.");
+        sb.AppendLine("You are an authentic Japanese roleplay conversational partner in the JCAP platform.");
+        sb.AppendLine("[SCENARIO CONTEXT]");
+        sb.AppendLine($"- Title: {scenario.Title}");
+        sb.AppendLine($"- Role/Persona: {levelConfig.AiPersona}");
+        sb.AppendLine($"- Context: {levelConfig.Description}");
+        sb.AppendLine($"- Target JLPT Level: {levelConfig.JLPTLevel}");
+        sb.AppendLine("[CORE GUARDRAILS]");
+        sb.AppendLine($"- Roleplay fidelity: Stay in character naturally; never break persona.");
+        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"  * If the learner uses ANY non-Japanese words, Vietnamese text, or foreign language (e.g., 'toi muon', 'cho toi', 'hello', 'want', 'order'):");
+        sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
+        sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");
+        sb.AppendLine($"  * STRICTLY FORBIDDEN: NEVER say '...ですね', '...ですか', or 'かしこまりました' when foreign/mixed language is used.");
+        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
+        sb.AppendLine($"- Level matching: Use vocabulary and grammar strictly appropriate for JLPT {levelConfig.JLPTLevel}.");
+        sb.AppendLine($"- Brevity: Keep responses concise (1-2 sentences) simulating real-world spoken Japanese.");
+        sb.AppendLine($"- Non-preemption: NEVER mention, answer, or complete pending missions for the learner; wait for them to initiate.");
+        sb.AppendLine($"- Conversational cueing: Respond only to the current turn with open-ended cues, leaving space for the learner to drive the next mission.");
+        sb.AppendLine($"- Output format: Always return valid, pure JSON matching the requested schema.");
         return sb.ToString();
     }
 
@@ -316,15 +387,35 @@ Trả về JSON thuần túy theo mẫu:
         };
 
         var json = JsonSerializer.Serialize(requestBody, JsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
-        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+        HttpResponseMessage? response = null;
+        string responseString = string.Empty;
 
-        if (!response.IsSuccessStatusCode)
+        for (int attempt = 0; attempt < 2; attempt++)
         {
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
+            responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (response.IsSuccessStatusCode)
+            {
+                break;
+            }
+
+            if ((response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429) && attempt == 0)
+            {
+                _logger.LogWarning("Gemini API bận (status {StatusCode}), tự động thử lại sau 1.2s...", response.StatusCode);
+                await Task.Delay(1200, cancellationToken);
+                continue;
+            }
+
             _logger.LogWarning("Gemini API trả về lỗi status {StatusCode}: {Response}", response.StatusCode, responseString);
             throw new HttpRequestException($"Gemini API error ({response.StatusCode}): {responseString}");
+        }
+
+        if (response == null || !response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException("Gemini API error: response is null or failed.");
         }
 
         using var doc = JsonDocument.Parse(responseString);
@@ -372,97 +463,152 @@ Trả về JSON thuần túy theo mẫu:
     }
 
     private static AiTurnResult ProcessSimulatorTurn(
+        Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         string userMessage,
         List<Mission> pendingMissions)
     {
         var completedIds = new List<int>();
         var lowerMsg = userMessage.ToLower();
+        var scenarioTitle = scenario?.Title ?? "";
+        bool isBaito = scenarioTitle.Contains("baito", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("phỏng vấn", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("xin việc", StringComparison.OrdinalIgnoreCase);
+        bool isRamen = scenarioTitle.Contains("ramen", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("quán", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("ăn", StringComparison.OrdinalIgnoreCase);
 
-        // 1. Phân tích hoàn thành mission theo từ khóa thực tế
-        foreach (var m in pendingMissions)
-        {
-            var criteria = m.CompletionCriteriaJson.ToLower();
-            if (criteria.Contains("order") || criteria.Contains("ramen") || criteria.Contains("gọi món"))
-            {
-                if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("ひとつ"))
-                {
-                    completedIds.Add(m.Id);
-                }
-            }
-            else if (criteria.Contains("price") || criteria.Contains("giá"))
-            {
-                if (lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段"))
-                {
-                    completedIds.Add(m.Id);
-                }
-            }
-            else if (criteria.Contains("thank") || criteria.Contains("goodbye") || criteria.Contains("cảm ơn") || criteria.Contains("tạm biệt"))
-            {
-                if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら"))
-                {
-                    completedIds.Add(m.Id);
-                }
-            }
-            else
-            {
-                // Fallback nếu có tin nhắn gửi đi
-                if (userMessage.Length > 2)
-                {
-                    completedIds.Add(m.Id);
-                }
-            }
-        }
-
-        // 2. Sinh câu trả lời giả lập phù hợp
         string jaReply;
         string viMeaning;
         var isNaturallyConcluded = false;
 
-        if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼"))
+        if (isBaito)
         {
-            jaReply = "ありがとうございました！またのお越しをお待ちしております。";
-            viMeaning = "Cảm ơn quý khách rất nhiều! Hẹn gặp lại quý khách lần sau ạ.";
-            isNaturallyConcluded = true;
-        }
-        else if (lowerMsg.Contains("いくら") || lowerMsg.Contains("値段"))
-        {
-            jaReply = "とんこつラーメンは一杯850円でございます。";
-            viMeaning = "Dạ một bát Tonkotsu Ramen có giá là 850 yên ạ.";
-        }
-        else if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("注文"))
-        {
-            jaReply = "かしこまりました！とんこつラーメン一杯ですね。少々お待ちください。";
-            viMeaning = "Dạ tôi đã rõ! Một bát Tonkotsu Ramen đúng không ạ. Xin quý khách vui lòng đợi một lát.";
-            if (pendingMissions.Count <= 1)
+            var orderedPending = pendingMissions.OrderBy(m => m.Order).ToList();
+            var nextMission = orderedPending.FirstOrDefault();
+
+            if (nextMission != null && (nextMission.Order == 1 || nextMission.Content.Contains("chào", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("giới thiệu", StringComparison.OrdinalIgnoreCase)))
             {
+                if (lowerMsg.Contains("こんにちは") || lowerMsg.Contains("申します") || lowerMsg.Contains("です") || lowerMsg.Contains("学生") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("名前"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "ご応募ありがとうございます。早速ですが、週に何日くらい、何曜日にシフトに入れますか？";
+                viMeaning = "Cảm ơn bạn đã ứng tuyển. Chúng ta bắt đầu nhé, một tuần bạn có thể làm việc khoảng mấy ngày và vào những thứ mấy?";
+            }
+            else if (nextMission != null && (nextMission.Order == 2 || nextMission.Content.Contains("ngày", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("tuần", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("ca", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (lowerMsg.Contains("日") || lowerMsg.Contains("週") || lowerMsg.Contains("曜日") || lowerMsg.Contains("シフト") || lowerMsg.Contains("午後") || lowerMsg.Contains("午前") || lowerMsg.Contains("時間") || lowerMsg.Contains("月") || lowerMsg.Contains("火") || lowerMsg.Contains("水") || lowerMsg.Contains("木") || lowerMsg.Contains("金") || lowerMsg.Contains("土"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "承知いたしました。シフトの希望はよくわかりました。最後に、当店で働く意気込みや志望動機をお聞かせいただけますか？";
+                viMeaning = "Tôi hiểu rồi. Nguyện vọng về ca làm việc rất rõ ràng. Cuối cùng, bạn có thể chia sẻ tinh thần làm việc hoặc động lực ứng tuyển vào quán được không?";
+            }
+            else if (nextMission != null)
+            {
+                if (lowerMsg.Contains("頑張") || lowerMsg.Contains("がんば") || lowerMsg.Contains("努力") || lowerMsg.Contains("一生懸命") || lowerMsg.Contains("ありがとう") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("失礼"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "素晴らしい意気込みですね！本日は面接にお越しいただき、誠にありがとうございました。採用結果は3日以内にご連絡いたします。";
+                viMeaning = "Tinh thần của bạn rất tuyệt vời! Cảm ơn bạn rất nhiều vì đã đến tham gia phỏng vấn hôm nay. Kết quả chúng tôi sẽ liên hệ trong vòng 3 ngày tới ạ.";
                 isNaturallyConcluded = true;
+            }
+            else
+            {
+                jaReply = "本日の面接は終了となります。お疲れ様でした。";
+                viMeaning = "Buổi phỏng vấn hôm nay đến đây là kết thúc. Cảm ơn bạn đã vất vả.";
+                isNaturallyConcluded = true;
+            }
+        }
+        else if (isRamen)
+        {
+            foreach (var m in pendingMissions)
+            {
+                var criteria = m.CompletionCriteriaJson.ToLower();
+                if (criteria.Contains("order") || criteria.Contains("ramen") || criteria.Contains("gọi món"))
+                {
+                    if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("おねがい") || lowerMsg.Contains("ください") || lowerMsg.Contains("一杯") || lowerMsg.Contains("ひとつ"))
+                    {
+                        completedIds.Add(m.Id);
+                        break;
+                    }
+                }
+                else if (criteria.Contains("price") || criteria.Contains("giá"))
+                {
+                    if (lowerMsg.Contains("いくら") || lowerMsg.Contains("円") || lowerMsg.Contains("値段"))
+                    {
+                        completedIds.Add(m.Id);
+                        break;
+                    }
+                }
+                else if (criteria.Contains("thank") || criteria.Contains("goodbye") || criteria.Contains("cảm ơn") || criteria.Contains("tạm biệt") || criteria.Contains("thanh toán"))
+                {
+                    if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計"))
+                    {
+                        completedIds.Add(m.Id);
+                        break;
+                    }
+                }
+            }
+
+            if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("会計"))
+            {
+                jaReply = "ありがとうございました！またのお越しをお待ちしております。";
+                viMeaning = "Cảm ơn quý khách rất nhiều! Hẹn gặp lại quý khách lần sau ạ.";
+                isNaturallyConcluded = true;
+            }
+            else if (lowerMsg.Contains("いくら") || lowerMsg.Contains("値段"))
+            {
+                jaReply = "とんこつラーメンは一杯850円でございます。";
+                viMeaning = "Dạ một bát Tonkotsu Ramen có giá là 850 yên ạ.";
+            }
+            else if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("注文"))
+            {
+                jaReply = "かしこまりました！とんこつラーメン一杯ですね。少々お待ちください。他にご注文はございますか？";
+                viMeaning = "Dạ tôi đã rõ! Một bát Tonkotsu Ramen đúng không ạ. Xin quý khách vui lòng đợi một lát. Quý khách còn muốn gọi thêm gì nữa không ạ?";
+            }
+            else
+            {
+                jaReply = "はい、かしこまりました。ご注文がお決まりになりましたらお呼びください。";
+                viMeaning = "Dạ vâng, khi nào quý khách chọn xong món xin vui lòng gọi tôi nhé.";
             }
         }
         else
         {
-            jaReply = "はい、かしこまりました。他にご注文はございますか？";
-            viMeaning = "Dạ tôi hiểu rồi. Quý khách còn muốn gọi thêm gì nữa không ạ?";
+            var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
+            if (nextMission != null && userMessage.Trim().Length >= 6)
+            {
+                completedIds.Add(nextMission.Id);
+            }
+
+            if (pendingMissions.Count <= 1)
+            {
+                jaReply = "よく分かりました。本日の練習はこれで終了です。大変よくできました！";
+                viMeaning = "Tôi đã hiểu rõ. Buổi luyện tập hôm nay đến đây là kết thúc. Bạn đã làm rất tốt!";
+                isNaturallyConcluded = true;
+            }
+            else
+            {
+                jaReply = "はい、承知いたしました。続けて次の会話を進めましょう。";
+                viMeaning = "Vâng, tôi đã hiểu. Chúng ta cùng tiếp tục câu chuyện nhé.";
+            }
         }
 
         var feedback = new LinguisticFeedbackDto
         {
-            Status = lowerMsg.Contains("を") ? "Warning" : "Good",
-            Summary = lowerMsg.Contains("を") ? "Khá tốt • Cần điều chỉnh nhỏ" : "Rất tốt • Chuẩn ngữ cảnh",
+            Status = "Good",
+            Summary = "Phản xạ tự nhiên • Đúng ngữ cảnh",
             Details = new List<LinguisticDetailItemDto>
             {
-                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = "Đáp ứng đúng bối cảnh hội thoại của tình huống." },
-                new() {
-                    Type = lowerMsg.Contains("を") ? "warning" : "success",
-                    Aspect = "Trợ từ",
-                    Comment = lowerMsg.Contains("を")
-                        ? "Trong khẩu ngữ thực tế, người Nhật thường lược bỏ trợ từ 「を」khi gọi món (ví dụ: 生ビール二つ thay vì 生ビールを二つ)."
-                        : "Cách dùng trợ từ tự nhiên và chính xác."
-                },
+                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = "Câu trả lời phù hợp với tình huống giao tiếp." },
                 new() { Type = "success", Aspect = "Văn phong", Comment = $"Sử dụng thể lịch sự phù hợp với trình độ {levelConfig.JLPTLevel}." }
             },
-            NaturalAlternative = "とりあえず、生二つと焼き鳥で！",
-            CulturalTip = "Thêm 「とりあえず」(Trước mắt cứ...) sẽ giúp câu nói tự nhiên y hệt người Nhật khi vừa vào quán!"
+            NaturalAlternative = userMessage,
+            CulturalTip = isBaito
+                ? "Trong phỏng vấn xin việc ở Nhật, luôn dùng thể lịch sự desu/masu và giữ ánh mắt tự tin, mỉm cười nhẹ khi trả lời."
+                : "Trong giao tiếp thường ngày, sử dụng câu ngắn gọn, rõ ràng sẽ giúp đối phương dễ nắm bắt ý hơn."
         };
 
         return new AiTurnResult

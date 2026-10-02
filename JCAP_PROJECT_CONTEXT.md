@@ -62,10 +62,29 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Learner Profile setup and management, including Japanese learning level.
 > * Admin user management: Search, Filter, Ban/Unban learner accounts.
 
+**Use Cases:**
+* **UC-01:** Register Account
+* **UC-02:** Log In
+* **UC-03:** Log In with Google
+* **UC-04:** Log Out
+* **UC-05:** Reset Password
+* **UC-06:** Change Password
+* **UC-07:** View Learner Profile
+* **UC-08:** Update Learner Profile
+* **UC-09:** Feedback and Report an Issue
+
 ### **FE-02: Credit and Payment**
 
 > * Credit package browsing, credit purchase, and credit transaction/usage history.
 > * Admin credit package management: Create, Edit, Delete credit packages.
+
+**Use Cases:**
+* **UC-10:** View Credit Packages
+* **UC-11:** Purchase Credits
+* **UC-12:** View Credit History
+* **UC-13:** Add Credit Package
+* **UC-14:** Edit Credit Package
+* **UC-15:** Delete Credit Package
 
 ### **FE-03: Scenario-based Conversation Learning**
 
@@ -74,12 +93,33 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Conversation performance evaluation, results, and AI-generated feedback after completed practice sessions.
 > * Adaptive learning support: Analyze learner performance and provide personalized recommendations for subsequent learning activities and practice.
 
+**Use Cases:**
+* **UC-16:** View Scenarios List (Learner/Admin)
+* **UC-17:** Search a Scenario
+* **UC-18:** View Scenario Details
+* **UC-19:** Practice AI Scenario Conversation
+* **UC-20:** View Conversation Result History
+* **UC-21:** View Conversation Result Detail
+* **UC-22:** Add Scenario
+* **UC-23:** Edit Scenario
+* **UC-24:** Delete Scenario
+
 ### **FE-04: Shadowing Learning**
 
 > * Shadowing content discovery and search based on scenario-related learning topics.
 > * Scenario-related shadowing practice with sentence-by-sentence listening and voice recording.
 > * Pronunciation assessment and assessment history for completed shadowing practice.
 > * Admin shadowing content management: Create, Edit, Delete content associated with existing scenarios.
+
+**Use Cases:**
+* **UC-25:** View Shadowing Contents List
+* **UC-26:** Search a Shadowing Content
+* **UC-27:** View Shadowing Content Details
+* **UC-28:** Practice Shadowing
+* **UC-29:** View Shadowing Assessment History
+* **UC-30:** Add Shadowing Content
+* **UC-31:** Edit Shadowing Content
+* **UC-32:** Delete Shadowing Content
 
 ### **FE-05: Self-study Learning**
 
@@ -89,11 +129,39 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Access recommended learning materials and review activities.
 > * Admin vocabulary and grammar content management, including group assignment and organization.
 
+**Use Cases:**
+* **UC-33:** Study Daily Recommended Flashcards
+* **UC-34:** View Vocabulary Group List
+* **UC-35:** View Vocabulary Group Details
+* **UC-36:** Search a Vocabulary
+* **UC-37:** Study a Vocabulary
+* **UC-38:** Review Vocabulary through Flashcards
+* **UC-39:** View Grammar Group List
+* **UC-40:** View Grammar Group
+* **UC-41:** Search a Grammar
+* **UC-42:** Study Grammar
+* **UC-43:** Review Grammar through Flashcards
+* **UC-44:** Bookmark Learning Contents
+* **UC-45:** View Bookmarked Learning Contents
+* **UC-46:** Add Vocabulary to Group
+* **UC-47:** Assign an existing Vocabulary to Group
+* **UC-48:** Edit Vocabulary
+* **UC-49:** Remove Vocabulary from Group
+* **UC-50:** Add Grammar to Group
+* **UC-51:** Assign an existing Grammar to Group
+* **UC-52:** Edit Grammar
+* **UC-53:** Remove Grammar from Group
+
 ### **FE-06: Platform Administration**
 
 > * Admin user administration: Search, Filter, Ban/Unban learner accounts.
 > * Learner feedback and issue report submission and review.
 > * Admin learning and system analytics for monitoring learner activity, engagement, learning performance, and system usage.
+
+**Use Cases:**
+* **UC-54:** Search & Filter Users
+* **UC-55:** Change User Account Status (Ban/Unban)
+* **UC-56:** View Learner Feedback
 
 
 ## **5\. Global Database Schema (Unified ERD Overview)**
