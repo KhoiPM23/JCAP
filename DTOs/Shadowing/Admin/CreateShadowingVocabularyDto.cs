@@ -4,6 +4,8 @@ namespace JCAP.DTOs.Shadowing.Admin
 {
     public class CreateShadowingVocabularyDto
     {
+        public int? Id { get; set; }
+
         [Required(ErrorMessage = "Từ vựng không được để trống.")]
         [MaxLength(100)]
         public string Word { get; set; } = string.Empty;

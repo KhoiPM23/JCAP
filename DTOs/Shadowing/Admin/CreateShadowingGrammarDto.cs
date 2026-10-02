@@ -4,6 +4,8 @@ namespace JCAP.DTOs.Shadowing.Admin
 {
     public class CreateShadowingGrammarDto
     {
+        public int? Id { get; set; }
+
         [Required(ErrorMessage = "Mẫu ngữ pháp không được để trống.")]
         [MaxLength(100)]
         public string Pattern { get; set; } = string.Empty;

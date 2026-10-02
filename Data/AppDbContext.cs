@@ -21,11 +21,15 @@ namespace JCAP.Data
         public DbSet<TargetVocabulary> TargetVocabularies { get; set; } = null!;
         public DbSet<TargetGrammar> TargetGrammars { get; set; } = null!;
 
+        // Shared Master Learning Resources DbSets
+        public DbSet<Vocabulary> Vocabularies { get; set; } = null!;
+        public DbSet<Grammar> Grammars { get; set; } = null!;
+
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
-        public DbSet<ShadowingVocabulary> ShadowingVocabularies { get; set; } = null!;
-        public DbSet<ShadowingGrammar> ShadowingGrammars { get; set; } = null!;
+        public DbSet<ShadowingDialogueVocabulary> ShadowingDialogueVocabularies { get; set; } = null!;
+        public DbSet<ShadowingDialogueGrammar> ShadowingDialogueGrammars { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
@@ -232,12 +236,12 @@ namespace JCAP.Data
                     .HasForeignKey(e => e.ShadowingDialogueId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.TargetVocabularies)
+                entity.HasMany(e => e.DialogueVocabularies)
                     .WithOne(e => e.ShadowingDialogue)
                     .HasForeignKey(e => e.ShadowingDialogueId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(e => e.TargetGrammars)
+                entity.HasMany(e => e.DialogueGrammars)
                     .WithOne(e => e.ShadowingDialogue)
                     .HasForeignKey(e => e.ShadowingDialogueId)
                     .OnDelete(DeleteBehavior.Cascade);
@@ -268,8 +272,8 @@ namespace JCAP.Data
                 entity.HasIndex(e => new { e.ShadowingDialogueId, e.OrderIndex });
             });
 
-            // ShadowingVocabulary configuration
-            modelBuilder.Entity<ShadowingVocabulary>(entity =>
+            // Shared Master Vocabulary configuration
+            modelBuilder.Entity<Vocabulary>(entity =>
             {
                 entity.Property(e => e.Word)
                     .IsRequired()
@@ -282,11 +286,17 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
-                entity.HasIndex(e => e.ShadowingDialogueId);
+                entity.Property(e => e.JLPTLevel)
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => new { e.Word, e.Meaning });
             });
 
-            // ShadowingGrammar configuration
-            modelBuilder.Entity<ShadowingGrammar>(entity =>
+            // Shared Master Grammar configuration
+            modelBuilder.Entity<Grammar>(entity =>
             {
                 entity.Property(e => e.Pattern)
                     .IsRequired()
@@ -299,7 +309,51 @@ namespace JCAP.Data
                 entity.Property(e => e.ExampleSentence)
                     .HasMaxLength(500);
 
-                entity.HasIndex(e => e.ShadowingDialogueId);
+                entity.Property(e => e.JLPTLevel)
+                    .HasMaxLength(10);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasIndex(e => new { e.Pattern, e.Meaning });
+            });
+
+            // ShadowingDialogueVocabulary join configuration
+            modelBuilder.Entity<ShadowingDialogueVocabulary>(entity =>
+            {
+                entity.HasKey(e => new { e.ShadowingDialogueId, e.VocabularyId });
+
+                entity.Property(e => e.Note)
+                    .HasMaxLength(200);
+
+                entity.HasOne(e => e.ShadowingDialogue)
+                    .WithMany(d => d.DialogueVocabularies)
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Vocabulary)
+                    .WithMany(v => v.ShadowingDialogueVocabularies)
+                    .HasForeignKey(e => e.VocabularyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ShadowingDialogueGrammar join configuration
+            modelBuilder.Entity<ShadowingDialogueGrammar>(entity =>
+            {
+                entity.HasKey(e => new { e.ShadowingDialogueId, e.GrammarId });
+
+                entity.Property(e => e.Note)
+                    .HasMaxLength(200);
+
+                entity.HasOne(e => e.ShadowingDialogue)
+                    .WithMany(d => d.DialogueGrammars)
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Grammar)
+                    .WithMany(g => g.ShadowingDialogueGrammars)
+                    .HasForeignKey(e => e.GrammarId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Roleplay result configuration

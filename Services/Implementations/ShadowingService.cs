@@ -74,8 +74,8 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(d => d.Scenario)
                 .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
-                .Include(d => d.TargetVocabularies)
-                .Include(d => d.TargetGrammars)
+                .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                 .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && d.Scenario.IsActive);
 
             if (dialogue == null)
@@ -108,14 +108,16 @@ namespace JCAP.Services.Implementations
                 if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRoleB_Name)) roles.Add(dialogue.SpeakerRoleB_Name);
             }
 
-            var vocabList = dialogue.TargetVocabularies != null && dialogue.TargetVocabularies.Any()
-                ? dialogue.TargetVocabularies.Select(v => new ShadowingVocabularyDto
-                {
-                    Id = v.Id,
-                    Word = v.Word,
-                    Reading = v.Reading,
-                    Meaning = v.Meaning
-                }).ToList()
+            var vocabList = dialogue.DialogueVocabularies != null && dialogue.DialogueVocabularies.Any()
+                ? dialogue.DialogueVocabularies
+                    .OrderBy(dv => dv.OrderIndex)
+                    .Select(dv => new ShadowingVocabularyDto
+                    {
+                        Id = dv.Vocabulary.Id,
+                        Word = dv.Vocabulary.Word,
+                        Reading = dv.Vocabulary.Reading,
+                        Meaning = dv.Vocabulary.Meaning
+                    }).ToList()
                 : levelConfig?.TargetVocabularies.Select(v => new ShadowingVocabularyDto
                 {
                     Id = v.Id,
@@ -124,14 +126,16 @@ namespace JCAP.Services.Implementations
                     Meaning = v.Meaning
                 }).ToList() ?? new List<ShadowingVocabularyDto>();
 
-            var grammarList = dialogue.TargetGrammars != null && dialogue.TargetGrammars.Any()
-                ? dialogue.TargetGrammars.Select(g => new ShadowingGrammarDto
-                {
-                    Id = g.Id,
-                    Pattern = g.Pattern,
-                    Meaning = g.Meaning,
-                    ExampleSentence = g.ExampleSentence
-                }).ToList()
+            var grammarList = dialogue.DialogueGrammars != null && dialogue.DialogueGrammars.Any()
+                ? dialogue.DialogueGrammars
+                    .OrderBy(dg => dg.OrderIndex)
+                    .Select(dg => new ShadowingGrammarDto
+                    {
+                        Id = dg.Grammar.Id,
+                        Pattern = dg.Grammar.Pattern,
+                        Meaning = dg.Grammar.Meaning,
+                        ExampleSentence = dg.Grammar.ExampleSentence
+                    }).ToList()
                 : levelConfig?.TargetGrammars.Select(g => new ShadowingGrammarDto
                 {
                     Id = g.Id,

@@ -18,5 +18,7 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<GeneratedShadowingDialogueDto>> GenerateDialogueDraftAsync(GenerateShadowingDialogueRequest request, CancellationToken cancellationToken = default);
         Task<ApiResponse<TranslateAssistResponse>> TranslateAssistAsync(TranslateAssistRequest request, CancellationToken cancellationToken = default);
         Task<ApiResponse<string>> UploadAudioAsync(IFormFile file, CancellationToken cancellationToken = default);
+        Task<ApiResponse<List<ShadowingVocabularyDto>>> GetSharedVocabulariesAsync(string? keyword = null, string? jlptLevel = null);
+        Task<ApiResponse<List<ShadowingGrammarDto>>> GetSharedGrammarsAsync(string? keyword = null, string? jlptLevel = null);
     }
 }

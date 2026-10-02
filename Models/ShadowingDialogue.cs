@@ -16,7 +16,7 @@ namespace JCAP.Models
         // Navigation properties
         public Scenario Scenario { get; set; } = null!;
         public ICollection<ShadowingSentence> Sentences { get; set; } = new List<ShadowingSentence>();
-        public ICollection<ShadowingVocabulary> TargetVocabularies { get; set; } = new List<ShadowingVocabulary>();
-        public ICollection<ShadowingGrammar> TargetGrammars { get; set; } = new List<ShadowingGrammar>();
+        public ICollection<ShadowingDialogueVocabulary> DialogueVocabularies { get; set; } = new List<ShadowingDialogueVocabulary>();
+        public ICollection<ShadowingDialogueGrammar> DialogueGrammars { get; set; } = new List<ShadowingDialogueGrammar>();
     }
 }

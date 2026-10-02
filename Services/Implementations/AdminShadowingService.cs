@@ -81,8 +81,8 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(d => d.Scenario)
                 .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
-                .Include(d => d.TargetVocabularies)
-                .Include(d => d.TargetGrammars)
+                .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             if (dialogue == null)
@@ -146,39 +146,8 @@ namespace JCAP.Services.Implementations
                     _context.ShadowingSentences.Add(sentence);
                 }
 
-                if (dto.TargetVocabularies != null && dto.TargetVocabularies.Any())
-                {
-                    foreach (var v in dto.TargetVocabularies)
-                    {
-                        if (!string.IsNullOrWhiteSpace(v.Word) && !string.IsNullOrWhiteSpace(v.Meaning))
-                        {
-                            _context.ShadowingVocabularies.Add(new ShadowingVocabulary
-                            {
-                                ShadowingDialogueId = dialogue.Id,
-                                Word = v.Word.Trim(),
-                                Reading = v.Reading?.Trim(),
-                                Meaning = v.Meaning.Trim()
-                            });
-                        }
-                    }
-                }
-
-                if (dto.TargetGrammars != null && dto.TargetGrammars.Any())
-                {
-                    foreach (var g in dto.TargetGrammars)
-                    {
-                        if (!string.IsNullOrWhiteSpace(g.Pattern) && !string.IsNullOrWhiteSpace(g.Meaning))
-                        {
-                            _context.ShadowingGrammars.Add(new ShadowingGrammar
-                            {
-                                ShadowingDialogueId = dialogue.Id,
-                                Pattern = g.Pattern.Trim(),
-                                Meaning = g.Meaning.Trim(),
-                                ExampleSentence = g.ExampleSentence?.Trim()
-                            });
-                        }
-                    }
-                }
+                await AttachSharedVocabulariesAsync(dialogue.Id, dialogue.JLPTLevel, dto.TargetVocabularies);
+                await AttachSharedGrammarsAsync(dialogue.Id, dialogue.JLPTLevel, dto.TargetGrammars);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -187,8 +156,8 @@ namespace JCAP.Services.Implementations
                     .AsNoTracking()
                     .Include(d => d.Scenario)
                     .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
-                    .Include(d => d.TargetVocabularies)
-                    .Include(d => d.TargetGrammars)
+                    .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                    .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                     .FirstAsync(d => d.Id == dialogue.Id);
 
                 return ApiResponse<ShadowingDialogueDetailDto>.Ok(MapToDetailDto(created, null), "Tạo mới bài học Shadowing thành công.");
@@ -205,8 +174,8 @@ namespace JCAP.Services.Implementations
         {
             var dialogue = await _context.ShadowingDialogues
                 .Include(d => d.Sentences)
-                .Include(d => d.TargetVocabularies)
-                .Include(d => d.TargetGrammars)
+                .Include(d => d.DialogueVocabularies)
+                .Include(d => d.DialogueGrammars)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             if (dialogue == null)
@@ -246,41 +215,12 @@ namespace JCAP.Services.Implementations
                     _context.ShadowingSentences.Add(sentence);
                 }
 
-                _context.ShadowingVocabularies.RemoveRange(dialogue.TargetVocabularies);
-                if (dto.TargetVocabularies != null && dto.TargetVocabularies.Any())
-                {
-                    foreach (var v in dto.TargetVocabularies)
-                    {
-                        if (!string.IsNullOrWhiteSpace(v.Word) && !string.IsNullOrWhiteSpace(v.Meaning))
-                        {
-                            _context.ShadowingVocabularies.Add(new ShadowingVocabulary
-                            {
-                                ShadowingDialogueId = dialogue.Id,
-                                Word = v.Word.Trim(),
-                                Reading = v.Reading?.Trim(),
-                                Meaning = v.Meaning.Trim()
-                            });
-                        }
-                    }
-                }
+                _context.ShadowingDialogueVocabularies.RemoveRange(dialogue.DialogueVocabularies);
+                _context.ShadowingDialogueGrammars.RemoveRange(dialogue.DialogueGrammars);
+                await _context.SaveChangesAsync();
 
-                _context.ShadowingGrammars.RemoveRange(dialogue.TargetGrammars);
-                if (dto.TargetGrammars != null && dto.TargetGrammars.Any())
-                {
-                    foreach (var g in dto.TargetGrammars)
-                    {
-                        if (!string.IsNullOrWhiteSpace(g.Pattern) && !string.IsNullOrWhiteSpace(g.Meaning))
-                        {
-                            _context.ShadowingGrammars.Add(new ShadowingGrammar
-                            {
-                                ShadowingDialogueId = dialogue.Id,
-                                Pattern = g.Pattern.Trim(),
-                                Meaning = g.Meaning.Trim(),
-                                ExampleSentence = g.ExampleSentence?.Trim()
-                            });
-                        }
-                    }
-                }
+                await AttachSharedVocabulariesAsync(dialogue.Id, dialogue.JLPTLevel, dto.TargetVocabularies);
+                await AttachSharedGrammarsAsync(dialogue.Id, dialogue.JLPTLevel, dto.TargetGrammars);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -289,8 +229,8 @@ namespace JCAP.Services.Implementations
                     .AsNoTracking()
                     .Include(d => d.Scenario)
                     .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
-                    .Include(d => d.TargetVocabularies)
-                    .Include(d => d.TargetGrammars)
+                    .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                    .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                     .FirstAsync(d => d.Id == dialogue.Id);
 
                 return ApiResponse<ShadowingDialogueDetailDto>.Ok(MapToDetailDto(updated, null), "Cập nhật bài học Shadowing thành công.");
@@ -506,15 +446,17 @@ namespace JCAP.Services.Implementations
             }
 
             List<ShadowingVocabularyDto> vocabList;
-            if (dialogue.TargetVocabularies != null && dialogue.TargetVocabularies.Any())
+            if (dialogue.DialogueVocabularies != null && dialogue.DialogueVocabularies.Any())
             {
-                vocabList = dialogue.TargetVocabularies.Select(v => new ShadowingVocabularyDto
-                {
-                    Id = v.Id,
-                    Word = v.Word,
-                    Reading = v.Reading,
-                    Meaning = v.Meaning
-                }).ToList();
+                vocabList = dialogue.DialogueVocabularies
+                    .OrderBy(dv => dv.OrderIndex)
+                    .Select(dv => new ShadowingVocabularyDto
+                    {
+                        Id = dv.Vocabulary.Id,
+                        Word = dv.Vocabulary.Word,
+                        Reading = dv.Vocabulary.Reading,
+                        Meaning = dv.Vocabulary.Meaning
+                    }).ToList();
             }
             else
             {
@@ -528,15 +470,17 @@ namespace JCAP.Services.Implementations
             }
 
             List<ShadowingGrammarDto> grammarList;
-            if (dialogue.TargetGrammars != null && dialogue.TargetGrammars.Any())
+            if (dialogue.DialogueGrammars != null && dialogue.DialogueGrammars.Any())
             {
-                grammarList = dialogue.TargetGrammars.Select(g => new ShadowingGrammarDto
-                {
-                    Id = g.Id,
-                    Pattern = g.Pattern,
-                    Meaning = g.Meaning,
-                    ExampleSentence = g.ExampleSentence
-                }).ToList();
+                grammarList = dialogue.DialogueGrammars
+                    .OrderBy(dg => dg.OrderIndex)
+                    .Select(dg => new ShadowingGrammarDto
+                    {
+                        Id = dg.Grammar.Id,
+                        Pattern = dg.Grammar.Pattern,
+                        Meaning = dg.Grammar.Meaning,
+                        ExampleSentence = dg.Grammar.ExampleSentence
+                    }).ToList();
             }
             else
             {
@@ -903,6 +847,156 @@ Trả về duy nhất JSON thuần túy theo schema:
                     VietnameseTranslation = text
                 };
             }
+        }
+
+        private async Task AttachSharedVocabulariesAsync(int dialogueId, string jlptLevel, List<CreateShadowingVocabularyDto>? vocabDtos)
+        {
+            if (vocabDtos == null || !vocabDtos.Any()) return;
+
+            int order = 1;
+            foreach (var v in vocabDtos)
+            {
+                var word = v.Word?.Trim() ?? string.Empty;
+                var meaning = v.Meaning?.Trim() ?? string.Empty;
+                var reading = v.Reading?.Trim();
+                if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(meaning)) continue;
+
+                Vocabulary? vocab = null;
+                if (v.Id.HasValue && v.Id.Value > 0)
+                {
+                    vocab = await _context.Vocabularies.FindAsync(v.Id.Value);
+                }
+
+                if (vocab == null)
+                {
+                    vocab = await _context.Vocabularies.FirstOrDefaultAsync(item => item.Word == word && item.Meaning == meaning);
+                }
+
+                if (vocab == null)
+                {
+                    vocab = new Vocabulary
+                    {
+                        Word = word,
+                        Reading = reading,
+                        Meaning = meaning,
+                        JLPTLevel = jlptLevel
+                    };
+                    _context.Vocabularies.Add(vocab);
+                    await _context.SaveChangesAsync();
+                }
+
+                _context.ShadowingDialogueVocabularies.Add(new ShadowingDialogueVocabulary
+                {
+                    ShadowingDialogueId = dialogueId,
+                    VocabularyId = vocab.Id,
+                    OrderIndex = order++
+                });
+            }
+        }
+
+        private async Task AttachSharedGrammarsAsync(int dialogueId, string jlptLevel, List<CreateShadowingGrammarDto>? grammarDtos)
+        {
+            if (grammarDtos == null || !grammarDtos.Any()) return;
+
+            int order = 1;
+            foreach (var g in grammarDtos)
+            {
+                var pattern = g.Pattern?.Trim() ?? string.Empty;
+                var meaning = g.Meaning?.Trim() ?? string.Empty;
+                var example = g.ExampleSentence?.Trim();
+                if (string.IsNullOrWhiteSpace(pattern) || string.IsNullOrWhiteSpace(meaning)) continue;
+
+                Grammar? grammar = null;
+                if (g.Id.HasValue && g.Id.Value > 0)
+                {
+                    grammar = await _context.Grammars.FindAsync(g.Id.Value);
+                }
+
+                if (grammar == null)
+                {
+                    grammar = await _context.Grammars.FirstOrDefaultAsync(item => item.Pattern == pattern && item.Meaning == meaning);
+                }
+
+                if (grammar == null)
+                {
+                    grammar = new Grammar
+                    {
+                        Pattern = pattern,
+                        Meaning = meaning,
+                        ExampleSentence = example,
+                        JLPTLevel = jlptLevel
+                    };
+                    _context.Grammars.Add(grammar);
+                    await _context.SaveChangesAsync();
+                }
+
+                _context.ShadowingDialogueGrammars.Add(new ShadowingDialogueGrammar
+                {
+                    ShadowingDialogueId = dialogueId,
+                    GrammarId = grammar.Id,
+                    OrderIndex = order++
+                });
+            }
+        }
+
+        public async Task<ApiResponse<List<ShadowingVocabularyDto>>> GetSharedVocabulariesAsync(string? keyword = null, string? jlptLevel = null)
+        {
+            var query = _context.Vocabularies.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var kw = keyword.Trim();
+                query = query.Where(v => v.Word.Contains(kw) || v.Meaning.Contains(kw) || (v.Reading != null && v.Reading.Contains(kw)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(jlptLevel))
+            {
+                query = query.Where(v => v.JLPTLevel == jlptLevel.Trim().ToUpper());
+            }
+
+            var items = await query
+                .OrderBy(v => v.Word)
+                .Take(50)
+                .Select(v => new ShadowingVocabularyDto
+                {
+                    Id = v.Id,
+                    Word = v.Word,
+                    Reading = v.Reading,
+                    Meaning = v.Meaning
+                })
+                .ToListAsync();
+
+            return ApiResponse<List<ShadowingVocabularyDto>>.Ok(items, "Lấy danh sách từ vựng dùng chung thành công.");
+        }
+
+        public async Task<ApiResponse<List<ShadowingGrammarDto>>> GetSharedGrammarsAsync(string? keyword = null, string? jlptLevel = null)
+        {
+            var query = _context.Grammars.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var kw = keyword.Trim();
+                query = query.Where(g => g.Pattern.Contains(kw) || g.Meaning.Contains(kw));
+            }
+
+            if (!string.IsNullOrWhiteSpace(jlptLevel))
+            {
+                query = query.Where(g => g.JLPTLevel == jlptLevel.Trim().ToUpper());
+            }
+
+            var items = await query
+                .OrderBy(g => g.Pattern)
+                .Take(50)
+                .Select(g => new ShadowingGrammarDto
+                {
+                    Id = g.Id,
+                    Pattern = g.Pattern,
+                    Meaning = g.Meaning,
+                    ExampleSentence = g.ExampleSentence
+                })
+                .ToListAsync();
+
+            return ApiResponse<List<ShadowingGrammarDto>>.Ok(items, "Lấy danh sách ngữ pháp dùng chung thành công.");
         }
     }
 }

@@ -1168,7 +1168,7 @@ export const AdminShadowingListView: React.FC = () => {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  📖 Từ vựng trọng tâm ({formVocabularies.length})
+                  📖 Từ vựng dùng chung ({formVocabularies.length})
                 </button>
                 <button
                   type="button"
@@ -1179,7 +1179,7 @@ export const AdminShadowingListView: React.FC = () => {
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  📝 Ngữ pháp trọng tâm ({formGrammars.length})
+                  📐 Ngữ pháp dùng chung ({formGrammars.length})
                 </button>
               </div>
 
@@ -1374,21 +1374,24 @@ export const AdminShadowingListView: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-slate-800 text-xs">Từ vựng trọng tâm bài học</span>
-                      <p className="text-[11px] text-slate-500">Giúp người học tra cứu từ vựng quan trọng trước khi Shadowing.</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-800 text-xs">Từ vựng dùng chung (Shared Master Resources)</span>
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-md border border-blue-200">Kho dùng chung</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500">Từ vựng được liên kết từ kho Master Data của hệ thống, tái sử dụng giữa Shadowing & Scenario.</p>
                     </div>
                     <button
                       type="button"
                       onClick={handleAddVocab}
                       className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer"
                     >
-                      + Thêm từ vựng
+                      + Thêm từ vựng dùng chung
                     </button>
                   </div>
 
                   {formVocabularies.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 border border-dashed border-slate-300 rounded-xl">
-                      Chưa có từ vựng trọng tâm. Bạn có thể thêm thủ công hoặc dùng tính năng AI Gợi ý nội dung.
+                      Chưa liên kết từ vựng dùng chung. Bạn có thể thêm mới vào kho hoặc dùng AI Gợi ý nội dung.
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1434,21 +1437,24 @@ export const AdminShadowingListView: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-slate-800 text-xs">Ngữ pháp trọng tâm bài học</span>
-                      <p className="text-[11px] text-slate-500">Mẫu câu ngữ pháp cốt lõi xuất hiện trong bài thoại.</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-800 text-xs">Ngữ pháp dùng chung (Shared Master Resources)</span>
+                        <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-200">Kho dùng chung</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500">Mẫu ngữ pháp được liên kết từ kho Master Data của hệ thống, tái sử dụng giữa Shadowing & Scenario.</p>
                     </div>
                     <button
                       type="button"
                       onClick={handleAddGrammar}
                       className="bg-blue-50 text-[#0878EE] hover:bg-blue-100 font-bold px-3 py-1.5 rounded-xl border border-blue-200 transition cursor-pointer"
                     >
-                      + Thêm mẫu ngữ pháp
+                      + Thêm ngữ pháp dùng chung
                     </button>
                   </div>
 
                   {formGrammars.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 border border-dashed border-slate-300 rounded-xl">
-                      Chưa có mẫu ngữ pháp. Bạn có thể thêm thủ công hoặc dùng tính năng AI Gợi ý nội dung.
+                      Chưa liên kết ngữ pháp dùng chung. Bạn có thể thêm mới vào kho hoặc dùng AI Gợi ý nội dung.
                     </div>
                   ) : (
                     <div className="space-y-2">
