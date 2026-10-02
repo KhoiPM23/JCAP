@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
+import { Toast, ToastType } from '../../components/ui/Toast';
 import { adminShadowingService } from '../../services/adminShadowingService';
 import { scenarioService } from '../../services/scenarioService';
 import type {
@@ -52,11 +54,27 @@ export interface ImportPreviewData {
   warnings: string[];
 }
 
+export interface ToastMessage {
+  id: string;
+  message: string;
+  type: ToastType;
+}
+
 export const AdminShadowingListView: React.FC = () => {
   const [items, setItems] = useState<ShadowingDialogueItem[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (msg: string, type: ToastType = 'success') => {
+    const id = Date.now().toString() + Math.random().toString().slice(2, 6);
+    setToasts((prev) => [...prev, { id, message: msg, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -389,8 +407,9 @@ export const AdminShadowingListView: React.FC = () => {
         }
         return next;
       });
+      addToast('Dịch tự động hoàn tất.', 'success');
     } else {
-      alert(res.message || 'Hỗ trợ dịch tự động gặp sự cố.');
+      addToast(res.message || 'Hỗ trợ dịch tự động gặp sự cố.', 'error');
     }
     setTranslatingIndex(null);
   };
@@ -418,13 +437,9 @@ export const AdminShadowingListView: React.FC = () => {
 
     if (res.success && res.data) {
       setAiDraft(res.data);
-      setMessage({
-        type: 'success',
-        text: `✨ AI đã tạo xong bản thảo gồm ${res.data.sentences.length} câu, từ vựng và ngữ pháp! Bạn hãy xem trước bên dưới và bấm "Áp dụng vào Form".`,
-      });
-      setTimeout(() => setMessage(null), 6000);
+      addToast(`✨ AI đã tạo xong bản thảo gồm ${res.data.sentences.length} câu thoại gợi ý!`, 'success');
     } else {
-      alert(res.message || 'Không thể tạo gợi ý nội dung từ AI.');
+      addToast(res.message || 'Không thể tạo gợi ý nội dung từ AI.', 'error');
     }
   };
 
@@ -441,15 +456,30 @@ export const AdminShadowingListView: React.FC = () => {
       setFormSpeakerRoles(aiDraft.speakerRoles);
     }
     if (aiDraft.sentences && aiDraft.sentences.length > 0) {
+      const roleAName = aiDraft.speakerRoles?.[0] || formSpeakerRoles[0] || 'Vai A';
+      const roleBName = aiDraft.speakerRoles?.[1] || formSpeakerRoles[1] || 'Vai B';
+
       setFormSentences(
-        aiDraft.sentences.map((s, idx) => ({
-          orderIndex: idx + 1,
-          speakerRole: s.speakerRole || (idx % 2 === 0 ? 'A' : 'B'),
-          japaneseText: s.japaneseText,
-          romajiText: s.romajiText || '',
-          vietnameseTranslation: s.vietnameseTranslation,
-          nativeAudioUrl: null,
-        }))
+        aiDraft.sentences.map((s, idx) => {
+          let normalizedRole = 'A';
+          const rawRole = (s.speakerRole || '').trim();
+          if (rawRole.toUpperCase() === 'B' || (roleBName && rawRole.toLowerCase() === roleBName.toLowerCase())) {
+            normalizedRole = 'B';
+          } else if (rawRole.toUpperCase() === 'A' || (roleAName && rawRole.toLowerCase() === roleAName.toLowerCase())) {
+            normalizedRole = 'A';
+          } else {
+            normalizedRole = idx % 2 === 0 ? 'A' : 'B';
+          }
+
+          return {
+            orderIndex: idx + 1,
+            speakerRole: normalizedRole,
+            japaneseText: s.japaneseText,
+            romajiText: s.romajiText || '',
+            vietnameseTranslation: s.vietnameseTranslation,
+            nativeAudioUrl: null,
+          };
+        })
       );
     }
     if (aiDraft.targetVocabularies && aiDraft.targetVocabularies.length > 0) {
@@ -461,11 +491,7 @@ export const AdminShadowingListView: React.FC = () => {
 
     setAiDraft(null);
     setIsAiPanelOpen(false);
-    setMessage({
-      type: 'success',
-      text: '✅ Đã áp dụng bản thảo AI vào form. Tất cả câu thoại, từ vựng và ngữ pháp đã có thể chỉnh sửa tự do!',
-    });
-    setTimeout(() => setMessage(null), 5000);
+    addToast('Đã áp dụng bản thảo AI vào form.', 'success');
   };
 
   const handleDiscardAiDraft = () => {
@@ -557,7 +583,7 @@ export const AdminShadowingListView: React.FC = () => {
         setRecordingSeconds((prev) => prev + 1);
       }, 1000);
     } catch {
-      alert('Không thể truy cập microphone. Vui lòng cấp quyền micro cho trình duyệt.');
+      addToast('Không thể truy cập microphone. Vui lòng cấp quyền micro cho trình duyệt.', 'error');
     }
   };
 
@@ -578,10 +604,9 @@ export const AdminShadowingListView: React.FC = () => {
     if (res.success && res.data) {
       handleSentenceChange(index, 'nativeAudioUrl', res.data);
       setRecordedAudioPreview(null);
-      setMessage({ type: 'success', text: '✅ Đã lưu âm thanh tham chiếu câu thoại!' });
-      setTimeout(() => setMessage(null), 3000);
+      addToast('Đã lưu audio.', 'success');
     } else {
-      alert(res.message || 'Không thể lưu tệp âm thanh.');
+      addToast(res.message || 'Không thể lưu audio.', 'error');
     }
   };
 
@@ -590,6 +615,7 @@ export const AdminShadowingListView: React.FC = () => {
     if (recordedAudioPreview?.index === index) {
       setRecordedAudioPreview(null);
     }
+    addToast('Đã gỡ audio câu thoại.', 'success');
   };
 
   // Import File Handlers
@@ -656,7 +682,7 @@ export const AdminShadowingListView: React.FC = () => {
 
           dataRows.forEach((rowCols, idx) => {
             const rowNumber = hasHeader ? idx + 2 : idx + 1;
-            const speakerRole = (rowCols[0] || 'A').trim().toUpperCase();
+            const rawRole = (rowCols[0] || 'A').trim().toUpperCase();
             const japaneseText = (rowCols[1] || '').trim();
             const romajiText = (rowCols[2] || '').trim();
             const vietnameseTranslation = (rowCols[3] || '').trim();
@@ -668,18 +694,18 @@ export const AdminShadowingListView: React.FC = () => {
               errors.push(`Dòng ${rowNumber}: Bản dịch tiếng Việt không được để trống.`);
             }
 
-            // Check role match against current form roles (A / B or role names)
-            if (
-              speakerRole !== 'A' &&
-              speakerRole !== 'B' &&
-              !formSpeakerRoles.some((r) => r.toUpperCase().includes(speakerRole))
-            ) {
-              warnings.push(`Dòng ${rowNumber}: Vai '${speakerRole}' có thể chưa khớp với cấu hình vai hiện tại của form.`);
+            let normalizedRole = 'A';
+            if (rawRole === 'B' || (formSpeakerRoles[1] && formSpeakerRoles[1].toUpperCase().includes(rawRole))) {
+              normalizedRole = 'B';
+            } else if (rawRole === 'A' || (formSpeakerRoles[0] && formSpeakerRoles[0].toUpperCase().includes(rawRole))) {
+              normalizedRole = 'A';
+            } else {
+              normalizedRole = idx % 2 === 0 ? 'A' : 'B';
             }
 
             parsedSentences.push({
               orderIndex: idx + 1,
-              speakerRole: speakerRole || 'A',
+              speakerRole: normalizedRole,
               japaneseText,
               romajiText,
               vietnameseTranslation,
@@ -699,6 +725,12 @@ export const AdminShadowingListView: React.FC = () => {
             errors,
             warnings,
           });
+
+          if (errors.length > 0) {
+            addToast('Tệp CSV có chứa lỗi xác thực dữ liệu. Vui lòng kiểm tra các mục đánh dấu đỏ.', 'error');
+          } else {
+            addToast(`Tệp CSV đã được phân tích cú pháp thành công (${parsedSentences.length} câu thoại).`, 'success');
+          }
         } else if (file.name.toLowerCase().endsWith('.json')) {
           let parsed: any;
           try {
@@ -753,9 +785,10 @@ export const AdminShadowingListView: React.FC = () => {
             errors.push('Tệp JSON không chứa danh sách câu thoại ("sentences").');
           }
 
+          const parsedRoles = Array.isArray(parsed.speakerRoles) ? parsed.speakerRoles : formSpeakerRoles;
           const parsedSentences: CreateShadowingSentencePayload[] = rawSentences.map((s, idx) => {
             const rowNumber = idx + 1;
-            const speakerRole = (s.speakerRole || (idx % 2 === 0 ? 'A' : 'B')).trim().toUpperCase();
+            const rawRole = (s.speakerRole || (idx % 2 === 0 ? 'A' : 'B')).trim().toUpperCase();
             const japaneseText = (s.japaneseText || '').trim();
             const romajiText = (s.romajiText || '').trim();
             const vietnameseTranslation = (s.vietnameseTranslation || '').trim();
@@ -768,9 +801,18 @@ export const AdminShadowingListView: React.FC = () => {
               errors.push(`Câu thoại #${rowNumber}: Thuộc tính "vietnameseTranslation" không được để trống.`);
             }
 
+            let normalizedRole = 'A';
+            if (rawRole === 'B' || (parsedRoles[1] && parsedRoles[1].toUpperCase().includes(rawRole))) {
+              normalizedRole = 'B';
+            } else if (rawRole === 'A' || (parsedRoles[0] && parsedRoles[0].toUpperCase().includes(rawRole))) {
+              normalizedRole = 'A';
+            } else {
+              normalizedRole = idx % 2 === 0 ? 'A' : 'B';
+            }
+
             return {
               orderIndex: s.orderIndex || rowNumber,
-              speakerRole,
+              speakerRole: normalizedRole,
               japaneseText,
               romajiText,
               vietnameseTranslation,
@@ -867,12 +909,19 @@ export const AdminShadowingListView: React.FC = () => {
             errors,
             warnings,
           });
+
+          if (errors.length > 0) {
+            addToast('Tệp JSON có chứa lỗi xác thực dữ liệu. Vui lòng kiểm tra các mục đánh dấu đỏ.', 'error');
+          } else {
+            addToast(`Tệp JSON đã được phân tích cú pháp thành công (${parsedSentences.length} câu thoại).`, 'success');
+          }
         } else {
           throw new Error('Định dạng tệp không được hỗ trợ. Vui lòng chọn tệp .json hoặc .csv.');
         }
       } catch (err: any) {
         setImportError(err.message || 'Lỗi đọc tệp.');
         setImportPreview(null);
+        addToast(`Lỗi nhập tệp: ${err.message || 'Không thể đọc tệp.'}`, 'error');
       }
     };
     reader.readAsText(file);
@@ -907,7 +956,7 @@ export const AdminShadowingListView: React.FC = () => {
   const handleApplyImport = () => {
     if (!importPreview) return;
     if (importPreview.errors.length > 0) {
-      alert('Tệp có chứa lỗi validation. Vui lòng kiểm tra và sửa các lỗi hiển thị màu đỏ trước khi áp dụng.');
+      addToast('Tệp có chứa lỗi validation. Vui lòng kiểm tra và sửa các lỗi hiển thị màu đỏ trước khi áp dụng.', 'error');
       return;
     }
 
@@ -922,10 +971,7 @@ export const AdminShadowingListView: React.FC = () => {
       // CSV = Quick Dialogue Import
       // ONLY replace sentences, preserve formTitle, formLevel, formScenarioId, formContextDescription, formSpeakerRoles, formVocabularies, formGrammars
       setFormSentences(importPreview.sentences);
-      setMessage({
-        type: 'success',
-        text: `📥 Đã nạp thành công ${importPreview.sentences.length} câu đối thoại từ CSV vào bài học hiện tại!`,
-      });
+      addToast('Đã áp dụng dữ liệu câu thoại vào form.', 'success');
     } else {
       // JSON = Full Lesson Import
       if (importPreview.title) {
@@ -969,16 +1015,109 @@ export const AdminShadowingListView: React.FC = () => {
         }));
       setFormGrammars(filteredGrammars);
 
-      setMessage({
-        type: 'success',
-        text: `📥 Đã nạp bài học hoàn chỉnh từ JSON ("${importFileName}") vào Form! Vui lòng rà soát và bấm "Hoàn tất & Tạo bài học".`,
-      });
+      addToast('Đã áp dụng toàn bộ bài học vào form.', 'success');
     }
 
     setIsImportModalOpen(false);
     setImportPreview(null);
     setIsFormOpen(true);
-    setTimeout(() => setMessage(null), 5000);
+  };
+
+  const handleDownloadTemplate = (format: 'csv' | 'json') => {
+    if (format === 'csv') {
+      const bom = '\uFEFF';
+      const csvContent = `${bom}SpeakerRole,JapaneseText,RomajiText,VietnameseTranslation
+A,"いらっしゃいませ。ご注文はお決まりですか。","Irasshaimase. Gochuumon wa okimari desu ka.","Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?"
+B,"はい、ラーメンを一つお願いします。","Hai, raamen wo hitotsu onegai shimasu.","Vâng, xin cho tôi một tô mì ramen."
+A,"かしこまりました。少々お待ちください。","Kashikomarimashita. Shoushou omachi kudasai.","Tôi đã rõ. Xin quý khách vui lòng đợi một chút."
+B,"ありがとうございます。","Arigatou gozaimasu.","Xin cảm ơn."
+`;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'shadowing_dialogue_template.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      const jsonTemplate = {
+        $schema: 'https://jcap.jp/schemas/shadowing-import-v1.json',
+        title: 'Gọi món tại nhà hàng Nhật',
+        jlptLevel: 'N4',
+        scenarioCode: 'SCN_RAMEN_01',
+        contextDescription: 'Khách hàng vào quán ramen vào giờ trưa và gọi món với nhân viên.',
+        speakerRoles: ['Nhân viên', 'Khách hàng'],
+        sentences: [
+          {
+            orderIndex: 1,
+            speakerRole: 'A',
+            japaneseText: 'いらっしゃいませ。ご注文はお決まりですか。',
+            romajiText: 'Irasshaimase. Gochuumon wa okimari desu ka.',
+            vietnameseTranslation: 'Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?',
+            nativeAudioUrl: null,
+          },
+          {
+            orderIndex: 2,
+            speakerRole: 'B',
+            japaneseText: 'はい、ラーメンを一つお願いします。',
+            romajiText: 'Hai, raamen wo hitotsu onegai shimasu.',
+            vietnameseTranslation: 'Vâng, xin cho tôi một tô mì ramen.',
+            nativeAudioUrl: null,
+          },
+          {
+            orderIndex: 3,
+            speakerRole: 'A',
+            japaneseText: 'かしこまりました。少々お待ちください。',
+            romajiText: 'Kashikomarimashita. Shoushou omachi kudasai.',
+            vietnameseTranslation: 'Tôi đã rõ. Xin quý khách vui lòng đợi một chút.',
+            nativeAudioUrl: null,
+          },
+          {
+            orderIndex: 4,
+            speakerRole: 'B',
+            japaneseText: 'ありがとうございます。',
+            romajiText: 'Arigatou gozaimasu.',
+            vietnameseTranslation: 'Xin cảm ơn.',
+            nativeAudioUrl: null,
+          },
+        ],
+        targetVocabularies: [
+          {
+            word: '注文',
+            reading: 'ちゅうもん',
+            meaning: 'Gọi món',
+            jlptLevel: 'N4',
+          },
+          {
+            word: 'ラーメン',
+            reading: 'らーめん',
+            meaning: 'Mì ramen',
+            jlptLevel: 'N4',
+          },
+        ],
+        targetGrammars: [
+          {
+            pattern: '～お願いします',
+            meaning: 'Làm ơn / Xin hãy...',
+            exampleSentence: 'ラーメンを一つお願いします。',
+            jlptLevel: 'N4',
+          },
+        ],
+      };
+      const blob = new Blob([JSON.stringify(jsonTemplate, null, 2)], {
+        type: 'application/json;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'shadowing_full_lesson_template.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   };
 
   // Submit Form
@@ -1024,11 +1163,11 @@ export const AdminShadowingListView: React.FC = () => {
 
       if (res.success) {
         setIsFormOpen(false);
-        setMessage({ type: 'success', text: `Cập nhật thành công bài học "${formTitle}".` });
+        addToast('Cập nhật Shadowing thành công.', 'success');
         loadData();
-        setTimeout(() => setMessage(null), 4000);
       } else {
-        setFormErrors(res.errors || [res.message || 'Lỗi cập nhật bài học.']);
+        setFormErrors(res.errors || [res.message || 'Không thể cập nhật Shadowing.']);
+        addToast('Không thể cập nhật Shadowing.', 'error');
       }
     } else {
       // UC-30 Create
@@ -1048,11 +1187,11 @@ export const AdminShadowingListView: React.FC = () => {
       const res = await adminShadowingService.createDialogue(payload);
       if (res.success) {
         setIsFormOpen(false);
-        setMessage({ type: 'success', text: `Tạo mới thành công bài học Shadowing "${formTitle}".` });
+        addToast('Tạo Shadowing thành công.', 'success');
         loadData();
-        setTimeout(() => setMessage(null), 4000);
       } else {
-        setFormErrors(res.errors || [res.message || 'Lỗi tạo bài học.']);
+        setFormErrors(res.errors || [res.message || 'Không thể tạo Shadowing. Vui lòng thử lại.']);
+        addToast('Không thể tạo Shadowing. Vui lòng thử lại.', 'error');
       }
     }
     setIsSubmitting(false);
@@ -1062,12 +1201,11 @@ export const AdminShadowingListView: React.FC = () => {
     if (!deletingItem) return;
     const res = await adminShadowingService.softDelete(deletingItem.id);
     if (res.success) {
-      setMessage({ type: 'success', text: `Đã vô hiệu hóa bài học "${deletingItem.title}" thành công.` });
+      addToast('Đã tạm ngưng Shadowing.', 'success');
       setDeletingItem(null);
       loadData();
-      setTimeout(() => setMessage(null), 4000);
     } else {
-      setMessage({ type: 'error', text: res.message || 'Lỗi khi xóa bài học.' });
+      addToast('Không thể tạm ngưng Shadowing.', 'error');
       setDeletingItem(null);
     }
   };
@@ -1163,6 +1301,14 @@ export const AdminShadowingListView: React.FC = () => {
 
         {/* Action Header Buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/shadowing"
+            className="flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-700 font-semibold border border-slate-300 px-3.5 py-2 rounded-xl text-xs transition shadow-xs cursor-pointer active:scale-98"
+            title="Chuyển sang giao diện luyện nói Shadowing của người học để trải nghiệm thực tế"
+          >
+            <span>🎧</span>
+            <span>Vào giao diện người học</span>
+          </Link>
           <button
             onClick={() => {
               setImportPreview(null);
@@ -1443,9 +1589,9 @@ export const AdminShadowingListView: React.FC = () => {
       </div>
 
       {/* 5. Create / Edit Form Modal */}
-      {isFormOpen && (
+      {isFormOpen && createPortal(
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl border border-slate-200 my-8 max-h-[90vh] flex flex-col">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl border border-slate-200 my-auto max-h-[90vh] flex flex-col relative">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
               <div>
@@ -2499,15 +2645,16 @@ export const AdminShadowingListView: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
 
 
       {/* 7. Import File Modal */}
-      {isImportModalOpen && (
-        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 my-4 max-h-[90vh] flex flex-col">
+      {isImportModalOpen && createPortal(
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 my-auto max-h-[90vh] flex flex-col relative">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
               <div className="flex items-center gap-2.5">
@@ -2554,14 +2701,14 @@ export const AdminShadowingListView: React.FC = () => {
                     </p>
                   </div>
                   <div className="pt-2 border-t border-emerald-100">
-                    <a
-                      href="/templates/shadowing_dialogue_template.csv"
-                      download="shadowing_dialogue_template.csv"
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs"
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadTemplate('csv')}
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
                       <span>Tải file mẫu CSV</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
 
@@ -2585,14 +2732,14 @@ export const AdminShadowingListView: React.FC = () => {
                     </p>
                   </div>
                   <div className="pt-2 border-t border-purple-100">
-                    <a
-                      href="/templates/shadowing_full_lesson_template.json"
-                      download="shadowing_full_lesson_template.json"
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition shadow-2xs"
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadTemplate('json')}
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer active:scale-98"
                     >
                       <span>📥</span>
                       <span>Tải file mẫu JSON</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2948,13 +3095,14 @@ export const AdminShadowingListView: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 8. Audio / Detail Preview Modal */}
-      {previewDialogue && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 my-8 max-h-[85vh] flex flex-col">
+      {previewDialogue && createPortal(
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 my-auto max-h-[85vh] flex flex-col relative">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl">
               <div>
                 <div className="flex items-center gap-2">
@@ -3100,13 +3248,14 @@ export const AdminShadowingListView: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 9. Delete Confirmation Modal */}
-      {deletingItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
+      {deletingItem && createPortal(
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 my-auto p-6 space-y-4 relative">
             <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mx-auto">
               ⚠️
             </div>
@@ -3131,7 +3280,24 @@ export const AdminShadowingListView: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Toast Notifications */}
+      {createPortal(
+        <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 pointer-events-none w-auto max-w-[calc(100vw-2rem)]">
+          {toasts.map((t) => (
+            <Toast
+              key={t.id}
+              id={t.id}
+              message={t.message}
+              type={t.type}
+              onClose={removeToast}
+            />
+          ))}
+        </div>,
+        document.body
       )}
     </div>
   );

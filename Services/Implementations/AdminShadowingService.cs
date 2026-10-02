@@ -630,7 +630,16 @@ Yêu cầu:
             for (int i = 0; i < parsed.Sentences.Count; i++)
             {
                 parsed.Sentences[i].OrderIndex = i + 1;
-                if (string.IsNullOrWhiteSpace(parsed.Sentences[i].SpeakerRole))
+                var rawRole = parsed.Sentences[i].SpeakerRole?.Trim() ?? string.Empty;
+                if (rawRole.Equals("B", StringComparison.OrdinalIgnoreCase) || (roles.Count > 1 && rawRole.Equals(roles[1], StringComparison.OrdinalIgnoreCase)))
+                {
+                    parsed.Sentences[i].SpeakerRole = "B";
+                }
+                else if (rawRole.Equals("A", StringComparison.OrdinalIgnoreCase) || (roles.Count > 0 && rawRole.Equals(roles[0], StringComparison.OrdinalIgnoreCase)))
+                {
+                    parsed.Sentences[i].SpeakerRole = "A";
+                }
+                else
                 {
                     parsed.Sentences[i].SpeakerRole = ((char)('A' + (i % roles.Count))).ToString();
                 }
