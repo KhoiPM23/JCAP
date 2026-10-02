@@ -4,6 +4,7 @@ using JCAP.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002070946_AddShadowingVocabGrammarAndRefinement")]
+    partial class AddShadowingVocabGrammarAndRefinement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,44 +188,6 @@ namespace JCAP.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("CreditTransactions");
-                });
-
-            modelBuilder.Entity("JCAP.Models.Grammar", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("ExampleSentence")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("JLPTLevel")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Meaning")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Pattern")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Pattern", "Meaning");
-
-                    b.ToTable("Grammars");
                 });
 
             modelBuilder.Entity("JCAP.Models.Mission", b =>
@@ -582,48 +547,36 @@ namespace JCAP.Migrations
                     b.ToTable("ShadowingDialogues");
                 });
 
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogueGrammar", b =>
+            modelBuilder.Entity("JCAP.Models.ShadowingGrammar", b =>
                 {
-                    b.Property<int>("ShadowingDialogueId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("GrammarId")
-                        .HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Note")
+                    b.Property<string>("ExampleSentence")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int");
+                    b.Property<string>("Pattern")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("ShadowingDialogueId", "GrammarId");
-
-                    b.HasIndex("GrammarId");
-
-                    b.ToTable("ShadowingDialogueGrammars");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogueVocabulary", b =>
-                {
                     b.Property<int>("ShadowingDialogueId")
                         .HasColumnType("int");
 
-                    b.Property<int>("VocabularyId")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.HasIndex("ShadowingDialogueId");
 
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("int");
-
-                    b.HasKey("ShadowingDialogueId", "VocabularyId");
-
-                    b.HasIndex("VocabularyId");
-
-                    b.ToTable("ShadowingDialogueVocabularies");
+                    b.ToTable("ShadowingGrammars");
                 });
 
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
@@ -671,6 +624,38 @@ namespace JCAP.Migrations
                     b.HasIndex("ShadowingDialogueId", "OrderIndex");
 
                     b.ToTable("ShadowingSentences");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingVocabulary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Reading")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ShadowingDialogueId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShadowingDialogueId");
+
+                    b.ToTable("ShadowingVocabularies");
                 });
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
@@ -735,44 +720,6 @@ namespace JCAP.Migrations
                     b.HasIndex("ScenarioLevelConfigurationId");
 
                     b.ToTable("TargetVocabularies");
-                });
-
-            modelBuilder.Entity("JCAP.Models.Vocabulary", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("JLPTLevel")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Meaning")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Reading")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Word")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Word", "Meaning");
-
-                    b.ToTable("Vocabularies");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1020,48 +967,32 @@ namespace JCAP.Migrations
                     b.Navigation("Scenario");
                 });
 
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogueGrammar", b =>
+            modelBuilder.Entity("JCAP.Models.ShadowingGrammar", b =>
                 {
-                    b.HasOne("JCAP.Models.Grammar", "Grammar")
-                        .WithMany("ShadowingDialogueGrammars")
-                        .HasForeignKey("GrammarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
-                        .WithMany("DialogueGrammars")
+                        .WithMany("TargetGrammars")
                         .HasForeignKey("ShadowingDialogueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Grammar");
-
                     b.Navigation("ShadowingDialogue");
-                });
-
-            modelBuilder.Entity("JCAP.Models.ShadowingDialogueVocabulary", b =>
-                {
-                    b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
-                        .WithMany("DialogueVocabularies")
-                        .HasForeignKey("ShadowingDialogueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
-                        .WithMany("ShadowingDialogueVocabularies")
-                        .HasForeignKey("VocabularyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShadowingDialogue");
-
-                    b.Navigation("Vocabulary");
                 });
 
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
                 {
                     b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
                         .WithMany("Sentences")
+                        .HasForeignKey("ShadowingDialogueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingDialogue");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingVocabulary", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
+                        .WithMany("TargetVocabularies")
                         .HasForeignKey("ShadowingDialogueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1142,11 +1073,6 @@ namespace JCAP.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("JCAP.Models.Grammar", b =>
-                {
-                    b.Navigation("ShadowingDialogueGrammars");
-                });
-
             modelBuilder.Entity("JCAP.Models.Mission", b =>
                 {
                     b.Navigation("SessionMissions");
@@ -1181,16 +1107,11 @@ namespace JCAP.Migrations
 
             modelBuilder.Entity("JCAP.Models.ShadowingDialogue", b =>
                 {
-                    b.Navigation("DialogueGrammars");
-
-                    b.Navigation("DialogueVocabularies");
-
                     b.Navigation("Sentences");
-                });
 
-            modelBuilder.Entity("JCAP.Models.Vocabulary", b =>
-                {
-                    b.Navigation("ShadowingDialogueVocabularies");
+                    b.Navigation("TargetGrammars");
+
+                    b.Navigation("TargetVocabularies");
                 });
 #pragma warning restore 612, 618
         }

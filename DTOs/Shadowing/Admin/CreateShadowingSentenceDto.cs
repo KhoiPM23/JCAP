@@ -8,8 +8,8 @@ namespace JCAP.DTOs.Shadowing.Admin
         [Range(1, 1000)]
         public int OrderIndex { get; set; }
 
-        [Required]
-        [RegularExpression("^(A|B)$", ErrorMessage = "SpeakerRole chỉ được phép là 'A' hoặc 'B'.")]
+        [Required(ErrorMessage = "SpeakerRole không được để trống.")]
+        [MaxLength(50)]
         public string SpeakerRole { get; set; } = "A";
 
         [Required(ErrorMessage = "JapaneseText không được để trống.")]
@@ -23,8 +23,9 @@ namespace JCAP.DTOs.Shadowing.Admin
         [MaxLength(500)]
         public string VietnameseTranslation { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "NativeAudioUrl không được để trống.")]
         [MaxLength(1000)]
-        public string NativeAudioUrl { get; set; } = string.Empty;
+        public string? NativeAudioUrl { get; set; }
+
+        public int? AudioDurationMs { get; set; }
     }
 }
