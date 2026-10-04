@@ -690,9 +690,49 @@ public class ScenarioService : IScenarioService
         var title = request.ScenarioTitle.Trim();
         var desc = request.ScenarioDescription?.Trim() ?? string.Empty;
 
-        int missionCount = Math.Max(3, request.MissionCount);
-        int vocabCount = Math.Max(3, request.VocabularyCount);
-        int grammarCount = Math.Max(3, request.GrammarCount);
+        const int maxItemsPerList = 20;
+        int missionCount = Math.Clamp(request.MissionCount, 3, maxItemsPerList);
+        int vocabCount = Math.Clamp(request.VocabularyCount, 3, maxItemsPerList);
+        int grammarCount = Math.Clamp(request.GrammarCount, 3, maxItemsPerList);
+
+        // Các mục admin đã nhập sẵn: bỏ dòng trống, bỏ trùng, không vượt quá số lượng yêu cầu
+        var existingMissions = (request.ExistingMissions ?? [])
+            .Where(m => m != null && !string.IsNullOrWhiteSpace(m.Content))
+            .Select(m => new CreateMissionDto
+            {
+                Id = m.Id,
+                Content = m.Content.Trim(),
+                Target = string.IsNullOrWhiteSpace(m.Target) ? m.Content.Trim() : m.Target.Trim(),
+                Intent = string.IsNullOrWhiteSpace(m.Intent) ? "CompleteMission" : m.Intent,
+                Conditions = m.Conditions ?? []
+            })
+            .DistinctBy(m => NormalizeGenKey(m.Content))
+            .Take(missionCount)
+            .ToList();
+        var existingVocabs = (request.ExistingVocabularies ?? [])
+            .Where(v => v != null && !string.IsNullOrWhiteSpace(v.Word))
+            .Select(v => new CreateVocabularyDto
+            {
+                Id = v.Id,
+                Word = v.Word.Trim(),
+                Reading = v.Reading?.Trim() ?? string.Empty,
+                Meaning = v.Meaning?.Trim() ?? string.Empty
+            })
+            .DistinctBy(v => NormalizeGenKey(v.Word))
+            .Take(vocabCount)
+            .ToList();
+        var existingGrammars = (request.ExistingGrammars ?? [])
+            .Where(g => g != null && !string.IsNullOrWhiteSpace(g.Pattern))
+            .Select(g => new CreateGrammarDto
+            {
+                Id = g.Id,
+                Pattern = g.Pattern.Trim(),
+                Meaning = g.Meaning?.Trim() ?? string.Empty,
+                ExampleSentence = g.ExampleSentence?.Trim() ?? string.Empty
+            })
+            .DistinctBy(g => NormalizeGenKey(g.Pattern))
+            .Take(grammarCount)
+            .ToList();
 
         var result = new GeneratedLevelContentDto
         {
@@ -711,11 +751,11 @@ public class ScenarioService : IScenarioService
             try
             {
                 var geminiResult = await TryGenerateWithGeminiAsync(
-                    apiKey, model, title, desc, level, missionCount, vocabCount, grammarCount, cancellationToken);
+                    apiKey, model, title, desc, level, missionCount, vocabCount, grammarCount,
+                    existingMissions, existingVocabs, existingGrammars, cancellationToken);
                 if (geminiResult != null &&
-                    geminiResult.Missions.Count >= missionCount &&
-                    geminiResult.TargetVocabularies.Count >= vocabCount &&
-                    geminiResult.TargetGrammars.Count >= grammarCount)
+                    TryFinalizeGeneratedContent(geminiResult, missionCount, vocabCount, grammarCount,
+                        existingMissions, existingVocabs, existingGrammars))
                 {
                     return ApiResponse<GeneratedLevelContentDto>.Ok(geminiResult, $"Tạo gợi ý nội dung AI ({model}) cho trình độ {level} thành công.");
                 }
@@ -745,7 +785,7 @@ public class ScenarioService : IScenarioService
         {
             if (isFood)
             {
-                result.AiPersona = "Nhân viên phục vụ quán (nói tiếng Nhật cơ bản, chậm rãi và nhiệt tình)";
+                result.AiPersona = "Nhân viên quán ăn - 店員 (nói chậm, thân thiện)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Chào nhân viên và hỏi xem thực đơn (Menu)", Target = "Hỏi thực đơn" },
@@ -775,7 +815,7 @@ public class ScenarioService : IScenarioService
             }
             else if (isJob)
             {
-                result.AiPersona = "Quản lý cửa hàng (nói chậm, phát âm rõ ràng, hỗ trợ ứng viên N5)";
+                result.AiPersona = "Quản lý cửa hàng - 店長 (nói chậm, rõ ràng)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Chào hỏi và giới thiệu tên, trường học của bản thân", Target = "Chào hỏi & Tự giới thiệu" },
@@ -805,7 +845,7 @@ public class ScenarioService : IScenarioService
             }
             else
             {
-                result.AiPersona = $"Người đối thoại bản xứ trong tình huống '{title}' (dùng từ vựng N5 đơn giản, câu ngắn dễ hiểu)";
+                result.AiPersona = "Người bản xứ - 日本人 (câu ngắn, từ vựng N5)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = $"Chào hỏi lịch sự và mở đầu cuộc trò chuyện về '{title}'", Target = "Chào hỏi ban đầu" },
@@ -838,7 +878,7 @@ public class ScenarioService : IScenarioService
         {
             if (isFood)
             {
-                result.AiPersona = "Bếp trưởng / Nhân viên lâu năm (giao tiếp tự nhiên, gợi ý món đặc biệt)";
+                result.AiPersona = "Bếp trưởng - 料理長 (gợi ý món đặc biệt)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Hỏi thăm món ăn nổi bật hoặc set ăn đề xuất của quán hôm nay", Target = "Hỏi món đề xuất (Osusume)" },
@@ -868,7 +908,7 @@ public class ScenarioService : IScenarioService
             }
             else if (isJob)
             {
-                result.AiPersona = "Trưởng ca cửa hàng (hỏi kỹ kinh nghiệm, tình huống xử lý khi đông khách)";
+                result.AiPersona = "Trưởng ca cửa hàng - 店長 (hỏi về kinh nghiệm)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Trình bày lý do chọn cửa hàng này để nộp hồ sơ xin việc", Target = "Động lực xin việc (Shibou Douki)" },
@@ -898,7 +938,7 @@ public class ScenarioService : IScenarioService
             }
             else
             {
-                result.AiPersona = $"Người phụ trách / Đối tác giao tiếp trong tình huống '{title}' (trao đổi tự nhiên ở trình độ trung cấp N4)";
+                result.AiPersona = "Người phụ trách - 担当者 (giao tiếp tự nhiên N4)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = $"Trình bày rõ bối cảnh cụ thể và lý do phát sinh sự việc trong '{title}'", Target = "Giải thích nguyên nhân" },
@@ -931,7 +971,7 @@ public class ScenarioService : IScenarioService
         {
             if (isFood)
             {
-                result.AiPersona = "Chủ quán / Quản lý nhà hàng cao cấp (giao tiếp tinh tế, sử dụng kính ngữ chuẩn mực)";
+                result.AiPersona = "Quản lý nhà hàng - 支配人 (dùng kính ngữ)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Đặt bàn trước và hỏi về các món ăn theo mùa hoặc thực đơn cho người kiêng ăn", Target = "Trao đổi yêu cầu ẩm thực đặc biệt" },
@@ -961,7 +1001,7 @@ public class ScenarioService : IScenarioService
             }
             else if (isJob)
             {
-                result.AiPersona = "Giám đốc nhân sự / Chủ doanh nghiệp (phỏng vấn sâu về định hướng nghề nghiệp và năng lực giải quyết vấn đề)";
+                result.AiPersona = "Giám đốc nhân sự - 人事部長 (phỏng vấn chuyên sâu)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = "Dùng kính ngữ Keigo mở đầu trang trọng và giới thiệu điểm mạnh nổi trội", Target = "Mở đầu trang trọng & Nêu điểm mạnh" },
@@ -991,7 +1031,7 @@ public class ScenarioService : IScenarioService
             }
             else
             {
-                result.AiPersona = $"Quản lý cấp cao / Đối tác chuyên môn trong tình huống '{title}' (giao tiếp lịch thiệp bằng kính ngữ N3)";
+                result.AiPersona = "Quản lý cấp cao - 上司 (giao tiếp kính ngữ N3)";
                 candidateMissions =
                 [
                     new() { Order = 1, Content = $"Trình bày mục đích cuộc trao đổi về '{title}' với ngôn ngữ lịch sự chuẩn mực", Target = "Mở đầu trang trọng" },
@@ -1021,11 +1061,50 @@ public class ScenarioService : IScenarioService
             }
         }
 
+        // Ghép: mục admin đã nhập (ưu tiên giữ) + kho gợi ý theo chủ đề, bỏ trùng
+        var mergedMissions = existingMissions
+            .Concat(candidateMissions)
+            .DistinctBy(m => NormalizeGenKey(m.Content))
+            .ToList();
+
+        var mergedVocabs = existingVocabs
+            .Select(v =>
+            {
+                // Bổ sung trường còn thiếu nếu từ đó có trong kho gợi ý
+                var match = candidateVocabs.FirstOrDefault(c => NormalizeGenKey(c.Word) == NormalizeGenKey(v.Word));
+                return new CreateVocabularyDto
+                {
+                    Id = v.Id,
+                    Word = v.Word,
+                    Reading = string.IsNullOrWhiteSpace(v.Reading) ? match?.Reading ?? string.Empty : v.Reading,
+                    Meaning = string.IsNullOrWhiteSpace(v.Meaning) ? match?.Meaning ?? string.Empty : v.Meaning
+                };
+            })
+            .Concat(candidateVocabs)
+            .DistinctBy(v => NormalizeGenKey(v.Word))
+            .ToList();
+
+        var mergedGrammars = existingGrammars
+            .Select(g =>
+            {
+                var match = candidateGrammars.FirstOrDefault(c => NormalizeGenKey(c.Pattern) == NormalizeGenKey(g.Pattern));
+                return new CreateGrammarDto
+                {
+                    Id = g.Id,
+                    Pattern = g.Pattern,
+                    Meaning = string.IsNullOrWhiteSpace(g.Meaning) ? match?.Meaning ?? string.Empty : g.Meaning,
+                    ExampleSentence = string.IsNullOrWhiteSpace(g.ExampleSentence) ? match?.ExampleSentence ?? string.Empty : g.ExampleSentence
+                };
+            })
+            .Concat(candidateGrammars)
+            .DistinctBy(g => NormalizeGenKey(g.Pattern))
+            .ToList();
+
         // Pad if requested count exceeds candidate pool
-        while (candidateMissions.Count < missionCount)
+        while (mergedMissions.Count < missionCount)
         {
-            int nextOrder = candidateMissions.Count + 1;
-            candidateMissions.Add(new CreateMissionDto
+            int nextOrder = mergedMissions.Count + 1;
+            mergedMissions.Add(new CreateMissionDto
             {
                 Order = nextOrder,
                 Content = $"Mở rộng trao đổi chi tiết bước {nextOrder} trong tình huống '{title}' ({level})",
@@ -1033,10 +1112,10 @@ public class ScenarioService : IScenarioService
             });
         }
 
-        while (candidateVocabs.Count < vocabCount)
+        while (mergedVocabs.Count < vocabCount)
         {
-            int nextIdx = candidateVocabs.Count + 1;
-            candidateVocabs.Add(new CreateVocabularyDto
+            int nextIdx = mergedVocabs.Count + 1;
+            mergedVocabs.Add(new CreateVocabularyDto
             {
                 Word = $"表現 {nextIdx}",
                 Reading = $"ひょうげん {nextIdx}",
@@ -1044,10 +1123,10 @@ public class ScenarioService : IScenarioService
             });
         }
 
-        while (candidateGrammars.Count < grammarCount)
+        while (mergedGrammars.Count < grammarCount)
         {
-            int nextIdx = candidateGrammars.Count + 1;
-            candidateGrammars.Add(new CreateGrammarDto
+            int nextIdx = mergedGrammars.Count + 1;
+            mergedGrammars.Add(new CreateGrammarDto
             {
                 Pattern = $"～表現パターン({nextIdx})",
                 Meaning = $"Mẫu câu giao tiếp mở rộng số {nextIdx} ({level})",
@@ -1055,20 +1134,23 @@ public class ScenarioService : IScenarioService
             });
         }
 
-        result.Missions = candidateMissions
+        // Lấy đủ số lượng (mục admin đứng trước nên luôn được giữ), rồi sắp xếp mạch hội thoại hợp lý
+        result.Missions = mergedMissions
             .Take(missionCount)
+            .OrderBy(m => GetMissionPhase(m.Content))
             .Select((m, idx) => new CreateMissionDto
             {
+                Id = m.Id,
                 Order = idx + 1,
                 Content = m.Content,
-                Target = m.Target,
-                Intent = m.Intent ?? "CompleteMission",
+                Target = string.IsNullOrWhiteSpace(m.Target) ? m.Content : m.Target,
+                Intent = string.IsNullOrWhiteSpace(m.Intent) ? "CompleteMission" : m.Intent,
                 Conditions = m.Conditions ?? []
             })
             .ToList();
 
-        result.TargetVocabularies = candidateVocabs.Take(vocabCount).ToList();
-        result.TargetGrammars = candidateGrammars.Take(grammarCount).ToList();
+        result.TargetVocabularies = mergedVocabs.Take(vocabCount).ToList();
+        result.TargetGrammars = mergedGrammars.Take(grammarCount).ToList();
 
         return ApiResponse<GeneratedLevelContentDto>.Ok(result, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
     }
@@ -1082,34 +1164,64 @@ public class ScenarioService : IScenarioService
         int missionCount,
         int vocabCount,
         int grammarCount,
+        List<CreateMissionDto> existingMissions,
+        List<CreateVocabularyDto> existingVocabs,
+        List<CreateGrammarDto> existingGrammars,
         CancellationToken cancellationToken)
     {
         var httpClient = _httpClientFactory!.CreateClient();
         var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+
+        var existingMissionsJson = JsonSerializer.Serialize(
+            existingMissions.Select(m => new { id = m.Id, content = m.Content, target = m.Target }), CriteriaJsonOptions);
+        var existingVocabsJson = JsonSerializer.Serialize(
+            existingVocabs.Select(v => new { id = v.Id, word = v.Word, reading = v.Reading, meaning = v.Meaning }), CriteriaJsonOptions);
+        var existingGrammarsJson = JsonSerializer.Serialize(
+            existingGrammars.Select(g => new { id = g.Id, pattern = g.Pattern, meaning = g.Meaning, exampleSentence = g.ExampleSentence }), CriteriaJsonOptions);
 
         var prompt = $@"Bạn là chuyên gia thiết kế bài học hội thoại tiếng Nhật JLPT {level}.
 Chủ đề kịch bản: ""{title}""
 Mô tả kịch bản: ""{desc}""
 Trình độ JLPT: {level}
 
-Hãy tạo nội dung cấu hình kịch bản phù hợp chặt chẽ với chủ đề trên theo yêu cầu số lượng chính xác sau:
-- Số lượng nhiệm vụ (missions): đúng {missionCount} nhiệm vụ (bằng tiếng Việt, cụ thể theo đúng tình huống ""{title}"").
-- Số lượng từ vựng (targetVocabularies): đúng {vocabCount} từ vựng tiếng Nhật trình độ {level} liên quan trực tiếp đến ""{title}"".
-- Số lượng ngữ pháp (targetGrammars): đúng {grammarCount} mẫu ngữ pháp trình độ {level} phù hợp với ""{title}"".
+DỮ LIỆU ADMIN ĐÃ NHẬP SẴN (có thể rỗng):
+- Nhiệm vụ đã có ({existingMissions.Count}): {existingMissionsJson}
+- Từ vựng đã có ({existingVocabs.Count}): {existingVocabsJson}
+- Ngữ pháp đã có ({existingGrammars.Count}): {existingGrammarsJson}
+
+YÊU CẦU BẮT BUỘC:
+1. Số lượng CHÍNH XÁC (không hơn, không kém):
+   - missions: đúng {missionCount} nhiệm vụ.
+   - targetVocabularies: đúng {vocabCount} từ vựng.
+   - targetGrammars: đúng {grammarCount} mẫu ngữ pháp.
+2. GIỮ LẠI toàn bộ ý của các mục đã có: được phép chỉnh câu chữ cho mạch lạc, tự nhiên, nhưng không bỏ mục nào.
+   Với mục giữ lại, trả về đúng ""id"" cũ của nó (nếu id là null thì để null). Mục mới thêm có ""id"": null.
+3. Điền thêm các mục mới cho đủ số lượng, liên quan trực tiếp đến chủ đề ""{title}"" và đúng trình độ {level}.
+4. KHÔNG trùng lặp: không có 2 nhiệm vụ cùng ý, không lặp từ vựng (word) hay mẫu ngữ pháp (pattern).
+5. SẮP XẾP nhiệm vụ theo đúng mạch một cuộc hội thoại thực tế:
+   chào hỏi / mở đầu → các yêu cầu, trao đổi chính (theo trình tự logic) → xác nhận → cảm ơn / chào tạm biệt.
+   Mục chào hỏi phải ở đầu, mục kết thúc phải ở cuối; ""order"" đánh số liên tục từ 1.
+6. Mọi trường đều KHÔNG được để trống:
+   - missions: content (tiếng Việt, cụ thể), target (mục tiêu ngắn gọn tiếng Việt).
+   - targetVocabularies: word (tiếng Nhật), reading (Hiragana), meaning (tiếng Việt).
+   - targetGrammars: pattern, meaning (tiếng Việt), exampleSentence (câu ví dụ tiếng Nhật đúng ngữ cảnh).
+   Nếu mục đã có bị thiếu trường nào thì tự bổ sung cho đúng.
+7. ""aiPersona"" phải NGẮN GỌN, TỐI ĐA 60 ký tự, theo dạng ""Vai trò tiếng Việt - 日本語"" (có thể thêm 1 ghi chú rất ngắn trong ngoặc).
+   Ví dụ: ""Nhân viên quán mì - 店員"", ""Quản lý cửa hàng - 店長 (nói chậm)"". Không viết thành câu mô tả dài.
 
 Trả về JSON thuần túy theo cấu trúc:
 {{
   ""title"": ""{title} ({level})"",
   ""description"": ""Mô tả bối cảnh cụ thể cho trình độ {level}"",
-  ""aiPersona"": ""Vai trò của AI trong tình huống này (tiếng Việt)"",
+  ""aiPersona"": ""Vai trò ngắn gọn - 日本語 (tối đa 60 ký tự)"",
   ""missions"": [
-    {{ ""order"": 1, ""content"": ""Nội dung nhiệm vụ 1"", ""target"": ""Mục tiêu ngắn gọn"" }}
+    {{ ""id"": null, ""order"": 1, ""content"": ""Nội dung nhiệm vụ 1"", ""target"": ""Mục tiêu ngắn gọn"" }}
   ],
   ""targetVocabularies"": [
-    {{ ""word"": ""Từ tiếng Nhật"", ""reading"": ""Cách đọc Hiragana"", ""meaning"": ""Nghĩa tiếng Việt"" }}
+    {{ ""id"": null, ""word"": ""Từ tiếng Nhật"", ""reading"": ""Cách đọc Hiragana"", ""meaning"": ""Nghĩa tiếng Việt"" }}
   ],
   ""targetGrammars"": [
-    {{ ""pattern"": ""Mẫu ngữ pháp"", ""meaning"": ""Ý nghĩa tiếng Việt"", ""exampleSentence"": ""Câu ví dụ tiếng Nhật"" }}
+    {{ ""id"": null, ""pattern"": ""Mẫu ngữ pháp"", ""meaning"": ""Ý nghĩa tiếng Việt"", ""exampleSentence"": ""Câu ví dụ tiếng Nhật"" }}
   ]
 }}";
 
@@ -1157,5 +1269,142 @@ Trả về JSON thuần túy theo cấu trúc:
         }
 
         return parsed;
+    }
+
+    /// <summary>
+    /// Ràng buộc kết quả AI: bỏ mục trống/trùng, chỉ giữ Id thuộc mục admin đã có,
+    /// bắt buộc đủ số lượng (thiếu → trả false để dùng bộ sinh dự phòng), cắt đúng số lượng
+    /// và sắp xếp nhiệm vụ theo mạch hội thoại.
+    /// </summary>
+    private static bool TryFinalizeGeneratedContent(
+        GeneratedLevelContentDto gen,
+        int missionCount,
+        int vocabCount,
+        int grammarCount,
+        List<CreateMissionDto> existingMissions,
+        List<CreateVocabularyDto> existingVocabs,
+        List<CreateGrammarDto> existingGrammars)
+    {
+        var allowedMissionIds = existingMissions.Where(m => m.Id.HasValue).Select(m => m.Id!.Value).ToHashSet();
+        var allowedVocabIds = existingVocabs.Where(v => v.Id.HasValue).Select(v => v.Id!.Value).ToHashSet();
+        var allowedGrammarIds = existingGrammars.Where(g => g.Id.HasValue).Select(g => g.Id!.Value).ToHashSet();
+
+        var missions = (gen.Missions ?? [])
+            .Where(m => m != null && !string.IsNullOrWhiteSpace(m.Content))
+            .DistinctBy(m => NormalizeGenKey(m.Content))
+            .ToList();
+        var vocabs = (gen.TargetVocabularies ?? [])
+            .Where(v => v != null &&
+                        !string.IsNullOrWhiteSpace(v.Word) &&
+                        !string.IsNullOrWhiteSpace(v.Reading) &&
+                        !string.IsNullOrWhiteSpace(v.Meaning))
+            .DistinctBy(v => NormalizeGenKey(v.Word))
+            .ToList();
+        var grammars = (gen.TargetGrammars ?? [])
+            .Where(g => g != null &&
+                        !string.IsNullOrWhiteSpace(g.Pattern) &&
+                        !string.IsNullOrWhiteSpace(g.Meaning) &&
+                        !string.IsNullOrWhiteSpace(g.ExampleSentence))
+            .DistinctBy(g => NormalizeGenKey(g.Pattern))
+            .ToList();
+
+        if (missions.Count < missionCount || vocabs.Count < vocabCount || grammars.Count < grammarCount)
+        {
+            return false;
+        }
+
+        var usedMissionIds = new HashSet<int>();
+        gen.AiPersona = ShortenPersona(gen.AiPersona);
+        gen.Missions = missions
+            .Take(missionCount)
+            .OrderBy(m => GetMissionPhase(m.Content))
+            .Select((m, idx) => new CreateMissionDto
+            {
+                Id = m.Id.HasValue && allowedMissionIds.Contains(m.Id.Value) && usedMissionIds.Add(m.Id.Value) ? m.Id : null,
+                Order = idx + 1,
+                Content = m.Content.Trim(),
+                Target = string.IsNullOrWhiteSpace(m.Target) ? m.Content.Trim() : m.Target.Trim(),
+                Intent = string.IsNullOrWhiteSpace(m.Intent) ? "CompleteMission" : m.Intent,
+                Conditions = m.Conditions ?? []
+            })
+            .ToList();
+
+        var usedVocabIds = new HashSet<int>();
+        gen.TargetVocabularies = vocabs
+            .Take(vocabCount)
+            .Select(v => new CreateVocabularyDto
+            {
+                Id = v.Id.HasValue && allowedVocabIds.Contains(v.Id.Value) && usedVocabIds.Add(v.Id.Value) ? v.Id : null,
+                Word = v.Word.Trim(),
+                Reading = v.Reading!.Trim(),
+                Meaning = v.Meaning.Trim()
+            })
+            .ToList();
+
+        var usedGrammarIds = new HashSet<int>();
+        gen.TargetGrammars = grammars
+            .Take(grammarCount)
+            .Select(g => new CreateGrammarDto
+            {
+                Id = g.Id.HasValue && allowedGrammarIds.Contains(g.Id.Value) && usedGrammarIds.Add(g.Id.Value) ? g.Id : null,
+                Pattern = g.Pattern.Trim(),
+                Meaning = g.Meaning.Trim(),
+                ExampleSentence = g.ExampleSentence!.Trim()
+            })
+            .ToList();
+
+        return true;
+    }
+
+    /// <summary>Giới hạn độ dài vai AI theo cột DB (ScenarioLevelConfiguration.AiPersona tối đa 100 ký tự).</summary>
+    private const int MaxAiPersonaLength = 100;
+
+    /// <summary>
+    /// Rút gọn vai AI: nếu quá dài thì bỏ phần ghi chú trong ngoặc, sau đó cắt theo ranh giới từ.
+    /// </summary>
+    private static string ShortenPersona(string? persona)
+    {
+        var text = string.Join(' ', (persona ?? string.Empty).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        if (text.Length <= MaxAiPersonaLength) return text;
+
+        var parenIdx = text.IndexOf('(');
+        if (parenIdx > 0)
+        {
+            var head = text[..parenIdx].Trim();
+            if (head.Length is > 0 and <= MaxAiPersonaLength) return head;
+        }
+
+        var cut = text[..MaxAiPersonaLength];
+        var lastSpace = cut.LastIndexOf(' ');
+        if (lastSpace > MaxAiPersonaLength / 2) cut = cut[..lastSpace];
+        return cut.TrimEnd(' ', ',', '/', '-', '(', ';', ':');
+    }
+
+    /// <summary>Khóa so sánh trùng lặp: chuẩn hóa Unicode, bỏ khoảng trắng thừa, không phân biệt hoa thường.</summary>
+    private static string NormalizeGenKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        var normalized = value.Normalize(NormalizationForm.FormC).Trim().ToLowerInvariant();
+        return string.Join(' ', normalized.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    /// <summary>
+    /// Phân pha nhiệm vụ trong mạch hội thoại: 0 = chào hỏi/mở đầu, 1 = trao đổi chính, 2 = kết thúc.
+    /// Dùng sắp xếp ổn định (stable) nên thứ tự bên trong mỗi pha được giữ nguyên.
+    /// </summary>
+    private static int GetMissionPhase(string? content)
+    {
+        var text = NormalizeGenKey(content);
+        if (text.Length == 0) return 1;
+
+        string[] closingKeywords = ["tạm biệt", "kết thúc", "tổng kết", "ra về", "rời quán", "rời đi", "rời khỏi"];
+        if (closingKeywords.Any(text.Contains)) return 2;
+
+        string[] openingKeywords = ["chào hỏi", "mở đầu", "tự giới thiệu", "giới thiệu bản thân", "giới thiệu tên", "bắt đầu hội thoại", "bắt đầu cuộc"];
+        if (text.StartsWith("chào") || openingKeywords.Any(text.Contains)) return 0;
+
+        if (text.Contains("cảm ơn")) return 2;
+
+        return 1;
     }
 }

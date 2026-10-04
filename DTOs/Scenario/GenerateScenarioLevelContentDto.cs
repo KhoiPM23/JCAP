@@ -17,6 +17,18 @@ public class GenerateScenarioLevelContentRequest
     public int VocabularyCount { get; set; } = 3;
 
     public int GrammarCount { get; set; } = 3;
+
+    /// <summary>
+    /// Các nhiệm vụ admin đã nhập sẵn. AI sẽ giữ ý, chỉnh câu chữ cho mạch lạc,
+    /// sắp xếp lại thứ tự hợp lý và điền thêm cho đủ MissionCount.
+    /// </summary>
+    public List<CreateMissionDto> ExistingMissions { get; set; } = [];
+
+    /// <summary>Các từ vựng admin đã nhập sẵn (giữ lại, bổ sung trường còn thiếu, điền thêm cho đủ).</summary>
+    public List<CreateVocabularyDto> ExistingVocabularies { get; set; } = [];
+
+    /// <summary>Các mẫu ngữ pháp admin đã nhập sẵn (giữ lại, bổ sung trường còn thiếu, điền thêm cho đủ).</summary>
+    public List<CreateGrammarDto> ExistingGrammars { get; set; } = [];
 }
 
 public class GeneratedLevelContentDto

@@ -1185,12 +1185,13 @@ export const AdminShadowingListView: React.FC = () => {
 
   // Filter calculations
   const filteredItems = items.filter((item) => {
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      const matchTitle = item.title.toLowerCase().includes(q);
-      const matchCode = `SHD_${item.id}`.toLowerCase().includes(q) || (item.scenarioTitle && item.scenarioTitle.toLowerCase().includes(q));
-      if (!matchTitle && !matchCode) return false;
-    }
+    const term = searchTerm.trim();
+    if (!term) return true;
+    if (term.length < 2) return false;
+    const q = term.toLowerCase();
+    const matchTitle = item.title.toLowerCase().includes(q);
+    const matchCode = `SHD_${item.id}`.toLowerCase().includes(q) || (item.scenarioTitle && item.scenarioTitle.toLowerCase().includes(q));
+    if (!matchTitle && !matchCode) return false;
     if (filterLevel !== 'ALL' && item.jlptLevel !== filterLevel) return false;
     if (filterScenario !== 'ALL' && item.scenarioTitle !== filterScenario) return false;
     if (filterStatus === 'ACTIVE' && !item.isActive) return false;

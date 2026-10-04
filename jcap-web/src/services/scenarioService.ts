@@ -175,7 +175,12 @@ export const scenarioService = {
     jlptLevel: string,
     missionCount: number = 3,
     vocabularyCount: number = 3,
-    grammarCount: number = 3
+    grammarCount: number = 3,
+    existing?: {
+      missions?: { id?: number; content: string; target?: string; intent?: string; conditions?: string[] }[];
+      vocabularies?: { id?: number; word: string; reading?: string; meaning: string }[];
+      grammars?: { id?: number; pattern: string; meaning: string; exampleSentence?: string }[];
+    }
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -192,6 +197,9 @@ export const scenarioService = {
           missionCount,
           vocabularyCount,
           grammarCount,
+          existingMissions: existing?.missions ?? [],
+          existingVocabularies: existing?.vocabularies ?? [],
+          existingGrammars: existing?.grammars ?? [],
         }),
       });
       const result = (await response.json().catch(() => null)) as ApiResponse<GeneratedLevelContent> | null;

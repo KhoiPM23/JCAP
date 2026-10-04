@@ -30,6 +30,7 @@ import { LearnerShadowingChapterListView } from '../views/shadowing/LearnerShado
 import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShadowingDialogueListView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
+import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
@@ -252,6 +253,10 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
+        <Route path="/admin/scenarios/new" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/new-scenario" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/new scenario" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/edit/:id" element={<AdminScenarioEditorView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
