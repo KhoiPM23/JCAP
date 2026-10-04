@@ -41,7 +41,6 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   role?: string;
-  jlptLevel?: string;
 }
 
 export interface ResetPasswordPayload {
