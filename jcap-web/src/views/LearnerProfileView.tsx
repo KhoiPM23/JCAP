@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { profileService } from '../services/profileService';
+import { formatDateFull } from '../utils/dateUtils';
 import type { LearnerProfile } from '../types/profile';
 
 export const LearnerProfileView: React.FC = () => {
@@ -69,18 +70,7 @@ export const LearnerProfileView: React.FC = () => {
     );
   }
 
-  const formattedJoinDate = (() => {
-    try {
-      const date = new Date(profile.createdAt);
-      return new Intl.DateTimeFormat('vi-VN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }).format(date);
-    } catch {
-      return profile.createdAt;
-    }
-  })();
+  const formattedJoinDate = formatDateFull(profile.createdAt);
 
   const avatarInitial = profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U';
 

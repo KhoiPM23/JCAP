@@ -9,7 +9,8 @@ namespace JCAP.Models
         public string JapaneseText { get; set; } = string.Empty;
         public string? RomajiText { get; set; }
         public string VietnameseTranslation { get; set; } = string.Empty;
-        public string NativeAudioUrl { get; set; } = string.Empty;
+        public string? NativeAudioUrl { get; set; }
+        public int? AudioDurationMs { get; set; }
 
         // Navigation properties
         public ShadowingDialogue ShadowingDialogue { get; set; } = null!;

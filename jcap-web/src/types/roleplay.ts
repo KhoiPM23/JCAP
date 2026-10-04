@@ -1,12 +1,19 @@
 import type { ScenarioVocabulary, ScenarioGrammar } from './scenarioDetails';
 
 export interface ActiveRoleplaySessionDto {
-  hasActiveSession: boolean;
+  hasActiveSession?: boolean;
   activeSessionId?: number;
+  sessionId?: number;
+  id?: number;
   scenarioId?: number;
   level?: string;
+  jlptLevel?: string;
   scenarioTitle?: string;
+  scenarioCode?: string;
+  aiPersona?: string;
   startedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   messageCount?: number;
   completedMissionsCount?: number;
   totalMissionsCount?: number;
@@ -19,6 +26,7 @@ export interface LinguisticDetailItemDto {
 }
 
 export interface LinguisticFeedbackDto {
+  evaluationSource?: 'AI' | 'Simulator' | string;
   status?: string;
   quickStatus?: string;
   summary: string;

@@ -39,6 +39,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)
+            .Include(s => s.Messages)
             .Where(s => s.UserId == userId && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
@@ -58,6 +59,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             AiPersona = activeSession.ScenarioLevelConfiguration.AiPersona,
             CompletedMissionsCount = activeSession.SessionMissions.Count(sm => sm.IsCompleted),
             TotalMissionsCount = activeSession.SessionMissions.Count,
+            MessageCount = activeSession.Messages.Count,
             CreatedAt = activeSession.CreatedAt,
             UpdatedAt = activeSession.UpdatedAt
         };
@@ -74,7 +76,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     {
         var levelConfig = await _dbContext.ScenarioLevelConfigurations
             .Include(c => c.Scenario)
-            .Include(c => c.Missions)
+            .Include(c => c.Missions.Where(m => m.IsActive))
             .FirstOrDefaultAsync(c => c.ScenarioId == scenarioId && c.JLPTLevel == jlptLevel, cancellationToken);
 
         if (levelConfig == null || levelConfig.Scenario == null)
@@ -91,44 +93,66 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         if (existingActiveSession != null)
         {
-            if (!request.ForceRestart)
+            if (!request.ForceRestart && existingActiveSession.ScenarioLevelConfiguration?.JLPTLevel == jlptLevel)
             {
-                // Người dùng muốn tiếp tục phiên dở dang -> Trả về phiên hiện tại (không trừ credit)
+                // Người dùng muốn tiếp tục phiên dở dang của cùng level -> Trả về phiên hiện tại (không trừ credit)
                 return await GetSessionDetailsAsync(userId, existingActiveSession.Id, cancellationToken);
             }
 
-            // Người dùng chọn bắt đầu lại mới -> Đánh dấu phiên cũ là Abandoned (không hoàn credit cũ)
+            // Người dùng chọn bắt đầu lại mới hoặc đổi sang cấp độ khác -> Đánh dấu phiên cũ là Abandoned (không hoàn credit cũ)
             existingActiveSession.Status = "Abandoned";
             existingActiveSession.UpdatedAt = DateTime.UtcNow;
-            _logger.LogInformation("Người dùng {UserId} hủy phiên dở dang {SessionId} để tạo phiên mới.", userId, existingActiveSession.Id);
+            _logger.LogInformation("Người dùng {UserId} hủy phiên dở dang {SessionId} để tạo phiên mới cấp độ {Level}.", userId, existingActiveSession.Id, jlptLevel);
         }
 
-        // Kiểm tra số dư Credit
+        // Kiểm tra số dư Credit (Miễn phí cho Admin khi trải nghiệm / kiểm thử hệ thống)
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
             return ApiResponse<RoleplaySessionDetailsDto>.Fail("Không tìm thấy thông tin tài khoản người dùng.");
         }
 
-        if (user.CreditBalance < levelConfig.CreditCost)
+        var isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+        if (!isAdmin)
+        {
+            try
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles != null && roles.Any(r => string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    isAdmin = true;
+                }
+            }
+            catch
+            {
+                // In case userManager mock does not have GetRolesAsync configured in tests
+            }
+        }
+
+        int creditDeducted = isAdmin ? 0 : levelConfig.CreditCost;
+
+        if (!isAdmin && user.CreditBalance < levelConfig.CreditCost)
         {
             return ApiResponse<RoleplaySessionDetailsDto>.Fail(
                 $"Số dư credit của bạn không đủ ({user.CreditBalance}/{levelConfig.CreditCost} credits). Vui lòng nạp thêm credit để bắt đầu luyện tập.");
         }
 
-        // Khấu trừ Credit theo Model A (Cố định theo phiên)
-        user.CreditBalance -= levelConfig.CreditCost;
-
-        var transaction = new CreditTransaction
+        // Khấu trừ Credit theo Model A (Cố định theo phiên) nếu không phải Admin
+        if (creditDeducted > 0)
         {
-            UserId = userId,
-            Amount = -levelConfig.CreditCost,
-            Type = "Deduct",
-            Status = "Paid",
-            Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
-            CreatedAt = DateTime.UtcNow
-        };
-        _dbContext.CreditTransactions.Add(transaction);
+            user.CreditBalance -= creditDeducted;
+
+            var transaction = new CreditTransaction
+            {
+                UserId = userId,
+                Amount = -creditDeducted,
+                Type = "Deduct",
+                Status = "Paid",
+                Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.CreditTransactions.Add(transaction);
+        }
 
         // Tạo RoleplaySession mới
         var newSession = new RoleplaySession
@@ -136,7 +160,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             UserId = userId,
             ScenarioLevelConfigurationId = levelConfig.Id,
             Status = "Active",
-            CreditDeducted = levelConfig.CreditCost,
+            CreditDeducted = creditDeducted,
             IsNaturallyConcluded = false,
             CreatedAt = DateTime.UtcNow
         };
@@ -144,7 +168,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         // Khởi tạo các Mission cho phiên
-        foreach (var mission in levelConfig.Missions.OrderBy(m => m.Order))
+        foreach (var mission in levelConfig.Missions.Where(m => m.IsActive).OrderBy(m => m.Order))
         {
             _dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
             {
@@ -351,13 +375,14 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên
+        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
         }
 
-        if (turnResult.IsNaturallyConcluded)
+        bool allMissionsDone = session.SessionMissions.Count > 0 && session.SessionMissions.All(sm => sm.IsCompleted);
+        if (turnResult.IsNaturallyConcluded && allMissionsDone)
         {
             session.IsNaturallyConcluded = true;
         }

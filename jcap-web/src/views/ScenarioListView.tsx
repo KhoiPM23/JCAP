@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { scenarioService } from '../services/scenarioService';
 import type { ScenarioListItem } from '../types/scenarioDetails';
 
@@ -26,6 +28,11 @@ interface ScenarioListViewProps {
 export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
   onSelectScenario,
 }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
+
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
   const [loading, setLoading] = useState<boolean>(true);
@@ -37,7 +44,16 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
       setLoading(true);
       setError(null);
 
-      const response = await scenarioService.getScenarios();
+      // Nếu từ khóa chỉ có 1 ký tự → không gọi API, trả về rỗng
+      if (searchQuery.trim().length === 1) {
+        if (isMounted) {
+          setScenarios([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const response = await scenarioService.getScenarios(searchQuery);
       if (!isMounted) return;
 
       if (response.success && response.data) {
@@ -52,7 +68,14 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [searchQuery]);
+
+  const clearSearch = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('query');
+    newParams.delete('search');
+    setSearchParams(newParams, { replace: true });
+  };
 
   // Lọc kịch bản theo level hỗ trợ
   const filteredScenarios = scenarios.filter((scenario) => {
@@ -62,6 +85,23 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
 
   return (
     <div className="w-full">
+      {/* Banner thông báo chế độ xem trước dành riêng cho Admin */}
+      {user?.role === 'Admin' && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-900 px-4 py-2.5 rounded-xl text-xs font-medium mb-6">
+          <div className="flex items-center gap-2">
+            <span className="bg-[#0878EE] text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">Chế độ xem trước</span>
+            <span>Bạn đang xem thư viện kịch bản với giao diện của Học viên.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/scenarios')}
+            className="text-[#0878EE] hover:text-blue-900 font-bold underline transition cursor-pointer"
+          >
+            &larr; Quay lại Quản lý Kịch bản
+          </button>
+        </div>
+      )}
+
       {/* Tiêu đề trang & Bộ lọc theo Level */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
@@ -89,6 +129,19 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
         </div>
       </div>
 
+      {/* Hiển thị từ khóa tìm kiếm đang active */}
+      {searchQuery && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2.5 rounded-xl text-xs font-medium mb-6">
+          <span>🔍 Kết quả tìm kiếm cho: <strong>"{searchQuery}"</strong></span>
+          <button
+            onClick={clearSearch}
+            className="text-blue-600 hover:text-blue-900 font-bold underline transition"
+          >
+            Xóa tìm kiếm
+          </button>
+        </div>
+      )}
+
       {/* Trạng thái Loading */}
       {loading && (
         <div className="flex justify-center items-center py-20">
@@ -107,7 +160,11 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
       {/* Trạng thái Rỗng */}
       {!loading && !error && filteredScenarios.length === 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <p className="text-slate-500 text-sm">Chưa có kịch bản đàm thoại nào ở trình độ đã chọn.</p>
+          <p className="text-slate-500 text-sm">
+            {searchQuery 
+              ? `Không tìm thấy kịch bản nào phù hợp với từ khóa "${searchQuery}".`
+              : 'Chưa có kịch bản đàm thoại nào ở trình độ đã chọn.'}
+          </p>
         </div>
       )}
 

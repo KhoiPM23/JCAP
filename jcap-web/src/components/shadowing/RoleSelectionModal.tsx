@@ -31,78 +31,78 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Chọn vai bạn muốn luyện nói"
-      maxWidth="md"
+      maxWidth="lg"
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
             Hủy bỏ
           </Button>
           <Button variant="primary" onClick={handleStart}>
-            Bắt đầu Luyện tập ngay ➔
+            Bắt đầu Luyện tập ngay
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <p className="text-xs text-[#71809A]">
-          Bài hội thoại: <strong className="text-[#071A44]">{dialogueTitle}</strong>
-        </p>
-        <p className="text-sm text-[#071A44]">
-          Hãy chọn một nhân vật để đóng vai. Hệ thống AI sẽ đọc lời thoại của nhân vật còn lại để bạn luyện Shadowing theo nhịp điệu tự nhiên.
+        <div className="bg-[#F8FAFD] p-3 rounded-xl border border-[#E6EDF5]">
+          <p className="text-xs text-[#71809A]">
+            Bài hội thoại: <strong className="text-[#071A44]">{dialogueTitle}</strong>
+          </p>
+        </div>
+        <p className="text-xs sm:text-sm text-[#4A5D78] leading-relaxed">
+          Hãy chọn một nhân vật để đóng vai.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           {/* Card Role A */}
           <div
             onClick={() => setSelectedRole('A')}
-            className={`cursor-pointer rounded-xl p-4 border-2 transition-all flex flex-col justify-between ${
+            className={`cursor-pointer rounded-2xl p-4 border-2 transition-all flex flex-col justify-between ${
               selectedRole === 'A'
-                ? 'border-[#0878EE] bg-blue-50/50 shadow-sm'
-                : 'border-[#E6EDF5] bg-white hover:border-gray-300'
+                ? 'border-[#0878EE] bg-blue-50/60 shadow-xs'
+                : 'border-[#E6EDF5] bg-white hover:border-[#BCDDFB]'
             }`}
           >
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#0878EE]">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                  selectedRole === 'A' ? 'bg-[#0878EE] text-white' : 'bg-blue-100 text-[#0878EE]'
+                }`}>
                   Vai A
                 </span>
                 {selectedRole === 'A' && (
                   <span className="text-xs text-[#0878EE] font-bold">✓ Đã chọn</span>
                 )}
               </div>
-              <h4 className="font-semibold text-base text-[#071A44] mb-1">
+              <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug">
                 {roleAName}
               </h4>
-              <p className="text-xs text-[#71809A]">
-                Bạn sẽ đọc các câu thoại của nhân vật này.
-              </p>
             </div>
           </div>
 
           {/* Card Role B */}
           <div
             onClick={() => setSelectedRole('B')}
-            className={`cursor-pointer rounded-xl p-4 border-2 transition-all flex flex-col justify-between ${
+            className={`cursor-pointer rounded-2xl p-4 border-2 transition-all flex flex-col justify-between ${
               selectedRole === 'B'
-                ? 'border-[#0878EE] bg-blue-50/50 shadow-sm'
-                : 'border-[#E6EDF5] bg-white hover:border-gray-300'
+                ? 'border-[#0878EE] bg-purple-50/60 shadow-xs'
+                : 'border-[#E6EDF5] bg-white hover:border-[#BCDDFB]'
             }`}
           >
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                  selectedRole === 'B' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700'
+                }`}>
                   Vai B
                 </span>
                 {selectedRole === 'B' && (
-                  <span className="text-xs text-[#0878EE] font-bold">✓ Đã chọn</span>
+                  <span className="text-xs text-purple-700 font-bold">✓ Đã chọn</span>
                 )}
               </div>
-              <h4 className="font-semibold text-base text-[#071A44] mb-1">
+              <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug">
                 {roleBName}
               </h4>
-              <p className="text-xs text-[#71809A]">
-                Bạn sẽ đọc các câu thoại của nhân vật này.
-              </p>
             </div>
           </div>
         </div>

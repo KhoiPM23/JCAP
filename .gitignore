@@ -499,3 +499,10 @@ Tài liệu/
 
 # Local VS Code settings
 .vscode/
+
+# AI Agent Instructions & Local Preferences (developer-specific)
+GEMINI.md
+AGENTS.md
+CLAUDE.md
+.agents/
+
