@@ -44,6 +44,15 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
       setLoading(true);
       setError(null);
 
+      // Nếu từ khóa chỉ có 1 ký tự → không gọi API, trả về rỗng
+      if (searchQuery.trim().length === 1) {
+        if (isMounted) {
+          setScenarios([]);
+          setLoading(false);
+        }
+        return;
+      }
+
       const response = await scenarioService.getScenarios(searchQuery);
       if (!isMounted) return;
 

@@ -28,9 +28,10 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     if (location.pathname === '/scenarios' || location.pathname === '/') {
+      const trimmed = value.trim();
       const newParams = new URLSearchParams(searchParams);
-      if (value.trim()) {
-        newParams.set('query', value);
+      if (trimmed.length > 0) {
+        newParams.set('query', trimmed);
       } else {
         newParams.delete('query');
         newParams.delete('search');
@@ -42,16 +43,23 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchTerm.trim();
-    if (location.pathname !== '/scenarios') {
-      navigate(trimmed ? `/scenarios?query=${encodeURIComponent(trimmed)}` : '/scenarios');
-    } else {
-      const newParams = new URLSearchParams(searchParams);
-      if (trimmed) {
-        newParams.set('query', trimmed);
+    if (trimmed.length === 0) {
+      // clear search
+      if (location.pathname !== '/scenarios') {
+        navigate('/scenarios');
       } else {
+        const newParams = new URLSearchParams(searchParams);
         newParams.delete('query');
         newParams.delete('search');
+        setSearchParams(newParams, { replace: true });
       }
+      return;
+    }
+    if (location.pathname !== '/scenarios') {
+      navigate(`/scenarios?query=${encodeURIComponent(trimmed)}`);
+    } else {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('query', trimmed);
       setSearchParams(newParams, { replace: true });
     }
   };
@@ -141,6 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   }, [currentUser?.creditBalance, authUser?.creditBalance]);
 
   const user = propUser !== undefined ? propUser : (currentUser || authUser);
+  const isAdminArea = user?.role === 'Admin' && !location.pathname.startsWith('/scenarios');
 
   return (
     <header className="h-[64px] bg-white border-b border-[#E6EDF5] flex items-center justify-between px-8 sticky top-0 z-40">
@@ -152,6 +161,9 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
       </div>
 
       {/* Center: Search */}
+      {isAdminArea ? (
+        <div className="flex-1" />
+      ) : (
       <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8">
         <div className="relative w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -168,6 +180,7 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           />
         </div>
       </form>
+      )}
 
       {/* Right: Actions & User Info */}
       <div className="flex items-center gap-4 sm:gap-6">

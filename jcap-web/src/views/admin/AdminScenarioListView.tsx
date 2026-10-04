@@ -704,8 +704,10 @@ export const AdminScenarioListView: React.FC = () => {
   const hasSelectedLevel = (['N5', 'N4', 'N3'] as const).some((lvl) => formData.levels[lvl].enabled);
 
   const filteredScenarios = scenarios.filter((item) => {
-    if (!searchTerm.trim()) return true;
-    const q = searchTerm.toLowerCase();
+    const term = searchTerm.trim();
+    if (!term) return true;
+    if (term.length < 2) return false;
+    const q = term.toLowerCase();
     return (
       item.title.toLowerCase().includes(q) ||
       item.description.toLowerCase().includes(q) ||
@@ -767,6 +769,18 @@ export const AdminScenarioListView: React.FC = () => {
         />
       </div>
 
+      {searchTerm.trim().length > 0 && (
+        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2.5 rounded-xl text-xs font-medium mb-6">
+          <span>🔍 Kết quả tìm kiếm cho: <strong>"{searchTerm.trim()}"</strong></span>
+          <button
+            onClick={() => setSearchTerm('')}
+            className="text-blue-600 hover:text-blue-900 font-bold underline transition cursor-pointer"
+          >
+            Xóa tìm kiếm
+          </button>
+        </div>
+      )}
+
       {/* Content Table */}
       {loading ? (
         <div className="flex justify-center items-center py-20 bg-white rounded-2xl border border-slate-200">
@@ -790,7 +804,9 @@ export const AdminScenarioListView: React.FC = () => {
                 {filteredScenarios.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-slate-400">
-                      Không tìm thấy kịch bản nào phù hợp.
+                      {searchTerm.trim().length > 0
+                        ? `Không tìm thấy kịch bản nào phù hợp với từ khóa "${searchTerm.trim()}".`
+                        : 'Không tìm thấy kịch bản nào phù hợp.'}
                     </td>
                   </tr>
                 ) : (
