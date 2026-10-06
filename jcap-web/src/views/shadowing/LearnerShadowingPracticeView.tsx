@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { shadowingService } from '../../services/shadowingService';
+import { shadowingStorageService } from '../../services/shadowingStorageService';
 import type {
   ShadowingDialogueDetail,
   ShadowingSentenceItem,
@@ -48,6 +49,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [currentTier, setCurrentTier] = useState<'green' | 'yellow' | 'red'>('green');
   const [currentFeedback, setCurrentFeedback] = useState<string>('');
   const [micError, setMicError] = useState<string | null>(null);
+  const [isOpponentPausedForResume, setIsOpponentPausedForResume] = useState<boolean>(false);
 
   // Audio Playback
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
@@ -170,25 +172,94 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           }
 
           stopAllAudio();
-          // Always start clean from Sentence 0 for true turn-by-turn progression
-          setCurrentSentenceIndex(0);
+
+          const isResume = searchParams.get('resume') === 'true';
+          const isRestart = searchParams.get('restart') === 'true';
+          const learnerId = user?.id || user?.email || 'guest_learner';
+          const savedProgress = shadowingStorageService.getProgress(learnerId, targetId);
+
+          let initialIndex = 0;
+          let effectiveRole = userRoleRef.current;
+
+          if (isRestart) {
+            const firstSentenceText = res.data.sentences[0]?.japaneseText;
+            effectiveRole = userRoleRef.current;
+            shadowingStorageService.restartProgress(
+              learnerId,
+              {
+                id: res.data.id,
+                title: res.data.title,
+                subtitle: res.data.scenarioTitle,
+                totalSentences: res.data.sentences.length,
+                jlptLevel: res.data.jlptLevel,
+                scenarioTitle: res.data.scenarioTitle,
+                textbookTitle: res.data.textbookTitle,
+                chapterTitle: res.data.chapterTitle,
+                currentSentenceText: firstSentenceText,
+              },
+              effectiveRole
+            );
+            initialIndex = 0;
+          } else if (isResume && savedProgress && savedProgress.status === 'IN_PROGRESS') {
+            effectiveRole = savedProgress.role || userRoleRef.current;
+            userRoleRef.current = effectiveRole;
+            setUserRole(effectiveRole);
+            initialIndex = Math.min(
+              Math.max(0, savedProgress.currentSentenceIndex),
+              Math.max(0, res.data.sentences.length - 1)
+            );
+          } else {
+            const firstSentenceText = res.data.sentences[0]?.japaneseText;
+            shadowingStorageService.startOrUpdateProgress(
+              learnerId,
+              {
+                id: res.data.id,
+                title: res.data.title,
+                subtitle: res.data.scenarioTitle,
+                totalSentences: res.data.sentences.length,
+                jlptLevel: res.data.jlptLevel,
+                scenarioTitle: res.data.scenarioTitle,
+                textbookTitle: res.data.textbookTitle,
+                chapterTitle: res.data.chapterTitle,
+                currentSentenceText: firstSentenceText,
+              },
+              effectiveRole,
+              0,
+              firstSentenceText
+            );
+            initialIndex = 0;
+          }
+
+          setCurrentSentenceIndex(initialIndex);
           setSentenceResults(new Map());
           setRecordedAudioUrls(new Map());
           setLiveTranscript('');
           setCurrentRecognizedText('');
 
-          // If first sentence belongs to opponent, trigger their turn
-          const currentRole = userRoleRef.current;
-          if (res.data.sentences.length > 0 && res.data.sentences[0].speakerRole !== currentRole) {
-            setPracticeState('opponent-speaking');
-            const activeTurnId = turnIdRef.current;
-            turnTimeoutRef.current = setTimeout(() => {
-              if (turnIdRef.current === activeTurnId) {
-                playOpponentSentence(res.data.sentences[0], activeTurnId);
+          // Kiểm tra câu bắt đầu tại initialIndex
+          if (res.data.sentences.length > initialIndex) {
+            const startSentence = res.data.sentences[initialIndex];
+            if (startSentence.speakerRole !== effectiveRole) {
+              if (isResume) {
+                // Q4 Rule: Resume câu đối phương -> KHÔNG tự động phát ngay, chuyển sang paused state với nút nghe rõ ràng
+                setIsOpponentPausedForResume(true);
+                setPracticeState('opponent-speaking');
+              } else {
+                setIsOpponentPausedForResume(false);
+                setPracticeState('opponent-speaking');
+                const activeTurnId = turnIdRef.current;
+                turnTimeoutRef.current = setTimeout(() => {
+                  if (turnIdRef.current === activeTurnId) {
+                    playOpponentSentence(startSentence, activeTurnId);
+                  }
+                }, 600);
               }
-            }, 600);
+            } else {
+              setIsOpponentPausedForResume(false);
+              setPracticeState('ready');
+            }
           } else {
-            // Lượt của người học: KHÔNG tự động phát âm thanh, chuyển sang trạng thái sẵn sàng ghi âm
+            setIsOpponentPausedForResume(false);
             setPracticeState('ready');
           }
         } else {
@@ -441,7 +512,17 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const nextIdx = currentIdx + 1;
     if (nextIdx < currentDialogue.sentences.length) {
       setCurrentSentenceIndex(nextIdx);
+      setIsOpponentPausedForResume(false);
+
       const nextSentence = currentDialogue.sentences[nextIdx];
+      const learnerId = user?.id || user?.email || 'guest_learner';
+      shadowingStorageService.updateSentenceProgress(
+        learnerId,
+        currentDialogue.id,
+        nextIdx,
+        currentDialogue.sentences.length,
+        nextSentence?.japaneseText
+      );
       const currentUserRole = userRoleRef.current;
 
       if (nextSentence.speakerRole !== currentUserRole) {
@@ -465,7 +546,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     }
   };
 
+  const handlePlayResumedOpponentSentence = () => {
+    setIsOpponentPausedForResume(false);
+    const activeTurnId = turnIdRef.current;
+    if (currentSentence) {
+      playOpponentSentence(currentSentence, activeTurnId);
+    }
+  };
+
   const handleSkipOpponentSpeech = () => {
+    setIsOpponentPausedForResume(false);
     stopAllAudio();
     if (currentSentence) {
       const activeTurnId = turnIdRef.current;
@@ -725,13 +815,24 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     if (!currentDialogue) return;
 
     const nextIdx = currentSentenceIndex + 1;
+    const learnerId = user?.id || user?.email || 'guest_learner';
+
     if (nextIdx < currentDialogue.sentences.length) {
       setCurrentSentenceIndex(nextIdx);
       setLiveTranscript('');
       setCurrentRecognizedText('');
       setMicError(null);
+      setIsOpponentPausedForResume(false);
 
       const nextSentence = currentDialogue.sentences[nextIdx];
+      // Cập nhật tiến trình lưu vào storage
+      shadowingStorageService.updateSentenceProgress(
+        learnerId,
+        currentDialogue.id,
+        nextIdx,
+        currentDialogue.sentences.length,
+        nextSentence?.japaneseText
+      );
       const currentUserRole = userRoleRef.current;
       if (nextSentence.speakerRole !== currentUserRole) {
         // Đối phương nói: tự động phát giọng đối phương, KHÔNG thu âm
@@ -766,6 +867,37 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     const currentDialogue = dialogueRef.current || dialogue;
     if (currentDialogue) {
+      const learnerId = user?.id || user?.email || 'guest_learner';
+      const savedProgress = shadowingStorageService.getProgress(learnerId, currentDialogue.id);
+
+      // 1. Cập nhật trạng thái hoàn thành vào progress storage
+      shadowingStorageService.completeProgress(
+        learnerId,
+        currentDialogue.id,
+        currentDialogue.sentences.length
+      );
+
+      // 2. Thêm một bản ghi lịch sử buổi luyện tập mới (không xóa / đè lịch sử cũ)
+      shadowingStorageService.addHistorySession({
+        sessionId: savedProgress?.sessionId || `session_${Date.now()}`,
+        learnerId,
+        dialogueId: currentDialogue.id,
+        dialogueTitle: currentDialogue.title,
+        scenarioTitle: currentDialogue.scenarioTitle,
+        textbookTitle: currentDialogue.textbookTitle,
+        chapterTitle: currentDialogue.chapterTitle,
+        jlptLevel: currentDialogue.jlptLevel,
+        role: userRoleRef.current,
+        startedAt: new Date(practiceStartTime).toISOString(),
+        completedAt: new Date().toISOString(),
+        sentenceScores: resultsList.map((r) => r.accuracyScore),
+        averageScore: avgScore,
+        durationSeconds: sessionDurationSeconds,
+        totalSentences: currentDialogue.sentences.length,
+        completed: true,
+      });
+
+      // 3. Gửi đồng bộ sang API backend nếu có kết nối
       await shadowingService.completeSession({
         dialogueId: currentDialogue.id,
         learnerRole: userRoleRef.current,
@@ -828,7 +960,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setUserRole(newRole);
     setSearchParams({ level: selectedLevel, role: newRole });
 
-    // 4. Reset toàn bộ tiến độ bài học về câu 0
+    // 4. Reset toàn bộ tiến độ bài học về câu 0 & bắt đầu session mới
     setCurrentSentenceIndex(0);
     setSentenceResults(new Map());
     setRecordedAudioUrls(new Map());
@@ -836,9 +968,27 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setCurrentRecognizedText('');
     setMicError(null);
     setIsCompletedModalOpen(false);
+    setIsOpponentPausedForResume(false);
+
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (currentDialogue) {
+      const learnerId = user?.id || user?.email || 'guest_learner';
+      shadowingStorageService.restartProgress(
+        learnerId,
+        {
+          id: currentDialogue.id,
+          title: currentDialogue.title,
+          totalSentences: currentDialogue.sentences.length,
+          jlptLevel: currentDialogue.jlptLevel,
+          scenarioTitle: currentDialogue.scenarioTitle,
+          textbookTitle: currentDialogue.textbookTitle,
+          chapterTitle: currentDialogue.chapterTitle,
+        },
+        newRole
+      );
+    }
 
     // 5. Kiểm tra câu 0 theo vai mới
-    const currentDialogue = dialogueRef.current || dialogue;
     if (currentDialogue && currentDialogue.sentences && currentDialogue.sentences.length > 0) {
       const firstSentence = currentDialogue.sentences[0];
       if (firstSentence.speakerRole !== newRole) {
@@ -1398,39 +1548,79 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                 {/* CHỈ THU ÂM CÂU CỦA NGƯỜI HỌC (userRole) - KHÔNG THU ÂM CÂU CỦA ĐỐI PHƯƠNG */}
                 {currentSentence?.speakerRole !== userRole ? (
-                  <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
-                        👩‍🏫
-                      </div>
-                      <div className="text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương) đang nói...</span>
-                          <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+                  isOpponentPausedForResume ? (
+                    <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
+                          👩‍🏫
                         </div>
-                        <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
-                          "{currentSentence?.japaneseText}"
-                        </p>
+                        <div className="text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương)</span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              Tạm dừng (Tiếp tục học)
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
+                            "{currentSentence?.japaneseText}"
+                          </p>
+                        </div>
                       </div>
+                      <div className="flex items-center gap-2 my-1">
+                        <button
+                          type="button"
+                          onClick={handlePlayResumedOpponentSentence}
+                          className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-2 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                        >
+                          <span>▶ Nghe câu đối thoại</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSkipOpponentSpeech}
+                          className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full transition-all cursor-pointer"
+                        >
+                          <span>Sang lượt nói của bạn &rarr;</span>
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        * Bấm để nghe câu thoại mẫu của đối phương trước khi chuyển sang lượt nói của bạn.
+                      </p>
                     </div>
-                    {/* Audio wave indicator */}
-                    <div className="flex items-center gap-1 my-0.5">
-                      <span className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce"></span>
-                      <span className="w-1 h-4 bg-blue-600 rounded-full animate-bounce [animation-delay:0.1s]"></span>
-                      <span className="w-1 h-5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                      <span className="w-1 h-3.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.3s]"></span>
-                      <span className="w-1 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  ) : (
+                    <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
+                          👩‍🏫
+                        </div>
+                        <div className="text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương) đang nói...</span>
+                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+                          </div>
+                          <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
+                            "{currentSentence?.japaneseText}"
+                          </p>
+                        </div>
+                      </div>
+                      {/* Audio wave indicator */}
+                      <div className="flex items-center gap-1 my-0.5">
+                        <span className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce"></span>
+                        <span className="w-1 h-4 bg-blue-600 rounded-full animate-bounce [animation-delay:0.1s]"></span>
+                        <span className="w-1 h-5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1 h-3.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                        <span className="w-1 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
+                      <button
+                        onClick={handleSkipOpponentSpeech}
+                        className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                      >
+                        <span>Sang lượt nói của bạn</span>
+                      </button>
+                      <p className="text-[11px] text-slate-400">
+                        * Câu của đối phương do hệ thống tự phát, bạn chỉ thu âm câu của chính mình ({learnerName}).
+                      </p>
                     </div>
-                    <button
-                      onClick={handleSkipOpponentSpeech}
-                      className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-                    >
-                      <span>Sang lượt nói của bạn</span>
-                    </button>
-                    <p className="text-[11px] text-slate-400">
-                      * Câu của đối phương do hệ thống tự phát, bạn chỉ thu âm câu của chính mình ({learnerName}).
-                    </p>
-                  </div>
+                  )
                 ) : (
                   <>
                     {/* LƯỢT CỦA BẠN - State 1: Ready to record (Ảnh 1: Chỉ hiển thị nút ghi âm) */}

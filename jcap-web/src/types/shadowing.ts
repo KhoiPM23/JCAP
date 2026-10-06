@@ -152,3 +152,5 @@ export interface UpdateShadowingDialoguePayload {
   sentences: CreateShadowingSentencePayload[];
 }
 
+export * from './shadowingProgress';
+
