@@ -86,8 +86,60 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Translations visibility toggles
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
 
-  // 1. Fetch dialogue detail from real backend API
+  // Synchronization refs to avoid stale closure races and unwanted auto-play
+  const userRoleRef = useRef<'A' | 'B'>(userRole);
+  const turnIdRef = useRef<number>(0);
+  const turnTimeoutRef = useRef<any>(null);
+  const isSpeechCancelledRef = useRef<boolean>(false);
+  const dialogueRef = useRef<ShadowingDialogueDetail | null>(null);
+
+  // Keep refs in sync
   useEffect(() => {
+    userRoleRef.current = userRole;
+  }, [userRole]);
+
+  useEffect(() => {
+    dialogueRef.current = dialogue;
+  }, [dialogue]);
+
+  // Centralized audio & timer stopper
+  const stopAllAudio = () => {
+    turnIdRef.current += 1;
+    isSpeechCancelledRef.current = true;
+
+    if (turnTimeoutRef.current) {
+      clearTimeout(turnTimeoutRef.current);
+      turnTimeoutRef.current = null;
+    }
+
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.onended = null;
+      audioPlayerRef.current.onerror = null;
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.currentTime = 0;
+      audioPlayerRef.current = null;
+    }
+
+    if (userAudioPlayerRef.current) {
+      userAudioPlayerRef.current.onended = null;
+      userAudioPlayerRef.current.onerror = null;
+      userAudioPlayerRef.current.pause();
+      userAudioPlayerRef.current.currentTime = 0;
+      userAudioPlayerRef.current = null;
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    setIsPlayingAudio(false);
+    setPlayingUserAudioSentenceId(null);
+  };
+
+  // 1. Fetch dialogue detail from real backend API (strictly dependent on id, NOT userRole)
+  useEffect(() => {
+    let isCancelled = false;
+
     const loadDialogue = async () => {
       setIsLoading(true);
       setErrorMessage(null);
@@ -108,12 +160,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
         const res = await shadowingService.getDetail(targetId);
 
+        if (isCancelled) return;
+
         if (res.success && res.data) {
           setDialogue(res.data);
+          dialogueRef.current = res.data;
           if (res.data.jlptLevel) {
             setSelectedLevel(res.data.jlptLevel as 'N5' | 'N4' | 'N3');
           }
 
+          stopAllAudio();
           // Always start clean from Sentence 0 for true turn-by-turn progression
           setCurrentSentenceIndex(0);
           setSentenceResults(new Map());
@@ -122,25 +178,48 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           setCurrentRecognizedText('');
 
           // If first sentence belongs to opponent, trigger their turn
-          if (res.data.sentences.length > 0 && res.data.sentences[0].speakerRole !== userRole) {
-            setTimeout(() => {
-              playOpponentSentence(res.data.sentences[0]);
+          const currentRole = userRoleRef.current;
+          if (res.data.sentences.length > 0 && res.data.sentences[0].speakerRole !== currentRole) {
+            setPracticeState('opponent-speaking');
+            const activeTurnId = turnIdRef.current;
+            turnTimeoutRef.current = setTimeout(() => {
+              if (turnIdRef.current === activeTurnId) {
+                playOpponentSentence(res.data.sentences[0], activeTurnId);
+              }
             }, 600);
           } else {
+            // Lượt của người học: KHÔNG tự động phát âm thanh, chuyển sang trạng thái sẵn sàng ghi âm
             setPracticeState('ready');
           }
         } else {
           setErrorMessage(res.message || `Không tìm thấy bài học Shadowing với Id = ${targetId}.`);
         }
       } catch (err: any) {
-        setErrorMessage(err.message || 'Lỗi khi kết nối đến máy chủ.');
+        if (!isCancelled) {
+          setErrorMessage(err.message || 'Lỗi khi kết nối đến máy chủ.');
+        }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadDialogue();
-  }, [id, userRole]);
+
+    return () => {
+      isCancelled = true;
+      stopAllAudio();
+    };
+  }, [id]);
+
+  // Sync role if changed via URL query params (e.g. browser back/forward)
+  useEffect(() => {
+    const roleInUrl = (searchParams.get('role')?.toUpperCase() as 'A' | 'B') || 'A';
+    if (roleInUrl !== userRoleRef.current) {
+      handleConfirmRoleChange(roleInUrl);
+    }
+  }, [searchParams]);
 
   // Handle changing Level from dropdown in header
   const handleLevelChange = (newLevel: 'N5' | 'N4' | 'N3') => {
@@ -165,15 +244,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Stop audio on unmount
   useEffect(() => {
     return () => {
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-      }
-      if (userAudioPlayerRef.current) {
-        userAudioPlayerRef.current.pause();
-      }
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopAllAudio();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -191,8 +262,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   }, [currentSentenceIndex, practiceState]);
 
   // Web Speech Synthesis for high-fidelity native Japanese audio playback
-  const speakJapanese = (text: string, rate: number = audioPlaybackSpeed, onEnd?: () => void) => {
+  const speakJapanese = (
+    text: string,
+    rate: number = audioPlaybackSpeed,
+    onEnd?: () => void,
+    expectedTurnId?: number
+  ) => {
     if ('speechSynthesis' in window) {
+      isSpeechCancelledRef.current = false;
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
@@ -200,28 +277,51 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
       if (jpVoice) utterance.voice = jpVoice;
+
       utterance.onend = () => {
         setIsPlayingAudio(false);
-        if (onEnd) onEnd();
+        if (!isSpeechCancelledRef.current && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
+          if (onEnd) onEnd();
+        }
       };
-      utterance.onerror = () => {
+
+      utterance.onerror = (e: any) => {
         setIsPlayingAudio(false);
-        if (onEnd) onEnd();
+        // Khi bị hủy bởi cancel(), turn bị drop hoặc đang dở đổi vai, tuyệt đối không trigger callback onEnd!
+        if (e.error === 'canceled' || e.error === 'interrupted' || isSpeechCancelledRef.current) {
+          return;
+        }
+        if (expectedTurnId === undefined || expectedTurnId === turnIdRef.current) {
+          if (onEnd) onEnd();
+        }
       };
+
       setIsPlayingAudio(true);
       window.speechSynthesis.speak(utterance);
       return true;
     }
-    if (onEnd) onEnd();
+    if (onEnd && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
+      onEnd();
+    }
     return false;
   };
 
   // Play audio sample: prefers real audio URL, falls back smoothly to SpeechSynthesis
-  const playAudio = (url?: string, text?: string, speed: number = audioPlaybackSpeed, onEnd?: () => void) => {
+  const playAudio = (
+    url?: string,
+    text?: string,
+    speed: number = audioPlaybackSpeed,
+    onEnd?: () => void,
+    expectedTurnId?: number
+  ) => {
     if (audioPlayerRef.current) {
+      audioPlayerRef.current.onended = null;
+      audioPlayerRef.current.onerror = null;
       audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
     }
     if ('speechSynthesis' in window) {
+      isSpeechCancelledRef.current = true;
       window.speechSynthesis.cancel();
     }
 
@@ -233,28 +333,39 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       }
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
+
       audio.onended = () => {
         setIsPlayingAudio(false);
-        if (onEnd) onEnd();
+        if (expectedTurnId === undefined || expectedTurnId === turnIdRef.current) {
+          if (onEnd) onEnd();
+        }
       };
+
       audio.onerror = () => {
-        if (text) speakJapanese(text, speed, onEnd);
-        else {
+        if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
+        if (text) {
+          speakJapanese(text, speed, onEnd, expectedTurnId);
+        } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
         }
       };
+
       audio.play().catch(() => {
-        if (text) speakJapanese(text, speed, onEnd);
-        else {
+        if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
+        if (text) {
+          speakJapanese(text, speed, onEnd, expectedTurnId);
+        } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
         }
       });
     } else if (text) {
-      speakJapanese(text, speed, onEnd);
+      speakJapanese(text, speed, onEnd, expectedTurnId);
     } else {
-      if (onEnd) onEnd();
+      if (onEnd && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
+        onEnd();
+      }
     }
   };
 
@@ -282,9 +393,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       return;
     }
 
-    if (audioPlayerRef.current) audioPlayerRef.current.pause();
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
+    stopAllAudio();
 
     const audio = new Audio(url);
     if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
@@ -305,27 +414,48 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   };
 
   // Turn progression: Opponent speaks and auto-advances
-  const playOpponentSentence = (sentence: ShadowingSentenceItem) => {
+  const playOpponentSentence = (sentence: ShadowingSentenceItem, activeTurnId?: number) => {
+    const currentTurnId = activeTurnId ?? turnIdRef.current;
     setPracticeState('opponent-speaking');
-    playAudio(sentence.nativeAudioUrl, sentence.japaneseText, audioPlaybackSpeed, () => {
-      setTimeout(() => {
-        advanceAfterOpponent(sentence.orderIndex);
-      }, 700);
-    });
+    playAudio(
+      sentence.nativeAudioUrl,
+      sentence.japaneseText,
+      audioPlaybackSpeed,
+      () => {
+        if (turnIdRef.current !== currentTurnId) return;
+        turnTimeoutRef.current = setTimeout(() => {
+          if (turnIdRef.current !== currentTurnId) return;
+          advanceAfterOpponent(sentence.orderIndex, currentTurnId);
+        }, 700);
+      },
+      currentTurnId
+    );
   };
 
-  const advanceAfterOpponent = (currentOrderIndex: number) => {
-    if (!dialogue) return;
-    const currentIdx = dialogue.sentences.findIndex(s => s.orderIndex === currentOrderIndex);
+  const advanceAfterOpponent = (currentOrderIndex: number, expectedTurnId?: number) => {
+    if (expectedTurnId !== undefined && turnIdRef.current !== expectedTurnId) return;
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (!currentDialogue) return;
+
+    const currentIdx = currentDialogue.sentences.findIndex(s => s.orderIndex === currentOrderIndex);
     const nextIdx = currentIdx + 1;
-    if (nextIdx < dialogue.sentences.length) {
+    if (nextIdx < currentDialogue.sentences.length) {
       setCurrentSentenceIndex(nextIdx);
-      const nextSentence = dialogue.sentences[nextIdx];
-      if (nextSentence.speakerRole !== userRole) {
-        setTimeout(() => {
-          playOpponentSentence(nextSentence);
+      const nextSentence = currentDialogue.sentences[nextIdx];
+      const currentUserRole = userRoleRef.current;
+
+      if (nextSentence.speakerRole !== currentUserRole) {
+        // Đối phương nói: tự động phát giọng đối phương, KHÔNG thu âm
+        setPracticeState('opponent-speaking');
+        const activeTurnId = turnIdRef.current;
+        turnTimeoutRef.current = setTimeout(() => {
+          if (turnIdRef.current === activeTurnId) {
+            playOpponentSentence(nextSentence, activeTurnId);
+          }
         }, 500);
       } else {
+        // LƯỢT CỦA NGƯỜI HỌC: Sẵn sàng ghi âm, TUYỆT ĐỐI KHÔNG TỰ ĐỘNG PHÁT CÂU MẪU!
+        // Người học phải chủ động bấm nút "Nghe lại" thì mới phát câu mẫu
         setPracticeState('ready');
         setLiveTranscript('');
         setCurrentRecognizedText('');
@@ -336,11 +466,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   };
 
   const handleSkipOpponentSpeech = () => {
-    if (audioPlayerRef.current) audioPlayerRef.current.pause();
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    setIsPlayingAudio(false);
+    stopAllAudio();
     if (currentSentence) {
-      advanceAfterOpponent(currentSentence.orderIndex);
+      const activeTurnId = turnIdRef.current;
+      advanceAfterOpponent(currentSentence.orderIndex, activeTurnId);
     }
   };
 
@@ -582,6 +711,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Retry current sentence
   const handleRetryCurrentSentence = () => {
+    stopAllAudio();
     setPracticeState('ready');
     setLiveTranscript('');
     setCurrentRecognizedText('');
@@ -590,23 +720,30 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Finish current sentence and move to next
   const handleNextSentence = () => {
-    if (!dialogue) return;
+    stopAllAudio();
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (!currentDialogue) return;
+
     const nextIdx = currentSentenceIndex + 1;
-    if (nextIdx < dialogue.sentences.length) {
+    if (nextIdx < currentDialogue.sentences.length) {
       setCurrentSentenceIndex(nextIdx);
       setLiveTranscript('');
       setCurrentRecognizedText('');
       setMicError(null);
 
-      const nextSentence = dialogue.sentences[nextIdx];
-      if (nextSentence.speakerRole !== userRole) {
+      const nextSentence = currentDialogue.sentences[nextIdx];
+      const currentUserRole = userRoleRef.current;
+      if (nextSentence.speakerRole !== currentUserRole) {
         // Đối phương nói: tự động phát giọng đối phương, KHÔNG thu âm
         setPracticeState('opponent-speaking');
-        setTimeout(() => {
-          playOpponentSentence(nextSentence);
+        const activeTurnId = turnIdRef.current;
+        turnTimeoutRef.current = setTimeout(() => {
+          if (turnIdRef.current === activeTurnId) {
+            playOpponentSentence(nextSentence, activeTurnId);
+          }
         }, 300);
       } else {
-        // Lượt của người học: sẵn sàng ghi âm
+        // Lượt của người học: sẵn sàng ghi âm, KHÔNG tự động phát âm thanh câu mẫu
         setPracticeState('ready');
       }
     } else {
@@ -627,10 +764,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const yellowCount = resultsList.filter(r => r.evaluationTier === 'yellow').length;
     const redCount = resultsList.filter(r => r.evaluationTier === 'red').length;
 
-    if (dialogue) {
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (currentDialogue) {
       await shadowingService.completeSession({
-        dialogueId: dialogue.id,
-        learnerRole: userRole,
+        dialogueId: currentDialogue.id,
+        learnerRole: userRoleRef.current,
         overallAccuracyScore: avgScore,
         durationSeconds: sessionDurationSeconds,
         sentencesPracticed: resultsList.length,
@@ -644,7 +782,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Request AI Deep Diagnostics (15 credits)
   const handleRequestAiDiagnostics = async () => {
-    if (!dialogue) return;
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (!currentDialogue) return;
     setIsRequestingAi(true);
     setAiAnalysisError(null);
 
@@ -653,8 +792,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const avgScore = resultsList.length > 0 ? Math.round(totalScore / resultsList.length) : 85;
 
     const res = await shadowingService.requestAiAnalysis({
-      dialogueId: dialogue.id,
-      learnerRole: userRole,
+      dialogueId: currentDialogue.id,
+      learnerRole: userRoleRef.current,
       overallAccuracyScore: avgScore,
       durationSeconds: sessionDurationSeconds,
       sentenceResults: resultsList,
@@ -670,23 +809,51 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Role selection change
   const handleConfirmRoleChange = (newRole: 'A' | 'B') => {
+    // 1. Dừng ngay lập tức toàn bộ audio, speech synthesis và timers đang chạy dở
+    stopAllAudio();
+
+    // 2. Dừng micro và ghi âm nếu đang ghi âm dở
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+    }
+    stopRecordingMedia();
+
+    // 3. Cập nhật vai mới vào ref và state
     setIsRoleModalOpen(false);
+    userRoleRef.current = newRole;
     setUserRole(newRole);
     setSearchParams({ level: selectedLevel, role: newRole });
+
+    // 4. Reset toàn bộ tiến độ bài học về câu 0
     setCurrentSentenceIndex(0);
     setSentenceResults(new Map());
     setRecordedAudioUrls(new Map());
     setLiveTranscript('');
     setCurrentRecognizedText('');
+    setMicError(null);
     setIsCompletedModalOpen(false);
 
-    if (dialogue && dialogue.sentences.length > 0) {
-      if (dialogue.sentences[0].speakerRole !== newRole) {
+    // 5. Kiểm tra câu 0 theo vai mới
+    const currentDialogue = dialogueRef.current || dialogue;
+    if (currentDialogue && currentDialogue.sentences && currentDialogue.sentences.length > 0) {
+      const firstSentence = currentDialogue.sentences[0];
+      if (firstSentence.speakerRole !== newRole) {
+        // Câu 0 là vai đối phương: Tự động phát âm thanh đối phương sau 500ms
         setPracticeState('opponent-speaking');
-        setTimeout(() => {
-          playOpponentSentence(dialogue.sentences[0]);
+        const activeTurnId = turnIdRef.current;
+        turnTimeoutRef.current = setTimeout(() => {
+          if (turnIdRef.current === activeTurnId) {
+            playOpponentSentence(firstSentence, activeTurnId);
+          }
         }, 500);
       } else {
+        // Câu 0 là vai người học (vai của tôi):
+        // Chuyển sang trạng thái 'ready' (sẵn sàng ghi âm), TUYỆT ĐỐI KHÔNG TỰ ĐỘNG PHÁT CÂU MẪU!
+        // Người học phải chủ động bấm nút "Nghe lại" thì mới phát câu mẫu.
         setPracticeState('ready');
       }
     }
@@ -930,7 +1097,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <span className="text-[#556987] text-[11px] font-normal">Tân học sinh</span>
                 </div>
                 <button
-                  onClick={() => setIsRoleModalOpen(true)}
+                  onClick={() => {
+                    stopAllAudio();
+                    setIsRoleModalOpen(true);
+                  }}
                   className="flex items-center gap-1 bg-white hover:bg-[#EEF6FE] text-[#0878EE] text-[11px] font-bold px-3 py-0.5 rounded-full border border-[#BCDDFB] shadow-2xs transition-all cursor-pointer"
                 >
                   Đổi vai
@@ -1617,10 +1787,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-1">
               <button
                 onClick={() => {
-                  setIsCompletedModalOpen(false);
-                  setCurrentSentenceIndex(0);
-                  setPracticeState('ready');
-                  setSentenceResults(new Map());
+                  handleConfirmRoleChange(userRoleRef.current);
                 }}
                 className="w-full sm:w-auto text-xs font-bold text-[#556987] hover:text-[#071A44] bg-[#F4F9FE] hover:bg-[#EEF6FE] border border-[#E6EDF5] px-5 py-2.5 rounded-full transition-all cursor-pointer"
               >
@@ -1628,6 +1795,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               </button>
               <button
                 onClick={() => {
+                  stopAllAudio();
                   setIsCompletedModalOpen(false);
                   setIsRoleModalOpen(true);
                 }}
