@@ -8,6 +8,7 @@ namespace JCAP.DTOs.Shadowing
         public string JapaneseText { get; set; } = string.Empty;
         public string? RomajiText { get; set; }
         public string VietnameseTranslation { get; set; } = string.Empty;
-        public string NativeAudioUrl { get; set; } = string.Empty;
+        public string? NativeAudioUrl { get; set; }
+        public int? AudioDurationMs { get; set; }
     }
 }

@@ -1,24 +1,6 @@
 import type { ApiResponse } from '../types/auth';
 import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent } from '../types/scenarioDetails';
 
-export interface AiModelOption {
-  id: string;
-  displayName: string;
-  provider: string;
-  badge: string;
-  description: string;
-  isConfigured: boolean;
-}
-
-export interface AiStatusResponse {
-  modelId: string;
-  displayName: string;
-  provider?: string;
-  isReady: boolean;
-  mode: string;
-  availableModels?: AiModelOption[];
-}
-
 const API_BASE_URL = '/api/scenarios';
 
 export const scenarioService = {
@@ -117,7 +99,7 @@ export const scenarioService = {
     }
   },
 
-  async getAiStatus(): Promise<ApiResponse<AiStatusResponse>> {
+  async getAiStatus(): Promise<ApiResponse<{ modelId: string; displayName: string; isReady: boolean; mode: string }>> {
     const token = localStorage.getItem('jcap_token');
     try {
       const response = await fetch('/api/admin/scenarios/ai-status', {
@@ -127,28 +109,10 @@ export const scenarioService = {
           Authorization: `Bearer ${token}`,
         },
       });
-      const result = (await response.json().catch(() => null)) as ApiResponse<AiStatusResponse> | null;
+      const result = (await response.json().catch(() => null)) as ApiResponse<{ modelId: string; displayName: string; isReady: boolean; mode: string }> | null;
       return result || { success: false, message: 'Không thể tải trạng thái AI.' };
     } catch {
       return { success: false, message: 'Lỗi kết nối máy chủ khi lấy trạng thái AI.' };
-    }
-  },
-
-  async switchAiModel(modelId: string): Promise<ApiResponse<AiStatusResponse>> {
-    const token = localStorage.getItem('jcap_token');
-    try {
-      const response = await fetch('/api/admin/scenarios/ai-model', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ modelId }),
-      });
-      const result = (await response.json().catch(() => null)) as ApiResponse<AiStatusResponse> | null;
-      return result || { success: false, message: 'Không thể chuyển đổi Model AI.' };
-    } catch {
-      return { success: false, message: 'Lỗi kết nối máy chủ khi chuyển đổi Model AI.' };
     }
   },
 
@@ -211,7 +175,12 @@ export const scenarioService = {
     jlptLevel: string,
     missionCount: number = 3,
     vocabularyCount: number = 3,
-    grammarCount: number = 3
+    grammarCount: number = 3,
+    existing?: {
+      missions?: { id?: number; content: string; target?: string; intent?: string; conditions?: string[] }[];
+      vocabularies?: { id?: number; word: string; reading?: string; meaning: string }[];
+      grammars?: { id?: number; pattern: string; meaning: string; exampleSentence?: string }[];
+    }
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
     try {
@@ -228,6 +197,9 @@ export const scenarioService = {
           missionCount,
           vocabularyCount,
           grammarCount,
+          existingMissions: existing?.missions ?? [],
+          existingVocabularies: existing?.vocabularies ?? [],
+          existingGrammars: existing?.grammars ?? [],
         }),
       });
       const result = (await response.json().catch(() => null)) as ApiResponse<GeneratedLevelContent> | null;

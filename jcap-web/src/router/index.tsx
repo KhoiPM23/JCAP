@@ -30,6 +30,8 @@ import { LearnerShadowingChapterListView } from '../views/shadowing/LearnerShado
 import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShadowingDialogueListView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
+import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
+import { AdminAiConfigView } from '../views/admin/AdminAiConfigView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
@@ -252,12 +254,20 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
+        <Route path="/admin/scenarios/new" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/new-scenario" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/new scenario" element={<AdminScenarioEditorView />} />
+        <Route path="/admin/scenarios/edit/:id" element={<AdminScenarioEditorView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
-        <Route path="/admin/users" element={<AdminDashboardView />} />
-        <Route path="/admin/ai-config" element={<AdminDashboardView />} />
-        <Route path="/admin/settings" element={<AdminDashboardView />} />
+        {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
+        <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/ai-config" element={<AdminAiConfigView />} />
+        <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        
+        {/* Catch-all cho các route admin không tồn tại */}
+        <Route path="/admin/*" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">404 - Không tìm thấy trang</h2><p className="text-slate-500 mt-2">Trang quản trị này không tồn tại hoặc đã bị di dời.</p></div>} />
       </Route>
 
       {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}
@@ -299,13 +309,11 @@ export const AppRouter: React.FC = () => {
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         
-        {/* Shadowing Multi-step Flow: Level -> Textbook -> Chapter -> Dialogue */}
-        <Route path="/shadowing" element={<LearnerShadowingTextbookListView />} />
-        <Route path="/shadowing/textbooks/:textbookId" element={<LearnerShadowingChapterListView />} />
-        <Route path="/shadowing/textbooks/:textbookId/chapters/:chapterId" element={<LearnerShadowingDialogueListView />} />
+        {/* Shadowing Flow: Real database catalog created by Admin */}
+        <Route path="/shadowing" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/catalog" element={<LearnerShadowingListView />} />
         <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
-        <Route path="/shadowing/:id" element={<Navigate to="/shadowing" replace />} />
+        <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />

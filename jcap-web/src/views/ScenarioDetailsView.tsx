@@ -13,6 +13,15 @@ const levelStyles: Record<ScenarioLevelConfiguration['jlptLevel'], string> = {
   N3: 'border-purple-200 bg-purple-50 text-purple-700',
 };
 
+// Thứ tự cấp độ JLPT từ thấp đến cao (cơ bản -> nâng cao)
+const jlptRank: Record<string, number> = {
+  N5: 1,
+  N4: 2,
+  N3: 3,
+  N2: 4,
+  N1: 5,
+};
+
 export const ScenarioDetailsView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +40,10 @@ export const ScenarioDetailsView: React.FC = () => {
   const [activeLevel, setActiveLevel] = useState<ScenarioLevelConfiguration['jlptLevel']>('N5');
   const [isStarting, setIsStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    targetLevel: string;
+    isSwitchingLevel: boolean;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -48,17 +61,24 @@ export const ScenarioDetailsView: React.FC = () => {
 
       if (scenarioRes.success && scenarioRes.data) {
         setScenario(scenarioRes.data);
-        const firstLevel = scenarioRes.data.levelConfigurations[0]?.jlptLevel;
-        if (firstLevel) setActiveLevel(firstLevel);
+        const sorted = [...scenarioRes.data.levelConfigurations].sort((a, b) => {
+          const rankA = jlptRank[a.jlptLevel] ?? 99;
+          const rankB = jlptRank[b.jlptLevel] ?? 99;
+          return rankA - rankB;
+        });
+        const lowestLevel = sorted[0]?.jlptLevel;
+        if (lowestLevel) setActiveLevel(lowestLevel);
       } else {
         setError(scenarioRes.message || 'Không thể tải dữ liệu kịch bản.');
       }
 
       if (sessionRes.success && sessionRes.data) {
         setActiveSession(sessionRes.data);
-        // Nếu đang có session dở dang, có thể tự động chọn tab level đó cho tiện
-        if (sessionRes.data.hasActiveSession && sessionRes.data.level) {
-          const matchLevel = sessionRes.data.level as ScenarioLevelConfiguration['jlptLevel'];
+        const hasActive = sessionRes.data.hasActiveSession ?? Boolean(sessionRes.data.sessionId || sessionRes.data.activeSessionId);
+        const sessionLevel = sessionRes.data.level || sessionRes.data.jlptLevel;
+        // Nếu đang có session dở dang, tự động chọn tab level đó cho tiện
+        if (hasActive && sessionLevel) {
+          const matchLevel = sessionLevel as ScenarioLevelConfiguration['jlptLevel'];
           if (['N5', 'N4', 'N3'].includes(matchLevel)) {
             setActiveLevel(matchLevel);
           }
@@ -75,37 +95,71 @@ export const ScenarioDetailsView: React.FC = () => {
     };
   }, [scenarioId]);
 
+  const hasActiveSession = Boolean(
+    activeSession &&
+      (activeSession.hasActiveSession ?? Boolean(activeSession.sessionId || activeSession.activeSessionId))
+  );
+  const activeSessionId = activeSession?.activeSessionId || activeSession?.sessionId;
+  const activeSessionLevel = activeSession?.level || activeSession?.jlptLevel;
+
+  // Danh sách cấp độ được sắp xếp tăng dần theo độ khó (N5 -> N4 -> N3 -> N2 -> N1)
+  const sortedLevelConfigurations = useMemo(() => {
+    if (!scenario?.levelConfigurations) return [];
+    return [...scenario.levelConfigurations].sort((a, b) => {
+      const rankA = jlptRank[a.jlptLevel] ?? 99;
+      const rankB = jlptRank[b.jlptLevel] ?? 99;
+      return rankA - rankB;
+    });
+  }, [scenario?.levelConfigurations]);
+
   const selectedLevel = useMemo(
     () =>
-      scenario?.levelConfigurations.find((level) => level.jlptLevel === activeLevel) ??
-      scenario?.levelConfigurations[0],
-    [activeLevel, scenario]
+      sortedLevelConfigurations.find((level) => level.jlptLevel === activeLevel) ??
+      sortedLevelConfigurations[0],
+    [activeLevel, sortedLevelConfigurations]
   );
 
-  const handleStartPractice = async (forceRestart: boolean = false) => {
-    if (!selectedLevel) return;
+  const isSelectedLevelActive = Boolean(
+    hasActiveSession && selectedLevel && selectedLevel.jlptLevel === activeSessionLevel
+  );
 
-    if (forceRestart) {
-      const confirmRestart = window.confirm(
-        isAdmin
-          ? 'Bạn có chắc chắn muốn bỏ phiên kiểm thử đang dang dở và bắt đầu một phiên kiểm thử mới không?'
-          : 'Bạn có chắc chắn muốn bỏ phiên đang dang dở và bắt đầu một phiên luyện tập hoàn toàn mới không? (Credit phiên mới sẽ được tính theo quy định)'
-      );
-      if (!confirmRestart) return;
-    }
+  const targetLevelConfig = useMemo(() => {
+    if (!confirmModal?.targetLevel) return null;
+    return scenario?.levelConfigurations.find(
+      (level) => level.jlptLevel === confirmModal.targetLevel
+    );
+  }, [confirmModal?.targetLevel, scenario?.levelConfigurations]);
 
+  const executeStartSession = async (levelToStart: string, forceRestart: boolean) => {
     setIsStarting(true);
     setStartError(null);
 
-    const result = await roleplayService.startSession(scenarioId, selectedLevel.jlptLevel, forceRestart);
+    const result = await roleplayService.startSession(scenarioId, levelToStart, forceRestart);
 
     if (result.success && result.data) {
+      setConfirmModal(null);
       const targetSessionId = result.data.sessionId || result.data.id;
       navigate(`/scenarios/practice/${targetSessionId}`);
     } else {
+      setConfirmModal(null);
       setStartError(result.message || 'Không thể bắt đầu phiên luyện tập. Vui lòng thử lại.');
       setIsStarting(false);
     }
+  };
+
+  const handleStartPractice = async (forceRestart: boolean = false, targetLevel?: string) => {
+    const levelToStart = targetLevel || selectedLevel?.jlptLevel;
+    if (!levelToStart) return;
+
+    if (forceRestart) {
+      setConfirmModal({
+        targetLevel: levelToStart,
+        isSwitchingLevel: Boolean(activeSessionLevel && activeSessionLevel !== levelToStart),
+      });
+      return;
+    }
+
+    await executeStartSession(levelToStart, false);
   };
 
   if (isLoading) {
@@ -176,8 +230,7 @@ export const ScenarioDetailsView: React.FC = () => {
           <section className="rounded-2xl border border-[#E6EDF5] bg-white p-6 shadow-sm md:p-8">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#71809A]">Choose your level</p>
-                <h2 className="mt-1 text-xl font-bold text-[#071A44]">Nội dung luyện tập</h2>
+                <h2 className="text-xl font-bold text-[#071A44]">Lựa chọn cấp độ luyện tập</h2>
               </div>
               <span className={`rounded-full border px-3 py-1 text-xs font-bold ${levelStyles[selectedLevel.jlptLevel]}`}>
                 JLPT {selectedLevel.jlptLevel}
@@ -185,7 +238,7 @@ export const ScenarioDetailsView: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-2 border-b border-[#E6EDF5] pb-5" role="tablist" aria-label="Chọn cấp độ JLPT">
-              {scenario.levelConfigurations.map((level) => (
+              {sortedLevelConfigurations.map((level) => (
                 <button
                   key={level.id}
                   type="button"
@@ -222,8 +275,7 @@ export const ScenarioDetailsView: React.FC = () => {
           <section className="rounded-2xl border border-[#E6EDF5] bg-white p-6 shadow-sm md:p-8">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#71809A]">Conversation missions</p>
-                <h2 className="mt-1 text-xl font-bold text-[#071A44]">Nhiệm vụ cần hoàn thành</h2>
+                <h2 className="text-xl font-bold text-[#071A44]">Nhiệm vụ cần hoàn thành</h2>
               </div>
               <span className="rounded-full bg-[#EAF4FF] px-3 py-1 text-xs font-bold text-[#0878EE]">
                 {selectedLevel.missions.length} nhiệm vụ
@@ -232,13 +284,12 @@ export const ScenarioDetailsView: React.FC = () => {
 
             <ol className="space-y-3">
               {selectedLevel.missions.map((mission) => (
-                <li key={mission.id} className="flex gap-3 rounded-xl border border-[#E6EDF5] p-4 transition hover:border-[#B9D9FF]">
+                <li key={mission.id} className="flex items-center gap-3 rounded-xl border border-[#E6EDF5] p-4 transition hover:border-[#B9D9FF]">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#EAF4FF] text-xs font-bold text-[#0878EE]">
                     {mission.order}
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[#071A44]">{mission.content}</p>
-                    <p className="mt-1 text-xs leading-5 text-[#71809A]">Mục tiêu hoàn thành: {mission.completionCriteria.target}</p>
                   </div>
                 </li>
               ))}
@@ -249,50 +300,52 @@ export const ScenarioDetailsView: React.FC = () => {
         {/* Right Sidebar: Resume Box & Start Actions & Cheatsheet */}
         <aside className="space-y-6">
           {/* Resume Box: Hiển thị nếu đang có phiên dang dở */}
-          {activeSession?.hasActiveSession && activeSession.activeSessionId && (
-            <section className="rounded-2xl border-2 border-[#0878EE] bg-[#F4F9FE] p-6 shadow-sm">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0878EE] text-base text-white">
-                  ⏱️
-                </span>
-                <div>
-                  <h3 className="text-sm font-bold text-[#071A44]">Phiên luyện tập đang dang dở</h3>
-                  <p className="text-xs text-[#71809A]">Bạn có thể tiếp tục tiến trình trước đó</p>
-                </div>
+          {hasActiveSession && activeSessionId && (
+            <section className="rounded-2xl border border-[#0878EE] bg-white p-6 shadow-sm">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">
+                  Phiên luyện tập dang dở
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-[#071A44]">
+                  JLPT {activeSessionLevel}
+                </h2>
               </div>
+              <p className="mt-3 text-sm leading-6 text-[#71809A]">
+                Bạn có thể tiếp tục tiến trình trước đó mà không mất dữ liệu.
+              </p>
 
-              <div className="mt-4 rounded-xl bg-white p-3.5 space-y-2 border border-[#B9D9FF]/50 text-xs">
-                <div className="flex justify-between">
+              <div className="mt-4 rounded-xl bg-[#F8FAFC] p-3.5 space-y-2 border border-[#E6EDF5] text-xs">
+                <div className="flex justify-between items-center">
                   <span className="text-[#71809A]">Cấp độ:</span>
-                  <span className="font-bold text-[#0878EE]">JLPT {activeSession.level}</span>
+                  <span className="font-bold text-[#0878EE]">JLPT {activeSessionLevel}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-[#71809A]">Tiến độ nhiệm vụ:</span>
                   <span className="font-bold text-emerald-600">
-                    {activeSession.completedMissionsCount ?? 0} / {activeSession.totalMissionsCount ?? 0}
+                    {activeSession?.completedMissionsCount ?? 0} / {activeSession?.totalMissionsCount ?? 0} hoàn thành
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-[#71809A]">Số lượt thoại:</span>
-                  <span className="font-medium text-[#071A44]">{activeSession.messageCount ?? 0} lượt</span>
+                  <span className="font-medium text-[#071A44]">{activeSession?.messageCount ?? 0} lượt</span>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div className="mt-6 space-y-2">
                 <Button
                   type="button"
-                  className="w-full bg-[#0878EE] hover:bg-[#0768D0] text-white font-bold py-2.5 rounded-xl shadow transition"
-                  onClick={() => navigate(`/scenarios/practice/${activeSession.activeSessionId}`)}
+                  className="w-full"
+                  onClick={() => navigate(`/scenarios/practice/${activeSessionId}`)}
                 >
                   Tiếp tục luyện tập →
                 </Button>
                 <button
                   type="button"
                   disabled={isStarting}
-                  onClick={() => handleStartPractice(true)}
+                  onClick={() => handleStartPractice(true, activeSessionLevel)}
                   className="w-full text-center text-xs font-semibold text-[#71809A] hover:text-red-600 py-1.5 transition"
                 >
-                  Hoặc bắt đầu phiên mới (bỏ dở phiên cũ)
+                  Hoặc làm lại từ đầu (JLPT {activeSessionLevel})
                 </button>
               </div>
             </section>
@@ -302,7 +355,7 @@ export const ScenarioDetailsView: React.FC = () => {
           <section className="rounded-2xl border border-[#0878EE] bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#71809A]">Selected level</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#71809A]">Cấp độ lựa chọn</p>
                 <h2 className="mt-1 text-xl font-bold text-[#071A44]">JLPT {selectedLevel.jlptLevel}</h2>
               </div>
               <span className={`rounded-full border px-3 py-1 text-xs font-bold ${levelStyles[selectedLevel.jlptLevel]}`}>
@@ -330,15 +383,25 @@ export const ScenarioDetailsView: React.FC = () => {
               type="button"
               className="mt-6 w-full"
               disabled={isStarting}
-              onClick={() => handleStartPractice(false)}
+              onClick={() => {
+                if (isSelectedLevelActive) {
+                  navigate(`/scenarios/practice/${activeSessionId}`);
+                } else if (hasActiveSession) {
+                  handleStartPractice(true, selectedLevel.jlptLevel);
+                } else {
+                  handleStartPractice(false, selectedLevel.jlptLevel);
+                }
+              }}
             >
               {isStarting ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
                   Đang khởi tạo phòng hội thoại...
                 </span>
-              ) : activeSession?.hasActiveSession ? (
-                'Bắt đầu phiên mới với cấp độ này'
+              ) : isSelectedLevelActive ? (
+                `Tiếp tục luyện tập (JLPT ${selectedLevel.jlptLevel}) →`
+              ) : hasActiveSession ? (
+                `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
               ) : (
                 'Bắt đầu hội thoại'
               )}
@@ -396,6 +459,131 @@ export const ScenarioDetailsView: React.FC = () => {
           </section>
         </aside>
       </div>
+
+      {/* Modal xác nhận bắt đầu lại / chuyển đổi cấp độ */}
+      {confirmModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in"
+          onClick={() => !isStarting && setConfirmModal(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${
+                  confirmModal.isSwitchingLevel
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-blue-100 text-[#0878EE]'
+                }`}
+              >
+                {confirmModal.isSwitchingLevel ? '⚠️' : '🔄'}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#071A44]">
+                  {confirmModal.isSwitchingLevel
+                    ? 'Chuyển sang cấp độ mới?'
+                    : isAdmin
+                    ? 'Làm lại từ đầu phiên kiểm thử?'
+                    : 'Làm lại từ đầu phiên luyện tập?'}
+                </h3>
+                <p className="text-xs text-[#71809A]">
+                  Kịch bản: {scenario?.title}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-[#F8FAFC] p-3 text-xs space-y-1.5 border border-[#E6EDF5]">
+              {confirmModal.isSwitchingLevel ? (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Phiên đang dở dang:</span>
+                    <span className="font-semibold text-amber-700">
+                      JLPT {activeSessionLevel} ({activeSession?.completedMissionsCount ?? 0}/{activeSession?.totalMissionsCount ?? 0} nhiệm vụ)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Cấp độ mới sẽ bắt đầu:</span>
+                    <span className="font-bold text-[#0878EE]">JLPT {confirmModal.targetLevel}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Chi phí credit:</span>
+                    <span className="font-medium text-[#071A44]">
+                      {isAdmin
+                        ? '🛡️ Miễn phí (Admin)'
+                        : `🪙 ${targetLevelConfig?.creditCost ?? 0} credits`}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Cấp độ:</span>
+                    <span className="font-bold text-[#0878EE]">JLPT {confirmModal.targetLevel}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Tiến độ sẽ làm lại:</span>
+                    <span className="font-bold text-amber-700">
+                      {activeSession?.completedMissionsCount ?? 0} / {activeSession?.totalMissionsCount ?? 0} nhiệm vụ đã xong
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#71809A]">Số lượt hội thoại:</span>
+                    <span className="font-medium text-[#071A44]">
+                      {activeSession?.messageCount ?? 0} lượt
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <p className="text-xs text-[#71809A] leading-relaxed">
+              {confirmModal.isSwitchingLevel ? (
+                <>
+                  Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu phiên mới ở cấp độ <strong>JLPT {confirmModal.targetLevel}</strong>, phiên dở dang cũ sẽ bị bỏ dở{!isAdmin && ' và credit phiên mới sẽ được tính theo quy định'}.
+                </>
+              ) : (
+                <>
+                  Làm lại từ đầu sẽ <strong>hủy toàn bộ tiến trình hội thoại</strong> và nhiệm vụ của phiên dở dang hiện tại. Bạn có chắc chắn muốn tiếp tục không?
+                </>
+              )}
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                disabled={isStarting}
+                className="rounded-xl border border-[#E6EDF5] bg-white px-4 py-2 text-xs font-semibold text-[#71809A] hover:bg-[#F8FAFC] transition disabled:opacity-50"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={() => executeStartSession(confirmModal.targetLevel, true)}
+                disabled={isStarting}
+                className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 ${
+                  confirmModal.isSwitchingLevel
+                    ? 'bg-[#0878EE] hover:bg-[#0768D0]'
+                    : 'bg-amber-600 hover:bg-amber-700'
+                }`}
+              >
+                {isStarting ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                    Đang khởi tạo...
+                  </span>
+                ) : confirmModal.isSwitchingLevel ? (
+                  `Bắt đầu JLPT ${confirmModal.targetLevel}`
+                ) : (
+                  'Xác nhận làm lại'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

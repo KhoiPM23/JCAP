@@ -39,6 +39,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)
+            .Include(s => s.Messages)
             .Where(s => s.UserId == userId && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
@@ -58,6 +59,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             AiPersona = activeSession.ScenarioLevelConfiguration.AiPersona,
             CompletedMissionsCount = activeSession.SessionMissions.Count(sm => sm.IsCompleted),
             TotalMissionsCount = activeSession.SessionMissions.Count,
+            MessageCount = activeSession.Messages.Count,
             CreatedAt = activeSession.CreatedAt,
             UpdatedAt = activeSession.UpdatedAt
         };
@@ -91,16 +93,16 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         if (existingActiveSession != null)
         {
-            if (!request.ForceRestart)
+            if (!request.ForceRestart && existingActiveSession.ScenarioLevelConfiguration?.JLPTLevel == jlptLevel)
             {
-                // Người dùng muốn tiếp tục phiên dở dang -> Trả về phiên hiện tại (không trừ credit)
+                // Người dùng muốn tiếp tục phiên dở dang của cùng level -> Trả về phiên hiện tại (không trừ credit)
                 return await GetSessionDetailsAsync(userId, existingActiveSession.Id, cancellationToken);
             }
 
-            // Người dùng chọn bắt đầu lại mới -> Đánh dấu phiên cũ là Abandoned (không hoàn credit cũ)
+            // Người dùng chọn bắt đầu lại mới hoặc đổi sang cấp độ khác -> Đánh dấu phiên cũ là Abandoned (không hoàn credit cũ)
             existingActiveSession.Status = "Abandoned";
             existingActiveSession.UpdatedAt = DateTime.UtcNow;
-            _logger.LogInformation("Người dùng {UserId} hủy phiên dở dang {SessionId} để tạo phiên mới.", userId, existingActiveSession.Id);
+            _logger.LogInformation("Người dùng {UserId} hủy phiên dở dang {SessionId} để tạo phiên mới cấp độ {Level}.", userId, existingActiveSession.Id, jlptLevel);
         }
 
         // Kiểm tra số dư Credit (Miễn phí cho Admin khi trải nghiệm / kiểm thử hệ thống)

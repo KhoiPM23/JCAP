@@ -110,7 +110,7 @@ export const DevShowcaseView: React.FC = () => {
               activeTab === 'profile' ? 'bg-[#0878EE] text-white shadow-sm' : 'text-[#71809A] hover:text-[#071A44]'
             }`}
           >
-            4. UC07 & UC08 Profile (View & Edit)
+            4. Hồ sơ học viên
           </button>
         </div>
       </div>
@@ -490,7 +490,7 @@ export const DevShowcaseView: React.FC = () => {
             <div className="bg-white rounded-xl border border-[#E6EDF5] p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-[#071A44]">
-                  UC07 & UC08 — Hồ sơ học viên (Learner Profile)
+                  Hồ sơ học viên
                 </h2>
                 <p className="text-xs text-[#71809A] mt-1">
                   Triển khai độc lập với backend, tái sử dụng toàn bộ Shared Layout Foundation (Button, Input, Toast, Header, Navbar, MainLayout).
@@ -509,7 +509,7 @@ export const DevShowcaseView: React.FC = () => {
                         : 'text-[#71809A] hover:text-[#071A44]'
                     }`}
                   >
-                    Xem hồ sơ (UC07)
+                    Xem hồ sơ
                   </button>
                   <button
                     type="button"
@@ -520,7 +520,7 @@ export const DevShowcaseView: React.FC = () => {
                         : 'text-[#71809A] hover:text-[#071A44]'
                     }`}
                   >
-                    Chỉnh sửa hồ sơ (UC08)
+                    Chỉnh sửa hồ sơ
                   </button>
                 </div>
 

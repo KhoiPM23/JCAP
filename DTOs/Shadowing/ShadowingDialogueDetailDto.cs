@@ -15,6 +15,8 @@ namespace JCAP.DTOs.Shadowing
         public string? SourceDescription { get; set; }
         public string SpeakerRoleA_Name { get; set; } = string.Empty;
         public string SpeakerRoleB_Name { get; set; } = string.Empty;
+        public List<string> SpeakerRoles { get; set; } = new List<string>();
+        public string? SpeakerRolesJson { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<ShadowingSentenceDto> Sentences { get; set; } = new List<ShadowingSentenceDto>();
@@ -28,6 +30,7 @@ namespace JCAP.DTOs.Shadowing
         public string Word { get; set; } = string.Empty;
         public string? Reading { get; set; }
         public string Meaning { get; set; } = string.Empty;
+        public string? JLPTLevel { get; set; }
     }
 
     public class ShadowingGrammarDto
@@ -36,6 +39,7 @@ namespace JCAP.DTOs.Shadowing
         public string Pattern { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? ExampleSentence { get; set; }
+        public string? JLPTLevel { get; set; }
     }
 }
 

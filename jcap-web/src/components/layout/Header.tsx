@@ -3,11 +3,133 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { creditService } from '../../services/creditService';
 import type { User } from '../../types/auth';
+import {
+  getActiveAiModelInfo,
+  loadAllAiModels,
+  ACTIVE_AI_MODEL_STORAGE_KEY,
+  type AiModelConfigItem,
+} from '../../views/admin/AdminAiConfigView';
 
 export interface HeaderProps {
   user?: User | null;
   onLogout?: () => void;
 }
+
+interface AiApiCallLog {
+  id: string;
+  actionName: string;
+  endpoint: string;
+  modelName: string;
+  modelId: string;
+  provider: string;
+  status: 'pending' | 'success' | 'error';
+  httpStatus?: number;
+  latencyMs?: number;
+  timestamp: string;
+}
+
+const AI_CALL_LOGS_STORAGE_KEY = 'jcap_ai_api_call_logs_v1';
+
+const loadSavedAiLogs = (): AiApiCallLog[] => {
+  try {
+    const raw = sessionStorage.getItem(AI_CALL_LOGS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {}
+  return [];
+};
+
+const saveAiLogs = (logs: AiApiCallLog[]) => {
+  try {
+    sessionStorage.setItem(AI_CALL_LOGS_STORAGE_KEY, JSON.stringify(logs.slice(0, 8)));
+  } catch {}
+};
+
+// Tự động nhận diện các đường dẫn API sử dụng AI trong hệ thống JCAP
+const classifyAiEndpoint = (url: string, method: string): string | null => {
+  const lower = url.toLowerCase();
+  if (lower.includes('/api/admin/scenarios/generate-level-content')) {
+    return 'AI Gợi ý Nội dung Kịch bản';
+  }
+  if (lower.includes('/api/roleplay/sessions') && lower.endsWith('/messages')) {
+    return 'AI Phản hồi Hội thoại & Chấm Mission';
+  }
+  if (lower.includes('/api/roleplay/sessions') && lower.endsWith('/hint')) {
+    return 'AI Sinh Gợi ý (On-demand Hint)';
+  }
+  if (lower.includes('/api/roleplay/sessions') && method.toUpperCase() === 'POST' && !lower.includes('/complete')) {
+    return 'AI Khởi tạo Câu chào Mở đầu';
+  }
+  if (lower.includes('/api/admin/scenarios/ai-status')) {
+    return 'Kiểm tra Trạng thái Kết nối AI';
+  }
+  return null;
+};
+
+// Cài đặt trình lắng nghe fetch toàn cục 1 lần duy nhất để theo dõi thời gian thực khi AI đang call API
+let isFetchMonitorInstalled = false;
+const installGlobalAiFetchMonitor = () => {
+  if (isFetchMonitorInstalled || typeof window === 'undefined') return;
+  isFetchMonitorInstalled = true;
+
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const urlStr = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const method = init?.method || (typeof input === 'object' && 'method' in input ? input.method : 'GET') || 'GET';
+    const aiAction = classifyAiEndpoint(urlStr, method);
+
+    if (!aiAction) {
+      return originalFetch(input, init);
+    }
+
+    const activeModel = getActiveAiModelInfo();
+    const callId = `call-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const nowTime = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+    const startTime = performance.now();
+
+    const pendingEntry: AiApiCallLog = {
+      id: callId,
+      actionName: aiAction,
+      endpoint: `${method.toUpperCase()} ${urlStr.replace(window.location.origin, '')}`,
+      modelName: activeModel.displayName,
+      modelId: activeModel.modelId,
+      provider: activeModel.provider,
+      status: 'pending',
+      timestamp: nowTime,
+    };
+
+    window.dispatchEvent(new CustomEvent('jcap_ai_call_update', { detail: { type: 'start', entry: pendingEntry } }));
+
+    try {
+      const response = await originalFetch(input, init);
+      const latency = Math.max(1, Math.round(performance.now() - startTime));
+      const doneEntry: AiApiCallLog = {
+        ...pendingEntry,
+        status: response.ok ? 'success' : 'error',
+        httpStatus: response.status,
+        latencyMs: latency,
+      };
+      const existing = loadSavedAiLogs().filter((l) => l.id !== callId);
+      saveAiLogs([doneEntry, ...existing]);
+      window.dispatchEvent(new CustomEvent('jcap_ai_call_update', { detail: { type: 'end', entry: doneEntry } }));
+      return response;
+    } catch (err) {
+      const latency = Math.max(1, Math.round(performance.now() - startTime));
+      const errEntry: AiApiCallLog = {
+        ...pendingEntry,
+        status: 'error',
+        httpStatus: 0,
+        latencyMs: latency,
+      };
+      const existing = loadSavedAiLogs().filter((l) => l.id !== callId);
+      saveAiLogs([errEntry, ...existing]);
+      window.dispatchEvent(new CustomEvent('jcap_ai_call_update', { detail: { type: 'end', entry: errEntry } }));
+      throw err;
+    }
+  };
+};
 
 export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const { user: authUser, logout } = useAuth();
@@ -21,6 +143,88 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const currentQuery = searchParams.get('query') || searchParams.get('search') || '';
   const [searchTerm, setSearchTerm] = React.useState(currentQuery);
 
+  // State cho nút kiểm tra Model AI & Trạng thái Call API cạnh logo JCAP
+  const [activeAiModel, setActiveAiModel] = React.useState<AiModelConfigItem>(() => getActiveAiModelInfo());
+  const [availableAiModels, setAvailableAiModels] = React.useState<AiModelConfigItem[]>(() =>
+    loadAllAiModels().filter((m) => m.isActive)
+  );
+  const [isAiMonitorOpen, setIsAiMonitorOpen] = React.useState<boolean>(false);
+  const [activeCallEntry, setActiveCallEntry] = React.useState<AiApiCallLog | null>(null);
+  const [aiCallLogs, setAiCallLogs] = React.useState<AiApiCallLog[]>(() => loadSavedAiLogs());
+  const [isTestingPing, setIsTestingPing] = React.useState<boolean>(false);
+  const aiMonitorRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    installGlobalAiFetchMonitor();
+
+    const syncAiModel = () => {
+      setActiveAiModel(getActiveAiModelInfo());
+      setAvailableAiModels(loadAllAiModels().filter((m) => m.isActive));
+    };
+
+    const handleCallUpdate = (e: Event) => {
+      const custom = e as CustomEvent<{ type: 'start' | 'end'; entry: AiApiCallLog }>;
+      if (!custom.detail) return;
+      if (custom.detail.type === 'start') {
+        setActiveCallEntry(custom.detail.entry);
+      } else {
+        setActiveCallEntry(null);
+        setAiCallLogs(loadSavedAiLogs());
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (aiMonitorRef.current && !aiMonitorRef.current.contains(e.target as Node)) {
+        setIsAiMonitorOpen(false);
+      }
+    };
+
+    window.addEventListener('jcap_ai_model_changed', syncAiModel);
+    window.addEventListener('storage', syncAiModel);
+    window.addEventListener('jcap_ai_call_update', handleCallUpdate);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('jcap_ai_model_changed', syncAiModel);
+      window.removeEventListener('storage', syncAiModel);
+      window.removeEventListener('jcap_ai_call_update', handleCallUpdate);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleQuickSwitchModel = (model: AiModelConfigItem) => {
+    localStorage.setItem(
+      ACTIVE_AI_MODEL_STORAGE_KEY,
+      JSON.stringify({
+        id: model.id,
+        modelId: model.modelId,
+        displayName: model.displayName,
+        provider: model.provider,
+      })
+    );
+    setActiveAiModel(model);
+    window.dispatchEvent(new Event('jcap_ai_model_changed'));
+  };
+
+  const handleTestAiApiCall = async () => {
+    if (isTestingPing) return;
+    setIsTestingPing(true);
+    const token = localStorage.getItem('jcap_token');
+    try {
+      await fetch('/api/admin/scenarios/ai-status', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+    } catch {
+      // Nếu lỗi mạng vẫn được fetch monitor ghi nhận
+    } finally {
+      setIsTestingPing(false);
+    }
+  };
+
   React.useEffect(() => {
     setSearchTerm(currentQuery);
   }, [currentQuery]);
@@ -28,9 +232,10 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     if (location.pathname === '/scenarios' || location.pathname === '/') {
+      const trimmed = value.trim();
       const newParams = new URLSearchParams(searchParams);
-      if (value.trim()) {
-        newParams.set('query', value);
+      if (trimmed.length > 0) {
+        newParams.set('query', trimmed);
       } else {
         newParams.delete('query');
         newParams.delete('search');
@@ -42,16 +247,23 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchTerm.trim();
-    if (location.pathname !== '/scenarios') {
-      navigate(trimmed ? `/scenarios?query=${encodeURIComponent(trimmed)}` : '/scenarios');
-    } else {
-      const newParams = new URLSearchParams(searchParams);
-      if (trimmed) {
-        newParams.set('query', trimmed);
+    if (trimmed.length === 0) {
+      // clear search
+      if (location.pathname !== '/scenarios') {
+        navigate('/scenarios');
       } else {
+        const newParams = new URLSearchParams(searchParams);
         newParams.delete('query');
         newParams.delete('search');
+        setSearchParams(newParams, { replace: true });
       }
+      return;
+    }
+    if (location.pathname !== '/scenarios') {
+      navigate(`/scenarios?query=${encodeURIComponent(trimmed)}`);
+    } else {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('query', trimmed);
       setSearchParams(newParams, { replace: true });
     }
   };
@@ -141,17 +353,216 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   }, [currentUser?.creditBalance, authUser?.creditBalance]);
 
   const user = propUser !== undefined ? propUser : (currentUser || authUser);
+  const isAdminArea = user?.role === 'Admin' && !location.pathname.startsWith('/scenarios');
 
   return (
     <header className="h-[64px] bg-white border-b border-[#E6EDF5] flex items-center justify-between px-8 sticky top-0 z-40">
-      {/* Left: Logo/Brand */}
-      <div className="flex items-center gap-4">
+      {/* Left: Logo/Brand + Nút kiểm tra Model AI & Call API */}
+      <div className="flex items-center gap-3 relative" ref={aiMonitorRef}>
         <Link to={user?.role === 'Admin' ? "/admin/dashboard" : "/"} className="text-2xl font-bold text-[#0878EE] tracking-tight">
           JCAP
         </Link>
+
+        {/* Nút kiểm tra Model AI đang hoạt động & trạng thái Call API */}
+        <button
+          type="button"
+          onClick={() => setIsAiMonitorOpen((prev) => !prev)}
+          title="Nhấn để kiểm tra Model AI nào đang hoạt động và theo dõi trạng thái Call API"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-2xs ${
+            activeCallEntry
+              ? 'bg-blue-50 border-[#0878EE] text-[#0878EE] ring-2 ring-[#0878EE]/20'
+              : 'bg-emerald-50/80 hover:bg-emerald-100/80 border-emerald-200 text-emerald-800'
+          }`}
+        >
+          {activeCallEntry ? (
+            <>
+              <span className="w-2.5 h-2.5 rounded-full border-2 border-[#0878EE] border-t-transparent animate-spin" />
+              <span className="truncate max-w-[180px] sm:max-w-[240px]">
+                ⚡ Đang Call API: {activeAiModel.displayName}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>🤖</span>
+              <span className="truncate max-w-[140px] sm:max-w-[200px]">{activeAiModel.displayName}</span>
+              <span className="text-[10px] opacity-70">▾</span>
+            </>
+          )}
+        </button>
+
+        {/* Popover chi tiết Model AI & Nhật ký Call API */}
+        {isAiMonitorOpen && (
+          <div className="absolute left-0 top-12 w-[360px] sm:w-[420px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 space-y-3.5 text-left">
+            {/* Header Popover */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-wider text-[#071A44] flex items-center gap-1.5">
+                  <span>📡</span> Trạng thái AI Engine & Call API
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Theo dõi thời gian thực model nào đang xử lý request AI
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAiMonitorOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-xs font-bold p-1 rounded-lg hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Thông tin Model đang active */}
+            <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  Model Đang Hoạt Động Chính
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-blue-200 border border-white/15">
+                  {activeAiModel.provider}
+                </span>
+              </div>
+
+              <div className="text-sm font-black flex items-center justify-between gap-2">
+                <span>{activeAiModel.displayName}</span>
+                <span className="text-[11px] font-mono font-normal text-slate-300 bg-black/25 px-2 py-0.5 rounded">
+                  {activeAiModel.modelId}
+                </span>
+              </div>
+
+              <div className="text-[11px] text-slate-300 font-mono truncate" title={activeAiModel.endpoint}>
+                Endpoint: {activeAiModel.endpoint}
+              </div>
+
+              <div className="pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px]">
+                <span>
+                  Trạng thái:{' '}
+                  {activeCallEntry ? (
+                    <strong className="text-amber-300">⚡ Đang gọi ({activeCallEntry.actionName})</strong>
+                  ) : (
+                    <strong className="text-emerald-300">🟢 Sẵn sàng (Idle)</strong>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  disabled={isTestingPing}
+                  onClick={handleTestAiApiCall}
+                  className="px-2.5 py-1 rounded-lg bg-[#0878EE] hover:bg-blue-600 text-white font-bold text-[11px] transition cursor-pointer disabled:opacity-50"
+                >
+                  {isTestingPing ? 'Đang ping...' : '🔄 Test Call API'}
+                </button>
+              </div>
+            </div>
+
+            {/* Đổi nhanh Model AI */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-bold text-slate-600 flex items-center justify-between">
+                <span>Chuyển nhanh Model đang dùng:</span>
+                <span className="text-[10px] text-slate-400">{availableAiModels.length} model khả dụng</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {availableAiModels.map((m) => {
+                  const isSelected = m.id === activeAiModel.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => handleQuickSwitchModel(m)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer flex items-center gap-1 ${
+                        isSelected
+                          ? 'bg-[#0878EE] text-white border-[#0878EE]'
+                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      <span>{isSelected ? '✓' : '○'}</span>
+                      <span>{m.displayName}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Nhật ký Call API gần nhất */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-600">Nhật ký Call API AI gần đây:</span>
+                {aiCallLogs.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      saveAiLogs([]);
+                      setAiCallLogs([]);
+                    }}
+                    className="text-[10px] text-slate-400 hover:text-red-600 font-semibold cursor-pointer"
+                  >
+                    Xóa log
+                  </button>
+                )}
+              </div>
+
+              {aiCallLogs.length === 0 ? (
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center text-[11px] text-slate-400">
+                  Chưa có lượt gọi API AI nào trong phiên này. Hãy bấm <strong>"🔄 Test Call API"</strong> hoặc sử dụng tính năng AI để xem log trực tiếp.
+                </div>
+              ) : (
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                  {aiCallLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-[#071A44] truncate">{log.actionName}</div>
+                        <div className="text-[10px] text-slate-500 truncate">
+                          Model: <strong className="text-slate-700">{log.modelName}</strong> ({log.modelId})
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-400 truncate">{log.endpoint}</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span
+                          className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                            log.status === 'success'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-red-50 text-red-600 border border-red-200'
+                          }`}
+                        >
+                          {log.status === 'success' ? `${log.httpStatus || 200} OK` : 'Lỗi'}
+                        </span>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {log.latencyMs} ms • {log.timestamp}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer Link tới trang Cấu hình AI & Prompt */}
+            {user?.role === 'Admin' && (
+              <div className="pt-2 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAiMonitorOpen(false);
+                    navigate('/admin/ai-config');
+                  }}
+                  className="text-xs font-bold text-[#0878EE] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  ⚙️ Mở trang Quản lý Model AI & Prompt →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Center: Search */}
+      {isAdminArea ? (
+        <div className="flex-1" />
+      ) : (
       <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8">
         <div className="relative w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -168,6 +579,7 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
           />
         </div>
       </form>
+      )}
 
       {/* Right: Actions & User Info */}
       <div className="flex items-center gap-4 sm:gap-6">

@@ -74,6 +74,8 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(d => d.Scenario)
                 .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
+                .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                 .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && d.Scenario.IsActive);
 
             if (dialogue == null)
@@ -88,6 +90,60 @@ namespace JCAP.Services.Implementations
                 .Include(c => c.TargetGrammars)
                 .FirstOrDefaultAsync(c => c.ScenarioId == dialogue.ScenarioId && c.JLPTLevel == dialogue.JLPTLevel);
 
+            var roles = new List<string>();
+            if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRolesJson))
+            {
+                try
+                {
+                    roles = System.Text.Json.JsonSerializer.Deserialize<List<string>>(dialogue.SpeakerRolesJson) ?? new();
+                }
+                catch
+                {
+                    roles = new();
+                }
+            }
+            if (roles.Count == 0)
+            {
+                if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRoleA_Name)) roles.Add(dialogue.SpeakerRoleA_Name);
+                if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRoleB_Name)) roles.Add(dialogue.SpeakerRoleB_Name);
+            }
+
+            var vocabList = dialogue.DialogueVocabularies != null && dialogue.DialogueVocabularies.Any()
+                ? dialogue.DialogueVocabularies
+                    .OrderBy(dv => dv.OrderIndex)
+                    .Select(dv => new ShadowingVocabularyDto
+                    {
+                        Id = dv.Vocabulary.Id,
+                        Word = dv.Vocabulary.Word,
+                        Reading = dv.Vocabulary.Reading,
+                        Meaning = dv.Vocabulary.Meaning
+                    }).ToList()
+                : levelConfig?.TargetVocabularies.Select(v => new ShadowingVocabularyDto
+                {
+                    Id = v.Id,
+                    Word = v.Word,
+                    Reading = v.Reading,
+                    Meaning = v.Meaning
+                }).ToList() ?? new List<ShadowingVocabularyDto>();
+
+            var grammarList = dialogue.DialogueGrammars != null && dialogue.DialogueGrammars.Any()
+                ? dialogue.DialogueGrammars
+                    .OrderBy(dg => dg.OrderIndex)
+                    .Select(dg => new ShadowingGrammarDto
+                    {
+                        Id = dg.Grammar.Id,
+                        Pattern = dg.Grammar.Pattern,
+                        Meaning = dg.Grammar.Meaning,
+                        ExampleSentence = dg.Grammar.ExampleSentence
+                    }).ToList()
+                : levelConfig?.TargetGrammars.Select(g => new ShadowingGrammarDto
+                {
+                    Id = g.Id,
+                    Pattern = g.Pattern,
+                    Meaning = g.Meaning,
+                    ExampleSentence = g.ExampleSentence
+                }).ToList() ?? new List<ShadowingGrammarDto>();
+
             var detail = new ShadowingDialogueDetailDto
             {
                 Id = dialogue.Id,
@@ -100,6 +156,8 @@ namespace JCAP.Services.Implementations
                 SourceDescription = dialogue.SourceDescription,
                 SpeakerRoleA_Name = dialogue.SpeakerRoleA_Name,
                 SpeakerRoleB_Name = dialogue.SpeakerRoleB_Name,
+                SpeakerRoles = roles,
+                SpeakerRolesJson = dialogue.SpeakerRolesJson,
                 IsActive = dialogue.IsActive,
                 CreatedAt = dialogue.CreatedAt,
                 Sentences = dialogue.Sentences
@@ -112,27 +170,12 @@ namespace JCAP.Services.Implementations
                         JapaneseText = s.JapaneseText,
                         RomajiText = s.RomajiText,
                         VietnameseTranslation = s.VietnameseTranslation,
-                        NativeAudioUrl = s.NativeAudioUrl
+                        NativeAudioUrl = s.NativeAudioUrl,
+                        AudioDurationMs = s.AudioDurationMs
                     })
                     .ToList(),
-                TargetVocabularies = levelConfig?.TargetVocabularies
-                    .Select(v => new ShadowingVocabularyDto
-                    {
-                        Id = v.Id,
-                        Word = v.Word,
-                        Reading = v.Reading,
-                        Meaning = v.Meaning
-                    })
-                    .ToList() ?? new List<ShadowingVocabularyDto>(),
-                TargetGrammars = levelConfig?.TargetGrammars
-                    .Select(g => new ShadowingGrammarDto
-                    {
-                        Id = g.Id,
-                        Pattern = g.Pattern,
-                        Meaning = g.Meaning,
-                        ExampleSentence = g.ExampleSentence
-                    })
-                    .ToList() ?? new List<ShadowingGrammarDto>()
+                TargetVocabularies = vocabList,
+                TargetGrammars = grammarList
             };
 
             return ApiResponse<ShadowingDialogueDetailDto>.Ok(detail, "Lấy thông tin chi tiết bài học Shadowing thành công.");
