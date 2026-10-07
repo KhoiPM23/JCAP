@@ -31,6 +31,7 @@ import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShad
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
+import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
@@ -260,8 +261,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
-        {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
-        <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
+        <Route path="/admin/users" element={<AdminUserManagementView />} />
         <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         
