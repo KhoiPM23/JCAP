@@ -85,6 +85,7 @@ builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
 builder.Services.AddScoped<IAiRoleplayService, GeminiRoleplayService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

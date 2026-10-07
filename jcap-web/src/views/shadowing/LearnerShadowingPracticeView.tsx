@@ -11,7 +11,9 @@ import type {
   ShadowingGrammarItem,
 } from '../../types/shadowing';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
-import { AudioSettingsModal } from '../../components/shadowing/AudioSettingsModal';
+import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDeviceSettingsModal';
+import { AiVoiceSettingsModal } from '../../components/shadowing/AiVoiceSettingsModal';
+import { voicevoxService, type VoiceOption } from '../../services/voicevoxService';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const LearnerShadowingPracticeView: React.FC = () => {
@@ -72,13 +74,45 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [isDialogueContentCollapsed, setIsDialogueContentCollapsed] = useState<boolean>(true);
   const [isFullScriptModalOpen, setIsFullScriptModalOpen] = useState<boolean>(false);
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState<boolean>(false);
-  const [isAudioSettingsModalOpen, setIsAudioSettingsModalOpen] = useState<boolean>(false);
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState<boolean>(false);
+  const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
+  const [isAiVoiceModalOpen, setIsAiVoiceModalOpen] = useState<boolean>(false);
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
     localStorage.getItem('jcap_audio_input_device') || ''
   );
   const [selectedAudioOutputDeviceId, setSelectedAudioOutputDeviceId] = useState<string>(
     localStorage.getItem('jcap_audio_output_device') || ''
   );
+
+  // VOICEVOX TTS Integration
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
+  const initialSavedVoiceId = Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3;
+  const [selectedVoiceVoxId, setSelectedVoiceVoxId] = useState<number>(initialSavedVoiceId);
+  const selectedVoiceVoxIdRef = useRef<number>(initialSavedVoiceId);
+
+  // Nạp danh sách Voice từ Backend (VOICEVOX) khi khởi tạo
+  useEffect(() => {
+    voicevoxService
+      .getVoices()
+      .then((list) => {
+        setAvailableVoices(list);
+        const savedId = Number(localStorage.getItem('jcap_voicevox_selected_id'));
+        if (savedId && list.some((v) => v.id === savedId)) {
+          setSelectedVoiceVoxId(savedId);
+          selectedVoiceVoxIdRef.current = savedId;
+        } else if (list.length > 0 && !list.some((v) => v.id === selectedVoiceVoxIdRef.current)) {
+          setSelectedVoiceVoxId(list[0].id);
+          selectedVoiceVoxIdRef.current = list[0].id;
+        }
+      })
+      .catch(() => {
+        // Nếu VOICEVOX offline, hệ thống sẽ tự động fallback sang Web Speech API
+      });
+
+    return () => {
+      voicevoxService.clearCache();
+    };
+  }, []);
 
   // AI Analysis State
   const [isRequestingAi, setIsRequestingAi] = useState<boolean>(false);
@@ -377,7 +411,45 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     return false;
   };
 
-  // Play audio sample: prefers real audio URL, falls back smoothly to SpeechSynthesis
+  // Phát audio bằng VOICEVOX TTS, nếu gặp sự cố sẽ tự động fallback sang Web Speech API
+  const playVoiceVoxWithFallback = async (
+    text: string,
+    speed: number = audioPlaybackSpeed,
+    onEnd?: () => void,
+    expectedTurnId?: number
+  ) => {
+    try {
+      setIsPlayingAudio(true);
+      const audioUrl = await voicevoxService.getAudioUrl(text, selectedVoiceVoxIdRef.current);
+      if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
+
+      const audio = new Audio(audioUrl);
+      audio.playbackRate = speed;
+      if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
+        (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
+      }
+      audioPlayerRef.current = audio;
+
+      audio.onended = () => {
+        setIsPlayingAudio(false);
+        if (expectedTurnId === undefined || expectedTurnId === turnIdRef.current) {
+          if (onEnd) onEnd();
+        }
+      };
+
+      audio.onerror = () => {
+        speakJapanese(text, speed, onEnd, expectedTurnId);
+      };
+
+      await audio.play().catch(() => {
+        speakJapanese(text, speed, onEnd, expectedTurnId);
+      });
+    } catch {
+      speakJapanese(text, speed, onEnd, expectedTurnId);
+    }
+  };
+
+  // Play audio sample: prefers real audio URL, falls back smoothly to VOICEVOX TTS (then Web Speech API)
   const playAudio = (
     url?: string,
     text?: string,
@@ -415,7 +487,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.onerror = () => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          speakJapanese(text, speed, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
@@ -425,14 +497,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.play().catch(() => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          speakJapanese(text, speed, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
         }
       });
     } else if (text) {
-      speakJapanese(text, speed, onEnd, expectedTurnId);
+      playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
     } else {
       if (onEnd && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
         onEnd();
@@ -1059,7 +1131,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col justify-between selection:bg-[#0878EE] selection:text-white bg-[#F4F9FE] text-[#071A44] font-sans"
+      className="min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-[#0878EE] selection:text-white bg-[#F4F9FE] text-[#071A44] font-sans lg:overflow-hidden"
       style={{
         backgroundImage: 'radial-gradient(#CBDDF3 1px, transparent 1px)',
         backgroundSize: '24px 24px',
@@ -1115,10 +1187,24 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         .pulse-recording-btn {
           animation: pulseRecord 1.5s infinite;
         }
+        /* Custom scrollbar for dialogue container */
+        .dialogue-scroll-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        .dialogue-scroll-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .dialogue-scroll-container::-webkit-scrollbar-thumb {
+          background-color: #CBDDF3;
+          border-radius: 9999px;
+        }
+        .dialogue-scroll-container::-webkit-scrollbar-thumb:hover {
+          background-color: #93C5FD;
+        }
       `}</style>
 
       {/* TOP HEADER (MATCHES REFERENCE IMAGE 2 EXACTLY) */}
-      <header className="w-full bg-[#F4F9FE]/90 backdrop-blur-md sticky top-0 z-40 py-2.5 border-b border-[#E6EDF5] px-6">
+      <header className="w-full bg-[#F4F9FE]/90 backdrop-blur-md sticky top-0 z-40 py-2.5 border-b border-[#E6EDF5] px-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Brand & Breadcrumbs */}
           <div className="flex items-center gap-3">
@@ -1154,28 +1240,120 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             </span>
           </div>
 
-          {/* Right Action: Settings Button */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Right Action: Settings Dropdown */}
+          <div className="relative flex-shrink-0">
             <button
               type="button"
-              onClick={() => setIsAudioSettingsModalOpen(true)}
-              title="Cài đặt thiết bị âm thanh"
-              className="w-8 h-8 rounded-full bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] hover:border-[#0878EE] text-[#556987] hover:text-[#0878EE] flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+              onClick={() => setIsSettingsMenuOpen((prev) => !prev)}
+              title="Cài đặt"
+              className={`flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+                isSettingsMenuOpen
+                  ? 'bg-[#EEF6FE] border-[#0878EE] text-[#0878EE]'
+                  : 'bg-white hover:bg-[#EEF6FE] border-[#BCDDFB] hover:border-[#0878EE] text-[#071A44] hover:text-[#0878EE]'
+              }`}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3.5 h-3.5 text-[#0878EE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
+              <span className="hidden sm:inline">Cài đặt</span>
+              <svg className={`w-3 h-3 text-[#556987] transition-transform ${isSettingsMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
+
+            {/* Dropdown Menu với 2 nút: Thiết bị âm thanh và Giọng đọc AI */}
+            {isSettingsMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsSettingsMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#BCDDFB] p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  {/* Nút 1: Thiết bị âm thanh */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSettingsMenuOpen(false);
+                      setIsAudioDeviceModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#EEF6FE] text-[#071A44] hover:text-[#0878EE] font-bold text-xs transition-all text-left group cursor-pointer"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#F4F9FE] border border-[#BCDDFB] flex items-center justify-center group-hover:scale-105 group-hover:border-[#0878EE] group-hover:bg-[#EEF6FE] transition-all flex-shrink-0">
+                      <svg
+                        className="w-5 h-5 text-[#071A44] group-hover:text-[#0878EE] transition-colors"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.8}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
+                        <path d="M14 10a3 3 0 010 4" />
+                        <path d="M17 7.5a6.5 6.5 0 010 9" />
+                        <path d="M20 5a10 10 0 010 14" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-[#071A44] group-hover:text-[#0878EE]">
+                        Thiết bị âm thanh
+                      </div>
+                      <div className="text-[11px] text-[#71809A] font-normal">
+                        Microphone & Loa / Tai nghe
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Nút 2: Giọng đọc AI */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSettingsMenuOpen(false);
+                      setIsAiVoiceModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#EEF6FE] text-[#071A44] hover:text-[#0878EE] font-bold text-xs transition-all text-left group cursor-pointer mt-1"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#F4F9FE] border border-[#BCDDFB] flex items-center justify-center group-hover:scale-105 group-hover:border-[#0878EE] group-hover:bg-[#EEF6FE] transition-all flex-shrink-0">
+                      <svg
+                        className="w-5 h-5 text-[#071A44] group-hover:text-[#0878EE] transition-colors"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.8}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="9" y="2.5" width="6" height="11" rx="3" />
+                        <path d="M9 5.5h6" />
+                        <path d="M9 8h6" />
+                        <path d="M9 10.5h6" />
+                        <path d="M5.5 10.5a6.5 6.5 0 0013 0" />
+                        <path d="M12 17v4" />
+                        <path d="M8.5 21h7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-[#071A44] group-hover:text-[#0878EE]">
+                        Giọng đọc AI
+                      </div>
+                      <div className="text-[11px] text-[#71809A] font-normal">
+                        Lựa chọn giọng đọc
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
 
       {/* MAIN WORKSPACE CONTENT */}
-      <main className="max-w-7xl w-full mx-auto py-4 px-4 sm:px-6 flex-1 flex flex-col justify-between">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT COLUMN: Context Panel */}
-          <section className="lg:col-span-4 flex flex-col gap-4">
+      <main className="max-w-7xl w-full mx-auto py-3 px-4 sm:px-6 flex-1 flex flex-col min-h-0 lg:overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
+          {/* LEFT COLUMN: Context Panel (Hình 3) - Cố định vị trí, không cuộn theo đoạn chat */}
+          <section className="lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
             <div className="rounded-[28px] p-5 shadow-sm border border-[#E6EDF5] bg-white relative overflow-hidden backdrop-blur-md">
               {/* Back / End Buttons */}
               <div className="flex items-center justify-between mb-3">
@@ -1229,7 +1407,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               {/* Character Avatar and Title Section: Ran TIỀN BỐI */}
               <div className="flex items-center gap-3 -mt-6 px-2 relative z-10">
                 <div className="w-16 h-16 rounded-full border-4 border-white bg-[#F4F9FE] shadow-md overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-                  <span className="text-2xl">👩‍🏫</span>
+                  <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
                   <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                 </div>
                 <div className="flex-1">
@@ -1354,9 +1532,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           </section>
 
           {/* RIGHT COLUMN: Dialogue Stream & Mic Console */}
-          <section className="lg:col-span-8 flex flex-col justify-between min-h-[640px] gap-6">
-            {/* Dialogue Stream (Matching Image 2 Bubbles) */}
-            <div className="space-y-4 w-full">
+          <section className="lg:col-span-8 flex flex-col justify-between lg:h-full min-h-0 lg:overflow-hidden gap-2">
+            {/* Dialogue Stream - CHỈ PHẦN NÀY ĐƯỢC CUỘN */}
+            <div className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
               {sentences.slice(0, currentSentenceIndex + 1).map((s, idx) => {
                 const isOpponent = s.speakerRole !== userRole;
                 const isCurrentActive = idx === currentSentenceIndex;
@@ -1366,45 +1544,50 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 if (isOpponent) {
                   // Opponent speech bubble (Ran / Yui)
                   return (
-                    <div key={s.id} className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-blue-100 text-[#0878EE] font-bold flex items-center justify-center flex-shrink-0 mt-1">
-                        👩‍🏫
+                    <div key={s.id} className="flex items-start gap-3 w-full max-w-xl">
+                      <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-blue-100 overflow-hidden flex-shrink-0 mt-0.5">
+                        <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
                       </div>
 
-                      <div className="bg-white rounded-[20px] p-4 shadow-xs border border-[#E6EDF5] max-w-xl flex-1">
-                        <div className="flex items-center justify-between mb-2">
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 ml-1">
                           <span className="font-bold text-xs text-[#071A44]">{opponentName}</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, audioPlaybackSpeed)}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
-                            >
-                              <span>🔊</span> Nghe lại
-                            </button>
-                            <button
-                              onClick={() => toggleTranslation(s.id)}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
-                            >
-                              <span>文A</span> Dịch
-                            </button>
-                            <button
-                              onClick={cyclePlaybackSpeed}
-                              className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs transition-all cursor-pointer"
-                            >
-                              ⏱️ {audioPlaybackSpeed}x
-                            </button>
-                          </div>
                         </div>
 
-                        <p className="text-base text-[#071A44] font-medium leading-relaxed">
-                          {renderAnnotatedSentenceText(s.japaneseText)}
-                        </p>
-
-                        {showTranslations[s.id] && (
-                          <div className="mt-2 pt-2 border-t border-[#E6EDF5] text-xs text-[#556987] italic">
-                            "{s.vietnameseTranslation}"
+                        <div className="bg-white rounded-[20px] p-4 shadow-xs border border-[#E6EDF5] w-full">
+                          <div className="flex items-center justify-end mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, audioPlaybackSpeed)}
+                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                              >
+                                <span>🔊</span> Nghe lại
+                              </button>
+                              <button
+                                onClick={() => toggleTranslation(s.id)}
+                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                              >
+                                <span>文A</span> Dịch
+                              </button>
+                              <button
+                                onClick={cyclePlaybackSpeed}
+                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs transition-all cursor-pointer"
+                              >
+                                ⏱️ {audioPlaybackSpeed}x
+                              </button>
+                            </div>
                           </div>
-                        )}
+
+                          <p className="text-base text-[#071A44] font-medium leading-relaxed">
+                            {renderAnnotatedSentenceText(s.japaneseText)}
+                          </p>
+
+                          {showTranslations[s.id] && (
+                            <div className="mt-2 pt-2 border-t border-[#E6EDF5] text-xs text-[#556987] italic">
+                              "{s.vietnameseTranslation}"
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -1416,13 +1599,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       {isCurrentActive && practiceState === 'listening' && (
                         <div className="w-full max-w-xl mr-10 mb-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
                           <div className="bg-[#071A44] text-white rounded-[20px] p-3.5 border border-cyan-400/40 shadow-xl flex flex-col items-center">
-                            <div className="flex items-center justify-between w-full mb-1.5 text-[11px] text-cyan-300 font-bold px-1">
+                            {/* <div className="flex items-center justify-between w-full mb-1.5 text-[11px] text-cyan-300 font-bold px-1">
                               <span className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                Đang nhận diện giọng nói trực tiếp (Live Sync)
+                                Đang nhận diện giọng nói
                               </span>
                               <span className="text-[10px] text-gray-400">ja-JP</span>
-                            </div>
+                            </div> */}
                             <div className="w-full bg-[#030D22] rounded-xl px-4 py-2.5 min-h-[42px] flex items-center justify-center border border-slate-700/60 text-center">
                               <p className="text-base sm:text-lg font-bold text-cyan-300 font-jp tracking-wide">
                                 {liveTranscript ? (
@@ -1432,7 +1615,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                   </span>
                                 ) : (
                                   <span className="text-slate-400 font-normal text-xs sm:text-sm italic">
-                                    Đang lắng nghe... Hãy nói: "{s.japaneseText}"
+                                    Đang lắng nghe...
                                   </span>
                                 )}
                               </p>
@@ -1520,9 +1703,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Circular Avatar Y */}
-                        <div className="w-8 h-8 rounded-full bg-[#071A44] text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 border border-blue-400/30 mt-1">
-                          Y
+                        {/* Circular Avatar */}
+                        <div className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden flex-shrink-0 shadow-xs mt-1">
+                          <img src="/default_avatar.png" alt={learnerName} className="w-full h-full object-cover" />
                         </div>
                       </div>
                     </div>
@@ -1533,10 +1716,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               <div ref={chatEndRef} />
             </div>
 
-            {/* ACTION CONSOLE (Recording & Evaluation) */}
-            <div className="w-full flex justify-center items-center relative z-10 mt-auto mb-2">
+            {/* ACTION CONSOLE (Recording & Evaluation) (Hình 4) - Cố định vị trí ở đáy */}
+            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10">
               <div
-                className="w-full rounded-[24px] border-2 border-dashed bg-white/80 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
+                className="w-full rounded-[24px] border-2 border-dashed bg-white/90 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
               >
                 {micError && (
@@ -1551,8 +1734,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   isOpponentPausedForResume ? (
                     <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
-                          👩‍🏫
+                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 overflow-hidden flex items-center justify-center font-bold text-base shadow-sm">
+                          <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
                         </div>
                         <div className="text-left">
                           <div className="flex items-center gap-2">
@@ -1588,20 +1771,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     </div>
                   ) : (
                     <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 text-blue-600 flex items-center justify-center font-bold text-base shadow-sm">
-                          👩‍🏫
-                        </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương) đang nói...</span>
-                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-                          </div>
-                          <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
-                            "{currentSentence?.japaneseText}"
-                          </p>
-                        </div>
-                      </div>
                       {/* Audio wave indicator */}
                       <div className="flex items-center gap-1 my-0.5">
                         <span className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce"></span>
@@ -1616,9 +1785,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       >
                         <span>Sang lượt nói của bạn</span>
                       </button>
-                      <p className="text-[11px] text-slate-400">
-                        * Câu của đối phương do hệ thống tự phát, bạn chỉ thu âm câu của chính mình ({learnerName}).
-                      </p>
                     </div>
                   )
                 ) : (
@@ -1671,15 +1837,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                 currentTier === 'green' ? 'text-[#027A48]' : currentTier === 'yellow' ? 'text-amber-700' : 'text-[#B42318]'
                               }`}>
                                 {currentTier === 'green' ? 'Xuất sắc!' : currentTier === 'yellow' ? 'Khá tốt!' : 'Cần cải thiện'}
-                              </span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                currentTier === 'green'
-                                  ? 'bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]'
-                                  : currentTier === 'yellow'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-red-50 text-red-700 border-red-200'
-                              }`}>
-                                {currentTier === 'green' ? 'Phát âm chuẩn' : currentTier === 'yellow' ? 'Chú ý âm' : 'Cần luyện lại'}
                               </span>
                             </div>
                             <p className="text-xs text-[#556987] font-medium mt-0.5 line-clamp-1">
@@ -1761,8 +1918,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     className={`flex items-start gap-2.5 ${s.speakerRole === userRole ? 'justify-end' : 'justify-start'}`}
                   >
                     {s.speakerRole !== userRole && (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0878EE] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-1">
-                        👩‍🏫
+                      <div className="w-8 h-8 rounded-full bg-blue-100 overflow-hidden flex-shrink-0 mt-1">
+                        <img src="/default_avatar.png" alt="Opponent" className="w-full h-full object-cover" />
                       </div>
                     )}
 
@@ -1793,8 +1950,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     </div>
 
                     {s.speakerRole === userRole && (
-                      <div className="w-8 h-8 rounded-full bg-[#071A44] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-1">
-                        Y
+                      <div className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden flex-shrink-0 mt-1">
+                        <img src="/default_avatar.png" alt="Learner" className="w-full h-full object-cover" />
                       </div>
                     )}
                   </div>
@@ -2014,15 +2171,28 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         onConfirm={handleConfirmRoleChange}
       />
 
-      {/* Audio Settings Modal */}
-      <AudioSettingsModal
-        isOpen={isAudioSettingsModalOpen}
-        onClose={() => setIsAudioSettingsModalOpen(false)}
+      {/* 1. Modal Cài đặt thiết bị âm thanh (Microphone & Loa) */}
+      <AudioDeviceSettingsModal
+        isOpen={isAudioDeviceModalOpen}
+        onClose={() => setIsAudioDeviceModalOpen(false)}
         selectedInputId={selectedAudioInputDeviceId}
         selectedOutputId={selectedAudioOutputDeviceId}
         onSave={(inId, outId) => {
           setSelectedAudioInputDeviceId(inId);
           setSelectedAudioOutputDeviceId(outId);
+        }}
+      />
+
+      {/* 2. Modal Cài đặt giọng đọc AI (VOICEVOX TTS) */}
+      <AiVoiceSettingsModal
+        isOpen={isAiVoiceModalOpen}
+        onClose={() => setIsAiVoiceModalOpen(false)}
+        selectedVoiceId={selectedVoiceVoxId}
+        availableVoices={availableVoices}
+        onSave={(voiceId) => {
+          setSelectedVoiceVoxId(voiceId);
+          selectedVoiceVoxIdRef.current = voiceId;
+          localStorage.setItem('jcap_voicevox_selected_id', voiceId.toString());
         }}
       />
     </div>

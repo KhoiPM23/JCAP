@@ -18,6 +18,7 @@ import { CreditPackagesView } from '../views/CreditPackagesView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
+import { VoiceVoxTestView } from '../views/VoiceVoxTestView';
 import { AdminDashboardView } from '../views/admin/AdminDashboardView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
@@ -351,6 +352,7 @@ export const AppRouter: React.FC = () => {
 
       {/* Temporary Development-Only Showcase Route */}
       <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
+      <Route path="/voicevox-test" element={<VoiceVoxTestView />} />
 
       {/* Wildcard */}
       <Route path="*" element={<Navigate to="/login" replace />} />
