@@ -5,6 +5,7 @@ import { scenarioService } from '../../services/scenarioService';
 import { adminShadowingService } from '../../services/adminShadowingService';
 import { creditService } from '../../services/creditService';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
+import { getActiveAiModelInfo, ACTIVE_AI_MODEL_STORAGE_KEY } from './AdminAiConfigView';
 
 export const AdminDashboardView: React.FC = () => {
   const { user } = useAuth();
@@ -14,7 +15,7 @@ export const AdminDashboardView: React.FC = () => {
   const [shadowingCount, setShadowingCount] = useState<number>(0);
   const [packageCount, setPackageCount] = useState<number>(0);
   const [recentScenarios, setRecentScenarios] = useState<ScenarioListItem[]>([]);
-  const [aiModelName, setAiModelName] = useState<string>('Gemini 3.1 Flash Lite');
+  const [aiModelName, setAiModelName] = useState<string>(() => getActiveAiModelInfo().displayName);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -41,7 +42,10 @@ export const AdminDashboardView: React.FC = () => {
           setPackageCount(packagesRes.data.length);
         }
 
-        if (aiStatusRes.success && aiStatusRes.data?.displayName) {
+        const localSaved = localStorage.getItem(ACTIVE_AI_MODEL_STORAGE_KEY);
+        if (localSaved) {
+          setAiModelName(getActiveAiModelInfo().displayName);
+        } else if (aiStatusRes.success && aiStatusRes.data?.displayName) {
           setAiModelName(aiStatusRes.data.displayName);
         }
       } catch (err) {
@@ -52,6 +56,12 @@ export const AdminDashboardView: React.FC = () => {
     };
 
     fetchDashboardData();
+
+    const handleModelChanged = () => {
+      setAiModelName(getActiveAiModelInfo().displayName);
+    };
+    window.addEventListener('jcap_ai_model_changed', handleModelChanged);
+    return () => window.removeEventListener('jcap_ai_model_changed', handleModelChanged);
   }, []);
 
   return (
@@ -153,19 +163,25 @@ export const AdminDashboardView: React.FC = () => {
         </Link>
 
         {/* Stat 4: Trạng thái AI */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <Link
+          to="/admin/ai-config"
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-400 hover:shadow-md transition-all flex items-center justify-between group"
+        >
           <div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">AI Roleplay Service</span>
             <div className="text-base font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Sẵn sàng
+              <span className="text-xs font-medium text-slate-400">• {aiModelName}</span>
             </div>
-            <span className="text-xs text-slate-400 mt-1 block">{aiModelName}</span>
+            <span className="text-xs text-emerald-600 font-medium mt-1 inline-block group-hover:underline">
+              Quản lý model AI →
+            </span>
           </div>
-          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
             🤖
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Quick Navigation / Features Grid */}

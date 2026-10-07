@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using JCAP.Data;
@@ -6,6 +7,7 @@ using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace JCAP.Services.Implementations;
 
@@ -15,15 +17,18 @@ public class ScenarioService : IScenarioService
     private readonly AppDbContext _dbContext;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly IConfiguration? _configuration;
+    private readonly ILogger<ScenarioService>? _logger;
 
     public ScenarioService(
         AppDbContext dbContext,
         IHttpClientFactory? httpClientFactory = null,
-        IConfiguration? configuration = null)
+        IConfiguration? configuration = null,
+        ILogger<ScenarioService>? logger = null)
     {
         _dbContext = dbContext;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(string? query = null, CancellationToken cancellationToken = default)
@@ -743,26 +748,61 @@ public class ScenarioService : IScenarioService
                 : $"Thực hành giao tiếp trình độ {level} cho chủ đề '{title}'.",
         };
 
-        var apiKey = _configuration?["Gemini:ApiKey"];
-        var model = _configuration?["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+        var groqKey = _configuration?["GroqCloud:ApiKey"];
+        var groqModel = _configuration?["GroqCloud:Model"] ?? "llama-3.3-70b-versatile";
 
-        if (!string.IsNullOrWhiteSpace(apiKey) && _httpClientFactory != null)
+        var geminiKey = _configuration?["Gemini:ApiKey"];
+        var geminiModel = _configuration?["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+
+        if (!string.IsNullOrWhiteSpace(groqKey) && _httpClientFactory != null)
+        {
+            try
+            {
+                var groqResult = await TryGenerateWithGroqOrOpenAiAsync(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    groqKey,
+                    groqModel,
+                    title,
+                    desc,
+                    level,
+                    missionCount,
+                    vocabCount,
+                    grammarCount,
+                    existingMissions,
+                    existingVocabs,
+                    existingGrammars,
+                    cancellationToken);
+
+                if (groqResult != null &&
+                    TryFinalizeGeneratedContent(groqResult, missionCount, vocabCount, grammarCount,
+                        existingMissions, existingVocabs, existingGrammars))
+                {
+                    return ApiResponse<GeneratedLevelContentDto>.Ok(groqResult, $"Tạo gợi ý nội dung AI ({groqModel}) cho trình độ {level} thành công.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi gọi GroqCloud API ({Model}). Thử fallback sang Gemini hoặc bộ sinh offline.", groqModel);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(geminiKey) && _httpClientFactory != null)
         {
             try
             {
                 var geminiResult = await TryGenerateWithGeminiAsync(
-                    apiKey, model, title, desc, level, missionCount, vocabCount, grammarCount,
+                    geminiKey, geminiModel, title, desc, level, missionCount, vocabCount, grammarCount,
                     existingMissions, existingVocabs, existingGrammars, cancellationToken);
                 if (geminiResult != null &&
                     TryFinalizeGeneratedContent(geminiResult, missionCount, vocabCount, grammarCount,
                         existingMissions, existingVocabs, existingGrammars))
                 {
-                    return ApiResponse<GeneratedLevelContentDto>.Ok(geminiResult, $"Tạo gợi ý nội dung AI ({model}) cho trình độ {level} thành công.");
+                    return ApiResponse<GeneratedLevelContentDto>.Ok(geminiResult, $"Tạo gợi ý nội dung AI ({geminiModel}) cho trình độ {level} thành công.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fallback to built-in generator below
+                _logger.LogWarning(ex, "Lỗi khi gọi Gemini API ({Model}). Thử fallback sang bộ sinh offline.", geminiModel);
             }
         }
 
@@ -1153,6 +1193,117 @@ public class ScenarioService : IScenarioService
         result.TargetGrammars = mergedGrammars.Take(grammarCount).ToList();
 
         return ApiResponse<GeneratedLevelContentDto>.Ok(result, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
+    }
+
+    private async Task<GeneratedLevelContentDto?> TryGenerateWithGroqOrOpenAiAsync(
+        string endpoint,
+        string apiKey,
+        string model,
+        string title,
+        string desc,
+        string level,
+        int missionCount,
+        int vocabCount,
+        int grammarCount,
+        List<CreateMissionDto> existingMissions,
+        List<CreateVocabularyDto> existingVocabs,
+        List<CreateGrammarDto> existingGrammars,
+        CancellationToken cancellationToken)
+    {
+        var httpClient = _httpClientFactory!.CreateClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        var existingMissionsJson = JsonSerializer.Serialize(
+            existingMissions.Select(m => new { id = m.Id, content = m.Content, target = m.Target }), CriteriaJsonOptions);
+        var existingVocabsJson = JsonSerializer.Serialize(
+            existingVocabs.Select(v => new { id = v.Id, word = v.Word, reading = v.Reading, meaning = v.Meaning }), CriteriaJsonOptions);
+        var existingGrammarsJson = JsonSerializer.Serialize(
+            existingGrammars.Select(g => new { id = g.Id, pattern = g.Pattern, meaning = g.Meaning, exampleSentence = g.ExampleSentence }), CriteriaJsonOptions);
+
+        var systemPrompt = $"Bạn là chuyên gia thiết kế giáo trình bài học hội thoại tiếng Nhật JLPT {level}. Bạn bắt buộc phải trả về định dạng JSON thuần túy không chứa văn bản thừa.";
+
+        var userPrompt = $@"Chủ đề kịch bản: ""{title}""
+Mô tả kịch bản: ""{desc}""
+Trình độ JLPT: {level}
+
+DỮ LIỆU ADMIN ĐÃ NHẬP SẴN (có thể rỗng):
+- Nhiệm vụ đã có ({existingMissions.Count}): {existingMissionsJson}
+- Từ vựng đã có ({existingVocabs.Count}): {existingVocabsJson}
+- Ngữ pháp đã có ({existingGrammars.Count}): {existingGrammarsJson}
+
+YÊU CẦU BẮT BUỘC:
+1. Số lượng CHÍNH XÁC:
+   - missions: đúng {missionCount} nhiệm vụ.
+   - targetVocabularies: đúng {vocabCount} từ vựng.
+   - targetGrammars: đúng {grammarCount} mẫu ngữ pháp.
+2. GIỮ LẠI toàn bộ ý của các mục đã có: giữ đúng ""id"" cũ của nó (mục mới thêm có ""id"": null).
+3. Điền thêm các mục mới cho đủ số lượng, liên quan trực tiếp đến chủ đề ""{title}"" và đúng trình độ {level}.
+4. KHÔNG trùng lặp nhiệm vụ, từ vựng hay ngữ pháp.
+5. SẮP XẾP nhiệm vụ theo mạch hội thoại: Mở đầu chào hỏi -> Trao đổi chính -> Xác nhận / Cảm ơn tạm biệt.
+6. Mọi trường đều KHÔNG được để trống.
+7. ""aiPersona"" NGẮN GỌN (tối đa 60 ký tự), dạng: ""Vai trò tiếng Việt - 日本語"".
+
+Trả về JSON thuần túy theo cấu trúc:
+{{
+  ""title"": ""{title} ({level})"",
+  ""description"": ""Mô tả bối cảnh cụ thể cho trình độ {level}"",
+  ""aiPersona"": ""Vai trò ngắn gọn - 日本語 (tối đa 60 ký tự)"",
+  ""missions"": [
+    {{ ""id"": null, ""order"": 1, ""content"": ""Nội dung nhiệm vụ 1"", ""target"": ""Mục tiêu ngắn gọn"" }}
+  ],
+  ""targetVocabularies"": [
+    {{ ""id"": null, ""word"": ""Từ tiếng Nhật"", ""reading"": ""Cách đọc Hiragana"", ""meaning"": ""Nghĩa tiếng Việt"" }}
+  ],
+  ""targetGrammars"": [
+    {{ ""id"": null, ""pattern"": ""Mẫu ngữ pháp"", ""meaning"": ""Ý nghĩa tiếng Việt"", ""exampleSentence"": ""Câu ví dụ tiếng Nhật"" }}
+  ]
+}}";
+
+        var requestBody = new
+        {
+            model = model,
+            messages = new object[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userPrompt }
+            },
+            temperature = 0.7,
+            response_format = new { type = "json_object" }
+        };
+
+        var json = JsonSerializer.Serialize(requestBody, CriteriaJsonOptions);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsync(endpoint, content, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("Groq API error ({Status}): {Response}", response.StatusCode, err);
+            return null;
+        }
+
+        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var doc = JsonDocument.Parse(responseString);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("choices", out var choices) || choices.GetArrayLength() == 0) return null;
+
+        var messageObj = choices[0].GetProperty("message");
+        var text = messageObj.GetProperty("content").GetString();
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        var parsed = JsonSerializer.Deserialize<GeneratedLevelContentDto>(text, CriteriaJsonOptions);
+        if (parsed == null) return null;
+
+        parsed.JLPTLevel = level;
+        for (int i = 0; i < parsed.Missions.Count; i++)
+        {
+            parsed.Missions[i].Order = i + 1;
+            if (string.IsNullOrWhiteSpace(parsed.Missions[i].Target))
+            {
+                parsed.Missions[i].Target = parsed.Missions[i].Content;
+            }
+        }
+
+        return parsed;
     }
 
     private async Task<GeneratedLevelContentDto?> TryGenerateWithGeminiAsync(

@@ -46,12 +46,11 @@ public class GeminiRoleplayService : IAiRoleplayService
         ScenarioLevelConfiguration levelConfig,
         CancellationToken cancellationToken = default)
     {
-        var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+        var hasKey = !string.IsNullOrWhiteSpace(_configuration["GroqCloud:ApiKey"]) || !string.IsNullOrWhiteSpace(_configuration["Gemini:ApiKey"]);
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (!hasKey)
         {
-            _logger.LogInformation("Gemini ApiKey chưa được cấu hình. Sử dụng Simulator cho câu mở đầu.");
+            _logger.LogInformation("Chưa cấu hình API Key (GroqCloud / Gemini). Sử dụng Simulator cho câu mở đầu.");
             return GenerateSimulatorOpeningMessage(scenario, levelConfig);
         }
 
@@ -65,7 +64,7 @@ Return strictly pure JSON matching:
   ""replyVietnamese"": ""Natural translation in Vietnamese""
 }";
 
-            var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
+            var jsonResponse = await CallAiAsync(systemPrompt, userPrompt, cancellationToken);
             if (!string.IsNullOrWhiteSpace(jsonResponse))
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
@@ -85,7 +84,7 @@ Return strictly pure JSON matching:
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Lỗi khi gọi Gemini API cho câu mở đầu. Tự động chuyển sang Simulator.");
+            _logger.LogWarning(ex, "Lỗi khi gọi AI API cho câu mở đầu. Tự động chuyển sang Simulator.");
         }
 
         return GenerateSimulatorOpeningMessage(scenario, levelConfig);
@@ -99,12 +98,11 @@ Return strictly pure JSON matching:
         List<Mission> pendingMissions,
         CancellationToken cancellationToken = default)
     {
-        var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+        var hasKey = !string.IsNullOrWhiteSpace(_configuration["GroqCloud:ApiKey"]) || !string.IsNullOrWhiteSpace(_configuration["Gemini:ApiKey"]);
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (!hasKey)
         {
-            _logger.LogInformation("Gemini ApiKey chưa được cấu hình. Sử dụng Simulator cho lượt đối thoại.");
+            _logger.LogInformation("Chưa cấu hình API Key (GroqCloud / Gemini). Sử dụng Simulator cho lượt đối thoại.");
             return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
         }
 
@@ -180,7 +178,7 @@ Return strictly pure JSON matching this schema:
   }}
 }}";
 
-            var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
+            var jsonResponse = await CallAiAsync(systemPrompt, userPrompt, cancellationToken);
             if (!string.IsNullOrWhiteSpace(jsonResponse))
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
@@ -279,10 +277,9 @@ Return strictly pure JSON matching this schema:
         List<Mission> pendingMissions,
         CancellationToken cancellationToken = default)
     {
-        var apiKey = _configuration["Gemini:ApiKey"];
-        var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+        var hasKey = !string.IsNullOrWhiteSpace(_configuration["GroqCloud:ApiKey"]) || !string.IsNullOrWhiteSpace(_configuration["Gemini:ApiKey"]);
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (!hasKey)
         {
             return GenerateSimulatorHint(levelConfig, pendingMissions);
         }
@@ -312,7 +309,7 @@ Return strictly pure JSON:
   ""contextExplanation"": ""Brief explanation in Vietnamese of when and why to use this phrase""
 }}";
 
-            var jsonResponse = await CallGeminiAsync(apiKey, model, systemPrompt, userPrompt, cancellationToken);
+            var jsonResponse = await CallAiAsync(systemPrompt, userPrompt, cancellationToken);
             if (!string.IsNullOrWhiteSpace(jsonResponse))
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
@@ -328,7 +325,7 @@ Return strictly pure JSON:
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Lỗi khi gọi Gemini API cho gợi ý câu tiếp theo. Tự động chuyển sang Simulator.");
+            _logger.LogWarning(ex, "Lỗi khi gọi AI API cho gợi ý câu tiếp theo. Tự động chuyển sang Simulator.");
         }
 
         return GenerateSimulatorHint(levelConfig, pendingMissions);
@@ -358,6 +355,88 @@ Return strictly pure JSON:
         sb.AppendLine($"- Conversational cueing: Respond only to the current turn with open-ended cues, leaving space for the learner to drive the next mission.");
         sb.AppendLine($"- Output format: Always return valid, pure JSON matching the requested schema.");
         return sb.ToString();
+    }
+
+    private async Task<string> CallAiAsync(
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken)
+    {
+        var groqKey = _configuration["GroqCloud:ApiKey"];
+        var groqModel = _configuration["GroqCloud:Model"] ?? "llama-3.3-70b-versatile";
+
+        if (!string.IsNullOrWhiteSpace(groqKey))
+        {
+            try
+            {
+                var groqResult = await CallGroqAsync(groqKey, groqModel, systemPrompt, userPrompt, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(groqResult))
+                {
+                    return groqResult;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Gọi GroqCloud API thất bại, chuyển sang Gemini nếu có.");
+            }
+        }
+
+        var geminiKey = _configuration["Gemini:ApiKey"];
+        var geminiModel = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
+
+        if (!string.IsNullOrWhiteSpace(geminiKey))
+        {
+            return await CallGeminiAsync(geminiKey, geminiModel, systemPrompt, userPrompt, cancellationToken);
+        }
+
+        throw new InvalidOperationException("Không tìm thấy cấu hình API Key hợp lệ cho GroqCloud hoặc Gemini.");
+    }
+
+    private async Task<string> CallGroqAsync(
+        string apiKey,
+        string model,
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken)
+    {
+        var endpoint = "https://api.groq.com/openai/v1/chat/completions";
+
+        var requestBody = new
+        {
+            model = model,
+            messages = new[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userPrompt }
+            },
+            response_format = new { type = "json_object" },
+            temperature = 0.6,
+            max_tokens = 1500
+        };
+
+        var json = JsonSerializer.Serialize(requestBody, JsonOptions);
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning("GroqCloud API error ({StatusCode}): {Response}", response.StatusCode, responseString);
+            throw new HttpRequestException($"GroqCloud API error ({response.StatusCode}): {responseString}");
+        }
+
+        using var doc = JsonDocument.Parse(responseString);
+        var choices = doc.RootElement.GetProperty("choices");
+        if (choices.GetArrayLength() > 0)
+        {
+            var content = choices[0].GetProperty("message").GetProperty("content").GetString();
+            return content ?? string.Empty;
+        }
+
+        return string.Empty;
     }
 
     private async Task<string> CallGeminiAsync(
