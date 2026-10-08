@@ -56,6 +56,7 @@ namespace JCAP.Controllers
             try
             {
                 var wavBytes = await _voiceVoxService.SynthesizeAsync(request.Text, request.SpeakerId, cancellationToken);
+                Response.Headers.CacheControl = "public, max-age=31536000, immutable";
                 return File(wavBytes, "audio/wav", "voicevox_sample.wav");
             }
             catch (InvalidOperationException ex)

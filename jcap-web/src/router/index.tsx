@@ -35,6 +35,7 @@ import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
+import { SettingsView } from '../views/SettingsView';
 
 // ============================================================
 // Route Wrappers
@@ -348,6 +349,9 @@ export const AppRouter: React.FC = () => {
 
         {/* Ket qua thanh toan PayOS */}
         <Route path="/credits/payment-return" element={<PaymentReturnView />} />
+
+        {/* UC: Cai dat he thong (Giong doc AI & Thiet bi am thanh) */}
+        <Route path="/settings" element={<SettingsView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}

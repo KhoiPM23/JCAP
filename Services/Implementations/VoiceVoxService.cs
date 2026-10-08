@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using JCAP.DTOs.Tts;
@@ -11,6 +12,7 @@ namespace JCAP.Services.Implementations
         private readonly HttpClient _httpClient;
         private readonly ILogger<VoiceVoxService> _logger;
         private readonly string _baseUrl;
+        private readonly string _cacheRootPath;
 
         // In-Memory Audio Cache: Lưu trữ wav bytes đã tổng hợp để tái sử dụng ngay lập tức (0ms)
         private static readonly ConcurrentDictionary<string, byte[]> _audioCache = new(StringComparer.Ordinal);
@@ -62,13 +64,34 @@ namespace JCAP.Services.Implementations
             ["里石ユカ"] = ("Satoishi Yuka", "Female", "Toàn quốc", "Giọng nữ mộc mạc, tự nhiên và thuần khiết")
         };
 
-        public VoiceVoxService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<VoiceVoxService> logger)
+        public VoiceVoxService(
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            IWebHostEnvironment environment,
+            ILogger<VoiceVoxService> logger)
         {
             _logger = logger;
             _baseUrl = configuration["VoiceVox:BaseUrl"] ?? "http://127.0.0.1:50021";
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
             _httpClient.Timeout = TimeSpan.FromSeconds(20);
+
+            var webRoot = !string.IsNullOrEmpty(environment.WebRootPath)
+                ? environment.WebRootPath
+                : Path.Combine(environment.ContentRootPath, "wwwroot");
+
+            _cacheRootPath = Path.Combine(webRoot, "audio-cache", "voicevox");
+            try
+            {
+                if (!Directory.Exists(_cacheRootPath))
+                {
+                    Directory.CreateDirectory(_cacheRootPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể khởi tạo thư mục Persistent Audio Cache tại: {Path}", _cacheRootPath);
+            }
         }
 
         public async Task<List<FlattenedVoiceDto>> GetAvailableVoicesAsync(CancellationToken cancellationToken = default)
@@ -120,6 +143,12 @@ namespace JCAP.Services.Implementations
             }
         }
 
+        private static string ComputeTextHash(string text)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+            return Convert.ToHexString(bytes).ToLowerInvariant();
+        }
+
         public async Task<byte[]> SynthesizeAsync(string text, int speakerId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -130,13 +159,34 @@ namespace JCAP.Services.Implementations
             var trimmedText = text.Trim();
             var cacheKey = $"{speakerId}:{trimmedText}";
 
-            // 1. Kiểm tra cache: nếu câu thoại và giọng này đã từng được sinh -> Trả về ngay lập tức (0ms delay)
+            // 1. Kiểm tra RAM Cache (0ms latency)
             if (_audioCache.TryGetValue(cacheKey, out var cachedBytes))
             {
-                _logger.LogInformation("Phát audio VOICEVOX từ Cache (0ms latency): speaker={SpeakerId}, text={Text}", speakerId, trimmedText);
+                _logger.LogInformation("Phát audio VOICEVOX từ RAM Cache (0ms): speaker={SpeakerId}, text={Text}", speakerId, trimmedText);
                 return cachedBytes;
             }
 
+            // 2. Kiểm tra Persistent Disk Cache trên thư mục wwwroot (1-3ms latency, tồn tại vĩnh viễn qua mọi lần restart)
+            var textHash = ComputeTextHash(trimmedText);
+            var speakerDir = Path.Combine(_cacheRootPath, speakerId.ToString());
+            var diskFilePath = Path.Combine(speakerDir, $"{textHash}.wav");
+
+            if (File.Exists(diskFilePath))
+            {
+                try
+                {
+                    var diskBytes = await File.ReadAllBytesAsync(diskFilePath, cancellationToken);
+                    _audioCache[cacheKey] = diskBytes;
+                    _logger.LogInformation("Phát audio VOICEVOX từ Persistent Disk Cache (wwwroot): speaker={SpeakerId}, file={File}", speakerId, diskFilePath);
+                    return diskBytes;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Lỗi đọc file disk cache {FilePath}, sẽ chuyển sang tổng hợp lại từ VOICEVOX", diskFilePath);
+                }
+            }
+
+            // 3. Nếu chưa có trên RAM và Ổ đĩa -> Gọi VOICEVOX Engine tổng hợp 1 lần duy nhất
             try
             {
                 // Bước 1: Gọi audio_query
@@ -165,8 +215,22 @@ namespace JCAP.Services.Implementations
 
                 var wavBytes = await synthesisResponse.Content.ReadAsByteArrayAsync(cancellationToken);
 
-                // 2. Lưu vào Cache để các lần phát tiếp theo hoặc người học khác học câu này được nhận ngay lập tức
+                // 4. Lưu đồng thời vào RAM Cache và Persistent Disk Cache
                 _audioCache[cacheKey] = wavBytes;
+
+                try
+                {
+                    if (!Directory.Exists(speakerDir))
+                    {
+                        Directory.CreateDirectory(speakerDir);
+                    }
+                    await File.WriteAllBytesAsync(diskFilePath, wavBytes, cancellationToken);
+                    _logger.LogInformation("Đã lưu audio VOICEVOX vào Persistent Disk Cache: {FilePath}", diskFilePath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Không thể lưu audio vào disk cache: {FilePath}", diskFilePath);
+                }
 
                 return wavBytes;
             }

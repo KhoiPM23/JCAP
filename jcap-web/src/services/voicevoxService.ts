@@ -14,6 +14,8 @@ export interface VoiceOption {
 class VoiceVoxService {
   // In-Memory Blob Cache: Tránh gọi lại VOICEVOX cho cùng một câu thoại và giọng
   private blobCache = new Map<string, string>();
+  // Hàng đợi tránh gọi trùng request khi đang fetch dở cho cùng 1 câu và giọng
+  private pendingRequests = new Map<string, Promise<string>>();
 
   /**
    * Lấy danh sách voice có sẵn từ Backend (Backend gọi VOICEVOX /speakers)
@@ -46,34 +48,47 @@ class VoiceVoxService {
       return this.blobCache.get(cacheKey)!;
     }
 
-    const res = await fetch('/api/tts/synthesize', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: trimmedText,
-        speakerId,
-      }),
-    });
-
-    if (!res.ok) {
-      let message = 'VOICEVOX Engine is not running.';
-      try {
-        const problem = await res.json();
-        if (problem?.detail) {
-          message = problem.detail;
-        } else if (problem?.message) {
-          message = problem.message;
-        }
-      } catch {}
-      throw new Error(message);
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey)!;
     }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    this.blobCache.set(cacheKey, url);
-    return url;
+    const fetchPromise = (async () => {
+      try {
+        const res = await fetch('/api/tts/synthesize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: trimmedText,
+            speakerId,
+          }),
+        });
+
+        if (!res.ok) {
+          let message = 'VOICEVOX Engine is not running.';
+          try {
+            const problem = await res.json();
+            if (problem?.detail) {
+              message = problem.detail;
+            } else if (problem?.message) {
+              message = problem.message;
+            }
+          } catch {}
+          throw new Error(message);
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        this.blobCache.set(cacheKey, url);
+        return url;
+      } finally {
+        this.pendingRequests.delete(cacheKey);
+      }
+    })();
+
+    this.pendingRequests.set(cacheKey, fetchPromise);
+    return fetchPromise;
   }
 
   /**

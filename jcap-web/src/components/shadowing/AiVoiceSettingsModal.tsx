@@ -342,7 +342,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
             </span>
           </div>
           <p className="text-xs text-[#556987] font-normal mt-0.5">
-            Chọn giọng đọc cho bài Shadowing
+            Chọn giọng đọc AI chuẩn Nhật ngữ cho toàn bộ hệ thống (Hội thoại & Shadowing)
           </p>
         </div>
       }

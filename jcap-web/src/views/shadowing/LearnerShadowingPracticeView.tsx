@@ -12,7 +12,6 @@ import type {
 } from '../../types/shadowing';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
 import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDeviceSettingsModal';
-import { AiVoiceSettingsModal } from '../../components/shadowing/AiVoiceSettingsModal';
 import { voicevoxService, type VoiceOption } from '../../services/voicevoxService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -55,6 +54,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Audio Playback
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [loadingAudioSentenceId, setLoadingAudioSentenceId] = useState<number | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // MediaRecorder & Playback for user recordings
@@ -73,9 +73,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [isDialogueContentCollapsed, setIsDialogueContentCollapsed] = useState<boolean>(true);
   const [isFullScriptModalOpen, setIsFullScriptModalOpen] = useState<boolean>(false);
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState<boolean>(false);
-  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState<boolean>(false);
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
-  const [isAiVoiceModalOpen, setIsAiVoiceModalOpen] = useState<boolean>(false);
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
     localStorage.getItem('jcap_audio_input_device') || ''
   );
@@ -365,16 +363,38 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentSentenceIndex, practiceState]);
 
-  // Tự động tải trước (Pre-fetch ngầm) âm thanh VOICEVOX cho câu hiện tại và 2 câu tiếp theo để triệt tiêu delay
+  // Tự động tải trước (Pre-fetch ngầm) âm thanh VOICEVOX theo thứ tự ưu tiên:
+  // 1. Tải câu hiện tại trước tiên
+  // 2. Tuần tự nạp 2 câu tiếp theo
   useEffect(() => {
     const sentences = dialogue?.sentences || [];
     if (!sentences || sentences.length === 0 || availableVoices.length === 0) return;
-    const targetSentences = sentences.slice(currentSentenceIndex, currentSentenceIndex + 3);
-    targetSentences.forEach((s) => {
-      if (s.japaneseText && (!s.nativeAudioUrl || !s.nativeAudioUrl.startsWith('http'))) {
-        voicevoxService.prefetchAudio(s.japaneseText, selectedVoiceVoxIdRef.current);
+
+    let isCancelled = false;
+
+    const prefetchSequence = async () => {
+      // Ưu tiên số 1: Tải câu hiện tại
+      const current = sentences[currentSentenceIndex];
+      if (current?.japaneseText && (!current.nativeAudioUrl || !current.nativeAudioUrl.startsWith('http'))) {
+        await voicevoxService.prefetchAudio(current.japaneseText, selectedVoiceVoxId);
       }
-    });
+      if (isCancelled) return;
+
+      // Ưu tiên số 2: Tuần tự nạp 2 câu tiếp theo
+      const nextSentences = sentences.slice(currentSentenceIndex + 1, currentSentenceIndex + 3);
+      for (const s of nextSentences) {
+        if (isCancelled) return;
+        if (s.japaneseText && (!s.nativeAudioUrl || !s.nativeAudioUrl.startsWith('http'))) {
+          await voicevoxService.prefetchAudio(s.japaneseText, selectedVoiceVoxId);
+        }
+      }
+    };
+
+    prefetchSequence();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [currentSentenceIndex, dialogue?.sentences, availableVoices.length, selectedVoiceVoxId]);
 
   // Web Speech Synthesis for high-fidelity native Japanese audio playback
@@ -425,10 +445,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const playVoiceVoxWithFallback = async (
     text: string,
     onEnd?: () => void,
-    expectedTurnId?: number
+    expectedTurnId?: number,
+    sentenceId?: number
   ) => {
     try {
-      setIsPlayingAudio(true);
+      if (sentenceId !== undefined) {
+        setLoadingAudioSentenceId(sentenceId);
+      }
       const audioUrl = await voicevoxService.getAudioUrl(text, selectedVoiceVoxIdRef.current);
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
@@ -437,6 +460,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
       }
       audioPlayerRef.current = audio;
+      setIsPlayingAudio(true);
 
       audio.onended = () => {
         setIsPlayingAudio(false);
@@ -446,6 +470,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       audio.onerror = () => {
+        setIsPlayingAudio(false);
         speakJapanese(text, onEnd, expectedTurnId);
       };
 
@@ -454,6 +479,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       });
     } catch {
       speakJapanese(text, onEnd, expectedTurnId);
+    } finally {
+      if (sentenceId !== undefined) {
+        setLoadingAudioSentenceId((prev) => (prev === sentenceId ? null : prev));
+      }
     }
   };
 
@@ -462,7 +491,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     url?: string,
     text?: string,
     onEnd?: () => void,
-    expectedTurnId?: number
+    expectedTurnId?: number,
+    sentenceId?: number
   ) => {
     if (audioPlayerRef.current) {
       audioPlayerRef.current.onended = null;
@@ -493,7 +523,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.onerror = () => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
@@ -503,14 +533,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.play().catch(() => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
         }
       });
     } else if (text) {
-      playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
+      playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
     } else {
       if (onEnd && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
         onEnd();
@@ -1235,112 +1265,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             </span>
           </div>
 
-          {/* Right Action: Settings Dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsSettingsMenuOpen((prev) => !prev)}
-              title="Cài đặt"
-              className={`flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-all shadow-2xs cursor-pointer ${
-                isSettingsMenuOpen
-                  ? 'bg-[#EEF6FE] border-[#0878EE] text-[#0878EE]'
-                  : 'bg-white hover:bg-[#EEF6FE] border-[#BCDDFB] hover:border-[#0878EE] text-[#071A44] hover:text-[#0878EE]'
-              }`}
+          {/* Right Action: Cài đặt âm thanh (Microphone & Loa) */}
+          <button
+            type="button"
+            onClick={() => setIsAudioDeviceModalOpen(true)}
+            title="Cài đặt thiết bị âm thanh"
+            className="flex items-center gap-1.5 h-8 px-3 rounded-full border border-[#BCDDFB] bg-white hover:bg-[#EEF6FE] hover:border-[#0878EE] text-[#071A44] hover:text-[#0878EE] text-xs font-bold transition-all shadow-2xs cursor-pointer flex-shrink-0"
+          >
+            <svg
+              className="w-3.5 h-3.5 text-[#0878EE]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg className="w-3.5 h-3.5 text-[#0878EE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span className="hidden sm:inline">Cài đặt</span>
-              <svg className={`w-3 h-3 text-[#556987] transition-transform ${isSettingsMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Dropdown Menu với 2 nút: Thiết bị âm thanh và Giọng đọc AI */}
-            {isSettingsMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsSettingsMenuOpen(false)}
-                />
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#BCDDFB] p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                  {/* Nút 1: Thiết bị âm thanh */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSettingsMenuOpen(false);
-                      setIsAudioDeviceModalOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#EEF6FE] text-[#071A44] hover:text-[#0878EE] font-bold text-xs transition-all text-left group cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-[#F4F9FE] border border-[#BCDDFB] flex items-center justify-center group-hover:scale-105 group-hover:border-[#0878EE] group-hover:bg-[#EEF6FE] transition-all flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-[#071A44] group-hover:text-[#0878EE] transition-colors"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.8}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
-                        <path d="M14 10a3 3 0 010 4" />
-                        <path d="M17 7.5a6.5 6.5 0 010 9" />
-                        <path d="M20 5a10 10 0 010 14" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-[#071A44] group-hover:text-[#0878EE]">
-                        Thiết bị âm thanh
-                      </div>
-                      <div className="text-[11px] text-[#71809A] font-normal">
-                        Microphone & Loa / Tai nghe
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Nút 2: Giọng đọc AI */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSettingsMenuOpen(false);
-                      setIsAiVoiceModalOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#EEF6FE] text-[#071A44] hover:text-[#0878EE] font-bold text-xs transition-all text-left group cursor-pointer mt-1"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-[#F4F9FE] border border-[#BCDDFB] flex items-center justify-center group-hover:scale-105 group-hover:border-[#0878EE] group-hover:bg-[#EEF6FE] transition-all flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-[#071A44] group-hover:text-[#0878EE] transition-colors"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.8}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="9" y="2.5" width="6" height="11" rx="3" />
-                        <path d="M9 5.5h6" />
-                        <path d="M9 8h6" />
-                        <path d="M9 10.5h6" />
-                        <path d="M5.5 10.5a6.5 6.5 0 0013 0" />
-                        <path d="M12 17v4" />
-                        <path d="M8.5 21h7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-[#071A44] group-hover:text-[#0878EE]">
-                        Giọng đọc AI
-                      </div>
-                      <div className="text-[11px] text-[#71809A] font-normal">
-                        Lựa chọn giọng đọc
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+              <path d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
+              <path d="M14 10a3 3 0 010 4" />
+              <path d="M17 7.5a6.5 6.5 0 010 9" />
+              <path d="M20 5a10 10 0 010 14" />
+            </svg>
+            <span className="hidden sm:inline">Cài đặt âm thanh</span>
+          </button>
         </div>
       </header>
 
@@ -1550,19 +1497,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         </div>
 
                         <div className="bg-white rounded-[20px] p-4 shadow-xs border border-[#E6EDF5] w-full">
-                          <div className="flex items-center justify-end mb-2">
+                          <div className="flex items-center justify-start mb-2">
                             <div className="flex items-center gap-1.5">
-                              <button
-                                onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
-                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
-                              >
-                                <span>🔊</span> Nghe lại
-                              </button>
                               <button
                                 onClick={() => toggleTranslation(s.id)}
                                 className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                               >
                                 <span>文A</span> Dịch
+                              </button>
+                              <button
+                                onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
+                                disabled={loadingAudioSentenceId === s.id}
+                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
+                              >
+                                {loadingAudioSentenceId === s.id ? (
+                                  <>
+                                    <span className="w-2.5 h-2.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                    <span>Đang nạp...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>🔊</span> Nghe mẫu
+                                  </>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -1655,17 +1612,27 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                               </svg>
                             </button>
 
-                            {/* 2. [🔊 Nghe lại] (White Pill Button) */}
+                            {/* 2. [🔊 Nghe mẫu] (White Pill Button) */}
                             <button
                               type="button"
-                              onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
-                              className="h-7 px-3.5 rounded-full bg-white hover:bg-gray-100 text-[#071A44] font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                              onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
+                              disabled={loadingAudioSentenceId === s.id}
+                              className="h-7 px-3.5 rounded-full bg-white hover:bg-gray-100 text-[#071A44] font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-60"
                               title="Nghe phát âm chuẩn câu này"
                             >
-                              <svg className="w-3.5 h-3.5 text-[#0878EE] fill-current" viewBox="0 0 24 24">
-                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                              </svg>
-                              <span>Nghe lại</span>
+                              {loadingAudioSentenceId === s.id ? (
+                                <>
+                                  <span className="w-2.5 h-2.5 border-2 border-[#0878EE] border-t-transparent rounded-full animate-spin"></span>
+                                  <span>Đang nạp...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-3.5 h-3.5 text-[#0878EE] fill-current" viewBox="0 0 24 24">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                  </svg>
+                                  <span>Nghe mẫu</span>
+                                </>
+                              )}
                             </button>
 
                             {/* 3. [文A Dịch] */}
@@ -2169,19 +2136,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         onSave={(inId, outId) => {
           setSelectedAudioInputDeviceId(inId);
           setSelectedAudioOutputDeviceId(outId);
-        }}
-      />
-
-      {/* 2. Modal Cài đặt giọng đọc AI (VOICEVOX TTS) */}
-      <AiVoiceSettingsModal
-        isOpen={isAiVoiceModalOpen}
-        onClose={() => setIsAiVoiceModalOpen(false)}
-        selectedVoiceId={selectedVoiceVoxId}
-        availableVoices={availableVoices}
-        onSave={(voiceId) => {
-          setSelectedVoiceVoxId(voiceId);
-          selectedVoiceVoxIdRef.current = voiceId;
-          localStorage.setItem('jcap_voicevox_selected_id', voiceId.toString());
         }}
       />
     </div>
