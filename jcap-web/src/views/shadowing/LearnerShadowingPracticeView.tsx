@@ -55,7 +55,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Audio Playback
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [audioPlaybackSpeed, setAudioPlaybackSpeed] = useState<number>(0.8); // Default 0.8x from prototype
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // MediaRecorder & Playback for user recordings
@@ -366,10 +365,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentSentenceIndex, practiceState]);
 
+  // Tự động tải trước (Pre-fetch ngầm) âm thanh VOICEVOX cho câu hiện tại và 2 câu tiếp theo để triệt tiêu delay
+  useEffect(() => {
+    const sentences = dialogue?.sentences || [];
+    if (!sentences || sentences.length === 0 || availableVoices.length === 0) return;
+    const targetSentences = sentences.slice(currentSentenceIndex, currentSentenceIndex + 3);
+    targetSentences.forEach((s) => {
+      if (s.japaneseText && (!s.nativeAudioUrl || !s.nativeAudioUrl.startsWith('http'))) {
+        voicevoxService.prefetchAudio(s.japaneseText, selectedVoiceVoxIdRef.current);
+      }
+    });
+  }, [currentSentenceIndex, dialogue?.sentences, availableVoices.length, selectedVoiceVoxId]);
+
   // Web Speech Synthesis for high-fidelity native Japanese audio playback
   const speakJapanese = (
     text: string,
-    rate: number = audioPlaybackSpeed,
     onEnd?: () => void,
     expectedTurnId?: number
   ) => {
@@ -378,7 +388,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = rate;
+      utterance.rate = 1.0;
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
       if (jpVoice) utterance.voice = jpVoice;
@@ -414,7 +424,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Phát audio bằng VOICEVOX TTS, nếu gặp sự cố sẽ tự động fallback sang Web Speech API
   const playVoiceVoxWithFallback = async (
     text: string,
-    speed: number = audioPlaybackSpeed,
     onEnd?: () => void,
     expectedTurnId?: number
   ) => {
@@ -424,7 +433,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
       const audio = new Audio(audioUrl);
-      audio.playbackRate = speed;
       if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
         (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
       }
@@ -438,14 +446,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       audio.onerror = () => {
-        speakJapanese(text, speed, onEnd, expectedTurnId);
+        speakJapanese(text, onEnd, expectedTurnId);
       };
 
       await audio.play().catch(() => {
-        speakJapanese(text, speed, onEnd, expectedTurnId);
+        speakJapanese(text, onEnd, expectedTurnId);
       });
     } catch {
-      speakJapanese(text, speed, onEnd, expectedTurnId);
+      speakJapanese(text, onEnd, expectedTurnId);
     }
   };
 
@@ -453,7 +461,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const playAudio = (
     url?: string,
     text?: string,
-    speed: number = audioPlaybackSpeed,
     onEnd?: () => void,
     expectedTurnId?: number
   ) => {
@@ -470,7 +477,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (url && url.startsWith('http')) {
       const audio = new Audio(url);
-      audio.playbackRate = speed;
       if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
         (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
       }
@@ -487,7 +493,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.onerror = () => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
@@ -497,29 +503,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       audio.play().catch(() => {
         if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
         if (text) {
-          playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
+          playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
         } else {
           setIsPlayingAudio(false);
           if (onEnd) onEnd();
         }
       });
     } else if (text) {
-      playVoiceVoxWithFallback(text, speed, onEnd, expectedTurnId);
+      playVoiceVoxWithFallback(text, onEnd, expectedTurnId);
     } else {
       if (onEnd && (expectedTurnId === undefined || expectedTurnId === turnIdRef.current)) {
         onEnd();
       }
-    }
-  };
-
-  // Toggle speed (0.8x -> 1.0x -> 1.2x)
-  const cyclePlaybackSpeed = () => {
-    const speeds = [0.8, 1.0, 1.2];
-    const nextIdx = (speeds.indexOf(audioPlaybackSpeed) + 1) % speeds.length;
-    const nextSpeed = speeds[nextIdx];
-    setAudioPlaybackSpeed(nextSpeed);
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.playbackRate = nextSpeed;
     }
   };
 
@@ -563,7 +558,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     playAudio(
       sentence.nativeAudioUrl,
       sentence.japaneseText,
-      audioPlaybackSpeed,
       () => {
         if (turnIdRef.current !== currentTurnId) return;
         turnTimeoutRef.current = setTimeout(() => {
@@ -1109,6 +1103,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const sentences = dialogue.sentences || [];
   const currentSentence: ShadowingSentenceItem | undefined = sentences[currentSentenceIndex];
 
+
   // Helper names
   const opponentRole = userRole === 'A' ? 'B' : 'A';
   const opponentName = userRole === 'A' ? dialogue.speakerRoleB_Name : dialogue.speakerRoleA_Name;
@@ -1558,7 +1553,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           <div className="flex items-center justify-end mb-2">
                             <div className="flex items-center gap-1.5">
                               <button
-                                onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, audioPlaybackSpeed)}
+                                onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
                                 className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                               >
                                 <span>🔊</span> Nghe lại
@@ -1568,12 +1563,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                 className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                               >
                                 <span>文A</span> Dịch
-                              </button>
-                              <button
-                                onClick={cyclePlaybackSpeed}
-                                className="bg-[#F8FAFD] hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs transition-all cursor-pointer"
-                              >
-                                ⏱️ {audioPlaybackSpeed}x
                               </button>
                             </div>
                           </div>
@@ -1669,7 +1658,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                             {/* 2. [🔊 Nghe lại] (White Pill Button) */}
                             <button
                               type="button"
-                              onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, audioPlaybackSpeed)}
+                              onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
                               className="h-7 px-3.5 rounded-full bg-white hover:bg-gray-100 text-[#071A44] font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                               title="Nghe phát âm chuẩn câu này"
                             >
@@ -1926,7 +1915,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <div className={`flex flex-col max-w-[80%] ${s.speakerRole === userRole ? 'items-end' : 'items-start'}`}>
                       <div className="flex items-center gap-1.5 mb-1">
                         <button
-                          onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, 1.0)}
+                          onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
                           className="bg-white hover:bg-blue-50 text-[#0878EE] border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs cursor-pointer"
                         >
                           <span>🔊</span> Nghe

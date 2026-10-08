@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using JCAP.DTOs.Tts;
@@ -10,6 +11,9 @@ namespace JCAP.Services.Implementations
         private readonly HttpClient _httpClient;
         private readonly ILogger<VoiceVoxService> _logger;
         private readonly string _baseUrl;
+
+        // In-Memory Audio Cache: Lưu trữ wav bytes đã tổng hợp để tái sử dụng ngay lập tức (0ms)
+        private static readonly ConcurrentDictionary<string, byte[]> _audioCache = new(StringComparer.Ordinal);
 
         private static readonly Dictionary<string, (string Romaji, string Gender, string Region, string Description)> CharacterMetadata = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -123,10 +127,20 @@ namespace JCAP.Services.Implementations
                 throw new ArgumentException("Nội dung text không được để trống.", nameof(text));
             }
 
+            var trimmedText = text.Trim();
+            var cacheKey = $"{speakerId}:{trimmedText}";
+
+            // 1. Kiểm tra cache: nếu câu thoại và giọng này đã từng được sinh -> Trả về ngay lập tức (0ms delay)
+            if (_audioCache.TryGetValue(cacheKey, out var cachedBytes))
+            {
+                _logger.LogInformation("Phát audio VOICEVOX từ Cache (0ms latency): speaker={SpeakerId}, text={Text}", speakerId, trimmedText);
+                return cachedBytes;
+            }
+
             try
             {
                 // Bước 1: Gọi audio_query
-                var escapedText = Uri.EscapeDataString(text.Trim());
+                var escapedText = Uri.EscapeDataString(trimmedText);
                 var queryUrl = $"/audio_query?text={escapedText}&speaker={speakerId}";
                 var queryResponse = await _httpClient.PostAsync(queryUrl, null, cancellationToken);
                 if (!queryResponse.IsSuccessStatusCode)
@@ -149,7 +163,12 @@ namespace JCAP.Services.Implementations
                     throw new InvalidOperationException($"VOICEVOX synthesis thất bại ({synthesisResponse.StatusCode}): {errorDetail}");
                 }
 
-                return await synthesisResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+                var wavBytes = await synthesisResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+
+                // 2. Lưu vào Cache để các lần phát tiếp theo hoặc người học khác học câu này được nhận ngay lập tức
+                _audioCache[cacheKey] = wavBytes;
+
+                return wavBytes;
             }
             catch (HttpRequestException ex)
             {

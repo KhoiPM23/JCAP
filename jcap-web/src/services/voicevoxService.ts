@@ -77,6 +77,17 @@ class VoiceVoxService {
   }
 
   /**
+   * Tải trước âm thanh ngầm (Pre-fetch) để khi người dùng bấm phát hoặc đối phương nói sẽ phát ngay lập tức (0ms delay)
+   */
+  public async prefetchAudio(text: string, speakerId: number): Promise<void> {
+    try {
+      await this.getAudioUrl(text, speakerId);
+    } catch {
+      // Pre-fetch ngầm thất bại sẽ bỏ qua trong yên lặng, khi phát thật sẽ có cơ chế fallback
+    }
+  }
+
+  /**
    * Phát nhanh câu thoại chào mừng để nghe thử chất giọng trong Settings
    */
   public async playVoicePreview(speakerId: number): Promise<HTMLAudioElement> {
