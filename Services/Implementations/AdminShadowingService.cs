@@ -551,7 +551,7 @@ Nhiệm vụ: Tạo một bài hội thoại Shadowing mẫu chất lượng cao
 - Số lượng ngữ pháp trọng tâm: {grammarCount} mẫu{customNotes}
 
 Yêu cầu:
-1. Các câu đối thoại luân phiên giữa các vai (A, B, C...).
+1. Gán đúng vai đối thoại ('speakerRole') cho từng câu thoại phù hợp với ngữ cảnh hội thoại thực tế, không bắt buộc phải luân phiên cứng nhắc giữa 2 vai nếu ngữ cảnh cần một bên nói liền nhiều câu. Giá trị 'speakerRole' của mỗi câu phải là ký tự định danh vai tương ứng ({string.Join(", ", roles.Select((_, idx) => $"\"{(char)('A' + idx)}\""))}).
 2. Câu tiếng Nhật tự nhiên, chuẩn văn phong hội thoại Nhật Bản ở trình độ {level}.
 3. Kèm Romaji chuẩn và bản dịch tiếng Việt mượt mà.
 4. Trả về JSON thuần túy theo schema sau:
@@ -591,26 +591,94 @@ Yêu cầu:
             if (parsed == null) return null;
 
             parsed.JLPTLevel = level;
-            parsed.SpeakerRoles = roles;
+            var resolvedRoles = new List<string>(roles);
+
             for (int i = 0; i < parsed.Sentences.Count; i++)
             {
                 parsed.Sentences[i].OrderIndex = i + 1;
-                var rawRole = parsed.Sentences[i].SpeakerRole?.Trim() ?? string.Empty;
-                if (rawRole.Equals("B", StringComparison.OrdinalIgnoreCase) || (roles.Count > 1 && rawRole.Equals(roles[1], StringComparison.OrdinalIgnoreCase)))
+                var rawRole = parsed.Sentences[i].SpeakerRole;
+                var normalizedRole = NormalizeSpeakerRole(rawRole, resolvedRoles);
+                parsed.Sentences[i].SpeakerRole = normalizedRole;
+
+                if (normalizedRole.Length == 1 && char.IsLetter(normalizedRole[0]))
                 {
-                    parsed.Sentences[i].SpeakerRole = "B";
-                }
-                else if (rawRole.Equals("A", StringComparison.OrdinalIgnoreCase) || (roles.Count > 0 && rawRole.Equals(roles[0], StringComparison.OrdinalIgnoreCase)))
-                {
-                    parsed.Sentences[i].SpeakerRole = "A";
-                }
-                else
-                {
-                    parsed.Sentences[i].SpeakerRole = ((char)('A' + (i % roles.Count))).ToString();
+                    int roleIndex = normalizedRole[0] - 'A';
+                    while (roleIndex >= resolvedRoles.Count && resolvedRoles.Count < 26)
+                    {
+                        char nextChar = (char)('A' + resolvedRoles.Count);
+                        resolvedRoles.Add($"Nhân vật {nextChar}");
+                    }
                 }
             }
 
+            parsed.SpeakerRoles = resolvedRoles;
             return parsed;
+        }
+
+        public static string NormalizeSpeakerRole(string? rawRole, List<string> roles)
+        {
+            if (string.IsNullOrWhiteSpace(rawRole)) return "A";
+            var trimmed = rawRole.Trim();
+
+            // 1. Single character 'A'..'Z'
+            if (trimmed.Length == 1 && char.IsLetter(trimmed[0]))
+            {
+                return char.ToUpperInvariant(trimmed[0]).ToString();
+            }
+
+            // 2. Pattern: "Vai A", "Role B", "Speaker C", "Nhân vật C"
+            var roleCharMatch = System.Text.RegularExpressions.Regex.Match(
+                trimmed,
+                @"^(?:vai|role|speaker|nhân\s*vật)\s*([a-zA-Z])\b",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (roleCharMatch.Success)
+            {
+                return roleCharMatch.Groups[1].Value.ToUpperInvariant();
+            }
+
+            // 3. Numeric pattern: "Vai 1", "Role 2", "1", "2"
+            var numMatch = System.Text.RegularExpressions.Regex.Match(
+                trimmed,
+                @"^(?:(?:vai|role|speaker|nhân\s*vật)\s*)?(\d+)\b",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (numMatch.Success && int.TryParse(numMatch.Groups[1].Value, out int roleNum) && roleNum >= 1)
+            {
+                int index = roleNum - 1;
+                if (index < 26)
+                {
+                    return ((char)('A' + index)).ToString();
+                }
+            }
+
+            // 4. Exact match against role names in roles list
+            for (int rIdx = 0; rIdx < roles.Count; rIdx++)
+            {
+                var rName = roles[rIdx].Trim();
+                if (trimmed.Equals(rName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ((char)('A' + rIdx)).ToString();
+                }
+            }
+
+            // 5. Partial/contains match against role names in roles list
+            for (int rIdx = 0; rIdx < roles.Count; rIdx++)
+            {
+                var rName = roles[rIdx].Trim();
+                if (!string.IsNullOrWhiteSpace(rName) &&
+                    (trimmed.Contains(rName, StringComparison.OrdinalIgnoreCase) ||
+                     rName.Contains(trimmed, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return ((char)('A' + rIdx)).ToString();
+                }
+            }
+
+            // Fallback: If starts with an alphabetic character
+            if (char.IsLetter(trimmed[0]))
+            {
+                return char.ToUpperInvariant(trimmed[0]).ToString();
+            }
+
+            return "A";
         }
 
         private async Task<TranslateAssistResponse?> TryTranslateWithAiClientAsync(
