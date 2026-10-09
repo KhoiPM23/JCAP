@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
 
@@ -97,6 +97,7 @@ const createDefaultLevelsState = (_scenarioTitle: string = ''): Record<'N5' | 'N
 
 export const AdminScenarioListView: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +120,11 @@ export const AdminScenarioListView: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Drag states for reordering rows with ⋮⋮
+  const [draggedMissionIndex, setDraggedMissionIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
+  const [draggedVocabIndex, setDraggedVocabIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
+  const [draggedGrammarIndex, setDraggedGrammarIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
+
   const fetchScenarios = async () => {
     setLoading(true);
     setError(null);
@@ -133,7 +139,13 @@ export const AdminScenarioListView: React.FC = () => {
 
   useEffect(() => {
     fetchScenarios();
-  }, []);
+    const state = location.state as { successMessage?: string } | null;
+    if (state?.successMessage) {
+      setSuccessMsg(state.successMessage);
+      window.history.replaceState({}, document.title);
+      setTimeout(() => setSuccessMsg(null), 4000);
+    }
+  }, [location.state]);
 
   const handleOpenAddModal = () => {
     setEditingScenario(null);
@@ -408,7 +420,9 @@ export const AdminScenarioListView: React.FC = () => {
               ...prev.levels,
               [lvl]: {
                 ...prevLvl,
-                aiPersona: prevLvl.aiPersona.trim() || gen.aiPersona || prevLvl.aiPersona,
+                aiPersona: (prevLvl.aiPersona.trim() || gen.aiPersona || prevLvl.aiPersona || 'Nhân viên / Người đối thoại')
+                  .trim()
+                  .slice(0, 100),
                 title: prevLvl.title.trim() || gen.title || prevLvl.title,
                 description: prevLvl.description.trim() || gen.description || prevLvl.description,
                 missions: mergedMissions,
@@ -589,6 +603,94 @@ export const AdminScenarioListView: React.FC = () => {
     });
   };
 
+  // Drag & drop handlers for Missions
+  const handleMissionDragStart = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
+    setDraggedMissionIndex({ lvl, index });
+  };
+
+  const handleMissionDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleMissionDrop = (lvl: 'N5' | 'N4' | 'N3', dropIndex: number) => {
+    if (!draggedMissionIndex || draggedMissionIndex.lvl !== lvl) return;
+    const fromIndex = draggedMissionIndex.index;
+    if (fromIndex === dropIndex) return;
+
+    setFormData((prev) => {
+      const list = [...prev.levels[lvl].missions];
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(dropIndex, 0, moved);
+      const updated = list.map((m, idx) => ({ ...m, order: idx + 1 }));
+      return {
+        ...prev,
+        levels: {
+          ...prev.levels,
+          [lvl]: { ...prev.levels[lvl], missions: updated },
+        },
+      };
+    });
+    setDraggedMissionIndex(null);
+  };
+
+  // Drag & drop handlers for Vocabularies
+  const handleVocabDragStart = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
+    setDraggedVocabIndex({ lvl, index });
+  };
+
+  const handleVocabDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleVocabDrop = (lvl: 'N5' | 'N4' | 'N3', dropIndex: number) => {
+    if (!draggedVocabIndex || draggedVocabIndex.lvl !== lvl) return;
+    const fromIndex = draggedVocabIndex.index;
+    if (fromIndex === dropIndex) return;
+
+    setFormData((prev) => {
+      const list = [...prev.levels[lvl].targetVocabularies];
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(dropIndex, 0, moved);
+      return {
+        ...prev,
+        levels: {
+          ...prev.levels,
+          [lvl]: { ...prev.levels[lvl], targetVocabularies: list },
+        },
+      };
+    });
+    setDraggedVocabIndex(null);
+  };
+
+  // Drag & drop handlers for Grammars
+  const handleGrammarDragStart = (lvl: 'N5' | 'N4' | 'N3', index: number) => {
+    setDraggedGrammarIndex({ lvl, index });
+  };
+
+  const handleGrammarDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleGrammarDrop = (lvl: 'N5' | 'N4' | 'N3', dropIndex: number) => {
+    if (!draggedGrammarIndex || draggedGrammarIndex.lvl !== lvl) return;
+    const fromIndex = draggedGrammarIndex.index;
+    if (fromIndex === dropIndex) return;
+
+    setFormData((prev) => {
+      const list = [...prev.levels[lvl].targetGrammars];
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(dropIndex, 0, moved);
+      return {
+        ...prev,
+        levels: {
+          ...prev.levels,
+          [lvl]: { ...prev.levels[lvl], targetGrammars: list },
+        },
+      };
+    });
+    setDraggedGrammarIndex(null);
+  };
+
   const handleDeleteScenario = async (id: number, title: string) => {
     if (!window.confirm(`Bạn có chắc chắn muốn vô hiệu hóa (xóa mềm) kịch bản "${title}"?`)) {
       return;
@@ -737,7 +839,7 @@ export const AdminScenarioListView: React.FC = () => {
 
           <button
             type="button"
-            onClick={handleOpenAddModal}
+            onClick={() => navigate('/admin/scenarios/new')}
             className="flex items-center gap-2 bg-[#0878EE] hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-sm active:scale-98 cursor-pointer"
           >
             <span>✨</span> Thêm Kịch bản Mới
@@ -847,7 +949,7 @@ export const AdminScenarioListView: React.FC = () => {
                       </td>
                       <td className="py-4 px-6 text-right space-x-2">
                         <button
-                          onClick={() => handleOpenEditModal(item)}
+                          onClick={() => navigate(`/admin/scenarios/edit/${item.id}`)}
                           className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
                         >
                           ✏️ Sửa
@@ -1096,14 +1198,20 @@ export const AdminScenarioListView: React.FC = () => {
                               {/* Vai AI Persona & Tiêu đề Level */}
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                                    Nhân vật AI đối thoại (Persona) <span className="text-red-500">*</span>
-                                  </label>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[11px] font-bold text-slate-700">
+                                      Nhân vật AI đối thoại (Persona) <span className="text-red-500">*</span>
+                                    </label>
+                                    <span className={`text-[10px] ${levelData.aiPersona.length >= 100 ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                                      {levelData.aiPersona.length}/100
+                                    </span>
+                                  </div>
                                   <input
                                     type="text"
+                                    maxLength={100}
                                     value={levelData.aiPersona}
                                     onChange={(e) => {
-                                      const val = e.target.value;
+                                      const val = e.target.value.slice(0, 100);
                                       setFormData((prev) => ({
                                         ...prev,
                                         levels: {
@@ -1112,7 +1220,7 @@ export const AdminScenarioListView: React.FC = () => {
                                         },
                                       }));
                                     }}
-                                    placeholder="Nhập vai trò của nhân vật AI trong tình huống này..."
+                                    placeholder="Nhập vai trò của nhân vật AI (tối đa 100 ký tự)..."
                                     className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#0878EE] outline-none"
                                   />
                                 </div>
@@ -1164,10 +1272,15 @@ export const AdminScenarioListView: React.FC = () => {
 
                               {/* 1. Nhiệm vụ cần hoàn thành (Missions) */}
                               <div className="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                    <span>📋</span> Nhiệm vụ cần hoàn thành ({levelData.missions.length})
-                                  </span>
+                                <div className="flex items-center justify-between pb-1 border-b border-slate-200/50">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                      <span>📋</span> Nhiệm vụ cần hoàn thành ({levelData.missions.length})
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 hidden sm:inline">
+                                      (Kéo biểu tượng ⋮⋮ ở đầu hàng để đổi thứ tự)
+                                    </span>
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => handleAddMission(lvl)}
@@ -1179,7 +1292,26 @@ export const AdminScenarioListView: React.FC = () => {
 
                                 <div className="space-y-2">
                                   {levelData.missions.map((mission, mIdx) => (
-                                    <div key={mIdx} className="flex items-center gap-2">
+                                    <div
+                                      key={mIdx}
+                                      draggable
+                                      onDragStart={() => handleMissionDragStart(lvl, mIdx)}
+                                      onDragOver={handleMissionDragOver}
+                                      onDrop={() => handleMissionDrop(lvl, mIdx)}
+                                      className={`flex items-center gap-2 p-1.5 rounded-lg border transition-all ${
+                                        draggedMissionIndex?.lvl === lvl && draggedMissionIndex?.index === mIdx
+                                          ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/40'
+                                          : 'border-transparent bg-transparent hover:bg-slate-100/60'
+                                      }`}
+                                    >
+                                      {/* Drag Handle Icon ⋮⋮ */}
+                                      <div
+                                        className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
+                                        title="Kéo để đổi thứ tự"
+                                      >
+                                        <span className="text-sm font-mono tracking-tighter leading-none select-none">⋮⋮</span>
+                                      </div>
+
                                       <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue-100 text-[#0878EE] font-bold text-[10px] shrink-0">
                                         {mIdx + 1}
                                       </span>
@@ -1208,10 +1340,15 @@ export const AdminScenarioListView: React.FC = () => {
 
                               {/* 2. Từ vựng trọng tâm (Vocabularies) */}
                               <div className="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                    <span>📖</span> Từ vựng trọng tâm ({levelData.targetVocabularies.length})
-                                  </span>
+                                <div className="flex items-center justify-between pb-1 border-b border-slate-200/50">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                      <span>📖</span> Từ vựng trọng tâm ({levelData.targetVocabularies.length})
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 hidden sm:inline">
+                                      (Kéo biểu tượng ⋮⋮ ở đầu hàng để đổi thứ tự)
+                                    </span>
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => handleAddVocab(lvl)}
@@ -1223,37 +1360,58 @@ export const AdminScenarioListView: React.FC = () => {
 
                                 <div className="space-y-2">
                                   {levelData.targetVocabularies.map((vocab, vIdx) => (
-                                    <div key={vIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center bg-white p-2 rounded-lg border border-slate-200 relative">
-                                      <input
-                                        type="text"
-                                        value={vocab.word}
-                                        onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
-                                        placeholder="Nhập từ vựng tiếng Nhật..."
-                                        className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={vocab.reading || ''}
-                                        onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
-                                        placeholder="Nhập cách đọc (Hiragana)..."
-                                        className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                      />
-                                      <div className="flex items-center gap-2">
+                                    <div
+                                      key={vIdx}
+                                      draggable
+                                      onDragStart={() => handleVocabDragStart(lvl, vIdx)}
+                                      onDragOver={handleVocabDragOver}
+                                      onDrop={() => handleVocabDrop(lvl, vIdx)}
+                                      className={`flex items-center gap-1.5 bg-white p-2 rounded-lg border transition-all ${
+                                        draggedVocabIndex?.lvl === lvl && draggedVocabIndex?.index === vIdx
+                                          ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/30'
+                                          : 'border-slate-200 hover:border-slate-300'
+                                      }`}
+                                    >
+                                      {/* Drag Handle Icon ⋮⋮ */}
+                                      <div
+                                        className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
+                                        title="Kéo để đổi thứ tự"
+                                      >
+                                        <span className="text-sm font-mono tracking-tighter leading-none select-none">⋮⋮</span>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center flex-1">
                                         <input
                                           type="text"
-                                          value={vocab.meaning}
-                                          onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
-                                          placeholder="Nhập ý nghĩa tiếng Việt..."
-                                          className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                          value={vocab.word}
+                                          onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
+                                          placeholder="Nhập từ vựng tiếng Nhật..."
+                                          className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveVocab(lvl, vIdx)}
-                                          className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs cursor-pointer"
-                                          title="Xóa từ vựng này"
-                                        >
-                                          ✕
-                                        </button>
+                                        <input
+                                          type="text"
+                                          value={vocab.reading || ''}
+                                          onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
+                                          placeholder="Nhập cách đọc (Hiragana)..."
+                                          className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <input
+                                            type="text"
+                                            value={vocab.meaning}
+                                            onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
+                                            placeholder="Nhập ý nghĩa tiếng Việt..."
+                                            className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveVocab(lvl, vIdx)}
+                                            className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs cursor-pointer"
+                                            title="Xóa từ vựng này"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
@@ -1265,10 +1423,15 @@ export const AdminScenarioListView: React.FC = () => {
 
                               {/* 3. Ngữ pháp trọng tâm (Grammars) */}
                               <div className="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                    <span>📝</span> Ngữ pháp trọng tâm ({levelData.targetGrammars.length})
-                                  </span>
+                                <div className="flex items-center justify-between pb-1 border-b border-slate-200/50">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                      <span>📝</span> Ngữ pháp trọng tâm ({levelData.targetGrammars.length})
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 hidden sm:inline">
+                                      (Kéo biểu tượng ⋮⋮ ở đầu hàng để đổi thứ tự)
+                                    </span>
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => handleAddGrammar(lvl)}
@@ -1280,37 +1443,58 @@ export const AdminScenarioListView: React.FC = () => {
 
                                 <div className="space-y-2">
                                   {levelData.targetGrammars.map((grammar, gIdx) => (
-                                    <div key={gIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center bg-white p-2 rounded-lg border border-slate-200 relative">
-                                      <input
-                                        type="text"
-                                        value={grammar.pattern}
-                                        onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
-                                        placeholder="Nhập mẫu ngữ pháp..."
-                                        className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={grammar.meaning}
-                                        onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
-                                        placeholder="Nhập ý nghĩa ngữ pháp..."
-                                        className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                      />
-                                      <div className="flex items-center gap-2">
+                                    <div
+                                      key={gIdx}
+                                      draggable
+                                      onDragStart={() => handleGrammarDragStart(lvl, gIdx)}
+                                      onDragOver={handleGrammarDragOver}
+                                      onDrop={() => handleGrammarDrop(lvl, gIdx)}
+                                      className={`flex items-center gap-1.5 bg-white p-2 rounded-lg border transition-all ${
+                                        draggedGrammarIndex?.lvl === lvl && draggedGrammarIndex?.index === gIdx
+                                          ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/30'
+                                          : 'border-slate-200 hover:border-slate-300'
+                                      }`}
+                                    >
+                                      {/* Drag Handle Icon ⋮⋮ */}
+                                      <div
+                                        className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
+                                        title="Kéo để đổi thứ tự"
+                                      >
+                                        <span className="text-sm font-mono tracking-tighter leading-none select-none">⋮⋮</span>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center flex-1">
                                         <input
                                           type="text"
-                                          value={grammar.exampleSentence || ''}
-                                          onChange={(e) => handleGrammarChange(lvl, gIdx, 'exampleSentence', e.target.value)}
-                                          placeholder="Nhập câu ví dụ minh họa..."
-                                          className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                          value={grammar.pattern}
+                                          onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
+                                          placeholder="Nhập mẫu ngữ pháp..."
+                                          className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveGrammar(lvl, gIdx)}
-                                          className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs cursor-pointer"
-                                          title="Xóa ngữ pháp này"
-                                        >
-                                          ✕
-                                        </button>
+                                        <input
+                                          type="text"
+                                          value={grammar.meaning}
+                                          onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
+                                          placeholder="Nhập ý nghĩa ngữ pháp..."
+                                          className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          <input
+                                            type="text"
+                                            value={grammar.exampleSentence || ''}
+                                            onChange={(e) => handleGrammarChange(lvl, gIdx, 'exampleSentence', e.target.value)}
+                                            placeholder="Nhập câu ví dụ minh họa..."
+                                            className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveGrammar(lvl, gIdx)}
+                                            className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs cursor-pointer"
+                                            title="Xóa ngữ pháp này"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
