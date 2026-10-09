@@ -111,7 +111,7 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Đổi mật khẩu của người dùng đang đăng nhập.
+        /// Đổi mật khẩu, hoặc tạo mật khẩu JCAP lần đầu cho tài khoản Google đã xác minh.
         /// </summary>
         [Authorize]
         [HttpPost("change-password")]

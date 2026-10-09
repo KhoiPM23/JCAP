@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDateTime } from '../utils/dateUtils';
+import { downloadResultImage, exportResultImage } from '../utils/exportResultImage';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
 
 const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
@@ -27,11 +28,21 @@ export const ConversationResultDetailView: React.FC = () => {
   const [result, setResult] = useState<RoleplayResultDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const resultContentRef = useRef<HTMLDivElement>(null);
+  const exportInProgress = useRef(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
 
     const loadResult = async () => {
+      setIsLoading(true);
+      setResult(null);
+      setError(null);
+      setExportError(null);
+      setExportMessage(null);
       if (!Number.isInteger(parsedResultId) || parsedResultId <= 0) {
         setError('Mã kết quả không hợp lệ.');
         setIsLoading(false);
@@ -55,7 +66,31 @@ export const ConversationResultDetailView: React.FC = () => {
     };
   }, [parsedResultId]);
 
-  if (isLoading) {
+  const handleDownloadImage = async () => {
+    const element = resultContentRef.current;
+    if (!element || !result || result.id !== parsedResultId || exportInProgress.current) return;
+
+    exportInProgress.current = true;
+    setIsExporting(true);
+    setExportError(null);
+    setExportMessage(null);
+    try {
+      const image = await exportResultImage(element);
+      // Navigating to a different result must not download the previous result.
+      if (!element.isConnected || resultContentRef.current !== element) return;
+      downloadResultImage(image, result.id);
+      setExportMessage('Đã tạo ảnh PNG và gửi yêu cầu tải xuống trình duyệt.');
+    } catch {
+      if (element.isConnected && resultContentRef.current === element) {
+        setExportError('Không thể tạo ảnh kết quả. Vui lòng thử lại. Kết quả của bạn vẫn được lưu trong lịch sử.');
+      }
+    } finally {
+      exportInProgress.current = false;
+      setIsExporting(false);
+    }
+  };
+
+  if (isLoading || (result && result.id !== parsedResultId)) {
     return (
       <div className="mx-auto max-w-5xl space-y-5">
         <div className="h-64 animate-pulse rounded-[28px] bg-white" />
@@ -85,95 +120,119 @@ export const ConversationResultDetailView: React.FC = () => {
 
   return (
     <section className="mx-auto w-full max-w-5xl pb-10">
-      <Link
-        to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
-        className="mb-5 inline-flex items-center text-sm font-bold text-[#52627A] transition hover:text-[#0878EE]"
-      >
-        ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
-      </Link>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <Link
+          to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
+          className="inline-flex items-center text-sm font-bold text-[#52627A] transition hover:text-[#0878EE]"
+        >
+          ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
+        </Link>
+        <button
+          type="button"
+          onClick={() => void handleDownloadImage()}
+          disabled={isExporting}
+          aria-busy={isExporting}
+          className="inline-flex items-center gap-2 rounded-xl border border-[#DCE7F4] bg-white px-5 py-2.5 text-sm font-bold text-[#071A44] transition hover:bg-[#F4F9FE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0878EE] disabled:cursor-wait disabled:opacity-60"
+        >
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4" />
+          </svg>
+          {isExporting ? 'Đang tạo ảnh…' : 'Tải ảnh kết quả'}
+        </button>
+      </div>
+      {exportError && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">{exportError}</p>}
+      <p role="status" className="text-sm text-[#52627A]">
+        {exportMessage && <span className="mb-4 block">{exportMessage}</span>}
+      </p>
 
-      <header className="relative overflow-hidden rounded-[30px] bg-[#071A44] px-7 py-8 text-white shadow-[0_24px_60px_rgba(7,26,68,0.2)] md:px-10 md:py-10">
-        <div className="absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(8,120,238,0.45),transparent_65%)]" />
-        <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
-          <div>
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-blue-100">
-                JLPT {result.jlptLevel}
-              </span>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-black ${
-                  result.passStatus
-                    ? 'bg-emerald-400/20 text-emerald-200'
-                    : 'bg-orange-400/20 text-orange-200'
-                }`}
-              >
-                {result.passStatus ? 'ĐẠT' : 'CHƯA ĐẠT'}
-              </span>
+      <div key={result.id} ref={resultContentRef} className="rounded-[30px] bg-[#F4F9FE] p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#52627A]">
+          <span className="text-base font-black text-[#0878EE]">JCAP</span>
+          <span>Kết quả #{result.id} · Thời gian Việt Nam (UTC+7)</span>
+        </div>
+        <header className="relative overflow-hidden rounded-[30px] bg-[#071A44] px-7 py-8 text-white shadow-[0_24px_60px_rgba(7,26,68,0.2)] md:px-10 md:py-10">
+          <div className="absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(8,120,238,0.45),transparent_65%)]" />
+          <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-blue-100">
+                  JLPT {result.jlptLevel}
+                </span>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-black ${
+                    result.passStatus
+                      ? 'bg-emerald-400/20 text-emerald-200'
+                      : 'bg-orange-400/20 text-orange-200'
+                  }`}
+                >
+                  {result.passStatus ? 'ĐẠT' : 'CHƯA ĐẠT'}
+                </span>
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7FC2FF]">
+                Kết quả hội thoại
+              </p>
+              <h1 className="mt-3 break-words text-3xl font-black tracking-tight md:text-4xl">
+                {result.scenarioTitle}
+              </h1>
+              <p className="mt-3 text-sm text-blue-100">Hoàn thành {formatDate(result.completedAt)}</p>
             </div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7FC2FF]">
-              Kết quả hội thoại
-            </p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
-              {result.scenarioTitle}
-            </h1>
-            <p className="mt-3 text-sm text-blue-100">Hoàn thành {formatDate(result.completedAt)}</p>
-          </div>
 
-          <div
-            className="grid h-36 w-36 place-items-center rounded-full p-3"
-            style={{
-              background: `conic-gradient(#38BDF8 ${result.overallScore}%, rgba(255,255,255,0.12) 0)`,
-            }}
-            aria-label={`Điểm tổng ${result.overallScore} trên 100`}
-          >
-            <div className="grid h-full w-full place-items-center rounded-full bg-[#071A44] text-center">
-              <div>
-                <strong className="block text-4xl font-black">{result.overallScore}</strong>
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Tổng điểm</span>
+            <div
+              className="grid h-36 w-36 place-items-center rounded-full p-3"
+              style={{
+                background: `conic-gradient(#38BDF8 ${result.overallScore}%, rgba(255,255,255,0.12) 0)`,
+              }}
+              aria-label={`Điểm tổng ${result.overallScore} trên 100`}
+            >
+              <div className="grid h-full w-full place-items-center rounded-full bg-[#071A44] text-center">
+                <div>
+                  <strong className="block text-4xl font-black">{result.overallScore}</strong>
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Tổng điểm</span>
+                </div>
               </div>
             </div>
           </div>
+        </header>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <ScoreCard label="Ngữ pháp" score={result.grammarScore} accent="bg-[#0878EE]" />
+          <ScoreCard label="Từ vựng" score={result.vocabularyScore} accent="bg-emerald-500" />
+          <ScoreCard label="Ấn tượng giao tiếp" score={result.impressionScore} accent="bg-amber-500" />
         </div>
-      </header>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <ScoreCard label="Ngữ pháp" score={result.grammarScore} accent="bg-[#0878EE]" />
-        <ScoreCard label="Từ vựng" score={result.vocabularyScore} accent="bg-emerald-500" />
-        <ScoreCard label="Ấn tượng giao tiếp" score={result.impressionScore} accent="bg-amber-500" />
-      </div>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <article className="rounded-[26px] border border-[#DCE7F4] bg-white p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Nhận xét tổng quan</p>
+            <h2 className="mt-2 text-2xl font-black text-[#071A44]">Đánh giá phiên luyện tập</h2>
+            <p className="mt-4 whitespace-pre-wrap break-words leading-7 text-[#52627A]">{result.generalFeedbackText}</p>
+            <p className="mt-6 border-t border-[#E6EDF5] pt-5 text-xs leading-5 text-[#8B9BB4]">
+              Nhận xét AI chỉ nhằm hỗ trợ học tập và không phải kết quả chứng nhận JLPT chính thức.
+            </p>
+          </article>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[26px] border border-[#DCE7F4] bg-white p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Nhận xét tổng quan</p>
-          <h2 className="mt-2 text-2xl font-black text-[#071A44]">Điều bạn đang làm tốt</h2>
-          <p className="mt-4 leading-7 text-[#52627A]">{result.generalFeedbackText}</p>
-          <p className="mt-6 border-t border-[#E6EDF5] pt-5 text-xs leading-5 text-[#8B9BB4]">
-            Nhận xét AI chỉ nhằm hỗ trợ học tập và không phải kết quả chứng nhận JLPT chính thức.
-          </p>
-        </article>
-
-        <aside className="rounded-[26px] border border-[#DCE7F4] bg-white p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Mission đã đạt</p>
-          <h2 className="mt-2 text-2xl font-black text-[#071A44]">
-            {result.completedMissions.length} mục tiêu
-          </h2>
-          <ul className="mt-5 space-y-3">
-            {result.completedMissions.length > 0 ? (
-              result.completedMissions.map((mission) => (
-                <li key={mission.missionId} className="flex gap-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-xs text-white">
-                    ✓
-                  </span>
-                  <span className="leading-6">{mission.title}</span>
+          <aside className="rounded-[26px] border border-[#DCE7F4] bg-white p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Nhiệm vụ đã hoàn thành</p>
+            <h2 className="mt-2 text-2xl font-black text-[#071A44]">
+              {result.completedMissions.length} mục tiêu
+            </h2>
+            <ul className="mt-5 space-y-3">
+              {result.completedMissions.length > 0 ? (
+                result.completedMissions.map((mission) => (
+                  <li key={mission.missionId} className="flex gap-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-xs text-white">
+                      ✓
+                    </span>
+                    <span className="min-w-0 break-words leading-6">{mission.title}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="rounded-xl bg-[#F4F9FE] p-4 text-sm leading-6 text-[#71809A]">
+                  Phiên này chưa ghi nhận nhiệm vụ hoàn thành.
                 </li>
-              ))
-            ) : (
-              <li className="rounded-xl bg-[#F4F9FE] p-4 text-sm leading-6 text-[#71809A]">
-                Phiên này chưa ghi nhận mission hoàn thành.
-              </li>
-            )}
-          </ul>
-        </aside>
+              )}
+            </ul>
+          </aside>
+        </div>
       </div>
 
       <div className="mt-7 flex flex-wrap gap-3">

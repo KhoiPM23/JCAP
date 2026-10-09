@@ -2,7 +2,6 @@ using JCAP.Data;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
-using JCAP.Services.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -305,6 +304,66 @@ namespace JCAP.Tests.Services
             Assert.NotNull(response.Data);
             Assert.Equal(DateTimeKind.Utc, response.Data.CompletedAt.Kind);
             Assert.Equal(persistedUtcValue, response.Data.CompletedAt);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_PreservesSnapshotAfterSourceSessionChanges()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var session = CreateSession(40, "learner-1");
+            dbContext.RoleplaySessions.Add(session);
+            await dbContext.SaveChangesAsync();
+            var snapshot = new RoleplaySessionSnapshot
+            {
+                SessionId = 40,
+                UserId = "learner-1",
+                ScenarioTitle = "Gọi món tại quán Ramen",
+                JLPTLevel = "N5",
+                CompletedMissions = [new CompletedMissionSnapshot { MissionId = 1, Title = "Gọi một tô ramen" }]
+            };
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider.Setup(item => item.GetCompletableSessionAsync(40, "learner-1")).ReturnsAsync(snapshot);
+            var service = CreateService(dbContext, provider.Object);
+            var completion = await service.CompleteSessionAsync("learner-1", 40);
+            Assert.True(completion.Success);
+            Assert.NotNull(completion.Data);
+            var original = (await service.GetDetailAsync("learner-1", completion.Data.ResultId)).Data;
+            Assert.NotNull(original);
+
+            // Later edits to the source must not change a learner's saved result.
+            snapshot.ScenarioTitle = "Kịch bản đã chỉnh sửa";
+            snapshot.JLPTLevel = "N3";
+            snapshot.CompletedMissions[0].Title = "Nhiệm vụ đã chỉnh sửa";
+            session.Messages.First().LinguisticFeedbackJson = null;
+            foreach (var sessionMission in session.SessionMissions)
+            {
+                sessionMission.IsCompleted = false;
+            }
+            await dbContext.SaveChangesAsync();
+            dbContext.ChangeTracker.Clear();
+
+            var repeated = await service.CompleteSessionAsync("learner-1", 40);
+            var reopened = await service.GetDetailAsync("learner-1", completion.Data.ResultId);
+
+            Assert.True(repeated.Success);
+            Assert.NotNull(repeated.Data);
+            Assert.True(repeated.Data.IsExistingResult);
+            Assert.Equal(completion.Data.ResultId, repeated.Data.ResultId);
+            Assert.True(reopened.Success);
+            Assert.NotNull(reopened.Data);
+            Assert.Equal(original.ScenarioTitle, reopened.Data.ScenarioTitle);
+            Assert.Equal(original.JLPTLevel, reopened.Data.JLPTLevel);
+            Assert.Equal(original.OverallScore, reopened.Data.OverallScore);
+            Assert.Equal(original.GrammarScore, reopened.Data.GrammarScore);
+            Assert.Equal(original.VocabularyScore, reopened.Data.VocabularyScore);
+            Assert.Equal(original.ImpressionScore, reopened.Data.ImpressionScore);
+            Assert.Equal(original.PassStatus, reopened.Data.PassStatus);
+            Assert.Equal(original.GeneralFeedbackText, reopened.Data.GeneralFeedbackText);
+            Assert.Equal(original.CompletedAt, reopened.Data.CompletedAt);
+            var mission = Assert.Single(reopened.Data.CompletedMissions);
+            Assert.Equal(1, mission.MissionId);
+            Assert.Equal("Gọi một tô ramen", mission.Title);
+            provider.Verify(item => item.GetCompletableSessionAsync(40, "learner-1"), Times.Once);
         }
 
         [Fact]

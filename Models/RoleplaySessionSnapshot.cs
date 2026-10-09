@@ -1,4 +1,4 @@
-namespace JCAP.Services.Models
+namespace JCAP.Models
 {
     public class RoleplaySessionSnapshot
     {
@@ -7,11 +7,5 @@ namespace JCAP.Services.Models
         public string ScenarioTitle { get; set; } = string.Empty;
         public string JLPTLevel { get; set; } = string.Empty;
         public List<CompletedMissionSnapshot> CompletedMissions { get; set; } = [];
-    }
-
-    public class CompletedMissionSnapshot
-    {
-        public int MissionId { get; set; }
-        public string Title { get; set; } = string.Empty;
     }
 }

@@ -83,10 +83,16 @@ builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, RoleplaySessionSnap
 builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
+builder.Services.AddScoped<IScenarioService, ScenarioService>();
+builder.Services.AddScoped<IShadowingService, ShadowingService>();
+builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
-builder.Services.AddScoped<IAiRoleplayService, GeminiRoleplayService>();
+builder.Services.AddScoped<GeminiAiClient>();
+builder.Services.AddScoped<OpenAiCompatibleAiClient>();
+builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
