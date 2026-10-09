@@ -13,6 +13,7 @@ export interface AuthResponseDto {
   role: string;
   creditBalance?: number;
   expiresAt: string;
+  hasPassword: boolean;
 }
 
 export interface RegisterResponseDto {
@@ -51,7 +52,7 @@ export interface ResetPasswordPayload {
 }
 
 export interface ChangePasswordPayload {
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
   confirmPassword: string;
 }

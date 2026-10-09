@@ -5,6 +5,7 @@ using JCAP.DTOs.Common;
 using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
+using JCAP.Services.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace JCAP.Services.Implementations;
@@ -13,15 +14,18 @@ public class ScenarioService : IScenarioService
 {
     private static readonly JsonSerializerOptions CriteriaJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly AppDbContext _dbContext;
+    private readonly IAiClient? _aiClient;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly IConfiguration? _configuration;
 
     public ScenarioService(
         AppDbContext dbContext,
+        IAiClient? aiClient = null,
         IHttpClientFactory? httpClientFactory = null,
         IConfiguration? configuration = null)
     {
         _dbContext = dbContext;
+        _aiClient = aiClient;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
@@ -743,21 +747,18 @@ public class ScenarioService : IScenarioService
                 : $"Thực hành giao tiếp trình độ {level} cho chủ đề '{title}'.",
         };
 
-        var apiKey = _configuration?["Gemini:ApiKey"];
-        var model = _configuration?["Gemini:Model"] ?? "gemini-3.1-flash-lite";
-
-        if (!string.IsNullOrWhiteSpace(apiKey) && _httpClientFactory != null)
+        if (_aiClient != null)
         {
             try
             {
-                var geminiResult = await TryGenerateWithGeminiAsync(
-                    apiKey, model, title, desc, level, missionCount, vocabCount, grammarCount,
+                var aiResult = await TryGenerateWithAiClientAsync(
+                    title, desc, level, missionCount, vocabCount, grammarCount,
                     existingMissions, existingVocabs, existingGrammars, cancellationToken);
-                if (geminiResult != null &&
-                    TryFinalizeGeneratedContent(geminiResult, missionCount, vocabCount, grammarCount,
+                if (aiResult != null &&
+                    TryFinalizeGeneratedContent(aiResult, missionCount, vocabCount, grammarCount,
                         existingMissions, existingVocabs, existingGrammars))
                 {
-                    return ApiResponse<GeneratedLevelContentDto>.Ok(geminiResult, $"Tạo gợi ý nội dung AI ({model}) cho trình độ {level} thành công.");
+                    return ApiResponse<GeneratedLevelContentDto>.Ok(aiResult, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
                 }
             }
             catch
@@ -1155,9 +1156,7 @@ public class ScenarioService : IScenarioService
         return ApiResponse<GeneratedLevelContentDto>.Ok(result, $"Tạo gợi ý nội dung AI cho trình độ {level} thành công.");
     }
 
-    private async Task<GeneratedLevelContentDto?> TryGenerateWithGeminiAsync(
-        string apiKey,
-        string model,
+    private async Task<GeneratedLevelContentDto?> TryGenerateWithAiClientAsync(
         string title,
         string desc,
         string level,
@@ -1169,8 +1168,7 @@ public class ScenarioService : IScenarioService
         List<CreateGrammarDto> existingGrammars,
         CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory!.CreateClient();
-        var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+        if (_aiClient == null) return null;
 
         var existingMissionsJson = JsonSerializer.Serialize(
             existingMissions.Select(m => new { id = m.Id, content = m.Content, target = m.Target }), CriteriaJsonOptions);
@@ -1225,37 +1223,11 @@ Trả về JSON thuần túy theo cấu trúc:
   ]
 }}";
 
-        var requestBody = new
-        {
-            contents = new[]
-            {
-                new
-                {
-                    role = "user",
-                    parts = new[] { new { text = prompt } }
-                }
-            },
-            generationConfig = new
-            {
-                temperature = 0.7,
-                responseMimeType = "application/json"
-            }
-        };
+        var aiRequest = AiRequest.CreateJson(null, prompt);
+        var aiResponse = await _aiClient.GenerateAsync(aiRequest, cancellationToken);
+        if (!aiResponse.IsSuccess || string.IsNullOrWhiteSpace(aiResponse.Content)) return null;
 
-        var json = JsonSerializer.Serialize(requestBody, CriteriaJsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await httpClient.PostAsync(endpoint, content, cancellationToken);
-        if (!response.IsSuccessStatusCode) return null;
-
-        var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
-        using var doc = JsonDocument.Parse(responseString);
-        var candidates = doc.RootElement.GetProperty("candidates");
-        if (candidates.GetArrayLength() == 0) return null;
-
-        var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-        if (string.IsNullOrWhiteSpace(text)) return null;
-
-        var parsed = JsonSerializer.Deserialize<GeneratedLevelContentDto>(text, CriteriaJsonOptions);
+        var parsed = JsonSerializer.Deserialize<GeneratedLevelContentDto>(aiResponse.Content, CriteriaJsonOptions);
         if (parsed == null) return null;
 
         parsed.JLPTLevel = level;

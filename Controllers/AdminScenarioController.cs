@@ -27,16 +27,10 @@ public class AdminScenarioController : ControllerBase
     [HttpGet("ai-status")]
     public IActionResult GetAiStatus()
     {
-        var rawModel = _configuration["AI:Model"]
-            ?? _configuration["Gemini:Model"]
-            ?? _configuration["OpenAI:Model"]
-            ?? _configuration["Claude:Model"]
+        var rawModel = ResolveConfig("AI:Model", "Gemini:Model", "OpenAI:Model", "Claude:Model")
             ?? "gemini-3.1-flash-lite";
 
-        var apiKey = _configuration["AI:ApiKey"]
-            ?? _configuration["Gemini:ApiKey"]
-            ?? _configuration["OpenAI:ApiKey"]
-            ?? _configuration["Claude:ApiKey"];
+        var apiKey = ResolveConfig("AI:ApiKey", "Gemini:ApiKey", "OpenAI:ApiKey", "Claude:ApiKey");
 
         var displayName = FormatAiModelDisplayName(rawModel);
 
@@ -47,6 +41,19 @@ public class AdminScenarioController : ControllerBase
             isReady = true,
             mode = string.IsNullOrWhiteSpace(apiKey) ? "Simulator" : "Live AI"
         }));
+    }
+
+    private string? ResolveConfig(params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var val = _configuration[key];
+            if (!string.IsNullOrWhiteSpace(val))
+            {
+                return val.Trim();
+            }
+        }
+        return null;
     }
 
     private static string FormatAiModelDisplayName(string rawModel)
