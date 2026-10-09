@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { ShadowingProgress } from '../../types/shadowingProgress';
 
 interface ContinueShadowingCardProps {
@@ -19,21 +19,9 @@ export const ContinueShadowingCard: React.FC<ContinueShadowingCardProps> = ({
     return (
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-[#005ab6]">
-              <span className="material-symbols-outlined text-[20px]">play_circle</span>
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-              Tiếp tục học Shadowing
-            </h2>
-          </div>
-          <Link
-            to="/shadowing"
-            className="text-xs font-semibold text-[#005ab6] hover:text-[#00458f] flex items-center gap-1 transition-colors"
-          >
-            <span>Xem tất cả bài tập</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </Link>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            Tiếp tục học Shadowing
+          </h2>
         </div>
 
         <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -94,21 +82,9 @@ export const ContinueShadowingCard: React.FC<ContinueShadowingCardProps> = ({
     <section className="space-y-3">
       {/* Header bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-[#005ab6]">
-            <span className="material-symbols-outlined text-[20px]">play_circle</span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-            Tiếp tục học Shadowing
-          </h2>
-        </div>
-        <Link
-          to="/shadowing?tab=in-progress"
-          className="text-xs font-semibold text-[#005ab6] hover:text-[#00458f] flex items-center gap-1 transition-colors"
-        >
-          <span>Xem tất cả bài tập</span>
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </Link>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          Tiếp tục học Shadowing
+        </h2>
       </div>
 
       {/* Main Resume Card */}
