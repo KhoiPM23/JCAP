@@ -87,8 +87,10 @@ builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
+builder.Services.AddScoped<IAiShadowingAssessmentService, GeminiShadowingAssessmentService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

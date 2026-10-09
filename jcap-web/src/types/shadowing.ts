@@ -87,15 +87,41 @@ export interface ShadowingSentencePracticeResult {
   orderIndex: number;
   targetText: string;
   recognizedText: string;
-  accuracyScore: number;
+  contentMatchScore: number; // 0 - 100 (60% trọng số)
+  fluencyScore: number; // 0 - 100 (40% trọng số)
+  overallScore: number; // Điểm tổng kết câu = 60% Content Match + 40% Fluency
+  accuracyScore: number; // Backward compatibility (= contentMatchScore)
+  intonationScore?: number;
+  evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
+  feedback?: string;
+  missingWords?: string[];
+  mismatchedWords?: string[];
+  audioGateStatus: 'good' | 'acceptable' | 'needs_retry';
+  audioGateLabel: string;
+  audioQualityScore?: number;
+  isValidForBestAttempt: boolean;
+  attemptsCount: number;
   evaluationTier: 'green' | 'yellow' | 'red';
+  diffTokens?: { text: string; status: 'correct' | 'mismatched' | 'missing'; spokenPart?: string }[];
   audioBlobUrl?: string;
+  durationMs?: number;
+  targetAudioUrl?: string;
+  romajiText?: string;
+  vietnameseTranslation?: string;
 }
 
 export interface ShadowingSessionCompletePayload {
   dialogueId: number;
   learnerRole: 'A' | 'B';
-  overallAccuracyScore: number;
+  overallContentMatchScore: number; // 60%
+  overallFluencyScore: number; // 40%
+  weightedOverallScore: number; // 60% Match + 40% Fluency
+  overallAccuracyScore: number; // Backward compatibility
+  overallIntonationScore?: number;
+  overallAudioQualityScore?: number;
+  audioQualityStatus?: string;
+  overallAudioGateStatus: 'good' | 'acceptable' | 'needs_retry';
+  audioGateLabel: string;
   durationSeconds: number;
   sentencesPracticed: number;
   totalGreenSentences: number;
@@ -108,8 +134,13 @@ export interface ShadowingAiAnalysisPayload {
   dialogueId: number;
   learnerRole: 'A' | 'B';
   overallAccuracyScore: number;
+  overallContentMatchScore?: number;
+  overallFluencyScore?: number;
+  overallIntonationScore?: number;
+  overallAudioQualityScore?: number;
   durationSeconds: number;
   sentenceResults: ShadowingSentencePracticeResult[];
+  audioDataMap?: Record<number, string>;
 }
 
 export interface ShadowingAiAnalysisResult {
@@ -161,6 +192,8 @@ export interface UpdateShadowingDialoguePayload {
   targetGrammars?: ShadowingGrammarItem[];
 }
 
+export * from './shadowingProgress';
+
 export interface GenerateShadowingDialoguePayload {
   scenarioId?: number;
   contextTitle: string;
@@ -194,3 +227,4 @@ export interface TranslateAssistResult {
   romajiText?: string | null;
   vietnameseTranslation: string;
 }
+
