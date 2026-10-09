@@ -1,15 +1,16 @@
 export interface ShadowingSentenceItem {
   id: number;
   orderIndex: number;
-  speakerRole: 'A' | 'B';
+  speakerRole: string; // 'A' | 'B' | 'C' etc.
   japaneseText: string;
   romajiText?: string | null;
   vietnameseTranslation: string;
-  nativeAudioUrl: string;
+  nativeAudioUrl?: string | null;
+  audioDurationMs?: number | null;
 }
 
 export interface ShadowingVocabularyItem {
-  id: number;
+  id?: number;
   word: string;
   reading?: string | null;
   meaning: string;
@@ -19,7 +20,7 @@ export interface ShadowingVocabularyItem {
 }
 
 export interface ShadowingGrammarItem {
-  id: number;
+  id?: number;
   pattern: string;
   meaning: string;
   exampleSentence?: string | null;
@@ -61,6 +62,7 @@ export interface ShadowingDialogueItem {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   totalSentences: number;
   isActive: boolean;
   createdAt: string;
@@ -85,15 +87,41 @@ export interface ShadowingSentencePracticeResult {
   orderIndex: number;
   targetText: string;
   recognizedText: string;
-  accuracyScore: number;
+  contentMatchScore: number; // 0 - 100 (60% trọng số)
+  fluencyScore: number; // 0 - 100 (40% trọng số)
+  overallScore: number; // Điểm tổng kết câu = 60% Content Match + 40% Fluency
+  accuracyScore: number; // Backward compatibility (= contentMatchScore)
+  intonationScore?: number;
+  evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
+  feedback?: string;
+  missingWords?: string[];
+  mismatchedWords?: string[];
+  audioGateStatus: 'good' | 'acceptable' | 'needs_retry';
+  audioGateLabel: string;
+  audioQualityScore?: number;
+  isValidForBestAttempt: boolean;
+  attemptsCount: number;
   evaluationTier: 'green' | 'yellow' | 'red';
+  diffTokens?: { text: string; status: 'correct' | 'mismatched' | 'missing'; spokenPart?: string }[];
   audioBlobUrl?: string;
+  durationMs?: number;
+  targetAudioUrl?: string;
+  romajiText?: string;
+  vietnameseTranslation?: string;
 }
 
 export interface ShadowingSessionCompletePayload {
   dialogueId: number;
   learnerRole: 'A' | 'B';
-  overallAccuracyScore: number;
+  overallContentMatchScore: number; // 60%
+  overallFluencyScore: number; // 40%
+  weightedOverallScore: number; // 60% Match + 40% Fluency
+  overallAccuracyScore: number; // Backward compatibility
+  overallIntonationScore?: number;
+  overallAudioQualityScore?: number;
+  audioQualityStatus?: string;
+  overallAudioGateStatus: 'good' | 'acceptable' | 'needs_retry';
+  audioGateLabel: string;
   durationSeconds: number;
   sentencesPracticed: number;
   totalGreenSentences: number;
@@ -106,8 +134,13 @@ export interface ShadowingAiAnalysisPayload {
   dialogueId: number;
   learnerRole: 'A' | 'B';
   overallAccuracyScore: number;
+  overallContentMatchScore?: number;
+  overallFluencyScore?: number;
+  overallIntonationScore?: number;
+  overallAudioQualityScore?: number;
   durationSeconds: number;
   sentenceResults: ShadowingSentencePracticeResult[];
+  audioDataMap?: Record<number, string>;
 }
 
 export interface ShadowingAiAnalysisResult {
@@ -125,11 +158,12 @@ export interface ShadowingAiAnalysisResult {
 
 export interface CreateShadowingSentencePayload {
   orderIndex: number;
-  speakerRole: 'A' | 'B';
+  speakerRole: string;
   japaneseText: string;
   romajiText?: string | null;
   vietnameseTranslation: string;
-  nativeAudioUrl: string;
+  nativeAudioUrl?: string | null;
+  audioDurationMs?: number | null;
 }
 
 export interface CreateShadowingDialoguePayload {
@@ -139,7 +173,10 @@ export interface CreateShadowingDialoguePayload {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   sentences: CreateShadowingSentencePayload[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
 export interface UpdateShadowingDialoguePayload {
@@ -148,9 +185,46 @@ export interface UpdateShadowingDialoguePayload {
   sourceDescription?: string | null;
   speakerRoleA_Name: string;
   speakerRoleB_Name: string;
+  speakerRoles?: string[];
   isActive: boolean;
   sentences: CreateShadowingSentencePayload[];
+  targetVocabularies?: ShadowingVocabularyItem[];
+  targetGrammars?: ShadowingGrammarItem[];
 }
 
 export * from './shadowingProgress';
+
+export interface GenerateShadowingDialoguePayload {
+  scenarioId?: number;
+  contextTitle: string;
+  contextDescription?: string;
+  jlptLevel: 'N5' | 'N4' | 'N3';
+  speakerRoles?: string[];
+  sentenceCount?: number;
+  vocabCount?: number;
+  grammarCount?: number;
+  customInstructions?: string;
+}
+
+export interface GeneratedShadowingDialogueResult {
+  title: string;
+  jlptLevel: 'N5' | 'N4' | 'N3';
+  contextDescription?: string;
+  speakerRoles: string[];
+  sentences: CreateShadowingSentencePayload[];
+  targetVocabularies: ShadowingVocabularyItem[];
+  targetGrammars: ShadowingGrammarItem[];
+}
+
+export interface TranslateAssistPayload {
+  text: string;
+  sourceLanguage: 'ja' | 'vi';
+  jlptLevel?: string;
+}
+
+export interface TranslateAssistResult {
+  japaneseText: string;
+  romajiText?: string | null;
+  vietnameseTranslation: string;
+}
 

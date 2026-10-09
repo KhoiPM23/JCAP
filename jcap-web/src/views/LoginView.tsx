@@ -25,7 +25,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('N5');
   const [showPassword, setShowPassword] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +47,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
     try {
       setIsSubmitting(true);
-      await login(email.trim(), password, selectedLevel);
+      await login(email.trim(), password);
       onLoginSuccess?.();
     } catch (err: any) {
       setClientError(err.message || 'Đăng nhập thất bại.');
@@ -130,23 +129,6 @@ export const LoginView: React.FC<LoginViewProps> = ({
           >
             Quên mật khẩu?
           </button>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#071A44] mb-1.5">Trình độ JLPT mục tiêu</label>
-          <div className="grid grid-cols-3 gap-2">
-            {['N5', 'N4', 'N3'].map((level) => (
-              <button
-                type="button"
-                key={level}
-                onClick={() => setSelectedLevel(level)}
-                className={`py-2 rounded-lg text-xs font-bold border transition ${selectedLevel === level ? 'bg-[#0878EE] text-white border-[#0878EE] shadow-md shadow-blue-200' : 'bg-white text-[#71809A] border-[#E6EDF5] hover:bg-blue-50'}`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-[#71809A] mt-1">AI sẽ điều chỉnh tốc độ nói và từ vựng theo cấp độ này.</p>
         </div>
 
         <Button type="submit" className="w-full mt-2" isLoading={isSubmitting}>

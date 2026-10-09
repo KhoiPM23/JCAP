@@ -1,0 +1,67 @@
+{
+  "$schema": "https://jcap.jp/schemas/shadowing-import-v1.json",
+  "title": "Gọi món tại nhà hàng Nhật",
+  "jlptLevel": "N4",
+  "scenarioCode": "SCN_RAMEN_01",
+  "contextDescription": "Khách hàng vào quán ramen vào giờ trưa và gọi món với nhân viên.",
+  "speakerRoles": [
+    "Nhân viên",
+    "Khách hàng"
+  ],
+  "sentences": [
+    {
+      "orderIndex": 1,
+      "speakerRole": "A",
+      "japaneseText": "いらっしゃいませ。ご注文はお決まりですか。",
+      "romajiText": "Irasshaimase. Gochuumon wa okimari desu ka.",
+      "vietnameseTranslation": "Xin kính chào quý khách. Quý khách đã chọn được món chưa ạ?",
+      "nativeAudioUrl": null
+    },
+    {
+      "orderIndex": 2,
+      "speakerRole": "B",
+      "japaneseText": "はい、ラーメンを一つお願いします。",
+      "romajiText": "Hai, raamen wo hitotsu onegai shimasu.",
+      "vietnameseTranslation": "Vâng, xin cho tôi một tô mì ramen.",
+      "nativeAudioUrl": null
+    },
+    {
+      "orderIndex": 3,
+      "speakerRole": "A",
+      "japaneseText": "かしこまりました。少々お待ちください。",
+      "romajiText": "Kashikomarimashita. Shoushou omachi kudasai.",
+      "vietnameseTranslation": "Tôi đã rõ. Xin quý khách vui lòng đợi một chút.",
+      "nativeAudioUrl": null
+    },
+    {
+      "orderIndex": 4,
+      "speakerRole": "B",
+      "japaneseText": "ありがとうございます。",
+      "romajiText": "Arigatou gozaimasu.",
+      "vietnameseTranslation": "Xin cảm ơn.",
+      "nativeAudioUrl": null
+    }
+  ],
+  "targetVocabularies": [
+    {
+      "word": "注文",
+      "reading": "ちゅうもん",
+      "meaning": "Gọi món",
+      "jlptLevel": "N4"
+    },
+    {
+      "word": "ラーメン",
+      "reading": "らーめん",
+      "meaning": "Mì ramen",
+      "jlptLevel": "N4"
+    }
+  ],
+  "targetGrammars": [
+    {
+      "pattern": "～お願いします",
+      "meaning": "Làm ơn / Xin hãy...",
+      "exampleSentence": "ラーメンを一つお願いします。",
+      "jlptLevel": "N4"
+    }
+  ]
+}

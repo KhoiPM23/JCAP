@@ -204,9 +204,6 @@ export const SettingsView: React.FC = () => {
               <h1 className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
                 Cài đặt hệ thống
               </h1>
-              <p className="text-xs sm:text-sm text-[#71809A] font-medium">
-                Quản lý giọng đọc AI (VOICEVOX TTS) và thiết bị âm thanh toàn hệ thống
-              </p>
             </div>
           </div>
         </div>
@@ -289,7 +286,7 @@ export const SettingsView: React.FC = () => {
                     </span>
                     {activeVoice.region && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-lg font-medium bg-slate-100 text-slate-700">
-                        📍 {activeVoice.region}
+                         {activeVoice.region}
                       </span>
                     )}
                   </div>

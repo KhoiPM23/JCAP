@@ -37,9 +37,18 @@ export interface ShadowingPracticeSession {
   completedAt: string;
   sentenceScores: number[];
   averageScore: number;
+  contentMatchScore?: number;
+  accuracyScore?: number;
+  fluencyScore?: number;
+  intonationScore?: number;
+  audioQualityScore?: number;
+  audioQualityStatus?: string;
+  audioGateStatus?: 'good' | 'acceptable' | 'needs_retry';
+  audioGateLabel?: string;
   durationSeconds?: number;
   totalSentences: number;
   completed: boolean;
+  sentenceResults?: any[];
 }
 
 export interface ShadowingBookmark {

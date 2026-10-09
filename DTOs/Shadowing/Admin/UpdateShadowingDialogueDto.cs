@@ -24,10 +24,16 @@ namespace JCAP.DTOs.Shadowing.Admin
         [MaxLength(100)]
         public string SpeakerRoleB_Name { get; set; } = string.Empty;
 
+        public List<string>? SpeakerRoles { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         [Required(ErrorMessage = "Danh sách câu thoại không được để trống.")]
         [MinLength(1, ErrorMessage = "Phải có ít nhất 1 câu thoại.")]
         public List<CreateShadowingSentenceDto> Sentences { get; set; } = new List<CreateShadowingSentenceDto>();
+
+        public List<CreateShadowingVocabularyDto>? TargetVocabularies { get; set; } = new List<CreateShadowingVocabularyDto>();
+
+        public List<CreateShadowingGrammarDto>? TargetGrammars { get; set; } = new List<CreateShadowingGrammarDto>();
     }
 }

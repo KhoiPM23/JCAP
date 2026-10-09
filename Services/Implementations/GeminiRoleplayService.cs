@@ -156,6 +156,10 @@ TASK INSTRUCTIONS:
        - type: ""success"" | ""warning"" | ""error""
        - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Từ vựng"")
        - comment: Specific constructive feedback in Vietnamese
+       - For every normal Japanese utterance, include at least one grammar-related item
+         (""Ngữ pháp"", ""Trợ từ"", ""Cấu trúc"" or ""Chia động từ""), one ""Từ vựng""
+         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"" or ""Lịch sự"").
+       - Positive usage MUST be recorded as type ""success""; do not return only mistakes.
      * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
      * culturalTip: Relevant practical cultural tip in Vietnamese
 
@@ -598,6 +602,7 @@ Return strictly pure JSON:
 
         var feedback = new LinguisticFeedbackDto
         {
+            EvaluationSource = "Simulator",
             Status = "Good",
             Summary = "Phản xạ tự nhiên • Đúng ngữ cảnh",
             Details = new List<LinguisticDetailItemDto>

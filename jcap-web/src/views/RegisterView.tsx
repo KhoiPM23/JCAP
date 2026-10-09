@@ -18,7 +18,6 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('N5');
   const [clientError, setClientError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +53,6 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
         email: email.trim(),
         password,
         confirmPassword,
-        jlptLevel: selectedLevel,
         role: 'Learner',
       });
 
@@ -127,29 +125,6 @@ export const RegisterView: React.FC<RegisterViewProps> = ({
 
           {/* Xác nhận mật khẩu */}
           <Input id="register-confirm-password" label="Xác nhận mật khẩu" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu" />
-
-          {/* Chọn trình độ JLPT (N5 - N4 - N3) */}
-          <div>
-            <label className="block text-sm font-medium text-[#071A44] mb-1.5">
-              Trình độ JLPT hiện tại / mục tiêu
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {['N5', 'N4', 'N3'].map((level) => (
-                <button
-                  type="button"
-                  key={level}
-                  onClick={() => setSelectedLevel(level)}
-                  className={`py-1.5 rounded-xl text-xs font-bold border transition ${
-                    selectedLevel === level
-                    ? 'bg-[#0878EE] text-white border-[#0878EE] shadow-md shadow-blue-200'
-                    : 'bg-white text-[#71809A] border-[#E6EDF5] hover:bg-blue-50'
-                  }`}
-                >
-                  {level}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Nút bấm Tạo tài khoản */}
           <Button type="submit" className="w-full mt-2" isLoading={isSubmitting}>

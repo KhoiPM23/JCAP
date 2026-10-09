@@ -74,6 +74,8 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(d => d.Scenario)
                 .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
+                .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
+                .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
                 .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && d.Scenario.IsActive);
 
             if (dialogue == null)
@@ -88,6 +90,60 @@ namespace JCAP.Services.Implementations
                 .Include(c => c.TargetGrammars)
                 .FirstOrDefaultAsync(c => c.ScenarioId == dialogue.ScenarioId && c.JLPTLevel == dialogue.JLPTLevel);
 
+            var roles = new List<string>();
+            if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRolesJson))
+            {
+                try
+                {
+                    roles = System.Text.Json.JsonSerializer.Deserialize<List<string>>(dialogue.SpeakerRolesJson) ?? new();
+                }
+                catch
+                {
+                    roles = new();
+                }
+            }
+            if (roles.Count == 0)
+            {
+                if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRoleA_Name)) roles.Add(dialogue.SpeakerRoleA_Name);
+                if (!string.IsNullOrWhiteSpace(dialogue.SpeakerRoleB_Name)) roles.Add(dialogue.SpeakerRoleB_Name);
+            }
+
+            var vocabList = dialogue.DialogueVocabularies != null && dialogue.DialogueVocabularies.Any()
+                ? dialogue.DialogueVocabularies
+                    .OrderBy(dv => dv.OrderIndex)
+                    .Select(dv => new ShadowingVocabularyDto
+                    {
+                        Id = dv.Vocabulary.Id,
+                        Word = dv.Vocabulary.Word,
+                        Reading = dv.Vocabulary.Reading,
+                        Meaning = dv.Vocabulary.Meaning
+                    }).ToList()
+                : levelConfig?.TargetVocabularies.Select(v => new ShadowingVocabularyDto
+                {
+                    Id = v.Id,
+                    Word = v.Word,
+                    Reading = v.Reading,
+                    Meaning = v.Meaning
+                }).ToList() ?? new List<ShadowingVocabularyDto>();
+
+            var grammarList = dialogue.DialogueGrammars != null && dialogue.DialogueGrammars.Any()
+                ? dialogue.DialogueGrammars
+                    .OrderBy(dg => dg.OrderIndex)
+                    .Select(dg => new ShadowingGrammarDto
+                    {
+                        Id = dg.Grammar.Id,
+                        Pattern = dg.Grammar.Pattern,
+                        Meaning = dg.Grammar.Meaning,
+                        ExampleSentence = dg.Grammar.ExampleSentence
+                    }).ToList()
+                : levelConfig?.TargetGrammars.Select(g => new ShadowingGrammarDto
+                {
+                    Id = g.Id,
+                    Pattern = g.Pattern,
+                    Meaning = g.Meaning,
+                    ExampleSentence = g.ExampleSentence
+                }).ToList() ?? new List<ShadowingGrammarDto>();
+
             var detail = new ShadowingDialogueDetailDto
             {
                 Id = dialogue.Id,
@@ -100,6 +156,8 @@ namespace JCAP.Services.Implementations
                 SourceDescription = dialogue.SourceDescription,
                 SpeakerRoleA_Name = dialogue.SpeakerRoleA_Name,
                 SpeakerRoleB_Name = dialogue.SpeakerRoleB_Name,
+                SpeakerRoles = roles,
+                SpeakerRolesJson = dialogue.SpeakerRolesJson,
                 IsActive = dialogue.IsActive,
                 CreatedAt = dialogue.CreatedAt,
                 Sentences = dialogue.Sentences
@@ -112,27 +170,12 @@ namespace JCAP.Services.Implementations
                         JapaneseText = s.JapaneseText,
                         RomajiText = s.RomajiText,
                         VietnameseTranslation = s.VietnameseTranslation,
-                        NativeAudioUrl = s.NativeAudioUrl
+                        NativeAudioUrl = s.NativeAudioUrl,
+                        AudioDurationMs = s.AudioDurationMs
                     })
                     .ToList(),
-                TargetVocabularies = levelConfig?.TargetVocabularies
-                    .Select(v => new ShadowingVocabularyDto
-                    {
-                        Id = v.Id,
-                        Word = v.Word,
-                        Reading = v.Reading,
-                        Meaning = v.Meaning
-                    })
-                    .ToList() ?? new List<ShadowingVocabularyDto>(),
-                TargetGrammars = levelConfig?.TargetGrammars
-                    .Select(g => new ShadowingGrammarDto
-                    {
-                        Id = g.Id,
-                        Pattern = g.Pattern,
-                        Meaning = g.Meaning,
-                        ExampleSentence = g.ExampleSentence
-                    })
-                    .ToList() ?? new List<ShadowingGrammarDto>()
+                TargetVocabularies = vocabList,
+                TargetGrammars = grammarList
             };
 
             return ApiResponse<ShadowingDialogueDetailDto>.Ok(detail, "Lấy thông tin chi tiết bài học Shadowing thành công.");
@@ -149,11 +192,22 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Không tìm thấy bài học Shadowing.");
             }
 
-            var feedback = dto.OverallAccuracyScore >= 80
-                ? "Xuất sắc! Phát âm và phản xạ nói của bạn rất chuẩn xác và tự nhiên."
-                : dto.OverallAccuracyScore >= 50
-                ? "Khá tốt! Hãy chú ý phát âm rõ hơn các trường âm và ngữ điệu câu hỏi."
-                : "Cần cải thiện thêm! Bạn nên luyện nghe mẫu chuẩn nhiều lần trước khi ghi âm lại.";
+            int contentMatch = dto.OverallContentMatchScore > 0 ? dto.OverallContentMatchScore : dto.OverallAccuracyScore;
+            int fluency = dto.OverallFluencyScore > 0 ? dto.OverallFluencyScore : 85;
+            int effectiveWeightedScore = dto.WeightedOverallScore > 0 
+                ? dto.WeightedOverallScore 
+                : (int)Math.Round(contentMatch * 0.60 + fluency * 0.40);
+
+            string rankTitle = effectiveWeightedScore >= 90 ? "Hạng S - Rất xuất sắc (Khớp chuẩn & Lưu loát)"
+                : effectiveWeightedScore >= 80 ? "Hạng A - Rất tốt (Phát âm tự nhiên)"
+                : effectiveWeightedScore >= 65 ? "Hạng B - Đạt chuẩn (Nắm vững câu từ)"
+                : "Hạng C - Cần rèn luyện thêm";
+
+            var feedback = effectiveWeightedScore >= 85
+                ? "Xuất sắc! Khớp chuẩn xác câu từ bản xứ, nhịp nói liền mạch và phản xạ tự nhiên."
+                : effectiveWeightedScore >= 70
+                ? "Khá tốt! Bạn phát âm rõ ràng, hãy chú ý các trợ từ nhỏ và giữ hơi thở ổn định hơn."
+                : "Cần cải thiện thêm! Bạn nên luyện nghe câu mẫu từng cụm từ ngắn trước khi ghép trọn vẹn câu thoại.";
 
             var response = new ShadowingSessionCompleteResponseDto
             {
@@ -161,7 +215,13 @@ namespace JCAP.Services.Implementations
                 Message = "Lưu tiến trình Shadowing thành công!",
                 DialogueId = dialogue.Id,
                 DialogueTitle = dialogue.Title,
-                OverallAccuracyScore = dto.OverallAccuracyScore,
+                OverallAccuracyScore = contentMatch,
+                OverallFluencyScore = fluency,
+                OverallIntonationScore = dto.OverallIntonationScore > 0 ? dto.OverallIntonationScore : contentMatch,
+                OverallAudioQualityScore = dto.OverallAudioQualityScore > 0 ? dto.OverallAudioQualityScore : 92,
+                AudioQualityStatus = !string.IsNullOrEmpty(dto.AudioQualityStatus) ? dto.AudioQualityStatus : "clear",
+                WeightedOverallScore = effectiveWeightedScore,
+                RankTitle = rankTitle,
                 SummaryFeedback = feedback
             };
 
@@ -194,59 +254,68 @@ namespace JCAP.Services.Implementations
             }
 
             // Tính toán điểm chi tiết dựa trên kết quả phát âm thực tế
-            int baseScore = Math.Clamp(dto.OverallAccuracyScore, 40, 100);
-            var random = new Random(dto.DialogueId + baseScore);
+            int contentMatch = dto.OverallContentMatchScore > 0 ? dto.OverallContentMatchScore : dto.OverallAccuracyScore;
+            int baseAcc = Math.Clamp(contentMatch > 0 ? contentMatch : 80, 40, 100);
+            int baseFlu = Math.Clamp(dto.OverallFluencyScore > 0 ? dto.OverallFluencyScore : baseAcc, 40, 100);
+            var random = new Random(dto.DialogueId + baseAcc + baseFlu);
 
-            int tokyoIntonation = Math.Clamp(baseScore + random.Next(-5, 6), 45, 98);
-            int vowelClarity = Math.Clamp(baseScore + random.Next(-3, 8), 50, 100);
-            int rhythmTempo = Math.Clamp(baseScore + random.Next(-8, 5), 40, 95);
-            int pitchAccent = Math.Clamp(baseScore + random.Next(-6, 6), 45, 96);
-            int longVowelPrecision = Math.Clamp(baseScore + random.Next(-4, 7), 50, 98);
+            int tokyoIntonation = Math.Clamp(baseAcc + random.Next(-3, 4), 45, 98);
+            int vowelClarity = Math.Clamp(baseAcc + random.Next(-2, 5), 50, 100);
+            int rhythmTempo = Math.Clamp(baseFlu + random.Next(-3, 4), 40, 96);
+            int pitchAccent = Math.Clamp(baseAcc + random.Next(-4, 4), 45, 96);
+            int longVowelPrecision = Math.Clamp(baseAcc + random.Next(-3, 6), 50, 98);
 
             var strengths = new List<string>();
             var improvements = new List<string>();
 
+            // Phân tích thói quen lặp lại theo danh sách các câu đã luyện
+            var weakSentences = dto.SentenceResults
+                .Where(s => s.AccuracyScore < 75 || s.ContentMatchScore < 75)
+                .Select(s => $"câu #{s.OrderIndex}")
+                .ToList();
+
             if (vowelClarity >= 80)
             {
-                strengths.Add("Độ mở các nguyên âm (a, i, u, e, o) rõ ràng, phát âm dứt khoát chuẩn giọng Tokyo.");
+                strengths.Add("Khẩu hình rõ ràng, các nguyên âm đơn (a, i, u, e, o) không bị nuốt chữ.");
             }
             else
             {
-                improvements.Add("Cần mở khẩu hình chuẩn hơn ở nguyên âm [u] và [o], tránh phát âm bẹt như tiếng Việt.");
+                improvements.Add("Chú ý mở khẩu hình chuẩn ở nguyên âm [u] (tránh chu môi quá mức) và [o], phát âm dứt khoát.");
             }
 
             if (tokyoIntonation >= 80)
             {
-                strengths.Add("Ngữ điệu lên xuống ở cuối câu tự nhiên, đặc biệt là các mẫu câu hỏi và xin phép.");
+                strengths.Add("Ngữ điệu tự nhiên, biết hạ giọng nhẹ ở cuối câu trần thuật và lên giọng đúng chỗ ở câu hỏi.");
             }
             else
             {
-                improvements.Add("Chú ý hạ giọng ở cuối câu khẳng định 'です' và lên giọng nhẹ ở câu hỏi thân mật '〜てもいい？'.");
+                improvements.Add("Cao độ Pitch Accent cần mượt hơn: Hãy chú ý hạ giọng dứt khoát ở đuôi câu '〜です' / '〜ます'.");
             }
 
             if (longVowelPrecision >= 80)
             {
-                strengths.Add("Trường âm (chouon) được ngân đủ 2 phách chính xác (ví dụ: どうぞ, しょうかい).");
+                strengths.Add("Trường âm (chouon) được ngân tròn đủ 2 phách, phân biệt rõ nguyên âm ngắn và nguyên âm dài.");
             }
             else
             {
-                improvements.Add("Trường âm trong từ 'いいです' hoặc 'どうぞ' chưa đủ độ dài, hãy ngân tròn 2 phách theo mẫu.");
+                improvements.Add("Có xu hướng phát âm trường âm hơi vội. Hãy ngân đủ 2 nhịp phách ở các từ có trường âm (ví dụ: どうぞ, そうですね).");
             }
 
-            if (rhythmTempo >= 80)
+            if (weakSentences.Count > 0)
             {
-                strengths.Add("Tốc độ nói ổn định, ngắt nghỉ đúng cụm ngữ pháp, không bị khựng lại giữa câu.");
+                improvements.Add($"Phát hiện lỗi lặp lại ở {string.Join(", ", weakSentences)}: Hãy nghe lại mẫu câu này với tốc độ 0.8x và chia nhỏ từng cụm ngữ pháp (bunsetsu) để luyện lại.");
             }
             else
             {
-                improvements.Add("Hãy tập chia nhịp theo từng cụm ngữ pháp (bunsetsu) để hơi thở tự nhiên hơn.");
+                strengths.Add("Nhịp điệu toàn bài rất ổn định, không bị vấp ngắt quãng ở các câu dài.");
             }
 
+            int baseScore = (int)Math.Round(baseAcc * 0.60 + baseFlu * 0.40);
             string diagnosis = baseScore >= 85
-                ? "Tổng thể phát âm đạt mức Rất Tốt (Very Good). Bạn có khả năng bắt chước ngữ điệu bản ngữ nhanh chóng, ngữ điệu chuẩn phong cách giao tiếp Tokyo."
+                ? "Tổng thể buổi học đạt mức Xuất Sắc (Mastery). Khả năng bắt chước nhịp điệu bản ngữ nhanh chóng, câu từ rõ ràng và trôi chảy chuẩn phong cách Tokyo."
                 : baseScore >= 70
-                ? "Tổng thể phát âm đạt mức Khá (Good). Các âm tiết cơ bản đã đúng, chỉ cần rèn luyện thêm về độ liền mạch và trọng âm từ."
-                : "Phát âm ở mức Cần Rèn Luyện (Needs Practice). Hãy sử dụng tính năng chỉnh tốc độ 0.8x để nghe chậm từng âm trước khi nhại lại.";
+                ? "Tổng thể đạt mức Khá Tốt (Proficient). Bạn nắm vững cấu trúc câu, chỉ cần chú ý kiểm soát hơi thở để các câu thoại dài không bị hụt hơi ở cuối câu."
+                : "Buổi học ở mức Cần Rèn Luyện Thêm (Developing). Hãy sử dụng tính năng nghe lại từng câu và luyện từng cụm 3-4 từ trước khi đọc trọn câu.";
 
             var response = new ShadowingAiAnalysisResponseDto
             {

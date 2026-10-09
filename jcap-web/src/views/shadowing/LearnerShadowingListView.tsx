@@ -36,9 +36,6 @@ export const LearnerShadowingListView: React.FC = () => {
   const [storageVersion, setStorageVersion] = useState<number>(0);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
 
-  // Tip modal / banner state
-  const [showTipModal, setShowTipModal] = useState<boolean>(false);
-
   // Role selection modal for starting or restarting practice
   const [selectedDialogueForRole, setSelectedDialogueForRole] = useState<{
     dialogue: ShadowingDialogueItem;
@@ -635,14 +632,27 @@ export const LearnerShadowingListView: React.FC = () => {
                             <tr className="bg-slate-50/90 border-b border-slate-200">
                               <td colSpan={8} className="py-4 px-6">
                                 <div className="space-y-3">
-                                  <div className="flex items-center justify-between text-xs">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                                     <span className="font-bold text-slate-800">
                                       Điểm từng câu thoại ({session.sentenceScores.length} câu)
                                     </span>
-                                    <span className="text-slate-500">
-                                      Điểm TB buổi học:{' '}
-                                      <strong className="text-slate-900">{session.averageScore}/100</strong>
-                                    </span>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-200">
+                                        🎯 Chính xác: {session.accuracyScore ?? session.averageScore}%
+                                      </span>
+                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        🎶 Ngữ điệu: {session.intonationScore ?? Math.round(session.averageScore * 0.95)}%
+                                      </span>
+                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        ⚡ Lưu loát: {session.fluencyScore ?? Math.round(session.averageScore * 0.92)}%
+                                      </span>
+                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                        🎤 Mic: {session.audioQualityScore ?? 92}%
+                                      </span>
+                                      <span className="text-slate-500 font-semibold ml-1">
+                                        Tổng: <strong className="text-slate-900">{session.averageScore}/100</strong>
+                                      </span>
+                                    </div>
                                   </div>
                                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
                                     {session.sentenceScores.map((score, sIdx) => (
@@ -886,82 +896,7 @@ export const LearnerShadowingListView: React.FC = () => {
         </div>
       )}
 
-      {/* 5. Bottom Helper / Practice Strategy Banner (Matching Mockup 1) */}
-      <div className="mt-8 p-5 rounded-2xl bg-blue-50/70 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#005ab6]/10 text-[#005ab6] flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">headphones</span>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <h4 className="text-xs font-bold text-slate-900">Mẹo luyện tập:</h4>
-            <p className="text-xs text-slate-600">
-              Nghe trước 1 lần không nhìn phụ đề để bắt nhịp ngữ điệu và trọng âm tự nhiên của người bản xứ.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowTipModal(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-white text-[#005ab6] border border-blue-200 hover:bg-blue-50/80 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[16px]">lightbulb</span>
-            <span>Chi tiết</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 6. Tip Details Modal */}
-      {showTipModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-blue-100 text-[#005ab6] flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]">lightbulb</span>
-                </span>
-                <h3 className="text-base font-bold text-slate-900">
-                  Phương pháp luyện Shadowing hiệu quả
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowTipModal(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <strong className="text-slate-900">1. Lắng nghe chủ động (Active Listening):</strong>
-                <p className="mt-0.5">Tập trung vào ngữ điệu lên xuống (Pitch Accent), chỗ ngừng nghỉ của người bản xứ trước khi bắt chước.</p>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <strong className="text-slate-900">2. Shadowing đồng thanh:</strong>
-                <p className="mt-0.5">Phát âm trễ hơn câu mẫu khoảng 0.5 giây. Không cần dừng băng, hãy cố bắt kịp nhịp độ tự nhiên.</p>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <strong className="text-slate-900">3. Đối chiếu và điều chỉnh:</strong>
-                <p className="mt-0.5">Nghe lại giọng thu của chính bạn và so sánh với điểm đánh giá AI để sửa các âm bị nuốt hoặc lệch trọng âm.</p>
-              </div>
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setShowTipModal(false)}
-                className="px-4 py-2 rounded-xl bg-[#005ab6] text-white text-xs font-bold hover:bg-[#00458f] transition cursor-pointer"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 7. Role Selection Modal */}
+      {/* Role Selection Modal */}
       {selectedDialogueForRole && (
         <RoleSelectionModal
           isOpen={true}
