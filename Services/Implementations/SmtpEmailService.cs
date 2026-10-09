@@ -41,7 +41,7 @@ namespace JCAP.Services.Implementations
                 HtmlBody = htmlBody
             }.ToMessageBody();
 
-            using var client = new SmtpClient();
+            using var client = new SmtpClient { Timeout = 30_000 };
             var isConnected = false;
 
             try
@@ -49,7 +49,9 @@ namespace JCAP.Services.Implementations
                 await client.ConnectAsync(
                     _options.Host,
                     _options.Port,
-                    _options.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None,
+                    _options.EnableSsl
+                        ? (_options.Port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
+                        : SecureSocketOptions.None,
                     cancellationToken);
                 isConnected = true;
 
@@ -79,7 +81,7 @@ namespace JCAP.Services.Implementations
             }
             finally
             {
-                if (isConnected)
+                if (isConnected && client.IsConnected)
                 {
                     await client.DisconnectAsync(true, cancellationToken);
                 }
@@ -101,6 +103,11 @@ namespace JCAP.Services.Implementations
             if (string.IsNullOrWhiteSpace(_options.From))
             {
                 throw new InvalidOperationException("Email:From is not configured.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(_options.Username) && !_options.EnableSsl)
+            {
+                throw new InvalidOperationException("Email:EnableSsl must be enabled when SMTP credentials are configured.");
             }
         }
     }

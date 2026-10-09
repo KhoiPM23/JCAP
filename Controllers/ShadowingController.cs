@@ -15,10 +15,14 @@ namespace JCAP.Controllers
     public class ShadowingController : ControllerBase
     {
         private readonly IShadowingService _shadowingService;
+        private readonly IAiShadowingAssessmentService _aiAssessmentService;
 
-        public ShadowingController(IShadowingService shadowingService)
+        public ShadowingController(
+            IShadowingService shadowingService,
+            IAiShadowingAssessmentService aiAssessmentService)
         {
             _shadowingService = shadowingService;
+            _aiAssessmentService = aiAssessmentService;
         }
 
         /// <summary>
@@ -88,6 +92,63 @@ namespace JCAP.Controllers
                 return BadRequest(result);
             }
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Phân tích và chấm điểm âm thanh của từng câu Shadowing bằng Gemini AI.
+        /// </summary>
+        [HttpPost("evaluate-audio")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<ShadowingAudioEvaluationResponseDto>>> EvaluateAudio(
+            [FromForm] ShadowingAudioEvaluationRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Audio == null || request.Audio.Length == 0)
+            {
+                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                {
+                    EvaluationStatus = "unavailable",
+                    ErrorCode = "EMPTY_AUDIO",
+                    ErrorMessage = "Không tìm thấy dữ liệu âm thanh."
+                }, "Dữ liệu âm thanh trống."));
+            }
+
+            if (string.IsNullOrWhiteSpace(request.TargetText))
+            {
+                return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Thiếu câu mẫu tiếng Nhật cần đánh giá."));
+            }
+
+            try
+            {
+                using var stream = request.Audio.OpenReadStream();
+                var result = await _aiAssessmentService.EvaluateAudioAsync(
+                    stream,
+                    request.Audio.ContentType,
+                    request.TargetText,
+                    cancellationToken);
+
+                if (result == null)
+                {
+                    return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                    {
+                        EvaluationStatus = "partial",
+                        Source = "client_fallback",
+                        ErrorCode = "AI_UNAVAILABLE",
+                        ErrorMessage = "Dịch vụ AI không khả dụng, sử dụng bộ đánh giá nội bộ."
+                    }, "Chuyển sang bộ đánh giá cục bộ."));
+                }
+
+                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Phân tích âm thanh thành công."));
+            }
+            catch (Exception ex)
+            {
+                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                {
+                    EvaluationStatus = "failed",
+                    ErrorCode = "EXCEPTION",
+                    ErrorMessage = ex.Message
+                }, "Đã xảy ra lỗi khi phân tích."));
+            }
         }
 
         private string? GetCurrentUserId()
