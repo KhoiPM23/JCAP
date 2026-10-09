@@ -68,7 +68,7 @@ export function ResetPasswordView({ onBackToLogin }: ResetPasswordViewProps) {
             required
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            helperText="Tối thiểu 6 ký tự theo cấu hình Identity hiện tại."
+            helperText="Mật khẩu có ít nhất 6 ký tự."
           />
           <Input
             id="reset-confirm-password"
