@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { ShadowingProgress } from '../../types/shadowingProgress';
 
 interface ContinueShadowingCardProps {
@@ -27,13 +27,6 @@ export const ContinueShadowingCard: React.FC<ContinueShadowingCardProps> = ({
               Tiếp tục học Shadowing
             </h2>
           </div>
-          <Link
-            to="/shadowing"
-            className="text-xs font-semibold text-[#005ab6] hover:text-[#00458f] flex items-center gap-1 transition-colors"
-          >
-            <span>Xem tất cả bài tập</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </Link>
         </div>
 
         <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -102,13 +95,6 @@ export const ContinueShadowingCard: React.FC<ContinueShadowingCardProps> = ({
             Tiếp tục học Shadowing
           </h2>
         </div>
-        <Link
-          to="/shadowing?tab=in-progress"
-          className="text-xs font-semibold text-[#005ab6] hover:text-[#00458f] flex items-center gap-1 transition-colors"
-        >
-          <span>Xem tất cả bài tập</span>
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </Link>
       </div>
 
       {/* Main Resume Card */}
