@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
+import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
@@ -26,6 +27,17 @@ export const RoleplayPracticeView: React.FC = () => {
   // Toggles hiển thị
   const [showTranslation, setShowTranslation] = useState(true);
   const [showFurigana, setShowFurigana] = useState(false); // Mặc định TẮT theo yêu cầu
+  const [autoPlayAudio, setAutoPlayAudio] = useState(true); // Toggle tự động phát âm thanh AI
+  const autoPlayAudioRef = useRef(true);
+  useEffect(() => {
+    autoPlayAudioRef.current = autoPlayAudio;
+  }, [autoPlayAudio]);
+  const [isPlayingAiSpeech, setIsPlayingAiSpeech] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
+  const [isRecordingMic, setIsRecordingMic] = useState(false); // Trạng thái thu âm UI
+  const isRecordingMicRef = useRef(false);
+  const recognitionRef = useRef<any>(null);
+  const [micError, setMicError] = useState<string | null>(null);
   const [isLeftOpen, setIsLeftOpen] = useState(true); // Cột Trái (Nhiệm vụ & Cheat Sheet)
   const [isRightOpen, setIsRightOpen] = useState(false); // Cột Phải (Chi tiết Đánh giá)
 
@@ -51,6 +63,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasPlayedOpeningRef = useRef(false);
 
   // Helper an toàn lấy trạng thái đánh giá (tránh crash khi trường status/quickStatus null/undefined)
   const getFeedbackStatus = (feedback?: LinguisticFeedbackDto | null) => {
@@ -59,9 +72,52 @@ export const RoleplayPracticeView: React.FC = () => {
     return s.toLowerCase();
   };
 
+  // Dừng thu âm micro ngay lập tức và hủy mọi sự kiện STT nền
+  const stopSpeechRecognition = () => {
+    isRecordingMicRef.current = false;
+    setIsRecordingMic(false);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+      recognitionRef.current = null;
+    }
+  };
+
+  // Phát âm thanh giọng nói AI (VOICEVOX / Web Speech fallback)
+  const handlePlayMessageAudio = (messageId: number, text: string) => {
+    // Luôn đảm bảo ngắt micro trước khi phát âm thanh để tránh dội âm thanh AI vào mic
+    stopSpeechRecognition();
+
+    if (playingMessageId === messageId && isPlayingAiSpeech) {
+      scenarioVoiceService.stopAllAudio();
+      setIsPlayingAiSpeech(false);
+      setPlayingMessageId(null);
+      return;
+    }
+
+    setIsPlayingAiSpeech(true);
+    setPlayingMessageId(messageId);
+
+    void scenarioVoiceService.playAiSpeech(text, 3, () => {
+      setIsPlayingAiSpeech(false);
+      setPlayingMessageId(null);
+    });
+  };
+
   // 1. Tải chi tiết phiên
   useEffect(() => {
     let isMounted = true;
+    hasPlayedOpeningRef.current = false;
 
     const fetchSession = async () => {
       if (!sessionId || isNaN(sessionId)) {
@@ -85,6 +141,19 @@ export const RoleplayPracticeView: React.FC = () => {
           .find((m) => m.sender === 'User' && m.linguisticFeedback);
         if (lastUserMsg) {
           setSelectedMessageId(lastUserMsg.id);
+        }
+
+        // Tự động phát âm thanh câu mở đầu đầu tiên của AI nếu autoPlay bật và phiên chưa có lượt nói từ User
+        const hasNoUserMessages = !res.data.messages.some((m) => m.sender === 'User');
+        const openingAiMsg = res.data.messages.find((m) => m.sender === 'Ai');
+        if (
+          !hasPlayedOpeningRef.current &&
+          autoPlayAudioRef.current &&
+          hasNoUserMessages &&
+          openingAiMsg?.japaneseText
+        ) {
+          hasPlayedOpeningRef.current = true;
+          handlePlayMessageAudio(openingAiMsg.id, openingAiMsg.japaneseText);
         }
       } else {
         setLoadError(res.message || 'Không thể tải dữ liệu phiên luyện tập.');
@@ -119,9 +188,15 @@ export const RoleplayPracticeView: React.FC = () => {
     return session.messages.find((m) => m.id === selectedMessageId && m.sender === 'User') ?? null;
   }, [session, selectedMessageId]);
 
+
   // 2. Gửi tin nhắn học viên (Optimistic UI update)
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    // DỪNG THU ÂM NGAY LẬP TỨC khi người dùng bấm gửi (kể cả khi chưa tự bấm dừng mic)
+    // Điều này ngăn chặn triệt để hiện tượng micro thu lại tiếng phát ra từ loa của AI (Audio Feedback Loop)
+    stopSpeechRecognition();
+
     const trimmed = inputText.trim();
     if (!trimmed || isSending || !session) return;
 
@@ -168,6 +243,11 @@ export const RoleplayPracticeView: React.FC = () => {
       // Ghi nhận ID tin nhắn mới (không tự động ép mở cột phải)
       if (turn.userMessage.linguisticFeedback) {
         setSelectedMessageId(turn.userMessage.id);
+      }
+
+      // Tự động phát âm thanh của AI nếu toggle autoPlayAudio đang BẬT
+      if (autoPlayAudioRef.current && turn.aiMessage?.japaneseText) {
+        handlePlayMessageAudio(turn.aiMessage.id, turn.aiMessage.japaneseText);
       }
     } else {
       // Khi gửi thất bại: xóa tin nhắn tạm và khôi phục nội dung vào ô nhập liệu
@@ -241,6 +321,88 @@ export const RoleplayPracticeView: React.FC = () => {
       setToastMessage(null);
     }, 3000);
   };
+
+  // 7. Voice Handlers (Scenario Voice Integration)
+
+  const startSpeechRecognition = () => {
+    setMicError(null);
+    try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+
+      const recognition = scenarioVoiceService.createSpeechRecognition({
+        onStart: () => {
+          setIsRecordingMic(true);
+          isRecordingMicRef.current = true;
+        },
+        onResult: (transcript: string) => {
+          if (transcript.trim()) {
+            setInputText(transcript.trim());
+          }
+        },
+        onError: (err: any) => {
+          console.warn('[Scenario STT] Error:', err);
+          if (err.error === 'not-allowed') {
+            setMicError('Quyền truy cập micro đã bị từ chối.');
+          }
+        },
+        onEnd: () => {
+          // Nếu người dùng vẫn đang ở trạng thái thu âm, tự động tái kích hoạt để không bị ngắt quãng
+          if (isRecordingMicRef.current && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch {
+              setIsRecordingMic(false);
+              isRecordingMicRef.current = false;
+            }
+          } else {
+            setIsRecordingMic(false);
+            isRecordingMicRef.current = false;
+          }
+        },
+      });
+
+      if (!recognition) {
+        alert('Trình duyệt hiện tại không hỗ trợ nhận diện giọng nói (Web Speech API). Vui lòng sử dụng Google Chrome hoặc Edge.');
+        setIsRecordingMic(false);
+        isRecordingMicRef.current = false;
+        return;
+      }
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn('[Scenario STT] Start error:', err);
+      setIsRecordingMic(false);
+      isRecordingMicRef.current = false;
+    }
+  };
+
+  const handleToggleMic = () => {
+    // Ngắt toàn bộ âm thanh AI đang phát để tránh tiếng vọng vào micro
+    scenarioVoiceService.stopAllAudio();
+    setIsPlayingAiSpeech(false);
+    setPlayingMessageId(null);
+
+    if (!isRecordingMic) {
+      startSpeechRecognition();
+    } else {
+      stopSpeechRecognition();
+    }
+  };
+
+  // Dọn dẹp âm thanh và micro khi rời phòng luyện tập
+  useEffect(() => {
+    return () => {
+      scenarioVoiceService.stopAllAudio();
+      stopSpeechRecognition();
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -316,8 +478,8 @@ export const RoleplayPracticeView: React.FC = () => {
 
         {/* Center/Right: Toggles, Credits, End Action */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Toggles: Dịch & Furigana */}
-          <div className="hidden lg:flex items-center gap-2 rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] p-1 text-xs">
+          {/* Toggles: Dịch, Furigana & Âm thanh AI */}
+          <div className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] p-1 text-xs">
             <button
               type="button"
               onClick={() => setShowTranslation(!showTranslation)}
@@ -327,6 +489,7 @@ export const RoleplayPracticeView: React.FC = () => {
             >
               Dịch: {showTranslation ? 'BẬT' : 'TẮT'}
             </button>
+            {/* Furigana toggle tạm ẩn (chờ implement sau)
             <button
               type="button"
               onClick={() => setShowFurigana(!showFurigana)}
@@ -335,6 +498,25 @@ export const RoleplayPracticeView: React.FC = () => {
               }`}
             >
               Furigana: {showFurigana ? 'BẬT' : 'TẮT'}
+            </button>
+            */}
+            <button
+              type="button"
+              onClick={() => {
+                if (autoPlayAudio) {
+                  scenarioVoiceService.stopAllAudio();
+                  setIsPlayingAiSpeech(false);
+                  setPlayingMessageId(null);
+                }
+                setAutoPlayAudio(!autoPlayAudio);
+              }}
+              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition ${
+                autoPlayAudio ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
+              }`}
+              title="Tự động phát giọng đọc AI khi có tin nhắn mới"
+            >
+              <span>{autoPlayAudio ? '🔊' : '🔇'}</span>
+              <span>Giọng AI: {autoPlayAudio ? 'BẬT' : 'TẮT'}</span>
             </button>
           </div>
 
@@ -674,20 +856,24 @@ export const RoleplayPracticeView: React.FC = () => {
                         </p>
                       )}
 
-                      {/* AI Audio button (TODO for Sprint 3) */}
+                      {/* AI Audio button */}
                       {isAi && (
                         <div className="mt-2 flex items-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert('Tính năng âm thanh AI (TTS) đang được hoàn thiện cho Sprint 3!');
+                              handlePlayMessageAudio(msg.id, msg.japaneseText);
                             }}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#71809A] hover:text-[#0878EE]"
-                            title="// TODO: Sprint 3 Audio integration"
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition ${
+                              playingMessageId === msg.id && isPlayingAiSpeech
+                                ? 'bg-[#EAF4FF] text-[#0878EE] animate-pulse font-bold'
+                                : 'text-[#71809A] hover:bg-slate-100 hover:text-[#0878EE]'
+                            }`}
+                            title="Nghe phát âm tiếng Nhật của AI"
                           >
-                            <span>🔊</span>
-                            <span>Nghe lại</span>
+                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? '🔊' : '🔈'}</span>
+                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? 'Đang phát...' : 'Nghe lại'}</span>
                           </button>
                         </div>
                       )}
@@ -760,6 +946,23 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
 
+              {/* Mic Permission / Error Warning */}
+              {micError && (
+                <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 animate-fade-in shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>{micError} Hãy cho phép trình duyệt truy cập micro để luyện nói.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMicError(null)}
+                    className="text-red-500 hover:text-red-800 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               {/* Input Row */}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 {/* Button xin Hint */}
@@ -777,15 +980,41 @@ export const RoleplayPracticeView: React.FC = () => {
                   )}
                 </button>
 
+                {/* Button Micro thu âm (Voice Input) */}
+                <button
+                  type="button"
+                  onClick={handleToggleMic}
+                  disabled={isSending}
+                  className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isRecordingMic
+                      ? 'border border-red-400 bg-red-600 text-white animate-pulse ring-4 ring-red-400/30'
+                      : 'border border-[#0878EE] bg-[#0878EE] text-white hover:bg-[#0768D0] hover:shadow-md'
+                  }`}
+                  title={isRecordingMic ? 'Đang bật mic (Bấm để dừng)' : 'Bấm để nói tiếng Nhật bằng micro'}
+                >
+                  <span className="text-sm">{isRecordingMic ? '⏹️' : '🎙️'}</span>
+                  <span className="hidden sm:inline">
+                    {isRecordingMic ? 'Đang thu âm...' : 'Nói'}
+                  </span>
+                </button>
+
                 {/* Text input */}
                 <input
                   ref={inputRef}
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)"
+                  placeholder={
+                    isRecordingMic
+                      ? '🎙️ Đang lắng nghe giọng nói tiếng Nhật của bạn...'
+                      : 'Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)'
+                  }
                   disabled={isSending}
-                  className="flex-1 rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#071A44] outline-none transition focus:border-[#0878EE] focus:bg-white focus:ring-2 focus:ring-[#0878EE]/20"
+                  className={`flex-1 rounded-xl border px-4 py-2.5 text-sm text-[#071A44] outline-none transition ${
+                    isRecordingMic
+                      ? 'border-red-300 bg-red-50/40 ring-2 ring-red-200'
+                      : 'border-[#E6EDF5] bg-[#F8FAFC] focus:border-[#0878EE] focus:bg-white focus:ring-2 focus:ring-[#0878EE]/20'
+                  }`}
                 />
 
                 {/* Send Button */}
