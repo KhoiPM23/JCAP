@@ -506,3 +506,9 @@ AGENTS.md
 CLAUDE.md
 .agents/
 
+# Generated audio cache & recordings
+wwwroot/audio-cache/
+wwwroot/audio/
+!wwwroot/audio/.gitkeep
+
+
