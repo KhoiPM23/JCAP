@@ -139,6 +139,60 @@ class ShadowingService {
     }
   }
 
+  /**
+   * Đánh giá âm thanh giọng nói của từng câu Shadowing qua Backend Gemini AI
+   */
+  public async evaluateAudio(
+    audioBlob: Blob,
+    targetText: string
+  ): Promise<ApiResponse<{
+    evaluationStatus: 'completed' | 'partial' | 'unavailable' | 'failed';
+    recognizedText: string;
+    contentMatchScore?: number | null;
+    pronunciationScore?: number | null;
+    fluencyScore?: number | null;
+    overallScore?: number | null;
+    tier?: 'green' | 'yellow' | 'red' | string;
+    feedback?: string;
+    missingWords?: string[];
+    mismatchedWords?: string[];
+    source: string;
+    errorCode?: string;
+    errorMessage?: string;
+  }>> {
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('targetText', targetText);
+
+      const token = localStorage.getItem('jcap_token');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/shadowing/evaluate-audio', {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: 'Lỗi máy chủ khi đánh giá âm thanh.',
+        };
+      }
+
+      return await response.json();
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối tới máy chủ AI.',
+      };
+    }
+  }
+
   // Legacy stubs (nếu có view cũ cần gọi tạm thời)
   public async getTextbooks(_level?: string): Promise<ApiResponse<ShadowingTextbookItem[]>> {
     return { success: true, message: 'OK', data: [] };

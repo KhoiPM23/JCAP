@@ -18,10 +18,12 @@ import { CreditPackagesView } from '../views/CreditPackagesView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
+import { VoiceVoxTestView } from '../views/VoiceVoxTestView';
 import { AdminDashboardView } from '../views/admin/AdminDashboardView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
+import { LearnerDashboardView } from '../views/LearnerDashboardView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
 import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
@@ -31,9 +33,11 @@ import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShad
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
+import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
+import { SettingsView } from '../views/SettingsView';
 
 // ============================================================
 // Route Wrappers
@@ -53,7 +57,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (userRole === 'Admin') {
       return <Navigate to="/admin/dashboard" replace />;
     }
-    return <Navigate to="/scenarios" replace />;
+    return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 };
@@ -76,10 +80,25 @@ const AdminRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   }
 
   if (user?.role !== 'Admin') {
-    return <Navigate to="/scenarios" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children || <Outlet />}</>;
+};
+
+const LearnerHomeRoute: React.FC = () => {
+  const { user } = useAuth();
+  let userRole = user?.role;
+  if (!userRole) {
+    try {
+      const saved = localStorage.getItem('jcap_user');
+      if (saved) userRole = JSON.parse(saved).role;
+    } catch {}
+  }
+  if (userRole === 'Admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  return <LearnerDashboardView />;
 };
 
 const LoginRoute: React.FC = () => {
@@ -97,7 +116,7 @@ const LoginRoute: React.FC = () => {
             }
           }
         } catch {}
-        navigate('/scenarios', { replace: true });
+        navigate('/', { replace: true });
       }}
       onSwitchToRegister={() => navigate('/register')}
       onForgotPassword={() => navigate('/forgot-password')}
@@ -260,8 +279,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
-        {/* Placeholder cho các màn hình Admin chưa implement để tránh mất layout */}
-        <Route path="/admin/users" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Quản lý Học viên</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
+        <Route path="/admin/users" element={<AdminUserManagementView />} />
         <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         
@@ -305,6 +324,8 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       >
+        <Route path="/" element={<LearnerHomeRoute />} />
+        <Route path="/dashboard" element={<LearnerHomeRoute />} />
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         
@@ -334,13 +355,16 @@ export const AppRouter: React.FC = () => {
 
         {/* Ket qua thanh toan PayOS */}
         <Route path="/credits/payment-return" element={<PaymentReturnView />} />
+
+        {/* UC: Cai dat he thong (Giong doc AI & Thiet bi am thanh) */}
+        <Route path="/settings" element={<SettingsView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}
       <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
+      <Route path="/voicevox-test" element={<VoiceVoxTestView />} />
 
-      {/* Root & wildcard */}
-      <Route path="/" element={<RootRedirect />} />
+      {/* Wildcard */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

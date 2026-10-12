@@ -64,19 +64,28 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
             }`}
           >
             <div>
-              <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center justify-between mb-3">
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                   selectedRole === 'A' ? 'bg-[#0878EE] text-white' : 'bg-blue-100 text-[#0878EE]'
                 }`}>
                   Vai A
                 </span>
-                {selectedRole === 'A' && (
-                  <span className="text-xs text-[#0878EE] font-bold">✓ Đã chọn</span>
+                {selectedRole === 'A' ? (
+                  <div className="w-5 h-5 rounded-full bg-[#0878EE] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                    ✓
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full border border-gray-300" />
                 )}
               </div>
-              <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug">
-                {roleAName}
-              </h4>
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug flex-1">
+                  {roleAName}
+                </h4>
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-blue-100 flex-shrink-0">
+                  <img src="/default_avatar.png" alt={roleAName} className="w-full h-full object-cover" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -90,19 +99,28 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
             }`}
           >
             <div>
-              <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center justify-between mb-3">
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                   selectedRole === 'B' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700'
                 }`}>
                   Vai B
                 </span>
-                {selectedRole === 'B' && (
-                  <span className="text-xs text-purple-700 font-bold">✓ Đã chọn</span>
+                {selectedRole === 'B' ? (
+                  <div className="w-5 h-5 rounded-full bg-[#0878EE] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                    ✓
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full border border-gray-300" />
                 )}
               </div>
-              <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug">
-                {roleBName}
-              </h4>
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <h4 className="font-bold text-sm sm:text-base text-[#071A44] leading-snug flex-1">
+                  {roleBName}
+                </h4>
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-purple-100 flex-shrink-0">
+                  <img src="/default_avatar.png" alt={roleBName} className="w-full h-full object-cover" />
+                </div>
+              </div>
             </div>
           </div>
         </div>

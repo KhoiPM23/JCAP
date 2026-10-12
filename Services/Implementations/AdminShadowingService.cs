@@ -13,6 +13,7 @@ using JCAP.DTOs.Shadowing;
 using JCAP.DTOs.Shadowing.Admin;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
+using JCAP.Services.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ namespace JCAP.Services.Implementations
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IWebHostEnvironment _environment;
+        private readonly IAiClient? _aiClient;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -40,13 +42,15 @@ namespace JCAP.Services.Implementations
             ILogger<AdminShadowingService> logger,
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IAiClient? aiClient = null)
         {
             _context = context;
             _logger = logger;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _environment = environment;
+            _aiClient = aiClient;
         }
 
         public async Task<ApiResponse<List<ShadowingDialogueListDto>>> GetAdminCatalogAsync()
@@ -331,25 +335,20 @@ namespace JCAP.Services.Implementations
             int vocabCount = Math.Clamp(request.VocabCount, 1, 8);
             int grammarCount = Math.Clamp(request.GrammarCount, 1, 6);
 
-            var apiKey = _configuration?["AI:ApiKey"]
-                ?? _configuration?["Gemini:ApiKey"]
-                ?? _configuration?["OpenAI:ApiKey"];
-            var model = _configuration?["Gemini:Model"] ?? "gemini-3.1-flash-lite";
-
-            if (!string.IsNullOrWhiteSpace(apiKey) && _httpClientFactory != null)
+            if (_aiClient != null)
             {
                 try
                 {
-                    var aiResult = await TryGenerateDialogueWithGeminiAsync(
-                        apiKey, model, title, desc, level, roles, sentenceCount, vocabCount, grammarCount, request.CustomInstructions, cancellationToken);
+                    var aiResult = await TryGenerateDialogueWithAiClientAsync(
+                        title, desc, level, roles, sentenceCount, vocabCount, grammarCount, request.CustomInstructions, cancellationToken);
                     if (aiResult != null && aiResult.Sentences.Count > 0)
                     {
-                        return ApiResponse<GeneratedShadowingDialogueDto>.Ok(aiResult, $"Tạo bài hội thoại Shadowing AI ({model}) thành công.");
+                        return ApiResponse<GeneratedShadowingDialogueDto>.Ok(aiResult, "Tạo bài hội thoại Shadowing AI thành công.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "AI Gemini call failed, falling back to heuristic generator.");
+                    _logger.LogWarning(ex, "AI call failed, falling back to heuristic generator.");
                 }
             }
 
@@ -370,16 +369,11 @@ namespace JCAP.Services.Implementations
             var isJa = request.SourceLanguage?.ToLowerInvariant() == "ja";
             var level = request.JLPTLevel ?? "N5";
 
-            var apiKey = _configuration?["AI:ApiKey"]
-                ?? _configuration?["Gemini:ApiKey"]
-                ?? _configuration?["OpenAI:ApiKey"];
-            var model = _configuration?["Gemini:Model"] ?? "gemini-3.1-flash-lite";
-
-            if (!string.IsNullOrWhiteSpace(apiKey) && _httpClientFactory != null)
+            if (_aiClient != null)
             {
                 try
                 {
-                    var aiResult = await TryTranslateWithGeminiAsync(apiKey, model, input, isJa, level, cancellationToken);
+                    var aiResult = await TryTranslateWithAiClientAsync(input, isJa, level, cancellationToken);
                     if (aiResult != null)
                     {
                         return ApiResponse<TranslateAssistResponse>.Ok(aiResult, "Hỗ trợ dịch thuật AI thành công.");
@@ -528,9 +522,7 @@ namespace JCAP.Services.Implementations
             };
         }
 
-        private async Task<GeneratedShadowingDialogueDto?> TryGenerateDialogueWithGeminiAsync(
-            string apiKey,
-            string model,
+        private async Task<GeneratedShadowingDialogueDto?> TryGenerateDialogueWithAiClientAsync(
             string title,
             string desc,
             string level,
@@ -541,8 +533,7 @@ namespace JCAP.Services.Implementations
             string? customInstructions,
             CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+            if (_aiClient == null) return null;
 
             var rolesDesc = string.Join(", ", roles.Select((r, idx) => $"Vai {(char)('A' + idx)}: {r}"));
             var customNotes = !string.IsNullOrWhiteSpace(customInstructions)
@@ -560,7 +551,7 @@ Nhiệm vụ: Tạo một bài hội thoại Shadowing mẫu chất lượng cao
 - Số lượng ngữ pháp trọng tâm: {grammarCount} mẫu{customNotes}
 
 Yêu cầu:
-1. Các câu đối thoại luân phiên giữa các vai (A, B, C...).
+1. Gán đúng vai đối thoại ('speakerRole') cho từng câu thoại phù hợp với ngữ cảnh hội thoại thực tế, không bắt buộc phải luân phiên cứng nhắc giữa 2 vai nếu ngữ cảnh cần một bên nói liền nhiều câu. Giá trị 'speakerRole' của mỗi câu phải là ký tự định danh vai tương ứng ({string.Join(", ", roles.Select((_, idx) => $"\"{(char)('A' + idx)}\""))}).
 2. Câu tiếng Nhật tự nhiên, chuẩn văn phong hội thoại Nhật Bản ở trình độ {level}.
 3. Kèm Romaji chuẩn và bản dịch tiếng Việt mượt mà.
 4. Trả về JSON thuần túy theo schema sau:
@@ -592,72 +583,111 @@ Yêu cầu:
   ]
 }}";
 
-            var requestBody = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        role = "user",
-                        parts = new[] { new { text = prompt } }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.7,
-                    responseMimeType = "application/json"
-                }
-            };
+            var aiRequest = AiRequest.CreateJson(null, prompt);
+            var aiResponse = await _aiClient.GenerateAsync(aiRequest, cancellationToken);
+            if (!aiResponse.IsSuccess || string.IsNullOrWhiteSpace(aiResponse.Content)) return null;
 
-            var json = JsonSerializer.Serialize(requestBody, JsonOptions);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(endpoint, content, cancellationToken);
-            if (!response.IsSuccessStatusCode) return null;
-
-            var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
-            using var doc = JsonDocument.Parse(responseString);
-            var candidates = doc.RootElement.GetProperty("candidates");
-            if (candidates.GetArrayLength() == 0) return null;
-
-            var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            if (string.IsNullOrWhiteSpace(text)) return null;
-
-            var parsed = JsonSerializer.Deserialize<GeneratedShadowingDialogueDto>(text, JsonOptions);
+            var parsed = JsonSerializer.Deserialize<GeneratedShadowingDialogueDto>(aiResponse.Content, JsonOptions);
             if (parsed == null) return null;
 
             parsed.JLPTLevel = level;
-            parsed.SpeakerRoles = roles;
+            var resolvedRoles = new List<string>(roles);
+
             for (int i = 0; i < parsed.Sentences.Count; i++)
             {
                 parsed.Sentences[i].OrderIndex = i + 1;
-                var rawRole = parsed.Sentences[i].SpeakerRole?.Trim() ?? string.Empty;
-                if (rawRole.Equals("B", StringComparison.OrdinalIgnoreCase) || (roles.Count > 1 && rawRole.Equals(roles[1], StringComparison.OrdinalIgnoreCase)))
+                var rawRole = parsed.Sentences[i].SpeakerRole;
+                var normalizedRole = NormalizeSpeakerRole(rawRole, resolvedRoles);
+                parsed.Sentences[i].SpeakerRole = normalizedRole;
+
+                if (normalizedRole.Length == 1 && char.IsLetter(normalizedRole[0]))
                 {
-                    parsed.Sentences[i].SpeakerRole = "B";
-                }
-                else if (rawRole.Equals("A", StringComparison.OrdinalIgnoreCase) || (roles.Count > 0 && rawRole.Equals(roles[0], StringComparison.OrdinalIgnoreCase)))
-                {
-                    parsed.Sentences[i].SpeakerRole = "A";
-                }
-                else
-                {
-                    parsed.Sentences[i].SpeakerRole = ((char)('A' + (i % roles.Count))).ToString();
+                    int roleIndex = normalizedRole[0] - 'A';
+                    while (roleIndex >= resolvedRoles.Count && resolvedRoles.Count < 26)
+                    {
+                        char nextChar = (char)('A' + resolvedRoles.Count);
+                        resolvedRoles.Add($"Nhân vật {nextChar}");
+                    }
                 }
             }
 
+            parsed.SpeakerRoles = resolvedRoles;
             return parsed;
         }
 
-        private async Task<TranslateAssistResponse?> TryTranslateWithGeminiAsync(
-            string apiKey,
-            string model,
+        public static string NormalizeSpeakerRole(string? rawRole, List<string> roles)
+        {
+            if (string.IsNullOrWhiteSpace(rawRole)) return "A";
+            var trimmed = rawRole.Trim();
+
+            // 1. Single character 'A'..'Z'
+            if (trimmed.Length == 1 && char.IsLetter(trimmed[0]))
+            {
+                return char.ToUpperInvariant(trimmed[0]).ToString();
+            }
+
+            // 2. Pattern: "Vai A", "Role B", "Speaker C", "Nhân vật C"
+            var roleCharMatch = System.Text.RegularExpressions.Regex.Match(
+                trimmed,
+                @"^(?:vai|role|speaker|nhân\s*vật)\s*([a-zA-Z])\b",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (roleCharMatch.Success)
+            {
+                return roleCharMatch.Groups[1].Value.ToUpperInvariant();
+            }
+
+            // 3. Numeric pattern: "Vai 1", "Role 2", "1", "2"
+            var numMatch = System.Text.RegularExpressions.Regex.Match(
+                trimmed,
+                @"^(?:(?:vai|role|speaker|nhân\s*vật)\s*)?(\d+)\b",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (numMatch.Success && int.TryParse(numMatch.Groups[1].Value, out int roleNum) && roleNum >= 1)
+            {
+                int index = roleNum - 1;
+                if (index < 26)
+                {
+                    return ((char)('A' + index)).ToString();
+                }
+            }
+
+            // 4. Exact match against role names in roles list
+            for (int rIdx = 0; rIdx < roles.Count; rIdx++)
+            {
+                var rName = roles[rIdx].Trim();
+                if (trimmed.Equals(rName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return ((char)('A' + rIdx)).ToString();
+                }
+            }
+
+            // 5. Partial/contains match against role names in roles list
+            for (int rIdx = 0; rIdx < roles.Count; rIdx++)
+            {
+                var rName = roles[rIdx].Trim();
+                if (!string.IsNullOrWhiteSpace(rName) &&
+                    (trimmed.Contains(rName, StringComparison.OrdinalIgnoreCase) ||
+                     rName.Contains(trimmed, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return ((char)('A' + rIdx)).ToString();
+                }
+            }
+
+            // Fallback: If starts with an alphabetic character
+            if (char.IsLetter(trimmed[0]))
+            {
+                return char.ToUpperInvariant(trimmed[0]).ToString();
+            }
+
+            return "A";
+        }
+
+        private async Task<TranslateAssistResponse?> TryTranslateWithAiClientAsync(
             string text,
             bool isJa,
             string level,
             CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+            if (_aiClient == null) return null;
 
             var direction = isJa
                 ? "Dịch câu tiếng Nhật sau sang tiếng Việt tự nhiên và cung cấp phiên âm Romaji."
@@ -673,37 +703,11 @@ Trả về duy nhất JSON thuần túy theo schema:
   ""vietnameseTranslation"": ""Bản dịch tiếng Việt""
 }}";
 
-            var requestBody = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        role = "user",
-                        parts = new[] { new { text = prompt } }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.3,
-                    responseMimeType = "application/json"
-                }
-            };
+            var aiRequest = AiRequest.CreateJson(null, prompt, temperature: 0.3);
+            var aiResponse = await _aiClient.GenerateAsync(aiRequest, cancellationToken);
+            if (!aiResponse.IsSuccess || string.IsNullOrWhiteSpace(aiResponse.Content)) return null;
 
-            var json = JsonSerializer.Serialize(requestBody, JsonOptions);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(endpoint, content, cancellationToken);
-            if (!response.IsSuccessStatusCode) return null;
-
-            var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
-            using var doc = JsonDocument.Parse(responseString);
-            var candidates = doc.RootElement.GetProperty("candidates");
-            if (candidates.GetArrayLength() == 0) return null;
-
-            var rawText = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            if (string.IsNullOrWhiteSpace(rawText)) return null;
-
-            return JsonSerializer.Deserialize<TranslateAssistResponse>(rawText, JsonOptions);
+            return JsonSerializer.Deserialize<TranslateAssistResponse>(aiResponse.Content, JsonOptions);
         }
 
         private static GeneratedShadowingDialogueDto GenerateHeuristicDialogue(

@@ -141,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
           <NavItem
             key={item.path}
             {...item}
-            forceActive={item.matchPrefix ? currentPath.startsWith(item.path) : currentPath === item.path}
+            forceActive={item.matchPrefix ? currentPath.startsWith(item.path.split('?')[0]) : currentPath === item.path}
           />
         ))}
       </nav>

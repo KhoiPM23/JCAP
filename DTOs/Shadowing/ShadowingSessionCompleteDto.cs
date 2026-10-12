@@ -6,7 +6,15 @@ namespace JCAP.DTOs.Shadowing
     {
         public int DialogueId { get; set; }
         public string LearnerRole { get; set; } = "A";
+        public int OverallContentMatchScore { get; set; }
         public int OverallAccuracyScore { get; set; }
+        public int OverallFluencyScore { get; set; }
+        public int OverallIntonationScore { get; set; }
+        public int OverallAudioQualityScore { get; set; }
+        public string AudioQualityStatus { get; set; } = "clear";
+        public string OverallAudioGateStatus { get; set; } = "good";
+        public string AudioGateLabel { get; set; } = "Tốt";
+        public int WeightedOverallScore { get; set; }
         public int DurationSeconds { get; set; }
         public int SentencesPracticed { get; set; }
         public int TotalGreenSentences { get; set; }
@@ -21,7 +29,15 @@ namespace JCAP.DTOs.Shadowing
         public int OrderIndex { get; set; }
         public string TargetText { get; set; } = string.Empty;
         public string RecognizedText { get; set; } = string.Empty;
+        public int ContentMatchScore { get; set; }
         public int AccuracyScore { get; set; }
+        public int FluencyScore { get; set; }
+        public int IntonationScore { get; set; }
+        public int OverallScore { get; set; }
+        public string AudioGateStatus { get; set; } = "good";
+        public string AudioGateLabel { get; set; } = string.Empty;
+        public bool IsValidForBestAttempt { get; set; } = true;
+        public int AttemptsCount { get; set; } = 1;
         public string EvaluationTier { get; set; } = "green"; // green, yellow, red
     }
 
@@ -32,6 +48,12 @@ namespace JCAP.DTOs.Shadowing
         public int DialogueId { get; set; }
         public string DialogueTitle { get; set; } = string.Empty;
         public int OverallAccuracyScore { get; set; }
+        public int OverallFluencyScore { get; set; }
+        public int OverallIntonationScore { get; set; }
+        public int OverallAudioQualityScore { get; set; }
+        public string AudioQualityStatus { get; set; } = "clear";
+        public int WeightedOverallScore { get; set; }
+        public string RankTitle { get; set; } = string.Empty;
         public string SummaryFeedback { get; set; } = string.Empty;
     }
 }
