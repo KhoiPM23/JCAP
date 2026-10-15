@@ -377,6 +377,7 @@ public class AuthServiceTests
         var user = new ApplicationUser { Id = "user-001", Email = "learner@example.com", IsActive = true };
         var userManagerMock = CreateUserManagerMock();
         userManagerMock.Setup(x => x.FindByIdAsync(user.Id)).ReturnsAsync(user);
+        userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
         userManagerMock
             .Setup(x => x.ChangePasswordAsync(user, "OldPassword123", "NewPassword123"))
             .ReturnsAsync(IdentityResult.Success);

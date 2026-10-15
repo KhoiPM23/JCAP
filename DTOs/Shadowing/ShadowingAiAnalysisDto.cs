@@ -6,7 +6,12 @@ namespace JCAP.DTOs.Shadowing
     {
         public int DialogueId { get; set; }
         public string LearnerRole { get; set; } = "A";
+        public int OverallContentMatchScore { get; set; }
         public int OverallAccuracyScore { get; set; }
+        public int OverallFluencyScore { get; set; }
+        public int OverallIntonationScore { get; set; }
+        public int OverallAudioQualityScore { get; set; }
+        public int WeightedOverallScore { get; set; }
         public int DurationSeconds { get; set; }
         public List<ShadowingSentencePracticeResultDto> SentenceResults { get; set; } = new List<ShadowingSentencePracticeResultDto>();
     }

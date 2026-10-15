@@ -8,6 +8,7 @@ namespace JCAP.DTOs.Auth
         public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public int CreditBalance { get; set; }
+        public bool HasPassword { get; set; }
         public DateTime ExpiresAt { get; set; }
     }
 }

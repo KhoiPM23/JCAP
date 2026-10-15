@@ -1,6 +1,6 @@
 using JCAP.Data;
 using JCAP.Services.Interfaces;
-using JCAP.Services.Models;
+using JCAP.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace JCAP.Services.Implementations

@@ -4,8 +4,8 @@ namespace JCAP.DTOs.Auth
 {
     public class ChangePasswordDto
     {
-        [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
-        public string CurrentPassword { get; set; } = string.Empty;
+        // Required by the service only when Identity reports an existing password.
+        public string? CurrentPassword { get; set; }
 
         [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
         [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu phải 6 ký tự")]

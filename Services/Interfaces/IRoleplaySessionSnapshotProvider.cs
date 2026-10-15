@@ -1,4 +1,4 @@
-using JCAP.Services.Models;
+using JCAP.Models;
 
 namespace JCAP.Services.Interfaces
 {

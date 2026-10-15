@@ -177,6 +177,7 @@ namespace JCAP.Services.Implementations
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
                 CreditBalance = user.CreditBalance,
+                HasPassword = await _userManager.HasPasswordAsync(user),
                 ExpiresAt = expiresAt
             };
 
@@ -186,7 +187,7 @@ namespace JCAP.Services.Implementations
         public async Task<ApiResponse<AuthResponseDto>> GetCurrentUserAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (user == null || !user.IsActive)
             {
                 return ApiResponse<AuthResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
@@ -202,6 +203,7 @@ namespace JCAP.Services.Implementations
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
                 CreditBalance = user.CreditBalance,
+                HasPassword = await _userManager.HasPasswordAsync(user),
                 ExpiresAt = DateTime.UtcNow
             };
 
@@ -278,15 +280,42 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<string>.Fail("Không tìm thấy tài khoản đang đăng nhập.");
             }
 
-            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!string.Equals(dto.NewPassword, dto.ConfirmPassword, StringComparison.Ordinal))
+            {
+                return ApiResponse<string>.Fail("Mật khẩu xác nhận không khớp.");
+            }
+
+            // Always read Identity state on the server. A client flag or Google
+            // login alone must never bypass an existing account password.
+            var hasPassword = await _userManager.HasPasswordAsync(user);
+            IdentityResult result;
+            if (hasPassword)
+            {
+                if (string.IsNullOrEmpty(dto.CurrentPassword))
+                {
+                    return ApiResponse<string>.Fail("Vui lòng nhập mật khẩu hiện tại.");
+                }
+                result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            }
+            else
+            {
+                var logins = await _userManager.GetLoginsAsync(user);
+                if (!user.EmailConfirmed || !logins.Any(login => login.LoginProvider == "Google"))
+                {
+                    return ApiResponse<string>.Fail("Chỉ tài khoản Google đã xác minh mới có thể tạo mật khẩu lần đầu tại đây.");
+                }
+                result = await _userManager.AddPasswordAsync(user, dto.NewPassword);
+            }
             if (!result.Succeeded)
             {
                 return ApiResponse<string>.Fail(
-                    "Không thể đổi mật khẩu.",
+                    hasPassword ? "Không thể đổi mật khẩu." : "Không thể tạo mật khẩu. Vui lòng tải lại trang và thử lại.",
                     result.Errors.Select(error => error.Description).ToList());
             }
 
-            return ApiResponse<string>.Ok(string.Empty, "Đổi mật khẩu thành công.");
+            return ApiResponse<string>.Ok(string.Empty, hasPassword
+                ? "Đổi mật khẩu thành công."
+                : "Tạo mật khẩu thành công. Bạn có thể đăng nhập bằng email và mật khẩu hoặc tiếp tục dùng Google.");
         }
 
         public string GetGoogleAuthUrl()
@@ -427,6 +456,7 @@ namespace JCAP.Services.Implementations
                     FullName = user.FullName ?? string.Empty,
                     Role = userRole,
                     CreditBalance = user.CreditBalance,
+                    HasPassword = await _userManager.HasPasswordAsync(user),
                     ExpiresAt = expiresAt
                 };
 

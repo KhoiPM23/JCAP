@@ -3,23 +3,6 @@ using JCAP.Models;
 
 namespace JCAP.Services.Interfaces;
 
-public class AiOpeningMessageResult
-{
-    public string JapaneseText { get; set; } = string.Empty;
-    public string VietnameseMeaning { get; set; } = string.Empty;
-    public string? FuriganaHtml { get; set; }
-}
-
-public class AiTurnResult
-{
-    public string JapaneseReply { get; set; } = string.Empty;
-    public string VietnameseMeaning { get; set; } = string.Empty;
-    public string? FuriganaHtml { get; set; }
-    public List<int> CompletedMissionIds { get; set; } = [];
-    public bool IsNaturallyConcluded { get; set; }
-    public LinguisticFeedbackDto? LinguisticFeedback { get; set; }
-}
-
 public interface IAiRoleplayService
 {
     /// <summary>

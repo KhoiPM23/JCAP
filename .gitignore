@@ -506,3 +506,27 @@ AGENTS.md
 CLAUDE.md
 .agents/
 
+# Diagram generators
+generate_diagrams.py
+*.drawio
+python_embed/
+python_embed.zip
+
+# Review 2 Presentation & local slide generators
+*.pptx
+generate_jcap_review2_deck.mjs
+generate_scientific_slides.mjs
+generate_html_viewer.py
+view_master_diagram.html
+
+# Local Audio & VoiceVox cache
+wwwroot/audio-cache/
+wwwroot/audio/
+!wwwroot/audio/.gitkeep
+
+# Local Presentation Outputs
+output/
+skills-lock.json
+
+
+
