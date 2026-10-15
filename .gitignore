@@ -506,7 +506,6 @@ AGENTS.md
 CLAUDE.md
 .agents/
 
-
 # Diagram generators
 generate_diagrams.py
 *.drawio
@@ -522,11 +521,12 @@ view_master_diagram.html
 
 # Local Audio & VoiceVox cache
 wwwroot/audio-cache/
+wwwroot/audio/
+!wwwroot/audio/.gitkeep
 
 # Local Presentation Outputs
 output/
 skills-lock.json
-
 
 
 

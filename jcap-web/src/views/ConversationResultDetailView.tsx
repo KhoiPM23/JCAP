@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDateTime } from '../utils/dateUtils';
-import { downloadResultImage, exportResultImage } from '../utils/exportResultImage';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
 
 const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
@@ -28,11 +27,6 @@ export const ConversationResultDetailView: React.FC = () => {
   const [result, setResult] = useState<RoleplayResultDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const resultContentRef = useRef<HTMLDivElement>(null);
-  const exportInProgress = useRef(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
-  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -41,8 +35,6 @@ export const ConversationResultDetailView: React.FC = () => {
       setIsLoading(true);
       setResult(null);
       setError(null);
-      setExportError(null);
-      setExportMessage(null);
       if (!Number.isInteger(parsedResultId) || parsedResultId <= 0) {
         setError('Mã kết quả không hợp lệ.');
         setIsLoading(false);
@@ -65,30 +57,6 @@ export const ConversationResultDetailView: React.FC = () => {
       isCurrent = false;
     };
   }, [parsedResultId]);
-
-  const handleDownloadImage = async () => {
-    const element = resultContentRef.current;
-    if (!element || !result || result.id !== parsedResultId || exportInProgress.current) return;
-
-    exportInProgress.current = true;
-    setIsExporting(true);
-    setExportError(null);
-    setExportMessage(null);
-    try {
-      const image = await exportResultImage(element);
-      // Navigating to a different result must not download the previous result.
-      if (!element.isConnected || resultContentRef.current !== element) return;
-      downloadResultImage(image, result.id);
-      setExportMessage('Đã tạo ảnh PNG và gửi yêu cầu tải xuống trình duyệt.');
-    } catch {
-      if (element.isConnected && resultContentRef.current === element) {
-        setExportError('Không thể tạo ảnh kết quả. Vui lòng thử lại. Kết quả của bạn vẫn được lưu trong lịch sử.');
-      }
-    } finally {
-      exportInProgress.current = false;
-      setIsExporting(false);
-    }
-  };
 
   if (isLoading || (result && result.id !== parsedResultId)) {
     return (
@@ -127,25 +95,9 @@ export const ConversationResultDetailView: React.FC = () => {
         >
           ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
         </Link>
-        <button
-          type="button"
-          onClick={() => void handleDownloadImage()}
-          disabled={isExporting}
-          aria-busy={isExporting}
-          className="inline-flex items-center gap-2 rounded-xl border border-[#DCE7F4] bg-white px-5 py-2.5 text-sm font-bold text-[#071A44] transition hover:bg-[#F4F9FE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0878EE] disabled:cursor-wait disabled:opacity-60"
-        >
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4" />
-          </svg>
-          {isExporting ? 'Đang tạo ảnh…' : 'Tải ảnh kết quả'}
-        </button>
       </div>
-      {exportError && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">{exportError}</p>}
-      <p role="status" className="text-sm text-[#52627A]">
-        {exportMessage && <span className="mb-4 block">{exportMessage}</span>}
-      </p>
 
-      <div key={result.id} ref={resultContentRef} className="rounded-[30px] bg-[#F4F9FE] p-4 sm:p-6">
+      <div key={result.id} className="rounded-[30px] bg-[#F4F9FE] p-4 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#52627A]">
           <span className="text-base font-black text-[#0878EE]">JCAP</span>
           <span>Kết quả #{result.id} · Thời gian Việt Nam (UTC+7)</span>

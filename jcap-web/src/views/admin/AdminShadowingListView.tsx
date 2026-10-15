@@ -15,6 +15,11 @@ import type {
   GeneratedShadowingDialogueResult,
 } from '../../types/shadowing';
 import { parseRFC4180CSV } from '../../utils/csvParser';
+import {
+  normalizeSpeakerRole,
+  ensureRolesCoverSentences,
+  getDialogueRoleName,
+} from '../../utils/shadowingRoleUtils';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
 
 export interface ImportVocabItem {
@@ -243,16 +248,18 @@ export const AdminShadowingListView: React.FC = () => {
       setFormTitle(d.title);
       setFormLevel(d.jlptLevel);
       setFormContextDescription(d.sourceDescription || '');
-      setFormSpeakerRoles(
+      const loadedRoles = ensureRolesCoverSentences(
         d.speakerRoles && d.speakerRoles.length > 0
           ? d.speakerRoles
-          : [d.speakerRoleA_Name || 'Vai A', d.speakerRoleB_Name || 'Vai B']
+          : [d.speakerRoleA_Name || 'Vai A', d.speakerRoleB_Name || 'Vai B'],
+        d.sentences || []
       );
+      setFormSpeakerRoles(loadedRoles);
       setFormIsActive(d.isActive);
       setFormSentences(
         d.sentences.map((s) => ({
           orderIndex: s.orderIndex,
-          speakerRole: s.speakerRole,
+          speakerRole: normalizeSpeakerRole(s.speakerRole, loadedRoles),
           japaneseText: s.japaneseText,
           romajiText: s.romajiText || '',
           vietnameseTranslation: s.vietnameseTranslation,
@@ -294,9 +301,17 @@ export const AdminShadowingListView: React.FC = () => {
     if (formSpeakerRoles.length <= 2) return; // Keep minimum 2 roles
     const removedChar = String.fromCharCode(65 + idx);
     setFormSpeakerRoles((prev) => prev.filter((_, i) => i !== idx));
-    // Reassign sentences using this role to 'A'
     setFormSentences((prev) =>
-      prev.map((s) => (s.speakerRole === removedChar ? { ...s, speakerRole: 'A' } : s))
+      prev.map((s) => {
+        if (s.speakerRole === removedChar) {
+          return { ...s, speakerRole: 'A' };
+        }
+        const charCode = s.speakerRole.charCodeAt(0);
+        if (charCode > 65 + idx) {
+          return { ...s, speakerRole: String.fromCharCode(charCode - 1) };
+        }
+        return s;
+      })
     );
   };
 
@@ -459,34 +474,24 @@ export const AdminShadowingListView: React.FC = () => {
     if (!formContextDescription.trim() && aiDraft.contextDescription) {
       setFormContextDescription(aiDraft.contextDescription);
     }
-    if (aiDraft.speakerRoles && aiDraft.speakerRoles.length > 0) {
-      setFormSpeakerRoles(aiDraft.speakerRoles);
-    }
+    const baseRoles =
+      aiDraft.speakerRoles && aiDraft.speakerRoles.length > 0
+        ? [...aiDraft.speakerRoles]
+        : [...formSpeakerRoles];
+
+    const finalRoles = ensureRolesCoverSentences(baseRoles, aiDraft.sentences || []);
+    setFormSpeakerRoles(finalRoles);
+
     if (aiDraft.sentences && aiDraft.sentences.length > 0) {
-      const roleAName = aiDraft.speakerRoles?.[0] || formSpeakerRoles[0] || 'Vai A';
-      const roleBName = aiDraft.speakerRoles?.[1] || formSpeakerRoles[1] || 'Vai B';
-
       setFormSentences(
-        aiDraft.sentences.map((s, idx) => {
-          let normalizedRole = 'A';
-          const rawRole = (s.speakerRole || '').trim();
-          if (rawRole.toUpperCase() === 'B' || (roleBName && rawRole.toLowerCase() === roleBName.toLowerCase())) {
-            normalizedRole = 'B';
-          } else if (rawRole.toUpperCase() === 'A' || (roleAName && rawRole.toLowerCase() === roleAName.toLowerCase())) {
-            normalizedRole = 'A';
-          } else {
-            normalizedRole = idx % 2 === 0 ? 'A' : 'B';
-          }
-
-          return {
-            orderIndex: idx + 1,
-            speakerRole: normalizedRole,
-            japaneseText: s.japaneseText,
-            romajiText: s.romajiText || '',
-            vietnameseTranslation: s.vietnameseTranslation,
-            nativeAudioUrl: null,
-          };
-        })
+        aiDraft.sentences.map((s, idx) => ({
+          orderIndex: idx + 1,
+          speakerRole: normalizeSpeakerRole(s.speakerRole, finalRoles),
+          japaneseText: s.japaneseText,
+          romajiText: s.romajiText || '',
+          vietnameseTranslation: s.vietnameseTranslation,
+          nativeAudioUrl: null,
+        }))
       );
     }
     if (aiDraft.targetVocabularies && aiDraft.targetVocabularies.length > 0) {
@@ -701,14 +706,7 @@ export const AdminShadowingListView: React.FC = () => {
               errors.push(`Dòng ${rowNumber}: Bản dịch tiếng Việt không được để trống.`);
             }
 
-            let normalizedRole = 'A';
-            if (rawRole === 'B' || (formSpeakerRoles[1] && formSpeakerRoles[1].toUpperCase().includes(rawRole))) {
-              normalizedRole = 'B';
-            } else if (rawRole === 'A' || (formSpeakerRoles[0] && formSpeakerRoles[0].toUpperCase().includes(rawRole))) {
-              normalizedRole = 'A';
-            } else {
-              normalizedRole = idx % 2 === 0 ? 'A' : 'B';
-            }
+            const normalizedRole = normalizeSpeakerRole(rawRole, formSpeakerRoles);
 
             parsedSentences.push({
               orderIndex: idx + 1,
@@ -792,10 +790,14 @@ export const AdminShadowingListView: React.FC = () => {
             errors.push('Tệp JSON không chứa danh sách câu thoại ("sentences").');
           }
 
-          const parsedRoles = Array.isArray(parsed.speakerRoles) ? parsed.speakerRoles : formSpeakerRoles;
+          const baseRoles =
+            Array.isArray(parsed.speakerRoles) && parsed.speakerRoles.length > 0
+              ? parsed.speakerRoles
+              : formSpeakerRoles;
+          const parsedRoles = ensureRolesCoverSentences(baseRoles, rawSentences);
           const parsedSentences: CreateShadowingSentencePayload[] = rawSentences.map((s, idx) => {
             const rowNumber = idx + 1;
-            const rawRole = (s.speakerRole || (idx % 2 === 0 ? 'A' : 'B')).trim().toUpperCase();
+            const rawRole = (s.speakerRole || '').trim();
             const japaneseText = (s.japaneseText || '').trim();
             const romajiText = (s.romajiText || '').trim();
             const vietnameseTranslation = (s.vietnameseTranslation || '').trim();
@@ -808,14 +810,7 @@ export const AdminShadowingListView: React.FC = () => {
               errors.push(`Câu thoại #${rowNumber}: Thuộc tính "vietnameseTranslation" không được để trống.`);
             }
 
-            let normalizedRole = 'A';
-            if (rawRole === 'B' || (parsedRoles[1] && parsedRoles[1].toUpperCase().includes(rawRole))) {
-              normalizedRole = 'B';
-            } else if (rawRole === 'A' || (parsedRoles[0] && parsedRoles[0].toUpperCase().includes(rawRole))) {
-              normalizedRole = 'A';
-            } else {
-              normalizedRole = idx % 2 === 0 ? 'A' : 'B';
-            }
+            const normalizedRole = normalizeSpeakerRole(rawRole, parsedRoles);
 
             return {
               orderIndex: s.orderIndex || rowNumber,
@@ -3308,7 +3303,7 @@ export const AdminShadowingListView: React.FC = () => {
                     <div key={s.id} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className={`px-2 py-0.5 rounded font-bold text-[10px] border ${getRoleBadgeColor(s.speakerRole)}`}>
-                          Vai {s.speakerRole}: {s.speakerRole === 'A' ? previewDialogue.speakerRoleA_Name : previewDialogue.speakerRoleB_Name}
+                          Vai {s.speakerRole}: {getDialogueRoleName(previewDialogue, s.speakerRole)}
                         </span>
                         {s.nativeAudioUrl ? (
                           <div className="flex items-center gap-2">
