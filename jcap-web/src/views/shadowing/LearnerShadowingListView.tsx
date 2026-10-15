@@ -1,14 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
-import type { ShadowingDialogueItem } from '../../types/shadowing';
+import type { ShadowingDialogueItem, ShadowingSentenceItem } from '../../types/shadowing';
+import { voicevoxService } from '../../services/voicevoxService';
 import type { ShadowingPracticeSession } from '../../types/shadowingProgress';
 import { Button } from '../../components/ui/Button';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
 import { useAuth } from '../../contexts/AuthContext';
 
 type ShadowingTab = 'all' | 'in-progress' | 'completed' | 'not-started' | 'bookmarks' | 'history';
+
+const HISTORY_PAGE_SIZE = 5;
+const getVoicevoxSpeakerId = (): number =>
+  Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3;
+
+const scoreTier = (score: number): 'green' | 'yellow' | 'red' =>
+  score >= 80 ? 'green' : score >= 60 ? 'yellow' : 'red';
+
+const scorePillClass = (score: number): string => {
+  const tier = scoreTier(score);
+  if (tier === 'green') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (tier === 'yellow') return 'bg-amber-50 text-amber-700 border-amber-200';
+  return 'bg-red-50 text-red-700 border-red-200';
+};
 
 export const LearnerShadowingListView: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +50,12 @@ export const LearnerShadowingListView: React.FC = () => {
   // Local storage state triggers
   const [storageVersion, setStorageVersion] = useState<number>(0);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState<number>(1);
+  // Cache câu thoại (bản dịch tiếng Việt, audio mẫu) theo dialogueId, tải khi mở chi tiết
+  const [dialogueSentences, setDialogueSentences] = useState<Record<number, ShadowingSentenceItem[]>>({});
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => () => audioRef.current?.pause(), []);
 
   // Role selection modal for starting or restarting practice
   const [selectedDialogueForRole, setSelectedDialogueForRole] = useState<{
@@ -173,6 +194,51 @@ export const LearnerShadowingListView: React.FC = () => {
       (session.textbookTitle && session.textbookTitle === historyTextbookFilter);
     return matchesSearch && matchesTextbook;
   });
+
+  const totalHistoryPages = Math.max(1, Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE));
+  const currentHistoryPage = Math.min(Math.max(1, historyPage), totalHistoryPages);
+  const pagedHistory = filteredHistory.slice(
+    (currentHistoryPage - 1) * HISTORY_PAGE_SIZE,
+    currentHistoryPage * HISTORY_PAGE_SIZE
+  );
+
+  const handleToggleHistoryDetail = async (session: ShadowingPracticeSession) => {
+    if (expandedHistoryId === session.id) {
+      setExpandedHistoryId(null);
+      return;
+    }
+    setExpandedHistoryId(session.id);
+    if (dialogueSentences[session.dialogueId]) return;
+    const res = await shadowingService.getDetail(session.dialogueId);
+    if (res.success && res.data) {
+      const sentences = res.data.sentences;
+      setDialogueSentences((prev) => ({ ...prev, [session.dialogueId]: sentences }));
+    }
+  };
+
+  const handleRestartFromHistory = (session: ShadowingPracticeSession) => {
+    navigate(`/shadowing/practice/${session.dialogueId}?role=${session.role}&restart=true`);
+  };
+
+  const playAudio = (url: string) => {
+    audioRef.current?.pause();
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.play().catch(() => undefined);
+  };
+
+  const handlePlaySample = async (text?: string, url?: string | null) => {
+    if (url) {
+      playAudio(url);
+      return;
+    }
+    if (!text) return;
+    try {
+      playAudio(await voicevoxService.getAudioUrl(text, getVoicevoxSpeakerId()));
+    } catch {
+      // Không phát được audio mẫu: bỏ qua, người học vẫn xem được điểm
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -398,74 +464,38 @@ export const LearnerShadowingListView: React.FC = () => {
         </div>
       ) : activeTab === 'history' ? (
         /* ================= HISTORY TAB VIEW (TABLE & METRICS) ================= */
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6 bg-[#F4F9FE] rounded-2xl px-8 pt-2.5 pb-8">
           {/* Summary Metric Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Metric 1: Điểm trung bình */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Điểm trung bình
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Metric 1: Điểm trung bình tích lũy */}
+            <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Điểm trung bình tích lũy
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-black text-slate-900 leading-none">
+                  {avgHistoryScore > 0 ? avgHistoryScore : '--'}
                 </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-[#005ab6] leading-none">
-                    {avgHistoryScore > 0 ? avgHistoryScore : '--'}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">/ 100</span>
-                </div>
-                <div className="w-36 h-2 bg-slate-100 rounded-full overflow-hidden mt-1.5">
-                  <div
-                    className="bg-[#005ab6] h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(100, avgHistoryScore)}%` }}
-                  />
-                </div>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-[#005ab6]">
-                <span className="material-symbols-outlined text-[26px]">grade</span>
+                <span className="text-xs text-slate-500 font-medium">/100</span>
               </div>
             </div>
 
-            {/* Metric 2: Lượt hoàn thành */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Tổng lượt hoàn thành
+            {/* Metric 2: Tổng thời lượng luyện tập */}
+            <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Tổng thời lượng luyện tập
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-3xl font-black text-slate-900 leading-none">
+                  {totalHistoryMinutes}
                 </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-emerald-600 leading-none">
-                    {historyList.length}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">lượt luyện</span>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1">Ghi nhận đầy đủ câu thoại</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <span className="material-symbols-outlined text-[26px]">emoji_events</span>
-              </div>
-            </div>
-
-            {/* Metric 3: Thời gian luyện tập */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Thời lượng tích lũy
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-purple-600 leading-none">
-                    {totalHistoryMinutes}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">phút</span>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1">Thời gian phát âm thực tế</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <span className="material-symbols-outlined text-[26px]">schedule</span>
+                <span className="text-xs text-slate-500 font-medium">phút</span>
               </div>
             </div>
           </div>
 
           {/* History Search & Filter Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">
                 search
@@ -473,7 +503,10 @@ export const LearnerShadowingListView: React.FC = () => {
               <input
                 type="text"
                 value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
+                onChange={(e) => {
+                  setHistorySearch(e.target.value);
+                  setHistoryPage(1);
+                }}
                 placeholder="Tìm theo tên hội thoại, bài học, từ khóa..."
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#005ab6]/20 text-slate-900 transition"
               />
@@ -483,7 +516,10 @@ export const LearnerShadowingListView: React.FC = () => {
               <span className="text-xs font-semibold text-slate-500">Giáo trình:</span>
               <select
                 value={historyTextbookFilter}
-                onChange={(e) => setHistoryTextbookFilter(e.target.value)}
+                onChange={(e) => {
+                  setHistoryTextbookFilter(e.target.value);
+                  setHistoryPage(1);
+                }}
                 className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Tất cả giáo trình</option>
@@ -496,7 +532,7 @@ export const LearnerShadowingListView: React.FC = () => {
 
           {/* History Data Table */}
           {filteredHistory.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center space-y-3">
+            <div className="bg-white rounded-xl border border-slate-200/80 p-12 text-center space-y-3">
               <span className="material-symbols-outlined text-4xl text-slate-300">
                 history_toggle_off
               </span>
@@ -521,23 +557,23 @@ export const LearnerShadowingListView: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+            <div className="rounded-xl bg-white border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50/80 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200/80">
-                      <th className="py-3 px-5 font-bold" scope="col">Ngày luyện tập</th>
+                      <th className="py-3 px-5 font-bold w-24" scope="col">Ngày hoàn thành</th>
                       <th className="py-3 px-4 font-bold" scope="col">Giáo trình</th>
                       <th className="py-3 px-4 font-bold" scope="col">Bài học</th>
-                      <th className="py-3 px-4 font-bold" scope="col">Hội thoại & Chủ đề</th>
+                      <th className="py-3 px-4 font-bold" scope="col">Tên bài thoại & ngữ cảnh</th>
                       <th className="py-3 px-4 font-bold" scope="col">Vai luyện</th>
-                      <th className="py-3 px-4 font-bold" scope="col">Điểm số</th>
+                      <th className="py-3 px-4 font-bold" scope="col">Điểm tổng kết</th>
                       <th className="py-3 px-4 font-bold" scope="col">Thời lượng</th>
                       <th className="py-3 px-5 text-right font-bold" scope="col">Thao tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs text-slate-800">
-                    {filteredHistory.map((session) => {
+                  <tbody className="text-xs text-slate-800">
+                    {pagedHistory.map((session) => {
                       const isExpanded = expandedHistoryId === session.id;
                       const dateObj = new Date(session.completedAt || session.startedAt);
                       const formattedDate = dateObj.toLocaleDateString('vi-VN');
@@ -548,23 +584,30 @@ export const LearnerShadowingListView: React.FC = () => {
                       const durationSec = session.durationSeconds || 120;
                       const minutes = Math.floor(durationSec / 60);
                       const seconds = durationSec % 60;
+                      const detailSentences = dialogueSentences[session.dialogueId];
 
                       return (
                         <React.Fragment key={session.id}>
-                          <tr className="hover:bg-blue-50/40 transition-colors">
-                            <td className="py-3.5 px-5 whitespace-nowrap">
+                          <tr className="border-b border-slate-100 hover:bg-blue-50/40 transition-colors">
+                            <td
+                              className={`py-3.5 px-5 whitespace-nowrap ${
+                                isExpanded ? 'shadow-[inset_3px_0_0_#005ab6]' : ''
+                              }`}
+                            >
                               <div className="flex flex-col">
                                 <span className="font-semibold text-slate-900">{formattedDate}</span>
                                 <span className="text-[11px] text-slate-400">{formattedTime}</span>
                               </div>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700">
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                                 {session.textbookTitle || 'Minna no Nihongo'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-600">
-                              {session.chapterTitle || 'Bài 14'}
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-100">
+                                {session.chapterTitle || 'Bài 14'}
+                              </span>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="flex flex-col max-w-xs">
@@ -579,19 +622,15 @@ export const LearnerShadowingListView: React.FC = () => {
                               </div>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6]">
+                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                 Vai {session.role}
                               </span>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                                  session.averageScore >= 80
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : session.averageScore >= 60
-                                    ? 'bg-amber-50 text-amber-700'
-                                    : 'bg-red-50 text-red-700'
-                                }`}
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${scorePillClass(
+                                  session.averageScore
+                                )}`}
                               >
                                 {session.averageScore} / 100
                               </span>
@@ -603,21 +642,18 @@ export const LearnerShadowingListView: React.FC = () => {
                               <div className="inline-flex items-center gap-1.5">
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    setExpandedHistoryId(isExpanded ? null : session.id)
-                                  }
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"
+                                  onClick={() => handleToggleHistoryDetail(session)}
+                                  className="px-3 py-1.5 rounded-lg bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                 >
-                                  {isExpanded ? 'Đóng' : 'Chi tiết'}
+                                  <span>{isExpanded ? 'Đóng' : 'Chi tiết'}</span>
+                                  <span className="material-symbols-outlined text-[14px]">
+                                    {isExpanded ? 'expand_less' : 'expand_more'}
+                                  </span>
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    navigate(
-                                      `/shadowing/practice/${session.dialogueId}?role=${session.role}&restart=true`
-                                    )
-                                  }
-                                  className="px-2.5 py-1 rounded-lg bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1 shadow-2xs"
+                                  onClick={() => handleRestartFromHistory(session)}
+                                  className="px-3 py-1.5 rounded-lg bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                   title="Luyện lại bài này"
                                 >
                                   <span className="material-symbols-outlined text-[14px]">replay</span>
@@ -627,55 +663,131 @@ export const LearnerShadowingListView: React.FC = () => {
                             </td>
                           </tr>
 
-                          {/* Expanded Sentence Score Breakdown Row */}
+                          {/* Expanded: Đánh giá đa chiều + chi tiết điểm từng câu */}
                           {isExpanded && (
-                            <tr className="bg-slate-50/90 border-b border-slate-200">
-                              <td colSpan={8} className="py-4 px-6">
-                                <div className="space-y-3">
-                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                                    <span className="font-bold text-slate-800">
-                                      Điểm từng câu thoại ({session.sentenceScores.length} câu)
-                                    </span>
+                            <tr className="bg-slate-50/60 border-b border-slate-200">
+                              <td colSpan={8} className="p-5">
+                                <div className="bg-white rounded-xl border border-slate-200/80 p-5 flex flex-col gap-4">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 text-[11px]">
+                                      <span className="font-bold text-slate-800 uppercase tracking-wider">
+                                        Đánh giá đa chiều năng lực phát âm
+                                      </span>
+                                      <span className="text-slate-300">|</span>
+                                      <span className="text-slate-500">
+                                        Phiên ID: {session.sessionId || session.id}
+                                      </span>
+                                    </div>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-200">
-                                        🎯 Chính xác: {session.accuracyScore ?? session.averageScore}%
+                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-200">
+                                        Độ chính xác: {session.accuracyScore ?? session.averageScore}%
                                       </span>
-                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                        🎶 Ngữ điệu: {session.intonationScore ?? Math.round(session.averageScore * 0.95)}%
+                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        Ngữ điệu (Pitch): {session.intonationScore ?? Math.round(session.averageScore * 0.95)}%
                                       </span>
-                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        ⚡ Lưu loát: {session.fluencyScore ?? Math.round(session.averageScore * 0.92)}%
-                                      </span>
-                                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                        🎤 Mic: {session.audioQualityScore ?? 92}%
-                                      </span>
-                                      <span className="text-slate-500 font-semibold ml-1">
-                                        Tổng: <strong className="text-slate-900">{session.averageScore}/100</strong>
+                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Độ lưu loát: {session.fluencyScore ?? Math.round(session.averageScore * 0.92)}%
                                       </span>
                                     </div>
                                   </div>
-                                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                                    {session.sentenceScores.map((score, sIdx) => (
-                                      <div
-                                        key={sIdx}
-                                        className="bg-white p-2 rounded-xl border border-slate-200 text-center shadow-2xs"
-                                      >
-                                        <div className="text-[10px] text-slate-400 font-medium">
-                                          Câu {sIdx + 1}
-                                        </div>
+
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                      Chi tiết điểm số từng câu ({session.sentenceScores.length} câu thoại)
+                                    </span>
+                                    <span className="hidden sm:inline text-[11px] text-slate-400">
+                                      Nhấp để nghe lại mẫu và giọng đọc của bạn
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {session.sentenceScores.map((score, sIdx) => {
+                                      const result = session.sentenceResults?.[sIdx];
+                                      const detail =
+                                        detailSentences?.find((s) => s.id === result?.sentenceId) ??
+                                        detailSentences?.[sIdx];
+                                      const japaneseText = result?.targetText || detail?.japaneseText;
+                                      const translation = detail?.vietnameseTranslation;
+                                      const tier = result?.evaluationTier ?? scoreTier(score);
+                                      const sampleUrl = result?.targetAudioUrl || detail?.nativeAudioUrl;
+                                      const userUrl = result?.audioBlobUrl;
+
+                                      return (
                                         <div
-                                          className={`text-sm font-bold mt-0.5 ${
-                                            score >= 80
-                                              ? 'text-emerald-600'
-                                              : score >= 60
-                                              ? 'text-amber-600'
-                                              : 'text-red-600'
-                                          }`}
+                                          key={sIdx}
+                                          className="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col gap-2.5"
                                         >
-                                          {score}%
+                                          <div className="flex items-start gap-3">
+                                            <span className="text-[11px] font-bold text-slate-400 pt-0.5">
+                                              {sIdx + 1}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-sm font-bold text-slate-900 leading-snug">
+                                                {japaneseText || `Câu ${sIdx + 1}`}
+                                              </p>
+                                              {translation && (
+                                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                                  {translation}
+                                                </p>
+                                              )}
+                                            </div>
+                                            <span
+                                              className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${scorePillClass(
+                                                score
+                                              )}`}
+                                            >
+                                              {score}%
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                                            <div className="flex items-center gap-3 text-[11px] font-semibold">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handlePlaySample(japaneseText, sampleUrl)
+                                                }
+                                                disabled={!japaneseText && !sampleUrl}
+                                                className="flex items-center gap-1 text-[#005ab6] hover:underline disabled:text-slate-300 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                                              >
+                                                <span className="material-symbols-outlined text-[14px]">volume_up</span>
+                                                Nghe mẫu
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => userUrl && playAudio(userUrl)}
+                                                disabled={!userUrl}
+                                                title={userUrl ? undefined : 'Bản ghi âm không còn được lưu cho phiên này'}
+                                                className="flex items-center gap-1 text-slate-600 hover:underline disabled:text-slate-300 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                                              >
+                                                <span className="material-symbols-outlined text-[14px]">mic</span>
+                                                Nghe bạn
+                                              </button>
+                                            </div>
+                                            <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                              <span className="material-symbols-outlined text-[14px]">
+                                                {tier === 'green' ? 'check' : 'priority_high'}
+                                              </span>
+                                              {tier === 'green'
+                                                ? 'Đạt chuẩn nhại'
+                                                : tier === 'yellow'
+                                                ? 'Cần cải thiện'
+                                                : 'Cần luyện lại'}
+                                            </span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
+                                  </div>
+
+                                  <div className="flex justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRestartFromHistory(session)}
+                                      className="px-4 py-2 rounded-full bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                    >
+                                      <span className="material-symbols-outlined text-[14px]">replay</span>
+                                      Luyện tập lại toàn bài này
+                                    </button>
                                   </div>
                                 </div>
                               </td>
@@ -686,6 +798,45 @@ export const LearnerShadowingListView: React.FC = () => {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Footer: tổng số phiên + phân trang */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 border-t border-slate-200/80 bg-slate-50/60 text-[11px] text-slate-500">
+                <span>
+                  Hiển thị {pagedHistory.length} trong tổng số {filteredHistory.length} phiên luyện tập đã ghi nhận.
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryPage(currentHistoryPage - 1)}
+                    disabled={currentHistoryPage <= 1}
+                    className="px-3 py-1 rounded-md border border-slate-200 bg-white text-slate-600 font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Trước
+                  </button>
+                  {Array.from({ length: totalHistoryPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => setHistoryPage(page)}
+                      className={`px-2.5 py-1 rounded-md font-bold cursor-pointer ${
+                        page === currentHistoryPage
+                          ? 'bg-[#005ab6] text-white'
+                          : 'border border-slate-200 bg-white text-slate-600'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setHistoryPage(currentHistoryPage + 1)}
+                    disabled={currentHistoryPage >= totalHistoryPages}
+                    className="px-3 py-1 rounded-md border border-slate-200 bg-white text-slate-600 font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Sau
+                  </button>
+                </div>
               </div>
             </div>
           )}
