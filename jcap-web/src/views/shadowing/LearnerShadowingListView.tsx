@@ -5,6 +5,8 @@ import { shadowingStorageService } from '../../services/shadowingStorageService'
 import type { ShadowingDialogueItem, ShadowingSentenceItem } from '../../types/shadowing';
 import { voicevoxService } from '../../services/voicevoxService';
 import { fromServerSession, isLegacyHistorySession, measuredScore, mergeHistory } from '../../utils/shadowingHistory';
+import { sessionRankTitle } from '../../utils/shadowingSessionScores';
+import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import type { ShadowingPracticeSession } from '../../types/shadowingProgress';
 import { Button } from '../../components/ui/Button';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
@@ -594,7 +596,6 @@ export const LearnerShadowingListView: React.FC = () => {
                       const seconds = hasDuration ? durationSec % 60 : 0;
                       const isLegacy = isLegacyHistorySession(session);
                       const contentScore = measuredScore(session.contentMatchScore ?? session.accuracyScore);
-                      const fluencyShown = measuredScore(session.fluencyScore);
                       const detailSentences = dialogueSentences[session.dialogueId];
 
                       return (
@@ -680,14 +681,8 @@ export const LearnerShadowingListView: React.FC = () => {
                               <td colSpan={8} className="p-5">
                                 <div className="bg-white rounded-xl border border-slate-200/80 p-5 flex flex-col gap-4">
                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2 text-[11px]">
-                                      <span className="font-bold text-slate-800 uppercase tracking-wider">
-                                        Đánh giá đa chiều năng lực phát âm
-                                      </span>
-                                      <span className="text-slate-300">|</span>
-                                      <span className="text-slate-500">
-                                        Phiên ID: {session.sessionId || session.id}
-                                      </span>
+                                    <div className="flex items-center gap-2 text-xs">
+                                      <span className="font-bold text-slate-800">Kết quả buổi luyện</span>
                                       {isLegacy && (
                                         <span
                                           className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 normal-case tracking-normal"
@@ -697,30 +692,25 @@ export const LearnerShadowingListView: React.FC = () => {
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-200">
-                                        Độ chính xác: {contentScore != null ? `${contentScore}%` : 'Chưa đo'}
-                                      </span>
-                                      <span
-                                        className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-50 text-slate-500 border border-slate-200"
-                                        title="Ngữ điệu (Pitch) chưa được đo bởi hệ thống chấm điểm hiện tại."
-                                      >
-                                        Ngữ điệu (Pitch): Chưa đo
-                                      </span>
-                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        Độ lưu loát: {fluencyShown != null ? `${fluencyShown}%` : 'Chưa đo'}
-                                      </span>
-                                    </div>
+                                    {/* Chỉ số liệu thật đã lưu: độ khớp nội dung (lưu loát, ngữ điệu chưa được chấm nên không hiển thị) */}
+                                    <dl className="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-slate-500">
+                                      <div className="flex items-center gap-1">
+                                        <dt>Độ khớp nội dung</dt>
+                                        <dd className="font-bold text-[#005ab6]">{contentScore != null ? `${contentScore}%` : '—'}</dd>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <dt>Câu đã chấm</dt>
+                                        <dd className="font-bold text-slate-800">
+                                          {session.sentenceScores.length}/{session.totalSentences || session.sentenceScores.length}
+                                        </dd>
+                                      </div>
+                                      {!isLegacy && (
+                                        <dd className="font-bold text-slate-800">{sessionRankTitle(session.averageScore)}</dd>
+                                      )}
+                                    </dl>
                                   </div>
 
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                                      Chi tiết điểm số từng câu ({session.sentenceScores.length} câu thoại)
-                                    </span>
-                                    <span className="hidden sm:inline text-[11px] text-slate-400">
-                                      Nhấp để nghe lại mẫu và giọng đọc của bạn
-                                    </span>
-                                  </div>
+                                  <span className="text-xs font-bold text-slate-500">Chi tiết từng câu</span>
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {session.sentenceScores.map((score, sIdx) => {
@@ -730,6 +720,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                         detailSentences?.[sIdx];
                                       const japaneseText = result?.targetText || detail?.japaneseText;
                                       const translation = detail?.vietnameseTranslation;
+                                      const recognizedText: string | undefined = result?.recognizedText;
                                       const tier: 'green' | 'yellow' | 'red' | null = result?.evaluationTier ?? null;
                                       const sampleUrl = result?.targetAudioUrl || detail?.nativeAudioUrl;
                                       const userUrl = result?.audioBlobUrl;
@@ -744,9 +735,16 @@ export const LearnerShadowingListView: React.FC = () => {
                                               {sIdx + 1}
                                             </span>
                                             <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-bold text-slate-900 leading-snug">
-                                                {japaneseText || `Câu ${sIdx + 1}`}
-                                              </p>
+                                              {japaneseText ? (
+                                                <JapaneseSentenceDiffView
+                                                  diffTokens={result?.diffTokens}
+                                                  targetText={japaneseText}
+                                                  spokenText={recognizedText}
+                                                  size="sm"
+                                                />
+                                              ) : (
+                                                <p className="text-sm font-bold text-slate-900 leading-snug">Câu {sIdx + 1}</p>
+                                              )}
                                               {translation && (
                                                 <p className="text-[11px] text-slate-500 mt-0.5">
                                                   {translation}
@@ -758,7 +756,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                                 score
                                               )}`}
                                             >
-                                              {score}%
+                                              {score} điểm
                                             </span>
                                           </div>
                                           <div className="flex items-center justify-between border-t border-slate-100 pt-2">
@@ -774,16 +772,16 @@ export const LearnerShadowingListView: React.FC = () => {
                                                 <span className="material-symbols-outlined text-[14px]">volume_up</span>
                                                 Nghe mẫu
                                               </button>
-                                              <button
-                                                type="button"
-                                                onClick={() => userUrl && playAudio(userUrl)}
-                                                disabled={!userUrl}
-                                                title={userUrl ? undefined : 'Bản ghi âm không còn được lưu cho phiên này'}
-                                                className="flex items-center gap-1 text-slate-600 hover:underline disabled:text-slate-300 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
-                                              >
-                                                <span className="material-symbols-outlined text-[14px]">mic</span>
-                                                Nghe bạn
-                                              </button>
+                                              {userUrl && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => playAudio(userUrl)}
+                                                  className="flex items-center gap-1 text-slate-600 hover:underline cursor-pointer"
+                                                >
+                                                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">mic</span>
+                                                  Nghe bạn
+                                                </button>
+                                              )}
                                             </div>
                                             <span className="flex items-center gap-1 text-[11px] text-slate-400">
                                               {tier && (
