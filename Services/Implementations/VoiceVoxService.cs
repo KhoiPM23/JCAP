@@ -241,6 +241,81 @@ namespace JCAP.Services.Implementations
             }
         }
 
+        private static readonly ConcurrentDictionary<string, IReadOnlyList<MoraTiming>> _timelineCache = new(StringComparer.Ordinal);
+        private const int MaxTimelineCacheEntries = 2000;
+
+        public async Task<IReadOnlyList<MoraTiming>?> GetMoraTimelineAsync(string text, int speakerId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+
+            var trimmed = text.Trim();
+            var key = $"{speakerId}:{trimmed}";
+            if (_timelineCache.TryGetValue(key, out var cached)) return cached;
+
+            try
+            {
+                var url = $"/audio_query?text={Uri.EscapeDataString(trimmed)}&speaker={speakerId}";
+                using var response = await _httpClient.PostAsync(url, null, cancellationToken);
+                if (!response.IsSuccessStatusCode) return null;
+
+                var timeline = ParseTimeline(await response.Content.ReadAsStringAsync(cancellationToken));
+                if (timeline == null) return null;
+
+                if (_timelineCache.Count >= MaxTimelineCacheEntries) _timelineCache.Clear();
+                _timelineCache[key] = timeline;
+                return timeline;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is HttpRequestException or JsonException or OperationCanceledException)
+            {
+                _logger.LogWarning("Không lấy được mốc mora từ VOICEVOX (speaker {Speaker}): {Message}", speakerId, ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Dựng mốc thời gian từ audio_query: prePhonemeLength, rồi lần lượt từng mora (phụ âm + nguyên âm) và pause_mora.
+        /// Độ dài trong query là giá trị ước lượng của engine nên tổng có thể lệch vài % so với audio thật.
+        /// </summary>
+        internal static IReadOnlyList<MoraTiming>? ParseTimeline(string json)
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("accent_phrases", out var phrases) || phrases.ValueKind != JsonValueKind.Array) return null;
+
+            double Num(JsonElement e, string name) =>
+                e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : 0;
+
+            var cursor = Num(root, "prePhonemeLength");
+            var list = new List<MoraTiming>();
+            foreach (var phrase in phrases.EnumerateArray())
+            {
+                if (phrase.TryGetProperty("moras", out var moras) && moras.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var mora in moras.EnumerateArray())
+                    {
+                        var text = mora.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
+                        var consonant = Num(mora, "consonant_length");
+                        var vowel = Num(mora, "vowel_length");
+                        list.Add(new MoraTiming(text, cursor, consonant, vowel, IsPause: false));
+                        cursor += consonant + vowel;
+                    }
+                }
+
+                if (phrase.TryGetProperty("pause_mora", out var pause) && pause.ValueKind == JsonValueKind.Object)
+                {
+                    var length = Num(pause, "vowel_length") * Math.Max(0.0, root.TryGetProperty("pauseLengthScale", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetDouble() : 1.0);
+                    list.Add(new MoraTiming("", cursor, 0, length, IsPause: true));
+                    cursor += length;
+                }
+            }
+
+            return list.Count(m => !m.IsPause) == 0 ? null : list;
+        }
+
         private static string TranslateStyle(string styleName)
         {
             return styleName switch

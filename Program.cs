@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,10 +90,35 @@ builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
-builder.Services.AddScoped<IAiShadowingAssessmentService, GeminiShadowingAssessmentService>();
+builder.Services.AddScoped<IShadowingSpeechRecognizer, GeminiSpeechRecognizer>();
+builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
+builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
+// Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
+// không dùng bảng tra tự viết để đoán cách đọc.
+builder.Services.AddHttpClient<VoiceVoxKanaReader>();
+builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
+builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
+builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
+
+// Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("shadowing-evaluate", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -154,6 +181,7 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 
