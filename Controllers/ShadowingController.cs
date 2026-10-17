@@ -3,10 +3,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Shadowing;
+using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
 
 namespace JCAP.Controllers
 {
@@ -21,17 +23,20 @@ namespace JCAP.Controllers
 
         private readonly IShadowingService _shadowingService;
         private readonly IAiShadowingAssessmentService _aiAssessmentService;
+        private readonly ILogger<ShadowingController> _logger;
 
         public ShadowingController(
             IShadowingService shadowingService,
-            IAiShadowingAssessmentService aiAssessmentService)
+            IAiShadowingAssessmentService aiAssessmentService,
+            ILogger<ShadowingController> logger)
         {
             _shadowingService = shadowingService;
             _aiAssessmentService = aiAssessmentService;
+            _logger = logger;
         }
 
         /// <summary>
-        /// UC-25 & UC-26: Lấy danh sách bài học Shadowing (hỗ trợ tìm kiếm từ khóa, lọc theo JLPT Level và ScenarioId).
+        /// UC-25 và UC-26: Lấy danh sách bài học Shadowing (hỗ trợ tìm kiếm từ khóa, lọc theo JLPT Level và ScenarioId).
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<ShadowingDialogueListDto>>>> GetCatalog(
@@ -58,7 +63,8 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Lưu lại tiến trình hoàn thành buổi luyện tập Shadowing (không tính phí).
+        /// Hoàn thành buổi luyện: backend lấy điểm từ các kết quả chấm câu đã lưu (theo EvaluationIds), tính điểm tổng
+        /// và lưu ShadowingPracticeSession vào lịch sử. Không nhận điểm từ client.
         /// </summary>
         [HttpPost("session/complete")]
         public async Task<ActionResult<ApiResponse<ShadowingSessionCompleteResponseDto>>> CompleteSession(
@@ -79,6 +85,21 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
+        /// Lịch sử các buổi luyện Shadowing đã hoàn thành của người dùng hiện tại (mới nhất trước).
+        /// </summary>
+        [HttpGet("history")]
+        public async Task<ActionResult<ApiResponse<List<ShadowingPracticeSessionDto>>>> GetHistory()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<List<ShadowingPracticeSessionDto>>.Fail("Không xác định được danh tính người dùng."));
+            }
+
+            return Ok(await _shadowingService.GetHistoryAsync(userId));
+        }
+
+        /// <summary>
         /// Đánh giá một câu Shadowing: nhận dạng giọng nói, so khớp với câu mẫu và chấm điểm (backend là nguồn điểm duy nhất).
         /// Yêu cầu đăng nhập (JWT); giới hạn dung lượng và tần suất để tránh lạm dụng API trả phí.
         /// </summary>
@@ -90,6 +111,20 @@ namespace JCAP.Controllers
             [FromForm] ShadowingAudioEvaluationRequestDto request,
             CancellationToken cancellationToken)
         {
+            var userId = GetCurrentUserId();
+
+            // Có SentenceId: câu mẫu lấy từ CSDL (không tin câu mẫu do client gửi) và kết quả chấm được lưu lại.
+            ShadowingSentence? sentence = null;
+            if (request.SentenceId is { } sentenceId)
+            {
+                sentence = await _shadowingService.FindPracticeSentenceAsync(sentenceId);
+                if (sentence == null)
+                {
+                    return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Không tìm thấy câu luyện tập."));
+                }
+                request.TargetText = sentence.JapaneseText;
+            }
+
             if (string.IsNullOrWhiteSpace(request.TargetText))
             {
                 return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Thiếu câu mẫu tiếng Nhật cần đánh giá."));
@@ -137,6 +172,20 @@ namespace JCAP.Controllers
                         AudioGateDetail = request.AudioGateDetail
                     },
                     cancellationToken);
+
+                if (sentence != null && !string.IsNullOrEmpty(userId))
+                {
+                    result.SentenceId = sentence.Id;
+                    try
+                    {
+                        result.EvaluationId = await _shadowingService.RecordSentenceEvaluationAsync(userId, sentence.Id, result);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Không lưu được chỉ làm câu này không vào được lịch sử; người học vẫn thấy điểm.
+                        _logger.LogError(ex, "Không lưu được kết quả chấm câu {SentenceId}.", sentence.Id);
+                    }
+                }
 
                 return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Đã xử lý yêu cầu đánh giá."));
             }

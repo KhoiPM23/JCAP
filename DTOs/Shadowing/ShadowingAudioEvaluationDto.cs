@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
@@ -7,7 +8,13 @@ namespace JCAP.DTOs.Shadowing
     {
         public IFormFile? Audio { get; set; }
 
-        /// <summary>Câu mẫu tiếng Nhật. Chỉ dùng để đối chiếu, KHÔNG gửi cho nhà cung cấp STT.</summary>
+        /// <summary>
+        /// Câu đang luyện. Khi có, backend lấy câu mẫu từ CSDL (bỏ qua TargetText do client gửi) và LƯU kết quả chấm
+        /// để dùng khi hoàn thành buổi luyện. Không có thì chỉ chấm theo TargetText và không lưu (công cụ thử nghiệm).
+        /// </summary>
+        public int? SentenceId { get; set; }
+
+        /// <summary>Câu mẫu tiếng Nhật. Chỉ dùng để đối chiếu, KHÔNG gửi cho nhà cung cấp STT. Bị bỏ qua khi có SentenceId.</summary>
         public string TargetText { get; set; } = string.Empty;
 
         /// <summary>
@@ -221,6 +228,11 @@ namespace JCAP.DTOs.Shadowing
 
     public class ShadowingAudioEvaluationResponseDto
     {
+        /// <summary>Id kết quả chấm đã lưu (chỉ có khi gửi SentenceId và câu được chấm). Dùng khi hoàn thành buổi luyện.</summary>
+        public Guid? EvaluationId { get; set; }
+
+        public int? SentenceId { get; set; }
+
         /// <summary>
         /// completed: điểm Content Match tính từ transcript do nguồn STT chính cung cấp.
         /// partial: điểm tính được nhưng phải dùng nguồn dự phòng (Web Speech) do nguồn chính lỗi kỹ thuật.

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Shadowing;
+using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -181,53 +183,249 @@ namespace JCAP.Services.Implementations
             return ApiResponse<ShadowingDialogueDetailDto>.Ok(detail, "Lấy thông tin chi tiết bài học Shadowing thành công.");
         }
 
+        private const int MaxEvaluationsPerSession = 200;
+        private const int MaxHistoryItems = 100;
+        private const int MaxSessionSeconds = 6 * 60 * 60;
+        private const int MaxRecognizedTextLength = 1000;
+        private const int MaxFeedbackLength = 2000;
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+        public async Task<ShadowingSentence?> FindPracticeSentenceAsync(int sentenceId)
+        {
+            return await _context.ShadowingSentences
+                .AsNoTracking()
+                .Include(s => s.ShadowingDialogue)
+                .FirstOrDefaultAsync(s => s.Id == sentenceId && s.ShadowingDialogue.IsActive);
+        }
+
+        public async Task<Guid?> RecordSentenceEvaluationAsync(string userId, int sentenceId, ShadowingAudioEvaluationResponseDto result)
+        {
+            // Chỉ lưu lượt có điểm. "Chưa chấm được" không phải điểm 0 nên không được đưa vào điểm tổng.
+            var scored = (result.EvaluationStatus == "completed" || result.EvaluationStatus == "partial")
+                && result.ContentMatchScore.HasValue
+                && result.OverallScore.HasValue;
+            if (!scored || string.IsNullOrEmpty(userId)) return null;
+
+            var evaluation = new ShadowingSentenceEvaluation
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ShadowingSentenceId = sentenceId,
+                RecognizedText = Truncate(result.RecognizedText, MaxRecognizedTextLength),
+                ContentMatchScore = result.ContentMatchScore!.Value,
+                OverallScore = result.OverallScore!.Value,
+                Tier = result.Tier,
+                EvaluationStatus = result.EvaluationStatus,
+                RecognitionSource = result.RecognitionSource,
+                ScoringVersion = result.ScoringVersion,
+                ComparisonMethod = result.ComparisonMethod,
+                AudioQualityStatus = result.AudioQualityStatus,
+                Feedback = Truncate(result.Feedback, MaxFeedbackLength),
+                DiffTokensJson = JsonSerializer.Serialize(result.DiffTokens, JsonOptions),
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _context.ShadowingSentenceEvaluations.Add(evaluation);
+            await _context.SaveChangesAsync();
+            return evaluation.Id;
+        }
+
         public async Task<ApiResponse<ShadowingSessionCompleteResponseDto>> CompleteSessionAsync(string userId, ShadowingSessionCompleteDto dto)
         {
+            var role = (dto.LearnerRole ?? string.Empty).Trim().ToUpperInvariant();
+            if (role != "A" && role != "B")
+            {
+                return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Vai luyện tập không hợp lệ.");
+            }
+
+            var ids = (dto.EvaluationIds ?? new List<Guid>()).Distinct().Take(MaxEvaluationsPerSession).ToList();
+            if (ids.Count == 0)
+            {
+                return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Chưa có câu nào được chấm trong buổi luyện này.");
+            }
+
             var dialogue = await _context.ShadowingDialogues
                 .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == dto.DialogueId);
-
             if (dialogue == null)
             {
                 return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Không tìm thấy bài học Shadowing.");
             }
 
-            int contentMatch = dto.OverallContentMatchScore > 0 ? dto.OverallContentMatchScore : dto.OverallAccuracyScore;
-            int fluency = dto.OverallFluencyScore > 0 ? dto.OverallFluencyScore : 85;
-            int effectiveWeightedScore = dto.WeightedOverallScore > 0 
-                ? dto.WeightedOverallScore 
-                : (int)Math.Round(contentMatch * 0.60 + fluency * 0.40);
+            // Điểm lấy từ kết quả chấm backend đã LƯU, không lấy từ client. Chỉ nhận kết quả của chính người dùng này,
+            // đúng bài, đúng vai và chưa thuộc buổi luyện nào (gửi lại cùng Id không tạo được buổi thứ hai).
+            var evaluations = await _context.ShadowingSentenceEvaluations
+                .Where(e => ids.Contains(e.Id)
+                    && e.UserId == userId
+                    && e.ShadowingPracticeSessionId == null
+                    && e.ShadowingSentence!.ShadowingDialogueId == dto.DialogueId
+                    && e.ShadowingSentence.SpeakerRole == role)
+                .ToListAsync();
 
-            string rankTitle = effectiveWeightedScore >= 90 ? "Hạng S - Rất xuất sắc (Khớp chuẩn & Lưu loát)"
-                : effectiveWeightedScore >= 80 ? "Hạng A - Rất tốt (Phát âm tự nhiên)"
-                : effectiveWeightedScore >= 65 ? "Hạng B - Đạt chuẩn (Nắm vững câu từ)"
-                : "Hạng C - Cần rèn luyện thêm";
+            // Mỗi câu một kết quả: nhiều lượt của cùng một câu thì lấy lượt điểm cao nhất (mới nhất nếu bằng điểm).
+            var chosen = evaluations
+                .GroupBy(e => e.ShadowingSentenceId)
+                .Select(g => g.OrderByDescending(e => e.OverallScore).ThenByDescending(e => e.CreatedAt).First())
+                .ToList();
+            if (chosen.Count == 0)
+            {
+                return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail(
+                    "Không có kết quả chấm hợp lệ để lưu (buổi luyện này có thể đã được lưu trước đó).");
+            }
 
-            var feedback = effectiveWeightedScore >= 85
-                ? "Xuất sắc! Khớp chuẩn xác câu từ bản xứ, nhịp nói liền mạch và phản xạ tự nhiên."
-                : effectiveWeightedScore >= 70
-                ? "Khá tốt! Bạn phát âm rõ ràng, hãy chú ý các trợ từ nhỏ và giữ hơi thở ổn định hơn."
-                : "Cần cải thiện thêm! Bạn nên luyện nghe câu mẫu từng cụm từ ngắn trước khi ghép trọn vẹn câu thoại.";
+            var learnerSentenceCount = await _context.ShadowingSentences
+                .AsNoTracking()
+                .CountAsync(s => s.ShadowingDialogueId == dto.DialogueId && s.SpeakerRole == role);
+            // Câu của vai người học chưa được chấm tính là 0 trong điểm tổng.
+            var denominator = learnerSentenceCount > 0 ? learnerSentenceCount : chosen.Count;
+
+            var contentMatch = Math.Clamp(
+                (int)Math.Round(chosen.Sum(e => (double)e.ContentMatchScore) / denominator, MidpointRounding.AwayFromZero), 0, 100);
+            int? fluency = null; // chưa đo ở phiên bản chấm hiện tại
+            var overall = ShadowingScoring.ComputeOverall(contentMatch, fluency) ?? 0;
+
+            var completedAt = DateTime.UtcNow;
+            var duration = Math.Clamp(dto.DurationSeconds, 0, MaxSessionSeconds);
+            var startedAt = dto.StartedAt?.ToUniversalTime() is { } started
+                && started <= completedAt
+                && started >= completedAt.AddSeconds(-MaxSessionSeconds)
+                ? started
+                : completedAt.AddSeconds(-duration);
+
+            var session = new ShadowingPracticeSession
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ShadowingDialogueId = dialogue.Id,
+                LearnerRole = role,
+                StartedAt = startedAt,
+                CompletedAt = completedAt,
+                DurationSeconds = duration,
+                ContentMatchScore = contentMatch,
+                FluencyScore = fluency,
+                WeightedOverallScore = overall,
+                ScoringVersion = ShadowingScoring.Version,
+                AudioQualityStatus = AggregateAudioQuality(chosen.Select(e => e.AudioQualityStatus)),
+                RankTitle = RankTitleFor(overall),
+                LearnerSentenceCount = learnerSentenceCount,
+                ScoredSentenceCount = chosen.Count,
+                IsActive = true,
+            };
+
+            _context.ShadowingPracticeSessions.Add(session);
+            foreach (var evaluation in chosen) evaluation.ShadowingPracticeSessionId = session.Id;
+            await _context.SaveChangesAsync();
 
             var response = new ShadowingSessionCompleteResponseDto
             {
-                Success = true,
-                Message = "Lưu tiến trình Shadowing thành công!",
+                SessionId = session.Id,
                 DialogueId = dialogue.Id,
                 DialogueTitle = dialogue.Title,
                 OverallAccuracyScore = contentMatch,
                 OverallFluencyScore = fluency,
-                OverallIntonationScore = dto.OverallIntonationScore > 0 ? dto.OverallIntonationScore : contentMatch,
-                OverallAudioQualityScore = dto.OverallAudioQualityScore > 0 ? dto.OverallAudioQualityScore : 92,
-                AudioQualityStatus = !string.IsNullOrEmpty(dto.AudioQualityStatus) ? dto.AudioQualityStatus : "clear",
-                WeightedOverallScore = effectiveWeightedScore,
-                RankTitle = rankTitle,
-                SummaryFeedback = feedback
+                AudioQualityStatus = session.AudioQualityStatus,
+                WeightedOverallScore = overall,
+                ScoringVersion = session.ScoringVersion,
+                RankTitle = session.RankTitle,
+                SummaryFeedback = SummaryFeedbackFor(overall),
+                LearnerSentenceCount = learnerSentenceCount,
+                ScoredSentenceCount = chosen.Count,
             };
 
-            return ApiResponse<ShadowingSessionCompleteResponseDto>.Ok(response, "Đã ghi nhận hoàn thành buổi luyện Shadowing.");
+            return ApiResponse<ShadowingSessionCompleteResponseDto>.Ok(response, "Đã lưu buổi luyện Shadowing vào lịch sử.");
         }
 
+        public async Task<ApiResponse<List<ShadowingPracticeSessionDto>>> GetHistoryAsync(string userId)
+        {
+            var sessions = await _context.ShadowingPracticeSessions
+                .AsNoTracking()
+                .Where(s => s.UserId == userId && s.IsActive)
+                .OrderByDescending(s => s.CompletedAt)
+                .Take(MaxHistoryItems)
+                .Include(s => s.ShadowingDialogue!).ThenInclude(d => d.Scenario)
+                .Include(s => s.SentenceEvaluations).ThenInclude(e => e.ShadowingSentence)
+                .AsSplitQuery()
+                .ToListAsync();
+
+            var items = sessions.Select(s => new ShadowingPracticeSessionDto
+            {
+                Id = s.Id,
+                DialogueId = s.ShadowingDialogueId,
+                DialogueTitle = s.ShadowingDialogue?.Title ?? string.Empty,
+                ScenarioTitle = s.ShadowingDialogue?.Scenario?.Title ?? string.Empty,
+                JlptLevel = s.ShadowingDialogue?.JLPTLevel ?? string.Empty,
+                LearnerRole = s.LearnerRole,
+                StartedAt = AsUtc(s.StartedAt),
+                CompletedAt = AsUtc(s.CompletedAt),
+                DurationSeconds = s.DurationSeconds,
+                ContentMatchScore = s.ContentMatchScore,
+                FluencyScore = s.FluencyScore,
+                WeightedOverallScore = s.WeightedOverallScore,
+                ScoringVersion = s.ScoringVersion,
+                AudioQualityStatus = s.AudioQualityStatus,
+                RankTitle = s.RankTitle,
+                LearnerSentenceCount = s.LearnerSentenceCount,
+                ScoredSentenceCount = s.ScoredSentenceCount,
+                Sentences = s.SentenceEvaluations
+                    .OrderBy(e => e.ShadowingSentence?.OrderIndex ?? int.MaxValue)
+                    .Select(e => new ShadowingSessionSentenceDto
+                    {
+                        EvaluationId = e.Id,
+                        SentenceId = e.ShadowingSentenceId,
+                        OrderIndex = e.ShadowingSentence?.OrderIndex ?? 0,
+                        TargetText = e.ShadowingSentence?.JapaneseText ?? string.Empty,
+                        RecognizedText = e.RecognizedText,
+                        ContentMatchScore = e.ContentMatchScore,
+                        OverallScore = e.OverallScore,
+                        Tier = e.Tier,
+                        Feedback = e.Feedback,
+                        ScoringVersion = e.ScoringVersion,
+                        DiffTokens = ReadDiffTokens(e.DiffTokensJson),
+                        EvaluatedAt = AsUtc(e.CreatedAt),
+                    })
+                    .ToList(),
+            }).ToList();
+
+            return ApiResponse<List<ShadowingPracticeSessionDto>>.Ok(items, "Lấy lịch sử luyện Shadowing thành công.");
+        }
+
+        // Điểm hiện chỉ đo độ khớp nội dung, nên lời nhận xét không được nói về lưu loát hay phát âm.
+        private static string RankTitleFor(int overall) =>
+            overall >= 90 ? "Hạng S - Rất xuất sắc"
+            : overall >= 80 ? "Hạng A - Rất tốt"
+            : overall >= 65 ? "Hạng B - Đạt chuẩn"
+            : "Hạng C - Cần rèn luyện thêm";
+
+        private static string SummaryFeedbackFor(int overall) =>
+            overall >= 85 ? "Xuất sắc! Bạn đọc khớp gần như toàn bộ câu chữ của bài mẫu."
+            : overall >= 70 ? "Khá tốt! Bạn đọc đúng phần lớn câu chữ; hãy chú ý các từ còn sai hoặc bị thiếu."
+            : "Cần luyện thêm! Hãy nghe lại câu mẫu theo từng cụm ngắn rồi đọc theo trước khi ghép cả câu.";
+
+        /// <summary>good khi mọi câu đều good; acceptable khi chỉ gồm good/acceptable; còn lại unmeasured.</summary>
+        private static string AggregateAudioQuality(IEnumerable<string> statuses)
+        {
+            var list = statuses.ToList();
+            if (list.Count > 0 && list.All(s => s == "good")) return "good";
+            if (list.Count > 0 && list.All(s => s == "good" || s == "acceptable")) return "acceptable";
+            return "unmeasured";
+        }
+
+        private static List<ShadowingDiffTokenDto> ReadDiffTokens(string json)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<List<ShadowingDiffTokenDto>>(json, JsonOptions) ?? new List<ShadowingDiffTokenDto>();
+            }
+            catch (JsonException)
+            {
+                return new List<ShadowingDiffTokenDto>();
+            }
+        }
+
+        private static DateTime AsUtc(DateTime value) =>
+            value.Kind == DateTimeKind.Utc ? value : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        private static string Truncate(string? value, int max) =>
+            string.IsNullOrEmpty(value) ? string.Empty : value.Length <= max ? value : value[..max];
     }
 }
-
