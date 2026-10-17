@@ -19,7 +19,7 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>
         /// Transcript ĐÃ CHỐT (final) từ Web Speech API của trình duyệt. Không bao giờ chứa kết quả interim.
-        /// Chỉ được dùng khi nhà cung cấp STT chính gặp lỗi kỹ thuật (xem ShadowingEvaluationService).
+        /// Đây là nguồn duy nhất được chấm (xem ShadowingEvaluationService).
         /// </summary>
         public string? ClientTranscript { get; set; }
 
@@ -234,8 +234,8 @@ namespace JCAP.DTOs.Shadowing
         public int? SentenceId { get; set; }
 
         /// <summary>
-        /// completed: điểm Content Match tính từ transcript do nguồn STT chính cung cấp.
-        /// partial: điểm tính được nhưng phải dùng nguồn dự phòng (Web Speech) do nguồn chính lỗi kỹ thuật.
+        /// completed: điểm Content Match tính từ transcript Web Speech đã chốt.
+        /// partial: không còn được tạo ra (chỉ có ở kết quả cũ, khi còn dùng Gemini làm nguồn chính).
         /// unavailable: không đủ dữ liệu tin cậy để chấm (im lặng, quá ngắn, âm thanh không đạt, sai định dạng).
         /// failed: lỗi kỹ thuật và không có nguồn dự phòng hợp lệ.
         /// </summary>
@@ -244,10 +244,10 @@ namespace JCAP.DTOs.Shadowing
         /// <summary>recognized | no_speech | unavailable — tách biệt với chất lượng âm thanh.</summary>
         public string RecognitionStatus { get; set; } = "recognized";
 
-        /// <summary>gemini | web_speech | none</summary>
-        public string RecognitionSource { get; set; } = "gemini";
+        /// <summary>web_speech | none (gemini chỉ có ở kết quả cũ)</summary>
+        public string RecognitionSource { get; set; } = "none";
 
-        /// <summary>Lý do dùng nguồn dự phòng (vd. AI_TIMEOUT). Null nếu dùng nguồn chính.</summary>
+        /// <summary>Không còn được dùng (luôn null); giữ để tương thích với kết quả cũ.</summary>
         public string? FallbackReason { get; set; }
 
         /// <summary>good | acceptable | needs_retry | unmeasured. Tách biệt với RecognitionStatus.</summary>
@@ -305,7 +305,7 @@ namespace JCAP.DTOs.Shadowing
         public List<string> MismatchedWords { get; set; } = new();
 
         /// <summary>Tương thích ngược: trùng RecognitionSource.</summary>
-        public string Source { get; set; } = "gemini";
+        public string Source { get; set; } = "none";
 
         public string? ErrorCode { get; set; }
         public string? ErrorMessage { get; set; }

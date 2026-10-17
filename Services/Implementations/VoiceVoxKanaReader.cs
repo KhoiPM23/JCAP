@@ -61,8 +61,8 @@ namespace JCAP.Services.Implementations
             if (Cache.TryGetValue(normalized, out var cached)) return cached;
             if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _breakerOpenUntilTicks)) return null;
 
-            // Gộp các yêu cầu cùng văn bản đang chạy: câu mẫu được đọc sớm (song song với Gemini) và lúc so khớp
-            // chỉ chờ chính yêu cầu đó thay vì gọi engine lần nữa.
+            // Gộp các yêu cầu cùng văn bản đang chạy (vd. nhiều người học cùng luyện một câu): chỉ gọi engine một lần,
+            // các yêu cầu sau chờ chính kết quả đó.
             var lazy = InFlight.GetOrAdd(normalized, key => new Lazy<Task<KanaReading?>>(() => FetchAsync(key)));
             try
             {

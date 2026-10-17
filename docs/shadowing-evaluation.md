@@ -3,10 +3,10 @@
 Tài liệu mô tả **toàn bộ logic hiện tại** (scoring version `shadowing-score/p2-content-word`, so khớp `kana-word-v1`).
 Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ dẫn file để đối chiếu.
 
-> **Chế độ nhận dạng hiện tại: trình duyệt (`Shadowing:Recognition:Provider` = `browser`, mặc định).** Backend **không gọi Gemini**,
-> chỉ chấm theo transcript Web Speech đã chốt (`final`) do client gửi; audio không được dùng nên bỏ qua kiểm tra dung lượng/MIME
-> (cổng âm thanh `needs_retry` vẫn chặn). Không có transcript hợp lệ → `unavailable` (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`,
-> `BROWSER_STT_ERROR`), không bao giờ là điểm 0. Đặt `Provider` = `gemini` để bật lại luồng Gemini mô tả bên dưới (mục 3, 5.2–5.4).
+> **Nhận dạng giọng nói chạy trên trình duyệt (Web Speech).** Backend chỉ chấm theo transcript đã chốt (`final`) do client gửi;
+> bản ghi gốc không được dùng để nhận dạng (cổng âm thanh `needs_retry` vẫn chặn). Không có transcript hợp lệ → `unavailable`
+> (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR`), không bao giờ là điểm 0.
+> Nhánh nhận dạng bằng Gemini (`GeminiSpeechRecognizer`, cấu hình `Shadowing:Recognition:Provider`) **đã được gỡ** vì không dùng.
 
 > **Nhịp nói (Fluency, số liệu thô, `fluency-metrics/v1`).** Sau khi chấm nội dung, client gửi thêm `analysisWav` (WAV PCM 16-bit mono 16 kHz,
 > được render lại qua `OfflineAudioContext` nên đúng tần số; `jcap-web/src/utils/wavEncoder.ts`). Backend (`FluencyAnalyzer`, C#, không cần Python/ffmpeg)
@@ -17,7 +17,7 @@ Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ d
 >
 > ### So nhịp nói với giọng mẫu (`fluency.reference` / `comparison` / `observations`)
 > **Điều kiện** (`FluencyComparer.CheckEligibility`; thiếu một điều kiện thì `comparison.status = unavailable` kèm `reasonCode`, không tạo nhận xét, không phải nói tốt hay kém):
-> kết quả nội dung là `completed` (không phải `partial`/dự phòng); Content Match ≥ `MinContentMatch` (70); số mora của transcript / số mora câu mẫu nằm trong [0.8, 1.25]
+> kết quả nội dung là `completed`; Content Match ≥ `MinContentMatch` (70); số mora của transcript / số mora câu mẫu nằm trong [0.8, 1.25]
 > (điểm cao chưa chắc transcript tương ứng câu mẫu nên có thêm kiểm tra này); bản ghi người học đo được; có giọng mẫu phân tích được; đoạn nói cả hai phía ≥ 800 ms.
 > `reasonCode`: TRANSCRIPT_NOT_RELIABLE, CONTENT_BELOW_THRESHOLD, TRANSCRIPT_MORA_MISMATCH, LEARNER_UNAVAILABLE, REFERENCE_UNAVAILABLE, SPEECH_TOO_SHORT_FOR_COMPARISON.
 > Khi chưa đủ điều kiện, backend không tính mora/giây (tránh con số vô nghĩa khi người học đọc câu khác); giao diện ẩn cả khối nhịp nói.
@@ -74,24 +74,23 @@ Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ d
 
 ## 1. Tóm tắt
 
-Người học đọc một câu → trình duyệt ghi âm và đo chất lượng tín hiệu → **Gemini nghe audio và chép lại thành chữ (transcript)** →
-backend đổi câu mẫu và transcript thành **chuỗi mora (cách đọc)** bằng **VOICEVOX G2P** → so từng mora → ra điểm.
+Người học đọc một câu → trình duyệt ghi âm, đo chất lượng tín hiệu và **nhận dạng giọng nói bằng Web Speech (transcript)** →
+backend đổi câu mẫu và transcript thành **chuỗi mora (cách đọc)** bằng **VOICEVOX G2P** → so khớp theo từ → ra điểm.
 
 Ba điều cần nhớ:
 
 1. **Backend là nơi duy nhất tính điểm.** Frontend chỉ thu bằng chứng và hiển thị kết quả.
-2. **Điểm là Content Match theo transcript, không phải điểm phát âm âm học.** Lưu loát và ngữ điệu chưa được đo (hiển thị "Chưa đo").
+2. **Điểm là Content Match theo transcript, không phải điểm phát âm âm học.** Lưu loát và ngữ điệu chưa được tính điểm (hiển thị "Chưa đo").
 3. **Thiếu dữ liệu thì không chấm, không đoán.** Không nghe được, không có cách đọc, hoặc lỗi kỹ thuật đều ra trạng thái "chưa chấm được", không bao giờ thành điểm 0.
 
 ## 2. Ai làm gì
 
 | Thành phần | Việc làm | Việc KHÔNG làm |
 |---|---|---|
-| **Trình duyệt** (MediaRecorder, Web Audio, Web Speech) | Ghi âm; đo cổng âm thanh; gom transcript Web Speech đã chốt (dự phòng) | Không tính điểm |
-| **Gemini** (`GeminiSpeechRecognizer`) | Nghe audio, trả transcript. Không biết câu mẫu | Không chấm, không nhận xét |
+| **Trình duyệt** (MediaRecorder, Web Audio, Web Speech) | Ghi âm; đo cổng âm thanh; nhận dạng và gom transcript đã chốt; xuất WAV 16 kHz để đo nhịp nói | Không tính điểm |
 | **VOICEVOX** (`VoiceVoxKanaReader`) | Nhận **văn bản**, trả cách đọc (mora). Chỉ dùng endpoint `/audio_query` | Không nhận audio, không nghe giọng, không chấm |
-| **`KanaMoraComparer`** | So chuỗi mora câu mẫu và transcript, tính điểm, phân loại lỗi | Không gọi dịch vụ ngoài trực tiếp |
-| **`ShadowingEvaluationService`** | Điều phối các bước, chính sách nguồn nhận dạng, tạo response | |
+| **`KanaMoraComparer`** | So chuỗi mora câu mẫu và transcript theo từ, tính điểm, phân loại lỗi | Không gọi dịch vụ ngoài trực tiếp |
+| **`ShadowingEvaluationService`** | Điều phối các bước, tạo response, gắn số liệu nhịp nói | |
 | **`ShadowingScoring`** | Công thức Overall và ngưỡng tier (duy nhất) | |
 
 ## 3. Luồng đầu-cuối
@@ -101,23 +100,20 @@ sequenceDiagram
     participant L as Người học
     participant FE as Trình duyệt
     participant BE as Backend (ShadowingEvaluationService)
-    participant G as Gemini (STT)
     participant V as VOICEVOX (G2P)
 
     L->>FE: Bấm micro, đọc câu
-    FE->>FE: MediaRecorder (webm/ogg/mp4) + Web Audio đo cổng + Web Speech gom transcript
-    L->>FE: Bấm dừng
+    FE->>FE: MediaRecorder + Web Audio đo cổng + Web Speech nhận dạng
+    L->>FE: Bấm gửi
     FE->>FE: Chờ recorder/Web Speech kết thúc (có chặn trên), chốt transcript
     FE->>FE: Cổng âm thanh (nếu "unmeasured": giải mã chính bản ghi để đo)
-    FE->>BE: POST /api/shadowing/evaluate-audio (audio + targetText + bằng chứng)
-    BE->>BE: Kiểm tra audio (kích thước, MIME khớp nội dung) và cổng
-    BE->>G: Audio (1 lần gọi duy nhất)
-    G-->>BE: transcript / noSpeech / lỗi
+    FE->>BE: POST /api/shadowing/evaluate-audio (sentenceId + transcript đã chốt + bằng chứng + WAV phân tích)
+    BE->>BE: Lấy câu mẫu từ CSDL, kiểm tra cổng
     BE->>V: /audio_query cho câu mẫu và transcript (có cache)
     V-->>BE: Chuỗi mora
-    BE->>BE: So mora, điểm, tier, diff
-    BE-->>FE: ShadowingAudioEvaluationResponseDto
-    FE-->>L: Điểm + đối chiếu "Chuẩn / Bạn nói" hoặc "Chưa chấm được"
+    BE->>BE: So khớp theo từ, điểm, tier, diff, nhịp nói; lưu kết quả câu
+    BE-->>FE: ShadowingAudioEvaluationResponseDto (+ evaluationId)
+    FE-->>L: Điểm + đối chiếu trên câu mẫu hoặc "Chưa chấm được"
 ```
 
 ## 4. Phía trình duyệt
@@ -131,18 +127,18 @@ File chính: `jcap-web/src/views/shadowing/LearnerShadowingPracticeView.tsx` (`s
   (backend sẽ từ chối), **không** mặc định `audio/webm`.
 - `MediaRecorder.start(100)`: cắt dữ liệu mỗi 100 ms.
 
-### 4.2 Web Speech API (nguồn dự phòng, `utils/speechTranscriptCollector.ts`)
+### 4.2 Web Speech API (nguồn nhận dạng, `utils/speechTranscriptCollector.ts`)
 - `ja-JP`, `continuous = true`, `interimResults = true`.
 - Trình duyệt tự kết thúc phiên (`onend`) thì tự khởi động lại, tối đa 5 lần, **trừ khi** đã bấm dừng hoặc gặp lỗi nghiêm trọng
   (`not-allowed`, `service-not-allowed`, `audio-capture`, `language-not-supported`).
 - Mỗi phiên là một session riêng. `event.results` của phiên mới bắt đầu lại từ 0, nên collector **giữ lại các đoạn đã chốt** của phiên cũ.
-- Kết quả **interim chỉ để hiển thị trực tiếp**; transcript dùng để chấm chỉ gồm đoạn `isFinal`.
+- Kết quả **interim không bao giờ được chấm**; transcript dùng để chấm chỉ gồm đoạn `isFinal`.
 - Mỗi lần nhận kết quả thay thế nguyên snapshot của phiên (không nối thêm) nên sự kiện lặp không nhân đôi chữ. Sự kiện của phiên cũ đến muộn bị bỏ qua.
 - `no-speech` và `aborted` không bị coi là lỗi. Trạng thái cuối: `final | empty | unsupported | error`.
 
 ### 4.3 Khi bấm dừng
 1. `collector.requestStop()`, `recognition.stop()`, `recorder.stop()`; giao diện sang trạng thái "đang phân tích".
-2. **Chờ theo sự kiện, có chặn trên:** recorder `onstop` (tối đa 2000 ms) và Web Speech `onend` (tối đa 600 ms, vì Web Speech chỉ là dự phòng). Không dùng độ trễ cố định.
+2. **Chờ theo sự kiện, có chặn trên:** recorder `onstop` (tối đa 2000 ms) và Web Speech `onend` (tối đa 600 ms; quá hạn thì chỉ dùng phần đã chốt). Không dùng độ trễ cố định.
 3. `collector.lock()`: từ đây mọi sự kiện đến muộn không ghi đè kết quả. Bấm thử lại/đi tiếp/đổi vai sẽ vô hiệu hóa kết quả đang chờ (`evaluationSeqRef`).
 4. Không có dữ liệu audio → "chưa chấm được" ngay (không gọi backend).
 
@@ -166,12 +162,12 @@ SNR = 20·log10(RMS giọng / nền ồn); RMS giọng = trung vị RMS của c�
 Khi đó client **giải mã chính bản ghi** (`measureRecordedBlob`, `decodeAudioData`) rồi áp cùng bộ quy tắc. Chỉ khi giải mã cũng thất bại mới gửi `unmeasured`.
 `unmeasured` không bao giờ được coi là `good`.
 
-**Vì sao cổng là bắt buộc:** thử với Gemini thật cho thấy với im lặng tuyệt đối nó vẫn bịa chữ ("お腹が空きました", "日本語", "こんにちは"),
-kèm `confidence` cao. Prompt chặt hơn chỉ chặn được trường hợp chỉ có tiếng ồn. Vì vậy bản thu không có tiếng phải bị chặn trước khi tới nhận dạng.
+**Vì sao cổng là bắt buộc:** bộ nhận dạng có thể bịa chữ cho bản thu im lặng hoặc toàn tiếng ồn (đã thấy khi còn thử nghiệm với Gemini),
+nên bản thu không có tiếng phải bị chặn trước khi chấm.
 
 ### 4.5 Gửi lên backend (`services/shadowingService.ts › evaluateAudio`)
-`multipart/form-data`: `audio` (tên tệp theo MIME), `targetText`, `audioGateStatus`, `audioGateDetail`, `durationMs`,
-`clientRecognitionStatus`, `clientRecognitionError`, và `clientTranscript` **chỉ khi** trạng thái là `final`.
+`multipart/form-data`: `audio` (bản ghi gốc; hiện backend không dùng để nhận dạng), `sentenceId`, `targetText`, `audioGateStatus`, `audioGateDetail`, `durationMs`,
+`clientRecognitionStatus`, `clientRecognitionError`, `clientTranscript` **chỉ khi** trạng thái là `final`, `analysisWav` và `referenceSpeakerId`.
 HTTP 401 / 429 / lỗi khác / mất kết nối → `failed` với thông báo, **không có điểm**.
 
 ## 5. Phía backend
@@ -186,51 +182,24 @@ Thứ tự và mã kết quả:
 | # | Bước | Điều kiện dừng | Kết quả |
 |---|---|---|---|
 | 1 | Câu mẫu | rỗng | `unavailable / MISSING_TARGET_TEXT` |
-| 2 | Kiểm tra audio | < 800 byte | `unavailable / AUDIO_TOO_SHORT` |
-| | | > `Shadowing:Audio:MaxBytes` (5 MB) | `unavailable / AUDIO_TOO_LARGE` |
-| | | MIME không hỗ trợ | `unavailable / UNSUPPORTED_AUDIO_TYPE` |
-| | | MIME khai báo không khớp nội dung (đọc vài byte đầu) | `unavailable / AUDIO_FORMAT_MISMATCH` |
-| 3 | Cổng âm thanh | `needs_retry` | `unavailable / AUDIO_QUALITY_INSUFFICIENT` (không gọi Gemini) |
-| 4 | Nhận dạng | xem 5.3 | |
-| 5 | Cách đọc + so khớp | không đọc được | `failed / READING_UNAVAILABLE` |
-| 6 | Chấm điểm | | `completed` hoặc `partial` |
+| 2 | Cổng âm thanh | `needs_retry` | `unavailable / AUDIO_QUALITY_INSUFFICIENT` |
+| 3 | Transcript | không có transcript `final` hợp lệ | `unavailable / NO_SPEECH_DETECTED` (`BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR` theo trạng thái client) |
+| 4 | Cách đọc + so khớp | không đọc được | `failed / READING_UNAVAILABLE` |
+| 5 | Chấm điểm | | `completed`, `recognitionSource = web_speech` |
 
-Họ định dạng được nhận: webm, ogg, mp4, wav, mp3, flac, aac (`AudioFormatSniffer`).
+Transcript chỉ được chấp nhận khi `clientRecognitionStatus = final`, không rỗng sau chuẩn hóa, cắt tối đa 500 ký tự. **Không bao giờ dùng interim.**
+Điểm 0 hợp lệ (nói sai hoàn toàn) là `completed`. Cùng transcript + cùng version ⇒ cùng điểm.
 
-### 5.3 Chính sách nguồn nhận dạng (chế độ `gemini`)
-Ở chế độ `gemini`, Gemini là nguồn chính, gọi **đúng một lần** cho mỗi lượt (`GeminiSpeechRecognizer`). Chế độ mặc định (`browser`) xem phần đầu tài liệu.
-
-| Kết quả từ Gemini | Hành động |
-|---|---|
-| Nhận dạng được | Dùng transcript Gemini. `completed`, `recognitionSource=gemini` |
-| Báo không có tiếng nói | `unavailable / NO_SPEECH_DETECTED`, `recognitionStatus=no_speech`. **Không đổi nguồn** |
-| **Lỗi kỹ thuật** (chưa cấu hình, timeout, quota, lỗi nhà cung cấp, phản hồi hỏng) **và** client có transcript đã chốt | Dùng transcript Web Speech: `partial`, `recognitionSource=web_speech`, `fallbackReason=<mã lỗi Gemini>` |
-| Lỗi kỹ thuật, không có transcript hợp lệ | `failed` với mã lỗi của Gemini |
-
-Transcript Web Speech chỉ được chấp nhận khi `clientRecognitionStatus = final`, không rỗng sau chuẩn hóa, cắt tối đa 500 ký tự. **Không bao giờ dùng interim.**
-Điểm 0 hợp lệ (nói sai hoàn toàn) là `completed` và **không bao giờ** kích hoạt đổi nguồn. Hai nguồn không bao giờ trộn điểm.
-Cùng transcript cuối cùng + cùng version ⇒ cùng điểm, bất kể nguồn hay tốc độ mạng.
-
-### 5.4 Gemini (`GeminiSpeechRecognizer.cs`)
-- Model: `Gemini:AudioModel` → `Gemini:Model` → `gemini-3.1-flash-lite`. API key đi trong header `x-goog-api-key`, không nằm trong URL.
-- Gửi audio inline (base64) kèm system prompt và `temperature = 0`, `responseMimeType = application/json`. **Không gửi câu mẫu.**
-- Prompt: chỉ báo lời nói nghe rõ (im lặng/ồn/tiếng thở không phải lời nói; không bịa); chép nguyên văn, không sửa ngữ pháp,
-  không hoàn thiện âm bị thiếu hay phát âm sai. Trả JSON `{noSpeech, transcript}`.
-- Timeout `Shadowing:Recognition:GeminiTimeoutSeconds` (mặc định 15). **Nếu client đã gửi kèm transcript Web Speech đã chốt** (có dự phòng), backend chỉ chờ
-  `Shadowing:Recognition:GeminiTimeoutWithFallbackSeconds` (mặc định 8) rồi chuyển sang dự phòng; không có dự phòng thì chờ đủ 15 giây. Lý do: độ trễ Gemini có đuôi dài
-  (đo thực: thường 1.5–2.5 s nhưng có lượt 9–15 s). Hủy do người gọi được ném lên, không bị coi là timeout.
-- Mã lỗi: `AI_KEY_NOT_CONFIGURED`, `AI_TIMEOUT`, `AI_QUOTA_EXCEEDED` (HTTP 429), `AI_HTTP_<mã>`, `AI_NETWORK_ERROR`, `AI_EMPTY_CANDIDATES` / `AI_EMPTY_PARTS` / `AI_EMPTY_TEXT` / `AI_MALFORMED_RESPONSE`.
-
-### 5.5 Cách đọc (`VoiceVoxKanaReader.cs`)
+### 5.3 Cách đọc (`VoiceVoxKanaReader.cs`)
 - `POST {VoiceVox:BaseUrl}/audio_query?text=<văn bản>&speaker=<id>`; lấy `accent_phrases[].moras[].text`, bỏ `pause_mora`. Chỉ nhận **văn bản**.
-- Cache theo văn bản (tối đa 5000 mục); timeout `Shadowing:Reading:TimeoutMs` (10000 ms). Hai phía được đọc **song song**, và cách đọc câu mẫu được **làm nóng trước** ngay khi bắt đầu gọi Gemini (các yêu cầu cùng văn bản được gộp thành một lần gọi engine).
+- Cache theo văn bản (tối đa 5000 mục); timeout `Shadowing:Reading:TimeoutMs` (10000 ms). Hai phía được đọc **song song**; các yêu cầu cùng văn bản đang chạy được gộp thành một lần gọi engine.
   Chỉ **lỗi kết nối** mới **ngắt mạch 60 giây** (các lượt sau trả không-dùng-được ngay, không chờ); quá thời gian chờ chỉ làm lượt đó không chấm được.
   Engine dùng riêng được cấu hình bằng `Shadowing:Reading:BaseUrl` (mặc định = `VoiceVox:BaseUrl`).
 - Đây là nguồn **duy nhất**. Không có bảng tra dự phòng và không đoán cách đọc (bảng từ điển offline từng có đã bị bỏ).
 - Hai phía (câu mẫu và transcript) luôn dùng cùng nguồn. Nếu không đọc được một phía, hoặc có ký tự không đổi được sang kana → `READING_UNAVAILABLE`:
   **không có điểm**, `recognizedText` vẫn được trả, lượt đó không bị tính vào điểm buổi.
 
-### 5.6 So khớp theo TỪ (`KanaMoraComparer.cs`, `JapaneseMora.cs`, `JapaneseSurfaceAligner.cs`)
+### 5.4 So khớp theo TỪ (`KanaMoraComparer.cs`, `JapaneseMora.cs`, `JapaneseSurfaceAligner.cs`)
 
 Điểm được tính **theo từ, không theo ký tự/mora rời rạc**: một từ chỉ được tính khi người học đọc đúng **toàn bộ** từ đó.
 Mora trùng ngẫu nhiên bên trong một từ sai **không** được tính điểm. Ví dụ câu mẫu có 4 từ, 14 mora; người học không đọc đúng từ nào nhưng 10/14 mora trùng ⇒ **0 điểm** (chấm theo mora sẽ ra ~71).
@@ -263,7 +232,7 @@ Giới hạn: đơn vị là cụm trọng âm, không phải từ điển học
 Ví dụ (đo với VOICEVOX thật): `いいです、いつでもどうぞ。おねがいします。` nói thành `ですね。いつよりもどうぞお願いします。` → **50** (trước đây chấm theo mora là 67): `いいです` và `いつでも` sai nguyên từ, `ね` thừa;
 `助かります。飲み物を頼んでもいいですか。` → 48; `綺麗ですね` = `きれいですね` → 100; `東京へ行きました` = `とうきょうへいきました` → 100.
 
-### 5.7 Điểm và tier (`ShadowingScoring.cs`)
+### 5.5 Điểm và tier (`ShadowingScoring.cs`)
 - Chỉ **Content Match** được đo. `fluencyScore`, `pronunciationScore` luôn `null`, nằm trong `unavailableDimensions`.
 - `Overall` = trung bình có trọng số (Content 0.6, Fluency 0.4) của các chiều đã đo; chia lại trọng số khi một chiều là `null` ⇒ hiện tại **`Overall = Content Match`**.
 - Tier: `green` ≥ 80, `yellow` ≥ 65, còn lại `red`. Vì chấm theo từ nên điểm có tính "bậc thang" hơn: một từ dài sai làm mất nguyên từ đó, nên câu ngắn dễ xuống `yellow`/`red` hơn so với chấm theo mora.
@@ -272,9 +241,9 @@ Ví dụ (đo với VOICEVOX thật): `いいです、いつでもどうぞ。�
 
 | Kết quả backend | Giao diện |
 |---|---|
-| `completed` / `partial` | Thẻ điểm; câu mẫu gốc với chữ sai được tô, rê chuột để xem "Câu mẫu: 助 (たす) ➔ Bạn nói: かし"; dòng "Bạn đã nói" (transcript). `partial` + `web_speech` có ghi chú đã chấm theo nhận dạng của trình duyệt |
+| `completed` | Thẻ điểm; câu mẫu gốc với chữ sai được tô, rê chuột để xem "Câu mẫu: 助 (たす) ➔ Bạn nói: かし"; dòng "Bạn đã nói" (transcript) |
 | `unavailable` | "Chưa thể đánh giá bản ghi" kèm lý do (im lặng, không nghe rõ, âm thanh không đạt…) |
-| `failed` | "Chưa thể chấm điểm lúc này" kèm lý do (timeout, quota, `READING_UNAVAILABLE`…) |
+| `failed` | "Chưa thể chấm điểm lúc này" kèm lý do (`READING_UNAVAILABLE`, lỗi kết nối…) |
 | `fluencyScore`/`pronunciationScore` = null | "Chưa đo" (modal tổng kết, trang lịch sử, ô Ngữ điệu/Độ lưu loát) |
 
 Câu chưa được chấm hiển thị "Chưa chấm" và "—", không bao giờ "0 điểm". Nhãn hạng chỉ nói về độ khớp ("Rất tốt", "Khá"), không nhắc lưu loát.
@@ -284,7 +253,7 @@ Câu chưa được chấm hiển thị "Chưa chấm" và "—", không bao gi�
 - Client (`utils/shadowingSessionScores.ts`) tính điểm buổi để hiển thị ngay: **trung bình các điểm backend đã chấm trên tổng số câu của vai người học** (câu chưa luyện tính 0).
   Không áp lại công thức trọng số. Chỉ tính kết quả hợp lệ (`isValidForBestAttempt`).
 - **Lưu kết quả từng câu:** client gửi `sentenceId` cùng bản ghi tới `evaluate-audio`. Backend lấy câu mẫu từ CSDL (bỏ qua `targetText` client gửi)
-  và nếu câu được chấm (completed/partial) thì lưu `ShadowingSentenceEvaluation`, trả `evaluationId`. Lượt "chưa chấm được" không được lưu.
+  và nếu câu được chấm (`completed`) thì lưu `ShadowingSentenceEvaluation`, trả `evaluationId`. Lượt "chưa chấm được" không được lưu.
   Không có `sentenceId` thì vẫn chấm theo `targetText` nhưng không lưu (chỉ cho công cụ thử nghiệm).
 - **Hoàn thành buổi:** `POST /api/shadowing/session/complete` chỉ nhận `dialogueId`, `learnerRole`, `durationSeconds`, `startedAt` và danh sách `evaluationIds`
   — **không nhận điểm**. `ShadowingService.CompleteSessionAsync` chỉ chấp nhận kết quả của chính người dùng, đúng bài, đúng vai và chưa thuộc buổi nào
@@ -299,11 +268,6 @@ Câu chưa được chấm hiển thị "Chưa chấm" và "—", không bao gi�
 
 | Khóa | Mặc định | Ghi chú |
 |---|---|---|
-| `Gemini:ApiKey` | — | Chưa cấu hình ⇒ lỗi kỹ thuật `AI_KEY_NOT_CONFIGURED` |
-| `Gemini:AudioModel` → `Gemini:Model` | `gemini-3.1-flash-lite` | Trước đây mặc định `gemini-1.5-flash` (HTTP 404) nên mọi lượt rơi xuống Web Speech |
-| `Shadowing:Recognition:GeminiTimeoutWithFallbackSeconds` | 8 | Dùng thay cho mục trên khi đã có transcript Web Speech dự phòng |
-| `Shadowing:Recognition:GeminiTimeoutSeconds` | 15 | Đo thực 1.7–9.2 s, từng có lần chạm 10 s và 15 s |
-| `Shadowing:Audio:MaxBytes` | 5242880 | |
 | `VoiceVox:BaseUrl` | `http://127.0.0.1:50021` | Dùng chung với TTS |
 | `Shadowing:Reading:UseVoiceVox` | `true` | `false`: mọi lượt là `READING_UNAVAILABLE` |
 | `Shadowing:Reading:BaseUrl` | = `VoiceVox:BaseUrl` | **Nên trỏ tới một engine VOICEVOX RIÊNG** (cổng khác) chỉ để lấy cách đọc, tránh tranh với TTS |
@@ -311,23 +275,23 @@ Câu chưa được chấm hiển thị "Chưa chấm" và "—", không bao gi�
 
 ## 9. Bảo mật
 
-JWT bắt buộc (đã bỏ `[AllowAnonymous]`); giới hạn dung lượng và tần suất; MIME phải khớp nội dung; API key không nằm trong URL;
-lỗi nhà cung cấp chỉ ghi trạng thái và thông điệp rút gọn (không ghi nội dung thô); không trả `ex.Message` cho client.
+JWT bắt buộc (đã bỏ `[AllowAnonymous]`); giới hạn dung lượng và tần suất; câu mẫu lấy từ CSDL theo `sentenceId`; không trả `ex.Message` cho client.
 
 ## 10. Giới hạn đã biết
 
-- **Điểm là Content Match theo transcript.** Mô hình nhận dạng có thể "sửa" lỗi phát âm thành từ chuẩn: giọng tổng hợp đọc `がこう` mà Gemini vẫn trả `学校`,
-  nên lỗi thiếu `っ` đó không bị phát hiện (còn thiếu trường âm `おばさん` thì bị phát hiện). Đo phát âm thật cần forced alignment hoặc so đường F0.
-- **Im lặng tuyệt đối vẫn có thể bị Gemini bịa chữ** nếu bản thu lọt qua cổng (ví dụ cả đo trực tiếp lẫn giải mã đều thất bại và gửi `unmeasured`).
-- **Cổng âm thanh là heuristic chưa hiệu chuẩn.** Kiểm trên giọng tổng hợp: SNR 0 dB vẫn "chấp nhận được" và Gemini nhận đúng; chưa thử với nhiều micro thật.
-- **Độ trễ Gemini có đuôi dài** và có lúc trả 429/503. Khi đó người học nhận trạng thái "chưa chấm được" (hoặc `partial` nếu có transcript Web Speech).
+- **Điểm là Content Match theo transcript.** Bộ nhận dạng có thể "sửa" lỗi phát âm thành từ chuẩn (đọc `がこう` mà nhận thành `学校`),
+  nên lỗi đó không bị phát hiện. Đo phát âm thật cần forced alignment hoặc so đường F0.
+- **Cổng âm thanh là heuristic chưa hiệu chuẩn**; chưa thử với nhiều micro thật.
+- **Phụ thuộc Web Speech của trình duyệt:** chỉ Chrome/Edge hỗ trợ đầy đủ; Safari/Firefox có thể báo `BROWSER_STT_UNSUPPORTED`.
 - **Engine VOICEVOX xử lý tuần tự, TTS và lấy cách đọc tranh nhau.** Đo thực: `/audio_query` mất ~40 ms khi engine rảnh nhưng ~19 giây khi có 4 yêu cầu tổng hợp giọng đang chạy
   (màn luyện tập tải trước giọng mẫu cho các câu kế tiếp); với 3 câu tải trước, lượt chấm phải chờ khoảng 7 giây. Cách triệt để: chạy một engine riêng cho việc lấy cách đọc và đặt `Shadowing:Reading:BaseUrl`.
   (Trước khi sửa, timeout 1.5 giây khiến mọi lượt bị `READING_UNAVAILABLE` và ngắt mạch 60 giây ngay khi người học vào bài.)
 - **Chấm điểm phụ thuộc engine VOICEVOX** (cách đọc). Engine tắt ⇒ không chấm được. G2P có thể đọc nhầm theo ngữ cảnh (ví dụ `十分かかります` đọc `じゅうぶん` thay vì `じゅっぷん`).
   Hướng giảm phụ thuộc: lưu cách đọc chuẩn của câu mẫu khi Admin tạo bài (cần thêm cột, phối hợp người phụ trách dữ liệu); phía transcript vẫn cần engine lúc chạy.
-- **Transcript ở chế độ trình duyệt do client gửi lên.** Câu mẫu và điểm đã do backend quyết định, nhưng ở chế độ Web Speech (mặc định)
-  transcript vẫn đến từ trình duyệt nên client có chủ ý gian lận vẫn gửi được transcript khớp tuyệt đối. Chế độ `gemini` không có điểm yếu này.
+- **Transcript do client gửi lên.** Câu mẫu và điểm do backend quyết định, nhưng transcript đến từ trình duyệt nên client có chủ ý gian lận
+  vẫn gửi được transcript khớp tuyệt đối.
+- **Bản ghi gốc vẫn được upload** mỗi lần chấm dù backend không dùng (chỉ `analysisWav` được dùng để đo nhịp nói); bỏ được khi sửa
+  `ShadowingController` và `services/shadowingService.ts`.
 - **Chưa đo** lưu loát, ngữ điệu, pitch accent.
 - Tính năng "Phân tích phát âm AI chuyên sâu" (15 credit) đã được **gỡ tạm thời**: bản cũ sinh điểm chi tiết bằng `Random` chứ không phân tích thật.
   Khi làm lại cần có nguồn đo thật (AiPronunciationDiagnostic) rồi mới thu credit.
@@ -335,13 +299,13 @@ lỗi nhà cung cấp chỉ ghi trạng thái và thông điệp rút gọn (kh�
 
 ## 11. Kiểm thử
 
-- Backend: `dotnet test JCAP.Tests` (338 test; liên quan: `ShadowingEvaluationServiceTests`, `GeminiSpeechRecognizerTests`, `KanaMoraComparerTests`,
+- Backend: `dotnet test JCAP.Tests` (300 test; liên quan: `ShadowingEvaluationServiceTests`, `KanaMoraComparerTests`,
   `ShadowingScoringAndComparerTests`, `ShadowingServiceCompleteSessionTests`, `ShadowingControllerTests`, `FluencyAnalyzerTests`, `FluencyComparerTests`,
   `MoraDurationTests`, `PausePositionLocatorTests`; `SurfaceDiffTests` kiểm tra diff trên câu gốc).
   Test dùng `TestKanaReader` (bảng nhỏ **chỉ trong thư mục test**) thay cho VOICEVOX.
 - Frontend: `npm test` (61 test: `speechTranscriptCollector`, `recordingMime`, `audioGate`, `wavEncoder`, `shadowingSessionScores`, `shadowingHistory`, `shadowingRoleUtils`) và `npm run build`.
-- Đã kiểm chứng thủ công với Gemini, VOICEVOX và Edge thật (host thử đặt ngoài repo): đọc đúng, bỏ một mora, sai từ, im lặng, ồn, chỉ-có-ồn;
-  timeout ép buộc; model cũ trả 404; VOICEVOX tắt; giao diện "Chưa đo".
+- Đã kiểm chứng thủ công với VOICEVOX và Edge thật (host thử đặt ngoài repo): đọc đúng, bỏ một mora, sai từ, im lặng, ồn; VOICEVOX tắt;
+  khoảng dừng theo từ; lưu và đọc lịch sử; giao diện "Chưa đo".
 
 ## 12. Bản đồ file
 
@@ -356,13 +320,11 @@ lỗi nhà cung cấp chỉ ghi trạng thái và thông điệp rút gọn (kh�
 | Màn lịch sử | `jcap-web/src/views/shadowing/LearnerShadowingListView.tsx` |
 | Controller | `Controllers/ShadowingController.cs` |
 | Điều phối | `Services/Implementations/ShadowingEvaluationService.cs` |
-| Nhận dạng Gemini | `Services/Implementations/GeminiSpeechRecognizer.cs` |
 | Cách đọc VOICEVOX | `Services/Implementations/VoiceVoxKanaReader.cs` |
 | Mora | `Services/Implementations/JapaneseMora.cs` |
 | So khớp | `Services/Implementations/KanaMoraComparer.cs` |
 | Gióng chữ viết với mora (diff trên câu gốc) | `Services/Implementations/JapaneseSurfaceAligner.cs` |
 | Công thức điểm | `Services/Implementations/ShadowingScoring.cs` |
-| Kiểm tra định dạng audio | `Services/Implementations/AudioFormatSniffer.cs` |
 | Nhịp nói, khoảng dừng, trường âm | `FluencyAnalyzer.cs`, `FluencyComparer.cs`, `PausePositionLocator.cs`, `MoraDurationAnalyzer.cs` |
 | Lưu kết quả câu, hoàn thành buổi, lịch sử | `Services/Implementations/ShadowingService.cs`; model `Models/ShadowingSentenceEvaluation.cs`, `Models/ShadowingPracticeSession.cs`; migration `AddShadowingPracticeHistory` |
 | DTO | `DTOs/Shadowing/ShadowingAudioEvaluationDto.cs`, `ShadowingSessionCompleteDto.cs` |

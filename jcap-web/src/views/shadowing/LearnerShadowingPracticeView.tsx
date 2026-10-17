@@ -712,9 +712,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // GHI ÂM → NHẬN DẠNG → BACKEND CHẤM ĐIỂM
   // Backend (ShadowingEvaluationService) là nguồn điểm DUY NHẤT. Client chỉ thu bằng chứng
   // (audio, transcript Web Speech ĐÃ CHỐT, trạng thái cổng mic) và hiển thị kết quả trả về.
-  // Nguồn nhận dạng do backend quyết định (Shadowing:Recognition:Provider): mặc định chấm theo transcript Web Speech đã chốt;
-  // chế độ gemini dùng Gemini làm nguồn chính và Web Speech làm dự phòng khi Gemini lỗi kỹ thuật.
-  // Kết quả luôn ghi rõ nguồn + lý do (recognitionSource / fallbackReason).
+  // Nhận dạng giọng nói chạy trên trình duyệt (Web Speech); backend chỉ chấm transcript ĐÃ CHỐT, không bao giờ dùng interim.
   // ===========================================================================
 
   /** Hủy mọi kết quả đang chờ và bỏ qua sự kiện nhận dạng đến muộn. */

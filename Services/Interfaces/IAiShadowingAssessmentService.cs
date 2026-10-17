@@ -17,6 +17,7 @@ namespace JCAP.Services.Interfaces
 
     public sealed class ShadowingAudioEvaluationInput
     {
+        /// <summary>Bản ghi gốc do controller chuyển vào. Không dùng để nhận dạng (nhận dạng chạy trên trình duyệt).</summary>
         public byte[] Audio { get; init; } = System.Array.Empty<byte>();
         public string MimeType { get; init; } = string.Empty;
         public string TargetText { get; init; } = string.Empty;

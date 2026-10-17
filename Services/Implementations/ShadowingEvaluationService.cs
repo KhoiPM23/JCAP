@@ -13,28 +13,18 @@ namespace JCAP.Services.Implementations
     /// <summary>
     /// Điều phối đánh giá một câu Shadowing. Backend là nơi DUY NHẤT tính điểm cuối cùng.
     ///
-    /// Chính sách chọn nguồn nhận dạng (xác định, không phụ thuộc điểm số):
-    ///  1. Nguồn chính: Gemini (nghe trực tiếp audio, không biết câu mẫu).
-    ///     - Gemini nhận dạng được  → dùng transcript của Gemini (RecognitionSource = gemini, status completed).
-    ///     - Gemini báo không có tiếng nói → unavailable. KHÔNG chuyển sang nguồn khác.
-    ///  2. Nguồn dự phòng: transcript ĐÃ CHỐT của Web Speech do client gửi kèm, CHỈ khi Gemini gặp LỖI KỸ THUẬT
-    ///     (chưa cấu hình, timeout, quota, lỗi nhà cung cấp, phản hồi hỏng). Kết quả mang status partial,
-    ///     RecognitionSource = web_speech và FallbackReason = mã lỗi của Gemini.
-    ///  3. Không có nguồn dự phòng hợp lệ → failed (lỗi kỹ thuật, KHÔNG phải điểm 0).
-    /// Điểm 0 hợp lệ không bao giờ kích hoạt chuyển nguồn. Hai nguồn không bao giờ được trộn điểm.
-    /// Một request chỉ gọi nhà cung cấp tối đa một lần.
+    /// Nhận dạng giọng nói chạy trên trình duyệt (Web Speech): backend chỉ chấm theo transcript ĐÃ CHỐT (final)
+    /// do client gửi, không bao giờ dùng kết quả interim. Không có transcript hợp lệ → "chưa chấm được"
+    /// (unavailable), KHÔNG phải điểm 0. Âm thanh gốc không được dùng để nhận dạng; chỉ bản WAV phân tích
+    /// (nếu có) được dùng để đo nhịp nói.
     /// </summary>
     public class ShadowingEvaluationService : IAiShadowingAssessmentService
     {
-        public const int MinAudioBytes = 800;
-        private const int DefaultMaxAudioBytes = 5 * 1024 * 1024;
         private const int MaxClientTranscriptLength = 500;
-        private const int DefaultTimeoutWithFallbackSeconds = 8;
         private const int MaxGateDetailLength = 200;
 
         private static readonly string[] ValidGateStatuses = { "good", "acceptable", "needs_retry", "unmeasured" };
 
-        private readonly IShadowingSpeechRecognizer _recognizer;
         private readonly IJapaneseTextComparer _comparer;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ShadowingEvaluationService> _logger;
@@ -42,14 +32,12 @@ namespace JCAP.Services.Implementations
         private readonly IReferenceVoiceProvider? _referenceProvider;
 
         public ShadowingEvaluationService(
-            IShadowingSpeechRecognizer recognizer,
             IJapaneseTextComparer comparer,
             IConfiguration configuration,
             ILogger<ShadowingEvaluationService> logger,
             IFluencyAnalyzer? fluencyAnalyzer = null,
             IReferenceVoiceProvider? referenceProvider = null)
         {
-            _recognizer = recognizer;
             _comparer = comparer;
             _configuration = configuration;
             _logger = logger;
@@ -68,87 +56,19 @@ namespace JCAP.Services.Implementations
                 return Unavailable(response, "MISSING_TARGET_TEXT", "Thiếu câu mẫu cần đối chiếu.");
             }
 
-            var browserOnly = UseBrowserRecognition();
-
-            // 1. Kiểm tra audio (độc lập với kết quả nhận dạng). Chế độ trình duyệt không dùng audio nên bỏ qua.
-            if (!browserOnly)
-            {
-                var audioError = ValidateAudio(input);
-                if (audioError != null)
-                {
-                    return Unavailable(response, audioError.Value.code, audioError.Value.message);
-                }
-            }
-
-            // 2. Chất lượng âm thanh do client đo (heuristic): needs_retry thì không chấm.
+            // Chất lượng âm thanh do client đo (heuristic): needs_retry thì không chấm.
             if (response.AudioQualityStatus == "needs_retry")
             {
                 return Unavailable(response, "AUDIO_QUALITY_INSUFFICIENT",
                     response.AudioQualityDetail ?? "Chất lượng âm thanh chưa đạt, hãy thu âm lại.");
             }
 
-            if (browserOnly)
-            {
-                return await EvaluateBrowserTranscriptAsync(input, response, cancellationToken);
-            }
-
-            // Đọc sẵn cách đọc của câu mẫu trong lúc chờ Gemini để lúc so khớp không phải chờ thêm.
-            _ = _comparer.WarmUpAsync(input.TargetText, cancellationToken);
-
-            // 3. Nhận dạng bằng nguồn chính (một lần gọi duy nhất).
-            // Độ trễ của Gemini có đuôi dài (đo thực: thường ~2 s nhưng có lượt 11–15 s). Nếu client đã có transcript Web Speech
-            // dự phòng thì chỉ chờ Gemini ngắn hơn rồi chuyển sang dự phòng; nếu không có dự phòng thì chờ đủ lâu như cấu hình.
-            TimeSpan? timeout = TryUseClientTranscript(input) != null
-                ? TimeSpan.FromSeconds(_configuration.GetValue<int?>("Shadowing:Recognition:GeminiTimeoutWithFallbackSeconds") ?? DefaultTimeoutWithFallbackSeconds)
-                : null;
-            var stt = await _recognizer.TranscribeAsync(
-                input.Audio, AudioFormatSniffer.NormalizeMime(input.MimeType), cancellationToken, timeout);
-
-            string transcript;
-            switch (stt.Outcome)
-            {
-                case SpeechRecognitionOutcome.Recognized:
-                    transcript = stt.Text;
-                    response.RecognitionSource = "gemini";
-                    response.EvaluationStatus = "completed";
-                    break;
-
-                case SpeechRecognitionOutcome.NoSpeech:
-                    response.RecognitionSource = "gemini";
-                    response.RecognitionStatus = "no_speech";
-                    return Unavailable(response, "NO_SPEECH_DETECTED",
-                        "Không phát hiện giọng nói rõ ràng trong bản ghi âm.", keepRecognitionStatus: true);
-
-                default:
-                    var fallback = TryUseClientTranscript(input);
-                    if (fallback == null)
-                    {
-                        _logger.LogWarning(
-                            "Gemini STT lỗi ({Code}) và không có transcript dự phòng hợp lệ (client: {ClientStatus}/{ClientError}).",
-                            stt.ErrorCode, input.ClientRecognitionStatus, input.ClientRecognitionError);
-
-                        response.EvaluationStatus = "failed";
-                        response.RecognitionStatus = "unavailable";
-                        response.RecognitionSource = "none";
-                        response.ErrorCode = stt.ErrorCode ?? "AI_UNAVAILABLE";
-                        response.ErrorMessage = "Không thể nhận dạng giọng nói lúc này. Điểm chưa được ghi nhận, hãy thử lại.";
-                        return response;
-                    }
-
-                    _logger.LogInformation("Dùng transcript Web Speech do Gemini STT lỗi ({Code}).", stt.ErrorCode);
-                    transcript = fallback;
-                    response.RecognitionSource = "web_speech";
-                    response.FallbackReason = stt.ErrorCode ?? "AI_UNAVAILABLE";
-                    response.EvaluationStatus = "partial";
-                    break;
-            }
-
-            return await ScoreTranscriptAsync(input, response, transcript, cancellationToken);
+            return await EvaluateBrowserTranscriptAsync(input, response, cancellationToken);
         }
 
         /// <summary>
-        /// Chế độ trình duyệt (mặc định): chỉ chấm theo transcript Web Speech ĐÃ CHỐT do client gửi, không gọi Gemini.
-        /// Điểm vẫn chỉ là so khớp nội dung; thiếu transcript hợp lệ thì "chưa chấm được", không phải điểm 0.
+        /// Chấm theo transcript Web Speech ĐÃ CHỐT do client gửi. Điểm chỉ là so khớp nội dung;
+        /// thiếu transcript hợp lệ thì "chưa chấm được", không phải điểm 0.
         /// </summary>
         private async Task<ShadowingAudioEvaluationResponseDto> EvaluateBrowserTranscriptAsync(
             ShadowingAudioEvaluationInput input,
@@ -176,13 +96,9 @@ namespace JCAP.Services.Implementations
                 }
             }
 
-            _ = _comparer.WarmUpAsync(input.TargetText, cancellationToken);
             response.EvaluationStatus = "completed";
             return await ScoreTranscriptAsync(input, response, transcript, cancellationToken);
         }
-
-        private bool UseBrowserRecognition() =>
-            !string.Equals(_configuration["Shadowing:Recognition:Provider"], "gemini", StringComparison.OrdinalIgnoreCase);
 
         private async Task<ShadowingAudioEvaluationResponseDto> ScoreTranscriptAsync(
             ShadowingAudioEvaluationInput input,
@@ -190,7 +106,7 @@ namespace JCAP.Services.Implementations
             string transcript,
             CancellationToken cancellationToken)
         {
-            // 4. So khớp + chấm điểm (một công thức duy nhất)
+            // So khớp + chấm điểm (một công thức duy nhất)
             var comparison = await _comparer.CompareAsync(input.TargetText, transcript, cancellationToken);
             if (comparison.ReadingUnavailable)
             {
@@ -459,34 +375,6 @@ namespace JCAP.Services.Implementations
             if (JapaneseMora.Normalize(text).Length == 0) return null;
 
             return text.Length > MaxClientTranscriptLength ? text[..MaxClientTranscriptLength] : text;
-        }
-
-        private (string code, string message)? ValidateAudio(ShadowingAudioEvaluationInput input)
-        {
-            var audio = input.Audio;
-            if (audio == null || audio.Length < MinAudioBytes)
-            {
-                return ("AUDIO_TOO_SHORT", "Bản ghi âm quá ngắn hoặc chưa thu được tiếng nói.");
-            }
-
-            var maxBytes = _configuration.GetValue<int?>("Shadowing:Audio:MaxBytes") ?? DefaultMaxAudioBytes;
-            if (audio.Length > maxBytes)
-            {
-                return ("AUDIO_TOO_LARGE", "Bản ghi âm vượt quá dung lượng cho phép.");
-            }
-
-            var mime = AudioFormatSniffer.NormalizeMime(input.MimeType);
-            if (!AudioFormatSniffer.IsSupportedMime(mime))
-            {
-                return ("UNSUPPORTED_AUDIO_TYPE", "Định dạng âm thanh không được hỗ trợ.");
-            }
-
-            if (!AudioFormatSniffer.MimeMatchesContent(mime, audio))
-            {
-                return ("AUDIO_FORMAT_MISMATCH", "Nội dung tệp âm thanh không khớp với định dạng đã khai báo.");
-            }
-
-            return null;
         }
     }
 }

@@ -90,7 +90,6 @@ builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
-builder.Services.AddScoped<IShadowingSpeechRecognizer, GeminiSpeechRecognizer>();
 builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
 builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
 // Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),

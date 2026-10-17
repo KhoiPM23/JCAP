@@ -46,11 +46,5 @@ namespace JCAP.Services.Interfaces
         string MethodId { get; }
 
         Task<JapaneseTextComparison> CompareAsync(string target, string recognized, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Chuẩn bị trước cách đọc của câu mẫu (chạy song song với bước nhận dạng) để lúc so khớp không phải chờ.
-        /// Không bao giờ ném lỗi; kết quả chỉ làm nóng bộ nhớ đệm.
-        /// </summary>
-        Task WarmUpAsync(string target, CancellationToken cancellationToken = default);
     }
 }

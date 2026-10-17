@@ -553,7 +553,7 @@ public class VoiceVoxKanaReaderTests
     [Fact]
     public async Task ConcurrentRequestsForTheSameText_ShareOneEngineCall()
     {
-        // Làm nóng cách đọc câu mẫu (song song với Gemini) và so khớp thật cùng hỏi một văn bản: chỉ gọi engine một lần.
+        // Nhiều yêu cầu cùng văn bản chạy đồng thời (vd. nhiều người học cùng một câu): chỉ gọi engine một lần.
         var handler = new AsyncStubHandler();
         var reader = new VoiceVoxKanaReader(new HttpClient(handler), new ConfigurationBuilder().Build(),
             new Mock<ILogger<VoiceVoxKanaReader>>().Object);

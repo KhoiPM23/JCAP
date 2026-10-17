@@ -14,29 +14,6 @@ public class ShadowingEvaluationServiceTests
 {
     private const string Target = "一人です。カウンター席でお願いします。";
 
-    private sealed class FakeRecognizer : IShadowingSpeechRecognizer
-    {
-        private readonly SpeechRecognitionResult _result;
-        public int Calls { get; private set; }
-        public TimeSpan? LastTimeout { get; private set; }
-
-        public FakeRecognizer(SpeechRecognitionResult result) => _result = result;
-
-        public Task<SpeechRecognitionResult> TranscribeAsync(
-            byte[] audio, string mimeType, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
-        {
-            Calls++;
-            LastTimeout = timeout;
-            return Task.FromResult(_result);
-        }
-    }
-
-    private static SpeechRecognitionResult Heard(string text) =>
-        new() { Outcome = SpeechRecognitionOutcome.Recognized, Text = text };
-
-    private static SpeechRecognitionResult Failure(SpeechRecognitionOutcome outcome, string code) =>
-        new() { Outcome = outcome, ErrorCode = code };
-
     private static byte[] WebmBytes(int length = 2048)
     {
         var data = new byte[length];
@@ -44,22 +21,9 @@ public class ShadowingEvaluationServiceTests
         return data;
     }
 
-    private static byte[] WavBytes(int length = 2048)
-    {
-        var data = new byte[length];
-        "RIFF"u8.CopyTo(data);
-        "WAVE"u8.CopyTo(data.AsSpan(8));
-        return data;
-    }
-
-    private static ShadowingEvaluationService CreateService(
-        FakeRecognizer recognizer, IKanaReader? reader = null, string provider = "gemini",
-        IFluencyAnalyzer? fluencyAnalyzer = null) =>
-        new(recognizer,
-            new KanaMoraComparer(new IKanaReader[] { reader ?? new TestKanaReader() }),
-            new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?> { ["Shadowing:Recognition:Provider"] = provider })
-                .Build(),
+    private static ShadowingEvaluationService CreateService(IKanaReader? reader = null, IFluencyAnalyzer? fluencyAnalyzer = null) =>
+        new(new KanaMoraComparer(new IKanaReader[] { reader ?? new TestKanaReader() }),
+            new ConfigurationBuilder().Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             fluencyAnalyzer);
 
@@ -85,8 +49,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task Fluency_IsAttachedAsRawMetrics_AndDoesNotChangeScores()
     {
-        var recognizer = new FakeRecognizer(Heard("x"));
-        var service = CreateService(recognizer, provider: "browser", fluencyAnalyzer: new FluencyAnalyzer());
+        var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer());
 
         var withWav = await service.EvaluateAsync(new ShadowingAudioEvaluationInput
         {
@@ -109,7 +72,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task Fluency_BadWav_NeverBreaksTheContentScore()
     {
-        var service = CreateService(new FakeRecognizer(Heard("x")), provider: "browser", fluencyAnalyzer: new FluencyAnalyzer());
+        var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer());
 
         var result = await service.EvaluateAsync(new ShadowingAudioEvaluationInput
         {
@@ -128,7 +91,7 @@ public class ShadowingEvaluationServiceTests
     {
         var analyzer = new Mock<IFluencyAnalyzer>();
         analyzer.Setup(a => a.Analyze(It.IsAny<byte[]>(), It.IsAny<int?>())).Throws(new InvalidOperationException("boom"));
-        var service = CreateService(new FakeRecognizer(Heard("x")), provider: "browser", fluencyAnalyzer: analyzer.Object);
+        var service = CreateService(fluencyAnalyzer: analyzer.Object);
 
         var result = await service.EvaluateAsync(new ShadowingAudioEvaluationInput
         {
@@ -156,9 +119,8 @@ public class ShadowingEvaluationServiceTests
     {
         var s = new FluencyAnalyzer();
         return new ShadowingEvaluationService(
-            new FakeRecognizer(Heard("x")),
             new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
-            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Shadowing:Recognition:Provider"] = "browser" }).Build(),
+            new ConfigurationBuilder().Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             s, provider);
     }
@@ -191,7 +153,6 @@ public class ShadowingEvaluationServiceTests
     {
         var settings = new Dictionary<string, string?>
         {
-            ["Shadowing:Recognition:Provider"] = "browser",
             // Tín hiệu tổng hợp có thang khoảng cách khác giọng thật: nới lọc tin cậy để kiểm tra đường tích hợp.
             ["Shadowing:Duration:MaxAlignmentCost"] = "99",
             ["Shadowing:Duration:MaxTempoSpread"] = "99",
@@ -199,7 +160,6 @@ public class ShadowingEvaluationServiceTests
         if (extra != null) foreach (var kv in extra) settings[kv.Key] = kv.Value;
 
         return new ShadowingEvaluationService(
-            new FakeRecognizer(Heard("x")),
             new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
             new ConfigurationBuilder().AddInMemoryCollection(settings).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
@@ -333,7 +293,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task Fluency_NotAttached_WhenNothingWasScored()
     {
-        var service = CreateService(new FakeRecognizer(Heard("x")), provider: "browser", fluencyAnalyzer: new FluencyAnalyzer());
+        var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer());
 
         var result = await service.EvaluateAsync(new ShadowingAudioEvaluationInput
         {
@@ -345,56 +305,55 @@ public class ShadowingEvaluationServiceTests
         Assert.Null(result.Fluency);
     }
 
-    // Chế độ trình duyệt (mặc định): không gọi Gemini, chỉ chấm theo transcript Web Speech đã chốt
+    // Nhận dạng chạy trên trình duyệt: backend chỉ chấm theo transcript Web Speech ĐÃ CHỐT do client gửi
     [Fact]
-    public async Task BrowserMode_ScoresClientFinalTranscript_WithoutCallingGemini()
+    public async Task FinalBrowserTranscript_IsScored()
     {
-        var recognizer = new FakeRecognizer(Heard("không dùng"));
-        var result = await CreateService(recognizer, provider: "browser")
-            .EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
+        var result = await CreateService().EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
 
-        Assert.Equal(0, recognizer.Calls);
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal("web_speech", result.RecognitionSource);
+        Assert.Equal("web_speech", result.Source);
         Assert.Null(result.FallbackReason);
         Assert.Equal(100, result.ContentMatchScore);
     }
 
     [Fact]
-    public async Task BrowserMode_DoesNotRequireAudioBytes()
+    public async Task AudioBytes_AreNotNeeded_ForScoring()
     {
-        var recognizer = new FakeRecognizer(Heard("không dùng"));
-        var result = await CreateService(recognizer, provider: "browser").EvaluateAsync(
+        var result = await CreateService().EvaluateAsync(
             Input(clientTranscript: Target, clientStatus: "final", audio: new byte[10], mime: "audio/unknown"));
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal(100, result.ContentMatchScore);
     }
 
+    // Không có transcript đã chốt: "chưa chấm được", không bao giờ là điểm 0 và không thay bằng câu mẫu
     [Theory]
     [InlineData("empty", "NO_SPEECH_DETECTED")]
+    [InlineData("interim", "NO_SPEECH_DETECTED")]
     [InlineData("unsupported", "BROWSER_STT_UNSUPPORTED")]
     [InlineData("error", "BROWSER_STT_ERROR")]
     [InlineData(null, "NO_SPEECH_DETECTED")]
-    public async Task BrowserMode_WithoutFinalTranscript_IsUnavailableNotZero(string? clientStatus, string expectedCode)
+    public async Task WithoutFinalTranscript_IsUnavailableNotZero(string? clientStatus, string expectedCode)
     {
-        var result = await CreateService(new FakeRecognizer(Heard("x")), provider: "browser")
-            .EvaluateAsync(Input(clientStatus: clientStatus));
+        var result = await CreateService().EvaluateAsync(Input(clientTranscript: Target, clientStatus: clientStatus));
 
         Assert.Equal("unavailable", result.EvaluationStatus);
         Assert.Equal(expectedCode, result.ErrorCode);
         Assert.Null(result.ContentMatchScore);
         Assert.Null(result.OverallScore);
+        Assert.Equal(string.Empty, result.Tier);
+        Assert.Equal(string.Empty, result.RecognizedText);
     }
 
     [Fact]
-    public async Task BrowserMode_NeedsRetryGate_StillBlocksScoring()
+    public async Task FinalTranscriptContainingOnlyPunctuation_IsNotUsable()
     {
-        var result = await CreateService(new FakeRecognizer(Heard("x")), provider: "browser")
-            .EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final", gate: "needs_retry"));
+        var result = await CreateService().EvaluateAsync(Input(clientTranscript: " 。、 ", clientStatus: "final"));
 
-        Assert.Equal("AUDIO_QUALITY_INSUFFICIENT", result.ErrorCode);
-        Assert.Null(result.OverallScore);
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("NO_SPEECH_DETECTED", result.ErrorCode);
     }
 
     private static ShadowingAudioEvaluationInput Input(
@@ -413,17 +372,17 @@ public class ShadowingEvaluationServiceTests
         AudioGateStatus = gate
     };
 
+    private static ShadowingAudioEvaluationInput Spoken(string transcript, string? target = null, string? gate = "good") =>
+        Input(clientTranscript: transcript, clientStatus: "final", target: target, gate: gate);
+
     // 1. Transcript đúng
     [Fact]
     public async Task CorrectTranscript_ScoresFullContentMatch_AndLeavesUnmeasuredDimensionsNull()
     {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input());
+        var result = await CreateService().EvaluateAsync(Spoken(Target));
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal("recognized", result.RecognitionStatus);
-        Assert.Equal("gemini", result.RecognitionSource);
-        Assert.Null(result.FallbackReason);
         Assert.Equal(100, result.ContentMatchScore);
         Assert.Equal(100, result.OverallScore);
         Assert.Equal("green", result.Tier);
@@ -435,48 +394,40 @@ public class ShadowingEvaluationServiceTests
         Assert.All(result.DiffTokens, t => Assert.Equal("correct", t.Status));
     }
 
-    // 2. Transcript sai một phần: điểm và danh sách lỗi đến từ so khớp ở backend, không từ AI
+    // 2. Transcript sai một phần: điểm và danh sách lỗi đến từ so khớp ở backend
     [Fact]
     public async Task PartiallyIncorrectTranscript_ScoresBetween0And100_AndDerivesErrorListsFromDiff()
     {
-        var recognizer = new FakeRecognizer(Heard("ひとりです。テーブル席でおねがいします。"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input());
+        var result = await CreateService().EvaluateAsync(Spoken("ひとりです。テーブル席でおねがいします。"));
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.InRange(result.ContentMatchScore!.Value, 1, 99);
         Assert.Equal(result.ContentMatchScore, result.OverallScore); // Overall = Content khi chưa đo Fluency
         Assert.Equal("kana-word-v1", result.ComparisonMethod);
         Assert.Equal("test", result.ReadingSource);
-        // Danh sách lỗi và diff do backend tính từ so khớp mora, không lấy từ nhà cung cấp AI
         Assert.Contains(result.DiffTokens, t => t.Status != "correct");
         Assert.NotEmpty(result.MismatchedWords);
         Assert.Contains("かうんたー", result.TargetReading);
     }
 
-    // 3. Sai hoàn toàn: điểm 0 hợp lệ, KHÔNG được chuyển sang nguồn khác
+    // 3. Sai hoàn toàn: điểm 0 hợp lệ
     [Fact]
-    public async Task CompletelyIncorrectTranscript_IsALegitimateZero_AndDoesNotTriggerFallback()
+    public async Task CompletelyIncorrectTranscript_IsALegitimateZero()
     {
-        var recognizer = new FakeRecognizer(Heard("おはよう"));
-        // Transcript Web Speech khớp 100% câu mẫu: nếu bị dùng thay thế thì điểm sẽ là 100.
-        var result = await CreateService(recognizer).EvaluateAsync(
-            Input(clientTranscript: "すみません。", clientStatus: "final", target: "すみません。"));
+        var result = await CreateService().EvaluateAsync(Spoken("おはよう", target: "すみません。"));
 
         Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal("gemini", result.RecognitionSource);
         Assert.Equal(0, result.ContentMatchScore);
         Assert.Equal(0, result.OverallScore);
         Assert.Equal("red", result.Tier);
         Assert.Equal("おはよう", result.RecognizedText);
-        Assert.Equal(1, recognizer.Calls);
     }
 
     // Cách đọc không dùng được (engine VOICEVOX tắt): KHÔNG chấm, KHÔNG phải điểm thấp
     [Fact]
     public async Task ReadingSourceDown_IsNotScored_AndKeepsWhatWasHeard()
     {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer, new UnavailableKanaReader()).EvaluateAsync(Input());
+        var result = await CreateService(new UnavailableKanaReader()).EvaluateAsync(Spoken(Target));
 
         Assert.Equal("failed", result.EvaluationStatus);
         Assert.Equal("READING_UNAVAILABLE", result.ErrorCode);
@@ -485,211 +436,30 @@ public class ShadowingEvaluationServiceTests
         Assert.Equal(string.Empty, result.Tier);
         Assert.Equal(Target, result.RecognizedText); // vẫn cho người học thấy hệ thống nghe được gì
         Assert.Equal("recognized", result.RecognitionStatus);
-        Assert.Equal("gemini", result.RecognitionSource);
-        Assert.Empty(result.DiffTokens);
-    }
-
-    [Fact]
-    public async Task ReadingSourceDown_AlsoAppliesToTheWebSpeechFallback()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT"));
-        var result = await CreateService(recognizer, new UnavailableKanaReader())
-            .EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-
-        Assert.Equal("failed", result.EvaluationStatus);
-        Assert.Equal("READING_UNAVAILABLE", result.ErrorCode);
         Assert.Equal("web_speech", result.RecognitionSource);
-        Assert.Null(result.OverallScore);
+        Assert.Empty(result.DiffTokens);
     }
 
     [Fact]
     public async Task UnreadableKanjiInTarget_IsNotScored()
     {
-        var recognizer = new FakeRecognizer(Heard("とうきょうへいきました"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(target: "東京へ行きました。"));
+        var result = await CreateService().EvaluateAsync(Spoken("とうきょうへいきました", target: "東京へ行きました。"));
 
         Assert.Equal("failed", result.EvaluationStatus);
         Assert.Equal("READING_UNAVAILABLE", result.ErrorCode);
         Assert.Null(result.ContentMatchScore);
     }
 
-    // Độ trễ: có dự phòng thì chờ Gemini ngắn hơn; không có dự phòng thì chờ theo cấu hình mặc định
-    [Fact]
-    public async Task WithAFinalWebSpeechTranscript_GeminiIsGivenAShorterTimeout()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-
-        Assert.Equal(TimeSpan.FromSeconds(8), recognizer.LastTimeout);
-    }
-
-    [Fact]
-    public async Task WithoutAFallback_GeminiKeepsTheDefaultTimeout()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        await CreateService(recognizer).EvaluateAsync(Input());
-        await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: Target, clientStatus: "empty"));
-
-        Assert.Null(recognizer.LastTimeout);
-    }
-
-    // 4. Thiếu transcript: không có điểm 0, không thay bằng câu mẫu
-    [Fact]
-    public async Task NoSpeechDetected_IsUnavailable_NotZero_AndNeverEchoesTarget()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.NoSpeech, "NO_SPEECH_DETECTED"));
-        // Dù client có transcript, Gemini báo không có tiếng nói thì không đổi nguồn.
-        var result = await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-
-        Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal("no_speech", result.RecognitionStatus);
-        Assert.Null(result.ContentMatchScore);
-        Assert.Null(result.OverallScore);
-        Assert.Equal(string.Empty, result.Tier);
-        Assert.Equal(string.Empty, result.RecognizedText);
-        Assert.NotEqual(Target, result.RecognizedText);
-        Assert.Equal(1, recognizer.Calls);
-    }
-
-    // 5. Gemini timeout: dùng đúng chính sách dự phòng và ghi lại nguồn + lý do
-    [Fact]
-    public async Task GeminiTimeout_WithFinalClientTranscript_UsesWebSpeechAndRecordsWhy()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-
-        Assert.Equal("partial", result.EvaluationStatus);
-        Assert.Equal("web_speech", result.RecognitionSource);
-        Assert.Equal("web_speech", result.Source);
-        Assert.Equal("AI_TIMEOUT", result.FallbackReason);
-        Assert.Equal(100, result.ContentMatchScore);
-        Assert.Equal(1, recognizer.Calls); // không gọi lặp
-    }
-
-    [Fact]
-    public async Task GeminiTimeout_WithoutClientTranscript_Fails_InsteadOfScoringZero()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input());
-
-        Assert.Equal("failed", result.EvaluationStatus);
-        Assert.Equal("AI_TIMEOUT", result.ErrorCode);
-        Assert.Null(result.ContentMatchScore);
-        Assert.Null(result.OverallScore);
-        Assert.Equal(string.Empty, result.RecognizedText);
-    }
-
-    // 6. Quota / lỗi nhà cung cấp
-    [Theory]
-    [InlineData(SpeechRecognitionOutcome.QuotaExceeded, "AI_QUOTA_EXCEEDED")]
-    [InlineData(SpeechRecognitionOutcome.ProviderError, "AI_HTTP_500")]
-    [InlineData(SpeechRecognitionOutcome.NotConfigured, "AI_KEY_NOT_CONFIGURED")]
-    public async Task ProviderFailures_FallBackWithRecordedReason_OrFailWithoutScore(SpeechRecognitionOutcome outcome, string code)
-    {
-        var withFallback = await CreateService(new FakeRecognizer(Failure(outcome, code)))
-            .EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-        Assert.Equal("partial", withFallback.EvaluationStatus);
-        Assert.Equal(code, withFallback.FallbackReason);
-
-        var withoutFallback = await CreateService(new FakeRecognizer(Failure(outcome, code))).EvaluateAsync(Input());
-        Assert.Equal("failed", withoutFallback.EvaluationStatus);
-        Assert.Equal(code, withoutFallback.ErrorCode);
-        Assert.Null(withoutFallback.OverallScore);
-    }
-
-    // 7. Phản hồi hỏng được coi là lỗi kỹ thuật (chi tiết parse ở GeminiSpeechRecognizerTests)
-    [Fact]
-    public async Task MalformedProviderResponse_IsTechnicalFailure_NotScoreZero()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.MalformedResponse, "AI_MALFORMED_RESPONSE"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input());
-
-        Assert.Equal("failed", result.EvaluationStatus);
-        Assert.Null(result.ContentMatchScore);
-    }
-
-    // Interim / transcript chưa chốt không bao giờ được chấm
-    [Theory]
-    [InlineData("interim")]
-    [InlineData("empty")]
-    [InlineData("unsupported")]
-    [InlineData("error")]
-    [InlineData(null)]
-    public async Task NonFinalClientTranscript_IsNeverScored(string? status)
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: Target, clientStatus: status));
-
-        Assert.Equal("failed", result.EvaluationStatus);
-        Assert.Null(result.ContentMatchScore);
-    }
-
-    [Fact]
-    public async Task FinalClientTranscriptContainingOnlyPunctuation_IsNotUsable()
-    {
-        var recognizer = new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT"));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(clientTranscript: " 。、 ", clientStatus: "final"));
-
-        Assert.Equal("failed", result.EvaluationStatus);
-    }
-
-    // 10. MIME không khớp nội dung / không hỗ trợ
-    [Fact]
-    public async Task DeclaredMimeThatDoesNotMatchContent_IsRejected_WithoutCallingProvider()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(audio: WavBytes(), mime: "audio/webm"));
-
-        Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal("AUDIO_FORMAT_MISMATCH", result.ErrorCode);
-        Assert.Null(result.OverallScore);
-        Assert.Equal(0, recognizer.Calls);
-    }
-
-    [Fact]
-    public async Task UnsupportedMime_IsRejected_WithoutCallingProvider()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(mime: "audio/amr"));
-
-        Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal("UNSUPPORTED_AUDIO_TYPE", result.ErrorCode);
-        Assert.Equal(0, recognizer.Calls);
-    }
-
-    [Fact]
-    public async Task MimeWithCodecParameters_MatchingContent_IsAccepted()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(audio: WavBytes(), mime: "audio/wav"));
-
-        Assert.Equal("completed", result.EvaluationStatus);
-    }
-
-    [Fact]
-    public async Task TooShortAudio_IsUnavailable()
-    {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(audio: WebmBytes(200)));
-
-        Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal("AUDIO_TOO_SHORT", result.ErrorCode);
-        Assert.Equal(0, recognizer.Calls);
-    }
-
-    // 11. Âm thanh không đạt không được gán "good" bịa; có transcript không chứng minh âm thanh đủ tốt
+    // Âm thanh không đạt không được gán "good" bịa; có transcript không chứng minh âm thanh đủ tốt
     [Fact]
     public async Task NeedsRetryAudio_IsNotScored_EvenThoughClientHasTranscript_AndIsNeverReportedGood()
     {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(
-            Input(clientTranscript: Target, clientStatus: "final", gate: "needs_retry"));
+        var result = await CreateService().EvaluateAsync(Spoken(Target, gate: "needs_retry"));
 
         Assert.Equal("unavailable", result.EvaluationStatus);
         Assert.Equal("AUDIO_QUALITY_INSUFFICIENT", result.ErrorCode);
         Assert.Equal("needs_retry", result.AudioQualityStatus);
         Assert.Null(result.OverallScore);
-        Assert.Equal(0, recognizer.Calls);
     }
 
     [Theory]
@@ -698,19 +468,18 @@ public class ShadowingEvaluationServiceTests
     [InlineData("excellent")]
     public async Task MissingOrUnknownGate_IsReportedAsUnmeasured_NotGood(string? gate)
     {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var result = await CreateService(recognizer).EvaluateAsync(Input(gate: gate));
+        var result = await CreateService().EvaluateAsync(Spoken(Target, gate: gate));
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal("unmeasured", result.AudioQualityStatus);
     }
 
-    // 13. Điểm và diff cùng dựa trên đúng một cặp (target, recognized)
+    // Điểm và diff cùng dựa trên đúng một cặp (target, recognized)
     [Fact]
     public async Task ScoreAndDiff_AreBothDerivedFromTheSameTargetAndRecognizedText()
     {
         const string spoken = "ひとりです。テーブル席でおねがいします。";
-        var result = await CreateService(new FakeRecognizer(Heard(spoken))).EvaluateAsync(Input());
+        var result = await CreateService().EvaluateAsync(Spoken(spoken));
 
         var recomputed = await new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() })
             .CompareAsync(Target, result.RecognizedText);
@@ -723,36 +492,30 @@ public class ShadowingEvaluationServiceTests
             result.DiffTokens.Select(t => (t.Text, t.Status)));
     }
 
-    // Nhất quán: cùng transcript cuối cùng + cùng phiên bản chấm → cùng điểm, bất kể nguồn
+    // Nhất quán: cùng transcript + cùng phiên bản chấm → cùng điểm
     [Fact]
-    public async Task SameFinalTranscript_YieldsSameScore_RegardlessOfRecognitionSource()
+    public async Task SameTranscript_YieldsSameScore()
     {
         const string transcript = "ひとりです。テーブル席でおねがいします。";
+        var first = await CreateService().EvaluateAsync(Spoken(transcript));
+        var second = await CreateService().EvaluateAsync(Spoken(transcript));
 
-        var viaGemini = await CreateService(new FakeRecognizer(Heard(transcript))).EvaluateAsync(Input());
-        var viaFallback = await CreateService(new FakeRecognizer(Failure(SpeechRecognitionOutcome.Timeout, "AI_TIMEOUT")))
-            .EvaluateAsync(Input(clientTranscript: transcript, clientStatus: "final"));
-
-        Assert.Equal("gemini", viaGemini.RecognitionSource);
-        Assert.Equal("web_speech", viaFallback.RecognitionSource);
-        Assert.Equal(viaGemini.ContentMatchScore, viaFallback.ContentMatchScore);
-        Assert.Equal(viaGemini.OverallScore, viaFallback.OverallScore);
-        Assert.Equal(viaGemini.ScoringVersion, viaFallback.ScoringVersion);
+        Assert.Equal(first.ContentMatchScore, second.ContentMatchScore);
+        Assert.Equal(first.OverallScore, second.OverallScore);
+        Assert.Equal(first.ScoringVersion, second.ScoringVersion);
     }
 
     [Fact]
     public async Task MissingTargetText_IsUnavailable()
     {
-        var recognizer = new FakeRecognizer(Heard(Target));
-        var input = Input();
-        var result = await CreateService(recognizer).EvaluateAsync(new ShadowingAudioEvaluationInput
+        var result = await CreateService().EvaluateAsync(new ShadowingAudioEvaluationInput
         {
-            Audio = input.Audio,
-            MimeType = input.MimeType,
-            TargetText = "  "
+            TargetText = "  ",
+            ClientTranscript = Target,
+            ClientRecognitionStatus = "final",
         });
 
         Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal(0, recognizer.Calls);
+        Assert.Equal("MISSING_TARGET_TEXT", result.ErrorCode);
     }
 }

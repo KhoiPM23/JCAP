@@ -42,13 +42,6 @@ namespace JCAP.Services.Implementations
             if (_readers.Count == 0) throw new ArgumentException("Cần ít nhất một nguồn cách đọc.", nameof(readers));
         }
 
-        public async Task WarmUpAsync(string target, CancellationToken cancellationToken = default)
-        {
-            try { await _readers[0].TryReadAsync(target ?? string.Empty, cancellationToken); }
-            catch (OperationCanceledException) { }
-            catch (Exception) { /* chỉ là bước làm nóng, lỗi sẽ được xử lý ở lượt so khớp thật */ }
-        }
-
         public async Task<JapaneseTextComparison> CompareAsync(
             string target, string recognized, CancellationToken cancellationToken = default)
         {
@@ -342,7 +335,7 @@ namespace JCAP.Services.Implementations
             string targetText, string recognizedText, IReadOnlyList<Mora> sm,
             List<WordResult> results, List<(Mora Mora, int Index)>?[] extras)
         {
-            // Chữ viết của transcript, để hiển thị âm thừa đúng như Gemini/Web Speech đã viết (không phải dạng chuẩn hóa).
+            // Chữ viết của transcript, để hiển thị âm thừa đúng như Web Speech đã viết (không phải dạng chuẩn hóa).
             var spokenItems = JapaneseSurfaceAligner.Segment(recognizedText);
             var spokenRanges = JapaneseSurfaceAligner.Align(spokenItems, sm);
 
