@@ -79,27 +79,6 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Yêu cầu phân tích phát âm AI chuyên sâu (tính phí 15 AI Credits).
-        /// </summary>
-        [HttpPost("session/ai-analysis")]
-        public async Task<ActionResult<ApiResponse<ShadowingAiAnalysisResponseDto>>> RequestAiAnalysis(
-            [FromBody] ShadowingAiAnalysisRequestDto request)
-        {
-            var userId = GetCurrentUserId();
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(ApiResponse<ShadowingAiAnalysisResponseDto>.Fail("Không xác định được danh tính người dùng."));
-            }
-
-            var result = await _shadowingService.RequestAiAnalysisAsync(userId, request);
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
-        }
-
-        /// <summary>
         /// Đánh giá một câu Shadowing: nhận dạng giọng nói, so khớp với câu mẫu và chấm điểm (backend là nguồn điểm duy nhất).
         /// Yêu cầu đăng nhập (JWT); giới hạn dung lượng và tần suất để tránh lạm dụng API trả phí.
         /// </summary>
