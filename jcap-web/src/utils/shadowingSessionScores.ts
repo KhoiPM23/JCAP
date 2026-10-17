@@ -59,3 +59,11 @@ export function summarizeSessionScores(
     gateStatus,
   };
 }
+
+/** Hạng của buổi luyện theo điểm tổng; cùng ngưỡng với backend (ShadowingService.RankTitleFor) để khớp với lịch sử đã lưu. */
+export function sessionRankTitle(overall: number): string {
+  if (overall >= 90) return 'Hạng S · Rất xuất sắc';
+  if (overall >= 80) return 'Hạng A · Rất tốt';
+  if (overall >= 65) return 'Hạng B · Đạt chuẩn';
+  return 'Hạng C · Cần luyện thêm';
+}

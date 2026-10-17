@@ -19,7 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
 import { pickRecordingMimeType, resolveRecordedMime } from '../../utils/recordingMime';
 import { blobToAnalysisWav } from '../../utils/wavEncoder';
-import { summarizeSessionScores } from '../../utils/shadowingSessionScores';
+import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingSessionScores';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
 
@@ -1281,12 +1281,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const sessionSummary = summarizeSessionScores(learnerSentences.map(s => s.id), sentenceResults);
   const practicedSentencesCount = sessionSummary.practicedSentences;
   const finalContentMatchScore = sessionSummary.contentMatch;
-  const finalFluencyScore = sessionSummary.fluency; // null = chưa đo
   const finalWeightedScore = sessionSummary.overall;
   const finalGateStatus = sessionSummary.gateStatus;
   const finalGreenCount = sessionSummary.greenCount;
   const finalYellowCount = sessionSummary.yellowCount;
   const finalRedCount = sessionSummary.redCount;
+  const hasScoredSentence = practicedSentencesCount > 0;
 
   // Render text directly without popup annotations (Bỏ qua popup từ vựng/ngữ pháp theo yêu cầu)
   const renderAnnotatedSentenceText = (text: string) => {
@@ -2005,256 +2005,165 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL 3: CompletedModal (Đánh giá tổng quát 4 tiêu chí & So sánh âm thanh) */}
+      {/* MODAL 3: Tổng kết buổi luyện (chỉ số liệu thật do backend chấm) */}
       {isCompletedModalOpen && (
         <div className="fixed inset-0 bg-[#071A44]/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-[28px] max-w-3xl w-full shadow-2xl border border-[#E6EDF5] max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-            {/* Scrollable Content Body (Trục cuộn duy nhất) */}
-            <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-5">
-              {/* 1. Header */}
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-2xl bg-[#EEF6FE] text-[#0878EE] flex items-center justify-center shadow-xs border border-[#BCDDFB] mb-2">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
-                  Chúc mừng bạn đã hoàn thành bài luyện!
+          <div role="dialog" aria-modal="true" aria-labelledby="completed-modal-title" className="bg-white rounded-[28px] max-w-3xl w-full shadow-2xl border border-[#E6EDF5] max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            {/* Nội dung cuộn (trục cuộn duy nhất của modal) */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
+              {/* 1. Tiêu đề: chỉ chúc mừng khi thật sự có câu được chấm */}
+              <div className="text-center">
+                <h3 id="completed-modal-title" className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
+                  {hasScoredSentence ? 'Hoàn thành bài luyện!' : 'Buổi luyện đã kết thúc'}
                 </h3>
-                <p className="text-xs sm:text-sm text-[#556987] font-medium mt-1">
-                  {dialogue.title} · <span className="text-[#0878EE] font-semibold">{practicedSentencesCount}/{totalLearnerSentencesCount} câu đã luyện</span> · JLPT {dialogue.jlptLevel}
+                <p className="text-sm text-[#556987] font-medium mt-1">
+                  {dialogue.title} · JLPT {dialogue.jlptLevel} · Vai {userRole} ({learnerName})
                 </p>
-                {historySaveState === 'saving' && (
-                  <p className="text-[11px] text-[#556987] mt-1">Đang lưu buổi luyện vào lịch sử...</p>
-                )}
-                {historySaveState === 'saved' && (
-                  <p className="text-[11px] text-[#027A48] font-semibold mt-1">Đã lưu buổi luyện vào lịch sử.</p>
-                )}
-                {historySaveState === 'failed' && (
-                  <p className="text-[11px] text-red-600 font-semibold mt-1">{historySaveMessage}</p>
-                )}
+                <div role="status" className="min-h-[18px] mt-1">
+                  {historySaveState === 'saving' && (
+                    <p className="text-xs text-[#556987]">Đang lưu buổi luyện vào lịch sử...</p>
+                  )}
+                  {historySaveState === 'saved' && (
+                    <p className="text-xs text-[#027A48] font-semibold">Đã lưu buổi luyện vào lịch sử.</p>
+                  )}
+                  {historySaveState === 'failed' && (
+                    <p className="text-xs text-red-600 font-semibold">{historySaveMessage}</p>
+                  )}
+                </div>
               </div>
 
-              {/* 2. Unified Hero Score Card (Hợp nhất Điểm tổng & 2 Trụ cột cốt lõi) */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#F8FAFD] via-white to-blue-50/30 border border-[#E6EDF5] shadow-xs">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-                  {/* Left Column: Overall Score & Rank (5 cols) */}
-                  <div className="md:col-span-5 flex items-center gap-4 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
-                    <div className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 shadow-sm ${
-                      practicedSentencesCount === 0 || finalWeightedScore === 0
-                        ? 'bg-gradient-to-br from-slate-400 to-slate-500 text-white'
-                        : finalWeightedScore >= 80
-                        ? 'bg-gradient-to-br from-[#0878EE] to-[#054EA0] text-white'
-                        : finalWeightedScore >= 65
-                        ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white'
-                        : 'bg-gradient-to-br from-rose-500 to-rose-600 text-white'
-                    }`}>
-                      <span className="text-3xl font-black leading-none">{practicedSentencesCount === 0 ? '—' : finalWeightedScore}</span>
-                      <span className="text-[10px] uppercase font-bold tracking-wider opacity-85 mt-1">/ 100</span>
-                    </div>
-
-                    <div className="space-y-1.5 min-w-0">
-                      <div>
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-black tracking-tight ${
-                          practicedSentencesCount === 0 || finalWeightedScore === 0
-                            ? 'bg-slate-100 text-slate-600 border border-slate-200'
-                            : finalWeightedScore >= 90
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : finalWeightedScore >= 80
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : finalWeightedScore >= 65
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
-                        }`}>
-                          {practicedSentencesCount === 0 || finalWeightedScore === 0
-                            ? 'Chưa luyện tập'
-                            : finalWeightedScore >= 90
-                            ? 'Hạng S · Rất xuất sắc'
-                            : finalWeightedScore >= 80
-                            ? 'Hạng A · Rất tốt'
-                            : finalWeightedScore >= 65
-                            ? 'Hạng B · Khá'
-                            : 'Cần luyện thêm'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#556987] font-medium">
-                        Thời gian: <strong className="text-[#071A44]">{Math.floor(sessionDurationSeconds / 60)}m {sessionDurationSeconds % 60}s</strong> · Vai <strong className="text-[#0878EE]">{userRole}</strong>
-                      </p>
-                      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                          {finalGreenCount} câu tốt
-                        </span>
-                        {finalYellowCount > 0 && (
-                          <span className="inline-flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                            {finalYellowCount} câu khá
-                          </span>
-                        )}
-                        {finalRedCount > 0 && (
-                          <span className="inline-flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                            {finalRedCount} cần sửa
-                          </span>
-                        )}
-                      </div>
-                    </div>
+              {/* 2. Tổng kết: số liệu thật từ kết quả backend đã chấm */}
+              {hasScoredSentence ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className={`col-span-2 sm:col-span-1 rounded-2xl p-4 flex flex-col items-center justify-center text-white ${
+                    finalWeightedScore >= 80
+                      ? 'bg-gradient-to-br from-[#0878EE] to-[#054EA0]'
+                      : finalWeightedScore >= 65
+                      ? 'bg-gradient-to-br from-amber-500 to-amber-600'
+                      : 'bg-gradient-to-br from-rose-500 to-rose-600'
+                  }`}>
+                    <span className="text-4xl font-black leading-none">{finalWeightedScore}</span>
+                    <span className="text-[11px] font-bold opacity-90 mt-1">/ 100 điểm</span>
+                    <span className="text-xs font-bold mt-2 text-center">{sessionRankTitle(finalWeightedScore)}</span>
                   </div>
 
-                  {/* Right Column: 2 Core Pillars Bars (7 cols) */}
-                  <div className="md:col-span-7 space-y-3">
-                    {/* Pillar 1: Content Match (đối chiếu văn bản với câu mẫu, chưa phải điểm phát âm) */}
-                    <div>
-                      <div className="flex justify-between items-center text-xs mb-1">
-                        <span className="font-bold text-[#071A44] flex items-center gap-1.5">
-                          <span>Độ khớp nội dung</span>
-                        </span>
-                        <span className="font-extrabold text-[#0878EE] text-xs">
-                          {practicedSentencesCount === 0 ? 'Chưa chấm' : `${finalContentMatchScore}%`}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#0878EE] h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, Math.max(0, finalContentMatchScore))}%` }}
-                        />
-                      </div>
-                    </div>
+                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
+                    <p className="text-xs font-semibold text-[#556987]">Câu đã chấm</p>
+                    <p className="text-2xl font-black text-[#071A44] mt-1">
+                      {practicedSentencesCount}<span className="text-base text-[#8A9AB3] font-bold">/{totalLearnerSentencesCount}</span>
+                    </p>
+                    <ul className="mt-2 space-y-0.5 text-xs text-[#556987]">
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />{finalGreenCount} khớp tốt</li>
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />{finalYellowCount} khớp một phần</li>
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" aria-hidden="true" />{finalRedCount} cần luyện lại</li>
+                    </ul>
+                  </div>
 
-                    {/* Pillar 2: Fluency — chỉ hiển thị khi đã đo được đáng tin cậy */}
-                    <div>
-                      <div className="flex justify-between items-center text-xs mb-1">
-                        <span className="font-bold text-[#071A44] flex items-center gap-1.5">
-                          <span>Độ lưu loát & Ngắt nhịp</span>
-                        </span>
-                        {finalFluencyScore == null ? (
-                          <span className="text-[11px] font-semibold text-slate-400">Chưa đo ở phiên bản này</span>
-                        ) : (
-                          <span className="font-extrabold text-teal-700 text-xs">{finalFluencyScore}%</span>
-                        )}
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        {finalFluencyScore != null && (
-                          <div
-                            className="bg-teal-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(100, Math.max(0, finalFluencyScore))}%` }}
-                          />
-                        )}
-                      </div>
+                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
+                    <p className="text-xs font-semibold text-[#556987]">Độ khớp nội dung</p>
+                    <p className="text-2xl font-black text-[#0878EE] mt-1">{finalContentMatchScore}%</p>
+                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden mt-3" aria-hidden="true">
+                      <div className="bg-[#0878EE] h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, finalContentMatchScore))}%` }} />
                     </div>
+                    <p className="text-[11px] text-[#8A9AB3] mt-2 leading-snug">Tính trên tất cả câu của vai bạn, câu chưa chấm tính 0.</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
+                    <p className="text-xs font-semibold text-[#556987]">Thời gian luyện</p>
+                    <p className="text-2xl font-black text-[#071A44] mt-1">
+                      {Math.floor(sessionDurationSeconds / 60)}:{String(sessionDurationSeconds % 60).padStart(2, '0')}
+                    </p>
+                    <p className="text-[11px] text-[#8A9AB3] mt-2">phút : giây</p>
                   </div>
                 </div>
-
-                {/* Subtle mic warning only if mic had an issue */}
-                {finalGateStatus === 'needs_retry' && (
-                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-amber-700">
-                    <svg className="w-4 h-4 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span>Tín hiệu micro hơi nhỏ hoặc có tạp âm. Bạn nên dùng tai nghe có micro để có kết quả tốt nhất.</span>
-                  </div>
-                )}
-              </div>
-
-            {/* 3. Chi tiết từng câu thoại (Không còn nested scroll!) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-[#071A44] text-sm">
-                    Chi tiết từng câu thoại
-                  </h4>
-                  <p className="text-xs text-[#556987]">
-                    Nghe lại bản thu tốt nhất của bạn và đối chiếu trực tiếp với phát âm câu mẫu.
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[#BCDDFB] bg-[#F4F9FE] p-5 text-center">
+                  <p className="font-bold text-[#071A44]">Chưa có câu nào được chấm điểm</p>
+                  <p className="text-sm text-[#556987] mt-1">
+                    Bấm <strong>Luyện lại bài này</strong>, ghi âm từng câu của vai bạn rồi gửi để nhận điểm và lưu vào lịch sử.
                   </p>
                 </div>
-                <span className="text-xs font-semibold text-[#0878EE] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                  {sentences.filter(s => s.speakerRole === userRole).length} câu của vai bạn
-                </span>
-              </div>
+              )}
 
-              <div className="space-y-3">
-                {sentences
-                  .filter((s) => s.speakerRole === userRole)
-                  .map((s) => {
+              {finalGateStatus === 'needs_retry' && (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Tín hiệu micro hơi nhỏ hoặc có tạp âm ở một số câu. Dùng tai nghe có micro sẽ cho kết quả ổn định hơn.</span>
+                </div>
+              )}
+
+              {/* 3. Chi tiết từng câu của vai người học */}
+              <section aria-labelledby="completed-sentences-title" className="space-y-3">
+                <h4 id="completed-sentences-title" className="font-bold text-[#071A44] text-sm">Chi tiết từng câu</h4>
+
+                <ol className="space-y-3">
+                  {learnerSentences.map((s, index) => {
                     const res = sentenceResults.get(s.id);
                     // Điểm và tier do backend tính; không tái tạo ở client.
-                    const sentenceScore = res ? res.overallScore : 0;
-                    const tier = res?.evaluationTier ?? 'red';
+                    const tier = res?.evaluationTier;
                     const hasUserRecording = recordedAudioUrls.has(s.id);
                     const isPlayingUser = playingUserAudioSentenceId === s.id;
                     const isPlayingNative = isPlayingAudio && loadingAudioSentenceId === s.id;
-                    const attempts = res?.attemptsCount ?? (sentenceAttemptsMap.get(s.id) || 1);
+                    const attempts = res?.attemptsCount ?? sentenceAttemptsMap.get(s.id) ?? 0;
 
                     return (
-                      <div
-                        key={s.id}
-                        className="p-3.5 sm:p-4 rounded-xl bg-white border border-[#E6EDF5] hover:border-blue-200 transition-all shadow-xs space-y-2.5"
-                      >
-                        {/* Top row: order, score, buttons */}
+                      <li key={s.id} className="p-4 rounded-xl bg-white border border-[#E6EDF5] space-y-2.5">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                              #{s.orderIndex}
-                            </span>
+                            <span className="text-xs font-bold text-[#556987]">Câu {index + 1}/{totalLearnerSentencesCount}</span>
                             <span
-                              className={`text-[11px] font-black px-2 py-0.5 rounded ${
+                              className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                                 !res
-                                  ? 'bg-slate-100 text-slate-500 border border-slate-200'
+                                  ? 'bg-slate-50 text-slate-500 border-slate-200'
                                   : tier === 'green'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : tier === 'yellow'
-                                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                  : 'bg-rose-50 text-rose-700 border-rose-200'
                               }`}
                             >
-                              {res ? `${sentenceScore} điểm` : 'Chưa chấm'}
+                              {res ? `${res.overallScore} điểm` : 'Chưa chấm'}
                             </span>
-                            {attempts > 1 && (
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                (thử {attempts} lần)
-                              </span>
-                            )}
+                            {attempts > 1 && <span className="text-xs text-[#8A9AB3]">thử {attempts} lần</span>}
                           </div>
 
-                          {/* Dual Audio Player Buttons */}
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={!hasUserRecording}
-                              onClick={() => playUserRecording(s.id)}
-                              className={`h-7 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                !hasUserRecording
-                                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50'
-                                  : isPlayingUser
-                                  ? 'bg-blue-600 text-white shadow-xs'
-                                  : 'bg-blue-50 hover:bg-blue-100 text-[#0878EE] border border-blue-200'
-                              }`}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
-                              </svg>
-                              <span>{isPlayingUser ? 'Đang phát...' : 'Nghe bạn'}</span>
-                            </button>
-
+                            {hasUserRecording && (
+                              <button
+                                type="button"
+                                onClick={() => playUserRecording(s.id)}
+                                className={`h-8 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                                  isPlayingUser
+                                    ? 'bg-[#0878EE] text-white'
+                                    : 'bg-blue-50 hover:bg-blue-100 text-[#0878EE] border border-blue-200'
+                                }`}
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+                                </svg>
+                                <span>{isPlayingUser ? 'Đang phát...' : 'Nghe bạn'}</span>
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
-                              className={`h-7 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                              className={`h-8 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                                 isPlayingNative
-                                  ? 'bg-slate-800 text-white shadow-xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-[#071A44] border border-slate-200'
+                                  ? 'bg-[#071A44] text-white'
+                                  : 'bg-white hover:bg-slate-50 text-[#071A44] border border-[#E6EDF5]'
                               }`}
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                               </svg>
-                              <span>{isPlayingNative ? 'Đang phát...' : 'Mẫu'}</span>
+                              <span>{isPlayingNative ? 'Đang phát...' : 'Nghe mẫu'}</span>
                             </button>
                           </div>
                         </div>
 
-                        {/* Sentence Diff View */}
-                        <div className="bg-[#F8FAFD] p-2.5 rounded-lg border border-slate-100">
+                        <div className="bg-[#F8FAFD] p-3 rounded-lg border border-slate-100">
                           <JapaneseSentenceDiffView
                             diffTokens={res?.diffTokens}
                             targetText={s.japaneseText}
@@ -2263,24 +2172,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           />
                         </div>
 
-                        {/* Translation and Romaji */}
-                        <div className="space-y-0.5 text-xs text-[#556987]">
-                          {s.romajiText && (
-                            <p className="text-[11px] text-slate-400 font-mono">
-                              {s.romajiText}
-                            </p>
-                          )}
-                          <p className="text-slate-600">
-                            "{s.vietnameseTranslation}"
-                          </p>
+                        <div className="space-y-0.5 text-xs">
+                          {s.romajiText && <p className="text-[#8A9AB3] font-mono">{s.romajiText}</p>}
+                          {s.vietnameseTranslation && <p className="text-[#556987]">{s.vietnameseTranslation}</p>}
                         </div>
-                      </div>
+                      </li>
                     );
                   })}
-              </div>
+                </ol>
+              </section>
             </div>
-
-          </div>
 
           {/* Sticky / Pinned Footer Bar (Luôn hiển thị cố định ở chân modal) */}
           <div className="p-4 sm:px-7 bg-white/95 backdrop-blur-md border-t border-[#E6EDF5] flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">

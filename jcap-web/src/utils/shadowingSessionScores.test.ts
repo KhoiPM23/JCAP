@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import { summarizeSessionScores } from './shadowingSessionScores.ts';
+import { sessionRankTitle, summarizeSessionScores } from './shadowingSessionScores.ts';
 
 type R = Parameters<typeof summarizeSessionScores>[1] extends Map<number, infer V> ? V : never;
 
@@ -70,4 +70,12 @@ test('Tier và cổng âm thanh được tổng hợp từ dữ liệu đã lưu
   );
   assert.deepStrictEqual([s.greenCount, s.yellowCount, s.redCount], [1, 1, 1]);
   assert.strictEqual(s.gateStatus, 'acceptable');
+});
+
+test('Hạng buổi luyện dùng đúng ngưỡng của backend (90/80/65)', () => {
+  assert.strictEqual(sessionRankTitle(90), 'Hạng S · Rất xuất sắc');
+  assert.strictEqual(sessionRankTitle(89), 'Hạng A · Rất tốt');
+  assert.strictEqual(sessionRankTitle(80), 'Hạng A · Rất tốt');
+  assert.strictEqual(sessionRankTitle(65), 'Hạng B · Đạt chuẩn');
+  assert.strictEqual(sessionRankTitle(64), 'Hạng C · Cần luyện thêm');
 });
