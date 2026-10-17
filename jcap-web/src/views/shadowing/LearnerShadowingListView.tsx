@@ -4,6 +4,7 @@ import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
 import type { ShadowingDialogueItem, ShadowingSentenceItem } from '../../types/shadowing';
 import { voicevoxService } from '../../services/voicevoxService';
+import { fromServerSession, isLegacyHistorySession, measuredScore, mergeHistory } from '../../utils/shadowingHistory';
 import type { ShadowingPracticeSession } from '../../types/shadowingProgress';
 import { Button } from '../../components/ui/Button';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
@@ -15,8 +16,9 @@ const HISTORY_PAGE_SIZE = 5;
 const getVoicevoxSpeakerId = (): number =>
   Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3;
 
+// Ngưỡng chỉ dùng để TÔ MÀU điểm đã lưu; khớp ShadowingScoring (backend): 80 / 65. Tier thật được lưu cùng kết quả.
 const scoreTier = (score: number): 'green' | 'yellow' | 'red' =>
-  score >= 80 ? 'green' : score >= 60 ? 'yellow' : 'red';
+  score >= 80 ? 'green' : score >= 65 ? 'yellow' : 'red';
 
 const scorePillClass = (score: number): string => {
   const tier = scoreTier(score);
@@ -77,9 +79,13 @@ export const LearnerShadowingListView: React.FC = () => {
       setErrorMessage(res.message || 'Không thể tải danh sách bài học Shadowing.');
     }
 
-    // Load history
-    const userHistory = shadowingStorageService.getHistoryList(learnerId);
-    setHistoryList(userHistory);
+    // Lịch sử: buổi luyện lưu ở backend + bản ghi cũ còn trong trình duyệt (trước khi lịch sử được lưu ở backend)
+    const localHistory = shadowingStorageService.getHistoryList(learnerId);
+    const serverRes = await shadowingService.getHistory();
+    const serverHistory = serverRes.success && serverRes.data
+      ? serverRes.data.map((record) => fromServerSession(record, learnerId))
+      : [];
+    setHistoryList(mergeHistory(serverHistory, localHistory));
 
     setIsLoading(false);
   };
@@ -179,8 +185,9 @@ export const LearnerShadowingListView: React.FC = () => {
         ) / 10
       : 0;
 
+  // Chỉ cộng thời lượng thực đã lưu; bản ghi thiếu thời lượng không bị gán giá trị mặc định.
   const totalHistoryMinutes = Math.round(
-    historyList.reduce((sum, h) => sum + (h.durationSeconds || 120), 0) / 60
+    historyList.reduce((sum, h) => sum + (h.durationSeconds ?? 0), 0) / 60
   );
 
   const filteredHistory = historyList.filter((session) => {
@@ -581,9 +588,13 @@ export const LearnerShadowingListView: React.FC = () => {
                         hour: '2-digit',
                         minute: '2-digit',
                       });
-                      const durationSec = session.durationSeconds || 120;
-                      const minutes = Math.floor(durationSec / 60);
-                      const seconds = durationSec % 60;
+                      const durationSec = session.durationSeconds;
+                      const hasDuration = typeof durationSec === 'number';
+                      const minutes = hasDuration ? Math.floor(durationSec / 60) : 0;
+                      const seconds = hasDuration ? durationSec % 60 : 0;
+                      const isLegacy = isLegacyHistorySession(session);
+                      const contentScore = measuredScore(session.contentMatchScore ?? session.accuracyScore);
+                      const fluencyShown = measuredScore(session.fluencyScore);
                       const detailSentences = dialogueSentences[session.dialogueId];
 
                       return (
@@ -601,12 +612,12 @@ export const LearnerShadowingListView: React.FC = () => {
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
                               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                                {session.textbookTitle || 'Minna no Nihongo'}
+                                {session.textbookTitle || '—'}
                               </span>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
                               <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-100">
-                                {session.chapterTitle || 'Bài 14'}
+                                {session.chapterTitle || '—'}
                               </span>
                             </td>
                             <td className="py-3.5 px-4">
@@ -636,7 +647,7 @@ export const LearnerShadowingListView: React.FC = () => {
                               </span>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap text-slate-500">
-                              {minutes}m {seconds.toString().padStart(2, '0')}s
+                              {hasDuration ? `${minutes}m ${seconds.toString().padStart(2, '0')}s` : '—'}
                             </td>
                             <td className="py-3.5 px-5 text-right whitespace-nowrap">
                               <div className="inline-flex items-center gap-1.5">
@@ -677,16 +688,27 @@ export const LearnerShadowingListView: React.FC = () => {
                                       <span className="text-slate-500">
                                         Phiên ID: {session.sessionId || session.id}
                                       </span>
+                                      {isLegacy && (
+                                        <span
+                                          className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 normal-case tracking-normal"
+                                          title="Bản ghi tạo trước khi có phiên bản chấm điểm hiện tại. Điểm lưu loát/ngữ điệu của bản ghi này có thể là ước lượng, không phải số đo thực."
+                                        >
+                                          Bản ghi cũ
+                                        </span>
+                                      )}
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-200">
-                                        Độ chính xác: {session.accuracyScore ?? session.averageScore}%
+                                        Độ chính xác: {contentScore != null ? `${contentScore}%` : 'Chưa đo'}
                                       </span>
-                                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                        Ngữ điệu (Pitch): {session.intonationScore ?? Math.round(session.averageScore * 0.95)}%
+                                      <span
+                                        className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-50 text-slate-500 border border-slate-200"
+                                        title="Ngữ điệu (Pitch) chưa được đo bởi hệ thống chấm điểm hiện tại."
+                                      >
+                                        Ngữ điệu (Pitch): Chưa đo
                                       </span>
                                       <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        Độ lưu loát: {session.fluencyScore ?? Math.round(session.averageScore * 0.92)}%
+                                        Độ lưu loát: {fluencyShown != null ? `${fluencyShown}%` : 'Chưa đo'}
                                       </span>
                                     </div>
                                   </div>
@@ -708,7 +730,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                         detailSentences?.[sIdx];
                                       const japaneseText = result?.targetText || detail?.japaneseText;
                                       const translation = detail?.vietnameseTranslation;
-                                      const tier = result?.evaluationTier ?? scoreTier(score);
+                                      const tier: 'green' | 'yellow' | 'red' | null = result?.evaluationTier ?? null;
                                       const sampleUrl = result?.targetAudioUrl || detail?.nativeAudioUrl;
                                       const userUrl = result?.audioBlobUrl;
 
@@ -764,14 +786,18 @@ export const LearnerShadowingListView: React.FC = () => {
                                               </button>
                                             </div>
                                             <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                              <span className="material-symbols-outlined text-[14px]">
-                                                {tier === 'green' ? 'check' : 'priority_high'}
-                                              </span>
+                                              {tier && (
+                                                <span className="material-symbols-outlined text-[14px]">
+                                                  {tier === 'green' ? 'check' : 'priority_high'}
+                                                </span>
+                                              )}
                                               {tier === 'green'
-                                                ? 'Đạt chuẩn nhại'
+                                                ? 'Khớp tốt'
                                                 : tier === 'yellow'
-                                                ? 'Cần cải thiện'
-                                                : 'Cần luyện lại'}
+                                                ? 'Khớp một phần'
+                                                : tier === 'red'
+                                                ? 'Chưa khớp'
+                                                : ''}
                                             </span>
                                           </div>
                                         </div>

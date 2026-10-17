@@ -1,37 +1,22 @@
 /**
  * Audio Metrics Service (Web Audio API)
- * Đo lường chất lượng âm thanh từ Micro và phân tích các chỉ số vật lý:
- * 1. Cổng kiểm định Micro (Mic Quality Gatekeeper): Tốt / Chấp nhận được / Cần thu lại
- * 2. Chỉ số độ trôi chảy (Fluency): Tỷ lệ khoảng lặng, thời lượng nói thực tế, số lần ngập ngừng > 1.2s
+ * Đo các chỉ số vật lý của tín hiệu từ Micro để kiểm định đầu vào (Mic Quality Gatekeeper).
+ *
+ * LƯU Ý: đây là heuristic dựa trên ngưỡng cố định, CHƯA được hiệu chuẩn/kiểm chứng (xem utils/audioGate.ts).
+ *  - Kết quả chỉ dùng để quyết định có nên chấm hay yêu cầu thu lại, và gửi kèm cho backend.
+ *  - KHÔNG được dùng để tạo điểm số hiển thị.
+ *  - Khi bộ đo trực tiếp không đo được, `measureRecordedBlob` giải mã chính bản ghi để biết có tiếng hay không.
+ *    Chỉ khi cả hai đều thất bại trạng thái mới là 'unmeasured' (KHÔNG phải 'good').
  */
+import {
+  NO_SIGNAL_RMS,
+  computeGateMetrics,
+  frameRmsFromPcm,
+  type AudioGateStatus,
+  type AudioQualityMetrics,
+} from '../utils/audioGate';
 
-export type AudioGateStatus = 'good' | 'acceptable' | 'needs_retry';
-
-export interface AudioQualityMetrics {
-  // Cổng kiểm định chất lượng âm thanh đầu vào
-  gateStatus: AudioGateStatus;
-  gateLabel: string;
-  gateDetail: string;
-  isValidForAssessment: boolean; // false nếu quá nhỏ, vỡ tiếng hoặc quá ồn
-
-  // Chỉ số vật lý tín hiệu
-  volumeRms: number; // 0.0 - 1.0 (mức âm lượng trung bình)
-  noiseFloor: number; // 0.0 - 1.0 (tạp âm môi trường nền)
-  snrDb: number; // Tỷ số tín hiệu / tạp âm (dB)
-  clippingCount: number; // Số khung bị vỡ tiếng (peak > 0.96)
-
-  // Chỉ số độ trôi chảy (Fluency)
-  pauseRatio: number; // Tỷ lệ thời gian im lặng (0.0 - 1.0)
-  unnaturalPausesCount: number; // Số lần ngập ngừng ngắt quãng kéo dài > 1.2s
-  activeSpeechMs: number; // Thời gian thực sự có giọng nói (ms)
-  fluencyScore: number; // Điểm lưu loát khoa học (0 - 100)
-  durationMs: number; // Tổng thời lượng thu âm (ms)
-
-  // Trường tương thích giao diện cũ
-  overallQualityScore: number;
-  qualityStatus: 'clear' | 'moderate_noise' | 'noisy' | 'too_quiet' | 'clipping';
-  qualityLabel: string;
-}
+export type { AudioGateStatus, AudioQualityMetrics };
 
 export class AudioMetricsAnalyzer {
   private audioContext: AudioContext | null = null;
@@ -40,14 +25,14 @@ export class AudioMetricsAnalyzer {
   private animationFrameId: number | null = null;
 
   private rmsSamples: number[] = [];
-  private silenceSamplesCount: number = 0;
-  private totalSamplesCount: number = 0;
   private clippingCount: number = 0;
   private startTime: number = 0;
+  private lastRms: number = 0;
 
-  // Theo dõi ngập ngừng / dừng quá lâu
-  private currentSilenceDurationFrames: number = 0;
-  private unnaturalPausesCount: number = 0;
+  /** Mức âm lượng (RMS 0..1) của khung đo mới nhất; 0 khi không đang phân tích. Chỉ để vẽ sóng âm. */
+  public get currentLevel(): number {
+    return this.lastRms;
+  }
 
   /**
    * Bắt đầu phân tích luồng âm thanh MediaStream khi người học bấm Micro
@@ -69,18 +54,11 @@ export class AudioMetricsAnalyzer {
       this.source.connect(this.analyser);
 
       this.rmsSamples = [];
-      this.silenceSamplesCount = 0;
-      this.totalSamplesCount = 0;
       this.clippingCount = 0;
-      this.currentSilenceDurationFrames = 0;
-      this.unnaturalPausesCount = 0;
       this.startTime = Date.now();
 
       const bufferLength = this.analyser.fftSize;
       const dataArray = new Float32Array(bufferLength);
-
-      // Ước tính 1 giây có khoảng 60 khung (60fps) -> 1.2s tương đương ~72 khung im lặng liên tục
-      const FRAMES_PER_UNNATURAL_PAUSE = 72;
 
       const sample = () => {
         if (!this.analyser) return;
@@ -89,7 +67,6 @@ export class AudioMetricsAnalyzer {
 
         let sumSquares = 0;
         let peak = 0;
-
         for (let i = 0; i < bufferLength; i++) {
           const val = dataArray[i];
           sumSquares += val * val;
@@ -97,27 +74,10 @@ export class AudioMetricsAnalyzer {
           if (absVal > peak) peak = absVal;
         }
 
-        const rms = Math.sqrt(sumSquares / bufferLength);
-        this.rmsSamples.push(rms);
-        this.totalSamplesCount++;
-
-        // Ngưỡng im lặng (RMS < 0.02)
-        const isSilentFrame = rms < 0.02;
-
-        if (isSilentFrame) {
-          this.silenceSamplesCount++;
-          this.currentSilenceDurationFrames++;
-          if (this.currentSilenceDurationFrames === FRAMES_PER_UNNATURAL_PAUSE) {
-            this.unnaturalPausesCount++;
-          }
-        } else {
-          this.currentSilenceDurationFrames = 0;
-        }
-
+        this.lastRms = Math.sqrt(sumSquares / bufferLength);
+        this.rmsSamples.push(this.lastRms);
         // Phát hiện vỡ tiếng / clipping (Peak > 0.96)
-        if (peak >= 0.96) {
-          this.clippingCount++;
-        }
+        if (peak >= 0.96) this.clippingCount++;
 
         this.animationFrameId = requestAnimationFrame(sample);
       };
@@ -129,15 +89,16 @@ export class AudioMetricsAnalyzer {
   }
 
   /**
-   * Dừng phân tích và tính toán toàn bộ chỉ số chất lượng âm thanh khi kết thúc ghi âm
+   * Dừng phân tích và tính chỉ số chất lượng âm thanh khi kết thúc ghi âm
    */
-  public stopAnalysis(targetDurationMs?: number): AudioQualityMetrics {
+  public stopAnalysis(_targetDurationMs?: number): AudioQualityMetrics {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
 
     const durationMs = Math.max(300, Date.now() - this.startTime);
+    this.lastRms = 0;
 
     // Dọn dẹp AudioContext
     try {
@@ -150,134 +111,57 @@ export class AudioMetricsAnalyzer {
         this.audioContext = null;
       }
     } catch {}
+    this.analyser = null;
 
-    if (this.rmsSamples.length === 0) {
-      return this.getDefaultMetrics(durationMs);
+    // Không có mẫu, hoặc toàn bộ mẫu gần 0: bộ đo trực tiếp không phân biệt được "im lặng thật"
+    // với "trình duyệt không cấp dữ liệu AudioContext". Trả 'unmeasured' để nơi gọi giải mã chính bản ghi.
+    if (this.rmsSamples.length === 0 || this.rmsSamples.every((s) => s < NO_SIGNAL_RMS)) {
+      return this.unmeasuredMetrics(durationMs);
     }
 
-    // Nếu tất cả các mẫu đều bằng 0 hoặc cực nhỏ (< 0.003) do trình duyệt chưa cấp quyền AudioContext float data
-    const isVirtuallyEmptyBuffer = this.rmsSamples.every(s => s < 0.003);
-    if (isVirtuallyEmptyBuffer && durationMs > 500) {
-      return this.getDefaultMetrics(durationMs);
-    }
-
-    // 1. Phân tích Volume & Noise Floor
-    const sortedSamples = [...this.rmsSamples].sort((a, b) => a - b);
-    const lowCount = Math.max(1, Math.floor(sortedSamples.length * 0.15));
-    const noiseFloor = sortedSamples.slice(0, lowCount).reduce((a, b) => a + b, 0) / lowCount;
-
-    const highSamples = sortedSamples.slice(Math.floor(sortedSamples.length * 0.5));
-    const averageVoiceRms = highSamples.reduce((a, b) => a + b, 0) / Math.max(1, highSamples.length);
-
-    // Tính SNR (Signal to Noise Ratio dB)
-    const safeNoise = Math.max(0.001, noiseFloor);
-    const safeSignal = Math.max(safeNoise, averageVoiceRms);
-    const snrDb = Math.round(20 * Math.log10(safeSignal / safeNoise));
-
-    // 2. Tỷ lệ khoảng lặng & Thời gian nói thực tế
-    const pauseRatio = this.totalSamplesCount > 0
-      ? this.silenceSamplesCount / this.totalSamplesCount
-      : 0.2;
-    const activeSpeechMs = Math.max(100, Math.round(durationMs * (1 - pauseRatio)));
-
-    // 3. Cổng kiểm định Micro (Mic Quality Gatekeeper)
-    let gateStatus: AudioGateStatus = 'good';
-    let gateLabel = 'Tốt';
-    let gateDetail = 'Tín hiệu rõ nét, ít tạp âm';
-    let isValidForAssessment = true;
-    let legacyQualityStatus: AudioQualityMetrics['qualityStatus'] = 'clear';
-
-    if (durationMs < 400 || averageVoiceRms < 0.008) {
-      gateStatus = 'needs_retry';
-      gateLabel = 'Cần thu lại';
-      gateDetail = 'Âm lượng mic quá nhỏ hoặc chưa thu được tiếng';
-      isValidForAssessment = false;
-      legacyQualityStatus = 'too_quiet';
-    } else if (this.clippingCount > 15) {
-      gateStatus = 'needs_retry';
-      gateLabel = 'Cần thu lại';
-      gateDetail = 'Âm thanh bị vỡ tiếng (nói quá sát mic)';
-      isValidForAssessment = false;
-      legacyQualityStatus = 'clipping';
-    } else if (snrDb < 6) {
-      gateStatus = 'needs_retry';
-      gateLabel = 'Cần thu lại';
-      gateDetail = 'Môi trường quá nhiều tiếng ồn xung quanh';
-      isValidForAssessment = false;
-      legacyQualityStatus = 'noisy';
-    } else if (snrDb < 12 || averageVoiceRms < 0.025) {
-      gateStatus = 'acceptable';
-      gateLabel = 'Chấp nhận được';
-      gateDetail = 'Âm lượng hơi nhỏ hoặc có tiếng ồn nền nhẹ';
-      isValidForAssessment = true;
-      legacyQualityStatus = 'moderate_noise';
-    } else {
-      gateStatus = 'good';
-      gateLabel = 'Tốt';
-      gateDetail = 'Tín hiệu rõ nét, micro rất tốt';
-      isValidForAssessment = true;
-      legacyQualityStatus = 'clear';
-    }
-
-    // 4. Tính toán Độ lưu loát (Fluency Score: 0 - 100)
-    // Sư phạm: Không phạt học viên N5/N4 nói chậm vừa phải để rèn phát âm tròn chữ
-    let fluencyScore = 88;
-
-    // Phạt khi khoảng lặng quá dài (ngập ngừng không tự nhiên)
-    if (pauseRatio > 0.55) {
-      fluencyScore = Math.max(45, Math.round(80 - (pauseRatio - 0.55) * 90));
-    } else if (pauseRatio > 0.38) {
-      fluencyScore = Math.round(85 - (pauseRatio - 0.38) * 35);
-    } else {
-      fluencyScore = Math.min(98, Math.round(88 + (0.35 - pauseRatio) * 20));
-    }
-
-    // Phạt mỗi lần dừng ngắt quãng kéo dài > 1.2s (Unnatural pauses)
-    if (this.unnaturalPausesCount > 0) {
-      fluencyScore = Math.max(40, fluencyScore - this.unnaturalPausesCount * 7);
-    }
-
-    return {
-      gateStatus,
-      gateLabel,
-      gateDetail,
-      isValidForAssessment,
-      volumeRms: Number(averageVoiceRms.toFixed(3)),
-      noiseFloor: Number(noiseFloor.toFixed(3)),
-      snrDb,
-      clippingCount: this.clippingCount,
-      pauseRatio: Number(pauseRatio.toFixed(2)),
-      unnaturalPausesCount: this.unnaturalPausesCount,
-      activeSpeechMs,
-      fluencyScore: Math.min(98, Math.max(40, fluencyScore)),
-      durationMs,
-      overallQualityScore: gateStatus === 'good' ? 95 : gateStatus === 'acceptable' ? 80 : 55,
-      qualityStatus: legacyQualityStatus,
-      qualityLabel: gateDetail,
-    };
+    return computeGateMetrics(this.rmsSamples, this.clippingCount, durationMs);
   }
 
-  private getDefaultMetrics(durationMs: number): AudioQualityMetrics {
+  /** Không có mẫu đo hợp lệ: báo 'unmeasured' thay vì giả định tín hiệu tốt. */
+  private unmeasuredMetrics(durationMs: number): AudioQualityMetrics {
     return {
-      gateStatus: 'good',
-      gateLabel: 'Tốt',
-      gateDetail: 'Tín hiệu rõ nét, ít tạp âm',
+      gateStatus: 'unmeasured',
+      gateLabel: 'Chưa đo được',
+      gateDetail: 'Không đo được chất lượng tín hiệu micro trên trình duyệt này',
       isValidForAssessment: true,
-      volumeRms: 0.18,
-      noiseFloor: 0.02,
-      snrDb: 22,
+      isMeasured: false,
+      volumeRms: 0,
+      volumeDb: -100,
+      noiseFloor: 0,
+      snrDb: 0,
       clippingCount: 0,
-      pauseRatio: 0.2,
+      pauseRatio: 0,
       unnaturalPausesCount: 0,
-      activeSpeechMs: Math.round(durationMs * 0.8),
-      fluencyScore: 88,
+      activeSpeechMs: 0,
       durationMs,
-      overallQualityScore: 92,
-      qualityStatus: 'clear',
-      qualityLabel: 'Tín hiệu rõ nét, ít tạp âm',
     };
   }
 }
 
-export const audioMetricsService = new AudioMetricsAnalyzer();
+/**
+ * Đo trực tiếp trên bản ghi đã thu (giải mã bằng Web Audio) — bằng chứng độc lập với bộ đo trực tiếp.
+ * Trả về null nếu không giải mã được (khi đó giữ nguyên trạng thái 'unmeasured').
+ */
+export async function measureRecordedBlob(blob: Blob, durationMsHint?: number): Promise<AudioQualityMetrics | null> {
+  const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioCtx || blob.size === 0) return null;
 
+  const ctx: AudioContext = new AudioCtx();
+  try {
+    const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+    const { rmsFrames, clippingCount } = frameRmsFromPcm(decoded.getChannelData(0), decoded.sampleRate);
+    return computeGateMetrics(rmsFrames, clippingCount, Math.round(decoded.duration * 1000) || durationMsHint || 0);
+  } catch (err) {
+    console.warn('[AudioMetrics] Không giải mã được bản ghi để đo:', err);
+    return null;
+  } finally {
+    ctx.close().catch(() => {});
+  }
+}
+
+export const audioMetricsService = new AudioMetricsAnalyzer();

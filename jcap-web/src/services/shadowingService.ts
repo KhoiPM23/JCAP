@@ -4,11 +4,26 @@ import type {
   ShadowingDialogueDetail,
   ShadowingFilterParams,
   ShadowingSessionCompletePayload,
-  ShadowingAiAnalysisPayload,
-  ShadowingAiAnalysisResult,
-  ShadowingTextbookItem,
-  ShadowingChapterItem,
+  ShadowingSessionCompleteResult,
+  ShadowingPracticeSessionRecord,
+  ShadowingAudioEvaluationResult,
 } from '../types/shadowing';
+
+import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
+import { fileExtensionForMime } from '../utils/recordingMime';
+
+export interface ShadowingEvaluateAudioEvidence {
+  /** Câu đang luyện: backend lấy câu mẫu từ CSDL và lưu kết quả chấm để đưa vào lịch sử. */
+  sentenceId?: number;
+  clientRecognition?: ClientRecognitionSnapshot;
+  audioGateStatus?: 'good' | 'acceptable' | 'needs_retry' | 'unmeasured';
+  audioGateDetail?: string;
+  durationMs?: number;
+  /** Bản ghi đã xuất WAV PCM 16-bit mono 16 kHz để backend đo nhịp nói (tùy chọn). */
+  analysisWav?: Blob | null;
+  /** Giọng VOICEVOX người học đã nghe làm mẫu, để backend so nhịp nói với đúng giọng đó. */
+  referenceSpeakerId?: number | null;
+}
 
 class ShadowingService {
   private getHeaders(): HeadersInit {
@@ -88,7 +103,7 @@ class ShadowingService {
   /**
    * Lưu lại tiến trình hoàn thành buổi luyện tập
    */
-  public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<unknown>> {
+  public async completeSession(payload: ShadowingSessionCompletePayload): Promise<ApiResponse<ShadowingSessionCompleteResult>> {
     try {
       const response = await fetch('/api/shadowing/session/complete', {
         method: 'POST',
@@ -106,64 +121,49 @@ class ShadowingService {
       };
     } catch {
       return {
-        success: true,
-        message: 'Đã hoàn thành buổi luyện tập cục bộ.',
+        success: false,
+        message: 'Không thể kết nối máy chủ để lưu kết quả buổi luyện tập.',
       };
     }
   }
 
-  /**
-   * Yêu cầu phân tích phát âm AI chuyên sâu (15 credits)
-   */
-  public async requestAiAnalysis(payload: ShadowingAiAnalysisPayload): Promise<ApiResponse<ShadowingAiAnalysisResult>> {
+  /** Lịch sử các buổi luyện đã hoàn thành của người dùng (lưu ở backend, mới nhất trước). */
+  public async getHistory(): Promise<ApiResponse<ShadowingPracticeSessionRecord[]>> {
     try {
-      const response = await fetch('/api/shadowing/session/ai-analysis', {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(payload),
-      });
-
+      const response = await fetch('/api/shadowing/history', { headers: this.getHeaders() });
       if (response.ok) {
         return await response.json();
       }
       const err = await response.json().catch(() => null);
-      return {
-        success: false,
-        message: err?.message || 'Không thể thực hiện phân tích AI.',
-      };
+      return { success: false, message: err?.message || 'Không thể tải lịch sử luyện tập.' };
     } catch {
-      return {
-        success: false,
-        message: 'Không thể kết nối đến máy chủ AI.',
-      };
+      return { success: false, message: 'Không thể kết nối máy chủ để tải lịch sử luyện tập.' };
     }
   }
 
-  /**
-   * Đánh giá âm thanh giọng nói của từng câu Shadowing qua Backend Gemini AI
-   */
   public async evaluateAudio(
     audioBlob: Blob,
-    targetText: string
-  ): Promise<ApiResponse<{
-    evaluationStatus: 'completed' | 'partial' | 'unavailable' | 'failed';
-    recognizedText: string;
-    contentMatchScore?: number | null;
-    pronunciationScore?: number | null;
-    fluencyScore?: number | null;
-    overallScore?: number | null;
-    tier?: 'green' | 'yellow' | 'red' | string;
-    feedback?: string;
-    missingWords?: string[];
-    mismatchedWords?: string[];
-    source: string;
-    errorCode?: string;
-    errorMessage?: string;
-  }>> {
+    targetText: string,
+    evidence: ShadowingEvaluateAudioEvidence = {},
+  ): Promise<ApiResponse<ShadowingAudioEvaluationResult>> {
     try {
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('audio', audioBlob, `recording.${fileExtensionForMime(audioBlob.type)}`);
       formData.append('targetText', targetText);
+      if (evidence.sentenceId != null) formData.append('sentenceId', String(evidence.sentenceId));
+
+      const rec = evidence.clientRecognition;
+      if (rec) {
+        formData.append('clientRecognitionStatus', rec.status);
+        // Chỉ gửi transcript khi đã chốt; không bao giờ gửi interim.
+        if (rec.status === 'final' && rec.transcript) formData.append('clientTranscript', rec.transcript);
+        if (rec.error) formData.append('clientRecognitionError', rec.error);
+      }
+      if (evidence.audioGateStatus) formData.append('audioGateStatus', evidence.audioGateStatus);
+      if (evidence.audioGateDetail) formData.append('audioGateDetail', evidence.audioGateDetail);
+      if (evidence.durationMs != null) formData.append('durationMs', String(Math.round(evidence.durationMs)));
+      if (evidence.analysisWav) formData.append('analysisWav', evidence.analysisWav, 'analysis.wav');
+      if (evidence.referenceSpeakerId != null) formData.append('referenceSpeakerId', String(evidence.referenceSpeakerId));
 
       const token = localStorage.getItem('jcap_token');
       const headers: HeadersInit = {};
@@ -177,38 +177,25 @@ class ShadowingService {
         body: formData,
       });
 
+      if (response.status === 401) {
+        return { success: false, message: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại để tiếp tục chấm điểm.' };
+      }
+      if (response.status === 429) {
+        return { success: false, message: 'Bạn thao tác quá nhanh. Hãy chờ vài giây rồi thử lại.' };
+      }
       if (!response.ok) {
-        return {
-          success: false,
-          message: 'Lỗi máy chủ khi đánh giá âm thanh.',
-        };
+        return { success: false, message: 'Lỗi máy chủ khi đánh giá âm thanh. Điểm chưa được ghi nhận.' };
       }
 
       return await response.json();
     } catch {
       return {
         success: false,
-        message: 'Không thể kết nối tới máy chủ AI.',
+        message: 'Không thể kết nối tới máy chủ. Điểm chưa được ghi nhận.',
       };
     }
   }
 
-  // Legacy stubs (nếu có view cũ cần gọi tạm thời)
-  public async getTextbooks(_level?: string): Promise<ApiResponse<ShadowingTextbookItem[]>> {
-    return { success: true, message: 'OK', data: [] };
-  }
-  public async getTextbookById(_id: string): Promise<ApiResponse<ShadowingTextbookItem>> {
-    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
-  }
-  public async getChapters(_textbookId: string): Promise<ApiResponse<ShadowingChapterItem[]>> {
-    return { success: true, message: 'OK', data: [] };
-  }
-  public async getChapterById(_textbookId: string, _chapterId: string): Promise<ApiResponse<ShadowingChapterItem>> {
-    return { success: false, message: 'Chức năng đã chuyển sang Thư viện bài học thực tế.' };
-  }
-  public async getDialoguesByChapter(_chapterId: string): Promise<ApiResponse<ShadowingDialogueDetail[]>> {
-    return { success: true, message: 'OK', data: [] };
-  }
 }
 
 export const shadowingService = new ShadowingService();
