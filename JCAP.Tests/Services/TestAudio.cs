@@ -5,8 +5,6 @@ namespace JCAP.Tests.Services;
 /// <summary>Tín hiệu tổng hợp cho test nhịp nói. KHÔNG phải giọng người thật.</summary>
 public static class TestAudio
 {
-    private static readonly Random Rng = new(7);
-
     public static float[] Sine(int ms, double amplitude = 0.3, double hz = 180, int sr = 16000)
     {
         var n = sr * ms / 1000;
@@ -15,11 +13,16 @@ public static class TestAudio
         return data;
     }
 
-    public static float[] Noise(int ms, double amplitude = 0.0005, int sr = 16000)
+    /// <summary>
+    /// Nhiễu nền có seed cố định cho MỖI lần gọi: không dùng chung một Random tĩnh vì xUnit chạy các lớp test song song,
+    /// thứ tự lấy số sẽ thay đổi giữa các lần chạy và làm kết quả chập chờn.
+    /// </summary>
+    public static float[] Noise(int ms, double amplitude = 0.0005, int sr = 16000, int seed = 7)
     {
+        var rng = new Random(seed);
         var n = sr * ms / 1000;
         var data = new float[n];
-        for (int i = 0; i < n; i++) data[i] = (float)((Rng.NextDouble() * 2 - 1) * amplitude);
+        for (int i = 0; i < n; i++) data[i] = (float)((rng.NextDouble() * 2 - 1) * amplitude);
         return data;
     }
 
