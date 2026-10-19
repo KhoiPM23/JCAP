@@ -18,6 +18,33 @@ export const CreditPackagesView: React.FC = () => {
   const [purchasingId, setPurchasingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+
+  // Tự động mờ dần và tắt thông báo sau 5 giây
+  useEffect(() => {
+    if (!error && !successMessage) {
+      setIsFadingOut(false);
+      return;
+    }
+
+    setIsFadingOut(false);
+    // Sau 5 giây bắt đầu hiệu ứng fade-out mờ dần
+    const fadeTimer = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 5000);
+
+    // Sau 5.5 giây (khi hiệu ứng fade-out 500ms hoàn tất) xóa hẳn thông báo
+    const clearTimer = setTimeout(() => {
+      setError(null);
+      setSuccessMessage(null);
+      setIsFadingOut(false);
+    }, 5500);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [error, successMessage]);
   const [currentBalance, setCurrentBalance] = useState<number>(() => {
     if (typeof user?.creditBalance === 'number') {
       return user.creditBalance;
@@ -111,7 +138,7 @@ export const CreditPackagesView: React.FC = () => {
   }, [currentBalance, user?.creditBalance]);
 
   // Find package with lowest cost per credit for "Tiết Kiệm Nhất" badge
-  const bestValuePkgId = React.useMemo(() => {
+  const bestValuePkgId = useMemo(() => {
     if (packages.length <= 1) return null;
     let bestId = packages[0].id;
     let minCost = packages[0].price / (packages[0].credits || 1);
@@ -124,6 +151,34 @@ export const CreditPackagesView: React.FC = () => {
     });
     return bestId;
   }, [packages]);
+
+  // Cấu hình layout cân xứng, tự căn giữa đẹp mắt khi ẩn/thêm gói
+  const packageLayout = useMemo(() => {
+    const count = packages.length;
+    if (count === 1) {
+      return {
+        containerClass: 'max-w-md mx-auto',
+        cardClass: 'w-full max-w-sm',
+      };
+    }
+    if (count === 2) {
+      return {
+        containerClass: 'max-w-3xl mx-auto',
+        cardClass: 'w-full sm:w-[320px] max-w-sm',
+      };
+    }
+    if (count === 3) {
+      return {
+        containerClass: 'max-w-5xl mx-auto',
+        cardClass: 'w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-sm',
+      };
+    }
+    // 4 gói trở lên: tối đa 4 gói trên 1 hàng, khi sang gói thứ 5 sẽ xuống hàng 2 và tự căn giữa cân xứng
+    return {
+      containerClass: 'max-w-7xl mx-auto',
+      cardClass: 'w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] min-w-[240px] max-w-[290px]',
+    };
+  }, [packages.length]);
 
   const handlePurchase = async (pkg: CreditPackage) => {
     setPurchasingId(pkg.id);
@@ -198,7 +253,11 @@ export const CreditPackagesView: React.FC = () => {
 
       {/* Thông báo thông điệp */}
       {successMessage && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-[#12B76A]/30 rounded-xl flex items-center justify-between text-sm text-[#027A48] animate-fade-in">
+        <div
+          className={`mb-6 p-4 bg-emerald-50 border border-[#12B76A]/30 rounded-xl flex items-center justify-between text-sm text-[#027A48] transition-opacity duration-500 ease-in-out ${
+            isFadingOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
           <div className="flex items-center gap-3">
             <span className="text-xl">✅</span>
             <span>{successMessage}</span>
@@ -214,7 +273,11 @@ export const CreditPackagesView: React.FC = () => {
       )}
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-[#D92D20]/30 rounded-xl flex items-center gap-3 text-sm text-[#D92D20]">
+        <div
+          className={`mb-6 p-4 bg-red-50 border border-[#D92D20]/30 rounded-xl flex items-center gap-3 text-sm text-[#D92D20] transition-opacity duration-500 ease-in-out ${
+            isFadingOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
           <span className="text-xl">⚠️</span>
           <span>{error}</span>
         </div>
@@ -244,7 +307,7 @@ export const CreditPackagesView: React.FC = () => {
           <p className="text-sm font-medium text-[#71809A]">Hiện chưa có gói credit nào khả dụng. Vui lòng quay lại sau.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className={`flex flex-wrap justify-center gap-6 ${packageLayout.containerClass}`}>
           {packages.map((pkg) => {
             const nameLower = pkg.name.toLowerCase();
             const unitPrice = Math.round(pkg.price / (pkg.credits || 1));
@@ -254,7 +317,7 @@ export const CreditPackagesView: React.FC = () => {
             return (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between p-6 relative ${
+                className={`${packageLayout.cardClass} bg-white rounded-2xl border transition-all duration-200 flex flex-col justify-between p-6 relative ${
                   isPopular
                     ? 'border-[#0878EE] shadow-md ring-2 ring-[#0878EE]/10'
                     : isBestValue
@@ -308,7 +371,7 @@ export const CreditPackagesView: React.FC = () => {
                   </div>
 
                   <Button
-                    variant={isPopular || isBestValue ? 'primary' : 'secondary'}
+                    variant="primary"
                     size="md"
                     className="w-full font-bold shadow-sm"
                     disabled={purchasingId !== null}
