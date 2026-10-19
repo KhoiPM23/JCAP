@@ -74,19 +74,21 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
     setSearchParams(newParams, { replace: true });
   };
 
-  // Lọc kịch bản theo level hỗ trợ và từ khóa tìm kiếm
-  const filteredScenarios = scenarios.filter((scenario) => {
-    if (filterLevel !== 'ALL' && !scenario.supportedJLPTLevels?.includes(filterLevel)) {
-      return false;
-    }
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return true;
-    return (
-      (scenario.title && scenario.title.toLowerCase().includes(term)) ||
-      (scenario.description && scenario.description.toLowerCase().includes(term)) ||
-      (scenario.scenarioCode && scenario.scenarioCode.toLowerCase().includes(term))
-    );
-  });
+  // Lọc kịch bản theo level hỗ trợ và từ khóa tìm kiếm, sắp xếp theo ID tăng dần (1, 2, 3...)
+  const filteredScenarios = scenarios
+    .filter((scenario) => {
+      if (filterLevel !== 'ALL' && !scenario.supportedJLPTLevels?.includes(filterLevel)) {
+        return false;
+      }
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        (scenario.title && scenario.title.toLowerCase().includes(term)) ||
+        (scenario.description && scenario.description.toLowerCase().includes(term)) ||
+        (scenario.scenarioCode && scenario.scenarioCode.toLowerCase().includes(term))
+      );
+    })
+    .sort((a, b) => a.id - b.id);
 
   return (
     <div className="w-full">
@@ -257,11 +259,9 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
                         </span>
                       ))}
                     </div>
-                    {item.scenarioCode && (
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {item.scenarioCode}
-                      </span>
-                    )}
+                    <span className="text-[11px] font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                      {item.scenarioCode || `SCN_${item.id}`}
+                    </span>
                   </div>
 
                   <h3 className="font-bold text-[#071A44] text-lg leading-snug">

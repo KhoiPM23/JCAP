@@ -121,9 +121,16 @@ export const AdminScenarioListView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Drag states for reordering rows with ⋮⋮
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [draggedMissionIndex, setDraggedMissionIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
   const [draggedVocabIndex, setDraggedVocabIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
   const [draggedGrammarIndex, setDraggedGrammarIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setActiveDragId(null);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
 
   const fetchScenarios = async () => {
     setLoading(true);
@@ -1294,10 +1301,17 @@ export const AdminScenarioListView: React.FC = () => {
                                   {levelData.missions.map((mission, mIdx) => (
                                     <div
                                       key={mIdx}
-                                      draggable
+                                      draggable={activeDragId === `mission-${lvl}-${mIdx}`}
                                       onDragStart={() => handleMissionDragStart(lvl, mIdx)}
+                                      onDragEnd={() => {
+                                        setDraggedMissionIndex(null);
+                                        setActiveDragId(null);
+                                      }}
                                       onDragOver={handleMissionDragOver}
-                                      onDrop={() => handleMissionDrop(lvl, mIdx)}
+                                      onDrop={() => {
+                                        handleMissionDrop(lvl, mIdx);
+                                        setActiveDragId(null);
+                                      }}
                                       className={`flex items-center gap-2 p-1.5 rounded-lg border transition-all ${
                                         draggedMissionIndex?.lvl === lvl && draggedMissionIndex?.index === mIdx
                                           ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/40'
@@ -1306,6 +1320,8 @@ export const AdminScenarioListView: React.FC = () => {
                                     >
                                       {/* Drag Handle Icon ⋮⋮ */}
                                       <div
+                                        onMouseDown={() => setActiveDragId(`mission-${lvl}-${mIdx}`)}
+                                        onMouseUp={() => setActiveDragId(null)}
                                         className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
                                         title="Kéo để đổi thứ tự"
                                       >
@@ -1319,6 +1335,7 @@ export const AdminScenarioListView: React.FC = () => {
                                         type="text"
                                         value={mission.content}
                                         onChange={(e) => handleMissionChange(lvl, mIdx, e.target.value)}
+                                        onDragStart={(e) => e.stopPropagation()}
                                         placeholder="Nhập nội dung nhiệm vụ cần hoàn thành..."
                                         className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-[#0878EE] outline-none"
                                       />
@@ -1362,10 +1379,17 @@ export const AdminScenarioListView: React.FC = () => {
                                   {levelData.targetVocabularies.map((vocab, vIdx) => (
                                     <div
                                       key={vIdx}
-                                      draggable
+                                      draggable={activeDragId === `vocab-${lvl}-${vIdx}`}
                                       onDragStart={() => handleVocabDragStart(lvl, vIdx)}
+                                      onDragEnd={() => {
+                                        setDraggedVocabIndex(null);
+                                        setActiveDragId(null);
+                                      }}
                                       onDragOver={handleVocabDragOver}
-                                      onDrop={() => handleVocabDrop(lvl, vIdx)}
+                                      onDrop={() => {
+                                        handleVocabDrop(lvl, vIdx);
+                                        setActiveDragId(null);
+                                      }}
                                       className={`flex items-center gap-1.5 bg-white p-2 rounded-lg border transition-all ${
                                         draggedVocabIndex?.lvl === lvl && draggedVocabIndex?.index === vIdx
                                           ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/30'
@@ -1374,6 +1398,8 @@ export const AdminScenarioListView: React.FC = () => {
                                     >
                                       {/* Drag Handle Icon ⋮⋮ */}
                                       <div
+                                        onMouseDown={() => setActiveDragId(`vocab-${lvl}-${vIdx}`)}
+                                        onMouseUp={() => setActiveDragId(null)}
                                         className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
                                         title="Kéo để đổi thứ tự"
                                       >
@@ -1385,6 +1411,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={vocab.word}
                                           onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
+                                          onDragStart={(e) => e.stopPropagation()}
                                           placeholder="Nhập từ vựng tiếng Nhật..."
                                           className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
@@ -1392,6 +1419,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={vocab.reading || ''}
                                           onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
+                                          onDragStart={(e) => e.stopPropagation()}
                                           placeholder="Nhập cách đọc (Hiragana)..."
                                           className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
@@ -1400,6 +1428,7 @@ export const AdminScenarioListView: React.FC = () => {
                                             type="text"
                                             value={vocab.meaning}
                                             onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
+                                            onDragStart={(e) => e.stopPropagation()}
                                             placeholder="Nhập ý nghĩa tiếng Việt..."
                                             className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                           />
@@ -1445,10 +1474,17 @@ export const AdminScenarioListView: React.FC = () => {
                                   {levelData.targetGrammars.map((grammar, gIdx) => (
                                     <div
                                       key={gIdx}
-                                      draggable
+                                      draggable={activeDragId === `grammar-${lvl}-${gIdx}`}
                                       onDragStart={() => handleGrammarDragStart(lvl, gIdx)}
+                                      onDragEnd={() => {
+                                        setDraggedGrammarIndex(null);
+                                        setActiveDragId(null);
+                                      }}
                                       onDragOver={handleGrammarDragOver}
-                                      onDrop={() => handleGrammarDrop(lvl, gIdx)}
+                                      onDrop={() => {
+                                        handleGrammarDrop(lvl, gIdx);
+                                        setActiveDragId(null);
+                                      }}
                                       className={`flex items-center gap-1.5 bg-white p-2 rounded-lg border transition-all ${
                                         draggedGrammarIndex?.lvl === lvl && draggedGrammarIndex?.index === gIdx
                                           ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/30'
@@ -1457,6 +1493,8 @@ export const AdminScenarioListView: React.FC = () => {
                                     >
                                       {/* Drag Handle Icon ⋮⋮ */}
                                       <div
+                                        onMouseDown={() => setActiveDragId(`grammar-${lvl}-${gIdx}`)}
+                                        onMouseUp={() => setActiveDragId(null)}
                                         className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
                                         title="Kéo để đổi thứ tự"
                                       >
@@ -1468,6 +1506,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={grammar.pattern}
                                           onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
+                                          onDragStart={(e) => e.stopPropagation()}
                                           placeholder="Nhập mẫu ngữ pháp..."
                                           className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
@@ -1475,6 +1514,7 @@ export const AdminScenarioListView: React.FC = () => {
                                           type="text"
                                           value={grammar.meaning}
                                           onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
+                                          onDragStart={(e) => e.stopPropagation()}
                                           placeholder="Nhập ý nghĩa ngữ pháp..."
                                           className="px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                         />
@@ -1483,6 +1523,7 @@ export const AdminScenarioListView: React.FC = () => {
                                             type="text"
                                             value={grammar.exampleSentence || ''}
                                             onChange={(e) => handleGrammarChange(lvl, gIdx, 'exampleSentence', e.target.value)}
+                                            onDragStart={(e) => e.stopPropagation()}
                                             placeholder="Nhập câu ví dụ minh họa..."
                                             className="flex-1 px-2.5 py-1 border border-slate-200 rounded text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                                           />
