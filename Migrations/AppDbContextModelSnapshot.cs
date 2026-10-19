@@ -626,6 +626,75 @@ namespace JCAP.Migrations
                     b.ToTable("ShadowingDialogueVocabularies");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AudioQualityStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ContentMatchScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FluencyScore")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LearnerRole")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<int>("LearnerSentenceCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RankTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ScoredSentenceCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScoringVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ShadowingDialogueId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WeightedOverallScore")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShadowingDialogueId");
+
+                    b.HasIndex("UserId", "CompletedAt");
+
+                    b.ToTable("ShadowingPracticeSessions");
+                });
+
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
                 {
                     b.Property<int>("Id")
@@ -671,6 +740,86 @@ namespace JCAP.Migrations
                     b.HasIndex("ShadowingDialogueId", "OrderIndex");
 
                     b.ToTable("ShadowingSentences");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AudioQualityStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ComparisonMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ContentMatchScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiffTokensJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EvaluationStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Feedback")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("OverallScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecognitionSource")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("RecognizedText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ScoringVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ShadowingPracticeSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ShadowingSentenceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShadowingPracticeSessionId");
+
+                    b.HasIndex("ShadowingSentenceId");
+
+                    b.HasIndex("UserId", "ShadowingSentenceId", "CreatedAt");
+
+                    b.ToTable("ShadowingSentenceEvaluations");
                 });
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
@@ -1058,6 +1207,25 @@ namespace JCAP.Migrations
                     b.Navigation("Vocabulary");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
+                        .WithMany()
+                        .HasForeignKey("ShadowingDialogueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingDialogue");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
                 {
                     b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
@@ -1067,6 +1235,32 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("ShadowingDialogue");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingPracticeSession", "ShadowingPracticeSession")
+                        .WithMany("SentenceEvaluations")
+                        .HasForeignKey("ShadowingPracticeSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.ShadowingSentence", "ShadowingSentence")
+                        .WithMany()
+                        .HasForeignKey("ShadowingSentenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingPracticeSession");
+
+                    b.Navigation("ShadowingSentence");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
@@ -1186,6 +1380,11 @@ namespace JCAP.Migrations
                     b.Navigation("DialogueVocabularies");
 
                     b.Navigation("Sentences");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.Navigation("SentenceEvaluations");
                 });
 
             modelBuilder.Entity("JCAP.Models.Vocabulary", b =>

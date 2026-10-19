@@ -1,24 +1,21 @@
 import React from 'react';
-import type { AudioGateStatus } from '../../services/audioMetricsService';
-import type { JapaneseDiffToken } from '../../utils/japaneseDiffUtils';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
+import type { ShadowingDiffToken, ShadowingFluencyMetrics } from '../../types/shadowing';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
   spokenText?: string;
   overallScore: number;
-  contentMatchScore: number;
-  fluencyScore: number;
-  tier: 'green' | 'yellow' | 'red';
-  gateStatus: AudioGateStatus;
-  gateLabel: string;
+  /** Số liệu nhịp nói thô (tham khảo, chưa tính vào điểm). null/unavailable = không hiển thị. */
+  fluencyMetrics?: ShadowingFluencyMetrics | null;
   gateDetail?: string;
-  diffTokens: JapaneseDiffToken[];
+  diffTokens: ShadowingDiffToken[];
   attemptsCount: number;
   hasRecording: boolean;
   isPlayingUserAudio: boolean;
-  feedback?: string;
   evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
+  /** Nguồn nhận dạng backend đã dùng; web_speech nghĩa là nguồn chính gặp lỗi kỹ thuật. */
+  recognitionSource?: 'gemini' | 'web_speech' | null;
   onPlayUserAudio: () => void;
   onRetry: () => void;
   onNext: () => void;
@@ -29,28 +26,24 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   targetText,
   spokenText = '',
   overallScore,
-  contentMatchScore,
-  fluencyScore,
-  tier,
-  gateStatus,
-  gateLabel,
+  fluencyMetrics = null,
   gateDetail,
   diffTokens,
   attemptsCount,
   hasRecording,
   isPlayingUserAudio,
-  feedback,
   evaluationStatus = 'completed',
+  recognitionSource = null,
   onPlayUserAudio,
   onRetry,
   onNext,
   className = '',
 }) => {
-  // Xác định rõ điều kiện State C: Âm thanh không đạt chuẩn / chưa thu được tiếng
-  // Xác định rõ điều kiện State C: Âm thanh không đạt chuẩn / chưa thu được tiếng
-  // Rơi vào State C khi hoàn toàn không có giọng nói hoặc evaluationStatus là unavailable/failed
+  // State C: chưa chấm được (không có điểm). unavailable = thiếu dữ liệu tin cậy (im lặng, âm thanh không đạt);
+  // failed = lỗi kỹ thuật. Cả hai KHÔNG phải điểm 0 và không bị tính vào điểm tổng.
   const cleanSpoken = spokenText.trim();
-  const isAudioInvalid = cleanSpoken.length === 0 || evaluationStatus === 'unavailable' || evaluationStatus === 'failed';
+  const isTechnicalFailure = evaluationStatus === 'failed';
+  const isAudioInvalid = cleanSpoken.length === 0 || evaluationStatus === 'unavailable' || isTechnicalFailure;
 
   // =========================================================================
   // STATE C: Âm thanh không đạt chuẩn (Mic quá nhỏ, ồn hoặc chưa có tiếng)
@@ -72,7 +65,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="text-sm font-extrabold text-[#071A44]">
-                  Chưa thể đánh giá bản ghi
+                  {isTechnicalFailure ? 'Chưa thể chấm điểm lúc này' : 'Chưa thể đánh giá bản ghi'}
                 </h4>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                   Lần thử #{attemptsCount}
@@ -82,7 +75,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
                 {invalidReason}
               </p>
               <p className="text-[11px] text-slate-400 mt-0.5 italic">
-                * Bản ghi chưa đạt chuẩn âm thanh sẽ không bị tính vào điểm tổng của bạn.
+                * Bản ghi chưa được đánh giá sẽ không bị tính vào điểm tổng của bạn.
               </p>
             </div>
           </div>
@@ -180,8 +173,41 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           spokenText={cleanSpoken}
           size="md"
         />
+        {evaluationStatus === 'partial' && recognitionSource === 'web_speech' && (
+          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+            Dịch vụ nhận dạng AI tạm thời không khả dụng nên lượt này được chấm theo nhận dạng của trình duyệt.
+          </p>
+        )}
       </div>
 
+      {/* 2. NHỊP NÓI SO VỚI GIỌNG MẪU: chỉ hiện khi đủ điều kiện so sánh (đọc đúng câu, có giọng mẫu, audio hợp lệ).
+          Là nhận xét về nhịp, không phải điểm và không nói lên phát âm đúng/sai. */}
+      {(fluencyMetrics?.comparison?.status === 'available' || (fluencyMetrics?.observations ?? []).length > 0) && (
+        <div className="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200/80">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+              Nhịp nói so với giọng mẫu
+            </span>
+            <span className="text-[10px] text-slate-400">Tham khảo, chưa tính vào điểm</span>
+          </div>
+          {(fluencyMetrics.observations ?? []).length > 0 ? (
+            <ul className="mt-1.5 space-y-1 text-xs text-[#071A44] list-disc pl-4">
+              {(fluencyMetrics.observations ?? []).map((o, i) => (
+                <li key={`${o.code}-${i}`}>
+                  {o.message}
+                  {o.data?.experimental === true && (
+                    <span className="ml-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5 align-middle">
+                      Thử nghiệm
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1.5 text-xs text-slate-500">Chưa thấy khác biệt rõ về nhịp nói so với giọng mẫu.</p>
+          )}
+        </div>
+      )}
 
       {/* 3. BA NÚT THAO TÁC: [🎧 Nghe lại] [🔄 Luyện lại câu] [Tiếp tục →] */}
       <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-1">

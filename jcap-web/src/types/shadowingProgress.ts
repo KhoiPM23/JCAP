@@ -39,11 +39,15 @@ export interface ShadowingPracticeSession {
   averageScore: number;
   contentMatchScore?: number;
   accuracyScore?: number;
-  fluencyScore?: number;
-  intonationScore?: number;
-  audioQualityScore?: number;
+  /** null/undefined = chưa đo. Bản ghi cũ (không có scoringVersion) có thể chứa giá trị ước lượng. */
+  fluencyScore?: number | null;
+  /** Chưa được đo bởi bất kỳ phiên bản chấm điểm nào; chỉ còn trong bản ghi cũ. */
+  intonationScore?: number | null;
+  audioQualityScore?: number | null;
   audioQualityStatus?: string;
-  audioGateStatus?: 'good' | 'acceptable' | 'needs_retry';
+  /** Phiên bản công thức chấm. Vắng mặt = bản ghi cũ (legacy). */
+  scoringVersion?: string;
+  audioGateStatus?: 'good' | 'acceptable' | 'needs_retry' | 'unmeasured';
   audioGateLabel?: string;
   durationSeconds?: number;
   totalSentences: number;

@@ -30,6 +30,8 @@ namespace JCAP.Data
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
         public DbSet<ShadowingDialogueVocabulary> ShadowingDialogueVocabularies { get; set; } = null!;
         public DbSet<ShadowingDialogueGrammar> ShadowingDialogueGrammars { get; set; } = null!;
+        public DbSet<ShadowingPracticeSession> ShadowingPracticeSessions { get; set; } = null!;
+        public DbSet<ShadowingSentenceEvaluation> ShadowingSentenceEvaluations { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
@@ -442,6 +444,59 @@ namespace JCAP.Data
                 entity.HasOne(e => e.Mission)
                     .WithMany(m => m.SessionMissions)
                     .HasForeignKey(e => e.MissionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingPracticeSession: lịch sử bất biến, không xóa cứng (Restrict để không mất lịch sử theo dây chuyền)
+            modelBuilder.Entity<ShadowingPracticeSession>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.CompletedAt });
+
+                entity.Property(e => e.LearnerRole).IsRequired().HasMaxLength(5);
+                entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.RankTitle).IsRequired().HasMaxLength(200);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingDialogue)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingSentenceEvaluation: kết quả chấm từng câu do backend tạo
+            modelBuilder.Entity<ShadowingSentenceEvaluation>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.ShadowingSentenceId, e.CreatedAt });
+                entity.HasIndex(e => e.ShadowingPracticeSessionId);
+
+                entity.Property(e => e.RecognizedText).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.Tier).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.EvaluationStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.RecognitionSource).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ComparisonMethod).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Feedback).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.DiffTokensJson).IsRequired().HasColumnType("nvarchar(max)");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingSentence)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingSentenceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingPracticeSession)
+                    .WithMany(s => s.SentenceEvaluations)
+                    .HasForeignKey(e => e.ShadowingPracticeSessionId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }
