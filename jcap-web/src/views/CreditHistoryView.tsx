@@ -13,7 +13,14 @@ export const CreditHistoryView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [cancelTargetTx, setCancelTargetTx] = useState<CreditTransaction | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const pageSize = 10;
+
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const fetchHistory = async (page: number) => {
     setIsLoading(true);
@@ -46,34 +53,36 @@ export const CreditHistoryView: React.FC = () => {
         if (res.data.checkoutUrl) {
           window.location.href = res.data.checkoutUrl;
         } else if (res.data.isMock) {
+          showToast('Nạp thành công (Chế độ Mock).', 'success');
           await fetchHistory(currentPage);
         }
       } else {
-        alert(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.');
+        showToast(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.', 'error');
       }
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi tiếp tục thanh toán.');
+      showToast(err.message || 'Lỗi khi tiếp tục thanh toán.', 'error');
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  const handleCancelOrder = async (orderCode?: string) => {
-    if (!orderCode) return;
-    if (!window.confirm('Bạn có chắc chắn muốn hủy giao dịch nạp credit này không?')) {
-      return;
-    }
-
+  const handleConfirmCancel = async () => {
+    if (!cancelTargetTx || !cancelTargetTx.payOsOrderCode) return;
+    const orderCode = cancelTargetTx.payOsOrderCode;
     setActionLoadingId(`cancel-${orderCode}`);
     try {
       const res = await creditService.cancelOrder(orderCode);
+      setCancelTargetTx(null);
       if (res.success) {
+        showToast('Đã hủy giao dịch thành công.', 'success');
         await fetchHistory(currentPage);
       } else {
-        alert(res.message || 'Không thể hủy đơn hàng này.');
+        showToast(res.message || 'Không thể hủy đơn hàng này.', 'error');
+        await fetchHistory(currentPage);
       }
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi hủy đơn hàng.');
+      setCancelTargetTx(null);
+      showToast(err.message || 'Lỗi khi hủy đơn hàng.', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -163,6 +172,29 @@ export const CreditHistoryView: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div
+          className={`mb-6 p-4 rounded-xl text-xs font-semibold border flex items-center justify-between shadow-xs transition-all ${
+            toastMessage.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span>{toastMessage.type === 'success' ? '✅' : '⚠️'}</span>
+            <span>{toastMessage.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="font-bold hover:opacity-75 cursor-pointer text-sm leading-none"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-[#D92D20]/30 rounded-xl flex items-center gap-3 text-sm text-[#D92D20]">
@@ -257,8 +289,8 @@ export const CreditHistoryView: React.FC = () => {
                             <button
                               type="button"
                               disabled={!!actionLoadingId}
-                              onClick={() => handleCancelOrder(tx.payOsOrderCode)}
-                              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                              onClick={() => setCancelTargetTx(tx)}
+                              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                               title="Hủy đơn nạp tiền này"
                             >
                               {actionLoadingId === `cancel-${tx.payOsOrderCode}` ? (
@@ -309,6 +341,61 @@ export const CreditHistoryView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal for Hủy giao dịch nạp tiền */}
+      {cancelTargetTx && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-xl shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-[#071A44]">
+                  Xác nhận hủy giao dịch nạp credit?
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Đơn hàng mã #{cancelTargetTx.payOsOrderCode} (+{cancelTargetTx.amount} Credits)
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3.5 mb-5 text-xs text-amber-900 leading-relaxed">
+              <p className="font-bold mb-1">📌 Lưu ý quan trọng:</p>
+              <p>
+                Nếu bạn chọn hủy, mã thanh toán PayOS liên kết với giao dịch này sẽ bị đóng lại. Nếu bạn đã thực hiện chuyển khoản qua ứng dụng ngân hàng, vui lòng không hủy đơn và chờ vài phút để hệ thống đối soát tự động.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={!!actionLoadingId}
+                onClick={() => setCancelTargetTx(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs transition cursor-pointer disabled:opacity-50"
+              >
+                Không, giữ lại
+              </button>
+
+              <button
+                type="button"
+                disabled={!!actionLoadingId}
+                onClick={handleConfirmCancel}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {actionLoadingId === `cancel-${cancelTargetTx.payOsOrderCode}` ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Đang hủy...</span>
+                  </>
+                ) : (
+                  <span>Đồng ý hủy giao dịch</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

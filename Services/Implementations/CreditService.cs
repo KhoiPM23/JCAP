@@ -151,10 +151,19 @@ namespace JCAP.Services.Implementations
                     safeDescription = safeDescription.Substring(0, 25);
                 }
 
+                // Đối với Gói Chuyên Sâu: thiết lập số tiền thanh toán test qua PayOS là 2.500 VNĐ.
+                // Các gói khác: sử dụng đúng giá trị niêm yết của gói.
+                int actualPaymentAmount = (int)package.Price;
+                var pkgNameLower = package.Name.ToLower();
+                if (pkgNameLower.Contains("chuyên sâu") || pkgNameLower.Contains("chuyen sau") || package.Credits == 1000)
+                {
+                    actualPaymentAmount = 2500;
+                }
+
                 var paymentRequest = new CreatePaymentLinkRequest
                 {
                     OrderCode = orderCode,
-                    Amount = (int)package.Price,
+                    Amount = actualPaymentAmount,
                     Description = safeDescription,
                     ReturnUrl = returnUrl,
                     CancelUrl = cancelUrl,
@@ -164,7 +173,7 @@ namespace JCAP.Services.Implementations
                         {
                             Name = package.Name,
                             Quantity = 1,
-                            Price = (int)package.Price
+                            Price = actualPaymentAmount
                         }
                     }
                 };
@@ -433,8 +442,29 @@ namespace JCAP.Services.Implementations
                     ? $"{frontendUrl}/credits"
                     : _payOsSettings.CancelUrl;
 
-                int packagePrice = (int)(transaction.Amount * 333);
-                if (packagePrice < 10000) packagePrice = 20000;
+                // Xác định gói nạp tương ứng để lấy đúng giá gốc của gói
+                var matchedPackage = await _dbContext.CreditPackages
+                    .FirstOrDefaultAsync(p => p.Credits == transaction.Amount);
+
+                int packagePrice;
+                if (matchedPackage != null)
+                {
+                    packagePrice = (int)matchedPackage.Price;
+                }
+                else
+                {
+                    // Fallback theo tỉ lệ mặc định nếu không tìm thấy package trong DB
+                    packagePrice = (int)(transaction.Amount * 333);
+                    if (packagePrice < 10000) packagePrice = 20000;
+                }
+
+                // Đối với Gói Chuyên Sâu (1000 credits hoặc tên chứa 'chuyên sâu'): giữ 2.500 VNĐ cho mục đích test
+                var descLower = (transaction.Description ?? "").ToLower();
+                var matchedNameLower = matchedPackage?.Name?.ToLower() ?? "";
+                if (transaction.Amount == 1000 || descLower.Contains("chuyên sâu") || descLower.Contains("chuyen sau") || matchedNameLower.Contains("chuyên sâu") || matchedNameLower.Contains("chuyen sau"))
+                {
+                    packagePrice = 2500;
+                }
 
                 string safeDescription = $"JCAP Nap {transaction.Amount}C";
                 if (safeDescription.Length > 25) safeDescription = safeDescription.Substring(0, 25);
@@ -483,7 +513,14 @@ namespace JCAP.Services.Implementations
         {
             var orderCodeStr = orderCode.ToString();
             var transaction = await _dbContext.CreditTransactions
-                .FirstOrDefaultAsync(t => t.PayOsOrderCode == orderCodeStr && t.UserId == userId);
+                .FirstOrDefaultAsync(t => (t.PayOsOrderCode == orderCodeStr || t.Id.ToString() == orderCodeStr) && t.UserId == userId);
+
+            if (transaction == null)
+            {
+                // Fallback tìm kiếm linh hoạt hơn
+                transaction = await _dbContext.CreditTransactions
+                    .FirstOrDefaultAsync(t => t.UserId == userId && t.PayOsOrderCode != null && t.PayOsOrderCode.Trim() == orderCodeStr.Trim());
+            }
 
             if (transaction == null)
             {
@@ -493,6 +530,11 @@ namespace JCAP.Services.Implementations
             if (transaction.Status == "Paid")
             {
                 return ApiResponse<bool>.Fail("Đơn hàng này đã thanh toán thành công, không thể hủy.");
+            }
+
+            if (transaction.Status == "Cancelled")
+            {
+                return ApiResponse<bool>.Ok(true, "Đơn hàng này đã ở trạng thái đã hủy.");
             }
 
             transaction.Status = "Cancelled";
