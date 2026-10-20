@@ -34,6 +34,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
   const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
 
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>(searchQuery);
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,16 +45,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
       setLoading(true);
       setError(null);
 
-      // Nếu từ khóa chỉ có 1 ký tự → không gọi API, trả về rỗng
-      if (searchQuery.trim().length === 1) {
-        if (isMounted) {
-          setScenarios([]);
-          setLoading(false);
-        }
-        return;
-      }
-
-      const response = await scenarioService.getScenarios(searchQuery);
+      const response = await scenarioService.getScenarios();
       if (!isMounted) return;
 
       if (response.success && response.data) {
@@ -68,20 +60,35 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [searchQuery]);
+  }, []);
 
-  const clearSearch = () => {
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
     const newParams = new URLSearchParams(searchParams);
-    newParams.delete('query');
-    newParams.delete('search');
+    if (val.trim()) {
+      newParams.set('query', val.trim());
+    } else {
+      newParams.delete('query');
+      newParams.delete('search');
+    }
     setSearchParams(newParams, { replace: true });
   };
 
-  // Lọc kịch bản theo level hỗ trợ
-  const filteredScenarios = scenarios.filter((scenario) => {
-    if (filterLevel === 'ALL') return true;
-    return scenario.supportedJLPTLevels?.includes(filterLevel);
-  });
+  // Lọc kịch bản theo level hỗ trợ và từ khóa tìm kiếm, sắp xếp theo ID tăng dần (1, 2, 3...)
+  const filteredScenarios = scenarios
+    .filter((scenario) => {
+      if (filterLevel !== 'ALL' && !scenario.supportedJLPTLevels?.includes(filterLevel)) {
+        return false;
+      }
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        (scenario.title && scenario.title.toLowerCase().includes(term)) ||
+        (scenario.description && scenario.description.toLowerCase().includes(term)) ||
+        (scenario.scenarioCode && scenario.scenarioCode.toLowerCase().includes(term))
+      );
+    })
+    .sort((a, b) => a.id - b.id);
 
   return (
     <div className="w-full">
@@ -102,40 +109,69 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
         </div>
       )}
 
-      {/* Tiêu đề trang & Bộ lọc theo Level */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#071A44]">Thư viện Tình huống Luyện nói</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Chọn một kịch bản từ cơ sở dữ liệu để bắt đầu hội thoại tương tác với AI Persona.
-          </p>
+      {/* Tiêu đề trang */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#071A44]">Thư viện Tình huống Luyện nói</h1>
+        <p className="text-slate-500 text-sm mt-1">
+          Chọn một kịch bản từ cơ sở dữ liệu để bắt đầu hội thoại tương tác với AI Persona.
+        </p>
+      </div>
+
+      {/* Search & Filter Toolbar (Giống giao diện Shadowing và Admin Kịch bản) */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center gap-4 justify-between mb-6">
+        {/* Search Input */}
+        <div className="relative flex-1 max-w-md">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg className="h-5 w-5 text-[#71809A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Tìm kiếm kịch bản theo mã, tiêu đề hoặc nội dung..."
+            className="w-full pl-10 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0878EE]/20 focus:border-[#0878EE] transition"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => handleSearchChange('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
-        {/* Bộ lọc theo Level */}
-        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        {/* Level Filter Buttons */}
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          <span className="text-xs font-semibold text-slate-500 mr-1 whitespace-nowrap">Trình độ:</span>
           {['ALL', 'N5', 'N4', 'N3'].map((lvl) => (
             <button
               key={lvl}
+              type="button"
               onClick={() => setFilterLevel(lvl)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                 filterLevel === lvl
-                  ? 'bg-red-600 text-white shadow'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#0878EE] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              {lvl === 'ALL' ? 'Tất cả' : lvl}
+              {lvl === 'ALL' ? 'Tất cả' : `JLPT ${lvl}`}
             </button>
           ))}
         </div>
       </div>
 
       {/* Hiển thị từ khóa tìm kiếm đang active */}
-      {searchQuery && (
+      {searchTerm.trim().length > 0 && (
         <div className="flex items-center justify-between bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2.5 rounded-xl text-xs font-medium mb-6">
-          <span>🔍 Kết quả tìm kiếm cho: <strong>"{searchQuery}"</strong></span>
+          <span>🔍 Kết quả tìm kiếm cho: <strong>"{searchTerm.trim()}"</strong></span>
           <button
-            onClick={clearSearch}
-            className="text-blue-600 hover:text-blue-900 font-bold underline transition"
+            type="button"
+            onClick={() => handleSearchChange('')}
+            className="text-blue-600 hover:text-blue-900 font-bold underline transition cursor-pointer"
           >
             Xóa tìm kiếm
           </button>
@@ -145,7 +181,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
       {/* Trạng thái Loading */}
       {loading && (
         <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0878EE]"></div>
           <span className="ml-3 text-sm text-slate-600 font-medium">Đang tải danh sách kịch bản từ cơ sở dữ liệu...</span>
         </div>
       )}
@@ -159,12 +195,26 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
 
       {/* Trạng thái Rỗng */}
       {!loading && !error && filteredScenarios.length === 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <p className="text-slate-500 text-sm">
-            {searchQuery 
-              ? `Không tìm thấy kịch bản nào phù hợp với từ khóa "${searchQuery}".`
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+          <span className="text-3xl block">🔍</span>
+          <h3 className="text-base font-bold text-[#071A44]">Không tìm thấy kịch bản nào phù hợp</h3>
+          <p className="text-slate-500 text-xs max-w-sm mx-auto">
+            {searchTerm
+              ? `Không tìm thấy kịch bản nào khớp với từ khóa "${searchTerm}".`
               : 'Chưa có kịch bản đàm thoại nào ở trình độ đã chọn.'}
           </p>
+          {(searchTerm || filterLevel !== 'ALL') && (
+            <button
+              type="button"
+              onClick={() => {
+                handleSearchChange('');
+                setFilterLevel('ALL');
+              }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
+            >
+              Đặt lại bộ lọc
+            </button>
+          )}
         </div>
       )}
 
@@ -209,11 +259,9 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
                         </span>
                       ))}
                     </div>
-                    {item.scenarioCode && (
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {item.scenarioCode}
-                      </span>
-                    )}
+                    <span className="text-[11px] font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                      {item.scenarioCode || `SCN_${item.id}`}
+                    </span>
                   </div>
 
                   <h3 className="font-bold text-[#071A44] text-lg leading-snug">
@@ -232,7 +280,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
 
                 <button
                   onClick={() => onSelectScenario(mappedScenario)}
-                  className="w-full py-2.5 bg-slate-900 hover:bg-red-600 text-white text-xs font-bold rounded-xl transition shadow active:scale-98"
+                  className="w-full py-2.5 bg-slate-900 hover:bg-[#0878EE] text-white text-xs font-bold rounded-xl transition shadow active:scale-98 cursor-pointer"
                 >
                   Bắt đầu Luyện nói ➔
                 </button>

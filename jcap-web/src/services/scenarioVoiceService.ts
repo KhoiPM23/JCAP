@@ -23,6 +23,25 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Lấy ID giọng đọc người dùng đã chọn trong phần Cài đặt từ localStorage (mặc định là 3 nếu chưa lưu)
+   */
+  public getSelectedVoiceId(): number {
+    if (typeof window === 'undefined') return 3;
+    try {
+      const raw = window.localStorage.getItem('jcap_voicevox_selected_id');
+      if (raw !== null && raw.trim() !== '') {
+        const parsed = Number(raw);
+        if (!Number.isNaN(parsed) && parsed >= 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return 3;
+  }
+
+  /**
    * Dừng toàn bộ âm thanh đang phát (cả audio element và SpeechSynthesis)
    */
   public stopAllAudio(): void {
@@ -78,18 +97,23 @@ class ScenarioVoiceService {
   }
 
   /**
-   * Phát giọng AI: ưu tiên VOICEVOX TTS, nếu offline tự động fallback sang Web Speech API
+   * Phát giọng AI: ưu tiên VOICEVOX TTS (theo giọng đã chọn trong Cài đặt), nếu offline tự động fallback sang Web Speech API
    */
   public async playAiSpeech(
     text: string,
-    voiceId: number = 3,
+    voiceId?: number,
     onEnd?: () => void
   ): Promise<void> {
     this.stopAllAudio();
     this.isSpeechCancelled = false;
 
+    const resolvedVoiceId =
+      typeof voiceId === 'number' && !Number.isNaN(voiceId)
+        ? voiceId
+        : this.getSelectedVoiceId();
+
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(text, voiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(text, resolvedVoiceId);
       const audio = new Audio(audioUrl);
       this.currentAudio = audio;
 
