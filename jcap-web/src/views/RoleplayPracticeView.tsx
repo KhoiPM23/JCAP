@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
+import { voicevoxService, type VoiceOption } from '../services/voicevoxService';
+import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsModal';
 import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
@@ -40,6 +42,23 @@ export const RoleplayPracticeView: React.FC = () => {
   const [micError, setMicError] = useState<string | null>(null);
   const [isLeftOpen, setIsLeftOpen] = useState(true); // Cột Trái (Nhiệm vụ & Cheat Sheet)
   const [isRightOpen, setIsRightOpen] = useState(false); // Cột Phải (Chi tiết Đánh giá)
+
+  // Cấu hình giọng đọc AI (VOICEVOX)
+  const [selectedVoiceId, setSelectedVoiceId] = useState<number>(() => scenarioVoiceService.getSelectedVoiceId());
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+    void scenarioVoiceService.getVoices().then((voices) => {
+      if (isCurrent && voices && voices.length > 0) {
+        setAvailableVoices(voices);
+      }
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   // Tin nhắn & Chat
   const [inputText, setInputText] = useState('');
@@ -108,7 +127,7 @@ export const RoleplayPracticeView: React.FC = () => {
     setIsPlayingAiSpeech(true);
     setPlayingMessageId(messageId);
 
-    void scenarioVoiceService.playAiSpeech(text, undefined, () => {
+    void scenarioVoiceService.playAiSpeech(text, selectedVoiceId, () => {
       setIsPlayingAiSpeech(false);
       setPlayingMessageId(null);
     });
@@ -519,6 +538,22 @@ export const RoleplayPracticeView: React.FC = () => {
               <span>{autoPlayAudio ? '🔊' : '🔇'}</span>
               <span>Giọng AI: {autoPlayAudio ? 'BẬT' : 'TẮT'}</span>
             </button>
+
+            {/* Nút chọn giọng đọc VOICEVOX cho AI */}
+            <button
+              type="button"
+              onClick={() => {
+                scenarioVoiceService.stopAllAudio();
+                setIsPlayingAiSpeech(false);
+                setPlayingMessageId(null);
+                setIsVoiceModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1 rounded-lg border border-[#E6EDF5] bg-white px-2 py-1 text-xs font-semibold text-[#52627A] transition hover:border-[#0878EE] hover:text-[#0878EE]"
+              title="Cài đặt giọng đọc AI (VOICEVOX)"
+            >
+              <span>🎙️</span>
+              <span className="hidden xl:inline">Giọng đọc</span>
+            </button>
           </div>
 
           {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
@@ -859,6 +894,16 @@ export const RoleplayPracticeView: React.FC = () => {
                         >
                           {msg.vietnameseMeaning}
                         </p>
+                      )}
+
+                      {/* Subtle Inline feedback preview for User messages */}
+                      {!isAi && msg.linguisticFeedback?.naturalAlternative && (
+                        <div className="mt-2 flex items-center justify-between border-t border-blue-400/30 pt-1.5 text-[11px] text-blue-100">
+                          <span className="truncate pr-2">💡 Gợi ý: {msg.linguisticFeedback.naturalAlternative}</span>
+                          <span className="shrink-0 text-[10px] font-bold text-white/90 underline decoration-dotted">
+                            Chi tiết ➔
+                          </span>
+                        </div>
                       )}
 
                       {/* AI Audio button */}
@@ -1382,6 +1427,23 @@ export const RoleplayPracticeView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ============================================================ */}
+      {/* 6. MODAL CÀI ĐẶT GIỌNG ĐỌC AI (VOICEVOX)                     */}
+      {/* ============================================================ */}
+      <AiVoiceSettingsModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        selectedVoiceId={selectedVoiceId}
+        availableVoices={availableVoices}
+        onSave={(newVoiceId) => {
+          setSelectedVoiceId(newVoiceId);
+          localStorage.setItem('jcap_voicevox_selected_id', newVoiceId.toString());
+          setIsVoiceModalOpen(false);
+          setToastMessage('Đã cập nhật giọng đọc AI thành công!');
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
     </div>
   );
 };

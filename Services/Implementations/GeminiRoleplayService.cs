@@ -154,11 +154,11 @@ TASK INSTRUCTIONS:
      * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"")
      * details: Array of items:
        - type: ""success"" | ""warning"" | ""error""
-       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Từ vựng"")
+       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Kính ngữ"" | ""Từ vựng"")
        - comment: Specific constructive feedback in Vietnamese
        - For every normal Japanese utterance, include at least one grammar-related item
          (""Ngữ pháp"", ""Trợ từ"", ""Cấu trúc"" or ""Chia động từ""), one ""Từ vựng""
-         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"" or ""Lịch sự"").
+         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"", ""Kính ngữ"" or ""Lịch sự"").
        - Positive usage MUST be recorded as type ""success""; do not return only mistakes.
      * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
      * culturalTip: Relevant practical cultural tip in Vietnamese

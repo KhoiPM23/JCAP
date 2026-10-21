@@ -26,17 +26,19 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
     private static readonly string[] GrammarAspects =
     [
         "ngữ pháp", "ngu phap", "trợ từ", "tro tu", "cấu trúc", "cau truc",
-        "chia động từ", "chia dong tu"
+        "chia động từ", "chia dong tu", "thể", "the te", "mẫu câu", "mau cau"
     ];
 
     private static readonly string[] VocabularyAspects =
     [
-        "từ vựng", "tu vung", "dùng từ", "dung tu"
+        "từ vựng", "tu vung", "dùng từ", "dung tu", "từ nối", "tu noi",
+        "từ chỉ định", "tu chi dinh", "thuật ngữ", "thuat ngu"
     ];
 
     private static readonly string[] ImpressionAspects =
     [
-        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su"
+        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su",
+        "kính ngữ", "kinh ngu", "keigo", "khiêm nhường", "khiem nhuong", "tôn kính", "ton kinh", "teinei"
     ];
 
     public RoleplayEvaluationResult? Evaluate(
