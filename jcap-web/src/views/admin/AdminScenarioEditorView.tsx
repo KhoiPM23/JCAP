@@ -238,6 +238,7 @@ export const AdminScenarioEditorView: React.FC = () => {
 
   // Chế độ chọn ảnh (Thumbnail): 'local' (tải từ máy), 'url' (nhập link)
   const [imageSourceMode, setImageSourceMode] = useState<'local' | 'url'>('local');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Drag & drop state for reordering - chỉ kích hoạt khi người dùng kéo từ biểu tượng handle ⋮⋮
@@ -405,8 +406,8 @@ export const AdminScenarioEditorView: React.FC = () => {
     };
   }, [isEditMode, scenarioId]);
 
-  // Xử lý chọn ảnh từ máy local (File input sang DataURL)
-  const handleLocalImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Xử lý chọn ảnh từ máy và tải trực tiếp lên Cloudinary
+  const handleLocalImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -416,15 +417,20 @@ export const AdminScenarioEditorView: React.FC = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setFormData((prev) => ({ ...prev, thumbnail: dataUrl }));
-        setError(null);
+    setIsUploadingImage(true);
+    setError(null);
+    try {
+      const res = await scenarioService.uploadThumbnail(file);
+      if (res.success && res.data) {
+        setFormData((prev) => ({ ...prev, thumbnail: res.data! }));
+      } else {
+        setError(res.message || 'Không thể tải ảnh lên Cloudinary.');
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setError('Đã xảy ra lỗi khi tải ảnh lên đám mây.');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   // Xóa ảnh đại diện
@@ -1242,7 +1248,7 @@ export const AdminScenarioEditorView: React.FC = () => {
                       onChange={() => setImageSourceMode('local')}
                       className="text-[#0878EE] focus:ring-[#0878EE] h-3.5 w-3.5"
                     />
-                    <span>📁 Duyệt từ máy chủ local</span>
+                    <span>📁 Tải từ thiết bị (Cloudinary)</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 hover:text-slate-900 select-none">
@@ -1293,7 +1299,12 @@ export const AdminScenarioEditorView: React.FC = () => {
               {/* Cột 2 (sm:col-span-1): Khung ảnh vẫn giữ nguyên dạng ô vuông như cũ, đẩy lên ngang hàng trên cùng */}
               <div className="sm:col-span-1">
                 <div className="w-full aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 flex flex-col items-center justify-center overflow-hidden relative group shadow-2xs">
-                  {formData.thumbnail ? (
+                  {isUploadingImage ? (
+                    <div className="text-center p-3 text-[#0878EE] animate-pulse">
+                      <div className="w-8 h-8 border-3 border-[#0878EE] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      <span className="text-xs font-semibold block">Đang tải lên Cloud...</span>
+                    </div>
+                  ) : formData.thumbnail ? (
                     <>
                       <img
                         src={formData.thumbnail}
