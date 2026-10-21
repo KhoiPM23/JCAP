@@ -7,6 +7,16 @@ import type { RoleplayResultDetail } from '../types/roleplayResult';
 
 const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
 
+const playJapaneseAudio = (text: string) => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+    utterance.rate = 0.92;
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
 const ScoreCard = ({ label, score, accent }: { label: string; score: number; accent: string }) => (
   <div className="rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_28px_rgba(7,26,68,0.05)]">
     <div className="mb-4 flex items-center justify-between">
@@ -226,19 +236,46 @@ export const ConversationResultDetailView: React.FC = () => {
                 )}
 
                 {/* Gợi ý diễn đạt tự nhiên hơn (Native Phrasing Recommendation) */}
-                {naturalAltText && (
-                  <div className="rounded-[24px] border border-[#0878EE]/30 bg-linear-to-r from-blue-50/80 to-indigo-50/60 p-5 shadow-xs">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0878EE]">
-                      <span>🌸</span>
-                      <span>Cách nói tự nhiên của người bản xứ</span>
+                {naturalAltText && (() => {
+                  const alternatives = naturalAltText
+                    .split(' | ')
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+
+                  return (
+                    <div className="rounded-[24px] border border-[#0878EE]/30 bg-linear-to-r from-blue-50/80 to-indigo-50/60 p-5 shadow-xs">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0878EE]">
+                          <span>🌸</span>
+                          <span>Cách nói tự nhiên của người bản xứ</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-[#52627A]">
+                          {alternatives.length} gợi ý diễn đạt
+                        </span>
+                      </div>
+                      <div className="space-y-2.5">
+                        {alternatives.map((alt, idx) => (
+                          <div
+                            key={idx}
+                            className="group flex items-center justify-between gap-3 rounded-xl border border-blue-100/70 bg-white/90 p-3.5 shadow-2xs transition hover:border-[#0878EE]/40 hover:bg-white"
+                          >
+                            <p className="text-sm sm:text-base font-bold text-[#071A44] leading-relaxed break-words">
+                              {alt}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => playJapaneseAudio(alt)}
+                              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#DCE7F4] bg-[#F4F9FE] text-xs text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
+                              title="Nghe phát âm bản xứ"
+                            >
+                              🔊
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="mt-2 rounded-xl bg-white/80 p-3.5 border border-blue-100/60">
-                      <p className="text-base font-bold text-[#071A44] leading-relaxed break-words">
-                        {naturalAltText}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <p className="text-[11px] leading-5 text-[#8B9BB4] italic">
                   * Nhận xét AI chỉ nhằm hỗ trợ học tập, rèn luyện phản xạ và không thay thế kết quả thi chứng chỉ JLPT chính thức.
@@ -276,6 +313,96 @@ export const ConversationResultDetailView: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* ============================================================ */}
+        {/* TARGET VOCABULARY & GRAMMAR REINFORCEMENT                    */}
+        {/* ============================================================ */}
+        {((result.targetVocabularies && result.targetVocabularies.length > 0) ||
+          (result.targetGrammars && result.targetGrammars.length > 0)) && (
+          <section className="mt-6 rounded-[26px] border border-[#DCE7F4] bg-white p-6 sm:p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EDF3F9] pb-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">
+                <span>📚</span>
+                <span>Củng cố kiến thức trọng tâm</span>
+              </div>
+              <span className="text-xs font-semibold text-[#71809A]">
+                Nội dung đề xuất ôn tập từ kịch bản này
+              </span>
+            </div>
+
+            {/* Từ vựng */}
+            {result.targetVocabularies && result.targetVocabularies.length > 0 && (
+              <div className="mt-5">
+                <h3 className="text-sm font-bold text-[#071A44] mb-3 flex items-center gap-2">
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-blue-100 text-[#0878EE] text-[11px] font-black">
+                    A
+                  </span>
+                  <span>Từ vựng trọng tâm ({result.targetVocabularies.length} từ)</span>
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                  {result.targetVocabularies.map((vocab) => (
+                    <div
+                      key={vocab.id}
+                      className="group flex flex-col justify-between rounded-2xl border border-[#EDF3F9] bg-[#F8FAFC] p-3.5 transition hover:border-[#B9D9FF] hover:bg-white hover:shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <ruby className="text-base font-black text-[#071A44]">
+                            {vocab.word}
+                            {vocab.reading && (
+                              <rt className="text-[10px] text-[#0878EE] font-normal">{vocab.reading}</rt>
+                            )}
+                          </ruby>
+                          <p className="mt-1 text-xs text-[#52627A] leading-relaxed font-medium">
+                            {vocab.meaning}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => playJapaneseAudio(vocab.word)}
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#DCE7F4] bg-white text-xs text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
+                          title="Nghe phát âm từ vựng"
+                        >
+                          🔊
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Mẫu ngữ pháp */}
+            {result.targetGrammars && result.targetGrammars.length > 0 && (
+              <div className="mt-6 border-t border-[#EDF3F9] pt-5">
+                <h3 className="text-sm font-bold text-[#071A44] mb-3 flex items-center gap-2">
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-indigo-100 text-indigo-600 text-[11px] font-black">
+                    G
+                  </span>
+                  <span>Mẫu câu & Ngữ pháp áp dụng ({result.targetGrammars.length} mẫu)</span>
+                </h3>
+                <div className="space-y-2.5">
+                  {result.targetGrammars.map((grammar) => (
+                    <div
+                      key={grammar.id}
+                      className="rounded-xl border border-[#EDF3F9] bg-[#F8FAFC] p-3.5 text-xs text-[#071A44]"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-bold text-[#0878EE] text-sm">{grammar.pattern}</span>
+                        <span className="font-medium text-[#52627A]">{grammar.meaning}</span>
+                      </div>
+                      {grammar.exampleSentence && (
+                        <p className="mt-1.5 text-[#71809A] italic border-l-2 border-[#B9D9FF] pl-2.5">
+                          Ví dụ: {grammar.exampleSentence}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       <div className="mt-7 flex flex-wrap gap-3">

@@ -88,6 +88,7 @@ export interface RoleplaySessionDetailsDto {
 export interface RoleplayTurnResponseDto {
   userMessage: RoleplayMessageDto;
   aiMessage: RoleplayMessageDto;
+  newlyCompletedMissionIds?: number[];
   updatedMissions: RoleplayMissionDto[];
   allMissionsCompleted?: boolean;
   isNaturallyConcluded: boolean;

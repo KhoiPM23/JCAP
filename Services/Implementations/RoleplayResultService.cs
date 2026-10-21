@@ -2,6 +2,7 @@ using System.Text.Json;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Roleplay;
+using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -234,6 +235,41 @@ namespace JCAP.Services.Implementations
                 completedMissions = [];
             }
 
+            List<TargetVocabularyDto> targetVocabularies = [];
+            List<TargetGrammarDto> targetGrammars = [];
+
+            if (result.RoleplaySessionId > 0)
+            {
+                var sessionConfig = await _dbContext.RoleplaySessions
+                    .AsNoTracking()
+                    .Where(s => s.Id == result.RoleplaySessionId)
+                    .Select(s => s.ScenarioLevelConfiguration)
+                    .Select(c => new
+                    {
+                        Vocabs = c != null ? c.TargetVocabularies.Select(v => new TargetVocabularyDto
+                        {
+                            Id = v.Id,
+                            Word = v.Word,
+                            Reading = v.Reading,
+                            Meaning = v.Meaning
+                        }).ToList() : new List<TargetVocabularyDto>(),
+                        Grammars = c != null ? c.TargetGrammars.Select(g => new TargetGrammarDto
+                        {
+                            Id = g.Id,
+                            Pattern = g.Pattern,
+                            Meaning = g.Meaning,
+                            ExampleSentence = g.ExampleSentence
+                        }).ToList() : new List<TargetGrammarDto>()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (sessionConfig != null)
+                {
+                    targetVocabularies = sessionConfig.Vocabs;
+                    targetGrammars = sessionConfig.Grammars;
+                }
+            }
+
             return ApiResponse<RoleplayResultDetailDto>.Ok(new RoleplayResultDetailDto
             {
                 Id = result.Id,
@@ -247,6 +283,8 @@ namespace JCAP.Services.Implementations
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
+                TargetVocabularies = targetVocabularies,
+                TargetGrammars = targetGrammars,
                 CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
         }

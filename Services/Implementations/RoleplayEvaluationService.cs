@@ -229,9 +229,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(2)
             .ToList();
-        var naturalAlternative = feedbacks
+        var naturalAlternatives = feedbacks
             .Select(feedback => feedback.NaturalAlternative?.Trim())
-            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Cast<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToList();
         var turnSummaries = feedbacks
             .Select(feedback => feedback.Summary?.Trim())
             .Where(summary => !string.IsNullOrWhiteSpace(summary))
@@ -256,9 +260,9 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             sections.Add($"Điểm cần cải thiện: {string.Join("; ", improvements)}");
         }
 
-        if (!string.IsNullOrWhiteSpace(naturalAlternative))
+        if (naturalAlternatives.Count > 0)
         {
-            sections.Add($"Cách diễn đạt tự nhiên hơn: {naturalAlternative}");
+            sections.Add($"Cách diễn đạt tự nhiên hơn: {string.Join(" | ", naturalAlternatives)}");
         }
 
         return string.Join(" ", sections);

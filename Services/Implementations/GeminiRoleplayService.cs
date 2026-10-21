@@ -159,6 +159,10 @@ TASK INSTRUCTIONS:
        - For every normal Japanese utterance, include at least one grammar-related item
          (""Ngữ pháp"", ""Trợ từ"", ""Cấu trúc"" or ""Chia động từ""), one ""Từ vựng""
          item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"", ""Kính ngữ"" or ""Lịch sự"").
+       - Contextual Keigo and Social Register Check:
+         * If Scenario is Business / Job Interview: Learner must use formal Teineigo (です/ます) or Keigo. If casual/tameguchi form is used, mark aspect ""Kính ngữ"" with type ""warning"" or ""error"" and guide them to be formal.
+         * If Scenario is Service Encounter: Learner should speak politely with ください / お願いします.
+         * If Scenario is Casual: Casual form is acceptable.
        - Positive usage MUST be recorded as type ""success""; do not return only mistakes.
      * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
      * culturalTip: Relevant practical cultural tip in Vietnamese
@@ -356,6 +360,10 @@ Return strictly pure JSON:
         sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。').");
         sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
         sb.AppendLine($"- Level matching: Use vocabulary and grammar strictly appropriate for JLPT {levelConfig.JLPTLevel}.");
+        sb.AppendLine($"- SITUATIONAL KEIGO & SOCIAL REGISTER (VĂN HÓA GIAO TIẾP NHẬT BẢN):");
+        sb.AppendLine($"  * Business/Job Interview (Phỏng vấn / Công sở): Learner must use formal Teineigo (です/ます) or Kenjougo/Sonkeigo (Kính ngữ/Khiêm nhường ngữ). If the learner uses plain form (Thể thường / Tameguchi / だ), gently correct them in linguisticFeedback as 'Cần lịch sự hơn trong phỏng vấn/công sở'.");
+        sb.AppendLine($"  * Service Encounter (Nhà hàng / Tiệm ăn / Cửa hàng tiện lợi): As staff, you use polite customer service Keigo (いらっしゃいませ, 少々お待ちください, かしこまりました). The learner (customer) should use polite standard Japanese (ください, お願いします, です/ます).");
+        sb.AppendLine($"  * Casual / Peers (Bạn bè / Đồng trang lứa): Standard casual or polite polite forms are acceptable.");
         sb.AppendLine($"- Brevity: Keep responses concise (1-2 sentences) simulating real-world spoken Japanese.");
         sb.AppendLine($"- Non-preemption: NEVER mention, answer, or complete pending missions for the learner; wait for them to initiate.");
         sb.AppendLine($"- Conversational cueing: Respond only to the current turn with open-ended cues, leaving space for the learner to drive the next mission.");

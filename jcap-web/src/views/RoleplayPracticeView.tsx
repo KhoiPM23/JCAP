@@ -77,8 +77,47 @@ export const RoleplayPracticeView: React.FC = () => {
   // Toast mock Flashcard
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Gamification & Micro-Celebration: Danh sách ID nhiệm vụ vừa hoàn thành (trong 4.5s)
+  const [recentlyCompletedMissionIds, setRecentlyCompletedMissionIds] = useState<number[]>([]);
+
   // Tab Cheat Sheet (Từ vựng vs Ngữ pháp)
   const [cheatSheetTab, setCheatSheetTab] = useState<'vocab' | 'grammar'>('vocab');
+
+  // Âm thanh chúc mừng Web Audio API (Chime E5 -> B5, nhẹ nhàng, không cần asset ngoài)
+  const playMissionCompleteSound = () => {
+    try {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const now = ctx.currentTime;
+
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.12, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.3);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(987.77, now + 0.12);
+      gain2.gain.setValueAtTime(0.18, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.55);
+    } catch {
+      // Non-blocking fallback
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -263,6 +302,20 @@ export const RoleplayPracticeView: React.FC = () => {
       // Ghi nhận ID tin nhắn mới (không tự động ép mở cột phải)
       if (turn.userMessage.linguisticFeedback) {
         setSelectedMessageId(turn.userMessage.id);
+      }
+
+      // Micro-Celebration: Bắn thông báo chúc mừng & âm thanh khi vừa hoàn thành nhiệm vụ mới
+      if (turn.newlyCompletedMissionIds && turn.newlyCompletedMissionIds.length > 0) {
+        playMissionCompleteSound();
+        setRecentlyCompletedMissionIds(turn.newlyCompletedMissionIds);
+        setTimeout(() => setRecentlyCompletedMissionIds([]), 4500);
+
+        const completedNames = turn.updatedMissions
+          .filter((m) => turn.newlyCompletedMissionIds.includes(m.missionId))
+          .map((m) => m.content);
+        const nameText = completedNames.length > 0 ? `: "${completedNames[0]}"` : '!';
+        setToastMessage(`🎯 Xuất sắc! Bạn vừa hoàn thành nhiệm vụ${nameText}`);
+        setTimeout(() => setToastMessage(null), 4000);
       }
 
       // Tự động phát âm thanh của AI nếu toggle autoPlayAudio đang BẬT
@@ -454,11 +507,17 @@ export const RoleplayPracticeView: React.FC = () => {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#F4F9FE] text-[#071A44]">
-      {/* Toast Notification (Flashcard mock) */}
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 rounded-xl bg-[#071A44] px-4 py-3 text-xs font-semibold text-white shadow-xl animate-fade-in">
-          <span>⭐</span>
-          <span>{toastMessage}</span>
+        <div
+          className={`fixed top-20 right-6 z-50 flex items-center gap-2.5 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
+            toastMessage.startsWith('🎯')
+              ? 'border border-emerald-400/80 bg-[#071A44] text-white shadow-[0_12px_36px_rgba(16,185,129,0.35)]'
+              : 'border border-blue-400/40 bg-[#071A44] text-white shadow-[0_12px_36px_rgba(7,26,68,0.3)]'
+          }`}
+        >
+          <span className="text-base">{toastMessage.startsWith('🎯') ? '🎉' : '⭐'}</span>
+          <span className="leading-snug">{toastMessage}</span>
         </div>
       )}
 
@@ -700,8 +759,10 @@ export const RoleplayPracticeView: React.FC = () => {
                   {session.missions.map((mission: RoleplayMissionDto) => (
                     <div
                       key={mission.missionId ?? mission.id ?? mission.order}
-                      className={`flex gap-3 rounded-xl border p-3 transition ${
-                        mission.isCompleted
+                      className={`flex gap-3 rounded-xl border p-3 transition duration-300 ${
+                        recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
+                          ? 'border-emerald-400 bg-emerald-100/90 ring-2 ring-emerald-400 ring-offset-1 animate-pulse shadow-sm'
+                          : mission.isCompleted
                           ? 'border-emerald-200 bg-emerald-50/60'
                           : 'border-[#E6EDF5] bg-white'
                       }`}
@@ -727,7 +788,9 @@ export const RoleplayPracticeView: React.FC = () => {
                           </p>
                           {mission.isCompleted && (
                             <span className="shrink-0 text-[10px] font-bold text-emerald-600">
-                              Đã đạt
+                              {recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
+                                ? '🎯 Vừa đạt!'
+                                : 'Đã đạt'}
                             </span>
                           )}
                         </div>

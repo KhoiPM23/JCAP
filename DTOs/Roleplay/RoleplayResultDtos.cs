@@ -1,3 +1,5 @@
+using JCAP.DTOs.Scenario;
+
 namespace JCAP.DTOs.Roleplay
 {
     public class CompleteRoleplaySessionResponseDto
@@ -31,6 +33,8 @@ namespace JCAP.DTOs.Roleplay
         public int ImpressionScore { get; set; }
         public string GeneralFeedbackText { get; set; } = string.Empty;
         public List<CompletedMissionResultDto> CompletedMissions { get; set; } = [];
+        public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
+        public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
     }
 
     public class RoleplayResultHistoryResponseDto
