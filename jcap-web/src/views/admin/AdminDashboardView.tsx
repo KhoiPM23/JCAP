@@ -60,6 +60,11 @@ export const AdminDashboardView: React.FC = () => {
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden border border-slate-700/50">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-xs text-slate-300 font-medium mb-1">
+              <span>Tổng quan</span>
+              <span>&gt;</span>
+              <span className="text-white font-semibold">Dashboard Tổng quan</span>
+            </div>
             <div className="inline-flex items-center gap-2 bg-red-600/90 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-xs">
               <span>🛡️</span> Cổng Quản Trị Hệ Thống JCAP
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
@@ -100,8 +100,72 @@ export const AdminScenarioListView: React.FC = () => {
   const location = useLocation();
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [error, setErrorState] = useState<string | null>(null);
+  const [isErrorFadingOut, setIsErrorFadingOut] = useState<boolean>(false);
+  const errorFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [successMsg, setSuccessMsgState] = useState<string | null>(null);
+  const [isSuccessFadingOut, setIsSuccessFadingOut] = useState<boolean>(false);
+  const successFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const successClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setError = useCallback((msg: string | null) => {
+    if (errorFadeTimerRef.current) clearTimeout(errorFadeTimerRef.current);
+    if (errorClearTimerRef.current) clearTimeout(errorClearTimerRef.current);
+
+    if (!msg) {
+      setErrorState(null);
+      setIsErrorFadingOut(false);
+      return;
+    }
+
+    setSuccessMsgState(null);
+    setErrorState(msg);
+    setIsErrorFadingOut(false);
+
+    errorFadeTimerRef.current = setTimeout(() => {
+      setIsErrorFadingOut(true);
+    }, 5000);
+
+    errorClearTimerRef.current = setTimeout(() => {
+      setErrorState(null);
+      setIsErrorFadingOut(false);
+    }, 5500);
+  }, []);
+
+  const setSuccessMsg = useCallback((msg: string | null) => {
+    if (successFadeTimerRef.current) clearTimeout(successFadeTimerRef.current);
+    if (successClearTimerRef.current) clearTimeout(successClearTimerRef.current);
+
+    if (!msg) {
+      setSuccessMsgState(null);
+      setIsSuccessFadingOut(false);
+      return;
+    }
+
+    setErrorState(null);
+    setSuccessMsgState(msg);
+    setIsSuccessFadingOut(false);
+
+    successFadeTimerRef.current = setTimeout(() => {
+      setIsSuccessFadingOut(true);
+    }, 5000);
+
+    successClearTimerRef.current = setTimeout(() => {
+      setSuccessMsgState(null);
+      setIsSuccessFadingOut(false);
+    }, 5500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (errorFadeTimerRef.current) clearTimeout(errorFadeTimerRef.current);
+      if (errorClearTimerRef.current) clearTimeout(errorClearTimerRef.current);
+      if (successFadeTimerRef.current) clearTimeout(successFadeTimerRef.current);
+      if (successClearTimerRef.current) clearTimeout(successClearTimerRef.current);
+    };
+  }, []);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -150,7 +214,7 @@ export const AdminScenarioListView: React.FC = () => {
     if (state?.successMessage) {
       setSuccessMsg(state.successMessage);
       window.history.replaceState({}, document.title);
-      setTimeout(() => setSuccessMsg(null), 4000);
+      
     }
   }, [location.state]);
 
@@ -707,7 +771,7 @@ export const AdminScenarioListView: React.FC = () => {
     if (res.success) {
       setSuccessMsg(`Đã vô hiệu hóa kịch bản "${title}" thành công.`);
       fetchScenarios();
-      setTimeout(() => setSuccessMsg(null), 4000);
+      
     } else {
       setError(res.message || 'Lỗi khi xóa kịch bản.');
     }
@@ -782,7 +846,7 @@ export const AdminScenarioListView: React.FC = () => {
         setSuccessMsg(`Cập nhật kịch bản "${formData.title}" thành công!`);
         setIsModalOpen(false);
         fetchScenarios();
-        setTimeout(() => setSuccessMsg(null), 4000);
+        
       } else {
         setError(res.message || 'Lỗi cập nhật kịch bản.');
       }
@@ -801,7 +865,7 @@ export const AdminScenarioListView: React.FC = () => {
         setSuccessMsg(`Thêm kịch bản mới "${formData.title}" thành công!`);
         setIsModalOpen(false);
         fetchScenarios();
-        setTimeout(() => setSuccessMsg(null), 4000);
+        
       } else {
         setError(res.message || 'Lỗi khi tạo mới kịch bản.');
       }
@@ -829,6 +893,11 @@ export const AdminScenarioListView: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1.5">
+            <span>Quản lý Nội dung</span>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">Kịch bản Hội thoại</span>
+          </div>
           <h1 className="text-2xl font-bold text-[#071A44]">🎭 Quản lý Kịch bản Đàm thoại</h1>
           <p className="text-slate-500 text-sm mt-1">
             Quản trị danh mục kịch bản roleplay, cấu hình trình độ JLPT.
@@ -854,16 +923,26 @@ export const AdminScenarioListView: React.FC = () => {
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages (Chuẩn phong cách tự làm mờ sau 5s, không in đậm) */}
       {successMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
-          <span>✅</span> {successMsg}
+        <div
+          className={`bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs sm:text-sm mb-6 flex items-center gap-2.5 shadow-xs transition-opacity duration-500 ease-in-out ${
+            isSuccessFadingOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <span className="text-base">✅</span>
+          <span>{successMsg}</span>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
-          <span>⚠️</span> {error}
+        <div
+          className={`bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs sm:text-sm mb-6 flex items-center gap-2.5 shadow-xs transition-opacity duration-500 ease-in-out ${
+            isErrorFadingOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <span className="text-base">⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
@@ -1009,8 +1088,13 @@ export const AdminScenarioListView: React.FC = () => {
             <form onSubmit={handleSubmitForm} className="flex flex-col flex-1 min-h-0 pt-4">
               <div className="overflow-y-auto pr-2 space-y-5 flex-1">
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 rounded-xl text-xs flex items-center gap-2">
-                    <span>⚠️</span> {error}
+                  <div
+                    className={`bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs flex items-center gap-2.5 shadow-xs transition-opacity duration-500 ease-in-out ${
+                      isErrorFadingOut ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  >
+                    <span className="text-base">⚠️</span>
+                    <span>{error}</span>
                   </div>
                 )}
 

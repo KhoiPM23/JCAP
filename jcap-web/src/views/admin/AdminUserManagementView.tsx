@@ -136,6 +136,11 @@ export const AdminUserManagementView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-2">
+            <span>Hệ thống &amp; Người dùng</span>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">Quản lý Học viên</span>
+          </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#0878EE] border border-blue-200 text-xs font-bold mb-2">
             <span>👥</span> Quản Trị Tài Khoản & Học Viên (FE-06: UC-54 & UC-55)
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export interface NavbarProps {
@@ -21,6 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Shadowing', path: '/shadowing', icon: MicIcon, matchPrefix: true },
     { name: 'Lịch học', path: '/schedule', icon: CalendarIcon, matchPrefix: true },
     { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon, matchPrefix: true },
+    { name: 'Gói & Hạn mức', path: '/subscription', icon: SubscriptionIcon, matchPrefix: true },
     { name: 'Hồ sơ', path: '/profile', icon: UserIcon, matchPrefix: true },
     { name: 'Cài đặt', path: '/settings', icon: SettingsIcon, matchPrefix: true },
   ];
@@ -91,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/admin/users')}
               />
               <NavItem
-                name="Quản lý Gói Credit"
+                name="Quản lý Gói và Credit"
                 path="/admin/credits/packages"
                 icon={CoinCardIcon}
                 forceActive={currentPath.startsWith('/admin/credits')}
@@ -141,7 +142,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
           <NavItem
             key={item.path}
             {...item}
-            forceActive={item.matchPrefix ? currentPath.startsWith(item.path.split('?')[0]) : currentPath === item.path}
+            forceActive={
+              (item.path === '/subscription' && (currentPath.startsWith('/subscription') || currentPath.startsWith('/credits')))
+                ? true
+                : (item.matchPrefix ? currentPath.startsWith(item.path.split('?')[0]) : currentPath === item.path)
+            }
           />
         ))}
       </nav>
@@ -343,6 +348,14 @@ function CoinCardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function SubscriptionIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   );
 }

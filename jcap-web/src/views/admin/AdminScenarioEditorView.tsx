@@ -1145,19 +1145,33 @@ export const AdminScenarioEditorView: React.FC = () => {
     <div ref={editorContainerRef} className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-20">
       {/* Breadcrumb Navigation - Đã xóa nút "✕ Hủy bỏ" thừa ở góc phải theo yêu cầu Hình 3 */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleOpenCancelConfirmation}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
-          >
-            <span>←</span> Quay lại danh sách
-          </button>
-          <span className="text-slate-300">/</span>
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
+            <span>Quản lý Nội dung</span>
+            <span>&gt;</span>
+            <button
+              type="button"
+              onClick={handleOpenCancelConfirmation}
+              className="hover:text-blue-600 transition cursor-pointer"
+            >
+              Kịch bản Hội thoại
+            </button>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">
+              {isEditMode ? `Chỉnh sửa #${scenarioId}` : 'Thêm mới'}
+            </span>
+          </div>
           <h1 className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
             {isEditMode ? `✏️ Chỉnh sửa Kịch bản #${scenarioId}` : '✨ Thêm Kịch bản Đàm thoại Mới'}
           </h1>
         </div>
+        <button
+          type="button"
+          onClick={handleOpenCancelConfirmation}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
+        >
+          <span>←</span> Quay lại danh sách
+        </button>
       </div>
 
       {error && (

@@ -1220,7 +1220,7 @@ export const AdminShadowingListView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
-            <span>Hệ thống Quản trị</span>
+            <span>Quản lý Nội dung</span>
             <span>&gt;</span>
             <span>Nội dung Luyện nói</span>
             <span>&gt;</span>
