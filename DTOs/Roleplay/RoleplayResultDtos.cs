@@ -35,6 +35,7 @@ namespace JCAP.DTOs.Roleplay
         public List<CompletedMissionResultDto> CompletedMissions { get; set; } = [];
         public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
         public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
+        public List<RoleplayMessageDto> Messages { get; set; } = [];
     }
 
     public class RoleplayResultHistoryResponseDto

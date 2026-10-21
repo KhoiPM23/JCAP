@@ -237,36 +237,81 @@ namespace JCAP.Services.Implementations
 
             List<TargetVocabularyDto> targetVocabularies = [];
             List<TargetGrammarDto> targetGrammars = [];
+            List<RoleplayMessageDto> messages = [];
 
             if (result.RoleplaySessionId > 0)
             {
-                var sessionConfig = await _dbContext.RoleplaySessions
+                var sessionData = await _dbContext.RoleplaySessions
                     .AsNoTracking()
                     .Where(s => s.Id == result.RoleplaySessionId)
-                    .Select(s => s.ScenarioLevelConfiguration)
-                    .Select(c => new
+                    .Select(s => new
                     {
-                        Vocabs = c != null ? c.TargetVocabularies.Select(v => new TargetVocabularyDto
+                        Config = s.ScenarioLevelConfiguration,
+                        Messages = s.Messages
+                            .OrderBy(m => m.CreatedAt)
+                            .Select(m => new
+                            {
+                                m.Id,
+                                m.Sender,
+                                m.JapaneseText,
+                                m.VietnameseMeaning,
+                                m.FuriganaHtml,
+                                m.LinguisticFeedbackJson,
+                                m.CreatedAt
+                            })
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (sessionData != null)
+                {
+                    if (sessionData.Config != null)
+                    {
+                        targetVocabularies = sessionData.Config.TargetVocabularies.Select(v => new TargetVocabularyDto
                         {
                             Id = v.Id,
                             Word = v.Word,
                             Reading = v.Reading,
                             Meaning = v.Meaning
-                        }).ToList() : new List<TargetVocabularyDto>(),
-                        Grammars = c != null ? c.TargetGrammars.Select(g => new TargetGrammarDto
+                        }).ToList();
+
+                        targetGrammars = sessionData.Config.TargetGrammars.Select(g => new TargetGrammarDto
                         {
                             Id = g.Id,
                             Pattern = g.Pattern,
                             Meaning = g.Meaning,
                             ExampleSentence = g.ExampleSentence
-                        }).ToList() : new List<TargetGrammarDto>()
-                    })
-                    .FirstOrDefaultAsync();
+                        }).ToList();
+                    }
 
-                if (sessionConfig != null)
-                {
-                    targetVocabularies = sessionConfig.Vocabs;
-                    targetGrammars = sessionConfig.Grammars;
+                    messages = sessionData.Messages.Select(m =>
+                    {
+                        LinguisticFeedbackDto? parsedFeedback = null;
+                        if (!string.IsNullOrWhiteSpace(m.LinguisticFeedbackJson))
+                        {
+                            try
+                            {
+                                parsedFeedback = JsonSerializer.Deserialize<LinguisticFeedbackDto>(
+                                    m.LinguisticFeedbackJson,
+                                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            }
+                            catch
+                            {
+                                // Safe fallback if json corrupted
+                            }
+                        }
+
+                        return new RoleplayMessageDto
+                        {
+                            Id = m.Id,
+                            Sender = m.Sender,
+                            JapaneseText = m.JapaneseText,
+                            VietnameseMeaning = m.VietnameseMeaning,
+                            FuriganaHtml = m.FuriganaHtml,
+                            LinguisticFeedback = parsedFeedback,
+                            CreatedAt = AsUtc(m.CreatedAt)
+                        };
+                    }).ToList();
                 }
             }
 
@@ -285,6 +330,7 @@ namespace JCAP.Services.Implementations
                 CompletedMissions = completedMissions,
                 TargetVocabularies = targetVocabularies,
                 TargetGrammars = targetGrammars,
+                Messages = messages,
                 CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
         }

@@ -37,6 +37,36 @@ export const ConversationResultDetailView: React.FC = () => {
   const [result, setResult] = useState<RoleplayResultDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copyToast, setCopyToast] = useState(false);
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
+
+  const handleCopySummary = async () => {
+    if (!result) return;
+    const text = [
+      `🎯 KẾT QUẢ LUYỆN HỘI THOẠI JCAP`,
+      `Kịch bản: ${result.scenarioTitle} (JLPT ${result.jlptLevel})`,
+      `Tổng điểm: ${result.overallScore}/100 - ${result.passStatus ? 'ĐẠT' : 'CHƯA ĐẠT'}`,
+      `• Ngữ pháp: ${result.grammarScore}/100`,
+      `• Từ vựng: ${result.vocabularyScore}/100`,
+      `• Kính ngữ & Văn phong: ${result.impressionScore}/100`,
+      `• Nhiệm vụ hoàn thành: ${result.completedMissions.length} mục tiêu`,
+      result.generalFeedbackText ? `\nNhận xét tổng quan:\n${result.generalFeedbackText}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyToast(true);
+      setTimeout(() => setCopyToast(false), 3000);
+    } catch {
+      // fallback
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -98,6 +128,14 @@ export const ConversationResultDetailView: React.FC = () => {
 
   return (
     <section className="mx-auto w-full max-w-5xl pb-10">
+      {/* Toast Notification */}
+      {copyToast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 rounded-2xl border border-emerald-400 bg-[#071A44] px-4 py-3 text-xs font-semibold text-white shadow-xl animate-fade-in">
+          <span>✓</span>
+          <span>Đã sao chép báo cáo kết quả vào bộ nhớ tạm!</span>
+        </div>
+      )}
+
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <Link
           to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
@@ -105,6 +143,27 @@ export const ConversationResultDetailView: React.FC = () => {
         >
           ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
         </Link>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopySummary}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#DCE7F4] bg-white px-3.5 py-2 text-xs font-bold text-[#071A44] shadow-2xs transition hover:bg-[#F4F9FE] hover:border-[#0878EE]"
+            title="Sao chép tóm tắt kết quả vào bộ nhớ tạm"
+          >
+            <span>📋</span>
+            <span>Sao chép tóm tắt</span>
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#DCE7F4] bg-white px-3.5 py-2 text-xs font-bold text-[#071A44] shadow-2xs transition hover:bg-[#F4F9FE] hover:border-[#0878EE]"
+            title="In hoặc Lưu báo cáo dưới dạng PDF"
+          >
+            <span>🖨️</span>
+            <span>In / PDF</span>
+          </button>
+        </div>
       </div>
 
       <div key={result.id} className="rounded-[30px] bg-[#F4F9FE] p-4 sm:p-6">
@@ -399,6 +458,127 @@ export const ConversationResultDetailView: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ============================================================ */}
+        {/* CONVERSATION TRANSCRIPT REVIEW (XEM LẠI ĐỐI THOẠI CHI TIẾT)  */}
+        {/* ============================================================ */}
+        {result.messages && result.messages.length > 0 && (
+          <section className="mt-6 rounded-[26px] border border-[#DCE7F4] bg-white p-6 sm:p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EDF3F9] pb-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">
+                <span>💬</span>
+                <span>Chi tiết toàn bộ đoạn hội thoại</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-[#71809A]">
+                  {result.messages.length} lượt nói
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
+                  className="rounded-lg border border-[#DCE7F4] bg-[#F8FAFC] px-2.5 py-1 text-xs font-semibold text-[#52627A] hover:bg-white transition"
+                >
+                  {isTranscriptOpen ? 'Thu gọn ▲' : 'Mở rộng ▼'}
+                </button>
+              </div>
+            </div>
+
+            {isTranscriptOpen && (
+              <div className="mt-5 space-y-4">
+                {result.messages.map((msg, index) => {
+                  const isUser = msg.sender.toLowerCase() === 'user';
+                  const feedback = msg.linguisticFeedback;
+                  const status = feedback?.quickStatus || feedback?.status || 'good';
+
+                  return (
+                    <div
+                      key={msg.id || index}
+                      className={`flex items-start gap-3 rounded-2xl p-4 transition ${
+                        isUser
+                          ? 'border border-[#E6EDF5] bg-[#F8FAFC]'
+                          : 'border border-blue-100 bg-blue-50/40'
+                      }`}
+                    >
+                      {/* Avatar Icon */}
+                      <div
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl text-xs font-bold text-white shadow-xs ${
+                          isUser ? 'bg-[#071A44]' : 'bg-[#0878EE]'
+                        }`}
+                      >
+                        {isUser ? 'Bạn' : 'AI'}
+                      </div>
+
+                      {/* Content */}
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-[#52627A]">
+                            {isUser ? 'Bạn đã nói' : 'AI phản hồi'}
+                          </span>
+                          {!isUser && (
+                            <button
+                              type="button"
+                              onClick={() => playJapaneseAudio(msg.japaneseText)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-[#DCE7F4] bg-white px-2 py-1 text-[11px] font-semibold text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
+                              title="Nghe lại câu này"
+                            >
+                              <span>🔊</span>
+                              <span>Nghe</span>
+                            </button>
+                          )}
+                          {isUser && feedback && (
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                                status.toLowerCase() === 'success' || status.toLowerCase() === 'good'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : status.toLowerCase() === 'warning'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {status.toLowerCase() === 'success' || status.toLowerCase() === 'good'
+                                ? '✓ Rất tốt'
+                                : status.toLowerCase() === 'warning'
+                                ? '! Cần chú ý'
+                                : '✕ Cần sửa'}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Japanese Utterance */}
+                        <p className="text-sm sm:text-base font-bold text-[#071A44] leading-relaxed break-words">
+                          {msg.japaneseText}
+                        </p>
+
+                        {/* Vietnamese Meaning */}
+                        {msg.vietnameseMeaning && (
+                          <p className="text-xs text-[#52627A] leading-relaxed italic">
+                            Dịch nghĩa: {msg.vietnameseMeaning}
+                          </p>
+                        )}
+
+                        {/* User Feedback Detail */}
+                        {isUser && feedback && (
+                          <div className="mt-2 rounded-xl bg-white/90 p-3 border border-[#E6EDF5] text-xs space-y-1">
+                            {feedback.summary && (
+                              <p className="font-semibold text-[#071A44]">
+                                💡 {feedback.summary}
+                              </p>
+                            )}
+                            {feedback.naturalAlternative && (
+                              <p className="text-emerald-700 font-semibold">
+                                🌸 Diễn đạt bản xứ: {feedback.naturalAlternative}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>

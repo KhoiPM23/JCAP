@@ -80,6 +80,9 @@ export const RoleplayPracticeView: React.FC = () => {
   // Gamification & Micro-Celebration: Danh sách ID nhiệm vụ vừa hoàn thành (trong 4.5s)
   const [recentlyCompletedMissionIds, setRecentlyCompletedMissionIds] = useState<number[]>([]);
 
+  // Tốc độ đọc AI (0.85x / 1.0x / 1.15x)
+  const [speechRate, setSpeechRate] = useState<number>(() => scenarioVoiceService.getSpeechRate());
+
   // Tab Cheat Sheet (Từ vựng vs Ngữ pháp)
   const [cheatSheetTab, setCheatSheetTab] = useState<'vocab' | 'grammar'>('vocab');
 
@@ -169,7 +172,7 @@ export const RoleplayPracticeView: React.FC = () => {
     void scenarioVoiceService.playAiSpeech(text, selectedVoiceId, () => {
       setIsPlayingAiSpeech(false);
       setPlayingMessageId(null);
-    });
+    }, speechRate);
   };
 
   // 1. Tải chi tiết phiên
@@ -612,6 +615,23 @@ export const RoleplayPracticeView: React.FC = () => {
             >
               <span>🎙️</span>
               <span className="hidden xl:inline">Giọng đọc</span>
+            </button>
+
+            {/* Nút điều chỉnh tốc độ phát âm AI */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextRate = speechRate === 1.0 ? 0.85 : speechRate === 0.85 ? 1.15 : 1.0;
+                setSpeechRate(nextRate);
+                scenarioVoiceService.setSpeechRate(nextRate);
+                setToastMessage(`⚡ Tốc độ giọng đọc AI: ${nextRate}x`);
+                setTimeout(() => setToastMessage(null), 2500);
+              }}
+              className="inline-flex items-center gap-1 rounded-lg border border-[#E6EDF5] bg-white px-2 py-1 text-xs font-semibold text-[#52627A] transition hover:border-[#0878EE] hover:text-[#0878EE]"
+              title="Đổi tốc độ đọc: 0.85x (Chậm/Luyện nghe), 1.0x (Chuẩn), 1.15x (Nhanh)"
+            >
+              <span>⚡</span>
+              <span>{speechRate}x</span>
             </button>
           </div>
 

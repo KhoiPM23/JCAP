@@ -1,3 +1,5 @@
+import type { RoleplayMessageDto } from './roleplay';
+
 export interface CompleteRoleplaySessionResponse {
   resultId: number;
   isExistingResult: boolean;
@@ -41,6 +43,7 @@ export interface RoleplayResultDetail extends RoleplayResultSummary {
   completedMissions: CompletedMissionResult[];
   targetVocabularies?: TargetVocabulary[];
   targetGrammars?: TargetGrammar[];
+  messages?: RoleplayMessageDto[];
 }
 
 export interface RoleplayResultHistoryResponse {
