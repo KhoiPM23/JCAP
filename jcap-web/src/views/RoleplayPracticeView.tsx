@@ -108,7 +108,7 @@ export const RoleplayPracticeView: React.FC = () => {
     setIsPlayingAiSpeech(true);
     setPlayingMessageId(messageId);
 
-    void scenarioVoiceService.playAiSpeech(text, 3, () => {
+    void scenarioVoiceService.playAiSpeech(text, undefined, () => {
       setIsPlayingAiSpeech(false);
       setPlayingMessageId(null);
     });
@@ -181,6 +181,7 @@ export const RoleplayPracticeView: React.FC = () => {
   );
   const totalMissionsCount = session?.missions.length ?? 0;
   const progressPercent = totalMissionsCount > 0 ? Math.round((completedMissionsCount / totalMissionsCount) * 100) : 0;
+  const isAllMissionsCompleted = totalMissionsCount > 0 && completedMissionsCount >= totalMissionsCount;
 
   // Lấy tin nhắn người dùng được chọn để hiển thị ở Cột Phải
   const selectedMessage = useMemo(() => {
@@ -560,13 +561,17 @@ export const RoleplayPracticeView: React.FC = () => {
             🔍 <span className="hidden xl:inline">Đánh giá</span>
           </button>
 
-          {/* End Session Button: Biến thành màu XANH LÁ khi tự nhiên kết thúc */}
-          {session.isNaturallyConcluded ? (
+          {/* End Session Button: Biến thành màu XANH LÁ khi đã hoàn thành 100% nhiệm vụ */}
+          {isAllMissionsCompleted ? (
             <button
               type="button"
               onClick={() => setShowEndModal(true)}
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 animate-pulse"
-              title="Kịch bản đã đạt kết thúc tự nhiên! Bấm để hoàn thành."
+              title={
+                session.isNaturallyConcluded
+                  ? 'Kịch bản đã hoàn thành trọn vẹn và kết thúc tự nhiên! Bấm để hoàn thành.'
+                  : 'Bạn đã hoàn thành toàn bộ nhiệm vụ! Bấm để hoàn thành phiên.'
+              }
             >
               <span>✓</span>
               <span>Hoàn thành phiên</span>
@@ -1250,16 +1255,16 @@ export const RoleplayPracticeView: React.FC = () => {
             <div className="flex items-center gap-3">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${
-                  session.isNaturallyConcluded
+                  isAllMissionsCompleted
                     ? 'bg-emerald-100 text-emerald-600'
                     : 'bg-amber-100 text-amber-600'
                 }`}
               >
-                {session.isNaturallyConcluded ? '🎉' : '⚠️'}
+                {isAllMissionsCompleted ? '🎉' : '⚠️'}
               </div>
               <div>
                 <h3 className="text-base font-bold text-[#071A44]">
-                  {session.isNaturallyConcluded ? 'Hoàn thành phiên luyện tập' : 'Kết thúc phiên sớm?'}
+                  {isAllMissionsCompleted ? 'Hoàn thành phiên luyện tập' : 'Kết thúc phiên sớm?'}
                 </h3>
                 <p className="text-xs text-[#71809A]">
                   Kịch bản: {session.scenarioTitle} (JLPT {session.level || session.jlptLevel})
@@ -1278,19 +1283,23 @@ export const RoleplayPracticeView: React.FC = () => {
                 <span className="text-[#71809A]">Số lượt hội thoại:</span>
                 <span className="font-medium text-[#071A44]">{session.messages.length} lượt</span>
               </div>
-              {session.isNaturallyConcluded && (
+              {session.isNaturallyConcluded ? (
                 <p className="mt-2 text-emerald-700 font-semibold text-[11px]">
-                  ✨ Kịch bản đã đạt kết thúc tự nhiên một cách xuất sắc!
+                  ✨ Cuộc hội thoại đã kết thúc trọn vẹn và tự nhiên (+Điểm ấn tượng)!
                 </p>
-              )}
+              ) : isAllMissionsCompleted ? (
+                <p className="mt-2 text-emerald-700 font-semibold text-[11px]">
+                  ✓ Bạn đã hoàn thành 100% nhiệm vụ! Có thể nói lời chào tạm biệt để cộng thêm điểm ấn tượng hoặc hoàn thành ngay.
+                </p>
+              ) : null}
             </div>
 
             <p className="text-xs text-[#71809A] leading-relaxed">
-              {session.isNaturallyConcluded
-                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
+              {isAllMissionsCompleted
+                ? 'Bạn đã hoàn thành đầy đủ các nhiệm vụ của kịch bản. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
                 : isAdmin
                 ? 'Nếu bạn kết thúc sớm, phiên kiểm thử kịch bản sẽ dừng lại tại đây và chuyển sang trang kết quả đánh giá.'
-                : 'Nếu bạn kết thúc sớm, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
+                : 'Nếu bạn kết thúc sớm khi chưa hoàn thành hết nhiệm vụ, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -1307,7 +1316,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 onClick={handleConfirmEnd}
                 disabled={isEnding}
                 className={`rounded-xl px-5 py-2 text-xs font-bold text-white transition ${
-                  session.isNaturallyConcluded
+                  isAllMissionsCompleted
                     ? 'bg-emerald-600 hover:bg-emerald-700 shadow-sm'
                     : 'bg-red-600 hover:bg-red-700 shadow-sm'
                 }`}
