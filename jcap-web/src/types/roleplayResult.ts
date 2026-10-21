@@ -14,6 +14,7 @@ export interface CompletedMissionResult {
 export interface RoleplayResultSummary {
   id: number;
   roleplaySessionId: number;
+  scenarioId?: number;
   scenarioTitle: string;
   jlptLevel: string;
   overallScore: number;
@@ -35,12 +36,22 @@ export interface TargetGrammar {
   exampleSentence?: string;
 }
 
+export interface RoleplayMissionProgress {
+  missionId: number;
+  content: string;
+  target?: string;
+  order: number;
+  isCompleted: boolean;
+  completedAt?: string;
+}
+
 export interface RoleplayResultDetail extends RoleplayResultSummary {
   grammarScore: number;
   vocabularyScore: number;
   impressionScore: number;
   generalFeedbackText: string;
   completedMissions: CompletedMissionResult[];
+  allMissions?: RoleplayMissionProgress[];
   targetVocabularies?: TargetVocabulary[];
   targetGrammars?: TargetGrammar[];
   messages?: RoleplayMessageDto[];

@@ -362,13 +362,25 @@ public class RoleplaySessionService : IRoleplaySessionService
         };
         _dbContext.RoleplayMessages.Add(aiMessage);
 
-        // 5. Cập nhật các mission vừa hoàn thành
+        // 5. Cập nhật các mission vừa hoàn thành (có kiểm tra thứ tự logic hội thoại)
         var newlyCompletedIds = new List<int>();
+        var maxOrder = session.SessionMissions.Count > 0
+            ? session.SessionMissions.Max(x => x.Mission?.Order ?? 0)
+            : 0;
+        var hasEarlierPending = session.SessionMissions.Any(x => !x.IsCompleted && (x.Mission?.Order ?? 0) < maxOrder);
+
         foreach (var missionId in turnResult.CompletedMissionIds)
         {
             var sm = session.SessionMissions.FirstOrDefault(x => x.MissionId == missionId && !x.IsCompleted);
             if (sm != null)
             {
+                // Ngăn chặn việc tick nhảy cóc nhiệm vụ kết thúc kịch bản khi các nhiệm vụ chính trước đó chưa hoàn thành
+                if ((sm.Mission?.Order ?? 0) == maxOrder && maxOrder > 1 && hasEarlierPending)
+                {
+                    _logger.LogInformation("Nhiệm vụ {MissionId} (Order {Order}) là nhiệm vụ kết thúc kịch bản, bị hoãn tick do còn nhiệm vụ tiên quyết chưa hoàn thành.", missionId, sm.Mission?.Order);
+                    continue;
+                }
+
                 sm.IsCompleted = true;
                 sm.CompletedAt = DateTime.UtcNow;
                 newlyCompletedIds.Add(missionId);

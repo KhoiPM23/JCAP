@@ -51,6 +51,7 @@ public class AiRoleplayService : IAiRoleplayService
 Return strictly pure JSON matching:
 {
   ""replyJapanese"": ""Opening greeting in Japanese suitable for the persona and context"",
+  ""replyFuriganaHtml"": ""HTML ruby tag markup for reading assistance (e.g. いらっしゃいませ！<ruby>何名様<rt>なんめいさま</rt></ruby>ですか？)"",
   ""replyVietnamese"": ""Natural translation in Vietnamese""
 }";
 
@@ -62,6 +63,7 @@ Return strictly pure JSON matching:
                 using var doc = JsonDocument.Parse(response.Content);
                 var root = doc.RootElement;
                 var ja = root.TryGetProperty("replyJapanese", out var jaProp) ? jaProp.GetString() ?? "" : "";
+                var fHtml = root.TryGetProperty("replyFuriganaHtml", out var fProp) ? fProp.GetString() : null;
                 var vi = root.TryGetProperty("replyVietnamese", out var viProp) ? viProp.GetString() ?? "" : "";
 
                 if (!string.IsNullOrWhiteSpace(ja))
@@ -69,6 +71,7 @@ Return strictly pure JSON matching:
                     return new AiOpeningMessageResult
                     {
                         JapaneseText = ja.Trim(),
+                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) ? fHtml.Trim() : null,
                         VietnameseMeaning = vi.Trim()
                     };
                 }
@@ -130,28 +133,38 @@ TASK INSTRUCTIONS:
      * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
 2. NORMAL JAPANESE EVALUATION (Only if learner spoke entirely in Japanese/Romaji):
    - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}.
+   - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text.
    - replyVietnamese: Natural translation in Vietnamese.
-   - completedMissionIds: Array of Mission IDs satisfied in a contextually appropriate manner:
-     * On open-ended cues (e.g. ""Anything else?""), the learner is FREE to initiate ANY pending mission.
-     * Only reject if the learner blatantly ignores a specific direct question (steer them back in replyJapanese). Return [] if none.
-   - isNaturallyConcluded: Boolean (true if the conversation naturally ends, e.g. transaction finished, farewell exchanged).
+   - userVietnameseMeaning: Accurate Vietnamese translation of what the learner said in Japanese in their latest utterance.
+   - completedMissionIds: Array of Mission IDs satisfied in the current turn. Follow STRICT rules:
+     * Intent Verification: The learner's utterance MUST actively and clearly express the specific intent and conditions specified in the mission's Content and CompletionCriteriaJson.
+     * NEVER mark a mission complete if the learner only provides generic filler words, passive agreement ('はい', 'そうです', 'わかりました', 'ええと'), or unrelated statements.
+     * Sequential Flow: Missions are ordered by conversation flow. NEVER mark the final departure/closing mission completed if earlier transactional/core missions are still unfulfilled.
+     * Concurrency: Typically at most ONE mission should be completed per turn, unless the learner explicitly combines multiple distinct intents in one compound sentence. Return [] if none.
+   - isNaturallyConcluded: Boolean (true ONLY IF all scenario missions are accomplished and the learner and AI exchanged closing/departure greetings).
    - linguisticFeedback: Linguistic evaluation of the learner's utterance (MUST write all explanations/comments in Vietnamese):
      * status: ""Good"" | ""Warning"" | ""Error""
      * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"")
      * details: Array of items:
        - type: ""success"" | ""warning"" | ""error""
-       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Từ vựng"")
+       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Kính ngữ"" | ""Từ vựng"")
        - comment: Specific constructive feedback in Vietnamese
        - For every normal Japanese utterance, include at least one grammar-related item
          (""Ngữ pháp"", ""Trợ từ"", ""Cấu trúc"" or ""Chia động từ""), one ""Từ vựng""
-         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"" or ""Lịch sự"").
+         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"", ""Kính ngữ"" or ""Lịch sự"").
+       - Contextual Keigo and Social Register Check:
+         * If Scenario is Business / Job Interview: Learner must use formal Teineigo (です/ます) or Keigo. If casual/tameguchi form is used, mark aspect ""Kính ngữ"" with type ""warning"" or ""error"" and guide them to be formal.
+         * If Scenario is Service Encounter: Learner should speak politely with ください / お願いします.
+         * If Scenario is Casual: Casual form is acceptable.
        - Positive usage MUST be recorded as type ""success""; do not return only mistakes.
      * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
      * culturalTip: Relevant practical cultural tip in Vietnamese
 
 Return strictly pure JSON matching this schema:
 {{
+  ""userVietnameseMeaning"": ""Vietnamese translation of what the learner just said in their utterance"",
   ""replyJapanese"": ""..."",
+  ""replyFuriganaHtml"": ""..."",
   ""replyVietnamese"": ""..."",
   ""completedMissionIds"": [],
   ""isNaturallyConcluded"": false,
@@ -173,7 +186,9 @@ Return strictly pure JSON matching this schema:
             {
                 using var doc = JsonDocument.Parse(response.Content);
                 var root = doc.RootElement;
+                var userVi = root.TryGetProperty("userVietnameseMeaning", out var uviProp) ? uviProp.GetString() ?? "" : "";
                 var ja = root.TryGetProperty("replyJapanese", out var jaProp) ? jaProp.GetString() ?? "" : "";
+                var fHtml = root.TryGetProperty("replyFuriganaHtml", out var fProp) ? fProp.GetString() : null;
                 var vi = root.TryGetProperty("replyVietnamese", out var viProp) ? viProp.GetString() ?? "" : "";
                 var isConcluded = root.TryGetProperty("isNaturallyConcluded", out var concProp) && concProp.GetBoolean();
 
@@ -244,7 +259,9 @@ Return strictly pure JSON matching this schema:
                     return new AiTurnResult
                     {
                         JapaneseReply = ja.Trim(),
+                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) ? fHtml.Trim() : null,
                         VietnameseMeaning = vi.Trim(),
+                        UserVietnameseMeaning = !string.IsNullOrWhiteSpace(userVi) ? userVi.Trim() : null,
                         CompletedMissionIds = completedIds,
                         IsNaturallyConcluded = isConcluded,
                         LinguisticFeedback = feedback
@@ -360,6 +377,7 @@ Return strictly pure JSON:
             return new AiOpeningMessageResult
             {
                 JapaneseText = "いらっしゃいませ！何名様ですか？",
+                FuriganaHtml = "いらっしゃいませ！<ruby>何名様<rt>なんめいさま</rt></ruby>ですか？",
                 VietnameseMeaning = "Kính chào quý khách! Quý khách đi mấy người ạ?"
             };
         }
@@ -369,6 +387,7 @@ Return strictly pure JSON:
             return new AiOpeningMessageResult
             {
                 JapaneseText = "はい、こちらは駅員室です。どうなさいましたか？",
+                FuriganaHtml = "はい、こちらは<ruby>駅員室<rt>えきいんしつ</rt></ruby>です。どうなさいましたか？",
                 VietnameseMeaning = "Vâng, đây là phòng trực ga. Tôi có thể giúp gì cho quý khách?"
             };
         }
@@ -376,6 +395,7 @@ Return strictly pure JSON:
         return new AiOpeningMessageResult
         {
             JapaneseText = $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。",
+            FuriganaHtml = $"こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>の{scenario.Title}を<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
             VietnameseMeaning = $"Xin chào. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}. Rất mong được hợp tác."
         };
     }
@@ -397,6 +417,7 @@ Return strictly pure JSON:
                        scenarioTitle.Contains("ăn", StringComparison.OrdinalIgnoreCase);
 
         string jaReply;
+        string fHtmlReply;
         string viMeaning;
         var isNaturallyConcluded = false;
 
@@ -412,6 +433,7 @@ Return strictly pure JSON:
                     completedIds.Add(nextMission.Id);
                 }
                 jaReply = "ご応募ありがとうございます。早速ですが、週に何日くらい、何曜日にシフトに入れますか？";
+                fHtmlReply = "ご<ruby>応募<rt>おうぼ</rt></ruby>ありがとうございます。<ruby>早速<rt>さっそく</rt></ruby>ですが、<ruby>週<rt>しゅう</rt></ruby>に<ruby>何日<rt>なんにち</rt></ruby>くらい、<ruby>何曜日<rt>なんようび</rt></ruby>にシフトに<ruby>入<rt>はい</rt></ruby>れますか？";
                 viMeaning = "Cảm ơn bạn đã ứng tuyển. Chúng ta bắt đầu nhé, một tuần bạn có thể làm việc khoảng mấy ngày và vào những thứ mấy?";
             }
             else if (nextMission != null && (nextMission.Order == 2 || nextMission.Content.Contains("ngày", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("tuần", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("ca", StringComparison.OrdinalIgnoreCase)))
@@ -421,6 +443,7 @@ Return strictly pure JSON:
                     completedIds.Add(nextMission.Id);
                 }
                 jaReply = "承知いたしました。シフトの希望はよくわかりました。最後に、当店で働く意気込みや志望動機をお聞かせいただけますか？";
+                fHtmlReply = "<ruby>承知<rt>しょうち</rt></ruby>いたしました。シフトの<ruby>希望<rt>きぼう</rt></ruby>はよくわかりました。<ruby>最後<rt>さいご</rt></ruby>に、<ruby>当店<rt>とうてん</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>く<ruby>意気込<rt>いきご</rt></ruby>みや<ruby>志望動機<rt>しぼうどうき</rt></ruby>をお<ruby>聞<rt>き</rt></ruby>かせいただけますか？";
                 viMeaning = "Tôi hiểu rồi. Nguyện vọng về ca làm việc rất rõ ràng. Cuối cùng, bạn có thể chia sẻ tinh thần làm việc hoặc động lực ứng tuyển vào quán được không?";
             }
             else if (nextMission != null)
@@ -430,18 +453,21 @@ Return strictly pure JSON:
                     completedIds.Add(nextMission.Id);
                 }
                 jaReply = "素晴らしい意気込みですね！本日は面接にお越しいただき、誠にありがとうございました。採用結果は3日以内にご連絡いたします。";
+                fHtmlReply = "<ruby>素晴<rt>すば</rt></ruby>らしい<ruby>意気込<rt>いきご</rt></ruby>みですね！<ruby>本日<rt>ほんじつ</rt></ruby>は<ruby>面接<rt>めんせつ</rt></ruby>にお<ruby>越<rt>こ</rt></ruby>しいただき、<ruby>誠<rt>まこと</rt></ruby>にありがとうございました。<ruby>採用結果<rt>さいようけっか</rt></ruby>は3<ruby>日以内<rt>にちいない</rt></ruby>にご<ruby>連絡<rt>れんらく</rt></ruby>いたします。";
                 viMeaning = "Tinh thần của bạn rất tuyệt vời! Cảm ơn bạn rất nhiều vì đã đến tham gia phỏng vấn hôm nay. Kết quả chúng tôi sẽ liên hệ trong vòng 3 ngày tới ạ.";
                 isNaturallyConcluded = true;
             }
             else
             {
                 jaReply = "本日の面接は終了となります。お疲れ様でした。";
+                fHtmlReply = "<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>面接<rt>めんせつ</rt></ruby>は<ruby>終了<rt>しゅうりょう</rt></ruby>となります。お<ruby>疲<rt>つか</rt></ruby>れ<ruby>様<rt>さま</rt></ruby>でした。";
                 viMeaning = "Buổi phỏng vấn hôm nay đến đây là kết thúc. Cảm ơn bạn đã vất vả.";
                 isNaturallyConcluded = true;
             }
         }
         else if (isRamen)
         {
+            var maxOrder = pendingMissions.Count > 0 ? pendingMissions.Max(m => m.Order) : 0;
             foreach (var m in pendingMissions)
             {
                 var criteria = m.CompletionCriteriaJson.ToLower();
@@ -463,7 +489,9 @@ Return strictly pure JSON:
                 }
                 else if (criteria.Contains("thank") || criteria.Contains("goodbye") || criteria.Contains("cảm ơn") || criteria.Contains("tạm biệt") || criteria.Contains("thanh toán"))
                 {
-                    if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計"))
+                    // Chỉ tick nhiệm vụ cảm ơn ra về nếu các nhiệm vụ gọi món/hỏi giá đã hoàn thành
+                    var hasEarlierIncomplete = pendingMissions.Any(pm => pm.Order < m.Order && !completedIds.Contains(pm.Id));
+                    if (!hasEarlierIncomplete && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計")))
                     {
                         completedIds.Add(m.Id);
                         break;
@@ -471,45 +499,75 @@ Return strictly pure JSON:
                 }
             }
 
-            if (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("会計"))
+            var hasPendingCore = pendingMissions.Any(pm => pm.Order < maxOrder && !completedIds.Contains(pm.Id));
+            if (!hasPendingCore && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("会計")))
             {
                 jaReply = "ありがとうございました！またのお越しをお待ちしております。";
+                fHtmlReply = "ありがとうございました！またのお<ruby>越<rt>こ</rt></ruby>しをお<ruby>待<rt>ま</rt></ruby>ちしております。";
                 viMeaning = "Cảm ơn quý khách rất nhiều! Hẹn gặp lại quý khách lần sau ạ.";
                 isNaturallyConcluded = true;
             }
             else if (lowerMsg.Contains("いくら") || lowerMsg.Contains("値段"))
             {
                 jaReply = "とんこつラーメンは一杯850円でございます。";
+                fHtmlReply = "<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメンは<ruby>一杯<rt>いっぱい</rt></ruby>850<ruby>円<rt>えん</rt></ruby>でございます。";
                 viMeaning = "Dạ một bát Tonkotsu Ramen có giá là 850 yên ạ.";
             }
             else if (lowerMsg.Contains("ラーメン") || lowerMsg.Contains("とんこつ") || lowerMsg.Contains("注文"))
             {
                 jaReply = "かしこまりました！とんこつラーメン一杯ですね。少々お待ちください。他にご注文はございますか？";
+                fHtmlReply = "かしこまりました！<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ちください。<ruby>他<rt>ほか</rt></ruby>にご<ruby>注文<rt>ちゅうもん</rt></ruby>はございますか？";
                 viMeaning = "Dạ tôi đã rõ! Một bát Tonkotsu Ramen đúng không ạ. Xin quý khách vui lòng đợi một lát. Quý khách còn muốn gọi thêm gì nữa không ạ?";
             }
             else
             {
                 jaReply = "はい、かしこまりました。ご注文がお決まりになりましたらお呼びください。";
+                fHtmlReply = "はい、かしこまりました。ご<ruby>注文<rt>ちゅうもん</rt></ruby>がお<ruby>決<rt>き</rt></ruby>まりになりましたらお<ruby>呼<rt>よ</rt></ruby>びください。";
                 viMeaning = "Dạ vâng, khi nào quý khách chọn xong món xin vui lòng gọi tôi nhé.";
             }
         }
         else
         {
             var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
-            if (nextMission != null && userMessage.Trim().Length >= 6)
+            if (nextMission != null)
             {
-                completedIds.Add(nextMission.Id);
+                var criteria = nextMission.CompletionCriteriaJson.ToLower();
+                var isMatched = false;
+                if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("intro"))
+                {
+                    isMatched = lowerMsg.Contains("こんにちは") || lowerMsg.Contains("はじめまして") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("です");
+                }
+                else if (criteria.Contains("hỏi") || criteria.Contains("ask") || criteria.Contains("price") || criteria.Contains("giá"))
+                {
+                    isMatched = lowerMsg.Contains("ですか") || lowerMsg.Contains("いくら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("なん");
+                }
+                else if (criteria.Contains("thank") || criteria.Contains("cảm ơn") || criteria.Contains("bye") || criteria.Contains("tạm biệt"))
+                {
+                    isMatched = lowerMsg.Contains("ありがとう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら");
+                }
+                else
+                {
+                    // Generic check: Must contain Japanese text characters and meaningful length
+                    isMatched = Regex.IsMatch(userMessage, @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]") && userMessage.Trim().Length >= 4;
+                }
+
+                if (isMatched)
+                {
+                    completedIds.Add(nextMission.Id);
+                }
             }
 
-            if (pendingMissions.Count <= 1)
+            if (pendingMissions.Count <= 1 && completedIds.Count > 0)
             {
                 jaReply = "よく分かりました。本日の練習はこれで終了です。大変よくできました！";
+                fHtmlReply = "よく<ruby>分<rt>わ</rt></ruby>かりました。<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>練習<rt>れんしゅう</rt></ruby>はこれで<ruby>終了<rt>しゅうりょう</rt></ruby>です。<ruby>大変<rt>たいへん</rt></ruby>よくできました！";
                 viMeaning = "Tôi đã hiểu rõ. Buổi luyện tập hôm nay đến đây là kết thúc. Bạn đã làm rất tốt!";
                 isNaturallyConcluded = true;
             }
             else
             {
                 jaReply = "はい、承知いたしました。続けて次の会話を進めましょう。";
+                fHtmlReply = "はい、<ruby>承知<rt>しょうち</rt></ruby>いたしました。<ruby>続<rt>つづ</rt></ruby>けて<ruby>次<rt>つぎ</rt></ruby>の<ruby>会話<rt>かいわ</rt></ruby>を<ruby>進<rt>すす</rt></ruby>めましょう。";
                 viMeaning = "Vâng, tôi đã hiểu. Chúng ta cùng tiếp tục câu chuyện nhé.";
             }
         }
@@ -533,7 +591,9 @@ Return strictly pure JSON:
         return new AiTurnResult
         {
             JapaneseReply = jaReply,
+            FuriganaHtml = fHtmlReply,
             VietnameseMeaning = viMeaning,
+            UserVietnameseMeaning = userMessage,
             CompletedMissionIds = completedIds,
             IsNaturallyConcluded = isNaturallyConcluded,
             LinguisticFeedback = feedback

@@ -238,6 +238,8 @@ namespace JCAP.Services.Implementations
             List<TargetVocabularyDto> targetVocabularies = [];
             List<TargetGrammarDto> targetGrammars = [];
             List<RoleplayMessageDto> messages = [];
+            List<RoleplayMissionProgressDto> allMissions = [];
+            int scenarioId = 0;
 
             if (result.RoleplaySessionId > 0)
             {
@@ -247,6 +249,18 @@ namespace JCAP.Services.Implementations
                     .Select(s => new
                     {
                         Config = s.ScenarioLevelConfiguration,
+                        SessionMissions = s.SessionMissions
+                            .OrderBy(sm => sm.Mission != null ? sm.Mission.Order : 0)
+                            .Select(sm => new
+                            {
+                                sm.MissionId,
+                                Content = sm.Mission != null ? sm.Mission.Content : "",
+                                CriteriaJson = sm.Mission != null ? sm.Mission.CompletionCriteriaJson : null,
+                                Order = sm.Mission != null ? sm.Mission.Order : 0,
+                                sm.IsCompleted,
+                                sm.CompletedAt
+                            })
+                            .ToList(),
                         Messages = s.Messages
                             .OrderBy(m => m.CreatedAt)
                             .Select(m => new
@@ -265,6 +279,17 @@ namespace JCAP.Services.Implementations
 
                 if (sessionData != null)
                 {
+                    scenarioId = sessionData.Config?.ScenarioId ?? 0;
+                    allMissions = sessionData.SessionMissions.Select(sm => new RoleplayMissionProgressDto
+                    {
+                        MissionId = sm.MissionId,
+                        Content = sm.Content,
+                        Target = ExtractMissionTarget(sm.CriteriaJson),
+                        Order = sm.Order,
+                        IsCompleted = sm.IsCompleted,
+                        CompletedAt = sm.CompletedAt.HasValue ? AsUtc(sm.CompletedAt.Value) : null
+                    }).ToList();
+
                     if (sessionData.Config != null)
                     {
                         targetVocabularies = sessionData.Config.TargetVocabularies.Select(v => new TargetVocabularyDto
@@ -319,6 +344,7 @@ namespace JCAP.Services.Implementations
             {
                 Id = result.Id,
                 RoleplaySessionId = result.RoleplaySessionId,
+                ScenarioId = scenarioId,
                 ScenarioTitle = result.ScenarioTitle,
                 JLPTLevel = result.JLPTLevel,
                 OverallScore = result.OverallScore,
@@ -328,6 +354,7 @@ namespace JCAP.Services.Implementations
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
+                AllMissions = allMissions,
                 TargetVocabularies = targetVocabularies,
                 TargetGrammars = targetGrammars,
                 Messages = messages,
@@ -343,6 +370,24 @@ namespace JCAP.Services.Implementations
             return value.Kind == DateTimeKind.Utc
                 ? value
                 : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
+        private static string ExtractMissionTarget(string? criteriaJson)
+        {
+            if (string.IsNullOrWhiteSpace(criteriaJson)) return string.Empty;
+            try
+            {
+                using var doc = JsonDocument.Parse(criteriaJson);
+                if (doc.RootElement.TryGetProperty("target", out var targetProp))
+                {
+                    return targetProp.GetString() ?? string.Empty;
+                }
+            }
+            catch
+            {
+                // Safe fallback
+            }
+            return string.Empty;
         }
 
         private static ApiResponse<CompleteRoleplaySessionResponseDto> BuildCompleteResponse(

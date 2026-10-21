@@ -38,7 +38,23 @@ export const ConversationResultDetailView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copyToast, setCopyToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
+  const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
+  const [copiedAlternativeId, setCopiedAlternativeId] = useState<number | null>(null);
+
+  const handleCopyText = (text: string, id: number, isAlt = false) => {
+    void navigator.clipboard.writeText(text);
+    if (isAlt) {
+      setCopiedAlternativeId(id);
+      setTimeout(() => setCopiedAlternativeId(null), 2000);
+    } else {
+      setCopiedMessageId(id);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    }
+    setToastMessage(`📋 Đã sao chép: "${text.length > 30 ? text.slice(0, 30) + '...' : text}"`);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
 
   const handleCopySummary = async () => {
     if (!result) return;
@@ -129,10 +145,10 @@ export const ConversationResultDetailView: React.FC = () => {
   return (
     <section className="mx-auto w-full max-w-5xl pb-10">
       {/* Toast Notification */}
-      {copyToast && (
+      {(copyToast || toastMessage) && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2 rounded-2xl border border-emerald-400 bg-[#071A44] px-4 py-3 text-xs font-semibold text-white shadow-xl animate-fade-in">
-          <span>✓</span>
-          <span>Đã sao chép báo cáo kết quả vào bộ nhớ tạm!</span>
+          <span>{toastMessage ? '⭐' : '✓'}</span>
+          <span>{toastMessage || 'Đã sao chép báo cáo kết quả vào bộ nhớ tạm!'}</span>
         </div>
       )}
 
@@ -341,21 +357,88 @@ export const ConversationResultDetailView: React.FC = () => {
                 </p>
               </div>
 
-              {/* Aside: Nhiệm vụ hoàn thành */}
+              {/* Aside: Nhiệm vụ kịch bản (Đầy đủ cả Đạt & Chưa đạt) */}
               <aside className="h-fit rounded-[26px] border border-[#DCE7F4] bg-white p-6 sm:p-7 shadow-[0_12px_32px_rgba(7,26,68,0.05)]">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Nhiệm vụ kịch bản</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Nhiệm vụ kịch bản</p>
                 <div className="mt-2 flex items-baseline justify-between">
                   <h2 className="text-2xl font-black text-[#071A44]">
-                    {result.completedMissions.length} mục tiêu
+                    {result.allMissions && result.allMissions.length > 0
+                      ? `${result.completedMissions.length} / ${result.allMissions.length}`
+                      : `${result.completedMissions.length}`}{' '}
+                    mục tiêu
                   </h2>
-                  <span className="text-xs font-semibold text-[#52627A]">
-                    {result.passStatus ? 'Đã hoàn thành xuất sắc' : 'Chưa hoàn tất hết'}
+                  <span
+                    className={`text-xs font-bold ${
+                      result.passStatus ? 'text-emerald-600' : 'text-amber-600'
+                    }`}
+                  >
+                    {result.passStatus ? '✓ Hoàn thành xuất sắc' : 'Chưa hoàn tất hết'}
                   </span>
                 </div>
+
+                {/* Thanh tiến độ */}
+                {result.allMissions && result.allMissions.length > 0 && (
+                  <div className="mt-3">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#E6EDF5]">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#0878EE] to-emerald-500 transition-all duration-500"
+                        style={{
+                          width: `${Math.round(
+                            (result.completedMissions.length / result.allMissions.length) * 100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <ul className="mt-5 space-y-3">
-                  {result.completedMissions.length > 0 ? (
+                  {result.allMissions && result.allMissions.length > 0 ? (
+                    result.allMissions.map((mission) => (
+                      <li
+                        key={mission.missionId}
+                        className={`flex gap-3 rounded-xl p-3.5 text-xs sm:text-sm font-semibold border transition ${
+                          mission.isCompleted
+                            ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                            : 'bg-slate-50 text-slate-600 border-slate-200'
+                        }`}
+                      >
+                        <span
+                          className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
+                            mission.isCompleted
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-slate-300 text-slate-700'
+                          }`}
+                        >
+                          {mission.isCompleted ? '✓' : mission.order}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="min-w-0 break-words leading-relaxed">
+                              {mission.content}
+                            </span>
+                            <span
+                              className={`shrink-0 text-[10px] font-bold ${
+                                mission.isCompleted ? 'text-emerald-700' : 'text-slate-500'
+                              }`}
+                            >
+                              {mission.isCompleted ? 'Đã đạt' : 'Chưa đạt'}
+                            </span>
+                          </div>
+                          {mission.target && (
+                            <p className="mt-1 text-[11px] font-normal text-[#71809A]">
+                              Mục tiêu: {mission.target}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))
+                  ) : result.completedMissions.length > 0 ? (
                     result.completedMissions.map((mission) => (
-                      <li key={mission.missionId} className="flex gap-3 rounded-xl bg-emerald-50 p-3.5 text-xs sm:text-sm font-semibold text-emerald-900 border border-emerald-100">
+                      <li
+                        key={mission.missionId}
+                        className="flex gap-3 rounded-xl bg-emerald-50 p-3.5 text-xs sm:text-sm font-semibold text-emerald-900 border border-emerald-100"
+                      >
                         <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-500 text-[10px] text-white">
                           ✓
                         </span>
@@ -416,14 +499,24 @@ export const ConversationResultDetailView: React.FC = () => {
                             {vocab.meaning}
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => playJapaneseAudio(vocab.word)}
-                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#DCE7F4] bg-white text-xs text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
-                          title="Nghe phát âm từ vựng"
-                        >
-                          🔊
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(`${vocab.word}${vocab.reading ? ` (${vocab.reading})` : ''}: ${vocab.meaning}`, vocab.id)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[#DCE7F4] bg-white text-xs text-[#52627A] transition hover:bg-[#F4F9FE] hover:text-[#0878EE]"
+                            title="Sao chép từ vựng"
+                          >
+                            📋
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => playJapaneseAudio(vocab.word)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[#DCE7F4] bg-white text-xs text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
+                            title="Nghe phát âm từ vựng"
+                          >
+                            🔊
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -518,17 +611,30 @@ export const ConversationResultDetailView: React.FC = () => {
                           <span className="text-xs font-bold text-[#52627A]">
                             {isUser ? 'Bạn đã nói' : 'AI phản hồi'}
                           </span>
-                          {!isUser && (
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => playJapaneseAudio(msg.japaneseText)}
                               className="inline-flex items-center gap-1 rounded-lg border border-[#DCE7F4] bg-white px-2 py-1 text-[11px] font-semibold text-[#0878EE] transition hover:bg-[#0878EE] hover:text-white"
-                              title="Nghe lại câu này"
+                              title="Nghe phát âm câu này"
                             >
                               <span>🔊</span>
                               <span>Nghe</span>
                             </button>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(msg.japaneseText, msg.id, false)}
+                              className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold transition ${
+                                copiedMessageId === msg.id
+                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                  : 'border-[#DCE7F4] bg-white text-[#52627A] hover:bg-[#F4F9FE] hover:text-[#0878EE]'
+                              }`}
+                              title="Sao chép câu này"
+                            >
+                              <span>{copiedMessageId === msg.id ? '✓' : '📋'}</span>
+                              <span>{copiedMessageId === msg.id ? 'Đã chép' : 'Chép'}</span>
+                            </button>
+                          </div>
                           {isUser && feedback && (
                             <span
                               className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
@@ -548,10 +654,17 @@ export const ConversationResultDetailView: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Japanese Utterance */}
-                        <p className="text-sm sm:text-base font-bold text-[#071A44] leading-relaxed break-words">
-                          {msg.japaneseText}
-                        </p>
+                        {/* Japanese Utterance (Hỗ trợ Furigana nếu có) */}
+                        {msg.furiganaHtml ? (
+                          <div
+                            className="text-sm sm:text-base font-bold text-[#071A44] leading-relaxed break-words"
+                            dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }}
+                          />
+                        ) : (
+                          <p className="text-sm sm:text-base font-bold text-[#071A44] leading-relaxed break-words">
+                            {msg.japaneseText}
+                          </p>
+                        )}
 
                         {/* Vietnamese Meaning */}
                         {msg.vietnameseMeaning && (
@@ -569,9 +682,35 @@ export const ConversationResultDetailView: React.FC = () => {
                               </p>
                             )}
                             {feedback.naturalAlternative && (
-                              <p className="text-emerald-700 font-semibold">
-                                🌸 Diễn đạt bản xứ: {feedback.naturalAlternative}
-                              </p>
+                              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F1F5F9]">
+                                <p className="text-emerald-800 font-bold text-xs">
+                                  🌸 Diễn đạt bản xứ: {feedback.naturalAlternative}
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => playJapaneseAudio(feedback.naturalAlternative!)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-emerald-100"
+                                    title="Nghe phát âm chuẩn câu bản xứ"
+                                  >
+                                    <span>🔊</span>
+                                    <span>Nghe câu mẫu</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyText(feedback.naturalAlternative!, msg.id, true)}
+                                    className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition ${
+                                      copiedAlternativeId === msg.id
+                                        ? 'border-emerald-500 bg-emerald-600 text-white'
+                                        : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                                    }`}
+                                    title="Sao chép câu bản xứ vào bộ nhớ tạm"
+                                  >
+                                    <span>{copiedAlternativeId === msg.id ? '✓' : '📋'}</span>
+                                    <span>{copiedAlternativeId === msg.id ? 'Đã chép' : 'Sao chép'}</span>
+                                  </button>
+                                </div>
+                              </div>
                             )}
                           </div>
                         )}
@@ -607,6 +746,7 @@ export const ConversationResultDetailView: React.FC = () => {
           Xem toàn bộ lịch sử
         </Link>
       </div>
+
     </section>
   );
 };

@@ -48,6 +48,45 @@ export const RoleplayPracticeView: React.FC = () => {
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
+  // Trạng thái sao chép và phát âm câu gợi ý bản xứ
+  const [copiedFeedbackText, setCopiedFeedbackText] = useState(false);
+  const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
+
+  // Phím tắt bàn phím (Escape đóng menu/modal)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSettingsOpen(false);
+        setShowEndModal(false);
+        setShowLeaveModal(false);
+        setIsVoiceModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Trạng thái gõ bàn phím tiếng Nhật (IME composition: ngăn chặn Enter submit nhầm)
+  const [isComposing, setIsComposing] = useState(false);
+
+  // Dropdown Cài đặt hỗ trợ (Dịch, Furigana, Giọng AI, Tốc độ)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    };
+    if (isSettingsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSettingsOpen]);
+
   useEffect(() => {
     let isCurrent = true;
     void scenarioVoiceService.getVoices().then((voices) => {
@@ -255,6 +294,11 @@ export const RoleplayPracticeView: React.FC = () => {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    // Ngăn chặn submit khi người dùng đang bấm Enter để chọn chữ Hán Kanji từ bộ gõ IME
+    if (isComposing) {
+      return;
+    }
+
     // DỪNG THU ÂM NGAY LẬP TỨC khi người dùng bấm gửi (kể cả khi chưa tự bấm dừng mic)
     // Điều này ngăn chặn triệt để hiện tượng micro thu lại tiếng phát ra từ loa của AI (Audio Feedback Loop)
     stopSpeechRecognition();
@@ -388,14 +432,6 @@ export const RoleplayPracticeView: React.FC = () => {
     } else {
       navigate('/scenarios');
     }
-  };
-
-  // 6. Mock toast thêm vào Flashcard
-  const handleAddToFlashcard = (text: string) => {
-    setToastMessage(`Đã thêm cụm từ "${text}" vào Flashcard ôn tập!`);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
   };
 
   // 7. Voice Handlers (Scenario Voice Integration)
@@ -558,122 +594,206 @@ export const RoleplayPracticeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Center/Right: Toggles, Credits, End Action */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Toggles: Dịch, Furigana & Âm thanh AI */}
-          <div className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] p-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setShowTranslation(!showTranslation)}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                showTranslation ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-            >
-              Dịch: {showTranslation ? 'BẬT' : 'TẮT'}
-            </button>
-            {/* Furigana toggle tạm ẩn (chờ implement sau)
-            <button
-              type="button"
-              onClick={() => setShowFurigana(!showFurigana)}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                showFurigana ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-            >
-              Furigana: {showFurigana ? 'BẬT' : 'TẮT'}
-            </button>
-            */}
-            <button
-              type="button"
-              onClick={() => {
-                if (autoPlayAudio) {
-                  scenarioVoiceService.stopAllAudio();
-                  setIsPlayingAiSpeech(false);
-                  setPlayingMessageId(null);
-                }
-                setAutoPlayAudio(!autoPlayAudio);
-              }}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition ${
-                autoPlayAudio ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-              title="Tự động phát giọng đọc AI khi có tin nhắn mới"
-            >
-              <span>{autoPlayAudio ? '🔊' : '🔇'}</span>
-              <span>Giọng AI: {autoPlayAudio ? 'BẬT' : 'TẮT'}</span>
-            </button>
-
-            {/* Nút chọn giọng đọc VOICEVOX cho AI */}
-            <button
-              type="button"
-              onClick={() => {
-                scenarioVoiceService.stopAllAudio();
-                setIsPlayingAiSpeech(false);
-                setPlayingMessageId(null);
-                setIsVoiceModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1 rounded-lg border border-[#E6EDF5] bg-white px-2 py-1 text-xs font-semibold text-[#52627A] transition hover:border-[#0878EE] hover:text-[#0878EE]"
-              title="Cài đặt giọng đọc AI (VOICEVOX)"
-            >
-              <span>🎙️</span>
-              <span className="hidden xl:inline">Giọng đọc</span>
-            </button>
-
-            {/* Nút điều chỉnh tốc độ phát âm AI */}
-            <button
-              type="button"
-              onClick={() => {
-                const nextRate = speechRate === 1.0 ? 0.85 : speechRate === 0.85 ? 1.15 : 1.0;
-                setSpeechRate(nextRate);
-                scenarioVoiceService.setSpeechRate(nextRate);
-                setToastMessage(`⚡ Tốc độ giọng đọc AI: ${nextRate}x`);
-                setTimeout(() => setToastMessage(null), 2500);
-              }}
-              className="inline-flex items-center gap-1 rounded-lg border border-[#E6EDF5] bg-white px-2 py-1 text-xs font-semibold text-[#52627A] transition hover:border-[#0878EE] hover:text-[#0878EE]"
-              title="Đổi tốc độ đọc: 0.85x (Chậm/Luyện nghe), 1.0x (Chuẩn), 1.15x (Nhanh)"
-            >
-              <span>⚡</span>
-              <span>{speechRate}x</span>
-            </button>
-          </div>
-
+        {/* Center/Right: Compact Action Controls */}
+        <div className="flex items-center gap-2">
           {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
           {!isAdmin && (
             <Link
               to="/credits"
-              className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
               title="Số dư credit hiện tại"
             >
               <span>🪙</span>
               <span>{session.creditBalance ?? 0}</span>
-              <span className="hidden sm:inline">Credits</span>
             </Link>
           )}
 
-          {/* Sidebar toggles on desktop */}
+          {/* Toggle Cột Trái: Nhiệm vụ */}
           <button
             type="button"
             onClick={() => setIsLeftOpen(!isLeftOpen)}
-            className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               isLeftOpen
                 ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
-                : 'border-[#E6EDF5] bg-white text-[#71809A] hover:border-[#0878EE]'
+                : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
             }`}
-            title="Ẩn/Hiện Nhiệm vụ & Cheat Sheet"
+            title="Ẩn/Hiện Danh sách nhiệm vụ kịch bản"
           >
-            📋 <span className="hidden xl:inline">Nhiệm vụ</span>
+            <span>📋</span>
+            <span className="hidden md:inline">Nhiệm vụ</span>
+            <span className="text-[10px] font-bold opacity-80">
+              ({completedMissionsCount}/{totalMissionsCount})
+            </span>
           </button>
 
+          {/* Toggle Cột Phải: Đánh giá */}
           <button
             type="button"
             onClick={() => setIsRightOpen(!isRightOpen)}
-            className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               isRightOpen
                 ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
-                : 'border-[#E6EDF5] bg-white text-[#71809A] hover:border-[#0878EE]'
+                : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
             }`}
-            title="Ẩn/Hiện Đánh giá ngôn ngữ"
+            title="Ẩn/Hiện Bảng phân tích & đánh giá ngôn ngữ chi tiết"
           >
-            🔍 <span className="hidden xl:inline">Đánh giá</span>
+            <span>🔍</span>
+            <span className="hidden md:inline">Đánh giá</span>
           </button>
+
+          {/* Dropdown Menu Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI, Tốc độ) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                isSettingsOpen
+                  ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
+                  : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
+              }`}
+              title="Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI)"
+            >
+              <span>⚙️</span>
+              <span className="hidden md:inline">Cài đặt</span>
+              {(showTranslation || showFurigana || autoPlayAudio) && (
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0878EE]" />
+              )}
+            </button>
+
+            {/* Popover Dropdown Panel */}
+            {isSettingsOpen && (
+              <div
+                ref={settingsRef}
+                className="absolute right-0 top-11 z-50 w-72 rounded-2xl border border-[#DCE7F4] bg-white p-4 shadow-2xl animate-fade-in text-xs space-y-3.5"
+              >
+                <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2">
+                  <span className="font-bold text-[#071A44] text-xs">Cài đặt hỗ trợ luyện tập</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="text-[#71809A] hover:text-[#071A44] font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Toggle Dịch */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Dịch nghĩa tiếng Việt</p>
+                    <p className="text-[11px] text-[#71809A]">Hiển thị bản dịch dưới câu</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTranslation(!showTranslation)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      showTranslation ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        showTranslation ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Toggle Furigana */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Phiên âm Furigana</p>
+                    <p className="text-[11px] text-[#71809A]">Cách đọc Hiragana trên Kanji</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFurigana(!showFurigana)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      showFurigana ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        showFurigana ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Toggle Giọng AI */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Tự động phát giọng AI</p>
+                    <p className="text-[11px] text-[#71809A]">Phát âm ngay khi AI trả lời</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (autoPlayAudio) {
+                        scenarioVoiceService.stopAllAudio();
+                        setIsPlayingAiSpeech(false);
+                        setPlayingMessageId(null);
+                      }
+                      setAutoPlayAudio(!autoPlayAudio);
+                    }}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      autoPlayAudio ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        autoPlayAudio ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Tốc độ đọc AI */}
+                <div className="border-t border-[#F1F5F9] pt-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-[#071A44]">Tốc độ đọc của AI</span>
+                    <span className="font-bold text-[#0878EE]">{speechRate}x</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[0.85, 1.0, 1.15].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          setSpeechRate(rate);
+                          scenarioVoiceService.setSpeechRate(rate);
+                        }}
+                        className={`rounded-lg py-1 text-center font-bold text-xs transition ${
+                          speechRate === rate
+                            ? 'bg-[#0878EE] text-white shadow-xs'
+                            : 'bg-[#F1F5F9] text-[#52627A] hover:bg-slate-200'
+                        }`}
+                      >
+                        {rate === 0.85 ? '0.85x Chậm' : rate === 1.0 ? '1.0x Chuẩn' : '1.15x Nhanh'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nút mở cài đặt giọng đọc VOICEVOX */}
+                <div className="border-t border-[#F1F5F9] pt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      scenarioVoiceService.stopAllAudio();
+                      setIsPlayingAiSpeech(false);
+                      setPlayingMessageId(null);
+                      setIsVoiceModalOpen(true);
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#DCE7F4] bg-[#F8FAFC] py-2 text-xs font-bold text-[#0878EE] transition hover:bg-[#EAF4FF] hover:border-[#0878EE]"
+                  >
+                    <span>🎙️</span>
+                    <span>Đổi nhân vật & giọng đọc AI</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* End Session Button: Biến thành màu XANH LÁ khi đã hoàn thành 100% nhiệm vụ */}
           {isAllMissionsCompleted ? (
@@ -779,12 +899,12 @@ export const RoleplayPracticeView: React.FC = () => {
                   {session.missions.map((mission: RoleplayMissionDto) => (
                     <div
                       key={mission.missionId ?? mission.id ?? mission.order}
-                      className={`flex gap-3 rounded-xl border p-3 transition duration-300 ${
+                      className={`flex gap-3 rounded-xl border p-3 transition-all duration-300 ${
                         recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
-                          ? 'border-emerald-400 bg-emerald-100/90 ring-2 ring-emerald-400 ring-offset-1 animate-pulse shadow-sm'
+                          ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
                           : mission.isCompleted
                           ? 'border-emerald-200 bg-emerald-50/60'
-                          : 'border-[#E6EDF5] bg-white'
+                          : 'border-[#E6EDF5] bg-white hover:border-[#B9D9FF]'
                       }`}
                     >
                       {/* Trạng thái icon: CHỈ CÓ Pending hoặc Completed */}
@@ -901,18 +1021,14 @@ export const RoleplayPracticeView: React.FC = () => {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex items-start gap-3 ${isAi ? '' : 'flex-row-reverse'}`}
+                    className={`flex items-start gap-3 transition-all duration-300 animate-slide-up ${isAi ? '' : 'justify-end'}`}
                   >
-                    {/* Avatar */}
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-xs ${
-                        isAi
-                          ? 'bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-white'
-                          : 'bg-[#071A44] text-white'
-                      }`}
-                    >
-                      {isAi ? session.aiPersona.slice(0, 1) || 'AI' : 'Bạn'}
-                    </div>
+                    {/* Avatar: chỉ hiển thị cho AI, tin nhắn người dùng căn phải tự nhiên */}
+                    {isAi && (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-xs font-bold text-white shadow-xs">
+                        {session.aiPersona.slice(0, 1) || 'AI'}
+                      </div>
+                    )}
 
                     {/* Chat Bubble */}
                     <div
@@ -924,8 +1040,8 @@ export const RoleplayPracticeView: React.FC = () => {
                       }}
                       className={`group relative max-w-[80%] rounded-2xl p-4 transition shadow-xs ${
                         isAi
-                          ? 'rounded-tl-xs border border-[#E6EDF5] bg-white text-[#071A44]'
-                          : `rounded-tr-xs bg-[#0878EE] text-white cursor-pointer ${
+                          ? 'bubble-ai rounded-tl-xs border border-[#E6EDF5] bg-white text-[#071A44]'
+                          : `bubble-user rounded-tr-xs bg-[#0878EE] text-white cursor-pointer ${
                               isSelected ? 'ring-3 ring-[#0878EE]/30 shadow-md' : 'hover:bg-[#0768D0]'
                             }`
                       }`}
@@ -964,9 +1080,16 @@ export const RoleplayPracticeView: React.FC = () => {
                       </div>
 
                       {/* Japanese text (with furigana toggle support) */}
-                      <p className="text-base font-medium leading-relaxed tracking-wide">
-                        {showFurigana && msg.furiganaText ? msg.furiganaText : msg.japaneseText}
-                      </p>
+                      {showFurigana && msg.furiganaHtml ? (
+                        <div
+                          className="text-base font-medium leading-relaxed tracking-wide"
+                          dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }}
+                        />
+                      ) : (
+                        <p className="text-base font-medium leading-relaxed tracking-wide">
+                          {showFurigana && msg.furiganaText ? msg.furiganaText : msg.japaneseText}
+                        </p>
+                      )}
 
                       {/* Vietnamese translation (with translation toggle support) */}
                       {showTranslation && msg.vietnameseMeaning && (
@@ -989,7 +1112,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         </div>
                       )}
 
-                      {/* AI Audio button */}
+                      {/* AI Audio button with Soundwave equalizer */}
                       {isAi && (
                         <div className="mt-2 flex items-center gap-2">
                           <button
@@ -998,15 +1121,28 @@ export const RoleplayPracticeView: React.FC = () => {
                               e.stopPropagation();
                               handlePlayMessageAudio(msg.id, msg.japaneseText);
                             }}
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition ${
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
                               playingMessageId === msg.id && isPlayingAiSpeech
-                                ? 'bg-[#EAF4FF] text-[#0878EE] animate-pulse font-bold'
+                                ? 'bg-[#EAF4FF] text-[#0878EE] font-bold shadow-xs'
                                 : 'text-[#71809A] hover:bg-slate-100 hover:text-[#0878EE]'
                             }`}
                             title="Nghe phát âm tiếng Nhật của AI"
                           >
-                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? '🔊' : '🔈'}</span>
-                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? 'Đang phát...' : 'Nghe lại'}</span>
+                            {playingMessageId === msg.id && isPlayingAiSpeech ? (
+                              <span className="flex items-center gap-1.5 text-[#0878EE]">
+                                <span className="flex items-end gap-0.5 h-3">
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.6s_ease-in-out_infinite] h-3" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.15s] h-2" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.3s] h-3.5" />
+                                </span>
+                                <span className="text-[11px]">Đang phát...</span>
+                              </span>
+                            ) : (
+                              <>
+                                <span>🔈</span>
+                                <span>Nghe lại</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       )}
@@ -1113,23 +1249,28 @@ export const RoleplayPracticeView: React.FC = () => {
                   )}
                 </button>
 
-                {/* Button Micro thu âm (Voice Input) */}
-                <button
-                  type="button"
-                  onClick={handleToggleMic}
-                  disabled={isSending}
-                  className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isRecordingMic
-                      ? 'border border-red-400 bg-red-600 text-white animate-pulse ring-4 ring-red-400/30'
-                      : 'border border-[#0878EE] bg-[#0878EE] text-white hover:bg-[#0768D0] hover:shadow-md'
-                  }`}
-                  title={isRecordingMic ? 'Đang bật mic (Bấm để dừng)' : 'Bấm để nói tiếng Nhật bằng micro'}
-                >
-                  <span className="text-sm">{isRecordingMic ? '⏹️' : '🎙️'}</span>
-                  <span className="hidden sm:inline">
-                    {isRecordingMic ? 'Đang thu âm...' : 'Nói'}
-                  </span>
-                </button>
+                {/* Button Micro thu âm (Voice Input với hiệu ứng Radar Pulse) */}
+                <div className="relative inline-flex shrink-0">
+                  {isRecordingMic && (
+                    <span className="absolute inset-0 rounded-xl bg-red-500 animate-ping opacity-40 pointer-events-none" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleToggleMic}
+                    disabled={isSending}
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRecordingMic
+                        ? 'border border-red-500 bg-red-600 text-white ring-4 ring-red-400/40 shadow-lg'
+                        : 'border border-[#0878EE] bg-[#0878EE] text-white hover:bg-[#0768D0] hover:shadow-md'
+                    }`}
+                    title={isRecordingMic ? 'Đang bật mic (Bấm để dừng)' : 'Bấm để nói tiếng Nhật bằng micro'}
+                  >
+                    <span className="text-sm">{isRecordingMic ? '⏹️' : '🎙️'}</span>
+                    <span className="hidden sm:inline">
+                      {isRecordingMic ? 'Đang thu âm...' : 'Nói'}
+                    </span>
+                  </button>
+                </div>
 
                 {/* Text input */}
                 <input
@@ -1137,6 +1278,15 @@ export const RoleplayPracticeView: React.FC = () => {
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
+                  onCompositionStart={() => setIsComposing(true)}
+                  onCompositionEnd={() => setIsComposing(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (isComposing || (e.nativeEvent as any).isComposing) {
+                        return;
+                      }
+                    }
+                  }}
                   placeholder={
                     isRecordingMic
                       ? '🎙️ Đang lắng nghe giọng nói tiếng Nhật của bạn...'
@@ -1330,20 +1480,56 @@ export const RoleplayPracticeView: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Flashcard Action */}
-                  <div className="pt-2">
+                  {/* Hành động thiết thực: Nghe phát âm & Sao chép câu bản xứ */}
+                  <div className="pt-2 grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        handleAddToFlashcard(
+                      onClick={() => {
+                        const textToPlay =
                           selectedMessage.linguisticFeedback?.naturalAlternative ||
-                            selectedMessage.japaneseText
-                        )
-                      }
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#0878EE] bg-white py-2.5 text-xs font-bold text-[#0878EE] shadow-xs transition hover:bg-[#EAF4FF]"
+                          selectedMessage.japaneseText;
+                        setIsPlayingAlternativeAudio(true);
+                        void scenarioVoiceService.playAiSpeech(
+                          textToPlay,
+                          selectedVoiceId,
+                          () => setIsPlayingAlternativeAudio(false),
+                          speechRate
+                        );
+                      }}
+                      className={`inline-flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold transition shadow-2xs ${
+                        isPlayingAlternativeAudio
+                          ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
+                          : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE] hover:text-[#0878EE]'
+                      }`}
+                      title="Nghe giọng AI đọc câu gợi ý chuẩn bản xứ này"
                     >
-                      <span>⭐</span>
-                      <span>Thêm cụm từ này vào Flashcard</span>
+                      <span>{isPlayingAlternativeAudio ? '🔊' : '🔈'}</span>
+                      <span>{isPlayingAlternativeAudio ? 'Đang đọc...' : 'Nghe câu mẫu'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const textToCopy =
+                          selectedMessage.linguisticFeedback?.naturalAlternative ||
+                          selectedMessage.japaneseText;
+                        void navigator.clipboard.writeText(textToCopy);
+                        setCopiedFeedbackText(true);
+                        setToastMessage('📋 Đã sao chép câu mẫu vào bộ nhớ tạm!');
+                        setTimeout(() => {
+                          setCopiedFeedbackText(false);
+                          setToastMessage(null);
+                        }, 2500);
+                      }}
+                      className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold shadow-2xs transition ${
+                        copiedFeedbackText
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-[#0878EE] text-white hover:bg-[#0768D0]'
+                      }`}
+                      title="Sao chép câu bản xứ vào clipboard để ghi chú hoặc tra từ điển"
+                    >
+                      <span>{copiedFeedbackText ? '✓' : '📋'}</span>
+                      <span>{copiedFeedbackText ? 'Đã sao chép' : 'Chép câu mẫu'}</span>
                     </button>
                   </div>
                 </>
@@ -1360,16 +1546,17 @@ export const RoleplayPracticeView: React.FC = () => {
           </aside>
         )}
 
-        {/* Nút Dock mở rộng Cột Phải khi đang bị thu gọn */}
-        {!isRightOpen && (
+        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
+        {!isLeftOpen && (
           <button
             type="button"
-            onClick={() => setIsRightOpen(true)}
-            className="absolute top-4 right-0 z-30 flex items-center gap-2 rounded-l-xl border border-r-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pl-4 transition-all"
-            title="Mở rộng bảng đánh giá ngôn ngữ"
+            onClick={() => setIsLeftOpen(true)}
+            className="absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all"
+            title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
           >
-            <span>◀</span>
-            <span>🔍 Đánh giá</span>
+            <span>📋</span>
+            <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
+            <span>▶</span>
           </button>
         )}
       </div>

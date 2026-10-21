@@ -19,11 +19,22 @@ namespace JCAP.DTOs.Roleplay
     {
         public int Id { get; set; }
         public int RoleplaySessionId { get; set; }
+        public int ScenarioId { get; set; }
         public string ScenarioTitle { get; set; } = string.Empty;
         public string JLPTLevel { get; set; } = string.Empty;
         public int OverallScore { get; set; }
         public bool PassStatus { get; set; }
         public DateTime CompletedAt { get; set; }
+    }
+
+    public class RoleplayMissionProgressDto
+    {
+        public int MissionId { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public string? Target { get; set; }
+        public int Order { get; set; }
+        public bool IsCompleted { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 
     public class RoleplayResultDetailDto : RoleplayResultSummaryDto
@@ -33,6 +44,7 @@ namespace JCAP.DTOs.Roleplay
         public int ImpressionScore { get; set; }
         public string GeneralFeedbackText { get; set; } = string.Empty;
         public List<CompletedMissionResultDto> CompletedMissions { get; set; } = [];
+        public List<RoleplayMissionProgressDto> AllMissions { get; set; } = [];
         public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
         public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
         public List<RoleplayMessageDto> Messages { get; set; } = [];
