@@ -375,7 +375,12 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
+        // 6. Cập nhật đánh giá ngôn ngữ, bản dịch tiếng Việt và cờ kết thúc tự nhiên
+        if (!string.IsNullOrWhiteSpace(turnResult.UserVietnameseMeaning))
+        {
+            userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
+        }
+
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
@@ -398,6 +403,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 Id = userMessage.Id,
                 Sender = userMessage.Sender,
                 JapaneseText = userMessage.JapaneseText,
+                VietnameseMeaning = userMessage.VietnameseMeaning,
                 LinguisticFeedback = turnResult.LinguisticFeedback,
                 CreatedAt = userMessage.CreatedAt
             },

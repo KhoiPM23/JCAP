@@ -165,6 +165,7 @@ TASK INSTRUCTIONS:
 
 Return strictly pure JSON matching this schema:
 {{
+  ""userVietnameseMeaning"": ""Vietnamese translation of what the learner just said in their utterance"",
   ""replyJapanese"": ""..."",
   ""replyVietnamese"": ""..."",
   ""completedMissionIds"": [],
@@ -185,6 +186,7 @@ Return strictly pure JSON matching this schema:
             {
                 using var doc = JsonDocument.Parse(jsonResponse);
                 var root = doc.RootElement;
+                var userVi = root.TryGetProperty("userVietnameseMeaning", out var uviProp) ? uviProp.GetString() ?? "" : "";
                 var ja = root.TryGetProperty("replyJapanese", out var jaProp) ? jaProp.GetString() ?? "" : "";
                 var vi = root.TryGetProperty("replyVietnamese", out var viProp) ? viProp.GetString() ?? "" : "";
                 var isConcluded = root.TryGetProperty("isNaturallyConcluded", out var concProp) && concProp.GetBoolean();
@@ -257,6 +259,7 @@ Return strictly pure JSON matching this schema:
                     {
                         JapaneseReply = ja.Trim(),
                         VietnameseMeaning = vi.Trim(),
+                        UserVietnameseMeaning = string.IsNullOrWhiteSpace(userVi) ? null : userVi.Trim(),
                         CompletedMissionIds = completedIds,
                         IsNaturallyConcluded = isConcluded,
                         LinguisticFeedback = feedback
