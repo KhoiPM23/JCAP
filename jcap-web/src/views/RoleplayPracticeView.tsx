@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
@@ -43,10 +43,17 @@ export const RoleplayPracticeView: React.FC = () => {
   const [isLeftOpen, setIsLeftOpen] = useState(true); // Cột Trái (Nhiệm vụ & Cheat Sheet)
   const [isRightOpen, setIsRightOpen] = useState(false); // Cột Phải (Chi tiết Đánh giá)
 
-  // Cấu hình giọng đọc AI (VOICEVOX)
+  // Cấu hình giọng đọc AI & Giọng đọc mẫu của người học (VOICEVOX)
   const [selectedVoiceId, setSelectedVoiceId] = useState<number>(() => scenarioVoiceService.getSelectedVoiceId());
+  const [learnerVoiceId, setLearnerVoiceId] = useState<number>(2); // Giọng phát âm mẫu chuẩn (Mặc định: Shikoku Metan - ID 2)
+  const [isPlayingLearnerSample, setIsPlayingLearnerSample] = useState(false);
+  const [playingLearnerText, setPlayingLearnerText] = useState<string | null>(null);
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
+  // AI Proactive Engagement (Chủ động gợi ý đồng hành khi người học im lặng > 14s)
+  const [showProactiveHint, setShowProactiveHint] = useState(false);
+  const idleTimerRef = useRef<any>(null);
 
   // Trạng thái sao chép và phát âm câu gợi ý bản xứ
   const [copiedFeedbackText, setCopiedFeedbackText] = useState(false);
@@ -193,6 +200,22 @@ export const RoleplayPracticeView: React.FC = () => {
     }
   };
 
+  // Nhận diện giọng đọc theo vai khi kịch bản có nhiều nhân vật (Multi-role Voice Mapping)
+  const getSpeakerVoiceId = (messageText: string): number => {
+    if (session?.roleVoiceMappings) {
+      for (const [roleName, voiceId] of Object.entries(session.roleVoiceMappings)) {
+        if (
+          messageText.startsWith(`[${roleName}]`) ||
+          messageText.startsWith(`${roleName}:`) ||
+          messageText.startsWith(`【${roleName}】`)
+        ) {
+          return voiceId;
+        }
+      }
+    }
+    return selectedVoiceId;
+  };
+
   // Phát âm thanh giọng nói AI (VOICEVOX / Web Speech fallback)
   const handlePlayMessageAudio = (messageId: number, text: string) => {
     // Luôn đảm bảo ngắt micro trước khi phát âm thanh để tránh dội âm thanh AI vào mic
@@ -208,9 +231,31 @@ export const RoleplayPracticeView: React.FC = () => {
     setIsPlayingAiSpeech(true);
     setPlayingMessageId(messageId);
 
-    void scenarioVoiceService.playAiSpeech(text, selectedVoiceId, () => {
+    const voiceToUse = getSpeakerVoiceId(text);
+    void scenarioVoiceService.playAiSpeech(text, voiceToUse, () => {
       setIsPlayingAiSpeech(false);
       setPlayingMessageId(null);
+    }, speechRate);
+  };
+
+  // Phát âm thanh mẫu câu chuẩn Tokyo cho người học (Learner Sample Voice)
+  const handlePlayLearnerSample = (text: string) => {
+    if (!text || !text.trim()) return;
+    stopSpeechRecognition();
+
+    if (isPlayingLearnerSample && playingLearnerText === text) {
+      scenarioVoiceService.stopAllAudio();
+      setIsPlayingLearnerSample(false);
+      setPlayingLearnerText(null);
+      return;
+    }
+
+    setIsPlayingLearnerSample(true);
+    setPlayingLearnerText(text);
+
+    void scenarioVoiceService.playAiSpeech(text, learnerVoiceId, () => {
+      setIsPlayingLearnerSample(false);
+      setPlayingLearnerText(null);
     }, speechRate);
   };
 
@@ -235,6 +280,15 @@ export const RoleplayPracticeView: React.FC = () => {
 
       if (res.success && res.data) {
         setSession(res.data);
+
+        // Tự động gán giọng AI chuẩn tối ưu theo Persona của kịch bản
+        if (res.data.recommendedAiVoiceId && res.data.recommendedAiVoiceId > 0) {
+          setSelectedVoiceId(res.data.recommendedAiVoiceId);
+        }
+        if (res.data.recommendedLearnerVoiceId && res.data.recommendedLearnerVoiceId > 0) {
+          setLearnerVoiceId(res.data.recommendedLearnerVoiceId);
+        }
+
         // Tự động chọn tin nhắn học viên mới nhất có feedback (nếu có)
         const lastUserMsg = [...res.data.messages]
           .reverse()
@@ -268,6 +322,31 @@ export const RoleplayPracticeView: React.FC = () => {
       isMounted = false;
     };
   }, [sessionId]);
+
+  // Quản lý đồng hồ im lặng để AI chủ động gợi ý (Proactive Idle Assist)
+  const resetIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    setShowProactiveHint(false);
+
+    // Chỉ đếm ngược khi AI không nói, người học không gõ/nói, và kịch bản chưa kết thúc
+    if (!isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded) {
+      idleTimerRef.current = setTimeout(() => {
+        setShowProactiveHint(true);
+      }, 14000); // Sau 14s không có hoạt động -> AI chủ động khích lệ
+    }
+  }, [isSending, isPlayingAiSpeech, session?.isNaturallyConcluded]);
+
+  useEffect(() => {
+    resetIdleTimer();
+    return () => {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, [session?.messages.length, isSending, isPlayingAiSpeech, resetIdleTimer]);
 
   // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
@@ -587,8 +666,15 @@ export const RoleplayPracticeView: React.FC = () => {
                   JLPT {session.level || session.jlptLevel}
                 </span>
               </div>
-              <p className="text-[11px] text-[#71809A]">
-                Đối thoại cùng: <span className="font-semibold text-[#071A44]">{session.aiPersona}</span>
+              <p className="text-[11px] text-[#71809A] flex items-center gap-1.5 flex-wrap">
+                <span>Đối thoại cùng:</span>
+                <span className="font-semibold text-[#071A44]">{session.aiPersona}</span>
+                {session.recommendedAiVoiceName && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#EAF4FF] px-2 py-0.5 text-[10px] font-bold text-[#0878EE] border border-[#B9D9FF]/60" title="Giọng nói tự động gán phù hợp với nhân vật">
+                    <span>🎙️</span>
+                    <span>{session.recommendedAiVoiceName.split('(')[0].trim()}</span>
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -1120,6 +1206,42 @@ export const RoleplayPracticeView: React.FC = () => {
                         </div>
                       )}
 
+                      {/* Learner audio sample pronunciation button */}
+                      {!isAi && (
+                        <div className="mt-2 flex items-center justify-end gap-2 border-t border-blue-400/20 pt-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayLearnerSample(msg.japaneseText);
+                            }}
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                              isPlayingLearnerSample && playingLearnerText === msg.japaneseText
+                                ? 'bg-white/20 text-white font-bold shadow-xs'
+                                : 'text-blue-100 hover:text-white hover:bg-white/10'
+                            }`}
+                            title="Nghe phát âm chuẩn câu này bằng giọng mẫu Tokyo"
+                          >
+                            {isPlayingLearnerSample && playingLearnerText === msg.japaneseText ? (
+                              <span className="flex items-center gap-1.5 text-white">
+                                <span className="flex items-end gap-0.5 h-3">
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
+                                </span>
+                                <span className="text-[11px] font-bold">Đang đọc mẫu...</span>
+                              </span>
+                            ) : (
+                              <>
+                                <span>🔈</span>
+                                <span>Nghe đọc mẫu</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
                       {/* AI Audio button with Soundwave equalizer */}
                       {isAi && (
                         <div className="mt-2 flex items-center gap-2">
@@ -1138,12 +1260,13 @@ export const RoleplayPracticeView: React.FC = () => {
                           >
                             {playingMessageId === msg.id && isPlayingAiSpeech ? (
                               <span className="flex items-center gap-1.5 text-[#0878EE]">
-                                <span className="flex items-end gap-0.5 h-3">
-                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.6s_ease-in-out_infinite] h-3" />
-                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.15s] h-2" />
-                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.3s] h-3.5" />
+                                <span className="flex items-end gap-0.5 h-3.5">
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
                                 </span>
-                                <span className="text-[11px]">Đang phát...</span>
+                                <span className="text-[11px] font-bold">Đang phát...</span>
                               </span>
                             ) : (
                               <>
@@ -1240,6 +1363,46 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
 
+              {/* Proactive AI Engagement (Tự động xuất hiện sau 14s người học chưa phản hồi) */}
+              {showProactiveHint && !hint && !isSending && !session.isNaturallyConcluded && (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#B9D9FF] bg-gradient-to-r from-[#F4F9FE] via-[#EAF4FF] to-[#F4F9FE] p-3 shadow-md animate-fade-in transition-all">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-white font-bold text-xs shadow-xs ring-2 ring-[#0878EE]/20 animate-pulse">
+                      <span>💬</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#071A44] truncate">
+                        {session.aiPersona || 'AI'} đang chờ bạn mở lời...
+                      </p>
+                      <p className="text-[11px] text-[#71809A]">
+                        Bạn có muốn xem gợi ý câu đối đáp chuẩn không? Đừng ngần ngại nhé!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProactiveHint(false);
+                        handleGetHint();
+                      }}
+                      className="inline-flex items-center gap-1 rounded-xl bg-[#0878EE] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0768D0] active:scale-95 transition"
+                    >
+                      <span>💡</span>
+                      <span>Xem gợi ý ngay</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowProactiveHint(false)}
+                      className="rounded-lg p-1 text-[#71809A] hover:bg-white hover:text-[#071A44] transition"
+                      title="Để sau"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Input Row */}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 {/* Button xin Hint */}
@@ -1307,6 +1470,32 @@ export const RoleplayPracticeView: React.FC = () => {
                       : 'border-[#E6EDF5] bg-[#F8FAFC] focus:border-[#0878EE] focus:bg-white focus:ring-2 focus:ring-[#0878EE]/20'
                   }`}
                 />
+
+                {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi */}
+                {inputText.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => handlePlayLearnerSample(inputText)}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#B9D9FF] bg-[#EAF4FF] px-3 py-2.5 text-xs font-bold text-[#0878EE] hover:bg-[#D5E9FF] active:scale-95 transition"
+                    title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
+                  >
+                    {isPlayingLearnerSample && playingLearnerText === inputText ? (
+                      <span className="flex items-center gap-1.5 text-[#0878EE]">
+                        <span className="flex items-end gap-0.5 h-3">
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                        </span>
+                        <span className="hidden md:inline text-[11px]">Đang đọc...</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span>🔈</span>
+                        <span className="hidden md:inline">Đọc mẫu</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
                 {/* Send Button */}
                 <button
@@ -1721,6 +1910,7 @@ export const RoleplayPracticeView: React.FC = () => {
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
         selectedVoiceId={selectedVoiceId}
+        recommendedVoiceId={session?.recommendedAiVoiceId}
         availableVoices={availableVoices}
         onSave={(newVoiceId) => {
           setSelectedVoiceId(newVoiceId);

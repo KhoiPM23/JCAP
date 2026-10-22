@@ -83,6 +83,11 @@ export interface RoleplaySessionDetailsDto {
   messages: RoleplayMessageDto[];
   targetVocabularies?: ScenarioVocabulary[];
   targetGrammars?: ScenarioGrammar[];
+  recommendedAiVoiceId?: number;
+  recommendedAiVoiceName?: string;
+  recommendedLearnerVoiceId?: number;
+  recommendedLearnerVoiceName?: string;
+  roleVoiceMappings?: Record<string, number>;
 }
 
 export interface RoleplayTurnResponseDto {

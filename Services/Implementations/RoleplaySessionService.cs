@@ -226,6 +226,12 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         var user = await _userManager.FindByIdAsync(userId);
 
+        var voiceResolution = VoiceVoxPersonaResolver.Resolve(
+            session.ScenarioLevelConfiguration?.AiPersona,
+            session.ScenarioLevelConfiguration?.Scenario?.Title,
+            session.ScenarioLevelConfiguration?.Description,
+            session.ScenarioLevelConfiguration?.JLPTLevel);
+
         var dto = new RoleplaySessionDetailsDto
         {
             SessionId = session.Id,
@@ -240,6 +246,11 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditBalance = user?.CreditBalance ?? 0,
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             CreatedAt = session.CreatedAt,
+            RecommendedAiVoiceId = voiceResolution.RecommendedAiVoiceId,
+            RecommendedAiVoiceName = voiceResolution.RecommendedAiVoiceName,
+            RecommendedLearnerVoiceId = voiceResolution.RecommendedLearnerVoiceId,
+            RecommendedLearnerVoiceName = voiceResolution.RecommendedLearnerVoiceName,
+            RoleVoiceMappings = voiceResolution.RoleVoiceMappings,
             TargetVocabularies = session.ScenarioLevelConfiguration?.TargetVocabularies
                 .Select(v => new TargetVocabularyDto
                 {
@@ -387,10 +398,15 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ, bản dịch tiếng Việt và cờ kết thúc tự nhiên
+        // 6. Cập nhật đánh giá ngôn ngữ, bản dịch tiếng Việt, furigana người học và cờ kết thúc tự nhiên
         if (!string.IsNullOrWhiteSpace(turnResult.UserVietnameseMeaning))
         {
             userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
+        }
+
+        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml))
+        {
+            userMessage.FuriganaHtml = turnResult.UserFuriganaHtml;
         }
 
         if (turnResult.LinguisticFeedback != null)
@@ -416,6 +432,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 Sender = userMessage.Sender,
                 JapaneseText = userMessage.JapaneseText,
                 VietnameseMeaning = userMessage.VietnameseMeaning,
+                FuriganaHtml = userMessage.FuriganaHtml,
                 LinguisticFeedback = turnResult.LinguisticFeedback,
                 CreatedAt = userMessage.CreatedAt
             },

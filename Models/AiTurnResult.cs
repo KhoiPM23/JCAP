@@ -8,6 +8,7 @@ public class AiTurnResult
     public string VietnameseMeaning { get; set; } = string.Empty;
     public string? FuriganaHtml { get; set; }
     public string? UserVietnameseMeaning { get; set; }
+    public string? UserFuriganaHtml { get; set; }
     public List<int> CompletedMissionIds { get; set; } = [];
     public bool IsNaturallyConcluded { get; set; }
     public LinguisticFeedbackDto? LinguisticFeedback { get; set; }
