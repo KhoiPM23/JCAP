@@ -88,6 +88,7 @@ builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IExploreService, ExploreService>();
 builder.Services.AddScoped<IAdminExploreService, AdminExploreService>();
+builder.Services.AddScoped<IAdminExploreSpotService, AdminExploreSpotService>();
 builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
