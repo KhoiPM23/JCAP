@@ -31,7 +31,7 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// UC12: Mua gói credit (Hỗ trợ cả Mock Payment và tạo Payment Link PayOS thật)
+        /// UC12: Mua gói credit tạo Payment Link PayOS thật
         /// </summary>
         [HttpPost("purchase")]
         [Authorize]
@@ -44,6 +44,28 @@ namespace JCAP.Controllers
             }
 
             var result = await _creditService.PurchasePackageAsync(userId, request.PackageId);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Mua gói hội viên theo tháng (Subscription Plan) qua PayOS
+        /// </summary>
+        [HttpPost("purchase-subscription")]
+        [Authorize]
+        public async Task<IActionResult> PurchaseSubscription([FromBody] PurchaseSubscriptionRequestDto request)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<PurchaseCreditResponseDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            var result = await _creditService.PurchaseSubscriptionAsync(userId, request);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -165,3 +187,4 @@ namespace JCAP.Controllers
         }
     }
 }
+

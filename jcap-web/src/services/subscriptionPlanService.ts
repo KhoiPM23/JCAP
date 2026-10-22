@@ -15,7 +15,22 @@ export interface SubscriptionPlanItem {
   features: string[];
 }
 
+export interface UserSubscriptionState {
+  planId: string;
+  planName: string;
+  planTier: string;
+  status: 'Active' | 'Expired';
+  activatedAt: string;
+  expiresAt: string;
+  daysRemaining: number;
+  monthlyPrice: number;
+  features: string[];
+  creditsAmount: number;
+  fiveHourQuota: number;
+}
+
 const STORAGE_KEY = 'jcap_admin_subscription_plans';
+const USER_SUBSCRIPTION_KEY = 'jcap_user_subscription';
 
 const DEFAULT_PLANS: SubscriptionPlanItem[] = [
   {
@@ -83,6 +98,11 @@ export const subscriptionPlanService = {
     return DEFAULT_PLANS;
   },
 
+  findPlanById(id: string): SubscriptionPlanItem | undefined {
+    const plans = this.getPlans();
+    return plans.find((p) => p.id === id);
+  },
+
   savePlans(plans: SubscriptionPlanItem[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(plans));
     window.dispatchEvent(new CustomEvent('jcap_subscription_plans_updated', { detail: plans }));
@@ -134,6 +154,75 @@ export const subscriptionPlanService = {
     const plans = this.getPlans();
     const updated = plans.filter((p) => p.id !== id);
     this.savePlans(updated);
+  },
+
+  /**
+   * Lấy thông tin gói hội viên hiện tại của người dùng
+   */
+  getUserSubscription(): UserSubscriptionState {
+    try {
+      const saved = localStorage.getItem(USER_SUBSCRIPTION_KEY);
+      if (saved) {
+        const sub = JSON.parse(saved) as UserSubscriptionState;
+        if (sub && sub.planName && sub.expiresAt) {
+          const diffMs = new Date(sub.expiresAt).getTime() - Date.now();
+          const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+          return {
+            ...sub,
+            daysRemaining,
+            status: daysRemaining > 0 ? 'Active' : 'Expired',
+          };
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi khi đọc gói người dùng:', e);
+    }
+
+    // Gói mặc định ban đầu nếu chưa kích hoạt gói nào
+    const defaultPlan = DEFAULT_PLANS[0];
+    const activatedAt = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + 24 * 24 * 60 * 60 * 1000).toISOString();
+    const initialSub: UserSubscriptionState = {
+      planId: defaultPlan.id,
+      planName: defaultPlan.name,
+      planTier: 'Pro',
+      status: 'Active',
+      activatedAt,
+      expiresAt,
+      daysRemaining: 24,
+      monthlyPrice: defaultPlan.price,
+      features: defaultPlan.features,
+      creditsAmount: defaultPlan.creditsAmount,
+      fiveHourQuota: defaultPlan.fiveHourQuota,
+    };
+    return initialSub;
+  },
+
+  /**
+   * Cập nhật gói cho người dùng khi thanh toán PayOS thành công
+   */
+  setUserSubscription(plan: SubscriptionPlanItem): UserSubscriptionState {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const planTier = plan.name.toLowerCase().includes('max') ? 'Pro Max' : 'Pro';
+
+    const sub: UserSubscriptionState = {
+      planId: plan.id,
+      planName: plan.name,
+      planTier,
+      status: 'Active',
+      activatedAt: now.toISOString(),
+      expiresAt,
+      daysRemaining: 30,
+      monthlyPrice: plan.price,
+      features: plan.features,
+      creditsAmount: plan.creditsAmount,
+      fiveHourQuota: plan.fiveHourQuota,
+    };
+
+    localStorage.setItem(USER_SUBSCRIPTION_KEY, JSON.stringify(sub));
+    window.dispatchEvent(new CustomEvent('jcap_subscription_updated', { detail: sub }));
+    return sub;
   },
 };
 

@@ -291,36 +291,37 @@ export const CreditPackagesView: React.FC = () => {
 
     try {
       const res = await creditService.purchasePackage(pkg.id);
-      if (res.success && res.data) {
-        if (res.data.checkoutUrl) {
-          window.location.href = res.data.checkoutUrl;
-        } else if (res.data.isMock) {
-          setSuccessMessage(`Đã nạp thành công ${res.data.addedCredits} Credits (Chế độ Thử nghiệm)!`);
-          if (res.data.newCreditBalance !== undefined) {
-            setCurrentBalance(res.data.newCreditBalance);
-          }
-        } else {
-          setSuccessMessage(res.message || 'Nạp credit thành công!');
-        }
+      if (res.success && res.data?.checkoutUrl) {
+        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+        window.location.href = res.data.checkoutUrl;
       } else {
-        setError(res.message || 'Không thể xử lý giao dịch nạp credit.');
+        setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói credit.');
       }
     } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi khi tạo liên kết thanh toán.');
+      setError(err.message || 'Đã xảy ra lỗi khi kết nối đến cổng PayOS.');
     } finally {
       setPurchasingId(null);
     }
   };
 
-  const handleSubscribeMonthlyPlan = (planId: string, planName: string) => {
-    setSubscribingPlanId(planId);
-    setTimeout(() => {
+  const handleSubscribeMonthlyPlan = async (plan: SubscriptionPlanItem) => {
+    setSubscribingPlanId(plan.id);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const res = await creditService.purchaseSubscriptionPlan(plan);
+      if (res.success && res.data?.checkoutUrl) {
+        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+        window.location.href = res.data.checkoutUrl;
+      } else {
+        setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói tháng.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Đã xảy ra lỗi khi kết nối đến cổng PayOS.');
+    } finally {
       setSubscribingPlanId(null);
-      setSuccessMessage(`Đã kích hoạt thành công ${planName}! Hạn ngạch tuần và 5 giờ của bạn đã được cập nhật.`);
-      setTimeout(() => {
-        navigate('/subscription');
-      }, 1500);
-    }, 800);
+    }
   };
 
   const formatVnd = (amount: number) => {
@@ -505,15 +506,15 @@ export const CreditPackagesView: React.FC = () => {
                       : 'bg-[#0878EE] hover:bg-blue-700'
                   }`}
                   disabled={subscribingPlanId !== null}
-                  onClick={() => handleSubscribeMonthlyPlan(plan.id, plan.name)}
+                  onClick={() => handleSubscribeMonthlyPlan(plan)}
                 >
                   {subscribingPlanId === plan.id ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/80 border-t-white rounded-full animate-spin"></div>
-                      Đang xử lý...
+                      Đang tạo thanh toán...
                     </span>
                   ) : (
-                    'Đăng Ký Gói Tháng'
+                    'Mua Ngay'
                   )}
                 </Button>
               </div>
@@ -626,7 +627,7 @@ export const CreditPackagesView: React.FC = () => {
                           Đang khởi tạo...
                         </span>
                       ) : (
-                        'Nạp Ngay'
+                        'Mua Ngay'
                       )}
                     </Button>
                   </div>

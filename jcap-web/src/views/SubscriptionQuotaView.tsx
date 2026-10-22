@@ -2,41 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
+import { subscriptionPlanService, type UserSubscriptionState } from '../services/subscriptionPlanService';
 
 export const SubscriptionQuotaView: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // State thông tin gói hội viên (Mock Pro Plan)
-  const [subscription] = useState({
-    planName: 'JCAP Pro Monthly (AI Conversation & Shadowing)',
-    planTier: 'Pro',
-    status: 'Active',
-    expiresAt: '2026-11-15T23:59:59Z',
-    daysRemaining: 24,
-    monthlyPrice: 199000,
-    features: [
-      'Không giới hạn số lượt mở kịch bản hội thoại',
-      'Hạn mức 1.000 credits AI mỗi tuần',
-      'Hạn mức 50 credits AI hồi phục sau mỗi 5 tiếng',
-      'Tự động kết nối trừ Credit nạp thêm khi vượt trần',
-      'Đánh giá phát âm & Pitch Accent chi tiết bằng Azure Speech AI',
-    ],
-  });
+  // State thông tin gói hội viên động từ subscriptionPlanService
+  const [subscription, setSubscription] = useState<UserSubscriptionState>(() =>
+    subscriptionPlanService.getUserSubscription()
+  );
 
   // State Dual-Window Rolling Quota (Khớp mẫu Antigravity)
-  const [weeklyLimit, setWeeklyLimit] = useState({
-    remainingPercent: 82,
-    usedCredits: 180,
-    totalCredits: 1000,
-    resetsInText: '2 ngày 17 giờ',
+  const [weeklyLimit, setWeeklyLimit] = useState(() => {
+    const sub = subscriptionPlanService.getUserSubscription();
+    const total = sub.creditsAmount || 1000;
+    const used = Math.min(180, total);
+    return {
+      remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
+      usedCredits: used,
+      totalCredits: total,
+      resetsInText: '2 ngày 17 giờ',
+    };
   });
 
-  const [fiveHourLimit, setFiveHourLimit] = useState({
-    remainingPercent: 99,
-    usedCredits: 1,
-    totalCredits: 100,
-    resetsInText: '2 giờ 58 phút',
+  const [fiveHourLimit, setFiveHourLimit] = useState(() => {
+    const sub = subscriptionPlanService.getUserSubscription();
+    const total = sub.fiveHourQuota || 50;
+    const used = 1;
+    return {
+      remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
+      usedCredits: used,
+      totalCredits: total,
+      resetsInText: '2 giờ 58 phút',
+    };
   });
 
   // Số dư Credit nạp thêm (Extra Credit Balance)
@@ -73,6 +72,39 @@ export const SubscriptionQuotaView: React.FC = () => {
     };
 
     fetchBalance();
+
+    const handleSubscriptionUpdate = () => {
+      const updated = subscriptionPlanService.getUserSubscription();
+      setSubscription(updated);
+      setWeeklyLimit((prev) => {
+        const total = updated.creditsAmount || 1000;
+        const used = Math.min(prev.usedCredits, total);
+        return {
+          ...prev,
+          totalCredits: total,
+          usedCredits: used,
+          remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
+        };
+      });
+      setFiveHourLimit((prev) => {
+        const total = updated.fiveHourQuota || 50;
+        const used = Math.min(prev.usedCredits, total);
+        return {
+          ...prev,
+          totalCredits: total,
+          usedCredits: used,
+          remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
+        };
+      });
+    };
+
+    window.addEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
+    window.addEventListener('storage', handleSubscriptionUpdate);
+
+    return () => {
+      window.removeEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
+      window.removeEventListener('storage', handleSubscriptionUpdate);
+    };
   }, []);
 
   const handleToggleAutoUseCredit = (checked: boolean) => {
@@ -199,16 +231,16 @@ export const SubscriptionQuotaView: React.FC = () => {
               <div>
                 <span className="text-xs text-slate-400 block">Thời hạn sử dụng còn lại:</span>
                 <span className="text-sm sm:text-base font-bold text-amber-300">
-                  Còn {subscription.daysRemaining} ngày (Hết hạn ngày: 15/11/2026)
+                  Còn {subscription.daysRemaining} ngày (Hết hạn ngày: {new Date(subscription.expiresAt).toLocaleDateString('vi-VN')})
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
-                  onClick={() => showToast('Gói của bạn vẫn còn 24 ngày! Hệ thống sẽ thông báo khi sắp hết hạn.', 'info')}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white transition cursor-pointer"
+                  onClick={() => navigate('/credits')}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold transition cursor-pointer shadow-sm"
                 >
-                  Gia hạn gói
+                  Nâng cấp / Đổi gói
                 </button>
               </div>
             </div>
