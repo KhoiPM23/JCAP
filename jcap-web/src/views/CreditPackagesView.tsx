@@ -289,6 +289,9 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
+    /* =========================================================================
+     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
+     * =========================================================================
     try {
       const res = await creditService.purchasePackage(pkg.id);
       if (res.success && res.data?.checkoutUrl) {
@@ -302,6 +305,29 @@ export const CreditPackagesView: React.FC = () => {
     } finally {
       setPurchasingId(null);
     }
+    ========================================================================= */
+
+    // =========================================================================
+    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG NẠP CREDIT NGAY, BỎ QUA BƯỚC NẠP TIỀN PAYOS
+    // =========================================================================
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const addedCredits = pkg.credits;
+      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
+      const newBalance = prevBalance + addedCredits;
+
+      setCurrentBalance(newBalance);
+      creditService.updateLocalCreditBalance(newBalance);
+
+      setSuccessMessage(
+        `Nạp thành công ${pkg.name}! (+${addedCredits.toLocaleString('vi-VN')} credits vào tài khoản). (Chế độ Test: Đã bỏ qua bước nạp tiền)`
+      );
+    } catch (err: any) {
+      setError(err.message || 'Đã xảy ra lỗi khi nạp credit test.');
+    } finally {
+      setPurchasingId(null);
+    }
   };
 
   const handleSubscribeMonthlyPlan = async (plan: SubscriptionPlanItem) => {
@@ -309,6 +335,9 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
+    /* =========================================================================
+     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
+     * =========================================================================
     try {
       const res = await creditService.purchaseSubscriptionPlan(plan);
       if (res.success && res.data?.checkoutUrl) {
@@ -319,6 +348,34 @@ export const CreditPackagesView: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.message || 'Đã xảy ra lỗi khi kết nối đến cổng PayOS.');
+    } finally {
+      setSubscribingPlanId(null);
+    }
+    ========================================================================= */
+
+    // =========================================================================
+    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG MUA & KÍCH HOẠT GÓI NGAY, BỎ QUA NẠP TIỀN PAYOS
+    // =========================================================================
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // 1. Kích hoạt và lưu thông tin gói hội viên vào hệ thống / LocalStorage
+      subscriptionPlanService.setUserSubscription(plan);
+
+      // 2. Tự động cộng số credit của gói vào số dư hiện tại của tài khoản
+      const addedCredits = plan.creditsAmount || 2500;
+      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
+      const newBalance = prevBalance + addedCredits;
+
+      setCurrentBalance(newBalance);
+      creditService.updateLocalCreditBalance(newBalance);
+
+      // 3. Hiển thị thông báo mua thành công
+      setSuccessMessage(
+        `Đã kích hoạt thành công ${plan.name}! Bạn được cấp ${addedCredits.toLocaleString('vi-VN')} credits/tuần và hạn mức mới. (Chế độ Test: Đã tự động mua, bỏ qua bước nạp tiền)`
+      );
+    } catch (err: any) {
+      setError(err.message || 'Đã xảy ra lỗi khi kích hoạt gói test.');
     } finally {
       setSubscribingPlanId(null);
     }
@@ -392,21 +449,30 @@ export const CreditPackagesView: React.FC = () => {
       {/* Thông báo thông điệp */}
       {successMessage && (
         <div
-          className={`mb-6 p-4 bg-emerald-50 border border-[#12B76A]/30 rounded-xl flex items-center justify-between text-sm text-[#027A48] transition-opacity duration-500 ease-in-out ${
+          className={`mb-6 p-4 bg-emerald-50 border border-[#12B76A]/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-[#027A48] transition-opacity duration-500 ease-in-out ${
             isFadingOut ? 'opacity-0' : 'opacity-100'
           }`}
         >
           <div className="flex items-center gap-3">
             <span className="text-xl">✅</span>
-            <span>{successMessage}</span>
+            <span className="font-medium">{successMessage}</span>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate('/credits/history')}
-          >
-            Kiểm tra Lịch sử
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate('/subscription')}
+            >
+              👑 Xem Gói & Hạn Mức
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate('/credits/history')}
+            >
+              Lịch sử
+            </Button>
+          </div>
         </div>
       )}
 
@@ -511,7 +577,7 @@ export const CreditPackagesView: React.FC = () => {
                   {subscribingPlanId === plan.id ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/80 border-t-white rounded-full animate-spin"></div>
-                      Đang tạo thanh toán...
+                      Đang kích hoạt gói...
                     </span>
                   ) : (
                     'Mua Ngay'

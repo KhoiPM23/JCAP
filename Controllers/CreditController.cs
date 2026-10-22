@@ -179,6 +179,28 @@ namespace JCAP.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Lấy thông tin hạn ngạch AI Rolling Quota (5 giờ và tuần) được tính toán động từ các phiên học thật
+        /// </summary>
+        [HttpGet("quota")]
+        [Authorize]
+        public async Task<IActionResult> GetUserQuota()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<UserQuotaDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            var result = await _creditService.GetUserQuotaAsync(userId);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
         private string? GetCurrentUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)

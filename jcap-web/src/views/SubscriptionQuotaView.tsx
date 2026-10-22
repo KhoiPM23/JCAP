@@ -13,34 +13,30 @@ export const SubscriptionQuotaView: React.FC = () => {
     subscriptionPlanService.getUserSubscription()
   );
 
-  // State Dual-Window Rolling Quota (Khớp mẫu Antigravity)
+  // State Dual-Window Rolling Quota (Được tính toán động từ các phiên học thật trong DB)
   const [weeklyLimit, setWeeklyLimit] = useState(() => {
     const sub = subscriptionPlanService.getUserSubscription();
-    const total = sub.creditsAmount || 1000;
-    const used = Math.min(180, total);
     return {
-      remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
-      usedCredits: used,
-      totalCredits: total,
-      resetsInText: '2 ngày 17 giờ',
+      remainingPercent: 100,
+      usedCredits: 0,
+      totalCredits: sub?.creditsAmount || 2500,
+      resetsInText: '7 ngày (Đầy đủ)',
     };
   });
 
   const [fiveHourLimit, setFiveHourLimit] = useState(() => {
     const sub = subscriptionPlanService.getUserSubscription();
-    const total = sub.fiveHourQuota || 50;
-    const used = 1;
     return {
-      remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
-      usedCredits: used,
-      totalCredits: total,
-      resetsInText: '2 giờ 58 phút',
+      remainingPercent: 100,
+      usedCredits: 0,
+      totalCredits: sub?.fiveHourQuota || 150,
+      resetsInText: '5 giờ (Đầy đủ)',
     };
   });
 
   // Số dư Credit nạp thêm (Extra Credit Balance)
   const [extraCredits, setExtraCredits] = useState<number>(() => {
-    return typeof user?.creditBalance === 'number' ? user.creditBalance : 3320;
+    return typeof user?.creditBalance === 'number' ? user.creditBalance : 0;
   });
 
   // Tùy chọn: Cho phép dùng credit khi hết quota
@@ -50,59 +46,88 @@ export const SubscriptionQuotaView: React.FC = () => {
   });
 
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
-
-  // Hiệu ứng mô phỏng tương tác
-  const [isSimulatingChat, setIsSimulatingChat] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const showToast = (text: string, type: 'success' | 'info' | 'error' = 'success') => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const histRes = await creditService.getHistory(1, 1);
-        if (histRes.success && histRes.data && typeof histRes.data.currentCreditBalance === 'number') {
-          setExtraCredits(histRes.data.currentCreditBalance);
-        }
-      } catch (err) {
-        console.error('Lỗi tải số dư credit:', err);
-      }
-    };
+  const loadQuotaFromBackend = async (showNotification: boolean = false) => {
+    setIsRefreshing(true);
+    try {
+      const res = await creditService.getQuota();
+      if (res.success && res.data) {
+        const d = res.data;
+        const currentSub = subscriptionPlanService.getUserSubscription();
+        const planWeeklyTotal = currentSub?.creditsAmount || d.weeklyTotalCredits || 1000;
+        const planFiveHourTotal = currentSub?.fiveHourQuota || d.fiveHourTotalCredits || 50;
 
-    fetchBalance();
+        const weeklyRemaining = Math.max(0, planWeeklyTotal - d.weeklyUsedCredits);
+        const weeklyPercent = planWeeklyTotal > 0 ? Math.round((weeklyRemaining / planWeeklyTotal) * 100) : 0;
+
+        const fiveHourRemaining = Math.max(0, planFiveHourTotal - d.fiveHourUsedCredits);
+        const fiveHourPercent = planFiveHourTotal > 0 ? Math.round((fiveHourRemaining / planFiveHourTotal) * 100) : 0;
+
+        setWeeklyLimit({
+          remainingPercent: weeklyPercent,
+          usedCredits: d.weeklyUsedCredits,
+          totalCredits: planWeeklyTotal,
+          resetsInText: d.weeklyResetsInText,
+        });
+
+        setFiveHourLimit({
+          remainingPercent: fiveHourPercent,
+          usedCredits: d.fiveHourUsedCredits,
+          totalCredits: planFiveHourTotal,
+          resetsInText: d.fiveHourResetsInText,
+        });
+
+        setExtraCredits(d.extraCreditBalance);
+
+        if (showNotification) {
+          showToast('Đã làm mới dữ liệu hạn ngạch từ các phiên học thành công!', 'success');
+        }
+      } else {
+        // Fallback tự động khi backend chưa phản hồi
+        setWeeklyLimit((prev) => ({
+          ...prev,
+          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '7 ngày (Đầy đủ)',
+        }));
+        setFiveHourLimit((prev) => ({
+          ...prev,
+          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '5 giờ (Đầy đủ)',
+        }));
+      }
+    } catch (err) {
+      console.error('Lỗi tải hạn ngạch Quota:', err);
+      setWeeklyLimit((prev) => ({ ...prev, resetsInText: '7 ngày (Đầy đủ)' }));
+      setFiveHourLimit((prev) => ({ ...prev, resetsInText: '5 giờ (Đầy đủ)' }));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadQuotaFromBackend(false);
 
     const handleSubscriptionUpdate = () => {
       const updated = subscriptionPlanService.getUserSubscription();
       setSubscription(updated);
-      setWeeklyLimit((prev) => {
-        const total = updated.creditsAmount || 1000;
-        const used = Math.min(prev.usedCredits, total);
-        return {
-          ...prev,
-          totalCredits: total,
-          usedCredits: used,
-          remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
-        };
-      });
-      setFiveHourLimit((prev) => {
-        const total = updated.fiveHourQuota || 50;
-        const used = Math.min(prev.usedCredits, total);
-        return {
-          ...prev,
-          totalCredits: total,
-          usedCredits: used,
-          remainingPercent: Math.max(0, Math.round(((total - used) / total) * 100)),
-        };
-      });
+      void loadQuotaFromBackend(false);
+    };
+
+    const handleProfileUpdate = () => {
+      void loadQuotaFromBackend(false);
     };
 
     window.addEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
+    window.addEventListener('jcap_profile_updated', handleProfileUpdate);
     window.addEventListener('storage', handleSubscriptionUpdate);
 
     return () => {
       window.removeEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
+      window.removeEventListener('jcap_profile_updated', handleProfileUpdate);
       window.removeEventListener('storage', handleSubscriptionUpdate);
     };
   }, []);
@@ -116,25 +141,6 @@ export const SubscriptionQuotaView: React.FC = () => {
         : 'Đã tắt: Khi hết hạn ngạch 5 giờ, bài học sẽ tạm dừng chờ hồi phục.',
       'info'
     );
-  };
-
-  // Nút tương tác thử nghiệm tiêu hao token/credit
-  const handleSimulateChatTurn = () => {
-    setIsSimulatingChat(true);
-    setTimeout(() => {
-      setFiveHourLimit((prev) => {
-        const newUsed = Math.min(prev.totalCredits, prev.usedCredits + 2);
-        const newPct = Math.max(0, Math.round(((prev.totalCredits - newUsed) / prev.totalCredits) * 100));
-        return { ...prev, usedCredits: newUsed, remainingPercent: newPct };
-      });
-      setWeeklyLimit((prev) => {
-        const newUsed = Math.min(prev.totalCredits, prev.usedCredits + 2);
-        const newPct = Math.max(0, Math.round(((prev.totalCredits - newUsed) / prev.totalCredits) * 100));
-        return { ...prev, usedCredits: newUsed, remainingPercent: newPct };
-      });
-      setIsSimulatingChat(false);
-      showToast('Đã mô phỏng 1 câu thoại khó: Gemini tiêu tốn 420 tokens → Khấu trừ 2 credits từ hạn ngạch 5 giờ!', 'info');
-    }, 600);
   };
 
   return (
@@ -173,11 +179,20 @@ export const SubscriptionQuotaView: React.FC = () => {
               </span>
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Quản lý gói tháng, chu kỳ hồi phục hạn ngạch thông minh (kiểu Antigravity) và số dư Credit nạp thêm.
+              Quản lý gói tháng, chu kỳ hồi phục hạn ngạch thông minh tính toán động từ các phiên học và số dư Credit nạp thêm.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void loadQuotaFromBackend(true)}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-60"
+            >
+              <span className={isRefreshing ? 'animate-spin inline-block' : ''}>🔄</span>
+              <span>{isRefreshing ? 'Đang đồng bộ...' : 'Làm mới Quota'}</span>
+            </button>
             <Link
               to="/credits/history"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition"
@@ -307,7 +322,7 @@ export const SubscriptionQuotaView: React.FC = () => {
           </div>
         </div>
 
-        {/* KHỐI 2: DUAL-WINDOW ROLLING QUOTA (MÔ PHỎNG ANTIGRAVITY) */}
+        {/* KHỐI 2: DUAL-WINDOW ROLLING QUOTA (TÍNH TOÁN ĐỘNG TỪ DATABASE) */}
         <div className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
@@ -318,7 +333,7 @@ export const SubscriptionQuotaView: React.FC = () => {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Cơ chế giới hạn cuộn thông minh giúp phân bổ tài nguyên AI công bằng và ổn định.
+                Cơ chế giới hạn cuộn thông minh giúp phân bổ tài nguyên AI công bằng và ổn định (Đồng bộ trực tiếp theo các phiên học thật).
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/60">
@@ -430,7 +445,7 @@ export const SubscriptionQuotaView: React.FC = () => {
             <div className="space-y-1">
               <span className="font-bold block">Nguyên lý hoạt động Hạn Ngạch & Credit Nạp Thêm:</span>
               <p className="text-slate-600 leading-relaxed">
-                Mỗi khi bạn gửi tin nhắn thoại hoặc hỏi đáp AI, hệ thống sẽ tính số tokens thực tế tiêu thụ và trừ trước vào <strong>Hạn ngạch 5 giờ</strong>. Khi hạn mức 5 giờ hết, nếu bạn bật chức năng <strong>"Dùng Credit khi hết Quota"</strong>, hệ thống sẽ tự động trừ vào số Credit Nạp Thêm để bạn tiếp tục cuộc trò chuyện không bị gián đoạn.
+                Mỗi khi bạn gửi tin nhắn thoại hoặc hỏi đáp AI trong bài kịch bản, hệ thống sẽ tính số tokens thực tế tiêu thụ và trừ trước vào <strong>Hạn ngạch 5 giờ</strong>. Khi hạn mức 5 giờ hết, nếu bạn bật chức năng <strong>"Dùng Credit khi hết Quota"</strong>, hệ thống sẽ tự động trừ vào số Credit Nạp Thêm để bạn tiếp tục cuộc trò chuyện không bị gián đoạn.
               </p>
             </div>
           </div>
@@ -439,4 +454,3 @@ export const SubscriptionQuotaView: React.FC = () => {
     </div>
   );
 };
-

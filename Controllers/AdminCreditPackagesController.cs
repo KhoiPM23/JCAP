@@ -1,5 +1,6 @@
 using JCAP.Data;
 using JCAP.DTOs.Common;
+using JCAP.DTOs.Credit;
 using JCAP.DTOs.CreditPackage;
 using JCAP.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -178,6 +179,106 @@ namespace JCAP.Controllers
                 return StatusCode(500, ApiResponse<CreditPackage>.Fail("Lỗi hệ thống khi vô hiệu hóa gói credit."));
             }
         }
+
+        /// <summary>
+        /// GET: /api/admin/credits/packages/recent-transactions
+        /// Lấy danh sách giao dịch mua gói (TopUp & Subscription) gần đây của người dùng từ cơ sở dữ liệu thật.
+        /// </summary>
+        [HttpGet("recent-transactions")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<AdminRecentTransactionDto>>>> GetRecentTransactions([FromQuery] int limit = 20)
+        {
+            try
+            {
+                limit = Math.Clamp(limit, 1, 100);
+
+                var packages = await _context.CreditPackages.AsNoTracking().ToListAsync();
+
+                var transactions = await _context.CreditTransactions
+                    .Include(t => t.User)
+                    .AsNoTracking()
+                    .Where(t => t.Type == "TopUp" || t.Type == "Subscription")
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Take(limit)
+                    .ToListAsync();
+
+                var result = transactions.Select(t =>
+                {
+                    var isSub = string.Equals(t.Type, "Subscription", StringComparison.OrdinalIgnoreCase);
+
+                    string pkgName = t.Description ?? (isSub ? "Gói Hội Viên Tháng" : "Gói Nạp Credit");
+                    if (pkgName.StartsWith("Đăng ký ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pkgName = pkgName.Substring("Đăng ký ".Length).Trim();
+                    }
+                    else if (pkgName.StartsWith("Nạp ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pkgName = pkgName.Substring("Nạp ".Length).Trim();
+                    }
+
+                    decimal vndAmount = 0;
+                    if (isSub)
+                    {
+                        if (pkgName.Contains("promax", StringComparison.OrdinalIgnoreCase) ||
+                            pkgName.Contains("Chuyên Sâu", StringComparison.OrdinalIgnoreCase) ||
+                            t.Amount >= 2500)
+                        {
+                            vndAmount = 349000;
+                        }
+                        else
+                        {
+                            vndAmount = 199000;
+                        }
+                    }
+                    else
+                    {
+                        var matchedPkg = packages.FirstOrDefault(p =>
+                            p.Credits == t.Amount ||
+                            (!string.IsNullOrEmpty(p.Name) && pkgName.Contains(p.Name, StringComparison.OrdinalIgnoreCase)));
+
+                        if (matchedPkg != null)
+                        {
+                            vndAmount = matchedPkg.Price;
+                        }
+                        else
+                        {
+                            vndAmount = t.Amount * 350;
+                        }
+                    }
+
+                    var userName = t.User != null
+                        ? (!string.IsNullOrWhiteSpace(t.User.FullName) ? t.User.FullName : (t.User.UserName ?? "Học viên"))
+                        : "Học viên";
+                    var email = t.User?.Email ?? "N/A";
+
+                    string method = "VietQR PayOS";
+                    if (!string.IsNullOrEmpty(t.Description) && t.Description.Contains("[Mock]", StringComparison.OrdinalIgnoreCase))
+                    {
+                        method = "VietQR PayOS (Thử nghiệm)";
+                    }
+
+                    return new AdminRecentTransactionDto
+                    {
+                        Id = $"TX-{t.Id:D5}",
+                        UserId = t.UserId,
+                        User = userName,
+                        Email = email,
+                        PackageName = pkgName,
+                        Type = isSub ? "subscription" : "credit",
+                        Amount = vndAmount,
+                        Credits = t.Amount,
+                        Status = t.Status,
+                        Method = method,
+                        CreatedAt = t.CreatedAt
+                    };
+                }).ToList();
+
+                return Ok(ApiResponse<IEnumerable<AdminRecentTransactionDto>>.Ok(result, "Lấy lịch sử giao dịch mua thành công."));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi xảy ra khi lấy danh sách giao dịch mua gần đây.");
+                return StatusCode(500, ApiResponse<IEnumerable<AdminRecentTransactionDto>>.Fail("Lỗi hệ thống khi tải lịch sử giao dịch."));
+            }
+        }
     }
 }
-
