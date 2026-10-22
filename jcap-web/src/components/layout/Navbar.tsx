@@ -77,6 +77,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 icon={AudioWavesIcon}
                 forceActive={isAudioTab}
               />
+              <NavItem
+                name="Bản đồ Khám phá"
+                path="/admin/explore"
+                icon={CompassIcon}
+                forceActive={currentPath.startsWith('/admin/explore')}
+              />
             </div>
           </div>
 
