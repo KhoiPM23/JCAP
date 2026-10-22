@@ -235,18 +235,11 @@ Example: feature/authentication-login
 > * **BR-15 Compliance:** UI disclaimers stating AI feedback is for learning support, not official JLPT certification.  
 > * **BR-24/25 Compliance:** Mandatory admin verification before scenarios become published.
 
-## **7\. Current Project Status & Sprint Roadmap**
-
-> * **Current Milestone:** Sprint 1 (31/08/2026 – 13/09/2026)  
-> * **Sprint 1 Focus:** Core foundation, Auth (Login/Register/OAuth), Learner Profile, Token Balance, Initial DB Schemas, API/FE Integration.  
-> * **Sprint 2 (14/09/2026 – 27/09/2026):** Scenario browsing, details view, text-based AI roleplay session initialization, prompt engineering.  
-> * **Sprint 3 (28/09/2026 – 12/10/2026):** Voice recording, Whisper STT, TTS audio playback, streaming audio integration.
-
-## **8. File Encoding Convention**
+## **7. File Encoding Convention**
 
 > * All files created or modified in this project must be saved as **UTF-8 without signature (without BOM)** to ensure consistent encoding across agents and development environments.
 
-## **9. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
+## **8. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
 
 ### **FE-03: Scenario-Based AI Conversation Practice**
 1. **Multi-JLPT Level Structure (Approach A - Topic-First Hierarchy):**
