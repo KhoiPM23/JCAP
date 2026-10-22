@@ -1,3 +1,5 @@
+import type { RoleplayMessageDto } from './roleplay';
+
 export interface CompleteRoleplaySessionResponse {
   resultId: number;
   isExistingResult: boolean;
@@ -12,11 +14,35 @@ export interface CompletedMissionResult {
 export interface RoleplayResultSummary {
   id: number;
   roleplaySessionId: number;
+  scenarioId?: number;
   scenarioTitle: string;
   jlptLevel: string;
   overallScore: number;
   passStatus: boolean;
   completedAt: string;
+}
+
+export interface TargetVocabulary {
+  id: number;
+  word: string;
+  reading?: string;
+  meaning: string;
+}
+
+export interface TargetGrammar {
+  id: number;
+  pattern: string;
+  meaning: string;
+  exampleSentence?: string;
+}
+
+export interface RoleplayMissionProgress {
+  missionId: number;
+  content: string;
+  target?: string;
+  order: number;
+  isCompleted: boolean;
+  completedAt?: string;
 }
 
 export interface RoleplayResultDetail extends RoleplayResultSummary {
@@ -25,6 +51,10 @@ export interface RoleplayResultDetail extends RoleplayResultSummary {
   impressionScore: number;
   generalFeedbackText: string;
   completedMissions: CompletedMissionResult[];
+  allMissions?: RoleplayMissionProgress[];
+  targetVocabularies?: TargetVocabulary[];
+  targetGrammars?: TargetGrammar[];
+  messages?: RoleplayMessageDto[];
 }
 
 export interface RoleplayResultHistoryResponse {

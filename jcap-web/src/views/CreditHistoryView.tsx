@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
@@ -8,33 +8,63 @@ import type { CreditTransaction, CreditHistoryResponse } from '../types/credit';
 
 export const CreditHistoryView: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<CreditHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [cancelTargetTx, setCancelTargetTx] = useState<CreditTransaction | null>(null);
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pageSize = 10;
 
-  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ type, text });
-    setTimeout(() => setToastMessage(null), 4000);
-  };
+  const showNotification = useCallback((text: string | null, type: 'success' | 'error' = 'success') => {
+    if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+
+    if (!text) {
+      setNotification(null);
+      setIsFadingOut(false);
+      return;
+    }
+
+    setIsFadingOut(false);
+    setNotification({ type, text });
+
+    // Tự động làm mờ sau 5 giây (chuẩn style Add Scenario)
+    fadeTimerRef.current = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 5000);
+
+    // Xóa hoàn toàn sau 5.5 giây
+    clearTimerRef.current = setTimeout(() => {
+      setNotification(null);
+      setIsFadingOut(false);
+    }, 5500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+    };
+  }, []);
 
   const fetchHistory = async (page: number) => {
     setIsLoading(true);
-    setError(null);
+    
     try {
       const res = await creditService.getHistory(page, pageSize);
       if (res.success && res.data) {
         setData(res.data);
         refreshUser();
       } else {
-        setError(res.message || 'Không thể tải lịch sử giao dịch.');
+        showNotification(res.message || 'Không thể tải lịch sử giao dịch.', 'error');
       }
     } catch (err: any) {
-      setError(err.message || 'Lỗi kết nối máy chủ.');
+      showNotification(err.message || 'Lỗi kết nối máy chủ.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -53,14 +83,14 @@ export const CreditHistoryView: React.FC = () => {
         if (res.data.checkoutUrl) {
           window.location.href = res.data.checkoutUrl;
         } else if (res.data.isMock) {
-          showToast('Nạp thành công (Chế độ Mock).', 'success');
+          showNotification('Nạp thành công (Chế độ Mock).', 'success');
           await fetchHistory(currentPage);
         }
       } else {
-        showToast(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.', 'error');
+        showNotification(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.', 'error');
       }
     } catch (err: any) {
-      showToast(err.message || 'Lỗi khi tiếp tục thanh toán.', 'error');
+      showNotification(err.message || 'Lỗi khi tiếp tục thanh toán.', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -74,15 +104,15 @@ export const CreditHistoryView: React.FC = () => {
       const res = await creditService.cancelOrder(orderCode);
       setCancelTargetTx(null);
       if (res.success) {
-        showToast('Đã hủy giao dịch thành công.', 'success');
+        showNotification('Đã hủy giao dịch thành công.', 'success');
         await fetchHistory(currentPage);
       } else {
-        showToast(res.message || 'Không thể hủy đơn hàng này.', 'error');
+        showNotification(res.message || 'Không thể hủy đơn hàng này.', 'error');
         await fetchHistory(currentPage);
       }
     } catch (err: any) {
       setCancelTargetTx(null);
-      showToast(err.message || 'Lỗi khi hủy đơn hàng.', 'error');
+      showNotification(err.message || 'Lỗi khi hủy đơn hàng.', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -139,15 +169,31 @@ export const CreditHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
+      {/* Breadcrumb & Nút Thoát / Quay lại */}
+      <div className="w-full flex items-center justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
+          <Link to="/" className="hover:text-[#0878EE] transition">Trang chủ</Link>
+          <span>/</span>
+          <Link to="/subscription" className="hover:text-[#0878EE] transition">Gói Dịch Vụ & Hạn Mức</Link>
+          <span>/</span>
+          <span className="text-slate-800 font-semibold">Lịch sử giao dịch</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/subscription')}
+          className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition cursor-pointer flex-shrink-0"
+          title="Quay lại trang Gói Dịch Vụ & Hạn Mức"
+        >
+          <span>←</span>
+          <span>Quay lại Gói & Hạn Mức</span>
+        </button>
+      </div>
+
       {/* Header & Balance card */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-6 border-b border-[#E6EDF5]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link to="/credits" className="text-xs text-[#0878EE] hover:underline font-medium">
-              ← Quay lại Nạp Credit
-            </Link>
-          </div>
           <h1 className="text-2xl font-bold text-[#071A44]">Lịch Sử Giao Dịch Credit</h1>
           <p className="text-xs text-[#71809A] mt-1">
             Tra cứu biến động số dư và theo dõi các khoản nạp qua cổng PayOS.
@@ -173,33 +219,17 @@ export const CreditHistoryView: React.FC = () => {
         </div>
       </div>
 
-      {/* Toast Notification Banner */}
-      {toastMessage && (
+      {/* Toast Notification Banner (Chuẩn phong cách Add Scenario - tự làm mờ sau 5s, không in đậm) */}
+      {notification && (
         <div
-          className={`mb-6 p-4 rounded-xl text-xs font-semibold border flex items-center justify-between shadow-xs transition-all ${
-            toastMessage.type === 'success'
+          className={`mb-6 px-4 py-3 rounded-2xl text-xs sm:text-sm border flex items-center gap-2.5 shadow-xs transition-opacity duration-500 ease-in-out ${
+            notification.type === 'success'
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}
+              : 'bg-red-50 border-red-200 text-red-700'
+          } ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
         >
-          <div className="flex items-center gap-2">
-            <span>{toastMessage.type === 'success' ? '✅' : '⚠️'}</span>
-            <span>{toastMessage.text}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setToastMessage(null)}
-            className="font-bold hover:opacity-75 cursor-pointer text-sm leading-none"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-[#D92D20]/30 rounded-xl flex items-center gap-3 text-sm text-[#D92D20]">
-          <span className="text-xl">⚠️</span>
-          <span>{error}</span>
+          <span className="text-base">{notification.type === 'success' ? '✅' : '⚠️'}</span>
+          <span>{notification.text}</span>
         </div>
       )}
 
