@@ -264,6 +264,7 @@ public class RoleplaySessionServiceTests
         using var dbContext = CreateInMemoryDbContext();
         var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
 
+        // user.CreditBalance = 0 (default) → không trừ credit nhưng vẫn hoạt động
         var user = new ApplicationUser { Id = "user-chat" };
         var userManagerMock = CreateUserManagerMock(user);
 
@@ -324,6 +325,8 @@ public class RoleplaySessionServiceTests
         Assert.NotNull(result.Data.UserMessage.LinguisticFeedback);
         Assert.Equal("Warning", result.Data.UserMessage.LinguisticFeedback.Status);
         Assert.Equal("Khá tốt • Cần điều chỉnh nhỏ", result.Data.UserMessage.LinguisticFeedback.Summary);
+        // user.CreditBalance = 0 → creditsSpentThisTurn = 0 (hết credit, được phép tiếp tục nhưng ghi log)
+        Assert.Equal(0, result.Data.CreditsSpentThisTurn);
 
         // Check DB persisted state
         var dbSessionMission = await dbContext.RoleplaySessionMissions.FirstAsync(sm => sm.MissionId == mission.Id);
@@ -337,4 +340,93 @@ public class RoleplaySessionServiceTests
         Assert.Contains("Khá tốt", dbUserMsg.LinguisticFeedbackJson);
         Assert.Contains("\"evaluationSource\":\"AI\"", dbUserMsg.LinguisticFeedbackJson);
     }
+
+    [Fact]
+    public async Task SendMessageAsync_DeductsCredit_PerAiReplyLength()
+    {
+        // Arrange: User có 50 credits, AI reply ngắn (< 30 chars) → trừ 1 credit (tối thiểu)
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-credit-deduct", CreditBalance = 50 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var session = new RoleplaySession
+        {
+            Id = 202,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active",
+            CreditDeducted = 5
+        };
+        dbContext.RoleplaySessions.Add(session);
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 202,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        // AI reply = "かしこまりました。" (9 chars → 9/30=0 → max(1,0)=1 credit tối thiểu)
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました。",
+                VietnameseMeaning = "Tôi đã hiểu.",
+                CompletedMissionIds = [],
+                IsNaturallyConcluded = false
+            });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Act
+        var result = await service.SendMessageAsync(user.Id, 202, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。"
+        });
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(1, result.Data!.CreditsSpentThisTurn);  // tối thiểu 1 credit
+        Assert.Equal(49, result.Data.CreditBalance);          // 50 - 1 = 49
+        Assert.Equal(49, user.CreditBalance);                 // model được cập nhật
+
+        // Verify transaction ghi vào DB
+        var deductTx = dbContext.CreditTransactions
+            .FirstOrDefault(t => t.Type == "Deduct" && t.Description.Contains("Lượt hội thoại AI"));
+        Assert.NotNull(deductTx);
+        Assert.Equal(-1, deductTx!.Amount);
+    }
+
+    [Fact]
+    public void EstimateCreditCost_ReturnsMinimumOne_ForShortReplies()
+    {
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost(""));
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("   "));
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("はい。"));           // 3 chars
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("かしこまりました。")); // 9 chars
+    }
+
+    [Fact]
+    public void EstimateCreditCost_ScalesWithReplyLength()
+    {
+        // 30 chars → 30/30 = 1 credit
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost(new string('あ', 30)));
+        // 60 chars → 60/30 = 2 credits
+        Assert.Equal(2, RoleplaySessionService.EstimateCreditCost(new string('あ', 60)));
+        // 90 chars → 90/30 = 3 credits
+        Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 90)));
+    }
 }
+

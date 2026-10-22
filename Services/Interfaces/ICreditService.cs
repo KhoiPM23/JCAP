@@ -14,6 +14,7 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<CreditTransactionDto>> VerifyOrderAsync(string userId, long orderCode);
         Task<ApiResponse<PurchaseCreditResponseDto>> ContinuePaymentAsync(string userId, long orderCode);
         Task<ApiResponse<bool>> CancelOrderAsync(string userId, long orderCode);
+        Task<ApiResponse<UserQuotaDto>> GetUserQuotaAsync(string userId);
     }
 }
 

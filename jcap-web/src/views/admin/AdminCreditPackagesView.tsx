@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   subscriptionPlanService,
   type SubscriptionPlanItem,
 } from '../../services/subscriptionPlanService';
+import { AdminRevenueReportSection } from './AdminRevenueReportSection';
 
 // ============================================================================
 // TypeScript Interfaces
@@ -80,13 +81,30 @@ const API_BASE_URL = '/api/admin/credits/packages';
 
 export const AdminCreditPackagesView: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const { user } = useAuth();
 
   // ============================================================================
-  // 1. Category Mode: MẶC ĐỊNH AUTO HIỆN BÊN GÓI THÁNG KHI VÀO TRANG
-  // 'subscription' (Gói Hội Viên Tháng) | 'one-time' (Gói Nạp Credit Lẻ)
+  // 1. Category Mode: MẶC ĐỊNH AUTO HIỆN BÁO CÁO DOANH THU KHI VÀO TRANG
+  // 'revenue' (Báo Cáo Doanh Thu) | 'subscription' (Gói Hội Viên Tháng) | 'one-time' (Gói Nạp Credit Lẻ)
   // ============================================================================
-  const [mainCategory, setMainCategory] = useState<'subscription' | 'one-time'>('subscription');
+  const [mainCategory, setMainCategoryState] = useState<'subscription' | 'one-time' | 'revenue'>(() => {
+    if (tabParam === 'subscription') return 'subscription';
+    if (tabParam === 'one-time' || tabParam === 'credit') return 'one-time';
+    return 'revenue';
+  });
+
+  const setMainCategory = (cat: 'subscription' | 'one-time' | 'revenue') => {
+    setMainCategoryState(cat);
+    setSearchParams(cat === 'revenue' ? {} : { tab: cat });
+  };
+
+  useEffect(() => {
+    if (tabParam === 'subscription') setMainCategoryState('subscription');
+    else if (tabParam === 'one-time' || tabParam === 'credit') setMainCategoryState('one-time');
+    else setMainCategoryState('revenue');
+  }, [tabParam]);
 
   // ============================================================================
   // 2. Editor Mode: Chuyển sang trang soạn thảo riêng như bên Scenario
@@ -979,17 +997,30 @@ export const AdminCreditPackagesView: React.FC = () => {
           <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
             <span>Hệ thống &amp; Người dùng</span>
             <span>&gt;</span>
-            <span className="text-slate-800 font-semibold">Quản lý Gói và Credit</span>
+            <span className="text-slate-500">Quản lý Gói và Credit</span>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">
+              {mainCategory === 'revenue' && 'Báo cáo Doanh thu'}
+              {mainCategory === 'subscription' && 'Gói Hội viên Tháng'}
+              {mainCategory === 'one-time' && 'Gói Nạp Credit'}
+            </span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Quản Lý Gói Dịch Vụ &amp; Hạn Mức Quota
+            {mainCategory === 'revenue' && 'Báo Cáo & Thống Kê Doanh Thu'}
+            {mainCategory === 'subscription' && 'Quản Lý Gói Dịch Vụ & Hạn Mức Quota'}
+            {mainCategory === 'one-time' && 'Quản Lý Gói Nạp Credit (Một Lần)'}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Cấu hình Gói Tháng Hội Viên, định mức Quota Rolling (5 tiếng &amp; tuần) và các Gói Nạp Credit lẻ.
+            {mainCategory === 'revenue' &&
+              'Tổng hợp doanh thu Gói Tháng Hội Viên & Gói Nạp Credit Lẻ theo ngày, tuần, tháng, năm với biểu đồ trực quan.'}
+            {mainCategory === 'subscription' &&
+              'Cấu hình Gói Tháng Hội Viên, định mức Quota Rolling (5 tiếng & tuần) và các tính năng đi kèm.'}
+            {mainCategory === 'one-time' &&
+              'Cấu hình các gói nạp credit bổ sung cho học viên khi cần thêm lượt học AI.'}
           </p>
         </div>
 
-        {/* Nút hành động thêm mới: KHÔNG CÓ TRÙNG LẶP DẤU CỘNG (Sửa lỗi Hình 2) */}
+        {/* Nút hành động */}
         {mainCategory === 'subscription' ? (
           <button
             type="button"
@@ -998,13 +1029,25 @@ export const AdminCreditPackagesView: React.FC = () => {
           >
             + Thêm Gói Tháng Mới
           </button>
-        ) : (
+        ) : mainCategory === 'one-time' ? (
           <button
             type="button"
             onClick={handleOpenCreateCreditEditor}
             className="inline-flex items-center px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-xs transition duration-150 cursor-pointer"
           >
             + Thêm Gói Nạp Lẻ
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('jcap_export_revenue_csv'));
+              setSuccessMessage('Đã tạo và tải xuống bản báo cáo doanh thu Excel (CSV) thành công!');
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-xs transition duration-150 cursor-pointer"
+          >
+            <span>📥</span>
+            <span>Xuất Báo Cáo Excel (CSV)</span>
           </button>
         )}
       </div>
@@ -1032,8 +1075,24 @@ export const AdminCreditPackagesView: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Main Navigation Switcher (Gói Hội Viên Tháng vs Gói Nạp Lẻ) */}
+      {/* 3. Main Navigation Switcher (Báo Cáo Doanh Thu ĐỨNG ĐẦU, Gói Hội Viên Tháng, Gói Nạp Lẻ) */}
       <div className="flex flex-wrap items-center gap-3 p-1.5 bg-slate-100 rounded-2xl mb-8 w-fit border border-slate-200">
+        <button
+          type="button"
+          onClick={() => setMainCategory('revenue')}
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+            mainCategory === 'revenue'
+              ? 'bg-white text-emerald-700 shadow-sm border border-slate-200'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+          }`}
+        >
+          <span>📊</span>
+          <span>Báo Cáo Doanh Thu</span>
+          <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 font-bold">
+            Tổng quan
+          </span>
+        </button>
+
         <button
           type="button"
           onClick={() => setMainCategory('subscription')}
@@ -1356,6 +1415,17 @@ export const AdminCreditPackagesView: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* SECTION 3: BÁO CÁO DOANH THU (BIỂU ĐỒ TRÒN & CỘT THEO NGÀY/TUẦN/THÁNG/NĂM) */}
+      {/* ==================================================================== */}
+      {mainCategory === 'revenue' && (
+        <AdminRevenueReportSection
+          onExportReport={() => {
+            setSuccessMessage('Đã tạo và tải xuống bản báo cáo doanh thu Excel (CSV) thành công!');
+          }}
+        />
       )}
     </div>
   );

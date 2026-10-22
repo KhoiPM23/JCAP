@@ -17,6 +17,11 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly IAiRoleplayService _aiRoleplayService;
     private readonly ILogger<RoleplaySessionService> _logger;
 
+    /// <summary>
+    /// Số ký tự tiếng Nhật ước lượng tương đương 1 credit (30 ký tự ≈ 30 tokens ≈ 1 credit).
+    /// </summary>
+    private const int CharsPerCredit = 30;
+
     public RoleplaySessionService(
         AppDbContext dbContext,
         UserManager<ApplicationUser> userManager,
@@ -362,6 +367,52 @@ public class RoleplaySessionService : IRoleplaySessionService
         };
         _dbContext.RoleplayMessages.Add(aiMessage);
 
+        // 4b. Trừ credit theo số token ước lượng từ câu thoại AI (tối thiểu 1 credit/lượt)
+        // Công thức: mỗi CharsPerCredit ký tự tiếng Nhật ≈ 1 credit, tối thiểu 1 credit/lượt.
+        // Admin không bị trừ credit.
+        var userForDeduct = await _userManager.FindByIdAsync(userId);
+        var isAdmin = userForDeduct != null &&
+            string.Equals(userForDeduct.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+        int creditsSpentThisTurn = 0;
+
+        if (!isAdmin && userForDeduct != null)
+        {
+            int estimatedTokens = string.IsNullOrWhiteSpace(turnResult.JapaneseReply)
+                ? 0
+                : turnResult.JapaneseReply.Length;
+            int creditsDue = Math.Max(1, estimatedTokens / CharsPerCredit);
+
+            if (userForDeduct.CreditBalance >= creditsDue)
+            {
+                creditsSpentThisTurn = creditsDue;
+            }
+            else if (userForDeduct.CreditBalance > 0)
+            {
+                // Trừ hết số dư còn lại nếu không đủ đúng lượng
+                creditsSpentThisTurn = userForDeduct.CreditBalance;
+            }
+            else
+            {
+                // Hết credit: vẫn cho phép nhận phản hồi lượt này nhưng ghi log
+                _logger.LogWarning("User {UserId} gửi tin nhắn nhưng số dư credit bằng 0. Cho phép lượt này nhưng không trừ credit.", userId);
+            }
+
+            if (creditsSpentThisTurn > 0)
+            {
+                userForDeduct.CreditBalance -= creditsSpentThisTurn;
+                _dbContext.CreditTransactions.Add(new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = -creditsSpentThisTurn,
+                    Type = "Deduct",
+                    Status = "Paid",
+                    Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _userManager.UpdateAsync(userForDeduct);
+            }
+        }
+
         // 5. Cập nhật các mission vừa hoàn thành
         var newlyCompletedIds = new List<int>();
         foreach (var missionId in turnResult.CompletedMissionIds)
@@ -391,6 +442,11 @@ public class RoleplaySessionService : IRoleplaySessionService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         // 7. Tạo response trả về cho frontend
+        // Lấy credit balance mới nhất (đã được cập nhật sau deduct)
+        int latestCreditBalance = userForDeduct?.CreditBalance
+            ?? (await _userManager.FindByIdAsync(userId))?.CreditBalance
+            ?? 0;
+
         var responseDto = new RoleplayTurnResponseDto
         {
             UserMessage = new RoleplayMessageDto
@@ -424,7 +480,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }).ToList(),
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             SessionStatus = session.Status,
-            CreditBalance = (await _userManager.FindByIdAsync(userId))?.CreditBalance ?? 0
+            CreditBalance = latestCreditBalance,
+            CreditsSpentThisTurn = creditsSpentThisTurn
         };
 
         return ApiResponse<RoleplayTurnResponseDto>.Ok(responseDto);
@@ -533,4 +590,15 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
         return string.Empty;
     }
+
+    /// <summary>
+    /// Ước lượng số credit cần trừ dựa trên độ dài câu thoại AI tiếng Nhật.
+    /// Mỗi <see cref="CharsPerCredit"/> ký tự = 1 credit, tối thiểu 1 credit.
+    /// </summary>
+    internal static int EstimateCreditCost(string japaneseReply)
+    {
+        if (string.IsNullOrWhiteSpace(japaneseReply)) return 1;
+        return Math.Max(1, japaneseReply.Length / CharsPerCredit);
+    }
 }
+

@@ -614,5 +614,120 @@ namespace JCAP.Services.Implementations
 
             return ApiResponse<bool>.Ok(true, "Hủy giao dịch thành công.");
         }
+
+        public async Task<ApiResponse<UserQuotaDto>> GetUserQuotaAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<UserQuotaDto>.Fail("Không tìm thấy người dùng.");
+            }
+
+            var now = DateTime.UtcNow;
+            var fiveHoursAgo = now.AddHours(-5);
+            var sevenDaysAgo = now.AddDays(-7);
+
+            // 1. Tính tổng credit bị khấu trừ trong 5 giờ qua từ các giao dịch Deduct
+            var used5h = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
+                .SumAsync(t => -t.Amount); // Amount là số âm khi Deduct (ví dụ: -1, -5) -> -t.Amount là số dương
+
+            // 2. Tính tổng credit bị khấu trừ trong 7 ngày qua
+            var usedWeek = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+                .SumAsync(t => -t.Amount);
+
+            // Mặc định định mức gói Pro: 50 credits/5h, 1000 credits/tuần
+            int fiveHourTotal = 50;
+            int weeklyTotal = 1000;
+
+            int fiveHourRemaining = Math.Max(0, fiveHourTotal - used5h);
+            int fiveHourPercent = fiveHourTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)fiveHourRemaining / fiveHourTotal * 100))) : 0;
+
+            int weeklyRemaining = Math.Max(0, weeklyTotal - usedWeek);
+            int weeklyPercent = weeklyTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)weeklyRemaining / weeklyTotal * 100))) : 0;
+
+            // 3. Tính thời gian reset hạn ngạch 5 giờ
+            // Dựa vào giao dịch Deduct cũ nhất trong cửa sổ 5 giờ: sau 5h kể từ lúc đó nó sẽ rơi khỏi cửa sổ
+            var oldestIn5h = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
+                .OrderBy(t => t.CreatedAt)
+                .Select(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            string fiveHourResetsText;
+            if (oldestIn5h != default)
+            {
+                var nextReset = oldestIn5h.AddHours(5);
+                var diff = nextReset - now;
+                if (diff.TotalMinutes > 0)
+                {
+                    int h = (int)diff.TotalHours;
+                    int m = diff.Minutes;
+                    fiveHourResetsText = h > 0 ? $"{h} giờ {m} phút" : $"{m} phút";
+                }
+                else
+                {
+                    fiveHourResetsText = "Đang hồi phục";
+                }
+            }
+            else
+            {
+                fiveHourResetsText = "5 giờ (Đầy đủ)";
+            }
+
+            // 4. Tính thời gian reset tuần (còn lại trong chu kỳ 7 ngày)
+            var oldestInWeek = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+                .OrderBy(t => t.CreatedAt)
+                .Select(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            string weeklyResetsText;
+            if (oldestInWeek != default)
+            {
+                var nextWeekReset = oldestInWeek.AddDays(7);
+                var diffW = nextWeekReset - now;
+                if (diffW.TotalHours > 0)
+                {
+                    int days = (int)diffW.TotalDays;
+                    int hours = diffW.Hours;
+                    weeklyResetsText = days > 0 ? $"{days} ngày {hours} giờ" : $"{hours} giờ";
+                }
+                else
+                {
+                    weeklyResetsText = "Đang hồi phục";
+                }
+            }
+            else
+            {
+                weeklyResetsText = "7 ngày (Đầy đủ)";
+            }
+
+            var dto = new UserQuotaDto
+            {
+                WeeklyTotalCredits = weeklyTotal,
+                WeeklyUsedCredits = usedWeek,
+                WeeklyRemainingCredits = weeklyRemaining,
+                WeeklyRemainingPercent = weeklyPercent,
+                WeeklyResetsInText = weeklyResetsText,
+
+                FiveHourTotalCredits = fiveHourTotal,
+                FiveHourUsedCredits = used5h,
+                FiveHourRemainingCredits = fiveHourRemaining,
+                FiveHourRemainingPercent = fiveHourPercent,
+                FiveHourResetsInText = fiveHourResetsText,
+
+                ExtraCreditBalance = user.CreditBalance,
+                PlanName = "Gói Tháng Pro (Cơ Bản)",
+                PlanTier = "Pro"
+            };
+
+            return ApiResponse<UserQuotaDto>.Ok(dto, "Lấy thông tin hạn ngạch thành công.");
+        }
     }
 }
