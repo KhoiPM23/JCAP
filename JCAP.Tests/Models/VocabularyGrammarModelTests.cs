@@ -4,6 +4,7 @@ using JCAP.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace JCAP.Tests.Models;
@@ -151,6 +152,39 @@ public class VocabularyGrammarModelTests
             && fk.Properties.Single().Name == "GrammarId");
         Assert.Equal(500, model.FindEntityType(typeof(Grammar))!
             .FindProperty(nameof(Grammar.ExampleSentence))!.GetMaxLength());
+    }
+
+    [Fact]
+    public void MigrationTargetModel_MatchesCurrentModelIncludingUpstreamSubscriptionField()
+    {
+        using var context = CreateSqlServerModelContext();
+        var migration = new AddVocabularyAndGrammarDetails();
+        var subscription = migration.TargetModel.FindEntityType(typeof(ApplicationUser).FullName!)!
+            .FindProperty(nameof(ApplicationUser.SubscriptionExpiresAt));
+
+        Assert.NotNull(subscription);
+        Assert.True(subscription.IsNullable);
+        Assert.Equal(typeof(DateTime?), subscription.ClrType);
+
+        var targetModel = context.GetService<IModelRuntimeInitializer>()
+            .Initialize(migration.TargetModel, designTime: true);
+        var currentModel = context.GetService<IDesignTimeModel>().Model;
+        var differences = context.GetService<IMigrationsModelDiffer>()
+            .GetDifferences(targetModel.GetRelationalModel(), currentModel.GetRelationalModel());
+
+        Assert.Empty(differences);
+    }
+
+    [Fact]
+    public void MigrationOrder_AppliesSubscriptionBeforeVocabularyAndGrammarDetails()
+    {
+        using var context = CreateSqlServerModelContext();
+        var migrations = context.GetService<IMigrationsAssembly>().Migrations.Keys.ToList();
+        var subscriptionIndex = migrations.IndexOf("20261022120506_AddSubscriptionExpiresAt");
+        var detailsIndex = migrations.IndexOf("20261022132040_AddVocabularyAndGrammarDetails");
+
+        Assert.True(subscriptionIndex >= 0);
+        Assert.Equal(subscriptionIndex + 1, detailsIndex);
     }
 
     [Fact]
