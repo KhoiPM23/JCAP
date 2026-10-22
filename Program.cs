@@ -1,4 +1,4 @@
-using JCAP.Data;
+﻿using JCAP.Data;
 using JCAP.DTOs.Credit;
 using JCAP.Models;
 using JCAP.Services.Implementations;
@@ -101,6 +101,7 @@ builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationSer
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
+builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
 builder.Services.AddRateLimiter(options =>

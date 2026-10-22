@@ -85,39 +85,11 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
 
-            // Chế độ 1: PayOS chưa được cấu hình -> Chạy Mock Payment (Phase 1)
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
-                _logger.LogInformation("PayOS chưa cấu hình thông tin. Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
-
-                var mockTransaction = new CreditTransaction
-                {
-                    UserId = userId,
-                    Amount = package.Credits,
-                    Type = "TopUp",
-                    Description = $"Nạp {package.Name} (+{package.Credits} credits) [Mock]",
-                    PayOsOrderCode = null,
-                    Status = "Paid",
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                user.CreditBalance += package.Credits;
-
-                await _dbContext.CreditTransactions.AddAsync(mockTransaction);
-                await _userManager.UpdateAsync(user);
-                await _dbContext.SaveChangesAsync();
-
-                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
-                {
-                    Success = true,
-                    Message = $"Nạp thành công {package.Credits} credits vào tài khoản (Chế độ Mock).",
-                    IsMock = true,
-                    AddedCredits = package.Credits,
-                    NewCreditBalance = user.CreditBalance
-                }, "Nạp credits thành công (Mock).");
+                _logger.LogError("PayOS chưa cấu hình thông tin. Từ chối khởi tạo giao dịch cho User: {UserId}, Package: {PackageId}", userId, packageId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán trực tuyến PayOS chưa được cấu hình hoặc gặp sự cố. Vui lòng liên hệ quản trị viên.");
             }
-
-            // Chế độ 2: Tích hợp cổng PayOS thực (Phase 2)
             try
             {
                 long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -192,6 +164,92 @@ namespace JCAP.Services.Implementations
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tạo payment link với PayOS. Order Package: {PackageId}", packageId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail($"Không thể tạo yêu cầu thanh toán: {ex.Message}");
+            }
+        }
+
+
+        public async Task<ApiResponse<PurchaseCreditResponseDto>> PurchaseSubscriptionAsync(string userId, PurchaseSubscriptionRequestDto request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
+            }
+
+            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            {
+                _logger.LogError("PayOS chưa cấu hình thông tin khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, request.PlanId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán PayOS chưa được kích hoạt hoặc cấu hình chưa đầy đủ. Vui lòng liên hệ quản trị viên.");
+            }
+
+            try
+            {
+                long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(request.PlanId)}";
+                var cancelUrl = $"{frontendUrl}/credits?cancel=true";
+
+                var pendingTransaction = new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = request.CreditsAmount,
+                    Type = "Subscription",
+                    Description = $"Đăng ký {request.PlanName} ({request.PlanId})",
+                    PayOsOrderCode = orderCode.ToString(),
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _dbContext.CreditTransactions.AddAsync(pendingTransaction);
+                await _dbContext.SaveChangesAsync();
+
+                // PayOS quy định mô tả tối đa 25 ký tự không dấu/đơn giản
+                string safeDescription = $"JCAP Sub {request.CreditsAmount}C";
+                if (safeDescription.Length > 25)
+                {
+                    safeDescription = safeDescription.Substring(0, 25);
+                }
+
+                int actualPaymentAmount = (int)request.Price;
+                if (actualPaymentAmount < 2000)
+                {
+                    actualPaymentAmount = 2500;
+                }
+
+                var paymentRequest = new CreatePaymentLinkRequest
+                {
+                    OrderCode = orderCode,
+                    Amount = actualPaymentAmount,
+                    Description = safeDescription,
+                    ReturnUrl = returnUrl,
+                    CancelUrl = cancelUrl,
+                    Items = new List<PaymentLinkItem>
+                    {
+                        new()
+                        {
+                            Name = request.PlanName,
+                            Quantity = 1,
+                            Price = actualPaymentAmount
+                        }
+                    }
+                };
+
+                var paymentLinkResult = await _payOSClient.PaymentRequests.CreateAsync(paymentRequest);
+
+                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                {
+                    Success = true,
+                    Message = "Tạo liên kết thanh toán gói tháng PayOS thành công.",
+                    CheckoutUrl = paymentLinkResult.CheckoutUrl,
+                    OrderCode = orderCode,
+                    IsMock = false
+                }, "Khởi tạo thanh toán thành công.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo payment link gói tháng với PayOS. PlanId: {PlanId}", request.PlanId);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail($"Không thể tạo yêu cầu thanh toán: {ex.Message}");
             }
         }

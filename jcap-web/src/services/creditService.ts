@@ -99,6 +99,62 @@ class CreditService {
   /**
    * UC13: Lấy lịch sử biến động số dư / giao dịch nạp credit
    */
+  /**
+   * Mua gói hội viên tháng (Subscription Plan) qua PayOS
+   */
+  public async purchaseSubscriptionPlan(plan: {
+    id: string;
+    name: string;
+    creditsAmount: number;
+    fiveHourQuota: number;
+    price: number;
+  }): Promise<ApiResponse<PurchaseCreditResponse>> {
+    const token = localStorage.getItem('jcap_token');
+    if (!token) {
+      return {
+        success: false,
+        message: 'Vui lòng đăng nhập để nâng cấp gói dịch vụ.',
+      };
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/purchase-subscription`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          planId: plan.id,
+          planName: plan.name,
+          creditsAmount: plan.creditsAmount,
+          fiveHourQuota: plan.fiveHourQuota,
+          price: plan.price,
+        }),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+        };
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Yêu cầu đăng ký gói tháng thất bại (${response.status})`,
+        errors: errData?.errors,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ thanh toán.',
+      };
+    }
+  }
+
   public async getHistory(page: number = 1, pageSize: number = 10): Promise<ApiResponse<CreditHistoryResponse>> {
     const token = localStorage.getItem('jcap_token');
     if (!token) {
