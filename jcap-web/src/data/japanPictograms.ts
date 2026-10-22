@@ -268,6 +268,9 @@ export const PICTOGRAM_PREFECTURES: Record<string, number[]> = (() => {
   return out;
 })();
 
+/** Biểu tượng riêng của JCAP (public/explore-icons) cho địa điểm bộ NDC không có. Thêm file .svg thì thêm dòng ở đây. */
+export const JCAP_ICONS: Pictogram[] = [P('X_airport', '空港', 'Sân bay', 'landmark')];
+
 /**
  * Đường dẫn file biểu tượng. Id có tiền tố "X_" là biểu tượng riêng của JCAP (public/explore-icons) cho địa điểm
  * bộ NDC không có (vd. sân bay), để không lẫn với bộ NDC (bộ NDC không được sửa hình).

@@ -3,7 +3,14 @@ import type {
   AdminExploreChapter,
   AdminExploreOverview,
   AdminExplorePrefecture,
+  AdminExplorePrefectureContent,
+  AdminExploreSpot,
+  AdminExploreWord,
+  ExploreLookupItem,
+  ExploreLookupKind,
+  ExploreSpotStatus,
   SaveExploreChapter,
+  SaveExploreSpot,
 } from '../types/adminExplore';
 
 const BASE = '/api/admin/explore';
@@ -63,6 +70,48 @@ class AdminExploreService {
   /** Ngừng dùng chương (không xoá cứng) */
   public deactivateChapter(id: number) {
     return this.send<boolean>('DELETE', `${BASE}/chapters/${id}`);
+  }
+
+  // ---- Soạn nội dung trong tỉnh ----
+
+  /** Mọi mốc (nháp và đang dùng) của tỉnh, kèm "Một từ ở tỉnh" */
+  public getPrefectureContent(prefectureId: number) {
+    return this.send<AdminExplorePrefectureContent>('GET', `${BASE}/prefectures/${prefectureId}/spots`);
+  }
+
+  public saveWord(prefectureId: number, dto: AdminExploreWord) {
+    return this.send<AdminExploreWord>('PUT', `${BASE}/prefectures/${prefectureId}/word`, dto);
+  }
+
+  public getSpot(id: number) {
+    return this.send<AdminExploreSpot>('GET', `${BASE}/spots/${id}`);
+  }
+
+  /** Tạo mốc mới (luôn ở trạng thái Nháp) */
+  public createSpot(prefectureId: number, dto: SaveExploreSpot) {
+    return this.send<AdminExploreSpot>('POST', `${BASE}/prefectures/${prefectureId}/spots`, dto);
+  }
+
+  public updateSpot(id: number, dto: SaveExploreSpot) {
+    return this.send<AdminExploreSpot>('PUT', `${BASE}/spots/${id}`, dto);
+  }
+
+  public setSpotStatus(id: number, status: ExploreSpotStatus) {
+    return this.send<AdminExploreSpot>('PUT', `${BASE}/spots/${id}/status`, { status });
+  }
+
+  /** Ngừng dùng mốc nháp (không xoá cứng) */
+  public deactivateSpot(id: number) {
+    return this.send<boolean>('DELETE', `${BASE}/spots/${id}`);
+  }
+
+  /** Tìm ngữ pháp, từ vựng, bài Shadowing, kịch bản Hội thoại AI để gắn vào bài */
+  public lookup(kind: ExploreLookupKind, level?: string | null, q?: string) {
+    const params = new URLSearchParams();
+    if (level) params.set('level', level);
+    if (q?.trim()) params.set('q', q.trim());
+    const qs = params.toString();
+    return this.send<ExploreLookupItem[]>('GET', `${BASE}/lookups/${kind}${qs ? `?${qs}` : ''}`);
   }
 }
 

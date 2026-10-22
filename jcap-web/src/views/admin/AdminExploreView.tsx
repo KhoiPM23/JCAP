@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Toast, type ToastType } from '../../components/ui/Toast';
 import { PREFECTURES, REGIONS } from '../../data/japanMap';
 import { adminExploreService } from '../../services/adminExploreService';
@@ -450,17 +450,15 @@ const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClo
         )}
       </div>
 
-      {/* Giai đoạn 3 */}
-      <button
-        type="button"
-        disabled
-        className="mt-5 w-full h-10 rounded-xl border border-dashed border-slate-300 text-slate-500 text-sm font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
+      <Link
+        to={`/admin/explore/prefectures/${id}`}
+        className="mt-5 w-full h-10 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0878EE]"
       >
-        Quản lý mốc học
-        <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
-          Sắp có
-        </span>
-      </button>
+        Quản lý mốc học và "Một từ ở tỉnh"
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 6l6 6-6 6" />
+        </svg>
+      </Link>
     </section>
   );
 };

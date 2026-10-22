@@ -40,3 +40,103 @@ export interface SaveExploreChapter {
   maxLevel: ExploreLevel;
   unlockThresholdPercent: number;
 }
+
+// ---- Soạn nội dung trong tỉnh (giai đoạn 3) ----
+
+export type ExploreSpotStatus = 'Draft' | 'Published';
+
+/** Khoá các mục kiểm tra trước khi chuyển mốc sang "Đang dùng" (khớp ExploreSpotCheck ở backend) */
+export type ExploreSpotCheckKey = 'place' | 'sentence' | 'target' | 'situation' | 'realUse' | 'shadowing';
+
+export interface AdminExplorePrefectureContent {
+  id: number;
+  isOpen: boolean;
+  chapterId?: number | null;
+  word?: AdminExploreWord | null;
+  spots: AdminExploreSpotSummary[];
+}
+
+export interface AdminExploreWord {
+  word: string;
+  kana: string;
+  meaning: string;
+  note?: string | null;
+  status: ExploreSpotStatus;
+}
+
+export interface AdminExploreSpotSummary {
+  id: number;
+  iconId: string;
+  nameVi: string;
+  nameJp: string;
+  latitude: number;
+  longitude: number;
+  status: ExploreSpotStatus;
+  jlptLevel: ExploreLevel;
+  hasRoleplay: boolean;
+  updatedAt: string;
+  missing: ExploreSpotCheckKey[];
+}
+
+export interface ExploreLookupItem {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  jlptLevel?: string | null;
+  /** false = nội dung đã ngừng dùng/lưu trữ */
+  available: boolean;
+}
+
+export type ExploreLookupKind = 'grammar' | 'vocabulary' | 'shadowing' | 'roleplay';
+
+export interface AdminExploreActivity {
+  type: 'Shadowing' | 'Roleplay';
+  referenceId?: number | null;
+  passThreshold?: number | null;
+  reference?: ExploreLookupItem | null;
+}
+
+export interface AdminExploreSpot {
+  id: number;
+  prefectureId: number;
+  prefectureIsOpen: boolean;
+  iconId: string;
+  nameVi: string;
+  nameJp: string;
+  nameKana?: string | null;
+  latitude: number;
+  longitude: number;
+  status: ExploreSpotStatus;
+  createdAt: string;
+  updatedAt: string;
+  jlptLevel: ExploreLevel;
+  situation: string;
+  realUse: string;
+  sentence: { text: string; reading?: string | null }[];
+  meaning: string;
+  grammarNote?: string | null;
+  estimatedMinutes: number;
+  grammars: ExploreLookupItem[];
+  vocabularies: ExploreLookupItem[];
+  activities: AdminExploreActivity[];
+  missing: ExploreSpotCheckKey[];
+}
+
+export interface SaveExploreSpot {
+  iconId: string;
+  nameVi: string;
+  nameJp: string;
+  nameKana?: string | null;
+  latitude: number;
+  longitude: number;
+  jlptLevel: ExploreLevel;
+  situation: string;
+  realUse: string;
+  sentence: { text: string; reading?: string | null }[];
+  meaning: string;
+  grammarNote?: string | null;
+  estimatedMinutes: number;
+  grammarIds: number[];
+  vocabularyIds: number[];
+  activities: { type: 'Shadowing' | 'Roleplay'; referenceId: number | null; passThreshold?: number | null }[];
+}
