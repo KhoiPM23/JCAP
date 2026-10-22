@@ -37,6 +37,11 @@ import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 import { SettingsView } from '../views/SettingsView';
 
+// Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
+const JapanMapView = React.lazy(() =>
+  import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
+);
+
 // ============================================================
 // Route Wrappers
 // ============================================================
@@ -310,6 +315,24 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Khám phá: bản đồ Nhật Bản toàn màn hình (nằm ngoài MainLayout) */}
+      <Route
+        path="/explore"
+        element={
+          <PrivateRoute>
+            <React.Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#F4F9FE]">
+                  <div className="w-10 h-10 border-4 border-blue-100 border-t-[#0878EE] rounded-full animate-spin" />
+                </div>
+              }
+            >
+              <JapanMapView />
+            </React.Suspense>
           </PrivateRoute>
         }
       />
