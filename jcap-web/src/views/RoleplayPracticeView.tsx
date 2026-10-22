@@ -827,8 +827,14 @@ export const RoleplayPracticeView: React.FC = () => {
         {/* ============================================================ */}
         {/* 1. LEFT SIDEBAR: Missions & Cheat Sheet                     */}
         {/* ============================================================ */}
-        {isLeftOpen && (
-          <aside className="w-80 shrink-0 border-r border-[#E6EDF5] bg-white flex flex-col z-10 transition-all duration-200">
+        <aside
+          className={`shrink-0 border-r border-[#E6EDF5] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+            isLeftOpen
+              ? 'w-80 opacity-100 shadow-sm'
+              : 'w-0 border-r-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-80 flex flex-col h-full shrink-0">
             {/* Header sidebar */}
             <div className="flex items-center justify-between border-b border-[#E6EDF5] px-4 py-3">
               <div>
@@ -980,22 +986,24 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
             </div>
-          </aside>
-        )}
+          </div>
+        </aside>
 
-        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
-        {!isLeftOpen && (
-          <button
-            type="button"
-            onClick={() => setIsLeftOpen(true)}
-            className="absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all"
-            title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
-          >
-            <span>📋</span>
-            <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
-            <span>▶</span>
-          </button>
-        )}
+        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn (Hiệu ứng trượt êm ái) */}
+        <button
+          type="button"
+          onClick={() => setIsLeftOpen(true)}
+          className={`absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all duration-300 ease-in-out ${
+            !isLeftOpen
+              ? 'translate-x-0 opacity-100 pointer-events-auto'
+              : '-translate-x-full opacity-0 pointer-events-none'
+          }`}
+          title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
+        >
+          <span>📋</span>
+          <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
+          <span>▶</span>
+        </button>
 
         {/* ============================================================ */}
         {/* 2. CENTER COLUMN: Chat Stream (Max Width 760px Centered)    */}
@@ -1328,8 +1336,14 @@ export const RoleplayPracticeView: React.FC = () => {
         {/* ============================================================ */}
         {/* 3. RIGHT SIDEBAR: Linguistic Feedback Panel                 */}
         {/* ============================================================ */}
-        {isRightOpen && (
-          <aside className="w-80 lg:w-[330px] xl:w-[350px] max-w-[30vw] shrink-0 border-l border-[#E6EDF5] bg-white flex flex-col z-10 transition-all duration-200">
+        <aside
+          className={`shrink-0 border-l border-[#E6EDF5] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+            isRightOpen
+              ? 'w-80 lg:w-[330px] xl:w-[350px] max-w-[30vw] opacity-100 shadow-sm'
+              : 'w-0 border-l-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-80 lg:w-[330px] xl:w-[350px] flex flex-col h-full shrink-0">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#E6EDF5] px-4 py-3">
               <div className="flex items-center gap-2">
@@ -1543,22 +1557,24 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
             </div>
-          </aside>
-        )}
+          </div>
+        </aside>
 
-        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
-        {!isLeftOpen && (
-          <button
-            type="button"
-            onClick={() => setIsLeftOpen(true)}
-            className="absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all"
-            title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
-          >
-            <span>📋</span>
-            <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
-            <span>▶</span>
-          </button>
-        )}
+        {/* Nút Dock mở rộng Cột Phải khi đang bị thu gọn */}
+        <button
+          type="button"
+          onClick={() => setIsRightOpen(true)}
+          className={`absolute top-4 right-0 z-30 flex items-center gap-2 rounded-l-xl border border-r-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pl-4 transition-all duration-300 ease-in-out ${
+            !isRightOpen && selectedMessage?.linguisticFeedback
+              ? 'translate-x-0 opacity-100 pointer-events-auto'
+              : 'translate-x-full opacity-0 pointer-events-none'
+          }`}
+          title="Mở rộng bảng đánh giá lượt nói"
+        >
+          <span>◀</span>
+          <span>Đánh giá</span>
+          <span>🔍</span>
+        </button>
       </div>
 
       {/* ============================================================ */}
