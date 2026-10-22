@@ -25,6 +25,7 @@ import {
   type PrefectureDetail,
 } from './prefectureDetail';
 import { ProvinceLabels } from './ProvinceLabels';
+import { PrefectureLabels, type PrefectureLabelItem } from './PrefectureLabelLayer';
 import { chipSize, layoutLabels, type Box, type LabelLayout } from './labelLayout';
 import { RouteLayer } from './RouteLayer';
 import { SpotCard } from './SpotCard';
@@ -385,6 +386,16 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   // Dải bờ biển nằm ở lớp <svg> riêng, có khung đã vẽ riêng (xem paintShore)
   const shoreSvgRef = useRef<SVGSVGElement>(null);
   const shoreRenderedRef = useRef<RenderedView | null>(null);
+  // Lớp tên tỉnh (HTML): đặt theo khung labelVbRef (khung đã vẽ lúc React dựng nhãn), camera chỉ dịch/co giãn bằng transform
+  const labelLayerRef = useRef<HTMLDivElement>(null);
+  const labelVbRef = useRef<ViewBox | null>(null);
+  const placeLabelLayer = useCallback((vb: ViewBox) => {
+    const el = labelLayerRef.current;
+    const lv = labelVbRef.current;
+    const { w, h } = sizeRef.current;
+    if (!el || !lv || !w) return;
+    el.style.transform = lv === vb ? '' : layerTransform(lv, vb, w, h).css;
+  }, []);
 
   /** Vẽ lại dải bờ biển đúng khung camera `vb` (đang bay thì bỏ qua: lớp này đang ẩn, `force` để hiện lại) */
   const paintShore = useCallback((vb: ViewBox, force = false) => {
@@ -401,9 +412,11 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       renderedRef.current = { vb, w, h };
       setLayerView(svgRef.current, vb, w);
       paintShore(vb);
+      // Nhãn vẫn đặt theo khung cũ đến khi React dựng lại: giữ khớp bằng transform trong lúc chờ
+      placeLabelLayer(vb);
       setRenderView(vb);
     },
-    [paintShore],
+    [paintShore, placeLabelLayer],
   );
 
   /** Đưa camera tới `vb`: dịch/co giãn ảnh đã vẽ nếu còn đủ nét và đủ phủ khung nhìn, không thì vẽ lại */
@@ -417,6 +430,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       const maxScale = bigFlyRef.current ? RERENDER_SCALE_FLYING : RERENDER_SCALE;
       if (!m.covers || m.s > maxScale || m.s < 1 / maxScale) return paint(vb);
       svg.style.transform = m.css;
+      placeLabelLayer(vb);
       if (bigFlyRef.current) return; // bờ biển đang ẩn, hiện lại (vẽ một lần) khi tới nơi
       // Dải bờ biển là nét dày theo pixel: co giãn ảnh làm dải bờ phình/teo theo, nên khi phóng to/thu nhỏ
       // lớp này được vẽ lại ngay khi lệch quá SHORE_MAX_STRETCH; còn khi chỉ kéo thì dịch như bản đồ.
@@ -425,7 +439,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       if (!ms || !ms.covers || Math.abs(ms.s - 1) > SHORE_MAX_STRETCH) paintShore(vb);
       else if (shoreSvgRef.current) shoreSvgRef.current.style.transform = ms.css;
     },
-    [paint, paintShore],
+    [paint, paintShore, placeLabelLayer],
   );
 
   const commit = useCallback((vb: ViewBox) => {
@@ -852,9 +866,48 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   // Khoảng cách giữa các nhãn tăng theo đúng mức zoom, nhanh hơn kích thước nhãn, nên vẫn không chồng nhau.
   const labelScale = (minPpu: number, max: number, ppu: number) => Math.min(Math.max(Math.sqrt(ppu / minPpu), 1), max);
   const regionScale = labelScale(regionMinPpu, REGION_LABEL_MAX_SCALE, pxPerUnit);
-  // Tên tỉnh vẽ trong bản đồ nên tính theo khung đã vẽ; biểu tượng ở lớp phủ nhân thêm mức phóng thật
-  // (22·lpx·pxPerUnit px) nên co giãn khớp với chữ trong lúc kéo/phóng
+  // Tên tỉnh (kèm biểu tượng) nằm ở lớp nhãn đi theo bản đồ nên tính theo khung đã vẽ; trong lúc kéo/phóng
+  // camera co giãn cả lớp cùng với ảnh bản đồ
   const lpx = rpx * labelScale(LABEL_MIN_PX_PER_UNIT.prefecture, PREF_LABEL_MAX_SCALE, rPxPerUnit);
+  const prefLabelScale = lpx * rPxPerUnit;
+
+  // Tên tỉnh: toàn quốc (kèm biểu tượng) hoặc tỉnh lân cận khi đang xem một tỉnh. Tính theo khung đã vẽ nên chỉ đổi
+  // khi bản đồ vẽ lại; bỏ các nhãn nằm ngoài vùng đã vẽ (khung nhìn + phần vẽ dư).
+  // Tên tỉnh toàn quốc được dựng sẵn từ trước (ẩn) và chỉ bật/tắt khi qua ngưỡng zoom: dựng 47 nhãn ngay lúc vượt
+  // ngưỡng tốn một lần tính bố cục lớn đúng giữa lúc đang cuộn
+  const mountPrefLabels = !selected && !prefFlying;
+  const showPrefLabels = mountPrefLabels && labelLevel === 'prefecture';
+  const showNeighborLabels = selected != null && !prefFlying && detailFor === selected.id;
+  const prefLabelItems = useMemo<PrefectureLabelItem[]>(() => {
+    if (!rv || !size.w || (!mountPrefLabels && !showNeighborLabels)) return [];
+    const margin = OVERSCAN_PX + 120;
+    const out: PrefectureLabelItem[] = [];
+    for (const p of PREFECTURES) {
+      if (showNeighborLabels && p.id === selected?.id) continue;
+      const x = (p.labelPos[0] - rv[0]) * rPxPerUnit;
+      const y = (p.labelPos[1] - rv[1]) * rPxPerUnit;
+      if (x < -margin || y < -margin || x > size.w + margin || y > size.h + margin) continue;
+      out.push({
+        id: p.id,
+        x,
+        // Mép trên dòng tên Việt: đường chân chữ cũ ở +9 (toàn quốc) hoặc 0 (tỉnh lân cận) đơn vị nhãn
+        y: mountPrefLabels ? y - 1.2 * prefLabelScale : y - 11.2,
+        nameVi: p.nameVi,
+        nameJp: p.nameJp,
+        icon: mountPrefLabels ? PREFECTURE_PICTOGRAMS[p.id]?.[0] : undefined,
+      });
+    }
+    return out;
+  }, [rv, rPxPerUnit, size.w, size.h, mountPrefLabels, showNeighborLabels, selected?.id, prefLabelScale]);
+
+  // Sau khi React dựng nhãn theo khung mới: ghi nhận khung đó và bỏ transform (hoặc khớp camera nếu đã đi tiếp)
+  useLayoutEffect(() => {
+    labelVbRef.current = rv;
+    const el = labelLayerRef.current;
+    const vb = viewRef.current;
+    if (!el) return;
+    el.style.transform = rv && vb && vb !== rv && size.w ? layerTransform(rv, vb, size.w, size.h).css : '';
+  }, [rv, size.w, size.h]);
 
   const ink = selected ? REGION_STYLE[selected.region].ink : T.ink;
   // Màu nền đất của tỉnh đang xem: màu vùng pha 35% giấy, một màu cho mọi quận
@@ -1234,64 +1287,22 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           />
         )}
 
-        {/* Tên tỉnh (phóng to): mọi tỉnh cùng một kiểu - biểu tượng (ở lớp phủ), tên Việt, tên Nhật */}
-        {labelLevel === 'prefecture' && !selected && !prefFlying && (
-          <g key="prefecture-labels" className="jm-label-fade" pointerEvents="none">
-            {PREFECTURES.map((p) => {
-              const [lx, ly] = p.labelPos;
-              return (
-                <text
-                  key={p.id}
-                  x={lx}
-                  y={ly + 9 * lpx}
-                  textAnchor="middle"
-                  fontSize={12 * lpx}
-                  fontWeight={650}
-                  fill={T.mapLabel}
-                  stroke={T.paper}
-                  strokeWidth={3 * lpx}
-                  strokeLinejoin="round"
-                  paintOrder="stroke"
-                >
-                  {p.nameVi}
-                  <tspan className="font-jp" x={lx} dy={13 * lpx} fontSize={11 * lpx} fontWeight={500} fill={T.ink2}>
-                    {p.nameJp}
-                  </tspan>
-                </text>
-              );
-            })}
-          </g>
-        )}
-
-        {/* Khi xem một tỉnh: tên các tỉnh lân cận nhỏ, nhạt, không biểu tượng để nhường chỗ cho tỉnh đang xem */}
-        {selected && !prefFlying && detailFor === selected.id && (
-          <g key="neighbor-labels" className="jm-label-fade" pointerEvents="none">
-            {PREFECTURES.filter((p) => p.id !== selected.id).map((p) => {
-              const [lx, ly] = p.labelPos;
-              return (
-                <text
-                  key={p.id}
-                  x={lx}
-                  y={ly}
-                  textAnchor="middle"
-                  fontSize={12 * rpx}
-                  fontWeight={600}
-                  fill={T.muted}
-                  stroke={T.paper}
-                  strokeWidth={3 * rpx}
-                  strokeLinejoin="round"
-                  paintOrder="stroke"
-                >
-                  {p.nameVi}
-                  <tspan className="font-jp" x={lx} dy={12 * rpx} fontSize={10.5 * rpx} fontWeight={500}>
-                    {p.nameJp}
-                  </tspan>
-                </text>
-              );
-            })}
-          </g>
-        )}
       </svg>
+
+      {/* Tên tỉnh (HTML, xem PrefectureLabelLayer): toàn quốc - biểu tượng, tên Việt, tên Nhật; khi xem một tỉnh -
+          tên các tỉnh lân cận nhỏ, nhạt, không biểu tượng để nhường chỗ cho tỉnh đang xem */}
+      <div ref={labelLayerRef} className="jm-plabel-layer" aria-hidden="true">
+        {mountPrefLabels && (
+          <div key="prefecture-labels" className={`jm-plabel-group${showPrefLabels ? ' jm-on' : ''}`}>
+            <PrefectureLabels items={prefLabelItems} scale={prefLabelScale} variant="main" iconColor={T.inkLine} />
+          </div>
+        )}
+        {showNeighborLabels && (
+          <div key="neighbor-labels" className="jm-label-fade">
+            <PrefectureLabels items={prefLabelItems} scale={1} variant="neighbor" iconColor={T.muted} />
+          </div>
+        )}
+      </div>
 
       {/* Hạt giấy phủ trên mép tối dần như giấy in cũ: gộp một lớp tĩnh, không nhận chuột */}
       <div
@@ -1309,7 +1320,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               <div
                 key={r.id}
                 className="jm-rlabel"
-                style={{ left: s.x, top: s.y, color: REGION_STYLE[r.id].ink, transform: `translate(-50%, -50%) scale(${regionScale})` }}
+                style={{ color: REGION_STYLE[r.id].ink, transform: `translate(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px) translate(-50%, -50%) scale(${regionScale})` }}
               >
                 <span className="jm-rk" lang="ja">
                   {r.nameJp}
@@ -1341,32 +1352,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               <feComposite in2="SourceAlpha" operator="in" />
             </filter>
           </defs>
-
-          {/* Biểu tượng chính của từng tỉnh, phía trên tên tỉnh */}
-          {labelLevel === 'prefecture' && !selected && !prefFlying && (
-            <g key="prefecture-icons" className="jm-label-fade">
-              {PREFECTURES.map((p) => {
-                const icon = PREFECTURE_PICTOGRAMS[p.id]?.[0];
-                if (!icon) return null;
-                const s = toScreen(...p.labelPos)!;
-                const k = lpx * pxPerUnit;
-                const sizePx = 22 * k;
-                if (s.x < -sizePx || s.y < -sizePx * 2 || s.x > size.w + sizePx || s.y > size.h + sizePx) return null;
-                return (
-                  <image
-                    key={p.id}
-                    href={pictogramUrl(icon)}
-                    x={s.x - sizePx / 2}
-                    y={s.y - 27 * k}
-                    width={sizePx}
-                    height={sizePx}
-                    filter="url(#jm-ink)"
-                    preserveAspectRatio="xMidYMid meet"
-                  />
-                );
-              })}
-            </g>
-          )}
 
           {selected && !prefFlying && (
             <g key={selected.id} className="jm-fade-quick" pointerEvents="auto">
@@ -1686,7 +1671,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         @keyframes jm-foam-flow { to { stroke-dashoffset: -${FOAM_PERIOD_PX}px; } }
         @keyframes jm-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes jm-ripple { from { transform: scale(0.9); opacity: 0.7; } to { transform: scale(1.9); opacity: 0; } }
-        .jm-rlabel { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; line-height: 1; }
+        .jm-rlabel { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; line-height: 1; }
         .jm-rk { writing-mode: vertical-rl; text-orientation: upright; font-family: var(--font-mincho); font-weight: 800; font-size: 17px;
           letter-spacing: .14em; line-height: 1; padding: 7px 4px; background: ${T.paper}; border: 1px solid ${T.inkLine};
           box-shadow: 0 0 0 2px ${T.paper}, 0 0 0 3px ${T.inkLine}, 2px 3px 0 3px rgba(8,20,44,.18); }
@@ -1696,6 +1681,17 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           .jm-rk { font-size: 11.5px; padding: 4px 2px; box-shadow: 0 0 0 1.5px ${T.paper}, 0 0 0 2.5px ${T.inkLine}; }
           .jm-rv { font-size: 9.5px; }
         }
+        .jm-plabel-layer { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+        .jm-plabel-group { opacity: 0; visibility: hidden; transition: opacity .2s ease-out, visibility 0s linear .2s; }
+        .jm-plabel-group.jm-on { opacity: 1; visibility: visible; transition: opacity .2s ease-out; }
+        .jm-plabel { position: absolute; left: 0; top: 0; transform-origin: 50% 0; display: flex; flex-direction: column; align-items: center;
+          white-space: nowrap; -webkit-text-stroke: 3px ${T.paper}; paint-order: stroke fill; }
+        .jm-plabel-icon { position: absolute; bottom: 100%; left: 50%; width: 22px; height: 22px; margin: 0 0 3.4px -11px; }
+        .jm-plabel-main .jm-plabel-vi { font-size: 12px; line-height: 13px; font-weight: 650; color: ${T.mapLabel}; }
+        .jm-plabel-main .jm-plabel-jp { font-size: 11px; line-height: 13px; font-weight: 500; color: ${T.ink2}; }
+        .jm-plabel-neighbor { color: ${T.muted}; }
+        .jm-plabel-neighbor .jm-plabel-vi { font-size: 12px; line-height: 12px; font-weight: 600; }
+        .jm-plabel-neighbor .jm-plabel-jp { font-size: 10.5px; line-height: 12px; font-weight: 500; }
         .jm-route-in { animation: jm-fade-in 0.4s ease-out 0.35s both; }
         .jm-next-ring { transform-box: fill-box; transform-origin: center; animation: jm-next-ring 2.4s ease-out infinite; }
         @keyframes jm-next-ring { from { transform: scale(0.95); opacity: 0.85; } to { transform: scale(1.55); opacity: 0; } }
@@ -1735,6 +1731,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-word-jp rt { font-size: 11px; }
         @media (prefers-reduced-motion: reduce) {
           .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-foam-layer, .jm-foam-flow, .jm-route-in, .jm-spotcard { animation: none; }
+          .jm-plabel-group, .jm-plabel-group.jm-on { transition: none; }
           .jm-next-ring { display: none; }
           .jm-pin-body { transition: none; }
         }
