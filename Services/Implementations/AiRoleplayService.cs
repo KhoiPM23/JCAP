@@ -370,9 +370,29 @@ Return strictly pure JSON:
     // ==========================================
     // MOCK SIMULATOR (Dự phòng khi offline / hết quota / chưa nhập Key)
     // ==========================================
+    // ==========================================
+    // MOCK SIMULATOR (Dự phòng khi offline / hết quota / chưa nhập Key)
+    // ==========================================
     private static AiOpeningMessageResult GenerateSimulatorOpeningMessage(Scenario scenario, ScenarioLevelConfiguration levelConfig)
     {
-        if (scenario.Title.Contains("Ramen", StringComparison.OrdinalIgnoreCase))
+        var title = scenario?.Title ?? "";
+        var persona = levelConfig?.AiPersona ?? "";
+
+        if (title.Contains("cụ già", StringComparison.OrdinalIgnoreCase) ||
+            title.Contains("người già", StringComparison.OrdinalIgnoreCase) ||
+            title.Contains("băng qua đường", StringComparison.OrdinalIgnoreCase) ||
+            persona.Contains("お年寄り", StringComparison.OrdinalIgnoreCase) ||
+            persona.Contains("cụ già", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AiOpeningMessageResult
+            {
+                JapaneseText = "あのう、すみません。足が悪くて、向こう側まで渡りたいのですが、手伝っていただけないでしょうか。",
+                FuriganaHtml = "あのう、すみません。<ruby>足<rt>あし</rt></ruby>が<ruby>悪<rt>わる</rt></ruby>くて、<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>まで<ruby>渡<rt>わた</rt></ruby>りたいのですが、<ruby>手伝<rt>てつだ</rt></ruby>っていただけないでしょうか。",
+                VietnameseMeaning = "Xin lỗi, chân tôi đau và tôi muốn băng sang bên kia đường, bạn có thể giúp tôi được không?"
+            };
+        }
+
+        if (title.Contains("Ramen", StringComparison.OrdinalIgnoreCase) || title.Contains("quán ăn", StringComparison.OrdinalIgnoreCase))
         {
             return new AiOpeningMessageResult
             {
@@ -382,7 +402,7 @@ Return strictly pure JSON:
             };
         }
 
-        if (scenario.Title.Contains("tàu", StringComparison.OrdinalIgnoreCase) || scenario.Title.Contains("Shinjuku", StringComparison.OrdinalIgnoreCase))
+        if (title.Contains("tàu", StringComparison.OrdinalIgnoreCase) || title.Contains("Shinjuku", StringComparison.OrdinalIgnoreCase))
         {
             return new AiOpeningMessageResult
             {
@@ -394,10 +414,93 @@ Return strictly pure JSON:
 
         return new AiOpeningMessageResult
         {
-            JapaneseText = $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。",
-            FuriganaHtml = $"こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>の{scenario.Title}を<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
-            VietnameseMeaning = $"Xin chào. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}. Rất mong được hợp tác."
+            JapaneseText = $"こんにちは。本日の{title}を始めましょう。よろしくお願いします。",
+            FuriganaHtml = $"こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>の{title}を<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
+            VietnameseMeaning = $"Xin chào. Chúng ta hãy bắt đầu bài luyện tập {title}. Rất mong được hợp tác."
         };
+    }
+
+    private static string TranslateUserUtteranceHeuristic(string userMessage, string scenarioTitle, string aiPersona)
+    {
+        if (string.IsNullOrWhiteSpace(userMessage)) return "";
+
+        var lower = userMessage.Trim().ToLowerInvariant();
+
+        if (lower.Contains("どういたしまして") && (lower.Contains("お気をつけて") || lower.Contains("気をつけて")) && lower.Contains("お大事に"))
+            return "Dạ không có gì đâu ạ. Chúc cụ/bạn đi cẩn thận và giữ gìn sức khỏe nhé.";
+
+        if (lower.Contains("どういたしまして") && (lower.Contains("お気をつけて") || lower.Contains("気をつけて")))
+            return "Dạ không có gì đâu ạ. Chúc bạn đi lại cẩn thận nhé.";
+
+        if (lower.Contains("お気をつけて") || lower.Contains("気をつけて"))
+        {
+            if (lower.Contains("お帰り") || lower.Contains("かえり"))
+                return "Chúc cụ/bạn đi về cẩn thận nhé ạ.";
+            if (lower.Contains("お大事に") || lower.Contains("だいじに"))
+                return "Chúc cụ/bạn đi lại cẩn thận và giữ gìn sức khỏe nhé.";
+            return "Chúc bạn/cụ đi lại cẩn thận nhé.";
+        }
+
+        if (lower.Contains("どういたしまして"))
+            return "Dạ không có gì đâu ạ.";
+
+        if (lower.Contains("お大事に") || lower.Contains("おだいじに"))
+            return "Chúc bạn/cụ mau khỏe và giữ gìn sức khỏe nhé.";
+
+        if (lower.Contains("喜んで") && (lower.Contains("手伝") || lower.Contains("てつだ")))
+        {
+            if (lower.Contains("渡りましょう") || lower.Contains("わたりましょう"))
+                return "Vâng, tôi rất sẵn lòng giúp đỡ. Chúng ta cùng sang đường nhé.";
+            return "Vâng, tôi rất sẵn lòng giúp bạn một tay.";
+        }
+
+        if (lower.Contains("どちらまで") && (lower.Contains("行かれ") || lower.Contains("いきます") || lower.Contains("いく")))
+        {
+            if (lower.Contains("手伝い") || lower.Contains("てつだい"))
+                return "Cụ/bạn định đi đến đâu vậy ạ? Để tôi giúp bạn nhé.";
+            return "Cụ/bạn định đi đến đâu vậy ạ?";
+        }
+
+        if (lower.Contains("手伝いましょうか") || lower.Contains("てつだいましょうか"))
+            return "Để tôi giúp bạn một tay nhé?";
+
+        if (lower.Contains("手伝") || lower.Contains("てつだ"))
+            return "Tôi muốn giúp đỡ bạn/cụ.";
+
+        if (lower.Contains("こんにちは"))
+            return "Xin chào bạn.";
+
+        if (lower.Contains("はじめまして"))
+            return "Rất vui được gặp bạn lần đầu.";
+
+        if (lower.Contains("よろしくお願") || lower.Contains("よろしくおねがい") || lower.Contains("よろしくお願いします"))
+            return "Rất mong nhận được sự giúp đỡ của bạn.";
+
+        if (lower.Contains("ありがとうございます") || lower.Contains("ありがとう"))
+            return "Cảm ơn bạn rất nhiều.";
+
+        if (lower.Contains("失礼します") || lower.Contains("失礼いたします") || lower.Contains("しつれい"))
+            return "Tôi xin phép chào bạn.";
+
+        if (lower.Contains("さようなら"))
+            return "Tạm biệt bạn.";
+
+        if (lower.Contains("ごちそうさま"))
+            return "Cảm ơn vì bữa ăn rất ngon ạ.";
+
+        if (lower.Contains("ラーメン") && (lower.Contains("お願いします") || lower.Contains("ください") || lower.Contains("一杯")))
+            return "Làm ơn cho tôi một bát mì Ramen.";
+
+        if (lower.Contains("いくら") || lower.Contains("値段"))
+            return "Món này / dịch vụ này giá bao nhiêu tiền ạ?";
+
+        if (lower.Contains("会計") || lower.Contains("お会計"))
+            return "Làm ơn cho tôi thanh toán tiền.";
+
+        if (lower.Contains("渡") || lower.Contains("わた"))
+            return "Chúng ta cùng qua đường nhé.";
+
+        return "Câu đối thoại lịch sự bằng tiếng Nhật phù hợp với bối cảnh.";
     }
 
     private static AiTurnResult ProcessSimulatorTurn(
@@ -409,19 +512,75 @@ Return strictly pure JSON:
         var completedIds = new List<int>();
         var lowerMsg = userMessage.ToLower();
         var scenarioTitle = scenario?.Title ?? "";
+        var persona = levelConfig?.AiPersona ?? "";
+
+        bool isElderlyHelp = scenarioTitle.Contains("cụ già", StringComparison.OrdinalIgnoreCase) ||
+                             scenarioTitle.Contains("người già", StringComparison.OrdinalIgnoreCase) ||
+                             scenarioTitle.Contains("băng qua đường", StringComparison.OrdinalIgnoreCase) ||
+                             scenarioTitle.Contains("sang đường", StringComparison.OrdinalIgnoreCase) ||
+                             persona.Contains("cụ già", StringComparison.OrdinalIgnoreCase) ||
+                             persona.Contains("お年寄り", StringComparison.OrdinalIgnoreCase);
+
         bool isBaito = scenarioTitle.Contains("baito", StringComparison.OrdinalIgnoreCase) ||
                        scenarioTitle.Contains("phỏng vấn", StringComparison.OrdinalIgnoreCase) ||
                        scenarioTitle.Contains("xin việc", StringComparison.OrdinalIgnoreCase);
+
         bool isRamen = scenarioTitle.Contains("ramen", StringComparison.OrdinalIgnoreCase) ||
-                       scenarioTitle.Contains("quán", StringComparison.OrdinalIgnoreCase) ||
-                       scenarioTitle.Contains("ăn", StringComparison.OrdinalIgnoreCase);
+                       scenarioTitle.Contains("quán ăn", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("nhà hàng", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("tiệm mì", StringComparison.OrdinalIgnoreCase) ||
+                       scenarioTitle.Contains("gọi món", StringComparison.OrdinalIgnoreCase);
 
         string jaReply;
         string fHtmlReply;
         string viMeaning;
         var isNaturallyConcluded = false;
 
-        if (isBaito)
+        if (isElderlyHelp)
+        {
+            var orderedPending = pendingMissions.OrderBy(m => m.Order).ToList();
+            var nextMission = orderedPending.FirstOrDefault();
+
+            if (nextMission != null && (nextMission.Order == 1 || nextMission.Content.Contains("giúp", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("sang đường", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (lowerMsg.Contains("手伝") || lowerMsg.Contains("てつだ") || lowerMsg.Contains("助け") || lowerMsg.Contains("一緒") || lowerMsg.Contains("渡") || lowerMsg.Contains("大丈夫") || lowerMsg.Contains("喜んで"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "ありがとうございます。では、あちらの横断歩道まで、ゆっくりお願いしますね。";
+                fHtmlReply = "ありがとうございます。では、あちらの<ruby>横断歩道<rt>おうだんほどう</rt></ruby>まで、ゆっくりお<ruby>願<rt>ねが</rt></ruby>いしますね。";
+                viMeaning = "Cảm ơn cháu rất nhiều. Vậy nhờ cháu đi chậm chậm đến vạch sang đường đằng kia nhé.";
+            }
+            else if (nextMission != null && (nextMission.Order == 2 || nextMission.Content.Contains("hướng", StringComparison.OrdinalIgnoreCase) || nextMission.Content.Contains("điểm đến", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (lowerMsg.Contains("どちら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("行") || lowerMsg.Contains("向こう") || lowerMsg.Contains("病院") || lowerMsg.Contains("駅") || lowerMsg.Contains("方向"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "ありがとうございます。目の前にある病院まで行きたいんです。本当に助かります。";
+                fHtmlReply = "ありがとうございます。<ruby>目<rt>め</rt></ruby>の<ruby>前<rt>まえ</rt></ruby>にある<ruby>病院<rt>びょういん</rt></ruby>まで<ruby>行<rt>い</rt></ruby>きたいんです。<ruby>本当<rt>ほんとう</rt></ruby>に<ruby>助<rt>たす</rt></ruby>かります。";
+                viMeaning = "Cảm ơn cháu. Cụ muốn đến bệnh viện ngay trước mặt kia. Cụ thực sự rất cảm ơn cháu.";
+            }
+            else if (nextMission != null)
+            {
+                if (lowerMsg.Contains("どういたしまして") || lowerMsg.Contains("お気をつけて") || lowerMsg.Contains("気をつけて") || lowerMsg.Contains("お大事に") || lowerMsg.Contains("お帰り") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("失礼") || lowerMsg.Contains("では") || lowerMsg.Contains("また") || lowerMsg.Contains("良い") || lowerMsg.Contains("よい"))
+                {
+                    completedIds.Add(nextMission.Id);
+                }
+                jaReply = "本当にありがとうね。あなたのような親切な人に出会えて嬉しいよ。気をつけて帰ってね。";
+                fHtmlReply = "<ruby>本当<rt>ほんとう</rt></ruby>にありがとうね。あなたのような<ruby>親切<rt>しんせつ</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>に<ruby>出会<rt>であ</rt></ruby>えて<ruby>嬉<rt>うれ</rt></ruby>しいよ。<ruby>気<rt>き</rt></ruby>をつけて<ruby>帰<rt>かえ</rt></ruby>ってね。";
+                viMeaning = "Cụ thực sự cảm ơn cháu nhiều lắm. Rất vui vì gặp được một người tốt bụng như cháu. Cháu đi về cẩn thận nhé.";
+                isNaturallyConcluded = true;
+            }
+            else
+            {
+                jaReply = "はい、ありがとうね。気をつけて行ってらっしゃい。";
+                fHtmlReply = "はい、ありがとうね。<ruby>気<rt>き</rt></ruby>をつけて<ruby>行<rt>い</rt></ruby>ってらっしゃい。";
+                viMeaning = "Cụ cảm ơn cháu nhé. Chúc cháu đi lại cẩn thận.";
+                isNaturallyConcluded = true;
+            }
+        }
+        else if (isBaito)
         {
             var orderedPending = pendingMissions.OrderBy(m => m.Order).ToList();
             var nextMission = orderedPending.FirstOrDefault();
@@ -489,9 +648,8 @@ Return strictly pure JSON:
                 }
                 else if (criteria.Contains("thank") || criteria.Contains("goodbye") || criteria.Contains("cảm ơn") || criteria.Contains("tạm biệt") || criteria.Contains("thanh toán"))
                 {
-                    // Chỉ tick nhiệm vụ cảm ơn ra về nếu các nhiệm vụ gọi món/hỏi giá đã hoàn thành
                     var hasEarlierIncomplete = pendingMissions.Any(pm => pm.Order < m.Order && !completedIds.Contains(pm.Id));
-                    if (!hasEarlierIncomplete && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計")))
+                    if (!hasEarlierIncomplete && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("会計") || lowerMsg.Contains("お気をつけて")))
                     {
                         completedIds.Add(m.Id);
                         break;
@@ -500,7 +658,7 @@ Return strictly pure JSON:
             }
 
             var hasPendingCore = pendingMissions.Any(pm => pm.Order < maxOrder && !completedIds.Contains(pm.Id));
-            if (!hasPendingCore && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("会計")))
+            if (!hasPendingCore && (lowerMsg.Contains("ありがとう") || lowerMsg.Contains("ごちそう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("会計") || lowerMsg.Contains("お気をつけて") || lowerMsg.Contains("さようなら")))
             {
                 jaReply = "ありがとうございました！またのお越しをお待ちしております。";
                 fHtmlReply = "ありがとうございました！またのお<ruby>越<rt>こ</rt></ruby>しをお<ruby>待<rt>ま</rt></ruby>ちしております。";
@@ -521,9 +679,9 @@ Return strictly pure JSON:
             }
             else
             {
-                jaReply = "はい、かしこまりました。ご注文がお決まりになりましたらお呼びください。";
-                fHtmlReply = "はい、かしこまりました。ご<ruby>注文<rt>ちゅうもん</rt></ruby>がお<ruby>決<rt>き</rt></ruby>まりになりましたらお<ruby>呼<rt>よ</rt></ruby>びください。";
-                viMeaning = "Dạ vâng, khi nào quý khách chọn xong món xin vui lòng gọi tôi nhé.";
+                jaReply = "はい、かしこまりました。他にご要望がございましたらお申し付けください。";
+                fHtmlReply = "はい、かしこまりました。<ruby>他<rt>ほか</rt></ruby>にご<ruby>要望<rt>ようぼう</rt></ruby>がございましたらお<ruby>申<rt>もう</rt></ruby>し<ruby>付<rt>つ</rt></ruby>けください。";
+                viMeaning = "Dạ vâng tôi đã hiểu. Nếu quý khách có thêm yêu cầu gì xin vui lòng cứ bảo tôi nhé.";
             }
         }
         else
@@ -531,23 +689,26 @@ Return strictly pure JSON:
             var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
             if (nextMission != null)
             {
-                var criteria = nextMission.CompletionCriteriaJson.ToLower();
+                var criteria = (nextMission.CompletionCriteriaJson + " " + nextMission.Content).ToLowerInvariant();
                 var isMatched = false;
-                if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("intro"))
+                if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("intro") || criteria.Contains("giới thiệu"))
                 {
-                    isMatched = lowerMsg.Contains("こんにちは") || lowerMsg.Contains("はじめまして") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("です");
+                    isMatched = lowerMsg.Contains("こんにちは") || lowerMsg.Contains("はじめまして") || lowerMsg.Contains("よろしく") || lowerMsg.Contains("です") || lowerMsg.Contains("申します");
                 }
-                else if (criteria.Contains("hỏi") || criteria.Contains("ask") || criteria.Contains("price") || criteria.Contains("giá"))
+                else if (criteria.Contains("hỏi") || criteria.Contains("ask") || criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("hướng") || criteria.Contains("điểm đến"))
                 {
-                    isMatched = lowerMsg.Contains("ですか") || lowerMsg.Contains("いくら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("なん");
+                    isMatched = lowerMsg.Contains("ですか") || lowerMsg.Contains("いくら") || lowerMsg.Contains("どこ") || lowerMsg.Contains("なん") || lowerMsg.Contains("どちら");
                 }
-                else if (criteria.Contains("thank") || criteria.Contains("cảm ơn") || criteria.Contains("bye") || criteria.Contains("tạm biệt"))
+                else if (criteria.Contains("thank") || criteria.Contains("cảm ơn") || criteria.Contains("bye") || criteria.Contains("tạm biệt") || criteria.Contains("kết thúc"))
                 {
-                    isMatched = lowerMsg.Contains("ありがとう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら");
+                    isMatched = lowerMsg.Contains("ありがとう") || lowerMsg.Contains("失礼") || lowerMsg.Contains("さようなら") || lowerMsg.Contains("お気をつけて") || lowerMsg.Contains("気をつけて") || lowerMsg.Contains("お大事に") || lowerMsg.Contains("どういたしまして") || lowerMsg.Contains("お帰り") || lowerMsg.Contains("では");
+                }
+                else if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("hỗ trợ"))
+                {
+                    isMatched = lowerMsg.Contains("手伝") || lowerMsg.Contains("助け") || lowerMsg.Contains("一緒") || lowerMsg.Contains("渡") || lowerMsg.Contains("大丈夫") || lowerMsg.Contains("喜んで");
                 }
                 else
                 {
-                    // Generic check: Must contain Japanese text characters and meaningful length
                     isMatched = Regex.IsMatch(userMessage, @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]") && userMessage.Trim().Length >= 4;
                 }
 
@@ -557,19 +718,28 @@ Return strictly pure JSON:
                 }
             }
 
-            if (pendingMissions.Count <= 1 && completedIds.Count > 0)
+            var remainingMissionsCount = pendingMissions.Count - completedIds.Count;
+            if (remainingMissionsCount <= 0 && completedIds.Count > 0)
             {
-                jaReply = "よく分かりました。本日の練習はこれで終了です。大変よくできました！";
-                fHtmlReply = "よく<ruby>分<rt>わ</rt></ruby>かりました。<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>練習<rt>れんしゅう</rt></ruby>はこれで<ruby>終了<rt>しゅうりょう</rt></ruby>です。<ruby>大変<rt>たいへん</rt></ruby>よくできました！";
-                viMeaning = "Tôi đã hiểu rõ. Buổi luyện tập hôm nay đến đây là kết thúc. Bạn đã làm rất tốt!";
+                jaReply = "丁寧にご対応いただき、誠にありがとうございました。本日の練習はこれで終了です。大変よくできました！";
+                fHtmlReply = "<ruby>丁寧<rt>ていねい</rt></ruby>にご<ruby>対応<rt>たいおう</rt></ruby>いただき、<ruby>誠<rt>まこと</rt></ruby>にありがとうございました。<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>練習<rt>れんしゅう</rt></ruby>はこれで<ruby>終了<rt>しゅうりょう</rt></ruby>です。<ruby>大変<rt>たいへん</rt></ruby>よくできました！";
+                viMeaning = "Cảm ơn bạn rất nhiều vì đã trao đổi rất chu đáo và lịch sự. Bài luyện tập hôm nay đến đây là hoàn thành xuất sắc!";
                 isNaturallyConcluded = true;
             }
             else
             {
-                jaReply = "はい、承知いたしました。続けて次の会話を進めましょう。";
-                fHtmlReply = "はい、<ruby>承知<rt>しょうち</rt></ruby>いたしました。<ruby>続<rt>つづ</rt></ruby>けて<ruby>次<rt>つぎ</rt></ruby>の<ruby>会話<rt>かいわ</rt></ruby>を<ruby>進<rt>すす</rt></ruby>めましょう。";
-                viMeaning = "Vâng, tôi đã hiểu. Chúng ta cùng tiếp tục câu chuyện nhé.";
+                jaReply = "はい、承知いたしました。続けて会話を進めましょう。";
+                fHtmlReply = "はい、<ruby>承知<rt>しょうち</rt></ruby>いたしました。<ruby>続<rt>つづ</rt></ruby>けて<ruby>会話<rt>かいわ</rt></ruby>を<ruby>進<rt>すす</rt></ruby>めましょう。";
+                viMeaning = "Vâng, tôi đã hiểu rõ. Chúng ta cùng tiếp tục câu chuyện nhé.";
             }
+        }
+
+        var userViMeaning = TranslateUserUtteranceHeuristic(userMessage, scenarioTitle, persona);
+
+        var naturalAlt = userMessage;
+        if (isElderlyHelp && lowerMsg.Contains("いいえ") && lowerMsg.Contains("どういたしまして"))
+        {
+            naturalAlt = "いえいえ、どういたしまして。お気をつけてお帰りくださいね。";
         }
 
         var feedback = new LinguisticFeedbackDto
@@ -579,12 +749,17 @@ Return strictly pure JSON:
             Summary = "Phản xạ tự nhiên • Đúng ngữ cảnh",
             Details = new List<LinguisticDetailItemDto>
             {
-                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = "Câu trả lời phù hợp với tình huống giao tiếp." },
-                new() { Type = "success", Aspect = "Văn phong", Comment = $"Sử dụng thể lịch sự phù hợp với trình độ {levelConfig.JLPTLevel}." }
+                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = $"Câu trả lời rất tự nhiên và phù hợp với tình huống đối thoại cùng {persona}." },
+                new() { Type = "success", Aspect = "Văn phong", Comment = $"Sử dụng thể lịch sự chuẩn mực, thể hiện thái độ chu đáo và lễ phép." },
+                new() { Type = "success", Aspect = "Từ vựng & Trợ từ", Comment = "Sử dụng từ vựng chính xác, cấu trúc câu gãy gọn rõ ràng." }
             },
-            NaturalAlternative = userMessage,
-            CulturalTip = isBaito
+            NaturalAlternative = naturalAlt,
+            CulturalTip = isElderlyHelp
+                ? "Khi giao tiếp và giúp đỡ người lớn tuổi ở Nhật, việc dùng ngữ điệu ấm áp kèm các lời chúc như 'お気をつけて' (chúc đi cẩn thận) hoặc 'お大事に' (chúc giữ gìn sức khỏe) thể hiện tinh thần Omotenashi và lễ nghĩa rất cao."
+                : isBaito
                 ? "Trong phỏng vấn xin việc ở Nhật, luôn dùng thể lịch sự desu/masu và giữ ánh mắt tự tin, mỉm cười nhẹ khi trả lời."
+                : isRamen
+                ? "Tại các quán ăn Nhật, khi gọi món nên dùng ください hoặc お願いします để thể hiện sự lịch thiệp."
                 : "Trong giao tiếp thường ngày, sử dụng câu ngắn gọn, rõ ràng sẽ giúp đối phương dễ nắm bắt ý hơn."
         };
 
@@ -593,7 +768,7 @@ Return strictly pure JSON:
             JapaneseReply = jaReply,
             FuriganaHtml = fHtmlReply,
             VietnameseMeaning = viMeaning,
-            UserVietnameseMeaning = userMessage,
+            UserVietnameseMeaning = userViMeaning,
             CompletedMissionIds = completedIds,
             IsNaturallyConcluded = isNaturallyConcluded,
             LinguisticFeedback = feedback
@@ -604,10 +779,53 @@ Return strictly pure JSON:
         ScenarioLevelConfiguration levelConfig,
         List<Mission> pendingMissions)
     {
+        var title = levelConfig?.Scenario?.Title ?? "";
+        var persona = levelConfig?.AiPersona ?? "";
+        bool isElderly = title.Contains("cụ già", StringComparison.OrdinalIgnoreCase) ||
+                         title.Contains("người già", StringComparison.OrdinalIgnoreCase) ||
+                         title.Contains("băng qua đường", StringComparison.OrdinalIgnoreCase) ||
+                         persona.Contains("お年寄り", StringComparison.OrdinalIgnoreCase) ||
+                         persona.Contains("cụ già", StringComparison.OrdinalIgnoreCase);
+
         var nextMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
         if (nextMission != null)
         {
-            var criteria = nextMission.CompletionCriteriaJson.ToLower();
+            var criteria = (nextMission.CompletionCriteriaJson + " " + nextMission.Content).ToLowerInvariant();
+
+            if (isElderly)
+            {
+                if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("đề nghị"))
+                {
+                    return new RoleplayHintDto
+                    {
+                        JapaneseSuggestion = "はい、喜んでお手伝いします。一緒に渡りましょう。",
+                        RomajiOrReading = "Hai, yorokonde otetsudai shimasu. Issho ni watarimashou.",
+                        VietnameseMeaning = "Vâng, tôi rất sẵn lòng giúp đỡ. Chúng ta cùng sang đường nhé.",
+                        ContextExplanation = "Cách đề nghị giúp đỡ nhiệt tình và lịch sự với người lớn tuổi."
+                    };
+                }
+                if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction"))
+                {
+                    return new RoleplayHintDto
+                    {
+                        JapaneseSuggestion = "どちらまで行かれますか。お手伝いしましょうか。",
+                        RomajiOrReading = "Dochira made ikaremasu ka. Otetsudai shimashou ka.",
+                        VietnameseMeaning = "Cụ định đi đến đâu vậy ạ? Để cháu giúp cụ nhé.",
+                        ContextExplanation = "Hỏi điểm đến bằng kính ngữ tôn kính (ikaremasu ka)."
+                    };
+                }
+                if (criteria.Contains("tạm biệt") || criteria.Contains("kết thúc") || criteria.Contains("cảm ơn"))
+                {
+                    return new RoleplayHintDto
+                    {
+                        JapaneseSuggestion = "いいえ、どういたしまして。お気をつけてお大事に。",
+                        RomajiOrReading = "Iie, dou itashimashite. O ki wo tsukete odaiji ni.",
+                        VietnameseMeaning = "Dạ không có gì đâu ạ. Chúc cụ đi cẩn thận và giữ gìn sức khỏe nhé.",
+                        ContextExplanation = "Lời đáp lại lời cảm ơn và lời chúc lễ phép, ấm áp dành cho người già."
+                    };
+                }
+            }
+
             if (criteria.Contains("price") || criteria.Contains("giá"))
             {
                 return new RoleplayHintDto
@@ -619,24 +837,24 @@ Return strictly pure JSON:
                 };
             }
 
-            if (criteria.Contains("thank") || criteria.Contains("cảm ơn"))
+            if (criteria.Contains("thank") || criteria.Contains("cảm ơn") || criteria.Contains("tạm biệt") || criteria.Contains("kết thúc"))
             {
                 return new RoleplayHintDto
                 {
-                    JapaneseSuggestion = "ごちそうさまでした。美味しかったです！",
-                    RomajiOrReading = "Gochisousama deshita. Oishikatta desu!",
-                    VietnameseMeaning = "Cảm ơn vì bữa ăn. Món ăn rất ngon ạ!",
-                    ContextExplanation = "Câu chào cảm ơn truyền thống của người Nhật khi ăn xong tại quán ăn."
+                    JapaneseSuggestion = "どうもありがとうございました。失礼いたします。",
+                    RomajiOrReading = "Doumo arigatou gozaimashita. Shitsurei itashimasu.",
+                    VietnameseMeaning = "Cảm ơn bạn rất nhiều. Tôi xin phép chào bạn ạ.",
+                    ContextExplanation = "Lời chào tạm biệt và cảm ơn chuẩn mực trong giao tiếp tiếng Nhật."
                 };
             }
         }
 
         return new RoleplayHintDto
         {
-            JapaneseSuggestion = "とんこつラーメンを一つお願いします。",
-            RomajiOrReading = "Tonkotsu raamen o hitotsu onegaishimasu.",
-            VietnameseMeaning = "Làm ơn cho tôi một bát mì Tonkotsu Ramen.",
-            ContextExplanation = "Mẫu câu gọi món cơ bản và lịch sự trong tiếng Nhật N5."
+            JapaneseSuggestion = "はい、わかりました。よろしくお願いします。",
+            RomajiOrReading = "Hai, wakarimashita. Yoroshiku onegaishimasu.",
+            VietnameseMeaning = "Vâng, tôi đã hiểu rõ. Rất mong được hợp tác.",
+            ContextExplanation = "Mẫu câu hồi đáp đồng ý và hợp tác lịch sự."
         };
     }
 }

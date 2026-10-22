@@ -667,7 +667,7 @@ export const ConversationResultDetailView: React.FC = () => {
                         )}
 
                         {/* Vietnamese Meaning */}
-                        {msg.vietnameseMeaning && (
+                        {msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
                           <p className="text-xs text-[#52627A] leading-relaxed italic">
                             Dịch nghĩa: {msg.vietnameseMeaning}
                           </p>

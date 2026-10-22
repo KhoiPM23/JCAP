@@ -1100,7 +1100,7 @@ export const RoleplayPracticeView: React.FC = () => {
                       )}
 
                       {/* Vietnamese translation (with translation toggle support) */}
-                      {showTranslation && msg.vietnameseMeaning && (
+                      {showTranslation && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
                         <p
                           className={`mt-2 border-t pt-2 text-xs leading-relaxed ${
                             isAi ? 'border-[#F1F5F9] text-[#71809A]' : 'border-blue-400/40 text-blue-100'
