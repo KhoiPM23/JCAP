@@ -297,6 +297,80 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task Lookup_ShowsWhichSpotsUseEachItem_IgnoringDeactivatedSpots()
+        {
+            var (db, r) = await SeededContext("usedby");
+            using var _db = db;
+            var service = new AdminExploreSpotService(db);
+            var sapporo = (await service.CreateSpotAsync(Hokkaido, Complete(r))).Data!;
+            var tokyoDto = Complete(r);
+            tokyoDto.NameVi = "Ga Tokyo";
+            tokyoDto.Latitude = 35.6812;
+            tokyoDto.Longitude = 139.7671;
+            var tokyo = (await service.CreateSpotAsync(Tokyo, tokyoDto)).Data!;
+            var removed = (await service.CreateSpotAsync(Nara, Complete(r))).Data!;
+            await service.DeactivateSpotAsync(removed.Id);
+
+            var dialogue = (await service.LookupAsync("shadowing", null, null)).Data!.Single();
+            Assert.Equal(new[] { sapporo.Id, tokyo.Id }, dialogue.UsedBy.Select(u => u.SpotId));
+            Assert.Equal(new[] { Hokkaido, Tokyo }, dialogue.UsedBy.Select(u => u.PrefectureId));
+            Assert.All(dialogue.UsedBy, u => Assert.Equal(ExploreSpotStatus.Draft, u.Status));
+
+            Assert.Equal(2, (await service.LookupAsync("grammar", null, null)).Data!.Single(g => g.Id == r.GrammarId).UsedBy.Count);
+            Assert.Empty((await service.LookupAsync("roleplay", null, null)).Data!.Single().UsedBy);
+
+            // Trình soạn cũng biết bài Shadowing đang gắn còn được dùng ở mốc nào khác
+            var reference = (await service.GetSpotAsync(sapporo.Id)).Data!.Activities.Single().Reference!;
+            Assert.Equal(new[] { sapporo.Id, tokyo.Id }, reference.UsedBy.Select(u => u.SpotId));
+        }
+
+        [Fact]
+        public async Task GetUsages_ByKindAndId()
+        {
+            var (db, r) = await SeededContext("usages");
+            using var _db = db;
+            var service = new AdminExploreSpotService(db);
+            var dto = Complete(r);
+            dto.Activities.Add(new() { Type = ExploreActivityType.Roleplay, ReferenceId = r.RoleplayId });
+            var spot = (await service.CreateSpotAsync(Hokkaido, dto)).Data!;
+
+            Assert.Equal(spot.Id, (await service.GetUsagesAsync("roleplay", r.RoleplayId)).Data!.Single().SpotId);
+            Assert.Equal(spot.Id, (await service.GetUsagesAsync("vocabulary", r.VocabId)).Data!.Single().SpotId);
+            Assert.Empty((await service.GetUsagesAsync("shadowing", r.InactiveDialogueId)).Data!);
+            Assert.False((await service.GetUsagesAsync("quiz", 1)).Success);
+        }
+
+        [Fact]
+        public async Task ListSpots_CoversAllPrefectures_WithAttachedContentAndWarnings()
+        {
+            var (db, r) = await SeededContext("list");
+            using var _db = db;
+            var service = new AdminExploreSpotService(db);
+            var dto = Complete(r);
+            dto.Activities.Add(new() { Type = ExploreActivityType.Roleplay, ReferenceId = r.RoleplayId });
+            var spot = (await service.CreateSpotAsync(Hokkaido, dto)).Data!;
+
+            var rows = (await service.ListSpotsAsync()).Data!;
+            Assert.Equal(16, rows.Count); // 15 mốc seed + 1 mốc mới
+            Assert.Equal(rows.OrderBy(x => x.PrefectureId).ThenBy(x => x.Id).Select(x => x.Id), rows.Select(x => x.Id));
+            var row = rows.Single(x => x.Id == spot.Id);
+            Assert.Equal("Mua vé tàu", row.Shadowing!.Title);
+            Assert.Equal("Ở nhà ga · Hỏi đường", row.Roleplay!.Title);
+            Assert.Equal(1, row.GrammarCount);
+            Assert.Empty(row.Missing);
+            Assert.False(row.HasUnavailableContent);
+            Assert.Equal(15, rows.Count(x => x.Missing.Contains(ExploreSpotCheck.Shadowing)));
+
+            // Nhóm ngừng dùng bài Shadowing -> mốc bị đánh dấu
+            (await db.ShadowingDialogues.FindAsync(r.DialogueId))!.IsActive = false;
+            await db.SaveChangesAsync();
+            row = (await service.ListSpotsAsync()).Data!.Single(x => x.Id == spot.Id);
+            Assert.True(row.HasUnavailableContent);
+            Assert.False(row.Shadowing!.Available);
+            Assert.Contains(ExploreSpotCheck.Shadowing, row.Missing);
+        }
+
+        [Fact]
         public async Task LearnerApi_OnlySeesPublishedSpots()
         {
             var (db, r) = await SeededContext("learner");

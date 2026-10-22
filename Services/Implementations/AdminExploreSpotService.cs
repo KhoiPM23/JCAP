@@ -272,7 +272,104 @@ namespace JCAP.Services.Implementations
                     return ApiResponse<List<ExploreLookupItemDto>>.Fail("Loại nội dung không hợp lệ.");
             }
 
+            await FillUsagesAsync(kind, items);
             return ApiResponse<List<ExploreLookupItemDto>>.Ok(items);
+        }
+
+        public async Task<ApiResponse<List<ExploreSpotRefDto>>> GetUsagesAsync(string kind, int id)
+        {
+            if (!LookupKinds.Contains(kind)) return ApiResponse<List<ExploreSpotRefDto>>.Fail("Loại nội dung không hợp lệ.");
+            var usages = await UsagesAsync(kind, new List<int> { id });
+            return ApiResponse<List<ExploreSpotRefDto>>.Ok(usages.GetValueOrDefault(id) ?? new());
+        }
+
+        public async Task<ApiResponse<List<AdminExploreSpotRowDto>>> ListSpotsAsync()
+        {
+            var spots = await LoadSpots().AsNoTracking()
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.PrefectureId).ThenBy(s => s.Id)
+                .ToListAsync();
+
+            var activities = spots.SelectMany(s => s.Lesson?.Activities ?? Enumerable.Empty<ExploreSpotActivity>()).ToList();
+            var shadowing = await ShadowingItemsAsync(RefIds(activities, ExploreActivityType.Shadowing));
+            var roleplay = await RoleplayItemsAsync(RefIds(activities, ExploreActivityType.Roleplay));
+            var shadowingOk = shadowing.Values.Where(i => i.Available).Select(i => i.Id).ToHashSet();
+
+            var grammarIds = spots.SelectMany(s => s.Lesson?.LessonGrammars.Select(g => g.GrammarId) ?? Enumerable.Empty<int>()).Distinct().ToList();
+            var vocabIds = spots.SelectMany(s => s.Lesson?.LessonVocabularies.Select(v => v.VocabularyId) ?? Enumerable.Empty<int>()).Distinct().ToList();
+            var activeGrammars = (await _context.Grammars.Where(g => grammarIds.Contains(g.Id) && g.IsActive).Select(g => g.Id).ToListAsync()).ToHashSet();
+            var activeVocabs = (await _context.Vocabularies.Where(v => vocabIds.Contains(v.Id) && v.IsActive).Select(v => v.Id).ToListAsync()).ToHashSet();
+
+            var rows = spots.Select(s =>
+            {
+                var l = s.Lesson;
+                var sh = Ref(l, ExploreActivityType.Shadowing, shadowing);
+                var rp = Ref(l, ExploreActivityType.Roleplay, roleplay);
+                return new AdminExploreSpotRowDto
+                {
+                    Id = s.Id,
+                    PrefectureId = s.PrefectureId,
+                    IconId = s.IconId,
+                    NameVi = s.NameVi,
+                    NameJp = s.NameJp,
+                    Status = s.Status,
+                    JLPTLevel = l?.JLPTLevel ?? "N5",
+                    Shadowing = sh,
+                    Roleplay = rp,
+                    GrammarCount = l?.LessonGrammars.Count ?? 0,
+                    VocabularyCount = l?.LessonVocabularies.Count ?? 0,
+                    HasUnavailableContent = sh is { Available: false } || rp is { Available: false }
+                        || (l?.LessonGrammars.Any(g => !activeGrammars.Contains(g.GrammarId)) ?? false)
+                        || (l?.LessonVocabularies.Any(v => !activeVocabs.Contains(v.VocabularyId)) ?? false),
+                    UpdatedAt = Max(s.UpdatedAt, l?.UpdatedAt),
+                    Missing = Missing(s, shadowingOk),
+                };
+            }).ToList();
+
+            return ApiResponse<List<AdminExploreSpotRowDto>>.Ok(rows);
+        }
+
+        private static readonly string[] LookupKinds = { "grammar", "vocabulary", "shadowing", "roleplay" };
+
+        /// <summary>Id nội dung -> các mốc chưa ngừng dùng đang gắn nó</summary>
+        private async Task<Dictionary<int, List<ExploreSpotRefDto>>> UsagesAsync(string kind, List<int> ids)
+        {
+            if (ids.Count == 0) return new();
+
+            // Mỗi nhánh trả các cặp (id nội dung, mốc đang gắn)
+            List<(int RefId, ExploreSpotRefDto Spot)> pairs;
+            switch (kind)
+            {
+                case "grammar":
+                    pairs = (await _context.ExploreSpotLessonGrammars.AsNoTracking()
+                        .Where(g => ids.Contains(g.GrammarId) && g.Lesson.Spot.IsActive)
+                        .Select(g => new { g.GrammarId, g.Lesson.Spot.Id, g.Lesson.Spot.PrefectureId, g.Lesson.Spot.NameVi, g.Lesson.Spot.Status })
+                        .ToListAsync())
+                        .Select(x => (x.GrammarId, new ExploreSpotRefDto { SpotId = x.Id, PrefectureId = x.PrefectureId, NameVi = x.NameVi, Status = x.Status }))
+                        .ToList();
+                    break;
+                case "vocabulary":
+                    pairs = (await _context.ExploreSpotLessonVocabularies.AsNoTracking()
+                        .Where(v => ids.Contains(v.VocabularyId) && v.Lesson.Spot.IsActive)
+                        .Select(v => new { v.VocabularyId, v.Lesson.Spot.Id, v.Lesson.Spot.PrefectureId, v.Lesson.Spot.NameVi, v.Lesson.Spot.Status })
+                        .ToListAsync())
+                        .Select(x => (x.VocabularyId, new ExploreSpotRefDto { SpotId = x.Id, PrefectureId = x.PrefectureId, NameVi = x.NameVi, Status = x.Status }))
+                        .ToList();
+                    break;
+                default:
+                    var type = kind == "shadowing" ? ExploreActivityType.Shadowing : ExploreActivityType.Roleplay;
+                    pairs = (await _context.ExploreSpotActivities.AsNoTracking()
+                        .Where(a => a.ActivityType == type && a.ReferenceId != null && ids.Contains(a.ReferenceId.Value) && a.Lesson.Spot.IsActive)
+                        .Select(a => new { RefId = a.ReferenceId!.Value, a.Lesson.Spot.Id, a.Lesson.Spot.PrefectureId, a.Lesson.Spot.NameVi, a.Lesson.Spot.Status })
+                        .ToListAsync())
+                        .Select(x => (x.RefId, new ExploreSpotRefDto { SpotId = x.Id, PrefectureId = x.PrefectureId, NameVi = x.NameVi, Status = x.Status }))
+                        .ToList();
+                    break;
+            }
+
+            return pairs
+                .GroupBy(p => p.RefId)
+                .ToDictionary(g => g.Key, g => g.Select(p => p.Spot).OrderBy(s => s.PrefectureId).ThenBy(s => s.SpotId).ToList());
         }
 
         // ---------------------------------------------------------------- kiểm tra
@@ -523,17 +620,18 @@ namespace JCAP.Services.Implementations
                 })
                 .ToListAsync();
 
-            var activities = new List<AdminExploreActivityDto>();
-            foreach (var a in (l?.Activities ?? new List<ExploreSpotActivity>()).OrderBy(a => a.OrderIndex))
+            var acts = (l?.Activities ?? new List<ExploreSpotActivity>()).OrderBy(a => a.OrderIndex).ToList();
+            var shadowingRefs = await ShadowingItemsAsync(RefIds(acts, ExploreActivityType.Shadowing), withUsages: true);
+            var roleplayRefs = await RoleplayItemsAsync(RefIds(acts, ExploreActivityType.Roleplay), withUsages: true);
+            var activities = acts.Select(a => new AdminExploreActivityDto
             {
-                activities.Add(new AdminExploreActivityDto
-                {
-                    Type = a.ActivityType,
-                    ReferenceId = a.ReferenceId,
-                    PassThreshold = a.PassThreshold,
-                    Reference = a.ReferenceId == null ? null : await ReferenceAsync(a.ActivityType, a.ReferenceId.Value),
-                });
-            }
+                Type = a.ActivityType,
+                ReferenceId = a.ReferenceId,
+                PassThreshold = a.PassThreshold,
+                Reference = a.ReferenceId == null
+                    ? null
+                    : (a.ActivityType == ExploreActivityType.Shadowing ? shadowingRefs : roleplayRefs).GetValueOrDefault(a.ReferenceId.Value),
+            }).ToList();
 
             var prefectureOpen = await _context.ExplorePrefectures.AnyAsync(p => p.Id == s.PrefectureId && p.IsOpen);
             return new AdminExploreSpotDto
@@ -565,9 +663,23 @@ namespace JCAP.Services.Implementations
             };
         }
 
-        private async Task<ExploreLookupItemDto?> ReferenceAsync(string type, int id) => type switch
+        private static List<int> RefIds(IEnumerable<ExploreSpotActivity> activities, string type) => activities
+            .Where(a => a.ActivityType == type && a.ReferenceId != null)
+            .Select(a => a.ReferenceId!.Value)
+            .Distinct()
+            .ToList();
+
+        private static ExploreLookupItemDto? Ref(ExploreSpotLesson? lesson, string type, Dictionary<int, ExploreLookupItemDto> items)
         {
-            ExploreActivityType.Shadowing => await _context.ShadowingDialogues.AsNoTracking().Where(d => d.Id == id)
+            var id = lesson?.Activities.FirstOrDefault(a => a.ActivityType == type)?.ReferenceId;
+            return id == null ? null : items.GetValueOrDefault(id.Value);
+        }
+
+        /// <summary>Bài Shadowing theo id (cả bài đã ngừng dùng, Available = false)</summary>
+        private async Task<Dictionary<int, ExploreLookupItemDto>> ShadowingItemsAsync(List<int> ids, bool withUsages = false)
+        {
+            if (ids.Count == 0) return new();
+            var items = await _context.ShadowingDialogues.AsNoTracking().Where(d => ids.Contains(d.Id))
                 .Select(d => new ExploreLookupItemDto
                 {
                     Id = d.Id,
@@ -576,8 +688,16 @@ namespace JCAP.Services.Implementations
                     JLPTLevel = d.JLPTLevel,
                     Available = d.IsActive,
                 })
-                .FirstOrDefaultAsync(),
-            ExploreActivityType.Roleplay => await _context.ScenarioLevelConfigurations.AsNoTracking().Where(c => c.Id == id)
+                .ToListAsync();
+            if (withUsages) await FillUsagesAsync("shadowing", items);
+            return items.ToDictionary(i => i.Id);
+        }
+
+        /// <summary>Kịch bản Hội thoại AI (cấp độ của kịch bản) theo id</summary>
+        private async Task<Dictionary<int, ExploreLookupItemDto>> RoleplayItemsAsync(List<int> ids, bool withUsages = false)
+        {
+            if (ids.Count == 0) return new();
+            var items = await _context.ScenarioLevelConfigurations.AsNoTracking().Where(c => ids.Contains(c.Id))
                 .Select(c => new ExploreLookupItemDto
                 {
                     Id = c.Id,
@@ -586,9 +706,16 @@ namespace JCAP.Services.Implementations
                     JLPTLevel = c.JLPTLevel,
                     Available = c.Status != "Archived" && c.Scenario != null && c.Scenario.IsActive,
                 })
-                .FirstOrDefaultAsync(),
-            _ => null,
-        };
+                .ToListAsync();
+            if (withUsages) await FillUsagesAsync("roleplay", items);
+            return items.ToDictionary(i => i.Id);
+        }
+
+        private async Task FillUsagesAsync(string kind, List<ExploreLookupItemDto> items)
+        {
+            var usages = await UsagesAsync(kind, items.Select(i => i.Id).ToList());
+            foreach (var item in items) item.UsedBy = usages.GetValueOrDefault(item.Id) ?? new();
+        }
 
         // ---------------------------------------------------------------- tiện ích
 

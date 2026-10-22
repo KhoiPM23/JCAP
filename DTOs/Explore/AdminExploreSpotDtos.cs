@@ -145,5 +145,37 @@ namespace JCAP.DTOs.Explore
         public string? JLPTLevel { get; set; }
         /// <summary>false = nội dung đã ngừng dùng hoặc bị lưu trữ (vẫn hiện để admin biết mà thay)</summary>
         public bool Available { get; set; } = true;
+        /// <summary>Các mốc (chưa ngừng dùng) đang gắn nội dung này</summary>
+        public List<ExploreSpotRefDto> UsedBy { get; set; } = new();
+    }
+
+    /// <summary>Tham chiếu ngắn tới một mốc (để biết nội dung đang được gắn ở đâu).</summary>
+    public class ExploreSpotRefDto
+    {
+        public int SpotId { get; set; }
+        public int PrefectureId { get; set; }
+        public string NameVi { get; set; } = string.Empty;
+        /// <summary>Draft | Published</summary>
+        public string Status { get; set; } = "Draft";
+    }
+
+    /// <summary>Một dòng trong bảng "Nội dung các mốc" (mọi tỉnh).</summary>
+    public class AdminExploreSpotRowDto
+    {
+        public int Id { get; set; }
+        public int PrefectureId { get; set; }
+        public string IconId { get; set; } = string.Empty;
+        public string NameVi { get; set; } = string.Empty;
+        public string NameJp { get; set; } = string.Empty;
+        public string Status { get; set; } = "Draft";
+        public string JLPTLevel { get; set; } = "N5";
+        public ExploreLookupItemDto? Shadowing { get; set; }
+        public ExploreLookupItemDto? Roleplay { get; set; }
+        public int GrammarCount { get; set; }
+        public int VocabularyCount { get; set; }
+        /// <summary>Có nội dung đã gắn nhưng bị ngừng dùng/lưu trữ (Shadowing, Hội thoại AI, ngữ pháp, từ vựng)</summary>
+        public bool HasUnavailableContent { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public List<string> Missing { get; set; } = new();
     }
 }

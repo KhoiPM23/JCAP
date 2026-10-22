@@ -5,9 +5,11 @@ import type {
   AdminExplorePrefecture,
   AdminExplorePrefectureContent,
   AdminExploreSpot,
+  AdminExploreSpotRow,
   AdminExploreWord,
   ExploreLookupItem,
   ExploreLookupKind,
+  ExploreSpotRef,
   ExploreSpotStatus,
   SaveExploreChapter,
   SaveExploreSpot,
@@ -105,7 +107,17 @@ class AdminExploreService {
     return this.send<boolean>('DELETE', `${BASE}/spots/${id}`);
   }
 
-  /** Tìm ngữ pháp, từ vựng, bài Shadowing, kịch bản Hội thoại AI để gắn vào bài */
+  /** Mọi mốc của cả nước kèm nội dung đã gắn (bảng "Nội dung các mốc") */
+  public listSpots() {
+    return this.send<AdminExploreSpotRow[]>('GET', `${BASE}/spots`);
+  }
+
+  /** Các mốc đang dùng một nội dung (để cảnh báo trước khi ngừng dùng nội dung đó) */
+  public getUsages(kind: ExploreLookupKind, id: number) {
+    return this.send<ExploreSpotRef[]>('GET', `${BASE}/usages?kind=${kind}&id=${id}`);
+  }
+
+  /** Tìm ngữ pháp, từ vựng, bài Shadowing, kịch bản Hội thoại AI để gắn vào bài (kèm các mốc đang dùng) */
   public lookup(kind: ExploreLookupKind, level?: string | null, q?: string) {
     const params = new URLSearchParams();
     if (level) params.set('level', level);

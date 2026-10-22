@@ -13,7 +13,7 @@ import type {
 } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
 import { WarnIcon } from './AdminExploreChapterSection';
-import { IconPicker, LookupChip, LookupSearch } from './AdminExplorePickers';
+import { IconPicker, LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
 import { AdminExplorePrefectureMap, type MapSpot } from './AdminExplorePrefectureMap';
 import { LoadError, useAdminToasts } from './AdminExploreToasts';
 import { SPOT_CHECKS, STATUS_BADGE, STATUS_LABEL, formatCoord, inJapan, parseLatLon } from './adminExploreSpots';
@@ -491,6 +491,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
               <p className="text-[11px] text-slate-500 mb-2">Lấy từ kho ngữ pháp/từ vựng dùng chung của hệ thống; cần ít nhất một mục.</p>
               <TargetList
                 kind="grammar"
+                spotId={spotId}
                 label="Ngữ pháp"
                 level={form.jlptLevel}
                 items={form.grammars}
@@ -499,6 +500,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
               <div className="h-3" />
               <TargetList
                 kind="vocabulary"
+                spotId={spotId}
                 label="Từ vựng"
                 level={form.jlptLevel}
                 items={form.vocabularies}
@@ -509,6 +511,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
 
           <Section n={3} title="Luyện tập" desc="Các bước người học làm tại mốc. Con dấu = hoàn thành các bước miễn phí; thêm Hội thoại AI để nhận dấu son.">
             <ActivityCard
+              spotId={spotId}
               step="②"
               title="Shadowing"
               note="Bắt buộc · miễn phí"
@@ -538,6 +541,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
             <PlaceholderCard step="③" title="Kiểm tra" note="Đạt từ 80% · đang chờ module Kiểm tra của nhóm" />
             <PlaceholderCard step="③" title="Flashcard" note="Đang chờ module Flashcard của nhóm" />
             <ActivityCard
+              spotId={spotId}
               step="④"
               title="Hội thoại AI"
               note="Tuỳ chọn · tốn Credit · cho dấu son"
@@ -759,11 +763,12 @@ const Ruby: React.FC<{ segments: { text: string; reading?: string | null }[] }> 
 
 const TargetList: React.FC<{
   kind: ExploreLookupKind;
+  spotId: number | null;
   label: string;
   level: ExploreLevel;
   items: ExploreLookupItem[];
   onChange: (items: ExploreLookupItem[]) => void;
-}> = ({ kind, label, level, items, onChange }) => {
+}> = ({ kind, spotId, label, level, items, onChange }) => {
   const [adding, setAdding] = useState(false);
   return (
     <div>
@@ -786,6 +791,7 @@ const TargetList: React.FC<{
         <div className="mt-2">
           <LookupSearch
             kind={kind}
+            currentSpotId={spotId}
             level={level}
             exclude={items.map((i) => i.id)}
             onSelect={(item) => onChange([...items, item])}
@@ -798,6 +804,7 @@ const TargetList: React.FC<{
 };
 
 const ActivityCard: React.FC<{
+  spotId: number | null;
   step: string;
   title: string;
   note: string;
@@ -807,7 +814,7 @@ const ActivityCard: React.FC<{
   onChange: (item: ExploreLookupItem | null) => void;
   ok?: boolean;
   children?: React.ReactNode;
-}> = ({ step, title, note, kind, level, item, onChange, ok, children }) => {
+}> = ({ spotId, step, title, note, kind, level, item, onChange, ok, children }) => {
   const [choosing, setChoosing] = useState(false);
   return (
     <div className="rounded-xl border border-slate-200 p-4 mb-3">
@@ -829,6 +836,7 @@ const ActivityCard: React.FC<{
             </span>
             {item.subtitle && <span className="block text-xs text-slate-500 truncate">{item.subtitle}</span>}
             {!item.available && <span className="block text-xs font-semibold text-red-700">Nội dung này đã ngừng dùng, hãy chọn nội dung khác.</span>}
+            <UsedByText usedBy={item.usedBy ?? []} currentSpotId={spotId} links prefix="Cũng đang dùng ở" className="block mt-1" />
           </span>
           <span className="flex gap-1.5">
             <button type="button" onClick={() => setChoosing((c) => !c)} className="h-8 px-3 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
@@ -854,6 +862,7 @@ const ActivityCard: React.FC<{
         <div className="mt-3">
           <LookupSearch
             kind={kind}
+            currentSpotId={spotId}
             level={level}
             exclude={item ? [item.id] : []}
             onSelect={(picked) => {

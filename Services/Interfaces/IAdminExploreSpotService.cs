@@ -31,7 +31,16 @@ namespace JCAP.Services.Interfaces
         /// <summary>Ngừng dùng mốc (IsActive = false). Chỉ áp dụng cho mốc đang ở trạng thái Nháp.</summary>
         Task<ApiResponse<bool>> DeactivateSpotAsync(int spotId);
 
-        /// <summary>Tìm nội dung để gắn vào bài: grammar | vocabulary | shadowing | roleplay.</summary>
+        /// <summary>
+        /// Tìm nội dung để gắn vào bài: grammar | vocabulary | shadowing | roleplay.
+        /// Mỗi kết quả kèm danh sách mốc đang gắn nó (UsedBy).
+        /// </summary>
         Task<ApiResponse<List<ExploreLookupItemDto>>> LookupAsync(string kind, string? level, string? query);
+
+        /// <summary>Mọi mốc chưa ngừng dùng của cả nước kèm nội dung đã gắn (bảng "Nội dung các mốc").</summary>
+        Task<ApiResponse<List<AdminExploreSpotRowDto>>> ListSpotsAsync();
+
+        /// <summary>Các mốc đang dùng một nội dung (grammar | vocabulary | shadowing | roleplay).</summary>
+        Task<ApiResponse<List<ExploreSpotRefDto>>> GetUsagesAsync(string kind, int id);
     }
 }

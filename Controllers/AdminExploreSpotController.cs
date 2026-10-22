@@ -73,6 +73,24 @@ namespace JCAP.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        /// <summary>Mọi mốc của cả nước kèm nội dung đã gắn (bảng "Nội dung các mốc").</summary>
+        [HttpGet("spots")]
+        public async Task<ActionResult<ApiResponse<List<AdminExploreSpotRowDto>>>> ListSpots()
+        {
+            return Ok(await _service.ListSpotsAsync());
+        }
+
+        /// <summary>
+        /// Các mốc đang dùng một nội dung. Trang Shadowing/Kịch bản có thể gọi để cảnh báo trước khi ngừng dùng nội dung.
+        /// kind: grammar | vocabulary | shadowing | roleplay.
+        /// </summary>
+        [HttpGet("usages")]
+        public async Task<ActionResult<ApiResponse<List<ExploreSpotRefDto>>>> GetUsages([FromQuery] string kind, [FromQuery] int id)
+        {
+            var result = await _service.GetUsagesAsync(kind, id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         /// <summary>Tìm nội dung để gắn vào bài: grammar | vocabulary | shadowing | roleplay.</summary>
         [HttpGet("lookups/{kind}")]
         public async Task<ActionResult<ApiResponse<List<ExploreLookupItemDto>>>> Lookup(string kind, [FromQuery] string? level, [FromQuery] string? q)

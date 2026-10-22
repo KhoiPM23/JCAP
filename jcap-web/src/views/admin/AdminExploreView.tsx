@@ -8,10 +8,12 @@ import type {
   AdminExploreChapter,
   AdminExploreOverview,
   AdminExplorePrefecture,
+  AdminExploreSpotRow,
   SaveExploreChapter,
 } from '../../types/adminExplore';
 import { AdminExploreChapterSection, WarnIcon } from './AdminExploreChapterSection';
 import { AdminExploreMap, STATE_LABEL, prefectureState, type PrefectureState } from './AdminExploreMap';
+import { AdminExploreSpotTable } from './AdminExploreSpotTable';
 
 /**
  * Quản lý bản đồ Khám phá (giai đoạn 2): mở tỉnh cho người học và quản lý chương.
@@ -76,6 +78,20 @@ export const AdminExploreView: React.FC = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Bảng "Nội dung các mốc" tải riêng để bản đồ hiện ra ngay
+  const [spotRows, setSpotRows] = useState<AdminExploreSpotRow[] | null>(null);
+  const [spotRowsError, setSpotRowsError] = useState<string | null>(null);
+  const loadSpotRows = useCallback(async () => {
+    setSpotRowsError(null);
+    const res = await adminExploreService.listSpots();
+    if (res.success && res.data) setSpotRows(res.data);
+    else setSpotRowsError(res.message);
+  }, []);
+
+  useEffect(() => {
+    loadSpotRows();
+  }, [loadSpotRows]);
 
   const prefectures = useMemo(
     () => new Map((overview?.prefectures ?? []).map((p) => [p.id, p])),
@@ -224,7 +240,12 @@ export const AdminExploreView: React.FC = () => {
                   onAssign={handleAssign}
                 />
               ) : (
-                <SummaryPanel open={totals.open} published={totals.published} draft={totals.draft} />
+                <SummaryPanel
+                  open={totals.open}
+                  published={totals.published}
+                  draft={totals.draft}
+                  missingShadowing={spotRows ? spotRows.filter((r) => r.missing.includes('shadowing')).length : null}
+                />
               )}
               <PrefectureList prefectures={prefectures} chapters={chapters} selectedId={selectedId} onSelect={select} />
             </div>
@@ -239,6 +260,8 @@ export const AdminExploreView: React.FC = () => {
             onMove={handleMove}
             onDeactivate={handleDeactivate}
           />
+
+          <AdminExploreSpotTable rows={spotRows} error={spotRowsError} onRetry={loadSpotRows} />
         </>
       )}
 
@@ -281,13 +304,19 @@ const Legend: React.FC = () => (
   </ul>
 );
 
-const SummaryPanel: React.FC<{ open: number; published: number; draft: number }> = ({ open, published, draft }) => (
+const SummaryPanel: React.FC<{ open: number; published: number; draft: number; missingShadowing: number | null }> = ({
+  open,
+  published,
+  draft,
+  missingShadowing,
+}) => (
   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
     <h2 className="text-base font-bold text-slate-900">Tổng quan</h2>
-    <div className="grid grid-cols-3 gap-2 mt-3">
+    <div className="grid grid-cols-2 gap-2 mt-3">
       <Stat label="Tỉnh đang mở" value={`${open}/47`} />
       <Stat label="Mốc đang dùng" value={published} />
       <Stat label="Mốc nháp" value={draft} tone={draft > 0 ? 'warn' : undefined} />
+      <Stat label="Mốc thiếu Shadowing" value={missingShadowing ?? '…'} tone={missingShadowing ? 'warn' : undefined} />
     </div>
     <p className="text-xs text-slate-500 mt-4 leading-relaxed">
       Chọn một tỉnh trên bản đồ hoặc trong danh sách bên dưới để xem chi tiết, đặt chương và mở tỉnh cho người học.

@@ -85,6 +85,35 @@ export interface ExploreLookupItem {
   jlptLevel?: string | null;
   /** false = nội dung đã ngừng dùng/lưu trữ */
   available: boolean;
+  /** Các mốc (chưa ngừng dùng) đang gắn nội dung này */
+  usedBy: ExploreSpotRef[];
+}
+
+/** Tham chiếu ngắn tới một mốc */
+export interface ExploreSpotRef {
+  spotId: number;
+  prefectureId: number;
+  nameVi: string;
+  status: ExploreSpotStatus;
+}
+
+/** Một dòng trong bảng "Nội dung các mốc" (mọi tỉnh) */
+export interface AdminExploreSpotRow {
+  id: number;
+  prefectureId: number;
+  iconId: string;
+  nameVi: string;
+  nameJp: string;
+  status: ExploreSpotStatus;
+  jlptLevel: ExploreLevel;
+  shadowing?: ExploreLookupItem | null;
+  roleplay?: ExploreLookupItem | null;
+  grammarCount: number;
+  vocabularyCount: number;
+  /** Có nội dung đã gắn nhưng bị ngừng dùng/lưu trữ */
+  hasUnavailableContent: boolean;
+  updatedAt: string;
+  missing: ExploreSpotCheckKey[];
 }
 
 export type ExploreLookupKind = 'grammar' | 'vocabulary' | 'shadowing' | 'roleplay';

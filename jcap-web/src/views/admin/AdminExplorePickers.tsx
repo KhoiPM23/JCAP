@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { PREFECTURES } from '../../data/japanMap';
 import { JCAP_ICONS, PICTOGRAMS, PREFECTURE_PICTOGRAMS, type Pictogram } from '../../data/japanPictograms';
 import { adminExploreService } from '../../services/adminExploreService';
-import type { ExploreLevel, ExploreLookupItem, ExploreLookupKind } from '../../types/adminExplore';
+import type { ExploreLevel, ExploreLookupItem, ExploreLookupKind, ExploreSpotRef } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
 
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -117,8 +119,53 @@ const KIND_LABEL: Record<ExploreLookupKind, string> = {
   roleplay: 'kịch bản Hội thoại AI',
 };
 
+const PREF_NAME = new Map(PREFECTURES.map((p) => [p.id, p.nameVi]));
+const USED_BY_SHOWN = 3;
+
+/**
+ * Nội dung đang được gắn ở những mốc nào.
+ * links = true: mỗi mốc là link mở trình soạn ở tab mới (không làm mất phần đang soạn dở).
+ */
+export const UsedByText: React.FC<{
+  usedBy: ExploreSpotRef[];
+  currentSpotId?: number | null;
+  links?: boolean;
+  prefix?: string;
+  className?: string;
+}> = ({ usedBy, currentSpotId, links, prefix = 'Đang gắn ở', className }) => {
+  const others = usedBy.filter((u) => u.spotId !== currentSpotId);
+  const here = usedBy.length > others.length;
+  const base = `text-[11px] leading-snug ${className ?? ''}`;
+  if (others.length === 0) {
+    return <span className={`${base} text-slate-400`}>{here ? 'Chỉ đang dùng ở mốc này' : 'Chưa gắn ở mốc nào'}</span>;
+  }
+  const label = (u: ExploreSpotRef) => `${u.nameVi} (${PREF_NAME.get(u.prefectureId) ?? `tỉnh ${u.prefectureId}`}${u.status === 'Draft' ? ', nháp' : ''})`;
+  const shown = others.slice(0, USED_BY_SHOWN);
+  const rest = others.length - shown.length;
+  return (
+    <span className={`${base} text-slate-600`} title={others.map(label).join('\n')}>
+      {here ? 'Mốc này và ' : `${prefix}: `}
+      {shown.map((u, i) => (
+        <React.Fragment key={u.spotId}>
+          {i > 0 && ', '}
+          {links ? (
+            <Link to={`/admin/explore/spots/${u.spotId}`} target="_blank" rel="noopener" className="font-semibold text-[#0878EE] hover:underline">
+              {label(u)}
+            </Link>
+          ) : (
+            <span className="font-semibold">{label(u)}</span>
+          )}
+        </React.Fragment>
+      ))}
+      {rest > 0 && ` và ${rest} mốc khác`}
+    </span>
+  );
+};
+
 interface LookupSearchProps {
   kind: ExploreLookupKind;
+  /** Mốc đang soạn (để ghi "mốc này" thay vì liệt kê lại chính nó) */
+  currentSpotId?: number | null;
   /** Cấp của bài: lọc mặc định theo cấp này */
   level: ExploreLevel;
   /** Id đã chọn (ẩn khỏi kết quả) */
@@ -127,7 +174,7 @@ interface LookupSearchProps {
   onClose?: () => void;
 }
 
-export const LookupSearch: React.FC<LookupSearchProps> = ({ kind, level, exclude = [], onSelect, onClose }) => {
+export const LookupSearch: React.FC<LookupSearchProps> = ({ kind, currentSpotId, level, exclude = [], onSelect, onClose }) => {
   const [query, setQuery] = useState('');
   const [onlyLevel, setOnlyLevel] = useState(true);
   const [state, setState] = useState<{ loading: boolean; items: ExploreLookupItem[]; error?: string }>({ loading: true, items: [] });
@@ -192,6 +239,7 @@ export const LookupSearch: React.FC<LookupSearchProps> = ({ kind, level, exclude
                 {item.jlptLevel && <span className="text-[10px] font-bold text-[#0878EE]">{item.jlptLevel}</span>}
               </span>
               {item.subtitle && <span className="block text-xs text-slate-500">{item.subtitle}</span>}
+              <UsedByText usedBy={item.usedBy ?? []} currentSpotId={currentSpotId} className="block mt-0.5" />
             </button>
           </li>
         ))}
