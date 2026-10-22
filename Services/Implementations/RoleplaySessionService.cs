@@ -134,29 +134,49 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
+        // Kiểm tra người dùng có gói tháng đang hoạt động không
+        bool hasActiveSub = !isAdmin
+            && user.SubscriptionExpiresAt.HasValue
+            && user.SubscriptionExpiresAt.Value > DateTime.UtcNow;
+
         int creditDeducted = isAdmin ? 0 : levelConfig.CreditCost;
 
-        if (!isAdmin && user.CreditBalance < levelConfig.CreditCost)
+        // Nếu có gói tháng: bỏ qua kiểm tra số dư và không trừ CreditBalance
+        if (!isAdmin && !hasActiveSub && user.CreditBalance < levelConfig.CreditCost)
         {
             return ApiResponse<RoleplaySessionDetailsDto>.Fail(
-                $"Số dư credit của bạn không đủ ({user.CreditBalance}/{levelConfig.CreditCost} credits). Vui lòng nạp thêm credit để bắt đầu luyện tập.");
+                $"Số dư credit của bạn không đủ ({user.CreditBalance}/{levelConfig.CreditCost} credits). Vui lòng nạp thêm credit hoặc mua gói tháng để bắt đầu luyện tập.");
         }
 
-        // Khấu trừ Credit theo Model A (Cố định theo phiên) nếu không phải Admin
+        // Khấu trừ Credit theo Model A (Cố định theo phiên) — chỉ trừ CreditBalance nếu KHÔNG có gói tháng
         if (creditDeducted > 0)
         {
-            user.CreditBalance -= creditDeducted;
-
-            var transaction = new CreditTransaction
+            if (hasActiveSub)
             {
-                UserId = userId,
-                Amount = -creditDeducted,
-                Type = "Deduct",
-                Status = "Paid",
-                Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.CreditTransactions.Add(transaction);
+                // Gói tháng bao gồm phí khởi tạo: ghi nhận giao dịch nhưng không trừ số dư vĩnh viễn
+                _dbContext.CreditTransactions.Add(new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = -creditDeducted,
+                    Type = "Deduct",
+                    Status = "Paid",
+                    Description = $"[Gói tháng] Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                user.CreditBalance -= creditDeducted;
+                _dbContext.CreditTransactions.Add(new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = -creditDeducted,
+                    Type = "Deduct",
+                    Status = "Paid",
+                    Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
         }
 
         // Tạo RoleplaySession mới
@@ -380,7 +400,7 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         // 4b. Trừ credit theo số token ước lượng từ câu thoại AI (tối thiểu 1 credit/lượt)
         // Công thức: mỗi CharsPerCredit ký tự tiếng Nhật ≈ 1 credit, tối thiểu 1 credit/lượt.
-        // Admin không bị trừ credit.
+        // Admin không bị trừ credit. Người dùng có gói tháng hoạt động KHÔNG bị trừ CreditBalance vĩnh viễn.
         var userForDeduct = await _userManager.FindByIdAsync(userId);
         var isAdmin = userForDeduct != null &&
             string.Equals(userForDeduct.Role, "Admin", StringComparison.OrdinalIgnoreCase);
@@ -393,34 +413,56 @@ public class RoleplaySessionService : IRoleplaySessionService
                 : turnResult.JapaneseReply.Length;
             int creditsDue = Math.Max(1, estimatedTokens / CharsPerCredit);
 
-            if (userForDeduct.CreditBalance >= creditsDue)
-            {
-                creditsSpentThisTurn = creditsDue;
-            }
-            else if (userForDeduct.CreditBalance > 0)
-            {
-                // Trừ hết số dư còn lại nếu không đủ đúng lượng
-                creditsSpentThisTurn = userForDeduct.CreditBalance;
-            }
-            else
-            {
-                // Hết credit: vẫn cho phép nhận phản hồi lượt này nhưng ghi log
-                _logger.LogWarning("User {UserId} gửi tin nhắn nhưng số dư credit bằng 0. Cho phép lượt này nhưng không trừ credit.", userId);
-            }
+            bool hasActiveSubscription = userForDeduct.SubscriptionExpiresAt.HasValue
+                && userForDeduct.SubscriptionExpiresAt.Value > DateTime.UtcNow;
 
-            if (creditsSpentThisTurn > 0)
+            if (hasActiveSubscription)
             {
-                userForDeduct.CreditBalance -= creditsSpentThisTurn;
+                // Gói tháng đang hoạt động: ghi nhận giao dịch để theo dõi quota, KHÔNG trừ CreditBalance
+                creditsSpentThisTurn = creditsDue;
                 _dbContext.CreditTransactions.Add(new CreditTransaction
                 {
                     UserId = userId,
-                    Amount = -creditsSpentThisTurn,
+                    Amount = -creditsDue,
                     Type = "Deduct",
                     Status = "Paid",
-                    Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
-                await _userManager.UpdateAsync(userForDeduct);
+                // Không gọi UpdateAsync vì CreditBalance không thay đổi
+            }
+            else
+            {
+                // Không có gói tháng: trừ từ CreditBalance vĩnh viễn
+                if (userForDeduct.CreditBalance >= creditsDue)
+                {
+                    creditsSpentThisTurn = creditsDue;
+                }
+                else if (userForDeduct.CreditBalance > 0)
+                {
+                    // Trừ hết số dư còn lại nếu không đủ đúng lượng
+                    creditsSpentThisTurn = userForDeduct.CreditBalance;
+                }
+                else
+                {
+                    // Hết credit: vẫn cho phép nhận phản hồi lượt này nhưng ghi log
+                    _logger.LogWarning("User {UserId} gửi tin nhắn nhưng số dư credit bằng 0. Cho phép lượt này nhưng không trừ credit.", userId);
+                }
+
+                if (creditsSpentThisTurn > 0)
+                {
+                    userForDeduct.CreditBalance -= creditsSpentThisTurn;
+                    _dbContext.CreditTransactions.Add(new CreditTransaction
+                    {
+                        UserId = userId,
+                        Amount = -creditsSpentThisTurn,
+                        Type = "Deduct",
+                        Status = "Paid",
+                        Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    await _userManager.UpdateAsync(userForDeduct);
+                }
             }
         }
 

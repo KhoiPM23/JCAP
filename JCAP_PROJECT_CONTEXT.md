@@ -123,46 +123,53 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 
 ### **FE-05: Self-study Learning**
 
-> * Vocabulary and grammar learning through organized learning groups.
-> * Vocabulary and grammar search, individual study, and flashcard-based review activities.
-> * Bookmark learning contents and view bookmarked contents.
-> * Access recommended learning materials and review activities.
-> * Admin vocabulary and grammar content management, including group assignment and organization.
+> * Vocabulary and grammar learning structured by Learning Topics.
+> * Vocabulary and grammar browsing, searching, and detailed study.
+> * Learning topic management: create, edit, change status.
+> * Content management: add, edit, remove, change content status, and batch import vocabulary/grammar from Excel.
+> * Bookmark learning contents and review bookmarked contents through flashcards.
+> * Flashcard set study, set details browsing, and flashcard review history tracking.
 
 **Use Cases:**
-* **UC-33:** Study Daily Recommended Flashcards
-* **UC-34:** View Vocabulary Group List
-* **UC-35:** View Vocabulary Group Details
-* **UC-36:** Search a Vocabulary
-* **UC-37:** Study a Vocabulary
-* **UC-38:** Review Vocabulary through Flashcards
-* **UC-39:** View Grammar Group List
-* **UC-40:** View Grammar Group
-* **UC-41:** Search a Grammar
-* **UC-42:** Study Grammar
-* **UC-43:** Review Grammar through Flashcards
-* **UC-44:** Bookmark Learning Contents
-* **UC-45:** View Bookmarked Learning Contents
-* **UC-46:** Add Vocabulary to Group
-* **UC-47:** Assign an existing Vocabulary to Group
-* **UC-48:** Edit Vocabulary
-* **UC-49:** Remove Vocabulary from Group
-* **UC-50:** Add Grammar to Group
-* **UC-51:** Assign an existing Grammar to Group
-* **UC-52:** Edit Grammar
-* **UC-53:** Remove Grammar from Group
+* **UC-33:** View Vocabulary List of a Topic
+* **UC-34:** Search a Vocabulary
+* **UC-35:** View Vocabulary Details
+* **UC-36:** View Grammar List of a Topic
+* **UC-37:** Search a Grammar
+* **UC-38:** View Grammar Details
+* **UC-39:** Add Vocabulary
+* **UC-40:** Edit Vocabulary
+* **UC-41:** Remove Vocabulary
+* **UC-42:** Add Grammar
+* **UC-43:** Edit Grammar
+* **UC-44:** Remove Grammar
+* **UC-45:** View Learning Topic List
+* **UC-46:** Add Learning Topic
+* **UC-47:** Edit Learning Topic
+* **UC-48:** Change Learning Topic Status
+* **UC-49:** Import Vocabulary from Excel
+* **UC-50:** Import Grammar from Excel
+* **UC-51:** Change Learning Content Status
+* **UC-52:** Bookmark Learning Content
+* **UC-53:** View Bookmarked Learning Contents
+* **UC-54:** Review Bookmarked Contents through Flashcard
+* **UC-55:** View Flashcard Sets
+* **UC-56:** View Flashcard Set Details
+* **UC-57:** Study a Flashcard Set
+* **UC-58:** View Flashcard Review History
 
 ### **FE-06: Platform Administration**
 
 > * Admin user administration: Search, Filter, Ban/Unban learner accounts.
-> * Learner feedback and issue report submission and review.
-> * Admin learning and system analytics for monitoring learner activity, engagement, learning performance, and system usage.
+> * Learner feedback and issue report review and resolution reply.
+> * Admin revenue, system analytics, and platform monitoring.
 
 **Use Cases:**
-* **UC-54:** Search & Filter Users
-* **UC-55:** Change User Account Status (Ban/Unban)
-* **UC-56:** View Learner Feedback
-
+* **UC-59:** Search & Filter Users
+* **UC-60:** Change User Account Status (Ban/Unban)
+* **UC-61:** View Learner Feedback
+* **UC-62:** Reply Learner Feedback
+* **UC-63:** View Revenue Analytics
 
 ## **5\. Global Database Schema (Unified ERD Overview)**
 
@@ -228,18 +235,11 @@ Example: feature/authentication-login
 > * **BR-15 Compliance:** UI disclaimers stating AI feedback is for learning support, not official JLPT certification.  
 > * **BR-24/25 Compliance:** Mandatory admin verification before scenarios become published.
 
-## **7\. Current Project Status & Sprint Roadmap**
-
-> * **Current Milestone:** Sprint 1 (31/08/2026 – 13/09/2026)  
-> * **Sprint 1 Focus:** Core foundation, Auth (Login/Register/OAuth), Learner Profile, Token Balance, Initial DB Schemas, API/FE Integration.  
-> * **Sprint 2 (14/09/2026 – 27/09/2026):** Scenario browsing, details view, text-based AI roleplay session initialization, prompt engineering.  
-> * **Sprint 3 (28/09/2026 – 12/10/2026):** Voice recording, Whisper STT, TTS audio playback, streaming audio integration.
-
-## **8. File Encoding Convention**
+## **7. File Encoding Convention**
 
 > * All files created or modified in this project must be saved as **UTF-8 without signature (without BOM)** to ensure consistent encoding across agents and development environments.
 
-## **9. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
+## **8. Detailed Domain Specifications: FE-03 (Scenario AI) & FE-04 (Shadowing)**
 
 ### **FE-03: Scenario-Based AI Conversation Practice**
 1. **Multi-JLPT Level Structure (Approach A - Topic-First Hierarchy):**
