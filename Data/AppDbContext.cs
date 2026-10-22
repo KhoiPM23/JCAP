@@ -288,8 +288,21 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.Property(e => e.PartOfSpeech)
+                    .HasMaxLength(100);
+
                 entity.Property(e => e.JLPTLevel)
                     .HasMaxLength(10);
+
+                entity.Property(e => e.Explanation)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(e => e.AudioUrl)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
@@ -308,11 +321,21 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.Property(e => e.Formation)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.Explanation)
+                    .HasColumnType("nvarchar(max)");
+
                 entity.Property(e => e.ExampleSentence)
                     .HasMaxLength(500);
 
                 entity.Property(e => e.JLPTLevel)
                     .HasMaxLength(10);
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
