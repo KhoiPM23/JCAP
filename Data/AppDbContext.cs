@@ -38,9 +38,23 @@ namespace JCAP.Data
         public DbSet<RoleplayMessage> RoleplayMessages { get; set; } = null!;
         public DbSet<RoleplaySessionMission> RoleplaySessionMissions { get; set; } = null!;
 
+        // Explore (bản đồ hành trình học) DbSets - cấu hình ở ExploreModelConfiguration
+        public DbSet<ExplorePrefecture> ExplorePrefectures { get; set; } = null!;
+        public DbSet<ExploreChapter> ExploreChapters { get; set; } = null!;
+        public DbSet<ExploreChapterPrefecture> ExploreChapterPrefectures { get; set; } = null!;
+        public DbSet<ExploreSpot> ExploreSpots { get; set; } = null!;
+        public DbSet<ExploreSpotLesson> ExploreSpotLessons { get; set; } = null!;
+        public DbSet<ExploreSpotLessonGrammar> ExploreSpotLessonGrammars { get; set; } = null!;
+        public DbSet<ExploreSpotLessonVocabulary> ExploreSpotLessonVocabularies { get; set; } = null!;
+        public DbSet<ExploreSpotActivity> ExploreSpotActivities { get; set; } = null!;
+        public DbSet<ExploreProvinceWord> ExploreProvinceWords { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Explore (bản đồ hành trình học)
+            ExploreModelConfiguration.Configure(modelBuilder);
 
             // ApplicationUser configuration
             modelBuilder.Entity<ApplicationUser>(entity =>
