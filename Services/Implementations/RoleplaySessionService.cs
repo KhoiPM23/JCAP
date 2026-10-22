@@ -231,6 +231,12 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         var user = await _userManager.FindByIdAsync(userId);
 
+        var voiceResolution = VoiceVoxPersonaResolver.Resolve(
+            session.ScenarioLevelConfiguration?.AiPersona,
+            session.ScenarioLevelConfiguration?.Scenario?.Title,
+            session.ScenarioLevelConfiguration?.Description,
+            session.ScenarioLevelConfiguration?.JLPTLevel);
+
         var dto = new RoleplaySessionDetailsDto
         {
             SessionId = session.Id,
@@ -245,6 +251,11 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditBalance = user?.CreditBalance ?? 0,
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             CreatedAt = session.CreatedAt,
+            RecommendedAiVoiceId = voiceResolution.RecommendedAiVoiceId,
+            RecommendedAiVoiceName = voiceResolution.RecommendedAiVoiceName,
+            RecommendedLearnerVoiceId = voiceResolution.RecommendedLearnerVoiceId,
+            RecommendedLearnerVoiceName = voiceResolution.RecommendedLearnerVoiceName,
+            RoleVoiceMappings = voiceResolution.RoleVoiceMappings,
             TargetVocabularies = session.ScenarioLevelConfiguration?.TargetVocabularies
                 .Select(v => new TargetVocabularyDto
                 {
@@ -413,20 +424,42 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
-        // 5. Cập nhật các mission vừa hoàn thành
+        // 5. Cập nhật các mission vừa hoàn thành (có kiểm tra thứ tự logic hội thoại)
         var newlyCompletedIds = new List<int>();
+        var maxOrder = session.SessionMissions.Count > 0
+            ? session.SessionMissions.Max(x => x.Mission?.Order ?? 0)
+            : 0;
+        var hasEarlierPending = session.SessionMissions.Any(x => !x.IsCompleted && (x.Mission?.Order ?? 0) < maxOrder);
+
         foreach (var missionId in turnResult.CompletedMissionIds)
         {
             var sm = session.SessionMissions.FirstOrDefault(x => x.MissionId == missionId && !x.IsCompleted);
             if (sm != null)
             {
+                // Ngăn chặn việc tick nhảy cóc nhiệm vụ kết thúc kịch bản khi các nhiệm vụ chính trước đó chưa hoàn thành
+                if ((sm.Mission?.Order ?? 0) == maxOrder && maxOrder > 1 && hasEarlierPending)
+                {
+                    _logger.LogInformation("Nhiệm vụ {MissionId} (Order {Order}) là nhiệm vụ kết thúc kịch bản, bị hoãn tick do còn nhiệm vụ tiên quyết chưa hoàn thành.", missionId, sm.Mission?.Order);
+                    continue;
+                }
+
                 sm.IsCompleted = true;
                 sm.CompletedAt = DateTime.UtcNow;
                 newlyCompletedIds.Add(missionId);
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
+        // 6. Cập nhật đánh giá ngôn ngữ, bản dịch tiếng Việt, furigana người học và cờ kết thúc tự nhiên
+        if (!string.IsNullOrWhiteSpace(turnResult.UserVietnameseMeaning))
+        {
+            userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
+        }
+
+        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml))
+        {
+            userMessage.FuriganaHtml = turnResult.UserFuriganaHtml;
+        }
+
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
@@ -454,6 +487,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                 Id = userMessage.Id,
                 Sender = userMessage.Sender,
                 JapaneseText = userMessage.JapaneseText,
+                VietnameseMeaning = userMessage.VietnameseMeaning,
+                FuriganaHtml = userMessage.FuriganaHtml,
                 LinguisticFeedback = turnResult.LinguisticFeedback,
                 CreatedAt = userMessage.CreatedAt
             },

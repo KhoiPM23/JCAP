@@ -2,6 +2,7 @@ using System.Text.Json;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Roleplay;
+using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -234,10 +235,116 @@ namespace JCAP.Services.Implementations
                 completedMissions = [];
             }
 
+            List<TargetVocabularyDto> targetVocabularies = [];
+            List<TargetGrammarDto> targetGrammars = [];
+            List<RoleplayMessageDto> messages = [];
+            List<RoleplayMissionProgressDto> allMissions = [];
+            int scenarioId = 0;
+
+            if (result.RoleplaySessionId > 0)
+            {
+                var sessionData = await _dbContext.RoleplaySessions
+                    .AsNoTracking()
+                    .Where(s => s.Id == result.RoleplaySessionId)
+                    .Select(s => new
+                    {
+                        Config = s.ScenarioLevelConfiguration,
+                        SessionMissions = s.SessionMissions
+                            .OrderBy(sm => sm.Mission != null ? sm.Mission.Order : 0)
+                            .Select(sm => new
+                            {
+                                sm.MissionId,
+                                Content = sm.Mission != null ? sm.Mission.Content : "",
+                                CriteriaJson = sm.Mission != null ? sm.Mission.CompletionCriteriaJson : null,
+                                Order = sm.Mission != null ? sm.Mission.Order : 0,
+                                sm.IsCompleted,
+                                sm.CompletedAt
+                            })
+                            .ToList(),
+                        Messages = s.Messages
+                            .OrderBy(m => m.CreatedAt)
+                            .Select(m => new
+                            {
+                                m.Id,
+                                m.Sender,
+                                m.JapaneseText,
+                                m.VietnameseMeaning,
+                                m.FuriganaHtml,
+                                m.LinguisticFeedbackJson,
+                                m.CreatedAt
+                            })
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (sessionData != null)
+                {
+                    scenarioId = sessionData.Config?.ScenarioId ?? 0;
+                    allMissions = sessionData.SessionMissions.Select(sm => new RoleplayMissionProgressDto
+                    {
+                        MissionId = sm.MissionId,
+                        Content = sm.Content,
+                        Target = ExtractMissionTarget(sm.CriteriaJson),
+                        Order = sm.Order,
+                        IsCompleted = sm.IsCompleted,
+                        CompletedAt = sm.CompletedAt.HasValue ? AsUtc(sm.CompletedAt.Value) : null
+                    }).ToList();
+
+                    if (sessionData.Config != null)
+                    {
+                        targetVocabularies = sessionData.Config.TargetVocabularies.Select(v => new TargetVocabularyDto
+                        {
+                            Id = v.Id,
+                            Word = v.Word,
+                            Reading = v.Reading,
+                            Meaning = v.Meaning
+                        }).ToList();
+
+                        targetGrammars = sessionData.Config.TargetGrammars.Select(g => new TargetGrammarDto
+                        {
+                            Id = g.Id,
+                            Pattern = g.Pattern,
+                            Meaning = g.Meaning,
+                            ExampleSentence = g.ExampleSentence
+                        }).ToList();
+                    }
+
+                    messages = sessionData.Messages.Select(m =>
+                    {
+                        LinguisticFeedbackDto? parsedFeedback = null;
+                        if (!string.IsNullOrWhiteSpace(m.LinguisticFeedbackJson))
+                        {
+                            try
+                            {
+                                parsedFeedback = JsonSerializer.Deserialize<LinguisticFeedbackDto>(
+                                    m.LinguisticFeedbackJson,
+                                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            }
+                            catch
+                            {
+                                // Safe fallback if json corrupted
+                            }
+                        }
+
+                        return new RoleplayMessageDto
+                        {
+                            Id = m.Id,
+                            Sender = m.Sender,
+                            JapaneseText = m.JapaneseText,
+                            VietnameseMeaning = m.VietnameseMeaning,
+                            FuriganaHtml = m.FuriganaHtml,
+                            LinguisticFeedback = parsedFeedback,
+                            CreatedAt = AsUtc(m.CreatedAt)
+                        };
+                    }).ToList();
+                }
+            }
+
             return ApiResponse<RoleplayResultDetailDto>.Ok(new RoleplayResultDetailDto
             {
                 Id = result.Id,
                 RoleplaySessionId = result.RoleplaySessionId,
+                ScenarioId = scenarioId,
                 ScenarioTitle = result.ScenarioTitle,
                 JLPTLevel = result.JLPTLevel,
                 OverallScore = result.OverallScore,
@@ -247,6 +354,10 @@ namespace JCAP.Services.Implementations
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
+                AllMissions = allMissions,
+                TargetVocabularies = targetVocabularies,
+                TargetGrammars = targetGrammars,
+                Messages = messages,
                 CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
         }
@@ -259,6 +370,24 @@ namespace JCAP.Services.Implementations
             return value.Kind == DateTimeKind.Utc
                 ? value
                 : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
+        private static string ExtractMissionTarget(string? criteriaJson)
+        {
+            if (string.IsNullOrWhiteSpace(criteriaJson)) return string.Empty;
+            try
+            {
+                using var doc = JsonDocument.Parse(criteriaJson);
+                if (doc.RootElement.TryGetProperty("target", out var targetProp))
+                {
+                    return targetProp.GetString() ?? string.Empty;
+                }
+            }
+            catch
+            {
+                // Safe fallback
+            }
+            return string.Empty;
         }
 
         private static ApiResponse<CompleteRoleplaySessionResponseDto> BuildCompleteResponse(

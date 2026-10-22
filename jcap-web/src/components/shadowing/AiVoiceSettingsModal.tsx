@@ -7,6 +7,7 @@ export interface AiVoiceSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedVoiceId?: number;
+  recommendedVoiceId?: number;
   availableVoices?: VoiceOption[];
   onSave: (voiceId: number) => void;
 }
@@ -85,6 +86,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
   isOpen,
   onClose,
   selectedVoiceId,
+  recommendedVoiceId,
   availableVoices = [],
   onSave,
 }) => {
@@ -377,6 +379,36 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
           </div>
         ) : (
           <>
+            {/* Scenario Recommendation Banner (nếu có đề xuất cho kịch bản) */}
+            {recommendedVoiceId && (
+              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-xs text-blue-900 shadow-2xs">
+                <span className="flex items-center gap-2 font-medium">
+                  <span className="text-base">✨</span>
+                  <span>
+                    Giọng AI tối ưu cho vai thoại này:{' '}
+                    <strong className="text-[#0878EE]">
+                      {availableVoices.find((v) => v.id === recommendedVoiceId)?.speakerName || `#${recommendedVoiceId}`}
+                    </strong>
+                  </span>
+                </span>
+                {currentVoiceId !== recommendedVoiceId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rec = availableVoices.find((v) => v.id === recommendedVoiceId);
+                      if (rec) {
+                        setCurrentVoiceId(rec.id);
+                        setSelectedCharacterName(rec.speakerName);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#0878EE] px-2.5 py-1 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0768D0] transition"
+                  >
+                    <span>Áp dụng ngay</span>
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* 1. Category Filter Pills */}
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {categories.map((cat) => {
@@ -438,7 +470,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
                 >
                   {activeCharacter?.styles.map((st) => (
                     <option key={st.id} value={st.id}>
-                      {st.styleVietnamese} ({st.styleName})
+                      {st.styleVietnamese} ({st.styleName}){st.id === recommendedVoiceId ? ' ⭐ Khuyên dùng cho kịch bản' : ''}
                     </option>
                   ))}
                 </select>
