@@ -17,6 +17,11 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly IAiRoleplayService _aiRoleplayService;
     private readonly ILogger<RoleplaySessionService> _logger;
 
+    /// <summary>
+    /// Số ký tự tiếng Nhật ước lượng tương đương 1 credit (30 ký tự ≈ 30 tokens ≈ 1 credit).
+    /// </summary>
+    private const int CharsPerCredit = 30;
+
     public RoleplaySessionService(
         AppDbContext dbContext,
         UserManager<ApplicationUser> userManager,
@@ -226,6 +231,12 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         var user = await _userManager.FindByIdAsync(userId);
 
+        var voiceResolution = VoiceVoxPersonaResolver.Resolve(
+            session.ScenarioLevelConfiguration?.AiPersona,
+            session.ScenarioLevelConfiguration?.Scenario?.Title,
+            session.ScenarioLevelConfiguration?.Description,
+            session.ScenarioLevelConfiguration?.JLPTLevel);
+
         var dto = new RoleplaySessionDetailsDto
         {
             SessionId = session.Id,
@@ -240,6 +251,11 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditBalance = user?.CreditBalance ?? 0,
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             CreatedAt = session.CreatedAt,
+            RecommendedAiVoiceId = voiceResolution.RecommendedAiVoiceId,
+            RecommendedAiVoiceName = voiceResolution.RecommendedAiVoiceName,
+            RecommendedLearnerVoiceId = voiceResolution.RecommendedLearnerVoiceId,
+            RecommendedLearnerVoiceName = voiceResolution.RecommendedLearnerVoiceName,
+            RoleVoiceMappings = voiceResolution.RoleVoiceMappings,
             TargetVocabularies = session.ScenarioLevelConfiguration?.TargetVocabularies
                 .Select(v => new TargetVocabularyDto
                 {
@@ -362,20 +378,88 @@ public class RoleplaySessionService : IRoleplaySessionService
         };
         _dbContext.RoleplayMessages.Add(aiMessage);
 
-        // 5. Cập nhật các mission vừa hoàn thành
+        // 4b. Trừ credit theo số token ước lượng từ câu thoại AI (tối thiểu 1 credit/lượt)
+        // Công thức: mỗi CharsPerCredit ký tự tiếng Nhật ≈ 1 credit, tối thiểu 1 credit/lượt.
+        // Admin không bị trừ credit.
+        var userForDeduct = await _userManager.FindByIdAsync(userId);
+        var isAdmin = userForDeduct != null &&
+            string.Equals(userForDeduct.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+        int creditsSpentThisTurn = 0;
+
+        if (!isAdmin && userForDeduct != null)
+        {
+            int estimatedTokens = string.IsNullOrWhiteSpace(turnResult.JapaneseReply)
+                ? 0
+                : turnResult.JapaneseReply.Length;
+            int creditsDue = Math.Max(1, estimatedTokens / CharsPerCredit);
+
+            if (userForDeduct.CreditBalance >= creditsDue)
+            {
+                creditsSpentThisTurn = creditsDue;
+            }
+            else if (userForDeduct.CreditBalance > 0)
+            {
+                // Trừ hết số dư còn lại nếu không đủ đúng lượng
+                creditsSpentThisTurn = userForDeduct.CreditBalance;
+            }
+            else
+            {
+                // Hết credit: vẫn cho phép nhận phản hồi lượt này nhưng ghi log
+                _logger.LogWarning("User {UserId} gửi tin nhắn nhưng số dư credit bằng 0. Cho phép lượt này nhưng không trừ credit.", userId);
+            }
+
+            if (creditsSpentThisTurn > 0)
+            {
+                userForDeduct.CreditBalance -= creditsSpentThisTurn;
+                _dbContext.CreditTransactions.Add(new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = -creditsSpentThisTurn,
+                    Type = "Deduct",
+                    Status = "Paid",
+                    Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _userManager.UpdateAsync(userForDeduct);
+            }
+        }
+
+        // 5. Cập nhật các mission vừa hoàn thành (có kiểm tra thứ tự logic hội thoại)
         var newlyCompletedIds = new List<int>();
+        var maxOrder = session.SessionMissions.Count > 0
+            ? session.SessionMissions.Max(x => x.Mission?.Order ?? 0)
+            : 0;
+        var hasEarlierPending = session.SessionMissions.Any(x => !x.IsCompleted && (x.Mission?.Order ?? 0) < maxOrder);
+
         foreach (var missionId in turnResult.CompletedMissionIds)
         {
             var sm = session.SessionMissions.FirstOrDefault(x => x.MissionId == missionId && !x.IsCompleted);
             if (sm != null)
             {
+                // Ngăn chặn việc tick nhảy cóc nhiệm vụ kết thúc kịch bản khi các nhiệm vụ chính trước đó chưa hoàn thành
+                if ((sm.Mission?.Order ?? 0) == maxOrder && maxOrder > 1 && hasEarlierPending)
+                {
+                    _logger.LogInformation("Nhiệm vụ {MissionId} (Order {Order}) là nhiệm vụ kết thúc kịch bản, bị hoãn tick do còn nhiệm vụ tiên quyết chưa hoàn thành.", missionId, sm.Mission?.Order);
+                    continue;
+                }
+
                 sm.IsCompleted = true;
                 sm.CompletedAt = DateTime.UtcNow;
                 newlyCompletedIds.Add(missionId);
             }
         }
 
-        // 6. Cập nhật đánh giá ngôn ngữ và cờ kết thúc tự nhiên (chỉ khi toàn bộ nhiệm vụ đã hoàn tất)
+        // 6. Cập nhật đánh giá ngôn ngữ, bản dịch tiếng Việt, furigana người học và cờ kết thúc tự nhiên
+        if (!string.IsNullOrWhiteSpace(turnResult.UserVietnameseMeaning))
+        {
+            userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
+        }
+
+        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml))
+        {
+            userMessage.FuriganaHtml = turnResult.UserFuriganaHtml;
+        }
+
         if (turnResult.LinguisticFeedback != null)
         {
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
@@ -391,6 +475,11 @@ public class RoleplaySessionService : IRoleplaySessionService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         // 7. Tạo response trả về cho frontend
+        // Lấy credit balance mới nhất (đã được cập nhật sau deduct)
+        int latestCreditBalance = userForDeduct?.CreditBalance
+            ?? (await _userManager.FindByIdAsync(userId))?.CreditBalance
+            ?? 0;
+
         var responseDto = new RoleplayTurnResponseDto
         {
             UserMessage = new RoleplayMessageDto
@@ -398,6 +487,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                 Id = userMessage.Id,
                 Sender = userMessage.Sender,
                 JapaneseText = userMessage.JapaneseText,
+                VietnameseMeaning = userMessage.VietnameseMeaning,
+                FuriganaHtml = userMessage.FuriganaHtml,
                 LinguisticFeedback = turnResult.LinguisticFeedback,
                 CreatedAt = userMessage.CreatedAt
             },
@@ -424,7 +515,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }).ToList(),
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             SessionStatus = session.Status,
-            CreditBalance = (await _userManager.FindByIdAsync(userId))?.CreditBalance ?? 0
+            CreditBalance = latestCreditBalance,
+            CreditsSpentThisTurn = creditsSpentThisTurn
         };
 
         return ApiResponse<RoleplayTurnResponseDto>.Ok(responseDto);
@@ -533,4 +625,15 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
         return string.Empty;
     }
+
+    /// <summary>
+    /// Ước lượng số credit cần trừ dựa trên độ dài câu thoại AI tiếng Nhật.
+    /// Mỗi <see cref="CharsPerCredit"/> ký tự = 1 credit, tối thiểu 1 credit.
+    /// </summary>
+    internal static int EstimateCreditCost(string japaneseReply)
+    {
+        if (string.IsNullOrWhiteSpace(japaneseReply)) return 1;
+        return Math.Max(1, japaneseReply.Length / CharsPerCredit);
+    }
 }
+

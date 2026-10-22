@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { scenarioService } from '../../services/scenarioService';
 import type {
@@ -108,21 +108,151 @@ export const AdminScenarioEditorView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setErrorState] = useState<string | null>(null);
+  const [isErrorFadingOut, setIsErrorFadingOut] = useState<boolean>(false);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Modal xác nhận hủy bỏ
+  // Hiển thị thông báo lỗi, cuộn lên đầu và tính lại thời gian từ 0s (kể cả khi bấm liên tục/spam)
+  const setError = useCallback((msg: string | null) => {
+    // Hủy các timer đang chạy trước đó
+    if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+
+    if (!msg) {
+      setErrorState(null);
+      setIsErrorFadingOut(false);
+      return;
+    }
+
+    // Luôn reset ngay lập tức trạng thái làm mờ về false (hiển thị rõ ràng 100%)
+    setIsErrorFadingOut(false);
+    setErrorState(msg);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Tính lại từ 0s: sau 5s bắt đầu mờ dần, sau 5.5s xóa hoàn toàn
+    fadeTimerRef.current = setTimeout(() => {
+      setIsErrorFadingOut(true);
+    }, 5000);
+
+    clearTimerRef.current = setTimeout(() => {
+      setErrorState(null);
+      setIsErrorFadingOut(false);
+    }, 5500);
+  }, []);
+
+  // Dọn dẹp timer khi component unmount
+  useEffect(() => {
+    return () => {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+    };
+  }, []);
+
+  // Tab chọn cấu hình level (dạng radio tabs N5, N4, N3)
+  const [activeLevelTab, setActiveLevelTab] = useState<'N5' | 'N4' | 'N3'>('N5');
+
+  // Modal xác nhận hủy bỏ / rời khỏi trang
   const [isCancelModalOpen, setIsCancelModalOpen] = useState<boolean>(false);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const pendingNavRef = useRef<string | (() => void) | null>(null);
+  const isSubmittingRef = useRef<boolean>(false);
+  const isCancelModalOpenRef = useRef<boolean>(false);
+  isSubmittingRef.current = isSubmitting;
+  isCancelModalOpenRef.current = isCancelModalOpen;
 
-  // Chế độ chọn ảnh (Thumbnail): 'local' (tải từ máy), 'url' (nhập link), 'ai' (AI gen mock)
-  const [imageSourceMode, setImageSourceMode] = useState<'local' | 'url' | 'ai'>('local');
-  const [aiImagePrompt, setAiImagePrompt] = useState<string>('');
-  const [aiMockNotice, setAiMockNotice] = useState<string | null>(null);
+  // Chặn điều hướng ngoài ý muốn (Sidebar, Header, Logo, Browser Back, Reload...) khi đang ở trang soạn thảo
+  useEffect(() => {
+    const handleCaptureClick = (e: MouseEvent) => {
+      if (isSubmittingRef.current) return;
+      if (isCancelModalOpenRef.current) return;
+
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Nếu click bên trong vùng soạn thảo (form, các nút hủy, nút lưu,...) thì cho phép bình thường
+      if (editorContainerRef.current && editorContainerRef.current.contains(target)) {
+        return;
+      }
+
+      // Nếu click vào thẻ link hoặc button ở ngoài vùng soạn thảo (Sidebar, Header, Đăng xuất...)
+      const anchor = target.closest('a');
+      const button = target.closest('button');
+
+      if (anchor) {
+        const href = anchor.getAttribute('href');
+        if (href && href !== '#' && !href.startsWith('javascript:')) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          pendingNavRef.current = href;
+          setIsCancelModalOpen(true);
+          return;
+        }
+      }
+
+      if (button) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        pendingNavRef.current = () => {
+          button.click();
+        };
+        setIsCancelModalOpen(true);
+        return;
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isSubmittingRef.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    // Push state để chặn người dùng ấn nút Back của trình duyệt
+    window.history.pushState({ editorActive: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      if (isSubmittingRef.current) return;
+
+      // Giữ lại URL hiện tại
+      window.history.pushState({ editorActive: true }, '', window.location.href);
+
+      pendingNavRef.current = () => {
+        window.removeEventListener('popstate', handlePopState);
+        window.history.back();
+      };
+      setIsCancelModalOpen(true);
+    };
+
+    document.addEventListener('click', handleCaptureClick, true);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      document.removeEventListener('click', handleCaptureClick, true);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  // Chế độ chọn ảnh (Thumbnail): 'local' (tải từ máy), 'url' (nhập link)
+  const [imageSourceMode, setImageSourceMode] = useState<'local' | 'url'>('local');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Drag & drop state for reordering
+  // Drag & drop state for reordering - chỉ kích hoạt khi người dùng kéo từ biểu tượng handle ⋮⋮
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [draggedMissionIndex, setDraggedMissionIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
   const [draggedVocabIndex, setDraggedVocabIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
   const [draggedGrammarIndex, setDraggedGrammarIndex] = useState<{ lvl: 'N5' | 'N4' | 'N3'; index: number } | null>(null);
+
+  // Lắng nghe mouseup toàn cục để reset trạng thái kéo nếu chuột được nhả ở ngoài vùng
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setActiveDragId(null);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
 
   const [formData, setFormData] = useState<ScenarioFormData>({
     title: '',
@@ -132,6 +262,44 @@ export const AdminScenarioEditorView: React.FC = () => {
     isActive: true,
     levels: createDefaultLevelsState(),
   });
+
+  const [predictedId, setPredictedId] = useState<number | null>(null);
+
+  // Khi ở chế độ tạo mới (New), tải danh sách kịch bản để tự động sinh mã kế tiếp (ví dụ SCN_4)
+  useEffect(() => {
+    if (isEditMode) return;
+
+    let isMounted = true;
+    const fetchNextScenarioId = async () => {
+      try {
+        const res = await scenarioService.getAdminScenarios();
+        if (isMounted && res.success && res.data) {
+          const maxId = res.data.length > 0 ? Math.max(...res.data.map((s) => s.id)) : 0;
+          const next = maxId + 1;
+          setPredictedId(next);
+          setFormData((prev) => ({ ...prev, scenarioCode: `SCN_${next}` }));
+        } else if (isMounted) {
+          setPredictedId(1);
+          setFormData((prev) => ({ ...prev, scenarioCode: 'SCN_1' }));
+        }
+      } catch {
+        if (isMounted) {
+          setPredictedId(1);
+          setFormData((prev) => ({ ...prev, scenarioCode: 'SCN_1' }));
+        }
+      }
+    };
+
+    fetchNextScenarioId();
+    return () => {
+      isMounted = false;
+    };
+  }, [isEditMode]);
+
+  const currentScenarioId = isEditMode ? scenarioId : (predictedId ?? 1);
+  const currentScenarioCode = isEditMode
+    ? (formData.scenarioCode || (scenarioId ? `SCN_${scenarioId}` : ''))
+    : (formData.scenarioCode || (predictedId ? `SCN_${predictedId}` : 'SCN_1'));
 
   // Tải chi tiết kịch bản khi vào chế độ Edit
   useEffect(() => {
@@ -155,34 +323,47 @@ export const AdminScenarioEditorView: React.FC = () => {
           full.levelConfigurations.forEach((lc) => {
             const lvl = lc.jlptLevel as 'N5' | 'N4' | 'N3';
             if (loadedLevels[lvl]) {
+              const missionsList = (lc.missions || []).map((m, idx) => ({
+                id: m.id,
+                order: m.order || idx + 1,
+                content: m.content || '',
+                target: m.completionCriteria?.target || m.content || '',
+                intent: m.completionCriteria?.intent || 'CompleteMission',
+                conditions: m.completionCriteria?.conditions || [],
+              }));
+              const vocabsList = (lc.targetVocabularies || []).map((v) => ({
+                id: v.id,
+                word: v.word || '',
+                reading: v.reading || '',
+                meaning: v.meaning || '',
+              }));
+              const grammarsList = (lc.targetGrammars || []).map((g) => ({
+                id: g.id,
+                pattern: g.pattern || '',
+                meaning: g.meaning || '',
+                exampleSentence: g.exampleSentence || '',
+              }));
+
+              // Chỉ BẬT nếu cấp độ này thực sự có nội dung (nhiệm vụ, từ vựng, ngữ pháp hoặc vai AI)
+              const hasRealContent =
+                missionsList.some((m) => m.content.trim()) ||
+                vocabsList.some((v) => v.word.trim()) ||
+                grammarsList.some((g) => g.pattern.trim()) ||
+                Boolean(lc.aiPersona?.trim());
+
+              const isPublished = (lc.status || 'Published').toLowerCase() === 'published';
+
               loadedLevels[lvl] = {
                 jlptLevel: lvl,
-                enabled: (lc.status || 'Published').toLowerCase() === 'published',
+                enabled: isPublished && hasRealContent,
                 title: lc.title || `${full.title} (${lvl})`,
                 description: lc.description || `Cấu hình ${lvl} cho ${full.title}`,
                 aiPersona: lc.aiPersona || '',
                 creditCost: lc.creditCost || 5,
                 status: lc.status || 'Published',
-                missions: (lc.missions || []).map((m, idx) => ({
-                  id: m.id,
-                  order: m.order || idx + 1,
-                  content: m.content || '',
-                  target: m.completionCriteria?.target || m.content || '',
-                  intent: m.completionCriteria?.intent || 'CompleteMission',
-                  conditions: m.completionCriteria?.conditions || [],
-                })),
-                targetVocabularies: (lc.targetVocabularies || []).map((v) => ({
-                  id: v.id,
-                  word: v.word || '',
-                  reading: v.reading || '',
-                  meaning: v.meaning || '',
-                })),
-                targetGrammars: (lc.targetGrammars || []).map((g) => ({
-                  id: g.id,
-                  pattern: g.pattern || '',
-                  meaning: g.meaning || '',
-                  exampleSentence: g.exampleSentence || '',
-                })),
+                missions: missionsList,
+                targetVocabularies: vocabsList,
+                targetGrammars: grammarsList,
                 isExpanded: true,
                 isAiGenerating: false,
               };
@@ -192,11 +373,15 @@ export const AdminScenarioEditorView: React.FC = () => {
           setFormData({
             title: full.title,
             description: full.description,
-            scenarioCode: full.scenarioCode || '',
+            scenarioCode: full.scenarioCode || (full.id ? `SCN_${full.id}` : ''),
             thumbnail: full.thumbnail || '',
             isActive: full.isActive,
             levels: loadedLevels,
           });
+
+          // Chọn tab level đầu tiên đang bật (ưu tiên N5, N4, N3), nếu không có cấp nào bật thì mặc định N5
+          const firstEnabled = (['N5', 'N4', 'N3'] as const).find((lvl) => loadedLevels[lvl].enabled);
+          setActiveLevelTab(firstEnabled || 'N5');
 
           // Xác định mode nguồn ảnh ban đầu
           if (full.thumbnail) {
@@ -221,8 +406,8 @@ export const AdminScenarioEditorView: React.FC = () => {
     };
   }, [isEditMode, scenarioId]);
 
-  // Xử lý chọn ảnh từ máy local (File input sang DataURL)
-  const handleLocalImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Xử lý chọn ảnh từ máy và tải trực tiếp lên Cloudinary
+  const handleLocalImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -232,30 +417,20 @@ export const AdminScenarioEditorView: React.FC = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setFormData((prev) => ({ ...prev, thumbnail: dataUrl }));
-        setError(null);
+    setIsUploadingImage(true);
+    setError(null);
+    try {
+      const res = await scenarioService.uploadThumbnail(file);
+      if (res.success && res.data) {
+        setFormData((prev) => ({ ...prev, thumbnail: res.data! }));
+      } else {
+        setError(res.message || 'Không thể tải ảnh lên Cloudinary.');
       }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Xử lý sinh ảnh AI (Mock)
-  const handleAiGenerateMock = () => {
-    setAiMockNotice(
-      'Tính năng AI sinh ảnh tự động đang trong quá trình phát triển (Mock). Đã gán một ảnh mẫu ngẫu nhiên minh họa cho kịch bản.'
-    );
-    const sampleImages = [
-      'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1528164344705-475426879c0d?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&auto=format&fit=crop&q=80',
-    ];
-    const randomImg = sampleImages[Math.floor(Math.random() * sampleImages.length)];
-    setFormData((prev) => ({ ...prev, thumbnail: randomImg }));
+    } catch {
+      setError('Đã xảy ra lỗi khi tải ảnh lên đám mây.');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   // Xóa ảnh đại diện
@@ -264,20 +439,39 @@ export const AdminScenarioEditorView: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    setAiMockNotice(null);
   };
 
   const handleToggleLevel = (lvl: 'N5' | 'N4' | 'N3') => {
     setFormData((prev) => {
       const current = prev.levels[lvl].enabled;
+      const willBeEnabled = !current;
+      const currentLvl = prev.levels[lvl];
+
+      // Khi bật lên, nếu danh sách nhiệm vụ/từ vựng/ngữ pháp đang trống, khởi tạo 1 dòng trống để nhập
+      let nextMissions = currentLvl.missions;
+      if (willBeEnabled && nextMissions.length === 0) {
+        nextMissions = [{ order: 1, content: '', intent: 'CompleteMission', target: '' }];
+      }
+      let nextVocabs = currentLvl.targetVocabularies;
+      if (willBeEnabled && nextVocabs.length === 0) {
+        nextVocabs = [{ word: '', reading: '', meaning: '' }];
+      }
+      let nextGrammars = currentLvl.targetGrammars;
+      if (willBeEnabled && nextGrammars.length === 0) {
+        nextGrammars = [{ pattern: '', meaning: '', exampleSentence: '' }];
+      }
+
       return {
         ...prev,
         levels: {
           ...prev.levels,
           [lvl]: {
-            ...prev.levels[lvl],
-            enabled: !current,
-            isExpanded: !current,
+            ...currentLvl,
+            enabled: willBeEnabled,
+            isExpanded: willBeEnabled,
+            missions: nextMissions,
+            targetVocabularies: nextVocabs,
+            targetGrammars: nextGrammars,
           },
         },
       };
@@ -750,13 +944,88 @@ export const AdminScenarioEditorView: React.FC = () => {
       return;
     }
 
-    const tooLongPersona = enabledLevels.find((lvl) => lvl.aiPersona.trim().length > AI_PERSONA_MAX_LENGTH);
-    if (tooLongPersona) {
-      setError(
-        `Vai nhân vật AI của cấp ${tooLongPersona.jlptLevel} quá dài (${tooLongPersona.aiPersona.trim().length}/${AI_PERSONA_MAX_LENGTH} ký tự). Vui lòng rút gọn hoặc bấm "AI Gợi ý nội dung" để sinh lại.`
+    // Kiểm tra tất cả các trường của các trình độ đang BẬT
+    for (const lvl of enabledLevels) {
+      if (!lvl.aiPersona.trim()) {
+        setError(`Vui lòng nhập Vai nhân vật AI (AiPersona) cho trình độ JLPT ${lvl.jlptLevel} hoặc bấm "AI Gợi ý nội dung".`);
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      if (lvl.aiPersona.trim().length > AI_PERSONA_MAX_LENGTH) {
+        setError(
+          `Vai nhân vật AI của trình độ JLPT ${lvl.jlptLevel} quá dài (${lvl.aiPersona.trim().length}/${AI_PERSONA_MAX_LENGTH} ký tự). Vui lòng rút gọn nội dung.`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      if (!lvl.creditCost || lvl.creditCost < 1) {
+        setError(`Vui lòng nhập số Credit hợp lệ (tối thiểu 1) cho trình độ JLPT ${lvl.jlptLevel}.`);
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const validMissions = lvl.missions.filter((m) => m.content.trim());
+      if (validMissions.length === 0) {
+        setError(
+          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa có nhiệm vụ nào. Vui lòng nhập nhiệm vụ, bấm "AI Gợi ý nội dung" hoặc gạt TẮT nếu chưa dùng.`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const validVocabs = lvl.targetVocabularies.filter((v) => v.word.trim() && v.meaning.trim());
+      if (validVocabs.length === 0) {
+        setError(
+          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa có từ vựng trọng tâm. Vui lòng nhập từ vựng và ý nghĩa hoặc bấm "AI Gợi ý nội dung".`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Kiểm tra hàng từ vựng dở dang (chỉ nhập từ mà quên nghĩa hoặc ngược lại)
+      const halfFilledVocabIdx = lvl.targetVocabularies.findIndex(
+        (v) => (v.word.trim() && !v.meaning.trim()) || (!v.word.trim() && v.meaning.trim())
       );
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+      if (halfFilledVocabIdx !== -1) {
+        const v = lvl.targetVocabularies[halfFilledVocabIdx];
+        setError(
+          `Từ vựng #${halfFilledVocabIdx + 1} (${v.word.trim() || 'Chưa có từ'}) của trình độ JLPT ${lvl.jlptLevel} chưa điền đầy đủ cả từ và ý nghĩa.`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const validGrammars = lvl.targetGrammars.filter((g) => g.pattern.trim() && g.meaning.trim());
+      if (validGrammars.length === 0) {
+        setError(
+          `Trình độ JLPT ${lvl.jlptLevel} đang BẬT nhưng chưa có ngữ pháp trọng tâm. Vui lòng nhập mẫu ngữ pháp và ý nghĩa hoặc bấm "AI Gợi ý nội dung".`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Kiểm tra hàng ngữ pháp dở dang (chỉ nhập mẫu mà quên nghĩa hoặc ngược lại)
+      const halfFilledGrammarIdx = lvl.targetGrammars.findIndex(
+        (g) => (g.pattern.trim() && !g.meaning.trim()) || (!g.pattern.trim() && g.meaning.trim())
+      );
+      if (halfFilledGrammarIdx !== -1) {
+        const g = lvl.targetGrammars[halfFilledGrammarIdx];
+        setError(
+          `Ngữ pháp #${halfFilledGrammarIdx + 1} (${g.pattern.trim() || 'Chưa có mẫu'}) của trình độ JLPT ${lvl.jlptLevel} chưa điền đầy đủ cả mẫu ngữ pháp và ý nghĩa.`
+        );
+        setActiveLevelTab(lvl.jlptLevel);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -802,7 +1071,7 @@ export const AdminScenarioEditorView: React.FC = () => {
       const res = await scenarioService.updateScenario(scenarioId, {
         title: formData.title.trim(),
         description: formData.description.trim(),
-        scenarioCode: formData.scenarioCode.trim(),
+        scenarioCode: currentScenarioCode,
         thumbnail: formData.thumbnail.trim(),
         isActive: formData.isActive,
         levelConfigurations,
@@ -822,7 +1091,7 @@ export const AdminScenarioEditorView: React.FC = () => {
       const res = await scenarioService.createScenario({
         title: formData.title.trim(),
         description: formData.description.trim(),
-        scenarioCode: formData.scenarioCode.trim(),
+        scenarioCode: currentScenarioCode,
         thumbnail: formData.thumbnail.trim(),
         isActive: formData.isActive,
         levelConfigurations,
@@ -841,16 +1110,26 @@ export const AdminScenarioEditorView: React.FC = () => {
   };
 
   const handleOpenCancelConfirmation = () => {
+    pendingNavRef.current = '/admin/scenarios';
     setIsCancelModalOpen(true);
   };
 
   const handleConfirmCancel = () => {
     setIsCancelModalOpen(false);
-    navigate('/admin/scenarios');
+    const target = pendingNavRef.current;
+    pendingNavRef.current = null;
+    if (typeof target === 'string') {
+      navigate(target);
+    } else if (typeof target === 'function') {
+      target();
+    } else {
+      navigate('/admin/scenarios');
+    }
   };
 
   const handleDismissCancel = () => {
     setIsCancelModalOpen(false);
+    pendingNavRef.current = null;
   };
 
   if (isLoading) {
@@ -863,38 +1142,46 @@ export const AdminScenarioEditorView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-20">
+    <div ref={editorContainerRef} className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-20">
       {/* Breadcrumb Navigation - Đã xóa nút "✕ Hủy bỏ" thừa ở góc phải theo yêu cầu Hình 3 */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleOpenCancelConfirmation}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
-          >
-            <span>←</span> Quay lại danh sách
-          </button>
-          <span className="text-slate-300">/</span>
+        <div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1">
+            <span>Quản lý Nội dung</span>
+            <span>&gt;</span>
+            <button
+              type="button"
+              onClick={handleOpenCancelConfirmation}
+              className="hover:text-blue-600 transition cursor-pointer"
+            >
+              Kịch bản Hội thoại
+            </button>
+            <span>&gt;</span>
+            <span className="text-slate-800 font-semibold">
+              {isEditMode ? `Chỉnh sửa #${scenarioId}` : 'Thêm mới'}
+            </span>
+          </div>
           <h1 className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
             {isEditMode ? `✏️ Chỉnh sửa Kịch bản #${scenarioId}` : '✨ Thêm Kịch bản Đàm thoại Mới'}
           </h1>
         </div>
+        <button
+          type="button"
+          onClick={handleOpenCancelConfirmation}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition active:scale-95 cursor-pointer"
+        >
+          <span>←</span> Quay lại danh sách
+        </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs sm:text-sm mb-6 flex items-center justify-between shadow-xs animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <span>⚠️</span>
-            <span>{error}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-800 font-bold p-1 rounded-lg hover:bg-red-100/60 transition cursor-pointer text-sm leading-none ml-3"
-            title="Tắt thông báo"
-          >
-            ✕
-          </button>
+        <div
+          className={`bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs sm:text-sm mb-6 flex items-center gap-2 shadow-xs transition-opacity duration-500 ease-in-out ${
+            isErrorFadingOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <span>⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
@@ -911,13 +1198,17 @@ export const AdminScenarioEditorView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">Mã kịch bản (ScenarioCode)</label>
-              <input
-                type="text"
-                value={formData.scenarioCode}
-                onChange={(e) => setFormData({ ...formData, scenarioCode: e.target.value })}
-                placeholder="Ví dụ: SCN_BAITO_01"
-                className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono focus:bg-white focus:ring-2 focus:ring-[#0878EE] outline-none transition"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  disabled
+                  value={currentScenarioCode}
+                  className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono font-bold text-[#0878EE] cursor-not-allowed select-none"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200 font-mono shadow-2xs">
+                  #{currentScenarioId}
+                </span>
+              </div>
             </div>
 
             <div className="sm:col-span-2">
@@ -971,7 +1262,7 @@ export const AdminScenarioEditorView: React.FC = () => {
                       onChange={() => setImageSourceMode('local')}
                       className="text-[#0878EE] focus:ring-[#0878EE] h-3.5 w-3.5"
                     />
-                    <span>📁 Duyệt từ máy chủ local</span>
+                    <span>📁 Tải từ thiết bị (Cloudinary)</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 hover:text-slate-900 select-none">
@@ -984,21 +1275,6 @@ export const AdminScenarioEditorView: React.FC = () => {
                       className="text-[#0878EE] focus:ring-[#0878EE] h-3.5 w-3.5"
                     />
                     <span>🔗 Điền link ảnh (URL)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 hover:text-slate-900 select-none">
-                    <input
-                      type="radio"
-                      name="imageSourceMode"
-                      value="ai"
-                      checked={imageSourceMode === 'ai'}
-                      onChange={() => setImageSourceMode('ai')}
-                      className="text-[#0878EE] focus:ring-[#0878EE] h-3.5 w-3.5"
-                    />
-                    <span className="flex items-center gap-1">
-                      <span>✨ Nhờ AI sinh ảnh</span>
-                      <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded-md">Mock</span>
-                    </span>
                   </label>
                 </div>
 
@@ -1032,43 +1308,17 @@ export const AdminScenarioEditorView: React.FC = () => {
                     </p>
                   </div>
                 )}
-
-                {imageSourceMode === 'ai' && (
-                  <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-amber-800">
-                      <span>✨</span>
-                      <span>Tính năng AI sinh ảnh tự động (Bản thử nghiệm / Mock)</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={aiImagePrompt}
-                        onChange={(e) => setAiImagePrompt(e.target.value)}
-                        placeholder="Mô tả bối cảnh muốn AI tạo ảnh (Ví dụ: Tiệm mì Ramen Tokyo)..."
-                        className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-amber-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAiGenerateMock}
-                        className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-2xs whitespace-nowrap"
-                      >
-                        Sinh ảnh (Mock)
-                      </button>
-                    </div>
-                    {aiMockNotice && (
-                      <div className="text-[11px] text-amber-700 bg-amber-100/70 p-1.5 rounded-lg flex items-center gap-1.5">
-                        <span>ℹ️</span>
-                        <span>{aiMockNotice}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Cột 2 (sm:col-span-1): Khung ảnh vẫn giữ nguyên dạng ô vuông như cũ, đẩy lên ngang hàng trên cùng */}
               <div className="sm:col-span-1">
                 <div className="w-full aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 flex flex-col items-center justify-center overflow-hidden relative group shadow-2xs">
-                  {formData.thumbnail ? (
+                  {isUploadingImage ? (
+                    <div className="text-center p-3 text-[#0878EE] animate-pulse">
+                      <div className="w-8 h-8 border-3 border-[#0878EE] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      <span className="text-xs font-semibold block">Đang tải lên Cloud...</span>
+                    </div>
+                  ) : formData.thumbnail ? (
                     <>
                       <img
                         src={formData.thumbnail}
@@ -1126,29 +1376,29 @@ export const AdminScenarioEditorView: React.FC = () => {
                 </p>
               </div>
 
-              {/* Badges Toggle */}
+              {/* Level Selector Buttons (N5 / N4 / N3) chuẩn Hình 2 */}
               <div className="flex items-center gap-2">
                 {(['N5', 'N4', 'N3'] as const).map((lvl) => {
-                  const isChecked = formData.levels[lvl].enabled;
-                  const activeColor =
-                    lvl === 'N5'
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : lvl === 'N4'
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-purple-600 text-white border-purple-600';
+                  const isEnabled = formData.levels[lvl].enabled;
+                  const isCurrentTab = activeLevelTab === lvl;
                   return (
                     <button
                       key={lvl}
                       type="button"
-                      onClick={() => handleToggleLevel(lvl)}
-                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                        isChecked
-                          ? activeColor
-                          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'
+                      onClick={() => setActiveLevelTab(lvl)}
+                      className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none ${
+                        isEnabled
+                          ? 'bg-[#0878EE] text-white shadow-xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-500'
+                      } ${
+                        isCurrentTab
+                          ? isEnabled
+                            ? 'ring-2 ring-[#0878EE] ring-offset-2 scale-[1.02]'
+                            : 'ring-2 ring-slate-400 ring-offset-2 scale-[1.02]'
+                          : 'opacity-90 hover:opacity-100'
                       }`}
                     >
-                      <span>{isChecked ? '✓' : '+'}</span>
-                      <span>JLPT {lvl}</span>
+                      {lvl}
                     </button>
                   );
                 })}
@@ -1156,340 +1406,389 @@ export const AdminScenarioEditorView: React.FC = () => {
             </div>
           </div>
 
-          {/* Cards for each level */}
-          <div className="space-y-4">
-            {(['N5', 'N4', 'N3'] as const).map((lvl) => {
-              const lvlData = formData.levels[lvl];
-              if (!lvlData.enabled) return null;
+          {/* Active Level Form */}
+          {(() => {
+            const lvl = activeLevelTab;
+            const lvlData = formData.levels[lvl];
 
-              const badgeColor =
-                lvl === 'N5'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : lvl === 'N4'
-                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                  : 'bg-purple-50 text-purple-700 border-purple-200';
-
-              return (
-                <div
-                  key={lvl}
-                  className="rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 sm:p-5 shadow-2xs space-y-4"
-                >
-                  {/* Level Header Bar */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span className={`px-2.5 py-1 rounded-lg border text-xs font-extrabold ${badgeColor}`}>
-                        JLPT {lvl}
-                      </span>
-                      <div className="text-xs text-slate-600">
-                        <span className="font-bold text-slate-800">Vai AI:</span>{' '}
-                        <span>{lvlData.aiPersona || '(Chưa đặt)'}</span>
-                      </div>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-xs text-slate-500 font-medium">
-                        {lvlData.missions.length} nhiệm vụ • {lvlData.targetVocabularies.length} từ vựng •{' '}
-                        {lvlData.targetGrammars.length} ngữ pháp
+            return (
+              <div
+                key={lvl}
+                className="rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 sm:p-5 shadow-2xs space-y-5"
+              >
+                {/* Level Header Bar with On/Off Switch and AI Generator */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* On / Off Switch */}
+                    <div className="flex items-center gap-3 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs">
+                      <span className="text-xs font-bold text-slate-700">Trạng thái trình độ JLPT {lvl}:</span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={lvlData.enabled}
+                        onClick={() => handleToggleLevel(lvl)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                          lvlData.enabled ? 'bg-[#0878EE]' : 'bg-slate-300'
+                        }`}
+                        title={lvlData.enabled ? 'Nhấn để tắt trình độ này' : 'Nhấn để bật trình độ này'}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                            lvlData.enabled ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                          lvlData.enabled
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        }`}
+                      >
+                        {lvlData.enabled ? 'BẬT' : 'TẮT'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleGenerateAiContent(lvl)}
-                        disabled={lvlData.isAiGenerating}
-                        className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer"
-                      >
-                        {lvlData.isAiGenerating ? (
-                          <>
-                            <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            <span>Đang sinh...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>✨</span>
-                            <span>AI Gợi ý nội dung</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleToggleExpand(lvl)}
-                        className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold transition cursor-pointer"
-                      >
-                        {lvlData.isExpanded ? '▲ Thu gọn' : '▼ Sửa chi tiết'}
-                      </button>
+                    <div className="text-xs text-slate-500 font-medium hidden md:flex items-center gap-2">
+                      <span>•</span>
+                      <span>{lvlData.missions.length} nhiệm vụ</span>
+                      <span>•</span>
+                      <span>{lvlData.targetVocabularies.length} từ vựng</span>
+                      <span>•</span>
+                      <span>{lvlData.targetGrammars.length} ngữ pháp</span>
                     </div>
                   </div>
 
-                  {/* Level Accordion Details */}
-                  {lvlData.isExpanded && (
-                    <div className="space-y-5 pt-3 border-t border-slate-200/80">
-                      {/* Vai AI & Cost */}
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200/70">
-                        <div className="sm:col-span-3">
-                          <label className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
-                            <span>Vai nhân vật AI (AiPersona) cho cấp {lvl}</span>
-                            <span
-                              className={`font-medium ${
-                                lvlData.aiPersona.length >= AI_PERSONA_MAX_LENGTH ? 'text-red-500' : 'text-slate-400'
-                              }`}
-                            >
-                              {lvlData.aiPersona.length}/{AI_PERSONA_MAX_LENGTH}
-                            </span>
-                          </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateAiContent(lvl)}
+                      disabled={lvlData.isAiGenerating}
+                      className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer"
+                    >
+                      {lvlData.isAiGenerating ? (
+                        <>
+                          <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Đang sinh...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>✨</span>
+                          <span>AI Gợi ý nội dung ({lvl})</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {!lvlData.enabled && (
+                  <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-center gap-2">
+                    <span className="text-base">ℹ️</span>
+                    <span>
+                      Trình độ <strong>JLPT {lvl}</strong> hiện đang <strong>TẮT</strong> (học viên sẽ không thấy trình độ này khi luyện tập). Bạn có thể cấu hình trước nội dung bên dưới và gạt nút <strong>BẬT</strong> ở trên khi muốn phát hành.
+                    </span>
+                  </div>
+                )}
+
+                {/* Level Details Form */}
+                <div className="space-y-5">
+                  {/* Vai AI & Cost */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200/70">
+                    <div className="sm:col-span-3">
+                      <label className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Vai nhân vật AI (AiPersona) cho cấp {lvl}</span>
+                        <span
+                          className={`font-medium ${
+                            lvlData.aiPersona.length >= AI_PERSONA_MAX_LENGTH ? 'text-red-500' : 'text-slate-400'
+                          }`}
+                        >
+                          {lvlData.aiPersona.length}/{AI_PERSONA_MAX_LENGTH}
+                        </span>
+                      </label>
+                      <input
+                        type="text"
+                        value={lvlData.aiPersona}
+                        maxLength={AI_PERSONA_MAX_LENGTH}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            levels: {
+                              ...prev.levels,
+                              [lvl]: {
+                                ...prev.levels[lvl],
+                                aiPersona: e.target.value.slice(0, AI_PERSONA_MAX_LENGTH),
+                              },
+                            },
+                          }))
+                        }
+                        placeholder="Ví dụ: Quản lý cửa hàng - 店長 (nói chậm)"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Credit / lượt ({lvl})
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={lvlData.creditCost}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            levels: {
+                              ...prev.levels,
+                              [lvl]: { ...prev.levels[lvl], creditCost: parseInt(e.target.value, 10) || 5 },
+                            },
+                          }))
+                        }
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nhiệm vụ (Missions) - Hỗ trợ kéo thả & đổi thứ tự */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <span>🎯</span> Nhiệm vụ cần hoàn thành ({lvlData.missions.length})
+                        </h3>
+                        <span className="text-[11px] text-slate-400 hidden sm:inline">
+                          (Kéo biểu tượng ⋮⋮ ở đầu hàng để đổi thứ tự)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddMission(lvl)}
+                        className="text-xs font-bold text-[#0878EE] hover:underline"
+                      >
+                        + Thêm nhiệm vụ
+                      </button>
+                    </div>
+                    <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
+                      {lvlData.missions.map((m, mIdx) => (
+                        <div
+                          key={mIdx}
+                          draggable={activeDragId === `mission-${lvl}-${mIdx}`}
+                          onDragStart={() => handleMissionDragStart(lvl, mIdx)}
+                          onDragEnd={() => {
+                            setDraggedMissionIndex(null);
+                            setActiveDragId(null);
+                          }}
+                          onDragOver={handleMissionDragOver}
+                          onDrop={() => {
+                            handleMissionDrop(lvl, mIdx);
+                            setActiveDragId(null);
+                          }}
+                          className={`flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border transition-all ${
+                            draggedMissionIndex?.lvl === lvl && draggedMissionIndex?.index === mIdx
+                              ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/40'
+                              : 'border-slate-200/80 hover:border-slate-300'
+                          }`}
+                        >
+                          {/* Drag Handle Icon - chỉ kích hoạt kéo khi nhấn chuột tại đây */}
+                          <div
+                            onMouseDown={() => setActiveDragId(`mission-${lvl}-${mIdx}`)}
+                            onMouseUp={() => setActiveDragId(null)}
+                            className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
+                            title="Kéo để sắp xếp lại"
+                          >
+                            <span className="text-sm font-mono tracking-tighter leading-none select-none">⋮⋮</span>
+                          </div>
+
+                          <span className="text-xs font-bold text-slate-400 w-5 text-center flex-shrink-0">#{mIdx + 1}</span>
+
                           <input
                             type="text"
-                            value={lvlData.aiPersona}
-                            maxLength={AI_PERSONA_MAX_LENGTH}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                levels: {
-                                  ...prev.levels,
-                                  [lvl]: {
-                                    ...prev.levels[lvl],
-                                    aiPersona: e.target.value.slice(0, AI_PERSONA_MAX_LENGTH),
-                                  },
-                                },
-                              }))
-                            }
-                            placeholder="Ví dụ: Quản lý cửa hàng - 店長 (nói chậm)"
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            value={m.content}
+                            onChange={(e) => handleMissionChange(lvl, mIdx, 'content', e.target.value)}
+                            onDragStart={(e) => e.stopPropagation()}
+                            placeholder="Nội dung nhiệm vụ"
+                            className="flex-1 min-w-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Credit / lượt ({lvl})
-                          </label>
-                          <input
-                            type="number"
-                            min={1}
-                            max={50}
-                            value={lvlData.creditCost}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                levels: {
-                                  ...prev.levels,
-                                  [lvl]: { ...prev.levels[lvl], creditCost: parseInt(e.target.value, 10) || 5 },
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                          />
-                        </div>
-                      </div>
 
-                      {/* Nhiệm vụ (Missions) - Hỗ trợ kéo thả & đổi thứ tự theo Hình 4 */}
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                              <span>🎯</span> Nhiệm vụ cần hoàn thành ({lvlData.missions.length})
-                            </h3>
-                            <span className="text-[11px] text-slate-400 hidden sm:inline">
-                              (Kéo biểu tượng ⋮⋮ ở đầu hàng để đổi thứ tự)
-                            </span>
-                          </div>
+                          <input
+                            type="text"
+                            value={m.target || ''}
+                            onChange={(e) => handleMissionChange(lvl, mIdx, 'target', e.target.value)}
+                            onDragStart={(e) => e.stopPropagation()}
+                            placeholder="Mục tiêu cốt lõi"
+                            className="w-32 sm:w-44 min-w-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE] hidden md:block"
+                          />
+
                           <button
                             type="button"
-                            onClick={() => handleAddMission(lvl)}
-                            className="text-xs font-bold text-[#0878EE] hover:underline"
+                            onClick={() => handleRemoveMission(lvl, mIdx)}
+                            className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-500 text-xs rounded hover:bg-red-50 transition cursor-pointer flex-shrink-0"
+                            title="Xóa nhiệm vụ"
                           >
-                            + Thêm nhiệm vụ
+                            ✕
                           </button>
                         </div>
-                        <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
-                          {lvlData.missions.map((m, mIdx) => (
-                            <div
-                              key={mIdx}
-                              draggable
-                              onDragStart={() => handleMissionDragStart(lvl, mIdx)}
-                              onDragOver={handleMissionDragOver}
-                              onDrop={() => handleMissionDrop(lvl, mIdx)}
-                              className={`flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border transition-all ${
-                                draggedMissionIndex?.lvl === lvl && draggedMissionIndex?.index === mIdx
-                                  ? 'opacity-40 border-dashed border-[#0878EE] bg-blue-50/40'
-                                  : 'border-slate-200/80 hover:border-slate-300'
-                              }`}
-                            >
-                              {/* Drag Handle Icon matching Hình 4 */}
-                              <div
-                                className="flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing px-1 select-none flex-shrink-0"
-                                title="Kéo để sắp xếp lại"
-                              >
-                                <span className="text-sm font-mono tracking-tighter leading-none select-none">⋮⋮</span>
-                              </div>
+                      ))}
+                    </div>
+                  </div>
 
-                              <span className="text-xs font-bold text-slate-400 w-5 text-center flex-shrink-0">#{mIdx + 1}</span>
-
-                              {/* Input nội dung nhiệm vụ có placeholder rỗng chuẩn Hình 2 */}
-                              <input
-                                type="text"
-                                value={m.content}
-                                onChange={(e) => handleMissionChange(lvl, mIdx, 'content', e.target.value)}
-                                placeholder="Nội dung nhiệm vụ"
-                                className="flex-1 min-w-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                              />
-                              <input
-                                type="text"
-                                value={m.target || ''}
-                                onChange={(e) => handleMissionChange(lvl, mIdx, 'target', e.target.value)}
-                                placeholder="Mục tiêu cốt lõi"
-                                className="w-32 sm:w-44 min-w-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE] hidden md:block"
-                              />
-
-                              {/* Nút Xóa */}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveMission(lvl, mIdx)}
-                                className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-500 text-xs rounded hover:bg-red-50 transition cursor-pointer flex-shrink-0"
-                                title="Xóa nhiệm vụ"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                  {/* Từ vựng & Ngữ pháp 2 cột */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Từ vựng */}
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <span>📖</span> Từ vựng trọng tâm ({lvlData.targetVocabularies.length})
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => handleAddVocab(lvl)}
+                          className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
+                        >
+                          + Thêm từ
+                        </button>
                       </div>
-
-                      {/* Từ vựng & Ngữ pháp 2 cột - Hỗ trợ đổi thứ tự & placeholder rỗng */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Từ vựng */}
-                        <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                              <span>📖</span> Từ vựng trọng tâm ({lvlData.targetVocabularies.length})
-                            </h3>
+                      <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
+                        {lvlData.targetVocabularies.map((v, vIdx) => (
+                          <div
+                            key={vIdx}
+                            draggable={activeDragId === `vocab-${lvl}-${vIdx}`}
+                            onDragStart={() => handleVocabDragStart(lvl, vIdx)}
+                            onDragEnd={() => {
+                              setDraggedVocabIndex(null);
+                              setActiveDragId(null);
+                            }}
+                            onDragOver={handleVocabDragOver}
+                            onDrop={() => {
+                              handleVocabDrop(lvl, vIdx);
+                              setActiveDragId(null);
+                            }}
+                            className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
+                              draggedVocabIndex?.lvl === lvl && draggedVocabIndex?.index === vIdx
+                                ? 'opacity-40 border-dashed border-[#0878EE]'
+                                : 'border-slate-100 hover:border-slate-200'
+                            }`}
+                          >
+                            <span
+                              onMouseDown={() => setActiveDragId(`vocab-${lvl}-${vIdx}`)}
+                              onMouseUp={() => setActiveDragId(null)}
+                              className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
+                              title="Kéo để sắp xếp lại"
+                            >
+                              ⋮⋮
+                            </span>
+                            <input
+                              type="text"
+                              value={v.word}
+                              onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
+                              onDragStart={(e) => e.stopPropagation()}
+                              placeholder="Từ vựng"
+                              className="w-20 sm:w-24 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            />
+                            <input
+                              type="text"
+                              value={v.reading || ''}
+                              onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
+                              onDragStart={(e) => e.stopPropagation()}
+                              placeholder="Cách đọc"
+                              className="w-16 sm:w-20 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            />
+                            <input
+                              type="text"
+                              value={v.meaning}
+                              onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
+                              onDragStart={(e) => e.stopPropagation()}
+                              placeholder="Ý nghĩa"
+                              className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            />
                             <button
                               type="button"
-                              onClick={() => handleAddVocab(lvl)}
-                              className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
+                              onClick={() => handleRemoveVocab(lvl, vIdx)}
+                              className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
+                              title="Xóa từ vựng"
                             >
-                              + Thêm từ
+                              ✕
                             </button>
                           </div>
-                          <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
-                            {lvlData.targetVocabularies.map((v, vIdx) => (
-                              <div
-                                key={vIdx}
-                                draggable
-                                onDragStart={() => handleVocabDragStart(lvl, vIdx)}
-                                onDragOver={handleVocabDragOver}
-                                onDrop={() => handleVocabDrop(lvl, vIdx)}
-                                className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
-                                  draggedVocabIndex?.lvl === lvl && draggedVocabIndex?.index === vIdx
-                                    ? 'opacity-40 border-dashed border-[#0878EE]'
-                                    : 'border-slate-100 hover:border-slate-200'
-                                }`}
-                              >
-                                <span
-                                  className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
-                                  title="Kéo để sắp xếp lại"
-                                >
-                                  ⋮⋮
-                                </span>
-                                <input
-                                  type="text"
-                                  value={v.word}
-                                  onChange={(e) => handleVocabChange(lvl, vIdx, 'word', e.target.value)}
-                                  placeholder="Từ vựng"
-                                  className="w-20 sm:w-24 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                />
-                                <input
-                                  type="text"
-                                  value={v.reading || ''}
-                                  onChange={(e) => handleVocabChange(lvl, vIdx, 'reading', e.target.value)}
-                                  placeholder="Cách đọc"
-                                  className="w-16 sm:w-20 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                />
-                                <input
-                                  type="text"
-                                  value={v.meaning}
-                                  onChange={(e) => handleVocabChange(lvl, vIdx, 'meaning', e.target.value)}
-                                  placeholder="Ý nghĩa"
-                                  className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveVocab(lvl, vIdx)}
-                                  className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
-                                  title="Xóa từ vựng"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Ngữ pháp */}
-                        <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                              <span>📐</span> Ngữ pháp trọng tâm ({lvlData.targetGrammars.length})
-                            </h3>
-                            <button
-                              type="button"
-                              onClick={() => handleAddGrammar(lvl)}
-                              className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
-                            >
-                              + Thêm ngữ pháp
-                            </button>
-                          </div>
-                          <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
-                            {lvlData.targetGrammars.map((g, gIdx) => (
-                              <div
-                                key={gIdx}
-                                draggable
-                                onDragStart={() => handleGrammarDragStart(lvl, gIdx)}
-                                onDragOver={handleGrammarDragOver}
-                                onDrop={() => handleGrammarDrop(lvl, gIdx)}
-                                className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
-                                  draggedGrammarIndex?.lvl === lvl && draggedGrammarIndex?.index === gIdx
-                                    ? 'opacity-40 border-dashed border-[#0878EE]'
-                                    : 'border-slate-100 hover:border-slate-200'
-                                }`}
-                              >
-                                <span
-                                  className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
-                                  title="Kéo để sắp xếp lại"
-                                >
-                                  ⋮⋮
-                                </span>
-                                <input
-                                  type="text"
-                                  value={g.pattern}
-                                  onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
-                                  placeholder="Mẫu ngữ pháp"
-                                  className="w-28 sm:w-32 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                />
-                                <input
-                                  type="text"
-                                  value={g.meaning}
-                                  onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
-                                  placeholder="Ý nghĩa"
-                                  className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveGrammar(lvl, gIdx)}
-                                  className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
-                                  title="Xóa ngữ pháp"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
-                  )}
+
+                    {/* Ngữ pháp */}
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/70 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <span>📐</span> Ngữ pháp trọng tâm ({lvlData.targetGrammars.length})
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => handleAddGrammar(lvl)}
+                          className="text-xs font-bold text-[#0878EE] hover:underline cursor-pointer"
+                        >
+                          + Thêm ngữ pháp
+                        </button>
+                      </div>
+                      <div className="space-y-2 max-h-72 overflow-y-auto overflow-x-hidden pr-1.5">
+                        {lvlData.targetGrammars.map((g, gIdx) => (
+                          <div
+                            key={gIdx}
+                            draggable={activeDragId === `grammar-${lvl}-${gIdx}`}
+                            onDragStart={() => handleGrammarDragStart(lvl, gIdx)}
+                            onDragEnd={() => {
+                              setDraggedGrammarIndex(null);
+                              setActiveDragId(null);
+                            }}
+                            onDragOver={handleGrammarDragOver}
+                            onDrop={() => {
+                              handleGrammarDrop(lvl, gIdx);
+                              setActiveDragId(null);
+                            }}
+                            className={`flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border transition-all ${
+                              draggedGrammarIndex?.lvl === lvl && draggedGrammarIndex?.index === gIdx
+                                ? 'opacity-40 border-dashed border-[#0878EE]'
+                                : 'border-slate-100 hover:border-slate-200'
+                            }`}
+                          >
+                            <span
+                              onMouseDown={() => setActiveDragId(`grammar-${lvl}-${gIdx}`)}
+                              onMouseUp={() => setActiveDragId(null)}
+                              className="text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing text-xs select-none px-0.5 flex-shrink-0"
+                              title="Kéo để sắp xếp lại"
+                            >
+                              ⋮⋮
+                            </span>
+                            <input
+                              type="text"
+                              value={g.pattern}
+                              onChange={(e) => handleGrammarChange(lvl, gIdx, 'pattern', e.target.value)}
+                              onDragStart={(e) => e.stopPropagation()}
+                              placeholder="Mẫu ngữ pháp"
+                              className="w-28 sm:w-32 min-w-0 flex-shrink px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            />
+                            <input
+                              type="text"
+                              value={g.meaning}
+                              onChange={(e) => handleGrammarChange(lvl, gIdx, 'meaning', e.target.value)}
+                              onDragStart={(e) => e.stopPropagation()}
+                              placeholder="Ý nghĩa"
+                              className="flex-1 min-w-0 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#0878EE]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGrammar(lvl, gIdx)}
+                              className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded text-xs transition flex-shrink-0 cursor-pointer"
+                              title="Xóa ngữ pháp"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })()}
         </section>
 
         {/* Footer Actions Sticky Bar */}
@@ -1533,7 +1832,7 @@ export const AdminScenarioEditorView: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-[#071A44]">
-                  Xác nhận hủy {isEditMode ? 'chỉnh sửa' : 'tạo mới'} kịch bản?
+                  Xác nhận rời khỏi trang {isEditMode ? 'chỉnh sửa' : 'tạo mới'} kịch bản?
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Thao tác này sẽ thoát khỏi trang soạn thảo kịch bản.
@@ -1544,7 +1843,7 @@ export const AdminScenarioEditorView: React.FC = () => {
             <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3.5 mb-5 text-xs text-amber-900 leading-relaxed">
               <p className="font-bold mb-1">📌 Lưu ý quan trọng:</p>
               <p>
-                Nếu bạn chọn hủy, toàn bộ bản nháp và tất cả các thay đổi vừa nhập hiện tại sẽ bị xóa bỏ và không được lưu lại.
+                Nếu bạn rời khỏi trang bây giờ, toàn bộ các thay đổi và nội dung vừa nhập hiện tại sẽ bị hủy bỏ và không được lưu lại.
               </p>
             </div>
 
@@ -1554,7 +1853,7 @@ export const AdminScenarioEditorView: React.FC = () => {
                 onClick={handleDismissCancel}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs transition cursor-pointer"
               >
-                Tiếp tục cài đặt
+                Tiếp tục chỉnh sửa
               </button>
 
               <button
@@ -1562,7 +1861,7 @@ export const AdminScenarioEditorView: React.FC = () => {
                 onClick={handleConfirmCancel}
                 className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
-                Đồng ý hủy & Quay lại
+                Đồng ý rời khỏi
               </button>
             </div>
           </div>

@@ -26,17 +26,19 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
     private static readonly string[] GrammarAspects =
     [
         "ngữ pháp", "ngu phap", "trợ từ", "tro tu", "cấu trúc", "cau truc",
-        "chia động từ", "chia dong tu"
+        "chia động từ", "chia dong tu", "thể", "the te", "mẫu câu", "mau cau"
     ];
 
     private static readonly string[] VocabularyAspects =
     [
-        "từ vựng", "tu vung", "dùng từ", "dung tu"
+        "từ vựng", "tu vung", "dùng từ", "dung tu", "từ nối", "tu noi",
+        "từ chỉ định", "tu chi dinh", "thuật ngữ", "thuat ngu"
     ];
 
     private static readonly string[] ImpressionAspects =
     [
-        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su"
+        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su",
+        "kính ngữ", "kinh ngu", "keigo", "khiêm nhường", "khiem nhuong", "tôn kính", "ton kinh", "teinei"
     ];
 
     public RoleplayEvaluationResult? Evaluate(
@@ -227,9 +229,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(2)
             .ToList();
-        var naturalAlternative = feedbacks
+        var naturalAlternatives = feedbacks
             .Select(feedback => feedback.NaturalAlternative?.Trim())
-            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Cast<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToList();
         var turnSummaries = feedbacks
             .Select(feedback => feedback.Summary?.Trim())
             .Where(summary => !string.IsNullOrWhiteSpace(summary))
@@ -254,9 +260,9 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             sections.Add($"Điểm cần cải thiện: {string.Join("; ", improvements)}");
         }
 
-        if (!string.IsNullOrWhiteSpace(naturalAlternative))
+        if (naturalAlternatives.Count > 0)
         {
-            sections.Add($"Cách diễn đạt tự nhiên hơn: {naturalAlternative}");
+            sections.Add($"Cách diễn đạt tự nhiên hơn: {string.Join(" | ", naturalAlternatives)}");
         }
 
         return string.Join(" ", sections);

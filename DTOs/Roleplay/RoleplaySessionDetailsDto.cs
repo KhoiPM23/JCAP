@@ -25,4 +25,11 @@ public class RoleplaySessionDetailsDto
     public List<RoleplayMessageDto> Messages { get; set; } = [];
     public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
     public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
+
+    // Smart Voice Assignment (Tự động lựa chọn giọng phù hợp theo bối cảnh persona & đa vai)
+    public int RecommendedAiVoiceId { get; set; } = 2;
+    public string RecommendedAiVoiceName { get; set; } = string.Empty;
+    public int RecommendedLearnerVoiceId { get; set; } = 2;
+    public string RecommendedLearnerVoiceName { get; set; } = string.Empty;
+    public Dictionary<string, int> RoleVoiceMappings { get; set; } = [];
 }

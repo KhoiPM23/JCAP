@@ -15,6 +15,7 @@ import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
+import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
@@ -346,6 +347,9 @@ export const AppRouter: React.FC = () => {
 
         {/* UC11 & UC12: Danh sach goi & Mua credits */}
         <Route path="/credits" element={<CreditPackagesView />} />
+        {/* Goi hoi vien & Dual-Window Rolling Quota (Kieu Antigravity) */}
+        <Route path="/subscription" element={<SubscriptionQuotaView />} />
+        <Route path="/credits/subscription" element={<SubscriptionQuotaView />} />
 
         {/* UC13: Lich su giao dich credit */}
         <Route path="/credits/history" element={<CreditHistoryView />} />

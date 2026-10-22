@@ -83,11 +83,17 @@ export interface RoleplaySessionDetailsDto {
   messages: RoleplayMessageDto[];
   targetVocabularies?: ScenarioVocabulary[];
   targetGrammars?: ScenarioGrammar[];
+  recommendedAiVoiceId?: number;
+  recommendedAiVoiceName?: string;
+  recommendedLearnerVoiceId?: number;
+  recommendedLearnerVoiceName?: string;
+  roleVoiceMappings?: Record<string, number>;
 }
 
 export interface RoleplayTurnResponseDto {
   userMessage: RoleplayMessageDto;
   aiMessage: RoleplayMessageDto;
+  newlyCompletedMissionIds?: number[];
   updatedMissions: RoleplayMissionDto[];
   allMissionsCompleted?: boolean;
   isNaturallyConcluded: boolean;

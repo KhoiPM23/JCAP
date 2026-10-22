@@ -23,6 +23,56 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Lấy ID giọng đọc người dùng đã chọn trong phần Cài đặt từ localStorage (mặc định là 3 nếu chưa lưu)
+   */
+  public getSelectedVoiceId(): number {
+    if (typeof window === 'undefined') return 3;
+    try {
+      const raw = window.localStorage.getItem('jcap_voicevox_selected_id');
+      if (raw !== null && raw.trim() !== '') {
+        const parsed = Number(raw);
+        if (!Number.isNaN(parsed) && parsed >= 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return 3;
+  }
+
+  /**
+   * Lấy tốc độ đọc AI từ localStorage (mặc định là 1.0)
+   */
+  public getSpeechRate(): number {
+    if (typeof window === 'undefined') return 1.0;
+    try {
+      const raw = window.localStorage.getItem('jcap_scenario_speech_rate');
+      if (raw !== null && raw.trim() !== '') {
+        const parsed = parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed >= 0.5 && parsed <= 2.0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return 1.0;
+  }
+
+  /**
+   * Lưu tốc độ đọc AI vào localStorage
+   */
+  public setSpeechRate(rate: number): void {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem('jcap_scenario_speech_rate', rate.toString());
+    } catch {
+      // ignore
+    }
+  }
+
+  /**
    * Dừng toàn bộ âm thanh đang phát (cả audio element và SpeechSynthesis)
    */
   public stopAllAudio(): void {
@@ -44,7 +94,7 @@ class ScenarioVoiceService {
   /**
    * Phát âm thanh tiếng Nhật qua Web Speech API (Local Browser Fallback)
    */
-  public speakWithWebSpeech(text: string, onEnd?: () => void): boolean {
+  public speakWithWebSpeech(text: string, onEnd?: () => void, rate?: number): boolean {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       onEnd?.();
       return false;
@@ -55,7 +105,7 @@ class ScenarioVoiceService {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
-    utterance.rate = 1.0;
+    utterance.rate = rate ?? this.getSpeechRate();
 
     const voices = window.speechSynthesis.getVoices();
     const jpVoice = voices.find((v) => v.lang.includes('ja') || v.lang.includes('JP'));
@@ -78,19 +128,28 @@ class ScenarioVoiceService {
   }
 
   /**
-   * Phát giọng AI: ưu tiên VOICEVOX TTS, nếu offline tự động fallback sang Web Speech API
+   * Phát giọng AI: ưu tiên VOICEVOX TTS (theo giọng đã chọn trong Cài đặt), nếu offline tự động fallback sang Web Speech API
    */
   public async playAiSpeech(
     text: string,
-    voiceId: number = 3,
-    onEnd?: () => void
+    voiceId?: number,
+    onEnd?: () => void,
+    rate?: number
   ): Promise<void> {
     this.stopAllAudio();
     this.isSpeechCancelled = false;
 
+    const resolvedVoiceId =
+      typeof voiceId === 'number' && !Number.isNaN(voiceId)
+        ? voiceId
+        : this.getSelectedVoiceId();
+
+    const resolvedRate = rate ?? this.getSpeechRate();
+
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(text, voiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(text, resolvedVoiceId);
       const audio = new Audio(audioUrl);
+      audio.playbackRate = resolvedRate;
       this.currentAudio = audio;
 
       audio.onended = () => {
@@ -102,15 +161,15 @@ class ScenarioVoiceService {
 
       audio.onerror = () => {
         this.currentAudio = null;
-        this.speakWithWebSpeech(text, onEnd);
+        this.speakWithWebSpeech(text, onEnd, resolvedRate);
       };
 
       await audio.play().catch(() => {
         this.currentAudio = null;
-        this.speakWithWebSpeech(text, onEnd);
+        this.speakWithWebSpeech(text, onEnd, resolvedRate);
       });
     } catch {
-      this.speakWithWebSpeech(text, onEnd);
+      this.speakWithWebSpeech(text, onEnd, resolvedRate);
     }
   }
 

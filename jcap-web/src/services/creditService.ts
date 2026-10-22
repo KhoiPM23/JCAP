@@ -4,6 +4,7 @@ import type {
   PurchaseCreditResponse,
   CreditHistoryResponse,
   CreditTransaction,
+  UserQuota,
 } from '../types/credit';
 
 const BASE_URL = '/api/credits';
@@ -39,7 +40,7 @@ class CreditService {
         success: false,
         message: errData?.message || `Lỗi tải danh sách gói credit (${response.status})`,
       };
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại dịch vụ.',
@@ -88,7 +89,63 @@ class CreditService {
         message: errData?.message || `Yêu cầu nạp credit thất bại (${response.status})`,
         errors: errData?.errors,
       };
-    } catch (err: any) {
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ thanh toán.',
+      };
+    }
+  }
+
+  /**
+   * Mua gói hội viên tháng (Subscription Plan) qua PayOS
+   */
+  public async purchaseSubscriptionPlan(plan: {
+    id: string;
+    name: string;
+    creditsAmount: number;
+    fiveHourQuota: number;
+    price: number;
+  }): Promise<ApiResponse<PurchaseCreditResponse>> {
+    const token = localStorage.getItem('jcap_token');
+    if (!token) {
+      return {
+        success: false,
+        message: 'Vui lòng đăng nhập để nâng cấp gói dịch vụ.',
+      };
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/purchase-subscription`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          planId: plan.id,
+          planName: plan.name,
+          creditsAmount: plan.creditsAmount,
+          fiveHourQuota: plan.fiveHourQuota,
+          price: plan.price,
+        }),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+        };
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Yêu cầu đăng ký gói tháng thất bại (${response.status})`,
+        errors: errData?.errors,
+      };
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ thanh toán.',
@@ -127,10 +184,49 @@ class CreditService {
         success: false,
         message: errData?.message || `Lỗi tải lịch sử giao dịch (${response.status})`,
       };
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ.',
+      };
+    }
+  }
+
+  /**
+   * Lấy thông tin hạn ngạch AI Rolling Quota (5 giờ và tuần) được tính toán động từ backend DB
+   */
+  public async getQuota(): Promise<ApiResponse<UserQuota>> {
+    const token = localStorage.getItem('jcap_token');
+    if (!token) {
+      return {
+        success: false,
+        message: 'Vui lòng đăng nhập để xem hạn ngạch AI.',
+      };
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/quota`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        const result: ApiResponse<UserQuota> = await response.json();
+        if (result.success && result.data?.extraCreditBalance !== undefined) {
+          this.updateLocalCreditBalance(result.data.extraCreditBalance);
+        }
+        return result;
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Lỗi tải hạn ngạch (${response.status})`,
+      };
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ để lấy hạn ngạch.',
       };
     }
   }
@@ -158,7 +254,7 @@ class CreditService {
         success: false,
         message: errData?.message || `Không thể xác minh đơn hàng (${response.status})`,
       };
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối để xác minh đơn hàng.',
@@ -189,7 +285,7 @@ class CreditService {
         success: false,
         message: errData?.message || `Không thể tiếp tục thanh toán (${response.status})`,
       };
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ.',
@@ -216,7 +312,7 @@ class CreditService {
         success: false,
         message: errData?.message || `Không thể hủy đơn hàng (${response.status})`,
       };
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ.',

@@ -85,39 +85,11 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
 
-            // Chế độ 1: PayOS chưa được cấu hình -> Chạy Mock Payment (Phase 1)
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
-                _logger.LogInformation("PayOS chưa cấu hình thông tin. Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
-
-                var mockTransaction = new CreditTransaction
-                {
-                    UserId = userId,
-                    Amount = package.Credits,
-                    Type = "TopUp",
-                    Description = $"Nạp {package.Name} (+{package.Credits} credits) [Mock]",
-                    PayOsOrderCode = null,
-                    Status = "Paid",
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                user.CreditBalance += package.Credits;
-
-                await _dbContext.CreditTransactions.AddAsync(mockTransaction);
-                await _userManager.UpdateAsync(user);
-                await _dbContext.SaveChangesAsync();
-
-                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
-                {
-                    Success = true,
-                    Message = $"Nạp thành công {package.Credits} credits vào tài khoản (Chế độ Mock).",
-                    IsMock = true,
-                    AddedCredits = package.Credits,
-                    NewCreditBalance = user.CreditBalance
-                }, "Nạp credits thành công (Mock).");
+                _logger.LogError("PayOS chưa cấu hình thông tin. Từ chối khởi tạo giao dịch cho User: {UserId}, Package: {PackageId}", userId, packageId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán trực tuyến PayOS chưa được cấu hình hoặc gặp sự cố. Vui lòng liên hệ quản trị viên.");
             }
-
-            // Chế độ 2: Tích hợp cổng PayOS thực (Phase 2)
             try
             {
                 long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -192,6 +164,92 @@ namespace JCAP.Services.Implementations
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tạo payment link với PayOS. Order Package: {PackageId}", packageId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail($"Không thể tạo yêu cầu thanh toán: {ex.Message}");
+            }
+        }
+
+
+        public async Task<ApiResponse<PurchaseCreditResponseDto>> PurchaseSubscriptionAsync(string userId, PurchaseSubscriptionRequestDto request)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
+            }
+
+            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            {
+                _logger.LogError("PayOS chưa cấu hình thông tin khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, request.PlanId);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán PayOS chưa được kích hoạt hoặc cấu hình chưa đầy đủ. Vui lòng liên hệ quản trị viên.");
+            }
+
+            try
+            {
+                long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+                var returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(request.PlanId)}";
+                var cancelUrl = $"{frontendUrl}/credits?cancel=true";
+
+                var pendingTransaction = new CreditTransaction
+                {
+                    UserId = userId,
+                    Amount = request.CreditsAmount,
+                    Type = "Subscription",
+                    Description = $"Đăng ký {request.PlanName} ({request.PlanId})",
+                    PayOsOrderCode = orderCode.ToString(),
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _dbContext.CreditTransactions.AddAsync(pendingTransaction);
+                await _dbContext.SaveChangesAsync();
+
+                // PayOS quy định mô tả tối đa 25 ký tự không dấu/đơn giản
+                string safeDescription = $"JCAP Sub {request.CreditsAmount}C";
+                if (safeDescription.Length > 25)
+                {
+                    safeDescription = safeDescription.Substring(0, 25);
+                }
+
+                int actualPaymentAmount = (int)request.Price;
+                if (actualPaymentAmount < 2000)
+                {
+                    actualPaymentAmount = 2500;
+                }
+
+                var paymentRequest = new CreatePaymentLinkRequest
+                {
+                    OrderCode = orderCode,
+                    Amount = actualPaymentAmount,
+                    Description = safeDescription,
+                    ReturnUrl = returnUrl,
+                    CancelUrl = cancelUrl,
+                    Items = new List<PaymentLinkItem>
+                    {
+                        new()
+                        {
+                            Name = request.PlanName,
+                            Quantity = 1,
+                            Price = actualPaymentAmount
+                        }
+                    }
+                };
+
+                var paymentLinkResult = await _payOSClient.PaymentRequests.CreateAsync(paymentRequest);
+
+                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                {
+                    Success = true,
+                    Message = "Tạo liên kết thanh toán gói tháng PayOS thành công.",
+                    CheckoutUrl = paymentLinkResult.CheckoutUrl,
+                    OrderCode = orderCode,
+                    IsMock = false
+                }, "Khởi tạo thanh toán thành công.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo payment link gói tháng với PayOS. PlanId: {PlanId}", request.PlanId);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail($"Không thể tạo yêu cầu thanh toán: {ex.Message}");
             }
         }
@@ -555,6 +613,121 @@ namespace JCAP.Services.Implementations
             _logger.LogInformation("Hủy đơn hàng #{OrderCode} thành công cho User {UserId}", orderCode, userId);
 
             return ApiResponse<bool>.Ok(true, "Hủy giao dịch thành công.");
+        }
+
+        public async Task<ApiResponse<UserQuotaDto>> GetUserQuotaAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<UserQuotaDto>.Fail("Không tìm thấy người dùng.");
+            }
+
+            var now = DateTime.UtcNow;
+            var fiveHoursAgo = now.AddHours(-5);
+            var sevenDaysAgo = now.AddDays(-7);
+
+            // 1. Tính tổng credit bị khấu trừ trong 5 giờ qua từ các giao dịch Deduct
+            var used5h = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
+                .SumAsync(t => -t.Amount); // Amount là số âm khi Deduct (ví dụ: -1, -5) -> -t.Amount là số dương
+
+            // 2. Tính tổng credit bị khấu trừ trong 7 ngày qua
+            var usedWeek = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+                .SumAsync(t => -t.Amount);
+
+            // Mặc định định mức gói Pro: 50 credits/5h, 1000 credits/tuần
+            int fiveHourTotal = 50;
+            int weeklyTotal = 1000;
+
+            int fiveHourRemaining = Math.Max(0, fiveHourTotal - used5h);
+            int fiveHourPercent = fiveHourTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)fiveHourRemaining / fiveHourTotal * 100))) : 0;
+
+            int weeklyRemaining = Math.Max(0, weeklyTotal - usedWeek);
+            int weeklyPercent = weeklyTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)weeklyRemaining / weeklyTotal * 100))) : 0;
+
+            // 3. Tính thời gian reset hạn ngạch 5 giờ
+            // Dựa vào giao dịch Deduct cũ nhất trong cửa sổ 5 giờ: sau 5h kể từ lúc đó nó sẽ rơi khỏi cửa sổ
+            var oldestIn5h = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
+                .OrderBy(t => t.CreatedAt)
+                .Select(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            string fiveHourResetsText;
+            if (oldestIn5h != default)
+            {
+                var nextReset = oldestIn5h.AddHours(5);
+                var diff = nextReset - now;
+                if (diff.TotalMinutes > 0)
+                {
+                    int h = (int)diff.TotalHours;
+                    int m = diff.Minutes;
+                    fiveHourResetsText = h > 0 ? $"{h} giờ {m} phút" : $"{m} phút";
+                }
+                else
+                {
+                    fiveHourResetsText = "Đang hồi phục";
+                }
+            }
+            else
+            {
+                fiveHourResetsText = "5 giờ (Đầy đủ)";
+            }
+
+            // 4. Tính thời gian reset tuần (còn lại trong chu kỳ 7 ngày)
+            var oldestInWeek = await _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+                .OrderBy(t => t.CreatedAt)
+                .Select(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            string weeklyResetsText;
+            if (oldestInWeek != default)
+            {
+                var nextWeekReset = oldestInWeek.AddDays(7);
+                var diffW = nextWeekReset - now;
+                if (diffW.TotalHours > 0)
+                {
+                    int days = (int)diffW.TotalDays;
+                    int hours = diffW.Hours;
+                    weeklyResetsText = days > 0 ? $"{days} ngày {hours} giờ" : $"{hours} giờ";
+                }
+                else
+                {
+                    weeklyResetsText = "Đang hồi phục";
+                }
+            }
+            else
+            {
+                weeklyResetsText = "7 ngày (Đầy đủ)";
+            }
+
+            var dto = new UserQuotaDto
+            {
+                WeeklyTotalCredits = weeklyTotal,
+                WeeklyUsedCredits = usedWeek,
+                WeeklyRemainingCredits = weeklyRemaining,
+                WeeklyRemainingPercent = weeklyPercent,
+                WeeklyResetsInText = weeklyResetsText,
+
+                FiveHourTotalCredits = fiveHourTotal,
+                FiveHourUsedCredits = used5h,
+                FiveHourRemainingCredits = fiveHourRemaining,
+                FiveHourRemainingPercent = fiveHourPercent,
+                FiveHourResetsInText = fiveHourResetsText,
+
+                ExtraCreditBalance = user.CreditBalance,
+                PlanName = "Gói Tháng Pro (Cơ Bản)",
+                PlanTier = "Pro"
+            };
+
+            return ApiResponse<UserQuotaDto>.Ok(dto, "Lấy thông tin hạn ngạch thành công.");
         }
     }
 }

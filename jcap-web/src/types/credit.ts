@@ -40,3 +40,21 @@ export interface CreditHistoryResponse {
   totalPages: number;
   currentCreditBalance: number;
 }
+
+export interface UserQuota {
+  weeklyTotalCredits: number;
+  weeklyUsedCredits: number;
+  weeklyRemainingCredits: number;
+  weeklyRemainingPercent: number;
+  weeklyResetsInText: string;
+
+  fiveHourTotalCredits: number;
+  fiveHourUsedCredits: number;
+  fiveHourRemainingCredits: number;
+  fiveHourRemainingPercent: number;
+  fiveHourResetsInText: string;
+
+  extraCreditBalance: number;
+  planName: string;
+  planTier: string;
+}

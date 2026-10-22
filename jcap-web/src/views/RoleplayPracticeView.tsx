@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { roleplayService } from '../services/roleplayService';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
+import { voicevoxService, type VoiceOption } from '../services/voicevoxService';
+import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsModal';
 import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
@@ -41,6 +43,69 @@ export const RoleplayPracticeView: React.FC = () => {
   const [isLeftOpen, setIsLeftOpen] = useState(true); // Cột Trái (Nhiệm vụ & Cheat Sheet)
   const [isRightOpen, setIsRightOpen] = useState(false); // Cột Phải (Chi tiết Đánh giá)
 
+  // Cấu hình giọng đọc AI & Giọng đọc mẫu của người học (VOICEVOX)
+  const [selectedVoiceId, setSelectedVoiceId] = useState<number>(() => scenarioVoiceService.getSelectedVoiceId());
+  const [learnerVoiceId, setLearnerVoiceId] = useState<number>(2); // Giọng phát âm mẫu chuẩn (Mặc định: Shikoku Metan - ID 2)
+  const [isPlayingLearnerSample, setIsPlayingLearnerSample] = useState(false);
+  const [playingLearnerText, setPlayingLearnerText] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
+  // AI Proactive Engagement (Chủ động gợi ý đồng hành khi người học im lặng > 14s)
+  const [showProactiveHint, setShowProactiveHint] = useState(false);
+  const idleTimerRef = useRef<any>(null);
+
+  // Trạng thái sao chép và phát âm câu gợi ý bản xứ
+  const [copiedFeedbackText, setCopiedFeedbackText] = useState(false);
+  const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
+
+  // Phím tắt bàn phím (Escape đóng menu/modal)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSettingsOpen(false);
+        setShowEndModal(false);
+        setShowLeaveModal(false);
+        setIsVoiceModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Trạng thái gõ bàn phím tiếng Nhật (IME composition: ngăn chặn Enter submit nhầm)
+  const [isComposing, setIsComposing] = useState(false);
+
+  // Dropdown Cài đặt hỗ trợ (Dịch, Furigana, Giọng AI, Tốc độ)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    };
+    if (isSettingsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSettingsOpen]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    void scenarioVoiceService.getVoices().then((voices) => {
+      if (isCurrent && voices && voices.length > 0) {
+        setAvailableVoices(voices);
+      }
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
   // Tin nhắn & Chat
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -58,8 +123,50 @@ export const RoleplayPracticeView: React.FC = () => {
   // Toast mock Flashcard
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Gamification & Micro-Celebration: Danh sách ID nhiệm vụ vừa hoàn thành (trong 4.5s)
+  const [recentlyCompletedMissionIds, setRecentlyCompletedMissionIds] = useState<number[]>([]);
+
+  // Tốc độ đọc AI (0.85x / 1.0x / 1.15x)
+  const [speechRate, setSpeechRate] = useState<number>(() => scenarioVoiceService.getSpeechRate());
+
   // Tab Cheat Sheet (Từ vựng vs Ngữ pháp)
   const [cheatSheetTab, setCheatSheetTab] = useState<'vocab' | 'grammar'>('vocab');
+
+  // Âm thanh chúc mừng Web Audio API (Chime E5 -> B5, nhẹ nhàng, không cần asset ngoài)
+  const playMissionCompleteSound = () => {
+    try {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const now = ctx.currentTime;
+
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.12, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.3);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(987.77, now + 0.12);
+      gain2.gain.setValueAtTime(0.18, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.55);
+    } catch {
+      // Non-blocking fallback
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,6 +200,22 @@ export const RoleplayPracticeView: React.FC = () => {
     }
   };
 
+  // Nhận diện giọng đọc theo vai khi kịch bản có nhiều nhân vật (Multi-role Voice Mapping)
+  const getSpeakerVoiceId = (messageText: string): number => {
+    if (session?.roleVoiceMappings) {
+      for (const [roleName, voiceId] of Object.entries(session.roleVoiceMappings)) {
+        if (
+          messageText.startsWith(`[${roleName}]`) ||
+          messageText.startsWith(`${roleName}:`) ||
+          messageText.startsWith(`【${roleName}】`)
+        ) {
+          return voiceId;
+        }
+      }
+    }
+    return selectedVoiceId;
+  };
+
   // Phát âm thanh giọng nói AI (VOICEVOX / Web Speech fallback)
   const handlePlayMessageAudio = (messageId: number, text: string) => {
     // Luôn đảm bảo ngắt micro trước khi phát âm thanh để tránh dội âm thanh AI vào mic
@@ -108,10 +231,32 @@ export const RoleplayPracticeView: React.FC = () => {
     setIsPlayingAiSpeech(true);
     setPlayingMessageId(messageId);
 
-    void scenarioVoiceService.playAiSpeech(text, 3, () => {
+    const voiceToUse = getSpeakerVoiceId(text);
+    void scenarioVoiceService.playAiSpeech(text, voiceToUse, () => {
       setIsPlayingAiSpeech(false);
       setPlayingMessageId(null);
-    });
+    }, speechRate);
+  };
+
+  // Phát âm thanh mẫu câu chuẩn Tokyo cho người học (Learner Sample Voice)
+  const handlePlayLearnerSample = (text: string) => {
+    if (!text || !text.trim()) return;
+    stopSpeechRecognition();
+
+    if (isPlayingLearnerSample && playingLearnerText === text) {
+      scenarioVoiceService.stopAllAudio();
+      setIsPlayingLearnerSample(false);
+      setPlayingLearnerText(null);
+      return;
+    }
+
+    setIsPlayingLearnerSample(true);
+    setPlayingLearnerText(text);
+
+    void scenarioVoiceService.playAiSpeech(text, learnerVoiceId, () => {
+      setIsPlayingLearnerSample(false);
+      setPlayingLearnerText(null);
+    }, speechRate);
   };
 
   // 1. Tải chi tiết phiên
@@ -135,6 +280,15 @@ export const RoleplayPracticeView: React.FC = () => {
 
       if (res.success && res.data) {
         setSession(res.data);
+
+        // Tự động gán giọng AI chuẩn tối ưu theo Persona của kịch bản
+        if (res.data.recommendedAiVoiceId && res.data.recommendedAiVoiceId > 0) {
+          setSelectedVoiceId(res.data.recommendedAiVoiceId);
+        }
+        if (res.data.recommendedLearnerVoiceId && res.data.recommendedLearnerVoiceId > 0) {
+          setLearnerVoiceId(res.data.recommendedLearnerVoiceId);
+        }
+
         // Tự động chọn tin nhắn học viên mới nhất có feedback (nếu có)
         const lastUserMsg = [...res.data.messages]
           .reverse()
@@ -169,6 +323,31 @@ export const RoleplayPracticeView: React.FC = () => {
     };
   }, [sessionId]);
 
+  // Quản lý đồng hồ im lặng để AI chủ động gợi ý (Proactive Idle Assist)
+  const resetIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    setShowProactiveHint(false);
+
+    // Chỉ đếm ngược khi AI không nói, người học không gõ/nói, và kịch bản chưa kết thúc
+    if (!isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded) {
+      idleTimerRef.current = setTimeout(() => {
+        setShowProactiveHint(true);
+      }, 14000); // Sau 14s không có hoạt động -> AI chủ động khích lệ
+    }
+  }, [isSending, isPlayingAiSpeech, session?.isNaturallyConcluded]);
+
+  useEffect(() => {
+    resetIdleTimer();
+    return () => {
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+    };
+  }, [session?.messages.length, isSending, isPlayingAiSpeech, resetIdleTimer]);
+
   // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,6 +360,7 @@ export const RoleplayPracticeView: React.FC = () => {
   );
   const totalMissionsCount = session?.missions.length ?? 0;
   const progressPercent = totalMissionsCount > 0 ? Math.round((completedMissionsCount / totalMissionsCount) * 100) : 0;
+  const isAllMissionsCompleted = totalMissionsCount > 0 && completedMissionsCount >= totalMissionsCount;
 
   // Lấy tin nhắn người dùng được chọn để hiển thị ở Cột Phải
   const selectedMessage = useMemo(() => {
@@ -192,6 +372,11 @@ export const RoleplayPracticeView: React.FC = () => {
   // 2. Gửi tin nhắn học viên (Optimistic UI update)
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    // Ngăn chặn submit khi người dùng đang bấm Enter để chọn chữ Hán Kanji từ bộ gõ IME
+    if (isComposing) {
+      return;
+    }
 
     // DỪNG THU ÂM NGAY LẬP TỨC khi người dùng bấm gửi (kể cả khi chưa tự bấm dừng mic)
     // Điều này ngăn chặn triệt để hiện tượng micro thu lại tiếng phát ra từ loa của AI (Audio Feedback Loop)
@@ -243,6 +428,20 @@ export const RoleplayPracticeView: React.FC = () => {
       // Ghi nhận ID tin nhắn mới (không tự động ép mở cột phải)
       if (turn.userMessage.linguisticFeedback) {
         setSelectedMessageId(turn.userMessage.id);
+      }
+
+      // Micro-Celebration: Bắn thông báo chúc mừng & âm thanh khi vừa hoàn thành nhiệm vụ mới
+      if (turn.newlyCompletedMissionIds && turn.newlyCompletedMissionIds.length > 0) {
+        playMissionCompleteSound();
+        setRecentlyCompletedMissionIds(turn.newlyCompletedMissionIds);
+        setTimeout(() => setRecentlyCompletedMissionIds([]), 4500);
+
+        const completedNames = turn.updatedMissions
+          .filter((m) => turn.newlyCompletedMissionIds.includes(m.missionId))
+          .map((m) => m.content);
+        const nameText = completedNames.length > 0 ? `: "${completedNames[0]}"` : '!';
+        setToastMessage(`🎯 Xuất sắc! Bạn vừa hoàn thành nhiệm vụ${nameText}`);
+        setTimeout(() => setToastMessage(null), 4000);
       }
 
       // Tự động phát âm thanh của AI nếu toggle autoPlayAudio đang BẬT
@@ -312,14 +511,6 @@ export const RoleplayPracticeView: React.FC = () => {
     } else {
       navigate('/scenarios');
     }
-  };
-
-  // 6. Mock toast thêm vào Flashcard
-  const handleAddToFlashcard = (text: string) => {
-    setToastMessage(`Đã thêm cụm từ "${text}" vào Flashcard ôn tập!`);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
   };
 
   // 7. Voice Handlers (Scenario Voice Integration)
@@ -434,11 +625,17 @@ export const RoleplayPracticeView: React.FC = () => {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#F4F9FE] text-[#071A44]">
-      {/* Toast Notification (Flashcard mock) */}
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 rounded-xl bg-[#071A44] px-4 py-3 text-xs font-semibold text-white shadow-xl animate-fade-in">
-          <span>⭐</span>
-          <span>{toastMessage}</span>
+        <div
+          className={`fixed top-20 right-6 z-50 flex items-center gap-2.5 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
+            toastMessage.startsWith('🎯')
+              ? 'border border-emerald-400/80 bg-[#071A44] text-white shadow-[0_12px_36px_rgba(16,185,129,0.35)]'
+              : 'border border-blue-400/40 bg-[#071A44] text-white shadow-[0_12px_36px_rgba(7,26,68,0.3)]'
+          }`}
+        >
+          <span className="text-base">{toastMessage.startsWith('🎯') ? '🎉' : '⭐'}</span>
+          <span className="leading-snug">{toastMessage}</span>
         </div>
       )}
 
@@ -469,104 +666,232 @@ export const RoleplayPracticeView: React.FC = () => {
                   JLPT {session.level || session.jlptLevel}
                 </span>
               </div>
-              <p className="text-[11px] text-[#71809A]">
-                Đối thoại cùng: <span className="font-semibold text-[#071A44]">{session.aiPersona}</span>
+              <p className="text-[11px] text-[#71809A] flex items-center gap-1.5 flex-wrap">
+                <span>Đối thoại cùng:</span>
+                <span className="font-semibold text-[#071A44]">{session.aiPersona}</span>
+                {session.recommendedAiVoiceName && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#EAF4FF] px-2 py-0.5 text-[10px] font-bold text-[#0878EE] border border-[#B9D9FF]/60" title="Giọng nói tự động gán phù hợp với nhân vật">
+                    <span>🎙️</span>
+                    <span>{session.recommendedAiVoiceName.split('(')[0].trim()}</span>
+                  </span>
+                )}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Center/Right: Toggles, Credits, End Action */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Toggles: Dịch, Furigana & Âm thanh AI */}
-          <div className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] p-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setShowTranslation(!showTranslation)}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                showTranslation ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-            >
-              Dịch: {showTranslation ? 'BẬT' : 'TẮT'}
-            </button>
-            {/* Furigana toggle tạm ẩn (chờ implement sau)
-            <button
-              type="button"
-              onClick={() => setShowFurigana(!showFurigana)}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                showFurigana ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-            >
-              Furigana: {showFurigana ? 'BẬT' : 'TẮT'}
-            </button>
-            */}
-            <button
-              type="button"
-              onClick={() => {
-                if (autoPlayAudio) {
-                  scenarioVoiceService.stopAllAudio();
-                  setIsPlayingAiSpeech(false);
-                  setPlayingMessageId(null);
-                }
-                setAutoPlayAudio(!autoPlayAudio);
-              }}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition ${
-                autoPlayAudio ? 'bg-white text-[#0878EE] shadow-xs' : 'text-[#71809A]'
-              }`}
-              title="Tự động phát giọng đọc AI khi có tin nhắn mới"
-            >
-              <span>{autoPlayAudio ? '🔊' : '🔇'}</span>
-              <span>Giọng AI: {autoPlayAudio ? 'BẬT' : 'TẮT'}</span>
-            </button>
-          </div>
-
+        {/* Center/Right: Compact Action Controls */}
+        <div className="flex items-center gap-2">
           {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
           {!isAdmin && (
             <Link
               to="/credits"
-              className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
               title="Số dư credit hiện tại"
             >
               <span>🪙</span>
               <span>{session.creditBalance ?? 0}</span>
-              <span className="hidden sm:inline">Credits</span>
             </Link>
           )}
 
-          {/* Sidebar toggles on desktop */}
+          {/* Toggle Cột Trái: Nhiệm vụ */}
           <button
             type="button"
             onClick={() => setIsLeftOpen(!isLeftOpen)}
-            className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               isLeftOpen
                 ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
-                : 'border-[#E6EDF5] bg-white text-[#71809A] hover:border-[#0878EE]'
+                : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
             }`}
-            title="Ẩn/Hiện Nhiệm vụ & Cheat Sheet"
+            title="Ẩn/Hiện Danh sách nhiệm vụ kịch bản"
           >
-            📋 <span className="hidden xl:inline">Nhiệm vụ</span>
+            <span>📋</span>
+            <span className="hidden md:inline">Nhiệm vụ</span>
+            <span className="text-[10px] font-bold opacity-80">
+              ({completedMissionsCount}/{totalMissionsCount})
+            </span>
           </button>
 
+          {/* Toggle Cột Phải: Đánh giá */}
           <button
             type="button"
             onClick={() => setIsRightOpen(!isRightOpen)}
-            className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
               isRightOpen
                 ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
-                : 'border-[#E6EDF5] bg-white text-[#71809A] hover:border-[#0878EE]'
+                : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
             }`}
-            title="Ẩn/Hiện Đánh giá ngôn ngữ"
+            title="Ẩn/Hiện Bảng phân tích & đánh giá ngôn ngữ chi tiết"
           >
-            🔍 <span className="hidden xl:inline">Đánh giá</span>
+            <span>🔍</span>
+            <span className="hidden md:inline">Đánh giá</span>
           </button>
 
-          {/* End Session Button: Biến thành màu XANH LÁ khi tự nhiên kết thúc */}
-          {session.isNaturallyConcluded ? (
+          {/* Dropdown Menu Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI, Tốc độ) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                isSettingsOpen
+                  ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
+                  : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE]'
+              }`}
+              title="Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI)"
+            >
+              <span>⚙️</span>
+              <span className="hidden md:inline">Cài đặt</span>
+              {(showTranslation || showFurigana || autoPlayAudio) && (
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0878EE]" />
+              )}
+            </button>
+
+            {/* Popover Dropdown Panel */}
+            {isSettingsOpen && (
+              <div
+                ref={settingsRef}
+                className="absolute right-0 top-11 z-50 w-72 rounded-2xl border border-[#DCE7F4] bg-white p-4 shadow-2xl animate-fade-in text-xs space-y-3.5"
+              >
+                <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2">
+                  <span className="font-bold text-[#071A44] text-xs">Cài đặt hỗ trợ luyện tập</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="text-[#71809A] hover:text-[#071A44] font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Toggle Dịch */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Dịch nghĩa tiếng Việt</p>
+                    <p className="text-[11px] text-[#71809A]">Hiển thị bản dịch dưới câu</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTranslation(!showTranslation)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      showTranslation ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        showTranslation ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Toggle Furigana */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Phiên âm Furigana</p>
+                    <p className="text-[11px] text-[#71809A]">Cách đọc Hiragana trên Kanji</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFurigana(!showFurigana)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      showFurigana ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        showFurigana ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Toggle Giọng AI */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Tự động phát giọng AI</p>
+                    <p className="text-[11px] text-[#71809A]">Phát âm ngay khi AI trả lời</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (autoPlayAudio) {
+                        scenarioVoiceService.stopAllAudio();
+                        setIsPlayingAiSpeech(false);
+                        setPlayingMessageId(null);
+                      }
+                      setAutoPlayAudio(!autoPlayAudio);
+                    }}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      autoPlayAudio ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        autoPlayAudio ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Tốc độ đọc AI */}
+                <div className="border-t border-[#F1F5F9] pt-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-[#071A44]">Tốc độ đọc của AI</span>
+                    <span className="font-bold text-[#0878EE]">{speechRate}x</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[0.85, 1.0, 1.15].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          setSpeechRate(rate);
+                          scenarioVoiceService.setSpeechRate(rate);
+                        }}
+                        className={`rounded-lg py-1 text-center font-bold text-xs transition ${
+                          speechRate === rate
+                            ? 'bg-[#0878EE] text-white shadow-xs'
+                            : 'bg-[#F1F5F9] text-[#52627A] hover:bg-slate-200'
+                        }`}
+                      >
+                        {rate === 0.85 ? '0.85x Chậm' : rate === 1.0 ? '1.0x Chuẩn' : '1.15x Nhanh'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nút mở cài đặt giọng đọc VOICEVOX */}
+                <div className="border-t border-[#F1F5F9] pt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      scenarioVoiceService.stopAllAudio();
+                      setIsPlayingAiSpeech(false);
+                      setPlayingMessageId(null);
+                      setIsVoiceModalOpen(true);
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#DCE7F4] bg-[#F8FAFC] py-2 text-xs font-bold text-[#0878EE] transition hover:bg-[#EAF4FF] hover:border-[#0878EE]"
+                  >
+                    <span>🎙️</span>
+                    <span>Đổi nhân vật & giọng đọc AI</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* End Session Button: Biến thành màu XANH LÁ khi đã hoàn thành 100% nhiệm vụ */}
+          {isAllMissionsCompleted ? (
             <button
               type="button"
               onClick={() => setShowEndModal(true)}
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 animate-pulse"
-              title="Kịch bản đã đạt kết thúc tự nhiên! Bấm để hoàn thành."
+              title={
+                session.isNaturallyConcluded
+                  ? 'Kịch bản đã hoàn thành trọn vẹn và kết thúc tự nhiên! Bấm để hoàn thành.'
+                  : 'Bạn đã hoàn thành toàn bộ nhiệm vụ! Bấm để hoàn thành phiên.'
+              }
             >
               <span>✓</span>
               <span>Hoàn thành phiên</span>
@@ -588,8 +913,14 @@ export const RoleplayPracticeView: React.FC = () => {
         {/* ============================================================ */}
         {/* 1. LEFT SIDEBAR: Missions & Cheat Sheet                     */}
         {/* ============================================================ */}
-        {isLeftOpen && (
-          <aside className="w-80 shrink-0 border-r border-[#E6EDF5] bg-white flex flex-col z-10 transition-all duration-200">
+        <aside
+          className={`shrink-0 border-r border-[#E6EDF5] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+            isLeftOpen
+              ? 'w-80 opacity-100 shadow-sm'
+              : 'w-0 border-r-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-80 flex flex-col h-full shrink-0">
             {/* Header sidebar */}
             <div className="flex items-center justify-between border-b border-[#E6EDF5] px-4 py-3">
               <div>
@@ -660,10 +991,12 @@ export const RoleplayPracticeView: React.FC = () => {
                   {session.missions.map((mission: RoleplayMissionDto) => (
                     <div
                       key={mission.missionId ?? mission.id ?? mission.order}
-                      className={`flex gap-3 rounded-xl border p-3 transition ${
-                        mission.isCompleted
+                      className={`flex gap-3 rounded-xl border p-3 transition-all duration-300 ${
+                        recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
+                          ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
+                          : mission.isCompleted
                           ? 'border-emerald-200 bg-emerald-50/60'
-                          : 'border-[#E6EDF5] bg-white'
+                          : 'border-[#E6EDF5] bg-white hover:border-[#B9D9FF]'
                       }`}
                     >
                       {/* Trạng thái icon: CHỈ CÓ Pending hoặc Completed */}
@@ -687,7 +1020,9 @@ export const RoleplayPracticeView: React.FC = () => {
                           </p>
                           {mission.isCompleted && (
                             <span className="shrink-0 text-[10px] font-bold text-emerald-600">
-                              Đã đạt
+                              {recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
+                                ? '🎯 Vừa đạt!'
+                                : 'Đã đạt'}
                             </span>
                           )}
                         </div>
@@ -737,22 +1072,24 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
             </div>
-          </aside>
-        )}
+          </div>
+        </aside>
 
-        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn */}
-        {!isLeftOpen && (
-          <button
-            type="button"
-            onClick={() => setIsLeftOpen(true)}
-            className="absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all"
-            title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
-          >
-            <span>📋</span>
-            <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
-            <span>▶</span>
-          </button>
-        )}
+        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn (Hiệu ứng trượt êm ái) */}
+        <button
+          type="button"
+          onClick={() => setIsLeftOpen(true)}
+          className={`absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pr-4 transition-all duration-300 ease-in-out ${
+            !isLeftOpen
+              ? 'translate-x-0 opacity-100 pointer-events-auto'
+              : '-translate-x-full opacity-0 pointer-events-none'
+          }`}
+          title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
+        >
+          <span>📋</span>
+          <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
+          <span>▶</span>
+        </button>
 
         {/* ============================================================ */}
         {/* 2. CENTER COLUMN: Chat Stream (Max Width 760px Centered)    */}
@@ -778,18 +1115,14 @@ export const RoleplayPracticeView: React.FC = () => {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex items-start gap-3 ${isAi ? '' : 'flex-row-reverse'}`}
+                    className={`flex items-start gap-3 transition-all duration-300 animate-slide-up ${isAi ? '' : 'justify-end'}`}
                   >
-                    {/* Avatar */}
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-xs ${
-                        isAi
-                          ? 'bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-white'
-                          : 'bg-[#071A44] text-white'
-                      }`}
-                    >
-                      {isAi ? session.aiPersona.slice(0, 1) || 'AI' : 'Bạn'}
-                    </div>
+                    {/* Avatar: chỉ hiển thị cho AI, tin nhắn người dùng căn phải tự nhiên */}
+                    {isAi && (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-xs font-bold text-white shadow-xs">
+                        {session.aiPersona.slice(0, 1) || 'AI'}
+                      </div>
+                    )}
 
                     {/* Chat Bubble */}
                     <div
@@ -801,8 +1134,8 @@ export const RoleplayPracticeView: React.FC = () => {
                       }}
                       className={`group relative max-w-[80%] rounded-2xl p-4 transition shadow-xs ${
                         isAi
-                          ? 'rounded-tl-xs border border-[#E6EDF5] bg-white text-[#071A44]'
-                          : `rounded-tr-xs bg-[#0878EE] text-white cursor-pointer ${
+                          ? 'bubble-ai rounded-tl-xs border border-[#E6EDF5] bg-white text-[#071A44]'
+                          : `bubble-user rounded-tr-xs bg-[#0878EE] text-white cursor-pointer ${
                               isSelected ? 'ring-3 ring-[#0878EE]/30 shadow-md' : 'hover:bg-[#0768D0]'
                             }`
                       }`}
@@ -841,12 +1174,19 @@ export const RoleplayPracticeView: React.FC = () => {
                       </div>
 
                       {/* Japanese text (with furigana toggle support) */}
-                      <p className="text-base font-medium leading-relaxed tracking-wide">
-                        {showFurigana && msg.furiganaText ? msg.furiganaText : msg.japaneseText}
-                      </p>
+                      {showFurigana && msg.furiganaHtml ? (
+                        <div
+                          className="text-base font-medium leading-relaxed tracking-wide"
+                          dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }}
+                        />
+                      ) : (
+                        <p className="text-base font-medium leading-relaxed tracking-wide">
+                          {showFurigana && msg.furiganaText ? msg.furiganaText : msg.japaneseText}
+                        </p>
+                      )}
 
                       {/* Vietnamese translation (with translation toggle support) */}
-                      {showTranslation && msg.vietnameseMeaning && (
+                      {showTranslation && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
                         <p
                           className={`mt-2 border-t pt-2 text-xs leading-relaxed ${
                             isAi ? 'border-[#F1F5F9] text-[#71809A]' : 'border-blue-400/40 text-blue-100'
@@ -856,7 +1196,53 @@ export const RoleplayPracticeView: React.FC = () => {
                         </p>
                       )}
 
-                      {/* AI Audio button */}
+                      {/* Subtle Inline feedback preview for User messages */}
+                      {!isAi && msg.linguisticFeedback?.naturalAlternative && (
+                        <div className="mt-2 flex items-center justify-between border-t border-blue-400/30 pt-1.5 text-[11px] text-blue-100">
+                          <span className="truncate pr-2">💡 Gợi ý: {msg.linguisticFeedback.naturalAlternative}</span>
+                          <span className="shrink-0 text-[10px] font-bold text-white/90 underline decoration-dotted">
+                            Chi tiết ➔
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Learner audio sample pronunciation button */}
+                      {!isAi && (
+                        <div className="mt-2 flex items-center justify-end gap-2 border-t border-blue-400/20 pt-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayLearnerSample(msg.japaneseText);
+                            }}
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                              isPlayingLearnerSample && playingLearnerText === msg.japaneseText
+                                ? 'bg-white/20 text-white font-bold shadow-xs'
+                                : 'text-blue-100 hover:text-white hover:bg-white/10'
+                            }`}
+                            title="Nghe phát âm chuẩn câu này bằng giọng mẫu Tokyo"
+                          >
+                            {isPlayingLearnerSample && playingLearnerText === msg.japaneseText ? (
+                              <span className="flex items-center gap-1.5 text-white">
+                                <span className="flex items-end gap-0.5 h-3">
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                                  <span className="w-1 bg-white rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
+                                </span>
+                                <span className="text-[11px] font-bold">Đang đọc mẫu...</span>
+                              </span>
+                            ) : (
+                              <>
+                                <span>🔈</span>
+                                <span>Nghe đọc mẫu</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* AI Audio button with Soundwave equalizer */}
                       {isAi && (
                         <div className="mt-2 flex items-center gap-2">
                           <button
@@ -865,15 +1251,29 @@ export const RoleplayPracticeView: React.FC = () => {
                               e.stopPropagation();
                               handlePlayMessageAudio(msg.id, msg.japaneseText);
                             }}
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition ${
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
                               playingMessageId === msg.id && isPlayingAiSpeech
-                                ? 'bg-[#EAF4FF] text-[#0878EE] animate-pulse font-bold'
+                                ? 'bg-[#EAF4FF] text-[#0878EE] font-bold shadow-xs'
                                 : 'text-[#71809A] hover:bg-slate-100 hover:text-[#0878EE]'
                             }`}
                             title="Nghe phát âm tiếng Nhật của AI"
                           >
-                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? '🔊' : '🔈'}</span>
-                            <span>{playingMessageId === msg.id && isPlayingAiSpeech ? 'Đang phát...' : 'Nghe lại'}</span>
+                            {playingMessageId === msg.id && isPlayingAiSpeech ? (
+                              <span className="flex items-center gap-1.5 text-[#0878EE]">
+                                <span className="flex items-end gap-0.5 h-3.5">
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                                  <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
+                                </span>
+                                <span className="text-[11px] font-bold">Đang phát...</span>
+                              </span>
+                            ) : (
+                              <>
+                                <span>🔈</span>
+                                <span>Nghe lại</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       )}
@@ -963,6 +1363,46 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
 
+              {/* Proactive AI Engagement (Tự động xuất hiện sau 14s người học chưa phản hồi) */}
+              {showProactiveHint && !hint && !isSending && !session.isNaturallyConcluded && (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#B9D9FF] bg-gradient-to-r from-[#F4F9FE] via-[#EAF4FF] to-[#F4F9FE] p-3 shadow-md animate-fade-in transition-all">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#0878EE] to-[#4FA3FF] text-white font-bold text-xs shadow-xs ring-2 ring-[#0878EE]/20 animate-pulse">
+                      <span>💬</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#071A44] truncate">
+                        {session.aiPersona || 'AI'} đang chờ bạn mở lời...
+                      </p>
+                      <p className="text-[11px] text-[#71809A]">
+                        Bạn có muốn xem gợi ý câu đối đáp chuẩn không? Đừng ngần ngại nhé!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProactiveHint(false);
+                        handleGetHint();
+                      }}
+                      className="inline-flex items-center gap-1 rounded-xl bg-[#0878EE] px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0768D0] active:scale-95 transition"
+                    >
+                      <span>💡</span>
+                      <span>Xem gợi ý ngay</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowProactiveHint(false)}
+                      className="rounded-lg p-1 text-[#71809A] hover:bg-white hover:text-[#071A44] transition"
+                      title="Để sau"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Input Row */}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 {/* Button xin Hint */}
@@ -980,23 +1420,28 @@ export const RoleplayPracticeView: React.FC = () => {
                   )}
                 </button>
 
-                {/* Button Micro thu âm (Voice Input) */}
-                <button
-                  type="button"
-                  onClick={handleToggleMic}
-                  disabled={isSending}
-                  className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isRecordingMic
-                      ? 'border border-red-400 bg-red-600 text-white animate-pulse ring-4 ring-red-400/30'
-                      : 'border border-[#0878EE] bg-[#0878EE] text-white hover:bg-[#0768D0] hover:shadow-md'
-                  }`}
-                  title={isRecordingMic ? 'Đang bật mic (Bấm để dừng)' : 'Bấm để nói tiếng Nhật bằng micro'}
-                >
-                  <span className="text-sm">{isRecordingMic ? '⏹️' : '🎙️'}</span>
-                  <span className="hidden sm:inline">
-                    {isRecordingMic ? 'Đang thu âm...' : 'Nói'}
-                  </span>
-                </button>
+                {/* Button Micro thu âm (Voice Input với hiệu ứng Radar Pulse) */}
+                <div className="relative inline-flex shrink-0">
+                  {isRecordingMic && (
+                    <span className="absolute inset-0 rounded-xl bg-red-500 animate-ping opacity-40 pointer-events-none" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleToggleMic}
+                    disabled={isSending}
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRecordingMic
+                        ? 'border border-red-500 bg-red-600 text-white ring-4 ring-red-400/40 shadow-lg'
+                        : 'border border-[#0878EE] bg-[#0878EE] text-white hover:bg-[#0768D0] hover:shadow-md'
+                    }`}
+                    title={isRecordingMic ? 'Đang bật mic (Bấm để dừng)' : 'Bấm để nói tiếng Nhật bằng micro'}
+                  >
+                    <span className="text-sm">{isRecordingMic ? '⏹️' : '🎙️'}</span>
+                    <span className="hidden sm:inline">
+                      {isRecordingMic ? 'Đang thu âm...' : 'Nói'}
+                    </span>
+                  </button>
+                </div>
 
                 {/* Text input */}
                 <input
@@ -1004,6 +1449,15 @@ export const RoleplayPracticeView: React.FC = () => {
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
+                  onCompositionStart={() => setIsComposing(true)}
+                  onCompositionEnd={() => setIsComposing(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (isComposing || (e.nativeEvent as any).isComposing) {
+                        return;
+                      }
+                    }
+                  }}
                   placeholder={
                     isRecordingMic
                       ? '🎙️ Đang lắng nghe giọng nói tiếng Nhật của bạn...'
@@ -1016,6 +1470,32 @@ export const RoleplayPracticeView: React.FC = () => {
                       : 'border-[#E6EDF5] bg-[#F8FAFC] focus:border-[#0878EE] focus:bg-white focus:ring-2 focus:ring-[#0878EE]/20'
                   }`}
                 />
+
+                {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi */}
+                {inputText.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => handlePlayLearnerSample(inputText)}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#B9D9FF] bg-[#EAF4FF] px-3 py-2.5 text-xs font-bold text-[#0878EE] hover:bg-[#D5E9FF] active:scale-95 transition"
+                    title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
+                  >
+                    {isPlayingLearnerSample && playingLearnerText === inputText ? (
+                      <span className="flex items-center gap-1.5 text-[#0878EE]">
+                        <span className="flex items-end gap-0.5 h-3">
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                          <span className="w-1 bg-[#0878EE] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                        </span>
+                        <span className="hidden md:inline text-[11px]">Đang đọc...</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span>🔈</span>
+                        <span className="hidden md:inline">Đọc mẫu</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
                 {/* Send Button */}
                 <button
@@ -1045,8 +1525,14 @@ export const RoleplayPracticeView: React.FC = () => {
         {/* ============================================================ */}
         {/* 3. RIGHT SIDEBAR: Linguistic Feedback Panel                 */}
         {/* ============================================================ */}
-        {isRightOpen && (
-          <aside className="w-80 lg:w-[330px] xl:w-[350px] max-w-[30vw] shrink-0 border-l border-[#E6EDF5] bg-white flex flex-col z-10 transition-all duration-200">
+        <aside
+          className={`shrink-0 border-l border-[#E6EDF5] bg-white flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+            isRightOpen
+              ? 'w-80 lg:w-[330px] xl:w-[350px] max-w-[30vw] opacity-100 shadow-sm'
+              : 'w-0 border-l-0 opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-80 lg:w-[330px] xl:w-[350px] flex flex-col h-full shrink-0">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#E6EDF5] px-4 py-3">
               <div className="flex items-center gap-2">
@@ -1197,20 +1683,56 @@ export const RoleplayPracticeView: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Flashcard Action */}
-                  <div className="pt-2">
+                  {/* Hành động thiết thực: Nghe phát âm & Sao chép câu bản xứ */}
+                  <div className="pt-2 grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        handleAddToFlashcard(
+                      onClick={() => {
+                        const textToPlay =
                           selectedMessage.linguisticFeedback?.naturalAlternative ||
-                            selectedMessage.japaneseText
-                        )
-                      }
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#0878EE] bg-white py-2.5 text-xs font-bold text-[#0878EE] shadow-xs transition hover:bg-[#EAF4FF]"
+                          selectedMessage.japaneseText;
+                        setIsPlayingAlternativeAudio(true);
+                        void scenarioVoiceService.playAiSpeech(
+                          textToPlay,
+                          selectedVoiceId,
+                          () => setIsPlayingAlternativeAudio(false),
+                          speechRate
+                        );
+                      }}
+                      className={`inline-flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold transition shadow-2xs ${
+                        isPlayingAlternativeAudio
+                          ? 'border-[#0878EE] bg-[#EAF4FF] text-[#0878EE]'
+                          : 'border-[#E6EDF5] bg-white text-[#52627A] hover:border-[#0878EE] hover:text-[#0878EE]'
+                      }`}
+                      title="Nghe giọng AI đọc câu gợi ý chuẩn bản xứ này"
                     >
-                      <span>⭐</span>
-                      <span>Thêm cụm từ này vào Flashcard</span>
+                      <span>{isPlayingAlternativeAudio ? '🔊' : '🔈'}</span>
+                      <span>{isPlayingAlternativeAudio ? 'Đang đọc...' : 'Nghe câu mẫu'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const textToCopy =
+                          selectedMessage.linguisticFeedback?.naturalAlternative ||
+                          selectedMessage.japaneseText;
+                        void navigator.clipboard.writeText(textToCopy);
+                        setCopiedFeedbackText(true);
+                        setToastMessage('📋 Đã sao chép câu mẫu vào bộ nhớ tạm!');
+                        setTimeout(() => {
+                          setCopiedFeedbackText(false);
+                          setToastMessage(null);
+                        }, 2500);
+                      }}
+                      className={`inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold shadow-2xs transition ${
+                        copiedFeedbackText
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-[#0878EE] text-white hover:bg-[#0768D0]'
+                      }`}
+                      title="Sao chép câu bản xứ vào clipboard để ghi chú hoặc tra từ điển"
+                    >
+                      <span>{copiedFeedbackText ? '✓' : '📋'}</span>
+                      <span>{copiedFeedbackText ? 'Đã sao chép' : 'Chép câu mẫu'}</span>
                     </button>
                   </div>
                 </>
@@ -1224,21 +1746,24 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
               )}
             </div>
-          </aside>
-        )}
+          </div>
+        </aside>
 
         {/* Nút Dock mở rộng Cột Phải khi đang bị thu gọn */}
-        {!isRightOpen && (
-          <button
-            type="button"
-            onClick={() => setIsRightOpen(true)}
-            className="absolute top-4 right-0 z-30 flex items-center gap-2 rounded-l-xl border border-r-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pl-4 transition-all"
-            title="Mở rộng bảng đánh giá ngôn ngữ"
-          >
-            <span>◀</span>
-            <span>🔍 Đánh giá</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setIsRightOpen(true)}
+          className={`absolute top-4 right-0 z-30 flex items-center gap-2 rounded-l-xl border border-r-0 border-[#0878EE]/30 bg-white px-3 py-2.5 text-xs font-bold text-[#0878EE] shadow-md hover:bg-[#EAF4FF] hover:pl-4 transition-all duration-300 ease-in-out ${
+            !isRightOpen && selectedMessage?.linguisticFeedback
+              ? 'translate-x-0 opacity-100 pointer-events-auto'
+              : 'translate-x-full opacity-0 pointer-events-none'
+          }`}
+          title="Mở rộng bảng đánh giá lượt nói"
+        >
+          <span>◀</span>
+          <span>Đánh giá</span>
+          <span>🔍</span>
+        </button>
       </div>
 
       {/* ============================================================ */}
@@ -1250,16 +1775,16 @@ export const RoleplayPracticeView: React.FC = () => {
             <div className="flex items-center gap-3">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${
-                  session.isNaturallyConcluded
+                  isAllMissionsCompleted
                     ? 'bg-emerald-100 text-emerald-600'
                     : 'bg-amber-100 text-amber-600'
                 }`}
               >
-                {session.isNaturallyConcluded ? '🎉' : '⚠️'}
+                {isAllMissionsCompleted ? '🎉' : '⚠️'}
               </div>
               <div>
                 <h3 className="text-base font-bold text-[#071A44]">
-                  {session.isNaturallyConcluded ? 'Hoàn thành phiên luyện tập' : 'Kết thúc phiên sớm?'}
+                  {isAllMissionsCompleted ? 'Hoàn thành phiên luyện tập' : 'Kết thúc phiên sớm?'}
                 </h3>
                 <p className="text-xs text-[#71809A]">
                   Kịch bản: {session.scenarioTitle} (JLPT {session.level || session.jlptLevel})
@@ -1278,19 +1803,23 @@ export const RoleplayPracticeView: React.FC = () => {
                 <span className="text-[#71809A]">Số lượt hội thoại:</span>
                 <span className="font-medium text-[#071A44]">{session.messages.length} lượt</span>
               </div>
-              {session.isNaturallyConcluded && (
+              {session.isNaturallyConcluded ? (
                 <p className="mt-2 text-emerald-700 font-semibold text-[11px]">
-                  ✨ Kịch bản đã đạt kết thúc tự nhiên một cách xuất sắc!
+                  ✨ Cuộc hội thoại đã kết thúc trọn vẹn và tự nhiên (+Điểm ấn tượng)!
                 </p>
-              )}
+              ) : isAllMissionsCompleted ? (
+                <p className="mt-2 text-emerald-700 font-semibold text-[11px]">
+                  ✓ Bạn đã hoàn thành 100% nhiệm vụ! Có thể nói lời chào tạm biệt để cộng thêm điểm ấn tượng hoặc hoàn thành ngay.
+                </p>
+              ) : null}
             </div>
 
             <p className="text-xs text-[#71809A] leading-relaxed">
-              {session.isNaturallyConcluded
-                ? 'Bạn đã hoàn tất cuộc hội thoại. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
+              {isAllMissionsCompleted
+                ? 'Bạn đã hoàn thành đầy đủ các nhiệm vụ của kịch bản. Bấm "Xác nhận kết thúc" để lưu kết quả và xem đánh giá tổng kết.'
                 : isAdmin
                 ? 'Nếu bạn kết thúc sớm, phiên kiểm thử kịch bản sẽ dừng lại tại đây và chuyển sang trang kết quả đánh giá.'
-                : 'Nếu bạn kết thúc sớm, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
+                : 'Nếu bạn kết thúc sớm khi chưa hoàn thành hết nhiệm vụ, phiên luyện tập sẽ dừng lại tại đây và credit đã trừ sẽ không được hoàn trả.'}
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -1307,7 +1836,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 onClick={handleConfirmEnd}
                 disabled={isEnding}
                 className={`rounded-xl px-5 py-2 text-xs font-bold text-white transition ${
-                  session.isNaturallyConcluded
+                  isAllMissionsCompleted
                     ? 'bg-emerald-600 hover:bg-emerald-700 shadow-sm'
                     : 'bg-red-600 hover:bg-red-700 shadow-sm'
                 }`}
@@ -1373,6 +1902,24 @@ export const RoleplayPracticeView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ============================================================ */}
+      {/* 6. MODAL CÀI ĐẶT GIỌNG ĐỌC AI (VOICEVOX)                     */}
+      {/* ============================================================ */}
+      <AiVoiceSettingsModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        selectedVoiceId={selectedVoiceId}
+        recommendedVoiceId={session?.recommendedAiVoiceId}
+        availableVoices={availableVoices}
+        onSave={(newVoiceId) => {
+          setSelectedVoiceId(newVoiceId);
+          localStorage.setItem('jcap_voicevox_selected_id', newVoiceId.toString());
+          setIsVoiceModalOpen(false);
+          setToastMessage('Đã cập nhật giọng đọc AI thành công!');
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
     </div>
   );
 };

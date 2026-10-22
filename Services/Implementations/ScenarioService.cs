@@ -57,7 +57,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode,
+            ScenarioCode = s.ScenarioCode ?? $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -239,7 +239,7 @@ public class ScenarioService : IScenarioService
         var scenarios = await _dbContext.Scenarios
             .AsNoTracking()
             .Include(s => s.LevelConfigurations)
-            .OrderByDescending(s => s.Id)
+            .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
 
         var result = scenarios.Select(s => new ScenarioListDto
@@ -249,7 +249,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode,
+            ScenarioCode = s.ScenarioCode ?? $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -303,12 +303,15 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail("Dữ liệu tạo kịch bản không hợp lệ.");
         }
 
+        // Tự động sinh ScenarioCode duy nhất bên trong backend (chỉ dùng để lưu DB và truy vấn hệ thống)
+        var generatedCode = $"SCN_{DateTime.UtcNow:yyyyMMdd}_{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+
         var scenario = new Scenario
         {
             Title = dto.Title.Trim(),
             Description = dto.Description.Trim(),
             Thumbnail = dto.Thumbnail?.Trim(),
-            ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant(),
+            ScenarioCode = generatedCode,
             IsActive = dto.IsActive
         };
 
@@ -384,6 +387,10 @@ public class ScenarioService : IScenarioService
         _dbContext.Scenarios.Add(scenario);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        // Tự động gán mã kịch bản chuẩn theo ID: SCN_{id}
+        scenario.ScenarioCode = $"SCN_{scenario.Id}";
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
         return await GetAdminScenarioDetailsAsync(scenario.Id, cancellationToken);
     }
 
@@ -411,7 +418,8 @@ public class ScenarioService : IScenarioService
         scenario.Title = dto.Title.Trim();
         scenario.Description = dto.Description.Trim();
         scenario.Thumbnail = dto.Thumbnail?.Trim();
-        scenario.ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant();
+        // Mã kịch bản luôn tương ứng chuẩn theo ID: SCN_{id}
+        scenario.ScenarioCode = $"SCN_{scenario.Id}";
         scenario.IsActive = dto.IsActive;
 
         if (dto.LevelConfigurations != null)
