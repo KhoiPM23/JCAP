@@ -32,10 +32,18 @@ import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
 import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
+import { AdminExploreView } from '../views/admin/AdminExploreView';
+import { AdminExplorePrefectureView } from '../views/admin/AdminExplorePrefectureView';
+import { AdminExploreSpotEditorView } from '../views/admin/AdminExploreSpotEditorView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 import { SettingsView } from '../views/SettingsView';
+
+// Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
+const JapanMapView = React.lazy(() =>
+  import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
+);
 
 // ============================================================
 // Route Wrappers
@@ -276,6 +284,10 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/scenarios/edit/:id" element={<AdminScenarioEditorView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
+        <Route path="/admin/explore" element={<AdminExploreView />} />
+        <Route path="/admin/explore/prefectures/:id" element={<AdminExplorePrefectureView />} />
+        <Route path="/admin/explore/prefectures/:id/spots/new" element={<AdminExploreSpotEditorView key="new" />} />
+        <Route path="/admin/explore/spots/:spotId" element={<AdminExploreSpotEditorView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
         {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
         <Route path="/admin/users" element={<AdminUserManagementView />} />
@@ -310,6 +322,24 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Khám phá: bản đồ Nhật Bản toàn màn hình (nằm ngoài MainLayout) */}
+      <Route
+        path="/explore"
+        element={
+          <PrivateRoute>
+            <React.Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#F4F9FE]">
+                  <div className="w-10 h-10 border-4 border-blue-100 border-t-[#0878EE] rounded-full animate-spin" />
+                </div>
+              }
+            >
+              <JapanMapView />
+            </React.Suspense>
           </PrivateRoute>
         }
       />

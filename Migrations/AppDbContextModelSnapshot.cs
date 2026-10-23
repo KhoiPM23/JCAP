@@ -190,6 +190,308 @@ namespace JCAP.Migrations
                     b.ToTable("CreditTransactions");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaxLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("MinLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("UnlockThresholdPercent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderIndex");
+
+                    b.ToTable("ExploreChapters");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapterPrefecture", b =>
+                {
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChapterId", "PrefectureId");
+
+                    b.HasIndex("PrefectureId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreChapterPrefectures");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefecture", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OpenedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExplorePrefectures", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExplorePrefecture_Id", "[Id] BETWEEN 1 AND 47");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
+                {
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kana")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("PrefectureId");
+
+                    b.ToTable("ExploreProvinceWords");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IconId")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("NameJp")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameKana")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameVi")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrefectureId", "Status", "IsActive");
+
+                    b.ToTable("ExploreSpots");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PassThreshold")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId", "OrderIndex");
+
+                    b.ToTable("ExploreSpotActivities");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EstimatedMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GrammarNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("JLPTLevel")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("N5");
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RealUse")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SentenceJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Situation")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpotId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreSpotLessons");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonGrammar", b =>
+                {
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LessonId", "GrammarId");
+
+                    b.HasIndex("GrammarId");
+
+                    b.ToTable("ExploreSpotLessonGrammars");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonVocabulary", b =>
+                {
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LessonId", "VocabularyId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.ToTable("ExploreSpotLessonVocabularies");
+                });
+
             modelBuilder.Entity("JCAP.Models.Grammar", b =>
                 {
                     b.Property<int>("Id")
@@ -1105,6 +1407,107 @@ namespace JCAP.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapterPrefecture", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreChapter", "Chapter")
+                        .WithMany("Prefectures")
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithOne("ChapterLink")
+                        .HasForeignKey("JCAP.Models.ExploreChapterPrefecture", "PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Chapter");
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithOne("Word")
+                        .HasForeignKey("JCAP.Models.ExploreProvinceWord", "PrefectureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithMany("Spots")
+                        .HasForeignKey("PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotActivity", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("Activities")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpot", "Spot")
+                        .WithOne("Lesson")
+                        .HasForeignKey("JCAP.Models.ExploreSpotLesson", "SpotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spot");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonGrammar", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("LessonGrammars")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonVocabulary", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("LessonVocabularies")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Vocabulary");
+                });
+
             modelBuilder.Entity("JCAP.Models.Mission", b =>
                 {
                     b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
@@ -1371,6 +1774,34 @@ namespace JCAP.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapter", b =>
+                {
+                    b.Navigation("Prefectures");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefecture", b =>
+                {
+                    b.Navigation("ChapterLink");
+
+                    b.Navigation("Spots");
+
+                    b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("LessonGrammars");
+
+                    b.Navigation("LessonVocabularies");
                 });
 
             modelBuilder.Entity("JCAP.Models.Grammar", b =>
