@@ -49,12 +49,22 @@ namespace JCAP.Data
         public DbSet<ExploreSpotActivity> ExploreSpotActivities { get; set; } = null!;
         public DbSet<ExploreProvinceWord> ExploreProvinceWords { get; set; } = null!;
 
+        // Flashcard & Bookmark (FE-05) DbSets - cấu hình ở FlashcardModelConfiguration
+        public DbSet<LearnerBookmark> LearnerBookmarks { get; set; } = null!;
+        public DbSet<LearnerFlashcardProgress> LearnerFlashcardProgresses { get; set; } = null!;
+        public DbSet<FlashcardStudySession> FlashcardStudySessions { get; set; } = null!;
+        public DbSet<FlashcardReviewLog> FlashcardReviewLogs { get; set; } = null!;
+        public DbSet<LearnerDailyFlashcardQuota> LearnerDailyFlashcardQuotas { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Explore (bản đồ hành trình học)
             ExploreModelConfiguration.Configure(modelBuilder);
+
+            // Flashcard & Bookmark (FE-05)
+            FlashcardModelConfiguration.Configure(modelBuilder);
 
             // ApplicationUser configuration
             modelBuilder.Entity<ApplicationUser>(entity =>

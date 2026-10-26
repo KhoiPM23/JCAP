@@ -1,5 +1,6 @@
 using JCAP.Data;
 using JCAP.DTOs.Credit;
+using JCAP.DTOs.Flashcard;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
@@ -76,6 +77,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOsSettings.SectionName));
+builder.Services.Configure<FlashcardQuotaOptions>(builder.Configuration.GetSection(FlashcardQuotaOptions.SectionName));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
@@ -89,6 +91,10 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IExploreService, ExploreService>();
 builder.Services.AddScoped<IAdminExploreService, AdminExploreService>();
 builder.Services.AddScoped<IAdminExploreSpotService, AdminExploreSpotService>();
+builder.Services.AddSingleton<ISrsCalculationService, SrsCalculationService>();
+builder.Services.AddScoped<ILearningTopicLookup, DefaultLearningTopicLookup>();
+builder.Services.AddScoped<ILearnerBookmarkService, LearnerBookmarkService>();
+builder.Services.AddScoped<ILearnerFlashcardService, LearnerFlashcardService>();
 builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
@@ -192,4 +198,3 @@ app.MapControllers();
 await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
 
 app.Run();
-
