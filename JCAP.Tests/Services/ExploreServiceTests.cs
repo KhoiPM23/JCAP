@@ -85,6 +85,26 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task Seeder_AfterAdminRenamesOrMovesSeedSpot_DoesNotRecreateTheOriginal()
+        {
+            var db = await SeededContext("renamed");
+            // Admin đổi tên tiếng Nhật và dời vị trí một mốc mẫu giữa hai lần khởi động
+            var baggage = await db.ExploreSpots.FirstAsync(s => s.NameJp == "成田空港 手荷物受取所");
+            baggage.NameJp = "成田空港 第1ターミナル";
+            baggage.Latitude = 35.7647;
+            baggage.Longitude = 140.3864;
+            await db.SaveChangesAsync();
+
+            var services = new ServiceCollection().AddSingleton(db).BuildServiceProvider();
+            await ExploreSeeder.SeedAsync(services);
+
+            // Không có bản sao của mốc gốc ở vị trí cũ quay lại
+            Assert.Equal(15, await db.ExploreSpots.CountAsync());
+            Assert.False(await db.ExploreSpots.AnyAsync(s => s.NameJp == "成田空港 手荷物受取所"));
+            Assert.Equal(35.7647, (await db.ExploreSpots.FindAsync(baggage.Id))!.Latitude);
+        }
+
+        [Fact]
         public async Task SeedData_EverySentenceHasTextAndReadingsAreKana()
         {
             foreach (var s in ExploreSeedData.Spots)
