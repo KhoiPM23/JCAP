@@ -40,7 +40,7 @@ export const AdminExplorePrefectureView: React.FC = () => {
   }, [shape, load]);
 
   const mapSpots = useMemo<MapSpot[]>(
-    () => (content?.spots ?? []).map((s) => ({ id: s.id, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi })),
+    () => (content?.spots ?? []).map((s, i) => ({ id: s.id, no: i + 1, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi })),
     [content],
   );
 
