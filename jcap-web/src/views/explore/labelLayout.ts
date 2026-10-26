@@ -50,10 +50,10 @@ export interface LabelInput {
   /** Bán kính vùng ghim tính là vật cản (px) và khoảng cách từ tâm ghim tới nhãn */
   pinRadius: number;
   pinLabelGap: number;
-  cities: { key: string; x: number; y: number; capital: boolean; label: LabelContent }[];
-  cityScale: number;
-  /** Quận/thành phố nhỏ: tâm và cỡ hộp bao trên màn hình */
-  districts: { key: string; name: string; x: number; y: number; w: number; h: number }[];
+  /** Thành phố chính và quận/thành phố nhỏ (tâm, cỡ hộp bao trên màn hình): bản đồ tỉnh hiện không truyền */
+  cities?: { key: string; x: number; y: number; capital: boolean; label: LabelContent }[];
+  cityScale?: number;
+  districts?: { key: string; name: string; x: number; y: number; w: number; h: number }[];
 }
 
 export interface LabelLayout {
@@ -113,8 +113,8 @@ export function layoutLabels(input: LabelInput): LabelLayout {
   // 3. Thành phố: thủ phủ trước, rồi thành phố khác; hết chỗ thì ẩn nhãn (thủ phủ vẫn giữ chấm trên bản đồ)
   const cities = new Map<string, Placed>();
   const cityDots = new Set<string>();
-  const s = input.cityScale;
-  for (const c of [...input.cities].sort((a, b) => Number(b.capital) - Number(a.capital))) {
+  const s = input.cityScale ?? 1;
+  for (const c of [...(input.cities ?? [])].sort((a, b) => Number(b.capital) - Number(a.capital))) {
     if (!visible(c.x, c.y)) continue;
     const { w, h } = labelSize(c.label, furigana, s);
     const near = (['bottom', 'top', 'right', 'left'] as const).map((side) => ({ side, box: beside(c.x, c.y, w, h, 8 * s, side) }));
@@ -136,9 +136,9 @@ export function layoutLabels(input: LabelInput): LabelLayout {
   }
 
   // 4. Tên quận (ưu tiên thấp nhất): chỉ khi hộp bao của quận đủ chỗ cho nhãn, bỏ tên trùng thành phố đã có nhãn
-  const cityNames = new Set(input.cities.filter((c) => cities.has(c.key)).map((c) => c.label.jp));
+  const cityNames = new Set((input.cities ?? []).filter((c) => cities.has(c.key)).map((c) => c.label.jp));
   const districts: LabelLayout['districts'] = [];
-  for (const d of input.districts) {
+  for (const d of input.districts ?? []) {
     if (cityNames.has(d.name) || !visible(d.x, d.y)) continue;
     const w = textWidth(d.name, DISTRICT_FONT) + 6;
     if (d.w < w + 14 || d.h < DISTRICT_LABEL_H + 10) continue;

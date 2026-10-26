@@ -139,11 +139,22 @@ export const JapanMapView: React.FC = () => {
     const prev = prevSelectedIdRef.current;
     prevSelectedIdRef.current = selectedId;
     if (prev === selectedId) return;
-    if (selectedId != null) {
-      headingRef.current?.focus({ preventScroll: true });
-    } else if (prev != null) {
-      document.querySelector<SVGPathElement>(`path[data-pref-id="${prev}"]`)?.focus({ preventScroll: true });
-    }
+    // Đợi khung hình đầu vẽ xong mới chuyển focus: focus() ngay sau khi DOM vừa đổi ép trình duyệt tính lại bố cục
+    // cả trang đồng bộ, đúng lúc camera bắt đầu bay (khựng); sau khi vẽ xong thì bố cục đã sẵn, focus gần như miễn phí
+    let timer = 0;
+    const raf = requestAnimationFrame(() => {
+      timer = window.setTimeout(() => {
+        if (selectedId != null) {
+          headingRef.current?.focus({ preventScroll: true });
+        } else if (prev != null) {
+          document.querySelector<SVGPathElement>(`path[data-pref-id="${prev}"]`)?.focus({ preventScroll: true });
+        }
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
   }, [selectedId]);
 
   // Giữ panel thêm một nhịp khi đóng để chạy hiệu ứng thoát.
