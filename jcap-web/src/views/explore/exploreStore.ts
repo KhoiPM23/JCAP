@@ -1,10 +1,14 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { exploreService } from '../../services/exploreService';
+import type { ApiResponse } from '../../types/auth';
 import type { ExploreJourney, ExplorePrefectureDetail, ExplorePrefectureSummary } from '../../types/explore';
 
 /**
  * Dữ liệu bản đồ Khám phá lấy từ API (hành trình, mốc của từng tỉnh), dùng chung cho mọi component của trang.
- * Mỗi thứ chỉ tải một lần trong phiên; component đăng ký qua hook để vẽ lại khi dữ liệu về.
+ *
+ * Dữ liệu đã tải được giữ lại để hiện ngay, nhưng mỗi lần vào trang hoặc mở một tỉnh đều được tải lại ngầm:
+ * admin có thể đã sửa nội dung (vị trí mốc, mốc mới, tỉnh vừa mở) trong lúc trang người học vẫn giữ bản cũ.
+ * Tải lại ngầm không đưa trang về trạng thái "đang tải"; lỗi mạng khi tải lại thì giữ dữ liệu cũ.
  */
 type Load<T> = { status: 'loading' } | { status: 'ok'; data: T } | { status: 'error'; message: string };
 
@@ -17,24 +21,71 @@ const emit = () => {
   listeners.forEach((l) => l());
 };
 
-export function loadJourney(force = false) {
-  if (journey && !force && journey.status !== 'error') return;
-  journey = { status: 'loading' };
-  emit();
-  exploreService.getJourney().then((res) => {
-    journey = res.success && res.data ? { status: 'ok', data: res.data } : { status: 'error', message: res.message };
+/** Nhiều component cùng xin một dữ liệu trong một lúc thì chỉ gọi API một lần */
+const inflight = new Set<string>();
+/** Lần tải xong gần nhất (ms), để không gọi lại liên tục khi nhiều component cùng gắn vào */
+const fetchedAt = new Map<string, number>();
+/** Trong khoảng này coi dữ liệu là mới, không tải lại */
+const FRESH_MS = 2000;
+/** Quay lại tab: chỉ tải lại khi lần tải trước đã cách ít nhất khoảng này */
+const REFOCUS_MS = 15000;
+
+function fetchInto<T>(
+  key: string,
+  get: () => Load<T> | undefined,
+  set: (v: Load<T>) => void,
+  request: () => Promise<ApiResponse<T>>,
+  force: boolean,
+  freshMs = FRESH_MS,
+) {
+  if (inflight.has(key)) return;
+  const cur = get();
+  const at = fetchedAt.get(key) ?? 0;
+  if (!force && cur?.status === 'ok' && Date.now() - at < freshMs) return;
+  inflight.add(key);
+  // Chưa có dữ liệu thì hiện "đang tải"; đã có thì tải lại ngầm, giữ dữ liệu cũ trên màn hình
+  if (cur?.status !== 'ok') {
+    set({ status: 'loading' });
+    emit();
+  }
+  request().then((res) => {
+    inflight.delete(key);
+    fetchedAt.set(key, Date.now());
+    const prev = get();
+    if (res.success && res.data) {
+      // Không đổi gì thì giữ nguyên object cũ: tránh vẽ lại bản đồ và tính lại lộ trình vô ích
+      if (prev?.status === 'ok' && JSON.stringify(prev.data) === JSON.stringify(res.data)) return;
+      set({ status: 'ok', data: res.data });
+    } else if (prev?.status === 'ok') {
+      return; // tải lại ngầm lỗi: giữ dữ liệu đang hiện
+    } else {
+      set({ status: 'error', message: res.message });
+    }
     emit();
   });
 }
 
-export function loadPrefecture(id: number, force = false) {
-  const cur = prefectures.get(id);
-  if (cur && !force && cur.status !== 'error') return;
-  prefectures.set(id, { status: 'loading' });
-  emit();
-  exploreService.getPrefecture(id).then((res) => {
-    prefectures.set(id, res.success && res.data ? { status: 'ok', data: res.data } : { status: 'error', message: res.message });
-    emit();
+export function loadJourney(force = false, freshMs = FRESH_MS) {
+  fetchInto('journey', () => journey, (v) => (journey = v), () => exploreService.getJourney(), force, freshMs);
+}
+
+export function loadPrefecture(id: number, force = false, freshMs = FRESH_MS) {
+  fetchInto(
+    `prefecture:${id}`,
+    () => prefectures.get(id),
+    (v) => prefectures.set(id, v),
+    () => exploreService.getPrefecture(id),
+    force,
+    freshMs,
+  );
+}
+
+// Quay lại tab Khám phá đang mở sẵn (admin có thể vừa sửa ở tab khác): tải lại những gì đã tải
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || listeners.size === 0) return;
+    if (journey) loadJourney(false, REFOCUS_MS);
+    prefectures.forEach((_, id) => loadPrefecture(id, false, REFOCUS_MS));
   });
 }
 
@@ -63,7 +114,7 @@ export interface JourneyState {
   retry: () => void;
 }
 
-/** Hành trình (tự tải lần đầu) */
+/** Hành trình (tải khi vào trang; đã có thì hiện ngay và tải lại ngầm) */
 export function useExploreJourney(): JourneyState {
   useStoreVersion();
   useEffect(() => loadJourney(), []);
@@ -78,7 +129,7 @@ export function useExploreJourney(): JourneyState {
   };
 }
 
-/** Các mốc của một tỉnh (tự tải khi id đổi); null id = không cần */
+/** Các mốc của một tỉnh (tải khi id đổi; đã có thì hiện ngay và tải lại ngầm); null id = không cần */
 export function usePrefectureData(id: number | null): { status: 'idle' | 'loading' | 'ok' | 'error'; data?: ExplorePrefectureDetail } {
   useStoreVersion();
   useEffect(() => {
