@@ -108,8 +108,7 @@ chỉ rollback khi đã lưu giữ dữ liệu cần thiết và kiểm tra dữ
 ## Kết quả kiểm tra ngày 27/10/2026
 
 - Nhánh làm việc: `feature/flashcards`, lấy từ origin ở commit `20a0a87`.
-- Tích hợp `origin/develop` ở `726815f` bằng merge không commit; không có file
-  xung đột. Chưa tạo commit/push, bản merge chờ lệnh commit của người dùng.
+- Đã tích hợp `origin/develop` ở `726815f`; không có file xung đột model/migration.
 - Backend build thành công. Toàn bộ test trước khi tách UsageNotes: 426 pass,
   3 fail; các fail là lỗi có
   sẵn của CreditServiceTests.PurchasePackageAsync_MockMode_CreatesPaidTransactionAndUpdatesBalance,
