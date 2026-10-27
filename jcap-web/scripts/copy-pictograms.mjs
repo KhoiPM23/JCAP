@@ -30,7 +30,10 @@ const missingPrefs = Array.from({ length: 47 }, (_, i) => i + 1).filter((id) => 
 if (missingPrefs.length) throw new Error(`Tỉnh chưa có icon: ${missingPrefs.join(', ')}`);
 const undeclared = [...used].filter((id) => !declared.includes(id));
 if (undeclared.length) throw new Error(`Icon được gán nhưng chưa khai báo: ${undeclared.join(', ')}`);
-const unused = declared.filter((id) => !used.has(id));
+// Biểu tượng tình huống (SCENE_PICTOGRAM_GROUPS) cố ý không gán cho tỉnh nào
+const sceneBlock = src.slice(src.indexOf('export const SCENE_PICTOGRAM_GROUPS'));
+const scene = new Set([...sceneBlock.matchAll(/^\s*P\('([^']+)'/gm)].map((m) => m[1]));
+const unused = declared.filter((id) => !used.has(id) && !scene.has(id));
 if (unused.length) console.warn(`Cảnh báo: icon khai báo nhưng không gán cho tỉnh nào: ${unused.join(', ')}`);
 
 const outDir = path.resolve('public/pictograms');
