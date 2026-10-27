@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PREFECTURES, projectLonLat, type PrefectureShape } from '../../data/japanMap';
-import { PICTOGRAMS, PREFECTURE_PICTOGRAMS, type Pictogram } from '../../data/japanPictograms';
+import { PICTOGRAMS, PREFECTURE_PICTOGRAMS, pictogramInfo, type Pictogram } from '../../data/japanPictograms';
 import { PREFECTURE_CITIES } from '../../data/japanPlaces';
 import type { LearnLevel, Phrase } from '../../data/learnContent';
 import type { ExplorePrefectureDetail, ExploreSpot } from '../../types/explore';
@@ -43,7 +43,7 @@ function toLandmark(s: ExploreSpot): MapLandmark {
   const lesson = s.lesson;
   return {
     spotId: s.id,
-    pictogram: { id: s.iconId, nameJp: s.nameJp, nameVi: s.nameVi, kind: PICTOGRAMS[s.iconId]?.kind ?? 'landmark' },
+    pictogram: { id: s.iconId, nameJp: s.nameJp, nameVi: s.nameVi, kind: pictogramInfo(s.iconId)?.kind ?? 'landmark' },
     xy: projectLonLat(s.latitude, s.longitude),
     kana: s.nameKana ?? undefined,
     phrase:
