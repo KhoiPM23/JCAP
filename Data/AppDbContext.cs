@@ -25,6 +25,16 @@ namespace JCAP.Data
         public DbSet<Vocabulary> Vocabularies { get; set; } = null!;
         public DbSet<Grammar> Grammars { get; set; } = null!;
 
+        // Self-study topics, examples and dataset provenance (no cross-module topic links).
+        public DbSet<LearningTopic> LearningTopics { get; set; } = null!;
+        public DbSet<TopicVocabulary> TopicVocabularies { get; set; } = null!;
+        public DbSet<TopicGrammar> TopicGrammars { get; set; } = null!;
+        public DbSet<VocabularyExample> VocabularyExamples { get; set; } = null!;
+        public DbSet<GrammarExample> GrammarExamples { get; set; } = null!;
+        public DbSet<LearningContentSource> LearningContentSources { get; set; } = null!;
+        public DbSet<VocabularySource> VocabularySources { get; set; } = null!;
+        public DbSet<GrammarSource> GrammarSources { get; set; } = null!;
+
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
@@ -331,7 +341,8 @@ namespace JCAP.Data
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
 
-                entity.HasIndex(e => new { e.Word, e.Meaning });
+                // Meaning can be long; keep it outside SQL Server's index-key size limit.
+                entity.HasIndex(e => e.Word);
             });
 
             // Shared Master Grammar configuration
@@ -364,8 +375,11 @@ namespace JCAP.Data
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
 
-                entity.HasIndex(e => new { e.Pattern, e.Meaning });
+                entity.HasIndex(e => e.Pattern);
             });
+
+            // Apply self-study extensions after the legacy master-field mappings.
+            LearningContentModelConfiguration.Configure(modelBuilder);
 
             // ShadowingDialogueVocabulary join configuration
             modelBuilder.Entity<ShadowingDialogueVocabulary>(entity =>

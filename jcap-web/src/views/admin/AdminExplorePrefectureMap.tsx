@@ -10,6 +10,8 @@ import { unproject } from './adminExploreSpots';
 
 export interface MapSpot {
   id: number;
+  /** Số thứ tự của mốc trong tỉnh (khớp danh sách mốc), không phụ thuộc mốc nào đang được vẽ */
+  no: number;
   lat: number;
   lon: number;
   status: ExploreSpotStatus;
@@ -24,6 +26,8 @@ interface Props {
   onSpotClick?: (id: number) => void;
   /** Vị trí đang đặt (trình soạn) */
   pick?: { lat: number; lon: number } | null;
+  /** Số thứ tự của mốc đang soạn, hiện trong chấm vị trí (mốc mới thì không có) */
+  pickNo?: number | null;
   /** Bấm lên bản đồ để đặt vị trí; inside = điểm nằm trong tỉnh */
   onPick?: (lat: number, lon: number, inside: boolean) => void;
   /** Báo điểm đang đặt (kể cả gõ tay) có nằm trong tỉnh không */
@@ -39,6 +43,7 @@ export const AdminExplorePrefectureMap: React.FC<Props> = ({
   highlightId,
   onSpotClick,
   pick,
+  pickNo,
   onPick,
   onPickInside,
   className,
@@ -123,7 +128,7 @@ export const AdminExplorePrefectureMap: React.FC<Props> = ({
         className="fill-white stroke-slate-400"
       />
 
-      {spots.map((s, i) => {
+      {spots.map((s) => {
         const [x, y] = projectLonLat(s.lat, s.lon);
         const hi = s.id === highlightId;
         return (
@@ -140,7 +145,7 @@ export const AdminExplorePrefectureMap: React.FC<Props> = ({
               vectorEffect="non-scaling-stroke"
             />
             <text x={x} y={y + unit * 0.55} textAnchor="middle" fontSize={unit * 1.5} fontWeight={700} className="fill-white pointer-events-none">
-              {i + 1}
+              {s.no}
             </text>
           </g>
         );
@@ -149,7 +154,16 @@ export const AdminExplorePrefectureMap: React.FC<Props> = ({
       {pickXY && (
         <g className="pointer-events-none">
           <circle cx={pickXY[0]} cy={pickXY[1]} r={unit * 2.2} className="fill-[#0878EE]/20 stroke-[#0878EE]" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-          <circle cx={pickXY[0]} cy={pickXY[1]} r={unit * 0.7} className="fill-[#0878EE]" />
+          {pickNo ? (
+            <>
+              <circle cx={pickXY[0]} cy={pickXY[1]} r={unit * 1.5} className="fill-[#0878EE]" stroke="white" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+              <text x={pickXY[0]} y={pickXY[1] + unit * 0.55} textAnchor="middle" fontSize={unit * 1.5} fontWeight={700} className="fill-white">
+                {pickNo}
+              </text>
+            </>
+          ) : (
+            <circle cx={pickXY[0]} cy={pickXY[1]} r={unit * 0.7} className="fill-[#0878EE]" />
+          )}
         </g>
       )}
     </svg>

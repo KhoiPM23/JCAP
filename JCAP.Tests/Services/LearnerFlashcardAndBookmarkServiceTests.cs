@@ -213,6 +213,42 @@ public class LearnerFlashcardAndBookmarkServiceTests
         Assert.Equal(3, detailRes.Data!.Logs.Count);
     }
 
+    [Theory]
+    [InlineData(FlashcardContentType.Vocabulary)]
+    [InlineData(FlashcardContentType.Grammar)]
+    public async Task StudySession_WithExtendedMeaning_PreservesFullHistorySnapshot(string contentType)
+    {
+        using var db = CreateInMemoryContext();
+        var (vocabulary, _, grammar) = await SeedTestEntitiesAsync(db);
+        var meaning = new string('語', 900);
+        vocabulary.Meaning = meaning;
+        grammar.Meaning = meaning;
+        await db.SaveChangesAsync();
+        var service = CreateFlashcardService(db);
+
+        var start = await service.StartSessionAsync("learner-1", new StartFlashcardSessionRequestDto
+        {
+            SourceType = FlashcardSessionSource.TopicSet,
+            TopicId = 1,
+            ContentType = contentType
+        });
+        Assert.True(start.Success);
+        var review = await service.SubmitCardReviewAsync("learner-1", start.Data!.SessionId,
+            new SubmitFlashcardReviewRequestDto
+            {
+                VocabularyId = contentType == FlashcardContentType.Vocabulary ? vocabulary.Id : null,
+                GrammarId = contentType == FlashcardContentType.Grammar ? grammar.Id : null,
+                Rating = FlashcardRating.Good
+            });
+
+        Assert.True(review.Success);
+        var log = await db.FlashcardReviewLogs.SingleAsync();
+        Assert.Equal(meaning, log.MeaningSnapshot);
+        var history = await service.GetSessionHistoryDetailAsync("learner-1", start.Data.SessionId);
+        Assert.True(history.Success);
+        Assert.Equal(meaning, Assert.Single(history.Data!.Logs).Meaning);
+    }
+
     [Fact]
     public async Task DailyQuotaAndUnlockWithCredit_LimitsNewCardsAndUnlocksExtraBatch()
     {

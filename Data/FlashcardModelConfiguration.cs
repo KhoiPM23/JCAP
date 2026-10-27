@@ -101,7 +101,8 @@ namespace JCAP.Data
 
                 entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
                 entity.Property(e => e.FrontTextSnapshot).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.MeaningSnapshot).IsRequired().HasMaxLength(300);
+                entity.Property(e => e.MeaningSnapshot).IsRequired()
+                    .HasMaxLength(LearningContentModelConfiguration.MeaningMaxLength);
                 entity.Property(e => e.Rating).IsRequired().HasMaxLength(20);
 
                 entity.HasIndex(e => e.SessionId);
