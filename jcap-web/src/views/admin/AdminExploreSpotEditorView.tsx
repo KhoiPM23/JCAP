@@ -13,7 +13,8 @@ import type {
 } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
 import { WarnIcon } from './AdminExploreChapterSection';
-import { IconPicker, LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
+import { IconPicker } from './AdminExploreIconPicker';
+import { LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
 import { AdminExplorePrefectureMap, type MapSpot } from './AdminExplorePrefectureMap';
 import { LoadError, useAdminToasts } from './AdminExploreToasts';
 import { SPOT_CHECKS, STATUS_BADGE, STATUS_LABEL, formatCoord, inJapan, parseLatLon } from './adminExploreSpots';
@@ -242,6 +243,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
     [allSpots, spotId],
   );
   const pickNo = spotId ? allSpots.findIndex((s) => s.id === spotId) + 1 || null : null;
+  const otherSpots = useMemo(() => allSpots.filter((s) => s.id !== spotId), [allSpots, spotId]);
 
   const backTo = prefectureId ? `/admin/explore/prefectures/${prefectureId}` : '/admin/explore';
   const goBack = () => {
@@ -392,7 +394,14 @@ export const AdminExploreSpotEditorView: React.FC = () => {
                 <div className="block text-xs font-semibold text-slate-700 mb-1">
                   Biểu tượng<span className="text-red-500"> *</span>
                 </div>
-                <IconPicker prefectureId={shape.id} value={form.iconId} onChange={(v) => set('iconId', v)} invalid={!!shownErrors.iconId} />
+                <IconPicker
+                  prefectureId={shape.id}
+                  value={form.iconId}
+                  onChange={(v) => set('iconId', v)}
+                  invalid={!!shownErrors.iconId}
+                  names={[form.nameVi, form.nameJp, form.nameKana]}
+                  prefectureSpots={otherSpots}
+                />
                 {shownErrors.iconId && <p className="text-[11px] text-red-600 mt-1">{shownErrors.iconId}</p>}
               </div>
             </div>
