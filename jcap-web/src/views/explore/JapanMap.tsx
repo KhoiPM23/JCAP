@@ -13,14 +13,14 @@ import { PREFECTURE_PICTOGRAMS, pictogramUrl, type PictogramKind } from '../../d
 import { useExploreJourney, usePrefectureData } from './exploreStore';
 import { REGION_STYLE, SEIGAIHA, T, mix, paperGrainUrl } from './exploreTheme';
 import { setFurigana, useFurigana } from './furigana';
-import { useSpotProgress } from './learnProgress';
-import { STOPS_PER_SPOT, nextSpotIndex, prefectureRoute } from './learnRoute';
+import { isStamped, useSpotProgress } from './learnProgress';
+import { nextSpotIndex, prefectureRoute } from './learnRoute';
+import { STAMP_INK } from './ExploreStamp';
 import { useFontVersion } from './measureText';
 import {
   prefectureLandmarks,
   prefetchPrefecture,
   usePrefectureDetails,
-  type MapLandmark,
   type PrefectureDetail,
 } from './prefectureDetail';
 import { ProvinceLabels } from './ProvinceLabels';
@@ -142,9 +142,11 @@ const PIN_RADIUS_PX = 19;
 const PIN_ICON_PX = 24;
 /** Khoảng cách từ tâm ghim tới nhãn tên bên cạnh (px) */
 const PIN_LABEL_GAP_PX = 25;
-/** Khi bay tới một địa điểm, ghim nằm thấp hơn tâm vùng trống chừng này (px) để thẻ nổi có chỗ phía trên */
+/** Khi phải dời bản đồ tới một địa điểm, ghim nằm thấp hơn tâm vùng trống chừng này (px) để thẻ nổi có chỗ phía trên */
 const SPOT_PIN_DROP_PX = 46;
 const SPOT_PIN_DROP_MOBILE_PX = 90;
+/** Chọn địa điểm mà ghim đã cách mép vùng trống ít nhất chừng này (px) thì giữ nguyên bản đồ, không dời */
+const SPOT_KEEP_MARGIN_PX = 64;
 /** Hai ghim gần nhau hơn khoảng này (px) thì gộp thành một nhóm */
 const CLUSTER_PX = 46;
 /** Giới hạn phóng to tối đa: số px màn hình trên một đơn vị bản đồ (~1 độ = 100 đơn vị) */
@@ -184,13 +186,6 @@ function centerViewBox(cx: number, cy: number, ppu: number, cw: number, ch: numb
   const availW = Math.max(cw - reserveRight - pad * 2, 80);
   const availH = Math.max(ch - reserveBottom - pad * 2, 80);
   return [cx - (pad + availW / 2) / ppu, cy - (pad + availH / 2) / ppu, cw / ppu, ch / ppu];
-}
-
-/** Khung quanh một địa điểm khi phóng vào: tỉ lệ theo cỡ tỉnh, để tỉnh nhỏ hay lớn đều có cảm giác "đến gần" */
-function spotBox(pref: PrefectureShape, landmark: MapLandmark): ViewBox {
-  const [x, y] = landmark.xy;
-  const r = Math.max(Math.max(pref.focus[2], pref.focus[3]) * 0.1, 3);
-  return [x - r, y - r, r * 2, r * 2];
 }
 
 /** Đa giác đều n cạnh quanh (cx, cy) bán kính r, góc xoay rot (khung ghim di sản) */
@@ -271,6 +266,8 @@ export interface JapanMapProps {
   onSelect: (id: number | null) => void;
   activeSpot: number | null;
   onSpotSelect: (index: number | null) => void;
+  /** Mở bài học của địa điểm (nút "Vào học" trên thẻ nổi) */
+  onSpotLearn: (index: number) => void;
   /** Số px bị panel che ở cạnh phải / cạnh dưới khi đang xem một tỉnh */
   reserveRight: number;
   reserveBottom: number;
@@ -283,6 +280,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   onSelect,
   activeSpot,
   onSpotSelect,
+  onSpotLearn,
   reserveRight,
   reserveBottom,
   onInteract,
@@ -550,12 +548,25 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     // Chưa chọn tỉnh: khung các đảo chính; Okinawa nằm đúng vị trí bên dưới, kéo xuống để tới
     if (!selected) return fitViewBox(HOME_VIEWBOX, size.w, size.h, 0, 0);
     const landmark = activeSpot != null ? prefectureLandmarks(selected.id)[activeSpot] : undefined;
-    const box = landmark ? spotBox(selected, landmark) : selected.focus;
-    const vb = fitViewBox(box, size.w, size.h, reserveRight, fitBottom);
-    if (!landmark) return vb;
-    // Ghim thấp hơn tâm vùng trống (điện thoại có ngăn kéo thì thấp hơn nữa) để thẻ nổi có chỗ phía trên
-    const drop = ((reserveBottom > 0 ? SPOT_PIN_DROP_MOBILE_PX : SPOT_PIN_DROP_PX) * vb[2]) / size.w;
-    return [vb[0], vb[1] - drop, vb[2], vb[3]];
+    const prefVb = fitViewBox(selected.focus, size.w, size.h, reserveRight, fitBottom);
+    if (!landmark) return prefVb;
+    // Chọn một địa điểm không phóng to thêm: giữ mức phóng to đang có (đang xa hơn khung tỉnh, vd. mở thẳng link
+    // tới địa điểm từ toàn quốc, thì lấy mức của khung tỉnh). Ghim đã nằm gọn trong vùng trống thì để yên bản đồ.
+    const cur = viewRef.current;
+    const keepZoom = !!cur && cur[2] <= prefVb[2] * 1.02;
+    const [w, h] = keepZoom ? [cur![2], cur![3]] : [prefVb[2], prefVb[3]];
+    const ppu = size.w / w;
+    const freeW = size.w - reserveRight;
+    const freeH = size.h - fitBottom;
+    if (keepZoom) {
+      const px = (landmark.xy[0] - cur![0]) * ppu;
+      const py = (landmark.xy[1] - cur![1]) * ppu;
+      const m = SPOT_KEEP_MARGIN_PX;
+      if (px >= m && px <= freeW - m && py >= m && py <= freeH - m) return cur!;
+    }
+    // Phải dời: đưa ghim vào giữa vùng trống, thấp hơn tâm một chút (điện thoại có ngăn kéo thì thấp hơn nữa) để thẻ nổi có chỗ phía trên
+    const drop = reserveBottom > 0 ? SPOT_PIN_DROP_MOBILE_PX : SPOT_PIN_DROP_PX;
+    return [landmark.xy[0] - freeW / 2 / ppu, landmark.xy[1] - (freeH / 2 + drop) / ppu, w, h];
   }, [selected, activeSpot, size.w, size.h, reserveRight, fitBottom]);
   const targetKey = `${selectedId}:${activeSpot}:${reserveRight}:${reserveBottom}`;
 
@@ -1064,10 +1075,10 @@ export const JapanMap: React.FC<JapanMapProps> = ({
 
   // ---- Lộ trình học, tiến độ và nhãn tên (chữ HTML theo pixel màn hình, xếp chống chồng nhau) ----
   const progressOf = useSpotProgress();
-  const spotProgress = (i: number) => (selected ? progressOf(landmarks[i].spotId) : 0);
-  const spotDone = (i: number) => spotProgress(i) >= STOPS_PER_SPOT;
+  const spotState = (i: number) => (selected ? progressOf(landmarks[i].spotId) : 'none');
+  const spotDone = (i: number) => isStamped(spotState(i));
   const route = selected ? prefectureRoute(selected.id) : null;
-  const nextIdx = selected ? nextSpotIndex(selected.id, spotProgress) : null;
+  const nextIdx = selected ? nextSpotIndex(selected.id, spotDone) : null;
   const [furigana] = useFurigana();
   const canSpeak = useCanSpeakJa();
   useFontVersion(); // phông mới tải xong -> số đo chữ đổi -> xếp lại nhãn
@@ -1481,7 +1492,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                     style={{ cursor: 'pointer', outline: 'none' }}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})`}
+                    aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})${spotDone(index) ? ', đã có con dấu' : ''}`}
                     aria-pressed={active}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1523,6 +1534,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                           preserveAspectRatio="xMidYMid meet"
                           pointerEvents="none"
                         />
+                        {/* Đã có con dấu: chấm mực chàm (dấu son: đỏ) có dấu tích ở góc trên phải */}
+                        {spotDone(index) && (
+                          <g aria-hidden="true" pointerEvents="none">
+                            <circle cx={37} cy={7} r={8} fill={spotState(index) === 'red' ? T.shu : STAMP_INK} stroke={T.paper} strokeWidth={1.5} />
+                            <path d="M33.4 7.2l2.5 2.5 4.6-5" fill="none" stroke={T.paper} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
+                          </g>
+                        )}
                         {/* Số thứ tự trên lộ trình: huy hiệu 19px ở góc dưới trái */}
                         {stopN != null && (
                           <g aria-hidden="true" pointerEvents="none">
@@ -1608,6 +1626,9 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           kana={activeLandmark.kana}
           stop={route ? { n: route.stop[activeSpot], total: route.route.length } : null}
           status={nextIdx === activeSpot ? 'next' : spotDone(activeSpot) ? 'done' : null}
+          spotId={activeLandmark.spotId}
+          stamp={spotState(activeSpot)}
+          onLearn={() => onSpotLearn(activeSpot)}
           phrase={activeLandmark.phrase}
           furigana={furigana}
           compact={reserveBottom > 0}

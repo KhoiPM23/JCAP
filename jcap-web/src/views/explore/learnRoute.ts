@@ -11,9 +11,6 @@ export interface LearnRoute {
   stop: number[];
 }
 
-/** Số bước (n/4) để một địa điểm được coi là đã đủ dấu */
-export const STOPS_PER_SPOT = 4;
-
 /** Nhớ theo mảng mốc (mỗi lần tải dữ liệu tỉnh là một mảng mới, nên dữ liệu mới thì tính lại) */
 const routeCache = new WeakMap<object, LearnRoute | null>();
 
@@ -55,10 +52,13 @@ export function prefectureRoute(prefId: number): LearnRoute | null {
   return result;
 }
 
-/** Địa điểm "Tiếp theo": điểm đầu tiên trên lộ trình có tiến độ < 4/4 (null nếu không có lộ trình hoặc đã xong hết) */
-export function nextSpotIndex(prefId: number, progressOf: (spotIndex: number) => number): number | null {
+/**
+ * Địa điểm "Tiếp theo": điểm đầu tiên trên lộ trình chưa có con dấu (null nếu không có lộ trình hoặc đã có hết).
+ * Chỉ là gợi ý: người học được học theo thứ tự tuỳ ý.
+ */
+export function nextSpotIndex(prefId: number, isDone: (spotIndex: number) => boolean): number | null {
   const r = prefectureRoute(prefId);
   if (!r) return null;
-  const found = r.route.find((i) => progressOf(i) < STOPS_PER_SPOT);
+  const found = r.route.find((i) => !isDone(i));
   return found ?? null;
 }

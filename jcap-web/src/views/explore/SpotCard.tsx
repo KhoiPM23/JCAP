@@ -1,9 +1,11 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { phraseKana, type Phrase } from '../../data/learnContent';
-import { ChatIcon, ListenButton, MicIcon, PictogramIcon } from './exploreUi';
+import { STAMP_INK, SpotStampMark } from './ExploreStamp';
+import { ListenButton } from './exploreUi';
 import { FuriganaText } from './furigana';
 import { T } from './exploreTheme';
 import type { Box } from './labelLayout';
+import type { SpotStamp } from './learnProgress';
 import { speakJa } from './speak';
 
 export interface SpotCardProps {
@@ -19,9 +21,14 @@ export interface SpotCardProps {
   kana?: string;
   stop: { n: number; total: number } | null;
   status: 'next' | 'done' | null;
+  /** Id mốc (độ nghiêng của con dấu theo id) và trạng thái con dấu */
+  spotId: number;
+  stamp: SpotStamp;
+  /** Mở bài học của địa điểm */
+  onLearn: () => void;
   phrase?: Phrase;
   furigana: boolean;
-  /** Điện thoại: bỏ hai ô hoạt động, cấp độ và dòng "Câu bạn sẽ học" cho gọn */
+  /** Điện thoại: bỏ cấp độ và dòng "Câu bạn sẽ học" cho gọn */
   compact: boolean;
   canSpeak: boolean;
   ink: string;
@@ -65,7 +72,7 @@ export function placeCard(pin: { x: number; y: number }, w: number, h: number, b
   return best ? { x: best.x, y: best.y } : { x: bounds.x0, y: bounds.y0 };
 }
 
-/** Thẻ nổi của địa điểm đang chọn: vị trí trong lộ trình, câu sẽ học, hai hoạt động sắp có */
+/** Thẻ nổi của địa điểm đang chọn: vị trí trong lộ trình, con dấu, câu sẽ học, nút vào học */
 export const SpotCard: React.FC<SpotCardProps> = ({
   pin,
   obstacles,
@@ -76,6 +83,9 @@ export const SpotCard: React.FC<SpotCardProps> = ({
   kana,
   stop,
   status,
+  spotId,
+  stamp,
+  onLearn,
   phrase,
   furigana,
   compact,
@@ -95,8 +105,6 @@ export const SpotCard: React.FC<SpotCardProps> = ({
   });
 
   const at = placeCard(pin, dim.w, dim.h, bounds, obstacles);
-  const done = status === 'done';
-  const stampColor = done ? T.shu : ink;
 
   return (
     <div
@@ -110,7 +118,7 @@ export const SpotCard: React.FC<SpotCardProps> = ({
       {compact ? (
         // Điện thoại: con dấu bên trái, bên phải xếp "Điểm n/N" + chip, tên Việt, tên Nhật (thẻ thấp để còn chỗ tránh ghim)
         <div className="flex items-center gap-2.5">
-          <Stamp pictogramId={pictogramId} color={stampColor} done={done} size={36} />
+          <SpotStampMark iconId={pictogramId} nameJp={nameJp} state={stamp} size={40} seed={spotId} />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {stop && <span className="text-xs font-semibold text-[var(--ink-2)]">Điểm {stop.n}/{stop.total}</span>}
@@ -127,7 +135,7 @@ export const SpotCard: React.FC<SpotCardProps> = ({
             <StatusChip status={status} />
           </div>
           <div className="mt-1.5 flex items-center gap-2.5">
-            <Stamp pictogramId={pictogramId} color={stampColor} done={done} size={44} />
+            <SpotStampMark iconId={pictogramId} nameJp={nameJp} state={stamp} size={48} seed={spotId} />
             <div className="min-w-0">
               <div className="text-sm font-bold leading-snug text-balance" style={{ color: ink }}>{nameVi}</div>
               <JpName nameJp={nameJp} kana={kana} furigana={furigana} />
@@ -159,41 +167,26 @@ export const SpotCard: React.FC<SpotCardProps> = ({
         <p className={`${compact ? 'mt-2' : 'mt-3 border-t border-[var(--rule)] pt-2.5'} text-xs text-[var(--muted)]`}>Nội dung bài học đang được chuẩn bị.</p>
       )}
 
-      {!compact && (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Soon icon={<ChatIcon className="h-4 w-4" />} label="Hội thoại AI" />
-          <Soon icon={<MicIcon className="h-4 w-4" />} label="Shadowing" />
-        </div>
+      {phrase && (
+        <button
+          type="button"
+          onClick={onLearn}
+          className={`jm-focus ${compact ? 'mt-2 h-10' : 'mt-3 h-11'} flex w-full items-center justify-center gap-2 rounded-[6px] text-sm font-semibold text-white transition-colors`}
+          style={{ background: 'var(--primary)' }}
+        >
+          {stamp === 'none' ? 'Vào học' : stamp === 'understood' ? 'Học tiếp' : 'Xem bài học'}
+          <span aria-hidden="true">→</span>
+        </button>
       )}
     </div>
   );
 };
 
-const Soon: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
-  <div className="flex flex-col gap-0.5 rounded-[6px] border-[1.5px] border-dashed border-[var(--ghost)] px-2.5 py-1.5">
-    <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--ink)]">
-      {icon}
-      {label}
-    </div>
-    <span className="text-[11px] text-[var(--muted)]">Sắp có</span>
-  </div>
-);
-
-const Stamp: React.FC<{ pictogramId: string; color: string; done: boolean; size: number }> = ({ pictogramId, color, done, size }) => (
-  <span
-    className="flex shrink-0 items-center justify-center rounded-full border-2"
-    style={{ width: size, height: size, borderColor: color, borderStyle: done ? 'solid' : 'dashed', background: T.card }}
-    aria-hidden="true"
-  >
-    <PictogramIcon id={pictogramId} color={color} className={size > 40 ? 'h-6 w-6' : 'h-5 w-5'} />
-  </span>
-);
-
 const StatusChip: React.FC<{ status: 'next' | 'done' | null }> = ({ status }) =>
   status === 'next' ? (
     <span className="jm-chip-next">Tiếp theo</span>
   ) : status === 'done' ? (
-    <span className="jm-chip-done" style={{ color: T.shu, borderColor: T.shu }}>
+    <span className="jm-chip-done" style={{ color: STAMP_INK, borderColor: STAMP_INK }}>
       Đã có dấu
     </span>
   ) : null;
