@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Switch } from '../components/jcap';
+import { Badge, Button, Switch } from '../components/jcap';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
 import { subscriptionPlanService, type UserSubscriptionState } from '../services/subscriptionPlanService';
@@ -10,6 +10,13 @@ interface Window {
   totalCredits: number;
   resetsInText: string;
 }
+
+/** Số liệu mẫu cho khối "theo kỹ năng" (chưa có API); thanh tính theo SKILL_USAGE_MAX */
+const SKILL_USAGE_SAMPLE = [
+  { label: 'Hội thoại AI', credits: 4 },
+  { label: 'Shadowing', credits: 1 }
+];
+const SKILL_USAGE_MAX = 5;
 
 const usedPercent = (w: Window) => (w.totalCredits > 0 ? Math.min(100, Math.round((w.usedCredits / w.totalCredits) * 100)) : 0);
 
@@ -194,8 +201,32 @@ export const SubscriptionQuotaView: React.FC = () => {
           </div>
         </section>
 
-        {/* "Mức dùng tuần này theo kỹ năng" (Hội thoại AI, Shadowing): API hạn mức chưa tách theo kỹ năng nên chưa hiện.
-            TODO: thêm khi creditService.getQuota trả số credit theo từng kỹ năng. */}
+        {/* Chưa có API tách credit theo kỹ năng: số liệu dưới đây là mẫu cố định, kèm thông báo cho người dùng.
+            TODO: thay SKILL_USAGE_SAMPLE bằng dữ liệu thật khi creditService.getQuota trả credit theo từng kỹ năng. */}
+        <section className="jx-um-sec" aria-labelledby="um-4">
+          <div className="jx-um-line" style={{ alignItems: 'center' }}>
+            <h2 id="um-4" className="jx-um-h">
+              Mức dùng tuần này theo kỹ năng
+            </h2>
+            <Badge tone="warning" icon="construction">
+              Chưa hoàn chỉnh
+            </Badge>
+          </div>
+          <div className="mt-2">
+            {SKILL_USAGE_SAMPLE.map((r) => (
+              <div key={r.label} className="jx-um-row">
+                <b className="text-[15px] font-semibold leading-[22px]">{r.label}</b>
+                <span className="jx-um-bar" role="img" aria-label={`${r.label}: ${r.credits} credit (số liệu mẫu)`}>
+                  <i style={{ width: `${Math.round((r.credits / SKILL_USAGE_MAX) * 100)}%` }} />
+                </span>
+                <span className="jx-um-val">{`${r.credits} credit`}</span>
+              </div>
+            ))}
+          </div>
+          <p className="jx-um-muted" style={{ marginTop: 8, fontSize: 13 }}>
+            Chức năng này chưa hoàn chỉnh, số liệu đang hiển thị chỉ là mẫu và chưa phản ánh mức dùng thật của bạn.
+          </p>
+        </section>
 
         <div className="flex items-center gap-4 border-t border-line pt-5 text-[13px] text-sumi-muted">
           <span className="flex-auto">
