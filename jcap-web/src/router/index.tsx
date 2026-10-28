@@ -39,6 +39,10 @@ import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 import { SettingsView } from '../views/SettingsView';
+import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
+import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
+import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
+import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
 
 // Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
 const JapanMapView = React.lazy(() =>
@@ -344,6 +348,16 @@ export const AppRouter: React.FC = () => {
         }
       />
 
+      {/* Fullscreen Flashcard SRS Study Session (Zen Mode, outside MainLayout) */}
+      <Route
+        path="/flashcards/study/:topicId/:contentType"
+        element={
+          <PrivateRoute>
+            <FlashcardSessionView />
+          </PrivateRoute>
+        }
+      />
+
       {/* Protected routes wrapped in MainLayout */}
       <Route
         element={
@@ -365,6 +379,11 @@ export const AppRouter: React.FC = () => {
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
+
+        {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
+        <Route path="/flashcards" element={<FlashcardSetsView />} />
+        <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
+        <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />

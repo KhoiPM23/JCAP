@@ -33,10 +33,12 @@ public class VocabularyGrammarModelTests
         Assert.InRange(grammar.CreatedAt, before, after);
         Assert.Null(vocabulary.PartOfSpeech);
         Assert.Null(vocabulary.Explanation);
+        Assert.Null(vocabulary.UsageNotes);
         Assert.Null(vocabulary.AudioUrl);
         Assert.Null(vocabulary.UpdatedAt);
         Assert.Null(grammar.Formation);
         Assert.Null(grammar.Explanation);
+        Assert.Null(grammar.UsageNotes);
         Assert.Null(grammar.UpdatedAt);
     }
 
@@ -44,8 +46,10 @@ public class VocabularyGrammarModelTests
     [InlineData(typeof(Vocabulary), nameof(Vocabulary.PartOfSpeech), "nvarchar(100)", 100)]
     [InlineData(typeof(Vocabulary), nameof(Vocabulary.AudioUrl), "nvarchar(1000)", 1000)]
     [InlineData(typeof(Vocabulary), nameof(Vocabulary.Explanation), "nvarchar(max)", null)]
+    [InlineData(typeof(Vocabulary), nameof(Vocabulary.UsageNotes), "nvarchar(max)", null)]
     [InlineData(typeof(Grammar), nameof(Grammar.Formation), "nvarchar(1000)", 1000)]
     [InlineData(typeof(Grammar), nameof(Grammar.Explanation), "nvarchar(max)", null)]
+    [InlineData(typeof(Grammar), nameof(Grammar.UsageNotes), "nvarchar(max)", null)]
     public void DetailFields_AreOptionalUnicodeColumns(
         Type entityType, string propertyName, string columnType, int? maxLength)
     {
@@ -76,7 +80,7 @@ public class VocabularyGrammarModelTests
         Assert.Equal("datetime2", updatedAt.GetColumnType());
         Assert.Equal(ValueGenerated.Never, updatedAt.ValueGenerated);
         Assert.Equal("GETUTCDATE()", entity.FindProperty("CreatedAt")!.GetDefaultValueSql());
-        Assert.Null(entity.FindProperty("UsageNotes"));
+        Assert.True(entity.FindProperty("UsageNotes")!.IsNullable);
         Assert.Null(entity.FindProperty("ContentCode"));
         Assert.Null(entity.FindProperty("Status"));
     }
@@ -97,7 +101,8 @@ public class VocabularyGrammarModelTests
             Meaning = "Ăn",
             PartOfSpeech = "Động từ nhóm 2",
             JLPTLevel = "N5",
-            Explanation = "Diễn tả hành động ăn.\nLưu ý: giải thích và lưu ý dùng chung trường.",
+            Explanation = "Diễn tả hành động ăn trong giao tiếp hằng ngày.",
+            UsageNotes = "Dùng 飲む khi diễn tả hành động uống.",
             AudioUrl = "/audio/vocabulary/taberu.mp3",
             IsActive = isActive,
             UpdatedAt = updatedAt
@@ -108,6 +113,7 @@ public class VocabularyGrammarModelTests
             Meaning = "Được phép làm gì",
             Formation = "Vて + もいい",
             Explanation = "Dùng để xin hoặc cho phép thực hiện một hành động.",
+            UsageNotes = "Dùng ですか khi muốn đặt câu hỏi xin phép.",
             ExampleSentence = "ここで食べてもいいですか。",
             JLPTLevel = "N5",
             IsActive = isActive,
@@ -124,11 +130,13 @@ public class VocabularyGrammarModelTests
         Assert.Equal(vocabulary.Meaning, savedVocabulary.Meaning);
         Assert.Equal(vocabulary.PartOfSpeech, savedVocabulary.PartOfSpeech);
         Assert.Equal(vocabulary.Explanation, savedVocabulary.Explanation);
+        Assert.Equal(vocabulary.UsageNotes, savedVocabulary.UsageNotes);
         Assert.Equal(vocabulary.AudioUrl, savedVocabulary.AudioUrl);
         Assert.Equal(grammar.Pattern, savedGrammar.Pattern);
         Assert.Equal(grammar.Meaning, savedGrammar.Meaning);
         Assert.Equal(grammar.Formation, savedGrammar.Formation);
         Assert.Equal(grammar.Explanation, savedGrammar.Explanation);
+        Assert.Equal(grammar.UsageNotes, savedGrammar.UsageNotes);
         Assert.Equal(grammar.ExampleSentence, savedGrammar.ExampleSentence);
         Assert.Equal(isActive, savedVocabulary.IsActive);
         Assert.Equal(isActive, savedGrammar.IsActive);
@@ -155,7 +163,7 @@ public class VocabularyGrammarModelTests
     }
 
     [Fact]
-    public void MigrationTargetModel_MatchesCurrentModelIncludingUpstreamSubscriptionField()
+    public void MigrationTargetModel_PreservesSubscriptionAndOnlyAddsLearningDetailColumns()
     {
         using var context = CreateSqlServerModelContext();
         var migration = new AddVocabularyAndGrammarDetails();
@@ -168,11 +176,19 @@ public class VocabularyGrammarModelTests
 
         var targetModel = context.GetService<IModelRuntimeInitializer>()
             .Initialize(migration.TargetModel, designTime: true);
-        var currentModel = context.GetService<IDesignTimeModel>().Model;
+        // Compare historical migrations to each other: later features legitimately
+        // add entities to the current model and must not break this regression test.
+        var previousModel = context.GetService<IModelRuntimeInitializer>()
+            .Initialize(new AddSubscriptionExpiresAt().TargetModel, designTime: true);
         var differences = context.GetService<IMigrationsModelDiffer>()
-            .GetDifferences(targetModel.GetRelationalModel(), currentModel.GetRelationalModel());
+            .GetDifferences(previousModel.GetRelationalModel(), targetModel.GetRelationalModel());
 
-        Assert.Empty(differences);
+        Assert.Equal(9, differences.Count);
+        Assert.All(differences, operation =>
+        {
+            var column = Assert.IsType<AddColumnOperation>(operation);
+            Assert.Contains(column.Table, new[] { "Vocabularies", "Grammars" });
+        });
     }
 
     [Fact]
