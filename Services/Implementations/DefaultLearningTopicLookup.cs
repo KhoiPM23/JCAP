@@ -10,18 +10,13 @@ using Microsoft.EntityFrameworkCore;
 namespace JCAP.Services.Implementations
 {
     /// <summary>
-    /// Cài đặt của ILearningTopicLookup phục vụ tra cứu chủ đề và các Từ vựng/Ngữ pháp độc lập (FE-05 Self-study).
-    /// Tuyệt đối tách biệt, không tự gom từ vựng/ngữ pháp phụ thuộc của Shadowing hoặc Scenario.
+    /// Cài đặt của ILearningTopicLookup tra cứu chủ đề tự học trực tiếp từ bảng LearningTopics và các bảng nối TopicVocabularies, TopicGrammars.
+    /// Thiết kế theo nguyên tắc Ràng buộc thuận (Positive Association):
+    /// Chỉ lấy các từ vựng và ngữ pháp được gán tường minh vào chủ đề tự học (Self-study LearningTopics),
+    /// hoàn toàn độc lập và không chứa bất kỳ logic loại trừ phụ thuộc nào vào Scenario hay Shadowing.
     /// </summary>
     public class DefaultLearningTopicLookup : ILearningTopicLookup
     {
-        private static readonly (int TopicId, string Level, string Title, string Description)[] DefaultLevelTopics =
-        {
-            (1, "N5", "Chủ đề Sơ cấp N5", "Tổng hợp từ vựng và mẫu ngữ pháp nền tảng trình độ JLPT N5."),
-            (2, "N4", "Chủ đề Sơ - Trung cấp N4", "Tổng hợp từ vựng và mẫu ngữ pháp thông dụng trình độ JLPT N4."),
-            (3, "N3", "Chủ đề Trung cấp N3", "Tổng hợp từ vựng và mẫu ngữ pháp giao tiếp trình độ JLPT N3.")
-        };
-
         private readonly AppDbContext _db;
 
         public DefaultLearningTopicLookup(AppDbContext db)
@@ -31,66 +26,64 @@ namespace JCAP.Services.Implementations
 
         public async Task<List<LearningTopicSnapshot>> GetActiveTopicsAsync(string? jlptLevelFilter = null, string? keyword = null)
         {
-            // Chỉ lấy các từ vựng & ngữ pháp ĐỘC LẬP (không bị gắn với Shadowing Dialogues)
-            var vocabularies = await _db.Vocabularies
+            var query = _db.LearningTopics
                 .AsNoTracking()
-                .Where(v => v.IsActive && !v.ShadowingDialogueVocabularies.Any())
-                .OrderBy(v => v.Id)
+                .Where(t => t.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                string kw = keyword.Trim();
+                query = query.Where(t => t.Name.Contains(kw) || (t.Description != null && t.Description.Contains(kw)));
+            }
+
+            var topics = await query
+                .Include(t => t.TopicVocabularies.OrderBy(tv => tv.OrderIndex))
+                    .ThenInclude(tv => tv.Vocabulary)
+                .Include(t => t.TopicGrammars.OrderBy(tg => tg.OrderIndex))
+                    .ThenInclude(tg => tg.Grammar)
+                .OrderBy(t => t.Id)
                 .ToListAsync();
 
-            var grammars = await _db.Grammars
-                .AsNoTracking()
-                .Where(g => g.IsActive && !g.ShadowingDialogueGrammars.Any())
-                .OrderBy(g => g.Id)
-                .ToListAsync();
-
-            // Nếu không có bất kỳ từ vựng hoặc ngữ pháp độc lập nào trong DB, trả về danh sách rỗng
-            if (vocabularies.Count == 0 && grammars.Count == 0)
+            if (topics.Count == 0)
             {
                 return new List<LearningTopicSnapshot>();
             }
 
             var result = new List<LearningTopicSnapshot>();
 
-            foreach (var def in DefaultLevelTopics)
+            foreach (var topic in topics)
             {
-                if (!string.IsNullOrWhiteSpace(jlptLevelFilter) &&
-                    !string.Equals(def.Level, jlptLevelFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+                var matchedVocabs = topic.TopicVocabularies
+                    .Select(tv => tv.Vocabulary)
+                    .Where(v => v != null && v.IsActive)
+                    .Where(v => string.IsNullOrWhiteSpace(jlptLevelFilter) ||
+                                string.Equals(v.JLPTLevel ?? "N5", jlptLevelFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var matchedGrammars = topic.TopicGrammars
+                    .Select(tg => tg.Grammar)
+                    .Where(g => g != null && g.IsActive)
+                    .Where(g => string.IsNullOrWhiteSpace(jlptLevelFilter) ||
+                                string.Equals(g.JLPTLevel ?? "N5", jlptLevelFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (matchedVocabs.Count == 0 && matchedGrammars.Count == 0)
                 {
                     continue;
                 }
 
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    string kw = keyword.Trim();
-                    if (!def.Title.Contains(kw, StringComparison.OrdinalIgnoreCase) &&
-                        !def.Description.Contains(kw, StringComparison.OrdinalIgnoreCase) &&
-                        !def.Level.Contains(kw, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-                }
-
-                var levelVocabs = vocabularies
-                    .Where(v => string.Equals(v.JLPTLevel ?? "N5", def.Level, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                var levelGrammars = grammars
-                    .Where(g => string.Equals(g.JLPTLevel ?? "N5", def.Level, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (levelVocabs.Count == 0 && levelGrammars.Count == 0)
-                {
-                    continue;
-                }
+                // Xác định JLPT Level đại diện cho Topic snapshot
+                string topicLevel = !string.IsNullOrWhiteSpace(jlptLevelFilter)
+                    ? jlptLevelFilter.Trim().ToUpper()
+                    : matchedVocabs.FirstOrDefault()?.JLPTLevel ?? matchedGrammars.FirstOrDefault()?.JLPTLevel ?? "N5";
 
                 result.Add(new LearningTopicSnapshot(
-                    def.TopicId,
-                    def.Title,
-                    def.Description,
-                    def.Level,
-                    levelVocabs,
-                    levelGrammars));
+                    topic.Id,
+                    topic.Name,
+                    topic.Description,
+                    topicLevel,
+                    matchedVocabs,
+                    matchedGrammars));
             }
 
             return result;
@@ -98,8 +91,39 @@ namespace JCAP.Services.Implementations
 
         public async Task<LearningTopicSnapshot?> GetActiveTopicByIdAsync(int topicId)
         {
-            var topics = await GetActiveTopicsAsync();
-            return topics.FirstOrDefault(t => t.TopicId == topicId);
+            var topic = await _db.LearningTopics
+                .AsNoTracking()
+                .Where(t => t.Id == topicId && t.IsActive)
+                .Include(t => t.TopicVocabularies.OrderBy(tv => tv.OrderIndex))
+                    .ThenInclude(tv => tv.Vocabulary)
+                .Include(t => t.TopicGrammars.OrderBy(tg => tg.OrderIndex))
+                    .ThenInclude(tg => tg.Grammar)
+                .FirstOrDefaultAsync();
+
+            if (topic == null)
+            {
+                return null;
+            }
+
+            var matchedVocabs = topic.TopicVocabularies
+                .Select(tv => tv.Vocabulary)
+                .Where(v => v != null && v.IsActive)
+                .ToList();
+
+            var matchedGrammars = topic.TopicGrammars
+                .Select(tg => tg.Grammar)
+                .Where(g => g != null && g.IsActive)
+                .ToList();
+
+            string topicLevel = matchedVocabs.FirstOrDefault()?.JLPTLevel ?? matchedGrammars.FirstOrDefault()?.JLPTLevel ?? "N5";
+
+            return new LearningTopicSnapshot(
+                topic.Id,
+                topic.Name,
+                topic.Description,
+                topicLevel,
+                matchedVocabs,
+                matchedGrammars);
         }
     }
 }
