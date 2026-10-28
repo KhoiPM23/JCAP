@@ -156,7 +156,9 @@
 /* ===== Vùng nội dung bên phải thanh bên + chuyển cảnh bản đồ <-> trang (prototype: .pgbg, .pg) ===== */
 /* Lớp bản đồ luôn nằm dưới. Ở trang khác thì ẩn sau khi nền trang đã phủ kín (trễ 0,3s), vẫn giữ nguyên trạng thái bản đồ */
 .jx-maplayer { position: fixed; inset: 0; }
-.jx-maplayer.is-hidden { visibility: hidden; pointer-events: none; transition: visibility 0s linear .3s; }
+/* Sau khi nền trang phủ xong (0,3s) bản đồ mới bị ẩn. content-visibility: hidden bỏ hẳn việc tính style/layout/vẽ của cả cây bản đồ
+   (hàng nghìn nút SVG) ở những lần tính lại style sau đó, nên các trang khác không còn khựng khi bản đồ nằm dưới. */
+.jx-maplayer.is-hidden { visibility: hidden; content-visibility: hidden; pointer-events: none; transition: visibility 0s linear .3s, content-visibility 0s linear .3s allow-discrete; }
 /* Nền trang: mờ dần phủ lên bản đồ (rời bản đồ) hoặc mờ dần để lộ bản đồ (quay về) */
 .jx-pgbg {
   position: fixed; inset: 0; z-index: 14; background: var(--paper-100); opacity: 0; visibility: hidden; pointer-events: none;
@@ -170,6 +172,9 @@
 .jx-app.is-collapsed .jx-page { left: 72px; }
 /* Nội dung trang hiện sau khi nền đã phủ được một nửa (trễ 0,14s) */
 .jx-page-inner { animation: jx-page-in .32s var(--e) .14s both; }
+/* Đang chờ chuyển cảnh: trang đã dựng và bố cục xong nhưng chưa hiện, hoạt ảnh vào chưa bắt đầu */
+.jx-page.is-pending { visibility: hidden; pointer-events: none; }
+.jx-page.is-pending .jx-page-inner { animation: none; opacity: 0; }
 @keyframes jx-page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 767px) {

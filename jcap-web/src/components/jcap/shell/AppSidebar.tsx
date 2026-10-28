@@ -47,13 +47,15 @@ const NAV: NavDef[] = [
 export interface AppSidebarProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  /** Khung đang ở dạng bản đồ hay trang (có thể trễ vài khung hình so với đường dẫn khi chuyển cảnh). Bỏ trống thì suy ra từ đường dẫn */
+  onMap?: boolean;
 }
 
 /**
  * Thanh bên của học viên (thay Header + Navbar cũ). Trên bản đồ nó nổi, ở các trang khác áp sát mép trái (CSS theo lớp
  * is-page của khung). Nhóm "Đang học" lấy từ tiến độ thật: chương hiện tại, bài Shadowing đang dở, phiên hội thoại đang dở.
  */
-export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleCollapsed }) => {
+export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleCollapsed, onMap }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -102,7 +104,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF).
   // Chế độ tối: cả hai nơi đều dùng hoc-tap-dem (bản đồ vẫn giữ kham-pha, chỉ thanh bên nổi trên nó tối đi)
   return (
-    <aside ref={sideRef} className="jx-side" data-theme={isDark ? themeFor('learn') : MAP_PATHS(path) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
+    <aside ref={sideRef} className="jx-side" data-theme={isDark ? themeFor('learn') : (onMap ?? MAP_PATHS(path)) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
       {/* Thương hiệu: logo (thu gọn: mở thanh bên), chữ JCAP (về trang chủ), nút thu gọn */}
       <div className="jx-brand">
         <button

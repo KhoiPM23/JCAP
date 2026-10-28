@@ -42,8 +42,27 @@ export const LearnerShell: React.FC = () => {
   const [params] = useSearchParams();
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const { isDark, themeFor } = useTheme();
-  const map = isMapPath(pathname);
-  const lightIsland = isDark && !map && !isThemedPath(pathname);
+  const mapRoute = isMapPath(pathname);
+  // Rời bản đồ: dựng và bố cục trang mới khi còn đứng yên (ẩn), rồi mới chạy chuyển cảnh. Phần việc nặng của lần dựng đầu
+  // (render, tính style, bố cục, đo chữ) nằm trước hoạt ảnh nên không làm hoạt ảnh bị giật; về bản đồ thì chạy ngay.
+  const [mapLook, setMapLook] = useState(mapRoute);
+  useEffect(() => {
+    if (mapRoute) {
+      setMapLook(true);
+      return;
+    }
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setMapLook(false));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      cancelAnimationFrame(r2);
+    };
+  }, [mapRoute]);
+  const map = mapRoute || mapLook;
+  const pending = !mapRoute && mapLook;
+  const lightIsland = isDark && !mapRoute && !isThemedPath(pathname);
 
   // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
   useEffect(() => {
@@ -53,13 +72,13 @@ export const LearnerShell: React.FC = () => {
       delete document.body.dataset.theme;
     };
   }, [isDark, themeFor]);
-  const inPrefecture = map && !!params.get('tinh');
+  const inPrefecture = mapRoute && !!params.get('tinh');
 
   // Lớp bản đồ dựng một lần rồi giữ. Vào thẳng một trang khác thì dựng sẵn lúc trình duyệt rảnh, để lần đầu về bản đồ không bị khựng
   const [mapMounted, setMapMounted] = useState(map);
   useEffect(() => {
-    if (map) setMapMounted(true);
-  }, [map]);
+    if (mapRoute) setMapMounted(true);
+  }, [mapRoute]);
   useEffect(() => {
     if (mapMounted) return;
     const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (h: number) => void };
@@ -84,7 +103,7 @@ export const LearnerShell: React.FC = () => {
 
   return (
     <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={themeFor('learn')}>
-      <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} />
+      <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
       {mapMounted && (
@@ -96,7 +115,7 @@ export const LearnerShell: React.FC = () => {
               </div>
             }
           >
-            <JapanMapView active={map} />
+            <JapanMapView active={mapRoute} />
           </React.Suspense>
         </div>
       )}
@@ -104,8 +123,8 @@ export const LearnerShell: React.FC = () => {
       {/* Nền trang phủ lên bản đồ bằng cross-fade */}
       <div className="jx-pgbg" aria-hidden="true" />
 
-      {!map && (
-        <main className="jx-page">
+      {!mapRoute && (
+        <main className={cx('jx-page', pending && 'is-pending')}>
           <div key={pathname} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">
