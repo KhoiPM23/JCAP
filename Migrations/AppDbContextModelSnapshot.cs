@@ -96,12 +96,6 @@ namespace JCAP.Migrations
                     b.Property<DateTime?>("SubscriptionExpiresAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("SubscriptionPlanId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("SubscriptionStartedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -164,13 +158,6 @@ namespace JCAP.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("AmountVnd")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("CoveredBySubscription")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -187,10 +174,6 @@ namespace JCAP.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("SubscriptionPlanId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -202,11 +185,7 @@ namespace JCAP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PayOsOrderCode")
-                        .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
-
-                    b.HasIndex("UserId", "Type", "CoveredBySubscription", "CreatedAt")
-                        .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
+                    b.HasIndex("UserId");
 
                     b.ToTable("CreditTransactions");
                 });
