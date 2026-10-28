@@ -248,11 +248,28 @@
 .jx-shf-search label { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--sumi-muted); cursor: pointer; }
 .jx-shf-search input { flex: 1; min-width: 0; height: 36px; padding: 0 12px 0 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: var(--sumi); outline: none; }
 
+body[data-theme$="-dem"] { background-color: var(--paper-100); color: var(--sumi); }
+/* Tấm sáng cho trang chưa làm lại theo design system khi bật chế độ tối (màu cứng cũ vẫn đọc được) */
+.jx-light-island { padding: 20px; border-radius: 20px; border: 1px solid var(--line); }
+@media (max-width: 767px) { .jx-light-island { padding: 12px; } }
+[data-theme$="-dem"] .jx-pill { box-shadow: 0 8px 22px rgba(0, 0, 0, .45); }
+
 /* ===== Phòng luyện Shadowing (prototype .room, .rm-*): nền trung tính, bỏ ám xanh của nền giấy ===== */
-.jx-room[data-theme] {
+.jx-room[data-theme] { background-color: var(--paper-100); background-size: 22px 22px; }
+.jx-room[data-theme="phong-luyen"] {
   --paper-100: #f4f6f8; --paper-200: #e9edf1; --paper-300: #dde3e9; --line: #dce2e8;
-  background-color: var(--paper-100); background-image: radial-gradient(circle, rgba(15, 37, 56, .10) 1px, transparent 1.4px); background-size: 22px 22px;
+  background-image: radial-gradient(circle, rgba(15, 37, 56, .10) 1px, transparent 1.4px);
 }
+/* Chế độ tối (design-handoff 9b, tông mực sumi): màu nền lấy từ token phong-luyen-dem, chỉ thêm chấm nền sáng nhẹ */
+.jx-room[data-theme="phong-luyen-dem"] { background-image: radial-gradient(circle, rgba(255, 255, 255, .06) 1px, transparent 1.4px); }
+.jx-room[data-theme="phong-luyen-dem"] .jx-rm-bar { background: rgba(32, 31, 28, .82); }
+/* Chữ trắng đặt trên nền --ai / --sumi / điểm: ở chế độ tối các nền này sáng lên nên chữ phải đổi sang màu đậm */
+.jx-room[data-theme$="-dem"] .text-white { color: var(--on-ai); }
+/* Câu của học viên: nền --ai-soft, chữ --sumi (nền --sumi của bản sáng sẽ thành màu sáng) */
+.jx-room[data-theme$="-dem"] .jx-me-bubble { background: var(--ai-soft); border: 1px solid color-mix(in srgb, var(--ai) 20%, var(--ai-soft)); color: var(--sumi); }
+.jx-room[data-theme$="-dem"] .jx-me-bubble .text-white { color: var(--sumi); }
+.jx-room[data-theme$="-dem"] .jx-me-bubble .text-on-ai { color: var(--sumi-muted); }
+.jx-room[data-theme$="-dem"] .jx-me-bubble .border-sumi { border-color: var(--line); }
 .jx-rm-bar {
   flex: none; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 24px; position: sticky; top: 0; z-index: 40;
   background: rgba(255, 255, 255, .72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);

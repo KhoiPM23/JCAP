@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { cx } from '../utils';
 import { AppSidebar } from './AppSidebar';
 
@@ -22,6 +23,13 @@ function readCollapsed(): boolean {
 export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
 
 /**
+ * Các trang đã làm lại theo design system nên có chế độ tối. Trang còn lại (Credit, Flashcard, Kết quả, chi tiết kịch bản…)
+ * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
+ */
+const THEMED_PATHS = ['/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
+const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
+
+/**
  * Khung ứng dụng của học viên: một thanh bên (240px, thu gọn 72px, nhớ trạng thái) và nội dung bên phải.
  *
  * Chuyển cảnh làm theo prototype (design-handoff/prototype, class .pgbg / .pg): bản đồ là một lớp luôn nằm dưới và KHÔNG bị
@@ -33,7 +41,18 @@ export const LearnerShell: React.FC = () => {
   const { pathname } = useLocation();
   const [params] = useSearchParams();
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const { isDark, themeFor } = useTheme();
   const map = isMapPath(pathname);
+  const lightIsland = isDark && !map && !isThemedPath(pathname);
+
+  // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
+  useEffect(() => {
+    if (!isDark) return;
+    document.body.dataset.theme = themeFor('learn');
+    return () => {
+      delete document.body.dataset.theme;
+    };
+  }, [isDark, themeFor]);
   const inPrefecture = map && !!params.get('tinh');
 
   // Lớp bản đồ dựng một lần rồi giữ. Vào thẳng một trang khác thì dựng sẵn lúc trình duyệt rảnh, để lần đầu về bản đồ không bị khựng
@@ -64,7 +83,7 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme="hoc-tap">
+    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={themeFor('learn')}>
       <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} />
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
@@ -88,7 +107,13 @@ export const LearnerShell: React.FC = () => {
       {!map && (
         <main className="jx-page">
           <div key={pathname} className="jx-page-inner px-4 py-5 md:p-8">
-            <Outlet />
+            {lightIsland ? (
+              <div data-theme="hoc-tap" className="jx-light-island">
+                <Outlet />
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </main>
       )}

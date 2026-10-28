@@ -80,7 +80,7 @@ export const LearnerProfileView: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div data-theme="hoc-tap" className="mx-auto max-w-[1040px] py-16 text-center text-sm text-sumi-muted" role="status">
+      <div className="mx-auto max-w-[1040px] py-16 text-center text-sm text-sumi-muted" role="status">
         <Icon name="progress_activity" spin size={28} className="mx-auto mb-3 text-ai" />
         Đang tải hồ sơ…
       </div>
@@ -89,7 +89,7 @@ export const LearnerProfileView: React.FC = () => {
 
   if (error || !profile) {
     return (
-      <div data-theme="hoc-tap" className="mx-auto max-w-[1040px] py-12">
+      <div className="mx-auto max-w-[1040px] py-12">
         <EmptyState icon="error" title="Không thể tải thông tin hồ sơ" action={<Button variant="primary" onClick={fetchProfile}>Thử lại</Button>}>
           {error || 'Dữ liệu hồ sơ không tìm thấy.'}
         </EmptyState>
@@ -117,7 +117,7 @@ export const LearnerProfileView: React.FC = () => {
   ];
 
   return (
-    <div data-theme="hoc-tap" className="bg-transparent">
+    <div className="bg-transparent">
       <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
         <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hồ sơ</h1>
 

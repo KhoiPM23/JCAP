@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { PREFECTURES } from '../../../data/japanMap';
 import { roleplayService } from '../../../services/roleplayService';
 import { shadowingStorageService } from '../../../services/shadowingStorageService';
@@ -58,6 +59,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   const path = location.pathname;
   const { logout } = useAuth();
   const { user, credit } = useLearnerAccount();
+  const { isDark, themeFor } = useTheme();
   const [open, setOpen] = useState<'chap' | 'cont' | 'conv' | null>(null);
   const [acctOpen, setAcctOpen] = useState(false);
   const acctRef = useRef<HTMLDivElement>(null);
@@ -97,9 +99,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   const accountPages = ['/subscription', '/credits', '/profile', '/settings'];
   const onAccountPage = accountPages.some((p) => path.startsWith(p));
 
-  // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF)
+  // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF).
+  // Chế độ tối: cả hai nơi đều dùng hoc-tap-dem (bản đồ vẫn giữ kham-pha, chỉ thanh bên nổi trên nó tối đi)
   return (
-    <aside ref={sideRef} className="jx-side" data-theme={MAP_PATHS(path) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
+    <aside ref={sideRef} className="jx-side" data-theme={isDark ? themeFor('learn') : MAP_PATHS(path) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
       {/* Thương hiệu: logo (thu gọn: mở thanh bên), chữ JCAP (về trang chủ), nút thu gọn */}
       <div className="jx-brand">
         <button

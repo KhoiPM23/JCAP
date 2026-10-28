@@ -20,7 +20,6 @@ import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
-import { JcapShowcaseView } from '../views/JcapShowcaseView';
 import { VoiceVoxTestView } from '../views/VoiceVoxTestView';
 import { AdminDashboardView } from '../views/admin/AdminDashboardView';
 import { AdminCreditPackagesView } from '../views/admin/AdminCreditPackagesView';
@@ -432,8 +431,6 @@ export const AppRouter: React.FC = () => {
 
       {/* Temporary Development-Only Showcase Route */}
       <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
-      {/* Design system mới (src/components/jcap): bày component để so với prototype */}
-      <Route path="/dev/jcap" element={<JcapShowcaseView />} />
       <Route path="/voicevox-test" element={<VoiceVoxTestView />} />
 
       {/* Wildcard */}
