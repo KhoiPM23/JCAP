@@ -9,6 +9,11 @@ namespace JCAP.Services.Implementations
 {
     public class AdminExploreService : IAdminExploreService
     {
+        /// <summary>
+        /// Số mốc đang dùng tối thiểu để mở một tỉnh: con dấu tỉnh cần đủ mọi mốc, tỉnh chỉ 1-2 mốc thì con dấu đến quá dễ.
+        /// </summary>
+        public const int MinSpotsToOpen = 3;
+
         /// <summary>Thứ tự độ khó: N5 dễ nhất</summary>
         private static readonly string[] Levels = { "N5", "N4", "N3" };
 
@@ -66,9 +71,9 @@ namespace JCAP.Services.Implementations
 
             var published = await _context.ExploreSpots
                 .CountAsync(s => s.PrefectureId == prefectureId && s.IsActive && s.Status == ExploreSpotStatus.Published);
-            if (published == 0)
+            if (published < MinSpotsToOpen)
             {
-                return ApiResponse<AdminExplorePrefectureDto>.Fail("Cần ít nhất 1 mốc đang dùng trước khi mở tỉnh cho người học.");
+                return ApiResponse<AdminExplorePrefectureDto>.Fail($"Cần ít nhất {MinSpotsToOpen} mốc đang dùng trước khi mở tỉnh cho người học.");
             }
 
             var now = DateTime.UtcNow;

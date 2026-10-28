@@ -378,10 +378,11 @@ namespace JCAP.Tests.Services
             var service = new AdminExploreSpotService(db);
             var draft = (await service.CreateSpotAsync(Tokyo, Complete(r))).Data!;
             var learner = new ExploreService(db);
+            await ExploreServiceTests.UnlockAllChapters(db, "learner-1");
 
-            Assert.DoesNotContain((await learner.GetPrefectureAsync(Tokyo)).Data!.Spots, s => s.Id == draft.Id);
+            Assert.DoesNotContain((await learner.GetPrefectureAsync("learner-1", Tokyo)).Data!.Spots, s => s.Id == draft.Id);
             await service.SetStatusAsync(draft.Id, ExploreSpotStatus.Published);
-            var shown = (await learner.GetPrefectureAsync(Tokyo)).Data!.Spots.Single(s => s.Id == draft.Id);
+            var shown = (await learner.GetPrefectureAsync("learner-1", Tokyo)).Data!.Spots.Single(s => s.Id == draft.Id);
             Assert.Equal("Shadowing", shown.Lesson!.Activities.Single().Type);
         }
     }

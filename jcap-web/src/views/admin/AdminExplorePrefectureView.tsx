@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PREFECTURES } from '../../data/japanMap';
-import { adminExploreService } from '../../services/adminExploreService';
+import { MIN_SPOTS_TO_OPEN, adminExploreService } from '../../services/adminExploreService';
 import type { AdminExplorePrefectureContent, AdminExploreWord, ExploreSpotStatus } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
 import { AdminExplorePrefectureMap, type MapSpot } from './AdminExplorePrefectureMap';
@@ -145,7 +145,7 @@ export const AdminExplorePrefectureView: React.FC = () => {
               {content.spots.length === 0 ? (
                 <div className="px-4 py-10 text-center">
                   <p className="text-sm text-slate-600">Chưa có mốc nào trong tỉnh.</p>
-                  <p className="text-xs text-slate-500 mt-1">Thêm mốc đầu tiên; cần ít nhất 1 mốc "Đang dùng" để mở tỉnh cho người học.</p>
+                  <p className="text-xs text-slate-500 mt-1">Thêm mốc đầu tiên; cần ít nhất {MIN_SPOTS_TO_OPEN} mốc "Đang dùng" để mở tỉnh cho người học.</p>
                 </div>
               ) : (
                 <ol className="divide-y divide-slate-100">

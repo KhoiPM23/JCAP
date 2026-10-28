@@ -255,6 +255,35 @@ namespace JCAP.Migrations
                     b.ToTable("ExploreChapterPrefectures");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapterUnlock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChapterId");
+
+                    b.HasIndex("UserId", "ChapterId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreChapterUnlocks", (string)null);
+                });
+
             modelBuilder.Entity("JCAP.Models.ExplorePrefecture", b =>
                 {
                     b.Property<int>("Id")
@@ -275,6 +304,38 @@ namespace JCAP.Migrations
                         {
                             t.HasCheckConstraint("CK_ExplorePrefecture_Id", "[Id] BETWEEN 1 AND 47");
                         });
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefectureStamp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RedStampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrefectureId");
+
+                    b.HasIndex("UserId", "PrefectureId")
+                        .IsUnique();
+
+                    b.ToTable("ExplorePrefectureStamps", (string)null);
                 });
 
             modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
@@ -490,6 +551,50 @@ namespace JCAP.Migrations
                     b.HasIndex("VocabularyId");
 
                     b.ToTable("ExploreSpotLessonVocabularies");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("RedStampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RoleplaySessionId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ShadowingPracticeSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UnderstoodAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpotId");
+
+                    b.HasIndex("UserId", "SpotId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreSpotProgresses", (string)null);
                 });
 
             modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
@@ -1995,6 +2100,40 @@ namespace JCAP.Migrations
                     b.Navigation("Prefecture");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapterUnlock", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreChapter", "Chapter")
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Chapter");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefectureStamp", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithMany()
+                        .HasForeignKey("PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
             modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
                 {
                     b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
@@ -2075,6 +2214,23 @@ namespace JCAP.Migrations
                     b.Navigation("Lesson");
 
                     b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotProgress", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpot", "Spot")
+                        .WithMany()
+                        .HasForeignKey("SpotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Spot");
                 });
 
             modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
