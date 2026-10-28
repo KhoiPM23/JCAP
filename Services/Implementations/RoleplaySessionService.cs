@@ -4,6 +4,7 @@ using JCAP.DTOs.Roleplay;
 using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
+using JCAP.Services.Subscriptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -140,19 +141,35 @@ public class RoleplaySessionService : IRoleplaySessionService
             && user.SubscriptionExpiresAt.Value > DateTime.UtcNow;
 
         int creditDeducted = isAdmin ? 0 : levelConfig.CreditCost;
+        bool useSubQuotaForInit = false;
 
-        // Nếu có gói tháng: bỏ qua kiểm tra số dư và không trừ CreditBalance
-        if (!isAdmin && !hasActiveSub && user.CreditBalance < levelConfig.CreditCost)
-        {
-            return ApiResponse<RoleplaySessionDetailsDto>.Fail(
-                $"Số dư credit của bạn không đủ ({user.CreditBalance}/{levelConfig.CreditCost} credits). Vui lòng nạp thêm credit hoặc mua gói tháng để bắt đầu luyện tập.");
-        }
-
-        // Khấu trừ Credit theo Model A (Cố định theo phiên) — chỉ trừ CreditBalance nếu KHÔNG có gói tháng
-        if (creditDeducted > 0)
+        if (!isAdmin && creditDeducted > 0)
         {
             if (hasActiveSub)
             {
+                var (canUseQuota, quotaError) = await CheckSubscriptionQuotaAvailableAsync(user, creditDeducted, cancellationToken);
+                if (canUseQuota)
+                {
+                    useSubQuotaForInit = true;
+                }
+                else if (user.CreditBalance < creditDeducted)
+                {
+                    return ApiResponse<RoleplaySessionDetailsDto>.Fail(quotaError);
+                }
+            }
+            else if (user.CreditBalance < creditDeducted)
+            {
+                return ApiResponse<RoleplaySessionDetailsDto>.Fail(
+                    $"Số dư credit của bạn không đủ ({user.CreditBalance}/{creditDeducted} credits). Vui lòng nạp thêm credit hoặc mua gói tháng để bắt đầu luyện tập.");
+            }
+        }
+
+        // Khấu trừ Credit theo Model A (Cố định theo phiên)
+        if (creditDeducted > 0)
+        {
+            if (useSubQuotaForInit)
+            {
+                var plan = SubscriptionPlanCatalog.FindOrDefault(user.SubscriptionPlanId);
                 // Gói tháng bao gồm phí khởi tạo: ghi nhận giao dịch nhưng không trừ số dư vĩnh viễn
                 _dbContext.CreditTransactions.Add(new CreditTransaction
                 {
@@ -160,6 +177,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                     Amount = -creditDeducted,
                     Type = "Deduct",
                     Status = "Paid",
+                    CoveredBySubscription = true,
+                    SubscriptionPlanId = plan.Id,
                     Description = $"[Gói tháng] Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
@@ -173,9 +192,11 @@ public class RoleplaySessionService : IRoleplaySessionService
                     Amount = -creditDeducted,
                     Type = "Deduct",
                     Status = "Paid",
+                    CoveredBySubscription = false,
                     Description = $"Luyện tập hội thoại: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
+                await _userManager.UpdateAsync(user);
             }
         }
 
@@ -360,6 +381,30 @@ public class RoleplaySessionService : IRoleplaySessionService
             return ApiResponse<RoleplayTurnResponseDto>.Fail("Dữ liệu kịch bản bị thiếu hoặc không hợp lệ.");
         }
 
+        // Kiểm tra hạn mức Quota (nếu dùng gói tháng) trước khi gọi AI
+        var userForDeduct = await _userManager.FindByIdAsync(userId);
+        var isAdmin = userForDeduct != null &&
+            string.Equals(userForDeduct.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+        bool hasActiveSubscription = !isAdmin && userForDeduct != null
+            && userForDeduct.SubscriptionExpiresAt.HasValue
+            && userForDeduct.SubscriptionExpiresAt.Value > DateTime.UtcNow;
+
+        bool canUseSubQuota = false;
+        if (hasActiveSubscription && userForDeduct != null)
+        {
+            var (quotaOk, quotaErr) = await CheckSubscriptionQuotaAvailableAsync(userForDeduct, 1, cancellationToken);
+            if (quotaOk)
+            {
+                canUseSubQuota = true;
+            }
+            else if (userForDeduct.CreditBalance <= 0)
+            {
+                // Đã chạm trần hạn ngạch gói tháng và không có credit nạp thêm dự phòng
+                return ApiResponse<RoleplayTurnResponseDto>.Fail(quotaErr);
+            }
+        }
+
         // 1. Lưu tin nhắn của học viên
         var userMessage = new RoleplayMessage
         {
@@ -400,10 +445,7 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         // 4b. Trừ credit theo số token ước lượng từ câu thoại AI (tối thiểu 1 credit/lượt)
         // Công thức: mỗi CharsPerCredit ký tự tiếng Nhật ≈ 1 credit, tối thiểu 1 credit/lượt.
-        // Admin không bị trừ credit. Người dùng có gói tháng hoạt động KHÔNG bị trừ CreditBalance vĩnh viễn.
-        var userForDeduct = await _userManager.FindByIdAsync(userId);
-        var isAdmin = userForDeduct != null &&
-            string.Equals(userForDeduct.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+        // Admin không bị trừ credit. Người dùng có gói tháng hoạt động còn quota KHÔNG bị trừ CreditBalance vĩnh viễn.
         int creditsSpentThisTurn = 0;
 
         if (!isAdmin && userForDeduct != null)
@@ -413,12 +455,10 @@ public class RoleplaySessionService : IRoleplaySessionService
                 : turnResult.JapaneseReply.Length;
             int creditsDue = Math.Max(1, estimatedTokens / CharsPerCredit);
 
-            bool hasActiveSubscription = userForDeduct.SubscriptionExpiresAt.HasValue
-                && userForDeduct.SubscriptionExpiresAt.Value > DateTime.UtcNow;
-
-            if (hasActiveSubscription)
+            if (canUseSubQuota)
             {
-                // Gói tháng đang hoạt động: ghi nhận giao dịch để theo dõi quota, KHÔNG trừ CreditBalance
+                var plan = SubscriptionPlanCatalog.FindOrDefault(userForDeduct.SubscriptionPlanId);
+                // Gói tháng đang hoạt động và còn hạn mức: ghi nhận giao dịch để theo dõi quota, KHÔNG trừ CreditBalance
                 creditsSpentThisTurn = creditsDue;
                 _dbContext.CreditTransactions.Add(new CreditTransaction
                 {
@@ -426,6 +466,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                     Amount = -creditsDue,
                     Type = "Deduct",
                     Status = "Paid",
+                    CoveredBySubscription = true,
+                    SubscriptionPlanId = plan.Id,
                     Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
@@ -433,7 +475,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
             else
             {
-                // Không có gói tháng: trừ từ CreditBalance vĩnh viễn
+                // Không có gói tháng (hoặc đã vượt trần quota gói tháng và dùng CreditBalance dự phòng): trừ từ CreditBalance vĩnh viễn
                 if (userForDeduct.CreditBalance >= creditsDue)
                 {
                     creditsSpentThisTurn = creditsDue;
@@ -458,6 +500,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                         Amount = -creditsSpentThisTurn,
                         Type = "Deduct",
                         Status = "Paid",
+                        CoveredBySubscription = false,
                         Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
                         CreatedAt = DateTime.UtcNow
                     });
@@ -666,6 +709,48 @@ public class RoleplaySessionService : IRoleplaySessionService
             // Ignore parse errors
         }
         return string.Empty;
+    }
+
+    /// <summary>
+    /// Kiểm tra xem người dùng có gói tháng còn đủ hạn mức quota 5 giờ và 7 ngày cho số credit cần dùng hay không.
+    /// Chỉ đếm các giao dịch Deduct thuộc gói tháng (CoveredBySubscription = true hoặc Description bắt đầu bằng "[Gói tháng]").
+    /// </summary>
+    private async Task<(bool Available, string ErrorMessage)> CheckSubscriptionQuotaAvailableAsync(
+        ApplicationUser user,
+        int requiredCredits,
+        CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        var fiveHoursAgo = now.AddHours(-5);
+        var sevenDaysAgo = now.AddDays(-7);
+
+        var plan = SubscriptionPlanCatalog.FindOrDefault(user.SubscriptionPlanId);
+
+        var subDeductQuery = _dbContext.CreditTransactions
+            .AsNoTracking()
+            .Where(t => t.UserId == user.Id
+                && t.Type == "Deduct"
+                && (t.CoveredBySubscription || (t.Description != null && t.Description.StartsWith("[Gói tháng]"))));
+
+        var used5h = await subDeductQuery
+            .Where(t => t.CreatedAt >= fiveHoursAgo)
+            .SumAsync(t => -t.Amount, cancellationToken);
+
+        if (used5h + requiredCredits > plan.FiveHourQuota)
+        {
+            return (false, $"Bạn đã sử dụng hết hạn ngạch 5 giờ ({used5h}/{plan.FiveHourQuota} credits) của {plan.Name}. Vui lòng chờ hạn ngạch hồi phục hoặc nạp thêm credit dự phòng.");
+        }
+
+        var usedWeek = await subDeductQuery
+            .Where(t => t.CreatedAt >= sevenDaysAgo)
+            .SumAsync(t => -t.Amount, cancellationToken);
+
+        if (usedWeek + requiredCredits > plan.WeeklyQuota)
+        {
+            return (false, $"Bạn đã sử dụng hết hạn ngạch tuần ({usedWeek}/{plan.WeeklyQuota} credits) của {plan.Name}. Vui lòng chờ hạn ngạch hồi phục hoặc nạp thêm credit dự phòng.");
+        }
+
+        return (true, string.Empty);
     }
 
     /// <summary>
