@@ -16,21 +16,23 @@ export const SubscriptionQuotaView: React.FC = () => {
   // State Dual-Window Rolling Quota (Được tính toán động từ các phiên học thật trong DB)
   const [weeklyLimit, setWeeklyLimit] = useState(() => {
     const sub = subscriptionPlanService.getUserSubscription();
+    const isActive = sub.status === 'Active' && sub.creditsAmount > 0;
     return {
-      remainingPercent: 100,
+      remainingPercent: isActive ? 100 : 0,
       usedCredits: 0,
-      totalCredits: sub?.creditsAmount || 2500,
-      resetsInText: '7 ngày (Đầy đủ)',
+      totalCredits: isActive ? sub.creditsAmount : 0,
+      resetsInText: isActive ? '7 ngày (Đầy đủ)' : 'Chưa kích hoạt gói tháng',
     };
   });
 
   const [fiveHourLimit, setFiveHourLimit] = useState(() => {
     const sub = subscriptionPlanService.getUserSubscription();
+    const isActive = sub.status === 'Active' && sub.fiveHourQuota > 0;
     return {
-      remainingPercent: 100,
+      remainingPercent: isActive ? 100 : 0,
       usedCredits: 0,
-      totalCredits: sub?.fiveHourQuota || 150,
-      resetsInText: '5 giờ (Đầy đủ)',
+      totalCredits: isActive ? sub.fiveHourQuota : 0,
+      resetsInText: isActive ? '5 giờ (Đầy đủ)' : 'Chưa kích hoạt gói tháng',
     };
   });
 
@@ -59,55 +61,88 @@ export const SubscriptionQuotaView: React.FC = () => {
       const res = await creditService.getQuota();
       if (res.success && res.data) {
         const d = res.data;
-        const currentSub = subscriptionPlanService.getUserSubscription();
-        const planWeeklyTotal = currentSub?.creditsAmount || d.weeklyTotalCredits || 1000;
-        const planFiveHourTotal = currentSub?.fiveHourQuota || d.fiveHourTotalCredits || 50;
 
-        const weeklyRemaining = Math.max(0, planWeeklyTotal - d.weeklyUsedCredits);
-        const weeklyPercent = planWeeklyTotal > 0 ? Math.round((weeklyRemaining / planWeeklyTotal) * 100) : 0;
+        if (d.hasActiveSubscription && d.subscriptionExpiresAt) {
+          const planWeeklyTotal = d.weeklyTotalCredits || 1000;
+          const planFiveHourTotal = d.fiveHourTotalCredits || 50;
+          const matchedPlan = d.planId ? subscriptionPlanService.findPlanById(d.planId) : undefined;
 
-        const fiveHourRemaining = Math.max(0, planFiveHourTotal - d.fiveHourUsedCredits);
-        const fiveHourPercent = planFiveHourTotal > 0 ? Math.round((fiveHourRemaining / planFiveHourTotal) * 100) : 0;
+          setSubscription((prev) => ({
+            ...prev,
+            planId: d.planId || prev.planId,
+            planName: d.planName || matchedPlan?.name || prev.planName,
+            planTier: d.planTier || prev.planTier,
+            status: 'Active',
+            expiresAt: d.subscriptionExpiresAt!,
+            daysRemaining: typeof d.subscriptionDaysRemaining === 'number' ? d.subscriptionDaysRemaining : 0,
+            creditsAmount: planWeeklyTotal,
+            fiveHourQuota: planFiveHourTotal,
+            features: matchedPlan?.features || prev.features,
+          }));
 
-        setWeeklyLimit({
-          remainingPercent: weeklyPercent,
-          usedCredits: d.weeklyUsedCredits,
-          totalCredits: planWeeklyTotal,
-          resetsInText: d.weeklyResetsInText,
-        });
+          const weeklyRemaining = Math.max(0, planWeeklyTotal - d.weeklyUsedCredits);
+          const weeklyPercent = planWeeklyTotal > 0 ? Math.round((weeklyRemaining / planWeeklyTotal) * 100) : 0;
 
-        setFiveHourLimit({
-          remainingPercent: fiveHourPercent,
-          usedCredits: d.fiveHourUsedCredits,
-          totalCredits: planFiveHourTotal,
-          resetsInText: d.fiveHourResetsInText,
-        });
+          const fiveHourRemaining = Math.max(0, planFiveHourTotal - d.fiveHourUsedCredits);
+          const fiveHourPercent = planFiveHourTotal > 0 ? Math.round((fiveHourRemaining / planFiveHourTotal) * 100) : 0;
+
+          setWeeklyLimit({
+            remainingPercent: weeklyPercent,
+            usedCredits: d.weeklyUsedCredits,
+            totalCredits: planWeeklyTotal,
+            resetsInText: d.weeklyResetsInText,
+          });
+
+          setFiveHourLimit({
+            remainingPercent: fiveHourPercent,
+            usedCredits: d.fiveHourUsedCredits,
+            totalCredits: planFiveHourTotal,
+            resetsInText: d.fiveHourResetsInText,
+          });
+        } else {
+          // Người dùng chưa đăng ký gói tháng hoặc gói đã hết hạn -> Xóa cache local và hiển thị trạng thái chưa có gói
+          subscriptionPlanService.clearUserSubscription();
+          const isExpired = Boolean(d.subscriptionExpiresAt);
+
+          setSubscription((prev) => ({
+            ...prev,
+            planId: d.planId || '',
+            planName: d.planName || 'Chưa đăng ký gói hội viên',
+            planTier: d.planTier || 'Free',
+            status: isExpired ? 'Expired' : 'None',
+            expiresAt: d.subscriptionExpiresAt || '',
+            daysRemaining: 0,
+            creditsAmount: 0,
+            fiveHourQuota: 0,
+          }));
+
+          setWeeklyLimit({
+            remainingPercent: 0,
+            usedCredits: 0,
+            totalCredits: 0,
+            resetsInText: d.weeklyResetsInText || 'Chưa kích hoạt gói tháng',
+          });
+
+          setFiveHourLimit({
+            remainingPercent: 0,
+            usedCredits: 0,
+            totalCredits: 0,
+            resetsInText: d.fiveHourResetsInText || 'Chưa kích hoạt gói tháng',
+          });
+        }
 
         setExtraCredits(d.extraCreditBalance);
 
         if (showNotification) {
           showToast('Đã làm mới dữ liệu hạn ngạch từ các phiên học thành công!', 'success');
         }
-      } else {
-        // Fallback tự động khi backend chưa phản hồi
-        setWeeklyLimit((prev) => ({
-          ...prev,
-          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '7 ngày (Đầy đủ)',
-        }));
-        setFiveHourLimit((prev) => ({
-          ...prev,
-          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '5 giờ (Đầy đủ)',
-        }));
       }
     } catch (err) {
       console.error('Lỗi tải hạn ngạch Quota:', err);
-      setWeeklyLimit((prev) => ({ ...prev, resetsInText: '7 ngày (Đầy đủ)' }));
-      setFiveHourLimit((prev) => ({ ...prev, resetsInText: '5 giờ (Đầy đủ)' }));
     } finally {
       setIsRefreshing(false);
     }
   };
-
   useEffect(() => {
     void loadQuotaFromBackend(false);
 
@@ -204,7 +239,7 @@ export const SubscriptionQuotaView: React.FC = () => {
 
         {/* KHỐI 1: THẺ GÓI HỘI VIÊN & SỐ DƯ CREDIT NẠP THÊM */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Cột Trái: Thông tin Gói Pro Tháng (2 Cột) */}
+          {/* Cột Trái: Thông tin Gói Hội Viên Tháng (2 Cột) */}
           <div className="lg:col-span-2 bg-gradient-to-br from-[#071A44] via-[#0D2B68] to-[#123E8E] text-white rounded-2xl p-6 sm:p-7 shadow-md relative overflow-hidden flex flex-col justify-between">
             {/* Họa tiết trang trí mờ phía sau */}
             <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -215,20 +250,34 @@ export const SubscriptionQuotaView: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">👑</span>
                   <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                    Gói Đang Sử Dụng
+                    {subscription.status === 'Active' ? 'Gói Đang Sử Dụng' : 'Trạng Thái Gói Hội Viên'}
                   </span>
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>Đang hoạt động (Active)</span>
-                </div>
+                {subscription.status === 'Active' ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Đang hoạt động (Active)</span>
+                  </div>
+                ) : subscription.status === 'Expired' ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>Đã hết hạn (Expired)</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/30 text-slate-200 border border-slate-400/30">
+                    <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                    <span>Chưa kích hoạt (Free Tier)</span>
+                  </div>
+                )}
               </div>
 
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2">
                 {subscription.planName}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 mb-6 max-w-xl leading-relaxed">
-                Gói học chuyên sâu dành cho người học Kaiwa: Tự động hồi phục hạn ngạch AI theo chu kỳ 5 giờ & 1 tuần, kết hợp luyện tập đối thoại AI không giới hạn tình huống.
+                {subscription.status === 'Active'
+                  ? 'Gói học chuyên sâu dành cho người học Kaiwa: Tự động hồi phục hạn ngạch AI theo chu kỳ 5 giờ & 1 tuần, kết hợp luyện tập đối thoại AI không giới hạn tình huống.'
+                  : 'Bạn hiện đang sử dụng chế độ trả theo lượt (Pay-As-You-Go) bằng số dư Credit nạp thêm. Đăng ký Gói Hội Viên Tháng để mở khóa hạn ngạch AI tự động hồi phục mỗi 5 giờ và mỗi tuần.'}
               </p>
 
               {/* Tính năng nổi bật */}
@@ -245,9 +294,19 @@ export const SubscriptionQuotaView: React.FC = () => {
             <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="text-xs text-slate-400 block">Thời hạn sử dụng còn lại:</span>
-                <span className="text-sm sm:text-base font-bold text-amber-300">
-                  Còn {subscription.daysRemaining} ngày (Hết hạn ngày: {new Date(subscription.expiresAt).toLocaleDateString('vi-VN')})
-                </span>
+                {subscription.status === 'Active' && subscription.expiresAt ? (
+                  <span className="text-sm sm:text-base font-bold text-amber-300">
+                    Còn {subscription.daysRemaining} ngày (Hết hạn ngày: {new Date(subscription.expiresAt).toLocaleDateString('vi-VN')})
+                  </span>
+                ) : subscription.status === 'Expired' && subscription.expiresAt ? (
+                  <span className="text-sm sm:text-base font-bold text-rose-300">
+                    Đã hết hạn vào ngày {new Date(subscription.expiresAt).toLocaleDateString('vi-VN')}
+                  </span>
+                ) : (
+                  <span className="text-sm sm:text-base font-bold text-slate-300">
+                    Bạn chưa đăng ký gói hội viên tháng nào
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2.5">
                 <button
@@ -255,12 +314,11 @@ export const SubscriptionQuotaView: React.FC = () => {
                   onClick={() => navigate('/credits')}
                   className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold transition cursor-pointer shadow-sm"
                 >
-                  Nâng cấp / Đổi gói
+                  {subscription.status === 'Active' ? 'Nâng cấp / Đổi gói' : 'Đăng ký Gói Tháng ngay'}
                 </button>
               </div>
             </div>
           </div>
-
           {/* Cột Phải: Thẻ Credit Nạp Thêm (Pay-As-You-Go Extra Credits) */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
             <div>
@@ -387,7 +445,7 @@ export const SubscriptionQuotaView: React.FC = () => {
 
               <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                 <span>Đã sử dụng: <strong className="text-slate-200">{weeklyLimit.usedCredits}</strong> / {weeklyLimit.totalCredits} credits</span>
-                <span className="text-emerald-400 font-medium">Còn {weeklyLimit.totalCredits - weeklyLimit.usedCredits} credits</span>
+                <span className="text-emerald-400 font-medium">Còn {Math.max(0, weeklyLimit.totalCredits - weeklyLimit.usedCredits)} credits</span>
               </div>
             </div>
 
@@ -434,7 +492,7 @@ export const SubscriptionQuotaView: React.FC = () => {
 
               <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                 <span>Đã sử dụng: <strong className="text-slate-200">{fiveHourLimit.usedCredits}</strong> / {fiveHourLimit.totalCredits} credits</span>
-                <span className="text-emerald-400 font-medium">Còn {fiveHourLimit.totalCredits - fiveHourLimit.usedCredits} credits</span>
+                <span className="text-emerald-400 font-medium">Còn {Math.max(0, fiveHourLimit.totalCredits - fiveHourLimit.usedCredits)} credits</span>
               </div>
             </div>
           </div>

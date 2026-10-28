@@ -289,9 +289,6 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
-    /* =========================================================================
-     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
-     * =========================================================================
     try {
       const res = await creditService.purchasePackage(pkg.id);
       if (res.success && res.data?.checkoutUrl) {
@@ -305,29 +302,6 @@ export const CreditPackagesView: React.FC = () => {
     } finally {
       setPurchasingId(null);
     }
-    ========================================================================= */
-
-    // =========================================================================
-    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG NẠP CREDIT NGAY, BỎ QUA BƯỚC NẠP TIỀN PAYOS
-    // =========================================================================
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const addedCredits = pkg.credits;
-      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
-      const newBalance = prevBalance + addedCredits;
-
-      setCurrentBalance(newBalance);
-      creditService.updateLocalCreditBalance(newBalance);
-
-      setSuccessMessage(
-        `Nạp thành công ${pkg.name}! (+${addedCredits.toLocaleString('vi-VN')} credits vào tài khoản). (Chế độ Test: Đã bỏ qua bước nạp tiền)`
-      );
-    } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi khi nạp credit test.');
-    } finally {
-      setPurchasingId(null);
-    }
   };
 
   const handleSubscribeMonthlyPlan = async (plan: SubscriptionPlanItem) => {
@@ -335,9 +309,6 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
-    /* =========================================================================
-     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
-     * =========================================================================
     try {
       const res = await creditService.purchaseSubscriptionPlan(plan);
       if (res.success && res.data?.checkoutUrl) {
@@ -351,36 +322,7 @@ export const CreditPackagesView: React.FC = () => {
     } finally {
       setSubscribingPlanId(null);
     }
-    ========================================================================= */
-
-    // =========================================================================
-    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG MUA & KÍCH HOẠT GÓI NGAY, BỎ QUA NẠP TIỀN PAYOS
-    // =========================================================================
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 1. Kích hoạt và lưu thông tin gói hội viên vào hệ thống / LocalStorage
-      subscriptionPlanService.setUserSubscription(plan);
-
-      // 2. Tự động cộng số credit của gói vào số dư hiện tại của tài khoản
-      const addedCredits = plan.creditsAmount || 2500;
-      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
-      const newBalance = prevBalance + addedCredits;
-
-      setCurrentBalance(newBalance);
-      creditService.updateLocalCreditBalance(newBalance);
-
-      // 3. Hiển thị thông báo mua thành công
-      setSuccessMessage(
-        `Đã kích hoạt thành công ${plan.name}! Bạn được cấp ${addedCredits.toLocaleString('vi-VN')} credits/tuần và hạn mức mới. (Chế độ Test: Đã tự động mua, bỏ qua bước nạp tiền)`
-      );
-    } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi khi kích hoạt gói test.');
-    } finally {
-      setSubscribingPlanId(null);
-    }
   };
-
   const formatVnd = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };

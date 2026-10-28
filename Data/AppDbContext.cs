@@ -93,6 +93,20 @@ namespace JCAP.Data
                 entity.Property(e => e.PayOsOrderCode)
                     .HasMaxLength(100);
 
+                entity.Property(e => e.AmountVnd)
+                    .HasPrecision(18, 2);
+
+                entity.Property(e => e.SubscriptionPlanId)
+                    .HasMaxLength(50);
+
+                // Truy vấn quota lọc theo UserId + Type + CoveredBySubscription + CreatedAt
+                entity.HasIndex(e => new { e.UserId, e.Type, e.CoveredBySubscription, e.CreatedAt })
+                    .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
+
+                // Đối soát webhook/verify-order tra theo mã đơn hàng
+                entity.HasIndex(e => e.PayOsOrderCode)
+                    .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
+
                 // ApplicationUser 1 - N CreditTransaction
                 entity.HasOne(e => e.User)
                     .WithMany()

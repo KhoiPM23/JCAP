@@ -20,7 +20,11 @@ namespace JCAP.DTOs.Credit
         public int ExtraCreditBalance { get; set; }
 
         // Thông tin gói
+        public string PlanId { get; set; } = "plan-pro";
         public string PlanName { get; set; } = "Gói Tháng Pro (Cơ Bản)";
         public string PlanTier { get; set; } = "Pro";
+        public bool HasActiveSubscription { get; set; }
+        public DateTime? SubscriptionExpiresAt { get; set; }
+        public int SubscriptionDaysRemaining { get; set; }
     }
 }
