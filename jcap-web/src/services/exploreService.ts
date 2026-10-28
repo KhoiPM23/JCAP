@@ -1,7 +1,7 @@
 import type { ApiResponse } from '../types/auth';
-import type { ExploreJourney, ExplorePrefectureDetail } from '../types/explore';
+import type { ExploreJourney, ExploreSyncResult } from '../types/explore';
 
-/** Bản đồ Khám phá phía người học (chỉ đọc): hành trình và các mốc học của từng tỉnh */
+/** Bản đồ Khám phá phía người học: hành trình, các mốc học của từng tỉnh và con dấu của người học */
 class ExploreService {
   private getHeaders(): HeadersInit {
     const token = localStorage.getItem('jcap_token');
@@ -10,9 +10,9 @@ class ExploreService {
     return headers;
   }
 
-  private async get<T>(url: string): Promise<ApiResponse<T>> {
+  private async send<T>(method: 'GET' | 'POST', url: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, { method: 'GET', headers: this.getHeaders() });
+      const response = await fetch(url, { method, headers: this.getHeaders() });
       const body = await response.json().catch(() => null);
       if (!response.ok || !body) {
         return { success: false, message: body?.message || `Lỗi máy chủ (${response.status})` };
@@ -23,14 +23,19 @@ class ExploreService {
     }
   }
 
-  /** Các chương và trạng thái 47 tỉnh (mở/đóng, số mốc, "Một từ ở tỉnh") */
+  /** Các chương và trạng thái 47 tỉnh (mở/đóng, khoá theo chương, số mốc, số con dấu, "Một từ ở tỉnh") */
   public getJourney(): Promise<ApiResponse<ExploreJourney>> {
-    return this.get<ExploreJourney>('/api/explore/journey');
+    return this.send<ExploreJourney>('GET', '/api/explore/journey');
   }
 
-  /** Các mốc đang dùng của một tỉnh; tỉnh đóng trả isOpen = false và không có mốc */
-  public getPrefecture(id: number): Promise<ApiResponse<ExplorePrefectureDetail>> {
-    return this.get<ExplorePrefectureDetail>(`/api/explore/prefectures/${id}`);
+  /** Các mốc của một tỉnh kèm tiến độ; server xét bằng chứng học của cả tỉnh và cấp con dấu vừa đạt trước khi trả */
+  public syncPrefecture(id: number): Promise<ApiResponse<ExploreSyncResult>> {
+    return this.send<ExploreSyncResult>('POST', `/api/explore/prefectures/${id}/sync`);
+  }
+
+  /** Ghi nhận "Đã hiểu" phần câu mẫu của mốc (rồi đồng bộ cả tỉnh) */
+  public markUnderstood(spotId: number): Promise<ApiResponse<ExploreSyncResult>> {
+    return this.send<ExploreSyncResult>('POST', `/api/explore/spots/${spotId}/understood`);
   }
 }
 

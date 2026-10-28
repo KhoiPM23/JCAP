@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Toast, type ToastType } from '../../components/ui/Toast';
 import { PREFECTURES, REGIONS } from '../../data/japanMap';
-import { adminExploreService } from '../../services/adminExploreService';
+import { MIN_SPOTS_TO_OPEN, adminExploreService } from '../../services/adminExploreService';
 import type {
   AdminExploreChapter,
   AdminExploreOverview,
@@ -247,7 +247,11 @@ export const AdminExploreView: React.FC = () => {
                   missingShadowing={spotRows ? spotRows.filter((r) => r.missing.includes('shadowing')).length : null}
                 />
               )}
-              <PrefectureList prefectures={prefectures} chapters={chapters} selectedId={selectedId} onSelect={select} />
+              {/* Đang xem một tỉnh thì chỉ hiện bảng chi tiết (cao gần bằng bản đồ); danh sách chỉ ẩn đi để giữ
+                  ô tìm, bộ lọc và vị trí cuộn khi quay lại */}
+              <div className={selectedId ? 'hidden' : undefined}>
+                <PrefectureList prefectures={prefectures} chapters={chapters} selectedId={selectedId} onSelect={select} />
+              </div>
             </div>
           </div>
 
@@ -353,6 +357,16 @@ const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClo
 
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5" aria-labelledby="explore-pref-title">
+      <button
+        type="button"
+        onClick={onClose}
+        className="-ml-1 mb-3 inline-flex items-center gap-1 h-8 px-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0878EE] hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0878EE]"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 18l-6-6 6-6" />
+        </svg>
+        Danh sách tỉnh
+      </button>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -463,16 +477,16 @@ const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClo
             </p>
             <button
               type="button"
-              disabled={busy || published === 0}
+              disabled={busy || published < MIN_SPOTS_TO_OPEN}
               onClick={() => setConfirming(true)}
               className="mt-3 w-full h-10 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-600 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-600"
             >
               Mở cho người học
             </button>
-            {published === 0 && (
+            {published < MIN_SPOTS_TO_OPEN && (
               <p className="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1">
                 <WarnIcon className="w-3.5 h-3.5 shrink-0 mt-px text-amber-600" />
-                Cần ít nhất 1 mốc đang dùng trước khi mở tỉnh.
+                Cần ít nhất {MIN_SPOTS_TO_OPEN} mốc đang dùng trước khi mở tỉnh (đang có {published}).
               </p>
             )}
           </div>

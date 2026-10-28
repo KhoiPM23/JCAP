@@ -46,6 +46,12 @@ const settleWithin = (promise: Promise<unknown>, ms: number): Promise<void> =>
 export const LearnerShadowingPracticeView: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  /**
+   * Mở từ trang Khám phá (?return=/explore?...): bấm "Xong"/"Quay lại" thì về lại đúng địa điểm trên bản đồ, nơi con dấu
+   * được cấp. Chỉ nhận đường dẫn nội bộ của Khám phá (không cho chuyển hướng ra ngoài).
+   */
+  const returnParam = searchParams.get('return');
+  const returnTo = returnParam && returnParam.startsWith('/explore') ? returnParam : null;
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -368,9 +374,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     navigate(`/shadowing?level=${newLevel}`);
   };
 
-  // Back button: returns to dialogue catalog
+  // Back button: returns to dialogue catalog (mở từ Khám phá thì về lại đúng chỗ đó trên bản đồ)
   const handleBackToDialogueList = () => {
-    navigate('/shadowing');
+    if (returnTo) navigate(returnTo, { replace: true });
+    else navigate('/shadowing');
   };
 
   // Update session duration counter
@@ -1186,7 +1193,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setIsRoleModalOpen(false);
     userRoleRef.current = newRole;
     setUserRole(newRole);
-    setSearchParams({ level: selectedLevel, role: newRole });
+    setSearchParams({ level: selectedLevel, role: newRole, ...(returnTo ? { return: returnTo } : {}) });
 
     // 4. Reset toàn bộ tiến độ bài học về câu 0 & bắt đầu session mới
     setCurrentSentenceIndex(0);
@@ -1252,10 +1259,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-red-200 text-center space-y-4 shadow-sm">
           <p className="text-red-600 font-bold">{errorMessage || 'Không tìm thấy bài học.'}</p>
           <button
-            onClick={() => navigate('/shadowing')}
+            onClick={handleBackToDialogueList}
             className="bg-[#0878EE] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-[#0662C6] cursor-pointer"
           >
-            Quay lại Thư viện Shadowing
+            {returnTo ? 'Quay lại Khám phá' : 'Quay lại Thư viện Shadowing'}
           </button>
         </div>
       </div>

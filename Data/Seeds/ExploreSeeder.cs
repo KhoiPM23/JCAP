@@ -43,19 +43,13 @@ namespace JCAP.Data.Seeds
                 await db.SaveChangesAsync();
             }
 
-            // 3. Mốc thử: thêm mốc chưa có (nhận biết theo tỉnh + tên tiếng Nhật)
-            var existingSpots = await db.ExploreSpots
-                .Select(s => new { s.PrefectureId, s.NameJp })
-                .ToListAsync();
-            var spotKeys = existingSpots.Select(s => (s.PrefectureId, s.NameJp)).ToHashSet();
-            var addedSpot = false;
-            foreach (var s in ExploreSeedData.Spots)
+            // 3. Mốc thử: chỉ nạp khi chưa có mốc nào. Không so theo tên: admin đổi tên hay vị trí một mốc mẫu thì
+            // lần khởi động sau không được tạo lại mốc gốc ở chỗ cũ (người học sẽ thấy cả hai)
+            if (!await db.ExploreSpots.AnyAsync())
             {
-                if (spotKeys.Contains((s.PrefectureId, s.NameJp))) continue;
-                db.ExploreSpots.Add(ExploreSeedData.ToEntity(s));
-                addedSpot = true;
+                db.ExploreSpots.AddRange(ExploreSeedData.Spots.Select(ExploreSeedData.ToEntity));
+                await db.SaveChangesAsync();
             }
-            if (addedSpot) await db.SaveChangesAsync();
 
             // 4. "Một từ ở tỉnh"
             var existingWords = await db.ExploreProvinceWords.Select(w => w.PrefectureId).ToListAsync();

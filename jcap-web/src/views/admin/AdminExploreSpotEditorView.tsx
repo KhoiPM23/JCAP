@@ -13,7 +13,8 @@ import type {
 } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
 import { WarnIcon } from './AdminExploreChapterSection';
-import { IconPicker, LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
+import { IconPicker } from './AdminExploreIconPicker';
+import { LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
 import { AdminExplorePrefectureMap, type MapSpot } from './AdminExplorePrefectureMap';
 import { LoadError, useAdminToasts } from './AdminExploreToasts';
 import { SPOT_CHECKS, STATUS_BADGE, STATUS_LABEL, formatCoord, inJapan, parseLatLon } from './adminExploreSpots';
@@ -161,7 +162,8 @@ export const AdminExploreSpotEditorView: React.FC = () => {
 
   const [spot, setSpot] = useState<AdminExploreSpot | null>(null);
   const [prefectureId, setPrefectureId] = useState<number | null>(spotId ? null : Number(params.id));
-  const [others, setOthers] = useState<AdminExploreSpotSummary[]>([]);
+  // Mọi mốc của tỉnh theo đúng thứ tự trang tỉnh (để số trên bản đồ khớp danh sách mốc)
+  const [allSpots, setAllSpots] = useState<AdminExploreSpotSummary[]>([]);
   const [prefectureOpen, setPrefectureOpen] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -198,7 +200,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
     setPrefectureId(prefId);
     const content = await adminExploreService.getPrefectureContent(prefId);
     if (content.success && content.data) {
-      setOthers(content.data.spots.filter((s) => s.id !== spotId));
+      setAllSpots(content.data.spots);
       setPrefectureOpen(content.data.isOpen);
     }
     setLoaded(true);
@@ -232,10 +234,16 @@ export const AdminExploreSpotEditorView: React.FC = () => {
 
   const coords = parseLatLon(form.coords);
   const pick = useMemo(() => (coords && inJapan(...coords) ? { lat: coords[0], lon: coords[1] } : null), [coords?.[0], coords?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Mốc đang soạn được vẽ bằng chấm vị trí (pick), các mốc khác giữ đúng số thứ tự của chúng trong tỉnh
   const mapSpots = useMemo<MapSpot[]>(
-    () => others.map((s) => ({ id: s.id, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi })),
-    [others],
+    () =>
+      allSpots
+        .map((s, i) => ({ id: s.id, no: i + 1, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi }))
+        .filter((s) => s.id !== spotId),
+    [allSpots, spotId],
   );
+  const pickNo = spotId ? allSpots.findIndex((s) => s.id === spotId) + 1 || null : null;
+  const otherSpots = useMemo(() => allSpots.filter((s) => s.id !== spotId), [allSpots, spotId]);
 
   const backTo = prefectureId ? `/admin/explore/prefectures/${prefectureId}` : '/admin/explore';
   const goBack = () => {
@@ -386,7 +394,14 @@ export const AdminExploreSpotEditorView: React.FC = () => {
                 <div className="block text-xs font-semibold text-slate-700 mb-1">
                   Biểu tượng<span className="text-red-500"> *</span>
                 </div>
-                <IconPicker prefectureId={shape.id} value={form.iconId} onChange={(v) => set('iconId', v)} invalid={!!shownErrors.iconId} />
+                <IconPicker
+                  prefectureId={shape.id}
+                  value={form.iconId}
+                  onChange={(v) => set('iconId', v)}
+                  invalid={!!shownErrors.iconId}
+                  names={[form.nameVi, form.nameJp, form.nameKana]}
+                  prefectureSpots={otherSpots}
+                />
                 {shownErrors.iconId && <p className="text-[11px] text-red-600 mt-1">{shownErrors.iconId}</p>}
               </div>
             </div>
@@ -397,6 +412,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
                   prefectureId={shape.id}
                   spots={mapSpots}
                   pick={pick}
+                  pickNo={pickNo}
                   onPick={(lat, lon) => set('coords', `${formatCoord(lat)}, ${formatCoord(lon)}`)}
                   onPickInside={(inside) => setOutside(!inside)}
                 />

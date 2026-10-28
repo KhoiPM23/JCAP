@@ -107,7 +107,8 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
     <header className="h-[64px] bg-white border-b border-[#E6EDF5] flex items-center justify-between px-8 sticky top-0 z-40">
       {/* Left: Logo/Brand */}
       <div className="flex items-center gap-4">
-        <Link to={user?.role === 'Admin' ? "/admin/dashboard" : "/"} className="text-2xl font-bold text-[#0878EE] tracking-tight">
+        <Link to={user?.role === 'Admin' ? "/admin/dashboard" : "/"} className="flex items-center gap-2 text-2xl font-bold text-[#0878EE] tracking-tight">
+          <img src="/jcap-torii.svg" alt="" width={32} height={32} className="h-8 w-8" />
           JCAP
         </Link>
       </div>

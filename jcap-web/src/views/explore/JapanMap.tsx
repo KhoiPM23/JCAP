@@ -10,18 +10,17 @@ import {
   type RegionId,
 } from '../../data/japanMap';
 import { PREFECTURE_PICTOGRAMS, pictogramUrl, type PictogramKind } from '../../data/japanPictograms';
-import { CITY_KANA } from '../../data/learnContent';
 import { useExploreJourney, usePrefectureData } from './exploreStore';
 import { REGION_STYLE, SEIGAIHA, T, mix, paperGrainUrl } from './exploreTheme';
 import { setFurigana, useFurigana } from './furigana';
-import { useSpotProgress } from './learnProgress';
-import { STOPS_PER_SPOT, nextSpotIndex, prefectureRoute } from './learnRoute';
+import { isStamped, useSpotProgress } from './learnProgress';
+import { nextSpotIndex, prefectureRoute } from './learnRoute';
+import { STAMP_INK } from './ExploreStamp';
 import { useFontVersion } from './measureText';
 import {
-  prefectureCities,
   prefectureLandmarks,
+  prefetchPrefecture,
   usePrefectureDetails,
-  type MapLandmark,
   type PrefectureDetail,
 } from './prefectureDetail';
 import { ProvinceLabels } from './ProvinceLabels';
@@ -29,7 +28,7 @@ import { PrefectureLabels, type PrefectureLabelItem } from './PrefectureLabelLay
 import { chipSize, layoutLabels, type Box, type LabelLayout } from './labelLayout';
 import { RouteLayer } from './RouteLayer';
 import { SpotCard } from './SpotCard';
-import { speakJa, useCanSpeakJa } from './speak';
+import { useCanSpeakJa } from './speak';
 import { ZONE_ZOOM_STEP, ZoneCircles } from './ZoneCircles';
 
 export { REGION_STYLE };
@@ -38,7 +37,7 @@ type ViewBox = [number, number, number, number];
 
 /**
  * Bờ biển kiểu tranh khắc gỗ: các lớp nét vẽ dưới đất, độ dày theo pixel màn hình (non-scaling-stroke).
- * Nét dày nằm một nửa dưới đất nên chỉ phần ngoài khơi lộ ra: (chấm bọt - xem FoamLayer), dải nước nông, bãi cạn, viền bọt.
+ * Nét dày nằm một nửa dưới đất nên chỉ phần ngoài khơi lộ ra: dải nước nông, bãi cạn, viền bọt.
  */
 const SHORE_PASSES = [
   { stroke: T.sea2, width: 22 },
@@ -62,43 +61,8 @@ const ShoreLayer = memo<{ d: string }>(({ d }) => (
   </g>
 ));
 
-/**
- * Chấm bọt ngoài cùng của bờ biển, chạy men theo bờ: đường bờ luôn vẽ theo chiều "đất bên trái"
- * nên khi dịch stroke-dashoffset, chấm bọt trôi ngược chiều kim đồng hồ quanh mọi đảo.
- * Nằm trong một <svg> riêng dưới bản đồ: hoạt ảnh chạy liên tục chỉ vẽ lại lớp này, không vẽ lại cả bản đồ.
- */
-/** Hai chấm rồi một vệt bọt dài: nhịp không đều để mắt bám được chuyển động (chấm đều nhau thì trông như đứng yên) */
-const FOAM_DASH_PX = [2.4, 5.6, 2.4, 5.6, 9, 7] as const;
-const FOAM_PERIOD_PX = FOAM_DASH_PX.reduce((a, b) => a + b, 0);
-/** Tốc độ trôi của bọt dọc bờ (px/giây): chậm như sóng lăn */
-const FOAM_SPEED_PX_S = 7;
-const FoamLayer = memo<{ paths: string[]; viewBox: string }>(({ paths, viewBox }) => (
-  <svg
-    viewBox={viewBox}
-    width="100%"
-    height="100%"
-    preserveAspectRatio="xMidYMid meet"
-    className="jm-foam-layer pointer-events-none absolute inset-0"
-    aria-hidden="true"
-  >
-    {paths.map((d, i) => (
-      <path
-        key={i}
-        className="jm-foam-flow"
-        d={d}
-        fill="none"
-        stroke={T.foam}
-        strokeOpacity={0.9}
-        strokeWidth={28}
-        strokeDasharray={FOAM_DASH_PX.join(' ')}
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    ))}
-  </svg>
-));
 
-/** Đứng yên bao lâu (ms) sau thao tác cuối thì coi là đã dừng (vẽ lại bản đồ cho nét, hiện lại chấm bọt) */
+/** Đứng yên bao lâu (ms) sau thao tác cuối thì coi là đã dừng (vẽ lại bản đồ cho nét) */
 const MOVING_SETTLE_MS = 200;
 /**
  * Khi kéo/phóng, bản đồ không vẽ lại mỗi khung hình: ảnh đã vẽ được dịch/co giãn bằng transform trên GPU, chỉ vẽ
@@ -112,8 +76,6 @@ const RERENDER_SCALE = 1.3;
  * (bờ biển và chữ ẩn đến khi tới nơi), co giãn ảnh nhiều hơn không lộ ra nên vẽ lại ít hơn nhiều.
  */
 const RERENDER_SCALE_FLYING = 1.8;
-/** Dải bờ biển chỉ được co giãn lệch tối đa 3% (mắt không nhận ra) trước khi vẽ lại */
-const SHORE_MAX_STRETCH = 0.03;
 
 const NO_DETAILS = new Map<number, PrefectureDetail>();
 
@@ -166,6 +128,13 @@ export const PREFECTURE_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
 const ZOOM_IN_MS = 650;
 const ZOOM_OUT_MS = 450;
 const BUTTON_ZOOM_MS = 250;
+/**
+ * Con lăn chuột có nấc (mỗi nấc ~14%): không nhảy ngay mà trượt tới mức zoom đích, hằng số thời gian này (ms).
+ * Nhảy cả bậc trong một khung hình rồi đứng yên chờ nấc sau làm mắt thấy giật dù máy chạy đủ 60 khung hình/giây.
+ */
+const WHEEL_SMOOTH_MS = 90;
+/** Sự kiện con lăn có |deltaY| từ mức này (px) coi là một nấc chuột; touchpad gửi nhiều bước nhỏ hơn và đã mượt sẵn */
+const WHEEL_NOTCH_PX = 40;
 /** Bán kính vùng bấm của ghim (px): đường kính 44px, đủ cho ngón tay */
 const PIN_HIT_RADIUS_PX = 22;
 /** Bán kính ghim địa danh nhìn thấy (px) và cỡ biểu tượng bên trong */
@@ -173,13 +142,13 @@ const PIN_RADIUS_PX = 19;
 const PIN_ICON_PX = 24;
 /** Khoảng cách từ tâm ghim tới nhãn tên bên cạnh (px) */
 const PIN_LABEL_GAP_PX = 25;
-/** Khi bay tới một địa điểm, ghim nằm thấp hơn tâm vùng trống chừng này (px) để thẻ nổi có chỗ phía trên */
+/** Khi phải dời bản đồ tới một địa điểm, ghim nằm thấp hơn tâm vùng trống chừng này (px) để thẻ nổi có chỗ phía trên */
 const SPOT_PIN_DROP_PX = 46;
 const SPOT_PIN_DROP_MOBILE_PX = 90;
+/** Chọn địa điểm mà ghim đã cách mép vùng trống ít nhất chừng này (px) thì giữ nguyên bản đồ, không dời */
+const SPOT_KEEP_MARGIN_PX = 64;
 /** Hai ghim gần nhau hơn khoảng này (px) thì gộp thành một nhóm */
 const CLUSTER_PX = 46;
-/** Thành phố: cỡ nhãn lớn tối đa bao nhiêu lần khi phóng to sâu hơn khung tỉnh */
-const CITY_LABEL_MAX_SCALE = 1.6;
 /** Giới hạn phóng to tối đa: số px màn hình trên một đơn vị bản đồ (~1 độ = 100 đơn vị) */
 const MAX_PX_PER_UNIT = 60;
 /** Nhãn to tối đa bao nhiêu lần so với cỡ gốc (tỉnh: chữ 12px -> ~29px, biểu tượng 22px -> ~53px) */
@@ -217,13 +186,6 @@ function centerViewBox(cx: number, cy: number, ppu: number, cw: number, ch: numb
   const availW = Math.max(cw - reserveRight - pad * 2, 80);
   const availH = Math.max(ch - reserveBottom - pad * 2, 80);
   return [cx - (pad + availW / 2) / ppu, cy - (pad + availH / 2) / ppu, cw / ppu, ch / ppu];
-}
-
-/** Khung quanh một địa điểm khi phóng vào: tỉ lệ theo cỡ tỉnh, để tỉnh nhỏ hay lớn đều có cảm giác "đến gần" */
-function spotBox(pref: PrefectureShape, landmark: MapLandmark): ViewBox {
-  const [x, y] = landmark.xy;
-  const r = Math.max(Math.max(pref.focus[2], pref.focus[3]) * 0.1, 3);
-  return [x - r, y - r, r * 2, r * 2];
 }
 
 /** Đa giác đều n cạnh quanh (cx, cy) bán kính r, góc xoay rot (khung ghim di sản) */
@@ -304,6 +266,8 @@ export interface JapanMapProps {
   onSelect: (id: number | null) => void;
   activeSpot: number | null;
   onSpotSelect: (index: number | null) => void;
+  /** Mở bài học của địa điểm (nút "Vào học" trên thẻ nổi) */
+  onSpotLearn: (index: number) => void;
   /** Số px bị panel che ở cạnh phải / cạnh dưới khi đang xem một tỉnh */
   reserveRight: number;
   reserveBottom: number;
@@ -316,6 +280,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   onSelect,
   activeSpot,
   onSpotSelect,
+  onSpotLearn,
   reserveRight,
   reserveBottom,
   onInteract,
@@ -328,6 +293,14 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const [view, setView] = useState<ViewBox | null>(null);
   const syncFrameRef = useRef(0);
   const animFrameRef = useRef(0);
+  /** Zoom trượt của con lăn: mức phóng đích (px/đơn vị) và điểm neo dưới con trỏ (px trong khung chứa) */
+  const wheelTargetRef = useRef<{ ppu: number; x: number; y: number } | null>(null);
+  const wheelFrameRef = useRef(0);
+  const cancelWheelZoom = useCallback(() => {
+    cancelAnimationFrame(wheelFrameRef.current);
+    wheelFrameRef.current = 0;
+    wheelTargetRef.current = null;
+  }, []);
   const sizeRef = useRef({ w: 0, h: 0 });
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -346,7 +319,35 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   // Bản đồ chi tiết (hàng trăm ranh giới thành phố) chỉ gắn vào khi camera đã dừng ở tỉnh đang chọn: gắn giữa chuyến
   // bay làm khựng hình, nên trong lúc bay vẫn dùng hình thô rồi chi tiết hiện dần lên khi tới nơi.
   const [detailFor, setDetailFor] = useState<number | null>(null);
-  const details = detailFor === selectedId ? loadedDetails : NO_DETAILS;
+  const allDetails = detailFor === selectedId ? loadedDetails : NO_DETAILS;
+  // Tới nơi: gắn bản đồ chi tiết theo từng nhịp (mỗi nhịp một khung hình) thay vì một lần - một lần gắn cả tỉnh đang xem,
+  // các tỉnh lân cận và mọi nhãn chữ là một tác vụ dài ngay lúc hạ cánh (khựng).
+  // Nhịp 1: tỉnh đang xem · 2: thêm tỉnh lân cận · 3: thêm nhãn và thẻ địa điểm.
+  const [stage, setStage] = useState<{ id: number | null; n: number }>({ id: null, n: 0 });
+  const detailStage = detailFor != null && detailFor === selectedId ? (stage.id === selectedId ? stage.n : 1) : 0;
+  useEffect(() => {
+    if (detailFor == null || detailFor !== selectedId) return;
+    let raf = 0;
+    let timer = 0;
+    const advance = (n: number) => {
+      raf = requestAnimationFrame(() => {
+        timer = window.setTimeout(() => {
+          setStage({ id: detailFor, n });
+          if (n < 3) advance(n + 1);
+        });
+      });
+    };
+    advance(2);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
+  }, [detailFor, selectedId]);
+  const details = useMemo(() => {
+    if (detailStage >= 2 || selectedId == null) return allDetails;
+    const own = detailStage >= 1 ? allDetails.get(selectedId) : undefined;
+    return own ? new Map([[selectedId, own]]) : NO_DETAILS;
+  }, [allDetails, detailStage, selectedId]);
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
   useEffect(() => setExpanded(null), [selectedId]);
@@ -373,9 +374,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   // Vẫn kéo được bản đồ, và các chuyến bay do ứng dụng tự chạy (chọn địa điểm, mở nhóm ghim, "Đưa về khung tỉnh") giữ nguyên.
   const zoomLocked = selected != null;
 
-  // Bản đồ đang chuyển động (kéo, cuộn, bay tới): tạm ẩn lớp chấm bọt nét đứt - lớp vẽ tốn nhất - để giữ mượt,
-  // hiện lại sau khi đứng yên một nhịp ngắn
-  const [moving, setMoving] = useState(false);
+  // Đứng yên một nhịp ngắn sau khi kéo/cuộn: vẽ lại bản đồ cho nét và nạp chi tiết tỉnh đang xem
   const movingTimerRef = useRef(0);
   const firstCommitRef = useRef(true);
 
@@ -432,11 +431,11 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       svg.style.transform = m.css;
       placeLabelLayer(vb);
       if (bigFlyRef.current) return; // bờ biển đang ẩn, hiện lại (vẽ một lần) khi tới nơi
-      // Dải bờ biển là nét dày theo pixel: co giãn ảnh làm dải bờ phình/teo theo, nên khi phóng to/thu nhỏ
-      // lớp này được vẽ lại ngay khi lệch quá SHORE_MAX_STRETCH; còn khi chỉ kéo thì dịch như bản đồ.
+      // Dải bờ biển co giãn cùng nhịp với bản đồ (nét dày phình/teo theo trong lúc phóng, dừng tay là vẽ lại cho
+      // đúng). Vẽ lại dải bờ (nét dày chạy quanh cả nước) ở mỗi khung hình là phần nặng nhất của GPU khi lăn chuột.
       const rs = shoreRenderedRef.current;
       const ms = rs && rs.w === cw && rs.h === ch ? layerTransform(rs.vb, vb, cw, ch) : null;
-      if (!ms || !ms.covers || Math.abs(ms.s - 1) > SHORE_MAX_STRETCH) paintShore(vb);
+      if (!ms || !ms.covers || ms.s > maxScale || ms.s < 1 / maxScale) paintShore(vb);
       else if (shoreSvgRef.current) shoreSvgRef.current.style.transform = ms.css;
     },
     [paint, paintShore, placeLabelLayer],
@@ -451,10 +450,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       finishFly();
     } else {
       applyCamera(vb);
-      setMoving(true);
       window.clearTimeout(movingTimerRef.current);
       movingTimerRef.current = window.setTimeout(() => {
-        setMoving(false);
         setDetailFor(selectedIdRef.current);
         // Dừng tay: vẽ lại cho nét ở đúng khung đang nhìn
         if (viewRef.current && renderedRef.current?.vb !== viewRef.current) paint(viewRef.current);
@@ -481,6 +478,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       // Huỷ chuyến bay đang dở (nếu có) mà không coi là "đã tới": chuyến mới sẽ tự kết thúc
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = 0;
+      cancelWheelZoom();
       const from = viewRef.current;
       if (!from || prefersReducedMotion()) {
         commit(target);
@@ -514,7 +512,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       };
       animFrameRef.current = requestAnimationFrame(step);
     },
-    [commit, finishFly],
+    [commit, finishFly, cancelWheelZoom],
   );
 
   // Tới nơi: hiện lại bờ biển, vẽ một lần ở đúng khung đang nhìn (tỉnh thì chờ có bản đồ chi tiết để khỏi vẽ hai lần)
@@ -550,12 +548,25 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     // Chưa chọn tỉnh: khung các đảo chính; Okinawa nằm đúng vị trí bên dưới, kéo xuống để tới
     if (!selected) return fitViewBox(HOME_VIEWBOX, size.w, size.h, 0, 0);
     const landmark = activeSpot != null ? prefectureLandmarks(selected.id)[activeSpot] : undefined;
-    const box = landmark ? spotBox(selected, landmark) : selected.focus;
-    const vb = fitViewBox(box, size.w, size.h, reserveRight, fitBottom);
-    if (!landmark) return vb;
-    // Ghim thấp hơn tâm vùng trống (điện thoại có ngăn kéo thì thấp hơn nữa) để thẻ nổi có chỗ phía trên
-    const drop = ((reserveBottom > 0 ? SPOT_PIN_DROP_MOBILE_PX : SPOT_PIN_DROP_PX) * vb[2]) / size.w;
-    return [vb[0], vb[1] - drop, vb[2], vb[3]];
+    const prefVb = fitViewBox(selected.focus, size.w, size.h, reserveRight, fitBottom);
+    if (!landmark) return prefVb;
+    // Chọn một địa điểm không phóng to thêm: giữ mức phóng to đang có (đang xa hơn khung tỉnh, vd. mở thẳng link
+    // tới địa điểm từ toàn quốc, thì lấy mức của khung tỉnh). Ghim đã nằm gọn trong vùng trống thì để yên bản đồ.
+    const cur = viewRef.current;
+    const keepZoom = !!cur && cur[2] <= prefVb[2] * 1.02;
+    const [w, h] = keepZoom ? [cur![2], cur![3]] : [prefVb[2], prefVb[3]];
+    const ppu = size.w / w;
+    const freeW = size.w - reserveRight;
+    const freeH = size.h - fitBottom;
+    if (keepZoom) {
+      const px = (landmark.xy[0] - cur![0]) * ppu;
+      const py = (landmark.xy[1] - cur![1]) * ppu;
+      const m = SPOT_KEEP_MARGIN_PX;
+      if (px >= m && px <= freeW - m && py >= m && py <= freeH - m) return cur!;
+    }
+    // Phải dời: đưa ghim vào giữa vùng trống, thấp hơn tâm một chút (điện thoại có ngăn kéo thì thấp hơn nữa) để thẻ nổi có chỗ phía trên
+    const drop = reserveBottom > 0 ? SPOT_PIN_DROP_MOBILE_PX : SPOT_PIN_DROP_PX;
+    return [landmark.xy[0] - freeW / 2 / ppu, landmark.xy[1] - (freeH / 2 + drop) / ppu, w, h];
   }, [selected, activeSpot, size.w, size.h, reserveRight, fitBottom]);
   const targetKey = `${selectedId}:${activeSpot}:${reserveRight}:${reserveBottom}`;
 
@@ -662,6 +673,31 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
+    // Trượt dần tới mức zoom đích: mỗi khung hình đi một phần quãng còn lại (theo log), neo điểm dưới con trỏ
+    let last = 0;
+    const slide = (now: number) => {
+      const target = wheelTargetRef.current;
+      const vb = viewRef.current;
+      const cw = sizeRef.current.w;
+      if (!target || !vb || !cw) {
+        wheelFrameRef.current = 0;
+        return;
+      }
+      const dt = last ? Math.min(now - last, 64) : 16;
+      last = now;
+      const ppu = cw / vb[2];
+      const remaining = Math.log(target.ppu / ppu);
+      const near = Math.abs(remaining) < 0.003;
+      zoomAt(target.x, target.y, Math.exp(near ? remaining : remaining * (1 - Math.exp(-dt / WHEEL_SMOOTH_MS))));
+      const after = viewRef.current ? cw / viewRef.current[2] : ppu;
+      // Tới nơi, hoặc chạm giới hạn phóng (mức zoom không đổi nữa): dừng
+      if (near || Math.abs(Math.log(after / ppu)) < 1e-6) {
+        wheelTargetRef.current = null;
+        wheelFrameRef.current = 0;
+        return;
+      }
+      wheelFrameRef.current = requestAnimationFrame(slide);
+    };
     const onWheel = (e: WheelEvent) => {
       e.preventDefault(); // luôn chặn cuộn trang; khi khoá zoom thì bỏ qua hẳn, không làm gián đoạn chuyến bay đang chạy
       if (zoomLocked) return;
@@ -670,11 +706,33 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
       const speed = e.ctrlKey ? 0.01 : 0.0015;
       const rect = wrap.getBoundingClientRect();
-      zoomAt(e.clientX - rect.left, e.clientY - rect.top, Math.exp(-e.deltaY * unit * speed));
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const factor = Math.exp(-e.deltaY * unit * speed);
+      // Touchpad (bước nhỏ, chụm ngón = ctrlKey) đã mượt sẵn: phản hồi ngay, không thêm độ trễ
+      const notch = !e.ctrlKey && (e.deltaMode !== 0 || Math.abs(e.deltaY) >= WHEEL_NOTCH_PX);
+      const vb = viewRef.current;
+      const { w: cw, h: ch } = sizeRef.current;
+      if (!notch || prefersReducedMotion() || !vb || !cw) {
+        cancelWheelZoom();
+        zoomAt(x, y, factor);
+        return;
+      }
+      // Chuột có nấc: cộng dồn vào mức đích (lăn tiếp khi đang trượt vẫn liền mạch), giới hạn trong khoảng phóng được
+      const minPpu = cw / fitViewBox(JAPAN_VIEWBOX, cw, ch, 0, 0)[2];
+      const from = wheelTargetRef.current?.ppu ?? cw / vb[2];
+      wheelTargetRef.current = { ppu: Math.min(Math.max(from * factor, minPpu), MAX_PX_PER_UNIT), x, y };
+      if (!wheelFrameRef.current) {
+        last = 0;
+        wheelFrameRef.current = requestAnimationFrame(slide);
+      }
     };
     wrap.addEventListener('wheel', onWheel, { passive: false });
-    return () => wrap.removeEventListener('wheel', onWheel);
-  }, [zoomAt, stopAnimation, markInteracted, zoomLocked]);
+    return () => {
+      wrap.removeEventListener('wheel', onWheel);
+      cancelWheelZoom();
+    };
+  }, [zoomAt, stopAnimation, markInteracted, zoomLocked, cancelWheelZoom]);
 
   // Kéo bằng chuột/1 ngón, chụm 2 ngón để phóng to
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
@@ -707,6 +765,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     const p = localPoint(e);
     pointersRef.current.set(e.pointerId, p);
     stopAnimation();
+    cancelWheelZoom();
     if (pointersRef.current.size === 1) {
       gestureRef.current = { startX: p.x, startY: p.y, dragging: false };
     } else if (pointersRef.current.size === 2) {
@@ -821,18 +880,18 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   // ---- Hover: làm nổi tỉnh dưới con trỏ (không hiện tooltip) ----
   const draggingRef = useRef(false);
   draggingRef.current = dragging;
+  // Dừng chuột/focus trên một tỉnh một nhịp ngắn: chuẩn bị trước dữ liệu, ranh giới và font của tỉnh đó,
+  // để khi bấm thì chuyến bay không phải chờ mạng hay dàn lại chữ (lướt chuột qua bản đồ thì không tải gì)
+  const prefetchTimerRef = useRef(0);
   const handleHover = useCallback((id: number | null) => {
     if (id != null && draggingRef.current) return;
     setHoverId(id);
+    window.clearTimeout(prefetchTimerRef.current);
+    if (id != null) prefetchTimerRef.current = window.setTimeout(() => prefetchPrefecture(id), 120);
   }, []);
 
   const hovered = hoverId != null && !selected ? PREFECTURE_BY_ID.get(hoverId) ?? null : null;
 
-  // Tỉnh đang chọn vẽ sau cùng để viền không bị các tỉnh bên cạnh che
-  const drawOrder = useMemo(
-    () => (selected ? [...PREFECTURES.filter((p) => p.id !== selected.id), selected] : PREFECTURES),
-    [selected],
-  );
   const [grain, setGrain] = useState<string | null>(null);
   useEffect(() => setGrain(paperGrainUrl()), []);
 
@@ -921,9 +980,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     [details, selectedId],
   );
 
-  // ---- Bản đồ chi tiết của tỉnh đang xem: ranh giới thành phố/quận, thành phố chính, địa danh ----
+  // ---- Bản đồ chi tiết của tỉnh đang xem: ranh giới thành phố/quận và địa danh ----
   const landmarks = selected ? prefectureLandmarks(selected.id) : [];
-  const cities = selected ? prefectureCities(selected.id) : [];
   const activeLandmark = activeSpot != null ? landmarks[activeSpot] : undefined;
 
   // Gộp các ghim quá gần nhau trên màn hình thành nhóm (tính lại theo mức phóng to hiện tại)
@@ -1017,18 +1075,14 @@ export const JapanMap: React.FC<JapanMapProps> = ({
 
   // ---- Lộ trình học, tiến độ và nhãn tên (chữ HTML theo pixel màn hình, xếp chống chồng nhau) ----
   const progressOf = useSpotProgress();
-  const spotProgress = (i: number) => (selected ? progressOf(landmarks[i].spotId) : 0);
-  const spotDone = (i: number) => spotProgress(i) >= STOPS_PER_SPOT;
+  const spotState = (i: number) => (selected ? progressOf(landmarks[i].spotId) : 'none');
+  const spotDone = (i: number) => isStamped(spotState(i));
   const route = selected ? prefectureRoute(selected.id) : null;
-  const nextIdx = selected ? nextSpotIndex(selected.id, spotProgress) : null;
+  const nextIdx = selected ? nextSpotIndex(selected.id, spotDone) : null;
   const [furigana] = useFurigana();
   const canSpeak = useCanSpeakJa();
   useFontVersion(); // phông mới tải xong -> số đo chữ đổi -> xếp lại nhãn
-  const showLabels = !!selected && !!view && !prefFlying;
-
-  // Tên thành phố to dần khi phóng sâu hơn khung tỉnh (tới CITY_LABEL_MAX_SCALE)
-  const fitPpu = selected && size.w ? size.w / fitViewBox(selected.focus, size.w, size.h, reserveRight, fitBottom)[2] : 1;
-  const cityScale = Math.min(Math.max(Math.sqrt(pxPerUnit / fitPpu), 1), CITY_LABEL_MAX_SCALE);
+  const showLabels = !!selected && !!view && !prefFlying && detailStage >= 3;
 
   const pinScreen = new Map<number, { x: number; y: number }>();
   let labelLayout: LabelLayout | null = null;
@@ -1042,18 +1096,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     const ordered = [...pinPlacements].sort((a, b) =>
       a.index === nextIdx ? -1 : b.index === nextIdx ? 1 : stopOf(a.index) - stopOf(b.index),
     );
-    const districtInput: { key: string; name: string; x: number; y: number; w: number; h: number }[] = [];
-    if (selectedDetail) {
-      for (const d of selectedDetail.districts) {
-        const w = d.bw * pxPerUnit;
-        const h = d.bh * pxPerUnit;
-        if (w < 36 || h < 24) continue;
-        const x = (d.cx - view[0]) * pxPerUnit;
-        const y = (d.cy - view[1]) * pxPerUnit;
-        if (x < -w || y < -h || x > size.w + w || y > size.h + h) continue;
-        districtInput.push({ key: d.code, name: d.name, x, y, w, h });
-      }
-    }
     labelLayout = layoutLabels({
       furigana,
       viewport: { w: size.w, h: size.h },
@@ -1074,12 +1116,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       chip: chipSize('Tiếp theo'),
       pinRadius: PIN_HIT_RADIUS_PX,
       pinLabelGap: PIN_LABEL_GAP_PX,
-      cities: cities.map((c) => {
-        const s = toScreen(...c.xy)!;
-        return { key: c.nameJp, x: s.x, y: s.y, capital: c.capital, label: { jp: c.nameJp, kana: CITY_KANA[c.nameJp], vi: c.nameVi } };
-      }),
-      cityScale,
-      districts: districtInput,
     });
   }
 
@@ -1087,9 +1123,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     ? toScreen(...(pinPlacements.find((p) => p.index === activeSpot)?.at ?? activeLandmark.xy))
     : null;
 
-  // Còn giữ chuột/ngón tay (đang kéo hoặc chụm) thì vẫn là đang chuyển động dù có khựng lại giữa chừng:
-  // chấm bọt chỉ hiện lại khi thật sự buông tay hoặc ngừng cuộn, tránh nhấp nháy khi máy yếu làm khung hình chậm.
-  const shoreMoving = moving || dragging;
   const shorePaths = selected && details.size ? [...details.values()].map((d) => d.outlineD) : [COAST_D];
 
   // Sóng neo theo bản đồ: hoa văn 青海波 phóng to/thu nhỏ cùng đất và bám vào gốc toạ độ bản đồ, nên không trôi lệch.
@@ -1152,7 +1185,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           }}
         />
       ))}
-      {!shoreMoving && <FoamLayer paths={shorePaths} viewBox={(viewRef.current ?? JAPAN_VIEWBOX).join(' ')} />}
       {/* Bờ biển (dưới đất): toàn quốc dùng hình thô; khi xem tỉnh dùng đường bao chi tiết của tỉnh đó và các tỉnh
           lân cận. Lớp riêng, viewBox do paintShore() đặt, cùng khung vẽ dư với bản đồ. */}
       <svg
@@ -1209,7 +1241,9 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         />
 
         <g>
-          {drawOrder.map((p) => (
+          {/* Thứ tự 47 tỉnh không đổi khi chọn tỉnh: dời phần tử tỉnh vừa bấm (đang có focus) xuống cuối làm nó mất
+              focus giữa lượt cập nhật, React trả focus lại và ép tính lại bố cục cả bản đồ ngay trước khi bay (khựng) */}
+          {PREFECTURES.map((p) => (
             <PrefecturePath
               key={p.id}
               shape={p}
@@ -1220,6 +1254,20 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               onSelect={onSelect}
             />
           ))}
+          {/* Viền tỉnh đang chọn vẽ đè lên trên để không bị các tỉnh bên cạnh che (thay cho việc dời tỉnh xuống cuối) */}
+          {selected && !details.has(selected.id) && (
+            <path
+              d={selected.d}
+              fillRule="evenodd"
+              fill="none"
+              stroke={REGION_STYLE[selected.region].ink}
+              strokeWidth={2.5}
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+              pointerEvents="none"
+              aria-hidden="true"
+            />
+          )}
         </g>
 
         {/* Tỉnh lân cận: vẽ lại bằng ranh giới thành phố, tô màu giấy nhạt, viền mực mảnh */}
@@ -1367,26 +1415,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                 </g>
               )}
 
-              {/* Thành phố chính: thủ phủ ◉, thành phố khác ○ (thành phố khác chỉ có chấm khi có nhãn) */}
-              {labelLayout &&
-                cities
-                  .filter((c) => labelLayout!.cityDots.has(c.nameJp))
-                  .map((c) => {
-                    const s = toScreen(...c.xy)!;
-                    return (
-                      <g key={c.nameJp} pointerEvents="none" aria-hidden="true">
-                        {c.capital ? (
-                          <>
-                            <circle cx={s.x} cy={s.y} r={5 * cityScale} fill={T.card} stroke={T.ink} strokeWidth={1.6 * cityScale} />
-                            <circle cx={s.x} cy={s.y} r={2.1 * cityScale} fill={T.ink} />
-                          </>
-                        ) : (
-                          <circle cx={s.x} cy={s.y} r={3.4 * cityScale} fill={T.card} stroke={T.ink} strokeWidth={1.5 * cityScale} />
-                        )}
-                      </g>
-                    );
-                  })}
-
               {/* Nhóm địa danh quá gần nhau: bấm để phóng tới (hoặc xòe ra nếu không thể tách) */}
               {bubbles.map((b) => {
                 const { x, y } = b.s;
@@ -1420,9 +1448,10 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                       {nextBubble === b && !nextActive && !reducedMotion && (
                         <circle className="jm-next-ring" cx={24} cy={24} r={20} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
                       )}
-                      {/* Chồng giấy: hai tờ phía sau, tờ trước tô màu vùng ghi số địa điểm */}
+                      {/* Chồng giấy: số tờ khớp số địa điểm (nhóm 2 = 2 tờ, từ 3 trở lên = 3 tờ), tờ trước tô màu
+                          vùng ghi số địa điểm */}
                       <g style={{ filter: 'drop-shadow(0 2px 3px rgba(7,26,68,0.22))' }}>
-                        <circle cx={30} cy={18} r={16} fill={T.paper} stroke={ink} strokeWidth={1.5} />
+                        {b.members.length > 2 && <circle cx={30} cy={18} r={16} fill={T.paper} stroke={ink} strokeWidth={1.5} />}
                         <circle cx={27} cy={21} r={16} fill={T.paper} stroke={ink} strokeWidth={1.5} />
                         <circle className="jm-focus-ring" cx={23} cy={25} r={17} fill={ink} stroke={T.paper} strokeWidth={2} />
                       </g>
@@ -1463,7 +1492,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                     style={{ cursor: 'pointer', outline: 'none' }}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})`}
+                    aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})${spotDone(index) ? ', đã có con dấu' : ''}`}
                     aria-pressed={active}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1505,6 +1534,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                           preserveAspectRatio="xMidYMid meet"
                           pointerEvents="none"
                         />
+                        {/* Đã có con dấu: chấm mực chàm (dấu son: đỏ) có dấu tích ở góc trên phải */}
+                        {spotDone(index) && (
+                          <g aria-hidden="true" pointerEvents="none">
+                            <circle cx={37} cy={7} r={8} fill={spotState(index) === 'red' ? T.shu : STAMP_INK} stroke={T.paper} strokeWidth={1.5} />
+                            <path d="M33.4 7.2l2.5 2.5 4.6-5" fill="none" stroke={T.paper} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
+                          </g>
+                        )}
                         {/* Số thứ tự trên lộ trình: huy hiệu 19px ở góc dưới trái */}
                         {stopN != null && (
                           <g aria-hidden="true" pointerEvents="none">
@@ -1547,23 +1583,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               },
             ];
           })}
-          cities={cities.flatMap((c) => {
-            const placed = labelLayout!.cities.get(c.nameJp);
-            if (!placed) return [];
-            const kana = CITY_KANA[c.nameJp];
-            return [
-              {
-                key: c.nameJp,
-                placed,
-                jp: c.nameJp,
-                kana,
-                vi: c.nameVi,
-                scale: cityScale,
-                onSpeak: kana && canSpeak ? () => speakJa(kana) : undefined,
-              },
-            ];
-          })}
-          districts={labelLayout.districts}
           cluster={(() => {
             const b = hoverCluster ? bubbles.find((c) => clusterKey(c.members) === hoverCluster) : undefined;
             if (!b) return null;
@@ -1607,6 +1626,9 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           kana={activeLandmark.kana}
           stop={route ? { n: route.stop[activeSpot], total: route.route.length } : null}
           status={nextIdx === activeSpot ? 'next' : spotDone(activeSpot) ? 'done' : null}
+          spotId={activeLandmark.spotId}
+          stamp={spotState(activeSpot)}
+          onLearn={() => onSpotLearn(activeSpot)}
           phrase={activeLandmark.phrase}
           furigana={furigana}
           compact={reserveBottom > 0}
@@ -1666,9 +1688,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pin:hover .jm-pin-body { transform: scale(1.08); }
         .jm-ripple { transform-box: fill-box; transform-origin: center; animation: jm-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
         .jm-label-fade { animation: jm-fade-in 0.2s ease-out both; }
-        .jm-foam-layer { animation: jm-fade-in 0.36s ease-out both; will-change: transform; }
-        .jm-foam-flow { animation: jm-foam-flow ${(FOAM_PERIOD_PX / FOAM_SPEED_PX_S).toFixed(2)}s linear infinite; }
-        @keyframes jm-foam-flow { to { stroke-dashoffset: -${FOAM_PERIOD_PX}px; } }
         @keyframes jm-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes jm-ripple { from { transform: scale(0.9); opacity: 0.7; } to { transform: scale(1.9); opacity: 0; } }
         .jm-rlabel { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; line-height: 1; }
@@ -1730,7 +1749,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-word-jp { font-family: var(--font-mincho); font-weight: 800; font-size: 30px; line-height: 1.5; }
         .jm-word-jp rt { font-size: 11px; }
         @media (prefers-reduced-motion: reduce) {
-          .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-foam-layer, .jm-foam-flow, .jm-route-in, .jm-spotcard { animation: none; }
+          .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-route-in, .jm-spotcard { animation: none; }
           .jm-plabel-group, .jm-plabel-group.jm-on { transition: none; }
           .jm-next-ring { display: none; }
           .jm-pin-body { transition: none; }

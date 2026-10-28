@@ -17,6 +17,13 @@ namespace JCAP.DTOs.Explore
         public string MaxLevel { get; set; } = "N5";
         public int UnlockThresholdPercent { get; set; }
         public List<int> PrefectureIds { get; set; } = new();
+
+        /// <summary>Chương đã mở cho người học này (chương đầu luôn mở; đã mở thì mở mãi).</summary>
+        public bool IsUnlocked { get; set; }
+        /// <summary>Số mốc người học thấy được trong chương (tỉnh đang mở, mốc Published, IsActive)</summary>
+        public int SpotCount { get; set; }
+        /// <summary>Số mốc trong SpotCount mà người học đã có con dấu</summary>
+        public int StampCount { get; set; }
     }
 
     public class ExplorePrefectureSummaryDto
@@ -28,16 +35,63 @@ namespace JCAP.DTOs.Explore
         /// <summary>Số mốc người học thấy được (Published, IsActive)</summary>
         public int SpotCount { get; set; }
         public ExploreProvinceWordDto? Word { get; set; }
+
+        /// <summary>Tỉnh thuộc một chương người học chưa mở</summary>
+        public bool IsLocked { get; set; }
+        /// <summary>Số mốc trong SpotCount mà người học đã có con dấu / dấu son</summary>
+        public int StampCount { get; set; }
+        public int RedStampCount { get; set; }
+        public ExploreStampDto? Stamp { get; set; }
     }
 
-    /// <summary>Chi tiết một tỉnh. Tỉnh đang đóng: IsOpen = false và Spots rỗng.</summary>
+    /// <summary>
+    /// Chi tiết một tỉnh. Tỉnh đang đóng: IsOpen = false và Spots rỗng.
+    /// Tỉnh thuộc chương chưa mở: IsLocked = true và Spots rỗng.
+    /// </summary>
     public class ExplorePrefectureDetailDto
     {
         public int Id { get; set; }
         public bool IsOpen { get; set; }
         public int? ChapterId { get; set; }
+        public bool IsLocked { get; set; }
         public ExploreProvinceWordDto? Word { get; set; }
         public List<ExploreSpotDto> Spots { get; set; } = new();
+        /// <summary>Con dấu tỉnh của người học; null = chưa có</summary>
+        public ExploreStampDto? Stamp { get; set; }
+    }
+
+    /// <summary>Một con dấu đã cấp. RedStampedAt có giá trị = đã thành dấu son.</summary>
+    public class ExploreStampDto
+    {
+        public DateTime StampedAt { get; set; }
+        public DateTime? RedStampedAt { get; set; }
+    }
+
+    /// <summary>Tiến độ của người học ở một mốc</summary>
+    public class ExploreSpotProgressDto
+    {
+        public DateTime? UnderstoodAt { get; set; }
+        public DateTime? StampedAt { get; set; }
+        public DateTime? RedStampedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Kết quả đồng bộ tiến độ một tỉnh: dữ liệu tỉnh mới nhất và những gì vừa đạt trong lần này
+    /// (để giao diện chỉ diễn hiệu ứng đóng dấu một lần).
+    /// </summary>
+    public class ExploreSyncResultDto
+    {
+        public ExplorePrefectureDetailDto Prefecture { get; set; } = new();
+        public ExploreAwardsDto Awards { get; set; } = new();
+    }
+
+    public class ExploreAwardsDto
+    {
+        public List<int> StampSpotIds { get; set; } = new();
+        public List<int> RedStampSpotIds { get; set; } = new();
+        public bool PrefectureStamp { get; set; }
+        public bool PrefectureRedStamp { get; set; }
+        public List<int> UnlockedChapterIds { get; set; } = new();
     }
 
     public class ExploreProvinceWordDto
@@ -57,7 +111,9 @@ namespace JCAP.DTOs.Explore
         public string? NameKana { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public int PrefectureId { get; set; }
         public ExploreLessonDto? Lesson { get; set; }
+        public ExploreSpotProgressDto Progress { get; set; } = new();
     }
 
     public class ExploreLessonDto
@@ -85,5 +141,11 @@ namespace JCAP.DTOs.Explore
         public string Type { get; set; } = string.Empty;
         public int? ReferenceId { get; set; }
         public int? PassThreshold { get; set; }
+        /// <summary>Tên bài Shadowing / kịch bản Hội thoại AI</summary>
+        public string? Title { get; set; }
+        /// <summary>Hội thoại AI: kịch bản gốc để mở trang kịch bản, cấp độ và số Credit của cấu hình</summary>
+        public int? ScenarioId { get; set; }
+        public string? JLPTLevel { get; set; }
+        public int? CreditCost { get; set; }
     }
 }

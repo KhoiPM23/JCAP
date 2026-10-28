@@ -5,13 +5,17 @@ import { PICTOGRAM_CREDIT, PICTOGRAM_KIND_LABEL, PICTOGRAM_PREFECTURES, pictogra
 import { JapanMap, PREFECTURE_BY_ID, REGION_NAME, REGION_STYLE } from './JapanMap';
 import type { ProvinceWord } from '../../data/learnContent';
 import type { ExploreProvinceWord } from '../../types/explore';
-import { useExploreJourney, usePrefectureData } from './exploreStore';
+import { cachedSpot, useExploreJourney, usePrefectureData, type JourneyState } from './exploreStore';
+import { AwardOverlay } from './AwardOverlay';
+import { PrefectureStampMark, STAMP_CSS, STAMP_INK, SpotStampMark } from './ExploreStamp';
 import { THEME_CSS_VARS, T } from './exploreTheme';
-import { ChatIcon, MicIcon, PictogramIcon } from './exploreUi';
+import { PictogramIcon } from './exploreUi';
 import { useFurigana } from './furigana';
-import { useSpotProgress } from './learnProgress';
-import { STOPS_PER_SPOT, nextSpotIndex, prefectureRoute } from './learnRoute';
+import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
+import { nextSpotIndex, prefectureRoute } from './learnRoute';
 import { BOUNDARY_CREDIT, prefectureFoods, prefectureLandmarks } from './prefectureDetail';
+import { SpotFocusCard } from './SpotFocusCard';
+import { SpotLesson, shadowingPracticeUrl } from './SpotLesson';
 import { WordCard } from './WordCard';
 
 const PANEL_WIDTH_PX = 360;
@@ -38,12 +42,13 @@ const normalize = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().trim();
 
 /** Trạng thái lịch sử do trang này đẩy vào: số mục đã đẩy (để "Xem toàn quốc" lùi đúng bấy nhiêu bước) */
-type MapNavState = { jmDepth?: number; jmSpot?: boolean } | null;
+type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmLesson?: boolean } | null;
 
 /**
  * Trang "Khám phá": bản đồ Nhật Bản toàn màn hình, kéo/phóng to tự do. Bấm một tỉnh để bay tới tỉnh đó,
  * bấm một địa điểm để bay tới địa điểm (bản phác thảo, chưa gắn nội dung học).
- * Lựa chọn nằm trên URL (?tinh=kyoto&dd=2) để chia sẻ link và để nút Back lùi lần lượt từng cấp.
+ * Lựa chọn nằm trên URL (?tinh=kyoto&dd=2, thêm &hoc=1 khi mở bài học của địa điểm) để chia sẻ link và để nút Back
+ * lùi lần lượt từng cấp.
  */
 export const JapanMapView: React.FC = () => {
   const navigate = useNavigate();
@@ -55,14 +60,15 @@ export const JapanMapView: React.FC = () => {
   const [interacted, setInteracted] = useState(false);
   const [furigana] = useFurigana();
   const journey = useExploreJourney();
-  /** Thông báo nổi khi bấm vào tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai") */
-  const [notice, setNotice] = useState<{ prefId: number; key: number } | null>(null);
+  /** Thông báo nổi khi bấm vào tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai") hoặc thuộc chương chưa mở */
+  const [notice, setNotice] = useState<{ prefId: number; key: number; locked: boolean } | null>(null);
   useEffect(() => {
     if (!notice) return;
-    const t = window.setTimeout(() => setNotice(null), 4500);
+    const t = window.setTimeout(() => setNotice(null), notice.locked ? 6500 : 4500);
     return () => window.clearTimeout(t);
   }, [notice]);
-  const showClosedNotice = (prefId: number) => setNotice({ prefId, key: Date.now() });
+  const showClosedNotice = (prefId: number) => setNotice({ prefId, key: Date.now(), locked: false });
+  const showLockedNotice = (prefId: number) => setNotice({ prefId, key: Date.now(), locked: true });
 
   const selected = PREFECTURE_BY_SLUG.get(searchParams.get('tinh') ?? '') ?? null;
   const selectedId = selected?.id ?? null;
@@ -70,6 +76,10 @@ export const JapanMapView: React.FC = () => {
   // dd = số thứ tự (từ 1) của địa danh trong danh sách địa điểm học của tỉnh
   const activeSpot =
     selected && spotParam >= 1 && spotParam <= prefectureLandmarks(selected.id).length ? spotParam - 1 : null;
+  const lessonSpot =
+    selected && activeSpot != null && searchParams.get('hoc') === '1'
+      ? cachedSpot(prefectureLandmarks(selected.id)[activeSpot].spotId)
+      : undefined;
 
   const selectedWord = toProvinceWord(selected ? journey.prefecture(selected.id)?.word : null);
 
@@ -92,6 +102,11 @@ export const JapanMapView: React.FC = () => {
       showClosedNotice(id);
       return;
     }
+    // Tỉnh thuộc chương chưa mở: báo cần bao nhiêu con dấu
+    if (journey.prefecture(id)?.isLocked) {
+      showLockedNotice(id);
+      return;
+    }
     if (selected) setSearchParams({ tinh: pref.slug }, { replace: true, state: { jmDepth: depth, jmSpot: false } });
     else setSearchParams({ tinh: pref.slug }, { state: { jmDepth: depth + 1 } });
   };
@@ -110,20 +125,41 @@ export const JapanMapView: React.FC = () => {
     else setSearchParams(params, { state: { jmDepth: depth + 1, jmSpot: true } });
   };
 
+  /** Mở bài học của địa điểm n: đẩy thêm một mục lịch sử để Back đóng bài học (về đúng địa điểm đó) */
+  const openLesson = (n: number) => {
+    if (!selected) return;
+    const params = { tinh: selected.slug, dd: String(n + 1) };
+    // Đổi địa điểm đang chọn trước (thay mục hiện tại), rồi đẩy mục bài học
+    if (activeSpot !== n) {
+      if (activeSpot != null) setSearchParams(params, { replace: true, state: navState });
+      else setSearchParams(params, { state: { jmDepth: depth + 1, jmSpot: true } });
+    }
+    const base = activeSpot != null ? navState : { jmDepth: depth + 1, jmSpot: true };
+    setSearchParams({ ...params, hoc: '1' }, { state: { ...base, jmDepth: (base.jmDepth ?? 0) + 1, jmLesson: true } });
+  };
+  const closeLesson = () => {
+    if (!selected || activeSpot == null) return;
+    if (navState.jmLesson) navigate(-1);
+    else setSearchParams({ tinh: selected.slug, dd: String(activeSpot + 1) }, { replace: true, state: { ...navState, jmLesson: false } });
+  };
+
   const selectedData = usePrefectureData(selectedId);
   useEffect(() => {
     if (selectedId == null) return;
     const closedByJourney = journey.status === 'ok' && !journey.prefecture(selectedId)?.isOpen;
     const closedByDetail = selectedData.status === 'ok' && !selectedData.data?.isOpen;
-    if (!closedByJourney && !closedByDetail) return;
-    showClosedNotice(selectedId);
+    const locked =
+      (journey.status === 'ok' && !!journey.prefecture(selectedId)?.isLocked) || (selectedData.status === 'ok' && !!selectedData.data?.isLocked);
+    if (!closedByJourney && !closedByDetail && !locked) return;
+    if (closedByJourney || closedByDetail) showClosedNotice(selectedId);
+    else showLockedNotice(selectedId);
     setSearchParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, journey.status, selectedData.status]);
+  }, [selectedId, journey.status, selectedData.status, selectedData.data?.isLocked]);
 
   // Esc: lùi một cấp (địa điểm -> tỉnh -> toàn quốc); bỏ qua nếu thành phần khác đã xử lý (ô tìm tỉnh)
   const backRef = useRef(() => {});
-  backRef.current = () => (activeSpot != null ? selectSpot(null) : selectPrefecture(null));
+  backRef.current = () => (lessonSpot ? closeLesson() : activeSpot != null ? selectSpot(null) : selectPrefecture(null));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !e.defaultPrevented) backRef.current();
@@ -139,11 +175,22 @@ export const JapanMapView: React.FC = () => {
     const prev = prevSelectedIdRef.current;
     prevSelectedIdRef.current = selectedId;
     if (prev === selectedId) return;
-    if (selectedId != null) {
-      headingRef.current?.focus({ preventScroll: true });
-    } else if (prev != null) {
-      document.querySelector<SVGPathElement>(`path[data-pref-id="${prev}"]`)?.focus({ preventScroll: true });
-    }
+    // Đợi khung hình đầu vẽ xong mới chuyển focus: focus() ngay sau khi DOM vừa đổi ép trình duyệt tính lại bố cục
+    // cả trang đồng bộ, đúng lúc camera bắt đầu bay (khựng); sau khi vẽ xong thì bố cục đã sẵn, focus gần như miễn phí
+    let timer = 0;
+    const raf = requestAnimationFrame(() => {
+      timer = window.setTimeout(() => {
+        if (selectedId != null) {
+          headingRef.current?.focus({ preventScroll: true });
+        } else if (prev != null) {
+          document.querySelector<SVGPathElement>(`path[data-pref-id="${prev}"]`)?.focus({ preventScroll: true });
+        }
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
   }, [selectedId]);
 
   // Giữ panel thêm một nhịp khi đóng để chạy hiệu ứng thoát.
@@ -249,6 +296,7 @@ export const JapanMapView: React.FC = () => {
           onSelect={selectPrefecture}
           activeSpot={activeSpot}
           onSpotSelect={selectSpot}
+          onSpotLearn={openLesson}
           reserveRight={selected && isWide ? PANEL_WIDTH_PX + 24 : 0}
           reserveBottom={selected && !isWide ? SHEET_HEIGHT_PX : 0}
           onInteract={() => setInteracted(true)}
@@ -270,6 +318,7 @@ export const JapanMapView: React.FC = () => {
             key={notice.key}
             pref={PREFECTURE_BY_ID.get(notice.prefId)!}
             word={toProvinceWord(journey.prefecture(notice.prefId)?.word)}
+            message={notice.locked ? lockedMessage(journey, notice.prefId) : undefined}
             furigana={furigana}
             onClose={() => setNotice(null)}
           />
@@ -323,13 +372,23 @@ export const JapanMapView: React.FC = () => {
             closing={closing}
             activeSpot={selected ? activeSpot : null}
             onSpotSelect={selectSpot}
+            onSpotLearn={openLesson}
             onClose={() => selectPrefecture(null)}
             headingRef={headingRef}
           />
         )}
 
+        {/* Bài học của địa điểm (?hoc=1): ngăn nổi trên bản đồ */}
+        {selected && lessonSpot && (
+          <SpotLesson key={lessonSpot.id} spot={lessonSpot} spotIndex={activeSpot!} pref={selected} furigana={furigana} isWide={isWide} onClose={closeLesson} />
+        )}
+
+        {/* Vừa đạt con dấu / con dấu tỉnh / chương mới */}
+        <AwardOverlay lessonSpotId={lessonSpot?.id ?? null} journey={journey} isWide={isWide} />
+
         <style>{`
           .jm-ukiyoe { ${THEME_CSS_VARS} }
+          ${STAMP_CSS}
           .jm-count { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--paper-2); font-size: 12px;
             font-weight: 600; color: var(--ink-2); display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
           .font-jp { font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif; }
@@ -423,6 +482,7 @@ const PanelWarmUp: React.FC = () => {
         closing={false}
         activeSpot={null}
         onSpotSelect={() => {}}
+        onSpotLearn={() => {}}
         onClose={() => {}}
         headingRef={headingRef}
       />
@@ -436,9 +496,14 @@ interface PrefecturePanelProps {
   closing: boolean;
   activeSpot: number | null;
   onSpotSelect: (index: number | null) => void;
+  /** Mở bài học của địa điểm */
+  onSpotLearn: (index: number) => void;
   onClose: () => void;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
+
+/** Quá nhiều địa điểm thì dải con dấu thành thanh tiến độ (dải vòng tròn quá dài, nhất là trên điện thoại) */
+const STAMP_STRIP_MAX = 16;
 
 const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   pref,
@@ -446,61 +511,84 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   closing,
   activeSpot,
   onSpotSelect,
+  onSpotLearn,
   onClose,
   headingRef,
 }) => {
+  const navigate = useNavigate();
   const region = REGION_STYLE[pref.region];
   const headingId = useId();
   const landmarks = prefectureLandmarks(pref.id);
   const foods = prefectureFoods(pref.id);
   const spotsData = usePrefectureData(pref.id);
   const journeyForWord = useExploreJourney();
-  const word = toProvinceWord(journeyForWord.prefecture(pref.id)?.word);
+  const summary = journeyForWord.prefecture(pref.id);
+  const word = toProvinceWord(summary?.word);
 
   // Lộ trình học: danh sách đi theo thứ tự lộ trình (không có lộ trình thì theo thứ tự gốc)
   const [furigana] = useFurigana();
   const progressOf = useSpotProgress();
   const route = prefectureRoute(pref.id);
   const order = route ? route.route : landmarks.map((_, i) => i);
-  const nextIdx = nextSpotIndex(pref.id, (i) => progressOf(landmarks[i].spotId));
-  const doneCount = landmarks.filter((lm) => progressOf(lm.spotId) >= STOPS_PER_SPOT).length;
+  const nextIdx = nextSpotIndex(pref.id, (i) => isStamped(progressOf(landmarks[i].spotId)));
+  const stampCount = landmarks.filter((lm) => isStamped(progressOf(lm.spotId))).length;
+  const redCount = landmarks.filter((lm) => progressOf(lm.spotId) === 'red').length;
+  // Dấu son chỉ có ở mốc có Hội thoại AI
+  const redTotal = (spotsData.data?.spots ?? []).filter((s) => s.lesson?.activities.some((a) => a.type === 'Roleplay')).length;
+  const prefStamp = spotsData.data?.stamp ?? summary?.stamp ?? null;
+  const prefStampState = prefStamp ? (prefStamp.redStampedAt ? 'red' : 'stamp') : 'none';
+  const stampLabel = `Con dấu: ${stampCount}/${landmarks.length} địa điểm`;
 
-  // Dải con dấu: mỗi địa điểm một vòng theo thứ tự lộ trình, đủ dấu thì tô son
-  const stampStrip = route ? (
-    <ol
-      className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5"
-      aria-label={`Con dấu: ${doneCount}/${landmarks.length} địa điểm đã có dấu`}
-    >
-      {order.map((i) => {
-        const done = progressOf(landmarks[i].spotId) >= STOPS_PER_SPOT;
-        return (
-          <li key={landmarks[i].spotId} className="shrink-0">
-            <span
-              className={`flex ${isWide ? 'h-8 w-8 text-xs' : 'h-6 w-6 text-[11px]'} items-center justify-center rounded-full border-2 font-bold`}
-              style={
-                done
-                  ? { background: T.shu, borderColor: T.shu, color: T.paper, borderStyle: 'solid' }
-                  : { borderColor: T.ghost, color: 'var(--ink-2)', borderStyle: 'dashed', background: T.card }
-              }
-              title={`${route.stop[i]}. ${landmarks[i].pictogram.nameVi}${done ? ' (đã có dấu)' : ''}`}
+  // Dải con dấu: mỗi địa điểm một vòng theo thứ tự lộ trình; có dấu thì hiện con dấu thu nhỏ (mực chàm, dấu son đỏ)
+  const stampStrip =
+    route && landmarks.length > STAMP_STRIP_MAX ? (
+      <div className="min-w-0 flex-1" role="img" aria-label={stampLabel}>
+        <div className="h-2 overflow-hidden rounded-full bg-[var(--paper-2)]">
+          <div className="h-full rounded-full" style={{ width: `${(stampCount / landmarks.length) * 100}%`, background: STAMP_INK }} />
+        </div>
+      </div>
+    ) : route ? (
+      <ol className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5" aria-label={stampLabel}>
+        {order.map((i) => {
+          const lm = landmarks[i];
+          const state = progressOf(lm.spotId);
+          const px = isWide ? 32 : 24;
+          return (
+            <li
+              key={lm.spotId}
+              className="shrink-0"
+              title={`${route.stop[i]}. ${lm.pictogram.nameVi}${state === 'red' ? ' (dấu son)' : isStamped(state) ? ' (đã có dấu)' : ''}`}
             >
-              {route.stop[i]}
-            </span>
-          </li>
-        );
-      })}
-    </ol>
-  ) : null;
+              {isStamped(state) ? (
+                <SpotStampMark iconId={lm.pictogram.id} nameJp={lm.pictogram.nameJp} state={state} size={px} seed={lm.spotId} />
+              ) : (
+                <span
+                  className={`flex ${isWide ? 'h-8 w-8 text-xs' : 'h-6 w-6 text-[11px]'} items-center justify-center rounded-full border-2 font-bold`}
+                  style={{ borderColor: T.ghost, color: 'var(--ink-2)', borderStyle: 'dashed', background: T.card }}
+                >
+                  {route.stop[i]}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    ) : null;
 
-  // Điện thoại: hàng thẻ ngang tự cuộn tới thẻ "Tiếp theo" khi mở tỉnh
-  const rowRef = useRef<HTMLUListElement>(null);
+  // Thẻ "đang học" ghim đầu danh sách: địa điểm đang chọn, chưa chọn thì địa điểm "Tiếp theo"
+  const focusIdx = activeSpot ?? nextIdx;
+  const rest = order.filter((n) => n !== focusIdx);
+  const spotData = (n: number) => spotsData.data?.spots.find((s) => s.id === landmarks[n].spotId);
+
+  // Đổi thẻ đang học (bấm một địa điểm khác): cuộn danh sách lên đầu để thấy thẻ vừa ghim
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const lastFocus = useRef(focusIdx);
   useEffect(() => {
-    const row = rowRef.current;
-    const card = row?.querySelector<HTMLElement>('[data-next]');
-    if (!row || !card || isWide) return;
-    row.scrollLeft = card.offsetLeft - row.offsetLeft - 8;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pref.id, isWide]);
+    if (lastFocus.current === focusIdx) return;
+    lastFocus.current = focusIdx;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scrollRef.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }, [focusIdx]);
 
   return (
     <aside
@@ -537,7 +625,35 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </span>
 
         <div className={`${isWide ? 'mt-3 gap-4' : 'mt-2 gap-3'} flex items-center`}>
-          <StampPreview pref={pref} compact={!isWide} />
+          <div
+            className="shrink-0 flex flex-col items-center gap-1"
+            role="img"
+            aria-label={
+              prefStampState === 'red'
+                ? `Con dấu ${pref.nameVi}: dấu son`
+                : prefStampState === 'stamp'
+                  ? `Con dấu ${pref.nameVi}: đã có`
+                  : `Con dấu ${pref.nameVi}: chưa có, cần con dấu của mọi địa điểm`
+            }
+          >
+            <PrefectureStampMark
+              d={pref.d}
+              main={pref.main}
+              nameJp={pref.nameJp}
+              caption={landmarks.length ? `${stampCount}/${landmarks.length}` : undefined}
+              state={prefStampState}
+              size={isWide ? 76 : 56}
+              seed={pref.id}
+            />
+            {/* Màn hẹp bỏ chú thích để ngăn dưới đủ chỗ cho danh sách địa điểm (nhãn vẫn có trong aria-label) */}
+            {isWide && prefStampState === 'none' && (
+              // Nằm trên dải màu vùng ở đầu panel: dùng ink-2 (≥ 5.4:1) thay cho muted (chỉ ~3.5:1 trên nền đó)
+              <span className="flex items-center gap-1 text-xs font-medium text-[var(--ink-2)]">
+                <LockIcon className="w-3 h-3" />
+                Con dấu
+              </span>
+            )}
+          </div>
           <div className="min-w-0">
             <h2
               id={headingId}
@@ -552,12 +668,27 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain p-5">
-        {/* Lộ trình học: các địa danh của tỉnh theo thứ tự đi (gần thủ phủ trước); bấm để bay tới trên bản đồ */}
+      <div ref={scrollRef} className={`flex-1 overflow-y-auto overscroll-contain ${isWide ? 'p-5' : 'px-4 py-3'}`}>
+        {/* Địa điểm học: các địa danh của tỉnh theo thứ tự lộ trình (gần thủ phủ trước); bấm để bay tới trên bản đồ */}
         <div className={`${isWide ? 'mb-3' : 'mb-2'} flex items-center justify-between gap-3`}>
-          <h3 className="flex shrink-0 items-center gap-2 text-sm font-bold text-[var(--ink)]">
-            Lộ trình học <span className="jm-count">{landmarks.length}</span>
-          </h3>
+          <div className="shrink-0">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-[var(--ink)]">
+              Địa điểm học <span className="jm-count">{landmarks.length}</span>
+            </h3>
+            {landmarks.length > 0 && (
+              <p className="mt-0.5 text-xs font-medium text-[var(--ink-2)]">
+                Con dấu {stampCount}/{landmarks.length}
+                {redTotal > 0 && (
+                  <>
+                    {' · '}
+                    <span style={{ color: redCount > 0 ? T.shu : undefined }}>
+                      Dấu son {redCount}/{redTotal}
+                    </span>
+                  </>
+                )}
+              </p>
+            )}
+          </div>
           {/* Điện thoại: dải con dấu nằm cùng hàng với tiêu đề để nhường chỗ cho hàng thẻ */}
           {route && !isWide && stampStrip}
         </div>
@@ -572,74 +703,63 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
           <p className="mb-3 text-sm text-[var(--ink-2)]">Tỉnh này chưa có mốc học nào.</p>
         )}
 
-        <ul
-          ref={rowRef}
-          className={isWide ? 'flex flex-col gap-2' : 'flex gap-2 overflow-x-auto snap-x snap-mandatory pb-2'}
-        >
-          {order.map((n) => {
+        {focusIdx != null && landmarks[focusIdx] && (
+          <SpotFocusCard
+            key={landmarks[focusIdx].spotId}
+            spot={spotData(focusIdx)}
+            pictogramId={landmarks[focusIdx].pictogram.id}
+            nameVi={landmarks[focusIdx].pictogram.nameVi}
+            nameJp={landmarks[focusIdx].pictogram.nameJp}
+            stopN={route ? route.stop[focusIdx] : null}
+            phrase={landmarks[focusIdx].phrase}
+            state={progressOf(landmarks[focusIdx].spotId)}
+            furigana={furigana}
+            compact={!isWide}
+            active={activeSpot === focusIdx}
+            isNext={focusIdx === nextIdx}
+            ink={region.ink}
+            onToggle={() => onSpotSelect(activeSpot === focusIdx ? null : focusIdx)}
+            onLearn={() => onSpotLearn(focusIdx)}
+            onShadowing={(id) => navigate(shadowingPracticeUrl(id, pref.slug, focusIdx))}
+            onRoleplay={(id) => navigate(`/scenarios/${id}`)}
+          />
+        )}
+
+        <ul className={`${focusIdx != null ? 'mt-2' : ''} flex flex-col`}>
+          {rest.map((n) => {
             const lm = landmarks[n];
             const p = lm.pictogram;
-            const active = activeSpot === n;
             const shared = (PICTOGRAM_PREFECTURES[p.id] ?? []).filter((other) => other !== pref.id);
-            const progress = progressOf(lm.spotId);
-            const done = progress >= STOPS_PER_SPOT;
-            const isNext = n === nextIdx;
+            const state = progressOf(lm.spotId);
             return (
-              <li key={lm.spotId} data-next={isNext ? '' : undefined} className={isWide ? '' : 'shrink-0 snap-start w-[250px]'}>
+              <li key={lm.spotId} className="border-b border-[var(--rule)] last:border-b-0">
                 <button
                   type="button"
-                  aria-expanded={active}
-                  onClick={() => onSpotSelect(active ? null : n)}
-                  className={`jm-focus relative h-full w-full rounded-[8px] border ${isWide ? 'p-3' : 'p-2.5'} text-left transition-colors ${
-                    active || isNext ? 'bg-[var(--card)]' : 'border-[var(--rule)] bg-[var(--card)] hover:bg-[var(--paper)]'
-                  }`}
-                  style={
-                    isNext
-                      ? { borderColor: T.shu, boxShadow: `0 0 0 1px ${T.shu}` }
-                      : active
-                        ? { borderColor: region.ink, boxShadow: `0 0 0 1px ${region.ink}` }
-                        : undefined
-                  }
+                  onClick={() => onSpotSelect(n)}
+                  className="jm-focus flex w-full items-center gap-3 rounded-[6px] px-1 py-2.5 text-left transition-colors hover:bg-[var(--paper-2)]"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="relative shrink-0">
-                      <span
-                        className="w-11 h-11 rounded-full flex items-center justify-center border-2 transition-colors"
-                        style={
-                          done
-                            ? { background: T.shu, borderColor: T.shu }
-                            : active
-                              ? { background: region.ink, borderColor: region.ink }
-                              : { borderColor: region.ink, background: 'var(--paper)' }
-                        }
-                      >
-                        <PictogramIcon id={p.id} color={active || done ? 'var(--paper)' : region.ink} className="w-6 h-6" />
-                      </span>
-                      {route && (
-                        <span className="jm-stop-badge" style={{ position: 'absolute', left: -6, top: -6, width: 20, height: 20 }} aria-label={`Điểm ${route.stop[n]}`}>
-                          {route.stop[n]}
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2"
+                    style={{ borderColor: region.ink, background: 'var(--paper)' }}
+                  >
+                    <PictogramIcon id={p.id} color={region.ink} className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold leading-snug text-[var(--ink)]">
+                      {route && `${route.stop[n]}. `}
+                      {p.nameVi}
+                    </span>
+                    <span className="font-jp block text-[13px] leading-snug text-[var(--ink-2)]">
+                      {p.nameJp}
+                      {shared.length > 0 && (
+                        <span className="font-sans text-xs text-[var(--muted)]">
+                          {' '}
+                          · Cùng với {shared.map((o) => PREFECTURE_BY_ID.get(o)?.nameVi).join(', ')}
                         </span>
                       )}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      {isNext && <span className={isWide ? 'jm-chip-next mb-1' : 'jm-chip-next absolute right-2 top-2'}>Tiếp theo</span>}
-                      <div className="text-sm font-semibold leading-snug text-[var(--ink)]">{p.nameVi}</div>
-                      <div className="font-jp text-[13px] leading-relaxed text-[var(--ink-2)]">{p.nameJp}</div>
-                      <div className="mt-0.5 text-xs text-[var(--muted)]">
-                        {PICTOGRAM_KIND_LABEL[p.kind]}
-                        {progress > 0 && ` · ${progress}/${STOPS_PER_SPOT}`}
-                        {shared.length > 0 && ` · Cùng với ${shared.map((o) => PREFECTURE_BY_ID.get(o)?.nameVi).join(', ')}`}
-                      </div>
-                    </div>
-                    <ChevronIcon className={`w-4 h-4 text-[var(--muted)] shrink-0 transition-transform ${active ? 'rotate-180' : ''}`} />
-                  </div>
-
-                  {active && (
-                    <div className="jm-reveal mt-3 grid grid-cols-2 gap-2">
-                      <ActivityPlaceholder icon={<ChatIcon className="w-4 h-4" />} label="Hội thoại AI" />
-                      <ActivityPlaceholder icon={<MicIcon className="w-4 h-4" />} label="Shadowing" />
-                    </div>
-                  )}
+                  </span>
+                  <SpotStatus state={state} />
                 </button>
               </li>
             );
@@ -700,44 +820,16 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   );
 };
 
-/** Con dấu của tỉnh ở trạng thái chưa mở khóa: hình dáng phần đất chính của tỉnh trong vòng tròn nét đứt */
-const StampPreview: React.FC<{ pref: PrefectureShape; compact?: boolean }> = ({ pref, compact }) => {
-  const [x, y, w, h] = pref.main;
-  const size = Math.max(w, h);
-  const pad = size * 0.12;
-  const viewBox = `${x + w / 2 - size / 2 - pad} ${y + h / 2 - size / 2 - pad} ${size + pad * 2} ${size + pad * 2}`;
-  return (
-    <div className="shrink-0 flex flex-col items-center gap-1">
-      <div
-        className={`${compact ? 'w-[52px] h-[52px] p-2' : 'w-[72px] h-[72px] p-2.5'} rounded-full border-2 border-dashed border-[var(--ghost)] bg-[var(--card)] flex items-center justify-center`}
-        role="img"
-        aria-label={`Con dấu ${pref.nameVi}: chưa mở khóa`}
-      >
-        <svg viewBox={viewBox} className="w-full h-full" aria-hidden="true">
-          <path d={pref.d} fillRule="evenodd" fill="#CFC5B1" />
-        </svg>
-      </div>
-      {/* Màn hẹp bỏ chú thích để ngăn dưới đủ chỗ cho danh sách địa điểm (nhãn vẫn có trong aria-label) */}
-      {!compact && (
-        // Nằm trên dải màu vùng ở đầu panel: dùng ink-2 (≥ 5.4:1) thay cho muted (chỉ ~3.5:1 trên nền đó)
-        <span className="flex items-center gap-1 text-xs font-medium text-[var(--ink-2)]">
-          <LockIcon className="w-3 h-3" />
-          Con dấu
-        </span>
-      )}
-    </div>
+/** Trạng thái ở cuối hàng địa điểm: con dấu màu mực chàm, dấu son màu son */
+const SpotStatus: React.FC<{ state: SpotStamp }> = ({ state }) =>
+  state === 'none' ? null : (
+    <span
+      className="shrink-0 text-xs font-bold"
+      style={{ color: state === 'red' ? T.shu : state === 'stamp' ? STAMP_INK : 'var(--ink-2)' }}
+    >
+      {state === 'red' ? 'Dấu son' : state === 'stamp' ? 'Đã có dấu' : 'Đã hiểu'}
+    </span>
   );
-};
-
-const ActivityPlaceholder: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
-  <div className="flex flex-col gap-1 rounded-[6px] border-[1.5px] border-dashed border-[var(--ghost)] px-2.5 py-2">
-    <div className="flex items-center gap-1.5 text-sm font-semibold text-[var(--ink)]">
-      {icon}
-      {label}
-    </div>
-    <span className="text-xs text-[var(--muted)]">Sắp có</span>
-  </div>
-);
 
 /**
  * Chỉ ở môi trường dev: nhắc lập trình viên khi máy chưa có icon EXPERIENCE JAPAN PICTOGRAMS.
@@ -778,12 +870,27 @@ function toProvinceWord(w: ExploreProvinceWord | null | undefined): ProvinceWord
 }
 
 /**
- * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh, "Sẽ cập nhật trong tương lai",
+ * Tỉnh thuộc chương chưa mở: nói rõ cần bao nhiêu con dấu ở chương trước, đang có bao nhiêu.
+ * Khác với tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai"): tỉnh này có sẵn bài, chỉ cần học tiếp.
+ */
+function lockedMessage(journey: JourneyState, prefId: number): string {
+  const chapters = journey.data?.chapters ?? [];
+  const at = chapters.findIndex((c) => c.prefectureIds.includes(prefId));
+  const chapter = chapters[at];
+  const prev = chapters[at - 1];
+  if (!chapter || !prev) return 'Thuộc chương bạn chưa mở.';
+  const need = Math.ceil((chapter.unlockThresholdPercent * prev.spotCount) / 100);
+  return `Thuộc "${chapter.title}". Cần ${need}/${prev.spotCount} con dấu ở "${prev.title}" (đang có ${prev.stampCount}).`;
+}
+
+/**
+ * Thông báo nổi khi bấm vào tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai") hoặc thuộc chương chưa mở (message),
  * kèm "Một từ ở tỉnh" nếu có để người học vẫn có chút gì để xem. Tự ẩn sau vài giây.
  */
-const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; furigana: boolean; onClose: () => void }> = ({
+const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; message?: string; furigana: boolean; onClose: () => void }> = ({
   pref,
   word,
+  message,
   furigana,
   onClose,
 }) => (
@@ -796,7 +903,10 @@ const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null;
         <div className="text-sm font-bold text-[var(--ink)]">
           {pref.nameVi} <span className="font-jp font-medium text-[var(--ink-2)]">{pref.nameJp}</span>
         </div>
-        <div className="mt-0.5 text-sm text-[var(--ink-2)]">Sẽ cập nhật trong tương lai</div>
+        <div className="mt-0.5 flex items-start gap-1.5 text-sm text-[var(--ink-2)]">
+          {message && <LockIcon className="mt-1 h-3.5 w-3.5 shrink-0" />}
+          {message ?? 'Sẽ cập nhật trong tương lai'}
+        </div>
       </div>
       <button
         type="button"
@@ -1033,14 +1143,6 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
     </svg>
   );
 }
