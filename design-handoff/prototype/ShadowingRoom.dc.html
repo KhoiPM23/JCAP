@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Phòng luyện Shadowing</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+.room{--e:cubic-bezier(.2,.7,.2,1)}
+/* hội thoại cuộn được; khi ít câu thì dồn xuống đáy */
+.hist>:first-child{margin-top:auto}
+/* nền trung tính cho phòng luyện: bỏ ám xanh của nền giấy */
+.room[data-theme]{--paper-100:#f4f6f8;--paper-200:#e9edf1;--paper-300:#dde3e9;--line:#dce2e8;background-color:var(--paper-100);background-image:radial-gradient(circle,rgba(15,37,56,.10) 1px,transparent 1.4px);background-size:22px 22px}
+/* bóng thoại: chỉ đổi màu khi hover nếu bấm được (sửa lỗi hover chung trong bundle) */
+.room .jc-bubble__box{cursor:default}
+.room .jc-bubble--ai .jc-bubble__box:hover{background:var(--paper-50)}
+.room .ln.me .jc-bubble__box,.room .ln.me .jc-bubble__box:hover{background:var(--sumi);border-color:var(--sumi);color:#fff}
+.room .ln.me .jc-bubble__vi{color:rgba(255,255,255,.82)}
+.hist{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:22px;padding:28px 8px 8px 0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 44px);mask-image:linear-gradient(180deg,transparent 0,#000 44px)}
+.room .jc-bubble__col{max-width:100%}
+.room .jc-bubble__tools:empty{display:none}
+.ln{display:flex;align-items:flex-start;gap:12px}
+.ln.me{flex-direction:row-reverse}
+.ln-col{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:600px}
+.ln.me .ln-col{align-items:flex-end;max-width:660px}
+/* ô của người học to hơn ô của nhân viên một bậc */
+.ln.me .jc-bubble__box{padding:14px 22px;border-radius:22px;border-top-right-radius:6px}
+.ln.me .jc-jp{font-size:21px;line-height:38px;font-weight:600}
+.ln.me .jc-bubble__vi{font-size:15px;line-height:24px}
+.ln.ai .ln-col{max-width:560px}
+.ln.ai .ln-col{align-items:flex-start}
+.ln-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ln.ai .ln-tools{padding-left:48px}
+.me-av{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;margin-top:22px;border-radius:50%;background:var(--sora);color:var(--on-sora);font-size:14px;font-weight:700}
+.av-score{position:absolute;left:50%;top:-20px;transform:translateX(-50%);min-width:28px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;border:2px solid var(--paper-100);font-size:11px;line-height:14px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.room .ln.pending .jc-bubble__box,.room .ln.pending .jc-bubble__box:hover{background:var(--paper-50);color:var(--sumi);border:2px dashed var(--ai)}
+.ln.pending .jc-jp rt{color:var(--sumi-muted)}
+.ln.pending .jc-bubble__name{color:var(--ai)}
+.ln.enter{animation:lnIn .32s var(--e)}
+@keyframes lnIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.score{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700}
+.dock{flex:none;box-sizing:border-box;border-radius:24px;background:var(--paper-50);border:2px dashed var(--line-strong)}
+.wave{flex:1 1 auto;display:flex;align-items:center;gap:4px;height:52px}
+.wave i{display:block;flex:1 1 0;max-width:5px;height:var(--h);border-radius:3px;background:var(--ai);opacity:.75;transform-origin:center;animation:wv .9s var(--e) infinite alternate;animation-delay:var(--d)}
+@keyframes wv{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.side-sec{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sec-chev{transition:transform .2s var(--e)}
+.sec-chev.closed{transform:rotate(180deg)}
+.scene{position:relative;height:172px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--ai-soft),var(--paper-100) 78%)}
+.cloud{position:absolute;height:22px;border-radius:999px;background:var(--paper-50);opacity:.9}
+.cloud::before{content:"";position:absolute;left:22%;top:-12px;width:44%;height:26px;border-radius:999px;background:inherit}
+.ground{position:absolute;left:-10%;right:-10%;bottom:-38px;height:80px;border-radius:50%;background:var(--nami-soft)}
+.win{position:absolute;left:50%;top:22px;transform:translateX(-50%);width:92px;height:112px;border-radius:46px;background:linear-gradient(180deg,#bfe0f6,#eaf5fb);box-shadow:inset 0 0 0 7px var(--paper-50),0 8px 18px rgba(15,37,56,.12);display:flex;align-items:center;justify-content:center;color:var(--ai)}
+@media (prefers-reduced-motion: reduce){.wave i,.ln.enter{animation:none}}
+.rm-bar{flex:none;display:flex;align-items:center;gap:12px;height:56px;padding:0 64px 0 104px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.rm-div{width:1px;height:18px;background:var(--line)}
+.rm-crumb{display:flex;align-items:center;gap:2px;min-width:0;font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.rm-crumb a{padding:4px 6px;border-radius:8px;color:inherit;text-decoration:none;transition:background .15s,color .15s}
+.rm-crumb a:hover{background:var(--paper-200);color:var(--sumi)}
+.rm-crumb a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.rm-title{padding:0 6px;font-size:15px;font-weight:700;color:var(--sumi);white-space:nowrap}
+.rm-lv{position:relative;display:inline-flex;align-items:center;height:24px;border-radius:999px;background:var(--n4-soft);color:var(--n4)}
+.rm-lv select{-webkit-appearance:none;appearance:none;height:24px;padding:0 22px 0 10px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;outline:none}
+.rm-lv .jc-icon{position:absolute;right:5px;pointer-events:none}
+.rm-lv:focus-within{box-shadow:0 0 0 2px var(--focus)}
+</style>
+</helmet>
+<div class="room" data-theme="phong-luyen" style="position: relative; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
+
+  <header class="rm-bar">
+    <x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{i28}}" with-name="{{no}}"></x-import>
+    <span class="rm-div" aria-hidden="true"></span>
+    <nav aria-label="Vị trí" class="rm-crumb">
+      <a href="#">Đi máy bay</a>
+      <x-import component-from-global-scope="JCAP.Icon" name="chevron_right" size="{{i18}}"></x-import>
+      <span class="rm-title" aria-current="page">Lần đầu tiên đi máy bay</span>
+    </nav>
+    <label class="rm-lv" title="Đổi cấp độ của bài">
+      <select aria-label="Cấp độ của bài"><option value="N5">N5</option><option value="N4" selected>N4</option><option value="N3">N3</option></select>
+      <x-import component-from-global-scope="JCAP.Icon" name="expand_more" size="{{i16}}"></x-import>
+    </label>
+    <div style="flex: 1 1 auto;"></div>
+    <x-import component-from-global-scope="JCAP.IconButton" icon="tune" label="Cài đặt âm thanh" variant="ghost"></x-import>
+  </header>
+
+  <div style="flex: 1 1 auto; min-height: 0; display: flex; gap: 40px; padding: 16px 64px 20px 104px;">
+
+    <aside aria-label="Bối cảnh bài học" style="flex: 0 0 380px; align-self: flex-start; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: 28px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(15,37,56,.06);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="arrow_back">Quay lại</x-import>
+        <x-import component-from-global-scope="JCAP.Button" variant="danger" size="sm" icon="stop_circle">Kết thúc</x-import>
+      </div>
+
+      <div style="position: relative; padding-bottom: 40px;">
+        <div class="scene" aria-hidden="true">
+          <span class="cloud" style="left: 26px; top: 40px; width: 70px;"></span>
+          <span class="cloud" style="right: 30px; top: 92px; width: 56px;"></span>
+          <span class="ground"></span>
+          <span class="win"><x-import component-from-global-scope="JCAP.Icon" name="flight" size="{{i36}}"></x-import></span>
+        </div>
+        <span style="position: absolute; right: 12px; top: 12px; padding: 4px 12px; border-radius: 999px; background: var(--paper-50); font-size: 12px; font-weight: 700; color: var(--ai); box-shadow: 0 2px 6px rgba(15,37,56,.08);">Trên máy bay</span>
+        <div style="position: absolute; left: 14px; bottom: 0; display: flex; align-items: flex-end; gap: 12px;">
+          <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 76px; border-radius: 50%; border: 4px solid var(--paper-50); background: var(--paper-200); color: var(--ai); box-shadow: 0 6px 14px rgba(15,37,56,.12);">
+            <x-import component-from-global-scope="JCAP.Icon" name="face" size="{{i36}}"></x-import>
+            <span style="position: absolute; right: 2px; bottom: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--paper-50); background: var(--success);" title="AI đang sẵn sàng"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; padding-bottom: 6px;">
+            <span style="font-size: 20px; line-height: 26px; font-weight: 700;">Nhân viên</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 16px; background: var(--paper-100); border: 1px solid var(--line);">
+        <span style="flex: 1 1 auto; font-size: 14px; line-height: 20px;"><strong>Khách hàng</strong></span>
+        <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="swap_horiz">Đổi vai</x-import>
+      </div>
+
+      <div class="side-sec">
+        <div class="sec-head">
+          <h2 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 700;">Tình huống</h2>
+          <button type="button" class="jc-audiochip" style="padding: 0 6px;" onClick="{{toggleSit}}" aria-expanded="{{sitOpen}}" aria-label="Thu gọn hoặc mở Tình huống"><span class="{{sitChev}}" style="display: inline-flex;"><x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{i22}}"></x-import></span></button>
+        </div>
+        <sc-if value="{{sitOpen}}" hint-placeholder-val="{{true}}">
+          <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Giao tiếp với tiếp viên hàng không: nhờ cất hành lý, nói mình hơi hồi hộp và gọi đồ uống.</p>
+        </sc-if>
+      </div>
+
+      <div class="side-sec">
+        <div class="sec-head">
+          <h2 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 700;">Nội dung bài học</h2>
+          <button type="button" class="jc-audiochip" style="padding: 0 6px;" onClick="{{toggleLes}}" aria-expanded="{{lesOpen}}" aria-label="Thu gọn hoặc mở Nội dung bài học"><span class="{{lesChev}}" style="display: inline-flex;"><x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{i22}}"></x-import></span></button>
+        </div>
+        <sc-if value="{{lesOpen}}" hint-placeholder-val="{{true}}">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{yes}}">Cả hội thoại</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{yes}}">Từ vựng</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{yes}}">Ngữ pháp</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </aside>
+
+    <section aria-label="Hội thoại luyện nói" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+      <div class="hist">
+          <sc-for list="{{lines}}" as="l" hint-placeholder-count="4">
+            <div class="{{l.cls}}">
+              <sc-if value="{{l.isMe}}" hint-placeholder-val="{{false}}">
+                <span class="me-av"><span aria-hidden="true">H</span>
+                  <sc-if value="{{l.hasScore}}" hint-placeholder-val="{{false}}"><span class="{{l.scoreCls}}" title="{{l.scoreText}}" aria-label="{{l.scoreText}}">{{l.scoreNum}}</span></sc-if>
+                </span>
+              </sc-if>
+              <div class="ln-col">
+                <x-import component-from-global-scope="JCAPX.Bubble" side="{{l.side}}" name="{{l.name}}" jp="{{l.jp}}" vi="{{l.vi}}" show-furigana="{{yes}}" show-translation="{{l.showVi}}" on-play="{{nothing}}"></x-import>
+                <div class="ln-tools">
+                  <sc-if value="{{l.isMe}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.IconButton" icon="mic" label="Thu lại câu này" size="sm"></x-import></sc-if>
+                  <x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe mẫu"></x-import>
+                  <button type="button" class="jc-audiochip" aria-pressed="{{l.showVi}}" onClick="{{l.toggleVi}}"><x-import component-from-global-scope="JCAP.Icon" name="translate" size="{{i18}}"></x-import>{{l.viLabel}}</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+      </div>
+
+      <div class="dock" aria-live="polite">
+        <sc-if value="{{isIdle}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px;">
+            <x-import component-from-global-scope="JCAP.MicButton" state="idle" label="Bấm để nói câu đang viền xanh" hide-label="{{yes}}" on-click="{{startRec}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isRec}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 22px; padding: 20px 22px 20px 36px;">
+            <div class="wave" aria-label="Đang thu âm" role="img">
+              <sc-for list="{{bars}}" as="b" hint-placeholder-count="60"><i style="--h: {{b.h}}; --d: {{b.d}};"></i></sc-for>
+            </div>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="stop" label="Dừng và huỷ bản thu" variant="secondary" fill="{{yes}}" on-click="{{cancelRec}}"></x-import>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="arrow_upward" label="Gửi để chấm điểm" variant="primary" on-click="{{submitRec}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isUnclear}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 22px;">
+            <div style="display: flex; align-items: flex-start; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--line);">
+              <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: var(--warning-soft); color: var(--warning);"><x-import component-from-global-scope="JCAP.Icon" name="mic_off" size="{{i22}}"></x-import></span>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="display: flex; align-items: center; gap: 8px;"><strong style="font-size: 16px; line-height: 24px;">Chưa thể đánh giá bản ghi</strong><x-import component-from-global-scope="JCAP.Badge" tone="neutral">Lần thử #{{attempt}}</x-import></span>
+                <span style="font-size: 14px; line-height: 22px;">Không nghe rõ giọng nói. Hãy đọc to và rõ hơn rồi thử lại.</span>
+                <span style="font-size: 12px; line-height: 18px; color: var(--sumi-muted);">Bản ghi chưa được đánh giá sẽ không tính vào điểm tổng của bạn.</span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-radius: 14px; background: var(--paper-100); border: 1px solid var(--line);">
+              <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--sumi-muted);">Câu mẫu cần luyện</span>
+              <x-import component-from-global-scope="JCAP.JpText" text="{{curJp}}" size="md" as="p"></x-import>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="play_arrow">Nghe lại bản thu</x-import>
+              <div style="flex: 1 1 auto;"></div>
+              <x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{skip}}">Bỏ qua câu</x-import>
+              <x-import component-from-global-scope="JCAP.Button" variant="primary" icon="mic" on-click="{{startRec}}">Thu âm lại</x-import>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isScored}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 22px;">
+            <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line);">
+              <x-import component-from-global-scope="JCAP.ScoreRing" value="{{res.score}}" size="{{i64}}"></x-import>
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <x-import component-from-global-scope="JCAP.WordDiff" tokens="{{res.tokens}}" show-legend="{{no}}"></x-import>
+              </div>
+            </div>
+            <x-import component-from-global-scope="JCAP.FeedbackItem" tone="{{res.tone}}" title="{{res.title}}">{{res.text}}</x-import>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="play_arrow">Nghe lại bản thu</x-import>
+              <div style="flex: 1 1 auto;"></div>
+              <x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="mic" on-click="{{startRec}}">Thu âm lại</x-import>
+              <x-import component-from-global-scope="JCAP.Button" variant="primary" icon-right="arrow_forward" on-click="{{next}}">{{nextLabel}}</x-import>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 22px;">
+            <x-import component-from-global-scope="JCAP.ScoreRing" value="{{avg}}" size="{{i64}}"></x-import>
+            <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+              <strong style="font-size: 17px; line-height: 24px;">Xong bài, điểm trung bình {{avg}}</strong>
+              <span style="font-size: 14px; color: var(--sumi-muted);">Bạn đã nói {{doneCount}} trên 4 câu. Luyện lại câu điểm thấp trước khi sang bài mới.</span>
+            </div>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="replay" on-click="{{restart}}">Luyện lại</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" icon-right="arrow_forward">Bài tiếp theo</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+// "from" là thuộc tính dành riêng của x-import, nên bọc ChatBubble và truyền vai qua "side"
+function jcapxInstall() {
+  window.JCAPX = window.JCAPX || {};
+  if (!window.JCAPX.Bubble) {
+    window.JCAPX.Bubble = function (p) {
+      var o = {};
+      for (var k in p) { if (k !== 'side') o[k] = p[k]; }
+      o.from = p.side === 'me' ? 'me' : 'ai';
+      return window.React.createElement(window.JCAP.ChatBubble, o);
+    };
+  }
+}
+jcapxInstall();
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    jcapxInstall();
+    this.state = { cur: 2, phase: 'idle', attempt: 0, scores: { 0: 88, 2: 74 }, done: false, vi: {}, sit: true, les: true };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var L = [
+      { me: true, jp: 'すみません、{荷物|にもつ}を{上|うえ}の{棚|たな}に{入|い}れてもいいですか。', vi: 'Xin lỗi, tôi để hành lý lên giá phía trên được không?' },
+      { me: false, jp: 'はい、もちろんです。お{荷物|にもつ}をお{持|も}ちしましょうか。', vi: 'Vâng, tất nhiên. Để tôi cầm hành lý giúp nhé?' },
+      { me: true, jp: 'ありがとうございます。{初|はじ}めて{飛行機|ひこうき}に{乗|の}るので、{少|すこ}し{緊張|きんちょう}しています。', vi: 'Cảm ơn chị. Lần đầu đi máy bay nên tôi hơi hồi hộp.' },
+      { me: false, jp: 'そうですか。{大丈夫|だいじょうぶ}ですよ。{何|なに}かあったら、いつでも{呼|よ}んでくださいね。', vi: 'Vậy à. Không sao đâu. Có gì cứ gọi tôi nhé.' },
+      { me: true, jp: '{助|たす}かります。{飲|の}み{物|もの}を{頼|たの}んでもいいですか。', vi: 'May quá. Cho tôi gọi đồ uống được không?' },
+      { me: false, jp: 'もちろんです。お{茶|ちゃ}とお{水|みず}がございます。', vi: 'Tất nhiên ạ. Có trà và nước.' },
+      { me: true, jp: 'お{茶|ちゃ}をお{願|ねが}いします。', vi: 'Cho tôi trà nhé.' }
+    ];
+    var mine = [0, 2, 4, 6];
+    var R = {
+      0: { score: 88, tone: 'success', title: 'Rõ ràng, đúng nhịp', text: 'Ngữ điệu câu hỏi lên giọng ở cuối rất tự nhiên.',
+        tokens: [{ text: 'すみません' }, { text: '荷物を', reading: 'にもつを' }, { text: '上の', reading: 'うえの' }, { text: '棚に', reading: 'たなに' }, { text: '入れても', reading: 'いれても' }, { text: 'いいですか' }] },
+      2: { score: 74, tone: 'warning', title: 'Trường âm trong 飛行機 và 緊張 còn ngắn', text: 'Kéo dài ひこう và きんちょう đủ hai nhịp như giọng mẫu.',
+        tokens: [{ text: 'ありがとうございます' }, { text: '初めて', reading: 'はじめて' }, { text: '飛行機に', reading: 'ひこうきに', status: 'wrong', error: 'chouon', expected: 'ひこうき' }, { text: '乗るので', reading: 'のるので' }, { text: '少し', reading: 'すこし' }, { text: '緊張して', reading: 'きんちょうして', status: 'wrong', error: 'chouon', expected: 'きんちょう' }, { text: 'います' }] },
+      4: { score: 82, tone: 'warning', title: 'Âm ん trong 頼んで chưa rõ', text: 'Giữ ん đủ một nhịp rồi mới nói で.',
+        tokens: [{ text: '助かります', reading: 'たすかります' }, { text: '飲み物を', reading: 'のみものを' }, { text: '頼んで', reading: 'たのんで', status: 'wrong', error: 'hatsuon', expected: 'たのんで' }, { text: 'も' }, { text: 'いいですか' }] },
+      6: { score: 91, tone: 'success', title: 'Rất tốt', text: 'Âm お và nhịp câu giống giọng mẫu.',
+        tokens: [{ text: 'お茶を', reading: 'おちゃを' }, { text: 'お願いします', reading: 'おねがいします' }] }
+    };
+    var curLine = st.done ? L.length : mine[st.cur];
+    var scores = st.scores || {}, viMap = st.vi || {};
+    function verdict(s) { return s >= 80 ? 'good' : s >= 60 ? 'mid' : 'low'; }
+    var ICON = { good: 'check_circle', mid: 'change_history', low: 'cancel' };
+    var lines = [];
+    L.forEach(function (l, i) {
+      if (i > curLine) return;
+      var pending = i === curLine && !st.done;
+      var sc = l.me && !pending ? scores[i] : undefined;
+      lines.push({
+        cls: 'ln ' + (l.me ? 'me' : 'ai') + (pending ? ' pending' : '') + (i >= curLine - 1 ? ' enter' : ''),
+        isPending: pending, isMe: l.me, side: l.me ? 'me' : 'ai',
+        name: l.me ? (pending ? 'Lượt của bạn · Khách hàng' : 'Khách hàng') : 'Nhân viên',
+        jp: l.jp, vi: l.vi,
+        showVi: !!viMap[i],
+        viLabel: viMap[i] ? 'Ẩn dịch' : 'Dịch',
+        toggleVi: function () { var m = {}; for (var k in viMap) m[k] = viMap[k]; m[i] = !viMap[i]; self.setState({ vi: m }); },
+        hasScore: sc !== undefined,
+        scoreCls: sc !== undefined ? 'av-score jc-v-' + verdict(sc) : 'av-score',
+        scoreNum: sc !== undefined ? String(sc) : '',
+        scoreIcon: sc !== undefined ? ICON[verdict(sc)] : 'check_circle',
+        scoreText: sc !== undefined ? 'Điểm câu này: ' + sc : ''
+      });
+    });
+    // cuộn khung hội thoại xuống câu mới nhất mỗi khi có thêm câu (người học vẫn cuộn lên xem lại được)
+    if (typeof window !== 'undefined' && window.requestAnimationFrame && window.__jcapHistN !== lines.length) {
+      window.__jcapHistN = lines.length;
+      window.requestAnimationFrame(function () { window.requestAnimationFrame(function () {
+        var els = document.querySelectorAll('.hist');
+        for (var q = 0; q < els.length; q++) els[q].scrollTop = els[q].scrollHeight;
+      }); });
+    }
+    var vals = Object.keys(scores).map(function (k) { return scores[k]; });
+    var avg = vals.length ? Math.round(vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) : 0;
+    function advance(withScore) {
+      var sc = {}; for (var k in scores) sc[k] = scores[k];
+      if (withScore) sc[curLine] = R[curLine].score;
+      if (st.cur >= 3) self.setState({ scores: sc, done: true, phase: 'done', attempt: 0 });
+      else self.setState({ scores: sc, cur: st.cur + 1, phase: 'idle', attempt: 0 });
+    }
+    var bars = [];
+    for (var b = 0; b < 64; b++) {
+      var env = Math.sin(Math.PI * b / 63);
+      var h = 6 + Math.round(42 * env * env * (0.7 + 0.3 * Math.abs(Math.sin(b * 0.9))));
+      bars.push({ h: h + 'px', d: (-(b % 9) * 0.1).toFixed(2) + 's' });
+    }
+    var res = R[curLine] || R[4];
+    return {
+      yes: true, no: false, nothing: null, i16: 16, i18: 18, i22: 22, i28: 28, i36: 36, i64: 64,
+      levels: [{ value: 'N5', label: 'JLPT N5' }, { value: 'N4', label: 'JLPT N4' }, { value: 'N3', label: 'JLPT N3' }],
+      sitOpen: !!st.sit, lesOpen: !!st.les,
+      sitChev: 'sec-chev' + (st.sit ? '' : ' closed'), lesChev: 'sec-chev' + (st.les ? '' : ' closed'),
+      toggleSit: function () { self.setState({ sit: !st.sit }); },
+      toggleLes: function () { self.setState({ les: !st.les }); },
+      lines: lines,
+      curJp: L[curLine] ? L[curLine].jp : '',
+      isIdle: st.phase === 'idle', isRec: st.phase === 'rec', isUnclear: st.phase === 'unclear', isScored: st.phase === 'scored', isDone: st.phase === 'done',
+      attempt: st.attempt,
+      bars: bars,
+      startRec: function () { self.setState({ phase: 'rec' }); },
+      cancelRec: function () { self.setState({ phase: st.attempt > 0 ? 'unclear' : 'idle' }); },
+      submitRec: function () {
+        var n = st.attempt + 1;
+        if (curLine === 4 && st.attempt === 0) self.setState({ phase: 'unclear', attempt: n });
+        else self.setState({ phase: 'scored', attempt: n });
+      },
+      skip: function () { advance(false); },
+      next: function () { advance(true); },
+      nextLabel: st.cur >= 3 ? 'Hoàn thành' : 'Câu tiếp',
+      res: { score: res.score, tone: res.tone, title: res.title, text: res.text, tokens: res.tokens },
+      avg: avg, doneCount: vals.length,
+      restart: function () { self.setState({ cur: 0, phase: 'idle', attempt: 0, scores: {}, done: false, vi: {} }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
