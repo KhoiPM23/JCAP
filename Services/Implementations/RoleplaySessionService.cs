@@ -212,8 +212,32 @@ public class RoleplaySessionService : IRoleplaySessionService
             });
         }
 
-        // AI luôn là người chủ động nói câu mở đầu
-        var opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, cancellationToken);
+        // AI luôn là người chủ động nói câu mở đầu (kèm lời chào thích ứng theo quan hệ / thời gian nếu có)
+        string npcCode = levelConfig.Scenario.ScenarioCode ?? $"SCN_{levelConfig.Scenario.Id}";
+        string? circadianGreeting = null;
+        try
+        {
+            circadianGreeting = await _personaMemory.GetAdaptiveCircadianGreetingAsync(userId, npcCode);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể lấy circadian greeting cho người dùng {UserId}", userId);
+        }
+
+        AiOpeningMessageResult? opening = null;
+        if (!string.IsNullOrWhiteSpace(circadianGreeting))
+        {
+            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, circadianGreeting, cancellationToken);
+        }
+        if (opening == null)
+        {
+            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, cancellationToken);
+        }
+        if (opening == null)
+        {
+            opening = RoleplaySocialRegister.GenerateOpeningMessage(levelConfig.Scenario, levelConfig);
+        }
+
         var aiOpeningMessage = new RoleplayMessage
         {
             RoleplaySessionId = newSession.Id,
@@ -407,14 +431,48 @@ public class RoleplaySessionService : IRoleplaySessionService
             TurnScore = 85.0
         });
 
-        // 3. Gọi AI phân tích và phản hồi
-        var turnResult = await _aiRoleplayService.ProcessTurnAsync(
-            levelConfig.Scenario,
-            levelConfig,
-            session.Messages.ToList(),
-            userMessage.JapaneseText,
-            pendingMissions,
-            cancellationToken);
+        string npcCode = levelConfig.Scenario.ScenarioCode ?? $"SCN_{levelConfig.Scenario.Id}";
+        string? compactMemory = null;
+        try
+        {
+            compactMemory = await _personaMemory.GetCompactMemoryDirectiveAsync(userId, npcCode);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể lấy persona memory directive cho người dùng {UserId}", userId);
+        }
+
+        // 3. Gọi AI phân tích và phản hồi (ưu tiên memory directive nếu có)
+        AiTurnResult? turnResult = null;
+        if (!string.IsNullOrWhiteSpace(compactMemory))
+        {
+            turnResult = await _aiRoleplayService.ProcessTurnAsync(
+                levelConfig.Scenario,
+                levelConfig,
+                session.Messages.ToList(),
+                userMessage.JapaneseText,
+                pendingMissions,
+                compactMemory,
+                cancellationToken);
+        }
+        if (turnResult == null)
+        {
+            turnResult = await _aiRoleplayService.ProcessTurnAsync(
+                levelConfig.Scenario,
+                levelConfig,
+                session.Messages.ToList(),
+                userMessage.JapaneseText,
+                pendingMissions,
+                cancellationToken);
+        }
+        if (turnResult == null)
+        {
+            turnResult = RoleplaySocialRegister.ProcessGenericTurn(
+                levelConfig.Scenario,
+                levelConfig,
+                userMessage.JapaneseText,
+                pendingMissions);
+        }
 
         // 4. Lưu tin nhắn phản hồi của AI
         var aiMessage = new RoleplayMessage

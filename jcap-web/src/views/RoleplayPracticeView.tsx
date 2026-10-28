@@ -791,6 +791,12 @@ export const RoleplayPracticeView: React.FC = () => {
             micStartedAtRef.current = Date.now();
           }
         },
+        onBargeIn: () => {
+          // Barge-In: Học viên cất tiếng nói khi AI đang nói -> ngắt lời AI tức thì
+          setIsPlayingAiSpeech(false);
+          setPlayingMessageId(null);
+          ukiyoSound.playSubtleTap();
+        },
         onResult: (transcript: string, _isFinal: boolean, confidence?: number) => {
           if (transcript.trim()) {
             setInputText(transcript.trim());

@@ -62,7 +62,7 @@ export const EkiStampOverlay: React.FC<EkiStampOverlayProps> = ({
         <p className="text-xs text-[var(--sumi-muted)] mt-1 max-w-xs">{scenarioTitle}</p>
 
         {/* Thẻ thống kê kết quả */}
-        <div className="grid grid-cols-2 gap-3 w-full my-6">
+        <div className="grid grid-cols-2 gap-3 w-full my-4">
           <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)]">
             <span className="text-[11px] font-bold text-[var(--sumi-muted)] block">Điểm trung bình</span>
             <span className="text-2xl font-extrabold font-mono text-[var(--ai)] mt-0.5 block">
@@ -76,6 +76,30 @@ export const EkiStampOverlay: React.FC<EkiStampOverlayProps> = ({
             <span className="text-2xl font-extrabold font-mono text-emerald-700 mt-0.5 block">
               {completedMissionsCount}/{totalMissionsCount}
             </span>
+          </div>
+        </div>
+
+        {/* Quẻ xăm Omikuji may mắn (Variable Reward) */}
+        <div className="w-full mb-5 p-3 rounded-2xl bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-amber-50/80 border border-amber-200/80 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5 text-left">
+            <span className="w-9 h-9 rounded-xl bg-amber-500 text-white font-serif font-black text-sm flex items-center justify-center shadow-xs">
+              {averageScore >= 85 ? '大吉' : averageScore >= 70 ? '中吉' : '吉'}
+            </span>
+            <div>
+              <div className="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                <span>Quẻ xăm may mắn (おみくじ):</span>
+                <span className="text-amber-700 font-normal">
+                  {averageScore >= 85 ? 'Đại Cát · +15 EXP' : averageScore >= 70 ? 'Trung Cát · +10 EXP' : 'Tiểu Cát · +5 EXP'}
+                </span>
+              </div>
+              <p className="text-[11px] text-amber-800 italic mt-0.5">
+                {averageScore >= 85
+                  ? '「千里の道も一歩から」— Phản xạ nhạy bén, tự tin như người bản xứ!'
+                  : averageScore >= 70
+                  ? '「継続は力なり」— Nhịp điệu đối thoại vững vàng, ngày càng tiến bộ!'
+                  : '「七転び八起き」— Vạn sự khởi đầu nan, kiên trì ắt thành tài!'}
+              </p>
+            </div>
           </div>
         </div>
 

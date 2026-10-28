@@ -14,6 +14,15 @@ public interface IAiRoleplayService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Sinh câu chào mở đầu của AI dựa trên bối cảnh và Persona (kèm Circadian Greeting thích ứng nếu có).
+    /// </summary>
+    Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string? circadianGreeting,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Xử lý một lượt đối thoại: AI phản hồi hội thoại, đồng thời phân tích mission và phát hiện kết thúc tự nhiên.
     /// </summary>
     Task<AiTurnResult> ProcessTurnAsync(
@@ -22,6 +31,18 @@ public interface IAiRoleplayService
         List<RoleplayMessage> conversationHistory,
         string userMessage,
         List<Mission> pendingMissions,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Xử lý một lượt đối thoại với Persona Memory Directive.
+    /// </summary>
+    Task<AiTurnResult> ProcessTurnAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        List<RoleplayMessage> conversationHistory,
+        string userMessage,
+        List<Mission> pendingMissions,
+        string? personaDirective,
         CancellationToken cancellationToken = default);
 
     /// <summary>

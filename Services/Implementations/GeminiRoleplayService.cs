@@ -41,11 +41,36 @@ public class GeminiRoleplayService : IAiRoleplayService
         _logger = logger;
     }
 
-    public async Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+    public Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         CancellationToken cancellationToken = default)
+        => GenerateOpeningMessageAsync(scenario, levelConfig, null, cancellationToken);
+
+    public async Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string? circadianGreeting,
+        CancellationToken cancellationToken = default)
     {
+        if (!string.IsNullOrWhiteSpace(circadianGreeting))
+        {
+            var reg = RoleplaySocialRegister.Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+            var fHtml = RoleplaySocialRegister.GenerateFuriganaHtml(circadianGreeting);
+            var viGreeting = circadianGreeting.Contains("おはよう")
+                ? $"Chào buổi sáng! Rất vui được gặp lại {reg.AiAddressLearner}. Hôm nay chúng ta cùng cố gắng nhé!"
+                : circadianGreeting.Contains("こんばんは")
+                    ? $"Chào buổi tối! {reg.AiAddressLearner} hôm nay cũng vất vả rồi. Cùng cố gắng luyện tập buổi tối nhé!"
+                    : $"Chào {reg.AiAddressLearner}! Hôm nay chúng ta cùng luyện tập nhé!";
+
+            return new AiOpeningMessageResult
+            {
+                JapaneseText = circadianGreeting.Trim(),
+                FuriganaHtml = fHtml,
+                VietnameseMeaning = viGreeting
+            };
+        }
+
         var apiKey = _configuration["Gemini:ApiKey"];
         var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
@@ -94,14 +119,61 @@ Return strictly pure JSON matching:
         return GenerateSimulatorOpeningMessage(scenario, levelConfig);
     }
 
-    public async Task<AiTurnResult> ProcessTurnAsync(
+    public Task<AiTurnResult> ProcessTurnAsync(
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         List<RoleplayMessage> conversationHistory,
         string userMessage,
         List<Mission> pendingMissions,
         CancellationToken cancellationToken = default)
+        => ProcessTurnAsync(scenario, levelConfig, conversationHistory, userMessage, pendingMissions, null, cancellationToken);
+
+    public async Task<AiTurnResult> ProcessTurnAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        List<RoleplayMessage> conversationHistory,
+        string userMessage,
+        List<Mission> pendingMissions,
+        string? personaDirective,
+        CancellationToken cancellationToken = default)
     {
+        var reg = RoleplaySocialRegister.Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+
+        // PRE-FLIGHT GUARD (0 tokens, <1ms):
+        // Chặn ngay các lượt nói tiếng Việt hoặc ngoại ngữ trước khi gọi LLM
+        if (IsLikelyForeignOrVietnamese(userMessage))
+        {
+            var confusedJa = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+            var confusedVi = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói bằng tiếng Nhật được không ạ?";
+            return new AiTurnResult
+            {
+                JapaneseReply = confusedJa,
+                FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(confusedJa),
+                VietnameseMeaning = confusedVi,
+                UserVietnameseMeaning = userMessage,
+                UserFuriganaHtml = userMessage,
+                CompletedMissionIds = new List<int>(),
+                IsNaturallyConcluded = false,
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Error",
+                    Summary = "Vui lòng sử dụng tiếng Nhật",
+                    EvaluationSource = "PreFlightGuard",
+                    Details = new List<LinguisticDetailItemDto>
+                    {
+                        new()
+                        {
+                            Type = "error",
+                            Aspect = "Ngôn ngữ",
+                            Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng không sử dụng tiếng Việt hoặc ngoại ngữ khác."
+                        }
+                    },
+                    NaturalAlternative = null,
+                    CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+                }
+            };
+        }
+
         var apiKey = _configuration["Gemini:ApiKey"];
         var model = _configuration["Gemini:Model"] ?? "gemini-3.1-flash-lite";
 
@@ -113,8 +185,11 @@ Return strictly pure JSON matching:
 
         try
         {
-            var reg = RoleplaySocialRegister.Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
+            if (!string.IsNullOrWhiteSpace(personaDirective))
+            {
+                systemPrompt += $"\n\n[NPC MEMORY DIRECTIVE]\n{personaDirective}\nMaintain continuity with these prior facts subtly and naturally.";
+            }
 
             var sbHistory = new StringBuilder();
             foreach (var msg in conversationHistory.TakeLast(10))

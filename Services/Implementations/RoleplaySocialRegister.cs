@@ -646,55 +646,165 @@ public sealed record RoleplaySocialRegister
     }
 
     /// <summary>
-    /// Tạo Furigana HTML cho các từ vựng chữ Hán thông dụng trong câu của người học
+    /// Tạo Furigana HTML cho các từ vựng chữ Hán thông dụng trong câu của người học và AI
     /// </summary>
     public static string GenerateFuriganaHtml(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return text;
+        if (text.Contains("<ruby>") && text.Contains("</ruby>")) return text;
 
-        var furiganaMap = new (string Word, string Ruby)[]
+        var furiganaDictionary = new (string Word, string Ruby)[]
         {
+            // Cụm 4-5 chữ Hán
+            ("志望動機", "<ruby>志望動機<rt>しぼうどうき</rt></ruby>"),
+            ("自己紹介", "<ruby>自己紹介<rt>じこしょうかい</rt></ruby>"),
+            ("電話番号", "<ruby>電話番号<rt>でんわばんごう</rt></ruby>"),
+            ("営業時間", "<ruby>営業時間<rt>えいぎょうじかん</rt></ruby>"),
+            
+            // Cụm 3 chữ Hán
+            ("何名様", "<ruby>何名様<rt>なんめいさま</rt></ruby>"),
+            ("領収書", "<ruby>領収書<rt>りょうしゅうしょ</rt></ruby>"),
+            ("改札口", "<ruby>改札口<rt>かいさつぐち</rt></ruby>"),
+            ("地下鉄", "<ruby>地下鉄<rt>ちかてつ</rt></ruby>"),
+            ("新幹線", "<ruby>新幹線<rt>しんかんせん</rt></ruby>"),
+            ("留学生", "<ruby>留学生<rt>りゅうがくせい</rt></ruby>"),
+            ("履歴書", "<ruby>履歴書<rt>りれきしょ</rt></ruby>"),
+            ("交差点", "<ruby>交差点<rt>こうさてん</rt></ruby>"),
+            ("処方箋", "<ruby>処方箋<rt>しょほうせん</rt></ruby>"),
+            ("向こう側", "<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>"),
+            ("少々お待ち", "<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ち"),
+            ("乗り換え", "<ruby>乗<rt>の</rt></ruby>り<ruby>換<rt>か</rt></ruby>え"),
+            ("真っ直ぐ", "<ruby>真<rt>ま</rt></ruby>っ<ruby>直<rt>す</rt></ruby>ぐ"),
+            
+            // Cụm 2 chữ Hán thông dụng
             ("大丈夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>"),
+            ("お会計", "お<ruby>会計<rt>かいけい</rt></ruby>"),
+            ("お勘定", "お<ruby>勘定<rt>かんじょう</rt></ruby>"),
+            ("お待ち", "お<ruby>待<rt>ま</rt></ruby>ち"),
+            ("お願い", "お<ruby>願<rt>ねが</rt></ruby>い"),
+            ("お手伝い", "お<ruby>手伝<rt>てつだ</rt></ruby>い"),
             ("手伝", "<ruby>手伝<rt>てつだ</rt></ruby>"),
-            ("渡", "<ruby>渡<rt>わた</rt></ruby>"),
-            ("道", "<ruby>道<rt>みち</rt></ruby>"),
-            ("元気", "<ruby>元気<rt>げんき</rt></ruby>"),
-            ("私", "<ruby>私<rt>わたし</rt></ruby>"),
-            ("僕", "<ruby>僕<rt>ぼく</rt></ruby>"),
-            ("駅", "<ruby>駅<rt>えき</rt></ruby>"),
-            ("病院", "<ruby>病院<rt>びょういん</rt></ruby>"),
-            ("痛", "<ruby>痛<rt>いた</rt></ruby>"),
-            ("薬", "<ruby>薬<rt>くすり</rt></ruby>"),
-            ("頭", "<ruby>頭<rt>あたま</rt></ruby>"),
-            ("喉", "<ruby>喉<rt>のど</rt></ruby>"),
-            ("熱", "<ruby>熱<rt>ねつ</rt></ruby>"),
-            ("何", "<ruby>何<rt>なに</rt></ruby>"),
-            ("行", "<ruby>行<rt>い</rt></ruby>"),
-            ("来", "<ruby>来<rt>き</rt></ruby>"),
-            ("見", "<ruby>見<rt>み</rt></ruby>"),
-            ("聞", "<ruby>聞<rt>き</rt></ruby>"),
-            ("話", "<ruby>話<rt>はな</rt></ruby>"),
-            ("買", "<ruby>買<rt>か</rt></ruby>"),
-            ("食", "<ruby>食<rt>た</rt></ruby>"),
-            ("飲", "<ruby>飲<rt>の</rt></ruby>"),
+            ("注文", "<ruby>注文<rt>ちゅうもん</rt></ruby>"),
+            ("会計", "<ruby>会計<rt>かいけい</rt></ruby>"),
+            ("豚骨", "<ruby>豚骨<rt>とんこつ</rt></ruby>"),
+            ("醤油", "<ruby>醤油<rt>しょうゆ</rt></ruby>"),
+            ("一杯", "<ruby>一杯<rt>いっぱい</rt></ruby>"),
+            ("大盛", "<ruby>大盛<rt>おおも</rt></ruby>り"),
+            ("定食", "<ruby>定食<rt>ていしょく</rt></ruby>"),
+            ("店員", "<ruby>店員<rt>てんいん</rt></ruby>"),
+            ("切符", "<ruby>切符<rt>きっぷ</rt></ruby>"),
+            ("電車", "<ruby>電車<rt>でんしゃ</rt></ruby>"),
+            ("時間", "<ruby>時間<rt>じかん</rt></ruby>"),
+            ("場所", "<ruby>場所<rt>ばしょ</rt></ruby>"),
+            ("面接", "<ruby>面接<rt>めんせつ</rt></ruby>"),
+            ("担当", "<ruby>担当<rt>たんとう</rt></ruby>"),
+            ("応募", "<ruby>応募<rt>おうぼ</rt></ruby>"),
+            ("長所", "<ruby>長所<rt>ちょうしょ</rt></ruby>"),
+            ("短所", "<ruby>短所<rt>たんしょ</rt></ruby>"),
+            ("日本語", "<ruby>日本語<rt>にほんご</rt></ruby>"),
+            ("英語", "<ruby>英語<rt>えいご</rt></ruby>"),
+            ("大学", "<ruby>大学<rt>だいがく</rt></ruby>"),
+            ("学生", "<ruby>学生<rt>がくせい</rt></ruby>"),
             ("先生", "<ruby>先生<rt>せんせい</rt></ruby>"),
             ("友達", "<ruby>友達<rt>ともだち</rt></ruby>"),
             ("会社", "<ruby>会社<rt>かいしゃ</rt></ruby>"),
             ("仕事", "<ruby>仕事<rt>しごと</rt></ruby>"),
+            ("住所", "<ruby>住所<rt>じゅうしょ</rt></ruby>"),
+            ("確認", "<ruby>確認<rt>かくにん</rt></ruby>"),
+            ("病院", "<ruby>病院<rt>びょういん</rt></ruby>"),
+            ("薬局", "<ruby>薬局<rt>やっきょく</rt></ruby>"),
+            ("症状", "<ruby>症状<rt>しょうじょう</rt></ruby>"),
+            ("診察", "<ruby>診察<rt>しんさつ</rt></ruby>"),
+            ("風邪", "<ruby>風邪<rt>かぜ</rt></ruby>"),
+            ("頭痛", "<ruby>頭痛<rt>ずつう</rt></ruby>"),
+            ("腹痛", "<ruby>腹痛<rt>ふくつう</rt></ruby>"),
+            ("食前", "<ruby>食前<rt>しょくぜん</rt></ruby>"),
+            ("食後", "<ruby>食後<rt>しょくご</rt></ruby>"),
+            ("毎日", "<ruby>毎日<rt>まいにち</rt></ruby>"),
+            ("一日", "<ruby>一日<rt>いちにち</rt></ruby>"),
+            ("一回", "<ruby>一回<rt>いっかい</rt></ruby>"),
+            ("二回", "<ruby>二回<rt>にかい</rt></ruby>"),
+            ("三回", "<ruby>三回<rt>さんかい</rt></ruby>"),
+            ("一人", "<ruby>一人<rt>ひとり</rt></ruby>"),
+            ("二人", "<ruby>二人<rt>ふたり</rt></ruby>"),
+            ("三人", "<ruby>三人<rt>さんにん</rt></ruby>"),
+            ("四人", "<ruby>四人<rt>よにん</rt></ruby>"),
+            ("交差点", "<ruby>交差点<rt>こうさてん</rt></ruby>"),
+            ("信号", "<ruby>信号<rt>しんごう</rt></ruby>"),
+            ("本日", "<ruby>本日<rt>ほんじつ</rt></ruby>"),
             ("今日", "<ruby>今日<rt>きょう</rt></ruby>"),
             ("明日", "<ruby>明日<rt>あした</rt></ruby>"),
-            ("信号", "<ruby>信号<rt>しんごう</rt></ruby>"),
+            ("昨日", "<ruby>昨日<rt>きのう</rt></ruby>"),
+            ("来週", "<ruby>来週<rt>らいしゅう</rt></ruby>"),
+            ("来月", "<ruby>来月<rt>らいげつ</rt></ruby>"),
+            ("今月", "<ruby>今月<rt>こんげつ</rt></ruby>"),
+            ("今年", "<ruby>今年<rt>ことし</rt></ruby>"),
+            ("現金", "<ruby>現金<rt>げんきん</rt></ruby>"),
+            ("値段", "<ruby>値段<rt>ねだん</rt></ruby>"),
+            ("質問", "<ruby>質問<rt>しつもん</rt></ruby>"),
+            ("練習", "<ruby>練習<rt>れんしゅう</rt></ruby>"),
+            ("勉強", "<ruby>勉強<rt>べんきょう</rt></ruby>"),
+            ("元気", "<ruby>元気<rt>げんき</rt></ruby>"),
+            
+            // Chữ đơn lẻ / động từ căn bản
+            ("私", "<ruby>私<rt>わたし</rt></ruby>"),
+            ("僕", "<ruby>僕<rt>ぼく</rt></ruby>"),
+            ("駅", "<ruby>駅<rt>えき</rt></ruby>"),
+            ("道", "<ruby>道<rt>みち</rt></ruby>"),
+            ("熱", "<ruby>熱<rt>ねつ</rt></ruby>"),
+            ("薬", "<ruby>薬<rt>くすり</rt></ruby>"),
+            ("頭", "<ruby>頭<rt>あたま</rt></ruby>"),
+            ("喉", "<ruby>喉<rt>のど</rt></ruby>"),
+            ("足", "<ruby>足<rt>あし</rt></ruby>"),
+            ("痛", "<ruby>痛<rt>いた</rt></ruby>"),
+            ("渡", "<ruby>渡<rt>わた</rt></ruby>"),
+            ("何", "<ruby>何<rt>なに</rt></ruby>"),
+            ("行", "<ruby>行<rt>い</rt></ruby>"),
+            ("来", "<ruby>来<rt>き</rt></ruby>"),
+            ("帰", "<ruby>帰<rt>かえ</rt></ruby>"),
+            ("見", "<ruby>見<rt>み</rt></ruby>"),
+            ("聞", "<ruby>聞<rt>き</rt></ruby>"),
+            ("話", "<ruby>話<rt>はな</rt></ruby>"),
+            ("読", "<ruby>読<rt>よ</rt></ruby>"),
+            ("書", "<ruby>書<rt>か</rt></ruby>"),
+            ("買", "<ruby>買<rt>か</rt></ruby>"),
+            ("食", "<ruby>食<rt>た</rt></ruby>"),
+            ("飲", "<ruby>飲<rt>の</rt></ruby>"),
+            ("座", "<ruby>座<rt>すわ</rt></ruby>"),
+            ("始", "<ruby>始<rt>はじ</rt></ruby>"),
+            ("終", "<ruby>終<rt>お</rt></ruby>"),
+            ("願", "<ruby>願<rt>ねが</rt></ruby>"),
+            ("右", "<ruby>右<rt>みぎ</rt></ruby>"),
+            ("左", "<ruby>左<rt>ひだり</rt></ruby>"),
+            ("角", "<ruby>角<rt>かど</rt></ruby>"),
+            ("朝", "<ruby>朝<rt>あさ</rt></ruby>"),
+            ("昼", "<ruby>昼<rt>ひる</rt></ruby>"),
+            ("夜", "<ruby>夜<rt>よる</rt></ruby>"),
+            ("円", "<ruby>円<rt>えん</rt></ruby>"),
             ("気", "<ruby>気<rt>き</rt></ruby>")
         };
 
+        // Sắp xếp theo chiều dài từ giảm dần để ưu tiên ghép từ ghép trước
+        var orderedMap = furiganaDictionary.OrderByDescending(f => f.Word.Length).ToList();
+        var placeholders = new Dictionary<string, string>();
         var result = text;
-        foreach (var (word, ruby) in furiganaMap)
+
+        for (int i = 0; i < orderedMap.Count; i++)
         {
-            if (result.Contains(word) && !result.Contains($"<ruby>{word}"))
+            var item = orderedMap[i];
+            if (result.Contains(item.Word))
             {
-                result = result.Replace(word, ruby);
+                var token = $"__RUBY_{i}__";
+                placeholders[token] = item.Ruby;
+                result = result.Replace(item.Word, token);
             }
         }
+
+        foreach (var kvp in placeholders)
+        {
+            result = result.Replace(kvp.Key, kvp.Value);
+        }
+
         return result;
     }
 }

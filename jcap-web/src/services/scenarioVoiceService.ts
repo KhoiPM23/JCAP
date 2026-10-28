@@ -273,6 +273,22 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Kiểm tra xem AI có đang phát âm thanh không
+   */
+  public isAiSpeaking(): boolean {
+    return this.currentAudio !== null || this.currentUtterance !== null;
+  }
+
+  /**
+   * Kích hoạt ngắt lời AI (Barge-In) ngay lập tức
+   */
+  public triggerBargeIn(): void {
+    if (this.isAiSpeaking()) {
+      this.stopAllAudio();
+    }
+  }
+
+  /**
    * Khởi tạo bộ nhận diện giọng nói tiếng Nhật (Web Speech API STT)
    */
   public createSpeechRecognition(options?: {
@@ -280,6 +296,7 @@ class ScenarioVoiceService {
     onResult?: (transcript: string, isFinal: boolean, confidence?: number) => void;
     onError?: (error: any) => void;
     onEnd?: () => void;
+    onBargeIn?: () => void;
   }): any | null {
     if (typeof window === 'undefined') return null;
 
@@ -301,6 +318,12 @@ class ScenarioVoiceService {
       };
 
       recognition.onresult = (event: any) => {
+        // Barge-In: Nếu AI đang nói mà người học cất tiếng nói có nội dung -> ngắt lời AI ngay
+        if (this.isAiSpeaking()) {
+          this.triggerBargeIn();
+          options?.onBargeIn?.();
+        }
+
         let interim = '';
         let final = '';
         let sumConfidence = 0;
