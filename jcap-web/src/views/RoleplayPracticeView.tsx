@@ -40,6 +40,7 @@ export const RoleplayPracticeView: React.FC = () => {
   }, [autoPlayAudio]);
   const [isPlayingAiSpeech, setIsPlayingAiSpeech] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
+  const [isAmbientOn, setIsAmbientOn] = useState(false);
   const [isRecordingMic, setIsRecordingMic] = useState(false); // Trạng thái thu âm UI
   const isRecordingMicRef = useRef(false);
   const [isProcessingStt, setIsProcessingStt] = useState(false); // Trạng thái xử lý Whisper STT
@@ -486,6 +487,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
     return () => {
       isMounted = false;
+      ukiyoSound.stopAmbientSound();
     };
   }, [sessionId]);
 
@@ -1176,6 +1178,37 @@ export const RoleplayPracticeView: React.FC = () => {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Âm thanh bối cảnh (Procedural Ambient Sound) */}
+                <div className="border-t border-[#F1F5F9] pt-2.5 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#071A44]">Âm thanh bối cảnh</p>
+                    <p className="text-[11px] text-[#71809A]">Nồi nước dùng / tàu điện nhẹ nhàng</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isAmbientOn) {
+                        ukiyoSound.stopAmbientSound();
+                        setIsAmbientOn(false);
+                      } else {
+                        const title = (session?.scenarioTitle || '').toLowerCase();
+                        const theme = title.includes('tàu') || title.includes('ga') ? 'train' : 'ramen';
+                        ukiyoSound.startAmbientSound(theme);
+                        setIsAmbientOn(true);
+                      }
+                    }}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                      isAmbientOn ? 'bg-[#0878EE]' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        isAmbientOn ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
 
                 {/* Nút mở cài đặt giọng đọc VOICEVOX */}

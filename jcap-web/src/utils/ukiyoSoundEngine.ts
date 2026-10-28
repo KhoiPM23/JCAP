@@ -7,6 +7,9 @@
 class UkiyoSoundEngine {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private ambientSource: AudioNode | null = null;
+  private ambientGain: GainNode | null = null;
+  private ambientType: string | null = null;
 
   private initContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -209,6 +212,79 @@ class UkiyoSoundEngine {
 
     osc.start(now);
     osc.stop(now + 0.025);
+  }
+
+  /**
+   * Bật âm thanh môi trường thủ công (quán Ramen sôi nước dùng, tiếng tàu điện, quán cafe)
+   * Tạo bằng Pink-Noise Filtered Synthesis siêu nhẹ, 0 byte file tải ngoài.
+   */
+  public startAmbientSound(theme: 'ramen' | 'train' | 'cafe' = 'ramen') {
+    if (this.isMuted) return;
+    this.stopAmbientSound();
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 1.5);
+
+    const bufferSize = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      data[i] = (b0 + b1 + b2) * 0.12;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(theme === 'train' ? 180 : 360, ctx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start();
+
+    this.ambientSource = noise;
+    this.ambientGain = gain;
+    this.ambientType = theme;
+  }
+
+  /**
+   * Dừng âm thanh môi trường
+   */
+  public stopAmbientSound() {
+    if (this.ambientGain && this.ctx) {
+      try {
+        this.ambientGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.4);
+      } catch {
+        // ignore
+      }
+    }
+    setTimeout(() => {
+      if (this.ambientSource && 'stop' in this.ambientSource) {
+        try {
+          (this.ambientSource as AudioScheduledSourceNode).stop();
+        } catch {
+          // ignore
+        }
+      }
+      this.ambientSource = null;
+      this.ambientGain = null;
+      this.ambientType = null;
+    }, 500);
+  }
+
+  public isAmbientPlaying(): boolean {
+    return this.ambientSource !== null;
   }
 }
 
