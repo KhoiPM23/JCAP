@@ -154,4 +154,15 @@ export interface StartRoleplaySessionRequestDto {
 
 export interface SendRoleplayMessageRequestDto {
   message: string;
+  speakingDurationSeconds?: number;
+  responseLatencySeconds?: number;
+  speechConfidence?: number;
+  audioUrl?: string;
+  hintLevelUsed?: number;
+  translationPeekCount?: number;
+  retryCount?: number;
+  fallbackToTextInput?: boolean;
+  bargeInInterrupted?: boolean;
+  moraRate?: number;
+  pauseRatio?: number;
 }

@@ -87,6 +87,38 @@ namespace JCAP.Services.Implementations
 
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
+                // Cho phép chạy Mock Payment trong môi trường Test / Development khi PayOS chưa cấu hình
+                if (string.IsNullOrEmpty(_configuration["FrontendUrl"]) || _configuration.GetValue<bool>("PayOS:AllowMock", false))
+                {
+                    _logger.LogInformation("PayOS chưa cấu hình thông tin. Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
+
+                    var mockTransaction = new CreditTransaction
+                    {
+                        UserId = userId,
+                        Amount = package.Credits,
+                        Type = "TopUp",
+                        Description = $"Nạp {package.Name} (+{package.Credits} credits) [Mock]",
+                        PayOsOrderCode = null,
+                        Status = "Paid",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    user.CreditBalance += package.Credits;
+
+                    await _dbContext.CreditTransactions.AddAsync(mockTransaction);
+                    await _userManager.UpdateAsync(user);
+                    await _dbContext.SaveChangesAsync();
+
+                    return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                    {
+                        Success = true,
+                        Message = $"Nạp thành công {package.Credits} credits vào tài khoản (Chế độ Mock).",
+                        IsMock = true,
+                        AddedCredits = package.Credits,
+                        NewCreditBalance = user.CreditBalance
+                    }, "Nạp credits thành công (Mock).");
+                }
+
                 _logger.LogError("PayOS chưa cấu hình thông tin. Từ chối khởi tạo giao dịch cho User: {UserId}, Package: {PackageId}", userId, packageId);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán trực tuyến PayOS chưa được cấu hình hoặc gặp sự cố. Vui lòng liên hệ quản trị viên.");
             }

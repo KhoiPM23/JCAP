@@ -303,8 +303,10 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail("Dữ liệu tạo kịch bản không hợp lệ.");
         }
 
-        // Tự động sinh ScenarioCode duy nhất bên trong backend (chỉ dùng để lưu DB và truy vấn hệ thống)
-        var generatedCode = $"SCN_{DateTime.UtcNow:yyyyMMdd}_{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+        // Tự động sinh ScenarioCode duy nhất nếu không được truyền vào
+        var generatedCode = !string.IsNullOrWhiteSpace(dto.ScenarioCode)
+            ? dto.ScenarioCode.Trim().ToUpperInvariant()
+            : $"SCN_{DateTime.UtcNow:yyyyMMdd}_{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
 
         var scenario = new Scenario
         {
@@ -387,9 +389,12 @@ public class ScenarioService : IScenarioService
         _dbContext.Scenarios.Add(scenario);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        // Tự động gán mã kịch bản chuẩn theo ID: SCN_{id}
-        scenario.ScenarioCode = $"SCN_{scenario.Id}";
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(dto.ScenarioCode))
+        {
+            // Tự động gán mã kịch bản chuẩn theo ID: SCN_{id} nếu chưa có
+            scenario.ScenarioCode = $"SCN_{scenario.Id}";
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return await GetAdminScenarioDetailsAsync(scenario.Id, cancellationToken);
     }
@@ -418,8 +423,14 @@ public class ScenarioService : IScenarioService
         scenario.Title = dto.Title.Trim();
         scenario.Description = dto.Description.Trim();
         scenario.Thumbnail = dto.Thumbnail?.Trim();
-        // Mã kịch bản luôn tương ứng chuẩn theo ID: SCN_{id}
-        scenario.ScenarioCode = $"SCN_{scenario.Id}";
+        if (!string.IsNullOrWhiteSpace(dto.ScenarioCode))
+        {
+            scenario.ScenarioCode = dto.ScenarioCode.Trim().ToUpperInvariant();
+        }
+        else if (string.IsNullOrWhiteSpace(scenario.ScenarioCode))
+        {
+            scenario.ScenarioCode = $"SCN_{scenario.Id}";
+        }
         scenario.IsActive = dto.IsActive;
 
         if (dto.LevelConfigurations != null)

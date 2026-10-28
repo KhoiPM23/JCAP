@@ -49,6 +49,10 @@ namespace JCAP.Services.Implementations
         [GeneratedRegex(@"(?:(?:便利|有名|暇|静か|元気|好き|嫌い|雨|日曜日|休み)[\s]*から)", RegexOptions.Compiled)]
         private static partial Regex E09MissingDaKaraRegex();
 
+        // E10: Nhầm trợ từ に thay vì で khi chỉ phương tiện di chuyển (VD: 電車に行きます, バイクに行く, 車に来ました)
+        [GeneratedRegex(@"(?:(?:電車|バス|車|タクシー|飛行機|新幹線|自転車|バイク)[\s]*に[\s]*(?:行[くきっ]|い[くきっ]|来[るま]|き[たま]|帰[るりっ]|かえ[るりっ]))", RegexOptions.Compiled)]
+        private static partial Regex E10TransportNiDeRegex();
+
         public IReadOnlyList<DetectedGrammarIssue> DetectErrors(string japaneseText)
         {
             var issues = new List<DetectedGrammarIssue>();
@@ -214,6 +218,21 @@ namespace JCAP.Services.Implementations
                     MatchedSnippet = m9.Value,
                     SuggestedFix = m9.Value.Replace("から", "だから / ですから"),
                     ExplanationVi = "Sau Danh từ và Tính từ đuôi な (như 便利, 暇, 静か, 雨...), khi nối với から chỉ lý do bắt buộc phải có だ (thể ngắn) hoặc です (thể lịch sự): 便利だから, 雨だから."
+                });
+            }
+
+            // E10 Check
+            var m10 = E10TransportNiDeRegex().Match(japaneseText);
+            if (m10.Success)
+            {
+                issues.Add(new DetectedGrammarIssue
+                {
+                    Code = "E10_TRANSPORT_NI_DE",
+                    Title = "Nhầm trợ từ に và で khi chỉ phương tiện giao thông",
+                    Severity = "error",
+                    MatchedSnippet = m10.Value,
+                    SuggestedFix = m10.Value.Replace("に", "で"),
+                    ExplanationVi = "Phương tiện giao thông (電車, バス, 車, タクシー...) khi dùng để di chuyển phải đi với trợ từ で (chỉ phương tiện/cách thức), không dùng に (chỉ điểm đến hoặc thời gian)."
                 });
             }
 

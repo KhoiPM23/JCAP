@@ -74,6 +74,15 @@ namespace JCAP.Tests.Services
             Assert.Contains(issues, i => i.Code == expectedCode);
         }
 
+        [Theory]
+        [InlineData("電車に行きます", "E10_TRANSPORT_NI_DE")]
+        [InlineData("バイクに来ました", "E10_TRANSPORT_NI_DE")]
+        public void Detects_E10_TransportNiDe(string input, string expectedCode)
+        {
+            var issues = _detector.DetectErrors(input);
+            Assert.Contains(issues, i => i.Code == expectedCode);
+        }
+
         [Fact]
         public void CleanJapanese_ReturnsNoIssues()
         {

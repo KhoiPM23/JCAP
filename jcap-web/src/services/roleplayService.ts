@@ -120,6 +120,13 @@ class RoleplayService {
       responseLatencySeconds?: number;
       speechConfidence?: number;
       audioUrl?: string;
+      hintLevelUsed?: number;
+      translationPeekCount?: number;
+      retryCount?: number;
+      fallbackToTextInput?: boolean;
+      bargeInInterrupted?: boolean;
+      moraRate?: number;
+      pauseRatio?: number;
     }
   ): Promise<ApiResponse<RoleplayTurnResponseDto>> {
     try {
@@ -132,6 +139,13 @@ class RoleplayService {
           responseLatencySeconds: delivery?.responseLatencySeconds,
           speechConfidence: delivery?.speechConfidence,
           audioUrl: delivery?.audioUrl,
+          hintLevelUsed: delivery?.hintLevelUsed ?? 0,
+          translationPeekCount: delivery?.translationPeekCount ?? 0,
+          retryCount: delivery?.retryCount ?? 0,
+          fallbackToTextInput: delivery?.fallbackToTextInput ?? false,
+          bargeInInterrupted: delivery?.bargeInInterrupted ?? false,
+          moraRate: delivery?.moraRate,
+          pauseRatio: delivery?.pauseRatio,
         }),
       });
 

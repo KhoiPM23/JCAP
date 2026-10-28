@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDateTime } from '../utils/dateUtils';
@@ -28,6 +28,9 @@ const ScoreCard = ({ label, score, accent, subtext }: { label: string; score: nu
 
 export const ConversationResultDetailView: React.FC = () => {
   const { resultId } = useParams();
+  const [searchParams] = useSearchParams();
+  const rawReturnUrl = searchParams.get('return');
+  const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : null;
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const parsedResultId = Number(resultId);
@@ -193,10 +196,10 @@ export const ConversationResultDetailView: React.FC = () => {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <Link
-          to={isAdmin ? '/admin/scenarios' : '/roleplay/results'}
+          to={returnUrl || (isAdmin ? '/admin/scenarios' : '/roleplay/results')}
           className="inline-flex items-center text-sm font-bold text-[#52627A] transition hover:text-[#0878EE]"
         >
-          ← {isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử'}
+          ← {returnUrl ? 'Quay lại Bản đồ Khám phá' : (isAdmin ? 'Quay lại Quản lý kịch bản' : 'Quay lại lịch sử')}
         </Link>
 
         <div className="flex items-center gap-2">
@@ -916,6 +919,15 @@ export const ConversationResultDetailView: React.FC = () => {
       </div>
 
       <div className="mt-7 flex flex-wrap gap-3">
+        {returnUrl && (
+          <Link
+            to={returnUrl}
+            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
+          >
+            <span>⛩️</span>
+            <span>Quay lại Bản đồ Khám phá</span>
+          </Link>
+        )}
         {isAdmin && (
           <Link
             to="/admin/scenarios"
