@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Button as JButton, Icon as JIcon, IconButton as JIconButton, Logo as JLogo } from '../../components/jcap';
+import { getPracticePrefs } from '../../utils/practicePrefs';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
 import type {
@@ -42,6 +44,9 @@ const settleWithin = (promise: Promise<unknown>, ms: number): Promise<void> =>
     promise.then(() => undefined),
     new Promise<void>((resolve) => setTimeout(resolve, ms)),
   ]);
+
+/** Tên vai hiển thị: bỏ chú thích "(Học viên)" mà dữ liệu bài học gắn sẵn sau tên vai (vd. "Khách hàng (Học viên)" -> "Khách hàng") */
+const displayRoleName = (name: string): string => name.replace(/\s*[(（]\s*học\s*viên\s*[)）]/gi, '').trim();
 
 export const LearnerShadowingPracticeView: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -164,6 +169,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Translations visibility toggles
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
+  // Mặc định ẩn nghĩa tiếng Việt: bấm "Dịch" ở từng câu mới hiện. Ai bật "Hiện nghĩa tiếng Việt" ở Cài đặt > Khi luyện tập thì hiện sẵn
+  const translationDefault = getPracticePrefs().translation;
+  const isTranslationShown = (sentenceId: number) => showTranslations[sentenceId] ?? translationDefault;
 
   // Synchronization refs to avoid stale closure races and unwanted auto-play
   const userRoleRef = useRef<'A' | 'B'>(userRole);
@@ -711,7 +719,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const toggleTranslation = (sentenceId: number) => {
     setShowTranslations(prev => ({
       ...prev,
-      [sentenceId]: !prev[sentenceId],
+      [sentenceId]: !(prev[sentenceId] ?? translationDefault),
     }));
   };
 
@@ -1246,21 +1254,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F4F9FE] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-[#BCDDFB] border-t-[#0878EE] rounded-full animate-spin"></div>
-        <p className="text-sm font-bold text-[#071A44]">Đang chuẩn bị phòng luyện Shadowing...</p>
+      <div className="min-h-screen bg-paper-100 flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-line-strong border-t-ai rounded-full animate-spin"></div>
+        <p className="text-sm font-bold text-sumi">Đang chuẩn bị phòng luyện Shadowing...</p>
       </div>
     );
   }
 
   if (errorMessage || !dialogue) {
     return (
-      <div className="min-h-screen bg-[#F4F9FE] flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-red-200 text-center space-y-4 shadow-sm">
-          <p className="text-red-600 font-bold">{errorMessage || 'Không tìm thấy bài học.'}</p>
+      <div className="min-h-screen bg-paper-100 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-paper-50 p-8 rounded-2xl border border-danger-soft text-center space-y-4 shadow-sm">
+          <p className="text-danger font-bold">{errorMessage || 'Không tìm thấy bài học.'}</p>
           <button
             onClick={handleBackToDialogueList}
-            className="bg-[#0878EE] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-[#0662C6] cursor-pointer"
+            className="bg-ai text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-ai-hover cursor-pointer"
           >
             {returnTo ? 'Quay lại Khám phá' : 'Quay lại Thư viện Shadowing'}
           </button>
@@ -1277,8 +1285,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Helper names
   const opponentRole = userRole === 'A' ? 'B' : 'A';
-  const opponentName = userRole === 'A' ? dialogue.speakerRoleB_Name : dialogue.speakerRoleA_Name;
-  const learnerName = userRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name;
+  const opponentName = displayRoleName(userRole === 'A' ? dialogue.speakerRoleB_Name : dialogue.speakerRoleA_Name);
+  const learnerName = displayRoleName(userRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name);
 
 
   // Summary results for celebration modal (trung bình các điểm do backend chấm; không áp lại công thức)
@@ -1302,11 +1310,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-[#0878EE] selection:text-white bg-[#F4F9FE] text-[#071A44] font-sans lg:overflow-hidden"
-      style={{
-        backgroundImage: 'radial-gradient(#CBDDF3 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
-      }}
+      data-theme="phong-luyen"
+      className="jx-room min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-ai selection:text-white text-sumi font-sans lg:overflow-hidden"
     >
       {/* Styles for interactive tooltips & pulse animations */}
       <style>{`
@@ -1320,16 +1325,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           transition: all 0.15s ease-in-out;
         }
         .annotation-term-red {
-          border-bottom-color: #F04438;
+          border-bottom-color: var(--danger);
         }
         .annotation-term-red:hover {
-          background-color: rgba(240, 68, 56, 0.12);
+          background-color: var(--danger-soft);
         }
         .annotation-term-blue {
-          border-bottom-color: #38BDF8;
+          border-bottom-color: var(--info);
         }
         .annotation-term-blue:hover {
-          background-color: rgba(56, 189, 248, 0.18);
+          background-color: var(--info-soft);
         }
         .annotation-term .term-tooltip {
           visibility: hidden;
@@ -1358,75 +1363,39 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           background: transparent;
         }
         .dialogue-scroll-container::-webkit-scrollbar-thumb {
-          background-color: #CBDDF3;
+          background-color: var(--line);
           border-radius: 9999px;
         }
         .dialogue-scroll-container::-webkit-scrollbar-thumb:hover {
-          background-color: #93C5FD;
+          background-color: var(--line-strong);
         }
       `}</style>
 
-      {/* TOP HEADER (MATCHES REFERENCE IMAGE 2 EXACTLY) */}
-      <header className="w-full bg-[#F4F9FE]/90 backdrop-blur-md sticky top-0 z-40 py-2.5 border-b border-[#E6EDF5] px-6 flex-shrink-0">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Brand & Breadcrumbs */}
-          <div className="flex items-center gap-3">
-            <Link
-              to="/shadowing"
-              className="font-black text-[#0878EE] text-2xl tracking-wide leading-none select-none hover:opacity-90"
-            >
-              JCAP
-            </Link>
-            <span className="text-gray-300 font-light">|</span>
-
-            {/* JLPT Level Dropdown Pill */}
-            <div className="relative inline-block">
-              <select
-                value={selectedLevel}
-                onChange={(e) => handleLevelChange(e.target.value as 'N5' | 'N4' | 'N3')}
-                className="bg-white border border-[#BCDDFB] hover:border-[#0878EE] text-[#071A44] text-xs font-bold rounded-full px-3 py-1 pr-6 cursor-pointer focus:ring-[#0878EE] focus:border-[#0878EE] shadow-2xs transition-colors"
-              >
-                <option value="N5">JLPT N5</option>
-                <option value="N4">JLPT N4</option>
-                <option value="N3">JLPT N3</option>
-              </select>
-            </div>
-
-            <span className="text-gray-400">/</span>
-            <span className="text-gray-700 font-semibold text-xs truncate max-w-[200px]" title={dialogue.scenarioTitle}>
-              {dialogue.scenarioTitle || 'Kịch bản hội thoại'}
-            </span>
-
-            <span className="text-gray-400">/</span>
-            <span className="text-[#0878EE] font-bold text-xs truncate max-w-[280px]" title={dialogue.title}>
-              {dialogue.title}
-            </span>
-          </div>
-
-          {/* Right Action: Cài đặt âm thanh (Microphone & Loa) */}
-          <button
-            type="button"
-            onClick={() => setIsAudioDeviceModalOpen(true)}
-            title="Cài đặt thiết bị âm thanh"
-            className="flex items-center gap-1.5 h-8 px-3 rounded-full border border-[#BCDDFB] bg-white hover:bg-[#EEF6FE] hover:border-[#0878EE] text-[#071A44] hover:text-[#0878EE] text-xs font-bold transition-all shadow-2xs cursor-pointer flex-shrink-0"
-          >
-            <svg
-              className="w-3.5 h-3.5 text-[#0878EE]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
-              <path d="M14 10a3 3 0 010 4" />
-              <path d="M17 7.5a6.5 6.5 0 010 9" />
-              <path d="M20 5a10 10 0 010 14" />
-            </svg>
-            <span className="hidden sm:inline">Cài đặt âm thanh</span>
+      {/* Thanh trên: logo, đường dẫn (kịch bản › bài), cấp độ của bài, cài đặt âm thanh */}
+      <header className="jx-rm-bar">
+        <Link to={returnTo ?? '/shadowing'} aria-label="JCAP, về thư viện Shadowing" className="flex-none">
+          <JLogo size={28} withName={false} />
+        </Link>
+        <span className="jx-rm-div" aria-hidden="true" />
+        <nav aria-label="Vị trí" className="jx-rm-crumb min-w-0">
+          <button type="button" onClick={handleBackToDialogueList} title={dialogue.scenarioTitle}>
+            {dialogue.scenarioTitle || 'Shadowing'}
           </button>
-        </div>
+          <JIcon name="chevron_right" size={18} />
+          <span className="jx-rm-title" aria-current="page" title={dialogue.title}>
+            {dialogue.title}
+          </span>
+        </nav>
+        <label className={`jx-rm-lv lv-${selectedLevel}`} title="Đổi cấp độ của bài">
+          <select aria-label="Cấp độ của bài" value={selectedLevel} onChange={(e) => handleLevelChange(e.target.value as 'N5' | 'N4' | 'N3')}>
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+            <option value="N3">N3</option>
+          </select>
+          <JIcon name="expand_more" size={16} />
+        </label>
+        <div className="flex-auto" />
+        <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
 
       {/* MAIN WORKSPACE CONTENT */}
@@ -1434,112 +1403,80 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
           {/* LEFT COLUMN: Context Panel (Hình 3) - Cố định vị trí, không cuộn theo đoạn chat */}
           <section className="lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
-            <div className="rounded-[28px] p-5 shadow-sm border border-[#E6EDF5] bg-white relative overflow-hidden backdrop-blur-md">
-              {/* Back / End Buttons */}
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={handleBackToDialogueList}
-                  className="text-[#071A44] bg-[#F4F9FE] hover:bg-[#EBF3FB] border border-[#E6EDF5] px-3.5 py-1 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
+            <div className="rounded-[28px] p-5 border border-line bg-paper-50 relative overflow-hidden" style={{ boxShadow: '0 10px 30px rgba(15,37,56,.06)' }}>
+              {/* Quay lại / Kết thúc */}
+              <div className="flex items-center justify-between mb-4">
+                <JButton variant="secondary" size="sm" icon="arrow_back" onClick={handleBackToDialogueList}>
                   Quay lại
-                </button>
-                <button
-                  onClick={handleFinishDialogue}
-                  className="flex items-center gap-1.5 text-[#D92D20] hover:text-red-700 bg-white hover:bg-red-50/50 border border-red-200 font-extrabold text-xs px-3.5 py-1 rounded-full shadow-xs transition-all cursor-pointer"
-                >
-                  <span className="w-2 h-2 rounded-full border-2 border-[#D92D20] inline-block"></span>
-                  <span>Kết thúc</span>
-                </button>
+                </JButton>
+                <JButton variant="danger" size="sm" icon="stop_circle" onClick={handleFinishDialogue}>
+                  Kết thúc
+                </JButton>
               </div>
 
-              {/* Campus Illustration Card with "Khuôn viên trường" badge */}
-              <div className="w-full h-40 rounded-2xl bg-gradient-to-b from-[#EBF4FE] to-[#F8FBFE] border border-[#E6EDF5] relative overflow-hidden flex items-end justify-center">
-                <svg className="w-full h-full object-cover" fill="none" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
-                  <rect fill="#EBF4FE" height="180" width="400"></rect>
-                  <path d="M40 30 Q55 20 70 30 T100 30 T120 40 L30 40 Z" fill="#FFFFFF" opacity="0.7"></path>
-                  <path d="M280 25 Q295 15 310 25 T340 25 T360 35 L270 35 Z" fill="#FFFFFF" opacity="0.8"></path>
-                  <path d="M-20 180 C80 120 180 160 420 130 L420 180 Z" fill="#D2E6FA"></path>
-                  <path d="M-10 180 C120 140 260 170 410 145 L410 180 Z" fill="#B9DBFC"></path>
-                  <g opacity="0.9">
-                    <circle cx="340" cy="110" fill="#F6D06F" r="10"></circle>
-                    <circle cx="365" cy="105" fill="#F6D06F" r="9"></circle>
-                    <circle cx="385" cy="118" fill="#F6D06F" r="8"></circle>
-                  </g>
-                  <g transform="translate(130, 45)">
-                    <rect fill="#FFE6D4" height="55" rx="3" stroke="#DDAA80" strokeWidth="2" width="90" x="25" y="45"></rect>
-                    <polygon fill="#D87860" points="15,45 70,18 125,45" stroke="#B85540" strokeWidth="1.5"></polygon>
-                    <rect fill="#FFF2E8" height="35" rx="2" stroke="#DDAA80" strokeWidth="1.5" width="36" x="52" y="10"></rect>
-                    <polygon fill="#0878EE" points="46,10 70,-10 94,10"></polygon>
-                    <circle cx="70" cy="26" fill="#FFFFFF" r="9" stroke="#809B89" strokeWidth="1.5"></circle>
-                    <line stroke="#333" strokeLinecap="round" strokeWidth="1.5" x1="70" x2="70" y1="26" y2="21"></line>
-                    <line stroke="#333" strokeLinecap="round" strokeWidth="1.5" x1="70" x2="75" y1="26" y2="26"></line>
-                    <rect fill="#FFFFFF" height="14" rx="2" stroke="#DDAA80" width="34" x="53" y="52"></rect>
-                    <text fill="#071A44" fontSize="6.5" fontWeight="900" textAnchor="middle" x="70" y="62">FPT SCHOOL</text>
-                  </g>
-                  <circle cx="100" cy="135" fill="#58AB8A" r="18"></circle>
-                  <circle cx="280" cy="138" fill="#58AB8A" r="16"></circle>
-                </svg>
-                <div className="absolute top-2 right-2 bg-white/95 text-[10px] font-bold text-[#0878EE] px-2.5 py-0.5 rounded-full shadow-xs border border-blue-100">
-                  Khuôn viên trường
+              {/* Ảnh bối cảnh + nhân vật đè góc */}
+              <div className="relative pb-10">
+                <div className="jx-scene" aria-hidden="true">
+                  <span className="jx-cloud" style={{ left: 26, top: 40, width: 70 }} />
+                  <span className="jx-cloud" style={{ right: 30, top: 92, width: 56 }} />
+                  <span className="jx-ground" />
+                  <span className="jx-win">
+                    <JIcon name="forum" size={36} />
+                  </span>
+                </div>
+                {dialogue.scenarioTitle && (
+                  <span className="absolute right-3 top-3 max-w-[60%] truncate rounded-full bg-paper-50 px-3 py-1 text-xs font-bold text-ai shadow-jc-sm">
+                    {dialogue.scenarioTitle}
+                  </span>
+                )}
+                <div className="absolute bottom-0 left-3.5 flex items-end gap-3">
+                  <span className="relative inline-flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full border-4 border-paper-50 bg-paper-200 shadow-jc-md">
+                    <img src="/default_avatar.png" alt={opponentName} className="h-full w-full object-cover" />
+                    <span className="absolute bottom-1 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-paper-50 bg-success" title="AI đang sẵn sàng" />
+                  </span>
+                  <span className="pb-1.5 text-xl font-bold leading-[26px]">{opponentName}</span>
                 </div>
               </div>
 
-              {/* Character Avatar and Title Section: Ran TIỀN BỐI */}
-              <div className="flex items-center gap-3 -mt-6 px-2 relative z-10">
-                <div className="w-16 h-16 rounded-full border-4 border-white bg-[#F4F9FE] shadow-md overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-                  <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
-                  <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-black text-[#071A44] tracking-tight">{opponentName}</h2>
-                  <p className="text-[10px] font-extrabold text-[#0878EE] uppercase tracking-wide">
-                    TIỀN BỐI
-                  </p>
-                </div>
-              </div>
-
-              {/* VAI CỦA BẠN: Yuuri Tân học sinh & Đổi vai */}
-              <div className="mt-3.5 bg-[#F8FAFD] border border-[#E6EDF5] rounded-2xl px-3.5 py-2 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold text-[#071A44]">{learnerName} </span>
-                  <span className="text-[#556987] text-[11px] font-normal">Tân học sinh</span>
-                </div>
-                <button
+              {/* Vai của người học + Đổi vai */}
+              <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-line bg-paper-100 py-2.5 pl-4 pr-2.5">
+                <span className="flex-auto text-sm leading-5">
+                  <span className="text-sumi-muted">Vai của bạn: </span>
+                  <strong>{learnerName}</strong>
+                </span>
+                <JButton
+                  variant="secondary"
+                  size="sm"
+                  icon="swap_horiz"
                   onClick={() => {
                     stopAllAudio();
                     setIsRoleModalOpen(true);
                   }}
-                  className="flex items-center gap-1 bg-white hover:bg-[#EEF6FE] text-[#0878EE] text-[11px] font-bold px-3 py-0.5 rounded-full border border-[#BCDDFB] shadow-2xs transition-all cursor-pointer"
                 >
                   Đổi vai
-                </button>
+                </JButton>
               </div>
 
-              {/* Divider Leaf */}
-              <div className="flex items-center justify-center my-3">
-                <div className="h-px bg-[#E6EDF5] flex-1"></div>
-                <span className="px-2 text-emerald-600 text-xs">🍃</span>
-                <div className="h-px bg-[#E6EDF5] flex-1"></div>
-              </div>
+              <div className="h-px bg-line my-4"></div>
 
               {/* Situation ("Tình huống") */}
               <div className="space-y-1.5">
                 <div
-                  className="flex items-center justify-between text-[#071A44] font-bold text-sm cursor-pointer select-none"
+                  className="flex items-center justify-between text-sumi font-bold text-sm cursor-pointer select-none"
                   onClick={() => setIsSituationCollapsed(!isSituationCollapsed)}
                 >
                   <span className="font-extrabold tracking-tight">Tình huống</span>
                   <button
                     type="button"
                     aria-label={isSituationCollapsed ? 'Mở rộng' : 'Thu gọn'}
-                    className="w-6 h-6 rounded-full bg-[#F4F9FE] hover:bg-[#EEF6FE] border border-[#E6EDF5] text-[#556987] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-6 h-6 rounded-full bg-paper-100 hover:bg-ai-soft border border-line text-sumi-muted flex items-center justify-center transition-colors cursor-pointer"
                   >
                     {isSituationCollapsed ? (
-                      <svg className="w-3.5 h-3.5 text-[#556987]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-3.5 h-3.5 text-sumi-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M19 9l-7 7-7-7" />
                       </svg>
                     ) : (
-                      <svg className="w-3.5 h-3.5 text-[#556987]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-3.5 h-3.5 text-sumi-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 15l7-7 7 7" />
                       </svg>
                     )}
@@ -1548,7 +1485,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                 {!isSituationCollapsed && (
                   <div className="space-y-3 pt-1">
-                    <p className="text-xs leading-relaxed text-[#4A5D78] text-justify">
+                    <p className="text-xs leading-relaxed text-sumi-muted text-justify">
                       {dialogue.scenarioDescription ||
                         'Bạn là tân học sinh. Chị khóa trên Ran phụ trách Club Day gọi điện báo về Ngày giới thiệu câu lạc bộ. Hãy hỏi lịch trình, địa điểm nhận đơn, và cách đăng ký câu lạc bộ âm nhạc.'}
                     </p>
@@ -1556,26 +1493,26 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 )}
               </div>
 
-              <div className="h-px bg-[#E6EDF5] my-3"></div>
+              <div className="h-px bg-paper-200 my-3"></div>
 
               {/* NỘI DUNG BÀI HỌC (3 Buttons: Toàn bộ hội thoại, Từ vựng, Ngữ pháp) */}
               <div className="space-y-1.5">
                 <div
-                  className="flex items-center justify-between text-[#071A44] font-bold text-sm cursor-pointer select-none"
+                  className="flex items-center justify-between text-sumi font-bold text-sm cursor-pointer select-none"
                   onClick={() => setIsDialogueContentCollapsed(!isDialogueContentCollapsed)}
                 >
                   <span className="font-extrabold tracking-tight">Nội dung bài học</span>
                   <button
                     type="button"
                     aria-label={isDialogueContentCollapsed ? 'Mở rộng' : 'Thu gọn'}
-                    className="w-6 h-6 rounded-full bg-[#F4F9FE] hover:bg-[#EEF6FE] border border-[#E6EDF5] text-[#556987] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-6 h-6 rounded-full bg-paper-100 hover:bg-ai-soft border border-line text-sumi-muted flex items-center justify-center transition-colors cursor-pointer"
                   >
                     {isDialogueContentCollapsed ? (
-                      <svg className="w-3.5 h-3.5 text-[#556987]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-3.5 h-3.5 text-sumi-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M19 9l-7 7-7-7" />
                       </svg>
                     ) : (
-                      <svg className="w-3.5 h-3.5 text-[#556987]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-3.5 h-3.5 text-sumi-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 15l7-7 7 7" />
                       </svg>
                     )}
@@ -1587,21 +1524,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsFullScriptModalOpen(true)}
-                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
+                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-paper-50 hover:bg-ai-soft border border-line-strong text-sumi hover:text-ai text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
                     >
                       Toàn bộ hội thoại
                     </button>
                     <button
                       type="button"
                       onClick={() => {}}
-                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
+                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-paper-50 hover:bg-ai-soft border border-line-strong text-sumi hover:text-ai text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
                     >
                       Từ vựng
                     </button>
                     <button
                       type="button"
                       onClick={() => {}}
-                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white hover:bg-[#EEF6FE] border border-[#BCDDFB] text-[#071A44] hover:text-[#0878EE] text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
+                      className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-paper-50 hover:bg-ai-soft border border-line-strong text-sumi hover:text-ai text-[11px] font-bold shadow-2xs transition-all cursor-pointer text-center leading-tight"
                     >
                       Ngữ pháp
                     </button>
@@ -1624,22 +1561,22 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   // Opponent speech bubble (Ran / Yui)
                   return (
                     <div key={s.id} className="flex items-start gap-3 w-full max-w-xl">
-                      <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-blue-100 overflow-hidden flex-shrink-0 mt-0.5">
+                      <div className="w-10 h-10 rounded-full border-2 border-paper-50 shadow-sm bg-ai-soft overflow-hidden flex-shrink-0 mt-0.5">
                         <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
                       </div>
 
                       <div className="flex flex-col items-start min-w-0">
                         <div className="flex items-center gap-2 mb-1.5 ml-1">
-                          <span className="font-bold text-xs text-[#071A44]">{opponentName}</span>
+                          <span className="font-bold text-xs text-sumi">{opponentName}</span>
                         </div>
 
-                        <div className="bg-white rounded-[20px] p-4 shadow-xs border border-[#E6EDF5] max-w-full">
-                          <p className="text-base text-[#071A44] font-medium leading-relaxed">
+                        <div className="bg-paper-50 rounded-[20px] p-4 shadow-xs border border-line max-w-full">
+                          <p className="text-base text-sumi font-medium leading-relaxed">
                             {renderAnnotatedSentenceText(s.japaneseText)}
                           </p>
 
-                          {showTranslations[s.id] && (
-                            <div className="mt-2 pt-2 border-t border-[#E6EDF5] text-xs text-[#556987] italic">
+                          {isTranslationShown(s.id) && (
+                            <div className="mt-2 pt-2 border-t border-line text-xs text-sumi-muted italic">
                               "{s.vietnameseTranslation}"
                             </div>
                           )}
@@ -1650,7 +1587,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => toggleTranslation(s.id)}
-                            className="bg-white hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                            className="bg-paper-50 hover:bg-paper-200 text-sumi-muted border border-line text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                           >
                             <span>文A</span> Dịch
                           </button>
@@ -1658,11 +1595,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                             type="button"
                             onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
                             disabled={loadingAudioSentenceId === s.id}
-                            className="bg-white hover:bg-[#EEF4FB] text-[#4A5D78] border border-[#E6EDF5] text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
+                            className="bg-paper-50 hover:bg-paper-200 text-sumi-muted border border-line text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
                           >
                             {loadingAudioSentenceId === s.id ? (
                               <>
-                                <span className="w-2.5 h-2.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                                <span className="w-2.5 h-2.5 border-2 border-ai border-t-transparent rounded-full animate-spin"></span>
                                 <span>Đang nạp...</span>
                               </>
                             ) : (
@@ -1681,7 +1618,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <div key={s.id} className="flex flex-col items-end w-full">
                       {/* Top Header: Yuuri / Learner Name */}
                       <div className="flex items-center gap-2 mb-1.5 text-xs pr-10">
-                        <span className="font-bold text-[#071A44]">{learnerName}</span>
+                        <span className="font-bold text-sumi">{learnerName}</span>
                         {(() => {
                           const sentenceResult = sentenceResults.get(s.id);
                           const activeScore = (isCurrentActive && practiceState === 'evaluated')
@@ -1693,10 +1630,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           return (
                             <span className={`font-bold text-[11px] px-2.5 py-0.5 rounded-full border transition-all duration-300 ${
                               activeScore >= 80
-                                ? 'bg-[#ECFDF3] text-[#027A48] border-[#A6F4C5]'
+                                ? 'bg-success-soft text-success border-success'
                                 : activeScore >= 65
-                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : 'bg-red-50 text-red-700 border-red-200'
+                                ? 'bg-warning-soft text-warning border-warning-soft'
+                                : 'bg-danger-soft text-danger border-danger-soft'
                             }`}>
                               {activeScore}%
                             </span>
@@ -1706,7 +1643,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                       <div className="flex items-start gap-2.5 justify-end w-full max-w-xl">
                         {/* Dark Navy Bubble */}
-                        <div className={`rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between min-w-0 max-w-full bg-[#071A44] transition-all ${
+                        <div className={`rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between min-w-0 max-w-full bg-sumi transition-all ${
                           isCurrentActive && practiceState === 'listening' ? 'ring-2 ring-cyan-400 shadow-cyan-500/20' : ''
                         }`}>
                           {/* Japanese Text */}
@@ -1715,15 +1652,15 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           </p>
 
                           {/* Vietnamese Translation (if toggled) */}
-                          {showTranslations[s.id] && (
-                            <div className="pt-2 mt-2 text-xs sm:text-sm text-blue-100 italic border-t border-[#1F4289] text-left">
+                          {isTranslationShown(s.id) && (
+                            <div className="pt-2 mt-2 text-xs sm:text-sm text-on-ai italic border-t border-sumi text-left">
                               "{s.vietnameseTranslation}"
                             </div>
                           )}
                         </div>
 
                         {/* Circular Avatar */}
-                        <div className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden flex-shrink-0 shadow-xs mt-1">
+                        <div className="w-8 h-8 rounded-full border border-line overflow-hidden flex-shrink-0 shadow-xs mt-1">
                           <img src="/default_avatar.png" alt={learnerName} className="w-full h-full object-cover" />
                         </div>
                       </div>
@@ -1740,7 +1677,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                               startRecording();
                             }
                           }}
-                          className="h-7 w-8 sm:w-9 rounded-full bg-white hover:bg-[#EEF6FE] text-[#0878EE] border border-[#BCDDFB] flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                          className="h-7 w-8 sm:w-9 rounded-full bg-paper-50 hover:bg-ai-soft text-ai border border-line-strong flex items-center justify-center transition-all shadow-2xs cursor-pointer"
                           title={hasRecordedAudio ? "Nghe lại giọng ghi âm của bạn" : "Bấm để ghi âm câu này"}
                         >
                           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -1754,17 +1691,17 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           type="button"
                           onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
                           disabled={loadingAudioSentenceId === s.id}
-                          className="h-7 px-3.5 rounded-full bg-white hover:bg-[#EEF6FE] text-[#071A44] border border-[#E6EDF5] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+                          className="h-7 px-3.5 rounded-full bg-paper-50 hover:bg-ai-soft text-sumi border border-line font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer disabled:opacity-60"
                           title="Nghe phát âm chuẩn câu này"
                         >
                           {loadingAudioSentenceId === s.id ? (
                             <>
-                              <span className="w-2.5 h-2.5 border-2 border-[#0878EE] border-t-transparent rounded-full animate-spin"></span>
+                              <span className="w-2.5 h-2.5 border-2 border-ai border-t-transparent rounded-full animate-spin"></span>
                               <span>Đang nạp...</span>
                             </>
                           ) : (
                             <>
-                              <svg className="w-3.5 h-3.5 text-[#0878EE] fill-current" viewBox="0 0 24 24">
+                              <svg className="w-3.5 h-3.5 text-ai fill-current" viewBox="0 0 24 24">
                                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
                               </svg>
                               <span>Nghe mẫu</span>
@@ -1776,7 +1713,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => toggleTranslation(s.id)}
-                          className="h-7 px-3 rounded-full bg-white hover:bg-[#EEF6FE] text-[#4A5D78] border border-[#E6EDF5] text-xs font-bold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                          className="h-7 px-3 rounded-full bg-paper-50 hover:bg-ai-soft text-sumi-muted border border-line text-xs font-bold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
                           title="Xem bản dịch tiếng Việt"
                         >
                           <span>文A Dịch</span>
@@ -1793,13 +1730,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             {/* ACTION CONSOLE (Recording & Evaluation) (Hình 4) - Cố định vị trí ở đáy */}
             <div className="w-full flex-shrink-0 pt-2 pb-1 z-10">
               <div
-                className="w-full rounded-[24px] border-2 border-dashed bg-white/90 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
+                className="w-full rounded-[24px] border-2 border-dashed bg-paper-50 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
               >
                 {micError && (
-                  <div className="w-full mb-3 p-2 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                  <div className="w-full mb-3 p-2 bg-danger-soft border border-danger-soft rounded-xl text-danger text-xs flex items-center justify-between">
                     <span>⚠️ {micError}</span>
-                    <button onClick={() => setMicError(null)} className="font-bold text-red-500">×</button>
+                    <button onClick={() => setMicError(null)} className="font-bold text-danger">×</button>
                   </div>
                 )}
 
@@ -1808,17 +1745,17 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   isOpponentPausedForResume ? (
                     <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 overflow-hidden flex items-center justify-center font-bold text-base shadow-sm">
+                        <div className="w-9 h-9 rounded-full bg-ai-soft border border-line-strong overflow-hidden flex items-center justify-center font-bold text-base shadow-sm">
                           <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
                         </div>
                         <div className="text-left">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-[#071A44]">{opponentName} (Đối phương)</span>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="text-xs font-black text-sumi">{opponentName} (Đối phương)</span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning-soft text-warning border border-warning-soft">
                               Tạm dừng (Tiếp tục học)
                             </span>
                           </div>
-                          <p className="text-xs font-semibold text-blue-900 font-jp mt-0.5 line-clamp-1">
+                          <p className="text-xs font-semibold text-sumi font-jp mt-0.5 line-clamp-1">
                             "{currentSentence?.japaneseText}"
                           </p>
                         </div>
@@ -1827,7 +1764,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         <button
                           type="button"
                           onClick={handlePlayResumedOpponentSentence}
-                          className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-2 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                          className="text-xs font-bold text-white bg-ai hover:bg-ai-hover px-5 py-2 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
                         >
                           <span>Nghe câu đối thoại</span>
                         </button>
@@ -1835,13 +1772,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleSkipOpponentSpeech}
-                            className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full transition-all cursor-pointer"
+                            className="text-xs font-bold text-sumi bg-paper-100 hover:bg-paper-200 px-4 py-2 rounded-full transition-all cursor-pointer"
                           >
                             <span>Sang lượt nói của bạn</span>
                           </button>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-sumi-muted">
                         {hasNextLearnerSentence
                           ? '* Bấm để nghe câu thoại mẫu của đối phương trước khi chuyển sang lượt nói của bạn.'
                           : '* Bấm để nghe câu đối thoại kết thúc của đối phương.'}
@@ -1851,16 +1788,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
                       {/* Audio wave indicator */}
                       <div className="flex items-center gap-1 my-0.5">
-                        <span className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce"></span>
-                        <span className="w-1 h-4 bg-blue-600 rounded-full animate-bounce [animation-delay:0.1s]"></span>
-                        <span className="w-1 h-5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                        <span className="w-1 h-3.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.3s]"></span>
-                        <span className="w-1 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                        <span className="w-1 h-2.5 bg-ai rounded-full animate-bounce"></span>
+                        <span className="w-1 h-4 bg-ai rounded-full animate-bounce [animation-delay:0.1s]"></span>
+                        <span className="w-1 h-5 bg-ai rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1 h-3.5 bg-ai rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                        <span className="w-1 h-2 bg-ai rounded-full animate-bounce [animation-delay:0.4s]"></span>
                       </div>
                       {hasNextLearnerSentence && (
                         <button
                           onClick={handleSkipOpponentSpeech}
-                          className="text-xs font-bold text-white bg-[#0878EE] hover:bg-[#0662C6] px-5 py-1.5 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                          className="text-xs font-bold text-white bg-ai hover:bg-ai-hover px-5 py-1.5 rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
                         >
                           <span>Sang lượt nói của bạn</span>
                         </button>
@@ -1874,7 +1811,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       <div className="flex items-center justify-center w-full py-1">
                         <button
                           onClick={startRecording}
-                          className="group bg-gradient-to-r from-[#0878EE] to-[#054EA0] hover:from-[#0662C6] hover:to-[#043A78] text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
+                          className="group bg-gradient-to-r from-ai to-ai-hover hover:from-ai-hover hover:to-sumi text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
                           title="Bấm để ghi âm câu thoại của bạn"
                         >
                           {/* Refined minimalist mic icon */}
@@ -1896,8 +1833,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                     {/* LƯỢT CỦA BẠN - State B: Analyzing / Processing (Đang phân tích bản ghi) */}
                     {practiceState === 'analyzing' && (
-                      <div className="w-full flex items-center justify-center gap-3 py-6 bg-white rounded-2xl border border-[#E6EDF5] shadow-2xs text-[#071A44] font-bold text-sm animate-pulse">
-                        <div className="w-5 h-5 border-2 border-[#0878EE] border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-full flex items-center justify-center gap-3 py-6 bg-paper-50 rounded-2xl border border-line shadow-2xs text-sumi font-bold text-sm animate-pulse">
+                        <div className="w-5 h-5 border-2 border-ai border-t-transparent rounded-full animate-spin"></div>
                         <span>Đang phân tích bản ghi âm...</span>
                       </div>
                     )}
@@ -1932,26 +1869,26 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       {/* MODAL 1: FullScriptModal (Xem kịch bản toàn bộ) */}
       {isFullScriptModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071A44]/50 backdrop-blur-xs transition-all duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[color-mix(in_srgb,var(--sumi)_50%,transparent)] backdrop-blur-xs transition-all duration-200"
           onClick={() => setIsFullScriptModalOpen(false)}
         >
           <div
-            className="bg-white rounded-[28px] max-w-2xl w-full max-h-[88vh] shadow-2xl border border-[#E6EDF5] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="bg-paper-50 rounded-[28px] max-w-2xl w-full max-h-[88vh] shadow-2xl border border-line flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-5 border-b border-[#E6EDF5] bg-[#F4F9FE] flex items-center justify-between">
-              <h3 className="font-extrabold text-[#071A44] text-lg">
+            <div className="p-5 border-b border-line bg-paper-100 flex items-center justify-between">
+              <h3 className="font-extrabold text-sumi text-lg">
                 Toàn bộ kịch bản hội thoại
               </h3>
               <button
                 onClick={() => setIsFullScriptModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white hover:bg-red-50 text-[#556987] hover:text-[#D92D20] border border-[#E6EDF5] flex items-center justify-center font-bold text-sm transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-full bg-paper-50 hover:bg-danger-soft text-sumi-muted hover:text-danger border border-line flex items-center justify-center font-bold text-sm transition-colors shadow-2xs cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm bg-white">
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm bg-paper-50">
               <div className="space-y-3.5">
                 {sentences.map(s => (
                   <div
@@ -1959,7 +1896,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     className={`flex items-start gap-2.5 ${s.speakerRole === userRole ? 'justify-end' : 'justify-start'}`}
                   >
                     {s.speakerRole !== userRole && (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 overflow-hidden flex-shrink-0 mt-1">
+                      <div className="w-8 h-8 rounded-full bg-ai-soft overflow-hidden flex-shrink-0 mt-1">
                         <img src="/default_avatar.png" alt="Opponent" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -1968,30 +1905,30 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       <div className="flex items-center gap-1.5 mb-1">
                         <button
                           onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText)}
-                          className="bg-white hover:bg-blue-50 text-[#0878EE] border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs cursor-pointer"
+                          className="bg-paper-50 hover:bg-ai-soft text-ai border border-line-strong text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs cursor-pointer"
                         >
                           <span>🔊</span> Nghe
                         </button>
-                        <span className="text-[10px] text-[#556987]">Câu #{s.orderIndex}</span>
-                        <span className="font-bold text-xs text-[#071A44]">
-                          {s.speakerRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name}
+                        <span className="text-[10px] text-sumi-muted">Câu #{s.orderIndex}</span>
+                        <span className="font-bold text-xs text-sumi">
+                          {displayRoleName(s.speakerRole === 'A' ? dialogue.speakerRoleA_Name : dialogue.speakerRoleB_Name)}
                         </span>
                       </div>
 
                       <div
                         className={`p-3 rounded-2xl border text-sm ${
                           s.speakerRole === userRole
-                            ? 'bg-[#EEF6FE] border-[#BCDDFB] text-right'
-                            : 'bg-[#F8FAFD] border-[#E6EDF5] text-left'
+                            ? 'bg-ai-soft border-line-strong text-right'
+                            : 'bg-paper-100 border-line text-left'
                         }`}
                       >
-                        <p className="font-semibold text-[#071A44] leading-relaxed">{s.japaneseText}</p>
-                        <p className="text-xs text-[#556987] mt-1 italic">"{s.vietnameseTranslation}"</p>
+                        <p className="font-semibold text-sumi leading-relaxed">{s.japaneseText}</p>
+                        <p className="text-xs text-sumi-muted mt-1 italic">"{s.vietnameseTranslation}"</p>
                       </div>
                     </div>
 
                     {s.speakerRole === userRole && (
-                      <div className="w-8 h-8 rounded-full border border-blue-400/30 overflow-hidden flex-shrink-0 mt-1">
+                      <div className="w-8 h-8 rounded-full border border-line overflow-hidden flex-shrink-0 mt-1">
                         <img src="/default_avatar.png" alt="Learner" className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -2000,10 +1937,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E6EDF5] bg-[#F4F9FE] flex justify-end">
+            <div className="p-4 border-t border-line bg-paper-100 flex justify-end">
               <button
                 onClick={() => setIsFullScriptModalOpen(false)}
-                className="px-6 py-2 rounded-full bg-[#0878EE] text-white text-xs font-bold hover:bg-[#0662C6] cursor-pointer"
+                className="px-6 py-2 rounded-full bg-ai text-white text-xs font-bold hover:bg-ai-hover cursor-pointer"
               >
                 Đóng
               </button>
@@ -2014,27 +1951,27 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
       {/* MODAL 3: Tổng kết buổi luyện (chỉ số liệu thật do backend chấm) */}
       {isCompletedModalOpen && (
-        <div className="fixed inset-0 bg-[#071A44]/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
-          <div role="dialog" aria-modal="true" aria-labelledby="completed-modal-title" className="bg-white rounded-[28px] max-w-3xl w-full shadow-2xl border border-[#E6EDF5] max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+        <div className="fixed inset-0 bg-[color-mix(in_srgb,var(--sumi)_50%,transparent)] backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="completed-modal-title" className="bg-paper-50 rounded-[28px] max-w-3xl w-full shadow-2xl border border-line max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
             {/* Nội dung cuộn (trục cuộn duy nhất của modal) */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
               {/* 1. Tiêu đề: chỉ chúc mừng khi thật sự có câu được chấm */}
               <div className="text-center">
-                <h3 id="completed-modal-title" className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
+                <h3 id="completed-modal-title" className="text-xl sm:text-2xl font-black text-sumi tracking-tight">
                   {hasScoredSentence ? 'Hoàn thành bài luyện!' : 'Buổi luyện đã kết thúc'}
                 </h3>
-                <p className="text-sm text-[#556987] font-medium mt-1">
+                <p className="text-sm text-sumi-muted font-medium mt-1">
                   {dialogue.title} · JLPT {dialogue.jlptLevel} · Vai {userRole} ({learnerName})
                 </p>
                 <div role="status" className="min-h-[18px] mt-1">
                   {historySaveState === 'saving' && (
-                    <p className="text-xs text-[#556987]">Đang lưu buổi luyện vào lịch sử...</p>
+                    <p className="text-xs text-sumi-muted">Đang lưu buổi luyện vào lịch sử...</p>
                   )}
                   {historySaveState === 'saved' && (
-                    <p className="text-xs text-[#027A48] font-semibold">Đã lưu buổi luyện vào lịch sử.</p>
+                    <p className="text-xs text-success font-semibold">Đã lưu buổi luyện vào lịch sử.</p>
                   )}
                   {historySaveState === 'failed' && (
-                    <p className="text-xs text-red-600 font-semibold">{historySaveMessage}</p>
+                    <p className="text-xs text-danger font-semibold">{historySaveMessage}</p>
                   )}
                 </div>
               </div>
@@ -2044,56 +1981,56 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className={`col-span-2 sm:col-span-1 rounded-2xl p-4 flex flex-col items-center justify-center text-white ${
                     finalWeightedScore >= 80
-                      ? 'bg-gradient-to-br from-[#0878EE] to-[#054EA0]'
+                      ? 'bg-gradient-to-br from-ai to-ai-hover'
                       : finalWeightedScore >= 65
-                      ? 'bg-gradient-to-br from-amber-500 to-amber-600'
-                      : 'bg-gradient-to-br from-rose-500 to-rose-600'
+                      ? 'bg-gradient-to-br from-score-mid to-score-mid'
+                      : 'bg-gradient-to-br from-score-low to-score-low'
                   }`}>
                     <span className="text-4xl font-black leading-none">{finalWeightedScore}</span>
                     <span className="text-[11px] font-bold opacity-90 mt-1">/ 100 điểm</span>
                     <span className="text-xs font-bold mt-2 text-center">{sessionRankTitle(finalWeightedScore)}</span>
                   </div>
 
-                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
-                    <p className="text-xs font-semibold text-[#556987]">Câu đã chấm</p>
-                    <p className="text-2xl font-black text-[#071A44] mt-1">
-                      {practicedSentencesCount}<span className="text-base text-[#8A9AB3] font-bold">/{totalLearnerSentencesCount}</span>
+                  <div className="rounded-2xl border border-line bg-paper-100 p-4">
+                    <p className="text-xs font-semibold text-sumi-muted">Câu đã chấm</p>
+                    <p className="text-2xl font-black text-sumi mt-1">
+                      {practicedSentencesCount}<span className="text-base text-sumi-faint font-bold">/{totalLearnerSentencesCount}</span>
                     </p>
-                    <ul className="mt-2 space-y-0.5 text-xs text-[#556987]">
-                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />{finalGreenCount} khớp tốt</li>
-                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />{finalYellowCount} khớp một phần</li>
-                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" aria-hidden="true" />{finalRedCount} cần luyện lại</li>
+                    <ul className="mt-2 space-y-0.5 text-xs text-sumi-muted">
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-score-good" aria-hidden="true" />{finalGreenCount} khớp tốt</li>
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-warning" aria-hidden="true" />{finalYellowCount} khớp một phần</li>
+                      <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-score-low" aria-hidden="true" />{finalRedCount} cần luyện lại</li>
                     </ul>
                   </div>
 
-                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
-                    <p className="text-xs font-semibold text-[#556987]">Độ khớp nội dung</p>
-                    <p className="text-2xl font-black text-[#0878EE] mt-1">{finalContentMatchScore}%</p>
-                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden mt-3" aria-hidden="true">
-                      <div className="bg-[#0878EE] h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, finalContentMatchScore))}%` }} />
+                  <div className="rounded-2xl border border-line bg-paper-100 p-4">
+                    <p className="text-xs font-semibold text-sumi-muted">Độ khớp nội dung</p>
+                    <p className="text-2xl font-black text-ai mt-1">{finalContentMatchScore}%</p>
+                    <div className="w-full bg-paper-200 h-1.5 rounded-full overflow-hidden mt-3" aria-hidden="true">
+                      <div className="bg-ai h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, finalContentMatchScore))}%` }} />
                     </div>
-                    <p className="text-[11px] text-[#8A9AB3] mt-2 leading-snug">Tính trên tất cả câu của vai bạn, câu chưa chấm tính 0.</p>
+                    <p className="text-[11px] text-sumi-faint mt-2 leading-snug">Tính trên tất cả câu của vai bạn, câu chưa chấm tính 0.</p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#E6EDF5] bg-[#F8FAFD] p-4">
-                    <p className="text-xs font-semibold text-[#556987]">Thời gian luyện</p>
-                    <p className="text-2xl font-black text-[#071A44] mt-1">
+                  <div className="rounded-2xl border border-line bg-paper-100 p-4">
+                    <p className="text-xs font-semibold text-sumi-muted">Thời gian luyện</p>
+                    <p className="text-2xl font-black text-sumi mt-1">
                       {Math.floor(sessionDurationSeconds / 60)}:{String(sessionDurationSeconds % 60).padStart(2, '0')}
                     </p>
-                    <p className="text-[11px] text-[#8A9AB3] mt-2">phút : giây</p>
+                    <p className="text-[11px] text-sumi-faint mt-2">phút : giây</p>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-[#BCDDFB] bg-[#F4F9FE] p-5 text-center">
-                  <p className="font-bold text-[#071A44]">Chưa có câu nào được chấm điểm</p>
-                  <p className="text-sm text-[#556987] mt-1">
+                <div className="rounded-2xl border border-dashed border-line-strong bg-paper-100 p-5 text-center">
+                  <p className="font-bold text-sumi">Chưa có câu nào được chấm điểm</p>
+                  <p className="text-sm text-sumi-muted mt-1">
                     Bấm <strong>Luyện lại bài này</strong>, ghi âm từng câu của vai bạn rồi gửi để nhận điểm và lưu vào lịch sử.
                   </p>
                 </div>
               )}
 
               {finalGateStatus === 'needs_retry' && (
-                <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                <div className="flex items-start gap-2 rounded-xl border border-warning-soft bg-warning-soft p-3 text-xs text-warning">
                   <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -2103,7 +2040,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
               {/* 3. Chi tiết từng câu của vai người học */}
               <section aria-labelledby="completed-sentences-title" className="space-y-3">
-                <h4 id="completed-sentences-title" className="font-bold text-[#071A44] text-sm">Chi tiết từng câu</h4>
+                <h4 id="completed-sentences-title" className="font-bold text-sumi text-sm">Chi tiết từng câu</h4>
 
                 <ol className="space-y-3">
                   {learnerSentences.map((s, index) => {
@@ -2116,24 +2053,24 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     const attempts = res?.attemptsCount ?? sentenceAttemptsMap.get(s.id) ?? 0;
 
                     return (
-                      <li key={s.id} className="p-4 rounded-xl bg-white border border-[#E6EDF5] space-y-2.5">
+                      <li key={s.id} className="p-4 rounded-xl bg-paper-50 border border-line space-y-2.5">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-[#556987]">Câu {index + 1}/{totalLearnerSentencesCount}</span>
+                            <span className="text-xs font-bold text-sumi-muted">Câu {index + 1}/{totalLearnerSentencesCount}</span>
                             <span
                               className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                                 !res
-                                  ? 'bg-slate-50 text-slate-500 border-slate-200'
+                                  ? 'bg-paper-100 text-sumi-muted border-line'
                                   : tier === 'green'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  ? 'bg-score-good-soft text-score-good border-score-good-soft'
                                   : tier === 'yellow'
-                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                  : 'bg-rose-50 text-rose-700 border-rose-200'
+                                  ? 'bg-warning-soft text-warning border-warning-soft'
+                                  : 'bg-score-low-soft text-score-low border-score-low-soft'
                               }`}
                             >
                               {res ? `${res.overallScore} điểm` : 'Chưa chấm'}
                             </span>
-                            {attempts > 1 && <span className="text-xs text-[#8A9AB3]">thử {attempts} lần</span>}
+                            {attempts > 1 && <span className="text-xs text-sumi-faint">thử {attempts} lần</span>}
                           </div>
 
                           <div className="flex items-center gap-2">
@@ -2143,8 +2080,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                                 onClick={() => playUserRecording(s.id)}
                                 className={`h-8 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                                   isPlayingUser
-                                    ? 'bg-[#0878EE] text-white'
-                                    : 'bg-blue-50 hover:bg-blue-100 text-[#0878EE] border border-blue-200'
+                                    ? 'bg-ai text-white'
+                                    : 'bg-ai-soft hover:bg-ai-soft text-ai border border-line-strong'
                                 }`}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -2158,8 +2095,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                               onClick={() => playAudio(s.nativeAudioUrl, s.japaneseText, undefined, undefined, s.id)}
                               className={`h-8 px-3 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                                 isPlayingNative
-                                  ? 'bg-[#071A44] text-white'
-                                  : 'bg-white hover:bg-slate-50 text-[#071A44] border border-[#E6EDF5]'
+                                  ? 'bg-sumi text-white'
+                                  : 'bg-paper-50 hover:bg-paper-100 text-sumi border border-line'
                               }`}
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -2170,7 +2107,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="bg-[#F8FAFD] p-3 rounded-lg border border-slate-100">
+                        <div className="bg-paper-100 p-3 rounded-lg border border-line">
                           <JapaneseSentenceDiffView
                             diffTokens={res?.diffTokens}
                             targetText={s.japaneseText}
@@ -2180,8 +2117,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         </div>
 
                         <div className="space-y-0.5 text-xs">
-                          {s.romajiText && <p className="text-[#8A9AB3] font-mono">{s.romajiText}</p>}
-                          {s.vietnameseTranslation && <p className="text-[#556987]">{s.vietnameseTranslation}</p>}
+                          {s.romajiText && <p className="text-sumi-faint font-mono">{s.romajiText}</p>}
+                          {s.vietnameseTranslation && <p className="text-sumi-muted">{s.vietnameseTranslation}</p>}
                         </div>
                       </li>
                     );
@@ -2191,13 +2128,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             </div>
 
           {/* Sticky / Pinned Footer Bar (Luôn hiển thị cố định ở chân modal) */}
-          <div className="p-4 sm:px-7 bg-white/95 backdrop-blur-md border-t border-[#E6EDF5] flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+          <div className="p-4 sm:px-7 bg-paper-50 backdrop-blur-md border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => {
                   handleConfirmRoleChange(userRoleRef.current);
                 }}
-                className="flex-1 sm:flex-initial text-xs font-bold text-[#556987] hover:text-[#071A44] bg-[#F4F9FE] hover:bg-[#EEF6FE] border border-[#E6EDF5] px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial text-xs font-bold text-sumi-muted hover:text-sumi bg-paper-100 hover:bg-ai-soft border border-line px-4 py-2.5 rounded-xl transition-all cursor-pointer"
               >
                 Luyện lại bài này
               </button>
@@ -2207,14 +2144,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   setIsCompletedModalOpen(false);
                   setIsRoleModalOpen(true);
                 }}
-                className="flex-1 sm:flex-initial text-xs font-bold text-[#0878EE] bg-blue-50 hover:bg-blue-100 border border-[#BCDDFB] px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial text-xs font-bold text-ai bg-ai-soft hover:bg-ai-soft border border-line-strong px-4 py-2.5 rounded-xl transition-all cursor-pointer"
               >
                 Đổi sang vai ({opponentRole})
               </button>
             </div>
             <button
               onClick={handleBackToDialogueList}
-              className="w-full sm:w-auto text-xs font-extrabold text-white bg-[#0878EE] hover:bg-[#0662C6] px-6 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+              className="w-full sm:w-auto text-xs font-extrabold text-white bg-ai hover:bg-ai-hover px-6 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Xong
             </button>
@@ -2228,8 +2165,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         onClose={() => setIsRoleModalOpen(false)}
         dialogueId={dialogue.id}
         dialogueTitle={dialogue.title}
-        roleAName={dialogue.speakerRoleA_Name}
-        roleBName={dialogue.speakerRoleB_Name}
+        roleAName={displayRoleName(dialogue.speakerRoleA_Name)}
+        roleBName={displayRoleName(dialogue.speakerRoleB_Name)}
         onConfirm={handleConfirmRoleChange}
       />
 
