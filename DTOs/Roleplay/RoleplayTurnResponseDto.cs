@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using JCAP.Services.Interfaces;
+
 namespace JCAP.DTOs.Roleplay;
 
 public class RoleplayTurnResponseDto
@@ -15,5 +18,19 @@ public class RoleplayTurnResponseDto
     /// Tối thiểu 1 credit/lượt. Bằng 0 nếu người dùng là Admin.
     /// </summary>
     public int CreditsSpentThisTurn { get; set; }
-}
 
+    /// <summary>
+    /// Các lỗi ngữ pháp / trợ từ phát hiện tức thì bằng C# Rule Engine (E01-E10)
+    /// </summary>
+    public List<DetectedGrammarIssue> DetectedIssues { get; set; } = [];
+
+    /// <summary>
+    /// Hệ số điều chỉnh tốc độ giọng AI theo nhịp độ người học (DDA: 0.85 chậm, 1.0 chuẩn, 1.05 nhanh)
+    /// </summary>
+    public double SpeedScale { get; set; } = 1.0;
+
+    /// <summary>
+    /// Trạng thái khích lệ nếu người học đang gặp khó khăn
+    /// </summary>
+    public bool ShouldOfferEncouragement { get; set; }
+}

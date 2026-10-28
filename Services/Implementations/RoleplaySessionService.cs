@@ -16,6 +16,9 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IAiRoleplayService _aiRoleplayService;
     private readonly ILogger<RoleplaySessionService> _logger;
+    private readonly IVietnameseLearnerErrorDetector _errorDetector;
+    private readonly ITelemetryEvaluatorService _telemetryEvaluator;
+    private readonly IPersonaMemoryService _personaMemory;
 
     /// <summary>
     /// Số ký tự tiếng Nhật ước lượng tương đương 1 credit (30 ký tự ≈ 30 tokens ≈ 1 credit).
@@ -26,12 +29,18 @@ public class RoleplaySessionService : IRoleplaySessionService
         AppDbContext dbContext,
         UserManager<ApplicationUser> userManager,
         IAiRoleplayService aiRoleplayService,
-        ILogger<RoleplaySessionService> logger)
+        ILogger<RoleplaySessionService> logger,
+        IVietnameseLearnerErrorDetector errorDetector,
+        ITelemetryEvaluatorService telemetryEvaluator,
+        IPersonaMemoryService personaMemory)
     {
         _dbContext = dbContext;
         _userManager = userManager;
         _aiRoleplayService = aiRoleplayService;
         _logger = logger;
+        _errorDetector = errorDetector;
+        _telemetryEvaluator = telemetryEvaluator;
+        _personaMemory = personaMemory;
     }
 
     public async Task<ApiResponse<ActiveRoleplaySessionDto?>> GetActiveSessionAsync(
@@ -378,6 +387,26 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Select(sm => sm.Mission!)
             .ToList();
 
+        // 2b. Quét lỗi chuyển dịch tiếng Nhật E01-E10 và ghi nhận Telemetry
+        var detectedIssues = _errorDetector.DetectErrors(userMessage.JapaneseText);
+        var turnIndex = session.Messages.Count(m => m.Sender == "User");
+        var ddaDecision = await _telemetryEvaluator.RecordAndEvaluateTurnAsync(new TurnTelemetryInput
+        {
+            SessionId = sessionId,
+            UserId = userId,
+            TurnIndex = turnIndex,
+            LatencyMs = (int)((request.ResponseLatencySeconds ?? 2.0) * 1000),
+            PauseRatio = request.PauseRatio ?? 0.0,
+            MoraRate = request.MoraRate ?? 3.5,
+            HintLevelUsed = request.HintLevelUsed,
+            TranslationPeekCount = request.TranslationPeekCount,
+            RetryCount = request.RetryCount,
+            FallbackToTextInput = request.FallbackToTextInput,
+            BargeInInterrupted = request.BargeInInterrupted,
+            JapaneseSpoken = userMessage.JapaneseText,
+            TurnScore = 85.0
+        });
+
         // 3. Gọi AI phân tích và phản hồi
         var turnResult = await _aiRoleplayService.ProcessTurnAsync(
             levelConfig.Scenario,
@@ -647,7 +676,10 @@ public class RoleplaySessionService : IRoleplaySessionService
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             SessionStatus = session.Status,
             CreditBalance = latestCreditBalance,
-            CreditsSpentThisTurn = creditsSpentThisTurn
+            CreditsSpentThisTurn = creditsSpentThisTurn,
+            DetectedIssues = detectedIssues.ToList(),
+            SpeedScale = ddaDecision.SpeedScale,
+            ShouldOfferEncouragement = ddaDecision.ShouldOfferEncouragement
         };
 
         return ApiResponse<RoleplayTurnResponseDto>.Ok(responseDto);
@@ -715,6 +747,55 @@ public class RoleplaySessionService : IRoleplaySessionService
         session.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        // Finalize Telemetry & Persona Memory
+        await _telemetryEvaluator.FinalizeSessionTelemetryAsync(sessionId, userId);
+
+        var sessionWithConfig = await _dbContext.RoleplaySessions
+            .Include(s => s.ScenarioLevelConfiguration)
+                .ThenInclude(c => c!.Scenario)
+            .Include(s => s.SessionMissions)
+            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+
+        if (sessionWithConfig?.ScenarioLevelConfiguration?.Scenario != null)
+        {
+            bool allDone = sessionWithConfig.SessionMissions.Count > 0 && sessionWithConfig.SessionMissions.All(m => m.IsCompleted);
+            string npcCode = sessionWithConfig.ScenarioLevelConfiguration.Scenario.ScenarioCode ?? $"SCN_{sessionWithConfig.ScenarioLevelConfiguration.Scenario.Id}";
+            await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, allDone);
+
+            if (allDone)
+            {
+                var spotActivity = await _dbContext.ExploreSpotActivities
+                    .Include(a => a.Lesson)
+                    .FirstOrDefaultAsync(a => a.ActivityType == ExploreActivityType.Roleplay && a.ReferenceId == sessionWithConfig.ScenarioLevelConfigurationId, cancellationToken);
+
+                if (spotActivity?.Lesson != null)
+                {
+                    var spotProgress = await _dbContext.Set<ExploreSpotProgress>()
+                        .FirstOrDefaultAsync(p => p.UserId == userId && p.SpotId == spotActivity.Lesson.SpotId, cancellationToken);
+                    if (spotProgress == null)
+                    {
+                        spotProgress = new ExploreSpotProgress
+                        {
+                            UserId = userId,
+                            SpotId = spotActivity.Lesson.SpotId,
+                            RedStampedAt = DateTime.UtcNow,
+                            RoleplaySessionId = sessionId,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        _dbContext.Set<ExploreSpotProgress>().Add(spotProgress);
+                        await _dbContext.SaveChangesAsync(cancellationToken);
+                    }
+                    else if (!spotProgress.RedStampedAt.HasValue)
+                    {
+                        spotProgress.RedStampedAt = DateTime.UtcNow;
+                        spotProgress.RoleplaySessionId = sessionId;
+                        spotProgress.UpdatedAt = DateTime.UtcNow;
+                        await _dbContext.SaveChangesAsync(cancellationToken);
+                    }
+                }
+            }
+        }
 
         return ApiResponse<bool>.Ok(true, "Phiên luyện tập đã kết thúc thành công.");
     }

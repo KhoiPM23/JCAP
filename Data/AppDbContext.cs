@@ -48,6 +48,12 @@ namespace JCAP.Data
         public DbSet<RoleplayMessage> RoleplayMessages { get; set; } = null!;
         public DbSet<RoleplaySessionMission> RoleplaySessionMissions { get; set; } = null!;
 
+        // Implicit Learner Intelligence & Persona Memory (FE-03 Telemetry)
+        public DbSet<LearnerIntelligenceProfile> LearnerIntelligenceProfiles { get; set; } = null!;
+        public DbSet<LearnerSkillMastery> LearnerSkillMasteries { get; set; } = null!;
+        public DbSet<LearnerBehaviorSignal> LearnerBehaviorSignals { get; set; } = null!;
+        public DbSet<UserNpcRelationship> UserNpcRelationships { get; set; } = null!;
+
         // Explore (bản đồ hành trình học) DbSets - cấu hình ở ExploreModelConfiguration
         public DbSet<ExplorePrefecture> ExplorePrefectures { get; set; } = null!;
         public DbSet<ExploreChapter> ExploreChapters { get; set; } = null!;
@@ -506,6 +512,28 @@ namespace JCAP.Data
                     .WithMany(m => m.SessionMissions)
                     .HasForeignKey(e => e.MissionId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Implicit Learner Intelligence & Persona Memory configurations
+            modelBuilder.Entity<LearnerIntelligenceProfile>(entity =>
+            {
+                entity.HasIndex(e => e.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<LearnerSkillMastery>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.SkillCode }).IsUnique();
+                entity.HasIndex(e => new { e.UserId, e.NextRecommendedReviewUtc });
+            });
+
+            modelBuilder.Entity<LearnerBehaviorSignal>(entity =>
+            {
+                entity.HasIndex(e => new { e.SessionId, e.TurnIndex });
+            });
+
+            modelBuilder.Entity<UserNpcRelationship>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.NpcCode }).IsUnique();
             });
 
             // ShadowingPracticeSession: lịch sử bất biến, không xóa cứng (Restrict để không mất lịch sử theo dây chuyền)

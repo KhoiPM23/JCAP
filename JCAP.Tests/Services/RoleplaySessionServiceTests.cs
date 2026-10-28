@@ -82,6 +82,33 @@ public class RoleplaySessionServiceTests
         return (scenario, levelConfig, mission);
     }
 
+    private static RoleplaySessionService CreateRoleplaySessionService(
+        AppDbContext dbContext,
+        UserManager<ApplicationUser> userManager,
+        IAiRoleplayService aiRoleplayService,
+        ILogger<RoleplaySessionService> logger)
+    {
+        var errorDetector = new Mock<IVietnameseLearnerErrorDetector>();
+        errorDetector.Setup(d => d.DetectErrors(It.IsAny<string>()))
+            .Returns(new List<DetectedGrammarIssue>());
+
+        var telemetryEvaluator = new Mock<ITelemetryEvaluatorService>();
+        telemetryEvaluator.Setup(t => t.RecordAndEvaluateTurnAsync(It.IsAny<TurnTelemetryInput>()))
+            .ReturnsAsync(new DynamicScaffoldingDecision { SpeedScale = 1.0 });
+
+        var personaMemory = new Mock<IPersonaMemoryService>();
+
+        return new RoleplaySessionService(
+            dbContext,
+            userManager,
+            aiRoleplayService,
+            logger,
+            errorDetector.Object,
+            telemetryEvaluator.Object,
+            personaMemory.Object);
+    }
+
+
     [Fact]
     public async Task StartSessionAsync_Fails_WhenCreditIsInsufficient()
     {
@@ -94,7 +121,7 @@ public class RoleplaySessionServiceTests
         var aiMock = new Mock<IAiRoleplayService>();
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
@@ -123,7 +150,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
@@ -159,7 +186,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(adminUser.Id, 1, "N5", new StartRoleplaySessionRequestDto());
@@ -205,7 +232,7 @@ public class RoleplaySessionServiceTests
         });
         await dbContext.SaveChangesAsync();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act - Bắt đầu session mà không force restart
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto { ForceRestart = false });
@@ -243,7 +270,7 @@ public class RoleplaySessionServiceTests
         dbContext.RoleplaySessions.Add(existingSession);
         await dbContext.SaveChangesAsync();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto { ForceRestart = true });
@@ -308,7 +335,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.SendMessageAsync(user.Id, 101, new SendRoleplayMessageRequestDto
@@ -388,7 +415,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.SendMessageAsync(user.Id, 202, new SendRoleplayMessageRequestDto

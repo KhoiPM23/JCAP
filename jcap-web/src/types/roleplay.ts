@@ -34,6 +34,18 @@ export interface SpeechDeliveryMetricsDto {
   jlptLevel?: string;
   paceAssessment?: string;
   latencyAssessment?: string;
+  audioUrl?: string;
+}
+
+export interface GrammarErrorItemDto {
+  type?: string;
+  explanation: string;
+  suggestedCorrection?: string;
+}
+
+export interface GrammarAccuracyDto {
+  score?: number;
+  errors?: GrammarErrorItemDto[];
 }
 
 export interface LinguisticFeedbackDto {
@@ -43,6 +55,7 @@ export interface LinguisticFeedbackDto {
   summary: string;
   details?: LinguisticDetailItemDto[];
   grammarAssessment?: string;
+  grammarAccuracy?: GrammarAccuracyDto;
   vocabularyAssessment?: string;
   politenessAssessment?: string;
   naturalAlternative?: string;
@@ -103,6 +116,15 @@ export interface RoleplaySessionDetailsDto {
   roleVoiceMappings?: Record<string, number>;
 }
 
+export interface DetectedGrammarIssue {
+  code: string;
+  title: string;
+  severity: 'info' | 'warning' | 'error' | string;
+  matchedSnippet: string;
+  suggestedFix: string;
+  explanationVi: string;
+}
+
 export interface RoleplayTurnResponseDto {
   userMessage: RoleplayMessageDto;
   aiMessage: RoleplayMessageDto;
@@ -112,6 +134,9 @@ export interface RoleplayTurnResponseDto {
   isNaturallyConcluded: boolean;
   creditBalance?: number;
   sessionStatus?: string;
+  detectedIssues?: DetectedGrammarIssue[];
+  speedScale?: number;
+  shouldOfferEncouragement?: boolean;
 }
 
 export interface RoleplayHintDto {
