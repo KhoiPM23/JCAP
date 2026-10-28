@@ -122,6 +122,52 @@ namespace JCAP.Data
                     .HasForeignKey<ExploreProvinceWord>(e => e.PrefectureId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            // Tiến độ người học: không có DbSet trong AppDbContext, đọc ghi qua context.Set<T>()
+            modelBuilder.Entity<ExploreSpotProgress>(entity =>
+            {
+                entity.ToTable("ExploreSpotProgresses");
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+                entity.HasIndex(e => new { e.UserId, e.SpotId }).IsUnique();
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Spot)
+                    .WithMany()
+                    .HasForeignKey(e => e.SpotId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ExplorePrefectureStamp>(entity =>
+            {
+                entity.ToTable("ExplorePrefectureStamps");
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+                entity.HasIndex(e => new { e.UserId, e.PrefectureId }).IsUnique();
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Prefecture)
+                    .WithMany()
+                    .HasForeignKey(e => e.PrefectureId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ExploreChapterUnlock>(entity =>
+            {
+                entity.ToTable("ExploreChapterUnlocks");
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+                entity.HasIndex(e => new { e.UserId, e.ChapterId }).IsUnique();
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Chapter)
+                    .WithMany()
+                    .HasForeignKey(e => e.ChapterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }

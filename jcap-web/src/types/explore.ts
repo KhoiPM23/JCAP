@@ -14,6 +14,11 @@ export interface ExploreChapter {
   maxLevel: string;
   unlockThresholdPercent: number;
   prefectureIds: number[];
+  /** Chương đã mở cho người học này (chương đầu luôn mở; đã mở thì mở mãi) */
+  isUnlocked: boolean;
+  /** Số mốc người học thấy được trong chương và số mốc đã có con dấu */
+  spotCount: number;
+  stampCount: number;
 }
 
 export interface ExplorePrefectureSummary {
@@ -23,14 +28,35 @@ export interface ExplorePrefectureSummary {
   chapterId?: number | null;
   spotCount: number;
   word?: ExploreProvinceWord | null;
+  /** Tỉnh thuộc chương người học chưa mở */
+  isLocked: boolean;
+  stampCount: number;
+  redStampCount: number;
+  /** Con dấu tỉnh; null = chưa có */
+  stamp?: ExploreStamp | null;
 }
 
 export interface ExplorePrefectureDetail {
   id: number;
   isOpen: boolean;
   chapterId?: number | null;
+  /** Thuộc chương chưa mở: không có mốc */
+  isLocked: boolean;
   word?: ExploreProvinceWord | null;
   spots: ExploreSpot[];
+  stamp?: ExploreStamp | null;
+}
+
+/** Con dấu đã cấp; redStampedAt có giá trị = đã thành dấu son */
+export interface ExploreStamp {
+  stampedAt: string;
+  redStampedAt?: string | null;
+}
+
+export interface ExploreSpotProgress {
+  understoodAt?: string | null;
+  stampedAt?: string | null;
+  redStampedAt?: string | null;
 }
 
 export interface ExploreProvinceWord {
@@ -49,7 +75,21 @@ export interface ExploreSpot {
   nameKana?: string | null;
   latitude: number;
   longitude: number;
+  prefectureId: number;
   lesson?: ExploreLesson | null;
+  progress: ExploreSpotProgress;
+}
+
+export interface ExploreActivity {
+  type: 'Shadowing' | 'Roleplay' | 'Quiz' | 'Flashcard';
+  referenceId?: number | null;
+  passThreshold?: number | null;
+  /** Tên bài Shadowing / kịch bản Hội thoại AI */
+  title?: string | null;
+  /** Hội thoại AI: kịch bản gốc (mở trang /scenarios/:id), cấp độ và số Credit */
+  scenarioId?: number | null;
+  jlptLevel?: string | null;
+  creditCost?: number | null;
 }
 
 export interface ExploreLesson {
@@ -60,5 +100,19 @@ export interface ExploreLesson {
   meaning: string;
   grammarNote?: string | null;
   estimatedMinutes: number;
-  activities: { type: 'Shadowing' | 'Roleplay' | 'Quiz' | 'Flashcard'; referenceId?: number | null; passThreshold?: number | null }[];
+  activities: ExploreActivity[];
+}
+
+/** Những gì vừa đạt trong một lần đồng bộ (để diễn hiệu ứng đóng dấu đúng một lần) */
+export interface ExploreAwards {
+  stampSpotIds: number[];
+  redStampSpotIds: number[];
+  prefectureStamp: boolean;
+  prefectureRedStamp: boolean;
+  unlockedChapterIds: number[];
+}
+
+export interface ExploreSyncResult {
+  prefecture: ExplorePrefectureDetail;
+  awards: ExploreAwards;
 }

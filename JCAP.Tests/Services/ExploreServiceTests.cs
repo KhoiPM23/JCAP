@@ -11,6 +11,18 @@ namespace JCAP.Tests.Services
 {
     public class ExploreServiceTests
     {
+        private const string User = "learner-1";
+
+        /// <summary>Mở mọi chương cho người học (để đọc tỉnh ở chương sau mà không cần đi lấy con dấu trước)</summary>
+        internal static async Task UnlockAllChapters(AppDbContext db, string user = User)
+        {
+            foreach (var id in await db.ExploreChapters.Select(c => c.Id).ToListAsync())
+            {
+                db.Set<ExploreChapterUnlock>().Add(new ExploreChapterUnlock { UserId = user, ChapterId = id });
+            }
+            await db.SaveChangesAsync();
+        }
+
         private static AppDbContext NewContext(string name) =>
             new(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase($"JCAP_Explore_{name}_{Guid.NewGuid()}").Options);
 
@@ -130,7 +142,7 @@ namespace JCAP.Tests.Services
             using var db = await SeededContext("journey");
             var service = new ExploreService(db);
 
-            var result = await service.GetJourneyAsync();
+            var result = await service.GetJourneyAsync(User);
 
             Assert.True(result.Success);
             var journey = result.Data!;
@@ -150,7 +162,7 @@ namespace JCAP.Tests.Services
         public async Task GetJourney_EmptyDatabase_StillReturns47ClosedPrefectures()
         {
             using var db = NewContext("empty");
-            var result = await new ExploreService(db).GetJourneyAsync();
+            var result = await new ExploreService(db).GetJourneyAsync(User);
 
             Assert.True(result.Success);
             Assert.Equal(47, result.Data!.Prefectures.Count);
@@ -161,7 +173,7 @@ namespace JCAP.Tests.Services
         public async Task GetPrefecture_Closed_ReturnsNotOpen_WithoutSpots()
         {
             using var db = await SeededContext("closed");
-            var result = await new ExploreService(db).GetPrefectureAsync(1);
+            var result = await new ExploreService(db).GetPrefectureAsync(User, 1);
 
             Assert.True(result.Success);
             Assert.False(result.Data!.IsOpen);
@@ -174,7 +186,7 @@ namespace JCAP.Tests.Services
         public async Task GetPrefecture_InvalidId_Fails(int id)
         {
             using var db = NewContext("invalid");
-            var result = await new ExploreService(db).GetPrefectureAsync(id);
+            var result = await new ExploreService(db).GetPrefectureAsync(User, id);
             Assert.False(result.Success);
         }
 
@@ -182,7 +194,8 @@ namespace JCAP.Tests.Services
         public async Task GetPrefecture_Open_ReturnsOnlyPublishedActiveSpots_WithParsedSentence()
         {
             using var db = await SeededContext("open");
-            var result = await new ExploreService(db).GetPrefectureAsync(29);
+            await UnlockAllChapters(db);
+            var result = await new ExploreService(db).GetPrefectureAsync(User, 29);
 
             Assert.True(result.Success);
             var nara = result.Data!;
@@ -213,10 +226,11 @@ namespace JCAP.Tests.Services
                     new ExploreSpotActivity { ActivityType = ExploreActivityType.Shadowing, ReferenceId = 3, PassThreshold = 60, OrderIndex = 1 },
                 },
             };
+            db.ScenarioLevelConfigurations.Add(new ScenarioLevelConfiguration { Id = 7, ScenarioId = 1, JLPTLevel = "N5", Title = "Gọi món", Status = "Published" });
             db.ExploreSpots.AddRange(visible, Spot(13, "停止", ExploreSpotStatus.Published, active: false), Spot(13, "下書き", ExploreSpotStatus.Draft));
             await db.SaveChangesAsync();
 
-            var result = await new ExploreService(db).GetPrefectureAsync(13);
+            var result = await new ExploreService(db).GetPrefectureAsync(User, 13);
 
             var spot = Assert.Single(result.Data!.Spots);
             Assert.Equal("見える", spot.NameJp);

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Toast, type ToastType } from '../../components/ui/Toast';
 import { PREFECTURES, REGIONS } from '../../data/japanMap';
-import { adminExploreService } from '../../services/adminExploreService';
+import { MIN_SPOTS_TO_OPEN, adminExploreService } from '../../services/adminExploreService';
 import type {
   AdminExploreChapter,
   AdminExploreOverview,
@@ -477,16 +477,16 @@ const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClo
             </p>
             <button
               type="button"
-              disabled={busy || published === 0}
+              disabled={busy || published < MIN_SPOTS_TO_OPEN}
               onClick={() => setConfirming(true)}
               className="mt-3 w-full h-10 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-600 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-600"
             >
               Mở cho người học
             </button>
-            {published === 0 && (
+            {published < MIN_SPOTS_TO_OPEN && (
               <p className="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1">
                 <WarnIcon className="w-3.5 h-3.5 shrink-0 mt-px text-amber-600" />
-                Cần ít nhất 1 mốc đang dùng trước khi mở tỉnh.
+                Cần ít nhất {MIN_SPOTS_TO_OPEN} mốc đang dùng trước khi mở tỉnh (đang có {published}).
               </p>
             )}
           </div>

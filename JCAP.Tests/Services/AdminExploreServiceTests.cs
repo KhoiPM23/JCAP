@@ -70,13 +70,22 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task OpenPrefecture_WithPublishedSpot_OpensAndStampsDate()
+        public async Task OpenPrefecture_NeedsMinimumPublishedSpots_ThenOpensAndStampsDate()
         {
             using var db = await SeededContext("open-ok");
+            for (var i = 1; i < AdminExploreService.MinSpotsToOpen; i++)
+            {
+                db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Thử", NameJp = "テスト" + i, Status = ExploreSpotStatus.Published });
+            }
+            await db.SaveChangesAsync();
+            var service = new AdminExploreService(db);
+
+            // Thiếu một mốc so với mức tối thiểu: chưa mở được
+            Assert.False((await service.OpenPrefectureAsync(1)).Success);
+
             db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Thử", NameJp = "テスト", Status = ExploreSpotStatus.Published });
             await db.SaveChangesAsync();
-
-            var result = await new AdminExploreService(db).OpenPrefectureAsync(1);
+            var result = await service.OpenPrefectureAsync(1);
 
             Assert.True(result.Success);
             Assert.True(result.Data!.IsOpen);
