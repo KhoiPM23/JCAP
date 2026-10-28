@@ -10,6 +10,8 @@ import { AwardOverlay } from './AwardOverlay';
 import { PrefectureStampMark, STAMP_CSS, STAMP_INK, SpotStampMark } from './ExploreStamp';
 import { THEME_CSS_VARS, T } from './exploreTheme';
 import { PictogramIcon } from './exploreUi';
+import { Button, Icon, IconButton } from '../../components/jcap';
+import { speakJa, useCanSpeakJa } from './speak';
 import { useFurigana } from './furigana';
 import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
@@ -18,7 +20,7 @@ import { SpotFocusCard } from './SpotFocusCard';
 import { SpotLesson, shadowingPracticeUrl } from './SpotLesson';
 import { WordCard } from './WordCard';
 
-const PANEL_WIDTH_PX = 360;
+const PANEL_WIDTH_PX = 400;
 const SHEET_HEIGHT_PX = 320;
 const PANEL_EXIT_MS = 180;
 
@@ -50,7 +52,12 @@ type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmLesson?: boolean } | 
  * Lựa chọn nằm trên URL (?tinh=kyoto&dd=2, thêm &hoc=1 khi mở bài học của địa điểm) để chia sẻ link và để nút Back
  * lùi lần lượt từng cấp.
  */
-export const JapanMapView: React.FC = () => {
+export const JapanMapView: React.FC<{
+  /** false khi bản đồ đang nằm ẩn dưới trang khác (khung học viên giữ nó sống để chuyển cảnh mượt): không bắt phím, không cướp focus */
+  active?: boolean;
+}> = ({ active = true }) => {
+  const activeRef = useRef(active);
+  activeRef.current = active;
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,6 +65,14 @@ export const JapanMapView: React.FC = () => {
   const isTouch = useMediaQuery('(pointer: coarse)');
   const isWideHint = useMediaQuery('(min-width: 761px)');
   const [interacted, setInteracted] = useState(false);
+  // Gợi ý thao tác tắt ngay khi người dùng làm bất kỳ thao tác nào trên trang (bấm, chạm, cuộn, bàn phím), không chỉ khi kéo/phóng bản đồ
+  useEffect(() => {
+    if (interacted || !active) return;
+    const dismiss = () => setInteracted(true);
+    const events = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
+    events.forEach((e) => window.addEventListener(e, dismiss, { capture: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, dismiss, { capture: true }));
+  }, [interacted, active]);
   const [furigana] = useFurigana();
   const journey = useExploreJourney();
   /** Thông báo nổi khi bấm vào tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai") hoặc thuộc chương chưa mở */
@@ -162,7 +177,7 @@ export const JapanMapView: React.FC = () => {
   backRef.current = () => (lessonSpot ? closeLesson() : activeSpot != null ? selectSpot(null) : selectPrefecture(null));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) backRef.current();
+      if (e.key === 'Escape' && !e.defaultPrevented && activeRef.current) backRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -180,6 +195,7 @@ export const JapanMapView: React.FC = () => {
     let timer = 0;
     const raf = requestAnimationFrame(() => {
       timer = window.setTimeout(() => {
+        if (!activeRef.current) return; // đang sang trang khác: không kéo focus khỏi thanh bên
         if (selectedId != null) {
           headingRef.current?.focus({ preventScroll: true });
         } else if (prev != null) {
@@ -208,7 +224,7 @@ export const JapanMapView: React.FC = () => {
   }, [selected]);
 
   return (
-    <div className="jm-ukiyoe h-screen flex flex-col bg-[var(--sea)] text-[var(--ink)] font-sans overflow-hidden">
+    <div data-theme="kham-pha" className="jm-ukiyoe relative h-full overflow-hidden text-[var(--ink)] font-sans" style={{ background: 'var(--sea)' }}>
       {/* Font Nhật: Noto Sans JP cho tên, Shippori Mincho B1 cho chữ Hán kiểu khắc gỗ (React 19 tự đưa lên <head>) */}
       <link
         rel="stylesheet"
@@ -216,81 +232,8 @@ export const JapanMapView: React.FC = () => {
         precedence="default"
       />
 
-      {/* Thanh trên cùng */}
-      <header className="jm-topbar relative h-16 shrink-0 px-3 sm:px-6 flex items-center gap-2 sm:gap-4 z-30">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          aria-label="Về trang chủ"
-          className="jm-focus flex items-center gap-2 h-11 min-w-11 justify-center px-3 rounded-[6px] text-[var(--ink-2)] hover:bg-[var(--paper-2)] hover:text-[var(--ink)] transition-colors"
-        >
-          <ArrowLeftIcon className="w-5 h-5" />
-          <span className="hidden sm:inline text-sm font-medium">Về trang chủ</span>
-        </button>
-
-        <div className="h-7 w-px bg-[var(--rule)] shrink-0" aria-hidden="true" />
-
-        <nav aria-label="Vị trí hiện tại" className="flex items-center gap-2 min-w-0 flex-1 text-sm">
-          <CompassIcon className="w-5 h-5 text-[#0878EE] shrink-0" />
-          {selected ? (
-            <>
-              <button
-                type="button"
-                onClick={() => selectPrefecture(null)}
-                className="jm-focus shrink-0 rounded-md font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
-              >
-                Nhật Bản
-              </button>
-              <span className="text-[var(--ghost)]" aria-hidden="true">
-                /
-              </span>
-              {activeSpot != null ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => selectSpot(null)}
-                    className="jm-focus shrink-0 rounded-md font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
-                  >
-                    {selected.nameVi}
-                  </button>
-                  <span className="text-[var(--ghost)]" aria-hidden="true">
-                    /
-                  </span>
-                  <span className="font-bold truncate" aria-current="page">
-                    {prefectureLandmarks(selected.id)[activeSpot].pictogram.nameVi}
-                  </span>
-                </>
-              ) : (
-                <span className="font-bold truncate" aria-current="page">
-                  {selected.nameVi} <span className="font-jp font-medium text-[var(--ink-2)]">{selected.nameJp}</span>
-                </span>
-              )}
-            </>
-          ) : (
-            <div className="min-w-0">
-              <h1 className="font-bold text-base leading-tight truncate">Khám phá Nhật Bản</h1>
-              <p className="hidden sm:block text-xs text-[var(--muted)]">47 tỉnh · 8 vùng</p>
-            </div>
-          )}
-        </nav>
-
-        <PrefecturePicker onPick={selectPrefecture} isClosed={(id) => journey.status === 'ok' && !journey.prefecture(id)?.isOpen} />
-
-        {selected && (
-          <button
-            type="button"
-            onClick={() => selectPrefecture(null)}
-            aria-label="Xem toàn quốc"
-            className="jm-focus flex items-center justify-center gap-2 h-11 min-w-11 px-3 sm:px-4 rounded-[6px] bg-[var(--primary-soft)] text-[var(--primary-ink)] text-sm font-semibold hover:bg-[#D7E8FD] transition-colors"
-          >
-            <ZoomOutIcon className="w-5 h-5" />
-            <span className="hidden md:inline">Xem toàn quốc</span>
-          </button>
-        )}
-      </header>
-
       {/* Vùng bản đồ (biển, bờ, đất do JapanMap vẽ) */}
-      <main className="relative flex-1 min-h-0 bg-[var(--sea)]">
+      <main className="relative h-full">
         <JapanMap
           selectedId={selectedId}
           onSelect={selectPrefecture}
@@ -300,12 +243,38 @@ export const JapanMapView: React.FC = () => {
           reserveRight={selected && isWide ? PANEL_WIDTH_PX + 24 : 0}
           reserveBottom={selected && !isWide ? SHEET_HEIGHT_PX : 0}
           onInteract={() => setInteracted(true)}
+          legend={<MapLegend />}
+          search={<PrefecturePicker onPick={selectPrefecture} isClosed={(id) => journey.status === 'ok' && !journey.prefecture(id)?.isOpen} />}
         />
+
+        {/* Đang xem một tỉnh: nút về toàn quốc + đường dẫn (thanh bên đã trượt ra ngoài) */}
+        {selected && (
+          <div className="jm-backbar">
+            <button type="button" onClick={() => selectPrefecture(null)} className="jm-back">
+              <Icon name="arrow_back" size={22} />
+              Toàn quốc
+            </button>
+            <nav aria-label="Vị trí" className="jm-crumb">
+              <span className="text-[var(--sumi-muted)]">{`Nhật Bản / ${REGION_NAME[selected.region]} /`}</span>
+              {activeSpot != null ? (
+                <>
+                  <button type="button" onClick={() => selectSpot(null)} className="jm-crumb-link">
+                    {selected.nameVi}
+                  </button>
+                  <span className="text-[var(--sumi-muted)]">/</span>
+                  <span aria-current="page">{prefectureLandmarks(selected.id)[activeSpot].pictogram.nameVi}</span>
+                </>
+              ) : (
+                <span aria-current="page">{selected.nameVi}</span>
+              )}
+            </nav>
+          </div>
+        )}
 
         {/* Gợi ý thao tác: ẩn sau lần kéo/phóng to/chọn tỉnh đầu tiên */}
         {!selected && !interacted && !notice && journey.status !== 'error' && (
-          <div className="pointer-events-none absolute z-10 top-3 sm:top-4 left-1/2 -translate-x-1/2 w-max max-w-[calc(100%-2rem)] flex items-center justify-center gap-2 rounded-[8px] sm:rounded-full bg-[var(--paper)] border border-[var(--ink-line)] px-3.5 sm:px-4 py-2 text-[12.5px] sm:text-sm text-center text-balance text-[var(--ink-2)] shadow-[var(--sh-2)]">
-            <PointerIcon className="w-4 h-4 text-[var(--shu)]" />
+          <div className="jm-hint pointer-events-none absolute z-10 flex items-center gap-2 rounded-[8px] sm:rounded-full border border-[var(--line)] bg-[var(--paper-50)] px-3.5 sm:px-4 py-2 text-[12.5px] sm:text-sm text-[var(--sumi)] shadow-[0_6px_18px_rgba(8,26,56,.28)]">
+            <PointerIcon className="w-4 h-4 shrink-0 text-[var(--shu)]" />
             {isTouch || !isWideHint
               ? 'Kéo, chụm hai ngón để phóng to, chạm vào một tỉnh'
               : 'Kéo để di chuyển · Cuộn để phóng to · Bấm vào một tỉnh'}
@@ -313,16 +282,27 @@ export const JapanMapView: React.FC = () => {
         )}
 
         {/* Bấm vào tỉnh admin chưa mở */}
-        {notice && (
-          <ClosedNotice
-            key={notice.key}
-            pref={PREFECTURE_BY_ID.get(notice.prefId)!}
-            word={toProvinceWord(journey.prefecture(notice.prefId)?.word)}
-            message={notice.locked ? lockedMessage(journey, notice.prefId) : undefined}
-            furigana={furigana}
-            onClose={() => setNotice(null)}
-          />
-        )}
+        {notice &&
+          (notice.locked ? (
+            <LockedNotice
+              key={notice.key}
+              pref={PREFECTURE_BY_ID.get(notice.prefId)!}
+              journey={journey}
+              onGo={(id) => {
+                setNotice(null);
+                selectPrefecture(id);
+              }}
+              onClose={() => setNotice(null)}
+            />
+          ) : (
+            <ClosedNotice
+              key={notice.key}
+              pref={PREFECTURE_BY_ID.get(notice.prefId)!}
+              word={toProvinceWord(journey.prefecture(notice.prefId)?.word)}
+              furigana={furigana}
+              onClose={() => setNotice(null)}
+            />
+          ))}
 
         {/* Không tải được dữ liệu Khám phá (máy chủ chưa chạy, mất mạng...) */}
         {journey.status === 'error' && !notice && (
@@ -334,34 +314,9 @@ export const JapanMapView: React.FC = () => {
           </div>
         )}
 
-        {/* Ô tên tranh kiểu tranh khắc gỗ: chỉ ở bản đồ toàn quốc, ẩn trên điện thoại */}
-        {!selected && (
-          <div className="jm-plate" aria-hidden="true">
-            <div className="jm-plate-box" lang="ja">
-              <span className="jm-plate-t1">日本めぐり</span>
-              <span className="jm-plate-t2">四十七都道府県</span>
-            </div>
-            <div className="jm-plate-vi">Hành trình 47 tỉnh</div>
-          </div>
-        )}
-
         {!selected && <PanelWarmUp />}
 
         {import.meta.env.DEV && <MissingIconsDevNotice />}
-
-        {/* "Một từ ở tỉnh": thẻ nổi góc trên trái ở cấp tỉnh (điện thoại: nằm trong panel) */}
-        {selected && activeSpot == null && isWide && selectedWord && (
-          <div className="jm-reveal" style={{ animationDelay: '0.5s' }}>
-            <WordCard
-              key={selected.id}
-              variant="floating"
-              provinceNameVi={selected.nameVi}
-              word={selectedWord}
-              furigana={furigana}
-              ink={REGION_STYLE[selected.region].ink}
-            />
-          </div>
-        )}
 
         {/* Thông tin tỉnh: panel bên phải (màn rộng) hoặc ngăn dưới (màn hẹp) */}
         {panelPref && (
@@ -393,20 +348,43 @@ export const JapanMapView: React.FC = () => {
             font-weight: 600; color: var(--ink-2); display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
           .font-jp { font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif; }
           .jm-focus:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-          .jm-topbar { background: linear-gradient(180deg, var(--sky) 0%, var(--paper) 100%);
-            box-shadow: 0 1px 0 var(--ink-line), 0 4px 0 var(--paper), 0 5px 0 var(--ink-line); }
-          .jm-plate { position: absolute; z-index: 5; left: 24px; top: 24px; display: flex; align-items: flex-start; gap: 10px; pointer-events: none; }
-          .jm-plate-box { display: flex; flex-direction: row-reverse; gap: 6px; padding: 12px 8px; background: var(--paper); border: 1px solid var(--ink-line);
-            box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--ink-line), 3px 4px 0 4px rgba(8,20,44,.25); }
-          .jm-plate-box span { writing-mode: vertical-rl; text-orientation: upright; font-family: var(--font-mincho); color: var(--ink); line-height: 1; }
-          .jm-plate-t1 { font-size: 22px; font-weight: 800; letter-spacing: .16em; }
-          .jm-plate-t2 { font-size: 13px; font-weight: 600; letter-spacing: .2em; margin-top: 18px; color: var(--ink-2) !important; }
-          .jm-plate-vi { margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--foam); writing-mode: vertical-rl; letter-spacing: .06em; opacity: .9; }
-          @media (max-width: 760px) { .jm-plate { display: none; } }
           .jm-paper-panel { background: var(--paper); border: 1px solid var(--ink-line);
             box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--rule), var(--sh-3); }
-          .jm-ph-name { font-family: var(--font-mincho); font-weight: 800; font-size: 38px; line-height: 1.15; letter-spacing: .04em; }
-          @media (max-width: 1023px) { .jm-ph-name { font-size: 27px; } }
+          .jm-lock { position: absolute; z-index: 30; top: 20px; left: 50%; transform: translateX(-50%); width: min(300px, calc(100% - 2rem)); box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; border-radius: 16px; background: var(--paper-50);
+            border: 1px solid var(--line); box-shadow: 0 14px 36px rgba(8,26,56,.38); color: var(--sumi); }
+          .jm-legend { position: absolute; right: 0; bottom: calc(100% + 10px); width: 300px; box-sizing: border-box; display: flex; flex-direction: column;
+            gap: 2px; padding: 14px 16px 12px; border-radius: 18px; background: var(--paper-50); border: 1px solid var(--line);
+            box-shadow: 0 14px 32px rgba(8,26,56,.3); color: var(--sumi); }
+          .jm-legend-btn { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
+            background: var(--paper-50); color: var(--sumi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+          .jm-legend-btn:hover { background: var(--paper-100); }
+          .jm-legend-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+          .jm-lg-sw { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 26px; border-radius: 6px; }
+          .jm-lg-seal { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
+            border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 12px; font-weight: 700; }
+          .jm-lg-region { writing-mode: vertical-rl; padding: 2px 1px; background: var(--paper-50); border: 3px double var(--sumi);
+            font-family: var(--font-mincho); font-size: 10px; line-height: 11px; font-weight: 700; }
+          /* Gợi ý thao tác nằm ngay bên phải thanh bên (240px + lề 12px + khe 12px; thanh bên thu gọn: 72px) */
+          .jm-hint { left: 264px; top: 20px; max-width: calc(100% - 264px - 16px); transition: left .2s cubic-bezier(.2,.7,.2,1); }
+          .jx-app.is-collapsed .jm-hint { left: 96px; max-width: calc(100% - 96px - 16px); }
+          .jm-backbar { position: absolute; z-index: 25; left: 20px; top: 20px; display: flex; align-items: center; gap: 12px; animation: jm-reveal .2s ease-out .5s both; }
+          .jm-back { display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px 0 14px; border-radius: 999px; border: 1px solid var(--line);
+            background: var(--paper-50); color: var(--sumi); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(8,26,56,.3); }
+          .jm-back:hover { background: var(--paper-100); }
+          .jm-back:focus-visible, .jm-crumb-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+          .jm-crumb { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; background: rgba(246,239,226,.9);
+            font-size: 13px; font-weight: 600; color: var(--sumi); }
+          .jm-crumb-link { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+          .jm-crumb-link:hover { text-decoration: underline; }
+          @media (max-width: 760px) { .jm-crumb { display: none; } .jm-backbar { left: 12px; top: 12px; } }
+          .jm-ph-name { font-family: var(--font-mincho); font-weight: 700; font-size: 42px; line-height: 50px; margin: 0; }
+          @media (max-width: 1023px) { .jm-ph-name { font-size: 28px; line-height: 36px; } }
+          .jm-ppanel { background: var(--paper-100); border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(8,26,56,.38); color: var(--sumi); }
+          .jm-region-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px;
+            background: var(--paper-50); border: 1px solid var(--line); font-size: 12px; font-weight: 600; white-space: nowrap; }
+          .jm-word { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft); }
+          .jm-word rt { font-size: 11px; }
           .jm-panel-right { animation: jm-slide-left 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-bottom { animation: jm-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-right.jm-closing { animation: jm-slide-left-out ${PANEL_EXIT_MS}ms ease-in both; }
@@ -502,8 +480,6 @@ interface PrefecturePanelProps {
   headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
 
-/** Quá nhiều địa điểm thì dải con dấu thành thanh tiến độ (dải vòng tròn quá dài, nhất là trên điện thoại) */
-const STAMP_STRIP_MAX = 16;
 
 const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   pref,
@@ -537,43 +513,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   const redTotal = (spotsData.data?.spots ?? []).filter((s) => s.lesson?.activities.some((a) => a.type === 'Roleplay')).length;
   const prefStamp = spotsData.data?.stamp ?? summary?.stamp ?? null;
   const prefStampState = prefStamp ? (prefStamp.redStampedAt ? 'red' : 'stamp') : 'none';
-  const stampLabel = `Con dấu: ${stampCount}/${landmarks.length} địa điểm`;
-
-  // Dải con dấu: mỗi địa điểm một vòng theo thứ tự lộ trình; có dấu thì hiện con dấu thu nhỏ (mực chàm, dấu son đỏ)
-  const stampStrip =
-    route && landmarks.length > STAMP_STRIP_MAX ? (
-      <div className="min-w-0 flex-1" role="img" aria-label={stampLabel}>
-        <div className="h-2 overflow-hidden rounded-full bg-[var(--paper-2)]">
-          <div className="h-full rounded-full" style={{ width: `${(stampCount / landmarks.length) * 100}%`, background: STAMP_INK }} />
-        </div>
-      </div>
-    ) : route ? (
-      <ol className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-0.5" aria-label={stampLabel}>
-        {order.map((i) => {
-          const lm = landmarks[i];
-          const state = progressOf(lm.spotId);
-          const px = isWide ? 32 : 24;
-          return (
-            <li
-              key={lm.spotId}
-              className="shrink-0"
-              title={`${route.stop[i]}. ${lm.pictogram.nameVi}${state === 'red' ? ' (dấu son)' : isStamped(state) ? ' (đã có dấu)' : ''}`}
-            >
-              {isStamped(state) ? (
-                <SpotStampMark iconId={lm.pictogram.id} nameJp={lm.pictogram.nameJp} state={state} size={px} seed={lm.spotId} />
-              ) : (
-                <span
-                  className={`flex ${isWide ? 'h-8 w-8 text-xs' : 'h-6 w-6 text-[11px]'} items-center justify-center rounded-full border-2 font-bold`}
-                  style={{ borderColor: T.ghost, color: 'var(--ink-2)', borderStyle: 'dashed', background: T.card }}
-                >
-                  {route.stop[i]}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    ) : null;
 
   // Thẻ "đang học" ghim đầu danh sách: địa điểm đang chọn, chưa chọn thì địa điểm "Tiếp theo"
   const focusIdx = activeSpot ?? nextIdx;
@@ -590,109 +529,91 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
     scrollRef.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   }, [focusIdx]);
 
+  const canSpeak = useCanSpeakJa();
+
   return (
     <aside
       aria-labelledby={headingId}
       className={`${
         isWide
-          ? 'jm-panel-right absolute top-4 right-4 bottom-4 rounded-[10px]'
-          : 'jm-panel-bottom absolute left-0 right-0 bottom-0 rounded-t-[10px] !border-b-0'
-      } ${closing ? 'jm-closing pointer-events-none' : ''} jm-paper-panel z-20 flex flex-col overflow-hidden`}
+          ? 'jm-panel-right absolute top-3 right-3 bottom-3 rounded-[20px]'
+          : 'jm-panel-bottom absolute left-0 right-0 bottom-0 rounded-t-[20px] !border-b-0'
+      } ${closing ? 'jm-closing pointer-events-none' : ''} jm-ppanel z-20 flex flex-col overflow-hidden`}
       style={isWide ? { width: PANEL_WIDTH_PX } : { height: SHEET_HEIGHT_PX }}
     >
-      {/* Đầu panel: dải màu vùng + con dấu (chưa mở khóa) */}
-      <div
-        className={`relative ${isWide ? 'px-5 pt-5 pb-4' : 'px-4 pt-3.5 pb-3'} border-b border-[var(--rule)]`}
-        style={{ background: `linear-gradient(180deg, ${region.tint} 0%, var(--paper) 100%)` }}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng và xem toàn quốc"
-          className="jm-focus absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-full text-[var(--ink-2)] hover:bg-[var(--paper-2)] hover:text-[var(--ink)] transition-colors"
-        >
-          <CloseIcon className="w-5 h-5" />
-        </button>
+      <div ref={scrollRef} className={`flex flex-1 flex-col gap-[18px] overflow-y-auto overscroll-contain ${isWide ? 'px-5 pt-[18px] pb-4' : 'px-4 pt-3 pb-3'}`}>
+        {/* Vùng + nút đóng */}
+        <div className="flex items-center justify-between">
+          <span className="jm-region-chip">
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: region.ink }} aria-hidden="true" />
+            Vùng {REGION_NAME[pref.region]}
+            <span className="font-jp font-medium" lang="ja">
+              {REGION_JP.get(pref.region)}
+            </span>
+          </span>
+          <IconButton icon="close" label="Đóng, về toàn quốc" size="sm" onClick={onClose} />
+        </div>
 
-        {/* Chip vùng một hàng riêng (đủ chỗ cho tên dài như "Kyushu - Okinawa 九州・沖縄"), nút đóng bên phải */}
-        <span
-          className="inline-flex max-w-[calc(100%-3rem)] items-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--paper)] border border-[var(--rule)] px-2.5 py-0.5 text-xs font-semibold"
-          style={{ color: region.ink }}
-        >
-          <span className="w-2 h-2 shrink-0 rounded-full" style={{ background: region.ink }} aria-hidden="true" />
-          Vùng {REGION_NAME[pref.region]}
-          <span className="font-jp font-medium text-[var(--ink-2)]">{REGION_JP.get(pref.region)}</span>
-        </span>
-
-        <div className={`${isWide ? 'mt-3 gap-4' : 'mt-2 gap-3'} flex items-center`}>
-          <div
-            className="shrink-0 flex flex-col items-center gap-1"
-            role="img"
-            aria-label={
-              prefStampState === 'red'
-                ? `Con dấu ${pref.nameVi}: dấu son`
-                : prefStampState === 'stamp'
-                  ? `Con dấu ${pref.nameVi}: đã có`
-                  : `Con dấu ${pref.nameVi}: chưa có, cần con dấu của mọi địa điểm`
-            }
-          >
-            <PrefectureStampMark
-              d={pref.d}
-              main={pref.main}
-              nameJp={pref.nameJp}
-              caption={landmarks.length ? `${stampCount}/${landmarks.length}` : undefined}
-              state={prefStampState}
-              size={isWide ? 76 : 56}
-              seed={pref.id}
-            />
-            {/* Màn hẹp bỏ chú thích để ngăn dưới đủ chỗ cho danh sách địa điểm (nhãn vẫn có trong aria-label) */}
-            {isWide && prefStampState === 'none' && (
-              // Nằm trên dải màu vùng ở đầu panel: dùng ink-2 (≥ 5.4:1) thay cho muted (chỉ ~3.5:1 trên nền đó)
-              <span className="flex items-center gap-1 text-xs font-medium text-[var(--ink-2)]">
-                <LockIcon className="w-3 h-3" />
-                Con dấu
+        {/* Tên tỉnh + con dấu tỉnh và số con dấu */}
+        <div className="flex items-end justify-between gap-3">
+          <div className="flex min-w-0 flex-col">
+            <h2 id={headingId} ref={headingRef} tabIndex={-1} className="jm-ph-name text-[var(--sumi)] outline-none" lang="ja">
+              {pref.nameJp}
+            </h2>
+            <span className="flex items-center gap-1 text-base font-semibold text-[var(--sumi)]">
+              {pref.nameVi}
+              {canSpeak && <IconButton icon="volume_up" label="Nghe tên tỉnh" size="sm" onClick={() => speakJa(pref.nameJp)} />}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span
+              role="img"
+              aria-label={
+                prefStampState === 'red'
+                  ? `Con dấu ${pref.nameVi}: dấu son`
+                  : prefStampState === 'stamp'
+                    ? `Con dấu ${pref.nameVi}: đã có`
+                    : `Con dấu ${pref.nameVi}: chưa có, cần con dấu của mọi địa điểm`
+              }
+            >
+              <PrefectureStampMark d={pref.d} main={pref.main} nameJp={pref.nameJp} state={prefStampState} size={isWide ? 56 : 44} seed={pref.id} />
+            </span>
+            {landmarks.length > 0 && (
+              <span className="flex flex-col items-end">
+                <span className="text-[28px] font-bold leading-8 text-[var(--shu)]">{`${stampCount}/${landmarks.length}`}</span>
+                <span className="text-xs text-[var(--sumi-muted)]">con dấu</span>
+                {redTotal > 0 && <span className="text-xs font-semibold text-[var(--shu)]">{`Dấu son ${redCount}/${redTotal}`}</span>}
               </span>
             )}
           </div>
-          <div className="min-w-0">
-            <h2
-              id={headingId}
-              ref={headingRef}
-              tabIndex={-1}
-              className="jm-ph-name text-[var(--ink)] outline-none"
-            >
-              {pref.nameJp}
-            </h2>
-            <p className="text-base font-semibold text-[var(--ink-2)]">{pref.nameVi}</p>
-          </div>
         </div>
-      </div>
 
-      <div ref={scrollRef} className={`flex-1 overflow-y-auto overscroll-contain ${isWide ? 'p-5' : 'px-4 py-3'}`}>
-        {/* Địa điểm học: các địa danh của tỉnh theo thứ tự lộ trình (gần thủ phủ trước); bấm để bay tới trên bản đồ */}
-        <div className={`${isWide ? 'mb-3' : 'mb-2'} flex items-center justify-between gap-3`}>
-          <div className="shrink-0">
-            <h3 className="flex items-center gap-2 text-sm font-bold text-[var(--ink)]">
-              Địa điểm học <span className="jm-count">{landmarks.length}</span>
-            </h3>
-            {landmarks.length > 0 && (
-              <p className="mt-0.5 text-xs font-medium text-[var(--ink-2)]">
-                Con dấu {stampCount}/{landmarks.length}
-                {redTotal > 0 && (
-                  <>
-                    {' · '}
-                    <span style={{ color: redCount > 0 ? T.shu : undefined }}>
-                      Dấu son {redCount}/{redTotal}
-                    </span>
-                  </>
-                )}
-              </p>
-            )}
-          </div>
-          {/* Điện thoại: dải con dấu nằm cùng hàng với tiêu đề để nhường chỗ cho hàng thẻ */}
-          {route && !isWide && stampStrip}
-        </div>
-        {route && isWide && <div className="mb-3">{stampStrip}</div>}
+        {/* Một từ ở tỉnh */}
+        {word && (
+          <section aria-label="Một từ ở tỉnh" className="jm-word">
+            <span className="font-jp text-2xl font-bold leading-[34px]" lang="ja">
+              {furigana && word[1] ? (
+                <ruby>
+                  {word[0]}
+                  <rt className="text-[11px] font-medium text-[var(--sumi-muted)]">{word[1]}</rt>
+                </ruby>
+              ) : (
+                word[0]
+              )}
+            </span>
+            <span className="flex min-w-0 flex-grow flex-col">
+              <span className="text-xs font-semibold leading-4 text-[var(--sumi-muted)]">Một từ ở tỉnh</span>
+              <span className="text-[15px] font-semibold leading-[22px]">{word[2]}</span>
+              {word[3] && <span className="text-xs leading-[18px] text-[var(--sumi-muted)]">{word[3]}</span>}
+            </span>
+            {canSpeak && <IconButton icon="volume_up" label={`Nghe từ ${word[0]}`} size="sm" onClick={() => speakJa(word[1] || word[0])} />}
+          </section>
+        )}
+
+        <div className="flex flex-col gap-2">
+        <h3 className="m-0 text-[15px] font-bold leading-[22px] text-[var(--sumi)]">
+          Địa điểm học <span className="font-medium text-[var(--sumi-muted)]">{landmarks.length}</span>
+        </h3>
 
         {landmarks.length === 0 && spotsData.status !== 'ok' && (
           <p className="mb-3 text-sm text-[var(--ink-2)]" role="status">
@@ -725,37 +646,35 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
           />
         )}
 
-        <ul className={`${focusIdx != null ? 'mt-2' : ''} flex flex-col`}>
+        <ul className="flex flex-col">
           {rest.map((n) => {
             const lm = landmarks[n];
             const p = lm.pictogram;
             const shared = (PICTOGRAM_PREFECTURES[p.id] ?? []).filter((other) => other !== pref.id);
             const state = progressOf(lm.spotId);
+            const color = state === 'red' ? T.shu : state === 'stamp' ? STAMP_INK : state === 'understood' ? region.ink : 'var(--sumi-muted)';
             return (
-              <li key={lm.spotId} className="border-b border-[var(--rule)] last:border-b-0">
+              <li key={lm.spotId}>
                 <button
                   type="button"
                   onClick={() => onSpotSelect(n)}
-                  className="jm-focus flex w-full items-center gap-3 rounded-[6px] px-1 py-2.5 text-left transition-colors hover:bg-[var(--paper-2)]"
+                  className="jm-focus flex w-full items-center gap-3 rounded-[12px] px-2.5 py-2 text-left transition-colors hover:bg-[var(--paper-200)]"
                 >
                   <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2"
-                    style={{ borderColor: region.ink, background: 'var(--paper)' }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                    style={{ border: state === 'none' ? '2px dashed var(--sumi)' : `2.5px solid ${color}`, background: 'var(--paper-50)' }}
                   >
-                    <PictogramIcon id={p.id} color={region.ink} className="h-5 w-5" />
+                    <PictogramIcon id={p.id} color={state === 'none' ? 'var(--sumi-muted)' : color} className="h-[18px] w-[18px]" />
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold leading-snug text-[var(--ink)]">
+                  <span className="flex min-w-0 flex-grow flex-col">
+                    <span className="text-sm font-semibold leading-5 text-[var(--sumi)]">
                       {route && `${route.stop[n]}. `}
                       {p.nameVi}
                     </span>
-                    <span className="font-jp block text-[13px] leading-snug text-[var(--ink-2)]">
+                    <span className="font-jp text-xs text-[var(--sumi-muted)]" lang="ja">
                       {p.nameJp}
                       {shared.length > 0 && (
-                        <span className="font-sans text-xs text-[var(--muted)]">
-                          {' '}
-                          · Cùng với {shared.map((o) => PREFECTURE_BY_ID.get(o)?.nameVi).join(', ')}
-                        </span>
+                        <span className="font-sans">{` · Cùng với ${shared.map((o) => PREFECTURE_BY_ID.get(o)?.nameVi).join(', ')}`}</span>
                       )}
                     </span>
                   </span>
@@ -765,22 +684,16 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
             );
           })}
         </ul>
-
-        {/* Điện thoại: "Một từ ở tỉnh" là một mục trong panel (trên desktop nó nổi trên bản đồ) */}
-        {!isWide && word && (
-          <div className="mt-5">
-            <WordCard variant="inline" provinceNameVi={pref.nameVi} word={word} furigana={furigana} ink={region.ink} />
-          </div>
-        )}
+        </div>
 
         {foods.length > 0 && (
           <>
-            <h3 className="mt-6 mb-3 flex items-center gap-2 text-sm font-bold text-[var(--ink)]">
-              Đặc sản <span className="jm-count">{foods.length}</span>
+            <h3 className="m-0 flex items-center gap-2 text-[15px] font-bold text-[var(--sumi)]">
+              Đặc sản <span className="font-medium text-[var(--sumi-muted)]">{foods.length}</span>
             </h3>
-            <ul className="grid grid-cols-2 gap-2">
+            <ul className="-mt-2 grid grid-cols-2 gap-2">
               {foods.map((p) => (
-                <li key={p.id} className="flex items-center gap-2.5 rounded-[6px] bg-[var(--paper-2)] p-2.5">
+                <li key={p.id} className="flex items-center gap-2.5 rounded-[12px] bg-[var(--paper-50)] p-2.5">
                   <PictogramIcon id={p.id} color={region.ink} className="w-8 h-8 shrink-0" />
                   <div className="min-w-0">
                     <div className="text-sm font-semibold leading-snug text-balance text-[var(--ink)]">{p.nameVi}</div>
@@ -794,7 +707,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
       </div>
 
       {/* Ghi nguồn: một dòng cố định ở đáy panel (không cuộn theo danh sách); tên đầy đủ trong title */}
-      <p className="shrink-0 truncate px-5 py-2.5 text-xs text-[var(--muted)] bg-[var(--paper)] border-t border-[var(--rule)]">
+      <p className="shrink-0 truncate px-5 py-2.5 text-xs text-[var(--sumi-muted)] bg-[var(--paper-100)] border-t border-[var(--line)]">
           Nguồn:{' '}
           <a
             href={PICTOGRAM_CREDIT.url}
@@ -870,57 +783,202 @@ function toProvinceWord(w: ExploreProvinceWord | null | undefined): ProvinceWord
 }
 
 /**
- * Tỉnh thuộc chương chưa mở: nói rõ cần bao nhiêu con dấu ở chương trước, đang có bao nhiêu.
- * Khác với tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai"): tỉnh này có sẵn bài, chỉ cần học tiếp.
+ * Tỉnh thuộc chương chưa mở: nói rõ cần bao nhiêu con dấu ở chương trước, đang có bao nhiêu, và gợi ý học tiếp ở một
+ * tỉnh đang mở của chương trước. Khác với tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai").
  */
-function lockedMessage(journey: JourneyState, prefId: number): string {
+const LockedNotice: React.FC<{ pref: PrefectureShape; journey: JourneyState; onGo: (prefId: number) => void; onClose: () => void }> = ({
+  pref,
+  journey,
+  onGo,
+  onClose,
+}) => {
   const chapters = journey.data?.chapters ?? [];
-  const at = chapters.findIndex((c) => c.prefectureIds.includes(prefId));
+  const at = chapters.findIndex((c) => c.prefectureIds.includes(pref.id));
   const chapter = chapters[at];
   const prev = chapters[at - 1];
-  if (!chapter || !prev) return 'Thuộc chương bạn chưa mở.';
-  const need = Math.ceil((chapter.unlockThresholdPercent * prev.spotCount) / 100);
-  return `Thuộc "${chapter.title}". Cần ${need}/${prev.spotCount} con dấu ở "${prev.title}" (đang có ${prev.stampCount}).`;
-}
+  const need = chapter && prev ? Math.ceil((chapter.unlockThresholdPercent * prev.spotCount) / 100) : 0;
+  const more = prev ? Math.max(0, need - prev.stampCount) : 0;
+  // Gợi ý: tỉnh đang mở của chương trước còn mốc chưa có dấu
+  const suggest = prev?.prefectureIds
+    .map((id) => ({ id, s: journey.prefecture(id) }))
+    .find(({ s }) => s?.isOpen && !s.isLocked && s.stampCount < s.spotCount);
+  const suggestPref = suggest ? PREFECTURE_BY_ID.get(suggest.id) : undefined;
+  return (
+    <div role="dialog" aria-label={`${pref.nameVi} đang khoá`} className="jm-reveal jm-lock">
+      <div className="flex items-start gap-2.5">
+        <span className="flex flex-grow flex-col gap-0.5">
+          <span className="flex items-baseline gap-2">
+            <span className="text-[17px] font-bold leading-6">{pref.nameVi}</span>
+            <span className="text-[15px] font-bold" lang="ja" style={{ fontFamily: 'var(--font-mincho)' }}>
+              {pref.nameJp}
+            </span>
+          </span>
+          {chapter && <span className="text-[13px] leading-5 text-[var(--sumi-muted)]">{chapter.title}</span>}
+        </span>
+        <IconButton icon="close" label="Đóng" size="sm" onClick={onClose} />
+      </div>
+      {chapter && prev ? (
+        <>
+          <p className="m-0 text-sm leading-[22px]">
+            {`Mở khi đạt ${chapter.unlockThresholdPercent}% con dấu ${prev.title}. Bạn đang có `}
+            <strong>{`${prev.stampCount}/${prev.spotCount}`}</strong>
+            {more > 0 ? `, cần thêm ${more} dấu.` : '.'}
+          </p>
+          <div className="relative h-2 rounded bg-[var(--paper-200)]" role="img" aria-label={`${prev.stampCount} trên ${prev.spotCount} dấu`}>
+            <span
+              className="absolute inset-y-0 left-0 rounded bg-[var(--shu)]"
+              style={{ width: `${prev.spotCount ? (prev.stampCount / prev.spotCount) * 100 : 0}%` }}
+            />
+            <span className="absolute -top-1 h-4 w-0.5 bg-[var(--sumi)]" style={{ left: `${chapter.unlockThresholdPercent}%` }} />
+          </div>
+          <div className="flex justify-between text-xs leading-4 text-[var(--sumi-muted)]">
+            <span>{`${prev.stampCount} dấu`}</span>
+            <span>{`Mở khoá ở ${need} dấu`}</span>
+          </div>
+          {suggestPref && (
+            <Button variant="primary" block icon="travel_explore" onClick={() => onGo(suggestPref.id)}>
+              {`Học mốc tiếp theo ở ${suggestPref.nameVi}`}
+            </Button>
+          )}
+        </>
+      ) : (
+        <p className="m-0 text-sm leading-[22px]">Thuộc chương bạn chưa mở.</p>
+      )}
+    </div>
+  );
+};
+
+/** Chú giải bản đồ: nút ở góc dưới phải, bảng mở lên phía trên */
+const MapLegend: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative" data-map-ui>
+      {open && (
+        <div className="jm-legend" role="dialog" aria-label="Chú giải bản đồ">
+          <div className="mb-1 flex items-center justify-between">
+            <strong className="text-[15px]">Chú giải bản đồ</strong>
+            <IconButton icon="close" label="Đóng chú giải" size="sm" onClick={() => setOpen(false)} />
+          </div>
+          <LegendRow sw={<span className="jm-lg-sw" style={{ background: 'var(--paper)', boxShadow: 'inset 0 0 0 2px var(--sumi)' }} />} title="Tỉnh đã mở" text="Bấm vào để vào tỉnh và học" />
+          <LegendRow
+            sw={<span className="jm-lg-sw" style={{ background: 'rgba(246,239,226,.38)', boxShadow: 'inset 0 0 0 1px var(--line)' }} />}
+            title="Tỉnh đang khoá"
+            text="Mở khi đủ con dấu của chương trước"
+          />
+          <LegendRow
+            sw={
+              <span className="jm-lg-sw">
+                <span className="jm-lg-seal" style={{ borderColor: STAMP_INK, color: STAMP_INK }}>
+                  印
+                </span>
+              </span>
+            }
+            title="Con dấu"
+            text="Mốc đã học xong (Hiểu + Shadowing)"
+          />
+          <LegendRow
+            sw={
+              <span className="jm-lg-sw">
+                <span className="jm-lg-seal">朱</span>
+              </span>
+            }
+            title="Dấu son"
+            text="Đã làm thêm Hội thoại AI ở mốc"
+          />
+          <LegendRow
+            sw={
+              <span className="jm-lg-sw">
+                <span className="h-2.5 w-2.5 rounded-full bg-[var(--shu)]" style={{ boxShadow: '0 0 0 5px var(--shu-soft)' }} />
+              </span>
+            }
+            title="Chấm đỏ"
+            text="Mốc tiếp theo nên học"
+          />
+          <LegendRow
+            sw={
+              <span className="jm-lg-sw">
+                <span className="jm-lg-region" lang="ja">
+                  関東
+                </span>
+              </span>
+            }
+            title="Nhãn vùng"
+            text="Tên các vùng lớn của Nhật"
+          />
+          <LegendRow
+            sw={
+              <span className="jm-lg-sw">
+                <svg width="34" height="10" viewBox="0 0 34 10" aria-hidden="true">
+                  <path d="M2 5h30" stroke="var(--shu)" strokeWidth="2.5" strokeDasharray="5 4" strokeLinecap="round" fill="none" />
+                </svg>
+              </span>
+            }
+            title="Lộ trình trong tỉnh"
+            text="Đi qua các mốc theo thứ tự học"
+          />
+        </div>
+      )}
+      <button type="button" className="jm-legend-btn" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <Icon name="map" size={20} />
+        Chú giải
+      </button>
+    </div>
+  );
+};
+
+const LegendRow: React.FC<{ sw: React.ReactNode; title: string; text: string }> = ({ sw, title, text }) => (
+  <div className="flex items-center gap-3 py-[7px] text-[13px] leading-[18px]">
+    {sw}
+    <div>
+      <b className="block text-sm font-semibold leading-5">{title}</b>
+      <span className="text-[var(--sumi-muted)]">{text}</span>
+    </div>
+  </div>
+);
 
 /**
- * Thông báo nổi khi bấm vào tỉnh admin chưa mở ("Sẽ cập nhật trong tương lai") hoặc thuộc chương chưa mở (message),
+ * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh, "Sẽ cập nhật trong tương lai",
  * kèm "Một từ ở tỉnh" nếu có để người học vẫn có chút gì để xem. Tự ẩn sau vài giây.
  */
-const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; message?: string; furigana: boolean; onClose: () => void }> = ({
+const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; furigana: boolean; onClose: () => void }> = ({
   pref,
   word,
-  message,
   furigana,
   onClose,
 }) => (
   <div
     role="status"
-    className="jm-reveal absolute z-20 top-3 sm:top-4 left-1/2 -translate-x-1/2 w-[min(360px,calc(100%-2rem))] rounded-[8px] bg-[var(--paper)] border border-[var(--ink-line)] px-4 py-3 shadow-[var(--sh-2)]"
+    className="jm-reveal absolute z-20 top-5 left-1/2 -translate-x-1/2 w-[min(360px,calc(100%-2rem))] rounded-[16px] bg-[var(--paper-50)] border border-[var(--line)] px-4 py-3 shadow-[0_14px_36px_rgba(8,26,56,.38)] text-[var(--sumi)]"
   >
     <div className="flex items-start gap-3">
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-bold text-[var(--ink)]">
-          {pref.nameVi} <span className="font-jp font-medium text-[var(--ink-2)]">{pref.nameJp}</span>
+        <div className="text-[15px] font-bold">
+          {pref.nameVi} <span className="font-jp font-medium text-[var(--sumi-muted)]">{pref.nameJp}</span>
         </div>
-        <div className="mt-0.5 flex items-start gap-1.5 text-sm text-[var(--ink-2)]">
-          {message && <LockIcon className="mt-1 h-3.5 w-3.5 shrink-0" />}
-          {message ?? 'Sẽ cập nhật trong tương lai'}
-        </div>
+        <div className="mt-0.5 text-sm text-[var(--sumi-muted)]">Sẽ cập nhật trong tương lai</div>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Đóng thông báo"
-        className="jm-focus -mr-2 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--ink-2)] hover:bg-[var(--paper-2)]"
-      >
-        <CloseIcon className="h-4 w-4" />
-      </button>
+      <IconButton icon="close" label="Đóng thông báo" size="sm" onClick={onClose} />
     </div>
     {word && (
-      <div className="mt-2 border-t border-[var(--rule)] pt-2 text-sm text-[var(--ink-2)]">
+      <div className="mt-2 border-t border-[var(--line)] pt-2 text-sm text-[var(--sumi-muted)]">
         Một từ ở {pref.nameVi}:{' '}
-        <span className="font-jp font-bold text-[var(--ink)]" lang="ja">
+        <span className="font-jp font-bold text-[var(--sumi)]" lang="ja">
           {furigana ? (
             <ruby>
               {word[0]}
@@ -1010,7 +1068,7 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
   let lastRegion: RegionId | null = null;
 
   return (
-    <div ref={rootRef} className="relative shrink-0">
+    <div ref={rootRef} className="relative shrink-0" data-map-ui>
       <button
         ref={triggerRef}
         type="button"
@@ -1018,18 +1076,14 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
         aria-expanded={open}
         aria-label="Tìm tỉnh"
         onClick={() => (open ? close(false) : setOpen(true))}
-        className={`jm-focus flex items-center justify-center gap-2 h-11 min-w-11 px-3 rounded-[6px] border text-sm font-semibold transition-colors ${
-          open
-            ? 'border-[var(--primary)] text-[var(--primary-ink)] bg-[var(--primary-soft)]'
-            : 'border-[var(--rule)] text-[var(--ink)] bg-[var(--paper)] hover:bg-[var(--paper-2)]'
-        }`}
+        title="Tìm tỉnh"
+        className={`jm-mapctl ${open ? 'on' : ''}`}
       >
-        <SearchIcon className="w-5 h-5" />
-        <span className="hidden md:inline">Tìm tỉnh</span>
+        <Icon name="search" size={22} />
       </button>
 
       {open && (
-        <div className="jm-reveal fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-[72px] sm:top-[calc(100%+10px)] sm:w-[320px] rounded-[8px] bg-[var(--paper)] border border-[var(--ink-line)] shadow-[var(--sh-3)] overflow-hidden z-40">
+        <div className="jm-reveal fixed sm:absolute left-3 right-3 sm:left-auto sm:right-[calc(100%+10px)] top-3 sm:top-auto sm:bottom-0 sm:w-[320px] rounded-[16px] bg-[var(--paper-50)] border border-[var(--line)] shadow-[0_14px_32px_rgba(8,26,56,.3)] overflow-hidden z-40">
           <div className="p-3 border-b border-[var(--rule)]">
             <label className="flex items-center gap-2 h-11 px-3 rounded-[6px] border-[1.5px] border-[var(--rule)] bg-white focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]">
               <SearchIcon className="w-4 h-4 text-[var(--muted)] shrink-0" />

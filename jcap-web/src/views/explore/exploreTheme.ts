@@ -26,9 +26,6 @@ export const T = {
   /** Màu pha để làm nhạt các tỉnh không được chọn (thành màu giấy) */
   dimMix: '#E7DCC6',
   shadow: '#081A38',
-  primary: '#0878EE',
-  primaryInk: '#0661C4',
-  primarySoft: '#E6F1FE',
 } as const;
 
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -69,7 +66,8 @@ export const THEME_CSS_VARS = `
   --paper:${T.paper}; --paper-2:${T.paper2}; --card:${T.card}; --rule:${T.rule}; --ink-line:${T.inkLine};
   --ghost:${T.ghost}; --shu:${T.shu}; --shu-soft:${T.shuSoft};
   --ink:${T.ink}; --ink-2:${T.ink2}; --muted:${T.muted}; --map-label:${T.mapLabel};
-  --primary:${T.primary}; --primary-ink:${T.primaryInk}; --primary-soft:${T.primarySoft};
+  /* Nút chính và viền focus theo token của direction kham-pha (data-theme ở gốc trang) */
+  --primary:var(--ai); --primary-ink:var(--ai-hover); --primary-soft:var(--ai-soft);
   --r-sm:6px; --r-md:8px; --r-lg:10px;
   --sh-1:0 1px 2px rgba(11,22,46,.18);
   --sh-2:0 1px 2px rgba(11,22,46,.16),0 8px 22px rgba(11,22,46,.22);

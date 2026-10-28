@@ -1,456 +1,268 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Badge, Button, Switch } from '../components/jcap';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
 import { subscriptionPlanService, type UserSubscriptionState } from '../services/subscriptionPlanService';
 
+interface Window {
+  usedCredits: number;
+  totalCredits: number;
+  resetsInText: string;
+}
+
+/** Số liệu mẫu cho khối "theo kỹ năng" (chưa có API); thanh tính theo SKILL_USAGE_MAX */
+const SKILL_USAGE_SAMPLE = [
+  { label: 'Hội thoại AI', credits: 4 },
+  { label: 'Shadowing', credits: 1 }
+];
+const SKILL_USAGE_MAX = 5;
+
+const usedPercent = (w: Window) => (w.totalCredits > 0 ? Math.min(100, Math.round((w.usedCredits / w.totalCredits) * 100)) : 0);
+
+/** Câu trạng thái đậm ở đầu trang, tính từ chu kỳ đang dùng nhiều nhất */
+function statusLine(five: Window, week: Window, autoUse: boolean, extra: number): string {
+  const worst = Math.max(usedPercent(five), usedPercent(week));
+  if (worst >= 100) {
+    return autoUse && extra > 0
+      ? 'Đã hết hạn mức. Bạn vẫn học tiếp được bằng Credit nạp thêm.'
+      : 'Đã hết hạn mức. Chờ tới lần hồi phục tiếp theo hoặc nạp thêm Credit.';
+  }
+  if (worst >= 80) return 'Sắp chạm giới hạn. Hạn mức sẽ hồi phục theo chu kỳ bên dưới.';
+  return 'Ổn định. Bạn còn dư hạn mức tới lần hồi phục tiếp theo.';
+}
+
+/**
+ * Gói & Credit (design-handoff mục 4): một cột ~760px, các phần ngăn bằng đường kẻ, không thẻ.
+ * Số liệu thật từ creditService.getQuota() và subscriptionPlanService như trước; chỉ đổi giao diện.
+ */
 export const SubscriptionQuotaView: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // State thông tin gói hội viên động từ subscriptionPlanService
-  const [subscription, setSubscription] = useState<UserSubscriptionState>(() =>
-    subscriptionPlanService.getUserSubscription()
-  );
+  // Thông tin gói hội viên động từ subscriptionPlanService
+  const [subscription, setSubscription] = useState<UserSubscriptionState>(() => subscriptionPlanService.getUserSubscription());
 
-  // State Dual-Window Rolling Quota (Được tính toán động từ các phiên học thật trong DB)
-  const [weeklyLimit, setWeeklyLimit] = useState(() => {
-    const sub = subscriptionPlanService.getUserSubscription();
-    return {
-      remainingPercent: 100,
-      usedCredits: 0,
-      totalCredits: sub?.creditsAmount || 2500,
-      resetsInText: '7 ngày (Đầy đủ)',
-    };
-  });
+  // Hai chu kỳ hạn mức (tính từ các phiên học thật trong DB)
+  const [weeklyLimit, setWeeklyLimit] = useState<Window>(() => ({
+    usedCredits: 0,
+    totalCredits: subscriptionPlanService.getUserSubscription()?.creditsAmount || 2500,
+    resetsInText: '7 ngày',
+  }));
+  const [fiveHourLimit, setFiveHourLimit] = useState<Window>(() => ({
+    usedCredits: 0,
+    totalCredits: subscriptionPlanService.getUserSubscription()?.fiveHourQuota || 150,
+    resetsInText: '5 giờ',
+  }));
 
-  const [fiveHourLimit, setFiveHourLimit] = useState(() => {
-    const sub = subscriptionPlanService.getUserSubscription();
-    return {
-      remainingPercent: 100,
-      usedCredits: 0,
-      totalCredits: sub?.fiveHourQuota || 150,
-      resetsInText: '5 giờ (Đầy đủ)',
-    };
-  });
+  // Số dư Credit nạp thêm
+  const [extraCredits, setExtraCredits] = useState<number>(() => (typeof user?.creditBalance === 'number' ? user.creditBalance : 0));
 
-  // Số dư Credit nạp thêm (Extra Credit Balance)
-  const [extraCredits, setExtraCredits] = useState<number>(() => {
-    return typeof user?.creditBalance === 'number' ? user.creditBalance : 0;
-  });
-
-  // Tùy chọn: Cho phép dùng credit khi hết quota
+  // Tuỳ chọn: tự dùng Credit nạp thêm khi hết hạn mức (lưu ở trình duyệt như trước)
+  // TODO: nối với cài đặt ở backend khi có API.
   const [allowAutoUseExtraCredits, setAllowAutoUseExtraCredits] = useState<boolean>(() => {
     const saved = localStorage.getItem('jcap_allow_auto_use_credit');
     return saved !== null ? saved === 'true' : true;
   });
 
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [showFeatures, setShowFeatures] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const showToast = (text: string, type: 'success' | 'info' | 'error' = 'success') => {
-    setToastMessage({ type, text });
-    setTimeout(() => setToastMessage(null), 4000);
-  };
-
-  const loadQuotaFromBackend = async (showNotification: boolean = false) => {
+  const loadQuotaFromBackend = async () => {
     setIsRefreshing(true);
     try {
       const res = await creditService.getQuota();
       if (res.success && res.data) {
         const d = res.data;
         const currentSub = subscriptionPlanService.getUserSubscription();
-        const planWeeklyTotal = currentSub?.creditsAmount || d.weeklyTotalCredits || 1000;
-        const planFiveHourTotal = currentSub?.fiveHourQuota || d.fiveHourTotalCredits || 50;
-
-        const weeklyRemaining = Math.max(0, planWeeklyTotal - d.weeklyUsedCredits);
-        const weeklyPercent = planWeeklyTotal > 0 ? Math.round((weeklyRemaining / planWeeklyTotal) * 100) : 0;
-
-        const fiveHourRemaining = Math.max(0, planFiveHourTotal - d.fiveHourUsedCredits);
-        const fiveHourPercent = planFiveHourTotal > 0 ? Math.round((fiveHourRemaining / planFiveHourTotal) * 100) : 0;
-
         setWeeklyLimit({
-          remainingPercent: weeklyPercent,
           usedCredits: d.weeklyUsedCredits,
-          totalCredits: planWeeklyTotal,
+          totalCredits: currentSub?.creditsAmount || d.weeklyTotalCredits || 1000,
           resetsInText: d.weeklyResetsInText,
         });
-
         setFiveHourLimit({
-          remainingPercent: fiveHourPercent,
           usedCredits: d.fiveHourUsedCredits,
-          totalCredits: planFiveHourTotal,
+          totalCredits: currentSub?.fiveHourQuota || d.fiveHourTotalCredits || 50,
           resetsInText: d.fiveHourResetsInText,
         });
-
         setExtraCredits(d.extraCreditBalance);
-
-        if (showNotification) {
-          showToast('Đã làm mới dữ liệu hạn ngạch từ các phiên học thành công!', 'success');
-        }
-      } else {
-        // Fallback tự động khi backend chưa phản hồi
-        setWeeklyLimit((prev) => ({
-          ...prev,
-          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '7 ngày (Đầy đủ)',
-        }));
-        setFiveHourLimit((prev) => ({
-          ...prev,
-          resetsInText: prev.usedCredits > 0 ? prev.resetsInText : '5 giờ (Đầy đủ)',
-        }));
+        setUpdatedAt(new Date());
       }
     } catch (err) {
       console.error('Lỗi tải hạn ngạch Quota:', err);
-      setWeeklyLimit((prev) => ({ ...prev, resetsInText: '7 ngày (Đầy đủ)' }));
-      setFiveHourLimit((prev) => ({ ...prev, resetsInText: '5 giờ (Đầy đủ)' }));
     } finally {
       setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    void loadQuotaFromBackend(false);
-
+    void loadQuotaFromBackend();
     const handleSubscriptionUpdate = () => {
-      const updated = subscriptionPlanService.getUserSubscription();
-      setSubscription(updated);
-      void loadQuotaFromBackend(false);
+      setSubscription(subscriptionPlanService.getUserSubscription());
+      void loadQuotaFromBackend();
     };
-
-    const handleProfileUpdate = () => {
-      void loadQuotaFromBackend(false);
-    };
-
+    const handleProfileUpdate = () => void loadQuotaFromBackend();
     window.addEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
     window.addEventListener('jcap_profile_updated', handleProfileUpdate);
     window.addEventListener('storage', handleSubscriptionUpdate);
-
     return () => {
       window.removeEventListener('jcap_subscription_updated', handleSubscriptionUpdate);
       window.removeEventListener('jcap_profile_updated', handleProfileUpdate);
       window.removeEventListener('storage', handleSubscriptionUpdate);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!notice) return;
+    const t = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(t);
+  }, [notice]);
 
   const handleToggleAutoUseCredit = (checked: boolean) => {
     setAllowAutoUseExtraCredits(checked);
     localStorage.setItem('jcap_allow_auto_use_credit', checked ? 'true' : 'false');
-    showToast(
-      checked
-        ? 'Đã bật: Tự động dùng Credit nạp thêm khi dùng hết hạn ngạch 5 giờ!'
-        : 'Đã tắt: Khi hết hạn ngạch 5 giờ, bài học sẽ tạm dừng chờ hồi phục.',
-      'info'
-    );
+    setNotice(checked ? 'Đã bật: tự dùng Credit nạp thêm khi hết hạn mức.' : 'Đã tắt: khi hết hạn mức, bài học tạm dừng chờ hồi phục.');
   };
 
+  const [planName, planTier] = splitPlanName(subscription.planName, subscription.planTier);
+  const expires = new Date(subscription.expiresAt);
+
   return (
-    <div className="min-h-screen bg-[#F4F7FC] py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Toast Thông báo */}
-        {toastMessage && (
-          <div className="fixed top-5 right-5 z-50 animate-bounce">
-            <div
-              className={`px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2 ${
-                toastMessage.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : toastMessage.type === 'error'
-                  ? 'bg-red-50 text-red-800 border-red-200'
-                  : 'bg-blue-50 text-blue-800 border-blue-200'
-              }`}
-            >
-              <span>{toastMessage.type === 'success' ? '✅' : toastMessage.type === 'error' ? '❌' : '⚡'}</span>
-              <span>{toastMessage.text}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Tiêu đề & Giới thiệu */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-              <Link to="/" className="hover:text-[#0878EE] transition">Trang chủ</Link>
-              <span>/</span>
-              <span className="text-slate-800 font-semibold">Gói Dịch Vụ & Hạn Mức</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#071A44] tracking-tight flex items-center gap-2.5">
-              <span>Gói Hội Viên & Hạn Mức AI</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-[#0878EE] font-bold">
-                Dual-Window Quota
-              </span>
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Quản lý gói tháng, chu kỳ hồi phục hạn ngạch thông minh tính toán động từ các phiên học và số dư Credit nạp thêm.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => void loadQuotaFromBackend(true)}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-60"
-            >
-              <span className={isRefreshing ? 'animate-spin inline-block' : ''}>🔄</span>
-              <span>{isRefreshing ? 'Đang đồng bộ...' : 'Làm mới Quota'}</span>
-            </button>
-            <Link
-              to="/credits/history"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition"
-            >
-              <span>📜 Lịch sử giao dịch</span>
-            </Link>
-          </div>
+    <div data-theme="hoc-tap" className="bg-transparent">
+      <div className="jx-um" style={{ paddingTop: 8, paddingBottom: 32 }}>
+        <div className="flex items-baseline gap-2.5 pb-2">
+          <h1 className="m-0 text-2xl font-bold leading-8">Mức dùng của bạn</h1>
+          <span className="text-sm text-sumi-muted">{planName}</span>
         </div>
 
-        {/* KHỐI 1: THẺ GÓI HỘI VIÊN & SỐ DƯ CREDIT NẠP THÊM */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Cột Trái: Thông tin Gói Pro Tháng (2 Cột) */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-[#071A44] via-[#0D2B68] to-[#123E8E] text-white rounded-2xl p-6 sm:p-7 shadow-md relative overflow-hidden flex flex-col justify-between">
-            {/* Họa tiết trang trí mờ phía sau */}
-            <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-0 right-0 p-6 opacity-10 text-8xl select-none pointer-events-none">✨</div>
+        <section className="jx-um-sec" style={{ paddingTop: 16 }} aria-labelledby="um-1">
+          <h2 id="um-1" className="jx-um-h" style={{ paddingBottom: 14, marginBottom: 6, borderBottom: '1px solid var(--line)' }}>
+            {statusLine(fiveHourLimit, weeklyLimit, allowAutoUseExtraCredits, extraCredits)}
+          </h2>
+          <UsageRow label="Chu kỳ 5 giờ" sub={`Hồi đầy sau ${fiveHourLimit.resetsInText}`} w={fiveHourLimit} aria="hạn mức 5 giờ" />
+          <UsageRow label="Tuần này" sub={`Làm mới sau ${weeklyLimit.resetsInText}`} w={weeklyLimit} aria="hạn mức tuần" />
+        </section>
 
+        <section className="jx-um-sec" aria-labelledby="um-2">
+          <div className="jx-um-line">
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">👑</span>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                    Gói Đang Sử Dụng
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>Đang hoạt động (Active)</span>
-                </div>
-              </div>
-
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2">
-                {subscription.planName}
+              <h2 id="um-2" className="jx-um-h">
+                {planName} {planTier && <span className="font-medium text-sumi-muted">{planTier}</span>}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 mb-6 max-w-xl leading-relaxed">
-                Gói học chuyên sâu dành cho người học Kaiwa: Tự động hồi phục hạn ngạch AI theo chu kỳ 5 giờ & 1 tuần, kết hợp luyện tập đối thoại AI không giới hạn tình huống.
+              <p className="jx-um-muted">
+                {`Hết hạn ${Number.isNaN(expires.getTime()) ? '—' : expires.toLocaleDateString('vi-VN')}. Mỗi 5 giờ có ${fiveHourLimit.totalCredits.toLocaleString('vi-VN')} credit, mỗi tuần ${weeklyLimit.totalCredits.toLocaleString('vi-VN')} credit.`}
               </p>
-
-              {/* Tính năng nổi bật */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-white/10 text-xs text-slate-200">
-                {subscription.features.map((feat, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
-              </div>
             </div>
-
-            <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <span className="text-xs text-slate-400 block">Thời hạn sử dụng còn lại:</span>
-                <span className="text-sm sm:text-base font-bold text-amber-300">
-                  Còn {subscription.daysRemaining} ngày (Hết hạn ngày: {new Date(subscription.expiresAt).toLocaleDateString('vi-VN')})
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => navigate('/credits')}
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold transition cursor-pointer shadow-sm"
-                >
-                  Nâng cấp / Đổi gói
-                </button>
-              </div>
-            </div>
+            <span className="jx-um-big">{subscription.status === 'Expired' ? 'Đã hết hạn' : `Còn ${subscription.daysRemaining} ngày`}</span>
           </div>
+          {showFeatures && subscription.features.length > 0 && (
+            <ul className="jx-um-feat">
+              {subscription.features.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button type="button" className="jx-um-link" onClick={() => setShowFeatures(!showFeatures)} aria-expanded={showFeatures}>
+              {showFeatures ? 'Ẩn quyền lợi của gói' : 'Xem quyền lợi của gói'}
+            </button>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/credits')}>
+              Đổi gói
+            </Button>
+          </div>
+        </section>
 
-          {/* Cột Phải: Thẻ Credit Nạp Thêm (Pay-As-You-Go Extra Credits) */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
+        <section className="jx-um-sec" aria-labelledby="um-3">
+          <div className="jx-um-line">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Credit Nạp Thêm
+              <h2 id="um-3" className="jx-um-h">
+                Credit nạp thêm
+              </h2>
+              <p className="jx-um-muted">Không hết hạn. Chỉ dùng khi bạn chạm giới hạn của gói.</p>
+            </div>
+            <span className="jx-um-big">{extraCredits.toLocaleString('vi-VN')}</span>
+          </div>
+          <div className="jx-um-line" style={{ alignItems: 'center', marginTop: 18 }}>
+            <span className="text-sm leading-[22px] text-sumi-muted">Bật để tự dùng credit và học tiếp khi hết hạn mức.</span>
+            <Switch checked={allowAutoUseExtraCredits} onChange={handleToggleAutoUseCredit} />
+          </div>
+          {notice && (
+            <p role="status" className="mt-2 text-[13px] text-sumi-muted">
+              {notice}
+            </p>
+          )}
+          <div className="mt-4 flex justify-end">
+            <Button variant="primary" size="sm" icon="add" onClick={() => navigate('/credits')}>
+              Nạp thêm credit
+            </Button>
+          </div>
+        </section>
+
+        {/* Chưa có API tách credit theo kỹ năng: số liệu dưới đây là mẫu cố định, kèm thông báo cho người dùng.
+            TODO: thay SKILL_USAGE_SAMPLE bằng dữ liệu thật khi creditService.getQuota trả credit theo từng kỹ năng. */}
+        <section className="jx-um-sec" aria-labelledby="um-4">
+          <div className="jx-um-line" style={{ alignItems: 'center' }}>
+            <h2 id="um-4" className="jx-um-h">
+              Mức dùng tuần này theo kỹ năng
+            </h2>
+            <Badge tone="warning" icon="construction">
+              Chưa hoàn chỉnh
+            </Badge>
+          </div>
+          <div className="mt-2">
+            {SKILL_USAGE_SAMPLE.map((r) => (
+              <div key={r.label} className="jx-um-row">
+                <b className="text-[15px] font-semibold leading-[22px]">{r.label}</b>
+                <span className="jx-um-bar" role="img" aria-label={`${r.label}: ${r.credits} credit (số liệu mẫu)`}>
+                  <i style={{ width: `${Math.round((r.credits / SKILL_USAGE_MAX) * 100)}%` }} />
                 </span>
-                <span className="text-xl">🪙</span>
+                <span className="jx-um-val">{`${r.credits} credit`}</span>
               </div>
-
-              <div className="my-2">
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#071A44]">
-                  {extraCredits}
-                  <span className="text-sm font-semibold text-slate-400 ml-1.5">Credits</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  Đây là số dư credit vĩnh viễn (không bao giờ hết hạn). Khi bạn sử dụng vượt trần hạn ngạch 5 giờ của Gói Tháng, hệ thống sẽ tự động trừ vào số credit này để bạn không bị ngắt quãng bài học.
-                </p>
-              </div>
-
-              <div className="mt-4 p-3 rounded-xl bg-amber-50/70 border border-amber-200/60 text-[11px] text-amber-900 leading-relaxed">
-                💡 <span className="font-semibold">Mẹo tiết kiệm:</span> Khi còn hạn ngạch 5 giờ, bài học hoàn toàn miễn phí mà không tốn 1 credit nạp thêm nào!
-              </div>
-
-              {/* Chức năng: Cho phép dùng credit khi hết quota */}
-              <div className="mt-4 pt-3.5 border-t border-slate-100">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-[#071A44] block">
-                      Dùng Credit khi hết Quota
-                    </span>
-                    <span className="text-[11px] text-slate-500 block leading-tight">
-                      {allowAutoUseExtraCredits
-                        ? 'Tự động trừ credit nạp thêm để học tiếp.'
-                        : 'Dừng khi hết hạn ngạch 5h (chờ hồi phục).'}
-                    </span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={allowAutoUseExtraCredits}
-                      onChange={(e) => handleToggleAutoUseCredit(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0878EE]"></div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-3 border-t border-slate-100">
-              <Link
-                to="/credits"
-                className="w-full py-2.5 px-4 rounded-xl bg-[#0878EE] hover:bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-2xs transition"
-              >
-                <span>+ Nạp thêm Credit</span>
-              </Link>
-            </div>
+            ))}
           </div>
-        </div>
+          <p className="jx-um-muted" style={{ marginTop: 8, fontSize: 13 }}>
+            Chức năng này chưa hoàn chỉnh, số liệu đang hiển thị chỉ là mẫu và chưa phản ánh mức dùng thật của bạn.
+          </p>
+        </section>
 
-        {/* KHỐI 2: DUAL-WINDOW ROLLING QUOTA (TÍNH TOÁN ĐỘNG TỪ DATABASE) */}
-        <div className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">📊</span>
-                <h2 className="text-lg sm:text-xl font-bold text-[#071A44]">
-                  Dual-Window Rolling Quota (Hạn Ngạch AI 2 Tầng)
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Cơ chế giới hạn cuộn thông minh giúp phân bổ tài nguyên AI công bằng và ổn định (Đồng bộ trực tiếp theo các phiên học thật).
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/60">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>Mô hình AI: <strong>Gemini 3.1 Flash / Live AI</strong></span>
-            </div>
-          </div>
-
-          {/* 2 Khối Quota hiển thị tương tự ảnh Antigravity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* TẦNG 1: WEEKLY LIMIT */}
-            <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0F172A] text-white border border-slate-800 shadow-md flex flex-col justify-between relative overflow-hidden">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <span className="text-xs font-semibold text-slate-400 block uppercase tracking-wider mb-1">
-                    Chu kỳ tuần (Weekly Quota)
-                  </span>
-                  <h3 className="text-base font-bold text-slate-100">
-                    Weekly Limit Remaining
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                    <span>⏳ Resets in {weeklyLimit.resetsInText}</span>
-                  </p>
-                </div>
-
-                {/* Vòng tròn tiến trình SVG */}
-                <div className="relative flex items-center justify-center shrink-0">
-                  <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      className="text-slate-800"
-                      strokeWidth="3.5"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className="text-emerald-400 transition-all duration-700 ease-out"
-                      strokeDasharray={`${weeklyLimit.remainingPercent}, 100`}
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute text-sm font-extrabold text-emerald-400">
-                    {weeklyLimit.remainingPercent}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                <span>Đã sử dụng: <strong className="text-slate-200">{weeklyLimit.usedCredits}</strong> / {weeklyLimit.totalCredits} credits</span>
-                <span className="text-emerald-400 font-medium">Còn {weeklyLimit.totalCredits - weeklyLimit.usedCredits} credits</span>
-              </div>
-            </div>
-
-            {/* TẦNG 2: FIVE HOUR LIMIT */}
-            <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0F172A] text-white border border-slate-800 shadow-md flex flex-col justify-between relative overflow-hidden">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <span className="text-xs font-semibold text-slate-400 block uppercase tracking-wider mb-1">
-                    Chu kỳ 5 giờ (Rolling 5-Hour)
-                  </span>
-                  <h3 className="text-base font-bold text-slate-100">
-                    Five Hour Limit Remaining
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                    <span>⚡ Resets in {fiveHourLimit.resetsInText}</span>
-                  </p>
-                </div>
-
-                {/* Vòng tròn tiến trình SVG */}
-                <div className="relative flex items-center justify-center shrink-0">
-                  <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      className="text-slate-800"
-                      strokeWidth="3.5"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className="text-emerald-400 transition-all duration-700 ease-out"
-                      strokeDasharray={`${fiveHourLimit.remainingPercent}, 100`}
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute text-sm font-extrabold text-emerald-400">
-                    {fiveHourLimit.remainingPercent}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                <span>Đã sử dụng: <strong className="text-slate-200">{fiveHourLimit.usedCredits}</strong> / {fiveHourLimit.totalCredits} credits</span>
-                <span className="text-emerald-400 font-medium">Còn {fiveHourLimit.totalCredits - fiveHourLimit.usedCredits} credits</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hộp thuyết minh cơ chế chuyển đổi tự động */}
-          <div className="mt-6 p-4 rounded-xl bg-blue-50/70 border border-blue-200/60 text-xs text-blue-900 flex items-start gap-3">
-            <span className="text-lg shrink-0">ℹ️</span>
-            <div className="space-y-1">
-              <span className="font-bold block">Nguyên lý hoạt động Hạn Ngạch & Credit Nạp Thêm:</span>
-              <p className="text-slate-600 leading-relaxed">
-                Mỗi khi bạn gửi tin nhắn thoại hoặc hỏi đáp AI trong bài kịch bản, hệ thống sẽ tính số tokens thực tế tiêu thụ và trừ trước vào <strong>Hạn ngạch 5 giờ</strong>. Khi hạn mức 5 giờ hết, nếu bạn bật chức năng <strong>"Dùng Credit khi hết Quota"</strong>, hệ thống sẽ tự động trừ vào số Credit Nạp Thêm để bạn tiếp tục cuộc trò chuyện không bị gián đoạn.
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center gap-4 border-t border-line pt-5 text-[13px] text-sumi-muted">
+          <span className="flex-auto">
+            {`Mô hình AI: Gemini 3.1 Flash / Live AI · ${updatedAt ? `Cập nhật lúc ${updatedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'Chưa cập nhật'}`}
+          </span>
+          <button type="button" className="jx-um-link" onClick={() => void loadQuotaFromBackend()} disabled={isRefreshing}>
+            {isRefreshing ? 'Đang làm mới…' : 'Làm mới'}
+          </button>
+          <Link to="/credits/history" className="text-ai underline underline-offset-[3px]">
+            Lịch sử giao dịch
+          </Link>
         </div>
       </div>
     </div>
   );
 };
+
+const UsageRow: React.FC<{ label: string; sub: string; w: Window; aria: string }> = ({ label, sub, w, aria }) => {
+  const pct = usedPercent(w);
+  return (
+    <div className="jx-um-row">
+      <span className="jx-um-lab">
+        <b>{label}</b>
+        <span>{sub}</span>
+      </span>
+      <span className={`jx-um-bar ${pct >= 100 ? 'is-empty' : pct >= 80 ? 'is-low' : ''}`} role="img" aria-label={`Đã dùng ${pct}% ${aria}`}>
+        <i style={{ width: `${pct}%` }} />
+      </span>
+      <span className="jx-um-val">{`${pct}% đã dùng`}</span>
+    </div>
+  );
+};
+
+/** "Gói Tháng Pro (Cơ Bản)" -> ["Gói Tháng Pro", "Cơ Bản"]; không có ngoặc thì dùng planTier */
+function splitPlanName(name: string, tier: string): [string, string] {
+  const m = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(name || '');
+  if (m) return [m[1], m[2]];
+  return [name || 'Gói miễn phí', tier || ''];
+}

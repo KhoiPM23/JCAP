@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Favicon JCAP: logo mới (xanh than + vàng đồng) trên nền kem #F6EFE2 của thanh bên, phóng to ~15% so với logo gốc để rõ ở cỡ 16-32px -->
+  <rect x="4" y="4" width="192" height="192" rx="38" fill="#F6EFE2"/>
+  <g transform="translate(100 100) scale(1.15) translate(-100 -106.5)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52,40 H148 A22,22 0 0 1 170,62 V128 A22,22 0 0 1 148,150 H84 L58,174 L62,150 H52 A22,22 0 0 1 30,128 V62 A22,22 0 0 1 52,40 Z" stroke="#1F3557" stroke-width="9"/>
+    <path d="M79,82 L73,150 M121,82 L127,150 M62,101 H138" stroke="#1F3557" stroke-width="9"/>
+    <path d="M50,76 Q100,62 150,76" stroke="#B48A3C" stroke-width="11"/>
+  </g>
+</svg>
