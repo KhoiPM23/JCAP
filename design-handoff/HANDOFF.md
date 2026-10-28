@@ -116,6 +116,23 @@ Prototype: `prototype/ConversationRoom.dc.html` (cũng có trong AppPrototype, t
 - **Xong 3 nhiệm vụ**: thẻ "Hoàn thành" trong hội thoại; ô trả lời đổi thành Luyện lại / Xem đánh giá.
 - Giữ nguyên logic RoleplaySession, trừ credit, gọi AI hiện có.
 
+## 9b. Chế độ tối (Cài đặt › Giao diện)
+
+Prototype: SegmentedControl "Chế độ màu" trong trang `pgSettings`, giá trị `themeMode` và khối CSS "Chế độ tối" trong `AppPrototype.dc.html`.
+
+- Ba lựa chọn: **Sáng / Tối / Theo máy**. Lưu vào `localStorage` (và cài đặt người dùng nếu backend có). "Theo máy" đọc `matchMedia('(prefers-color-scheme: dark)')` và lắng nghe thay đổi.
+- Cách hoạt động: chỉ đổi giá trị `data-theme` ở gốc mỗi khu vực, mọi token tự đổi theo:
+  | Sáng | Tối |
+  |---|---|
+  | `hoc-tap` (trang học viên, thanh bên) | `hoc-tap-dem` |
+  | `phong-luyen` (hai phòng luyện) | `phong-luyen-dem` |
+  | `kham-pha` (bản đồ) | giữ `kham-pha` cho bản đồ (tranh minh hoạ), riêng thanh bên nổi dùng `hoc-tap-dem` |
+- Nên làm một `ThemeProvider` (context) trả về `isDark` và hàm `themeFor('learn' | 'room' | 'map')`, các layout gọi hàm này để đặt `data-theme`.
+- Tông nền tối là **mực sumi** (nâu đen ấm, không dùng navy). Giá trị đã nằm sẵn trong `tokens.css` cho `hoc-tap-dem` (`--paper-50:#232220; --paper-100:#1a1917; --paper-200:#2c2a27; --paper-300:#37342f; --line:#38352f`) và `phong-luyen-dem` (sâu hơn một nấc: `#201f1c / #141311 / #2a2825 / #34312d`). Chữ `--sumi:#efe9dc`, màu nhấn `--ai:#a9b8f0`. Chấm nền phòng luyện `rgba(255,255,255,.06)`.
+- Câu của học viên trong phòng tối: nền `--ai-soft`, viền `#3d4668`, chữ `--sumi` (không dùng nền `--sumi` như bản sáng vì sẽ thành màu sáng).
+- Không còn mã màu cứng nào được phép phụ thuộc chế độ sáng: rà các `bg-white`, `text-slate-*`, `#...` cũ trong các view khi chuyển sang token.
+- Logo trên nền tối tự nằm trên tấm `--logo-plate` (component Logo đã xử lý).
+
 ## 10. Thứ tự làm và cách nghiệm thu
 
 | Bước | Nội dung | Xong khi |
@@ -127,6 +144,7 @@ Prototype: `prototype/ConversationRoom.dc.html` (cũng có trong AppPrototype, t
 | 5 | Phòng Shadowing (8) | Đủ 5 trạng thái khung thu âm, điểm thật |
 | 6 | Phòng Hội thoại AI (9) | Gợi ý, mic, gõ chữ, đánh giá từng câu |
 | 7 | Bản đồ Hành trình (3) | Chuyển động vào/ra tỉnh, chú giải, điều khiển |
+| 8 | Chế độ tối (9b) | Chuyển Sáng/Tối/Theo máy ở Cài đặt, mọi màn đọc rõ, không còn màu cứng |
 
 Mỗi bước: chạy `npm run build` (typecheck) và `npm test`, chụp màn hình so với prototype, commit riêng.
 
