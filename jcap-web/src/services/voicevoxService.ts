@@ -11,11 +11,96 @@ export interface VoiceOption {
   displayName: string;
 }
 
+// ----------------------------------------------------
+// TẦNG LƯU TRỮ INDEXEDDB: Cache audio WAV bền vững (Persistent Storage)
+// ----------------------------------------------------
+const DB_NAME = 'jcap_audio_cache_db';
+const STORE_NAME = 'audio_cache';
+const DB_VERSION = 1;
+
+function openAudioDb(): Promise<IDBDatabase | null> {
+  if (typeof window === 'undefined' || !('indexedDB' in window)) {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'key' });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function getCachedAudioBlob(key: string): Promise<Blob | null> {
+  try {
+    const db = await openAudioDb();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(key);
+      req.onsuccess = () => {
+        if (req.result && req.result.blob instanceof Blob) {
+          resolve(req.result.blob);
+        } else {
+          resolve(null);
+        }
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedAudioBlob(key: string, blob: Blob): Promise<void> {
+  try {
+    const db = await openAudioDb();
+    if (!db) return;
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.put({ key, blob, createdAt: Date.now() });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch {
+    // Bỏ qua lỗi ghi storage nếu bộ nhớ đầy hoặc browser hạn chế
+  }
+}
+
 class VoiceVoxService {
-  // In-Memory Blob Cache: Tránh gọi lại VOICEVOX cho cùng một câu thoại và giọng
+  // L1 Cache: In-Memory Object URL Cache (Truy xuất tức thì 0ms trong phiên)
   private blobCache = new Map<string, string>();
   // Hàng đợi tránh gọi trùng request khi đang fetch dở cho cùng 1 câu và giọng
   private pendingRequests = new Map<string, Promise<string>>();
+
+  // Cờ trạng thái sẵn sàng: Nếu VOICEVOX offline, chuyển sang Web Speech trong 0ms mà không tốn 3-4s chờ timeout
+  private isVoiceVoxAvailable: boolean | null = null;
+  private lastCheckTime = 0;
+  private readonly OFFLINE_COOLDOWN_MS = 45000; // 45 giây thử lại 1 lần nếu offline
+
+  // Danh mục câu chào & mẫu thoại cốt lõi hay gặp nhất trong tiếng Nhật giao tiếp
+  public static readonly COMMON_PHRASES = [
+    'こんにちは',
+    'いらっしゃいませ',
+    'ありがとうございます',
+    'ごちそうさまでした',
+    'すみません',
+    'お願いします',
+    'わかりました',
+    'かしこまりました',
+    '少々お待ちください',
+    '失礼します',
+  ];
 
   /**
    * Lấy danh sách voice có sẵn từ Backend (Backend gọi VOICEVOX /speakers)
@@ -23,6 +108,8 @@ class VoiceVoxService {
   public async getVoices(): Promise<VoiceOption[]> {
     const res = await fetch('/api/tts/voices');
     if (!res.ok) {
+      this.isVoiceVoxAvailable = false;
+      this.lastCheckTime = Date.now();
       let errorMsg = 'Không thể kết nối đến VOICEVOX Engine.';
       try {
         const err = await res.json();
@@ -30,12 +117,17 @@ class VoiceVoxService {
       } catch {}
       throw new Error(errorMsg);
     }
+    this.isVoiceVoxAvailable = true;
+    this.lastCheckTime = Date.now();
     const data = await res.json();
     return data.data || [];
   }
 
   /**
-   * Lấy URL âm thanh WAV (ưu tiên lấy từ Cache nếu câu thoại và voice đã từng được sinh)
+   * Lấy URL âm thanh WAV:
+   * 1. Check L1 Cache (RAM) -> 0ms
+   * 2. Check L2 Cache (IndexedDB) -> ~2ms (không tốn mạng)
+   * 3. Network Fetch từ VOICEVOX Backend -> Lưu đồng thời vào cả L1 và L2
    */
   public async getAudioUrl(text: string, speakerId: number): Promise<string> {
     const trimmedText = text.trim();
@@ -44,15 +136,39 @@ class VoiceVoxService {
     }
 
     const cacheKey = `${speakerId}_${trimmedText}`;
+
+    // 1. Kiểm tra L1 Cache (RAM)
     if (this.blobCache.has(cacheKey)) {
       return this.blobCache.get(cacheKey)!;
     }
 
+    // Kiểm tra request đang chạy dở
     if (this.pendingRequests.has(cacheKey)) {
       return this.pendingRequests.get(cacheKey)!;
     }
 
+    // Nếu gần đây VOICEVOX không phản hồi, bỏ qua ngay trong 0ms để rơi vào Web Speech API tức thì!
+    if (this.isVoiceVoxAvailable === false && Date.now() - this.lastCheckTime < this.OFFLINE_COOLDOWN_MS) {
+      throw new Error('VOICEVOX Engine is offline (Fast fallback).');
+    }
+
     const fetchPromise = (async () => {
+      // 2. Kiểm tra L2 Cache (IndexedDB bền vững)
+      try {
+        const cachedBlob = await getCachedAudioBlob(cacheKey);
+        if (cachedBlob) {
+          const url = URL.createObjectURL(cachedBlob);
+          this.blobCache.set(cacheKey, url);
+          return url;
+        }
+      } catch {
+        // bỏ qua lỗi đọc IndexedDB và tiếp tục fetch mạng
+      }
+
+      // 3. Network Fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 950); // 950ms timeout tối đa
+
       try {
         const res = await fetch('/api/tts/synthesize', {
           method: 'POST',
@@ -63,9 +179,13 @@ class VoiceVoxService {
             text: trimmedText,
             speakerId,
           }),
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
 
         if (!res.ok) {
+          this.isVoiceVoxAvailable = false;
+          this.lastCheckTime = Date.now();
           let message = 'VOICEVOX Engine is not running.';
           try {
             const problem = await res.json();
@@ -78,10 +198,21 @@ class VoiceVoxService {
           throw new Error(message);
         }
 
+        this.isVoiceVoxAvailable = true;
+        this.lastCheckTime = Date.now();
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
+
+        // Lưu vào RAM và lưu ngầm vào IndexedDB
         this.blobCache.set(cacheKey, url);
+        void setCachedAudioBlob(cacheKey, blob);
+
         return url;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        this.isVoiceVoxAvailable = false;
+        this.lastCheckTime = Date.now();
+        throw err;
       } finally {
         this.pendingRequests.delete(cacheKey);
       }
@@ -103,6 +234,34 @@ class VoiceVoxService {
   }
 
   /**
+   * Lazy Loading & Warm-up các câu thoại chào hỏi/phản xạ cốt lõi vào IndexedDB & RAM
+   * Chạy nền không chặn UI luồng chính
+   */
+  public async prefetchCommonPhrases(speakerId: number = 2): Promise<void> {
+    if (typeof window === 'undefined') return;
+
+    for (const phrase of VoiceVoxService.COMMON_PHRASES) {
+      const key = `${speakerId}_${phrase}`;
+      if (this.blobCache.has(key)) continue;
+
+      try {
+        const cachedBlob = await getCachedAudioBlob(key);
+        if (cachedBlob) {
+          const url = URL.createObjectURL(cachedBlob);
+          this.blobCache.set(key, url);
+          continue;
+        }
+
+        // Tải tuần tự với khoảng nghỉ nhỏ để không làm nghẽn băng thông
+        await this.prefetchAudio(phrase, speakerId);
+        await new Promise((r) => setTimeout(r, 60));
+      } catch {
+        // Bỏ qua lỗi mạng
+      }
+    }
+  }
+
+  /**
    * Phát nhanh câu thoại chào mừng để nghe thử chất giọng trong Settings
    */
   public async playVoicePreview(speakerId: number): Promise<HTMLAudioElement> {
@@ -114,10 +273,10 @@ class VoiceVoxService {
   }
 
   /**
-   * Dọn dẹp cache và giải phóng bộ nhớ browser khi rời màn hình
+   * Dọn dẹp RAM blob cache khi cần giải phóng bộ nhớ (IndexedDB vẫn giữ nguyên)
    */
   public clearCache(): void {
-    this.blobCache.forEach(url => {
+    this.blobCache.forEach((url) => {
       try {
         URL.revokeObjectURL(url);
       } catch {}
@@ -127,4 +286,3 @@ class VoiceVoxService {
 }
 
 export const voicevoxService = new VoiceVoxService();
-

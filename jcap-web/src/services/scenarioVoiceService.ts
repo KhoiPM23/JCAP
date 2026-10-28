@@ -11,6 +11,12 @@ class ScenarioVoiceService {
   private currentAudio: HTMLAudioElement | null = null;
   private isSpeechCancelled = false;
 
+  // MediaRecorder audio capture for Whisper STT Engine
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioStream: MediaStream | null = null;
+  private audioChunks: Blob[] = [];
+  private recordingStartedAt = 0;
+
   /**
    * Lấy danh sách giọng đọc từ VOICEVOX
    */
@@ -86,38 +92,72 @@ class ScenarioVoiceService {
       this.currentAudio = null;
     }
 
+    if (this.currentUtterance) {
+      this.currentUtterance.onstart = null;
+      this.currentUtterance.onend = null;
+      this.currentUtterance.onerror = null;
+      this.currentUtterance = null;
+    }
+
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
   }
 
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private cachedJpVoice: SpeechSynthesisVoice | null = null;
+
   /**
-   * Phát âm thanh tiếng Nhật qua Web Speech API (Local Browser Fallback)
+   * Phát âm thanh tiếng Nhật qua Web Speech API (Local Browser Fallback) - Tốc độ phản hồi cực nhanh < 15ms
    */
-  public speakWithWebSpeech(text: string, onEnd?: () => void, rate?: number): boolean {
+  public speakWithWebSpeech(
+    text: string,
+    onEnd?: () => void,
+    rate?: number,
+    onStart?: () => void
+  ): boolean {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       onEnd?.();
       return false;
     }
 
     this.isSpeechCancelled = false;
+
+    // Chữa lỗi trình duyệt Chrome/Edge bị tạm dừng SpeechSynthesis ngầm
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
+    // Lưu tham chiếu utterance vào biến instance để tránh bị Garbage Collector của Chrome thu dọn giữa chừng
+    this.currentUtterance = utterance;
     utterance.lang = 'ja-JP';
     utterance.rate = rate ?? this.getSpeechRate();
 
-    const voices = window.speechSynthesis.getVoices();
-    const jpVoice = voices.find((v) => v.lang.includes('ja') || v.lang.includes('JP'));
-    if (jpVoice) utterance.voice = jpVoice;
+    if (!this.cachedJpVoice) {
+      const voices = window.speechSynthesis.getVoices();
+      this.cachedJpVoice = voices.find((v) => v.lang.includes('ja') || v.lang.includes('JP')) || null;
+    }
+    if (this.cachedJpVoice) {
+      utterance.voice = this.cachedJpVoice;
+    }
+
+    utterance.onstart = () => {
+      if (!this.isSpeechCancelled) {
+        onStart?.();
+      }
+    };
 
     utterance.onend = () => {
+      this.currentUtterance = null;
       if (!this.isSpeechCancelled) {
         onEnd?.();
       }
     };
 
     utterance.onerror = (e) => {
+      this.currentUtterance = null;
       if (e.error !== 'canceled' && e.error !== 'interrupted' && !this.isSpeechCancelled) {
         onEnd?.();
       }
@@ -134,7 +174,8 @@ class ScenarioVoiceService {
     text: string,
     voiceId?: number,
     onEnd?: () => void,
-    rate?: number
+    rate?: number,
+    onStart?: () => void
   ): Promise<void> {
     this.stopAllAudio();
     this.isSpeechCancelled = false;
@@ -152,6 +193,12 @@ class ScenarioVoiceService {
       audio.playbackRate = resolvedRate;
       this.currentAudio = audio;
 
+      audio.onplay = () => {
+        if (!this.isSpeechCancelled) {
+          onStart?.();
+        }
+      };
+
       audio.onended = () => {
         this.currentAudio = null;
         if (!this.isSpeechCancelled) {
@@ -161,15 +208,67 @@ class ScenarioVoiceService {
 
       audio.onerror = () => {
         this.currentAudio = null;
-        this.speakWithWebSpeech(text, onEnd, resolvedRate);
+        this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       };
 
       await audio.play().catch(() => {
         this.currentAudio = null;
-        this.speakWithWebSpeech(text, onEnd, resolvedRate);
+        this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       });
     } catch {
-      this.speakWithWebSpeech(text, onEnd, resolvedRate);
+      this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+    }
+  }
+
+  /**
+   * Tải trước ngầm một câu thoại vào cache (RAM + IndexedDB)
+   */
+  public async prefetchAudio(text: string, voiceId?: number): Promise<void> {
+    const resolvedVoiceId =
+      typeof voiceId === 'number' && !Number.isNaN(voiceId)
+        ? voiceId
+        : this.getSelectedVoiceId();
+    await voicevoxService.prefetchAudio(text, resolvedVoiceId);
+  }
+
+  /**
+   * Lazy load các câu thoại chào hỏi/phản xạ phổ biến vào IndexedDB & RAM để phát 0ms delay
+   */
+  public async prefetchCommonPhrases(voiceId?: number): Promise<void> {
+    const resolvedVoiceId =
+      typeof voiceId === 'number' && !Number.isNaN(voiceId)
+        ? voiceId
+        : this.getSelectedVoiceId();
+    await voicevoxService.prefetchCommonPhrases(resolvedVoiceId);
+  }
+
+  /**
+   * Tua âm thanh đang phát tới vị trí tương ứng (hỗ trợ cả file audio tĩnh và cắt lát ngữ điệu Web Speech)
+   */
+  public seekAiSpeech(
+    fullText: string,
+    targetRatio: number,
+    targetTime: number,
+    voiceId?: number,
+    onEnd?: () => void,
+    rate?: number,
+    onStart?: () => void
+  ): void {
+    if (this.currentAudio && Number.isFinite(this.currentAudio.duration) && this.currentAudio.duration > 0) {
+      this.currentAudio.currentTime = Math.min(this.currentAudio.duration, Math.max(0, targetTime));
+      return;
+    }
+
+    // Với Web Speech: cắt lát chuỗi văn bản và phát tiếp tức thời từ vị trí chữ tương ứng
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const textToUse = fullText.trim();
+      if (!textToUse) return;
+      this.stopAllAudio();
+      const charIndex = Math.min(textToUse.length - 1, Math.max(0, Math.floor(targetRatio * textToUse.length)));
+      const slicedText = textToUse.slice(charIndex);
+      if (slicedText) {
+        this.speakWithWebSpeech(slicedText, onEnd, rate, onStart);
+      }
     }
   }
 
@@ -178,7 +277,7 @@ class ScenarioVoiceService {
    */
   public createSpeechRecognition(options?: {
     onStart?: () => void;
-    onResult?: (transcript: string, isFinal: boolean) => void;
+    onResult?: (transcript: string, isFinal: boolean, confidence?: number) => void;
     onError?: (error: any) => void;
     onEnd?: () => void;
   }): any | null {
@@ -204,16 +303,26 @@ class ScenarioVoiceService {
       recognition.onresult = (event: any) => {
         let interim = '';
         let final = '';
+        let sumConfidence = 0;
+        let countConfidence = 0;
         for (let i = 0; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            final += event.results[i][0].transcript;
+          const res = event.results[i];
+          if (res.isFinal) {
+            final += res[0].transcript;
+            if (typeof res[0].confidence === 'number' && res[0].confidence > 0) {
+              sumConfidence += res[0].confidence;
+              countConfidence++;
+            }
           } else {
-            interim += event.results[i][0].transcript;
+            interim += res[0].transcript;
           }
         }
         const combined = (final + ' ' + interim).trim();
         const hasFinal = event.results[event.results.length - 1]?.isFinal || false;
-        options?.onResult?.(combined, hasFinal);
+        const avgConfidence = countConfidence > 0
+          ? sumConfidence / countConfidence
+          : (typeof event.results[0]?.[0]?.confidence === 'number' ? event.results[0][0].confidence : 0.88);
+        options?.onResult?.(combined, hasFinal, avgConfidence);
       };
 
       recognition.onerror = (err: any) => {
@@ -228,6 +337,241 @@ class ScenarioVoiceService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Chọn định dạng MIME được trình duyệt hỗ trợ để ghi âm
+   */
+  private pickSupportedMimeType(): string {
+    if (typeof MediaRecorder === 'undefined') return 'audio/webm';
+    const candidateTypes = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+      'audio/ogg',
+      'audio/mp4',
+      'audio/wav',
+    ];
+    for (const t of candidateTypes) {
+      if (MediaRecorder.isTypeSupported(t)) {
+        return t;
+      }
+    }
+    return '';
+  }
+
+  /**
+   * Bắt đầu ghi âm audio stream từ micro cho Whisper STT Engine
+   */
+  public async startAudioRecording(): Promise<boolean> {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      return false;
+    }
+    try {
+      this.stopAudioRecordingSync();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      this.audioStream = stream;
+      this.audioChunks = [];
+      this.recordingStartedAt = Date.now();
+
+      const mimeType = this.pickSupportedMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      this.mediaRecorder = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          this.audioChunks.push(e.data);
+        }
+      };
+
+      recorder.start(100);
+      return true;
+    } catch (err) {
+      console.warn('[Scenario STT] Failed to start MediaRecorder:', err);
+      this.stopAudioRecordingSync();
+      return false;
+    }
+  }
+
+  /**
+   * Dừng ghi âm và trả về audio blob kèm thời lượng phát âm thực tế
+   */
+  public async stopAudioRecording(): Promise<{ blob: Blob; durationSeconds: number } | null> {
+    const recorder = this.mediaRecorder;
+    const startedAt = this.recordingStartedAt;
+
+    if (!recorder || recorder.state === 'inactive') {
+      this.stopAudioRecordingSync();
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      recorder.onstop = () => {
+        const mime = recorder.mimeType || 'audio/webm';
+        const durationSeconds = Math.max(0.1, (Date.now() - startedAt) / 1000);
+        const blob = new Blob(this.audioChunks, { type: mime });
+        this.stopAudioRecordingSync();
+        if (blob.size === 0) {
+          resolve(null);
+        } else {
+          resolve({ blob, durationSeconds });
+        }
+      };
+
+      try {
+        recorder.stop();
+      } catch {
+        this.stopAudioRecordingSync();
+        resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Dọn dẹp luồng micro lập tức (giải phóng mic phần cứng)
+   */
+  public stopAudioRecordingSync(): void {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.stop();
+      } catch {
+        // ignore
+      }
+    }
+    this.mediaRecorder = null;
+    if (this.audioStream) {
+      try {
+        this.audioStream.getTracks().forEach((t) => t.stop());
+      } catch {
+        // ignore
+      }
+      this.audioStream = null;
+    }
+    this.audioChunks = [];
+  }
+
+  /**
+   * Nhận diện giọng nói tiếng Nhật chính xác cao qua Whisper STT Engine
+   * Hỗ trợ tự động fallback: Backend proxy -> Direct Engine -> null (để dùng Web Speech)
+   */
+  public async transcribeWithWhisper(audioBlob: Blob): Promise<{
+    text: string;
+    confidence: number;
+    durationSeconds: number;
+    speechPace: number;
+    audioUrl?: string;
+  } | null> {
+    if (!audioBlob || audioBlob.size === 0) return null;
+
+    const ext = audioBlob.type.includes('ogg') ? 'ogg' : audioBlob.type.includes('wav') ? 'wav' : 'webm';
+    const formData = new FormData();
+    formData.append('file', audioBlob, `recording.${ext}`);
+
+    // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn)
+    try {
+      const res = await fetch('/api/stt/transcribe?language=ja', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          return {
+            text: json.data.text || '',
+            confidence: json.data.confidence ?? 0.88,
+            durationSeconds: json.data.durationSeconds ?? 0,
+            speechPace: json.data.speechPace ?? 0,
+            audioUrl: json.data.audioUrl,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[Scenario STT] Backend Whisper proxy unavailable, trying direct engine:', err);
+    }
+
+    // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe
+    try {
+      const directRes = await fetch('/whisper/transcribe?language=ja', {
+        method: 'POST',
+        body: formData,
+      });
+      if (directRes.ok) {
+        const json = await directRes.json();
+        if (json.success) {
+          // Lưu audio file song song lên backend để có link phát lại
+          const savedUrl = await this.saveLearnerAudio(audioBlob);
+          return {
+            text: json.text || '',
+            confidence: json.confidence ?? 0.88,
+            durationSeconds: json.durationSeconds ?? 0,
+            speechPace: json.speechPace ?? 0,
+            audioUrl: savedUrl || undefined,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[Scenario STT] Direct Whisper engine call failed:', err);
+    }
+
+    return null;
+  }
+
+  /**
+   * Lưu trữ audio người học lên server wwwroot/audio/roleplay để nghe lại vĩnh viễn
+   */
+  public async saveLearnerAudio(audioBlob: Blob): Promise<string | null> {
+    if (!audioBlob || audioBlob.size === 0) return null;
+    try {
+      const ext = audioBlob.type.includes('ogg') ? 'ogg' : audioBlob.type.includes('wav') ? 'wav' : 'webm';
+      const formData = new FormData();
+      formData.append('file', audioBlob, `recording.${ext}`);
+      const res = await fetch('/api/stt/save-audio', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data?.audioUrl) {
+          return json.data.audioUrl;
+        }
+      }
+    } catch (err) {
+      console.warn('[Scenario STT] Save learner audio failed:', err);
+    }
+    return null;
+  }
+
+  /**
+   * Kiểm tra xem Whisper Engine có sẵn sàng phục vụ không
+   */
+  public async isWhisperAvailable(): Promise<boolean> {
+    try {
+      const res = await fetch('/api/stt/health');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data?.available) return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      const direct = await fetch('/whisper/health');
+      if (direct.ok) {
+        const json = await direct.json();
+        return json.status === 'ok';
+      }
+    } catch {
+      // ignore
+    }
+
+    return false;
   }
 }
 

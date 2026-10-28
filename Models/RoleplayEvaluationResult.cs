@@ -10,6 +10,10 @@ public sealed class RoleplayEvaluationResult
     public int GrammarScore { get; init; }
     public int VocabularyScore { get; init; }
     public int ImpressionScore { get; init; }
+    public int FluencyScore { get; init; }
+    public int SpeechConfidenceScore { get; init; }
+    public double AverageResponseLatencySeconds { get; init; }
+    public double AverageSpeechPace { get; init; }
     public int MissionProgressScore { get; init; }
     public bool AllMissionsCompleted { get; init; }
     public string GeneralFeedbackText { get; init; } = string.Empty;

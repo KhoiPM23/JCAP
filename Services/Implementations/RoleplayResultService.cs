@@ -334,10 +334,70 @@ namespace JCAP.Services.Implementations
                             VietnameseMeaning = m.VietnameseMeaning,
                             FuriganaHtml = m.FuriganaHtml,
                             LinguisticFeedback = parsedFeedback,
+                            AudioUrl = parsedFeedback?.SpeechDelivery?.AudioUrl,
                             CreatedAt = AsUtc(m.CreatedAt)
                         };
                     }).ToList();
                 }
+            }
+
+            var userFeedbacks = messages
+                .Where(m => string.Equals(m.Sender, "User", StringComparison.OrdinalIgnoreCase) && m.LinguisticFeedback != null)
+                .Select(m => m.LinguisticFeedback!)
+                .ToList();
+
+            var evalResult = userFeedbacks.Count > 0
+                ? _evaluationService.Evaluate(
+                    userFeedbacks.Select(f => JsonSerializer.Serialize(f, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })),
+                    completedMissions.Count,
+                    allMissions.Count,
+                    result.PassStatus)
+                : null;
+
+            var fluencyScore = evalResult?.FluencyScore ?? 85;
+            var confidenceScore = evalResult?.SpeechConfidenceScore ?? 90;
+            var avgLatency = evalResult?.AverageResponseLatencySeconds ?? 0;
+            var avgPace = evalResult?.AverageSpeechPace ?? 0;
+
+            // Tính toán so sánh tiến độ giữa các lần luyện tập (Attempt Progression Analytics)
+            var previousAttempts = await _dbContext.RoleplayResults
+                .Where(r => r.UserId == userId && r.ScenarioTitle == result.ScenarioTitle && r.Id != result.Id)
+                .OrderByDescending(r => r.CompletedAt)
+                .ToListAsync();
+
+            RoleplayAttemptComparisonDto attemptComparison;
+            var attemptNumber = previousAttempts.Count + 1;
+            if (previousAttempts.Count > 0)
+            {
+                var prev = previousAttempts[0];
+                var scoreDiff = result.OverallScore - prev.OverallScore;
+                var summary = scoreDiff switch
+                {
+                    > 0 => $"🎉 Tiến bộ vượt bậc! Bạn đã tăng {scoreDiff} điểm so với lần luyện tập trước.",
+                    0 => "🎯 Phong độ rất ổn định! Bạn duy trì đúng số điểm của lần luyện tập trước.",
+                    _ => $"💡 Hãy giữ vững sự tự tin! Lần trước bạn đạt {prev.OverallScore} điểm, hãy chú ý ngắt nghỉ và phản xạ nhé."
+                };
+
+                attemptComparison = new RoleplayAttemptComparisonDto
+                {
+                    AttemptNumber = attemptNumber,
+                    PreviousOverallScore = prev.OverallScore,
+                    OverallScore = result.OverallScore,
+                    CurrentLatencySeconds = avgLatency,
+                    CurrentPace = avgPace,
+                    ProgressSummary = summary
+                };
+            }
+            else
+            {
+                attemptComparison = new RoleplayAttemptComparisonDto
+                {
+                    AttemptNumber = 1,
+                    OverallScore = result.OverallScore,
+                    CurrentLatencySeconds = avgLatency,
+                    CurrentPace = avgPace,
+                    ProgressSummary = "🌟 Đây là lần đầu tiên bạn hoàn thành kịch bản này! Hãy tiếp tục luyện tập để ghi nhận biểu đồ tiến bộ."
+                };
             }
 
             return ApiResponse<RoleplayResultDetailDto>.Ok(new RoleplayResultDetailDto
@@ -351,6 +411,10 @@ namespace JCAP.Services.Implementations
                 GrammarScore = result.GrammarScore,
                 VocabularyScore = result.VocabularyScore,
                 ImpressionScore = result.ImpressionScore,
+                FluencyScore = fluencyScore,
+                SpeechConfidenceScore = confidenceScore,
+                AverageResponseLatencySeconds = avgLatency,
+                AverageSpeechPace = avgPace,
                 PassStatus = result.PassStatus,
                 GeneralFeedbackText = result.GeneralFeedbackText,
                 CompletedMissions = completedMissions,
@@ -358,6 +422,7 @@ namespace JCAP.Services.Implementations
                 TargetVocabularies = targetVocabularies,
                 TargetGrammars = targetGrammars,
                 Messages = messages,
+                AttemptComparison = attemptComparison,
                 CompletedAt = AsUtc(result.CompletedAt)
             }, "Lấy chi tiết kết quả luyện hội thoại thành công.");
         }

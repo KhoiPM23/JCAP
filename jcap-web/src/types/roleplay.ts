@@ -25,6 +25,17 @@ export interface LinguisticDetailItemDto {
   comment: string;
 }
 
+export interface SpeechDeliveryMetricsDto {
+  speakingDurationSeconds?: number;
+  responseLatencySeconds?: number;
+  speechConfidence?: number;
+  speechPace?: number;
+  turnFluencyScore?: number;
+  jlptLevel?: string;
+  paceAssessment?: string;
+  latencyAssessment?: string;
+}
+
 export interface LinguisticFeedbackDto {
   evaluationSource?: 'AI' | 'Simulator' | string;
   status?: string;
@@ -36,6 +47,7 @@ export interface LinguisticFeedbackDto {
   politenessAssessment?: string;
   naturalAlternative?: string;
   culturalTip?: string;
+  speechDelivery?: SpeechDeliveryMetricsDto;
 }
 
 export interface RoleplayMessageDto {
@@ -46,6 +58,7 @@ export interface RoleplayMessageDto {
   furiganaHtml?: string;
   furiganaText?: string;
   audioUrl?: string;
+  userAudioUrl?: string;
   createdAt: string;
   linguisticFeedback?: LinguisticFeedbackDto;
 }

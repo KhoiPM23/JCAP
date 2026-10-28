@@ -112,12 +112,27 @@ class RoleplayService {
   /**
    * Gửi tin nhắn của học viên, nhận phản hồi từ AI và cập nhật tiến độ nhiệm vụ
    */
-  public async sendMessage(sessionId: number, message: string): Promise<ApiResponse<RoleplayTurnResponseDto>> {
+  public async sendMessage(
+    sessionId: number,
+    message: string,
+    delivery?: {
+      speakingDurationSeconds?: number;
+      responseLatencySeconds?: number;
+      speechConfidence?: number;
+      audioUrl?: string;
+    }
+  ): Promise<ApiResponse<RoleplayTurnResponseDto>> {
     try {
       const response = await fetch(`${BASE_URL}/sessions/${sessionId}/messages`, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          speakingDurationSeconds: delivery?.speakingDurationSeconds,
+          responseLatencySeconds: delivery?.responseLatencySeconds,
+          speechConfidence: delivery?.speechConfidence,
+          audioUrl: delivery?.audioUrl,
+        }),
       });
 
       if (response.ok) {

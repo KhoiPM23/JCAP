@@ -45,16 +45,35 @@ export interface RoleplayMissionProgress {
   completedAt?: string;
 }
 
+export interface RoleplayAttemptComparison {
+  attemptNumber: number;
+  previousOverallScore?: number;
+  scoreDelta: number;
+  overallScore: number;
+  previousLatencySeconds?: number;
+  latencyDeltaSeconds?: number;
+  currentLatencySeconds: number;
+  previousPace?: number;
+  paceDelta?: number;
+  currentPace: number;
+  progressSummary: string;
+}
+
 export interface RoleplayResultDetail extends RoleplayResultSummary {
   grammarScore: number;
   vocabularyScore: number;
   impressionScore: number;
+  fluencyScore?: number;
+  speechConfidenceScore?: number;
+  averageResponseLatencySeconds?: number;
+  averageSpeechPace?: number;
   generalFeedbackText: string;
   completedMissions: CompletedMissionResult[];
   allMissions?: RoleplayMissionProgress[];
   targetVocabularies?: TargetVocabulary[];
   targetGrammars?: TargetGrammar[];
   messages?: RoleplayMessageDto[];
+  attemptComparison?: RoleplayAttemptComparison;
 }
 
 export interface RoleplayResultHistoryResponse {

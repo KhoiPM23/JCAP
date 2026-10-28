@@ -33,6 +33,24 @@ public class LinguisticFeedbackDto
     /// Mẹo văn hóa bản xứ hoặc chú thích thêm
     /// </summary>
     public string? CulturalTip { get; set; }
+
+    /// <summary>
+    /// Các chỉ số phân tích phát âm và nhịp nói (Speech Delivery)
+    /// </summary>
+    public SpeechDeliveryMetricsDto? SpeechDelivery { get; set; }
+}
+
+public class SpeechDeliveryMetricsDto
+{
+    public double? SpeakingDurationSeconds { get; set; }
+    public double? ResponseLatencySeconds { get; set; }
+    public double? SpeechConfidence { get; set; }
+    public double? SpeechPace { get; set; }
+    public int? TurnFluencyScore { get; set; }
+    public string? JlptLevel { get; set; }
+    public string? PaceAssessment { get; set; }
+    public string? LatencyAssessment { get; set; }
+    public string? AudioUrl { get; set; }
 }
 
 public class LinguisticDetailItemDto

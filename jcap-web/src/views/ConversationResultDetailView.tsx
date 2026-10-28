@@ -4,27 +4,24 @@ import { roleplayResultService } from '../services/roleplayResultService';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDateTime } from '../utils/dateUtils';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
+import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
+import { scenarioVoiceService } from '../services/scenarioVoiceService';
 
 const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
 
 const playJapaneseAudio = (text: string) => {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ja-JP';
-    utterance.rate = 0.92;
-    window.speechSynthesis.speak(utterance);
-  }
+  void scenarioVoiceService.playAiSpeech(text, 2);
 };
 
-const ScoreCard = ({ label, score, accent }: { label: string; score: number; accent: string }) => (
+const ScoreCard = ({ label, score, accent, subtext }: { label: string; score: number; accent: string; subtext?: string }) => (
   <div className="rounded-2xl border border-[#DCE7F4] bg-white p-5 shadow-[0_10px_28px_rgba(7,26,68,0.05)]">
-    <div className="mb-4 flex items-center justify-between">
+    <div className="mb-2 flex items-center justify-between">
       <span className="text-sm font-bold text-[#52627A]">{label}</span>
       <strong className="text-2xl font-black text-[#071A44]">{score}</strong>
     </div>
+    {subtext && <p className="mb-3 text-[11px] font-semibold text-[#71809A]">{subtext}</p>}
     <div className="h-2 overflow-hidden rounded-full bg-[#EDF3F9]">
-      <div className={`h-full rounded-full ${accent}`} style={{ width: `${score}%` }} />
+      <div className={`h-full rounded-full ${accent}`} style={{ width: `${Math.min(Math.max(score, 0), 100)}%` }} />
     </div>
   </div>
 );
@@ -42,6 +39,37 @@ export const ConversationResultDetailView: React.FC = () => {
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
   const [copiedAlternativeId, setCopiedAlternativeId] = useState<number | null>(null);
+  const [playingSampleMsgId, setPlayingSampleMsgId] = useState<number | null>(null);
+
+  const handlePlaySample = (msgId: number, text: string) => {
+    if (playingSampleMsgId === msgId) {
+      scenarioVoiceService.stopAllAudio();
+      setPlayingSampleMsgId(null);
+      return;
+    }
+
+    setPlayingSampleMsgId(msgId);
+    void scenarioVoiceService.playAiSpeech(
+      text,
+      2, // Shikoku Metan Tokyo standard
+      () => setPlayingSampleMsgId(null),
+      1.0,
+      () => setPlayingSampleMsgId(msgId)
+    );
+  };
+
+  const handleSeekSample = (msgId: number, text: string, ratio: number, time: number) => {
+    setPlayingSampleMsgId(msgId);
+    scenarioVoiceService.seekAiSpeech(
+      text,
+      ratio,
+      time,
+      2,
+      () => setPlayingSampleMsgId(null),
+      1.0,
+      () => setPlayingSampleMsgId(msgId)
+    );
+  };
 
   const handleCopyText = (text: string, id: number, isAlt = false) => {
     void navigator.clipboard.writeText(text);
@@ -65,6 +93,8 @@ export const ConversationResultDetailView: React.FC = () => {
       `• Ngữ pháp: ${result.grammarScore}/100`,
       `• Từ vựng: ${result.vocabularyScore}/100`,
       `• Kính ngữ & Văn phong: ${result.impressionScore}/100`,
+      typeof result.fluencyScore === 'number' ? `• Độ trôi chảy & Phản xạ: ${result.fluencyScore}/100` : '',
+      typeof result.speechConfidenceScore === 'number' ? `• Độ tự tin & Rõ ràng: ${result.speechConfidenceScore}/100` : '',
       `• Nhiệm vụ hoàn thành: ${result.completedMissions.length} mục tiêu`,
       result.generalFeedbackText ? `\nNhận xét tổng quan:\n${result.generalFeedbackText}` : '',
     ]
@@ -104,6 +134,14 @@ export const ConversationResultDetailView: React.FC = () => {
         setError(response.message || 'Không thể tải kết quả luyện tập.');
       } else {
         setResult(response.data);
+        // Tải trước ngầm các câu thoại mẫu chuẩn Tokyo vào IndexedDB/RAM để bấm là phát ngay
+        const userMsgs = response.data.messages?.filter((m) => m.sender?.toLowerCase() === 'user') || [];
+        setTimeout(() => {
+          userMsgs.slice(0, 5).forEach((msg) => {
+            const text = msg.linguisticFeedback?.naturalAlternative || msg.japaneseText;
+            if (text) void scenarioVoiceService.prefetchAudio(text, 2);
+          });
+        }, 800);
       }
       setIsLoading(false);
     };
@@ -111,6 +149,7 @@ export const ConversationResultDetailView: React.FC = () => {
     void loadResult();
     return () => {
       isCurrent = false;
+      scenarioVoiceService.stopAllAudio();
     };
   }, [parsedResultId]);
 
@@ -231,29 +270,124 @@ export const ConversationResultDetailView: React.FC = () => {
           </div>
         </header>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 grid-cols-2 lg:grid-cols-5">
           <ScoreCard label="Ngữ pháp & Cấu trúc" score={result.grammarScore} accent="bg-[#0878EE]" />
           <ScoreCard label="Vốn từ vựng" score={result.vocabularyScore} accent="bg-emerald-500" />
           <ScoreCard label="Kính ngữ & Văn phong" score={result.impressionScore} accent="bg-amber-500" />
+          <ScoreCard
+            label="Độ trôi chảy & Phản xạ"
+            score={result.fluencyScore ?? 85}
+            accent="bg-purple-500"
+            subtext={result.averageResponseLatencySeconds ? `Phản xạ ~${result.averageResponseLatencySeconds.toFixed(1)}s/lượt` : 'Nhịp đối đáp ổn định'}
+          />
+          <ScoreCard
+            label="Độ tự tin & Rõ ràng"
+            score={result.speechConfidenceScore ?? 90}
+            accent="bg-teal-500"
+            subtext={result.averageSpeechPace ? `Tốc độ ~${result.averageSpeechPace.toFixed(1)} ký tự/s` : 'Phát âm rõ ràng'}
+          />
         </div>
+
+        {/* Attempt Progression & Historical Comparison Card (Direction 4) */}
+        {(() => {
+          const attempt = result.attemptComparison || {
+            attemptNumber: 1,
+            overallScore: result.overallScore,
+            scoreDelta: 0,
+            previousOverallScore: undefined,
+            progressSummary: result.overallScore >= 80
+              ? '🌟 Phong độ rất tốt! Bạn đã hoàn thành các mục tiêu hội thoại với ngữ điệu tự nhiên.'
+              : '🎯 Hoàn thành kịch bản! Hãy tiếp tục luyện tập để cải thiện sự lưu loát và phản xạ tự nhiên.',
+          };
+
+          return (
+            <div className="mt-6 overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 via-white to-sky-50/80 p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-[#0878EE] text-white shadow-xs">
+                    <span className="text-xl">📈</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-[#071A44]">
+                        Tiến độ qua các lần luyện tập kịch bản
+                      </h3>
+                      <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-bold text-indigo-700">
+                        Lần #{attempt.attemptNumber}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-[#52627A]">
+                      {attempt.progressSummary}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Score Delta Badge */}
+                {attempt.previousOverallScore !== undefined && attempt.previousOverallScore !== null ? (
+                  <div className="flex items-center gap-4 bg-white/80 rounded-xl px-4 py-2 border border-indigo-100 shadow-2xs">
+                    <div className="text-right">
+                      <span className="block text-[10px] font-bold uppercase text-[#71809A]">Lần trước</span>
+                      <span className="text-sm font-bold text-[#52627A]">
+                        {attempt.previousOverallScore} điểm
+                      </span>
+                    </div>
+                    <div className="h-7 w-px bg-slate-200" />
+                    <div className="text-right">
+                      <span className="block text-[10px] font-bold uppercase text-[#71809A]">Hiện tại</span>
+                      <span className="text-sm font-black text-[#071A44]">
+                        {attempt.overallScore} điểm
+                      </span>
+                    </div>
+                    <div className="h-7 w-px bg-slate-200" />
+                    <div className="text-right">
+                      <span className="block text-[10px] font-bold uppercase text-[#71809A]">Thay đổi</span>
+                      <span
+                        className={`inline-flex items-center gap-0.5 rounded-lg px-2.5 py-1 text-xs font-black ${
+                          attempt.scoreDelta > 0
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : attempt.scoreDelta === 0
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {attempt.scoreDelta > 0 && '▲ +'}
+                        {attempt.scoreDelta === 0 && '― '}
+                        {attempt.scoreDelta < 0 && '▼ '}
+                        {attempt.scoreDelta !== 0 && attempt.scoreDelta}
+                        {attempt.scoreDelta === 0 && '0'} điểm
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-xl bg-white/80 border border-indigo-100 px-3.5 py-2 text-xs font-semibold text-indigo-900 shadow-2xs">
+                    <span>🎯</span>
+                    <span>Điểm khởi đầu: <strong className="font-bold text-[#0878EE]">{attempt.overallScore}/100</strong></span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Structured AI Feedback Section */}
         {(() => {
           const rawText = result.generalFeedbackText || '';
           
           // Regex extract các phần phản hồi đã được chuẩn hóa
-          const strengthsMatch = rawText.match(/Điểm làm tốt:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|Nhận xét theo lượt:|$))/i);
-          const improvementsMatch = rawText.match(/Điểm cần cải thiện:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Cách diễn đạt tự nhiên hơn:|Nhận xét theo lượt:|Điểm làm tốt:|$))/i);
-          const naturalAltMatch = rawText.match(/Cách diễn đạt tự nhiên hơn:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Nhận xét theo lượt:|Điểm làm tốt:|Điểm cần cải thiện:|$))/i);
-          const turnsMatch = rawText.match(/Nhận xét theo lượt:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Điểm làm tốt:|Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|$))/i);
+          const strengthsMatch = rawText.match(/Điểm làm tốt:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|Nhận xét theo lượt:|Độ trôi chảy & Phát âm:|$))/i);
+          const improvementsMatch = rawText.match(/Điểm cần cải thiện:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Cách diễn đạt tự nhiên hơn:|Nhận xét theo lượt:|Điểm làm tốt:|Độ trôi chảy & Phát âm:|$))/i);
+          const naturalAltMatch = rawText.match(/Cách diễn đạt tự nhiên hơn:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Nhận xét theo lượt:|Điểm làm tốt:|Điểm cần cải thiện:|Độ trôi chảy & Phát âm:|$))/i);
+          const turnsMatch = rawText.match(/Nhận xét theo lượt:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Điểm làm tốt:|Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|Độ trôi chảy & Phát âm:|$))/i);
+          const deliveryMatch = rawText.match(/Độ trôi chảy & Phát âm:\s*([^.]+(?:\.[^.]+)*?)(?=\s*(?:Điểm làm tốt:|Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|Nhận xét theo lượt:|$))/i);
 
           const strengthsText = strengthsMatch ? strengthsMatch[1].trim() : null;
           const improvementsText = improvementsMatch ? improvementsMatch[1].trim() : null;
           const naturalAltText = naturalAltMatch ? naturalAltMatch[1].trim() : null;
           const turnsText = turnsMatch ? turnsMatch[1].trim() : null;
+          const deliveryText = deliveryMatch ? deliveryMatch[1].trim() : null;
 
           // Phần text nhận xét tổng quát (câu đầu tiên trước các tiêu đề phân loại)
-          const firstSection = rawText.split(/(?:Nhận xét theo lượt:|Điểm làm tốt:|Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:)/i)[0]?.trim() || rawText;
+          const firstSection = rawText.split(/(?:Nhận xét theo lượt:|Điểm làm tốt:|Điểm cần cải thiện:|Cách diễn đạt tự nhiên hơn:|Độ trôi chảy & Phát âm:)/i)[0]?.trim() || rawText;
 
           return (
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
@@ -307,6 +441,19 @@ export const ConversationResultDetailView: React.FC = () => {
                         </p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Đánh giá Độ trôi chảy & Phát âm */}
+                {deliveryText && (
+                  <div className="rounded-[22px] border border-purple-200 bg-purple-50/60 p-5 shadow-xs">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-800">
+                      <span className="grid h-5 w-5 place-items-center rounded-full bg-purple-500 text-white text-[10px]">🎙️</span>
+                      <span>Độ trôi chảy & Phát âm</span>
+                    </div>
+                    <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-purple-950 font-medium break-words">
+                      {deliveryText}
+                    </p>
                   </div>
                 )}
 
@@ -681,6 +828,25 @@ export const ConversationResultDetailView: React.FC = () => {
                                 💡 {feedback.summary}
                               </p>
                             )}
+                            {feedback.speechDelivery && (
+                              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                                {typeof feedback.speechDelivery.speechConfidence === 'number' && (
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 px-2 py-0.5 font-semibold text-teal-800 border border-teal-200/60">
+                                    🎙️ Tự tin: {Math.round(feedback.speechDelivery.speechConfidence * (feedback.speechDelivery.speechConfidence <= 1 ? 100 : 1))}%
+                                  </span>
+                                )}
+                                {typeof feedback.speechDelivery.responseLatencySeconds === 'number' && (
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 font-semibold text-purple-800 border border-purple-200/60">
+                                    ⚡ Phản xạ: {feedback.speechDelivery.responseLatencySeconds.toFixed(1)}s
+                                  </span>
+                                )}
+                                {typeof feedback.speechDelivery.speechPace === 'number' && (
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 font-semibold text-blue-800 border border-blue-200/60">
+                                    ⏱️ Tốc độ: {feedback.speechDelivery.speechPace.toFixed(1)} ký tự/s
+                                  </span>
+                                )}
+                              </div>
+                            )}
                             {feedback.naturalAlternative && (
                               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F1F5F9]">
                                 <p className="text-emerald-800 font-bold text-xs">
@@ -712,6 +878,31 @@ export const ConversationResultDetailView: React.FC = () => {
                                 </div>
                               </div>
                             )}
+                          </div>
+                        )}
+
+                        {/* Audio Waveform Player (Lưu trữ và phát lại trực quan đồng bộ) */}
+                        {isUser && (
+                          <div className="mt-3 pt-2.5 border-t border-[#E6EDF5]/80 flex flex-wrap items-center gap-2.5">
+                            {(msg.audioUrl || (msg as any).userAudioUrl) && (
+                              <AudioWaveformPlayer
+                                audioUrl={msg.audioUrl || (msg as any).userAudioUrl}
+                                label="Bản thu của bạn"
+                                variant="user"
+                                compact
+                                className="w-fit"
+                              />
+                            )}
+                            <AudioWaveformPlayer
+                              onPlayFallback={() => handlePlaySample(msg.id, feedback?.naturalAlternative || msg.japaneseText)}
+                              onSeekFallback={(ratio, time) => handleSeekSample(msg.id, feedback?.naturalAlternative || msg.japaneseText, ratio, time)}
+                              isFallbackPlaying={playingSampleMsgId === msg.id}
+                              fallbackDuration={Math.max(1.4, Number((((feedback?.naturalAlternative || msg.japaneseText).length * 0.22)).toFixed(1)))}
+                              label="Mẫu bản xứ Tokyo"
+                              variant="model"
+                              compact
+                              className="w-fit"
+                            />
                           </div>
                         )}
                       </div>

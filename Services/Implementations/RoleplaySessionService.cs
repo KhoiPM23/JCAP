@@ -313,6 +313,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                     VietnameseMeaning = m.VietnameseMeaning,
                     FuriganaHtml = m.FuriganaHtml,
                     LinguisticFeedback = ParseFeedback(m.LinguisticFeedbackJson),
+                    AudioUrl = ParseFeedback(m.LinguisticFeedbackJson)?.SpeechDelivery?.AudioUrl,
                     CreatedAt = m.CreatedAt
                 }).ToList()
         };
@@ -504,6 +505,93 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         if (turnResult.LinguisticFeedback != null)
         {
+            if (request.SpeakingDurationSeconds.HasValue || request.ResponseLatencySeconds.HasValue || request.SpeechConfidence.HasValue)
+            {
+                var duration = request.SpeakingDurationSeconds;
+                var pace = (duration.HasValue && duration.Value > 0)
+                    ? Math.Round(userMessage.JapaneseText.Length / duration.Value, 1)
+                    : (double?)null;
+
+                var jlpt = (levelConfig.JLPTLevel ?? "N4").Trim().ToUpperInvariant();
+                (double idealLat, double maxLat, double minPace, double maxPace, string paceDesc) = jlpt switch
+                {
+                    "N5" => (5.0, 10.0, 2.0, 4.5, "Chuẩn N5: 2.0 - 4.5 ký tự/s"),
+                    "N4" => (4.0, 8.5, 2.5, 5.5, "Chuẩn N4: 2.5 - 5.5 ký tự/s"),
+                    "N3" => (3.0, 7.0, 3.5, 6.5, "Chuẩn N3: 3.5 - 6.5 ký tự/s"),
+                    "N2" => (2.2, 5.5, 4.5, 7.5, "Chuẩn N2: 4.5 - 7.5 ký tự/s"),
+                    "N1" => (1.8, 4.5, 5.5, 9.0, "Chuẩn N1: 5.5 - 9.0 ký tự/s"),
+                    _ => (4.0, 8.5, 2.5, 5.5, "Chuẩn N4: 2.5 - 5.5 ký tự/s")
+                };
+
+                var turnFluency = 85;
+                string? latencyAssessment = null;
+                if (request.ResponseLatencySeconds.HasValue)
+                {
+                    var lat = request.ResponseLatencySeconds.Value;
+                    if (lat <= idealLat)
+                    {
+                        turnFluency += 10;
+                        latencyAssessment = $"Phản xạ rất tốt ({lat:0.0}s, chuẩn {jlpt} <= {idealLat:0.0}s)";
+                    }
+                    else if (lat <= (idealLat + maxLat) / 2.0)
+                    {
+                        turnFluency += 3;
+                        latencyAssessment = $"Phản xạ ổn định ({lat:0.0}s)";
+                    }
+                    else if (lat > maxLat)
+                    {
+                        var penalty = Math.Min(30, (int)((lat - maxLat) * 3));
+                        turnFluency -= penalty;
+                        latencyAssessment = $"Ngập ngừng lâu ({lat:0.0}s > {maxLat:0.0}s)";
+                    }
+                    else
+                    {
+                        latencyAssessment = $"Phản xạ trung bình ({lat:0.0}s)";
+                    }
+                }
+
+                string? paceAssessment = null;
+                if (pace.HasValue)
+                {
+                    var p = pace.Value;
+                    if (p >= minPace && p <= maxPace)
+                    {
+                        turnFluency += 5;
+                        paceAssessment = $"Tốc độ phù hợp ({p:0.0} kt/s - {paceDesc})";
+                    }
+                    else if (p < minPace)
+                    {
+                        turnFluency -= 5;
+                        paceAssessment = $"Hơi chậm ({p:0.0} kt/s < {minPace:0.0})";
+                    }
+                    else
+                    {
+                        paceAssessment = $"Tốc độ nhanh ({p:0.0} kt/s)";
+                    }
+                }
+
+                if (request.SpeechConfidence.HasValue)
+                {
+                    var conf = request.SpeechConfidence.Value;
+                    if (conf >= 0.85) turnFluency += 5;
+                    else if (conf < 0.60) turnFluency -= 15;
+                }
+                turnFluency = Math.Clamp(turnFluency, 30, 100);
+
+                turnResult.LinguisticFeedback.SpeechDelivery = new SpeechDeliveryMetricsDto
+                {
+                    SpeakingDurationSeconds = request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
+                    ResponseLatencySeconds = request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
+                    SpeechConfidence = request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
+                    SpeechPace = pace,
+                    TurnFluencyScore = turnFluency,
+                    JlptLevel = jlpt,
+                    PaceAssessment = paceAssessment,
+                    LatencyAssessment = latencyAssessment,
+                    AudioUrl = request.AudioUrl
+                };
+            }
+
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
         }
 
@@ -532,6 +620,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 VietnameseMeaning = userMessage.VietnameseMeaning,
                 FuriganaHtml = userMessage.FuriganaHtml,
                 LinguisticFeedback = turnResult.LinguisticFeedback,
+                AudioUrl = request.AudioUrl,
                 CreatedAt = userMessage.CreatedAt
             },
             AiMessage = new RoleplayMessageDto

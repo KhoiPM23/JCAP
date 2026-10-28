@@ -65,6 +65,8 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         var impressionLanguageScore = AverageAndRound(feedbacks.Select(feedback =>
             GetCategoryScore(feedback, ImpressionAspects)));
 
+        var (fluencyScore, confidenceScore, avgLatency, avgPace) = CalculateDeliveryMetrics(feedbacks);
+
         var normalizedTotalMissionCount = Math.Max(totalMissionCount, 0);
         var normalizedCompletedMissionCount = Math.Clamp(
             completedMissionCount,
@@ -95,6 +97,10 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             GrammarScore = grammarScore,
             VocabularyScore = vocabularyScore,
             ImpressionScore = impressionScore,
+            FluencyScore = fluencyScore,
+            SpeechConfidenceScore = confidenceScore,
+            AverageResponseLatencySeconds = avgLatency,
+            AverageSpeechPace = avgPace,
             MissionProgressScore = ClampAndRound(missionCompletionScore),
             AllMissionsCompleted = allMissionsCompleted,
             GeneralFeedbackText = BuildGeneralFeedback(
@@ -102,7 +108,11 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                 overallScore,
                 normalizedCompletedMissionCount,
                 normalizedTotalMissionCount,
-                allMissionsCompleted),
+                allMissionsCompleted,
+                fluencyScore,
+                confidenceScore,
+                avgLatency,
+                avgPace),
             EvaluatedTurnCount = feedbacks.Count
         };
     }
@@ -190,12 +200,73 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         return (int)Math.Round(Math.Clamp(value, 0, 100), MidpointRounding.AwayFromZero);
     }
 
+    private static (int FluencyScore, int ConfidenceScore, double AvgLatency, double AvgPace) CalculateDeliveryMetrics(
+        IReadOnlyCollection<LinguisticFeedbackDto> feedbacks)
+    {
+        var speechDeliveries = feedbacks
+            .Select(f => f.SpeechDelivery)
+            .Where(d => d != null)
+            .Cast<SpeechDeliveryMetricsDto>()
+            .ToList();
+
+        double avgLatency = 0;
+        double avgPace = 0;
+        int fluencyScore;
+        int confidenceScore;
+
+        if (speechDeliveries.Count > 0)
+        {
+            var validLatencies = speechDeliveries
+                .Where(d => d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
+                .Select(d => d.ResponseLatencySeconds!.Value)
+                .ToList();
+            avgLatency = validLatencies.Count > 0 ? Math.Round(validLatencies.Average(), 1) : 0;
+
+            var validPaces = speechDeliveries
+                .Where(d => d.SpeechPace.HasValue && d.SpeechPace.Value > 0)
+                .Select(d => d.SpeechPace!.Value)
+                .ToList();
+            avgPace = validPaces.Count > 0 ? Math.Round(validPaces.Average(), 1) : 0;
+
+            var turnFluencyScores = speechDeliveries
+                .Where(d => d.TurnFluencyScore.HasValue)
+                .Select(d => (double)d.TurnFluencyScore!.Value)
+                .ToList();
+            fluencyScore = turnFluencyScores.Count > 0
+                ? (int)Math.Round(turnFluencyScores.Average())
+                : 85;
+
+            var confidences = speechDeliveries
+                .Where(d => d.SpeechConfidence.HasValue)
+                .Select(d => d.SpeechConfidence!.Value * 100)
+                .ToList();
+            confidenceScore = confidences.Count > 0
+                ? (int)Math.Round(Math.Clamp(confidences.Average(), 0, 100))
+                : 90;
+        }
+        else
+        {
+            var goodCount = feedbacks.Count(f => string.Equals(f.Status, "Good", StringComparison.OrdinalIgnoreCase));
+            var warningCount = feedbacks.Count(f => string.Equals(f.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+            var errorCount = feedbacks.Count(f => string.Equals(f.Status, "Error", StringComparison.OrdinalIgnoreCase));
+
+            fluencyScore = ClampAndRound(85.0 + (goodCount * 3) - (warningCount * 5) - (errorCount * 12));
+            confidenceScore = ClampAndRound(88.0 + (goodCount * 2) - (warningCount * 4) - (errorCount * 10));
+        }
+
+        return (fluencyScore, confidenceScore, avgLatency, avgPace);
+    }
+
     private static string BuildGeneralFeedback(
         IReadOnlyCollection<LinguisticFeedbackDto> feedbacks,
         int overallScore,
         int completedMissionCount,
         int totalMissionCount,
-        bool allMissionsCompleted)
+        bool allMissionsCompleted,
+        int fluencyScore,
+        int confidenceScore,
+        double avgLatency,
+        double avgPace)
     {
         var overview = !allMissionsCompleted
             ? totalMissionCount > 0
@@ -263,6 +334,35 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         if (naturalAlternatives.Count > 0)
         {
             sections.Add($"Cách diễn đạt tự nhiên hơn: {string.Join(" | ", naturalAlternatives)}");
+        }
+
+        if (avgLatency > 0 || avgPace > 0)
+        {
+            var jlpt = feedbacks
+                .Select(f => f.SpeechDelivery?.JlptLevel)
+                .FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
+            var jlptPrefix = !string.IsNullOrWhiteSpace(jlpt) ? $" (Chuẩn {jlpt})" : "";
+
+            var deliveryParts = new List<string>();
+            if (avgLatency > 0)
+            {
+                var latencyComment = avgLatency <= 4.0
+                    ? "phản xạ đối đáp nhanh nhẹn"
+                    : avgLatency <= 8.0
+                        ? "tốc độ phản xạ ổn định"
+                        : "cần phản xạ nhanh hơn khi giao tiếp";
+                deliveryParts.Add($"phản xạ trung bình {avgLatency:0.0}s ({latencyComment})");
+            }
+            if (avgPace > 0)
+            {
+                deliveryParts.Add($"nhịp nói ~{avgPace:0.0} ký tự/s");
+            }
+            if (confidenceScore > 0)
+            {
+                var confDesc = confidenceScore >= 85 ? "rõ ràng, tự tin" : "cần đọc tròn vành rõ chữ hơn";
+                deliveryParts.Add($"độ tự tin phát âm {confidenceScore}% ({confDesc})");
+            }
+            sections.Add($"Độ trôi chảy & Phát âm{jlptPrefix}: Điểm {fluencyScore}/100, {string.Join(", ", deliveryParts)}.");
         }
 
         return string.Join(" ", sections);

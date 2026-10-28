@@ -104,6 +104,7 @@ builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationSer
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
+builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
 builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
