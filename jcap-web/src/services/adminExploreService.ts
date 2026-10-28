@@ -17,6 +17,9 @@ import type {
 
 const BASE = '/api/admin/explore';
 
+/** Số mốc đang dùng tối thiểu để mở một tỉnh (khớp AdminExploreService.MinSpotsToOpen ở backend) */
+export const MIN_SPOTS_TO_OPEN = 3;
+
 /** Quản lý bản đồ Khám phá phía admin: mở tỉnh và quản lý chương */
 class AdminExploreService {
   private getHeaders(): HeadersInit {
@@ -47,7 +50,7 @@ class AdminExploreService {
     return this.send<AdminExploreOverview>('GET', BASE);
   }
 
-  /** Mở tỉnh cho người học (cần ít nhất 1 mốc đang dùng). Không có thao tác đóng. */
+  /** Mở tỉnh cho người học (cần ít nhất MIN_SPOTS_TO_OPEN mốc đang dùng). Không có thao tác đóng. */
   public openPrefecture(id: number) {
     return this.send<AdminExplorePrefecture>('POST', `${BASE}/prefectures/${id}/open`);
   }
