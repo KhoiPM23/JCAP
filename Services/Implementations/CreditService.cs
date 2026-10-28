@@ -266,6 +266,51 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<CreditHistoryResponseDto>.Fail("Không tìm thấy người dùng.");
             }
 
+            // Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
+            // (Giúp đồng bộ tức thì khi người dùng bấm Hủy hoặc Thanh toán ở tab PayOS song song rồi mở/quay lại Lịch sử giao dịch)
+            if (_payOSClient != null && _payOsSettings.IsConfigured)
+            {
+                var pendingTxs = await _dbContext.CreditTransactions
+                    .Where(t => t.UserId == userId && t.Status == "Pending" && t.PayOsOrderCode != null)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                bool hasStatusChanges = false;
+                foreach (var pendingTx in pendingTxs)
+                {
+                    if (!long.TryParse(pendingTx.PayOsOrderCode, out var pendingOrderCode))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var paymentInfo = await _payOSClient.PaymentRequests.GetAsync(pendingOrderCode);
+                        var statusStr = paymentInfo?.Status.ToString()?.ToUpperInvariant();
+                        if (paymentInfo != null && statusStr == "PAID")
+                        {
+                            await ActivateTransactionAsync(pendingTx);
+                            user = await _userManager.FindByIdAsync(userId) ?? user;
+                        }
+                        else if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED" || statusStr == "EXPIRED"))
+                        {
+                            pendingTx.Status = "Cancelled";
+                            hasStatusChanges = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Không thể đối soát trạng thái đơn Pending #{OrderCode} từ PayOS khi tải lịch sử.", pendingOrderCode);
+                    }
+                }
+
+                if (hasStatusChanges)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+
             var query = _dbContext.CreditTransactions
                 .AsNoTracking()
                 .Where(t => t.UserId == userId);
@@ -327,11 +372,14 @@ namespace JCAP.Services.Implementations
         /// </summary>
         private async Task<bool> TryClaimTransactionAsync(CreditTransaction transaction, CancellationToken cancellationToken = default)
         {
+            var paidAt = DateTime.UtcNow;
             if (_dbContext.Database.IsRelational())
             {
                 var affected = await _dbContext.CreditTransactions
                     .Where(t => t.Id == transaction.Id && t.Status == "Pending")
-                    .ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, "Paid"), cancellationToken);
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(t => t.Status, "Paid")
+                        .SetProperty(t => t.CreatedAt, paidAt), cancellationToken);
 
                 if (affected == 0)
                 {
@@ -341,6 +389,7 @@ namespace JCAP.Services.Implementations
                 // ExecuteUpdateAsync ghi trực tiếp xuống DB, không qua change tracker.
                 // Đồng bộ lại entity đang track để các bước sau đọc đúng trạng thái.
                 _dbContext.Entry(transaction).Property(t => t.Status).CurrentValue = "Paid";
+                _dbContext.Entry(transaction).Property(t => t.CreatedAt).CurrentValue = paidAt;
                 return true;
             }
 
@@ -350,6 +399,7 @@ namespace JCAP.Services.Implementations
             }
 
             transaction.Status = "Paid";
+            transaction.CreatedAt = paidAt;
             return true;
         }
 
@@ -601,8 +651,22 @@ namespace JCAP.Services.Implementations
 
                 if (paymentInfo != null && statusStr == "PAID")
                 {
-                    await ActivateTransactionAsync(transaction);
-                    return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng đã được thanh toán thành công qua PayOS.");
+                    var (_, updatedBalance) = await ActivateTransactionAsync(transaction);
+                    return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                    {
+                        Success = true,
+                        Message = "Đơn hàng đã được thanh toán thành công qua PayOS và quyền lợi đã được kích hoạt.",
+                        OrderCode = orderCode,
+                        IsMock = false,
+                        NewCreditBalance = updatedBalance
+                    }, "Đơn hàng đã được thanh toán thành công qua PayOS.");
+                }
+
+                if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED" || statusStr == "EXPIRED"))
+                {
+                    transaction.Status = "Cancelled";
+                    await _dbContext.SaveChangesAsync();
+                    return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã bị hủy trên cổng PayOS.");
                 }
 
                 var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
@@ -625,6 +689,8 @@ namespace JCAP.Services.Implementations
                     transaction.AmountVnd = packagePrice;
                     itemName = plan.Name;
                     safeDescription = $"JCAP Sub {plan.Tier}";
+                    returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(plan.Id)}";
+                    cancelUrl = $"{frontendUrl}/credits?cancel=true";
                 }
                 else
                 {
@@ -653,6 +719,19 @@ namespace JCAP.Services.Implementations
                 }
 
                 if (safeDescription.Length > 25) safeDescription = safeDescription.Substring(0, 25);
+
+                // Nếu đơn cũ vẫn đang PENDING trên PayOS, hủy link cũ trước khi cấp mã đơn mới để tránh treo 2 link song song
+                if (paymentInfo != null && statusStr == "PENDING")
+                {
+                    try
+                    {
+                        await _payOSClient.PaymentRequests.CancelAsync(orderCode, "Người dùng tạo liên kết thanh toán mới");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Không thể hủy link PayOS cũ #{OrderCode} khi tạo link mới.", orderCode);
+                    }
+                }
 
                 var newOrderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 transaction.PayOsOrderCode = newOrderCode.ToString();

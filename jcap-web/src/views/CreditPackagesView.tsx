@@ -13,6 +13,7 @@ export const CreditPackagesView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const cancelParam = searchParams.get('cancel');
   const statusParam = searchParams.get('status');
+  const orderCodeParam = searchParams.get('orderCode');
 
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -91,6 +92,9 @@ export const CreditPackagesView: React.FC = () => {
 
     if (cancelParam === 'true' || statusParam === 'CANCELLED') {
       setError('Yêu cầu thanh toán đã bị hủy. Bạn có thể chọn gói khác để thử lại.');
+      if (orderCodeParam) {
+        creditService.cancelOrder(orderCodeParam).catch(() => {});
+      }
     }
 
     creditService.getHistory(1, 1).then((res) => {
@@ -117,7 +121,7 @@ export const CreditPackagesView: React.FC = () => {
 
     window.addEventListener('jcap_profile_updated', handleProfileUpdated);
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
-  }, [cancelParam, statusParam]);
+  }, [cancelParam, statusParam, orderCodeParam]);
 
   const displayBalance = useMemo(() => {
     if (typeof currentBalance === 'number') {

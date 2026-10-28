@@ -1,3 +1,4 @@
+using JCAP.Services.Subscriptions;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Credit;
@@ -196,7 +197,7 @@ namespace JCAP.Controllers
                 var transactions = await _context.CreditTransactions
                     .Include(t => t.User)
                     .AsNoTracking()
-                    .Where(t => t.Type == "TopUp" || t.Type == "Subscription")
+                    .Where(t => (t.Type == "TopUp" || t.Type == "Subscription") && t.Status == "Paid")
                     .OrderByDescending(t => t.CreatedAt)
                     .Take(limit)
                     .ToListAsync();

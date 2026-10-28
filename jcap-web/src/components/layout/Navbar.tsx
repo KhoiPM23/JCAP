@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation, Link } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export interface NavbarProps {
@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
   ];
 
   const bottomItems = [
-    { name: 'Trợ giúp', path: '/help', icon: HelpIcon, matchPrefix: true },
+    { name: 'Góp ý ẩn danh', path: '/feedback', icon: HelpIcon, matchPrefix: true },
   ];
 
   // If user is Admin, render the Admin Sidebar matching mockup image media_1790526792509.png
@@ -100,6 +100,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/admin/users')}
               />
               <NavItem
+                name="Hòm thư Góp ý"
+                path="/admin/feedback"
+                icon={ChatBubbleIcon}
+                forceActive={currentPath.startsWith('/admin/feedback')}
+              />
+              <NavItem
                 name="Quản lý Gói và Credit"
                 path="/admin/credits/packages"
                 icon={CoinCardIcon}
@@ -164,7 +170,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
           <NavItem
             key={item.path}
             {...item}
-            forceActive={item.matchPrefix ? currentPath.startsWith(item.path) : currentPath === item.path}
+            forceActive={
+              item.path === '/feedback'
+                ? currentPath.startsWith('/feedback') || currentPath.startsWith('/help')
+                : item.matchPrefix
+                ? currentPath.startsWith(item.path)
+                : currentPath === item.path
+            }
           />
         ))}
         <button
@@ -329,14 +341,6 @@ function UsersTalkIcon({ className }: { className?: string }) {
   );
 }
 
-function ListLinesIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
-    </svg>
-  );
-}
-
 function AudioWavesIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -376,7 +380,6 @@ function SubscriptionIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 
 function CardsIcon({ className }: { className?: string }) {
   return (

@@ -52,27 +52,65 @@ export const CreditHistoryView: React.FC = () => {
     };
   }, []);
 
-  const fetchHistory = async (page: number) => {
-    setIsLoading(true);
+  const fetchHistory = useCallback(async (page: number, silent: boolean = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     
     try {
       const res = await creditService.getHistory(page, pageSize);
       if (res.success && res.data) {
         setData(res.data);
         refreshUser();
-      } else {
+      } else if (!silent) {
         showNotification(res.message || 'Không thể tải lịch sử giao dịch.', 'error');
       }
     } catch (err: any) {
-      showNotification(err.message || 'Lỗi kết nối máy chủ.', 'error');
+      if (!silent) {
+        showNotification(err.message || 'Lỗi kết nối máy chủ.', 'error');
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [pageSize, refreshUser, showNotification]);
 
   useEffect(() => {
-    fetchHistory(currentPage);
-  }, [currentPage]);
+    void fetchHistory(currentPage, false);
+  }, [currentPage, fetchHistory]);
+
+  // Tự động đồng bộ khi người dùng chuyển từ tab PayOS quay lại tab Lịch sử giao dịch
+  // hoặc đang treo song song 2 tab mà có giao dịch ở trạng thái Pending
+  const hasPendingTransactions = Boolean(
+    data?.transactions?.some((tx) => tx.status.toLowerCase() === 'pending')
+  );
+
+  useEffect(() => {
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchHistory(currentPage, true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocusOrVisible);
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
+
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    if (hasPendingTransactions) {
+      pollTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          void fetchHistory(currentPage, true);
+        }
+      }, 3000);
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocusOrVisible);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
+      if (pollTimer) clearInterval(pollTimer);
+    };
+  }, [currentPage, hasPendingTransactions, fetchHistory]);
 
   const handleContinuePayment = async (orderCode?: string) => {
     if (!orderCode) return;
@@ -82,12 +120,13 @@ export const CreditHistoryView: React.FC = () => {
       if (res.success && res.data) {
         if (res.data.checkoutUrl) {
           window.location.href = res.data.checkoutUrl;
-        } else if (res.data.isMock) {
-          showNotification('Nạp thành công (Chế độ Mock).', 'success');
-          await fetchHistory(currentPage);
+        } else {
+          showNotification(res.data.message || 'Đơn hàng đã thanh toán thành công và quyền lợi đã được kích hoạt!', 'success');
+          await fetchHistory(currentPage, false);
         }
       } else {
         showNotification(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.', 'error');
+        await fetchHistory(currentPage, true);
       }
     } catch (err: any) {
       showNotification(err.message || 'Lỗi khi tiếp tục thanh toán.', 'error');
@@ -159,6 +198,8 @@ export const CreditHistoryView: React.FC = () => {
     switch (type.toLowerCase()) {
       case 'topup':
         return 'Nạp Credit';
+      case 'subscription':
+        return 'Đăng ký Gói Tháng';
       case 'deduct':
         return 'Sử dụng hội thoại';
       case 'voucher':
@@ -281,14 +322,22 @@ export const CreditHistoryView: React.FC = () => {
                         {getTypeLabel(tx.type)}
                       </td>
                       <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <span
-                          className={`font-bold text-sm ${
-                            isPositive ? 'text-emerald-600' : 'text-red-600'
-                          }`}
-                        >
-                          {isPositive ? `+${tx.amount}` : tx.amount}
-                        </span>{' '}
-                        <span className="text-[11px] text-[#71809A]">Credits</span>
+                        {tx.type.toLowerCase() === 'subscription' ? (
+                          <span className="font-bold text-xs text-[#0878EE] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                            Hạn mức {tx.amount} Credits/tuần
+                          </span>
+                        ) : (
+                          <>
+                            <span
+                              className={`font-bold text-sm ${
+                                isPositive ? 'text-emerald-600' : 'text-red-600'
+                              }`}
+                            >
+                              {isPositive ? `+${tx.amount}` : tx.amount}
+                            </span>{' '}
+                            <span className="text-[11px] text-[#71809A]">Credits</span>
+                          </>
+                        )}
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
                         {getStatusBadge(tx.status)}
