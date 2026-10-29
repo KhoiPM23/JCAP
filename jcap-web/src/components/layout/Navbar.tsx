@@ -118,10 +118,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/profile')}
               />
               <NavItem
-                name="Cấu hình AI & Prompt"
-                path="/admin/ai-config"
-                icon={BrainGearIcon}
-                forceActive={currentPath.startsWith('/admin/ai-config')}
+                name="Cài đặt Thông báo"
+                path="/admin/notifications"
+                icon={MegaphoneIcon}
+                forceActive={currentPath.startsWith('/admin/notifications')}
               />
               <NavItem
                 name="Cài đặt hệ thống"
@@ -357,10 +357,10 @@ function UsersGroupIcon({ className }: { className?: string }) {
   );
 }
 
-function BrainGearIcon({ className }: { className?: string }) {
+function MegaphoneIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
     </svg>
   );
 }

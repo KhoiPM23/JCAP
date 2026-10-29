@@ -1,67 +1,88 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import {
-  getAllMockFeedbackTickets,
-  saveMockFeedbackTickets,
-  resetMockFeedbackTickets,
-  createSampleAttachment,
-  formatFileSize,
-  CATEGORY_META,
-  STATUS_META,
-  type FeedbackTicket,
   type FeedbackCategory,
   type FeedbackStatus,
   type FeedbackAttachment,
-} from '../../services/mockFeedbackStore';
+  type FeedbackTicket,
+  STATUS_META,
+  CATEGORY_META,
+  feedbackService,
+  formatFileSize,
+} from '../../services/feedbackService';
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // Giới hạn 5MB
+function formatRelativeTime(iso: string): string {
+  const date = new Date(iso);
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'Vừa xong';
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} giờ trước`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export const AdminFeedbackView: React.FC = () => {
-  const [tickets, setTickets] = useState<FeedbackTicket[]>(() => getAllMockFeedbackTickets());
-  const [selectedTicketId, setSelectedTicketId] = useState<string>(() => {
-    const initial = getAllMockFeedbackTickets();
-    return initial[0]?.id || '';
-  });
+  const [tickets, setTickets] = useState<FeedbackTicket[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Bộ lọc 3 trạng thái: Chờ Admin phản hồi (PENDING) | Đang trò chuyện (IN_PROGRESS) | Đã đóng (CLOSED)
+  // Bộ lọc quản trị
   const [statusFilter, setStatusFilter] = useState<'ALL' | FeedbackStatus>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | FeedbackCategory>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // State phản hồi của Admin
+  // Ô nhập phản hồi của Admin
   const [replyContent, setReplyContent] = useState('');
   const [replyAttachments, setReplyAttachments] = useState<FeedbackAttachment[]>([]);
-  const [isUploadingReply, setIsUploadingReply] = useState(false);
-  const [replyError, setReplyError] = useState<string | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // Lightbox xem ảnh đính kèm
-  const [previewImage, setPreviewImage] = useState<{
-    url: string;
-    name: string;
-    publicId: string;
-  } | null>(null);
+  const [previewImage, setPreviewImage] = useState<FeedbackAttachment | null>(null);
 
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => {
-      setToastMsg((prev) => (prev === msg ? null : prev));
-    }, 4000);
-  };
+  const loadAllTickets = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    const res = await feedbackService.getAllTicketsForAdmin();
+    if (res.success && res.data) {
+      setTickets(res.data);
+      setSelectedTicketId((prev) => {
+        if (prev && res.data!.some((t) => t.id === prev)) return prev;
+        return res.data![0]?.id ?? null;
+      });
+      setErrorMessage(null);
+    } else if (!silent) {
+      setErrorMessage(res.message || 'Không thể tải danh sách hòm thư quản trị.');
+    }
+    if (!silent) setIsLoading(false);
+  }, []);
 
-  const syncTickets = (updated: FeedbackTicket[]) => {
-    setTickets(updated);
-    saveMockFeedbackTickets(updated);
-  };
+  useEffect(() => {
+    loadAllTickets(false);
+    const timer = window.setInterval(() => {
+      loadAllTickets(true);
+    }, 10000);
+    return () => window.clearInterval(timer);
+  }, [loadAllTickets]);
 
-  // Thống kê tổng quan cho Admin
-  const stats = useMemo(() => {
-    const total = tickets.length;
-    const pendingCount = tickets.filter((t) => t.status === 'PENDING').length;
-    const inProgressCount = tickets.filter((t) => t.status === 'IN_PROGRESS').length;
-    const closedCount = tickets.filter((t) => t.status === 'CLOSED').length;
-    return { total, pendingCount, inProgressCount, closedCount };
+  const counts = useMemo(() => {
+    return {
+      ALL: tickets.length,
+      PENDING: tickets.filter((t) => t.status === 'PENDING').length,
+      IN_PROGRESS: tickets.filter((t) => t.status === 'IN_PROGRESS').length,
+      CLOSED: tickets.filter((t) => t.status === 'CLOSED').length,
+    };
   }, [tickets]);
 
   const filteredTickets = useMemo(() => {
@@ -71,371 +92,239 @@ export const AdminFeedbackView: React.FC = () => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchTitle = t.title.toLowerCase().includes(q);
-        const matchCode = t.anonymousCode.toLowerCase().includes(q);
-        const matchMsg = t.messages.some((m) => m.content.toLowerCase().includes(q));
-        if (!matchTitle && !matchCode && !matchMsg) return false;
+        const matchAnon = t.anonymousCode.toLowerCase().includes(q);
+        const matchBody = t.messages.some((m) => m.content.toLowerCase().includes(q));
+        if (!matchTitle && !matchAnon && !matchBody) return false;
       }
       return true;
     });
   }, [tickets, statusFilter, categoryFilter, searchQuery]);
 
   const selectedTicket = useMemo(
-    () => tickets.find((t) => t.id === selectedTicketId) || filteredTickets[0] || null,
-    [tickets, selectedTicketId, filteredTickets]
+    () => tickets.find((t) => t.id === selectedTicketId) || null,
+    [tickets, selectedTicketId]
   );
 
-  // Khi Admin bấm chọn xem một bài đang PENDING mà chưa có adminSeenAt, đánh dấu là Admin đã mở xem
-  const handleSelectTicket = (ticket: FeedbackTicket) => {
-    setSelectedTicketId(ticket.id);
-    setReplyError(null);
-    if (!ticket.adminSeenAt) {
-      const nowIso = new Date().toISOString();
-      const updated = tickets.map((t) =>
-        t.id === ticket.id ? { ...t, adminSeenAt: nowIso } : t
-      );
-      syncTickets(updated);
-    }
-  };
-
-  // Upload tệp/ảnh đính kèm khi Admin trả lời
-  const handleFilesSelected = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    setReplyError(null);
-
-    if (replyAttachments.length + files.length > 3) {
-      setReplyError('Tối đa 3 tệp/ảnh đính kèm trong một lần gửi.');
-      return;
-    }
-
-    const validFiles: File[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
-      if (f.size > MAX_FILE_SIZE_BYTES) {
-        setReplyError(`Tệp "${f.name}" vượt quá giới hạn dung lượng nhỏ (Tối đa 5MB).`);
-        return;
+  // Khi Admin bấm chọn một bài đang PENDING mà chưa có adminSeenAt -> gọi API đánh dấu Admin đã mở xem
+  const handleSelectTicket = async (ticketId: number) => {
+    setSelectedTicketId(ticketId);
+    const target = tickets.find((t) => t.id === ticketId);
+    if (target && !target.adminSeenAt) {
+      const res = await feedbackService.markSeenByAdmin(ticketId);
+      if (res.success && res.data) {
+        setTickets((prev) => prev.map((t) => (t.id === res.data!.id ? res.data! : t)));
       }
-      validFiles.push(f);
     }
-
-    setIsUploadingReply(true);
-
-    Promise.all(
-      validFiles.map(
-        (file) =>
-          new Promise<FeedbackAttachment>((resolve) => {
-            const isImage = file.type.startsWith('image/');
-            const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const randSuffix = Math.floor(1000 + Math.random() * 9000);
-            const publicId = `issues/admin_${cleanName.replace(/\.[^.]+$/, '')}_${randSuffix}`;
-
-            if (isImage) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                resolve({
-                  id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                  fileName: file.name,
-                  fileSize: file.size,
-                  fileType: 'IMAGE',
-                  mimeType: file.type || 'image/png',
-                  cloudinaryUrl: typeof reader.result === 'string' ? reader.result : '',
-                  cloudinaryPublicId: publicId,
-                });
-              };
-              reader.readAsDataURL(file);
-            } else {
-              resolve({
-                id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: 'FILE',
-                mimeType: file.type || 'application/octet-stream',
-                cloudinaryUrl: `https://res.cloudinary.com/jcap-cloud/raw/upload/v1/${publicId}`,
-                cloudinaryPublicId: publicId,
-              });
-            }
-          })
-      )
-    ).then((uploaded) => {
-      setTimeout(() => {
-        setReplyAttachments((prev) => [...prev, ...uploaded]);
-        setIsUploadingReply(false);
-        showToast(`Đã tải ${uploaded.length} tệp lên Cloudinary (folder: issues/)`);
-      }, 400);
-    });
   };
 
-  const handleAddSampleAttachment = (type: 'IMAGE' | 'FILE') => {
-    if (replyAttachments.length >= 3) {
-      setReplyError('Tối đa 3 tệp/ảnh đính kèm trong một lần gửi.');
-      return;
-    }
-    setReplyError(null);
-    const sample = createSampleAttachment(type);
-    setReplyAttachments((prev) => [...prev, sample]);
-    showToast(`Đã đính kèm ${type === 'IMAGE' ? 'ảnh mẫu' : 'tệp PDF mẫu'} lên Cloudinary`);
-  };
+  // Tải tệp đính kèm thực tế lên Cloudinary (folder: issues/)
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
 
-  // Admin gửi phản hồi -> Tự động chuyển trạng thái từ PENDING sang IN_PROGRESS ("Đang trò chuyện")
-  const handleSendAdminReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTicket) return;
-    if (selectedTicket.status === 'CLOSED') {
-      setReplyError('Bài góp ý đã đóng. Hãy mở lại bài nếu muốn gửi thêm phản hồi.');
-      return;
-    }
-    if (!replyContent.trim() && replyAttachments.length === 0) {
-      setReplyError('Vui lòng nhập nội dung phản hồi hoặc đính kèm tệp/ảnh.');
-      return;
-    }
-
-    const nowIso = new Date().toISOString();
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      ticketId: selectedTicket.id,
-      senderRole: 'ADMIN' as const,
-      content: replyContent.trim(),
-      attachments: replyAttachments,
-      createdAt: nowIso,
-    };
-
-    const updated = tickets.map((t) =>
-      t.id === selectedTicket.id
-        ? {
-            ...t,
-            status: 'IN_PROGRESS' as const, // Chuyển sang trạng thái "Đang trò chuyện"
-            adminSeenAt: t.adminSeenAt || nowIso,
-            updatedAt: nowIso,
-            messages: [...t.messages, newMsg],
-          }
-        : t
-    );
-
-    syncTickets(updated);
-    setReplyContent('');
-    setReplyAttachments([]);
-    setReplyError(null);
-    showToast(
-      `Đã gửi phản hồi cho ${selectedTicket.anonymousCode} — Trạng thái: Đang trò chuyện`
-    );
-  };
-
-  // Chỉ Admin mới có quyền đóng bài
-  const handleCloseTicket = (ticketId: string) => {
-    const nowIso = new Date().toISOString();
-    const updated = tickets.map((t) =>
-      t.id === ticketId
-        ? {
-            ...t,
-            status: 'CLOSED' as const,
-            adminSeenAt: t.adminSeenAt || nowIso,
-            closedAt: nowIso,
-            updatedAt: nowIso,
-          }
-        : t
-    );
-    syncTickets(updated);
-    showToast('Đã đóng bài góp ý thành công.');
-  };
-
-  const handleReopenTicket = (ticketId: string) => {
-    const nowIso = new Date().toISOString();
-    const updated = tickets.map((t) =>
-      t.id === ticketId
-        ? {
-            ...t,
-            status: 'IN_PROGRESS' as const,
-            closedAt: undefined,
-            updatedAt: nowIso,
-          }
-        : t
-    );
-    syncTickets(updated);
-    showToast('Đã mở lại bài góp ý sang trạng thái Đang trò chuyện.');
-  };
-
-  const handleResetDemo = () => {
-    const fresh = resetMockFeedbackTickets();
-    setTickets(fresh);
-    setSelectedTicketId(fresh[0]?.id || '');
-    showToast('Đã khôi phục bộ dữ liệu mẫu ban đầu.');
-  };
-
-  const formatDateTime = (iso: string) => {
+    setIsUploadingAttachment(true);
+    setErrorMessage(null);
     try {
-      const d = new Date(iso);
-      return d.toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
+      const uploadedList: FeedbackAttachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`Tệp "${file.name}" vượt quá giới hạn 5MB.`);
+          continue;
+        }
+        const res = await feedbackService.uploadAttachment(file);
+        if (res.success && res.data) {
+          uploadedList.push(res.data);
+        } else {
+          alert(res.message || `Không thể tải tệp "${file.name}" lên Cloudinary.`);
+        }
+      }
+      if (uploadedList.length > 0) {
+        setReplyAttachments((prev) => [...prev, ...uploadedList]);
+      }
+    } finally {
+      setIsUploadingAttachment(false);
+    }
+  };
+
+  // Admin gửi phản hồi -> trạng thái tự động chuyển từ PENDING sang IN_PROGRESS (Đang trò chuyện)
+  const handleAdminReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket || selectedTicket.status === 'CLOSED' || isSubmittingReply) return;
+    if (!replyContent.trim() && replyAttachments.length === 0) return;
+
+    setIsSubmittingReply(true);
+    setErrorMessage(null);
+    try {
+      const res = await feedbackService.replyAsAdmin(selectedTicket.id, {
+        content: replyContent.trim() || '(Đính kèm tệp/ảnh từ Admin)',
+        attachments: replyAttachments.map((a) => ({
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          fileType: a.fileType,
+          mimeType: a.mimeType,
+          cloudinaryUrl: a.cloudinaryUrl,
+          cloudinaryPublicId: a.cloudinaryPublicId,
+        })),
       });
-    } catch {
-      return iso;
+
+      if (res.success && res.data) {
+        setTickets((prev) => prev.map((t) => (t.id === res.data!.id ? res.data! : t)));
+        setReplyContent('');
+        setReplyAttachments([]);
+      } else {
+        setErrorMessage(res.message || 'Không thể gửi phản hồi Admin.');
+      }
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  // Admin đóng bài hoặc mở lại bài
+  const handleToggleCloseTicket = async (ticket: FeedbackTicket) => {
+    if (isUpdatingStatus) return;
+    setIsUpdatingStatus(true);
+    setErrorMessage(null);
+    try {
+      const res =
+        ticket.status === 'CLOSED'
+          ? await feedbackService.reopenTicketAsAdmin(ticket.id)
+          : await feedbackService.closeTicketAsAdmin(ticket.id);
+
+      if (res.success && res.data) {
+        setTickets((prev) => prev.map((t) => (t.id === res.data!.id ? res.data! : t)));
+      } else {
+        setErrorMessage(res.message || 'Không thể cập nhật trạng thái bài góp ý.');
+      }
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
   return (
-    <div className="max-w-[1360px] mx-auto space-y-6 pb-10">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#071A44] text-white px-5 py-3.5 rounded-xl shadow-xl border border-blue-400/30 flex items-center gap-3 animate-fade-in">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm font-medium">{toastMsg}</span>
-        </div>
-      )}
-
-      {/* ===================================================================== */}
-      {/* HEADER QUẢN TRỊ HÒM THƯ GÓP Ý ẨN DANH                                 */}
-      {/* ===================================================================== */}
-      <div className="bg-white rounded-2xl border border-[#E6EDF5] p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl font-extrabold text-[#071A44]">
-                Quản lý Hòm thư Góp ý Ẩn danh
-              </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                🛡️ Bảo vệ Danh tính Học viên
-              </span>
+    <div className="space-y-6">
+      {/* Header Quản trị Hòm thư Góp ý Ẩn danh */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              <span>🛡️ Quản trị Hòm thư Góp ý Ẩn danh</span>
+              <span>•</span>
+              <span>Bảo vệ danh tính người gửi (#ANON)</span>
             </div>
-
-            <p className="text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-              Tiếp nhận và giải đáp phản ánh từ tất cả học viên trong hệ thống. Danh tính người gửi được ẩn hoàn toàn dưới mã{' '}
-              <code className="text-indigo-600 font-semibold">#ANON-xxxx</code>. Khi Admin gửi phản hồi, trạng thái bài sẽ tự động chuyển từ{' '}
-              <strong>Chờ Admin phản hồi</strong> sang <strong>Đang trò chuyện</strong>. Chỉ Admin có quyền đóng bài.
+            <h1 className="text-xl font-bold text-[#071A44]">
+              Tiếp nhận & Phản hồi Góp ý Học viên
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600">
+              Toàn bộ bài góp ý của học viên được ẩn danh hoàn toàn (không hiển thị tên, email hay ID tài khoản).
+              Khi Admin phản hồi, trạng thái sẽ tự động chuyển sang <strong>Đang trò chuyện</strong>. Chỉ Admin mới có quyền <strong>Đóng bài</strong>.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleResetDemo}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition cursor-pointer shrink-0 self-start md:self-auto"
-          >
-            Khôi phục dữ liệu mẫu
-          </button>
-        </div>
-
-        {/* Thống kê 3 trạng thái */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/70">
-            <div className="text-xs font-medium text-slate-500">Tổng số thư góp ý</div>
-            <div className="text-xl font-extrabold text-[#071A44] mt-0.5">{stats.total} bài</div>
-          </div>
-          <div className="bg-amber-50/70 rounded-xl p-3.5 border border-amber-200">
-            <div className="text-xs font-semibold text-amber-800 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Chờ Admin phản hồi
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+              <span className="text-amber-700">Chờ Admin phản hồi: </span>
+              <strong className="text-amber-900 font-bold">{counts.PENDING}</strong>
             </div>
-            <div className="text-xl font-extrabold text-amber-800 mt-0.5">{stats.pendingCount}</div>
-          </div>
-          <div className="bg-blue-50/70 rounded-xl p-3.5 border border-blue-200">
-            <div className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600" />
-              Đang trò chuyện
+            <div className="px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-xs">
+              <span className="text-blue-700">Đang trò chuyện: </span>
+              <strong className="text-blue-900 font-bold">{counts.IN_PROGRESS}</strong>
             </div>
-            <div className="text-xl font-extrabold text-blue-700 mt-0.5">
-              {stats.inProgressCount}
+            <div className="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-300 text-xs">
+              <span className="text-slate-600">Đã đóng: </span>
+              <strong className="text-slate-800 font-bold">{counts.CLOSED}</strong>
             </div>
-          </div>
-          <div className="bg-slate-100/80 rounded-xl p-3.5 border border-slate-200">
-            <div className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-500" />
-              Đã đóng (Closed)
-            </div>
-            <div className="text-xl font-extrabold text-slate-700 mt-0.5">{stats.closedCount}</div>
+            <button
+              type="button"
+              onClick={() => loadAllTickets(false)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer"
+              title="Làm mới danh sách"
+            >
+              <span>🔄</span>
+              <span>Làm mới</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ===================================================================== */}
-      {/* BỐ CỤC 2 CỘT: DANH SÁCH THƯ ẨN DANH (TRÁI) & XỬ LÝ LUỒNG (PHẢI)        */}
-      {/* ===================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* CỘT TRÁI: DANH SÁCH TOÀN BỘ THƯ GÓP Ý (5/12) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E6EDF5] shadow-xs overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-slate-100 space-y-3 bg-slate-50/50">
-            <div className="relative">
-              <svg
-                className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm theo mã #ANON, tiêu đề hoặc nội dung..."
-                className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#0878EE]"
-              />
-            </div>
+      {errorMessage && (
+        <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center justify-between">
+          <span>⚠️ {errorMessage}</span>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="text-red-500 hover:text-red-700 font-bold cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
+      {/* Bố cục 2 cột cho Admin */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* CỘT TRÁI (5/12): Danh sách tất cả bài góp ý ẩn danh gửi về hệ thống */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div className="p-3.5 border-b border-slate-100 space-y-2.5 bg-slate-50/50">
             {/* Bộ lọc 3 trạng thái */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="grid grid-cols-4 gap-1 bg-slate-200/70 p-1 rounded-xl text-[11px] font-semibold">
               <button
                 type="button"
                 onClick={() => setStatusFilter('ALL')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                className={`py-1.5 px-2 rounded-lg transition cursor-pointer ${
                   statusFilter === 'ALL'
-                    ? 'bg-[#071A44] text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-white text-[#071A44] shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Tất cả ({stats.total})
+                Tất cả ({counts.ALL})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('PENDING')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`py-1.5 px-2 rounded-lg transition cursor-pointer ${
                   statusFilter === 'PENDING'
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                    ? 'bg-white text-amber-700 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Chờ phản hồi ({stats.pendingCount})
+                Chờ ({counts.PENDING})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('IN_PROGRESS')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`py-1.5 px-2 rounded-lg transition cursor-pointer ${
                   statusFilter === 'IN_PROGRESS'
-                    ? 'bg-[#0878EE] text-white'
-                    : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+                    ? 'bg-white text-blue-700 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Đang trò chuyện ({stats.inProgressCount})
+                Đang chat ({counts.IN_PROGRESS})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('CLOSED')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`py-1.5 px-2 rounded-lg transition cursor-pointer ${
                   statusFilter === 'CLOSED'
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
+                    ? 'bg-white text-slate-800 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Đã đóng ({stats.closedCount})
+                Đã đóng ({counts.CLOSED})
               </button>
             </div>
 
-            <div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm mã #ANON, tiêu đề, nội dung..."
+                className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value as 'ALL' | FeedbackCategory)}
-                className="w-full text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:border-[#0878EE]"
+                className="px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-700"
               >
-                <option value="ALL">Tất cả danh mục chủ đề</option>
+                <option value="ALL">Mọi danh mục</option>
                 {(Object.keys(CATEGORY_META) as FeedbackCategory[]).map((cat) => (
                   <option key={cat} value={cat}>
                     {CATEGORY_META[cat].icon} {CATEGORY_META[cat].label}
@@ -445,72 +334,66 @@ export const AdminFeedbackView: React.FC = () => {
             </div>
           </div>
 
-          <div className="divide-y divide-slate-100 max-h-[640px] overflow-y-auto">
-            {filteredTickets.length === 0 ? (
-              <div className="p-10 text-center">
-                <div className="text-3xl mb-2">📭</div>
-                <p className="text-sm font-semibold text-slate-700">
-                  Không có bài góp ý nào khớp bộ lọc
-                </p>
+          <div className="divide-y divide-slate-100 max-h-[620px] overflow-y-auto">
+            {isLoading ? (
+              <div className="p-10 text-center text-xs text-slate-500">
+                Đang tải danh sách hòm thư góp ý...
+              </div>
+            ) : filteredTickets.length === 0 ? (
+              <div className="p-10 text-center text-xs text-slate-500">
+                Không có bài góp ý nào khớp với bộ lọc hiện tại.
               </div>
             ) : (
               filteredTickets.map((ticket) => {
-                const isSelected = selectedTicket?.id === ticket.id;
-                const catMeta = CATEGORY_META[ticket.category];
-                const stMeta = STATUS_META[ticket.status];
-                const lastMessage = ticket.messages[ticket.messages.length - 1];
+                const isSelected = ticket.id === selectedTicket?.id;
+                const catMeta = CATEGORY_META[ticket.category] || CATEGORY_META.SUGGESTION;
+                const statusMeta = STATUS_META[ticket.status] || STATUS_META.PENDING;
+                const lastMsg = ticket.messages[ticket.messages.length - 1];
+                const waitingForAdmin =
+                  ticket.status === 'PENDING' ||
+                  (ticket.status === 'IN_PROGRESS' && lastMsg?.senderRole === 'LEARNER');
 
                 return (
                   <button
                     key={ticket.id}
                     type="button"
-                    onClick={() => handleSelectTicket(ticket)}
-                    className={`w-full text-left p-4 transition cursor-pointer block ${
+                    onClick={() => handleSelectTicket(ticket.id)}
+                    className={`w-full text-left p-4 transition flex flex-col gap-2 cursor-pointer ${
                       isSelected
                         ? 'bg-blue-50/70 border-l-4 border-l-[#0878EE]'
-                        : 'hover:bg-slate-50 border-l-4 border-l-transparent'
+                        : 'hover:bg-slate-50/80'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${stMeta.badgeBg} ${stMeta.badgeText} ${stMeta.badgeBorder}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${stMeta.dotColor}`} />
-                        {stMeta.label}
-                      </span>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${statusMeta.badgeBg} ${statusMeta.badgeText} ${statusMeta.badgeBorder}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotColor}`} />
+                          {statusMeta.label}
+                        </span>
+                        {waitingForAdmin && ticket.status !== 'CLOSED' && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
+                            Cần phản hồi
+                          </span>
+                        )}
+                      </div>
 
-                      <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                        🕵️ {ticket.anonymousCode}
+                      <span className="text-[11px] text-slate-400">
+                        {formatRelativeTime(ticket.updatedAt)}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-[#071A44] line-clamp-2 leading-snug mt-1">
+                    <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug">
                       {ticket.title}
                     </h3>
 
-                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${catMeta.badgeBg} ${catMeta.badgeText} ${catMeta.badgeBorder}`}
-                      >
-                        {catMeta.icon} {catMeta.label}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="font-mono font-semibold text-slate-600">
+                        🕵️ {ticket.anonymousCode} (Ẩn danh)
                       </span>
-                    </div>
-
-                    {lastMessage && (
-                      <p className="text-xs text-slate-500 line-clamp-1 mt-2">
-                        <span className="font-semibold text-slate-700">
-                          {lastMessage.senderRole === 'ADMIN'
-                            ? '🛡️ Admin: '
-                            : `🕵️ ${ticket.anonymousCode}: `}
-                        </span>
-                        {lastMessage.content}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-100">
-                      <span>Cập nhật: {formatDateTime(ticket.updatedAt)}</span>
-                      <span className="font-semibold text-slate-600">
-                        💬 {ticket.messages.length} tin nhắn
+                      <span>
+                        {catMeta.icon} {catMeta.label} • 💬 {ticket.messages.length}
                       </span>
                     </div>
                   </button>
@@ -520,366 +403,235 @@ export const AdminFeedbackView: React.FC = () => {
           </div>
         </div>
 
-        {/* CỘT PHẢI: CHI TIẾT XỬ LÝ & ĐÓNG BÀI CỦA ADMIN (7/12) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E6EDF5] shadow-xs overflow-hidden flex flex-col">
+        {/* CỘT PHẢI (7/12): Luồng xử lý & Đóng bài dành cho Admin */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           {!selectedTicket ? (
-            <div className="p-16 text-center text-slate-500">
-              Chọn một thư góp ý ở bên trái để xem nội dung và phản hồi cho học viên.
+            <div className="p-12 text-center text-sm text-slate-500">
+              Chọn một bài góp ý ở cột bên trái để xem chi tiết và phản hồi cho học viên.
             </div>
           ) : (
             <>
-              <div className="p-6 border-b border-slate-200 bg-slate-50/60">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
+              <div className="p-5 border-b border-slate-200/80 bg-slate-50/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                        (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeBg
+                      } ${(STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeText} ${
+                        (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeBorder
+                      }`}
+                    >
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                          STATUS_META[selectedTicket.status].badgeBg
-                        } ${STATUS_META[selectedTicket.status].badgeText} ${
-                          STATUS_META[selectedTicket.status].badgeBorder
+                        className={`w-2 h-2 rounded-full ${
+                          (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).dotColor
                         }`}
-                      >
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            STATUS_META[selectedTicket.status].dotColor
-                          }`}
-                        />
-                        {STATUS_META[selectedTicket.status].label}
-                      </span>
+                      />
+                      {(STATUS_META[selectedTicket.status] || STATUS_META.PENDING).label}
+                    </span>
 
-                      <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
-                        Người gửi: Học viên Ẩn danh ({selectedTicket.anonymousCode})
-                      </span>
-
-                      <span
-                        className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${
-                          CATEGORY_META[selectedTicket.category].badgeBg
-                        } ${CATEGORY_META[selectedTicket.category].badgeText} ${
-                          CATEGORY_META[selectedTicket.category].badgeBorder
-                        }`}
-                      >
-                        {CATEGORY_META[selectedTicket.category].icon}{' '}
-                        {CATEGORY_META[selectedTicket.category].label}
-                      </span>
-                    </div>
-
-                    <h2 className="text-lg font-extrabold text-[#071A44] leading-snug">
-                      {selectedTicket.title}
-                    </h2>
-
-                    <div className="text-xs text-slate-500">
-                      🕵️ Danh tính học viên (Tên, Email, User ID) được ẩn tuyệt đối khỏi Admin • Ngày gửi:{' '}
-                      {formatDateTime(selectedTicket.createdAt)}
-                    </div>
+                    <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                      🕵️ Người gửi: {selectedTicket.anonymousCode} (Đã ẩn danh tính)
+                    </span>
                   </div>
 
-                  {/* Nút Đóng bài / Mở lại bài của Admin */}
-                  <div className="shrink-0">
-                    {selectedTicket.status !== 'CLOSED' ? (
-                      <button
-                        type="button"
-                        onClick={() => handleCloseTicket(selectedTicket.id)}
-                        className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span>Đóng bài góp ý</span>
-                      </button>
+                  {/* Nút Đóng / Mở lại bài - Đặc quyền của Admin */}
+                  <button
+                    type="button"
+                    disabled={isUpdatingStatus}
+                    onClick={() => handleToggleCloseTicket(selectedTicket)}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
+                      selectedTicket.status === 'CLOSED'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                    }`}
+                  >
+                    {selectedTicket.status === 'CLOSED' ? (
+                      <>
+                        <span>🔓</span>
+                        <span>Mở lại bài góp ý</span>
+                      </>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleReopenTicket(selectedTicket.id)}
-                        className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <span>🔓 Mở lại bài</span>
-                      </button>
+                      <>
+                        <span>🔒</span>
+                        <span>Đóng bài góp ý này</span>
+                      </>
                     )}
-                  </div>
+                  </button>
                 </div>
+
+                <h2 className="text-base sm:text-lg font-bold text-[#071A44]">
+                  {selectedTicket.title}
+                </h2>
               </div>
 
               {/* Luồng tin nhắn */}
-              <div className="p-6 space-y-0 flex-1 max-h-[540px] overflow-y-auto bg-[#FAFCFF]">
-                {selectedTicket.messages.map((msg, idx) => {
+              <div className="p-5 space-y-4 max-h-[460px] overflow-y-auto bg-[#F8FAFC]">
+                {selectedTicket.messages.map((msg) => {
                   const isAdmin = msg.senderRole === 'ADMIN';
-                  const isFirst = idx === 0;
-
                   return (
-                    <div key={msg.id} className="relative pl-8 pb-6 last:pb-2">
-                      {idx < selectedTicket.messages.length - 1 ||
-                      selectedTicket.status === 'CLOSED' ? (
-                        <div className="absolute left-[13px] top-7 bottom-0 w-0.5 bg-slate-200" />
-                      ) : null}
-
+                    <div
+                      key={msg.id}
+                      className={`rounded-2xl border overflow-hidden shadow-2xs ${
+                        isAdmin ? 'border-blue-200 bg-white' : 'border-slate-200 bg-white'
+                      }`}
+                    >
                       <div
-                        className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-2xs border-2 border-white ${
-                          isAdmin ? 'bg-[#0878EE] text-white' : 'bg-indigo-600 text-white'
+                        className={`px-4 py-2.5 border-b flex items-center justify-between text-xs ${
+                          isAdmin
+                            ? 'bg-[#071A44] text-white border-slate-800'
+                            : 'bg-slate-50 text-slate-700 border-slate-100'
                         }`}
                       >
-                        {isAdmin ? '🛡️' : '🕵️'}
+                        <div className="flex items-center gap-2 font-bold">
+                          <span>{isAdmin ? '🛡️ Ban Quản trị (Admin)' : `🕵️ Học viên ẩn danh (${selectedTicket.anonymousCode})`}</span>
+                        </div>
+                        <span className={isAdmin ? 'text-slate-300' : 'text-slate-400'}>
+                          {formatRelativeTime(msg.createdAt)}
+                        </span>
                       </div>
 
-                      <div
-                        className={`rounded-2xl border overflow-hidden shadow-2xs ${
-                          isAdmin
-                            ? 'bg-blue-50/40 border-blue-200'
-                            : 'bg-white border-slate-200'
-                        }`}
-                      >
-                        <div
-                          className={`px-4 py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs ${
-                            isAdmin
-                              ? 'bg-blue-100/50 border-blue-200 text-blue-950'
-                              : 'bg-slate-50 border-slate-200/80 text-slate-700'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold">
-                              {isAdmin
-                                ? 'Ban Quản Trị JCAP (Admin)'
-                                : `Học viên Ẩn danh (${selectedTicket.anonymousCode})`}
-                            </span>
-                            {isFirst && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                                Bài góp ý gốc
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-slate-500">{formatDateTime(msg.createdAt)}</span>
-                        </div>
-
-                        <div className="p-4 text-sm text-slate-800 whitespace-pre-line leading-relaxed">
+                      <div className="p-4 space-y-3">
+                        <p className="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed">
                           {msg.content}
-                        </div>
+                        </p>
 
-                        {msg.attachments.length > 0 && (
-                          <div className="px-4 pb-4 pt-1 border-t border-slate-100/80 bg-slate-50/40">
-                            <div className="text-[11px] font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
-                              <span>☁️ Tệp & Ảnh đính kèm (Cloudinary)</span>
-                              <span className="text-slate-400">({msg.attachments.length})</span>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {msg.attachments.map((att) =>
-                                att.fileType === 'IMAGE' ? (
-                                  <div
-                                    key={att.id}
-                                    onClick={() =>
-                                      setPreviewImage({
-                                        url: att.cloudinaryUrl,
-                                        name: att.fileName,
-                                        publicId: att.cloudinaryPublicId,
-                                      })
-                                    }
-                                    className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-900 cursor-pointer hover:border-[#0878EE] transition"
-                                  >
-                                    <img
-                                      src={att.cloudinaryUrl}
-                                      alt={att.fileName}
-                                      className="w-full h-36 object-cover group-hover:opacity-90 transition"
-                                    />
-                                    <div className="p-2 bg-white flex items-center justify-between text-xs">
-                                      <span className="font-semibold text-slate-700 truncate max-w-[160px]">
-                                        🖼️ {att.fileName}
-                                      </span>
-                                      <span className="text-[11px] text-slate-400 shrink-0">
-                                        {formatFileSize(att.fileSize)}
-                                      </span>
-                                    </div>
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {msg.attachments.map((att) =>
+                              att.fileType === 'IMAGE' ? (
+                                <div
+                                  key={att.id}
+                                  onClick={() => setPreviewImage(att)}
+                                  className="rounded-xl border border-slate-200 overflow-hidden bg-slate-900 cursor-pointer hover:border-blue-400"
+                                >
+                                  <img
+                                    src={att.cloudinaryUrl}
+                                    alt={att.fileName}
+                                    className="w-full h-32 object-cover"
+                                  />
+                                  <div className="p-2 bg-white flex items-center justify-between text-[11px]">
+                                    <span className="truncate font-medium">🖼️ {att.fileName}</span>
+                                    <span className="text-slate-400">{formatFileSize(att.fileSize)}</span>
                                   </div>
-                                ) : (
-                                  <div
-                                    key={att.id}
-                                    className="p-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between gap-3 hover:border-blue-300 transition"
-                                  >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0878EE] flex items-center justify-center font-bold text-sm shrink-0">
-                                        📄
-                                      </div>
-                                      <div className="min-w-0">
-                                        <div className="text-xs font-bold text-slate-800 truncate">
-                                          {att.fileName}
-                                        </div>
-                                        <div className="text-[11px] text-slate-400 truncate">
-                                          {formatFileSize(att.fileSize)} • {att.cloudinaryPublicId}
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        showToast(
-                                          `Đang tải tệp từ Cloudinary: ${att.cloudinaryPublicId}`
-                                        )
-                                      }
-                                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-xs font-semibold text-[#0878EE] shrink-0 cursor-pointer"
-                                    >
-                                      Tải về
-                                    </button>
-                                  </div>
-                                )
-                              )}
-                            </div>
+                                </div>
+                              ) : (
+                                <a
+                                  key={att.id}
+                                  href={att.cloudinaryUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/40 flex items-center justify-between text-xs"
+                                >
+                                  <span className="font-semibold truncate">📄 {att.fileName}</span>
+                                  <span className="text-slate-400 shrink-0 ml-2">
+                                    {formatFileSize(att.fileSize)} ↗
+                                  </span>
+                                </a>
+                              )
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
                   );
                 })}
-
-                {selectedTicket.status === 'CLOSED' && (
-                  <div className="relative pl-8 pt-1">
-                    <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs shadow-2xs border-2 border-white">
-                      🔒
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700">
-                      <strong>Admin</strong> đã đóng bài góp ý này
-                      {selectedTicket.closedAt
-                        ? ` vào lúc ${formatDateTime(selectedTicket.closedAt)}`
-                        : ''}
-                      .
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Khung Admin trả lời */}
-              <div className="p-5 border-t border-slate-200 bg-white">
+              {/* Khung Admin phản hồi */}
+              <div className="p-4 border-t border-slate-200/80 bg-white">
                 {selectedTicket.status === 'CLOSED' ? (
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
-                    <div className="text-sm font-bold text-slate-700">
-                      🔒 Bài góp ý này đã đóng
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      Nếu cần trao đổi thêm với học viên {selectedTicket.anonymousCode}, hãy bấm nút "Mở lại bài" ở góc trên.
-                    </p>
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+                    <span className="font-semibold text-slate-700">
+                      🔒 Bài góp ý này đang ở trạng thái Đã đóng.
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleToggleCloseTicket(selectedTicket)}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    >
+                      🔓 Mở lại để phản hồi tiếp
+                    </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSendAdminReply} className="space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span className="font-bold text-slate-700">
-                        🛡️ Phản hồi của Admin gửi tới Học viên Ẩn danh ({selectedTicket.anonymousCode})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setReplyContent(
-                            `Chào bạn (${selectedTicket.anonymousCode}), Ban Quản Trị đã kiểm tra thông tin bạn gửi và hoàn tất xử lý trên hệ thống. Bạn vui lòng tải lại trang để kiểm tra kết quả nhé!`
-                          )
-                        }
-                        className="text-[11px] font-bold text-[#0878EE] hover:underline cursor-pointer"
-                      >
-                        ✨ Điền nhanh câu trả lời mẫu
-                      </button>
-                    </div>
-
-                    {replyError && (
-                      <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
-                        {replyError}
-                      </div>
-                    )}
-
+                  <form onSubmit={handleAdminReply} className="space-y-3">
                     <textarea
                       rows={3}
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder="Nhập nội dung phản hồi hoặc hướng dẫn giải quyết cho học viên..."
-                      className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#0878EE] resize-none"
+                      placeholder={`Nhập phản hồi chính thức của Admin gửi tới ${selectedTicket.anonymousCode}...`}
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
                     />
 
                     {replyAttachments.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-1">
+                      <div className="flex flex-wrap gap-2">
                         {replyAttachments.map((att) => (
                           <div
-                            key={att.id}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900"
+                            key={att.cloudinaryUrl}
+                            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800"
                           >
-                            <span>{att.fileType === 'IMAGE' ? '🖼️' : '📄'}</span>
-                            <span className="font-semibold truncate max-w-[160px]">
-                              {att.fileName}
-                            </span>
-                            <span className="text-[10px] text-blue-600">
-                              ({formatFileSize(att.fileSize)})
-                            </span>
+                            <span>{att.fileType === 'IMAGE' ? '🖼️' : '📎'}</span>
+                            <span className="truncate max-w-[180px]">{att.fileName}</span>
                             <button
                               type="button"
                               onClick={() =>
                                 setReplyAttachments((prev) =>
-                                  prev.filter((x) => x.id !== att.id)
+                                  prev.filter((x) => x.cloudinaryUrl !== att.cloudinaryUrl)
                                 )
                               }
-                              className="text-rose-600 hover:text-rose-800 font-bold ml-1 cursor-pointer"
+                              className="text-blue-500 hover:text-red-600 font-bold cursor-pointer"
                             >
-                              ✕
+                              ×
                             </button>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <input
                           ref={replyFileInputRef}
                           type="file"
                           multiple
-                          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-                          onChange={(e) => handleFilesSelected(e.target.files)}
+                          accept="image/*,.pdf,.txt,.log,.json,.zip,.doc,.docx"
                           className="hidden"
+                          onChange={(e) => {
+                            handleFileUpload(e.target.files);
+                            e.target.value = '';
+                          }}
                         />
                         <button
                           type="button"
-                          disabled={isUploadingReply}
+                          disabled={isUploadingAttachment}
                           onClick={() => replyFileInputRef.current?.click()}
-                          className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 text-xs font-medium text-slate-700 cursor-pointer"
                         >
-                          <span>📎</span>
-                          <span>
-                            {isUploadingReply
-                              ? 'Đang tải lên Cloudinary...'
-                              : 'Đính kèm ảnh / tệp (<5MB)'}
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSampleAttachment('IMAGE')}
-                          className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-600 cursor-pointer"
-                        >
-                          + Ảnh mẫu
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSampleAttachment('FILE')}
-                          className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-600 cursor-pointer"
-                        >
-                          + Tệp PDF mẫu
+                          {isUploadingAttachment
+                            ? '⏳ Đang tải lên Cloudinary...'
+                            : '📎 Đính kèm ảnh / tệp (Cloudinary)'}
                         </button>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleCloseTicket(selectedTicket.id)}
-                          className="px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition cursor-pointer"
+                          disabled={isUpdatingStatus}
+                          onClick={() => handleToggleCloseTicket(selectedTicket)}
+                          className="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 text-rose-700 text-xs font-bold cursor-pointer"
                         >
-                          Đóng bài góp ý
+                          🔒 Đóng bài
                         </button>
                         <button
                           type="submit"
-                          disabled={isUploadingReply}
-                          className="px-5 py-2.5 rounded-xl bg-[#0878EE] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition cursor-pointer"
+                          disabled={
+                            isSubmittingReply ||
+                            isUploadingAttachment ||
+                            (!replyContent.trim() && replyAttachments.length === 0)
+                          }
+                          className="px-4 py-2 rounded-xl bg-[#071A44] hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-semibold cursor-pointer"
                         >
-                          Gửi phản hồi của Admin
+                          {isSubmittingReply ? '⏳ Đang gửi...' : '🛡️ Gửi phản hồi của Admin'}
                         </button>
                       </div>
                     </div>
@@ -891,36 +643,38 @@ export const AdminFeedbackView: React.FC = () => {
         </div>
       </div>
 
-      {/* Lightbox xem ảnh đính kèm */}
+      {/* Lightbox xem ảnh */}
       {previewImage && (
         <div
           onClick={() => setPreviewImage(null)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200"
+            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200"
           >
-            <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between text-xs">
-              <div>
-                <span className="font-bold">{previewImage.name}</span>
-                <span className="text-slate-400 ml-2">
-                  (Cloudinary: {previewImage.publicId})
-                </span>
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-slate-800 truncate">
+                  🖼️ {previewImage.fileName} ({formatFileSize(previewImage.fileSize)})
+                </div>
+                <div className="text-[11px] text-slate-500 font-mono truncate">
+                  ☁️ Cloudinary URL: {previewImage.cloudinaryUrl}
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewImage(null)}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 font-bold cursor-pointer"
+                className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-500 font-bold cursor-pointer"
               >
-                Đóng ✕
+                ✕
               </button>
             </div>
             <div className="p-4 bg-slate-950 flex items-center justify-center">
               <img
-                src={previewImage.url}
-                alt={previewImage.name}
-                className="max-h-[70vh] w-auto rounded-lg"
+                src={previewImage.cloudinaryUrl}
+                alt={previewImage.fileName}
+                className="max-h-[420px] w-auto rounded-lg"
               />
             </div>
           </div>
@@ -929,5 +683,3 @@ export const AdminFeedbackView: React.FC = () => {
     </div>
   );
 };
-
-export default AdminFeedbackView;

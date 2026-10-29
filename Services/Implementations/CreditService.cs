@@ -15,6 +15,8 @@ namespace JCAP.Services.Implementations
 {
     public class CreditService : ICreditService
     {
+        public const int PendingOrderTimeoutMinutes = 10;
+
         private readonly AppDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly PayOsSettings _payOsSettings;

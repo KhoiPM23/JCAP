@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
-import { formatDateTime } from '../utils/dateUtils';
+import { formatDateTime, parseDateTime } from '../utils/dateUtils';
 import type { CreditTransaction, CreditHistoryResponse } from '../types/credit';
+
+const PENDING_TIMEOUT_MS = 10 * 60 * 1000; // Thời gian tự hủy đơn treo: 10 phút (đồng bộ PayOS)
 
 export const CreditHistoryView: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -16,8 +18,10 @@ export const CreditHistoryView: React.FC = () => {
   const [cancelTargetTx, setCancelTargetTx] = useState<CreditTransaction | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoCancellingIdsRef = useRef<Set<number>>(new Set());
   const pageSize = 10;
 
   const showNotification = useCallback((text: string | null, type: 'success' | 'error' = 'success') => {
@@ -97,7 +101,13 @@ export const CreditHistoryView: React.FC = () => {
     document.addEventListener('visibilitychange', handleFocusOrVisible);
 
     let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let countdownTimer: ReturnType<typeof setInterval> | null = null;
     if (hasPendingTransactions) {
+      setNowMs(Date.now());
+      countdownTimer = setInterval(() => {
+        setNowMs(Date.now());
+      }, 1000);
+
       pollTimer = setInterval(() => {
         if (document.visibilityState === 'visible') {
           void fetchHistory(currentPage, true);
@@ -109,8 +119,49 @@ export const CreditHistoryView: React.FC = () => {
       window.removeEventListener('focus', handleFocusOrVisible);
       document.removeEventListener('visibilitychange', handleFocusOrVisible);
       if (pollTimer) clearInterval(pollTimer);
+      if (countdownTimer) clearInterval(countdownTimer);
     };
   }, [currentPage, hasPendingTransactions, fetchHistory]);
+
+  const getRemainingSeconds = useCallback((createdAtStr: string, currentNowMs: number): number => {
+    const createdDate = parseDateTime(createdAtStr);
+    if (!createdDate) return 0;
+    const expiresAtMs = createdDate.getTime() + PENDING_TIMEOUT_MS;
+    return Math.max(0, Math.ceil((expiresAtMs - currentNowMs) / 1000));
+  }, []);
+
+  const formatCountdown = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // Khi đồng hồ đếm ngược 10 phút về 00:00 -> tự động kích hoạt hủy giao dịch và làm mới danh sách
+  useEffect(() => {
+    if (!data?.transactions) return;
+
+    const expiredPendingTxs = data.transactions.filter(
+      (tx) =>
+        tx.status.toLowerCase() === 'pending' &&
+        getRemainingSeconds(tx.createdAt, nowMs) <= 0 &&
+        !autoCancellingIdsRef.current.has(tx.id)
+    );
+
+    if (expiredPendingTxs.length === 0) return;
+
+    expiredPendingTxs.forEach((tx) => {
+      autoCancellingIdsRef.current.add(tx.id);
+    });
+
+    void (async () => {
+      await Promise.allSettled(
+        expiredPendingTxs.map((tx) =>
+          tx.payOsOrderCode ? creditService.cancelOrder(tx.payOsOrderCode) : Promise.resolve()
+        )
+      );
+      await fetchHistory(currentPage, true);
+    })();
+  }, [nowMs, data?.transactions, currentPage, fetchHistory, getRemainingSeconds]);
 
   const handleContinuePayment = async (orderCode?: string) => {
     if (!orderCode) return;
@@ -159,7 +210,8 @@ export const CreditHistoryView: React.FC = () => {
 
   const formatDate = (dateStr: string) => formatDateTime(dateStr);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (tx: CreditTransaction) => {
+    const status = tx.status;
     switch (status.toLowerCase()) {
       case 'paid':
         return (
@@ -167,12 +219,35 @@ export const CreditHistoryView: React.FC = () => {
             Thành công
           </span>
         );
-      case 'pending':
+      case 'pending': {
+        const remainingSec = getRemainingSeconds(tx.createdAt, nowMs);
+        if (remainingSec <= 0) {
+          return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+              Đã hủy
+            </span>
+          );
+        }
+        const isUrgent = remainingSec <= 120;
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            Chờ thanh toán
-          </span>
+          <div className="inline-flex flex-col items-start gap-1">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              Chờ thanh toán
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md ${
+                isUrgent
+                  ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+              title="Đơn hàng sẽ tự động hủy sau 10 phút nếu chưa hoàn tất thanh toán"
+            >
+              <span>⏳</span>
+              <span>Tự hủy: {formatCountdown(remainingSec)}</span>
+            </span>
+          </div>
         );
+      }
       case 'cancelled':
       case 'failed':
         return (
@@ -311,7 +386,9 @@ export const CreditHistoryView: React.FC = () => {
               <tbody className="divide-y divide-[#E6EDF5]">
                 {data.transactions.map((tx: CreditTransaction) => {
                   const isPositive = tx.amount > 0;
-                  const isPending = tx.status.toLowerCase() === 'pending';
+                  const isPending =
+                    tx.status.toLowerCase() === 'pending' &&
+                    getRemainingSeconds(tx.createdAt, nowMs) > 0;
 
                   return (
                     <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
@@ -340,7 +417,7 @@ export const CreditHistoryView: React.FC = () => {
                         )}
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
-                        {getStatusBadge(tx.status)}
+                        {getStatusBadge(tx)}
                       </td>
                       <td className="py-4 px-6 text-[#475467] max-w-xs truncate">
                         {formatDescription(tx.description)}

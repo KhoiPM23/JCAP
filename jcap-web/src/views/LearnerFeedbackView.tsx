@@ -1,1164 +1,955 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+
 import {
-  getAllMockFeedbackTickets,
-  getLearnerOwnTickets,
-  saveMockFeedbackTickets,
-  resetMockFeedbackTickets,
-  createSampleAttachment,
-  formatFileSize,
-  CATEGORY_META,
-  STATUS_META,
-  type FeedbackTicket,
   type FeedbackCategory,
   type FeedbackStatus,
   type FeedbackAttachment,
-} from '../services/mockFeedbackStore';
+  type FeedbackTicket,
+  STATUS_META,
+  CATEGORY_META,
+  feedbackService,
+  formatFileSize,
+} from '../services/feedbackService';
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // Giới hạn 5MB cho tệp/ảnh dung lượng nhỏ
+function formatRelativeTime(iso: string): string {
+  const date = new Date(iso);
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'Vừa xong';
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} giờ trước`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export const LearnerFeedbackView: React.FC = () => {
-  const { user } = useAuth();
-  const learnerKey = useMemo(() => {
-    if (user?.id) return String(user.id);
-    if (user?.email) return user.email.toLowerCase();
-    try {
-      const saved = localStorage.getItem('jcap_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return String(parsed.id || parsed.email || 'PRIMARY_DEMO_LEARNER').toLowerCase();
-      }
-    } catch {}
-    return 'PRIMARY_DEMO_LEARNER';
-  }, [user]);
+  const [myTickets, setMyTickets] = useState<FeedbackTicket[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Chỉ lấy các bài góp ý CỦA CHÍNH HỌC VIÊN ĐANG ĐĂNG NHẬP
-  const [myTickets, setMyTickets] = useState<FeedbackTicket[]>(() =>
-    getLearnerOwnTickets(learnerKey)
-  );
-  const [selectedTicketId, setSelectedTicketId] = useState<string>(() => {
-    const initial = getLearnerOwnTickets(learnerKey);
-    return initial[0]?.id || '';
-  });
-
-  useEffect(() => {
-    const own = getLearnerOwnTickets(learnerKey);
-    setMyTickets(own);
-    if (own.length > 0 && !own.some((t) => t.id === selectedTicketId)) {
-      setSelectedTicketId(own[0].id);
-    }
-  }, [learnerKey]);
-
-  // Bộ lọc danh sách theo 3 trạng thái
+  // Bộ lọc danh sách của riêng học viên
   const [statusFilter, setStatusFilter] = useState<'ALL' | FeedbackStatus>('ALL');
-  const [categoryFilter, setCategoryFilter] = useState<'ALL' | FeedbackCategory>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // State cho Modal Tạo Bài Góp Ý Mới
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // Modal tạo bài góp ý ẩn danh mới
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<FeedbackCategory>('SCENARIO_BUG');
   const [newContent, setNewContent] = useState('');
   const [newAttachments, setNewAttachments] = useState<FeedbackAttachment[]>([]);
-  const [isUploadingNew, setIsUploadingNew] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
+  const [isUploadingNewAttachment, setIsUploadingNewAttachment] = useState(false);
+  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
 
-  // State cho khung Phản hồi trong luồng (Reply Box)
+  // Ô nhập phản hồi tiếp theo của học viên
   const [replyContent, setReplyContent] = useState('');
   const [replyAttachments, setReplyAttachments] = useState<FeedbackAttachment[]>([]);
-  const [isUploadingReply, setIsUploadingReply] = useState(false);
-  const [replyError, setReplyError] = useState<string | null>(null);
+  const [isUploadingReplyAttachment, setIsUploadingReplyAttachment] = useState(false);
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // Lightbox xem ảnh đính kèm
-  const [previewImage, setPreviewImage] = useState<{
-    url: string;
-    name: string;
-    publicId: string;
-  } | null>(null);
-
-  // Toast thông báo thao tác
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<FeedbackAttachment | null>(null);
 
   const newFileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => {
-      setToastMsg((prev) => (prev === msg ? null : prev));
-    }, 4000);
-  };
+  const loadMyTickets = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    const res = await feedbackService.getMyTickets();
+    if (res.success && res.data) {
+      setMyTickets(res.data);
+      setSelectedTicketId((prev) => {
+        if (prev && res.data!.some((t) => t.id === prev)) return prev;
+        return res.data![0]?.id ?? null;
+      });
+      setErrorMessage(null);
+    } else if (!silent) {
+      setErrorMessage(res.message || 'Không thể tải lịch sử góp ý của bạn.');
+    }
+    if (!silent) setIsLoading(false);
+  }, []);
 
-  // Thống kê theo 3 trạng thái của riêng học viên này
-  const stats = useMemo(() => {
-    const total = myTickets.length;
-    const pendingCount = myTickets.filter((t) => t.status === 'PENDING').length;
-    const inProgressCount = myTickets.filter((t) => t.status === 'IN_PROGRESS').length;
-    const closedCount = myTickets.filter((t) => t.status === 'CLOSED').length;
-    return { total, pendingCount, inProgressCount, closedCount };
+  useEffect(() => {
+    loadMyTickets(false);
+    // Tự động đồng bộ mỗi 10 giây để cập nhật trạng thái Admin đã xem / phản hồi mới
+    const timer = window.setInterval(() => {
+      loadMyTickets(true);
+    }, 10000);
+    return () => window.clearInterval(timer);
+  }, [loadMyTickets]);
+
+  const counts = useMemo(() => {
+    return {
+      ALL: myTickets.length,
+      PENDING: myTickets.filter((t) => t.status === 'PENDING').length,
+      IN_PROGRESS: myTickets.filter((t) => t.status === 'IN_PROGRESS').length,
+      CLOSED: myTickets.filter((t) => t.status === 'CLOSED').length,
+    };
   }, [myTickets]);
 
-  // Lọc danh sách bài góp ý của cá nhân học viên
   const filteredTickets = useMemo(() => {
     return myTickets.filter((t) => {
       if (statusFilter !== 'ALL' && t.status !== statusFilter) return false;
-      if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchTitle = t.title.toLowerCase().includes(q);
         const matchCode = t.anonymousCode.toLowerCase().includes(q);
-        const matchMsg = t.messages.some((m) => m.content.toLowerCase().includes(q));
-        if (!matchTitle && !matchCode && !matchMsg) return false;
+        const matchBody = t.messages.some((m) => m.content.toLowerCase().includes(q));
+        if (!matchTitle && !matchCode && !matchBody) return false;
       }
       return true;
     });
-  }, [myTickets, statusFilter, categoryFilter, searchQuery]);
+  }, [myTickets, statusFilter, searchQuery]);
 
   const selectedTicket = useMemo(
-    () => myTickets.find((t) => t.id === selectedTicketId) || filteredTickets[0] || null,
-    [myTickets, selectedTicketId, filteredTickets]
+    () => myTickets.find((t) => t.id === selectedTicketId) || null,
+    [myTickets, selectedTicketId]
   );
 
-  // Xử lý chọn file từ máy tính & giả lập upload lên Cloudinary (folder: issues/)
-  const handleFilesSelected = (files: FileList | null, target: 'NEW' | 'REPLY') => {
+  // Tải tệp/ảnh thực tế lên Cloudinary (folder: issues/)
+  const handleFileUpload = async (
+    files: FileList | null,
+    target: 'NEW' | 'REPLY'
+  ) => {
     if (!files || files.length === 0) return;
-    const setErr = target === 'NEW' ? setCreateError : setReplyError;
-    const currentList = target === 'NEW' ? newAttachments : replyAttachments;
-    const setList = target === 'NEW' ? setNewAttachments : setReplyAttachments;
-    const setUploading = target === 'NEW' ? setIsUploadingNew : setIsUploadingReply;
 
-    setErr(null);
-
-    if (currentList.length + files.length > 3) {
-      setErr('Tối đa 3 tệp/ảnh đính kèm trong một lần gửi.');
-      return;
-    }
-
-    const validFiles: File[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
-      if (f.size > MAX_FILE_SIZE_BYTES) {
-        setErr(`Tệp "${f.name}" vượt quá giới hạn dung lượng nhỏ (Tối đa 5MB).`);
-        return;
-      }
-      validFiles.push(f);
-    }
-
+    const setUploading =
+      target === 'NEW' ? setIsUploadingNewAttachment : setIsUploadingReplyAttachment;
     setUploading(true);
+    setErrorMessage(null);
 
-    Promise.all(
-      validFiles.map(
-        (file) =>
-          new Promise<FeedbackAttachment>((resolve) => {
-            const isImage = file.type.startsWith('image/');
-            const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const randSuffix = Math.floor(1000 + Math.random() * 9000);
-            const publicId = `issues/${cleanName.replace(/\.[^.]+$/, '')}_${randSuffix}`;
-
-            if (isImage) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                resolve({
-                  id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                  fileName: file.name,
-                  fileSize: file.size,
-                  fileType: 'IMAGE',
-                  mimeType: file.type || 'image/png',
-                  cloudinaryUrl: typeof reader.result === 'string' ? reader.result : '',
-                  cloudinaryPublicId: publicId,
-                });
-              };
-              reader.readAsDataURL(file);
-            } else {
-              resolve({
-                id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: 'FILE',
-                mimeType: file.type || 'application/octet-stream',
-                cloudinaryUrl: `https://res.cloudinary.com/jcap-cloud/raw/upload/v1/${publicId}`,
-                cloudinaryPublicId: publicId,
-              });
-            }
-          })
-      )
-    ).then((uploaded) => {
-      setTimeout(() => {
-        setList((prev) => [...prev, ...uploaded]);
-        setUploading(false);
-        showToast(`Đã tải ${uploaded.length} tệp lên Cloudinary (folder: issues/)`);
-      }, 400);
-    });
-  };
-
-  const handleAddSampleAttachment = (target: 'NEW' | 'REPLY', type: 'IMAGE' | 'FILE') => {
-    const currentList = target === 'NEW' ? newAttachments : replyAttachments;
-    const setList = target === 'NEW' ? setNewAttachments : setReplyAttachments;
-    const setErr = target === 'NEW' ? setCreateError : setReplyError;
-    if (currentList.length >= 3) {
-      setErr('Tối đa 3 tệp/ảnh đính kèm trong một lần gửi.');
-      return;
-    }
-    setErr(null);
-    const sample = createSampleAttachment(type);
-    setList((prev) => [...prev, sample]);
-    showToast(`Đã đính kèm ${type === 'IMAGE' ? 'ảnh mẫu' : 'tệp PDF mẫu'} lên Cloudinary`);
-  };
-
-  // Gửi bài góp ý ẩn danh mới
-  const handleCreateTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim()) {
-      setCreateError('Vui lòng nhập tiêu đề bài góp ý.');
-      return;
-    }
-    if (!newContent.trim()) {
-      setCreateError('Vui lòng nhập nội dung chi tiết.');
-      return;
-    }
-
-    const randomAnonNum = Math.floor(1000 + Math.random() * 9000);
-    const nowIso = new Date().toISOString();
-    const newId = `fb-${Date.now()}`;
-
-    const created: FeedbackTicket = {
-      id: newId,
-      learnerOwnerKey: 'PRIMARY_DEMO_LEARNER',
-      anonymousCode: `#ANON-${randomAnonNum}`,
-      title: newTitle.trim(),
-      category: newCategory,
-      status: 'PENDING', // Mới tạo luôn ở trạng thái "Chờ Admin phản hồi"
-      createdAt: nowIso,
-      updatedAt: nowIso,
-      messages: [
-        {
-          id: `msg-${Date.now()}`,
-          ticketId: newId,
-          senderRole: 'LEARNER',
-          content: newContent.trim(),
-          attachments: newAttachments,
-          createdAt: nowIso,
-        },
-      ],
-    };
-
-    const allTickets = getAllMockFeedbackTickets();
-    const updatedAll = [created, ...allTickets];
-    saveMockFeedbackTickets(updatedAll);
-
-    setMyTickets(getLearnerOwnTickets(learnerKey));
-    setSelectedTicketId(created.id);
-    setNewTitle('');
-    setNewContent('');
-    setNewAttachments([]);
-    setCreateError(null);
-    setIsCreateModalOpen(false);
-    showToast(
-      `Đã gửi bài góp ý ẩn danh (${created.anonymousCode}) — Trạng thái: Chờ Admin phản hồi!`
-    );
-  };
-
-  // Học viên gửi tin nhắn tiếp theo trong cuộc trò chuyện với Admin
-  const handleSendReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTicket) return;
-    if (selectedTicket.status === 'CLOSED') {
-      setReplyError('Bài góp ý này đã được Admin đóng lại, không thể gửi thêm phản hồi.');
-      return;
-    }
-    if (!replyContent.trim() && replyAttachments.length === 0) {
-      setReplyError('Vui lòng nhập nội dung tin nhắn hoặc đính kèm tệp/ảnh.');
-      return;
-    }
-
-    const nowIso = new Date().toISOString();
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      ticketId: selectedTicket.id,
-      senderRole: 'LEARNER' as const,
-      content: replyContent.trim(),
-      attachments: replyAttachments,
-      createdAt: nowIso,
-    };
-
-    const allTickets = getAllMockFeedbackTickets();
-    const updatedAll = allTickets.map((t) =>
-      t.id === selectedTicket.id
-        ? {
-            ...t,
-            updatedAt: nowIso,
-            messages: [...t.messages, newMsg],
-          }
-        : t
-    );
-    saveMockFeedbackTickets(updatedAll);
-    setMyTickets(getLearnerOwnTickets(learnerKey));
-
-    setReplyContent('');
-    setReplyAttachments([]);
-    setReplyError(null);
-    showToast(`Đã gửi tin nhắn tới Admin trong luồng ${selectedTicket.anonymousCode}`);
-  };
-
-  const handleResetDemo = () => {
-    resetMockFeedbackTickets();
-    const freshMine = getLearnerOwnTickets(learnerKey);
-    setMyTickets(freshMine);
-    setSelectedTicketId(freshMine[0]?.id || '');
-    showToast('Đã khôi phục bộ dữ liệu mẫu ban đầu.');
-  };
-
-  const formatDateTime = (iso: string) => {
     try {
-      const d = new Date(iso);
-      return d.toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
+      const uploadedList: FeedbackAttachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`Tệp "${file.name}" vượt quá giới hạn 5MB.`);
+          continue;
+        }
+        const res = await feedbackService.uploadAttachment(file);
+        if (res.success && res.data) {
+          uploadedList.push(res.data);
+        } else {
+          alert(res.message || `Không thể tải tệp "${file.name}" lên Cloudinary.`);
+        }
+      }
+
+      if (uploadedList.length > 0) {
+        if (target === 'NEW') {
+          setNewAttachments((prev) => [...prev, ...uploadedList]);
+        } else {
+          setReplyAttachments((prev) => [...prev, ...uploadedList]);
+        }
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Gửi bài góp ý ẩn danh mới lên Backend & lưu vào Database
+  const handleCreateTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim() || isSubmittingNew) return;
+
+    setIsSubmittingNew(true);
+    setErrorMessage(null);
+    try {
+      const res = await feedbackService.createTicket({
+        title: newTitle.trim(),
+        category: newCategory,
+        content: newContent.trim(),
+        attachments: newAttachments.map((a) => ({
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          fileType: a.fileType,
+          mimeType: a.mimeType,
+          cloudinaryUrl: a.cloudinaryUrl,
+          cloudinaryPublicId: a.cloudinaryPublicId,
+        })),
       });
-    } catch {
-      return iso;
+
+      if (res.success && res.data) {
+        setMyTickets((prev) => [res.data!, ...prev]);
+        setSelectedTicketId(res.data.id);
+        setNewTitle('');
+        setNewContent('');
+        setNewAttachments([]);
+        setIsNewModalOpen(false);
+      } else {
+        setErrorMessage(res.message || 'Không thể gửi bài góp ý.');
+      }
+    } finally {
+      setIsSubmittingNew(false);
+    }
+  };
+
+  // Học viên gửi phản hồi trong bài của mình
+  const handleSendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket || selectedTicket.status === 'CLOSED' || isSubmittingReply) return;
+    if (!replyContent.trim() && replyAttachments.length === 0) return;
+
+    setIsSubmittingReply(true);
+    setErrorMessage(null);
+    try {
+      const res = await feedbackService.replyAsLearner(selectedTicket.id, {
+        content: replyContent.trim() || '(Đính kèm tệp/ảnh)',
+        attachments: replyAttachments.map((a) => ({
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          fileType: a.fileType,
+          mimeType: a.mimeType,
+          cloudinaryUrl: a.cloudinaryUrl,
+          cloudinaryPublicId: a.cloudinaryPublicId,
+        })),
+      });
+
+      if (res.success && res.data) {
+        setMyTickets((prev) =>
+          prev.map((t) => (t.id === res.data!.id ? res.data! : t))
+        );
+        setReplyContent('');
+        setReplyAttachments([]);
+      } else {
+        setErrorMessage(res.message || 'Không thể gửi phản hồi.');
+      }
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
   return (
-    <div className="max-w-[1360px] mx-auto space-y-6 pb-10">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#071A44] text-white px-5 py-3.5 rounded-xl shadow-xl border border-blue-400/30 flex items-center gap-3 animate-fade-in">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm font-medium">{toastMsg}</span>
-        </div>
-      )}
+    <div className="w-full font-sans text-slate-900">
 
-      {/* ===================================================================== */}
-      {/* HEADER RIÊNG CỦA HỌC VIÊN & CAM KẾT BẢO MẬT RIÊNG TƯ                   */}
-      {/* ===================================================================== */}
-      <div className="bg-white rounded-2xl border border-[#E6EDF5] p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl font-extrabold text-[#071A44]">
-                Hòm thư Góp ý Ẩn danh của Tôi
+
+      <div className="max-w-7xl w-full mx-auto">
+        {/* Header Hòm thư Góp ý Ẩn danh của Học viên */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span>🕵️</span>
+                <span>Bảo mật 100% Ẩn danh • Riêng tư giữa Bạn và Admin</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#071A44] tracking-tight">
+                Hòm thư Góp ý & Hỗ trợ Ẩn danh của Tôi
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                🔒 Riêng tư & Ẩn danh 100%
-              </span>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+                Gửi báo lỗi kịch bản, góp ý chấm điểm AI hoặc đề xuất tính năng hoàn toàn <strong>ẩn danh</strong>.
+                Bạn <strong>chỉ nhìn thấy lịch sử các bài do chính mình gửi</strong> (không ai khác xem được) và theo dõi trực tiếp xem Admin đã để ý hay phản hồi chưa.
+              </p>
             </div>
 
-            <p className="text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-              Không gian trao đổi riêng giữa bạn và Ban Quản Trị.{' '}
-              <strong className="text-slate-800">
-                Các học viên khác không thể nhìn thấy bài góp ý của bạn
-              </strong>
-              , và phía Admin cũng chỉ thấy mã ẩn danh ngẫu nhiên (VD:{' '}
-              <code className="text-indigo-600 font-semibold">#ANON-8492</code>) mà không biết danh tính tài khoản của bạn.
-            </p>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => loadMyTickets(false)}
+                className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition cursor-pointer"
+                title="Làm mới danh sách"
+              >
+                <span>🔄</span>
+                <span className="hidden sm:inline">Làm mới</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsNewModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0878EE] hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition cursor-pointer"
+              >
+                <span className="text-base leading-none">＋</span>
+                <span>Gửi góp ý ẩn danh mới</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
+          {/* Thanh 3 trạng thái để học viên theo dõi tiến độ */}
+          <div className="mt-4 pt-3.5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
               type="button"
-              onClick={handleResetDemo}
-              className="px-3.5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition cursor-pointer"
+              onClick={() => setStatusFilter('ALL')}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-left transition cursor-pointer ${
+                statusFilter === 'ALL'
+                  ? 'bg-[#071A44] text-white border-[#071A44] shadow-xs'
+                  : 'bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200/80'
+              }`}
             >
-              Khôi phục dữ liệu mẫu
+              <div>
+                <div className="text-[11px] font-medium opacity-80">Tất cả bài của tôi</div>
+                <div className="text-xs font-bold mt-0.5">Toàn bộ lịch sử</div>
+              </div>
+              <span className="text-lg font-extrabold">{counts.ALL}</span>
             </button>
+
             <button
               type="button"
-              onClick={() => {
-                setCreateError(null);
-                setIsCreateModalOpen(true);
-              }}
-              className="px-5 py-3 rounded-xl bg-[#0878EE] hover:bg-blue-700 text-white font-bold text-sm shadow-sm flex items-center gap-2 transition cursor-pointer"
+              onClick={() => setStatusFilter('PENDING')}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-left transition cursor-pointer ${
+                statusFilter === 'PENDING'
+                  ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                  : 'bg-amber-50/60 hover:bg-amber-50 text-amber-900 border-amber-200'
+              }`}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              <span>Gửi góp ý ẩn danh mới</span>
+              <div>
+                <div className="text-[11px] font-medium opacity-85">Trạng thái 1</div>
+                <div className="text-xs font-bold mt-0.5">⏳ Chờ Admin phản hồi</div>
+              </div>
+              <span className="text-lg font-extrabold">{counts.PENDING}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter('IN_PROGRESS')}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-left transition cursor-pointer ${
+                statusFilter === 'IN_PROGRESS'
+                  ? 'bg-[#0878EE] text-white border-[#0878EE] shadow-xs'
+                  : 'bg-blue-50/60 hover:bg-blue-50 text-blue-900 border-blue-200'
+              }`}
+            >
+              <div>
+                <div className="text-[11px] font-medium opacity-85">Trạng thái 2</div>
+                <div className="text-xs font-bold mt-0.5">💬 Đang trò chuyện</div>
+              </div>
+              <span className="text-lg font-extrabold">{counts.IN_PROGRESS}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter('CLOSED')}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-left transition cursor-pointer ${
+                statusFilter === 'CLOSED'
+                  ? 'bg-slate-700 text-white border-slate-700 shadow-xs'
+                  : 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-700 border-slate-300'
+              }`}
+            >
+              <div>
+                <div className="text-[11px] font-medium opacity-85">Trạng thái 3</div>
+                <div className="text-xs font-bold mt-0.5">🔒 Đã đóng</div>
+              </div>
+              <span className="text-lg font-extrabold">{counts.CLOSED}</span>
             </button>
           </div>
         </div>
 
-        {/* Thống kê 3 trạng thái lịch sử góp ý của bản thân */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/70">
-            <div className="text-xs font-medium text-slate-500">Lịch sử góp ý của bạn</div>
-            <div className="text-xl font-extrabold text-[#071A44] mt-0.5">{stats.total} bài</div>
+        {errorMessage && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center justify-between">
+            <span>⚠️ {errorMessage}</span>
+            <button
+              type="button"
+              onClick={() => setErrorMessage(null)}
+              className="text-red-500 hover:text-red-700 font-bold cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
-          <div className="bg-amber-50/70 rounded-xl p-3.5 border border-amber-200">
-            <div className="text-xs font-semibold text-amber-800 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Chờ Admin phản hồi
-            </div>
-            <div className="text-xl font-extrabold text-amber-800 mt-0.5">{stats.pendingCount}</div>
-          </div>
-          <div className="bg-blue-50/70 rounded-xl p-3.5 border border-blue-200">
-            <div className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600" />
-              Đang trò chuyện với Admin
-            </div>
-            <div className="text-xl font-extrabold text-blue-700 mt-0.5">
-              {stats.inProgressCount}
-            </div>
-          </div>
-          <div className="bg-slate-100/80 rounded-xl p-3.5 border border-slate-200">
-            <div className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-500" />
-              Đã đóng (Hoàn tất)
-            </div>
-            <div className="text-xl font-extrabold text-slate-700 mt-0.5">{stats.closedCount}</div>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* ===================================================================== */}
-      {/* BỐ CỤC 2 CỘT: LỊCH SỬ BÀI CỦA TÔI (TRÁI) & TRÒ CHUYỆN VỚI ADMIN (PHẢI) */}
-      {/* ===================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* CỘT TRÁI: LỊCH SỬ GÓP Ý CỦA TÔI (5/12) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E6EDF5] shadow-xs overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-slate-100 space-y-3 bg-slate-50/50">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                Lịch sử góp ý của riêng bạn ({filteredTickets.length})
-              </span>
-            </div>
+        {/* Khung 2 cột: Cột trái = Lịch sử bài của tôi | Cột phải = Luồng trò chuyện với Admin */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* CỘT TRÁI (5/12): Lịch sử bài góp ý của riêng tôi */}
+          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col">
+            <div className="p-3.5 border-b border-slate-100 space-y-2.5 bg-slate-50/50">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#071A44] uppercase tracking-wider">
+                  📬 Lịch sử góp ý của tôi ({filteredTickets.length})
+                </span>
+                <span className="text-[11px] text-slate-500">Chỉ mình bạn xem được</span>
+              </div>
 
-            <div className="relative">
-              <svg
-                className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Tìm trong lịch sử góp ý của bạn..."
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
-              </svg>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm trong lịch sử góp ý của bạn..."
-                className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#0878EE]"
-              />
+                <span className="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+              </div>
             </div>
 
-            {/* Bộ lọc 3 trạng thái: Chờ Admin phản hồi | Đang trò chuyện | Đã đóng */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setStatusFilter('ALL')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                  statusFilter === 'ALL'
-                    ? 'bg-[#071A44] text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Tất cả ({stats.total})
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusFilter('PENDING')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'PENDING'
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Chờ phản hồi ({stats.pendingCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusFilter('IN_PROGRESS')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'IN_PROGRESS'
-                    ? 'bg-[#0878EE] text-white'
-                    : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Đang trò chuyện ({stats.inProgressCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusFilter('CLOSED')}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
-                  statusFilter === 'CLOSED'
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                Đã đóng ({stats.closedCount})
-              </button>
-            </div>
+            <div className="divide-y divide-slate-100 max-h-[640px] overflow-y-auto">
+              {isLoading ? (
+                <div className="p-10 text-center text-xs text-slate-500">
+                  Đang tải lịch sử hòm thư của bạn...
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="p-10 text-center space-y-2">
+                  <div className="text-2xl">📭</div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    Chưa có bài góp ý nào trong mục này
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Bấm &ldquo;Gửi góp ý ẩn danh mới&rdquo; ở góc trên để gửi phản ánh tới Admin.
+                  </p>
+                </div>
+              ) : (
+                filteredTickets.map((ticket) => {
+                  const isSelected = ticket.id === selectedTicket?.id;
+                  const catMeta = CATEGORY_META[ticket.category] || CATEGORY_META.SUGGESTION;
+                  const statusMeta = STATUS_META[ticket.status] || STATUS_META.PENDING;
+                  const lastMsg = ticket.messages[ticket.messages.length - 1];
+                  const totalAttachments = ticket.messages.reduce(
+                    (sum, m) => sum + (m.attachments?.length || 0),
+                    0
+                  );
 
-            <div>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value as 'ALL' | FeedbackCategory)}
-                className="w-full text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:border-[#0878EE]"
-              >
-                <option value="ALL">Tất cả danh mục chủ đề</option>
-                {(Object.keys(CATEGORY_META) as FeedbackCategory[]).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {CATEGORY_META[cat].icon} {CATEGORY_META[cat].label}
-                  </option>
-                ))}
-              </select>
+                  return (
+                    <button
+                      key={ticket.id}
+                      type="button"
+                      onClick={() => setSelectedTicketId(ticket.id)}
+                      className={`w-full text-left p-4 transition flex flex-col gap-2 cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-50/70 border-l-4 border-l-[#0878EE]'
+                          : 'hover:bg-slate-50/90'
+                      }`}
+                    >
+                      {/* Hàng 1: Trạng thái + Mã ẩn danh + Thời gian */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusMeta.badgeBg} ${statusMeta.badgeText} ${statusMeta.badgeBorder}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotColor}`} />
+                          {statusMeta.label}
+                        </span>
+
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                          <span className="font-mono font-semibold text-slate-500">
+                            {ticket.anonymousCode}
+                          </span>
+                          <span>•</span>
+                          <span>{formatRelativeTime(ticket.updatedAt)}</span>
+                        </div>
+                      </div>
+
+                      {/* Tiêu đề */}
+                      <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug">
+                        {ticket.title}
+                      </h3>
+
+                      {/* Chỉ báo Admin đã để ý hay chưa */}
+                      <div className="flex items-center justify-between gap-2 text-[11px]">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium border ${catMeta.badgeBg} ${catMeta.badgeText} ${catMeta.badgeBorder}`}
+                        >
+                          <span>{catMeta.icon}</span>
+                          <span>{catMeta.label}</span>
+                        </span>
+
+                        {ticket.status === 'PENDING' && (
+                          <span
+                            className={`text-[11px] font-medium ${
+                              ticket.adminSeenAt ? 'text-blue-600' : 'text-amber-700'
+                            }`}
+                          >
+                            {ticket.adminSeenAt
+                              ? '👁️ Admin đã xem bài của bạn'
+                              : '⏳ Admin chưa mở xem'}
+                          </span>
+                        )}
+
+                        {ticket.status === 'IN_PROGRESS' && lastMsg && (
+                          <span
+                            className={`text-[11px] font-semibold ${
+                              lastMsg.senderRole === 'ADMIN'
+                                ? 'text-emerald-700'
+                                : 'text-slate-500'
+                            }`}
+                          >
+                            {lastMsg.senderRole === 'ADMIN'
+                              ? '🛡️ Admin vừa phản hồi bạn'
+                              : '✓ Bạn đã phản hồi'}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Thống kê số tin nhắn & tệp đính kèm */}
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                        <span>💬 {ticket.messages.length} tin nhắn trong luồng</span>
+                        {totalAttachments > 0 && <span>📎 {totalAttachments} tệp đính kèm</span>}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {/* Danh sách bài góp ý của riêng học viên */}
-          <div className="divide-y divide-slate-100 max-h-[640px] overflow-y-auto">
-            {filteredTickets.length === 0 ? (
-              <div className="p-10 text-center">
-                <div className="text-3xl mb-2">📭</div>
-                <p className="text-sm font-semibold text-slate-700">
-                  Bạn chưa có bài góp ý nào ở mục này
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Bấm nút "Gửi góp ý ẩn danh mới" để gửi phản ánh hoặc câu hỏi tới Admin.
-                </p>
+          {/* CỘT PHẢI (7/12): Chi tiết lịch sử trò chuyện giữa Tôi và Admin */}
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col">
+            {!selectedTicket ? (
+              <div className="p-14 text-center space-y-3">
+                <div className="text-3xl">💬</div>
+                <h2 className="text-base font-bold text-slate-700">
+                  Chọn một bài góp ý ở cột bên trái để xem cuộc trò chuyện với Admin
+                </h2>
               </div>
             ) : (
-              filteredTickets.map((ticket) => {
-                const isSelected = selectedTicket?.id === ticket.id;
-                const catMeta = CATEGORY_META[ticket.category];
-                const stMeta = STATUS_META[ticket.status];
-                const lastMessage = ticket.messages[ticket.messages.length - 1];
-                const hasAdminReplied = ticket.messages.some((m) => m.senderRole === 'ADMIN');
-
-                return (
-                  <button
-                    key={ticket.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTicketId(ticket.id);
-                      setReplyError(null);
-                    }}
-                    className={`w-full text-left p-4 transition cursor-pointer block ${
-                      isSelected
-                        ? 'bg-blue-50/70 border-l-4 border-l-[#0878EE]'
-                        : 'hover:bg-slate-50 border-l-4 border-l-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                      {/* Badge 3 Trạng thái */}
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${stMeta.badgeBg} ${stMeta.badgeText} ${stMeta.badgeBorder}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${stMeta.dotColor}`} />
-                        {stMeta.label}
-                      </span>
-
-                      <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                        {ticket.anonymousCode}
-                      </span>
-                    </div>
-
-                    <h3 className="text-sm font-bold text-[#071A44] line-clamp-2 leading-snug mt-1">
-                      {ticket.title}
-                    </h3>
-
-                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border ${catMeta.badgeBg} ${catMeta.badgeText} ${catMeta.badgeBorder}`}
-                      >
-                        {catMeta.icon} {catMeta.label}
-                      </span>
-
-                      {/* Chỉ báo xem Admin đã để ý chưa */}
-                      {ticket.status === 'PENDING' && (
-                        <span className="text-[11px] font-medium text-amber-700">
-                          {ticket.adminSeenAt
-                            ? '👁️ Admin đã xem bài của bạn'
-                            : '⏳ Admin chưa mở xem'}
-                        </span>
-                      )}
-                      {hasAdminReplied && ticket.status === 'IN_PROGRESS' && (
-                        <span className="text-[11px] font-semibold text-blue-600">
-                          ✓ Có phản hồi từ Admin
-                        </span>
-                      )}
-                    </div>
-
-                    {lastMessage && (
-                      <p className="text-xs text-slate-500 line-clamp-1 mt-2">
-                        <span className="font-semibold text-slate-700">
-                          {lastMessage.senderRole === 'ADMIN' ? '🛡️ Admin: ' : 'Bạn: '}
-                        </span>
-                        {lastMessage.content}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-100">
-                      <span>Cập nhật: {formatDateTime(ticket.updatedAt)}</span>
-                      <span className="font-semibold text-slate-600">
-                        💬 {ticket.messages.length} tin nhắn
-                      </span>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* CỘT PHẢI: CHI TIẾT CUỘC TRÒ CHUYỆN VỚI ADMIN (7/12) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E6EDF5] shadow-xs overflow-hidden flex flex-col">
-          {!selectedTicket ? (
-            <div className="p-16 text-center text-slate-500">
-              Chọn một bài góp ý ở danh sách bên trái để xem lịch sử trò chuyện với Admin.
-            </div>
-          ) : (
-            <>
-              {/* Header chi tiết bài góp ý & Thanh theo dõi tiến trình Admin xử lý */}
-              <div className="p-6 border-b border-slate-200 bg-slate-50/60 space-y-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
+              <>
+                {/* Header của bài góp ý + Thanh tiến trình 3 bước */}
+                <div className="p-5 border-b border-slate-200/80 bg-slate-50/40 space-y-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                          STATUS_META[selectedTicket.status].badgeBg
-                        } ${STATUS_META[selectedTicket.status].badgeText} ${
-                          STATUS_META[selectedTicket.status].badgeBorder
+                          (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeBg
+                        } ${(STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeText} ${
+                          (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).badgeBorder
                         }`}
                       >
                         <span
                           className={`w-2 h-2 rounded-full ${
-                            STATUS_META[selectedTicket.status].dotColor
+                            (STATUS_META[selectedTicket.status] || STATUS_META.PENDING).dotColor
                           }`}
                         />
-                        {STATUS_META[selectedTicket.status].label}
+                        {(STATUS_META[selectedTicket.status] || STATUS_META.PENDING).label}
                       </span>
 
-                      <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
-                        Mã ẩn danh của bạn: {selectedTicket.anonymousCode}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        🕵️ Mã ẩn danh của bạn: {selectedTicket.anonymousCode}
                       </span>
 
                       <span
-                        className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${
-                          CATEGORY_META[selectedTicket.category].badgeBg
-                        } ${CATEGORY_META[selectedTicket.category].badgeText} ${
-                          CATEGORY_META[selectedTicket.category].badgeBorder
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border ${
+                          (CATEGORY_META[selectedTicket.category] || CATEGORY_META.SUGGESTION).badgeBg
+                        } ${(CATEGORY_META[selectedTicket.category] || CATEGORY_META.SUGGESTION).badgeText} ${
+                          (CATEGORY_META[selectedTicket.category] || CATEGORY_META.SUGGESTION).badgeBorder
                         }`}
                       >
-                        {CATEGORY_META[selectedTicket.category].icon}{' '}
-                        {CATEGORY_META[selectedTicket.category].label}
+                        <span>
+                          {(CATEGORY_META[selectedTicket.category] || CATEGORY_META.SUGGESTION).icon}
+                        </span>
+                        <span>
+                          {(CATEGORY_META[selectedTicket.category] || CATEGORY_META.SUGGESTION).label}
+                        </span>
                       </span>
                     </div>
 
-                    <h2 className="text-lg font-extrabold text-[#071A44] leading-snug">
-                      {selectedTicket.title}
-                    </h2>
+                    <span className="text-xs text-slate-500">
+                      Gửi lúc {formatRelativeTime(selectedTicket.createdAt)}
+                    </span>
                   </div>
 
-                  <div className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] text-slate-600 font-medium shrink-0">
-                    🔒 Chỉ Admin có quyền đóng bài
-                  </div>
-                </div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#071A44] leading-snug">
+                    {selectedTicket.title}
+                  </h2>
 
-                {/* Thanh Tiến trình Trạng thái để học viên biết Admin đã chú ý chưa */}
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
-                        selectedTicket.status === 'PENDING'
-                          ? 'bg-amber-100 text-amber-700'
-                          : selectedTicket.status === 'IN_PROGRESS'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {selectedTicket.status === 'PENDING'
-                        ? '⏳'
-                        : selectedTicket.status === 'IN_PROGRESS'
-                        ? '💬'
-                        : '✅'}
-                    </div>
-                    <div>
-                      <div className="text-xs font-extrabold text-[#071A44]">
-                        Trạng thái hiện tại: {STATUS_META[selectedTicket.status].label}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {selectedTicket.status === 'PENDING' ? (
-                          selectedTicket.adminSeenAt ? (
-                            <span className="text-amber-700 font-medium">
-                              👁️ Admin đã mở xem bài của bạn vào lúc{' '}
-                              {formatDateTime(selectedTicket.adminSeenAt)} và đang chuẩn bị phản hồi.
-                            </span>
-                          ) : (
-                            <span>
-                              Bài góp ý đã vào hàng đợi ẩn danh, đang chờ Admin mở xem và phản hồi.
-                            </span>
-                          )
-                        ) : (
-                          STATUS_META[selectedTicket.status].learnerHint
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ================================================================= */}
-              {/* LUỒNG TRÒ CHUYỆN PHÂN NHÁNH GIỮA BẠN VÀ ADMIN                     */}
-              {/* ================================================================= */}
-              <div className="p-6 space-y-0 flex-1 max-h-[540px] overflow-y-auto bg-[#FAFCFF]">
-                {selectedTicket.messages.map((msg, idx) => {
-                  const isAdmin = msg.senderRole === 'ADMIN';
-                  const isFirst = idx === 0;
-
-                  return (
-                    <div key={msg.id} className="relative pl-8 pb-6 last:pb-2">
-                      {/* Đường kẻ nhánh dọc nối các tin nhắn */}
-                      {idx < selectedTicket.messages.length - 1 ||
-                      selectedTicket.status === 'CLOSED' ? (
-                        <div className="absolute left-[13px] top-7 bottom-0 w-0.5 bg-slate-200" />
-                      ) : null}
-
-                      {/* Node chấm tròn trên nhánh */}
+                  {/* Thanh theo dõi trạng thái trực quan cho Học viên */}
+                  <div className="p-3 rounded-xl bg-white border border-slate-200/90 space-y-2">
+                    <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold">
                       <div
-                        className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-2xs border-2 border-white ${
-                          isAdmin ? 'bg-[#0878EE] text-white' : 'bg-indigo-600 text-white'
+                        className={`py-1.5 px-2 rounded-lg border ${
+                          selectedTicket.status === 'PENDING'
+                            ? 'bg-amber-50 border-amber-300 text-amber-800'
+                            : 'bg-emerald-50/70 border-emerald-200 text-emerald-700'
                         }`}
                       >
-                        {isAdmin ? '🛡️' : '🕵️'}
-                      </div>
-
-                      {/* Thẻ nội dung tin nhắn */}
-                      <div
-                        className={`rounded-2xl border overflow-hidden shadow-2xs ${
-                          isAdmin
-                            ? 'bg-blue-50/40 border-blue-200'
-                            : 'bg-white border-slate-200'
-                        }`}
-                      >
-                        <div
-                          className={`px-4 py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs ${
-                            isAdmin
-                              ? 'bg-blue-100/50 border-blue-200 text-blue-950'
-                              : 'bg-slate-50 border-slate-200/80 text-slate-700'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold">
-                              {isAdmin
-                                ? 'Ban Quản Trị JCAP (Admin)'
-                                : `Bạn (Ẩn danh ${selectedTicket.anonymousCode})`}
-                            </span>
-                            {isFirst && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                                Bài góp ý gốc
-                              </span>
-                            )}
-                            {isAdmin && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#0878EE] text-white">
-                                Phản hồi từ Admin
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-slate-500">{formatDateTime(msg.createdAt)}</span>
-                        </div>
-
-                        <div className="p-4 text-sm text-slate-800 whitespace-pre-line leading-relaxed">
-                          {msg.content}
-                        </div>
-
-                        {/* Danh sách Ảnh & Tệp đính kèm (Lưu trên Cloudinary) */}
-                        {msg.attachments.length > 0 && (
-                          <div className="px-4 pb-4 pt-1 border-t border-slate-100/80 bg-slate-50/40">
-                            <div className="text-[11px] font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
-                              <span>☁️ Tệp & Ảnh đính kèm (Cloudinary)</span>
-                              <span className="text-slate-400">({msg.attachments.length})</span>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {msg.attachments.map((att) =>
-                                att.fileType === 'IMAGE' ? (
-                                  <div
-                                    key={att.id}
-                                    onClick={() =>
-                                      setPreviewImage({
-                                        url: att.cloudinaryUrl,
-                                        name: att.fileName,
-                                        publicId: att.cloudinaryPublicId,
-                                      })
-                                    }
-                                    className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-900 cursor-pointer hover:border-[#0878EE] transition"
-                                  >
-                                    <img
-                                      src={att.cloudinaryUrl}
-                                      alt={att.fileName}
-                                      className="w-full h-36 object-cover group-hover:opacity-90 transition"
-                                    />
-                                    <div className="p-2 bg-white flex items-center justify-between text-xs">
-                                      <span className="font-semibold text-slate-700 truncate max-w-[160px]">
-                                        🖼️ {att.fileName}
-                                      </span>
-                                      <span className="text-[11px] text-slate-400 shrink-0">
-                                        {formatFileSize(att.fileSize)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div
-                                    key={att.id}
-                                    className="p-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between gap-3 hover:border-blue-300 transition"
-                                  >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0878EE] flex items-center justify-center font-bold text-sm shrink-0">
-                                        📄
-                                      </div>
-                                      <div className="min-w-0">
-                                        <div className="text-xs font-bold text-slate-800 truncate">
-                                          {att.fileName}
-                                        </div>
-                                        <div className="text-[11px] text-slate-400 truncate">
-                                          {formatFileSize(att.fileSize)} • {att.cloudinaryPublicId}
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        showToast(
-                                          `Đang tải tệp từ Cloudinary: ${att.cloudinaryPublicId}`
-                                        )
-                                      }
-                                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-xs font-semibold text-[#0878EE] shrink-0 cursor-pointer"
-                                    >
-                                      Tải về
-                                    </button>
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          </div>
+                        1. Đã gửi ẩn danh
+                        {selectedTicket.adminSeenAt && (
+                          <span className="block text-[10px] font-normal">
+                            (Admin đã xem {formatRelativeTime(selectedTicket.adminSeenAt)})
+                          </span>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
 
-                {selectedTicket.status === 'CLOSED' && (
-                  <div className="relative pl-8 pt-1">
-                    <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs shadow-2xs border-2 border-white">
-                      🔒
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700">
-                      <strong>Ban Quản Trị (Admin)</strong> đã đóng bài góp ý này
-                      {selectedTicket.closedAt
-                        ? ` vào lúc ${formatDateTime(selectedTicket.closedAt)}`
-                        : ''}
-                      . Cuộc trò chuyện đã kết thúc.
-                    </div>
-                  </div>
-                )}
-              </div>
+                      <div
+                        className={`py-1.5 px-2 rounded-lg border ${
+                          selectedTicket.status === 'IN_PROGRESS'
+                            ? 'bg-blue-50 border-blue-300 text-blue-700'
+                            : selectedTicket.status === 'CLOSED'
+                            ? 'bg-emerald-50/70 border-emerald-200 text-emerald-700'
+                            : 'bg-slate-50 border-slate-200 text-slate-400'
+                        }`}
+                      >
+                        2. Đang trò chuyện với Admin
+                      </div>
 
-              {/* ================================================================= */}
-              {/* KHUNG NHẮN TIN TIẾP CHO ADMIN (KHI CHƯA ĐÓNG)                      */}
-              {/* ================================================================= */}
-              <div className="p-5 border-t border-slate-200 bg-white">
-                {selectedTicket.status === 'CLOSED' ? (
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-1.5">
-                    <div className="text-sm font-bold text-slate-700">
-                      🔒 Bài góp ý này đã được Admin đóng lại
+                      <div
+                        className={`py-1.5 px-2 rounded-lg border ${
+                          selectedTicket.status === 'CLOSED'
+                            ? 'bg-slate-800 border-slate-800 text-white'
+                            : 'bg-slate-50 border-slate-200 text-slate-400'
+                        }`}
+                      >
+                        3. Admin đóng bài
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Bạn không thể gửi thêm tin nhắn vào luồng đã đóng. Nếu có thắc mắc hoặc góp ý mới, hãy bấm "Gửi góp ý ẩn danh mới".
+
+                    <p className="text-[11px] text-slate-600">
+                      💡 {(STATUS_META[selectedTicket.status] || STATUS_META.PENDING).learnerHint}
                     </p>
                   </div>
-                ) : (
-                  <form onSubmit={handleSendReply} className="space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-700">
-                        🕵️ Nhắn tin phản hồi cho Admin (dưới mã ẩn danh {selectedTicket.anonymousCode})
-                      </span>
-                      <span className="text-slate-400">
-                        Tin nhắn lưu DB • Ảnh & Tệp nhỏ lưu Cloudinary
-                      </span>
-                    </div>
+                </div>
 
-                    {replyError && (
-                      <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
-                        {replyError}
-                      </div>
-                    )}
+                {/* Luồng tin nhắn phân nhánh giữa Tôi (Ẩn danh) và Admin */}
+                <div className="p-5 space-y-5 max-h-[480px] overflow-y-auto bg-[#F8FAFC]">
+                  {selectedTicket.messages.map((msg, idx) => {
+                    const isAdmin = msg.senderRole === 'ADMIN';
+                    return (
+                      <div key={msg.id} className="relative pl-5">
+                        {idx < selectedTicket.messages.length - 1 && (
+                          <div className="absolute left-2 top-7 bottom-[-22px] w-0.5 bg-slate-200" />
+                        )}
+                        <div
+                          className={`absolute left-0 top-3 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[9px] ${
+                            isAdmin
+                              ? 'bg-[#071A44] border-[#071A44] text-white'
+                              : 'bg-white border-[#0878EE] text-[#0878EE]'
+                          }`}
+                        >
+                          {isAdmin ? '★' : '●'}
+                        </div>
 
-                    <textarea
-                      rows={3}
-                      value={replyContent}
-                      onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder="Nhập tin nhắn trao đổi với Admin hoặc bổ sung thêm thông tin..."
-                      className="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#0878EE] resize-none"
-                    />
-
-                    {replyAttachments.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {replyAttachments.map((att) => (
+                        <div
+                          className={`rounded-2xl border overflow-hidden shadow-2xs ${
+                            isAdmin
+                              ? 'border-blue-200/90 bg-white ring-1 ring-blue-500/10'
+                              : 'border-slate-200/90 bg-white'
+                          }`}
+                        >
                           <div
-                            key={att.id}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900"
+                            className={`px-4 py-2.5 border-b flex items-center justify-between gap-2 text-xs ${
+                              isAdmin
+                                ? 'bg-gradient-to-r from-[#071A44] to-[#0E2963] text-white border-slate-800'
+                                : 'bg-slate-50/90 text-slate-700 border-slate-100'
+                            }`}
                           >
-                            <span>{att.fileType === 'IMAGE' ? '🖼️' : '📄'}</span>
-                            <span className="font-semibold truncate max-w-[160px]">
-                              {att.fileName}
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                  isAdmin
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}
+                              >
+                                {isAdmin ? '🛡️' : '🕵️'}
+                              </span>
+                              <span className="font-bold">
+                                {isAdmin
+                                  ? 'Ban Quản trị JCAP (Admin)'
+                                  : `Bạn (${selectedTicket.anonymousCode})`}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                  isAdmin
+                                    ? 'bg-blue-400/20 text-blue-100 border border-blue-300/30'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}
+                              >
+                                {isAdmin ? 'Phản hồi chính thức' : 'Đã ẩn danh'}
+                              </span>
+                            </div>
+
+                            <span className={isAdmin ? 'text-slate-300' : 'text-slate-400'}>
+                              {formatRelativeTime(msg.createdAt)}
                             </span>
-                            <span className="text-[10px] text-blue-600">
-                              ({formatFileSize(att.fileSize)})
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setReplyAttachments((prev) =>
-                                  prev.filter((x) => x.id !== att.id)
-                                )
-                              }
-                              className="text-rose-600 hover:text-rose-800 font-bold ml-1 cursor-pointer"
-                            >
-                              ✕
-                            </button>
                           </div>
-                        ))}
-                      </div>
-                    )}
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <input
-                          ref={replyFileInputRef}
-                          type="file"
-                          multiple
-                          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-                          onChange={(e) => handleFilesSelected(e.target.files, 'REPLY')}
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          disabled={isUploadingReply}
-                          onClick={() => replyFileInputRef.current?.click()}
-                          className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
-                        >
-                          <span>📎</span>
-                          <span>
-                            {isUploadingReply
-                              ? 'Đang tải lên Cloudinary...'
-                              : 'Đính kèm ảnh / tệp (<5MB)'}
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSampleAttachment('REPLY', 'IMAGE')}
-                          className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-600 cursor-pointer"
-                        >
-                          + Ảnh mẫu
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSampleAttachment('REPLY', 'FILE')}
-                          className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-600 cursor-pointer"
-                        >
-                          + Tệp PDF mẫu
-                        </button>
-                      </div>
+                          <div className="p-4 space-y-3">
+                            <p className="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed">
+                              {msg.content}
+                            </p>
 
-                      <button
-                        type="submit"
-                        disabled={isUploadingReply}
-                        className="px-5 py-2.5 rounded-xl bg-[#0878EE] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition cursor-pointer"
-                      >
-                        Gửi tin nhắn ẩn danh
-                      </button>
+                            {msg.attachments && msg.attachments.length > 0 && (
+                              <div className="pt-2 border-t border-slate-100 space-y-2">
+                                <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1.5">
+                                  <span>☁️ Tệp đính kèm trên Cloudinary ({msg.attachments.length}):</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                  {msg.attachments.map((att) =>
+                                    att.fileType === 'IMAGE' ? (
+                                      <div
+                                        key={att.id}
+                                        onClick={() => setPreviewImage(att)}
+                                        className="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-900 cursor-pointer hover:border-blue-400 transition"
+                                      >
+                                        <img
+                                          src={att.cloudinaryUrl}
+                                          alt={att.fileName}
+                                          className="w-full h-32 object-cover group-hover:opacity-90 transition"
+                                        />
+                                        <div className="p-2 bg-white flex items-center justify-between text-[11px]">
+                                          <span className="font-medium text-slate-700 truncate">
+                                            🖼️ {att.fileName}
+                                          </span>
+                                          <span className="text-slate-400 shrink-0 ml-2">
+                                            {formatFileSize(att.fileSize)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <a
+                                        key={att.id}
+                                        href={att.cloudinaryUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-blue-50/50 transition"
+                                      >
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                          <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm shrink-0">
+                                            📄
+                                          </span>
+                                          <div className="min-w-0">
+                                            <div className="text-xs font-semibold text-slate-800 truncate">
+                                              {att.fileName}
+                                            </div>
+                                            <div className="text-[10px] text-slate-500 font-mono truncate">
+                                              ☁️ {att.cloudinaryPublicId} • {formatFileSize(att.fileSize)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <span className="text-[11px] font-semibold text-blue-600 shrink-0 ml-2">
+                                          Mở tệp ↗
+                                        </span>
+                                      </a>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Khu vực trả lời tiếp theo (Chỉ mở khi bài chưa bị Admin đóng) */}
+                <div className="p-4 border-t border-slate-200/80 bg-white">
+                  {selectedTicket.status === 'CLOSED' ? (
+                    <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-center space-y-1">
+                      <div className="text-xs font-bold text-slate-700">
+                        🔒 Bài góp ý này đã được Admin đóng lại
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Chỉ Admin mới có quyền đóng hoặc mở lại bài. Nếu bạn có vấn đề mới, vui lòng tạo bài góp ý ẩn danh mới.
+                      </p>
                     </div>
-                  </form>
-                )}
-              </div>
-            </>
-          )}
+                  ) : (
+                    <form onSubmit={handleSendReply} className="space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700">
+                          🕵️ Gửi tin nhắn tiếp theo cho Admin (ẩn danh {selectedTicket.anonymousCode})
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          Chỉ Admin mới có quyền đóng bài này
+                        </span>
+                      </div>
+
+                      <textarea
+                        rows={3}
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="Nhập nội dung phản hồi thêm cho Admin..."
+                        className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                      />
+
+                      {replyAttachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {replyAttachments.map((att) => (
+                            <div
+                              key={att.cloudinaryUrl}
+                              className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800"
+                            >
+                              <span>{att.fileType === 'IMAGE' ? '🖼️' : '📎'}</span>
+                              <span className="font-medium max-w-[180px] truncate">{att.fileName}</span>
+                              <span className="text-[10px] text-blue-600">
+                                ({formatFileSize(att.fileSize)})
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setReplyAttachments((prev) =>
+                                    prev.filter((x) => x.cloudinaryUrl !== att.cloudinaryUrl)
+                                  )
+                                }
+                                className="text-blue-500 hover:text-red-600 font-bold ml-1 cursor-pointer"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <input
+                            ref={replyFileInputRef}
+                            type="file"
+                            multiple
+                            accept="image/*,.pdf,.txt,.log,.json,.zip,.doc,.docx"
+                            className="hidden"
+                            onChange={(e) => {
+                              handleFileUpload(e.target.files, 'REPLY');
+                              e.target.value = '';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            disabled={isUploadingReplyAttachment}
+                            onClick={() => replyFileInputRef.current?.click()}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 text-slate-700 text-xs font-medium transition cursor-pointer"
+                          >
+                            <span>📎</span>
+                            <span>
+                              {isUploadingReplyAttachment
+                                ? 'Đang tải lên Cloudinary...'
+                                : 'Đính kèm ảnh / tệp nhỏ (≤ 5MB)'}
+                            </span>
+                          </button>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={
+                            isSubmittingReply ||
+                            isUploadingReplyAttachment ||
+                            (!replyContent.trim() && replyAttachments.length === 0)
+                          }
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0878EE] hover:bg-blue-700 disabled:opacity-40 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
+                        >
+                          <span>{isSubmittingReply ? '⏳ Đang gửi...' : '📤 Gửi phản hồi ẩn danh'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ===================================================================== */}
-      {/* MODAL TẠO BÀI GÓP Ý ẨN DANH MỚI                                       */}
-      {/* ===================================================================== */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
-            <div className="px-6 py-4 bg-gradient-to-r from-[#071A44] to-[#0878EE] text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="text-xl">🕵️</span>
-                <div>
-                  <h3 className="text-base font-extrabold">Gửi Bài Góp Ý / Báo Lỗi Ẩn Danh</h3>
-                  <p className="text-xs text-blue-100">
-                    Chỉ mình bạn và Admin thấy bài này • Danh tính của bạn được giấu kín
-                  </p>
-                </div>
+      {/* Modal tạo bài góp ý ẩn danh mới */}
+      {isNewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-xl w-full overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+              <div>
+                <h3 className="text-base font-bold text-[#071A44]">
+                  🕵️ Gửi Góp ý & Phản ánh Ẩn danh Mới
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Chỉ bạn và Admin xem được cuộc trò chuyện này. Admin không thể biết danh tính của bạn.
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer"
+                onClick={() => setIsNewModalOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-slate-200/70 text-slate-500 font-bold cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <form
-              onSubmit={handleCreateTicket}
-              className="p-6 space-y-4 max-h-[82vh] overflow-y-auto"
-            >
-              {createError && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
-                  {createError}
-                </div>
-              )}
-
+            <form onSubmit={handleCreateTicket} className="p-5 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Chủ đề góp ý / phản ánh *
+                  Phân loại góp ý
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {(Object.keys(CATEGORY_META) as FeedbackCategory[]).map((cat) => {
-                    const meta = CATEGORY_META[cat];
-                    const active = newCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setNewCategory(cat)}
-                        className={`p-2.5 rounded-xl border text-left text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
-                          active
-                            ? 'border-[#0878EE] bg-blue-50/80 text-[#071A44] ring-2 ring-blue-500/20'
-                            : 'border-slate-200 hover:bg-slate-50 text-slate-600'
-                        }`}
-                      >
-                        <span className="text-base">{meta.icon}</span>
-                        <span>{meta.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value as FeedbackCategory)}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {(Object.keys(CATEGORY_META) as FeedbackCategory[]).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {CATEGORY_META[cat].icon} {CATEGORY_META[cat].label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-700">Tiêu đề tóm tắt *</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewCategory('SCENARIO_BUG');
-                      setNewTitle('Kịch bản "Mua vé tàu Shinkansen" bị thiếu gợi ý từ vựng câu #3');
-                      setNewContent(
-                        'Chào Admin, ở kịch bản Mua vé tàu Shinkansen (N4), lượt thoại thứ 3 nhân viên nhà ga nói khá nhanh từ 指定席 (Ghế đặt trước) nhưng trong khung gợi ý từ vựng bên phải chưa liệt kê từ này. Nhờ team bổ sung giúp ạ!'
-                      );
-                    }}
-                    className="text-[11px] font-bold text-[#0878EE] hover:underline cursor-pointer"
-                  >
-                    ✨ Điền nhanh nội dung mẫu
-                  </button>
-                </div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Tiêu đề tóm tắt *
+                </label>
                 <input
                   type="text"
+                  required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="VD: Câu thoại số 2 bài Phỏng vấn xin việc bị sai âm đọc..."
-                  className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#0878EE]"
+                  placeholder="VD: Lỗi chấm từ vựng ở kịch bản Nhà hàng Izakaya N4..."
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nội dung chi tiết *
+                  Nội dung chi tiết (Lưu vào Database) *
                 </label>
                 <textarea
                   rows={4}
+                  required
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
-                  placeholder="Mô tả chi tiết vấn đề bạn gặp phải hoặc ý kiến đóng góp cho hệ thống..."
-                  className="w-full p-3.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#0878EE] resize-none"
+                  placeholder="Mô tả chi tiết vấn đề hoặc ý kiến đóng góp của bạn..."
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
                 />
               </div>
 
-              {/* Khu vực đính kèm ảnh / tệp lưu lên Cloudinary */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-300 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="text-xs font-bold text-slate-700">
-                      ☁️ Đính kèm Ảnh hoặc Tệp nhỏ (Lưu trữ qua Cloudinary)
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Hỗ trợ PNG, JPG, PDF, TXT, DOCX (Tối đa 5MB/tệp • Tối đa 3 tệp).
-                    </p>
-                  </div>
+              {/* Đính kèm ảnh / tệp nhỏ lên Cloudinary */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  Đính kèm hình ảnh / tệp nhỏ (Lưu trên Cloudinary folder <code className="font-mono">issues/</code>, tối đa 5MB/tệp)
+                </label>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={newFileInputRef}
-                      type="file"
-                      multiple
-                      accept="image/*,.pdf,.doc,.docx,.txt,.zip"
-                      onChange={(e) => handleFilesSelected(e.target.files, 'NEW')}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      disabled={isUploadingNew}
-                      onClick={() => newFileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#0878EE] text-xs font-bold text-[#0878EE] shadow-2xs cursor-pointer"
-                    >
-                      {isUploadingNew ? 'Đang tải lên...' : '+ Chọn tệp từ máy'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddSampleAttachment('NEW', 'IMAGE')}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-200/70 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 cursor-pointer"
-                    >
-                      + Ảnh mẫu
-                    </button>
-                  </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={newFileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.txt,.log,.json,.zip,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => {
+                      handleFileUpload(e.target.files, 'NEW');
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={isUploadingNewAttachment}
+                    onClick={() => newFileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 text-slate-700 text-xs font-medium cursor-pointer"
+                  >
+                    <span>📁</span>
+                    <span>
+                      {isUploadingNewAttachment
+                        ? 'Đang tải lên Cloudinary...'
+                        : 'Chọn ảnh / tệp từ máy (Cloudinary)'}
+                    </span>
+                  </button>
                 </div>
 
                 {newAttachments.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                  <div className="flex flex-wrap gap-2 pt-1">
                     {newAttachments.map((att) => (
                       <div
-                        key={att.id}
-                        className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2 text-xs"
+                        key={att.cloudinaryUrl}
+                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800"
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span>{att.fileType === 'IMAGE' ? '🖼️' : '📄'}</span>
-                          <div className="min-w-0">
-                            <div className="font-semibold text-slate-800 truncate">
-                              {att.fileName}
-                            </div>
-                            <div className="text-[10px] text-slate-400">
-                              {formatFileSize(att.fileSize)} • {att.cloudinaryPublicId}
-                            </div>
-                          </div>
-                        </div>
+                        <span>{att.fileType === 'IMAGE' ? '🖼️' : '📎'}</span>
+                        <span className="font-medium max-w-[180px] truncate">{att.fileName}</span>
+                        <span className="text-[10px] text-blue-600">
+                          ({formatFileSize(att.fileSize)})
+                        </span>
                         <button
                           type="button"
                           onClick={() =>
-                            setNewAttachments((prev) => prev.filter((x) => x.id !== att.id))
+                            setNewAttachments((prev) =>
+                              prev.filter((x) => x.cloudinaryUrl !== att.cloudinaryUrl)
+                            )
                           }
-                          className="text-rose-500 hover:text-rose-700 font-bold px-1.5 cursor-pointer"
+                          className="text-blue-500 hover:text-red-600 font-bold cursor-pointer"
                         >
-                          ✕
+                          ×
                         </button>
                       </div>
                     ))}
@@ -1166,20 +957,20 @@ export const LearnerFeedbackView: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => setIsNewModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
                 >
-                  Hủy bỏ
+                  Hủy
                 </button>
                 <button
                   type="submit"
-                  disabled={isUploadingNew}
-                  className="px-5 py-2.5 rounded-xl bg-[#0878EE] hover:bg-blue-700 text-white text-xs font-bold shadow-sm cursor-pointer"
+                  disabled={isSubmittingNew || isUploadingNewAttachment}
+                  className="px-4 py-2 rounded-xl bg-[#0878EE] hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold shadow-sm cursor-pointer"
                 >
-                  Gửi góp ý ẩn danh
+                  {isSubmittingNew ? '⏳ Đang gửi...' : '🚀 Gửi bài góp ý ẩn danh'}
                 </button>
               </div>
             </form>
@@ -1191,32 +982,34 @@ export const LearnerFeedbackView: React.FC = () => {
       {previewImage && (
         <div
           onClick={() => setPreviewImage(null)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200"
+            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200"
           >
-            <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between text-xs">
-              <div>
-                <span className="font-bold">{previewImage.name}</span>
-                <span className="text-slate-400 ml-2">
-                  (Cloudinary: {previewImage.publicId})
-                </span>
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-slate-800 truncate">
+                  🖼️ {previewImage.fileName} ({formatFileSize(previewImage.fileSize)})
+                </div>
+                <div className="text-[11px] text-slate-500 font-mono truncate">
+                  ☁️ Cloudinary URL: {previewImage.cloudinaryUrl}
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewImage(null)}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 font-bold cursor-pointer"
+                className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-500 font-bold cursor-pointer"
               >
-                Đóng ✕
+                ✕
               </button>
             </div>
             <div className="p-4 bg-slate-950 flex items-center justify-center">
               <img
-                src={previewImage.url}
-                alt={previewImage.name}
-                className="max-h-[70vh] w-auto rounded-lg"
+                src={previewImage.cloudinaryUrl}
+                alt={previewImage.fileName}
+                className="max-h-[420px] w-auto rounded-lg"
               />
             </div>
           </div>
@@ -1225,5 +1018,3 @@ export const LearnerFeedbackView: React.FC = () => {
     </div>
   );
 };
-
-export default LearnerFeedbackView;

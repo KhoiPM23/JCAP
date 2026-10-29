@@ -292,5 +292,65 @@ namespace JCAP.Tests.Services
             Assert.Equal(15, result.Data.WeeklyUsedCredits);
             Assert.Equal(2485, result.Data.WeeklyRemainingCredits);
         }
+
+        [Fact]
+        public async Task GetHistoryAsync_AutomaticallyCancelsPendingTransactionsOlderThan10Minutes()
+        {
+            // Arrange
+            using var dbContext = CreateInMemoryDbContext();
+            var user = new ApplicationUser
+            {
+                Id = "user-timeout-test",
+                CreditBalance = 100
+            };
+
+            dbContext.CreditTransactions.AddRange(
+                // Quá 10 phút -> phải tự động chuyển thành Cancelled
+                new CreditTransaction
+                {
+                    Id = 10,
+                    UserId = "user-timeout-test",
+                    Amount = 50,
+                    Type = "TopUp",
+                    PayOsOrderCode = "100001",
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-11)
+                },
+                // Mới tạo 3 phút -> vẫn giữ nguyên trạng thái Pending
+                new CreditTransaction
+                {
+                    Id = 11,
+                    UserId = "user-timeout-test",
+                    Amount = 150,
+                    Type = "TopUp",
+                    PayOsOrderCode = "100002",
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-3)
+                }
+            );
+            await dbContext.SaveChangesAsync();
+
+            var userManagerMock = CreateUserManagerMock();
+            userManagerMock.Setup(x => x.FindByIdAsync("user-timeout-test")).ReturnsAsync(user);
+
+            var payOsOptions = Options.Create(new PayOsSettings());
+            var configMock = new Mock<IConfiguration>();
+            var loggerMock = new Mock<ILogger<CreditService>>();
+
+            var service = new CreditService(dbContext, userManagerMock.Object, payOsOptions, configMock.Object, loggerMock.Object);
+
+            // Act
+            var result = await service.GetHistoryAsync("user-timeout-test", page: 1, pageSize: 10);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.NotNull(result.Data);
+
+            var newerTx = result.Data.Transactions.First(t => t.Id == 11);
+            var expiredTx = result.Data.Transactions.First(t => t.Id == 10);
+
+            Assert.Equal("Pending", newerTx.Status);
+            Assert.Equal("Cancelled", expiredTx.Status);
+        }
     }
 }
