@@ -4,6 +4,7 @@ import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { AudioDeviceSettingsModal } from '../components/shadowing/AudioDeviceSettingsModal';
 import { Button, Icon, SegmentedControl, Select, Switch } from '../components/jcap';
 import { cx } from '../components/jcap/utils';
+import { useTheme, type ThemeMode } from '../contexts/ThemeContext';
 import { getPracticePrefs, setPracticePref, type PracticePrefs } from '../utils/practicePrefs';
 
 const SAMPLE_TEXT = 'こんにちは！JCAPで日本語を一緒に練習しましょう。';
@@ -40,6 +41,7 @@ const SECTIONS = [
  * tuỳ chọn khi luyện, giao diện. Thay đổi lưu ngay (cùng khoá localStorage như trước).
  */
 export const SettingsView: React.FC = () => {
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
   // Giọng đọc
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const [isLoadingVoices, setIsLoadingVoices] = useState<boolean>(true);
@@ -180,7 +182,7 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div data-theme="hoc-tap" className="bg-transparent">
+    <div className="bg-transparent">
       <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[28px] font-bold leading-[38px]">Cài đặt</h1>
@@ -385,21 +387,22 @@ export const SettingsView: React.FC = () => {
               </div>
             </section>
 
-            {/* Giao diện: app chưa có chế độ tối, chỉ bật được Sáng */}
+            {/* Giao diện: Sáng / Tối / Theo máy, lưu ở trình duyệt (ThemeProvider) */}
             <section id="giaodien" aria-labelledby="gd-h" className="flex scroll-mt-6 flex-wrap items-center justify-between gap-3 rounded-jc-lg border border-line bg-paper-50 p-6">
               <span className="flex flex-col">
                 <h2 id="gd-h" className="m-0 text-[19px] font-semibold leading-7">
                   Giao diện
                 </h2>
-                <span className="text-sm leading-[22px] text-sumi-muted">Chế độ tối và theo máy sắp có.</span>
+                <span className="text-sm leading-[22px] text-sumi-muted">Chế độ tối dùng cả trong phòng luyện.</span>
               </span>
               <SegmentedControl
                 ariaLabel="Chế độ màu"
-                value="light"
+                value={themeMode}
+                onChange={(v) => setThemeMode(v as ThemeMode)}
                 options={[
                   { value: 'light', label: 'Sáng', icon: 'light_mode' },
-                  { value: 'dark', label: 'Tối', icon: 'dark_mode', disabled: true },
-                  { value: 'system', label: 'Theo máy', icon: 'computer', disabled: true },
+                  { value: 'dark', label: 'Tối', icon: 'dark_mode' },
+                  { value: 'system', label: 'Theo máy', icon: 'computer' },
                 ]}
               />
             </section>

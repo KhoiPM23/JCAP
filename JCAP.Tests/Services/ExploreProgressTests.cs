@@ -302,6 +302,65 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task StampBook_ListsOnlyOwnStampedSpots_WithoutAwardingAnything()
+        {
+            var w = await NewWorld("stampbook");
+            using var db = w.Db;
+            var service = new ExploreService(db);
+            // Mốc 0: có con dấu; mốc 1: mới "Đã hiểu"; người khác có con dấu ở mốc 2
+            AddShadowing(db, 101, 90);
+            AddShadowing(db, 103, 90, user: "other");
+            await db.SaveChangesAsync();
+            await service.MarkUnderstoodAsync(User, w.ChibaSpots[0]);
+            await service.MarkUnderstoodAsync(User, w.ChibaSpots[1]);
+            await service.MarkUnderstoodAsync("other", w.ChibaSpots[2]);
+            var before = await db.Set<ExploreSpotProgress>().CountAsync(p => p.StampedAt != null);
+
+            var book = (await service.GetStampBookAsync(User)).Data!;
+
+            Assert.Equal(new[] { w.ChibaSpots[0] }, book.Stamps.Select(s => s.SpotId));
+            var stamp = book.Stamps.Single();
+            Assert.Equal(Chiba, stamp.PrefectureId);
+            Assert.Equal("Mốc 101", stamp.NameVi);
+            Assert.NotNull(stamp.UnderstoodAt);
+            Assert.Null(stamp.RedStampedAt);
+            // Chỉ đọc: gọi sổ con dấu không cấp thêm dấu nào
+            Assert.Equal(before, await db.Set<ExploreSpotProgress>().CountAsync(p => p.StampedAt != null));
+        }
+
+        [Fact]
+        public async Task StampBook_HidesSpotsNoLongerVisible_ButKeepsTheStampInDatabase()
+        {
+            var w = await NewWorld("stampbook-hidden");
+            using var db = w.Db;
+            var service = new ExploreService(db);
+            for (var i = 0; i < 3; i++) AddShadowing(db, 101 + i, 90);
+            await db.SaveChangesAsync();
+            foreach (var id in w.ChibaSpots) await service.MarkUnderstoodAsync(User, id);
+
+            (await db.ExploreSpots.FindAsync(w.ChibaSpots[0]))!.IsActive = false;
+            (await db.ExploreSpots.FindAsync(w.ChibaSpots[1]))!.Status = ExploreSpotStatus.Draft;
+            await db.SaveChangesAsync();
+
+            var book = (await service.GetStampBookAsync(User)).Data!;
+
+            Assert.Equal(new[] { w.ChibaSpots[2] }, book.Stamps.Select(s => s.SpotId));
+            Assert.Equal(3, await db.Set<ExploreSpotProgress>().CountAsync(p => p.UserId == User && p.StampedAt != null));
+        }
+
+        [Fact]
+        public async Task StampBook_NoStamps_ReturnsEmptyList()
+        {
+            var w = await NewWorld("stampbook-empty");
+            using var db = w.Db;
+
+            var result = await new ExploreService(db).GetStampBookAsync(User);
+
+            Assert.True(result.Success);
+            Assert.Empty(result.Data!.Stamps);
+        }
+
+        [Fact]
         public void ChapterStates_FirstAlwaysOpen_EmptyPreviousCountsAsMet_ChainNeedsPreviousUnlocked()
         {
             var chapters = new[]

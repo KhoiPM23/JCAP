@@ -25,9 +25,9 @@ const scoreTier = (score: number): 'green' | 'yellow' | 'red' =>
 
 const scorePillClass = (score: number): string => {
   const tier = scoreTier(score);
-  if (tier === 'green') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  if (tier === 'yellow') return 'bg-amber-50 text-amber-700 border-amber-200';
-  return 'bg-red-50 text-red-700 border-red-200';
+  if (tier === 'green') return 'bg-score-good-soft text-score-good border-line';
+  if (tier === 'yellow') return 'bg-score-mid-soft text-score-mid border-line';
+  return 'bg-score-low-soft text-score-low border-line';
 };
 
 export const LearnerShadowingListView: React.FC = () => {
@@ -284,7 +284,7 @@ export const LearnerShadowingListView: React.FC = () => {
   };
 
   return (
-    <div data-theme="hoc-tap" className="mx-auto flex max-w-[1180px] flex-col gap-7 bg-transparent pb-12">
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-7 bg-transparent pb-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[28px] font-bold leading-[38px]">{activeTab === 'history' ? 'Lịch sử luyện Shadowing' : 'Shadowing'}</h1>
@@ -312,40 +312,40 @@ export const LearnerShadowingListView: React.FC = () => {
             Đang tải lịch sử…
           </p>
         ) : (
-        <div className="flex flex-col gap-6 bg-[#F4F9FE] rounded-2xl px-8 pt-2.5 pb-8">
+        <div className="flex flex-col gap-6 bg-paper-100 rounded-2xl px-8 pt-2.5 pb-8">
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Metric 1: Điểm trung bình tích lũy */}
-            <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="p-5 rounded-xl bg-paper-50 border border-line shadow-xs flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold text-sumi-muted uppercase tracking-wider">
                 Điểm trung bình tích lũy
               </span>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-black text-slate-900 leading-none">
+                <span className="text-3xl font-black text-sumi leading-none">
                   {avgHistoryScore > 0 ? avgHistoryScore : '--'}
                 </span>
-                <span className="text-xs text-slate-500 font-medium">/100</span>
+                <span className="text-xs text-sumi-muted font-medium">/100</span>
               </div>
             </div>
 
             {/* Metric 2: Tổng thời lượng luyện tập */}
-            <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-xs flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="p-5 rounded-xl bg-paper-50 border border-line shadow-xs flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold text-sumi-muted uppercase tracking-wider">
                 Tổng thời lượng luyện tập
               </span>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-black text-slate-900 leading-none">
+                <span className="text-3xl font-black text-sumi leading-none">
                   {totalHistoryMinutes}
                 </span>
-                <span className="text-xs text-slate-500 font-medium">phút</span>
+                <span className="text-xs text-sumi-muted font-medium">phút</span>
               </div>
             </div>
           </div>
 
           {/* History Search & Filter Bar */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-paper-50 p-4 rounded-xl border border-line shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sumi-faint text-[20px]">
                 search
               </span>
               <input
@@ -356,19 +356,19 @@ export const LearnerShadowingListView: React.FC = () => {
                   setHistoryPage(1);
                 }}
                 placeholder="Tìm theo tên hội thoại, bài học, từ khóa..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#005ab6]/20 text-slate-900 transition"
+                className="w-full pl-10 pr-4 py-2 bg-paper-100 border border-line rounded-xl text-xs focus:bg-paper-50 focus:outline-none focus:ring-2 focus:ring-ai text-sumi transition"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500">Giáo trình:</span>
+              <span className="text-xs font-semibold text-sumi-muted">Giáo trình:</span>
               <select
                 value={historyTextbookFilter}
                 onChange={(e) => {
                   setHistoryTextbookFilter(e.target.value);
                   setHistoryPage(1);
                 }}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
+                className="bg-paper-100 border border-line text-sumi text-xs font-medium px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Tất cả giáo trình</option>
                 <option value="みんなの日本語 II">みんなの日本語 II</option>
@@ -380,16 +380,16 @@ export const LearnerShadowingListView: React.FC = () => {
 
           {/* History Data Table */}
           {filteredHistory.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200/80 p-12 text-center space-y-3">
-              <span className="material-symbols-outlined text-4xl text-slate-300">
+            <div className="bg-paper-50 rounded-xl border border-line p-12 text-center space-y-3">
+              <span className="material-symbols-outlined text-4xl text-sumi-faint">
                 history_toggle_off
               </span>
-              <h3 className="text-base font-bold text-slate-800">
+              <h3 className="text-base font-bold text-sumi">
                 {historyList.length === 0
                   ? 'Chưa có lịch sử luyện tập nào'
                   : 'Không tìm thấy kết quả phù hợp'}
               </h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              <p className="text-xs text-sumi-muted max-w-sm mx-auto">
                 {historyList.length === 0
                   ? 'Hãy chọn một bài hội thoại từ Thư viện và hoàn thành lượt luyện để lưu kết quả chấm điểm.'
                   : 'Hãy thử tìm kiếm với từ khóa khác hoặc bỏ lọc giáo trình.'}
@@ -398,18 +398,18 @@ export const LearnerShadowingListView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleTabChange('all')}
-                  className="px-4 py-2 rounded-xl bg-[#005ab6] text-white text-xs font-bold hover:bg-[#00458f] transition shadow-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-ai text-on-ai text-xs font-bold hover:bg-ai-hover transition shadow-xs cursor-pointer"
                 >
                   Khám phá bài học ngay
                 </button>
               )}
             </div>
           ) : (
-            <div className="rounded-xl bg-white border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+            <div className="rounded-xl bg-paper-50 border border-line shadow-xs overflow-hidden flex flex-col">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200/80">
+                    <tr className="bg-paper-100 text-sumi-muted text-[11px] uppercase tracking-wider border-b border-line">
                       <th className="py-3 px-5 font-bold w-24" scope="col">Ngày hoàn thành</th>
                       <th className="py-3 px-4 font-bold" scope="col">Giáo trình</th>
                       <th className="py-3 px-4 font-bold" scope="col">Bài học</th>
@@ -420,7 +420,7 @@ export const LearnerShadowingListView: React.FC = () => {
                       <th className="py-3 px-5 text-right font-bold" scope="col">Thao tác</th>
                     </tr>
                   </thead>
-                  <tbody className="text-xs text-slate-800">
+                  <tbody className="text-xs text-sumi">
                     {pagedHistory.map((session) => {
                       const isExpanded = expandedHistoryId === session.id;
                       const dateObj = new Date(session.completedAt || session.startedAt);
@@ -439,41 +439,41 @@ export const LearnerShadowingListView: React.FC = () => {
 
                       return (
                         <React.Fragment key={session.id}>
-                          <tr className="border-b border-slate-100 hover:bg-blue-50/40 transition-colors">
+                          <tr className="border-b border-line hover:bg-paper-100 transition-colors">
                             <td
                               className={`py-3.5 px-5 whitespace-nowrap ${
-                                isExpanded ? 'shadow-[inset_3px_0_0_#005ab6]' : ''
+                                isExpanded ? 'shadow-[inset_3px_0_0_var(--ai)]' : ''
                               }`}
                             >
                               <div className="flex flex-col">
-                                <span className="font-semibold text-slate-900">{formattedDate}</span>
-                                <span className="text-[11px] text-slate-400">{formattedTime}</span>
+                                <span className="font-semibold text-sumi">{formattedDate}</span>
+                                <span className="text-[11px] text-sumi-faint">{formattedTime}</span>
                               </div>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-paper-200 text-sumi border border-line">
                                 {session.textbookTitle || '—'}
                               </span>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-[#005ab6] border border-blue-100">
+                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-ai-soft text-ai border border-line">
                                 {session.chapterTitle || '—'}
                               </span>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="flex flex-col max-w-xs">
-                                <span className="font-bold text-slate-900 truncate">
+                                <span className="font-bold text-sumi truncate">
                                   {session.dialogueTitle}
                                 </span>
                                 {session.scenarioTitle && (
-                                  <span className="text-[11px] text-slate-500 truncate">
+                                  <span className="text-[11px] text-sumi-muted truncate">
                                     {session.scenarioTitle}
                                   </span>
                                 )}
                               </div>
                             </td>
                             <td className="py-3.5 px-4 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-paper-200 text-sumi border border-line">
                                 Vai {session.role}
                               </span>
                             </td>
@@ -486,7 +486,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                 {session.averageScore} / 100
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 whitespace-nowrap text-slate-500">
+                            <td className="py-3.5 px-4 whitespace-nowrap text-sumi-muted">
                               {hasDuration ? `${minutes}m ${seconds.toString().padStart(2, '0')}s` : '—'}
                             </td>
                             <td className="py-3.5 px-5 text-right whitespace-nowrap">
@@ -494,7 +494,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleToggleHistoryDetail(session)}
-                                  className="px-3 py-1.5 rounded-lg bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-lg bg-ai hover:bg-ai-hover text-on-ai text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                 >
                                   <span>{isExpanded ? 'Đóng' : 'Chi tiết'}</span>
                                   <span className="material-symbols-outlined text-[14px]">
@@ -504,7 +504,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleRestartFromHistory(session)}
-                                  className="px-3 py-1.5 rounded-lg bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-lg bg-ai hover:bg-ai-hover text-on-ai text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                   title="Luyện lại bài này"
                                 >
                                   <span className="material-symbols-outlined text-[14px]">replay</span>
@@ -516,15 +516,15 @@ export const LearnerShadowingListView: React.FC = () => {
 
                           {/* Expanded: Đánh giá đa chiều + chi tiết điểm từng câu */}
                           {isExpanded && (
-                            <tr className="bg-slate-50/60 border-b border-slate-200">
+                            <tr className="bg-paper-100 border-b border-line">
                               <td colSpan={8} className="p-5">
-                                <div className="bg-white rounded-xl border border-slate-200/80 p-5 flex flex-col gap-4">
+                                <div className="bg-paper-50 rounded-xl border border-line p-5 flex flex-col gap-4">
                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 text-xs">
-                                      <span className="font-bold text-slate-800">Kết quả buổi luyện</span>
+                                      <span className="font-bold text-sumi">Kết quả buổi luyện</span>
                                       {isLegacy && (
                                         <span
-                                          className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200 normal-case tracking-normal"
+                                          className="px-1.5 py-0.5 rounded bg-paper-200 text-sumi-muted border border-line normal-case tracking-normal"
                                           title="Bản ghi tạo trước khi có phiên bản chấm điểm hiện tại. Điểm lưu loát/ngữ điệu của bản ghi này có thể là ước lượng, không phải số đo thực."
                                         >
                                           Bản ghi cũ
@@ -532,24 +532,24 @@ export const LearnerShadowingListView: React.FC = () => {
                                       )}
                                     </div>
                                     {/* Chỉ số liệu thật đã lưu: độ khớp nội dung (lưu loát, ngữ điệu chưa được chấm nên không hiển thị) */}
-                                    <dl className="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-slate-500">
+                                    <dl className="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-sumi-muted">
                                       <div className="flex items-center gap-1">
                                         <dt>Độ khớp nội dung</dt>
-                                        <dd className="font-bold text-[#005ab6]">{contentScore != null ? `${contentScore}%` : '—'}</dd>
+                                        <dd className="font-bold text-ai">{contentScore != null ? `${contentScore}%` : '—'}</dd>
                                       </div>
                                       <div className="flex items-center gap-1">
                                         <dt>Câu đã chấm</dt>
-                                        <dd className="font-bold text-slate-800">
+                                        <dd className="font-bold text-sumi">
                                           {session.sentenceScores.length}/{session.totalSentences || session.sentenceScores.length}
                                         </dd>
                                       </div>
                                       {!isLegacy && (
-                                        <dd className="font-bold text-slate-800">{sessionRankTitle(session.averageScore)}</dd>
+                                        <dd className="font-bold text-sumi">{sessionRankTitle(session.averageScore)}</dd>
                                       )}
                                     </dl>
                                   </div>
 
-                                  <span className="text-xs font-bold text-slate-500">Chi tiết từng câu</span>
+                                  <span className="text-xs font-bold text-sumi-muted">Chi tiết từng câu</span>
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {session.sentenceScores.map((score, sIdx) => {
@@ -567,10 +567,10 @@ export const LearnerShadowingListView: React.FC = () => {
                                       return (
                                         <div
                                           key={sIdx}
-                                          className="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col gap-2.5"
+                                          className="p-3.5 rounded-xl border border-line bg-paper-50 flex flex-col gap-2.5"
                                         >
                                           <div className="flex items-start gap-3">
-                                            <span className="text-[11px] font-bold text-slate-400 pt-0.5">
+                                            <span className="text-[11px] font-bold text-sumi-faint pt-0.5">
                                               {sIdx + 1}
                                             </span>
                                             <div className="flex-1 min-w-0">
@@ -582,10 +582,10 @@ export const LearnerShadowingListView: React.FC = () => {
                                                   size="sm"
                                                 />
                                               ) : (
-                                                <p className="text-sm font-bold text-slate-900 leading-snug">Câu {sIdx + 1}</p>
+                                                <p className="text-sm font-bold text-sumi leading-snug">Câu {sIdx + 1}</p>
                                               )}
                                               {translation && (
-                                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                                <p className="text-[11px] text-sumi-muted mt-0.5">
                                                   {translation}
                                                 </p>
                                               )}
@@ -598,7 +598,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                               {score} điểm
                                             </span>
                                           </div>
-                                          <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                                          <div className="flex items-center justify-between border-t border-line pt-2">
                                             <div className="flex items-center gap-3 text-[11px] font-semibold">
                                               <button
                                                 type="button"
@@ -606,7 +606,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                                   handlePlaySample(japaneseText, sampleUrl)
                                                 }
                                                 disabled={!japaneseText && !sampleUrl}
-                                                className="flex items-center gap-1 text-[#005ab6] hover:underline disabled:text-slate-300 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                                                className="flex items-center gap-1 text-ai hover:underline disabled:text-sumi-faint disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
                                               >
                                                 <span className="material-symbols-outlined text-[14px]">volume_up</span>
                                                 Nghe mẫu
@@ -615,14 +615,14 @@ export const LearnerShadowingListView: React.FC = () => {
                                                 <button
                                                   type="button"
                                                   onClick={() => playAudio(userUrl)}
-                                                  className="flex items-center gap-1 text-slate-600 hover:underline cursor-pointer"
+                                                  className="flex items-center gap-1 text-sumi-muted hover:underline cursor-pointer"
                                                 >
                                                   <span className="material-symbols-outlined text-[14px]" aria-hidden="true">mic</span>
                                                   Nghe bạn
                                                 </button>
                                               )}
                                             </div>
-                                            <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                            <span className="flex items-center gap-1 text-[11px] text-sumi-faint">
                                               {tier && (
                                                 <span className="material-symbols-outlined text-[14px]">
                                                   {tier === 'green' ? 'check' : 'priority_high'}
@@ -646,7 +646,7 @@ export const LearnerShadowingListView: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => handleRestartFromHistory(session)}
-                                      className="px-4 py-2 rounded-full bg-[#005ab6] hover:bg-[#00458f] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                      className="px-4 py-2 rounded-full bg-ai hover:bg-ai-hover text-on-ai text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                     >
                                       <span className="material-symbols-outlined text-[14px]">replay</span>
                                       Luyện tập lại toàn bài này
@@ -664,7 +664,7 @@ export const LearnerShadowingListView: React.FC = () => {
               </div>
 
               {/* Footer: tổng số phiên + phân trang */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 border-t border-slate-200/80 bg-slate-50/60 text-[11px] text-slate-500">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 border-t border-line bg-paper-100 text-[11px] text-sumi-muted">
                 <span>
                   Hiển thị {pagedHistory.length} trong tổng số {filteredHistory.length} phiên luyện tập đã ghi nhận.
                 </span>
@@ -673,7 +673,7 @@ export const LearnerShadowingListView: React.FC = () => {
                     type="button"
                     onClick={() => setHistoryPage(currentHistoryPage - 1)}
                     disabled={currentHistoryPage <= 1}
-                    className="px-3 py-1 rounded-md border border-slate-200 bg-white text-slate-600 font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                    className="px-3 py-1 rounded-md border border-line bg-paper-50 text-sumi-muted font-semibold disabled:text-sumi-faint disabled:cursor-not-allowed cursor-pointer"
                   >
                     Trước
                   </button>
@@ -684,8 +684,8 @@ export const LearnerShadowingListView: React.FC = () => {
                       onClick={() => setHistoryPage(page)}
                       className={`px-2.5 py-1 rounded-md font-bold cursor-pointer ${
                         page === currentHistoryPage
-                          ? 'bg-[#005ab6] text-white'
-                          : 'border border-slate-200 bg-white text-slate-600'
+                          ? 'bg-ai text-on-ai'
+                          : 'border border-line bg-paper-50 text-sumi-muted'
                       }`}
                     >
                       {page}
@@ -695,7 +695,7 @@ export const LearnerShadowingListView: React.FC = () => {
                     type="button"
                     onClick={() => setHistoryPage(currentHistoryPage + 1)}
                     disabled={currentHistoryPage >= totalHistoryPages}
-                    className="px-3 py-1 rounded-md border border-slate-200 bg-white text-slate-600 font-semibold disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                    className="px-3 py-1 rounded-md border border-line bg-paper-50 text-sumi-muted font-semibold disabled:text-sumi-faint disabled:cursor-not-allowed cursor-pointer"
                   >
                     Sau
                   </button>

@@ -114,7 +114,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   });
 
   return (
-    <div data-theme="hoc-tap" className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12">
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12">
       {user?.role === 'Admin' && (
         <div className="flex items-center justify-between gap-3 rounded-jc-md bg-info-soft px-4 py-2.5 text-[13px]">
           <span>Bạn đang xem thư viện kịch bản với giao diện của học viên.</span>

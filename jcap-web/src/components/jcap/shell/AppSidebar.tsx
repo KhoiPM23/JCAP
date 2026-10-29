@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { PREFECTURES } from '../../../data/japanMap';
 import { roleplayService } from '../../../services/roleplayService';
 import { shadowingStorageService } from '../../../services/shadowingStorageService';
@@ -40,24 +41,27 @@ const NAV: NavDef[] = [
   // Flashcard có trong code nhưng chưa có trong thiết kế: đặt ngay dưới Shadowing, cùng kiểu
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
-  { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', soon: true },
+  { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
 ];
 
 export interface AppSidebarProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  /** Khung đang ở dạng bản đồ hay trang (có thể trễ vài khung hình so với đường dẫn khi chuyển cảnh). Bỏ trống thì suy ra từ đường dẫn */
+  onMap?: boolean;
 }
 
 /**
  * Thanh bên của học viên (thay Header + Navbar cũ). Trên bản đồ nó nổi, ở các trang khác áp sát mép trái (CSS theo lớp
  * is-page của khung). Nhóm "Đang học" lấy từ tiến độ thật: chương hiện tại, bài Shadowing đang dở, phiên hội thoại đang dở.
  */
-export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleCollapsed }) => {
+export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleCollapsed, onMap }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
   const { logout } = useAuth();
   const { user, credit } = useLearnerAccount();
+  const { isDark, themeFor } = useTheme();
   const [open, setOpen] = useState<'chap' | 'cont' | 'conv' | null>(null);
   const [acctOpen, setAcctOpen] = useState(false);
   const acctRef = useRef<HTMLDivElement>(null);
@@ -97,9 +101,15 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   const accountPages = ['/subscription', '/credits', '/profile', '/settings'];
   const onAccountPage = accountPages.some((p) => path.startsWith(p));
 
-  // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF)
+  // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF).
+  // Chế độ tối: cả hai nơi đều dùng hoc-tap-dem (bản đồ vẫn giữ kham-pha, chỉ thanh bên nổi trên nó tối đi)
   return (
-    <aside ref={sideRef} className="jx-side" data-theme={MAP_PATHS(path) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
+    <aside ref={sideRef} className="jx-side" data-theme={isDark ? themeFor('learn') : (onMap ?? MAP_PATHS(path)) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
+      {/* Hai lớp vỏ chồng nhau thay cho việc animate left/top/bottom/border-radius (design-handoff/transitions, bản B): chỉ transform và opacity */}
+      <span className="jx-shell jx-shell--float" data-theme={isDark ? themeFor('learn') : 'kham-pha'} aria-hidden="true" />
+      <span className="jx-shell jx-shell--dock" data-theme={isDark ? themeFor('learn') : 'hoc-tap'} aria-hidden="true" />
+      <div className="jx-side-body">
+      <div className="jx-side-top">
       {/* Thương hiệu: logo (thu gọn: mở thanh bên), chữ JCAP (về trang chủ), nút thu gọn */}
       <div className="jx-brand">
         <button
@@ -157,9 +167,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
         })}
       </nav>
 
-      <div style={{ flexGrow: 1 }} />
+      </div>
 
-      <div className="jx-group" style={{ gap: 4, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
+      <div className="jx-group jx-side-bot" style={{ gap: 4, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
         <button type="button" className="jx-row" title={`Số dư ${fmt(credit)} Credit`} onClick={() => go('/subscription')}>
           <span className="jx-coin">
             <Icon name="toll" size={16} />
@@ -217,6 +227,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             </span>
           </button>
         </div>
+      </div>
       </div>
     </aside>
   );

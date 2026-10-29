@@ -27,6 +27,13 @@ namespace JCAP.Controllers
             return Ok(await _service.GetOverviewAsync());
         }
 
+        /// <summary>Thống kê tiến độ người học: tổng quan, theo chương và phễu từng mốc đang dùng.</summary>
+        [HttpGet("stats")]
+        public async Task<ActionResult<ApiResponse<AdminExploreStatsDto>>> GetStats()
+        {
+            return Ok(await _service.GetStatsAsync());
+        }
+
         /// <summary>Mở tỉnh cho người học (cần ít nhất 1 mốc đang dùng). Không có thao tác đóng tỉnh.</summary>
         [HttpPost("prefectures/{id:int}/open")]
         public async Task<ActionResult<ApiResponse<AdminExplorePrefectureDto>>> OpenPrefecture(int id)

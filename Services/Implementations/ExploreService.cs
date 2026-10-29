@@ -109,6 +109,28 @@ namespace JCAP.Services.Implementations
             return ApiResponse<ExploreJourneyDto>.Ok(new ExploreJourneyDto { Chapters = chapters, Prefectures = summaries });
         }
 
+        public async Task<ApiResponse<ExploreStampBookDto>> GetStampBookAsync(string userId)
+        {
+            // Mốc nay đã ngừng dùng, về Nháp hoặc thuộc tỉnh đóng thì không hiện (người học không còn vào được; con dấu vẫn giữ trong CSDL)
+            var stamps = await _context.Set<ExploreSpotProgress>().AsNoTracking()
+                .Where(p => p.UserId == userId && p.StampedAt != null
+                    && p.Spot.IsActive && p.Spot.Status == ExploreSpotStatus.Published && p.Spot.Prefecture.IsOpen)
+                .OrderBy(p => p.StampedAt)
+                .Select(p => new ExploreStampedSpotDto
+                {
+                    SpotId = p.SpotId,
+                    PrefectureId = p.Spot.PrefectureId,
+                    IconId = p.Spot.IconId,
+                    NameVi = p.Spot.NameVi,
+                    NameJp = p.Spot.NameJp,
+                    UnderstoodAt = p.UnderstoodAt,
+                    StampedAt = p.StampedAt!.Value,
+                    RedStampedAt = p.RedStampedAt,
+                })
+                .ToListAsync();
+            return ApiResponse<ExploreStampBookDto>.Ok(new ExploreStampBookDto { Stamps = stamps });
+        }
+
         public async Task<ApiResponse<ExplorePrefectureDetailDto>> GetPrefectureAsync(string userId, int prefectureId)
         {
             if (prefectureId < 1 || prefectureId > PrefectureCount)

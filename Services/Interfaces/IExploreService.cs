@@ -21,6 +21,9 @@ namespace JCAP.Services.Interfaces
         /// <summary>Một mốc người học vào được (tỉnh mở, chương đã mở), kèm tiến độ.</summary>
         Task<ApiResponse<ExploreSpotDto>> GetSpotAsync(string userId, int spotId);
 
+        /// <summary>Sổ con dấu: mọi mốc người học đã có con dấu (chỉ đọc, không cấp dấu mới; cấp dấu chỉ xảy ra khi đồng bộ tỉnh).</summary>
+        Task<ApiResponse<ExploreStampBookDto>> GetStampBookAsync(string userId);
+
         /// <summary>Ghi nhận "Đã hiểu" phần câu mẫu của mốc rồi đồng bộ tỉnh của mốc đó.</summary>
         Task<ApiResponse<ExploreSyncResultDto>> MarkUnderstoodAsync(string userId, int spotId);
     }
