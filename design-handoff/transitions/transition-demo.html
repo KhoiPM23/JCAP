@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chuyển cảnh Bản đồ - Trang</title>
+<style>
+/* JCAP — generated from tokens.json */
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap");
+:root, [data-theme="hoc-tap"] {
+  --paper-50: #ffffff;
+  --paper-100: #f5f8fb;
+  --paper-200: #e9f0f5;
+  --paper-300: #dce6ee;
+  --sumi: #13204a;
+  --sumi-muted: #4b5868;
+  --sumi-faint: #9aa6b4;
+  --line: #d9e3eb;
+  --line-strong: #7d8a98;
+  --ai: #2346b0;
+  --ai-hover: #1b3893;
+  --ai-soft: #e3ebfb;
+  --on-ai: #ffffff;
+  --shu: #c63a24;
+  --shu-soft: #fde6df;
+  --on-shu: #ffffff;
+  --sora: #ffd3a1;
+  --sora-soft: #fff1e0;
+  --on-sora: #13204a;
+  --nami: #1b6f80;
+  --nami-soft: #dcf2f4;
+  --focus: #2f5bd6;
+  --success: #17705f;
+  --success-soft: #dff1ec;
+  --warning: #8a5300;
+  --warning-soft: #fbefd6;
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --info: #1d5f8c;
+  --info-soft: #e2eff7;
+  --score-good: #11706b;
+  --score-good-soft: #dcf0ee;
+  --score-mid: #8a5300;
+  --score-mid-soft: #fbefd6;
+  --score-low: #b42318;
+  --score-low-soft: #fde8e6;
+  --n5: #2f6a2c;
+  --n5-soft: #e5f1df;
+  --n4: #1b627c;
+  --n4-soft: #dfeef3;
+  --n3: #673f8f;
+  --n3-soft: #eee6f6;
+  --credit: #7f4f00;
+  --credit-soft: #fbefd2;
+  --credit-coin: #e0a526;
+  --quota-5h: #2346b0;
+  --quota-week: #4f8ba3;
+  --logo-plate: #ffffff00;
+  --scrim: #13204a80;
+  --shadow-sm: 0 1px 2px rgba(19,32,74,0.06);
+  --shadow-md: 0 6px 20px rgba(19,32,74,0.10);
+  --shadow-lg: 0 18px 48px rgba(19,32,74,0.16);
+}
+[data-theme="phong-luyen"] {
+  --paper-50: #ffffff;
+  --paper-100: #eef7f8;
+  --paper-200: #dcedf0;
+  --paper-300: #cbe3e8;
+  --sumi: #0f2538;
+  --sumi-muted: #41596a;
+  --sumi-faint: #8fa7b2;
+  --line: #cde2e7;
+  --line-strong: #6c8693;
+  --ai: #1d5a8c;
+  --ai-hover: #164a75;
+  --ai-soft: #d9eaf6;
+  --on-ai: #ffffff;
+  --shu: #c63a24;
+  --shu-soft: #fde6df;
+  --on-shu: #ffffff;
+  --sora: #ffd3a1;
+  --sora-soft: #fff1e0;
+  --on-sora: #13204a;
+  --nami: #1b6f80;
+  --nami-soft: #dcf2f4;
+  --focus: #2f5bd6;
+  --success: #17705f;
+  --success-soft: #dff1ec;
+  --warning: #8a5300;
+  --warning-soft: #fbefd6;
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --info: #1d5f8c;
+  --info-soft: #e2eff7;
+  --score-good: #11706b;
+  --score-good-soft: #dcf0ee;
+  --score-mid: #8a5300;
+  --score-mid-soft: #fbefd6;
+  --score-low: #b42318;
+  --score-low-soft: #fde8e6;
+  --n5: #2f6a2c;
+  --n5-soft: #e5f1df;
+  --n4: #1b627c;
+  --n4-soft: #dfeef3;
+  --n3: #673f8f;
+  --n3-soft: #eee6f6;
+  --credit: #7f4f00;
+  --credit-soft: #fbefd2;
+  --credit-coin: #e0a526;
+  --quota-5h: #1d5a8c;
+  --quota-week: #4f8ba3;
+  --logo-plate: #ffffff00;
+  --scrim: #0f253880;
+  --shadow-sm: 0 1px 2px rgba(19,32,74,0.06);
+  --shadow-md: 0 6px 20px rgba(19,32,74,0.10);
+  --shadow-lg: 0 18px 48px rgba(19,32,74,0.16);
+}
+[data-theme="kham-pha"] {
+  --paper-50: #fbf6ec;
+  --paper-100: #f6efe2;
+  --paper-200: #ede2cd;
+  --paper-300: #e3d4b8;
+  --sumi: #1e2c48;
+  --sumi-muted: #5b6170;
+  --sumi-faint: #a49a86;
+  --line: #e0d3bb;
+  --line-strong: #8f8470;
+  --ai: #26497b;
+  --ai-hover: #1c3961;
+  --ai-soft: #e2e8f1;
+  --on-ai: #ffffff;
+  --shu: #bf2e28;
+  --shu-soft: #f7e0d9;
+  --on-shu: #ffffff;
+  --sora: #e5c7a4;
+  --sora-soft: #f2e2cc;
+  --on-sora: #1e2c48;
+  --nami: #2f6683;
+  --nami-soft: #dcebec;
+  --focus: #2f5bd6;
+  --success: #17705f;
+  --success-soft: #dff1ec;
+  --warning: #8a5300;
+  --warning-soft: #fbefd6;
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --info: #1d5f8c;
+  --info-soft: #e2eff7;
+  --score-good: #11706b;
+  --score-good-soft: #dcf0ee;
+  --score-mid: #8a5300;
+  --score-mid-soft: #fbefd6;
+  --score-low: #b42318;
+  --score-low-soft: #fde8e6;
+  --n5: #2f6a2c;
+  --n5-soft: #e5f1df;
+  --n4: #1b627c;
+  --n4-soft: #dfeef3;
+  --n3: #673f8f;
+  --n3-soft: #eee6f6;
+  --credit: #7f4f00;
+  --credit-soft: #fbefd2;
+  --credit-coin: #e0a526;
+  --quota-5h: #26497b;
+  --quota-week: #58829c;
+  --logo-plate: #fbf6ec00;
+  --scrim: #1e2c4899;
+  --shadow-sm: 0 1px 2px rgba(19,32,74,0.06);
+  --shadow-md: 0 6px 20px rgba(19,32,74,0.10);
+  --shadow-lg: 0 18px 48px rgba(19,32,74,0.16);
+}
+[data-theme="quan-tri"] {
+  --paper-50: #ffffff;
+  --paper-100: #f4f6f9;
+  --paper-200: #e8ecf1;
+  --paper-300: #dce2e9;
+  --sumi: #18233a;
+  --sumi-muted: #4c5667;
+  --sumi-faint: #9aa6b4;
+  --line: #dde3ea;
+  --line-strong: #7e8896;
+  --ai: #2346b0;
+  --ai-hover: #1b3893;
+  --ai-soft: #e3ebfb;
+  --on-ai: #ffffff;
+  --shu: #c63a24;
+  --shu-soft: #fde6df;
+  --on-shu: #ffffff;
+  --sora: #ffe3c2;
+  --sora-soft: #fff4e6;
+  --on-sora: #13204a;
+  --nami: #1b6f80;
+  --nami-soft: #dcf2f4;
+  --focus: #2f5bd6;
+  --success: #17705f;
+  --success-soft: #dff1ec;
+  --warning: #8a5300;
+  --warning-soft: #fbefd6;
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --info: #1d5f8c;
+  --info-soft: #e2eff7;
+  --score-good: #11706b;
+  --score-good-soft: #dcf0ee;
+  --score-mid: #8a5300;
+  --score-mid-soft: #fbefd6;
+  --score-low: #b42318;
+  --score-low-soft: #fde8e6;
+  --n5: #2f6a2c;
+  --n5-soft: #e5f1df;
+  --n4: #1b627c;
+  --n4-soft: #dfeef3;
+  --n3: #673f8f;
+  --n3-soft: #eee6f6;
+  --credit: #7f4f00;
+  --credit-soft: #fbefd2;
+  --credit-coin: #e0a526;
+  --quota-5h: #2346b0;
+  --quota-week: #4f8ba3;
+  --logo-plate: #ffffff00;
+  --scrim: #13204a80;
+  --shadow-sm: 0 1px 2px rgba(19,32,74,0.06);
+  --shadow-md: 0 6px 20px rgba(19,32,74,0.10);
+  --shadow-lg: 0 18px 48px rgba(19,32,74,0.16);
+}
+[data-theme="hoc-tap-dem"] {
+  --paper-50: #232220;
+  --paper-100: #1a1917;
+  --paper-200: #2c2a27;
+  --paper-300: #37342f;
+  --sumi: #efe9dc;
+  --sumi-muted: #aaa395;
+  --sumi-faint: #6a6459;
+  --line: #38352f;
+  --line-strong: #7a7468;
+  --ai: #a9b8f0;
+  --ai-hover: #c3cdf5;
+  --ai-soft: #2a2f46;
+  --on-ai: #15171f;
+  --shu: #f08a6e;
+  --shu-soft: #3d211b;
+  --on-shu: #2a0e0a;
+  --sora: #e5c7a4;
+  --sora-soft: #2f2b26;
+  --on-sora: #162145;
+  --nami: #8fc0c8;
+  --nami-soft: #1f3234;
+  --focus: #ffd27a;
+  --success: #5fd0b6;
+  --success-soft: #123a33;
+  --warning: #f1b45a;
+  --warning-soft: #3b2a0e;
+  --danger: #ff8f84;
+  --danger-soft: #43191a;
+  --info: #86c4ee;
+  --info-soft: #1d2e38;
+  --score-good: #5cd0c6;
+  --score-good-soft: #113937;
+  --score-mid: #f1b45a;
+  --score-mid-soft: #3b2a0e;
+  --score-low: #ff8f84;
+  --score-low-soft: #43191a;
+  --n5: #8fd18a;
+  --n5-soft: #1c3319;
+  --n4: #7ccbe6;
+  --n4-soft: #15313b;
+  --n3: #c9a9ef;
+  --n3-soft: #2e2140;
+  --credit: #f5c25b;
+  --credit-soft: #3a2b0c;
+  --credit-coin: #e0a526;
+  --quota-5h: #9fb3ee;
+  --quota-week: #5b7aa8;
+  --logo-plate: #eeeadf;
+  --scrim: #000000b3;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+}
+[data-theme="phong-luyen-dem"] {
+  --paper-50: #201f1c;
+  --paper-100: #141311;
+  --paper-200: #2a2825;
+  --paper-300: #34312d;
+  --sumi: #efe9dc;
+  --sumi-muted: #aaa395;
+  --sumi-faint: #6a6459;
+  --line: #2f2c28;
+  --line-strong: #756f64;
+  --ai: #a9b8f0;
+  --ai-hover: #c3cdf5;
+  --ai-soft: #272c42;
+  --on-ai: #15171f;
+  --shu: #ff8c6e;
+  --shu-soft: #3d211b;
+  --on-shu: #2a0e0a;
+  --sora: #e5c7a4;
+  --sora-soft: #35302a;
+  --on-sora: #162145;
+  --nami: #8fc0c8;
+  --nami-soft: #1d302f;
+  --focus: #ffd27a;
+  --success: #6fd8bf;
+  --success-soft: #133a3a;
+  --warning: #f4bd66;
+  --warning-soft: #3b2e14;
+  --danger: #ff9a8f;
+  --danger-soft: #47202a;
+  --info: #8ccaf2;
+  --info-soft: #1b2c36;
+  --score-good: #6fd8cd;
+  --score-good-soft: #123c45;
+  --score-mid: #f4bd66;
+  --score-mid-soft: #3b2e14;
+  --score-low: #ff9a8f;
+  --score-low-soft: #47202a;
+  --n5: #97d892;
+  --n5-soft: #1d3a2a;
+  --n4: #86d2ea;
+  --n4-soft: #173b4c;
+  --n3: #d0b2f2;
+  --n3-soft: #33275a;
+  --credit: #f6c766;
+  --credit-soft: #3a3016;
+  --credit-coin: #e0a526;
+  --quota-5h: #93bec5;
+  --quota-week: #6a95c2;
+  --logo-plate: #f3eedf;
+  --scrim: #000000b3;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --touch-target: 44px;
+  --control-h: 40px;
+  --control-h-lg: 48px;
+  --header-h: 60px;
+  --sidebar-w: 240px;
+  --bottomnav-h: 64px;
+  --mic-size: 72px;
+  --content-max: 1200px;
+  --reading-max: 720px;
+  --bp-sm: 360px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --font-sans: "Be Vietnam Pro", "Noto Sans JP", system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Be Vietnam Pro", sans-serif;
+  --font-mincho: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+.display { font-family: var(--font-sans); font-size: 32px; line-height: 44px; font-weight: 700; letter-spacing: -0.01em; }
+.title-1 { font-family: var(--font-sans); font-size: 24px; line-height: 34px; font-weight: 700; }
+.title-2 { font-family: var(--font-sans); font-size: 19px; line-height: 28px; font-weight: 600; }
+.title-3 { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.body { font-family: var(--font-sans); font-size: 15px; line-height: 24px; font-weight: 400; }
+.body-strong { font-family: var(--font-sans); font-size: 15px; line-height: 24px; font-weight: 600; }
+.body-sm { font-family: var(--font-sans); font-size: 13px; line-height: 20px; font-weight: 400; }
+.label { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 600; }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
+.overline { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.06em; }
+.numeral { font-family: var(--font-sans); font-size: 40px; line-height: 44px; font-weight: 700; }
+.jp-lg { font-family: var(--font-jp); font-size: 22px; line-height: 40px; font-weight: 500; }
+.jp-md { font-family: var(--font-jp); font-size: 18px; line-height: 34px; font-weight: 400; }
+.jp-sm { font-family: var(--font-jp); font-size: 15px; line-height: 26px; font-weight: 400; }
+.furigana { font-family: var(--font-jp); font-size: 10px; line-height: 12px; font-weight: 500; }
+.romaji { font-family: var(--font-sans); font-size: 13px; line-height: 20px; font-weight: 400; }
+.jp-display { font-family: var(--font-mincho); font-size: 28px; line-height: 36px; font-weight: 600; }
+
+</style>
+<style>
+/* ============================================================
+   Khung demo (không thuộc hiệu ứng)
+   ============================================================ */
+body{margin:0;background:var(--paper-200);color:var(--sumi);font-family:var(--font-sans)}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--paper-50)}
+.bar b{font-size:14px}.bar label{font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.bar button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--line-strong);background:var(--paper-50);color:var(--sumi);cursor:pointer}
+.bar button[aria-pressed=true]{background:var(--ai);color:var(--on-ai);border-color:var(--ai)}
+.scroll{overflow:auto;padding:16px}
+pre.log{margin:0;padding:12px 16px;font:12px/18px ui-monospace,Menlo,Consolas,monospace;white-space:pre;overflow:auto;max-height:260px}
+
+/* ============================================================
+   1) HIỆU ỨNG - phần chung cho cả hai cách làm
+   ============================================================ */
+.app{--e:cubic-bezier(.2,.7,.2,1);position:relative;width:1440px;height:900px;overflow:hidden;background:var(--nami);font-family:var(--font-sans);color:var(--sumi)}
+
+/* Lớp bản đồ nằm dưới cùng. Trong prototype là MỘT thẻ <img>, không phải SVG. */
+.mapfull{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:none;transition:transform .45s cubic-bezier(.4,0,.2,1) .2s;
+  background:radial-gradient(circle at 62% 38%,var(--paper-200) 0 18%,transparent 18.4%),radial-gradient(circle at 48% 62%,var(--paper-200) 0 22%,transparent 22.4%),var(--nami)}
+.is-pref .mapfull{transform:scale(2.2) translate(-30%,-12%);transition:transform .6s cubic-bezier(.4,0,.2,1) .2s}
+.hot{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--shu);border:2px solid var(--paper-50)}
+.backbtn{position:absolute;left:20px;top:20px;z-index:30;opacity:0;pointer-events:none;transition:opacity .08s linear 0s}
+.is-pref .backbtn{opacity:1;pointer-events:auto;transition:opacity .12s linear 1.08s}
+
+/* Tấm nền phủ kín bản đồ khi đang ở trang. z 14, dưới trang (15), dưới thanh bên (20) */
+.pgbg{position:absolute;inset:0;z-index:14;background:var(--paper-100);opacity:0;visibility:hidden;transition:opacity .28s linear,visibility 0s .28s}
+.is-page .pgbg{opacity:1;visibility:visible;transition:opacity .28s linear,visibility 0s}
+
+/* Trang. Luôn nằm sẵn trong DOM, ẩn bằng opacity + visibility + transform */
+.pg{position:absolute;top:0;right:0;bottom:0;left:240px;z-index:15;overflow-y:auto;background:transparent;color:var(--sumi);
+  opacity:0;visibility:hidden;transform:translateY(10px);
+  transition:opacity .14s linear,transform .2s var(--e),visibility 0s .2s,left .2s var(--e) 0s}
+.pg.on{opacity:1;visibility:visible;transform:none;
+  transition:opacity .22s linear .14s,transform .32s var(--e) .14s,visibility 0s,left .2s var(--e) .09s}
+.is-collapsed .pg{left:72px}
+.pg h1{margin:0 0 8px;font-size:28px}.pg{padding:40px 48px;box-sizing:border-box}
+.pg .card{margin-top:16px;padding:20px;border-radius:16px;background:var(--paper-50);border:1px solid var(--line);max-width:560px}
+
+/* Nội dung thanh bên (dùng chung) */
+.side{position:absolute;z-index:20;box-sizing:border-box;display:flex;flex-direction:column;color:var(--sumi)}
+.side__body{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+.side__top{display:flex;flex-direction:column;gap:14px}
+.side__bot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;justify-content:space-between;height:44px;font-weight:700;font-size:18px}
+.row{display:flex;align-items:center;gap:12px;height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi);cursor:pointer;text-align:left}
+.row:hover{background:var(--paper-200)}.row.on{background:var(--shu-soft)}
+.row .dot{flex:none;width:22px;height:22px;border-radius:7px;background:var(--sumi-faint)}.row.on .dot{background:var(--shu)}
+.lbl{opacity:1;transition:opacity .12s linear .2s;white-space:nowrap;overflow:hidden}
+.is-collapsed .lbl{opacity:0;transition:opacity .09s linear 0s}
+
+/* Vào tỉnh (is-pref): thanh bên trượt ra, bản đồ zoom */
+.is-pref .side,.is-pref.is-collapsed .side{transform:translateX(-120%);opacity:0;pointer-events:none;transition:width .2s 0s,transform .2s cubic-bezier(.4,0,1,1) 0s,opacity .2s linear 0s}
+
+/* Giảm chuyển động: vẫn còn mờ dần 0.2s, bỏ trượt và zoom */
+@media (prefers-reduced-motion: reduce){
+  .app *{transition-duration:.2s !important;transition-delay:0s !important;animation:none !important}
+  .is-pref .mapfull{transform:none}
+  .side,.is-pref .side,.is-pref.is-collapsed .side{transform:none}
+}
+
+/* ============================================================
+   CÁCH A - nguyên văn prototype (animate left/top/bottom/width/border-radius)
+   ============================================================ */
+[data-impl=a] .side__shell{display:none}
+[data-impl=a] .side{left:12px;top:12px;bottom:12px;width:240px;padding:16px 12px 12px;border-radius:20px;border:1px solid var(--line);background:var(--paper-100);box-shadow:0 14px 36px rgba(8,26,56,.32);
+  transition:width .2s var(--e) 0s,transform .16s var(--e) .65s,opacity .16s linear .65s,left .3s var(--e),top .3s var(--e),bottom .3s var(--e),border-radius .3s var(--e),box-shadow .3s linear,background-color .3s linear}
+[data-impl=a].is-collapsed .side{width:72px;transition:width .2s var(--e) .09s,transform .16s var(--e) .65s,opacity .16s linear .65s,left .3s var(--e),top .3s var(--e),bottom .3s var(--e),border-radius .3s var(--e),box-shadow .3s linear,background-color .3s linear}
+[data-impl=a].is-page .side{left:0;top:0;bottom:0;border-radius:0;border-width:0 1px 0 0;background:var(--paper-50);box-shadow:none}
+
+/* ============================================================
+   CÁCH B - chỉ transform + opacity cho chuyển Bản đồ <-> Trang
+   Hộp thanh bên luôn ở hình học "dock" (0,0, 240 x 900).
+   Dạng nổi = hai lớp vỏ + dịch nhóm nội dung 13px, không đổi layout.
+   ============================================================ */
+[data-impl=b] .side{left:0;top:0;bottom:0;width:240px;padding:16px 13px 12px 12px;
+  transition:width .2s var(--e) 0s,transform .16s var(--e) .65s,opacity .16s linear .65s}
+[data-impl=b].is-collapsed .side{width:72px;transition:width .2s var(--e) .09s,transform .16s var(--e) .65s,opacity .16s linear .65s}
+[data-impl=b] .side__shell{position:absolute;pointer-events:none;box-sizing:border-box;will-change:transform,opacity}
+/* vỏ nổi: bo 20, viền, bóng đổ, nền paper-100. Luôn dùng token kham-pha (data-theme tĩnh)
+   để màu nền giống prototype trong lúc chuyển. Vỏ dock luôn dùng token hoc-tap. */
+[data-impl=b] .side__shell--float{left:12px;right:-12px;top:12px;bottom:12px;border-radius:20px;border:1px solid var(--line);background:var(--paper-100);box-shadow:0 14px 36px rgba(8,26,56,.32);
+  opacity:1;transform:none;transition:transform .3s var(--e),opacity 0s}
+/* vỏ dock: phủ kín, viền phải, nền paper-50 */
+[data-impl=b] .side__shell--dock{inset:0;border-right:1px solid var(--line);background:var(--paper-50);
+  opacity:0;transition:opacity .3s linear 0s}
+/* nội dung: ở dạng nổi lệch (13, +13, -13) so với dock, về 0 khi vào trang */
+[data-impl=b] .side__body{transform:translateX(13px);transition:transform .3s var(--e)}
+[data-impl=b] .side__top{transform:translateY(13px);transition:transform .3s var(--e)}
+[data-impl=b] .side__bot{transform:translateY(-13px);transition:transform .3s var(--e)}
+/* vào trang */
+[data-impl=b].is-page .side__shell--float{transform:translate(-12px,-12px);opacity:0;transition:transform .3s var(--e),opacity .06s linear .24s}
+[data-impl=b].is-page .side__shell--dock{opacity:1;transition:opacity .3s linear 0s}
+[data-impl=b].is-page .side__body,[data-impl=b].is-page .side__top,[data-impl=b].is-page .side__bot{transform:none}
+@media (prefers-reduced-motion: reduce){
+  [data-impl=b] .side__shell--float,[data-impl=b].is-page .side__shell--float{transform:none}
+  [data-impl=b] .side__body,[data-impl=b] .side__top,[data-impl=b] .side__bot{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>Chuyển cảnh Bản đồ ↔ Trang</b>
+  <span role="group" aria-label="Cách làm">
+    <button type="button" data-impl-btn="a" aria-pressed="true">A · nguyên văn prototype</button>
+    <button type="button" data-impl-btn="b" aria-pressed="false">B · chỉ transform/opacity</button>
+  </span>
+  <label><input type="checkbox" id="slow"> Chậm 5×</label>
+  <span style="font-size:12px;color:var(--sumi-muted)">Bấm mục trong thanh bên. Bảng thời gian thật hiện bên dưới.</span>
+</div>
+<div class="scroll">
+<div class="app" id="app" data-impl="a" data-theme="kham-pha">
+  <div class="mapfull" aria-label="Bản đồ"><i class="hot" style="left:880px;top:330px"></i><i class="hot" style="left:700px;top:520px"></i><i class="hot" style="left:960px;top:430px"></i></div>
+  <button type="button" class="backbtn row" id="back" style="background:var(--paper-50);border:1px solid var(--line)">Quay lại bản đồ</button>
+
+  <div class="pgbg" data-theme="hoc-tap" aria-hidden="true"></div>
+
+  <section class="pg" data-page="roleplay" data-theme="hoc-tap" aria-hidden="true"><h1>Hội thoại AI</h1><div class="card">Nội dung trang Hội thoại AI.</div></section>
+  <section class="pg" data-page="shadow" data-theme="hoc-tap" aria-hidden="true"><h1>Shadowing</h1><div class="card">Nội dung trang Shadowing.</div></section>
+  <section class="pg" data-page="profile" data-theme="hoc-tap" aria-hidden="true"><h1>Hồ sơ</h1><div class="card">Nội dung trang Hồ sơ.</div></section>
+
+  <aside class="side" id="side" data-theme="kham-pha" aria-label="Thanh điều hướng">
+    <span class="side__shell side__shell--float" data-theme="kham-pha"></span>
+    <span class="side__shell side__shell--dock" data-theme="hoc-tap"></span>
+    <div class="side__body">
+      <div class="side__top">
+        <div class="brand"><span>JCAP</span></div>
+        <button type="button" class="row on" data-go="map"><span class="dot"></span><span class="lbl">Hành trình</span></button>
+        <button type="button" class="row" data-go="roleplay"><span class="dot"></span><span class="lbl">Hội thoại AI</span></button>
+        <button type="button" class="row" data-go="shadow"><span class="dot"></span><span class="lbl">Shadowing</span></button>
+        <button type="button" class="row" data-go="profile"><span class="dot"></span><span class="lbl">Hồ sơ</span></button>
+      </div>
+      <div class="side__bot">
+        <button type="button" class="row" id="enterPref"><span class="dot"></span><span class="lbl">Vào tỉnh (demo)</span></button>
+        <button type="button" class="row" id="collapse"><span class="dot"></span><span class="lbl">Thu gọn</span></button>
+      </div>
+    </div>
+  </aside>
+</div>
+</div>
+<pre class="log" id="log">Chưa có chuyển cảnh nào.</pre>
+
+<script>
+/* ============================================================
+   2) LOGIC ĐỔI TRẠNG THÁI
+   Toàn bộ chỉ là: đặt lớp trên .app, bật .on trên đúng một .pg.
+   Không có JS điều khiển hoạt họa; trình duyệt tự chạy transition.
+   ============================================================ */
+var app  = document.getElementById('app');
+var side = document.getElementById('side');
+var pages = Array.prototype.slice.call(document.querySelectorAll('.pg'));
+var navRows = Array.prototype.slice.call(document.querySelectorAll('[data-go]'));
+var state = { page: 'map', collapsed: false, pref: false };
+
+function render() {
+  app.className = 'app' + (state.pref ? ' is-pref' : '') + (state.collapsed ? ' is-collapsed' : '') + (state.page !== 'map' ? ' is-page' : '');
+  /* thanh bên: bản đồ dùng direction kham-pha, trang dùng hoc-tap (token đổi ngay tại t=0) */
+  side.setAttribute('data-theme', state.page === 'map' ? 'kham-pha' : 'hoc-tap');
+  pages.forEach(function (p) {
+    var on = p.getAttribute('data-page') === state.page;
+    p.classList.toggle('on', on);
+    p.setAttribute('aria-hidden', on ? 'false' : 'true');
+  });
+  navRows.forEach(function (r) { r.classList.toggle('on', r.getAttribute('data-go') === state.page); });
+}
+function go(page) { startLog(page); state.page = page; state.pref = false; render(); }
+
+navRows.forEach(function (r) { r.addEventListener('click', function () { go(r.getAttribute('data-go')); }); });
+document.getElementById('collapse').addEventListener('click', function () { startLog('collapse'); state.collapsed = !state.collapsed; render(); });
+document.getElementById('enterPref').addEventListener('click', function () { startLog('pref'); state.page = 'map'; state.pref = true; render(); });
+document.getElementById('back').addEventListener('click', function () { startLog('map'); state.pref = false; render(); });
+Array.prototype.forEach.call(document.querySelectorAll('[data-impl-btn]'), function (b) {
+  b.addEventListener('click', function () {
+    app.setAttribute('data-impl', b.getAttribute('data-impl-btn'));
+    Array.prototype.forEach.call(document.querySelectorAll('[data-impl-btn]'), function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+  });
+});
+document.getElementById('slow').addEventListener('change', function (e) {
+  /* chỉ để quan sát: làm chậm mọi hoạt họa bằng Web Animations API */
+  window.__slow = e.target.checked ? 0.2 : 1;
+  document.getAnimations().forEach(function (a) { a.playbackRate = window.__slow; });
+});
+app.addEventListener('transitionrun', function () { if (window.__slow) document.getAnimations().forEach(function (a) { a.playbackRate = window.__slow; }); }, true);
+
+/* ============================================================
+   Bảng thời gian đo thật bằng transitionrun / transitionend
+   ============================================================ */
+var t0 = 0, rows = [], label = '';
+function name(el) {
+  if (el.classList.contains('side__shell--float')) return '.side__shell--float';
+  if (el.classList.contains('side__shell--dock')) return '.side__shell--dock';
+  if (el.classList.contains('side__body')) return '.side__body';
+  if (el.classList.contains('side__top')) return '.side__top';
+  if (el.classList.contains('side__bot')) return '.side__bot';
+  if (el.classList.contains('pg')) return '.pg[' + el.getAttribute('data-page') + ']';
+  if (el.classList.contains('pgbg')) return '.pgbg';
+  if (el.classList.contains('side')) return '.side';
+  if (el.classList.contains('mapfull')) return '.mapfull';
+  return null;
+}
+function startLog(l) { t0 = performance.now(); rows = []; label = l; window.__rows = rows; }
+app.addEventListener('transitionrun', function (e) {
+  var n = name(e.target); if (!n || !t0) return;
+  var cs = getComputedStyle(e.target), props = cs.transitionProperty.split(', '), i = props.indexOf(e.propertyName);
+  var dur = parseFloat(cs.transitionDuration.split(', ')[i]) * 1000, del = parseFloat(cs.transitionDelay.split(', ')[i]) * 1000;
+  var r = { el: n, prop: e.propertyName, delay: Math.round(del), dur: Math.round(dur), ease: cs.transitionTimingFunction.split(/, (?![^(]*\))/)[i] };
+  rows.push(r); schedule();
+}, true);
+var tm;
+function schedule() { clearTimeout(tm); tm = setTimeout(show, 900); }
+function show() {
+  var out = '-> ' + label + '   (đơn vị ms, tính từ lúc bấm)\n';
+  out += 'phần tử'.padEnd(26) + 'thuộc tính'.padEnd(20) + 'trễ'.padStart(5) + 'dài'.padStart(6) + ' bắt đầu->xong   easing\n';
+  rows.sort(function (a, b) { return a.delay - b.delay; }).forEach(function (r) {
+    if (r.dur === 0 && r.prop === 'visibility' && r.delay === 0) return;
+    out += r.el.padEnd(26) + r.prop.padEnd(20) + String(r.delay).padStart(5) + String(r.dur).padStart(6) + ('  ' + r.delay + '->' + (r.delay + r.dur)).padEnd(16) + r.ease + '\n';
+  });
+  document.getElementById('log').textContent = out;
+}
+render();
+</script>
+</body>
+</html>

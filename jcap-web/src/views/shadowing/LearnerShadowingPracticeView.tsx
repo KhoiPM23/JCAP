@@ -24,6 +24,7 @@ import { blobToAnalysisWav } from '../../utils/wavEncoder';
 import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingSessionScores';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Chặn trên (ms) khi chờ sự kiện kết thúc của MediaRecorder / Web Speech sau khi bấm dừng.
 const RECORDER_SETTLE_TIMEOUT_MS = 2000;
@@ -49,6 +50,7 @@ const settleWithin = (promise: Promise<unknown>, ms: number): Promise<void> =>
 const displayRoleName = (name: string): string => name.replace(/\s*[(（]\s*học\s*viên\s*[)）]/gi, '').trim();
 
 export const LearnerShadowingPracticeView: React.FC = () => {
+  const { themeFor } = useTheme();
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   /**
@@ -1310,7 +1312,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   return (
     <div
-      data-theme="phong-luyen"
+      data-theme={themeFor('room')}
       className="jx-room min-h-screen lg:h-screen lg:max-h-screen flex flex-col justify-between selection:bg-ai selection:text-white text-sumi font-sans lg:overflow-hidden"
     >
       {/* Styles for interactive tooltips & pulse animations */}
@@ -1643,7 +1645,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                       <div className="flex items-start gap-2.5 justify-end w-full max-w-xl">
                         {/* Dark Navy Bubble */}
-                        <div className={`rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between min-w-0 max-w-full bg-sumi transition-all ${
+                        <div className={`jx-me-bubble rounded-[22px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between min-w-0 max-w-full bg-sumi transition-all ${
                           isCurrentActive && practiceState === 'listening' ? 'ring-2 ring-cyan-400 shadow-cyan-500/20' : ''
                         }`}>
                           {/* Japanese Text */}

@@ -267,6 +267,18 @@ a{color:inherit;text-decoration:none}
 .mapctl:hover{background:var(--paper-200);color:var(--sumi)}
 .mapctl.on{color:var(--shu)}
 .mapctl:focus-visible{outline:2px solid var(--focus);outline-offset:-3px}
+/* ===== Chế độ tối (Cài đặt › Giao diện › Tối) ===== */
+[data-theme="hoc-tap-dem"]{--paper-50:#232220;--paper-100:#1a1917;--paper-200:#2c2a27;--paper-300:#37342f;--line:#38352f;--line-strong:#7a7468;--ai-soft:#2a2f46;--sumi:#efe9dc;--sumi-muted:#aaa395;--sumi-faint:#6a6459;--ai:#a9b8f0;--ai-hover:#c3cdf5;--on-ai:#15171f;--shu-soft:#3d211b;--nami-soft:#1f3234;--info-soft:#1d2e38;}
+[data-theme="phong-luyen-dem"]{--paper-50:#201f1c;--paper-100:#141311;--paper-200:#2a2825;--paper-300:#34312d;--line:#2f2c28;--line-strong:#756f64;--ai-soft:#272c42;--sumi:#efe9dc;--sumi-muted:#aaa395;--sumi-faint:#6a6459;--ai:#a9b8f0;--ai-hover:#c3cdf5;--on-ai:#15171f;--shu-soft:#3d211b;--nami-soft:#1f3234;--info-soft:#1d2e38;}
+.cv-hint-lbl{color:#7a4a00}
+[data-theme$="-dem"] .cv-hint-lbl{color:var(--sora)}
+[data-theme$="-dem"] .cv-hint{border-color:#4a4034}
+.room[data-theme="phong-luyen-dem"],.cv[data-theme="phong-luyen-dem"]{background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1.4px)}
+.room[data-theme="phong-luyen-dem"] .rm-bar,.cv[data-theme="phong-luyen-dem"] .cv-bar{background:rgba(32,31,28,.82)}
+.room[data-theme="phong-luyen-dem"] .ln.me:not(.pending) .jc-bubble__box,.room[data-theme="phong-luyen-dem"] .ln.me:not(.pending) .jc-bubble__box:hover,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__box,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__box:hover{background:var(--ai-soft);border-color:#3d4668;color:var(--sumi)}
+.room[data-theme="phong-luyen-dem"] .ln.me .jc-jp rt,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-jp rt{color:var(--sumi-muted);opacity:1}
+.room[data-theme="phong-luyen-dem"] .ln.me .jc-bubble__vi,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__vi{color:var(--sumi-muted);border-top-color:var(--line)}
+[data-theme$="-dem"] .pill{box-shadow:0 8px 22px rgba(0,0,0,.45)}
 </style>
 </helmet>
 <div class="{{rootClass}}" data-theme="kham-pha" style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #26497B; font-family: var(--font-sans); color: var(--sumi);">
@@ -485,8 +497,8 @@ a{color:inherit;text-decoration:none}
     </div>
   </aside>
 
-  <div class="pgbg" data-theme="hoc-tap" aria-hidden="true"></div>
-  <div class="{{pgRole}}" data-theme="hoc-tap" aria-hidden="{{hideRole}}">
+  <div class="pgbg" data-theme="{{thLearn}}" aria-hidden="true"></div>
+  <div class="{{pgRole}}" data-theme="{{thLearn}}" aria-hidden="{{hideRole}}">
     <main style="padding: 32px 36px 56px;">
       <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
 
@@ -614,7 +626,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </main>
   </div>
-  <div class="{{pgShadow}}" data-theme="hoc-tap" aria-hidden="{{hideShadow}}">
+  <div class="{{pgShadow}}" data-theme="{{thLearn}}" aria-hidden="{{hideShadow}}">
     <main style="padding: 32px 36px 56px;">
       <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px;">
 
@@ -726,7 +738,7 @@ a{color:inherit;text-decoration:none}
     </main>
   </div>
 
-  <div class="{{pgProfile}}" data-theme="hoc-tap" aria-hidden="{{hideProfile}}">
+  <div class="{{pgProfile}}" data-theme="{{thLearn}}" aria-hidden="{{hideProfile}}">
     <main style="padding: 32px 36px 56px;">
       <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
 
@@ -831,7 +843,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </main>
   </div>
-  <div class="{{pgPlan}}" data-theme="hoc-tap" aria-hidden="{{hidePlan}}">
+  <div class="{{pgPlan}}" data-theme="{{thLearn}}" aria-hidden="{{hidePlan}}">
     <main style="padding: 40px 36px 64px;">
       <div class="um">
         <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px;">
@@ -913,7 +925,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </main>
   </div>
-  <div class="{{pgSettings}}" data-theme="hoc-tap" aria-hidden="{{hideSettings}}">
+  <div class="{{pgSettings}}" data-theme="{{thLearn}}" aria-hidden="{{hideSettings}}">
     <main style="padding: 32px 36px 56px;">
       <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
 
@@ -1025,7 +1037,7 @@ a{color:inherit;text-decoration:none}
                 <h2 id="gd-h" style="margin: 0; font-size: 19px; line-height: 28px; font-weight: 600;">Giao diện</h2>
                 <span style="font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Chế độ tối dùng cả trong phòng luyện.</span>
               </span>
-              <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Chế độ màu" options="{{themes}}" default-value="light"></x-import>
+              <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Chế độ màu" options="{{themes}}" value="{{themeMode}}" on-change="{{setThemeMode}}"></x-import>
             </section>
 
           </div>
@@ -1035,7 +1047,7 @@ a{color:inherit;text-decoration:none}
   </div>
 
   <div class="{{rmCls}}" aria-hidden="{{rmHidden}}">
-<div class="room" data-theme="phong-luyen" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
+<div class="room" data-theme="{{thRoom}}" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
 
   <header class="rm-bar">
     <x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{rm.i28}}" with-name="{{rm.no}}"></x-import>
@@ -1207,7 +1219,7 @@ a{color:inherit;text-decoration:none}
   </div>
 
   <div class="{{cvCls}}" aria-hidden="{{cvHidden}}">
-<div class="cv" data-theme="phong-luyen" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
+<div class="cv" data-theme="{{thRoom}}" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
 
   <header class="cv-bar">
     <x-import component-from-global-scope="JCAP.IconButton" icon="arrow_back" label="Rời phòng" variant="ghost" on-click="{{cv.exit}}"></x-import>
@@ -1313,7 +1325,7 @@ a{color:inherit;text-decoration:none}
           <div class="cv-hint" role="status">
             <x-import component-from-global-scope="JCAP.Icon" name="lightbulb" size="{{cv.i22}}" fill="{{cv.yes}}" style="color: #b86e00; margin-top: 2px;"></x-import>
             <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;">
-              <span class="cv-lbl" style="color: #7a4a00;">Gợi ý cho nhiệm vụ: {{cv.hint.mission}}</span>
+              <span class="cv-lbl cv-hint-lbl">Gợi ý cho nhiệm vụ: {{cv.hint.mission}}</span>
               <x-import component-from-global-scope="JCAP.JpText" text="{{cv.hint.jp}}" size="md" as="p"></x-import>
               <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">{{cv.hint.vi}}</span>
             </div>
@@ -1800,6 +1812,8 @@ class Component extends DCLogic {
   }
   renderVals() {
     var self = this, st = this.state;
+    var themeMode = st.themeMode || 'light';
+    var isDark = themeMode === 'dark' || (themeMode === 'system' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     var locks = {
       kyoto: { name: 'Kyoto', jp: '京都府', x: 748, y: 604, px: 598, py: 340 },
       nara: { name: 'Nara', jp: '奈良県', x: 780, y: 689, px: 630, py: 425 }
@@ -1905,7 +1919,11 @@ class Component extends DCLogic {
       rootClass: 'app' + (st.pref ? ' is-pref' : '') + (st.collapsed ? ' is-collapsed' : '') + (st.page !== 'map' ? ' is-page' : ''),
       enterPref: function () { self.setState({ pref: true, lock: null, open: null, acct: false, page: 'map' }); },
       three: 3, six: 6,
-      sideTheme: st.page === 'map' ? 'kham-pha' : 'hoc-tap',
+      sideTheme: isDark ? 'hoc-tap-dem' : (st.page === 'map' ? 'kham-pha' : 'hoc-tap'),
+      thLearn: isDark ? 'hoc-tap-dem' : 'hoc-tap',
+      thRoom: isDark ? 'phong-luyen-dem' : 'phong-luyen',
+      themeMode: st.themeMode || 'light',
+      setThemeMode: function (v) { self.setState({ themeMode: v }); },
       nav: { map: 'row' + (st.page === 'map' ? ' on' : ''), role: 'row' + (st.page === 'roleplay' ? ' on' : ''), shadow: 'row' + (st.page === 'shadow' ? ' on' : '') },
       cur: { map: st.page === 'map' ? 'page' : 'false', role: st.page === 'roleplay' ? 'page' : 'false', shadow: st.page === 'shadow' ? 'page' : 'false', profile: st.page === 'profile' ? 'page' : 'false', settings: st.page === 'settings' ? 'page' : 'false', plan: st.page === 'plan' ? 'page' : 'false' },
       mi: { profile: 'mi' + (st.page === 'profile' ? ' on' : ''), settings: 'mi' + (st.page === 'settings' ? ' on' : ''), plan: 'mi' + (st.page === 'plan' ? ' on' : '') },

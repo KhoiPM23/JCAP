@@ -131,7 +131,7 @@ export const SubscriptionQuotaView: React.FC = () => {
   const expires = new Date(subscription.expiresAt);
 
   return (
-    <div data-theme="hoc-tap" className="bg-transparent">
+    <div className="bg-transparent">
       <div className="jx-um" style={{ paddingTop: 8, paddingBottom: 32 }}>
         <div className="flex items-baseline gap-2.5 pb-2">
           <h1 className="m-0 text-2xl font-bold leading-8">Mức dùng của bạn</h1>

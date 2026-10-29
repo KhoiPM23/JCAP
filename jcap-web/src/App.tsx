@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { AppRouter } from './router';
 
 // ============================================================
@@ -10,7 +11,9 @@ import { AppRouter } from './router';
 export const App: React.FC = () => (
   <BrowserRouter>
     <AuthProvider>
-      <AppRouter />
+      <ThemeProvider>
+        <AppRouter />
+      </ThemeProvider>
     </AuthProvider>
   </BrowserRouter>
 );

@@ -36,6 +36,10 @@ Dán lần lượt từng câu vào khung chat Claude Code. Gõ `@` để gắn 
 
 > Làm mục 3: đưa bản đồ Hành trình lên route "/", đổi màu exploreTheme.ts sang token kham-pha, thêm cụm điều khiển, bảng chú giải, popover tỉnh khoá và chuỗi chuyển động vào/ra tỉnh như trong prototype (.mapfull, .natl, .zoomL, .ppanel, .legend). Giữ toàn bộ dữ liệu và logic bản đồ hiện có.
 
+## Bước 8 · Chế độ tối
+
+> Làm mục 9b trong @design-handoff/HANDOFF.md: thêm ThemeProvider, nối SegmentedControl "Chế độ màu" ở SettingsView (Sáng / Tối / Theo máy, lưu localStorage), đổi data-theme các khu vực sang hoc-tap-dem / phong-luyen-dem. Rà và thay các màu cứng còn sót (bg-white, text-slate-*, mã hex) bằng token. Đối chiếu khối CSS "Chế độ tối" trong prototype.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

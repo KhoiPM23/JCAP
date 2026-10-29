@@ -181,6 +181,105 @@ namespace JCAP.Services.Implementations
             return ApiResponse<bool>.Ok(true, "Đã ngừng dùng chương.");
         }
 
+        public async Task<ApiResponse<AdminExploreStatsDto>> GetStatsAsync()
+        {
+            // Mọi con số gom nhóm ngay trong SQL; chỉ số dòng theo mốc/chương (rất nhỏ) mới về bộ nhớ
+            var progress = _context.Set<ExploreSpotProgress>().AsNoTracking();
+            var learners = await progress.Select(p => p.UserId).Distinct().CountAsync();
+            var perSpot = (await progress
+                .GroupBy(p => p.SpotId)
+                .Select(g => new
+                {
+                    SpotId = g.Key,
+                    Understood = g.Count(p => p.UnderstoodAt != null),
+                    Stamped = g.Count(p => p.StampedAt != null),
+                    Red = g.Count(p => p.RedStampedAt != null),
+                })
+                .ToListAsync())
+                .ToDictionary(x => x.SpotId);
+
+            var prefectureStamps = _context.Set<ExplorePrefectureStamp>().AsNoTracking();
+            var unlockedByChapter = (await _context.Set<ExploreChapterUnlock>().AsNoTracking()
+                .GroupBy(u => u.ChapterId)
+                .Select(g => new { ChapterId = g.Key, Count = g.Count() })
+                .ToListAsync())
+                .ToDictionary(x => x.ChapterId, x => x.Count);
+
+            // Chỉ mốc người học có thể thấy trong danh sách: đang dùng và chưa ngừng dùng. Dấu son chỉ có khi kịch bản còn Published.
+            var spots = await _context.ExploreSpots.AsNoTracking()
+                .Where(s => s.IsActive && s.Status == ExploreSpotStatus.Published)
+                .OrderBy(s => s.PrefectureId).ThenBy(s => s.Id)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.NameVi,
+                    s.PrefectureId,
+                    PrefectureIsOpen = s.Prefecture.IsOpen,
+                    HasRoleplay = s.Lesson != null && s.Lesson.Activities.Any(a =>
+                        a.ActivityType == ExploreActivityType.Roleplay
+                        && a.ReferenceId != null
+                        && _context.ScenarioLevelConfigurations.Any(c => c.Id == a.ReferenceId && c.Status == "Published")),
+                })
+                .ToListAsync();
+
+            var chapters = await LoadChaptersAsync();
+            var chapterOfPrefecture = chapters
+                .SelectMany(c => c.PrefectureIds.Select(p => (Prefecture: p, ChapterId: c.Id)))
+                .ToDictionary(x => x.Prefecture, x => x.ChapterId);
+
+            var spotStats = spots.Select(s =>
+            {
+                var n = perSpot.GetValueOrDefault(s.Id);
+                var understood = n?.Understood ?? 0;
+                var stamped = n?.Stamped ?? 0;
+                return new AdminExploreSpotStatsDto
+                {
+                    SpotId = s.Id,
+                    NameVi = s.NameVi,
+                    PrefectureId = s.PrefectureId,
+                    PrefectureIsOpen = s.PrefectureIsOpen,
+                    ChapterId = chapterOfPrefecture.TryGetValue(s.PrefectureId, out var cid) ? cid : null,
+                    HasRoleplay = s.HasRoleplay,
+                    Understood = understood,
+                    Stamped = stamped,
+                    RedStamped = s.HasRoleplay ? n?.Red ?? 0 : null,
+                    StuckAtShadowing = Math.Max(0, understood - stamped),
+                };
+            }).ToList();
+
+            var chapterStats = chapters.Select((c, i) =>
+            {
+                // Cùng cách tính với người học: chỉ mốc của tỉnh đã mở mới tính vào chương
+                var visible = spotStats.Where(s => s.ChapterId == c.Id && s.PrefectureIsOpen).ToList();
+                var unlocked = i == 0 ? learners : unlockedByChapter.GetValueOrDefault(c.Id);
+                double? avg = null;
+                if (visible.Count > 0 && unlocked > 0)
+                {
+                    avg = Math.Round(Math.Min(100.0, visible.Sum(s => s.Stamped) * 100.0 / (visible.Count * unlocked)), 1);
+                }
+                return new AdminExploreChapterStatsDto
+                {
+                    ChapterId = c.Id,
+                    OrderIndex = c.OrderIndex,
+                    Title = c.Title,
+                    SpotCount = visible.Count,
+                    UnlockedLearners = unlocked,
+                    AvgStampPercent = avg,
+                };
+            }).ToList();
+
+            return ApiResponse<AdminExploreStatsDto>.Ok(new AdminExploreStatsDto
+            {
+                Learners = learners,
+                Stamps = perSpot.Values.Sum(x => x.Stamped),
+                RedStamps = perSpot.Values.Sum(x => x.Red),
+                PrefectureStamps = await prefectureStamps.CountAsync(),
+                PrefectureRedStamps = await prefectureStamps.CountAsync(p => p.RedStampedAt != null),
+                Chapters = chapterStats,
+                Spots = spotStats,
+            });
+        }
+
         // ---- helpers ----
 
         private static bool IsValidPrefecture(int id) => id >= 1 && id <= ExploreService.PrefectureCount;

@@ -2,6 +2,45 @@
 
 export type ExploreLevel = 'N5' | 'N4' | 'N3';
 
+export interface AdminExploreStats {
+  /** Số người học đã bắt đầu (có ít nhất một dòng tiến độ) */
+  learners: number;
+  /** Tổng con dấu / dấu son mốc đã cấp (gồm cả mốc nay đã ngừng dùng) */
+  stamps: number;
+  redStamps: number;
+  prefectureStamps: number;
+  prefectureRedStamps: number;
+  chapters: AdminExploreChapterStats[];
+  spots: AdminExploreSpotStats[];
+}
+
+export interface AdminExploreChapterStats {
+  chapterId: number;
+  orderIndex: number;
+  title: string;
+  /** Số mốc người học thấy được trong chương */
+  spotCount: number;
+  /** Số người đã mở chương (chương đầu = mọi người đã bắt đầu) */
+  unlockedLearners: number;
+  /** Trung bình % mốc có con dấu trên những người đã mở chương; null khi chưa có số liệu */
+  avgStampPercent?: number | null;
+}
+
+export interface AdminExploreSpotStats {
+  spotId: number;
+  nameVi: string;
+  prefectureId: number;
+  prefectureIsOpen: boolean;
+  chapterId?: number | null;
+  hasRoleplay: boolean;
+  understood: number;
+  stamped: number;
+  /** null khi mốc không có Hội thoại AI */
+  redStamped?: number | null;
+  /** Đã hiểu nhưng chưa có con dấu: kẹt ở Shadowing */
+  stuckAtShadowing: number;
+}
+
 export interface AdminExploreOverview {
   prefectures: AdminExplorePrefecture[];
   chapters: AdminExploreChapter[];
