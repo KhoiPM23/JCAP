@@ -105,6 +105,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   // Chế độ tối: cả hai nơi đều dùng hoc-tap-dem (bản đồ vẫn giữ kham-pha, chỉ thanh bên nổi trên nó tối đi)
   return (
     <aside ref={sideRef} className="jx-side" data-theme={isDark ? themeFor('learn') : (onMap ?? MAP_PATHS(path)) ? 'kham-pha' : 'hoc-tap'} aria-label="Thanh điều hướng">
+      {/* Hai lớp vỏ chồng nhau thay cho việc animate left/top/bottom/border-radius (design-handoff/transitions, bản B): chỉ transform và opacity */}
+      <span className="jx-shell jx-shell--float" data-theme={isDark ? themeFor('learn') : 'kham-pha'} aria-hidden="true" />
+      <span className="jx-shell jx-shell--dock" data-theme={isDark ? themeFor('learn') : 'hoc-tap'} aria-hidden="true" />
+      <div className="jx-side-body">
+      <div className="jx-side-top">
       {/* Thương hiệu: logo (thu gọn: mở thanh bên), chữ JCAP (về trang chủ), nút thu gọn */}
       <div className="jx-brand">
         <button
@@ -162,9 +167,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
         })}
       </nav>
 
-      <div style={{ flexGrow: 1 }} />
+      </div>
 
-      <div className="jx-group" style={{ gap: 4, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
+      <div className="jx-group jx-side-bot" style={{ gap: 4, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
         <button type="button" className="jx-row" title={`Số dư ${fmt(credit)} Credit`} onClick={() => go('/subscription')}>
           <span className="jx-coin">
             <Icon name="toll" size={16} />
@@ -222,6 +227,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             </span>
           </button>
         </div>
+      </div>
       </div>
     </aside>
   );

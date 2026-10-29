@@ -6,20 +6,26 @@
 
 /* ===== Thanh bên ===== */
 .jx-side {
-  position: fixed; z-index: 40; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;
-  padding: 16px 12px 12px; color: var(--sumi);
-  left: 12px; top: 12px; bottom: 12px; width: 240px; border-radius: 20px; border: 1px solid var(--line);
-  background: var(--paper-100); box-shadow: 0 14px 36px rgba(8, 26, 56, .32);
-  transition: width .2s var(--e) 0s, transform .16s var(--e) .65s, opacity .16s linear .65s, left .3s var(--e), top .3s var(--e),
-    bottom .3s var(--e), border-radius .3s var(--e), box-shadow .3s linear, background-color .3s linear;
+  position: fixed; z-index: 40; box-sizing: border-box; display: flex; flex-direction: column; color: var(--sumi);
+  left: 0; top: 0; bottom: 0; width: 240px; padding: 16px 13px 12px 12px; background: transparent;
+  transition: width .2s var(--e) 0s, transform .16s var(--e) .65s, opacity .16s linear .65s;
 }
-.jx-app.is-collapsed .jx-side {
-  width: 72px;
-  transition: width .2s var(--e) .09s, transform .16s var(--e) .65s, opacity .16s linear .65s, left .3s var(--e), top .3s var(--e),
-    bottom .3s var(--e), border-radius .3s var(--e), box-shadow .3s linear, background-color .3s linear;
-}
-.jx-app.is-page .jx-side { left: 0; top: 0; bottom: 0; border-radius: 0; border-width: 0 1px 0 0; background: var(--paper-50); box-shadow: none; }
+.jx-app.is-collapsed .jx-side { width: 72px; transition: width .2s var(--e) .09s, transform .16s var(--e) .65s, opacity .16s linear .65s; }
 .jx-app.is-pref .jx-side { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: width .2s 0s, transform .2s cubic-bezier(.4, 0, 1, 1) 0s, opacity .2s linear 0s; }
+/* Chuyển bản đồ <-> trang chỉ dùng transform và opacity (compositor), không animate left/top/bottom/border-radius làm bố cục lại mỗi khung hình.
+   Hộp thanh bên luôn ở hình dock; dạng nổi là lớp vỏ riêng trượt (-12px, -12px) và mờ đi, lớp vỏ dock hiện lên; nội dung dịch về vị trí. */
+.jx-shell { position: absolute; pointer-events: none; box-sizing: border-box; }
+.jx-shell--float {
+  left: 12px; right: -12px; top: 12px; bottom: 12px; border-radius: 20px; border: 1px solid var(--line);
+  background: var(--paper-100); box-shadow: 0 14px 36px rgba(8, 26, 56, .32); opacity: 1; transform: none; transition: transform .3s var(--e), opacity 0s;
+}
+.jx-shell--dock { inset: 0; border-right: 1px solid var(--line); background: var(--paper-50); opacity: 0; transition: opacity .3s linear 0s; }
+.jx-app.is-page .jx-shell--float { transform: translate(-12px, -12px); opacity: 0; transition: transform .3s var(--e), opacity .06s linear .24s; }
+.jx-app.is-page .jx-shell--dock { opacity: 1; }
+.jx-side-body { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; transform: translateX(13px); transition: transform .3s var(--e); }
+.jx-side-top { display: flex; flex-direction: column; gap: 14px; transform: translateY(13px); transition: transform .3s var(--e); }
+.jx-side-bot { margin-top: auto; transform: translateY(-13px); transition: transform .3s var(--e); }
+.jx-app.is-page .jx-side-body, .jx-app.is-page .jx-side-top, .jx-app.is-page .jx-side-bot { transform: none; }
 .jx-lbl { opacity: 1; transition: opacity .12s linear .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 /* Số tiến độ, chevron… ở cuối hàng: không co lại, để tên dài bị cắt "…" thay vì đẩy chúng ra ngoài */
 .jx-lbl-fixed { flex: none; }
@@ -155,7 +161,7 @@
 
 /* ===== Vùng nội dung bên phải thanh bên + chuyển cảnh bản đồ <-> trang (prototype: .pgbg, .pg) ===== */
 /* Lớp bản đồ luôn nằm dưới. Ở trang khác thì ẩn sau khi nền trang đã phủ kín (trễ 0,3s), vẫn giữ nguyên trạng thái bản đồ */
-.jx-maplayer { position: fixed; inset: 0; }
+.jx-maplayer { position: fixed; inset: 0; contain: strict; }
 /* Sau khi nền trang phủ xong (0,3s) bản đồ mới bị ẩn. content-visibility: hidden bỏ hẳn việc tính style/layout/vẽ của cả cây bản đồ
    (hàng nghìn nút SVG) ở những lần tính lại style sau đó, nên các trang khác không còn khựng khi bản đồ nằm dưới. */
 .jx-maplayer.is-hidden { visibility: hidden; content-visibility: hidden; pointer-events: none; transition: visibility 0s linear .3s, content-visibility 0s linear .3s allow-discrete; }
@@ -171,14 +177,21 @@
 }
 .jx-app.is-collapsed .jx-page { left: 72px; }
 /* Nội dung trang hiện sau khi nền đã phủ được một nửa (trễ 0,14s) */
-.jx-page-inner { animation: jx-page-in .32s var(--e) .14s both; }
+.jx-page-inner { animation: jx-page-fade .22s linear .14s both, jx-page-rise .32s var(--e) .14s both; }
 /* Đang chờ chuyển cảnh: trang đã dựng và bố cục xong nhưng chưa hiện, hoạt ảnh vào chưa bắt đầu */
 .jx-page.is-pending { visibility: hidden; pointer-events: none; }
 .jx-page.is-pending .jx-page-inner { animation: none; opacity: 0; }
-@keyframes jx-page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes jx-page-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jx-page-rise { from { transform: translateY(10px); } to { transform: none; } }
+/* Trang cũ mờ đi khi rời (prototype: .pg mất .on, opacity 0,14s linear, transform 0,2s). Là bản sao DOM chỉ để nhìn, tạo lúc trang bị gỡ */
+.jx-ghosts { position: fixed; top: 0; right: 0; bottom: 0; left: 240px; z-index: 15; overflow: hidden; pointer-events: none; transition: left .2s var(--e) .09s; }
+.jx-app.is-collapsed .jx-ghosts { left: 72px; }
+.jx-ghost { position: absolute; inset: 0; animation: jx-ghost-fade .14s linear both, jx-ghost-drop .2s var(--e) both; }
+@keyframes jx-ghost-fade { from { opacity: 1; } to { opacity: 0; } }
+@keyframes jx-ghost-drop { from { transform: none; } to { transform: translateY(10px); } }
 
 @media (max-width: 767px) {
-  .jx-page { left: 72px; }
+  .jx-page, .jx-ghosts { left: 72px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
