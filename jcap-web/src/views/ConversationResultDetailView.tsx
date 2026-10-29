@@ -6,6 +6,7 @@ import { formatDateTime } from '../utils/dateUtils';
 import type { RoleplayResultDetail } from '../types/roleplayResult';
 import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
+import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 
 const formatDate = (value: string) => formatDateTime(value, { dateStyle: 'long', timeStyle: 'short' });
 
@@ -85,6 +86,35 @@ export const ConversationResultDetailView: React.FC = () => {
     }
     setToastMessage(`📋 Đã sao chép: "${text.length > 30 ? text.slice(0, 30) + '...' : text}"`);
     setTimeout(() => setToastMessage(null), 2500);
+  };
+
+  const handleSaveToFlashcards = () => {
+    if (!result) return;
+    const itemsToSave: Array<{ word: string; meaning: string; context: string }> = [];
+
+    // Lấy từ vựng mục tiêu của kịch bản
+    result.targetVocabularies?.forEach((v) => {
+      itemsToSave.push({ word: v.word, meaning: v.meaning, context: result.scenarioTitle });
+    });
+
+    // Lấy các câu bản xứ tự nhiên từ lượt nói của user
+    result.messages?.forEach((m) => {
+      if (m.sender.toLowerCase() === 'user' && m.linguisticFeedback?.naturalAlternative) {
+        itemsToSave.push({
+          word: m.linguisticFeedback.naturalAlternative,
+          meaning: m.vietnameseMeaning || 'Diễn đạt tự nhiên bản xứ',
+          context: result.scenarioTitle,
+        });
+      }
+    });
+
+    const existing = JSON.parse(localStorage.getItem('jcap_roleplay_flashcards') || '[]');
+    const merged = [...existing, ...itemsToSave.filter((item) => !existing.some((e: any) => e.word === item.word))];
+    localStorage.setItem('jcap_roleplay_flashcards', JSON.stringify(merged));
+
+    ukiyoSound.playMigotoChime();
+    setToastMessage(`🎴 Đã lưu ${itemsToSave.length} từ vựng & câu chuẩn vào Sổ tay Flashcard!`);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleCopySummary = async () => {
@@ -371,6 +401,41 @@ export const ConversationResultDetailView: React.FC = () => {
             </div>
           );
         })()}
+
+        {/* Omikuji Variable Reward & Flashcard Integration Card */}
+        <div className="mt-6 rounded-2xl border border-rose-200 bg-gradient-to-r from-rose-50/90 via-white to-amber-50/80 p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white flex items-center justify-center text-2xl shadow-xs">
+              ⛩️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-800">Quẻ Vận Omikuji Sau Phiên</span>
+                <span className="rounded-full bg-rose-100 border border-rose-300 px-2.5 py-0.5 text-xs font-black text-rose-700">
+                  {result.overallScore >= 85 ? '大吉 (Đại Cát) +15 EXP' : result.overallScore >= 70 ? '中吉 (Trung Cát) +10 EXP' : '吉 (Cát) +5 EXP'}
+                </span>
+              </div>
+              <p className="text-xs text-[#071A44] font-medium mt-1">
+                継続は力なり (Keizoku wa chikara nari) — Kiên trì đối thoại mỗi ngày là chìa khóa phản xạ!
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSaveToFlashcards}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:from-emerald-700 hover:to-teal-700 transition active:scale-98 cursor-pointer"
+              title="Lưu các từ vựng mục tiêu và câu diễn đạt bản xứ vào Sổ tay ôn tập"
+            >
+              <span>🎴</span>
+              <span>Lưu vào Sổ tay Flashcard</span>
+            </button>
+            <div className="w-10 h-10 rounded-full border-2 border-dashed border-red-500 bg-red-50 flex items-center justify-center text-red-600 font-serif font-black text-xs select-none shadow-xs rotate-[-8deg]" title="Con dấu Eki-stamp hoàn thành phiên">
+              済
+            </div>
+          </div>
+        </div>
 
         {/* Structured AI Feedback Section */}
         {(() => {

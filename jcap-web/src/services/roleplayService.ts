@@ -4,6 +4,7 @@ import type {
   RoleplaySessionDetailsDto,
   RoleplayTurnResponseDto,
   RoleplayHintDto,
+  LearnerIntelligenceProfileDto,
 } from '../types/roleplay';
 
 const BASE_URL = '/api/roleplay';
@@ -216,6 +217,33 @@ class RoleplayService {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ để kết thúc phiên.',
+      };
+    }
+  }
+
+  /**
+   * Lấy hồ sơ trí tuệ học viên và các chỉ số phản xạ giao tiếp ngầm (TikTok-style Linguistic Intelligence Profile)
+   */
+  public async getIntelligenceProfile(): Promise<ApiResponse<LearnerIntelligenceProfileDto>> {
+    try {
+      const response = await fetch(`${BASE_URL}/intelligence-profile`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Lỗi lấy hồ sơ trí tuệ học viên (${response.status})`,
+      };
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ để lấy hồ sơ trí tuệ.',
       };
     }
   }

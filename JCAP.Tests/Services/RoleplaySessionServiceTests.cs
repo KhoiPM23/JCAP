@@ -455,5 +455,51 @@ public class RoleplaySessionServiceTests
         // 90 chars → 90/30 = 3 credits
         Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 90)));
     }
+
+    [Fact]
+    public async Task GetIntelligenceProfileAsync_ReturnsSuccess_WithComputedMetrics()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var user = new ApplicationUser { Id = "user-test", UserName = "tester" };
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiRoleplayMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        var errorDetector = new Mock<IVietnameseLearnerErrorDetector>();
+        var telemetryEvaluator = new Mock<ITelemetryEvaluatorService>();
+        telemetryEvaluator.Setup(t => t.GetOrCreateProfileAsync("user-test"))
+            .ReturnsAsync(new LearnerIntelligenceProfile
+            {
+                UserId = "user-test",
+                SpeakingReflexIndex = 75.0,
+                KeigoCommandScore = 80.0,
+                ParticleAccuracyRate = 85.0,
+                AverageMoraRate = 4.8,
+                CommunicativeProficiencyIndex = 88.0,
+                CommunicativeConfidenceScore = 82.0
+            });
+
+        var personaMemory = new Mock<IPersonaMemoryService>();
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiRoleplayMock.Object,
+            loggerMock.Object,
+            errorDetector.Object,
+            telemetryEvaluator.Object,
+            personaMemory.Object);
+
+        // Act
+        var result = await service.GetIntelligenceProfileAsync("user-test");
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(75.0, result.Data!.SpeakingReflexIndex);
+        Assert.Equal(80.0, result.Data.KeigoCommandScore);
+        Assert.Equal("大吉 (Đại Cát)", result.Data.OmikujiRank);
+        Assert.NotEmpty(result.Data.Strengths);
+    }
 }
 

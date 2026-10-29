@@ -4,12 +4,24 @@
  * Âm sắc phong cách truyền thống Nhật Bản: Taiko, Woodblock (Hyoshigi), Hirajoshi Chime, Washi Rustle.
  */
 
+export type AmbientTheme = 'ramen' | 'train' | 'cafe' | 'office' | 'konbini' | 'zen';
+
+export const detectScenarioTheme = (scenarioTitle?: string, aiPersona?: string): AmbientTheme => {
+  const text = `${scenarioTitle || ''} ${aiPersona || ''}`.toLowerCase();
+  if (/tàu|ga|shinkansen|chuyến đi|sân bay|vé tàu|soát vé/.test(text)) return 'train';
+  if (/công ty|phỏng vấn|baito|tuyển dụng|văn phòng|hội nghị|giám đốc|nhân sự/.test(text)) return 'office';
+  if (/tiện lợi|konbini|siêu thị|thu ngân|tính tiền|mua sắm|tạp hóa/.test(text)) return 'konbini';
+  if (/trà đạo|kimono|ryokan|khách sạn|chùa|đền|truyền thống|onsen/.test(text)) return 'zen';
+  if (/cafe|cà phê|nước uống|quán trà|barista/.test(text)) return 'cafe';
+  return 'ramen'; // Mặc định quán ăn / ẩm thực Nhật
+};
+
 class UkiyoSoundEngine {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
   private ambientSource: AudioNode | null = null;
   private ambientGain: GainNode | null = null;
-  private ambientType: string | null = null;
+  private ambientType: AmbientTheme | null = null;
 
   private initContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -215,10 +227,10 @@ class UkiyoSoundEngine {
   }
 
   /**
-   * Bật âm thanh môi trường thủ công (quán Ramen sôi nước dùng, tiếng tàu điện, quán cafe)
-   * Tạo bằng Pink-Noise Filtered Synthesis siêu nhẹ, 0 byte file tải ngoài.
+   * Bật âm thanh môi trường thủ công cho mọi bối cảnh hội thoại (Ramen, tàu điện, văn phòng phỏng vấn, konbini, cafe, thiền zen)
+   * Tạo bằng Pink-Noise Filtered Synthesis siêu nhẹ, 0 byte file tải ngoài, latency < 5ms.
    */
-  public startAmbientSound(theme: 'ramen' | 'train' | 'cafe' = 'ramen') {
+  public startAmbientSound(theme: AmbientTheme = 'ramen') {
     if (this.isMuted) return;
     this.stopAmbientSound();
     const ctx = this.initContext();
@@ -226,7 +238,7 @@ class UkiyoSoundEngine {
 
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.001, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 1.5);
+    gain.gain.linearRampToValueAtTime(theme === 'office' ? 0.018 : 0.03, ctx.currentTime + 1.5);
 
     const bufferSize = ctx.sampleRate * 2;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -246,12 +258,65 @@ class UkiyoSoundEngine {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(theme === 'train' ? 180 : 360, ctx.currentTime);
+
+    // Điều chỉnh tần số cắt filter theo bối cảnh
+    let cutoffFreq = 340;
+    switch (theme) {
+      case 'train':
+        cutoffFreq = 160; // Tiếng rầm rì trầm sâu của đường ray
+        break;
+      case 'office':
+        cutoffFreq = 220; // Tiếng điều hòa và không gian phòng họp tĩnh lặng
+        break;
+      case 'konbini':
+        cutoffFreq = 380; // Tiếng quạt mát tủ lạnh cửa hàng tiện lợi
+        break;
+      case 'zen':
+        cutoffFreq = 260; // Tiếng gió mát và nước róc rách thanh tịnh
+        break;
+      case 'cafe':
+        cutoffFreq = 420; // Tiếng máy pha cafe và không gian quán ấm áp
+        break;
+      case 'ramen':
+      default:
+        cutoffFreq = 340; // Tiếng nồi súp hầm ramen sôi sùng sục
+        break;
+    }
+    filter.frequency.setValueAtTime(cutoffFreq, ctx.currentTime);
 
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
     noise.start();
+
+    // Điểm xuyết âm thanh biểu tượng đặc thù:
+    // Nếu là Konbini: điểm chuông cửa 2-tone kinh điển của cửa hàng tiện lợi Nhật Bản
+    if (theme === 'konbini') {
+      const chimeNow = ctx.currentTime + 0.3;
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const cGain = ctx.createGain();
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(740, chimeNow); // F#5
+      osc1.frequency.setValueAtTime(587.33, chimeNow + 0.22); // D5
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1480, chimeNow);
+      osc2.frequency.setValueAtTime(1174.66, chimeNow + 0.22);
+
+      cGain.gain.setValueAtTime(0.08, chimeNow);
+      cGain.gain.exponentialRampToValueAtTime(0.001, chimeNow + 0.7);
+
+      osc1.connect(cGain);
+      osc2.connect(cGain);
+      cGain.connect(ctx.destination);
+
+      osc1.start(chimeNow);
+      osc2.start(chimeNow);
+      osc1.stop(chimeNow + 0.7);
+      osc2.stop(chimeNow + 0.7);
+    }
 
     this.ambientSource = noise;
     this.ambientGain = gain;

@@ -166,3 +166,22 @@ export interface SendRoleplayMessageRequestDto {
   moraRate?: number;
   pauseRatio?: number;
 }
+
+export interface LearnerIntelligenceProfileDto {
+  userId: string;
+  thetaEstimate: number;
+  speakingReflexIndex: number;
+  keigoCommandScore: number;
+  particleAccuracyRate: number;
+  averageMoraRate: number;
+  hintDependencyRate: number;
+  communicativeConfidenceScore: number;
+  communicativeProficiencyIndex: number;
+  totalSessionsCompleted: number;
+  totalPracticeTurns: number;
+  strengths: string[];
+  targetFocusAreas: string[];
+  omikujiRank: string;
+  kotowazaProverb: string;
+  lastPracticedAtUtc?: string;
+}

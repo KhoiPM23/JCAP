@@ -2,11 +2,20 @@ import React from 'react';
 
 export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'cheering';
 export type MouthViseme = 'closed' | 'A' | 'I' | 'U' | 'E' | 'O' | 'N';
+export type ScenarioArchetype =
+  | 'culinary'     // Tiệm mì Ramen, quán ăn, nhà hàng, izakaya, đầu bếp
+  | 'business'     // Phỏng vấn, baito, công sở, tuyển dụng, giám đốc, đối tác
+  | 'transit'      // Nhà ga, tàu điện, mua vé, shinkansen, sân bay
+  | 'retail'       // Konbini (cửa hàng tiện lợi), siêu thị, thu ngân, mua sắm
+  | 'hospitality'  // Ryokan, khách sạn, onsen, trà đạo, tiếp tân
+  | 'medical'      // Bệnh viện, phòng khám, bác sĩ, y tá, dược sĩ
+  | 'casual';      // Hằng ngày, bạn bè, bạn học, hàng xóm, dạo phố
 
 export interface LivingAvatarProps {
   avatarState: AvatarState;
   personaName: string;
   personaRole?: string;
+  scenarioTitle?: string;
   currentViseme?: MouthViseme;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   isAizuchiActive?: boolean;
@@ -17,18 +26,40 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   avatarState,
   personaName = '',
   personaRole = '',
+  scenarioTitle = '',
   currentViseme = 'closed',
   size = 'md',
   isAizuchiActive = false,
   hideLabel = false,
 }) => {
-  // Nhận diện bối cảnh và giới tính nhân vật từ tên/vai trò
-  const textToAnalyze = `${personaName} ${personaRole}`.toLowerCase();
+  // Nhận diện bối cảnh đa dạng và giới tính nhân vật
+  const textToAnalyze = `${personaName} ${personaRole} ${scenarioTitle}`.toLowerCase();
   
-  const isMale = /nam|ông|anh|bác|thầy|sếp|ryusei|takehiro/.test(textToAnalyze);
-  const isElderly = /cụ|già|ông lão|bà lão|trưởng bối/.test(textToAnalyze);
-  const isRamenChef = /ramen|mì|quán ăn|nhà hàng|bếp|đầu bếp/.test(textToAnalyze);
-  const isBusiness = /phỏng vấn|công ty|giám đốc|trưởng phòng|baito|tuyển dụng|đồng nghiệp/.test(textToAnalyze);
+  const isMale = /nam|ông|anh|bác|thầy|sếp|ryusei|takehiro|cha|chú/.test(textToAnalyze);
+
+  const detectArchetype = (): ScenarioArchetype => {
+    if (/ramen|mì|quán ăn|nhà hàng|bếp|đầu bếp|phục vụ|izakaya|sushi|ăn uống|món ăn|cafe|cà phê|pha chế|barista/.test(textToAnalyze)) {
+      return 'culinary';
+    }
+    if (/phỏng vấn|tuyển dụng|baito|công ty|giám đốc|trưởng phòng|nhân sự|đồng nghiệp|văn phòng|kinh doanh|hội nghị|đối tác/.test(textToAnalyze)) {
+      return 'business';
+    }
+    if (/ga|tàu|shinkansen|vé tàu|soát vé|nhà ga|chuyến bay|sân bay|hành khách|lái tàu|trạm|chuyến đi/.test(textToAnalyze)) {
+      return 'transit';
+    }
+    if (/cửa hàng tiện lợi|tiện ích|konbini|siêu thị|thu ngân|tính tiền|mua sắm|cửa hàng|bán hàng|tạp hóa/.test(textToAnalyze)) {
+      return 'retail';
+    }
+    if (/khách sạn|hotel|ryokan|onsen|nghỉ dưỡng|tiếp tân|trà đạo|kimono|yukata|truyền thống/.test(textToAnalyze)) {
+      return 'hospitality';
+    }
+    if (/bệnh viện|phòng khám|bác sĩ|y tá|dược sĩ|thuốc|khám bệnh|nha sĩ|sức khỏe/.test(textToAnalyze)) {
+      return 'medical';
+    }
+    return 'casual';
+  };
+
+  const archetype = detectArchetype();
 
   // Kích thước container
   const getDimensions = () => {
@@ -49,10 +80,23 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   // Render Huy hiệu Persona tinh tế (Neo-Tokyo / Ukiyo-e Kanji Badge) kèm Aura phát âm
   if (size === 'sm') {
     const getBadgeIcon = () => {
-      if (isRamenChef) return '🍜';
-      if (isBusiness) return '💼';
-      if (isElderly) return '🍵';
-      return isMale ? '🧑‍💼' : '👩‍💼';
+      switch (archetype) {
+        case 'culinary':
+          return '🍜';
+        case 'business':
+          return '💼';
+        case 'transit':
+          return '🚅';
+        case 'retail':
+          return '🏪';
+        case 'hospitality':
+          return '🍵';
+        case 'medical':
+          return '🏥';
+        case 'casual':
+        default:
+          return isMale ? '🧑‍💼' : '👩‍💼';
+      }
     };
 
     return (
@@ -240,21 +284,58 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
 
             {/* Cổ áo & Trang phục theo bối cảnh */}
             <path d="M38 78 L50 86 L62 78 L62 100 L38 100 Z" fill="#f8fafc" />
-            {isRamenChef ? (
+            {archetype === 'culinary' ? (
               // Tạp dề / Đồng phục quán ăn Nhật
               <g>
                 <path d="M30 84 L50 92 L70 84 L74 100 L26 100 Z" fill="#0f172a" />
                 <path d="M44 86 L50 90 L56 86 L50 84 Z" fill="#e11d48" />
               </g>
-            ) : isBusiness ? (
-              // Cổ áo sơ mi & Vest công sở
+            ) : archetype === 'business' ? (
+              // Cổ áo sơ mi & Vest công sở lịch thiệp
               <g>
                 <path d="M26 84 L50 96 L74 84 L76 100 L24 100 Z" fill="#1e293b" />
                 <polygon points="50,88 47,100 53,100" fill="#0284c7" />
+                {/* Ghim cài áo corporate */}
+                <circle cx="34" cy="88" r="1.5" fill="#f59e0b" />
+              </g>
+            ) : archetype === 'transit' ? (
+              // Đồng phục đường sắt Nhật Bản (JR Railway Uniform) viền vàng
+              <g>
+                <path d="M26 83 L50 95 L74 83 L76 100 L24 100 Z" fill="#0f172a" />
+                <path d="M48 88 L52 88 L52 100 L48 100 Z" fill="#eab308" />
+                {/* Cầu vai vàng */}
+                <path d="M25 83 L32 86 L30 89 L23 85 Z" fill="#eab308" />
+                <path d="M75 83 L68 86 L70 89 L77 85 Z" fill="#eab308" />
+              </g>
+            ) : archetype === 'retail' ? (
+              // Đồng phục Konbini (Cửa hàng tiện lợi) sọc viền kèm thẻ tên
+              <g>
+                <path d="M27 84 L50 94 L73 84 L76 100 L24 100 Z" fill="#059669" />
+                <path d="M46 84 L54 84 L54 100 L46 100 Z" fill="#ffffff" />
+                {/* Thẻ tên nhân viên Konbini */}
+                <rect x="33" y="87" width="8" height="5" rx="1" fill="#ffffff" stroke="#047857" strokeWidth="0.8" />
+                <line x1="35" y1="89.5" x2="39" y2="89.5" stroke="#047857" strokeWidth="0.8" />
+              </g>
+            ) : archetype === 'hospitality' ? (
+              // Kimono / Yukata vạt chéo truyền thống Nhật Bản
+              <g>
+                <path d="M26 84 L50 98 L74 84 L76 100 L24 100 Z" fill="#881337" />
+                <path d="M36 84 L50 98 L44 100 L30 86 Z" fill="#fbcfe8" />
+                <path d="M50 98 L64 84 L70 86 L56 100 Z" fill="#f43f5e" />
+              </g>
+            ) : archetype === 'medical' ? (
+              // Áo Blouse bác sĩ trắng khoác ngoài áo scrub y tế
+              <g>
+                <path d="M34 82 L50 94 L66 82 L66 100 L34 100 Z" fill="#0d9488" />
+                <path d="M25 84 L38 88 L38 100 L23 100 Z" fill="#f8fafc" />
+                <path d="M75 84 L62 88 L62 100 L77 100 Z" fill="#f8fafc" />
+                {/* Ống nghe y tế */}
+                <path d="M37 84 Q42 96 50 96 Q58 96 63 84" stroke="#475569" strokeWidth="1.5" fill="none" />
+                <circle cx="50" cy="96" r="2" fill="#94a3b8" />
               </g>
             ) : (
               // Trang phục thường nhật thanh lịch
-              <path d="M28 85 C36 82 64 82 72 85 L75 100 L25 100 Z" fill="#3b82f6" />
+              <path d="M28 85 C36 82 64 82 72 85 L75 100 L25 100 Z" fill="#4f46e5" />
             )}
 
             {/* Khuôn mặt V-line thanh tú (Thon gọn, tỷ lệ chuẩn anime) */}
@@ -283,11 +364,32 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
               fill="none"
             />
 
-            {/* Mũ / Băng đô quán Ramen (Tenugui) nếu là tiệm mì */}
-            {isRamenChef && (
+            {/* Mũ & Phụ kiện bối cảnh đặc thù */}
+            {archetype === 'culinary' && (
+              // Băng đô Tenugui quán ăn Nhật Bản
               <g>
                 <path d="M26 31 C34 26 66 26 74 31 L75 37 C67 32 33 32 25 37 Z" fill="#0f172a" />
                 <circle cx="50" cy="33.5" r="2.2" fill="#e11d48" />
+              </g>
+            )}
+            {archetype === 'transit' && (
+              // Mũ kepi Trưởng ga đường sắt Nhật Bản (JR Peaked Cap)
+              <g>
+                <path d="M25 24 C33 18 67 18 75 24 L77 34 C69 32 31 32 23 34 Z" fill="#0f172a" />
+                {/* Viền vàng */}
+                <path d="M24 33 C33 30 67 30 76 33 L76 35 C67 32 33 32 24 35 Z" fill="#eab308" />
+                {/* Huy hiệu hoa cúc vàng trung tâm */}
+                <polygon points="50,26 52,29 55,29 53,31 54,34 50,32 46,34 47,31 45,29 48,29" fill="#f59e0b" />
+                {/* Vành mũ da đen bóng */}
+                <path d="M23 34 C33 38 67 38 77 34 C72 40 28 40 23 34 Z" fill="#1e293b" opacity="0.9" />
+              </g>
+            )}
+            {archetype === 'hospitality' && (
+              // Trâm cài tóc hoa anh đào Kanzashi truyền thống
+              <g>
+                <circle cx="71" cy="38" r="3.5" fill="#f43f5e" />
+                <circle cx="71" cy="38" r="1.5" fill="#fef08a" />
+                <path d="M72 41 L74 48" stroke="#f43f5e" strokeWidth="1.2" strokeLinecap="round" />
               </g>
             )}
 

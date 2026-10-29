@@ -905,5 +905,84 @@ public class RoleplaySessionService : IRoleplaySessionService
         if (string.IsNullOrWhiteSpace(japaneseReply)) return 1;
         return Math.Max(1, japaneseReply.Length / CharsPerCredit);
     }
+
+    public async Task<ApiResponse<LearnerIntelligenceProfileDto>> GetIntelligenceProfileAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return ApiResponse<LearnerIntelligenceProfileDto>.Fail("UserId không hợp lệ.");
+        }
+
+        var profile = await _telemetryEvaluator.GetOrCreateProfileAsync(userId);
+
+        int totalSessions = await _dbContext.RoleplaySessions
+            .CountAsync(s => s.UserId == userId && s.Status == "Completed", cancellationToken);
+
+        int totalTurns = await _dbContext.LearnerBehaviorSignals
+            .Join(_dbContext.RoleplaySessions, sig => sig.SessionId, ses => ses.Id, (sig, ses) => new { sig, ses })
+            .CountAsync(x => x.ses.UserId == userId, cancellationToken);
+
+        DateTime? lastPracticed = await _dbContext.RoleplaySessions
+            .Where(s => s.UserId == userId && s.CompletedAt != null)
+            .OrderByDescending(s => s.CompletedAt)
+            .Select(s => s.CompletedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // Suy luận điểm mạnh & điểm cần tôi luyện từ chỉ số thực
+        var strengths = new List<string>();
+        var focusAreas = new List<string>();
+
+        if (profile.SpeakingReflexIndex >= 65)
+            strengths.Add("⚡ Phản xạ hội thoại nhạy bén (< 2.0s)");
+        else
+            focusAreas.Add("⏱️ Cải thiện tốc độ phản xạ khởi đầu câu");
+
+        if (profile.KeigoCommandScore >= 65)
+            strengths.Add("🌸 Sử dụng Kính ngữ (Desu/Masu) tự nhiên chuẩn mực");
+        else
+            focusAreas.Add("⛩️ Củng cố văn phong thể lịch sự Desu/Masu");
+
+        if (profile.ParticleAccuracyRate >= 70)
+            strengths.Add("🎯 Làm chủ chính xác trợ từ は, が, に, で");
+        else
+            focusAreas.Add("🔍 Chú ý phân biệt cặp trợ từ に vs で, は vs が");
+
+        if (profile.AverageMoraRate >= 4.0)
+            strengths.Add("🎙️ Nhịp điệu phát âm lưu loát (≥ 4.0 mora/s)");
+        else
+            focusAreas.Add("🗣️ Luyện tập nối âm và ngắt nghỉ tự nhiên hơn");
+
+        if (profile.HintDependencyRate <= 25)
+            strengths.Add("💪 Tự chủ giao tiếp cao (ít dựa gợi ý)");
+        else
+            focusAreas.Add("💡 Thử thách tự diễn đạt trước khi mở thẻ gợi ý");
+
+        string omikujiRank = profile.CommunicativeProficiencyIndex >= 85 ? "大吉 (Đại Cát)"
+            : profile.CommunicativeProficiencyIndex >= 70 ? "中吉 (Trung Cát)" : "吉 (Cát)";
+
+        var dto = new LearnerIntelligenceProfileDto
+        {
+            UserId = userId,
+            ThetaEstimate = profile.ThetaEstimate,
+            SpeakingReflexIndex = profile.SpeakingReflexIndex,
+            KeigoCommandScore = profile.KeigoCommandScore,
+            ParticleAccuracyRate = profile.ParticleAccuracyRate,
+            AverageMoraRate = profile.AverageMoraRate,
+            HintDependencyRate = profile.HintDependencyRate,
+            CommunicativeConfidenceScore = profile.CommunicativeConfidenceScore,
+            CommunicativeProficiencyIndex = profile.CommunicativeProficiencyIndex,
+            TotalSessionsCompleted = totalSessions,
+            TotalPracticeTurns = totalTurns,
+            Strengths = strengths,
+            TargetFocusAreas = focusAreas,
+            OmikujiRank = omikujiRank,
+            KotowazaProverb = "継続は力なり — Kiên trì mỗi ngày chính là cội nguồn của sức mạnh giao tiếp.",
+            LastPracticedAtUtc = lastPracticed
+        };
+
+        return ApiResponse<LearnerIntelligenceProfileDto>.Ok(dto);
+    }
 }
 

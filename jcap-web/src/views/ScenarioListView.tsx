@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { scenarioService } from '../services/scenarioService';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import type { ScenarioListItem } from '../types/scenarioDetails';
 
 export interface Scenario {
@@ -285,9 +286,18 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({
                 </span>
               </div>
 
-              <div>
-                <h2 className="text-lg font-bold text-[var(--sumi)] leading-snug">{selectedScenario.title}</h2>
-                <p className="text-xs text-[var(--sumi-muted)] mt-2 leading-relaxed">{selectedScenario.description}</p>
+              <div className="flex items-center gap-4 p-3 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-100">
+                <LivingAvatar
+                  size="md"
+                  avatarState="idle"
+                  personaName={selectedScenario.title}
+                  scenarioTitle={selectedScenario.title}
+                  hideLabel
+                />
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-bold text-[var(--sumi)] leading-snug line-clamp-1">{selectedScenario.title}</h2>
+                  <p className="text-xs text-[var(--sumi-muted)] mt-1 line-clamp-2 leading-relaxed">{selectedScenario.description}</p>
+                </div>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)] space-y-2 text-xs">

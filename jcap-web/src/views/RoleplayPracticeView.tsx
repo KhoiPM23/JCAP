@@ -8,7 +8,7 @@ import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsMod
 import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
 import { LivingAvatar, type AvatarState, type MouthViseme } from '../components/roleplay/LivingAvatar';
 import { EkiStampOverlay } from '../components/roleplay/EkiStampOverlay';
-import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import type {
   RoleplaySessionDetailsDto,
@@ -971,6 +971,7 @@ export const RoleplayPracticeView: React.FC = () => {
               avatarState={avatarState}
               personaName={session.aiPersona}
               personaRole={session.recommendedAiVoiceName?.split('(')[0].trim()}
+              scenarioTitle={session.scenarioTitle}
               currentViseme={currentViseme}
               isAizuchiActive={isRecordingMic}
             />
@@ -1184,7 +1185,20 @@ export const RoleplayPracticeView: React.FC = () => {
                 <div className="border-t border-[#F1F5F9] pt-2.5 flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-[#071A44]">Âm thanh bối cảnh</p>
-                    <p className="text-[11px] text-[#71809A]">Nồi nước dùng / tàu điện nhẹ nhàng</p>
+                    <p className="text-[11px] text-[#71809A]">
+                      {(() => {
+                        const th = detectScenarioTheme(session?.scenarioTitle, session?.aiPersona);
+                        switch (th) {
+                          case 'office': return '💼 Văn phòng phỏng vấn tĩnh lặng';
+                          case 'train': return '🚅 Nhà ga / Tàu điện nhẹ nhàng';
+                          case 'konbini': return '🏪 Cửa hàng tiện lợi Konbini';
+                          case 'cafe': return '☕ Quán cafe ấm cúng';
+                          case 'zen': return '🍵 Không gian trà đạo thanh tịnh';
+                          case 'ramen':
+                          default: return '🍜 Tiệm mì / Quán ăn sôi nước dùng';
+                        }
+                      })()}
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -1193,8 +1207,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         ukiyoSound.stopAmbientSound();
                         setIsAmbientOn(false);
                       } else {
-                        const title = (session?.scenarioTitle || '').toLowerCase();
-                        const theme = title.includes('tàu') || title.includes('ga') ? 'train' : 'ramen';
+                        const theme = detectScenarioTheme(session?.scenarioTitle, session?.aiPersona);
                         ukiyoSound.startAmbientSound(theme);
                         setIsAmbientOn(true);
                       }
@@ -1457,6 +1470,7 @@ export const RoleplayPracticeView: React.FC = () => {
                     avatarState={avatarState}
                     personaName={session.aiPersona}
                     personaRole={session.recommendedAiVoiceName?.split('(')[0].trim()}
+                    scenarioTitle={session.scenarioTitle}
                     currentViseme={currentViseme}
                     isAizuchiActive={isRecordingMic}
                     hideLabel
@@ -1489,6 +1503,7 @@ export const RoleplayPracticeView: React.FC = () => {
                           size="sm"
                           avatarState={playingMessageId === msg.id && isPlayingAiSpeech ? 'speaking' : 'idle'}
                           personaName={session.aiPersona}
+                          scenarioTitle={session.scenarioTitle}
                           currentViseme={playingMessageId === msg.id && isPlayingAiSpeech ? currentViseme : 'closed'}
                         />
                       </div>

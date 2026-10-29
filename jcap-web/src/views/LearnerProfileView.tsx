@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { profileService } from '../services/profileService';
 import { formatDateFull } from '../utils/dateUtils';
 import type { LearnerProfile } from '../types/profile';
+import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 
 export const LearnerProfileView: React.FC = () => {
   const navigate = useNavigate();
@@ -231,6 +232,9 @@ export const LearnerProfileView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Linguistic Intelligence Telemetry Radar (TikTok-style) */}
+      <LearnerIntelligenceRadarCard />
     </div>
   );
 };
