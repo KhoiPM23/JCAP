@@ -134,7 +134,8 @@ export const JcapShowcaseView: React.FC = () => {
         <Section title="TextField · Select">
           <div className="grid gap-3 sm:grid-cols-2">
             <TextField label="Họ tên" placeholder="Nguyễn Văn A" hint="Hiện trên hồ sơ" />
-            <TextField label="Mật khẩu" type="password" defaultValue="matkhau" />
+            {/* <TextField label="Mật khẩu" type="password" /> (Mock UI showcase) */}
+            <TextField label="Mật khẩu" type="password" placeholder="••••••••" />
             <TextField label="Tìm tình huống" icon="search" placeholder="Mua vé tàu…" />
             <TextField label="Email" defaultValue="a@" error="Email chưa đúng định dạng" />
             <Select label="Tốc độ đọc" options={['0.8×', '1×', '1.2×']} defaultValue="1×" />

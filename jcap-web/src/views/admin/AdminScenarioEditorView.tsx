@@ -298,7 +298,7 @@ export const AdminScenarioEditorView: React.FC = () => {
 
   const currentScenarioId = isEditMode ? scenarioId : (predictedId ?? 1);
   const currentScenarioCode = isEditMode
-    ? (formData.scenarioCode || (scenarioId ? `SCN_${scenarioId}` : ''))
+    ? (scenarioId ? `SCN_${scenarioId}` : formData.scenarioCode)
     : (formData.scenarioCode || (predictedId ? `SCN_${predictedId}` : 'SCN_1'));
 
   // Tải chi tiết kịch bản khi vào chế độ Edit
@@ -373,7 +373,7 @@ export const AdminScenarioEditorView: React.FC = () => {
           setFormData({
             title: full.title,
             description: full.description,
-            scenarioCode: full.scenarioCode || (full.id ? `SCN_${full.id}` : ''),
+            scenarioCode: full.id ? `SCN_${full.id}` : (full.scenarioCode || ''),
             thumbnail: full.thumbnail || '',
             isActive: full.isActive,
             levels: loadedLevels,
@@ -385,7 +385,7 @@ export const AdminScenarioEditorView: React.FC = () => {
 
           // Xác định mode nguồn ảnh ban đầu
           if (full.thumbnail) {
-            if (full.thumbnail.startsWith('data:image')) {
+            if (full.thumbnail.startsWith('data:image') || full.thumbnail.includes('res.cloudinary.com')) {
               setImageSourceMode('local');
             } else {
               setImageSourceMode('url');
@@ -1289,7 +1289,45 @@ export const AdminScenarioEditorView: React.FC = () => {
                       className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0878EE]/10 file:text-[#0878EE] hover:file:bg-[#0878EE]/20 file:cursor-pointer cursor-pointer border border-slate-200 rounded-xl p-1.5 bg-slate-50/50"
                     />
                     <p className="text-[11px] text-slate-400">
-                      Hỗ trợ tải lên ảnh PNG, JPG, JPEG, WebP dung lượng tối đa 5MB từ thiết bị của bạn.
+                      Hỗ trợ tải lên ảnh PNG, JPG, JPEG, WebP, GIF tối đa 5MB. Ảnh được lưu trên <strong className="text-slate-600">Cloudinary</strong> (folder <code className="text-slate-600 font-mono bg-slate-100 px-1 py-0.5 rounded">scenarios/</code>) và lưu đường dẫn (URL) vào cột <code className="text-slate-600 font-mono bg-slate-100 px-1 py-0.5 rounded">Scenarios.Thumbnail</code> trong DB.
+                    </p>
+                    {formData.thumbnail && (
+                      <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-200/80 space-y-1.5 mt-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0878EE]">
+                            <span>☁️</span>
+                            {formData.thumbnail.includes('res.cloudinary.com')
+                              ? 'Đã tải lên Cloudinary • Đường dẫn lưu vào DB (Scenarios.Thumbnail):'
+                              : 'Đường dẫn ảnh hiện tại (lưu vào DB):'}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <a
+                              href={formData.thumbnail}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-2 py-0.5 rounded-md bg-white border border-blue-200 text-[10px] font-bold text-[#0878EE] hover:bg-blue-50 transition"
+                            >
+                              Mở ảnh ↗
+                            </a>
+                            <button
+                              type="button"
+                              onClick={handleClearImage}
+                              className="px-2 py-0.5 rounded-md bg-white border border-red-200 text-[10px] font-bold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                            >
+                              ✕ Xóa
+                            </button>
+                          </div>
+                        </div>
+                        <input
+                          type="text"
+                          readOnly
+                          value={formData.thumbnail}
+                          onClick={(e) => (e.target as HTMLInputElement).select()}
+                          className="w-full px-2.5 py-1.5 bg-white border border-blue-200/80 rounded-lg text-[11px] font-mono text-slate-700 outline-none"
+                        />
+                      </div>
+                    )}
+                    <p className="hidden">
                     </p>
                   </div>
                 )}

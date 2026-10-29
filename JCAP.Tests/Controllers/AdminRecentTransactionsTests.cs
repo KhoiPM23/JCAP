@@ -82,7 +82,7 @@ namespace JCAP.Tests.Controllers
                 CreatedAt = DateTime.UtcNow.AddMinutes(-20)
             });
 
-            // Giao dịch 3: Subscription
+            // Giao dịch 3: Subscription đã thanh toán thành công (Paid) -> được xuất hiện
             context.CreditTransactions.Add(new CreditTransaction
             {
                 Id = 3,
@@ -91,8 +91,21 @@ namespace JCAP.Tests.Controllers
                 Type = "Subscription",
                 Description = "Đăng ký Gói Tháng Pro",
                 PayOsOrderCode = "87654321",
-                Status = "Pending",
+                Status = "Paid",
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+            });
+
+            // Giao dịch 4: Đơn Pending / Cancelled -> KHÔNG được xuất hiện trong dòng giao dịch thành công của Admin
+            context.CreditTransactions.Add(new CreditTransaction
+            {
+                Id = 4,
+                UserId = "user-real-01",
+                Amount = 500,
+                Type = "TopUp",
+                Description = "Nạp Gói Bị Hủy",
+                PayOsOrderCode = "99999999",
+                Status = "Cancelled",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-1)
             });
 
             await context.SaveChangesAsync();
@@ -107,7 +120,7 @@ namespace JCAP.Tests.Controllers
             Assert.NotNull(apiResponse.Data);
 
             var list = apiResponse.Data.ToList();
-            Assert.Equal(2, list.Count); // Chỉ lấy TopUp và Subscription, loại bỏ Deduct
+            Assert.Equal(2, list.Count); // Chỉ lấy TopUp và Subscription có Status == "Paid", loại bỏ Deduct & Cancelled/Pending
 
             // Giao dịch mới nhất phải đứng đầu (Id 3)
             var txSub = list[0];
@@ -116,7 +129,7 @@ namespace JCAP.Tests.Controllers
             Assert.Equal("nguyenvana@gmail.com", txSub.Email);
             Assert.Equal("subscription", txSub.Type);
             Assert.Equal("Gói Tháng Pro", txSub.PackageName);
-            Assert.Equal("Pending", txSub.Status);
+            Assert.Equal("Paid", txSub.Status);
             Assert.Equal(199000, txSub.Amount);
 
             // Giao dịch thứ hai (Id 2)

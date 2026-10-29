@@ -3,6 +3,7 @@ using JCAP.DTOs.Common;
 using JCAP.DTOs.Credit;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
+using JCAP.Services.Subscriptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,8 @@ namespace JCAP.Services.Implementations
 {
     public class CreditService : ICreditService
     {
+        public const int PendingOrderTimeoutMinutes = 10;
+
         private readonly AppDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly PayOsSettings _payOsSettings;
@@ -106,6 +109,7 @@ namespace JCAP.Services.Implementations
                 {
                     UserId = userId,
                     Amount = package.Credits,
+                    AmountVnd = package.Price,
                     Type = "TopUp",
                     Description = $"Nạp {package.Name} ({package.Credits} credits)",
                     PayOsOrderCode = orderCode.ToString(),
@@ -123,14 +127,8 @@ namespace JCAP.Services.Implementations
                     safeDescription = safeDescription.Substring(0, 25);
                 }
 
-                // Đối với Gói Chuyên Sâu: thiết lập số tiền thanh toán test qua PayOS là 2.500 VNĐ.
-                // Các gói khác: sử dụng đúng giá trị niêm yết của gói.
+                // Sử dụng đúng giá trị niêm yết của gói credit (VND) để tạo liên kết thanh toán PayOS
                 int actualPaymentAmount = (int)package.Price;
-                var pkgNameLower = package.Name.ToLower();
-                if (pkgNameLower.Contains("chuyên sâu") || pkgNameLower.Contains("chuyen sau") || package.Credits == 1000)
-                {
-                    actualPaymentAmount = 2500;
-                }
 
                 var paymentRequest = new CreatePaymentLinkRequest
                 {
@@ -171,6 +169,12 @@ namespace JCAP.Services.Implementations
 
         public async Task<ApiResponse<PurchaseCreditResponseDto>> PurchaseSubscriptionAsync(string userId, PurchaseSubscriptionRequestDto request)
         {
+            var plan = SubscriptionPlanCatalog.Find(request.PlanId);
+            if (plan == null)
+            {
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Gói đăng ký hội viên không hợp lệ hoặc không tồn tại.");
+            }
+
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
@@ -179,7 +183,7 @@ namespace JCAP.Services.Implementations
 
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
-                _logger.LogError("PayOS chưa cấu hình thông tin khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, request.PlanId);
+                _logger.LogError("PayOS chưa cấu hình thông tin khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, plan.Id);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán PayOS chưa được kích hoạt hoặc cấu hình chưa đầy đủ. Vui lòng liên hệ quản trị viên.");
             }
 
@@ -188,15 +192,17 @@ namespace JCAP.Services.Implementations
                 long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
                 var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-                var returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(request.PlanId)}";
+                var returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(plan.Id)}";
                 var cancelUrl = $"{frontendUrl}/credits?cancel=true";
 
                 var pendingTransaction = new CreditTransaction
                 {
                     UserId = userId,
-                    Amount = request.CreditsAmount,
+                    Amount = plan.WeeklyQuota,
+                    AmountVnd = plan.Price,
+                    SubscriptionPlanId = plan.Id,
                     Type = "Subscription",
-                    Description = $"Đăng ký {request.PlanName} ({request.PlanId})",
+                    Description = $"Đăng ký {plan.Name} ({plan.Id})",
                     PayOsOrderCode = orderCode.ToString(),
                     Status = "Pending",
                     CreatedAt = DateTime.UtcNow
@@ -206,17 +212,13 @@ namespace JCAP.Services.Implementations
                 await _dbContext.SaveChangesAsync();
 
                 // PayOS quy định mô tả tối đa 25 ký tự không dấu/đơn giản
-                string safeDescription = $"JCAP Sub {request.CreditsAmount}C";
+                string safeDescription = $"JCAP Sub {plan.Tier}";
                 if (safeDescription.Length > 25)
                 {
                     safeDescription = safeDescription.Substring(0, 25);
                 }
 
-                int actualPaymentAmount = (int)request.Price;
-                if (actualPaymentAmount < 2000)
-                {
-                    actualPaymentAmount = 2500;
-                }
+                int actualPaymentAmount = (int)plan.Price;
 
                 var paymentRequest = new CreatePaymentLinkRequest
                 {
@@ -229,7 +231,7 @@ namespace JCAP.Services.Implementations
                     {
                         new()
                         {
-                            Name = request.PlanName,
+                            Name = plan.Name,
                             Quantity = 1,
                             Price = actualPaymentAmount
                         }
@@ -264,6 +266,51 @@ namespace JCAP.Services.Implementations
             if (user == null)
             {
                 return ApiResponse<CreditHistoryResponseDto>.Fail("Không tìm thấy người dùng.");
+            }
+
+            // Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
+            // (Giúp đồng bộ tức thì khi người dùng bấm Hủy hoặc Thanh toán ở tab PayOS song song rồi mở/quay lại Lịch sử giao dịch)
+            if (_payOSClient != null && _payOsSettings.IsConfigured)
+            {
+                var pendingTxs = await _dbContext.CreditTransactions
+                    .Where(t => t.UserId == userId && t.Status == "Pending" && t.PayOsOrderCode != null)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                bool hasStatusChanges = false;
+                foreach (var pendingTx in pendingTxs)
+                {
+                    if (!long.TryParse(pendingTx.PayOsOrderCode, out var pendingOrderCode))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var paymentInfo = await _payOSClient.PaymentRequests.GetAsync(pendingOrderCode);
+                        var statusStr = paymentInfo?.Status.ToString()?.ToUpperInvariant();
+                        if (paymentInfo != null && statusStr == "PAID")
+                        {
+                            await ActivateTransactionAsync(pendingTx);
+                            user = await _userManager.FindByIdAsync(userId) ?? user;
+                        }
+                        else if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED" || statusStr == "EXPIRED"))
+                        {
+                            pendingTx.Status = "Cancelled";
+                            hasStatusChanges = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Không thể đối soát trạng thái đơn Pending #{OrderCode} từ PayOS khi tải lịch sử.", pendingOrderCode);
+                    }
+                }
+
+                if (hasStatusChanges)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
             }
 
             var query = _dbContext.CreditTransactions
@@ -302,6 +349,172 @@ namespace JCAP.Services.Implementations
             return ApiResponse<CreditHistoryResponseDto>.Ok(response, "Lấy lịch sử giao dịch thành công.");
         }
 
+        /// <summary>
+        /// Kết quả của một lần kích hoạt giao dịch.
+        /// </summary>
+        private enum ActivationOutcome
+        {
+            /// <summary>Giao dịch vừa được chuyển sang Paid và quyền lợi đã được cấp.</summary>
+            Activated,
+            /// <summary>Giao dịch đã được xử lý trước đó — không cấp quyền lợi lần hai.</summary>
+            AlreadyProcessed
+        }
+
+        /// <summary>
+        /// Chuyển giao dịch sang trạng thái Paid một cách nguyên tử.
+        ///
+        /// Chống race condition: webhook PayOS và VerifyOrderAsync (frontend gọi khi PayOS redirect về)
+        /// có thể chạy đồng thời cho cùng một đơn. Trước đây cả hai đều check-then-update
+        /// <c>transaction.Status</c> nên credit có thể được cộng hai lần.
+        ///
+        /// Trên SQL Server dùng một câu UPDATE có điều kiện (<c>WHERE Status = 'Pending'</c>) —
+        /// đúng một tiến trình nhận được affected = 1, tiến trình còn lại nhận 0 và dừng lại.
+        /// Provider InMemory (dùng trong test) không hỗ trợ ExecuteUpdateAsync nên rơi về
+        /// check-then-set thuần; test chạy đơn luồng nên không ảnh hưởng tính đúng đắn.
+        /// </summary>
+        private async Task<bool> TryClaimTransactionAsync(CreditTransaction transaction, CancellationToken cancellationToken = default)
+        {
+            var paidAt = DateTime.UtcNow;
+            if (_dbContext.Database.IsRelational())
+            {
+                var affected = await _dbContext.CreditTransactions
+                    .Where(t => t.Id == transaction.Id && t.Status == "Pending")
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(t => t.Status, "Paid")
+                        .SetProperty(t => t.CreatedAt, paidAt), cancellationToken);
+
+                if (affected == 0)
+                {
+                    return false;
+                }
+
+                // ExecuteUpdateAsync ghi trực tiếp xuống DB, không qua change tracker.
+                // Đồng bộ lại entity đang track để các bước sau đọc đúng trạng thái.
+                _dbContext.Entry(transaction).Property(t => t.Status).CurrentValue = "Paid";
+                _dbContext.Entry(transaction).Property(t => t.CreatedAt).CurrentValue = paidAt;
+                return true;
+            }
+
+            if (transaction.Status != "Pending")
+            {
+                return false;
+            }
+
+            transaction.Status = "Paid";
+            transaction.CreatedAt = paidAt;
+            return true;
+        }
+
+        /// <summary>
+        /// Cấp quyền lợi cho một giao dịch đã thanh toán thành công. Idempotent.
+        ///
+        /// Dùng chung cho cả ba đường vào: webhook PayOS, VerifyOrderAsync và ContinuePaymentAsync.
+        /// Trước đây mỗi đường tự cộng credit theo cách riêng, và không đường nào set
+        /// <c>SubscriptionExpiresAt</c> — nên gói tháng mua xong không bao giờ được kích hoạt.
+        ///
+        /// Phân biệt rõ hai loại quyền lợi:
+        /// - Type = "TopUp": cộng <c>Amount</c> vào CreditBalance (credit nạp thêm, không hết hạn).
+        /// - Type = "Subscription": set hạn dùng gói, KHÔNG cộng vào CreditBalance. Amount của gói
+        ///   tháng là hạn mức quota tuần, không phải số dư — cộng vào balance là nhầm hai khái niệm
+        ///   và cho người dùng hưởng lợi hai lần (vừa có quota gói, vừa có thêm 1000 credit vĩnh viễn).
+        /// </summary>
+        private async Task<(ActivationOutcome Outcome, int? NewBalance)> ActivateTransactionAsync(
+            CreditTransaction transaction,
+            CancellationToken cancellationToken = default)
+        {
+            var useTransaction = _dbContext.Database.IsRelational();
+            var dbTransaction = useTransaction
+                ? await _dbContext.Database.BeginTransactionAsync(cancellationToken)
+                : null;
+
+            try
+            {
+                if (!await TryClaimTransactionAsync(transaction, cancellationToken))
+                {
+                    _logger.LogInformation(
+                        "Giao dịch OrderCode {OrderCode} đã được xử lý trước đó. Bỏ qua để đảm bảo idempotency.",
+                        transaction.PayOsOrderCode);
+
+                    if (dbTransaction != null)
+                    {
+                        await dbTransaction.CommitAsync(cancellationToken);
+                    }
+
+                    var existing = await _userManager.FindByIdAsync(transaction.UserId);
+                    return (ActivationOutcome.AlreadyProcessed, existing?.CreditBalance);
+                }
+
+                var user = transaction.User ?? await _userManager.FindByIdAsync(transaction.UserId);
+                if (user == null)
+                {
+                    _logger.LogError(
+                        "Giao dịch OrderCode {OrderCode} thanh toán thành công nhưng không tìm thấy User {UserId}.",
+                        transaction.PayOsOrderCode, transaction.UserId);
+
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                    if (dbTransaction != null)
+                    {
+                        await dbTransaction.CommitAsync(cancellationToken);
+                    }
+
+                    return (ActivationOutcome.Activated, null);
+                }
+
+                var now = DateTime.UtcNow;
+
+                if (string.Equals(transaction.Type, "Subscription", StringComparison.OrdinalIgnoreCase))
+                {
+                    var plan = SubscriptionPlanCatalog.FindOrDefault(transaction.SubscriptionPlanId);
+
+                    // Gia hạn nối tiếp: nếu gói hiện tại còn hiệu lực thì cộng dồn từ ngày hết hạn cũ,
+                    // không cắt ngắn thời gian người dùng đã trả tiền.
+                    var startFrom = user.SubscriptionExpiresAt.HasValue && user.SubscriptionExpiresAt.Value > now
+                        ? user.SubscriptionExpiresAt.Value
+                        : now;
+
+                    user.SubscriptionPlanId = plan.Id;
+                    user.SubscriptionStartedAt = now;
+                    user.SubscriptionExpiresAt = startFrom.AddDays(plan.DurationDays);
+
+                    await _userManager.UpdateAsync(user);
+
+                    _logger.LogInformation(
+                        "Kích hoạt gói {PlanId} cho User {UserId}, hiệu lực đến {ExpiresAt:u}.",
+                        plan.Id, user.Id, user.SubscriptionExpiresAt);
+                }
+                else
+                {
+                    user.CreditBalance += transaction.Amount;
+                    await _userManager.UpdateAsync(user);
+
+                    _logger.LogInformation(
+                        "Cộng {Amount} credits cho User {UserId} từ OrderCode {OrderCode}. Số dư mới: {Balance}.",
+                        transaction.Amount, user.Id, transaction.PayOsOrderCode, user.CreditBalance);
+                }
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
+
+                if (dbTransaction != null)
+                {
+                    await dbTransaction.CommitAsync(cancellationToken);
+                }
+
+                return (ActivationOutcome.Activated, user.CreditBalance);
+            }
+            catch
+            {
+                if (dbTransaction != null)
+                {
+                    await dbTransaction.RollbackAsync(cancellationToken);
+                }
+                throw;
+            }
+            finally
+            {
+                dbTransaction?.Dispose();
+            }
+        }
+
         public async Task<ApiResponse<bool>> HandlePayOsWebhookAsync(Webhook webhook)
         {
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
@@ -338,35 +551,13 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<bool>.Ok(true, "Không tìm thấy giao dịch tương ứng trong hệ thống.");
             }
 
-            // Bắt buộc Idempotency: Kiểm tra nếu đã thanh toán trước đó thì không cộng lần 2
-            if (transaction.Status == "Paid")
+            var (outcome, _) = await ActivateTransactionAsync(transaction);
+            if (outcome == ActivationOutcome.AlreadyProcessed)
             {
-                _logger.LogInformation("Giao dịch OrderCode {OrderCode} đã ở trạng thái Paid. Bỏ qua idempotency.", orderCodeStr);
                 return ApiResponse<bool>.Ok(true, "Giao dịch đã được xử lý trước đó.");
             }
 
-            // Cập nhật trạng thái và cộng credit
-            transaction.Status = "Paid";
-            if (transaction.User != null)
-            {
-                transaction.User.CreditBalance += transaction.Amount;
-                await _userManager.UpdateAsync(transaction.User);
-            }
-            else
-            {
-                var user = await _userManager.FindByIdAsync(transaction.UserId);
-                if (user != null)
-                {
-                    user.CreditBalance += transaction.Amount;
-                    await _userManager.UpdateAsync(user);
-                }
-            }
-
-            await _dbContext.SaveChangesAsync();
-            _logger.LogInformation("Thanh toán thành công qua PayOS OrderCode: {OrderCode}, đã cộng {Amount} credits cho User {UserId}",
-                orderCodeStr, transaction.Amount, transaction.UserId);
-
-            return ApiResponse<bool>.Ok(true, "Cộng credit thành công.");
+            return ApiResponse<bool>.Ok(true, "Xử lý thanh toán thành công.");
         }
 
         public async Task<ApiResponse<CreditTransactionDto>> VerifyOrderAsync(string userId, long orderCode)
@@ -380,7 +571,7 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<CreditTransactionDto>.Fail("Không tìm thấy giao dịch này.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            int? currentBalance = null;
 
             // Nếu đơn hàng đang Pending và PayOS được cấu hình, gọi trực tiếp API PayOS để chủ động đối soát
             // (Hỗ trợ tốt cho môi trường Dev Local khi chưa cấu hình Webhook public ngrok/localtunnel)
@@ -392,16 +583,8 @@ namespace JCAP.Services.Implementations
                     var statusStr = paymentInfo?.Status.ToString()?.ToUpperInvariant();
                     if (paymentInfo != null && statusStr == "PAID")
                     {
-                        transaction.Status = "Paid";
-
-                        if (user != null)
-                        {
-                            user.CreditBalance += transaction.Amount;
-                            await _userManager.UpdateAsync(user);
-                        }
-
-                        await _dbContext.SaveChangesAsync();
-                        _logger.LogInformation("Xác minh đơn hàng #{OrderCode} thành công qua PayOS API direct check, đã cộng {Amount} credits cho User {UserId}", orderCode, transaction.Amount, userId);
+                        var (_, updatedBalance) = await ActivateTransactionAsync(transaction);
+                        currentBalance = updatedBalance;
                     }
                     else if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED"))
                     {
@@ -415,6 +598,12 @@ namespace JCAP.Services.Implementations
                 }
             }
 
+            if (currentBalance == null)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                currentBalance = user?.CreditBalance;
+            }
+
             var dto = new CreditTransactionDto
             {
                 Id = transaction.Id,
@@ -424,7 +613,7 @@ namespace JCAP.Services.Implementations
                 PayOsOrderCode = transaction.PayOsOrderCode,
                 Status = transaction.Status,
                 CreatedAt = transaction.CreatedAt,
-                CurrentCreditBalance = user?.CreditBalance
+                CurrentCreditBalance = currentBalance
             };
 
             return ApiResponse<CreditTransactionDto>.Ok(dto, "Lấy thông tin giao dịch thành công.");
@@ -451,29 +640,12 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã bị hủy.");
             }
 
-            // Chế độ 1: Mock Payment
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
-                transaction.Status = "Paid";
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    user.CreditBalance += transaction.Amount;
-                    await _userManager.UpdateAsync(user);
-                }
-                await _dbContext.SaveChangesAsync();
-
-                return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
-                {
-                    Success = true,
-                    Message = $"Nạp thành công {transaction.Amount} credits (Chế độ Mock).",
-                    IsMock = true,
-                    AddedCredits = transaction.Amount,
-                    NewCreditBalance = user?.CreditBalance
-                }, "Thanh toán thành công (Mock).");
+                _logger.LogError("PayOS chưa cấu hình thông tin. Từ chối tiếp tục thanh toán cho User: {UserId}, OrderCode: {OrderCode}", userId, orderCode);
+                return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán trực tuyến PayOS chưa được cấu hình hoặc gặp sự cố. Vui lòng liên hệ quản trị viên.");
             }
 
-            // Chế độ 2: PayOS Real Client
             try
             {
                 var paymentInfo = await _payOSClient.PaymentRequests.GetAsync(orderCode);
@@ -481,15 +653,22 @@ namespace JCAP.Services.Implementations
 
                 if (paymentInfo != null && statusStr == "PAID")
                 {
-                    transaction.Status = "Paid";
-                    var user = await _userManager.FindByIdAsync(userId);
-                    if (user != null)
+                    var (_, updatedBalance) = await ActivateTransactionAsync(transaction);
+                    return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
                     {
-                        user.CreditBalance += transaction.Amount;
-                        await _userManager.UpdateAsync(user);
-                    }
+                        Success = true,
+                        Message = "Đơn hàng đã được thanh toán thành công qua PayOS và quyền lợi đã được kích hoạt.",
+                        OrderCode = orderCode,
+                        IsMock = false,
+                        NewCreditBalance = updatedBalance
+                    }, "Đơn hàng đã được thanh toán thành công qua PayOS.");
+                }
+
+                if (paymentInfo != null && (statusStr == "CANCELLED" || statusStr == "CANCELED" || statusStr == "EXPIRED"))
+                {
+                    transaction.Status = "Cancelled";
                     await _dbContext.SaveChangesAsync();
-                    return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng đã được thanh toán thành công qua PayOS.");
+                    return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã bị hủy trên cổng PayOS.");
                 }
 
                 var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
@@ -500,32 +679,61 @@ namespace JCAP.Services.Implementations
                     ? $"{frontendUrl}/credits"
                     : _payOsSettings.CancelUrl;
 
-                // Xác định gói nạp tương ứng để lấy đúng giá gốc của gói
-                var matchedPackage = await _dbContext.CreditPackages
-                    .FirstOrDefaultAsync(p => p.Credits == transaction.Amount);
-
+                // Xác định số tiền thanh toán thật (VND) cho cả đơn Subscription lẫn TopUp
                 int packagePrice;
-                if (matchedPackage != null)
+                string itemName;
+                string safeDescription;
+
+                if (string.Equals(transaction.Type, "Subscription", StringComparison.OrdinalIgnoreCase))
                 {
-                    packagePrice = (int)matchedPackage.Price;
+                    var plan = SubscriptionPlanCatalog.FindOrDefault(transaction.SubscriptionPlanId);
+                    packagePrice = transaction.AmountVnd > 0 ? (int)transaction.AmountVnd : (int)plan.Price;
+                    transaction.AmountVnd = packagePrice;
+                    itemName = plan.Name;
+                    safeDescription = $"JCAP Sub {plan.Tier}";
+                    returnUrl = $"{frontendUrl}/credits/payment-return?type=subscription&planId={Uri.EscapeDataString(plan.Id)}";
+                    cancelUrl = $"{frontendUrl}/credits?cancel=true";
                 }
                 else
                 {
-                    // Fallback theo tỉ lệ mặc định nếu không tìm thấy package trong DB
-                    packagePrice = (int)(transaction.Amount * 333);
-                    if (packagePrice < 10000) packagePrice = 20000;
+                    var matchedPackage = await _dbContext.CreditPackages
+                        .FirstOrDefaultAsync(p => p.Credits == transaction.Amount);
+
+                    if (transaction.AmountVnd > 0)
+                    {
+                        packagePrice = (int)transaction.AmountVnd;
+                    }
+                    else if (matchedPackage != null)
+                    {
+                        packagePrice = (int)matchedPackage.Price;
+                        transaction.AmountVnd = matchedPackage.Price;
+                    }
+                    else
+                    {
+                        // Fallback theo tỉ lệ mặc định nếu không tìm thấy package trong DB
+                        packagePrice = (int)(transaction.Amount * 333);
+                        if (packagePrice < 10000) packagePrice = 20000;
+                        transaction.AmountVnd = packagePrice;
+                    }
+
+                    itemName = matchedPackage?.Name ?? $"Nạp {transaction.Amount} Credits";
+                    safeDescription = $"JCAP Nap {transaction.Amount}C";
                 }
 
-                // Đối với Gói Chuyên Sâu (1000 credits hoặc tên chứa 'chuyên sâu'): giữ 2.500 VNĐ cho mục đích test
-                var descLower = (transaction.Description ?? "").ToLower();
-                var matchedNameLower = matchedPackage?.Name?.ToLower() ?? "";
-                if (transaction.Amount == 1000 || descLower.Contains("chuyên sâu") || descLower.Contains("chuyen sau") || matchedNameLower.Contains("chuyên sâu") || matchedNameLower.Contains("chuyen sau"))
-                {
-                    packagePrice = 2500;
-                }
-
-                string safeDescription = $"JCAP Nap {transaction.Amount}C";
                 if (safeDescription.Length > 25) safeDescription = safeDescription.Substring(0, 25);
+
+                // Nếu đơn cũ vẫn đang PENDING trên PayOS, hủy link cũ trước khi cấp mã đơn mới để tránh treo 2 link song song
+                if (paymentInfo != null && statusStr == "PENDING")
+                {
+                    try
+                    {
+                        await _payOSClient.PaymentRequests.CancelAsync(orderCode, "Người dùng tạo liên kết thanh toán mới");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Không thể hủy link PayOS cũ #{OrderCode} khi tạo link mới.", orderCode);
+                    }
+                }
 
                 var newOrderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 transaction.PayOsOrderCode = newOrderCode.ToString();
@@ -542,7 +750,7 @@ namespace JCAP.Services.Implementations
                     {
                         new()
                         {
-                            Name = $"Nạp {transaction.Amount} Credits",
+                            Name = itemName,
                             Quantity = 1,
                             Price = packagePrice
                         }
@@ -624,24 +832,65 @@ namespace JCAP.Services.Implementations
             }
 
             var now = DateTime.UtcNow;
+            bool hasActiveSub = user.SubscriptionExpiresAt.HasValue && user.SubscriptionExpiresAt.Value > now;
+
+            // Nếu người dùng chưa đăng ký gói tháng hoặc gói đã hết hạn -> KHÔNG tự động gán gói Pro mặc định
+            if (!hasActiveSub)
+            {
+                var expiredPlan = SubscriptionPlanCatalog.Find(user.SubscriptionPlanId);
+                bool hadPlanBefore = user.SubscriptionExpiresAt.HasValue && expiredPlan != null;
+
+                var inactiveDto = new UserQuotaDto
+                {
+                    WeeklyTotalCredits = 0,
+                    WeeklyUsedCredits = 0,
+                    WeeklyRemainingCredits = 0,
+                    WeeklyRemainingPercent = 0,
+                    WeeklyResetsInText = "Chưa kích hoạt gói tháng",
+
+                    FiveHourTotalCredits = 0,
+                    FiveHourUsedCredits = 0,
+                    FiveHourRemainingCredits = 0,
+                    FiveHourRemainingPercent = 0,
+                    FiveHourResetsInText = "Chưa kích hoạt gói tháng",
+
+                    ExtraCreditBalance = user.CreditBalance,
+                    PlanId = hadPlanBefore ? expiredPlan!.Id : string.Empty,
+                    PlanName = hadPlanBefore ? $"{expiredPlan!.Name} (Đã hết hạn)" : "Chưa đăng ký gói hội viên",
+                    PlanTier = hadPlanBefore ? expiredPlan!.Tier : "Free",
+                    HasActiveSubscription = false,
+                    SubscriptionExpiresAt = user.SubscriptionExpiresAt,
+                    SubscriptionDaysRemaining = 0
+                };
+
+                return ApiResponse<UserQuotaDto>.Ok(inactiveDto, "Người dùng hiện chưa có gói hội viên tháng đang hoạt động.");
+            }
+
             var fiveHoursAgo = now.AddHours(-5);
             var sevenDaysAgo = now.AddDays(-7);
 
-            // 1. Tính tổng credit bị khấu trừ trong 5 giờ qua từ các giao dịch Deduct
-            var used5h = await _dbContext.CreditTransactions
-                .AsNoTracking()
-                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
-                .SumAsync(t => -t.Amount); // Amount là số âm khi Deduct (ví dụ: -1, -5) -> -t.Amount là số dương
+            // Xác định gói tháng đang hoạt động của người dùng
+            var plan = SubscriptionPlanCatalog.FindOrDefault(user.SubscriptionPlanId);
+            int fiveHourTotal = plan.FiveHourQuota;
+            int weeklyTotal = plan.WeeklyQuota;
 
-            // 2. Tính tổng credit bị khấu trừ trong 7 ngày qua
-            var usedWeek = await _dbContext.CreditTransactions
+            // Chỉ đếm các giao dịch Deduct được chi trả bởi gói tháng (CoveredBySubscription = true hoặc Description bắt đầu bằng "[Gói tháng]")
+            // để không đếm lẫn các lượt trừ từ CreditBalance nạp lẻ (pay-as-you-go).
+            var subDeductQuery = _dbContext.CreditTransactions
                 .AsNoTracking()
-                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+                .Where(t => t.UserId == userId
+                    && t.Type == "Deduct"
+                    && (t.CoveredBySubscription || (t.Description != null && t.Description.StartsWith("[Gói tháng]"))));
+
+            // 1. Tính tổng credit bị khấu trừ trong 5 giờ qua từ các giao dịch gói tháng
+            var used5h = await subDeductQuery
+                .Where(t => t.CreatedAt >= fiveHoursAgo)
                 .SumAsync(t => -t.Amount);
 
-            // Mặc định định mức gói Pro: 50 credits/5h, 1000 credits/tuần
-            int fiveHourTotal = 50;
-            int weeklyTotal = 1000;
+            // 2. Tính tổng credit bị khấu trừ trong 7 ngày qua từ các giao dịch gói tháng
+            var usedWeek = await subDeductQuery
+                .Where(t => t.CreatedAt >= sevenDaysAgo)
+                .SumAsync(t => -t.Amount);
 
             int fiveHourRemaining = Math.Max(0, fiveHourTotal - used5h);
             int fiveHourPercent = fiveHourTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)fiveHourRemaining / fiveHourTotal * 100))) : 0;
@@ -649,11 +898,9 @@ namespace JCAP.Services.Implementations
             int weeklyRemaining = Math.Max(0, weeklyTotal - usedWeek);
             int weeklyPercent = weeklyTotal > 0 ? Math.Max(0, Math.Min(100, (int)Math.Round((double)weeklyRemaining / weeklyTotal * 100))) : 0;
 
-            // 3. Tính thời gian reset hạn ngạch 5 giờ
-            // Dựa vào giao dịch Deduct cũ nhất trong cửa sổ 5 giờ: sau 5h kể từ lúc đó nó sẽ rơi khỏi cửa sổ
-            var oldestIn5h = await _dbContext.CreditTransactions
-                .AsNoTracking()
-                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= fiveHoursAgo)
+            // 3. Tính thời gian hồi phục hạn ngạch 5 giờ (rolling window)
+            var oldestIn5h = await subDeductQuery
+                .Where(t => t.CreatedAt >= fiveHoursAgo)
                 .OrderBy(t => t.CreatedAt)
                 .Select(t => t.CreatedAt)
                 .FirstOrDefaultAsync();
@@ -679,10 +926,9 @@ namespace JCAP.Services.Implementations
                 fiveHourResetsText = "5 giờ (Đầy đủ)";
             }
 
-            // 4. Tính thời gian reset tuần (còn lại trong chu kỳ 7 ngày)
-            var oldestInWeek = await _dbContext.CreditTransactions
-                .AsNoTracking()
-                .Where(t => t.UserId == userId && t.Type == "Deduct" && t.CreatedAt >= sevenDaysAgo)
+            // 4. Tính thời gian hồi phục hạn ngạch tuần (rolling window 7 ngày)
+            var oldestInWeek = await subDeductQuery
+                .Where(t => t.CreatedAt >= sevenDaysAgo)
                 .OrderBy(t => t.CreatedAt)
                 .Select(t => t.CreatedAt)
                 .FirstOrDefaultAsync();
@@ -708,6 +954,8 @@ namespace JCAP.Services.Implementations
                 weeklyResetsText = "7 ngày (Đầy đủ)";
             }
 
+            int daysRemaining = Math.Max(0, (int)Math.Ceiling((user.SubscriptionExpiresAt!.Value - now).TotalDays));
+
             var dto = new UserQuotaDto
             {
                 WeeklyTotalCredits = weeklyTotal,
@@ -723,8 +971,12 @@ namespace JCAP.Services.Implementations
                 FiveHourResetsInText = fiveHourResetsText,
 
                 ExtraCreditBalance = user.CreditBalance,
-                PlanName = "Gói Tháng Pro (Cơ Bản)",
-                PlanTier = "Pro"
+                PlanId = plan.Id,
+                PlanName = plan.Name,
+                PlanTier = plan.Tier,
+                HasActiveSubscription = true,
+                SubscriptionExpiresAt = user.SubscriptionExpiresAt,
+                SubscriptionDaysRemaining = daysRemaining
             };
 
             return ApiResponse<UserQuotaDto>.Ok(dto, "Lấy thông tin hạn ngạch thành công.");

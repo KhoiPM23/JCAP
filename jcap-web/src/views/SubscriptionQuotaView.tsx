@@ -21,7 +21,12 @@ const SKILL_USAGE_MAX = 5;
 const usedPercent = (w: Window) => (w.totalCredits > 0 ? Math.min(100, Math.round((w.usedCredits / w.totalCredits) * 100)) : 0);
 
 /** Câu trạng thái đậm ở đầu trang, tính từ chu kỳ đang dùng nhiều nhất */
-function statusLine(five: Window, week: Window, autoUse: boolean, extra: number): string {
+function statusLine(five: Window, week: Window, autoUse: boolean, extra: number, status: UserSubscriptionState['status']): string {
+  if (status !== 'Active') {
+    return extra > 0
+      ? 'Chưa kích hoạt gói tháng. Bạn đang sử dụng chế độ trả theo lượt bằng Credit nạp thêm.'
+      : 'Chưa kích hoạt gói tháng. Đăng ký gói hội viên hoặc nạp thêm Credit để bắt đầu luyện tập.';
+  }
   const worst = Math.max(usedPercent(five), usedPercent(week));
   if (worst >= 100) {
     return autoUse && extra > 0
@@ -34,7 +39,7 @@ function statusLine(five: Window, week: Window, autoUse: boolean, extra: number)
 
 /**
  * Gói & Credit (design-handoff mục 4): một cột ~760px, các phần ngăn bằng đường kẻ, không thẻ.
- * Số liệu thật từ creditService.getQuota() và subscriptionPlanService như trước; chỉ đổi giao diện.
+ * Số liệu thật từ creditService.getQuota() và subscriptionPlanService.
  */
 export const SubscriptionQuotaView: React.FC = () => {
   const { user } = useAuth();
@@ -44,22 +49,29 @@ export const SubscriptionQuotaView: React.FC = () => {
   const [subscription, setSubscription] = useState<UserSubscriptionState>(() => subscriptionPlanService.getUserSubscription());
 
   // Hai chu kỳ hạn mức (tính từ các phiên học thật trong DB)
-  const [weeklyLimit, setWeeklyLimit] = useState<Window>(() => ({
-    usedCredits: 0,
-    totalCredits: subscriptionPlanService.getUserSubscription()?.creditsAmount || 2500,
-    resetsInText: '7 ngày',
-  }));
-  const [fiveHourLimit, setFiveHourLimit] = useState<Window>(() => ({
-    usedCredits: 0,
-    totalCredits: subscriptionPlanService.getUserSubscription()?.fiveHourQuota || 150,
-    resetsInText: '5 giờ',
-  }));
+  const [weeklyLimit, setWeeklyLimit] = useState<Window>(() => {
+    const sub = subscriptionPlanService.getUserSubscription();
+    const isActive = sub.status === 'Active' && sub.creditsAmount > 0;
+    return {
+      usedCredits: 0,
+      totalCredits: isActive ? sub.creditsAmount : 0,
+      resetsInText: isActive ? '7 ngày' : 'Chưa kích hoạt gói tháng',
+    };
+  });
+  const [fiveHourLimit, setFiveHourLimit] = useState<Window>(() => {
+    const sub = subscriptionPlanService.getUserSubscription();
+    const isActive = sub.status === 'Active' && sub.fiveHourQuota > 0;
+    return {
+      usedCredits: 0,
+      totalCredits: isActive ? sub.fiveHourQuota : 0,
+      resetsInText: isActive ? '5 giờ' : 'Chưa kích hoạt gói tháng',
+    };
+  });
 
   // Số dư Credit nạp thêm
   const [extraCredits, setExtraCredits] = useState<number>(() => (typeof user?.creditBalance === 'number' ? user.creditBalance : 0));
 
   // Tuỳ chọn: tự dùng Credit nạp thêm khi hết hạn mức (lưu ở trình duyệt như trước)
-  // TODO: nối với cài đặt ở backend khi có API.
   const [allowAutoUseExtraCredits, setAllowAutoUseExtraCredits] = useState<boolean>(() => {
     const saved = localStorage.getItem('jcap_allow_auto_use_credit');
     return saved !== null ? saved === 'true' : true;
@@ -76,17 +88,63 @@ export const SubscriptionQuotaView: React.FC = () => {
       const res = await creditService.getQuota();
       if (res.success && res.data) {
         const d = res.data;
-        const currentSub = subscriptionPlanService.getUserSubscription();
-        setWeeklyLimit({
-          usedCredits: d.weeklyUsedCredits,
-          totalCredits: currentSub?.creditsAmount || d.weeklyTotalCredits || 1000,
-          resetsInText: d.weeklyResetsInText,
-        });
-        setFiveHourLimit({
-          usedCredits: d.fiveHourUsedCredits,
-          totalCredits: currentSub?.fiveHourQuota || d.fiveHourTotalCredits || 50,
-          resetsInText: d.fiveHourResetsInText,
-        });
+
+        if (d.hasActiveSubscription && d.subscriptionExpiresAt) {
+          const planWeeklyTotal = d.weeklyTotalCredits || 1000;
+          const planFiveHourTotal = d.fiveHourTotalCredits || 50;
+          const matchedPlan = d.planId ? subscriptionPlanService.findPlanById(d.planId) : undefined;
+
+          setSubscription((prev) => ({
+            ...prev,
+            planId: d.planId || prev.planId,
+            planName: d.planName || matchedPlan?.name || prev.planName,
+            planTier: d.planTier || prev.planTier,
+            status: 'Active',
+            expiresAt: d.subscriptionExpiresAt!,
+            daysRemaining: typeof d.subscriptionDaysRemaining === 'number' ? d.subscriptionDaysRemaining : 0,
+            creditsAmount: planWeeklyTotal,
+            fiveHourQuota: planFiveHourTotal,
+            features: matchedPlan?.features || prev.features,
+          }));
+
+          setWeeklyLimit({
+            usedCredits: d.weeklyUsedCredits,
+            totalCredits: planWeeklyTotal,
+            resetsInText: d.weeklyResetsInText,
+          });
+          setFiveHourLimit({
+            usedCredits: d.fiveHourUsedCredits,
+            totalCredits: planFiveHourTotal,
+            resetsInText: d.fiveHourResetsInText,
+          });
+        } else {
+          subscriptionPlanService.clearUserSubscription();
+          const isExpired = Boolean(d.subscriptionExpiresAt);
+
+          setSubscription((prev) => ({
+            ...prev,
+            planId: d.planId || '',
+            planName: d.planName || 'Chưa đăng ký gói hội viên',
+            planTier: d.planTier || 'Free',
+            status: isExpired ? 'Expired' : 'None',
+            expiresAt: d.subscriptionExpiresAt || '',
+            daysRemaining: 0,
+            creditsAmount: 0,
+            fiveHourQuota: 0,
+          }));
+
+          setWeeklyLimit({
+            usedCredits: 0,
+            totalCredits: 0,
+            resetsInText: d.weeklyResetsInText || 'Chưa kích hoạt gói tháng',
+          });
+          setFiveHourLimit({
+            usedCredits: 0,
+            totalCredits: 0,
+            resetsInText: d.fiveHourResetsInText || 'Chưa kích hoạt gói tháng',
+          });
+        }
+
         setExtraCredits(d.extraCreditBalance);
         setUpdatedAt(new Date());
       }
@@ -140,10 +198,20 @@ export const SubscriptionQuotaView: React.FC = () => {
 
         <section className="jx-um-sec" style={{ paddingTop: 16 }} aria-labelledby="um-1">
           <h2 id="um-1" className="jx-um-h" style={{ paddingBottom: 14, marginBottom: 6, borderBottom: '1px solid var(--line)' }}>
-            {statusLine(fiveHourLimit, weeklyLimit, allowAutoUseExtraCredits, extraCredits)}
+            {statusLine(fiveHourLimit, weeklyLimit, allowAutoUseExtraCredits, extraCredits, subscription.status)}
           </h2>
-          <UsageRow label="Chu kỳ 5 giờ" sub={`Hồi đầy sau ${fiveHourLimit.resetsInText}`} w={fiveHourLimit} aria="hạn mức 5 giờ" />
-          <UsageRow label="Tuần này" sub={`Làm mới sau ${weeklyLimit.resetsInText}`} w={weeklyLimit} aria="hạn mức tuần" />
+          <UsageRow
+            label="Chu kỳ 5 giờ"
+            sub={subscription.status === 'Active' ? `Hồi đầy sau ${fiveHourLimit.resetsInText}` : fiveHourLimit.resetsInText}
+            w={fiveHourLimit}
+            aria="hạn mức 5 giờ"
+          />
+          <UsageRow
+            label="Tuần này"
+            sub={subscription.status === 'Active' ? `Làm mới sau ${weeklyLimit.resetsInText}` : weeklyLimit.resetsInText}
+            w={weeklyLimit}
+            aria="hạn mức tuần"
+          />
         </section>
 
         <section className="jx-um-sec" aria-labelledby="um-2">
@@ -153,10 +221,18 @@ export const SubscriptionQuotaView: React.FC = () => {
                 {planName} {planTier && <span className="font-medium text-sumi-muted">{planTier}</span>}
               </h2>
               <p className="jx-um-muted">
-                {`Hết hạn ${Number.isNaN(expires.getTime()) ? '—' : expires.toLocaleDateString('vi-VN')}. Mỗi 5 giờ có ${fiveHourLimit.totalCredits.toLocaleString('vi-VN')} credit, mỗi tuần ${weeklyLimit.totalCredits.toLocaleString('vi-VN')} credit.`}
+                {subscription.status === 'Active'
+                  ? `Hết hạn ${Number.isNaN(expires.getTime()) ? '—' : expires.toLocaleDateString('vi-VN')}. Mỗi 5 giờ có ${fiveHourLimit.totalCredits.toLocaleString('vi-VN')} credit, mỗi tuần ${weeklyLimit.totalCredits.toLocaleString('vi-VN')} credit.`
+                  : 'Bạn đang ở gói miễn phí (Pay-As-You-Go). Đăng ký gói hội viên tháng để mở khóa hạn mức AI tự động hồi phục mỗi 5 giờ và mỗi tuần.'}
               </p>
             </div>
-            <span className="jx-um-big">{subscription.status === 'Expired' ? 'Đã hết hạn' : `Còn ${subscription.daysRemaining} ngày`}</span>
+            <span className="jx-um-big">
+              {subscription.status === 'Active'
+                ? `Còn ${subscription.daysRemaining} ngày`
+                : subscription.status === 'Expired'
+                ? 'Đã hết hạn'
+                : 'Chưa đăng ký'}
+            </span>
           </div>
           {showFeatures && subscription.features.length > 0 && (
             <ul className="jx-um-feat">
@@ -170,7 +246,7 @@ export const SubscriptionQuotaView: React.FC = () => {
               {showFeatures ? 'Ẩn quyền lợi của gói' : 'Xem quyền lợi của gói'}
             </button>
             <Button variant="secondary" size="sm" onClick={() => navigate('/credits')}>
-              Đổi gói
+              {subscription.status === 'Active' ? 'Đổi gói' : 'Đăng ký gói tháng'}
             </Button>
           </div>
         </section>
