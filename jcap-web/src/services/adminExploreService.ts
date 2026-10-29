@@ -6,6 +6,7 @@ import type {
   AdminExplorePrefectureContent,
   AdminExploreSpot,
   AdminExploreSpotRow,
+  AdminExploreStats,
   AdminExploreWord,
   ExploreLookupItem,
   ExploreLookupKind,
@@ -75,6 +76,11 @@ class AdminExploreService {
   /** Ngừng dùng chương (không xoá cứng) */
   public deactivateChapter(id: number) {
     return this.send<boolean>('DELETE', `${BASE}/chapters/${id}`);
+  }
+
+  /** Thống kê tiến độ người học: tổng quan, theo chương và phễu từng mốc đang dùng */
+  public getStats() {
+    return this.send<AdminExploreStats>('GET', `${BASE}/stats`);
   }
 
   // ---- Soạn nội dung trong tỉnh ----

@@ -25,5 +25,8 @@ namespace JCAP.Services.Interfaces
 
         /// <summary>Ngừng dùng chương (IsActive = false); các tỉnh của chương được trả về trạng thái chưa thuộc chương nào.</summary>
         Task<ApiResponse<bool>> DeactivateChapterAsync(int chapterId);
+
+        /// <summary>Thống kê tiến độ người học: tổng quan, theo chương và phễu Hiểu → Con dấu → Dấu son của từng mốc đang dùng.</summary>
+        Task<ApiResponse<AdminExploreStatsDto>> GetStatsAsync();
     }
 }
