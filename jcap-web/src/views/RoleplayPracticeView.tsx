@@ -8,6 +8,7 @@ import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsMod
 import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
 import { LivingAvatar, type AvatarState, type MouthViseme } from '../components/roleplay/LivingAvatar';
 import { EkiStampOverlay } from '../components/roleplay/EkiStampOverlay';
+import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import type {
@@ -1726,44 +1727,22 @@ export const RoleplayPracticeView: React.FC = () => {
           {/* HINT BAR & INPUT BAR */}
           <footer className="shrink-0 border-t border-[#E6EDF5] bg-white p-3 md:p-4 z-10 shadow-lg">
             <div className="mx-auto w-full max-w-[760px] space-y-2.5">
-              {/* Hint Bar Box (nếu đã gọi gợi ý) */}
+              {/* Graduated Hint 3-Tier Scaffolding (Từ khóa -> Điền khuyết -> Trọn câu) */}
               {hint && (
-                <div className="rounded-xl border border-[#B9D9FF] bg-[#F4F9FE] p-3 text-xs shadow-xs animate-fade-in">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1 font-bold text-[#0878EE]">
-                      <span>💡</span>
-                      <span>Gợi ý câu tiếp theo:</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setHint(null)}
-                      className="text-[#71809A] hover:text-[#071A44]"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                      <p className="font-bold text-[#071A44] text-sm">
-                        {hint.suggestedJapaneseText || hint.japaneseSuggestion}
-                      </p>
-                      <p className="text-[11px] text-[#71809A]">
-                        {hint.suggestedVietnameseMeaning || hint.vietnameseMeaning}
-                      </p>
-                      <p className="mt-0.5 text-[10px] italic text-[#0878EE]">
-                        {hint.explanation || hint.contextExplanation}
-                      </p>
-                    </div>
-                    {/* Nút dùng câu này: CHỈ ĐIỀN TIẾNG NHẬT theo yêu cầu */}
-                    <button
-                      type="button"
-                      onClick={handleApplyHint}
-                      className="shrink-0 self-end sm:self-center rounded-lg bg-[#0878EE] px-3 py-1.5 font-bold text-white transition hover:bg-[#0768D0] shadow-xs"
-                    >
-                      Dùng câu này ➔
-                    </button>
-                  </div>
-                </div>
+                <GraduatedHintCard
+                  missionTitle={session?.missions?.find((m) => !m.isCompleted)?.content || 'Nhiệm vụ tiếp theo'}
+                  fullJapaneseSample={hint.suggestedJapaneseText || hint.japaneseSuggestion || ''}
+                  vietnameseMeaning={hint.suggestedVietnameseMeaning || hint.vietnameseMeaning}
+                  onUseHint={(sentence) => {
+                    setInputText(sentence);
+                    setHint(null);
+                  }}
+                  onPlaySampleAudio={() => {
+                    const text = hint.suggestedJapaneseText || hint.japaneseSuggestion;
+                    if (text) void scenarioVoiceService.playAiSpeech(text, 2);
+                  }}
+                  onClose={() => setHint(null)}
+                />
               )}
 
               {/* Mic Permission / Error Warning */}
