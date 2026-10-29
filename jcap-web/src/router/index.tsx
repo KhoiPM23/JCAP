@@ -14,6 +14,7 @@ import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
+import { StampBookView } from '../views/explore/StampBookView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
 import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
@@ -386,6 +387,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/" element={<LearnerHomeRoute />} />
         {/* Khám phá = bản đồ Hành trình, cùng trang với trang chủ */}
         <Route path="/explore" element={<MapRoute />} />
+        {/* Sổ con dấu: xem lại mọi con dấu của hành trình */}
+        <Route path="/stamps" element={<StampBookView />} />
         <Route path="/dashboard" element={<LearnerDashboardRoute />} />
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />

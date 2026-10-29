@@ -26,7 +26,7 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * Các trang đã làm lại theo design system nên có chế độ tối. Trang còn lại (Credit, Flashcard, Kết quả, chi tiết kịch bản…)
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
-const THEMED_PATHS = ['/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
+const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
 const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
 
 /**

@@ -180,6 +180,11 @@ export const LearnerProfileView: React.FC = () => {
                 <Stat value={shadowingCount} label="buổi luyện Shadowing" />
                 <Stat value={stamps ?? null} label="con dấu Khám phá" />
               </div>
+              <div>
+                <Button variant="ghost" size="sm" iconRight="arrow_forward" onClick={() => navigate('/stamps')}>
+                  Xem sổ con dấu
+                </Button>
+              </div>
             </section>
 
             {/* Thông tin tài khoản */}

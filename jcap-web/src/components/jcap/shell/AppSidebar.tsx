@@ -41,7 +41,7 @@ const NAV: NavDef[] = [
   // Flashcard có trong code nhưng chưa có trong thiết kế: đặt ngay dưới Shadowing, cùng kiểu
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
-  { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', soon: true },
+  { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
 ];
 
 export interface AppSidebarProps {

@@ -29,6 +29,15 @@ namespace JCAP.Controllers
             return Ok(await _exploreService.GetJourneyAsync(userId));
         }
 
+        /// <summary>Sổ con dấu: các mốc đã có con dấu của người học (chỉ đọc, không cấp dấu).</summary>
+        [HttpGet("stamps")]
+        public async Task<ActionResult<ApiResponse<ExploreStampBookDto>>> GetStampBook()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized(ApiResponse<ExploreStampBookDto>.Fail("Không xác định được danh tính người dùng."));
+            return Ok(await _exploreService.GetStampBookAsync(userId));
+        }
+
         /// <summary>Các mốc đang dùng của một tỉnh kèm tiến độ. Tỉnh đóng: IsOpen = false; chương chưa mở: IsLocked = true; cả hai không có mốc.</summary>
         [HttpGet("prefectures/{id:int}")]
         public async Task<ActionResult<ApiResponse<ExplorePrefectureDetailDto>>> GetPrefecture(int id)

@@ -53,6 +53,22 @@ export interface ExploreStamp {
   redStampedAt?: string | null;
 }
 
+/** Sổ con dấu: mọi mốc đã có con dấu mà người học còn thấy được */
+export interface ExploreStampBook {
+  stamps: ExploreStampedSpot[];
+}
+
+export interface ExploreStampedSpot {
+  spotId: number;
+  prefectureId: number;
+  iconId: string;
+  nameVi: string;
+  nameJp: string;
+  understoodAt?: string | null;
+  stampedAt: string;
+  redStampedAt?: string | null;
+}
+
 export interface ExploreSpotProgress {
   understoodAt?: string | null;
   stampedAt?: string | null;
