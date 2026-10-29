@@ -1,0 +1,603 @@
+{
+  "Version": "2026-10-29-sample-v1",
+  "Sources": [
+    {
+      "Key": "openjlpt",
+      "Name": "OpenJLPT",
+      "Version": "0d1d3410bec90bd4098a7c72de820543cb4f707c",
+      "SourceUrl": "https://github.com/evanclan/OpenJLPT/tree/0d1d3410bec90bd4098a7c72de820543cb4f707c",
+      "License": "CC-BY-SA-4.0",
+      "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "Attribution": "Contains data from OpenJLPT contributors (CC BY-SA 4.0), using JMdict (EDRDG) and Jonathan Waller JLPT lists. Vocabulary record IDs and readings retained. JLPT labels are unofficial approximations. Vietnamese glosses, explanations and usage notes adapted/added by JCAP with AI assistance for development; not independently language-expert reviewed. Adapted vocabulary data remains CC BY-SA 4.0. See bundled OpenJLPT-NOTICE.md and LICENSE."
+    },
+    {
+      "Key": "nihongo-mono",
+      "Name": "Nihongo Mono Grammar",
+      "Version": "ec0ba4a0ce1611c568b0e4f8a223eb8029249a25",
+      "SourceUrl": "https://github.com/stndaru/nihongo-mono/tree/ec0ba4a0ce1611c568b0e4f8a223eb8029249a25/src/data/grammar",
+      "License": "MIT",
+      "LicenseUrl": "https://github.com/stndaru/nihongo-mono/blob/ec0ba4a0ce1611c568b0e4f8a223eb8029249a25/LICENSE",
+      "Attribution": "Grammar explanations, formations and examples from stndaru/nihongo-mono grammar files, MIT per LICENSE-DATA.md. Original Japanese examples and source slugs retained. Furigana converted from pipe/bracket notation to {surface|reading}. Vietnamese meanings, explanations, notes and translations adapted by JCAP with AI assistance for development; not independently language-expert reviewed. Some formations clarified. See bundled NihongoMono-LICENSE.txt and LICENSE-DATA.md."
+    },
+    {
+      "Key": "tatoeba",
+      "Name": "Tatoeba via OpenJLPT",
+      "Version": "0d1d3410bec90bd4098a7c72de820543cb4f707c",
+      "SourceUrl": "https://tatoeba.org/",
+      "License": "CC-BY-2.0-FR",
+      "LicenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+      "Attribution": "Japanese vocabulary examples from Tatoeba/Tanaka Corpus as redistributed by OpenJLPT. ExternalId is the original Tatoeba sentence ID; original sentence and contributor information: https://tatoeba.org/sentences/show/<ExternalId>. Japanese text and supplied furigana retained. Vietnamese translations added by JCAP with AI assistance; not official Tatoeba translations or independently expert reviewed. See OpenJLPT-NOTICE.md."
+    }
+  ],
+  "Vocabularies": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fa5a63fc7",
+      "Word": "大きい",
+      "Reading": "おおきい",
+      "Meaning": "To; lớn",
+      "PartOfSpeech": "Tính từ đuôi い",
+      "JLPTLevel": "N5",
+      "Explanation": "Diễn tả kích thước, quy mô hoặc mức độ lớn. Có thể đứng trực tiếp trước danh từ, như 大きい家, hoặc làm vị ngữ.",
+      "UsageNotes": "Khi bổ nghĩa cho danh từ có thể gặp 大きな, nhưng 大きな không dùng độc lập làm vị ngữ.",
+      "Examples": [
+        {
+          "JapaneseText": "もっと大きいサイズはありますか。",
+          "VietnameseTranslation": "Có cỡ lớn hơn không?",
+          "Furigana": "もっと{大|おお}きいサイズはありますか。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "193236"
+        },
+        {
+          "JapaneseText": "きみは何と大きい家を持っているんだろう。",
+          "VietnameseTranslation": "Nhà của bạn lớn thật đấy!",
+          "Furigana": "きみは{何|なん}と{大|おお}きい{家|いえ}を{持|も}っているんだろう。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "225891"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd8ac16bd2",
+      "Word": "学校",
+      "Reading": "がっこう",
+      "Meaning": "Trường học",
+      "PartOfSpeech": "Danh từ",
+      "JLPTLevel": "N5",
+      "Explanation": "Chỉ cơ sở giáo dục nơi học sinh hoặc sinh viên đến học. Thường gặp trong 学校に行く (đến trường) và 学校で勉強する (học ở trường).",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "この学校はたくさんの生徒がいます。",
+          "VietnameseTranslation": "Trường này có nhiều học sinh.",
+          "Furigana": "この{学校|がっこう}はたくさんの{生徒|せいと}がいます。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "222600"
+        },
+        {
+          "JapaneseText": "学校を出たあと、どうするつもり？",
+          "VietnameseTranslation": "Sau khi ra trường, bạn định làm gì?",
+          "Furigana": "{学校|がっこう}を{出|で}たあと、どうするつもり？",
+          "SourceKey": "tatoeba",
+          "ExternalId": "184354"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "86f67e2dc3",
+      "Word": "食べる",
+      "Reading": "たべる",
+      "Meaning": "Ăn",
+      "PartOfSpeech": "Động từ nhóm 2; tha động từ",
+      "JLPTLevel": "N5",
+      "Explanation": "Chỉ hành động ăn thức ăn. Món ăn thường đi với trợ từ を. Các dạng thường dùng gồm 食べます, 食べて và 食べない.",
+      "UsageNotes": "Không nhầm với 飲む, dùng khi uống nước hoặc các loại đồ uống.",
+      "Examples": [
+        {
+          "JapaneseText": "ちょうど食べたかったものでした。",
+          "VietnameseTranslation": "Đó đúng là món tôi đang muốn ăn.",
+          "Furigana": "ちょうど{食|た}べたかったものでした。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "202896"
+        },
+        {
+          "JapaneseText": "食べながら読んではいけません。",
+          "VietnameseTranslation": "Không được vừa ăn vừa đọc.",
+          "Furigana": "{食|た}べながら{読|よ}んではいけません。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "145934"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "62b5c13164",
+      "Word": "電車",
+      "Reading": "でんしゃ",
+      "Meaning": "Tàu điện",
+      "PartOfSpeech": "Danh từ",
+      "JLPTLevel": "N5",
+      "Explanation": "Chỉ tàu chạy bằng điện, thường dùng khi nói về việc đi lại bằng đường sắt. 電車で diễn tả phương tiện di chuyển; 電車に乗る là lên tàu.",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "電車の中ですりにやられちゃったんだ。",
+          "VietnameseTranslation": "Tôi bị móc túi trên tàu điện rồi.",
+          "Furigana": "{電車|でんしゃ}の{中|なか}ですりにやられちゃったんだ。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "124800"
+        },
+        {
+          "JapaneseText": "電車でポケットの中にあるものをすられた。",
+          "VietnameseTranslation": "Tôi bị móc mất đồ trong túi khi đi tàu điện.",
+          "Furigana": "{電車|でんしゃ}でポケットの{中|なか}にあるものをすられた。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "124816"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0bcec9bd9",
+      "Word": "飲む",
+      "Reading": "のむ",
+      "Meaning": "Uống",
+      "PartOfSpeech": "Động từ nhóm 1; tha động từ",
+      "JLPTLevel": "N5",
+      "Explanation": "Chỉ hành động uống chất lỏng. Đồ uống thường đi với を. Dạng て là 飲んで và dạng quá khứ là 飲んだ.",
+      "UsageNotes": "Thuốc uống cũng thường dùng 飲む, như 薬を飲む.",
+      "Examples": [
+        {
+          "JapaneseText": "コーラはみんな飲んでしまったの。",
+          "VietnameseTranslation": "Coca đã bị uống hết rồi à?",
+          "Furigana": "コーラはみんな{飲|の}んでしまったの。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "224842"
+        },
+        {
+          "JapaneseText": "今すぐにコーラが飲みたいんだ。",
+          "VietnameseTranslation": "Ngay bây giờ tôi rất muốn uống Coca.",
+          "Furigana": "{今|いま}すぐにコーラが{飲|の}みたいんだ。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "172829"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae8ce3986c",
+      "Word": "遅れる",
+      "Reading": "おくれる",
+      "Meaning": "Đến muộn; bị chậm; trễ",
+      "PartOfSpeech": "Động từ nhóm 2; tự động từ",
+      "JLPTLevel": "N4",
+      "Explanation": "Diễn tả người, phương tiện hoặc công việc bị muộn so với giờ dự kiến. Sự kiện hoặc phương tiện bị lỡ thường được đánh dấu bằng に, như 会議に遅れる.",
+      "UsageNotes": "Phân biệt 遅れる (bị muộn) và 遅らせる (làm cho chậm lại, hoãn lại).",
+      "Examples": [
+        {
+          "JapaneseText": "電車はほとんど一時間遅れだった。",
+          "VietnameseTranslation": "Chuyến tàu đã trễ gần một giờ.",
+          "Furigana": "{電車|でんしゃ}はほとんど{一時間|いちじかん}{遅|おく}れだった。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "124786"
+        },
+        {
+          "JapaneseText": "月曜日にはバスはたいてい遅れる。",
+          "VietnameseTranslation": "Vào thứ Hai, xe buýt thường đến muộn.",
+          "Furigana": "{月曜日|げつようび}にはバスはたいてい{遅|おく}れる。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "175601"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83af91b7eb",
+      "Word": "会議",
+      "Reading": "かいぎ",
+      "Meaning": "Cuộc họp; hội nghị",
+      "PartOfSpeech": "Danh từ; động từ する",
+      "JLPTLevel": "N4",
+      "Explanation": "Buổi tập hợp để trao đổi, thảo luận hoặc đưa ra quyết định. Có thể dùng trong 会議に出る (tham dự cuộc họp) và 会議を開く (tổ chức cuộc họp).",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "会議は終わりに近づきつつあった。",
+          "VietnameseTranslation": "Hội nghị đang dần đi đến hồi kết.",
+          "Furigana": "{会議|かいぎ}は{終|お}わりに{近|ちか}づきつつあった。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "185354"
+        },
+        {
+          "JapaneseText": "会議に彼は現れましたか。",
+          "VietnameseTranslation": "Anh ấy có xuất hiện tại cuộc họp không?",
+          "Furigana": "{会議|かいぎ}に{彼|かれ}は{現|あらわ}れましたか。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "185390"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6ce523bcb6",
+      "Word": "準備",
+      "Reading": "じゅんび",
+      "Meaning": "Sự chuẩn bị; chuẩn bị",
+      "PartOfSpeech": "Danh từ; động từ する; tha động từ",
+      "JLPTLevel": "N4",
+      "Explanation": "Việc sắp xếp hoặc làm những điều cần thiết trước khi bắt đầu một hoạt động. Dùng với する để diễn tả hành động, như 旅行の準備をする.",
+      "UsageNotes": "準備ができる nghĩa là đã sẵn sàng hoặc đã chuẩn bị xong.",
+      "Examples": [
+        {
+          "JapaneseText": "準備ができるまでちょっと待ってくれ。",
+          "VietnameseTranslation": "Chờ một chút cho đến khi tôi chuẩn bị xong nhé.",
+          "Furigana": "{準備|じゅんび}ができるまでちょっと{待|ま}ってくれ。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "147589"
+        },
+        {
+          "JapaneseText": "母は私に昼食の準備をしてくれた。",
+          "VietnameseTranslation": "Mẹ đã chuẩn bị bữa trưa cho tôi.",
+          "Furigana": "{母|はは}は{私|わたし}に{昼食|ちゅうしょく}の{準備|じゅんび}をしてくれた。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "82958"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6907fc706d",
+      "Word": "必要",
+      "Reading": "ひつよう",
+      "Meaning": "Cần thiết",
+      "PartOfSpeech": "Tính từ đuôi な",
+      "JLPTLevel": "N4",
+      "Explanation": "Diễn tả điều không thể thiếu hoặc cần phải có. Dùng 必要な trước danh từ và 必要です ở cuối câu; động từ thể từ điển + 必要がある diễn tả sự cần thiết phải làm gì.",
+      "UsageNotes": "Cần dùng な khi bổ nghĩa trực tiếp cho danh từ: 必要なもの.",
+      "Examples": [
+        {
+          "JapaneseText": "歯医者に行く必要はないですよ。",
+          "VietnameseTranslation": "Bạn không cần đến nha sĩ đâu.",
+          "Furigana": null,
+          "SourceKey": "tatoeba",
+          "ExternalId": "150948"
+        },
+        {
+          "JapaneseText": "必要なら、すぐにまいりましょう。",
+          "VietnameseTranslation": "Nếu cần, tôi sẽ đến ngay.",
+          "Furigana": "{必要|ひつよう}なら、すぐにまいりましょう。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "85449"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed37fe04b5",
+      "Word": "予約",
+      "Reading": "よやく",
+      "Meaning": "Sự đặt trước; đặt chỗ",
+      "PartOfSpeech": "Danh từ; động từ する; tha động từ",
+      "JLPTLevel": "N4",
+      "Explanation": "Việc giữ trước chỗ, phòng, vé hoặc một khung giờ sử dụng dịch vụ. Dùng 予約する hoặc 予約をする để diễn tả hành động đặt trước.",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "「ホテルの予約はしてありますか」「すみませんが、まだなんです」",
+          "VietnameseTranslation": "“Bạn đã đặt phòng khách sạn chưa?” “Xin lỗi, tôi vẫn chưa đặt.”",
+          "Furigana": "「ホテルの{予約|よやく}はしてありますか」「すみませんが、まだなんです」",
+          "SourceKey": "tatoeba",
+          "ExternalId": "236436"
+        },
+        {
+          "JapaneseText": "前もって予約しなければならない。",
+          "VietnameseTranslation": "Phải đặt chỗ trước.",
+          "Furigana": "{前|まえ}もって{予約|よやく}しなければならない。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "140958"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "999fa2ee16",
+      "Word": "確認",
+      "Reading": "かくにん",
+      "Meaning": "Sự xác nhận; kiểm tra để xác nhận",
+      "PartOfSpeech": "Danh từ; động từ する; tha động từ",
+      "JLPTLevel": "N3",
+      "Explanation": "Kiểm tra thông tin hoặc tình trạng để chắc chắn rằng nội dung đó đúng. Thường dùng với 予約, 時間 hoặc 内容 và kết hợp với する.",
+      "UsageNotes": "Nhấn mạnh việc làm rõ hoặc kiểm chứng, không nhất thiết mang nghĩa kiểm tra bằng bài thi.",
+      "Examples": [
+        {
+          "JapaneseText": "予約は確認されています。",
+          "VietnameseTranslation": "Việc đặt chỗ đã được xác nhận.",
+          "Furigana": "{予約|よやく}は{確認|かくにん}されています。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "78975"
+        },
+        {
+          "JapaneseText": "時計を確認すると、２１時ジャスト。",
+          "VietnameseTranslation": "Khi kiểm tra đồng hồ, tôi thấy đúng 21 giờ.",
+          "Furigana": "{時計|とけい}を{確認|かくにん}すると、２１{時|じ}ジャスト。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "76068"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c8ca17553a",
+      "Word": "環境",
+      "Reading": "かんきょう",
+      "Meaning": "Môi trường; hoàn cảnh xung quanh",
+      "PartOfSpeech": "Danh từ",
+      "JLPTLevel": "N3",
+      "Explanation": "Những điều kiện bao quanh con người hoặc sinh vật, bao gồm môi trường tự nhiên, sinh sống và làm việc. Ví dụ: 自然環境 và 職場の環境.",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "彼は新しい環境にすばやく慣れた。",
+          "VietnameseTranslation": "Anh ấy nhanh chóng thích nghi với môi trường mới.",
+          "Furigana": "{彼|かれ}は{新|あたら}しい{環境|かんきょう}にすばやく{慣|な}れた。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "103825"
+        },
+        {
+          "JapaneseText": "環境の変化から新種の発生をみた。",
+          "VietnameseTranslation": "Sự thay đổi của môi trường đã dẫn đến sự xuất hiện của những loài mới.",
+          "Furigana": "{環境|かんきょう}の{変化|へんか}から{新種|しんしゅ}の{発生|はっせい}をみた。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "183897"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8a5bd5d9d1",
+      "Word": "管理",
+      "Reading": "かんり",
+      "Meaning": "Sự quản lý; kiểm soát",
+      "PartOfSpeech": "Danh từ; động từ する; tha động từ",
+      "JLPTLevel": "N3",
+      "Explanation": "Theo dõi, tổ chức và giữ cho người, tài sản, thông tin hoặc hoạt động ở tình trạng phù hợp. Kết hợp với する để diễn tả hành động quản lý.",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "彼に財産管理を任せた。",
+          "VietnameseTranslation": "Tôi đã giao cho anh ấy việc quản lý tài sản.",
+          "Furigana": null,
+          "SourceKey": "tatoeba",
+          "ExternalId": "118595"
+        },
+        {
+          "JapaneseText": "その公園は市に管理されている。",
+          "VietnameseTranslation": "Công viên đó do thành phố quản lý.",
+          "Furigana": "その{公園|こうえん}は{市|し}に{管理|かんり}されている。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "210750"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23ba87bda6",
+      "Word": "協力",
+      "Reading": "きょうりょく",
+      "Meaning": "Sự hợp tác; cùng góp sức",
+      "PartOfSpeech": "Danh từ; động từ する; tự động từ",
+      "JLPTLevel": "N3",
+      "Explanation": "Cùng làm việc hoặc hỗ trợ người khác để đạt mục tiêu chung. Người cùng hợp tác có thể đi với と; công việc được hỗ trợ có thể đi với に.",
+      "UsageNotes": null,
+      "Examples": [
+        {
+          "JapaneseText": "彼らは協力してその絵を仕上げた。",
+          "VietnameseTranslation": "Họ đã hợp sức hoàn thành bức tranh đó.",
+          "Furigana": "{彼|かれ}らは{協力|きょうりょく}してその{絵|え}を{仕上|しあ}げた。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "97330"
+        },
+        {
+          "JapaneseText": "彼らは君に協力を期待している。",
+          "VietnameseTranslation": "Họ mong đợi sự hợp tác từ bạn.",
+          "Furigana": "{彼|かれ}らは{君|きみ}に{協力|きょうりょく}を{期待|きたい}している。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "97296"
+        }
+      ]
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce2ba9fec2",
+      "Word": "参加",
+      "Reading": "さんか",
+      "Meaning": "Sự tham gia; tham dự",
+      "PartOfSpeech": "Danh từ; động từ する; tự động từ",
+      "JLPTLevel": "N3",
+      "Explanation": "Gia nhập hoặc góp mặt trong một hoạt động, sự kiện hay tổ chức. Hoạt động được tham gia thường đi với trợ từ に, như 会議に参加する.",
+      "UsageNotes": "Dùng に để đánh dấu hoạt động: イベントに参加する.",
+      "Examples": [
+        {
+          "JapaneseText": "あなたは競技に参加しましたか。",
+          "VietnameseTranslation": "Bạn có tham gia cuộc thi không?",
+          "Furigana": "あなたは{競技|きょうぎ}に{参加|さんか}しましたか。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "232117"
+        },
+        {
+          "JapaneseText": "彼女は美人コンテストに参加した。",
+          "VietnameseTranslation": "Cô ấy đã tham gia một cuộc thi sắc đẹp.",
+          "Furigana": "{彼女|かのじょ}は{美人|びじん}コンテストに{参加|さんか}した。",
+          "SourceKey": "tatoeba",
+          "ExternalId": "87076"
+        }
+      ]
+    }
+  ],
+  "Grammars": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kudasai",
+      "Pattern": "てください",
+      "Reading": "てください",
+      "Meaning": "Hãy…; vui lòng…",
+      "Formation": "Động từ thể て + ください",
+      "JLPTLevel": "N5",
+      "Explanation": "Dùng để đưa ra lời yêu cầu hoặc hướng dẫn lịch sự, mong người nghe thực hiện một hành động. Thường gặp trong lớp học, biển hướng dẫn và các tình huống dịch vụ.",
+      "UsageNotes": "Với người có vai vế cao hơn, có thể dùng cách nói mềm hơn như てくださいませんか. Muốn yêu cầu không làm gì, dùng động từ thể ない + でください.",
+      "Examples": [
+        {
+          "JapaneseText": "ここに名前を書いてください。",
+          "VietnameseTranslation": "Vui lòng viết tên vào đây.",
+          "Furigana": "ここに{名前|なまえ}を{書|か}いてください。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "te-kudasai:example:1"
+        },
+        {
+          "JapaneseText": "もう一度言ってください。",
+          "VietnameseTranslation": "Vui lòng nói lại một lần nữa.",
+          "Furigana": "もう{一度|いちど}{言|い}ってください。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "te-kudasai:example:2"
+        }
+      ]
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo-ii",
+      "Pattern": "〜てもいい",
+      "Reading": "てもいい",
+      "Meaning": "Được phép…; có thể… được không?",
+      "Formation": "Động từ thể て + もいい／もいいです",
+      "JLPTLevel": "N5",
+      "Explanation": "Diễn tả một hành động được cho phép. Khi thêm ですか, mẫu này trở thành câu hỏi xin phép; ở dạng khẳng định, nó cho biết người nghe có thể thực hiện hành động.",
+      "UsageNotes": "Câu xin phép thường dùng てもいいですか. Với danh từ và tính từ đuôi な, dùng でもいい thay vì てもいい.",
+      "Examples": [
+        {
+          "JapaneseText": "ここに座ってもいいですか。",
+          "VietnameseTranslation": "Tôi ngồi ở đây được không?",
+          "Furigana": "ここに{座|すわ}ってもいいですか。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "temo-ii:example:1"
+        },
+        {
+          "JapaneseText": "鉛筆で書いてもいいです。",
+          "VietnameseTranslation": "Bạn có thể viết bằng bút chì.",
+          "Furigana": "{鉛筆|えんぴつ}で{書|か}いてもいいです。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "temo-ii:example:2"
+        }
+      ]
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ga-aru",
+      "Pattern": "ことがある",
+      "Reading": "ことがある",
+      "Meaning": "Có lúc…; thỉnh thoảng…",
+      "Formation": "Động từ thể từ điển hoặc thể ない + ことがある",
+      "JLPTLevel": "N4",
+      "Explanation": "Diễn tả một sự việc đôi khi xảy ra, không phải thói quen diễn ra thường xuyên. Có thể đi cùng たまに hoặc ときどき để làm rõ tần suất thỉnh thoảng.",
+      "UsageNotes": "Phân biệt động từ thể từ điển + ことがある (có lúc làm) với động từ thể た + ことがある (đã từng làm, nói về trải nghiệm).",
+      "Examples": [
+        {
+          "JapaneseText": "朝、時間がなくて朝ご飯を食べないことがあります。",
+          "VietnameseTranslation": "Buổi sáng có lúc tôi không ăn sáng vì không có thời gian.",
+          "Furigana": "{朝|あさ}、{時間|じかん}がなくて{朝|あさ}ご{飯|はん}を{食|た}べないことがあります。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "koto-ga-aru:example:1"
+        },
+        {
+          "JapaneseText": "この道はたまにとても混むことがある。",
+          "VietnameseTranslation": "Con đường này thỉnh thoảng rất đông đúc.",
+          "Furigana": "この{道|みち}はたまにとても{混|こ}むことがある。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "koto-ga-aru:example:2"
+        }
+      ]
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-naru",
+      "Pattern": "ようになる",
+      "Reading": "ようになる",
+      "Meaning": "Dần trở nên…; đã có thể…",
+      "Formation": "Động từ thể từ điển + ようになる\nĐộng từ thể khả năng + ようになる",
+      "JLPTLevel": "N4",
+      "Explanation": "Diễn tả sự thay đổi theo thời gian, khi một khả năng hoặc thói quen mới hình thành. Thường dùng với động từ thể khả năng để nói rằng trước đây chưa làm được nhưng nay đã làm được.",
+      "UsageNotes": "Phân biệt ようになる (sự thay đổi) với ようにする (chủ động cố gắng hoặc tạo thói quen). Khi nói không còn làm hoặc không còn có thể làm, dạng なくなる thường được dùng.",
+      "Examples": [
+        {
+          "JapaneseText": "練習して、自転車に乗れるようになりました。",
+          "VietnameseTranslation": "Sau khi luyện tập, tôi đã có thể đi xe đạp.",
+          "Furigana": "{練習|れんしゅう}して、{自転車|じてんしゃ}に{乗|の}れるようになりました。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "you-ni-naru:example:1"
+        },
+        {
+          "JapaneseText": "最近、からい料理も食べられるようになった。",
+          "VietnameseTranslation": "Gần đây tôi đã có thể ăn cả món cay.",
+          "Furigana": "{最近|さいきん}、からい{料理|りょうり}も{食|た}べられるようになった。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "you-ni-naru:example:2"
+        }
+      ]
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-taishite",
+      "Pattern": "に対して",
+      "Reading": "にたいして",
+      "Meaning": "Đối với…; trái với…",
+      "Formation": "Danh từ + に対して\nDanh từ + に対する + danh từ\nMệnh đề thể thông thường + のに対して (đối chiếu)",
+      "JLPTLevel": "N3",
+      "Explanation": "Đánh dấu đối tượng mà một hành động, thái độ hoặc cảm xúc hướng đến. Mẫu này cũng được dùng để đối chiếu hai sự vật hoặc hai tình trạng tương phản. Khi đứng trước danh từ, dùng に対する.",
+      "UsageNotes": "Không nhầm に対して, chỉ đối tượng hoặc sự tương phản, với に関して／について, chỉ chủ đề đang được nói đến. Với mệnh đề danh từ hoặc tính từ đuôi な, dùng なのに対して khi đối chiếu.",
+      "Examples": [
+        {
+          "JapaneseText": "お客様に対して、丁寧な言葉を使いましょう。",
+          "VietnameseTranslation": "Hãy dùng lời nói lịch sự với khách hàng.",
+          "Furigana": "お{客様|きゃくさま}に{対|たい}して、{丁寧|ていねい}な{言葉|ことば}を{使|つか}いましょう。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "ni-taishite:example:1"
+        },
+        {
+          "JapaneseText": "兄が明るいのに対して、弟は静かだ。",
+          "VietnameseTranslation": "Trái với người anh vui vẻ, người em trai lại trầm lặng.",
+          "Furigana": "{兄|あに}が{明|あか}るいのに{対|たい}して、{弟|おとうと}は{静|しず}かだ。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "ni-taishite:example:2"
+        }
+      ]
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wake-dewa-nai",
+      "Pattern": "わけではない",
+      "Reading": "わけではない",
+      "Meaning": "Không hẳn là…; không có nghĩa là…",
+      "Formation": "Động từ／tính từ đuôi い thể thông thường + わけではない\nTính từ đuôi な + な + わけではない\nDanh từ + という + わけではない",
+      "JLPTLevel": "N3",
+      "Explanation": "Phủ định một nhận định hoặc kết luận mà người nghe có thể suy ra. Thường dùng để đính chính hiểu lầm hoặc giới hạn phạm vi khẳng định, thay vì phủ định tuyệt đối mọi trường hợp. Dạng hội thoại là わけじゃない.",
+      "UsageNotes": "Phân biệt với わけがない, diễn tả khẳng định mạnh rằng một việc không thể xảy ra. わけではない thường mang sắc thái phủ định nhẹ hoặc phủ định một phần.",
+      "Examples": [
+        {
+          "JapaneseText": "野菜が嫌いなわけではないが、あまり食べない。",
+          "VietnameseTranslation": "Không phải tôi ghét rau, nhưng tôi không ăn nhiều.",
+          "Furigana": "{野菜|やさい}が{嫌|きら}いなわけではないが、あまり{食|た}べない。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "wake-dewa-nai:example:1"
+        },
+        {
+          "JapaneseText": "高いからといって、必ずおいしいわけではない。",
+          "VietnameseTranslation": "Đắt tiền không có nghĩa là nhất định ngon.",
+          "Furigana": "{高|たか}いからといって、{必|かなら}ずおいしいわけではない。",
+          "SourceKey": "nihongo-mono",
+          "ExternalId": "wake-dewa-nai:example:2"
+        }
+      ]
+    }
+  ]
+}

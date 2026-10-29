@@ -73,6 +73,19 @@ public class LearnerFlashcardAndBookmarkServiceTests
         db.Users.Add(user);
         db.Vocabularies.AddRange(vocab1, vocab2);
         db.Grammars.Add(grammar1);
+
+        var topic1 = new LearningTopic
+        {
+            Id = 1,
+            Code = "TOPIC_N5_BASIC",
+            Name = "Chủ đề Sơ cấp N5",
+            Description = "Tổng hợp từ vựng và mẫu ngữ pháp nền tảng trình độ JLPT N5.",
+            IsActive = true
+        };
+        topic1.TopicVocabularies.Add(new TopicVocabulary { TopicId = 1, VocabularyId = vocab1.Id, Vocabulary = vocab1, OrderIndex = 1 });
+        topic1.TopicVocabularies.Add(new TopicVocabulary { TopicId = 1, VocabularyId = vocab2.Id, Vocabulary = vocab2, OrderIndex = 2 });
+        topic1.TopicGrammars.Add(new TopicGrammar { TopicId = 1, GrammarId = grammar1.Id, Grammar = grammar1, OrderIndex = 1 });
+        db.LearningTopics.Add(topic1);
         await db.SaveChangesAsync();
 
         return (vocab1, vocab2, grammar1);
