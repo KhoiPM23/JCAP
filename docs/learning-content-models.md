@@ -4,6 +4,10 @@ Phạm vi: mở rộng kho `Vocabulary` / `Grammar` hiện có, thêm Topic ph�
 ví dụ và thông tin nguồn. Chưa triển khai API/UI/import hoặc nối Topic vào
 Scenario, Shadowing, Explore, Flashcard, tài khoản hay lịch sử học.
 
+Cập nhật 29/10/2026: đã có bộ nhập **mẫu phát triển** gồm 15 từ và 6 mẫu
+ngữ pháp, ví dụ và nguồn; xem [hướng dẫn bộ mẫu](../Data/Seeds/LearningContentSample/README.md).
+Chưa triển khai import Excel/admin hoặc nhập toàn bộ dataset; không nạp Topic.
+
 ## Các quyết định đã áp dụng
 
 - Giữ một bản nội dung, liên kết được với nhiều Topic. Truy vấn gộp Topic nên
