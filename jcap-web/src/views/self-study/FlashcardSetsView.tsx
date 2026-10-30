@@ -11,6 +11,7 @@ export const FlashcardSetsView: React.FC = () => {
   const [sets, setSets] = useState<FlashcardSetSummary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [simulating, setSimulating] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -84,6 +85,23 @@ export const FlashcardSetsView: React.FC = () => {
     setUnlocking(false);
   };
 
+  // Giả lập thời gian trôi qua để kiểm thử SRS
+  const handleSimulateDays = async (days: number) => {
+    setSimulating(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const res = await flashcardService.simulateDays(days);
+    if (res.success) {
+      setSuccessMessage(res.message || `Đã giả lập tua nhanh ${days} ngày.`);
+      await loadData();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } else {
+      setErrorMessage(res.message || `Không thể giả lập qua ${days} ngày.`);
+    }
+    setSimulating(false);
+  };
+
   // An toàn với mảng dữ liệu (Defensive array)
   const safeSets = useMemo(() => (Array.isArray(sets) ? sets : []), [sets]);
 
@@ -120,6 +138,32 @@ export const FlashcardSetsView: React.FC = () => {
             <p className="text-sm text-slate-500 mt-1">
               Ôn tập ngắt quãng (SRS SM-2) theo các chủ đề N5 – N3 và danh sách đánh dấu cá nhân
             </p>
+          </div>
+
+          {/* Công cụ giả lập kiểm thử SRS */}
+          <div className="flex items-center flex-wrap gap-2 bg-white/90 p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
+            <span className="text-xs font-bold text-slate-500 px-2 flex items-center gap-1">
+              <span>🧪</span>
+              <span className="hidden md:inline">Test SRS:</span>
+            </span>
+            <button
+              onClick={() => handleSimulateDays(1)}
+              disabled={simulating}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Lùi thời gian tiến độ của thẻ 1 ngày để kích hoạt các thẻ hẹn 1 ngày (hoặc Again) đến hạn ôn tập"
+            >
+              <span>⏩</span>
+              <span>{simulating ? 'Đang tua...' : 'Giả lập qua 1 ngày'}</span>
+            </button>
+            <button
+              onClick={() => handleSimulateDays(3)}
+              disabled={simulating}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Lùi thời gian tiến độ của thẻ 3 ngày để kiểm tra các thẻ hẹn 3 ngày đến hạn ôn tập"
+            >
+              <span>⏩</span>
+              <span>{simulating ? 'Đang tua...' : 'Giả lập qua 3 ngày'}</span>
+            </button>
           </div>
         </div>
 

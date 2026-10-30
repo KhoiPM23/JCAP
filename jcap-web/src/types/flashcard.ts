@@ -142,6 +142,7 @@ export interface FlashcardSessionHistoryItem {
   endedAt?: string | null;
   durationSeconds: number;
   totalCards: number;
+  totalReviews?: number;
   againCount: number;
   goodCount: number;
   easyCount: number;
