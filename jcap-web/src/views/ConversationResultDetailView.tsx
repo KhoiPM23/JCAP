@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { roleplayResultService } from '../services/roleplayResultService';
 
@@ -240,7 +240,7 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
 
 export const ConversationResultDetailView: React.FC = () => {
-
+  const navigate = useNavigate();
   const { resultId } = useParams();
 
   const [searchParams] = useSearchParams();

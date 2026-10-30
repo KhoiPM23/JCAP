@@ -3130,7 +3130,8 @@ export const RoleplayPracticeView: React.FC = () => {
                     if (text) void scenarioVoiceService.playAiSpeech(text, 2);
                   }}
                   onClose={clearAllAssistance}
-                />
+                  />
+                )
               ) : showProactiveHint && !isSending && !session.isNaturallyConcluded ? (
                 <div className="flex items-center justify-between gap-3 rounded-full border border-[var(--ai)]/20 bg-gradient-to-r from-[var(--ai-soft)] via-white to-sky-50/70 px-4 py-1.5 shadow-xs animate-fadeIn text-xs select-none">
                   <div className="flex items-center gap-2 min-w-0">
