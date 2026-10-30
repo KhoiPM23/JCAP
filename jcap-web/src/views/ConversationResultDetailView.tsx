@@ -52,58 +52,35 @@ const playJapaneseAudio = (text: string) => {
 
 
 const ScoreCard = ({ label, score, accent, subtext }: { label: string; score: number; accent: string; subtext?: string }) => {
-
   const [animatedWidth, setAnimatedWidth] = useState(0);
 
-
-
   useEffect(() => {
-
     const timer = setTimeout(() => {
-
       setAnimatedWidth(Math.min(Math.max(score, 0), 100));
-
     }, 150);
-
     return () => clearTimeout(timer);
-
   }, [score]);
 
-
-
   return (
-
-    <div className="group rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-blue-300 hover:shadow-md">
-
-      <div className="mb-2 flex items-center justify-between">
-
-        <span className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wide font-sans">{label}</span>
-
-        <strong className="text-2xl font-black text-slate-800 font-sans">{score}</strong>
-
+    <div className="group flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-blue-300 hover:shadow-md h-full min-h-[136px]">
+      <div className="flex-1">
+        <div className="mb-2 flex items-start justify-between gap-2 min-h-[2.5rem]">
+          <span className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wide font-sans line-clamp-2 leading-tight flex-1">{label}</span>
+          <strong className="text-2xl font-black text-slate-800 font-sans shrink-0">{score}</strong>
+        </div>
+        <p className="mb-3 text-[11px] font-medium text-slate-400 font-sans min-h-[1.25rem] truncate leading-tight">
+          {subtext || '\u00A0'}
+        </p>
       </div>
-
-      {subtext && <p className="mb-3 text-[11px] font-medium text-slate-400 font-sans">{subtext}</p>}
-
-      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200/50">
-
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200/50 mt-auto">
         <div 
-
           className={`h-full rounded-full transition-all duration-1000 ease-out shadow-xs ${accent}`} 
-
           style={{ width: `${animatedWidth}%` }} 
-
         />
-
       </div>
-
     </div>
-
   );
-
 };
-
-
 
 const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
@@ -579,27 +556,20 @@ export const ConversationResultDetailView: React.FC = () => {
 
 
   if (isLoading || (result && result.id !== parsedResultId)) {
-
     return (
-
-      <div className="mx-auto max-w-5xl space-y-5">
-
-        <div className="h-64 animate-pulse rounded-[28px] bg-white" />
-
-        <div className="grid gap-4 md:grid-cols-3">
-
-          {[1, 2, 3].map((item) => (
-
-            <div key={item} className="h-28 animate-pulse rounded-2xl bg-white" />
-
-          ))}
-
+      <div className="mx-auto max-w-5xl space-y-5 py-6">
+        <div className="rounded-[28px] border border-[var(--line)] bg-[var(--paper-50)] p-8 text-center shadow-xs flex flex-col items-center justify-center">
+          <div className="h-12 w-12 rounded-full border-3 border-[var(--line)] border-t-[var(--ai)] animate-spin mb-4" />
+          <h2 className="text-base font-bold text-[var(--sumi)] font-sans">Đang tải bản khắc kết quả hội thoại...</h2>
+          <p className="text-xs text-[var(--sumi-muted)] mt-1">Hệ thống đang đồng bộ dữ liệu đánh giá và chỉ số phản xạ</p>
         </div>
-
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-28 animate-pulse rounded-2xl bg-white border border-stone-200/60" />
+          ))}
+        </div>
       </div>
-
     );
-
   }
 
 
@@ -969,11 +939,11 @@ export const ConversationResultDetailView: React.FC = () => {
 
         <div className="mt-6 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
 
-          <ScoreCard label="Ngữ pháp & Cấu trúc" score={result.grammarScore} accent="bg-[var(--ai)]" />
+          <ScoreCard label="Ngữ pháp & Cấu trúc" score={result.grammarScore} accent="bg-[var(--ai)]" subtext={result.grammarScore >= 80 ? "Đúng cấu trúc & trợ từ" : "Cần lưu ý trợ từ & thể"} />
 
-          <ScoreCard label="Vốn từ vựng" score={result.vocabularyScore} accent="bg-emerald-600" />
+          <ScoreCard label="Vốn từ vựng" score={result.vocabularyScore} accent="bg-emerald-600" subtext={result.vocabularyScore >= 80 ? "Từ ngữ đúng chủ đề" : "Cần mở rộng vốn từ"} />
 
-          <ScoreCard label="Kính ngữ & Văn phong" score={result.impressionScore} accent="bg-amber-600" />
+          <ScoreCard label="Kính ngữ & Văn phong" score={result.impressionScore} accent="bg-amber-600" subtext={result.impressionScore >= 80 ? "Lịch sự, tự nhiên" : "Cần chú ý thể Teinei"} />
 
           <ScoreCard
 

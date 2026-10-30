@@ -3155,36 +3155,26 @@ export const RoleplayPracticeView: React.FC = () => {
                 {/* Button Micro thu âm (Voice Input với hiệu ứng Radar Pulse & Adaptive Silence Ring) */}
                 <div className="relative inline-flex shrink-0">
                   {isRecordingMic && (
-                    <span className="absolute inset-0 rounded-xl bg-red-500 animate-ping opacity-40 pointer-events-none" />
+                    <span className="absolute inset-0 rounded-xl bg-[var(--shu)] animate-ping opacity-30 pointer-events-none" />
                   )}
                   {isRecordingMic && silenceCountdownProgress > 0 && (
-                    <svg className="absolute -inset-1.5 h-[calc(100%+12px)] w-[calc(100%+12px)] pointer-events-none transform -rotate-90 z-20">
-                      <rect
-                        x="3"
-                        y="3"
-                        width="calc(100% - 6px)"
-                        height="calc(100% - 6px)"
-                        rx="14"
-                        stroke="var(--shu)"
-                        strokeWidth="2.5"
-                        fill="none"
-                        strokeDasharray={140}
-                        strokeDashoffset={140 * (1 - silenceCountdownProgress)}
-                        strokeLinecap="round"
-                        className="transition-all duration-75"
+                    <div className="absolute -bottom-1 left-2 right-2 h-1 bg-red-200/80 rounded-full overflow-hidden z-20 shadow-xs">
+                      <div 
+                        className="h-full bg-white transition-all duration-75 ease-linear rounded-full"
+                        style={{ width: `${Math.max(0, Math.min(100, (1 - silenceCountdownProgress) * 100))}%` }}
                       />
-                    </svg>
+                    </div>
                   )}
                   <button
                     type="button"
                     onClick={handleToggleMic}
                     disabled={isSending || isProcessingStt}
-                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer min-w-[84px] sm:min-w-[96px] select-none disabled:opacity-50 disabled:cursor-not-allowed ${
                       isProcessingStt
                         ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
                         : isRecordingMic
                         ? 'border border-[var(--shu)] bg-[var(--shu)] text-white ring-4 ring-[var(--shu)]/40 shadow-lg'
-                        : 'border border-[var(--ai)] bg-[var(--ai)] text-white hover:bg-[var(--ai-hover)] hover:shadow-md'
+                        : 'border border-[var(--ai)] bg-[var(--ai)] text-white hover:bg-[var(--ai-hover)] hover:shadow-md active:scale-95'
                     }`}
                     title={
                       isProcessingStt
@@ -3198,12 +3188,15 @@ export const RoleplayPracticeView: React.FC = () => {
                   >
                     {isProcessingStt ? (
                       <>
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-600/20 border-t-blue-600" />
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--ai)]/30 border-t-[var(--ai)]" />
                         <span className="hidden sm:inline">Nhận diện...</span>
                       </>
                     ) : (
                       <>
-                                                <span>{isRecordingMic ? `Đang nghe (${recordingDurationSec.toFixed(1)}s)` : 'Nói'}</span>
+                        <svg className={`w-4 h-4 shrink-0 ${isRecordingMic ? 'animate-pulse text-white' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        <span>{isRecordingMic ? `${recordingDurationSec.toFixed(1)}s` : 'Nói'}</span>
                       </>
                     )}
                   </button>
@@ -3817,6 +3810,15 @@ export const RoleplayPracticeView: React.FC = () => {
 
       {/* ============================================================ */}
       {/* 7. HANKO EKI-STAMP CELEBRATION OVERLAY                      */}
+      {/* Loading Overlay khi đang hoàn tất phiên & tổng hợp kết quả */}
+      {isEnding && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm text-white select-none animate-fadeIn">
+          <div className="w-14 h-14 rounded-full border-4 border-white/20 border-t-white animate-spin mb-4 shadow-xl" />
+          <h3 className="text-base font-bold font-sans">Đang hoàn tất phiên luyện tập...</h3>
+          <p className="text-xs text-white/80 mt-1 font-sans">Hệ thống đang tổng hợp điểm số và phân tích năng lực Kaiwa của bạn</p>
+        </div>
+      )}
+
       {/* ============================================================ */}
       {session && (
         <EkiStampOverlay

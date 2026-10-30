@@ -451,7 +451,7 @@ namespace JCAP.Services.Implementations
 
                 .AsNoTracking()
 
-                .FirstOrDefaultAsync(item => item.Id == resultId && item.UserId == userId);
+                .FirstOrDefaultAsync(item => (item.Id == resultId || item.RoleplaySessionId == resultId) && item.UserId == userId);
 
 
 
