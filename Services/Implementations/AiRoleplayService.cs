@@ -93,10 +93,13 @@ Return strictly pure JSON matching:
 
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
+                    ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja);
                     return new AiOpeningMessageResult
                     {
                         JapaneseText = ja.Trim(),
-                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) ? fHtml.Trim() : null,
+                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                            ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
+                            : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim()),
                         VietnameseMeaning = vi.Trim()
                     };
                 }
@@ -208,8 +211,8 @@ TASK INSTRUCTIONS:
      * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
      * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
 2. NORMAL JAPANESE EVALUATION (Only if learner spoke entirely in Japanese/Romaji):
-   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}.
-   - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text.
+   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}. PURE JAPANESE ONLY (STRICTLY NO VIETNAMESE WORDS, ENGLISH, OR TRANSLATIONS INSIDE replyJapanese).
+   - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text. PURE JAPANESE RUBY ONLY.
    - replyVietnamese: Natural translation in Vietnamese strictly adhering to the social register: use '{reg.AiSelf}' and address learner as '{reg.AiAddressLearner}'. ABSOLUTELY ZERO SLASHES ('/').
    - userVietnameseMeaning: Accurate Vietnamese translation of what the learner said in Japanese, strictly phrased from the learner's perspective ('{reg.LearnerSelf}' addressing '{reg.LearnerAddressAi}'). ABSOLUTELY ZERO SLASHES ('/').
    - completedMissionIds: Array of Mission IDs satisfied in the current turn. Follow STRICT rules:
@@ -334,8 +337,13 @@ Return strictly pure JSON matching this schema:
 
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
-                    var resolvedReplyFurigana = !string.IsNullOrWhiteSpace(fHtml)
-                        ? fHtml.Trim()
+                    ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja,
+                        levelConfig.AiPersona.Contains("cụ") || scenario.Title.Contains("cụ")
+                            ? "本当にありがとうね。気をつけて帰ってね。"
+                            : "丁寧にご対応いただき、誠にありがとうございました。");
+
+                    var resolvedReplyFurigana = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                        ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
                         : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim());
 
                     var resolvedUserFurigana = !string.IsNullOrWhiteSpace(userFHtml)
@@ -407,13 +415,18 @@ Return strictly pure JSON:
             {
                 using var doc = JsonDocument.Parse(response.Content);
                 var root = doc.RootElement;
-                return new RoleplayHintDto
+                var hintDto = new RoleplayHintDto
                 {
                     JapaneseSuggestion = root.TryGetProperty("japaneseSuggestion", out var jProp) ? jProp.GetString() ?? "" : "",
                     RomajiOrReading = root.TryGetProperty("romajiOrReading", out var rProp) ? rProp.GetString() ?? "" : "",
                     VietnameseMeaning = root.TryGetProperty("vietnameseMeaning", out var vProp) ? vProp.GetString() ?? "" : "",
-                    ContextExplanation = root.TryGetProperty("contextExplanation", out var cProp) ? cProp.GetString() ?? "" : ""
+                    ContextExplanation = root.TryGetProperty("contextExplanation", out var cProp) ? cProp.GetString() ?? "" : "",
+                    Keywords = root.TryGetProperty("keywords", out var kProp) && kProp.ValueKind == JsonValueKind.Array
+                        ? kProp.EnumerateArray().Select(e => e.GetString() ?? "").Where(s => !string.IsNullOrWhiteSpace(s)).ToList()
+                        : new List<string>(),
+                    ClozeSentence = root.TryGetProperty("clozeSentence", out var clProp) ? clProp.GetString() : null
                 };
+                return RoleplaySocialRegister.EnrichScaffolding(hintDto);
             }
             else
             {
@@ -447,7 +460,10 @@ Return strictly pure JSON:
         sb.AppendLine("- CONSISTENCY: Maintain that chosen pronoun pair consistently across all Vietnamese fields (userVietnameseMeaning, replyVietnamese, and linguisticFeedback).");
         sb.AppendLine("[CORE GUARDRAILS]");
         sb.AppendLine($"- Roleplay fidelity: Stay in character naturally; never break persona.");
-        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who speaks and understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"  * replyJapanese MUST contain 100% Japanese text ONLY (Kanji, Hiragana, Katakana, and Japanese punctuation).");
+        sb.AppendLine($"  * ABSOLUTELY NEVER include, leak, append, or interpolate ANY Vietnamese words, Roman letters, English words, or translations inside replyJapanese (e.g. NEVER write 'cháu...', 'cảm ơn...', or '(dịch nghĩa...)').");
+        sb.AppendLine($"  * All Vietnamese meanings and translations belong EXCLUSIVELY in replyVietnamese.");
         sb.AppendLine($"  * If the learner uses ANY non-Japanese words, Vietnamese text, or foreign language (e.g., 'toi muon', 'cho toi', 'hello', 'want', 'order'):");
         sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
         sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");

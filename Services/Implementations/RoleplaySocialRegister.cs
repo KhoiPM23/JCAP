@@ -55,20 +55,23 @@ public sealed record RoleplaySocialRegister
             };
         }
 
-        // 2. Interviewer / Cấp trên / Tuyển dụng
-        if (combined.Contains("phỏng vấn") ||
+        // 2. Interviewer / Cấp trên / Tuyển dụng (Chỉ khớp khi thực sự là phỏng vấn xin việc/baito hoặc cấp trên)
+        // Lưu ý: "店長" (Chủ quán Ramen/nhà hàng/tiệm) tuyệt đối không được tự suy ra là Interviewer!
+        var isInterview = combined.Contains("phỏng vấn") ||
             combined.Contains("xin việc") ||
             combined.Contains("baito") ||
             combined.Contains("tuyển dụng") ||
-            combined.Contains("sếp") ||
-            combined.Contains("giám đốc") ||
-            combined.Contains("quản lý") ||
-            combined.Contains("tiền bối") ||
             combined.Contains("面接") ||
             combined.Contains("採用") ||
-            combined.Contains("店長") ||
+            combined.Contains("応募");
+
+        var isOfficeHierarchy = combined.Contains("sếp") ||
+            combined.Contains("giám đốc") ||
+            combined.Contains("tiền bối") ||
             combined.Contains("上司") ||
-            combined.Contains("先輩"))
+            combined.Contains("先輩");
+
+        if (isInterview || isOfficeHierarchy)
         {
             return new RoleplaySocialRegister
             {
@@ -370,77 +373,185 @@ public sealed record RoleplaySocialRegister
 
             if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("đề nghị") || criteria.Contains("hỗ trợ"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "はい、喜んでお手伝いします。一緒に渡りましょう。",
                     RomajiOrReading = "Hai, yorokonde otetsudai shimasu. Issho ni watarimashou.",
                     VietnameseMeaning = $"Vâng, {reg.LearnerSelf} rất sẵn lòng giúp đỡ ạ. Chúng ta cùng sang đường nhé {reg.LearnerAddressAi}.",
                     ContextExplanation = $"Cách đề nghị giúp đỡ nhiệt tình, lịch sự phù hợp với {reg.LearnerAddressAi}."
-                };
+                });
             }
 
             if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "どちらまで行かれますか。お手伝いしましょうか。",
                     RomajiOrReading = "Dochira made ikaremasu ka. Otetsudai shimashou ka.",
                     VietnameseMeaning = $"{reg.LearnerAddressAi} định đi đến đâu vậy ạ? Để {reg.LearnerSelf} giúp {reg.LearnerAddressAi} nhé.",
                     ContextExplanation = "Hỏi điểm đến bằng kính ngữ tôn kính (ikaremasu ka)."
-                };
+                });
             }
 
             if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("giới thiệu") || criteria.Contains("intro"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "はじめまして。よろしくお願いします。",
                     RomajiOrReading = "Hajimemashite. Yoroshiku onegaishimasu.",
                     VietnameseMeaning = $"Rất vui được gặp {reg.LearnerAddressAi} lần đầu. Rất mong được {reg.LearnerAddressAi} giúp đỡ ạ.",
                     ContextExplanation = "Chào hỏi chuẩn mực khi bắt đầu đối thoại."
-                };
+                });
             }
 
             if (criteria.Contains("tạm biệt") || criteria.Contains("kết thúc") || criteria.Contains("cảm ơn") || criteria.Contains("bye"))
             {
                 if (reg.RegisterType == SocialRegisterType.Elderly)
                 {
-                    return new RoleplayHintDto
+                    return EnrichScaffolding(new RoleplayHintDto
                     {
                         JapaneseSuggestion = "いいえ、どういたしまして。お気をつけてお大事に。",
                         RomajiOrReading = "Iie, dou itashimashite. O ki wo tsukete odaiji ni.",
                         VietnameseMeaning = $"Dạ không có gì đâu ạ. Chúc {reg.LearnerAddressAi} đi lại cẩn thận và giữ gìn sức khỏe nhé ạ.",
                         ContextExplanation = "Lời đáp lại lời cảm ơn và lời chúc lễ phép, ấm áp dành cho người già."
-                    };
+                    });
                 }
 
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "どうもありがとうございました。失礼いたします。",
                     RomajiOrReading = "Doumo arigatou gozaimashita. Shitsurei itashimasu.",
                     VietnameseMeaning = $"Cảm ơn {reg.LearnerAddressAi} rất nhiều. {reg.LearnerSelf} xin phép chào {reg.LearnerAddressAi} ạ.",
                     ContextExplanation = "Lời chào tạm biệt và cảm ơn chuẩn mực trong giao tiếp tiếng Nhật."
-                };
+                });
             }
 
             if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("order") || criteria.Contains("gọi món"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "すみません、これはいくらですか？",
                     RomajiOrReading = "Sumimasen, kore wa ikura desu ka?",
                     VietnameseMeaning = "Xin lỗi, món này bao nhiêu tiền vậy ạ?",
                     ContextExplanation = "Hỏi giá tiền một cách lịch sự bằng thể Desu ka."
-                };
+                });
             }
         }
 
-        return new RoleplayHintDto
+        var defaultHint = new RoleplayHintDto
         {
             JapaneseSuggestion = "はい、わかりました。よろしくお願いします。",
             RomajiOrReading = "Hai, wakarimashita. Yoroshiku onegaishimasu.",
             VietnameseMeaning = $"Vâng, {reg.LearnerSelf} đã hiểu rõ. Rất mong được {reg.LearnerAddressAi} giúp đỡ.",
             ContextExplanation = "Mẫu câu hồi đáp đồng ý và hợp tác lịch sự."
+        };
+        return EnrichScaffolding(defaultHint);
+    }
+
+    /// <summary>
+    /// Bổ sung tự động danh sách từ khóa (Tier 1) và mẫu câu điền khuyết (Tier 2) cho giàn giáo thích ứng
+    /// </summary>
+    public static RoleplayHintDto EnrichScaffolding(RoleplayHintDto dto)
+    {
+        if (dto == null) return new RoleplayHintDto();
+
+        if (dto.Keywords == null || dto.Keywords.Count == 0)
+        {
+            var matches = Regex.Matches(dto.JapaneseSuggestion ?? string.Empty, @"[゠-ヿ]{2,}|[一-龯]+[぀-ゟ]*");
+            dto.Keywords = matches.Select(m => m.Value).Distinct().Take(4).ToList();
+            if (dto.Keywords.Count == 0 && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+            {
+                dto.Keywords.Add(dto.JapaneseSuggestion.Length > 5 ? dto.JapaneseSuggestion.Substring(0, 5) : dto.JapaneseSuggestion);
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.ClozeSentence) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        {
+            var mainWord = dto.Keywords.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(mainWord) && dto.JapaneseSuggestion.Contains(mainWord))
+            {
+                dto.ClozeSentence = dto.JapaneseSuggestion.Replace(mainWord, " [ ______ ] ");
+            }
+            else if (dto.JapaneseSuggestion.Length > 6)
+            {
+                int mid = dto.JapaneseSuggestion.Length / 2;
+                dto.ClozeSentence = dto.JapaneseSuggestion.Substring(0, Math.Max(2, mid - 2)) + " [ ______ ] " + dto.JapaneseSuggestion.Substring(Math.Min(dto.JapaneseSuggestion.Length, mid + 2));
+            }
+            else
+            {
+                dto.ClozeSentence = dto.JapaneseSuggestion + " [ ______ ]";
+            }
+        }
+
+        return dto;
+    }
+
+    /// <summary>
+    /// Kiểm tra xem học viên có nói hoàn toàn bằng tiếng Việt hoặc tiếng Anh không (không có chữ Kana/Kanji nào).
+    /// </summary>
+    public static bool IsPureForeignOrVietnamese(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        var trimmed = text.Trim();
+        // Có chữ Hiragana, Katakana hoặc Kanji không?
+        bool hasJapanese = Regex.IsMatch(trimmed, @"[぀-ゟ゠-ヿ一-龯]");
+        if (hasJapanese) return false;
+
+        // Nếu hoàn toàn không có tiếng Nhật và có chữ cái Latin/dấu tiếng Việt
+        bool hasLatin = Regex.IsMatch(trimmed, @"[a-zA-ZÀ-ỹ]");
+        return hasLatin;
+    }
+
+    /// <summary>
+    /// Xử lý tất định 0ms không tốn token LLM khi học viên nói nhầm tiếng Việt/ngoại ngữ.
+    /// Nhắc nhở lịch sự và nhập vai theo đúng Persona.
+    /// </summary>
+    public static AiTurnResult ProcessForeignLanguageTurn(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string userMessage)
+    {
+        var reg = Deduce(scenario?.Title, levelConfig?.AiPersona, levelConfig?.Description);
+        string jaText = "すみません、ここは日本ですので、日本語でお話しいただけますか？";
+        string viMeaning = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói lại bằng tiếng Nhật được không ạ?";
+
+        if (reg.RegisterType == SocialRegisterType.ServiceStaff)
+        {
+            jaText = "恐れ入ります、日本語でお話しいただけますでしょうか。ご注文やご用件をお伺いします。";
+            viMeaning = $"Kính xin {reg.AiAddressLearner} vui lòng dùng tiếng Nhật ạ. {reg.AiSelf} xin phép được lắng nghe yêu cầu của quý khách.";
+        }
+        else if (reg.RegisterType == SocialRegisterType.Elderly)
+        {
+            jaText = "おや、日本語で話してくれるかい？ わしには外国語はちと難しくてねぇ。";
+            viMeaning = $"Ôi, {reg.AiAddressLearner} có thể nói tiếng Nhật được không? Già này tiếng nước ngoài khó hiểu quá à.";
+        }
+
+        return new AiTurnResult
+        {
+            JapaneseReply = jaText,
+            VietnameseMeaning = viMeaning,
+            FuriganaHtml = GenerateFuriganaHtml(jaText),
+            UserVietnameseMeaning = userMessage,
+            UserFuriganaHtml = userMessage,
+            CompletedMissionIds = new List<int>(),
+            IsNaturallyConcluded = false,
+            LinguisticFeedback = new LinguisticFeedbackDto
+            {
+                Status = "Error",
+                Summary = "Vui lòng sử dụng tiếng Nhật",
+                EvaluationSource = "PreFlightGuard",
+                Details = new List<LinguisticDetailItemDto>
+                {
+                    new()
+                    {
+                        Type = "error",
+                        Aspect = "Ngôn ngữ",
+                        Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng nói lại bằng tiếng Nhật."
+                    }
+                },
+                NaturalAlternative = "すみません、日本語で話します。",
+                CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+            }
         };
     }
 
@@ -806,5 +917,65 @@ public sealed record RoleplaySocialRegister
         }
 
         return result;
+    }
+
+    private static readonly Regex VietnameseCharOrWordRegex = new(
+        @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(cháu|cụ|bác|ông|bà|anh|chi|chị|em|bạn|tôi|mình|thật|tốt|bụng|cẩn|thận|nhé|đi|về|nhiều|lắm|người|cảm|ơn|xin|chào|dịch|nghĩa|rất|hãy)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex JapaneseCharacterRegex = new(
+        @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Kiểm tra xem chuỗi có bị rò rỉ ký tự hoặc từ ngữ tiếng Việt hay không.
+    /// </summary>
+    public static bool HasVietnameseLeak(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        return VietnameseCharOrWordRegex.IsMatch(text);
+    }
+
+    /// <summary>
+    /// Khử sạch hoàn toàn tiếng Việt bị rò rỉ vào câu thoại tiếng Nhật (Japanese Utterance),
+    /// bảo đảm câu thoại AI luôn 100% tiếng Nhật chuẩn mực.
+    /// </summary>
+    public static string SanitizeJapaneseReply(string? jaText, string? fallbackJa = null)
+    {
+        if (string.IsNullOrWhiteSpace(jaText))
+        {
+            return fallbackJa ?? "本当にありがとうございました。";
+        }
+
+        var text = jaText.Trim();
+
+        // 1. Loại bỏ các phần chú thích trong ngoặc đơn nếu có chữ Latin/tiếng Việt
+        // ví dụ: "本当にありがとうございます。(Cháu đi cẩn thận nhé)" -> "本当にありがとうございます。"
+        text = Regex.Replace(text, @"[\(（][^\)）]*[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\)）]*[\)）]", "").Trim();
+
+        // 2. Nếu phát hiện tiếng Việt bị nối sau câu tiếng Nhật (VD: "本当にありがとうございます。 cháu thật là một người tốt bụng...")
+        var match = VietnameseCharOrWordRegex.Match(text);
+        if (match.Success)
+        {
+            // Cắt lấy phần câu tiếng Nhật trước vị trí rò rỉ tiếng Việt
+            var cutIndex = match.Index;
+            var cleanPrefix = text.Substring(0, cutIndex).Trim();
+
+            // Nếu phần prefix có chứa chữ Hán/Hiragana/Katakana hợp lệ, giữ lại phần đó
+            if (JapaneseCharacterRegex.IsMatch(cleanPrefix))
+            {
+                cleanPrefix = cleanPrefix.TrimEnd(' ', '　', ',', '、');
+                if (!cleanPrefix.EndsWith("。") && !cleanPrefix.EndsWith("！") && !cleanPrefix.EndsWith("？") && !cleanPrefix.EndsWith("!"))
+                {
+                    cleanPrefix += "。";
+                }
+                return cleanPrefix;
+            }
+
+            // Nếu toàn bộ chuỗi đều là tiếng Việt, trả về câu tiếng Nhật chuẩn dự phòng
+            return fallbackJa ?? "本当にありがとうございました。気をつけてお帰りください。";
+        }
+
+        return text;
     }
 }
