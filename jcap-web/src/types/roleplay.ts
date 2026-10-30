@@ -31,6 +31,10 @@ export interface SpeechDeliveryMetricsDto {
   speechConfidence?: number;
   speechPace?: number;
   turnFluencyScore?: number;
+  turnAutonomyScore?: number;
+  autonomyAssessment?: string;
+  pronunciationClarityScore?: number;
+  moraRate?: number;
   jlptLevel?: string;
   paceAssessment?: string;
   latencyAssessment?: string;
@@ -114,6 +118,11 @@ export interface RoleplaySessionDetailsDto {
   recommendedLearnerVoiceId?: number;
   recommendedLearnerVoiceName?: string;
   roleVoiceMappings?: Record<string, number>;
+  sceneType?: string;
+  npcAffinityScore?: number;
+  currentDayStreak?: number;
+  npcRelationshipTitle?: string;
+  npcMemories?: string[];
 }
 
 export interface DetectedGrammarIssue {
@@ -146,6 +155,8 @@ export interface RoleplayHintDto {
   suggestedVietnameseMeaning?: string;
   contextExplanation?: string;
   explanation?: string;
+  keywords?: string[];
+  clozeSentence?: string;
 }
 
 export interface StartRoleplaySessionRequestDto {
@@ -167,6 +178,18 @@ export interface SendRoleplayMessageRequestDto {
   pauseRatio?: number;
 }
 
+export interface LearnerSkillMasteryItemDto {
+  skillCode: string;
+  skillName: string;
+  category: string;
+  stability: number;
+  difficulty: number;
+  repetitions: number;
+  lapses: number;
+  nextRecommendedReviewUtc: string;
+  isDueForReview: boolean;
+}
+
 export interface LearnerIntelligenceProfileDto {
   userId: string;
   thetaEstimate: number;
@@ -184,4 +207,17 @@ export interface LearnerIntelligenceProfileDto {
   omikujiRank: string;
   kotowazaProverb: string;
   lastPracticedAtUtc?: string;
+  hesitationRate?: number;
+  averageHesitationSeconds?: number;
+  scaffoldTierPreference?: string;
+  preferredTone?: string;
+  toneConsistencyScore?: number;
+  dominantWeaknessCategory?: string;
+  nextRecommendedScenarioId?: number;
+  nextRecommendedScenarioCode?: string;
+  nextRecommendedScenarioTitle?: string;
+  nextRecommendedReason?: string;
+  predictedSuccessRateNextScenario?: number;
+  adaptiveLearningPathStatus?: string;
+  dueReviewItems?: LearnerSkillMasteryItemDto[];
 }

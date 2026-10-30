@@ -49,6 +49,7 @@ export interface RoleplayAttemptComparison {
   attemptNumber: number;
   previousOverallScore?: number;
   scoreDelta: number;
+  isPersonalBest?: boolean;
   overallScore: number;
   previousLatencySeconds?: number;
   latencyDeltaSeconds?: number;
@@ -59,12 +60,41 @@ export interface RoleplayAttemptComparison {
   progressSummary: string;
 }
 
+export interface ScoreAdjustmentItem {
+  category: string;
+  description: string;
+  deltaPoints: number;
+  isPositive: boolean;
+}
+
+export interface ScoreBreakdown {
+  missionCompletionPoints: number;
+  missionCount: number;
+  totalMissionCount: number;
+  grammarPoints: number;
+  grammarBaseScore: number;
+  vocabularyPoints: number;
+  vocabularyBaseScore: number;
+  impressionPoints: number;
+  impressionBaseScore: number;
+  naturalConclusionBonus: boolean;
+  autonomyScore: number;
+  fluencyScore: number;
+  averageLatencySeconds: number;
+  averagePace: number;
+  isCappedDueToIncomplete: boolean;
+  finalOverallScore: number;
+  adjustments: ScoreAdjustmentItem[];
+}
+
 export interface RoleplayResultDetail extends RoleplayResultSummary {
   grammarScore: number;
   vocabularyScore: number;
   impressionScore: number;
   fluencyScore?: number;
   speechConfidenceScore?: number;
+  autonomyScore?: number;
+  pronunciationScore?: number;
   averageResponseLatencySeconds?: number;
   averageSpeechPace?: number;
   generalFeedbackText: string;
@@ -74,6 +104,13 @@ export interface RoleplayResultDetail extends RoleplayResultSummary {
   targetGrammars?: TargetGrammar[];
   messages?: RoleplayMessageDto[];
   attemptComparison?: RoleplayAttemptComparison;
+  awardedEkiStampName?: string;
+  exploreSpotId?: number;
+  explorePrefectureId?: number;
+  scoreBreakdown?: ScoreBreakdown;
+  aiPersona?: string;
+  npcAffinityScore?: number;
+  npcRelationshipTitle?: string;
 }
 
 export interface RoleplayResultHistoryResponse {

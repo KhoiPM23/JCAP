@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'cheering';
+export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'cheering' | 'bowing';
 export type MouthViseme = 'closed' | 'A' | 'I' | 'U' | 'E' | 'O' | 'N';
 export type ScenarioArchetype =
   | 'culinary'     // Tiệm mì Ramen, quán ăn, nhà hàng, izakaya, đầu bếp
@@ -16,6 +16,7 @@ export interface LivingAvatarProps {
   personaName: string;
   personaRole?: string;
   scenarioTitle?: string;
+  archetype?: ScenarioArchetype | string;
   currentViseme?: MouthViseme;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   isAizuchiActive?: boolean;
@@ -27,6 +28,7 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   personaName = '',
   personaRole = '',
   scenarioTitle = '',
+  archetype: propArchetype,
   currentViseme = 'closed',
   size = 'md',
   isAizuchiActive = false,
@@ -37,7 +39,16 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   
   const isMale = /nam|ông|anh|bác|thầy|sếp|ryusei|takehiro|cha|chú/.test(textToAnalyze);
 
-  const detectArchetype = (): ScenarioArchetype => {
+  const resolveArchetype = (): ScenarioArchetype => {
+    if (propArchetype) {
+      const lower = propArchetype.toLowerCase();
+      if (lower === 'train' || lower === 'transit') return 'transit';
+      if (lower === 'konbini' || lower === 'retail') return 'retail';
+      if (lower === 'office' || lower === 'business') return 'business';
+      if (lower === 'zen' || lower === 'hospitality') return 'hospitality';
+      if (lower === 'ramen' || lower === 'cafe' || lower === 'culinary') return 'culinary';
+      if (lower === 'medical') return 'medical';
+    }
     if (/ramen|mì|quán ăn|nhà hàng|bếp|đầu bếp|phục vụ|izakaya|sushi|ăn uống|món ăn|cafe|cà phê|pha chế|barista/.test(textToAnalyze)) {
       return 'culinary';
     }
@@ -59,13 +70,13 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
     return 'casual';
   };
 
-  const archetype = detectArchetype();
+  const archetype = resolveArchetype();
 
   // Kích thước container
   const getDimensions = () => {
     switch (size) {
       case 'sm':
-        return 'w-9 h-9';
+        return 'w-9 h-9 sm:w-10 sm:h-10';
       case 'lg':
         return 'w-20 h-20 md:w-24 md:h-24';
       case 'xl':
@@ -75,50 +86,6 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
         return 'w-14 h-14 md:w-16 md:h-16';
     }
   };
-
-  // Đối với kích thước nhỏ (size sm trong chat bubble):
-  // Render Huy hiệu Persona tinh tế (Neo-Tokyo / Ukiyo-e Kanji Badge) kèm Aura phát âm
-  if (size === 'sm') {
-    const getBadgeIcon = () => {
-      switch (archetype) {
-        case 'culinary':
-          return '🍜';
-        case 'business':
-          return '💼';
-        case 'transit':
-          return '🚅';
-        case 'retail':
-          return '🏪';
-        case 'hospitality':
-          return '🍵';
-        case 'medical':
-          return '🏥';
-        case 'casual':
-        default:
-          return isMale ? '🧑‍💼' : '👩‍💼';
-      }
-    };
-
-    return (
-      <div className="relative flex items-center justify-center select-none">
-        {avatarState === 'speaking' && (
-          <span className="absolute -inset-1 rounded-full bg-sky-400/30 animate-ping opacity-75" />
-        )}
-        <div
-          className={`relative ${getDimensions()} rounded-full flex items-center justify-center text-sm font-bold shadow-xs transition-transform duration-200 border-2 ${
-            avatarState === 'speaking'
-              ? 'border-sky-500 bg-gradient-to-tr from-sky-500 to-indigo-600 text-white scale-105 shadow-md shadow-sky-500/20'
-              : 'border-slate-200/80 bg-gradient-to-tr from-slate-100 to-white text-slate-700 hover:border-slate-300'
-          }`}
-          title={personaName || 'AI Persona'}
-        >
-          <span className="text-base leading-none select-none">{getBadgeIcon()}</span>
-        </div>
-      </div>
-    );
-  }
-
-  // --- RENDERING SVG CHO SIZE MD, LG, XL (SÂN KHẤU CHÍNH & BANNER) ---
 
   // Miệng chuẩn Anime/Manga theo Viseme
   const renderMouth = () => {
@@ -164,7 +131,7 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
       default:
         return (
           <path
-            d={avatarState === 'cheering' ? 'M45 61 Q50 65 55 61' : 'M46 61.5 Q50 63 54 61.5'}
+            d={avatarState === 'cheering' || avatarState === 'bowing' ? 'M45 61 Q50 65 55 61' : 'M46 61.5 Q50 63 54 61.5'}
             stroke="#be123c"
             strokeWidth="1.8"
             strokeLinecap="round"
@@ -176,7 +143,7 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
 
   // Đôi mắt Anime/Manga có chiều sâu và cảm xúc
   const renderEyes = () => {
-    if (avatarState === 'cheering') {
+    if (avatarState === 'cheering' || avatarState === 'bowing') {
       // Mắt cười híp hình cung trăng đáng yêu (^ ^)
       return (
         <g>
@@ -235,8 +202,8 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center select-none">
-      <div className={`relative ${getDimensions()}`}>
+    <div className="flex flex-col items-center select-none shrink-0">
+      <div className={`relative shrink-0 aspect-square ${getDimensions()}`}>
         {/* Vòng hào quang tương tác khi nói / nghe */}
         {avatarState === 'speaking' && (
           <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 animate-ping opacity-40 pointer-events-none" />
@@ -251,7 +218,9 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
             avatarState === 'speaking'
               ? 'border-sky-500 shadow-md shadow-sky-200'
               : 'border-slate-200 hover:border-slate-300'
-          } ${avatarState === 'idle' ? 'animate-breathing' : ''}`}
+          } ${avatarState === 'idle' ? 'animate-breathing' : ''} ${
+            avatarState === 'bowing' ? 'transform translate-y-1.5 rotate-[2.5deg] scale-95 transition-all duration-500' : ''
+          }`}
         >
           <svg viewBox="0 0 100 100" className="w-full h-full">
             <defs>

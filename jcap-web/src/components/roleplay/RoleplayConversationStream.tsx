@@ -33,16 +33,33 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
+  const sanitizeDisplayJapanese = (raw?: string): string => {
+    if (!raw) return '';
+    const trimmed = raw.trim();
+    const withoutParen = trimmed.replace(/[\(（][^\)）]*[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\)）]*[\)）]/g, '').trim();
+    const viMatch = withoutParen.match(/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(cháu|cụ|bác|ông|bà|anh|chi|chị|em|bạn|tôi|mình|thật|tốt|bụng|cẩn|thận|nhé|đi|về|nhiều|lắm|người|cảm|ơn|xin|chào|dịch|nghĩa|rất|hãy)\b/i);
+    if (viMatch && viMatch.index !== undefined && viMatch.index > 0) {
+      const cleanPrefix = withoutParen.slice(0, viMatch.index).trim();
+      if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(cleanPrefix)) {
+        const sanitized = cleanPrefix.replace(/[,、\s]+$/, '');
+        return (sanitized.endsWith('。') || sanitized.endsWith('！') || sanitized.endsWith('？') || sanitized.endsWith('!'))
+          ? sanitized
+          : sanitized + '。';
+      }
+    }
+    return withoutParen;
+  };
+
   const renderJapaneseText = (msg: RoleplayMessageDto, isUser: boolean) => {
     if (showFurigana && msg.furiganaHtml) {
       return (
         <span
           className={isUser ? 'bubble-user text-base font-sans' : 'bubble-ai text-base font-sans'}
-          dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeDisplayJapanese(msg.furiganaHtml) }}
         />
       );
     }
-    return <span className="text-base font-sans leading-relaxed tracking-wide">{msg.japaneseText}</span>;
+    return <span className="text-base font-sans leading-relaxed tracking-wide">{sanitizeDisplayJapanese(msg.japaneseText)}</span>;
   };
 
   return (

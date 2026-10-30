@@ -16,6 +16,8 @@ class ScenarioVoiceService {
   private audioStream: MediaStream | null = null;
   private audioChunks: Blob[] = [];
   private recordingStartedAt = 0;
+  private visemeAnimFrame: number | null = null;
+  private onVisemeCallback: ((v: any) => void) | null = null;
 
   /**
    * Lấy danh sách giọng đọc từ VOICEVOX
@@ -83,6 +85,15 @@ class ScenarioVoiceService {
    */
   public stopAllAudio(): void {
     this.isSpeechCancelled = true;
+
+    if (this.visemeAnimFrame !== null) {
+      cancelAnimationFrame(this.visemeAnimFrame);
+      this.visemeAnimFrame = null;
+    }
+    if (this.onVisemeCallback) {
+      this.onVisemeCallback('closed');
+      this.onVisemeCallback = null;
+    }
 
     if (this.currentAudio) {
       this.currentAudio.onended = null;
@@ -175,10 +186,12 @@ class ScenarioVoiceService {
     voiceId?: number,
     onEnd?: () => void,
     rate?: number,
-    onStart?: () => void
+    onStart?: () => void,
+    onViseme?: (viseme: any) => void
   ): Promise<void> {
     this.stopAllAudio();
     this.isSpeechCancelled = false;
+    this.onVisemeCallback = onViseme || null;
 
     const resolvedVoiceId =
       typeof voiceId === 'number' && !Number.isNaN(voiceId)
@@ -196,10 +209,38 @@ class ScenarioVoiceService {
       audio.onplay = () => {
         if (!this.isSpeechCancelled) {
           onStart?.();
+          if (onViseme) {
+            const visemes = voicevoxService.getVisemes(text, resolvedVoiceId);
+            if (visemes && visemes.length > 0) {
+              const step = () => {
+                if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || this.isSpeechCancelled) {
+                  onViseme('closed');
+                  return;
+                }
+                const currentT = this.currentAudio.currentTime;
+                let activeV = 'closed';
+                for (let i = 0; i < visemes.length; i++) {
+                  if (visemes[i].t <= currentT) {
+                    activeV = visemes[i].v;
+                  } else {
+                    break;
+                  }
+                }
+                onViseme(activeV);
+                this.visemeAnimFrame = requestAnimationFrame(step);
+              };
+              this.visemeAnimFrame = requestAnimationFrame(step);
+            }
+          }
         }
       };
 
       audio.onended = () => {
+        if (this.visemeAnimFrame !== null) {
+          cancelAnimationFrame(this.visemeAnimFrame);
+          this.visemeAnimFrame = null;
+        }
+        onViseme?.('closed');
         this.currentAudio = null;
         if (!this.isSpeechCancelled) {
           onEnd?.();

@@ -80,13 +80,23 @@ async function setCachedAudioBlob(key: string, blob: Blob): Promise<void> {
 class VoiceVoxService {
   // L1 Cache: In-Memory Object URL Cache (Truy xuất tức thì 0ms trong phiên)
   private blobCache = new Map<string, string>();
+  // Viseme mouth timeline cache cho LivingAvatar
+  private visemeCache = new Map<string, Array<{ t: number; v: string }>>();
   // Hàng đợi tránh gọi trùng request khi đang fetch dở cho cùng 1 câu và giọng
   private pendingRequests = new Map<string, Promise<string>>();
 
   // Cờ trạng thái sẵn sàng: Nếu VOICEVOX offline, chuyển sang Web Speech trong 0ms mà không tốn 3-4s chờ timeout
   private isVoiceVoxAvailable: boolean | null = null;
   private lastCheckTime = 0;
-  private readonly OFFLINE_COOLDOWN_MS = 45000; // 45 giây thử lại 1 lần nếu offline
+  private readonly OFFLINE_COOLDOWN_MS = 6000; // 6 giây thử lại thay vì 45s để không bị treo lâu
+
+  /**
+   * Reset cờ trạng thái để thử lại kết nối VOICEVOX ngay lập tức
+   */
+  public resetAvailability(): void {
+    this.isVoiceVoxAvailable = null;
+    this.lastCheckTime = 0;
+  }
 
   // Danh mục câu chào & mẫu thoại cốt lõi hay gặp nhất trong tiếng Nhật giao tiếp
   public static readonly COMMON_PHRASES = [
@@ -106,21 +116,31 @@ class VoiceVoxService {
    * Lấy danh sách voice có sẵn từ Backend (Backend gọi VOICEVOX /speakers)
    */
   public async getVoices(): Promise<VoiceOption[]> {
-    const res = await fetch('/api/tts/voices');
-    if (!res.ok) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch('/api/tts/voices', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        this.isVoiceVoxAvailable = false;
+        this.lastCheckTime = Date.now();
+        let errorMsg = 'Không thể kết nối đến VOICEVOX Engine.';
+        try {
+          const err = await res.json();
+          if (err?.message) errorMsg = err.message;
+        } catch {}
+        throw new Error(errorMsg);
+      }
+      this.isVoiceVoxAvailable = true;
+      this.lastCheckTime = Date.now();
+      const data = await res.json();
+      return data.data || [];
+    } catch (err: any) {
+      clearTimeout(timeoutId);
       this.isVoiceVoxAvailable = false;
       this.lastCheckTime = Date.now();
-      let errorMsg = 'Không thể kết nối đến VOICEVOX Engine.';
-      try {
-        const err = await res.json();
-        if (err?.message) errorMsg = err.message;
-      } catch {}
-      throw new Error(errorMsg);
+      throw err;
     }
-    this.isVoiceVoxAvailable = true;
-    this.lastCheckTime = Date.now();
-    const data = await res.json();
-    return data.data || [];
   }
 
   /**
@@ -166,8 +186,9 @@ class VoiceVoxService {
       }
 
       // 3. Network Fetch
+      // Đặt timeout 12000ms (12 giây) để CPU tổng hợp đủ thời gian (trên CPU Voicevox thường tốn 1.2s - 2.5s)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 950); // 950ms timeout tối đa
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       try {
         const res = await fetch('/api/tts/synthesize', {
@@ -184,8 +205,11 @@ class VoiceVoxService {
         clearTimeout(timeoutId);
 
         if (!res.ok) {
-          this.isVoiceVoxAvailable = false;
-          this.lastCheckTime = Date.now();
+          // Chỉ đánh dấu offline nếu backend trả về 503 (VOICEVOX process không bật)
+          if (res.status === 503) {
+            this.isVoiceVoxAvailable = false;
+            this.lastCheckTime = Date.now();
+          }
           let message = 'VOICEVOX Engine is not running.';
           try {
             const problem = await res.json();
@@ -200,6 +224,18 @@ class VoiceVoxService {
 
         this.isVoiceVoxAvailable = true;
         this.lastCheckTime = Date.now();
+
+        // Đọc header X-Viseme-Timeline để làm lip-sync thời gian thực chuẩn phách
+        const visemesHeader = res.headers.get('X-Viseme-Timeline');
+        if (visemesHeader) {
+          try {
+            const parsed = JSON.parse(visemesHeader);
+            if (Array.isArray(parsed)) {
+              this.visemeCache.set(cacheKey, parsed);
+            }
+          } catch {}
+        }
+
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
 
@@ -208,10 +244,15 @@ class VoiceVoxService {
         void setCachedAudioBlob(cacheKey, blob);
 
         return url;
-      } catch (err) {
+      } catch (err: any) {
         clearTimeout(timeoutId);
-        this.isVoiceVoxAvailable = false;
-        this.lastCheckTime = Date.now();
+        // Nếu do timeout fetch, không vội đánh dấu cả hệ thống offline vĩnh viễn
+        if (err?.name === 'AbortError') {
+          console.warn('[VOICEVOX] Fetch synthesis timed out (>12s), falling back gracefully.');
+        } else {
+          this.isVoiceVoxAvailable = false;
+          this.lastCheckTime = Date.now();
+        }
         throw err;
       } finally {
         this.pendingRequests.delete(cacheKey);
@@ -270,6 +311,15 @@ class VoiceVoxService {
     const audio = new Audio(audioUrl);
     await audio.play();
     return audio;
+  }
+
+  /**
+   * Lấy danh sách timeline visemes (mốc thời gian và khẩu hình miệng tương ứng)
+   */
+  public getVisemes(text: string, speakerId: number): Array<{ t: number; v: string }> | null {
+    const trimmedText = text.trim();
+    const cacheKey = `${speakerId}_${trimmedText}`;
+    return this.visemeCache.get(cacheKey) || null;
   }
 
   /**
