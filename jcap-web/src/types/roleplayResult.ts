@@ -111,6 +111,10 @@ export interface RoleplayResultDetail extends RoleplayResultSummary {
   aiPersona?: string;
   npcAffinityScore?: number;
   npcRelationshipTitle?: string;
+  nextRecommendedScenarioId?: number;
+  nextRecommendedScenarioTitle?: string;
+  nextRecommendedReason?: string;
+  predictedSuccessRateNextScenario?: number;
 }
 
 export interface RoleplayResultHistoryResponse {

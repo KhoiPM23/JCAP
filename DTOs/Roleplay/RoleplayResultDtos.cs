@@ -62,6 +62,10 @@ namespace JCAP.DTOs.Roleplay
         public string? AiPersona { get; set; }
         public int NpcAffinityScore { get; set; } = 20;
         public string? NpcRelationshipTitle { get; set; }
+        public int? NextRecommendedScenarioId { get; set; }
+        public string? NextRecommendedScenarioTitle { get; set; }
+        public string? NextRecommendedReason { get; set; }
+        public double? PredictedSuccessRateNextScenario { get; set; }
     }
 
     public class ScoreBreakdownDto

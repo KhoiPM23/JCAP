@@ -14,8 +14,6 @@ using JCAP.Services.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 
-
-
 namespace JCAP.Services.Implementations
 
 {
@@ -28,8 +26,6 @@ namespace JCAP.Services.Implementations
 
         private const string LegacyMockFeedback = "Bạn đã duy trì hội thoại rõ ràng và hoàn thành tốt các mục tiêu chính. Hãy tiếp tục luyện cách diễn đạt tự nhiên hơn trong những lượt nói tiếp theo.";
 
-
-
         private readonly AppDbContext _dbContext;
 
         private readonly IRoleplaySessionSnapshotProvider _sessionSnapshotProvider;
@@ -37,8 +33,6 @@ namespace JCAP.Services.Implementations
         private readonly IRoleplayEvaluationService _evaluationService;
 
         private readonly ILogger<RoleplayResultService> _logger;
-
-
 
         public RoleplayResultService(
 
@@ -61,8 +55,6 @@ namespace JCAP.Services.Implementations
             _logger = logger;
 
         }
-
-
 
         private async Task<(string Persona, int Score, string Title)> LoadNpcInfoAsync(string userId, int sessionId)
     {
@@ -105,8 +97,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var existingResult = await _dbContext.RoleplayResults
 
                 .AsNoTracking()
@@ -114,8 +104,6 @@ namespace JCAP.Services.Implementations
                 .FirstOrDefaultAsync(result =>
 
                     result.RoleplaySessionId == sessionId && result.UserId == userId);
-
-
 
             if (existingResult != null)
 
@@ -131,8 +119,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var snapshot = await _sessionSnapshotProvider.GetCompletableSessionAsync(sessionId, userId);
 
             if (snapshot == null || !string.Equals(snapshot.UserId, userId, StringComparison.Ordinal))
@@ -145,8 +131,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var completedMissions = snapshot.CompletedMissions.Select(mission => new CompletedMissionResultDto
 
             {
@@ -157,8 +141,6 @@ namespace JCAP.Services.Implementations
 
             }).ToList();
 
-
-
             var session = await _dbContext.RoleplaySessions
 
                 .Include(item => item.Messages)
@@ -166,8 +148,6 @@ namespace JCAP.Services.Implementations
                 .Include(item => item.SessionMissions)
 
                 .FirstOrDefaultAsync(item => item.Id == sessionId && item.UserId == userId);
-
-
 
             if (session == null)
 
@@ -179,8 +159,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var userMessages = session.Messages
 
                 .Where(message => string.Equals(message.Sender, "User", StringComparison.OrdinalIgnoreCase))
@@ -188,8 +166,6 @@ namespace JCAP.Services.Implementations
                 .OrderBy(message => message.CreatedAt)
 
                 .ToList();
-
-
 
             if (userMessages.Count == 0)
 
@@ -201,8 +177,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var evaluation = _evaluationService.Evaluate(
 
                 userMessages.Select(message => message.LinguisticFeedbackJson),
@@ -212,8 +186,6 @@ namespace JCAP.Services.Implementations
                 session.SessionMissions.Count,
 
                 session.IsNaturallyConcluded);
-
-
 
             if (evaluation == null)
 
@@ -225,8 +197,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var completedAt = DateTime.UtcNow;
 
             session.Status = "Completed";
@@ -234,8 +204,6 @@ namespace JCAP.Services.Implementations
             session.CompletedAt ??= completedAt;
 
             session.UpdatedAt = completedAt;
-
-
 
             var result = new RoleplayResult
 
@@ -269,11 +237,67 @@ namespace JCAP.Services.Implementations
 
             };
 
-
-
             _dbContext.RoleplayResults.Add(result);
 
+            // Ghi nhận con dấu son Hanko (Red Stamp) vào Bản đồ Khám phá (Explore Spot Progress)
+            if (result.PassStatus)
+            {
+                try
+                {
+                    var configId = session.ScenarioLevelConfigurationId;
+                    if (configId > 0)
+                    {
+                        var spotActivity = await _dbContext.ExploreSpotActivities
+                            .Include(a => a.Lesson)
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(a => a.ActivityType == ExploreActivityType.Roleplay && a.ReferenceId == configId);
 
+                        int? targetSpotId = null;
+                        if (spotActivity?.Lesson != null)
+                        {
+                            targetSpotId = spotActivity.Lesson.SpotId;
+                        }
+                        else if (spotActivity != null && spotActivity.LessonId > 0)
+                        {
+                            var lesson = await _dbContext.ExploreSpotLessons.AsNoTracking().FirstOrDefaultAsync(l => l.Id == spotActivity.LessonId);
+                            if (lesson != null)
+                            {
+                                targetSpotId = lesson.SpotId;
+                            }
+                        }
+
+                        if (targetSpotId.HasValue && targetSpotId.Value > 0)
+                        {
+                            var spotProgress = await _dbContext.Set<ExploreSpotProgress>()
+                                .FirstOrDefaultAsync(p => p.UserId == userId && p.SpotId == targetSpotId.Value);
+
+                            if (spotProgress == null)
+                            {
+                                spotProgress = new ExploreSpotProgress
+                                {
+                                    UserId = userId,
+                                    SpotId = targetSpotId.Value,
+                                    RedStampedAt = completedAt,
+                                    StampedAt = completedAt,
+                                    RoleplaySessionId = sessionId,
+                                    UpdatedAt = completedAt
+                                };
+                                _dbContext.Set<ExploreSpotProgress>().Add(spotProgress);
+                            }
+                            else
+                            {
+                                spotProgress.RedStampedAt = completedAt;
+                                spotProgress.RoleplaySessionId = sessionId;
+                                spotProgress.UpdatedAt = completedAt;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Không thể ghi nhận con dấu son Hanko cho RoleplaySession {SessionId}", sessionId);
+                }
+            }
 
             try
 
@@ -303,8 +327,6 @@ namespace JCAP.Services.Implementations
 
                     sessionId);
 
-
-
                 _dbContext.Entry(result).State = EntityState.Detached;
 
                 _dbContext.Entry(session).State = EntityState.Detached;
@@ -316,8 +338,6 @@ namespace JCAP.Services.Implementations
                     .FirstOrDefaultAsync(item =>
 
                         item.RoleplaySessionId == sessionId && item.UserId == userId);
-
-
 
                 if (concurrentResult != null)
 
@@ -333,15 +353,11 @@ namespace JCAP.Services.Implementations
 
                 }
 
-
-
                 throw;
 
             }
 
         }
-
-
 
         public async Task<ApiResponse<RoleplayResultHistoryResponseDto>> GetHistoryAsync(
 
@@ -359,15 +375,11 @@ namespace JCAP.Services.Implementations
 
             pageSize = Math.Clamp(pageSize, 1, 50);
 
-
-
             var query = _dbContext.RoleplayResults
 
                 .AsNoTracking()
 
                 .Where(result => result.UserId == userId);
-
-
 
             if (passStatus.HasValue)
 
@@ -376,8 +388,6 @@ namespace JCAP.Services.Implementations
                 query = query.Where(result => result.PassStatus == passStatus.Value);
 
             }
-
-
 
             var totalCount = await query.CountAsync();
 
@@ -411,8 +421,6 @@ namespace JCAP.Services.Implementations
 
                 .ToListAsync();
 
-
-
             foreach (var item in items)
 
             {
@@ -420,8 +428,6 @@ namespace JCAP.Services.Implementations
                 item.CompletedAt = AsUtc(item.CompletedAt);
 
             }
-
-
 
             return ApiResponse<RoleplayResultHistoryResponseDto>.Ok(new RoleplayResultHistoryResponseDto
 
@@ -441,8 +447,6 @@ namespace JCAP.Services.Implementations
 
         }
 
-
-
         public async Task<ApiResponse<RoleplayResultDetailDto>> GetDetailAsync(string userId, int resultId)
 
         {
@@ -453,8 +457,6 @@ namespace JCAP.Services.Implementations
 
                 .FirstOrDefaultAsync(item => (item.Id == resultId || item.RoleplaySessionId == resultId) && item.UserId == userId);
 
-
-
             if (result == null)
 
             {
@@ -464,8 +466,6 @@ namespace JCAP.Services.Implementations
                     "Không tìm thấy kết quả luyện tập hoặc bạn không có quyền xem kết quả này.");
 
             }
-
-
 
             List<CompletedMissionResultDto> completedMissions;
 
@@ -495,8 +495,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             List<TargetVocabularyDto> targetVocabularies = [];
 
             List<TargetGrammarDto> targetGrammars = [];
@@ -508,8 +506,6 @@ namespace JCAP.Services.Implementations
             int scenarioId = 0;
 
             int scenarioLevelConfigId = 0;
-
-
 
             if (result.RoleplaySessionId > 0)
 
@@ -583,8 +579,6 @@ namespace JCAP.Services.Implementations
 
                     .FirstOrDefaultAsync();
 
-
-
                 if (sessionData != null)
 
                 {
@@ -611,45 +605,33 @@ namespace JCAP.Services.Implementations
 
                     }).ToList();
 
-
-
-                    if (sessionData.Config != null)
-
+                    if (scenarioLevelConfigId > 0)
                     {
+                        var fullConfig = await _dbContext.ScenarioLevelConfigurations
+                            .Include(c => c.TargetVocabularies)
+                            .Include(c => c.TargetGrammars)
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(c => c.Id == scenarioLevelConfigId);
 
-                        targetVocabularies = sessionData.Config.TargetVocabularies.Select(v => new TargetVocabularyDto
-
+                        if (fullConfig != null)
                         {
+                            targetVocabularies = fullConfig.TargetVocabularies.Select(v => new TargetVocabularyDto
+                            {
+                                Id = v.Id,
+                                Word = v.Word,
+                                Reading = v.Reading,
+                                Meaning = v.Meaning
+                            }).ToList();
 
-                            Id = v.Id,
-
-                            Word = v.Word,
-
-                            Reading = v.Reading,
-
-                            Meaning = v.Meaning
-
-                        }).ToList();
-
-
-
-                        targetGrammars = sessionData.Config.TargetGrammars.Select(g => new TargetGrammarDto
-
-                        {
-
-                            Id = g.Id,
-
-                            Pattern = g.Pattern,
-
-                            Meaning = g.Meaning,
-
-                            ExampleSentence = g.ExampleSentence
-
-                        }).ToList();
-
+                            targetGrammars = fullConfig.TargetGrammars.Select(g => new TargetGrammarDto
+                            {
+                                Id = g.Id,
+                                Pattern = g.Pattern,
+                                Meaning = g.Meaning,
+                                ExampleSentence = g.ExampleSentence
+                            }).ToList();
+                        }
                     }
-
-
 
                     messages = sessionData.Messages.Select(m =>
 
@@ -683,8 +665,6 @@ namespace JCAP.Services.Implementations
 
                         }
 
-
-
                         return new RoleplayMessageDto
 
                         {
@@ -713,8 +693,6 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             var userFeedbacks = messages
 
                 .Where(m => string.Equals(m.Sender, "User", StringComparison.OrdinalIgnoreCase) && m.LinguisticFeedback != null)
@@ -722,8 +700,6 @@ namespace JCAP.Services.Implementations
                 .Select(m => m.LinguisticFeedback!)
 
                 .ToList();
-
-
 
             var evalResult = userFeedbacks.Count > 0
 
@@ -739,8 +715,6 @@ namespace JCAP.Services.Implementations
 
                 : null;
 
-
-
             var fluencyScore = evalResult?.FluencyScore ?? 85;
 
             var confidenceScore = evalResult?.SpeechConfidenceScore ?? 90;
@@ -748,8 +722,6 @@ namespace JCAP.Services.Implementations
             var avgLatency = evalResult?.AverageResponseLatencySeconds ?? 0;
 
             var avgPace = evalResult?.AverageSpeechPace ?? 0;
-
-
 
             // Tính toán so sánh tiến độ giữa các lần luyện tập (Attempt Progression Analytics)
 
@@ -760,8 +732,6 @@ namespace JCAP.Services.Implementations
                 .OrderByDescending(r => r.CompletedAt)
 
                 .ToListAsync();
-
-
 
             var npcInfo = await LoadNpcInfoAsync(result.UserId, result.RoleplaySessionId);
 
@@ -788,8 +758,6 @@ namespace JCAP.Services.Implementations
                     _ => $"Hãy giữ vững sự tự tin! Lần trước bạn đạt {prev.OverallScore} điểm, hãy chú ý ngắt nghỉ và phản xạ nhé."
 
                 };
-
-
 
                 attemptComparison = new RoleplayAttemptComparisonDto
 
@@ -835,15 +803,11 @@ namespace JCAP.Services.Implementations
 
             }
 
-
-
             string? awardedEkiStampName = null;
 
             int? exploreSpotId = null;
 
             int? explorePrefectureId = null;
-
-
 
             if (result.RoleplaySessionId > 0)
 
@@ -865,11 +829,7 @@ namespace JCAP.Services.Implementations
 
                 }
 
-
-
                 ExploreSpot? linkedSpot = null;
-
-
 
                 if (scenarioLevelConfigId > 0)
 
@@ -882,8 +842,6 @@ namespace JCAP.Services.Implementations
                         .AsNoTracking()
 
                         .FirstOrDefaultAsync(a => a.ActivityType == ExploreActivityType.Roleplay && a.ReferenceId == scenarioLevelConfigId);
-
-
 
                     if (spotActivity?.Lesson != null)
 
@@ -915,8 +873,6 @@ namespace JCAP.Services.Implementations
 
                 }
 
-
-
                 if (linkedSpot == null)
 
                 {
@@ -929,8 +885,6 @@ namespace JCAP.Services.Implementations
 
                         .FirstOrDefaultAsync(p => p.UserId == userId && p.RoleplaySessionId == result.RoleplaySessionId);
 
-
-
                     if (directProg?.Spot != null)
 
                     {
@@ -941,8 +895,6 @@ namespace JCAP.Services.Implementations
 
                 }
 
-
-
                 if (linkedSpot != null)
 
                 {
@@ -950,8 +902,6 @@ namespace JCAP.Services.Implementations
                     exploreSpotId = linkedSpot.Id;
 
                     explorePrefectureId = linkedSpot.PrefectureId;
-
-
 
                     // Chỉ trao con dấu Eki-stamp khi phiên này đạt yêu cầu (PassStatus == true)
 
@@ -971,13 +921,41 @@ namespace JCAP.Services.Implementations
 
             }
 
+            // Gợi ý kịch bản tiếp theo (Next Best Challenge Recommendation)
+            int? nextScenarioId = null;
+            string? nextScenarioTitle = null;
+            string? nextReason = null;
+            double? predictedSuccessRate = null;
 
+            if (scenarioId > 0)
+            {
+                var nextScenario = await _dbContext.Scenarios
+                    .AsNoTracking()
+                    .Where(s => s.Id != scenarioId && s.IsActive)
+                    .OrderBy(s => s.Id > scenarioId ? 0 : 1)
+                    .ThenBy(s => s.Id)
+                    .FirstOrDefaultAsync();
+
+                if (nextScenario != null)
+                {
+                    nextScenarioId = nextScenario.Id;
+                    nextScenarioTitle = nextScenario.Title;
+                    predictedSuccessRate = result.PassStatus ? 0.85 : 0.65;
+                    nextReason = result.PassStatus
+                        ? $"Bạn đã làm chủ kịch bản '{result.ScenarioTitle}' ({result.OverallScore}đ)! Thử thách tiếp theo phù hợp nhất cho bạn là '{nextScenario.Title}'."
+                        : $"Để củng cố thêm kỹ năng giao tiếp, bạn có thể thử sức với kịch bản '{nextScenario.Title}' hoặc luyện lại tình huống hiện tại.";
+                }
+            }
 
             return ApiResponse<RoleplayResultDetailDto>.Ok(new RoleplayResultDetailDto
 
             {
 
                 Id = result.Id,
+                NextRecommendedScenarioId = nextScenarioId,
+                NextRecommendedScenarioTitle = nextScenarioTitle,
+                NextRecommendedReason = nextReason,
+                PredictedSuccessRateNextScenario = predictedSuccessRate,
 
                 RoleplaySessionId = result.RoleplaySessionId,
 
@@ -1038,8 +1016,6 @@ namespace JCAP.Services.Implementations
 
         }
 
-
-
         private static DateTime AsUtc(DateTime value)
 
         {
@@ -1057,8 +1033,6 @@ namespace JCAP.Services.Implementations
                 : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
         }
-
-
 
         private static string ExtractMissionTarget(string? criteriaJson)
 
@@ -1094,8 +1068,6 @@ namespace JCAP.Services.Implementations
 
         }
 
-
-
         private static ApiResponse<CompleteRoleplaySessionResponseDto> BuildCompleteResponse(
 
             int resultId,
@@ -1112,8 +1084,6 @@ namespace JCAP.Services.Implementations
 
                 : "Hoàn tất và lưu kết quả luyện tập thành công.";
 
-
-
             return ApiResponse<CompleteRoleplaySessionResponseDto>.Ok(new CompleteRoleplaySessionResponseDto
 
             {
@@ -1127,8 +1097,6 @@ namespace JCAP.Services.Implementations
             }, message);
 
         }
-
-
 
         private static bool IsLegacyMockResult(RoleplayResult result)
 

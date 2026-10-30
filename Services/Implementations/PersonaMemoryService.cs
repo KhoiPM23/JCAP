@@ -68,11 +68,11 @@ namespace JCAP.Services.Implementations
                 _context.UserNpcRelationships.Add(rel);
             }
 
-            rel.CompletedSessionsCount += 1;
             rel.LastInteractedUtc = DateTime.UtcNow;
 
             if (completedSuccessfully)
             {
+                rel.CompletedSessionsCount += 1;
                 rel.AffinityScore = Math.Min(100, rel.AffinityScore + 10);
             }
 

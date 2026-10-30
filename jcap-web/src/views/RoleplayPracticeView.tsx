@@ -3101,11 +3101,28 @@ export const RoleplayPracticeView: React.FC = () => {
               {/* Input Row */}
               {/* Applied Hint Feedback Banner */}
               {appliedHintTier !== null && (
-                <div className="flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-amber-50/95 border border-amber-300 text-xs text-amber-900 shadow-2xs font-sans animate-fade-in">
-                  <div className="flex items-center gap-2">
-                                        <span>
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50/95 border border-amber-300 text-xs text-amber-900 shadow-2xs font-sans animate-fade-in">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>
                       Đang dùng gợi ý <strong>Cấp {appliedHintTier}</strong> ({appliedHintTier === 1 ? 'Từ khóa' : appliedHintTier === 2 ? 'Khung điền từ' : 'Mẫu câu'}) — Tự chủ lượt này: <strong>{appliedHintTier === 1 ? '90' : appliedHintTier === 2 ? '70' : '40'}/100đ</strong>
                     </span>
+                    {appliedHintTier >= 2 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAppliedHintTier(1);
+                          hintLevelUsedRef.current = 1;
+                          setInputText('');
+                          setToastMessage('🌟 Thử thách Tự chủ: Hãy tự nói câu bằng Micro để lấy trọn 90+ điểm tự chủ!');
+                          setTimeout(() => setToastMessage(null), 4000);
+                          startSpeechRecognition();
+                        }}
+                        className="px-2.5 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-2xs transition active:scale-95 cursor-pointer"
+                        title="Tự nói bằng mic để lấy lại điểm tự chủ"
+                      >
+                        Thử thách Tự nói (Lấy 90đ) ➔
+                      </button>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -3158,52 +3175,49 @@ export const RoleplayPracticeView: React.FC = () => {
                 </button>
 
 
-                {/* Button Micro thu âm (Voice Input với hiệu ứng Radar Pulse & Adaptive Silence Ring) */}
+                {/* Button Micro thu âm (Voice Input với hiệu ứng Breathing Glow & Inner Ring) */}
                 <div className="relative inline-flex shrink-0">
-                  {isRecordingMic && (
-                    <span className="absolute inset-0 rounded-xl bg-[var(--shu)] animate-ping opacity-30 pointer-events-none" />
-                  )}
-                  {isRecordingMic && silenceCountdownProgress > 0 && (
-                    <div className="absolute -bottom-1 left-2 right-2 h-1 bg-red-200/80 rounded-full overflow-hidden z-20 shadow-xs">
-                      <div 
-                        className="h-full bg-white transition-all duration-75 ease-linear rounded-full"
-                        style={{ width: `${Math.max(0, Math.min(100, (1 - silenceCountdownProgress) * 100))}%` }}
-                      />
-                    </div>
-                  )}
                   <button
                     type="button"
                     onClick={handleToggleMic}
                     disabled={isSending || isProcessingStt}
-                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer min-w-[84px] sm:min-w-[96px] select-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all shadow-xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
                       isProcessingStt
-                        ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
+                        ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] min-w-[105px]'
                         : isRecordingMic
-                        ? 'border border-[var(--shu)] bg-[var(--shu)] text-white ring-4 ring-[var(--shu)]/40 shadow-lg'
-                        : 'border border-[var(--ai)] bg-[var(--ai)] text-white hover:bg-[var(--ai-hover)] hover:shadow-md active:scale-95'
+                        ? 'border border-rose-500 bg-rose-600 text-white ring-4 ring-rose-400/25 shadow-md min-w-[96px] animate-pulse'
+                        : 'border border-[var(--line)] bg-white text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:shadow-sm active:scale-95 min-w-[80px]'
                     }`}
                     title={
                       isProcessingStt
-                        ? 'Whisper AI đang xử lý nhận diện giọng nói...'
+                        ? 'Đang nhận diện giọng nói...'
                         : isRecordingMic
                         ? 'Đang bật mic (Bấm để dừng)'
                         : isWhisperEngineOnline
-                        ? 'Nói tiếng Nhật (Hỗ trợ Whisper STT chuẩn cao)'
+                        ? 'Nói tiếng Nhật (Hỗ trợ Whisper STT)'
                         : 'Bấm để nói tiếng Nhật bằng micro'
                     }
                   >
+                    {/* Thanh đếm im lặng thông minh bên trong button, không tràn viền */}
+                    {isRecordingMic && silenceCountdownProgress > 0 && (
+                      <span 
+                        className="absolute bottom-0 left-0 h-1 bg-white/70 transition-all duration-75 ease-linear rounded-full pointer-events-none"
+                        style={{ width: `${Math.max(0, Math.min(100, (1 - silenceCountdownProgress) * 100))}%` }}
+                      />
+                    )}
+
                     {isProcessingStt ? (
-                      <>
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--ai)]/30 border-t-[var(--ai)]" />
-                        <span className="hidden sm:inline">Nhận diện...</span>
-                      </>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-[var(--ai)]/30 border-t-[var(--ai)]" />
+                        <span className="text-[11px] font-semibold whitespace-nowrap">Nhận diện...</span>
+                      </span>
                     ) : (
-                      <>
-                        <svg className={`w-4 h-4 shrink-0 ${isRecordingMic ? 'animate-pulse text-white' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <span className="flex items-center gap-1.5">
+                        <svg className={`w-3.5 h-3.5 shrink-0 ${isRecordingMic ? 'text-white' : 'text-[var(--ai)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
-                        <span>{isRecordingMic ? `${recordingDurationSec.toFixed(1)}s` : 'Nói'}</span>
-                      </>
+                        <span className="whitespace-nowrap">{isRecordingMic ? `${recordingDurationSec.toFixed(1)}s` : 'Nói'}</span>
+                      </span>
                     )}
                   </button>
                 </div>

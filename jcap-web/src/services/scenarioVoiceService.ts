@@ -537,12 +537,16 @@ class ScenarioVoiceService {
     const formData = new FormData();
     formData.append('file', audioBlob, `recording.${ext}`);
 
-    // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn)
+    // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn) với Timeout 4.5s
     try {
+      const controller1 = new AbortController();
+      const timeout1 = setTimeout(() => controller1.abort(), 4500);
       const res = await fetch('/api/stt/transcribe?language=ja', {
         method: 'POST',
         body: formData,
-      });
+        signal: controller1.signal,
+      }).finally(() => clearTimeout(timeout1));
+
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -556,15 +560,19 @@ class ScenarioVoiceService {
         }
       }
     } catch (err) {
-      console.warn('[Scenario STT] Backend Whisper proxy unavailable, trying direct engine:', err);
+      console.warn('[Scenario STT] Backend Whisper proxy unavailable or timed out, trying direct engine:', err);
     }
 
-    // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe
+    // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe với Timeout 4.5s
     try {
+      const controller2 = new AbortController();
+      const timeout2 = setTimeout(() => controller2.abort(), 4500);
       const directRes = await fetch('/whisper/transcribe?language=ja', {
         method: 'POST',
         body: formData,
-      });
+        signal: controller2.signal,
+      }).finally(() => clearTimeout(timeout2));
+
       if (directRes.ok) {
         const json = await directRes.json();
         if (json.success) {
@@ -580,7 +588,7 @@ class ScenarioVoiceService {
         }
       }
     } catch (err) {
-      console.warn('[Scenario STT] Direct Whisper engine call failed:', err);
+      console.warn('[Scenario STT] Direct Whisper engine call failed or timed out:', err);
     }
 
     return null;
