@@ -48,10 +48,25 @@ namespace JCAP.Services.Implementations
         // E09: Thiếu だ/である trước から với danh từ hoặc tính từ đuôi な (VD: 便利から, 雨から, 暇から)
         [GeneratedRegex(@"(?:(?:便利|有名|暇|静か|元気|好き|嫌い|雨|日曜日|休み)[\s]*から)", RegexOptions.Compiled)]
         private static partial Regex E09MissingDaKaraRegex();
-
         // E10: Nhầm trợ từ に thay vì で khi chỉ phương tiện di chuyển (VD: 電車に行きます, バイクに行く, 車に来ました)
         [GeneratedRegex(@"(?:(?:電車|バス|車|タクシー|飛行機|新幹線|自転車|バイク)[\s]*に[\s]*(?:行[くきっ]|い[くきっ]|来[るま]|き[たま]|帰[るりっ]|かえ[るりっ]))", RegexOptions.Compiled)]
         private static partial Regex E10TransportNiDeRegex();
+
+        // E11: Bare noun cộc lốc khi gọi món (VD: 卵です, ラーメンです, 水です)
+        [GeneratedRegex(@"^(?:(?:[ぁ-んァ-ヶ一-龯a-zA-Z0-9]+[\s]+)?(?:卵|たまご|味玉|水|お水|ビール|ラーメン|ごはん|ご飯|チャーシュー|替玉|替え玉)[\s]*です[。！？]?)$", RegexOptions.Compiled)]
+        private static partial Regex E11BareNounOrderRegex();
+
+        // E12: Đoản ngữ thiếu vị ngữ khi đặt hàng (VD: 卵を注文, 替玉を注文, 水を希望)
+        [GeneratedRegex(@"(?:[ぁ-んァ-ヶ一-龯]+[\s]*を[\s]*(?:注文|追加|希望)[\s]*(?:です)?$)", RegexOptions.Compiled)]
+        private static partial Regex E12VerblessOrderRegex();
+
+        // E13: Dùng động từ từ điển + ことですか thay vì thể khả năng (VD: 使うことですか, 払うことですか)
+        [GeneratedRegex(@"(?:[ぁ-んァ-ヶ一-龯]+(?:る|う|く|す|つ|ぬ|ふ|む)[\s]*ことですか)", RegexOptions.Compiled)]
+        private static partial Regex E13KotoDesuKaPotentialRegex();
+
+        // E14: Lạm dụng 'OK / OKです' trong bối cảnh giao tiếp dịch vụ tiếng Nhật
+        [GeneratedRegex(@"(?:\bOK\s*(?:です)?\b|ＯＫ\s*(?:です)?)", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
+        private static partial Regex E14OkDesuOveruseRegex();
 
         public IReadOnlyList<DetectedGrammarIssue> DetectErrors(string japaneseText)
         {
@@ -220,7 +235,6 @@ namespace JCAP.Services.Implementations
                     ExplanationVi = "Sau Danh từ và Tính từ đuôi な (như 便利, 暇, 静か, 雨...), khi nối với から chỉ lý do bắt buộc phải có だ (thể ngắn) hoặc です (thể lịch sự): 便利だから, 雨だから."
                 });
             }
-
             // E10 Check
             var m10 = E10TransportNiDeRegex().Match(japaneseText);
             if (m10.Success)
@@ -233,6 +247,66 @@ namespace JCAP.Services.Implementations
                     MatchedSnippet = m10.Value,
                     SuggestedFix = m10.Value.Replace("に", "で"),
                     ExplanationVi = "Phương tiện giao thông (電車, バス, 車, タクシー...) khi dùng để di chuyển phải đi với trợ từ で (chỉ phương tiện/cách thức), không dùng に (chỉ điểm đến hoặc thời gian)."
+                });
+            }
+
+            // E11 Check: Bare noun cộc lốc khi gọi món
+            var m11 = E11BareNounOrderRegex().Match(japaneseText.Trim());
+            if (m11.Success)
+            {
+                issues.Add(new DetectedGrammarIssue
+                {
+                    Code = "E11_BARE_NOUN_ORDER",
+                    Title = "Diễn đạt cộc lốc khi gọi món (chỉ nói tên món + です)",
+                    Severity = "warning",
+                    MatchedSnippet = m11.Value,
+                    SuggestedFix = m11.Value.Replace("です", "をお願いします").Replace("。", "") + " / 〜を追加してください",
+                    ExplanationVi = "Trong giao tiếp dịch vụ hoặc nhà hàng Nhật Bản, chỉ nói tên món kèm 'です' (như '卵です') tạo cảm giác cộc lốc, chưa tự nhiên. Hãy nói '〜をお願いします' hoặc '〜を追加してください'."
+                });
+            }
+
+            // E12 Check: Đoản ngữ thiếu vị ngữ
+            var m12 = E12VerblessOrderRegex().Match(japaneseText.Trim());
+            if (m12.Success)
+            {
+                issues.Add(new DetectedGrammarIssue
+                {
+                    Code = "E12_VERBLESS_ORDER",
+                    Title = "Đoản ngữ thiếu vị ngữ hoàn chỉnh",
+                    Severity = "warning",
+                    MatchedSnippet = m12.Value,
+                    SuggestedFix = m12.Value.Replace("注文", "注文します").Replace("追加", "追加してください") + " / 〜をお願いします",
+                    ExplanationVi = "Cụm từ dạng '〜を注文' bị thiếu vị ngữ động từ hoàn chỉnh. Hãy dùng '〜を注文します' hoặc '〜をお願いします'."
+                });
+            }
+
+            // E13 Check: Động từ từ điển + ことですか thay vì thể khả năng
+            var m13 = E13KotoDesuKaPotentialRegex().Match(japaneseText);
+            if (m13.Success)
+            {
+                issues.Add(new DetectedGrammarIssue
+                {
+                    Code = "E13_KOTO_DESU_KA_POTENTIAL",
+                    Title = "Sai cách hỏi khả năng (ghép động từ từ điển + ことですか)",
+                    Severity = "warning",
+                    MatchedSnippet = m13.Value,
+                    SuggestedFix = m13.Value.Replace("使うことですか", "使えますか").Replace("ことですか", "できますか"),
+                    ExplanationVi = "Để hỏi xem một dịch vụ hay phương thức có được chấp nhận/sử dụng được không, hãy dùng thể khả năng (VD: '使えますか' hoặc '利用できますか'), không ghép động từ nguyên mẫu với 'ことですか'."
+                });
+            }
+
+            // E14 Check: Lạm dụng 'OK' trong hội thoại dịch vụ Nhật Bản
+            var m14 = E14OkDesuOveruseRegex().Match(japaneseText);
+            if (m14.Success)
+            {
+                issues.Add(new DetectedGrammarIssue
+                {
+                    Code = "E14_OK_DESU_OVERUSE",
+                    Title = "Lạm dụng 'OK' trong văn phong hội thoại tiếng Nhật",
+                    Severity = "warning",
+                    MatchedSnippet = m14.Value,
+                    SuggestedFix = "大丈夫です / かしこまりました / 問題ありません",
+                    ExplanationVi = "Trong bối cảnh nhà hàng và dịch vụ tại Nhật, dùng 'OK' hoặc 'OKです' bị coi là suồng sã, thiếu trang trọng. Hãy dùng '大丈夫です' hoặc 'かしこまりました'."
                 });
             }
 

@@ -83,6 +83,41 @@ namespace JCAP.Tests.Services
             Assert.Contains(issues, i => i.Code == expectedCode);
         }
 
+        [Theory]
+        [InlineData("卵です", "E11_BARE_NOUN_ORDER")]
+        [InlineData("水です", "E11_BARE_NOUN_ORDER")]
+        public void Detects_E11_BareNounOrder(string input, string expectedCode)
+        {
+            var issues = _detector.DetectErrors(input);
+            Assert.Contains(issues, i => i.Code == expectedCode);
+        }
+
+        [Theory]
+        [InlineData("すみません 卵を注文", "E12_VERBLESS_ORDER")]
+        [InlineData("替玉を追加", "E12_VERBLESS_ORDER")]
+        public void Detects_E12_VerblessOrder(string input, string expectedCode)
+        {
+            var issues = _detector.DetectErrors(input);
+            Assert.Contains(issues, i => i.Code == expectedCode);
+        }
+
+        [Theory]
+        [InlineData("クレジットカードは使うことですか", "E13_KOTO_DESU_KA_POTENTIAL")]
+        public void Detects_E13_KotoDesuKaPotential(string input, string expectedCode)
+        {
+            var issues = _detector.DetectErrors(input);
+            Assert.Contains(issues, i => i.Code == expectedCode);
+        }
+
+        [Theory]
+        [InlineData("OK です", "E14_OK_DESU_OVERUSE")]
+        [InlineData("OK", "E14_OK_DESU_OVERUSE")]
+        public void Detects_E14_OkDesuOveruse(string input, string expectedCode)
+        {
+            var issues = _detector.DetectErrors(input);
+            Assert.Contains(issues, i => i.Code == expectedCode);
+        }
+
         [Fact]
         public void CleanJapanese_ReturnsNoIssues()
         {

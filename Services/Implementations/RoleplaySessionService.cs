@@ -457,6 +457,10 @@ public class RoleplaySessionService : IRoleplaySessionService
         var session = await _dbContext.RoleplaySessions
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
+            .Include(s => s.ScenarioLevelConfiguration)
+                .ThenInclude(c => c!.TargetVocabularies)
+            .Include(s => s.ScenarioLevelConfiguration)
+                .ThenInclude(c => c!.TargetGrammars)
             .Include(s => s.SessionMissions)
                 .ThenInclude(sm => sm.Mission)
             .Include(s => s.Messages)

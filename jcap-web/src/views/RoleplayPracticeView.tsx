@@ -1390,6 +1390,12 @@ export const RoleplayPracticeView: React.FC = () => {
           setTimeout(() => setToastMessage(null), 4000);
         }
 
+        // Dynamic Scaffolding DDA: Khích lệ học viên khi hệ thống phát hiện cần trợ lực phản xạ
+        if (turn.shouldOfferEncouragement && !turn.newlyCompletedMissionIds?.length) {
+          setToastMessage('💡 Tiếp tục phát huy! Hãy thử trả lời bằng câu hoàn chỉnh (như 〜をお願いします) để ghi điểm tối đa.');
+          setTimeout(() => setToastMessage(null), 4500);
+        }
+
 
         // Con dấu Eki-Stamp Hanko khi kết thúc tự nhiên hoặc hoàn thành mọi nhiệm vụ
         if (turn.isNaturallyConcluded || turn.allMissionsCompleted) {
