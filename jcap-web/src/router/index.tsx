@@ -311,6 +311,14 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/roleplay/:sessionId"
+        element={
+          <PrivateRoute>
+            <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
 
       {/* Interactive Shadowing Practice Room (FE Fullscreen matching Reference Image 2) */}
       <Route
