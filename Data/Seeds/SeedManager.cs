@@ -30,9 +30,6 @@ namespace JCAP.Data.Seeds
                 // 4b. Seed bản đồ Khám phá: 47 tỉnh, chương, mốc học thử (Chiba/Tokyo/Kyoto/Nara)
                 await ExploreSeeder.SeedAsync(services);
 
-                // 4c. Seed chủ đề tự học mẫu và bộ thẻ Flashcard (Ẩm thực & Gọi món nhà hàng - N5)
-                await LearningTopicSeeder.SeedAsync(services);
-
                 // 5. Chuẩn hóa diễn giải các giao dịch đã tạo trước đây trong DB
                 var oldTransactions = await context.CreditTransactions
                     .Where(t => t.Description != null && (t.Description.Contains("Nạp gói Gói") || t.Description.Contains("Nạp gói gói")))
