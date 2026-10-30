@@ -47,6 +47,10 @@ public class SpeechDeliveryMetricsDto
     public double? SpeechConfidence { get; set; }
     public double? SpeechPace { get; set; }
     public int? TurnFluencyScore { get; set; }
+    public int? TurnAutonomyScore { get; set; }
+    public string? AutonomyAssessment { get; set; }
+    public int? PronunciationClarityScore { get; set; }
+    public double? MoraRate { get; set; }
     public string? JlptLevel { get; set; }
     public string? PaceAssessment { get; set; }
     public string? LatencyAssessment { get; set; }
