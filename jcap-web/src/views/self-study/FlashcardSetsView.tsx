@@ -117,6 +117,31 @@ export const FlashcardSetsView: React.FC = () => {
     );
   }, [safeSets, searchQuery]);
 
+  // Phân trang danh sách bộ thẻ (10 bộ mỗi trang)
+  const PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset về trang 1 khi đổi bộ lọc hoặc từ khóa tìm kiếm
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [typeFilter, jlptFilter, searchQuery]);
+
+  // Tổng số trang
+  const totalPages = Math.max(1, Math.ceil(filteredSets.length / PAGE_SIZE));
+
+  // Tự động điều chỉnh trang nếu vượt quá tổng số trang hợp lệ
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  // Danh sách bộ thẻ hiển thị trên trang hiện tại
+  const paginatedSets = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredSets.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredSets, currentPage]);
+
   // Tổng số thẻ đến hạn hôm nay trong tất cả bộ
   const totalDueToday = useMemo(() => {
     return safeSets.reduce((acc, curr) => acc + (curr?.dueCards || 0), 0);
@@ -500,8 +525,9 @@ export const FlashcardSetsView: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredSets.map((set) => {
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {paginatedSets.map((set) => {
               const isGrammar = set.contentType === 'Grammar';
               const hasDue = set.dueCards > 0;
               const isCompletedToday = !hasDue && set.learnedCards === set.totalCards && set.totalCards > 0;
@@ -621,6 +647,82 @@ export const FlashcardSetsView: React.FC = () => {
                 </div>
               );
             })}
+            </div>
+
+            {/* Thanh điều hướng phân trang (10 bộ thẻ / trang) */}
+            {filteredSets.length > PAGE_SIZE && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                {/* Thông tin số lượng hiển thị */}
+                <div className="text-xs text-slate-500 font-medium">
+                  Hiển thị <span className="font-bold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1}</span> – <span className="font-bold text-slate-800">{Math.min(currentPage * PAGE_SIZE, filteredSets.length)}</span> trên tổng số <span className="font-bold text-slate-800">{filteredSets.length}</span> bộ thẻ (Trang {currentPage}/{totalPages})
+                </div>
+
+                {/* Nút bấm chuyển trang */}
+                <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.max(1, prev - 1));
+                      window.scrollTo({ top: 380, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>◀</span>
+                    <span>Trước</span>
+                  </button>
+
+                  {/* Danh sách các số trang */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                    // Logic thu gọn số trang nếu tổng số trang > 7
+                    if (
+                      totalPages > 7 &&
+                      pageNum !== 1 &&
+                      pageNum !== totalPages &&
+                      Math.abs(pageNum - currentPage) > 1
+                    ) {
+                      if (pageNum === 2 || pageNum === totalPages - 1) {
+                        return (
+                          <span key={'ellipsis-' + pageNum} className="px-1.5 text-slate-400 text-xs select-none">
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    }
+
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          window.scrollTo({ top: 380, behavior: 'smooth' });
+                        }}
+                        className={'w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ' + (
+                          isActive
+                            ? 'bg-[#2563EB] text-white shadow-xs'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                        )}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                      window.scrollTo({ top: 380, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Sau</span>
+                    <span>▶</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
