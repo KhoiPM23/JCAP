@@ -157,11 +157,11 @@ class UkiyoSoundEngine {
     osc2.frequency.exponentialRampToValueAtTime(440, now + 0.12);
 
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(800, now);
+    filter.frequency.setValueAtTime(2200, now);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    gain.gain.linearRampToValueAtTime(0.38, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
     osc1.connect(filter);
     osc2.connect(filter);
@@ -170,8 +170,8 @@ class UkiyoSoundEngine {
 
     osc1.start(now);
     osc2.start(now);
-    osc1.stop(now + 0.35);
-    osc2.stop(now + 0.35);
+    osc1.stop(now + 0.4);
+    osc2.stop(now + 0.4);
   }
 
   /**

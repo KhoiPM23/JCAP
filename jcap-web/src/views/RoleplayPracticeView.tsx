@@ -95,17 +95,25 @@ export const RoleplayPracticeView: React.FC = () => {
 
   useEffect(() => {
     let interval: any = null;
+    let autoStopTimeout: any = null;
     if (isRecordingMic) {
       const start = Date.now();
       setRecordingDurationSec(0);
       interval = setInterval(() => {
         setRecordingDurationSec(Number(((Date.now() - start) / 1000).toFixed(1)));
       }, 100);
+      // Giới hạn 12s tự động chốt và chuyển sang Whisper để người học không phải đợi lâu
+      autoStopTimeout = setTimeout(() => {
+        if (isRecordingMicRef.current) {
+          void stopSpeechRecognition();
+        }
+      }, 12000);
     } else {
       setRecordingDurationSec(0);
     }
     return () => {
       if (interval) clearInterval(interval);
+      if (autoStopTimeout) clearTimeout(autoStopTimeout);
     };
   }, [isRecordingMic]);
 
@@ -238,6 +246,7 @@ export const RoleplayPracticeView: React.FC = () => {
   // AI Proactive Engagement (Chủ động gợi ý đồng hành khi người học im lặng > 14s)
   const [showProactiveHint, setShowProactiveHint] = useState(false);
   const idleTimerRef = useRef<any>(null);
+  const proactiveDismissedTurnRef = useRef<number>(-1);
 
 
   // Trạng thái sao chép và phát âm câu gợi ý bản xứ
@@ -820,6 +829,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     // Chỉ đếm ngược khi AI không nói, người học không gõ/nói, kịch bản chưa kết thúc, chưa mở hint, và không ở chế độ Rảnh tay
+    if (proactiveDismissedTurnRef.current === session?.messages.length) return;
     if (!isHandsFreeMode && !isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded && !hint) {
       idleTimerRef.current = setTimeout(() => {
         setShowProactiveHint(true);
@@ -1301,6 +1311,16 @@ export const RoleplayPracticeView: React.FC = () => {
       };
     });
 
+
+    // Anti-Cheat: Nếu người học xem gợi ý Cấp 3 hoặc copy câu mẫu gợi ý
+    if (hint) {
+      const sample = (hint.suggestedJapaneseText || hint.japaneseSuggestion || '').trim();
+      const userClean = trimmed.replace(/[\s\.,?!。、？！]/g, '');
+      const sampleClean = sample.replace(/[\s\.,?!。、？！]/g, '');
+      if (sampleClean.length >= 4 && (userClean.includes(sampleClean) || sampleClean.includes(userClean))) {
+        hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 3);
+      }
+    }
 
     setIsSending(true);
     ukiyoSound.playAizuchi();
