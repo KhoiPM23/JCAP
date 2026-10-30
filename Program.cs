@@ -20,7 +20,13 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 
 // 1. Cấu hình DbContext kết nối SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions =>
+        {
+            sqlServerOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            sqlServerOptions.CommandTimeout(60);
+        }));
 
 // Explicit local sample import; exits before web startup and all unrelated automatic seeders.
 if (args.Contains("--import-learning-sample"))

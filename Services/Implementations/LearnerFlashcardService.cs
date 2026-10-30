@@ -685,7 +685,8 @@ namespace JCAP.Services.Implementations
             if (!session.EndedAt.HasValue)
             {
                 session.EndedAt = nowUtc;
-                session.TotalCards = session.ReviewLogs.Count;
+                int uniqueCount = session.ReviewLogs.Select(l => l.VocabularyId.HasValue ? ("v_" + l.VocabularyId) : ("g_" + l.GrammarId)).Distinct().Count();
+                if (uniqueCount > 0) session.TotalCards = uniqueCount;
                 await _db.SaveChangesAsync();
             }
 
@@ -704,8 +705,9 @@ namespace JCAP.Services.Implementations
             {
                 SessionId = session.Id,
                 SetTitle = session.SetTitleSnapshot,
-                StartedAt = session.StartedAt,
-                EndedAt = endedAt,
+                IsExtraPractice = session.IsExtraPractice,
+                StartedAt = DateTime.SpecifyKind(session.StartedAt, DateTimeKind.Utc),
+                EndedAt = DateTime.SpecifyKind(endedAt, DateTimeKind.Utc),
                 DurationSeconds = durationSec,
                 TotalReviewed = session.ReviewLogs.Count,
                 AgainCount = session.AgainCount,
@@ -753,6 +755,69 @@ namespace JCAP.Services.Implementations
                 Session = MapSessionHistoryItemDto(session),
                 Logs = logs
             });
+        }
+
+        public async Task<ApiResponse<bool>> SimulateTimeAdvanceAsync(string userId, int days)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return ApiResponse<bool>.Fail("Chưa xác thực người dùng.");
+            }
+
+            if (days <= 0)
+            {
+                return ApiResponse<bool>.Fail("Số ngày giả lập phải lớn hơn 0.");
+            }
+
+            // 1. Lùi thời gian tiến độ SRS của các thẻ (cộng thêm 1 phút đệm để đảm bảo NextReviewAt < UtcNow)
+            var progresses = await _db.LearnerFlashcardProgresses
+                .Where(p => p.UserId == userId)
+                .ToListAsync();
+
+            foreach (var p in progresses)
+            {
+                p.NextReviewAt = p.NextReviewAt.AddDays(-days).AddMinutes(-1);
+                p.LastReviewedAt = p.LastReviewedAt.AddDays(-days);
+            }
+
+            // 2. Lùi thời gian các log ôn tập (để giải phóng quota thẻ mới hôm nay)
+            var logs = await _db.FlashcardReviewLogs
+                .Where(l => l.UserId == userId)
+                .ToListAsync();
+
+            foreach (var l in logs)
+            {
+                l.ReviewedAt = l.ReviewedAt.AddDays(-days);
+            }
+
+            // 3. Lùi thời gian các phiên học
+            var sessions = await _db.FlashcardStudySessions
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+
+            foreach (var s in sessions)
+            {
+                s.StartedAt = s.StartedAt.AddDays(-days);
+                if (s.EndedAt.HasValue)
+                {
+                    s.EndedAt = s.EndedAt.Value.AddDays(-days);
+                }
+            }
+
+            // 4. Lùi ngày hạn mức (Quota) đã mở khóa trước đó
+            var quotas = await _db.LearnerDailyFlashcardQuotas
+                .Where(q => q.UserId == userId)
+                .ToListAsync();
+
+            foreach (var q in quotas)
+            {
+                q.DateVn = q.DateVn.AddDays(-days);
+                q.UpdatedAt = q.UpdatedAt.AddDays(-days);
+            }
+
+            await _db.SaveChangesAsync();
+
+            return ApiResponse<bool>.Ok(true, $"Đã giả lập tua nhanh {days} ngày.");
         }
 
         private async Task<FlashcardQuotaDto?> BuildQuotaDtoAsync(string userId, DateTime nowUtc)
@@ -863,10 +928,11 @@ namespace JCAP.Services.Implementations
                 SetTitle = s.SetTitleSnapshot,
                 ContentType = s.ContentType,
                 IsExtraPractice = s.IsExtraPractice,
-                StartedAt = s.StartedAt,
-                EndedAt = s.EndedAt,
+                StartedAt = DateTime.SpecifyKind(s.StartedAt, DateTimeKind.Utc),
+                EndedAt = s.EndedAt.HasValue ? DateTime.SpecifyKind(s.EndedAt.Value, DateTimeKind.Utc) : null,
                 DurationSeconds = duration,
-                TotalCards = s.AgainCount + s.GoodCount + s.EasyCount,
+                TotalCards = s.TotalCards > 0 ? s.TotalCards : (s.AgainCount + s.GoodCount + s.EasyCount),
+                TotalReviews = s.AgainCount + s.GoodCount + s.EasyCount,
                 AgainCount = s.AgainCount,
                 GoodCount = s.GoodCount,
                 EasyCount = s.EasyCount
@@ -886,7 +952,7 @@ namespace JCAP.Services.Implementations
                 IsNewCard = l.IsNewCard,
                 IntervalBefore = l.IntervalBefore,
                 IntervalAfter = l.IntervalAfter,
-                ReviewedAt = l.ReviewedAt
+                ReviewedAt = DateTime.SpecifyKind(l.ReviewedAt, DateTimeKind.Utc)
             };
         }
 

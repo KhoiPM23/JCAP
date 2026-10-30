@@ -3,6 +3,20 @@ import { Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardSessionHistoryItem, FlashcardSessionHistoryDetail } from '../../types/flashcard';
 
+const formatVnDateTime = (dateStr?: string | null): string => {
+  if (!dateStr) return '';
+  const utcStr = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`;
+  return new Date(utcStr).toLocaleString('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
 export const FlashcardReviewHistoryView: React.FC = () => {
   const [historyItems, setHistoryItems] = useState<FlashcardSessionHistoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,7 +86,10 @@ export const FlashcardReviewHistoryView: React.FC = () => {
     const retentionRate = totalReviewed > 0 ? Math.round((totalGoodOrEasy / totalReviewed) * 100) : 0;
 
     const distinctDays = new Set(
-      historyItems.map((item) => new Date(item.startedAt).toISOString().split('T')[0])
+      historyItems.map((item) => {
+        const utcStr = item.startedAt.endsWith('Z') || item.startedAt.includes('+') ? item.startedAt : `${item.startedAt}Z`;
+        return new Date(utcStr).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+      })
     );
     const streak = distinctDays.size;
 
@@ -83,6 +100,51 @@ export const FlashcardReviewHistoryView: React.FC = () => {
       streak,
     };
   }, [historyItems]);
+
+  // Gom nhóm các lượt đánh giá theo từng thẻ duy nhất trong phiên (loại bỏ trùng lặp khi bấm Học lại nhiều lần)
+  const groupedLogs = useMemo(() => {
+    if (!sessionDetail?.logs) return [];
+    const map = new Map<string, {
+      key: string;
+      itemId: number;
+      itemType: string;
+      frontText: string;
+      meaning: string;
+      finalRating: string;
+      againCount: number;
+      intervalBefore: number;
+      intervalAfter: number;
+      reviewedAt: string;
+    }>();
+
+    sessionDetail.logs.forEach((log) => {
+      const key = `${log.itemType}_${log.itemId}`;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, {
+          key,
+          itemId: log.itemId,
+          itemType: log.itemType,
+          frontText: log.frontText,
+          meaning: log.meaning,
+          finalRating: log.rating,
+          againCount: log.rating === 'Again' ? 1 : 0,
+          intervalBefore: log.intervalBefore,
+          intervalAfter: log.intervalAfter,
+          reviewedAt: log.reviewedAt,
+        });
+      } else {
+        if (log.rating === 'Again') {
+          existing.againCount += 1;
+        }
+        existing.finalRating = log.rating;
+        existing.intervalAfter = log.intervalAfter;
+        existing.reviewedAt = log.reviewedAt;
+      }
+    });
+
+    return Array.from(map.values());
+  }, [sessionDetail]);
 
   return (
     <div className="min-h-screen bg-[#F4F9FE] py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -285,41 +347,59 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">
                           {item.sourceType === 'Bookmark' ? 'Thẻ đã lưu' : 'Theo chủ đề'}
                         </span>
+                        {item.isExtraPractice && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                            ↻ Ôn tập thêm
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {new Date(item.startedAt).toLocaleString('vi-VN')} • Thời lượng:{' '}
+                        {formatVnDateTime(item.startedAt)} • Thời lượng:{' '}
                         <span className="font-semibold text-slate-700">
                           {durationMinutes > 0 ? `${durationMinutes}m ` : ''}
                           {durationSecs}s
                         </span>{' '}
-                        • Tổng cộng:{' '}
+                        • Quy mô:{' '}
                         <span className="font-bold text-[#2563EB]">{item.totalCards} thẻ</span>
+                        {total > item.totalCards && !item.isExtraPractice && (
+                          <span className="text-slate-400 font-medium ml-1">
+                            ({total} lượt ôn)
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {/* Middle: Rating Breakdown Pills & Bar */}
                   <div className="space-y-1.5 lg:w-72">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-red-700">🔴 {item.againCount}</span>
-                      <span className="text-blue-700">🔵 {item.goodCount}</span>
-                      <span className="text-emerald-700">🟢 {item.easyCount}</span>
-                    </div>
+                    {item.isExtraPractice ? (
+                      <div className="text-xs font-semibold text-slate-500 bg-slate-50 py-2 px-3 rounded-xl border border-slate-200 text-center">
+                        ↻ Duyệt tự do ({item.totalCards} thẻ) • Không tính SRS
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-red-700">🔴 {item.againCount}</span>
+                          <span className="text-blue-700">🔵 {item.goodCount}</span>
+                          <span className="text-emerald-700">🟢 {item.easyCount}</span>
+                        </div>
 
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
-                      <div
-                        className="bg-red-500 h-full"
-                        style={{ width: `${(item.againCount / Math.max(1, total)) * 100}%` }}
-                      />
-                      <div
-                        className="bg-blue-500 h-full"
-                        style={{ width: `${(item.goodCount / Math.max(1, total)) * 100}%` }}
-                      />
-                      <div
-                        className="bg-emerald-500 h-full"
-                        style={{ width: `${(item.easyCount / Math.max(1, total)) * 100}%` }}
-                      />
-                    </div>
+                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+                          <div
+                            className="bg-red-500 h-full"
+                            style={{ width: `${(item.againCount / Math.max(1, total)) * 100}%` }}
+                          />
+                          <div
+                            className="bg-blue-500 h-full"
+                            style={{ width: `${(item.goodCount / Math.max(1, total)) * 100}%` }}
+                          />
+                          <div
+                            className="bg-emerald-500 h-full"
+                            style={{ width: `${(item.easyCount / Math.max(1, total)) * 100}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Right: View Detail Button */}
@@ -363,34 +443,58 @@ export const FlashcardReviewHistoryView: React.FC = () => {
               ) : sessionDetail ? (
                 <div className="overflow-y-auto space-y-2 flex-1 pr-1">
                   <div className="text-xs text-slate-500 pb-2">
-                    {sessionDetail.session.setTitle} • Tổng cộng {sessionDetail.logs.length} lượt đánh giá
+                    {sessionDetail.session.setTitle} •{' '}
+                    {sessionDetail.session.isExtraPractice
+                      ? `Ôn tập tự do (${groupedLogs.length} thẻ)`
+                      : `Quy mô: ${groupedLogs.length} thẻ (${sessionDetail.logs.length} lượt đánh giá)`}
                   </div>
 
-                  {sessionDetail.logs.map((log) => (
+                  {groupedLogs.map((item) => (
                     <div
-                      key={log.logId}
+                      key={item.key}
                       className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs gap-3"
                     >
-                      <div>
-                        <div className="font-extrabold text-[#071A44] text-sm">{log.frontText}</div>
-                        <div className="text-slate-500 text-[11px] line-clamp-1">{log.meaning}</div>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-[#071A44] text-sm">{item.frontText}</span>
+                          {item.againCount > 0 && !sessionDetail.session.isExtraPractice && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
+                              🔄 {item.againCount} lượt học lại
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-slate-500 text-[11px] line-clamp-1">{item.meaning}</div>
                       </div>
 
-                      <div className="flex items-center gap-3 text-right">
+                      <div className="flex items-center gap-3 text-right shrink-0">
                         <div className="text-[11px] text-slate-400">
-                          {log.intervalBefore} ngày ➔{' '}
-                          <span className="font-bold text-slate-700">{log.intervalAfter} ngày</span>
+                          {sessionDetail.session.isExtraPractice ? (
+                            <span className="text-slate-500 font-medium">Ôn tự do</span>
+                          ) : (
+                            <>
+                              {item.intervalBefore} ngày ➔{' '}
+                              <span className="font-bold text-slate-700">{item.intervalAfter} ngày</span>
+                            </>
+                          )}
                         </div>
                         <span
                           className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
-                            log.rating === 'Again'
+                            sessionDetail.session.isExtraPractice
+                              ? 'bg-blue-100 text-blue-800'
+                              : item.finalRating === 'Again'
                               ? 'bg-red-100 text-red-800'
-                              : log.rating === 'Good'
+                              : item.finalRating === 'Good'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-emerald-100 text-emerald-800'
                           }`}
                         >
-                          {log.rating === 'Again' ? 'Học lại' : log.rating === 'Good' ? 'Tốt' : 'Dễ'}
+                          {sessionDetail.session.isExtraPractice
+                            ? 'Đã duyệt'
+                            : item.finalRating === 'Again'
+                            ? 'Học lại'
+                            : item.finalRating === 'Good'
+                            ? 'Tốt'
+                            : 'Dễ'}
                         </span>
                       </div>
                     </div>

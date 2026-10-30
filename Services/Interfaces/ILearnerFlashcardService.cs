@@ -36,5 +36,7 @@ namespace JCAP.Services.Interfaces
 
         Task<ApiResponse<List<FlashcardSessionHistoryItemDto>>> GetSessionHistoryAsync(string userId);
         Task<ApiResponse<FlashcardSessionHistoryDetailDto>> GetSessionHistoryDetailAsync(string userId, int sessionId);
+
+        Task<ApiResponse<bool>> SimulateTimeAdvanceAsync(string userId, int days);
     }
 }

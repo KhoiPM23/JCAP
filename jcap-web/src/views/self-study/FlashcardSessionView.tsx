@@ -628,6 +628,45 @@ export const FlashcardSessionView: React.FC = () => {
     setSpeechFeedback(null);
   }, [leechCards]);
 
+  // Điều hướng duyệt thẻ trong chế độ Ôn tập tự do (Extra Practice)
+  const handlePrevCard = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+      setIsFlipped(false);
+      setSpeechFeedback(null);
+    }
+  }, [currentIndex]);
+
+  const handleFinishExtraPractice = useCallback(async () => {
+    if (session?.sessionId && !isDemo) {
+      try {
+        const res = await flashcardService.getSessionSummary(session.sessionId);
+        if (res.success && res.data) {
+          setSummary(res.data);
+        }
+      } catch {}
+    }
+    setIsCompleted(true);
+  }, [session, isDemo]);
+
+  const handleNextCard = useCallback(() => {
+    if (session?.sessionId && currentCard && !isDemo) {
+      flashcardService.rateCard(session.sessionId, {
+        itemId: currentCard.itemId,
+        itemType: currentCard.itemType,
+        rating: 'Good',
+      }).catch(() => {});
+    }
+
+    if (currentIndex < queue.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      setIsFlipped(false);
+      setSpeechFeedback(null);
+    } else {
+      handleFinishExtraPractice();
+    }
+  }, [currentIndex, queue.length, session, currentCard, isDemo, handleFinishExtraPractice]);
+
   // Toggle Bookmark
   const handleToggleBookmark = useCallback(() => {
     if (!currentCard) return;
@@ -643,13 +682,19 @@ export const FlashcardSessionView: React.FC = () => {
       if (e.code === 'Space') {
         e.preventDefault();
         handleToggleFlip();
-      } else if (e.key === '1') {
+      } else if (isExtraPractice && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevCard();
+      } else if (isExtraPractice && (e.key === 'ArrowRight' || e.key === 'Enter')) {
+        e.preventDefault();
+        handleNextCard();
+      } else if (!isExtraPractice && e.key === '1') {
         e.preventDefault();
         handleRate('Again');
-      } else if (e.key === '2') {
+      } else if (!isExtraPractice && e.key === '2') {
         e.preventDefault();
         handleRate('Good');
-      } else if (e.key === '3') {
+      } else if (!isExtraPractice && e.key === '3') {
         e.preventDefault();
         handleRate('Easy');
       } else if (e.key === 'a' || e.key === 'A') {
@@ -680,6 +725,9 @@ export const FlashcardSessionView: React.FC = () => {
   }, [
     isCompleted,
     handleRate,
+    handlePrevCard,
+    handleNextCard,
+    isExtraPractice,
     currentCard,
     playTargetAudio,
     handleVoicePractice,
@@ -737,33 +785,57 @@ export const FlashcardSessionView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-2xl font-black text-[#071A44]">
-              {isMiniRound ? 'Hoàn thành Mini-round!' : 'Hoàn thành phiên học!'}
+              {isExtraPractice
+                ? 'Hoàn thành ôn tập tự do!'
+                : isMiniRound
+                ? 'Hoàn thành Mini-round!'
+                : 'Hoàn thành phiên học!'}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              {isMiniRound
+              {isExtraPractice
+                ? `Bạn đã duyệt qua toàn bộ ${queue.length} thẻ trong phiên ôn tập tự do này.`
+                : isMiniRound
                 ? 'Bạn đã ôn nhanh xong các thẻ khó trong danh sách Cần chú ý.'
                 : `Bạn đã hoàn thành ${totalOriginalCards} / ${totalOriginalCards} thẻ của phiên học này.`}
             </p>
           </div>
 
           {/* Thống kê đánh giá */}
-          <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-            <div className="bg-red-50 p-2.5 rounded-xl border border-red-200">
-              <div className="text-[10px] font-bold text-red-700 uppercase">Lượt Học lại</div>
-              <div className="text-lg font-black text-red-900">{ratingCounts.again}</div>
+          {isExtraPractice ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                  <div className="text-[10px] font-bold text-blue-700 uppercase">Số thẻ đã xem</div>
+                  <div className="text-xl font-black text-blue-900">{queue.length} thẻ</div>
+                </div>
+                <div className="bg-indigo-50 p-3 rounded-xl border border-indigo-200">
+                  <div className="text-[10px] font-bold text-indigo-700 uppercase">Chế độ</div>
+                  <div className="text-xs font-black text-indigo-900 mt-1">Ôn tự do (Freeze SRS)</div>
+                </div>
+              </div>
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 text-center font-medium">
+                ✨ Lịch trình nhắc nhở SRS của các thẻ vẫn được bảo toàn nguyên vẹn!
+              </div>
             </div>
-            <div className="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
-              <div className="text-[10px] font-bold text-blue-700 uppercase">Tốt</div>
-              <div className="text-lg font-black text-blue-900">{ratingCounts.good}</div>
+          ) : (
+            <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+              <div className="bg-red-50 p-2.5 rounded-xl border border-red-200">
+                <div className="text-[10px] font-bold text-red-700 uppercase">Lượt Học lại</div>
+                <div className="text-lg font-black text-red-900">{ratingCounts.again}</div>
+              </div>
+              <div className="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
+                <div className="text-[10px] font-bold text-blue-700 uppercase">Tốt</div>
+                <div className="text-lg font-black text-blue-900">{ratingCounts.good}</div>
+              </div>
+              <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                <div className="text-[10px] font-bold text-emerald-700 uppercase">Dễ</div>
+                <div className="text-lg font-black text-emerald-900">{ratingCounts.easy}</div>
+              </div>
             </div>
-            <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
-              <div className="text-[10px] font-bold text-emerald-700 uppercase">Dễ</div>
-              <div className="text-lg font-black text-emerald-900">{ratingCounts.easy}</div>
-            </div>
-          </div>
+          )}
 
           {/* Danh sách thẻ Leech (cần chú ý vì chọn Again > 2 lần) */}
-          {leechCards.length > 0 && (
+          {!isExtraPractice && leechCards.length > 0 && (
             <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-left space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-amber-900 flex items-center gap-1.5">
@@ -788,21 +860,23 @@ export const FlashcardSessionView: React.FC = () => {
             </div>
           )}
 
-          {isDemo ? (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 font-semibold space-y-1">
-              <div className="font-bold">🧪 Chế độ trải nghiệm thử (Sandbox)</div>
-              <div className="text-[11px] text-blue-700">
-                Bạn đã hoàn thành trọn vẹn luồng học mẫu! Toàn bộ tiến trình diễn ra trên RAM và tuyệt đối không ghi dữ liệu vào DB.
+          {!isExtraPractice && (
+            isDemo ? (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 font-semibold space-y-1">
+                <div className="font-bold">🧪 Chế độ trải nghiệm thử (Sandbox)</div>
+                <div className="text-[11px] text-blue-700">
+                  Bạn đã hoàn thành trọn vẹn luồng học mẫu! Toàn bộ tiến trình diễn ra trên RAM và tuyệt đối không ghi dữ liệu vào DB.
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="text-xs text-slate-500">
-              Tổng cộng: <span className="font-bold text-slate-800">{total} lượt đánh giá</span>. Lịch ôn tập ngắt quãng (SRS) đã được cập nhật thành công!
-            </div>
+            ) : (
+              <div className="text-xs text-slate-500">
+                Quy mô: <span className="font-bold text-slate-800">{totalOriginalCards} thẻ</span> • Tổng cộng: <span className="font-bold text-slate-800">{total} lượt đánh giá</span>. Lịch ôn tập ngắt quãng (SRS) đã được cập nhật thành công!
+              </div>
+            )
           )}
 
           <div className="space-y-2.5 pt-2">
-            {leechCards.length > 0 && !isMiniRound && (
+            {!isExtraPractice && leechCards.length > 0 && !isMiniRound && (
               <button
                 onClick={handleStartMiniRound}
                 className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
@@ -836,7 +910,7 @@ export const FlashcardSessionView: React.FC = () => {
     .slice(currentIndex)
     .filter((c) => (cardAgainMap[`${c.itemType}_${c.itemId}`] || 0) > 0).length;
   const safeTotalOriginal = Math.max(1, totalOriginalCards);
-  const progressPercent = Math.min(100, Math.round((resolvedCardsCount / safeTotalOriginal) * 100));
+  const progressPercent = isExtraPractice ? Math.min(100, Math.round(((currentIndex + 1) / Math.max(1, queue.length)) * 100)) : Math.min(100, Math.round((resolvedCardsCount / safeTotalOriginal) * 100));
   const isGrammarFront = isGrammar && !isFlipped;
 
   return (
@@ -891,8 +965,16 @@ export const FlashcardSessionView: React.FC = () => {
             </span>
           )}
 
+          {/* Badge chế độ Ôn tập tự do */}
+          {isExtraPractice && (
+            <span className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 flex items-center gap-1">
+              <span>↻</span>
+              <span>ÔN TẬP TỰ DO</span>
+            </span>
+          )}
+
           {/* Trạng thái ôn lại của thẻ hiện tại hoặc hàng đợi */}
-          {currentCardRetryAttempt > 0 ? (
+          {!isExtraPractice && currentCardRetryAttempt > 0 ? (
             <span className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-300 animate-pulse">
               🔄 Ôn lại {currentCardRetryAttempt}/{MAX_RETRIES_PER_CARD}
             </span>
@@ -908,9 +990,9 @@ export const FlashcardSessionView: React.FC = () => {
 
           {/* Số thẻ hoàn thành */}
           <div className="px-3 py-1 bg-slate-100/90 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center gap-1 shadow-2xs">
-            <span className="hidden sm:inline text-slate-500">Đã thuộc:</span>
+            <span className="hidden sm:inline text-slate-500">{isExtraPractice ? 'Thẻ:' : 'Đã thuộc:'}</span>
             <strong className="text-[#071A44] font-black">
-              {resolvedCardsCount}/{safeTotalOriginal}
+              {isExtraPractice ? `${currentIndex + 1}/${queue.length}` : `${resolvedCardsCount}/${safeTotalOriginal}`}
             </strong>
           </div>
         </div>
@@ -990,9 +1072,9 @@ export const FlashcardSessionView: React.FC = () => {
               <div className="h-4" />
             </div>
 
-            {/* ==================== MẶT SAU (CẤU TRÚC / CÁCH ĐỌC + NGHĨA + CÂU MẪU CHO NGỮ PHÁP) ==================== */}
+            {/* ==================== MẶT SAU (CẤU TRÚC / CÁCH ĐỌC + NGHĨA + CÂU MẪU + GIẢI THÍCH) ==================== */}
             <div
-              className={`absolute inset-0 w-full h-full bg-white rounded-3xl border-2 p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between ${
+              className={`absolute inset-0 w-full h-full bg-white rounded-3xl border-2 p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between overflow-y-auto ${
                 isGrammar ? 'border-purple-200' : 'border-blue-200'
               }`}
               style={{
@@ -1002,7 +1084,7 @@ export const FlashcardSessionView: React.FC = () => {
               }}
             >
               {/* Chỉ báo góc tối giản + Từ loại nhẹ nhàng */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between shrink-0">
                 <span
                   className={`text-[10px] font-bold uppercase tracking-widest ${
                     isGrammar ? 'text-purple-400' : 'text-blue-400'
@@ -1017,8 +1099,8 @@ export const FlashcardSessionView: React.FC = () => {
                 )}
               </div>
 
-              {/* Nội dung chính Mặt Sau: Cách đọc / Cấu trúc + Nghĩa + Câu mẫu */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center px-4 space-y-3">
+              {/* Nội dung chính Mặt Sau: Cách đọc / Cấu trúc + Nghĩa + Câu mẫu / Ví dụ + Giải thích */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-2 sm:px-4 py-2 space-y-2.5 max-w-full">
                 {currentCard.readingOrFormation && (
                   <div
                     className={`text-lg sm:text-xl font-bold ${
@@ -1029,7 +1111,7 @@ export const FlashcardSessionView: React.FC = () => {
                   </div>
                 )}
 
-                <h2 className="text-3xl sm:text-4xl font-black text-[#071A44] leading-snug">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#071A44] leading-snug">
                   {currentCard.meaning}
                 </h2>
 
@@ -1037,8 +1119,8 @@ export const FlashcardSessionView: React.FC = () => {
                 {isGrammar && currentCard.exampleSentence && (() => {
                   const { ja, vi } = extractJapaneseSentence(currentCard.exampleSentence);
                   return (
-                    <div className="mt-3 px-5 py-3.5 bg-purple-50/70 border border-purple-200/90 rounded-2xl max-w-lg w-full text-center shadow-2xs">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 mb-1 flex items-center justify-center gap-1.5">
+                    <div className="mt-2 px-4 py-2.5 bg-purple-50/70 border border-purple-200/90 rounded-2xl max-w-lg w-full text-center shadow-2xs">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 mb-0.5 flex items-center justify-center gap-1.5">
                         <span>💬</span>
                         <span>Câu mẫu minh họa</span>
                       </div>
@@ -1046,17 +1128,50 @@ export const FlashcardSessionView: React.FC = () => {
                         {ja}
                       </div>
                       {vi && (
-                        <div className="text-xs text-slate-600 font-medium mt-1">
+                        <div className="text-xs text-slate-600 font-medium mt-0.5">
                           {vi}
                         </div>
                       )}
                     </div>
                   );
                 })()}
+
+                {/* Với thẻ Từ vựng: Hiển thị câu ví dụ minh họa (nếu có) */}
+                {!isGrammar && currentCard.exampleSentence && (
+                  <div className="mt-2 px-4 py-2.5 bg-blue-50/60 border border-blue-200/80 rounded-2xl max-w-lg w-full text-center shadow-2xs">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+                        <span>💬</span>
+                        <span>Câu ví dụ</span>
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playAudio(currentCard.exampleSentence || '');
+                        }}
+                        disabled={isRecording || isPlayingAudio}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-bold px-1.5 py-0.5 rounded-md hover:bg-blue-100 transition-colors cursor-pointer"
+                        title="Nghe câu ví dụ"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                    <div className="text-sm sm:text-base font-bold text-blue-950 leading-relaxed">
+                      {currentCard.exampleSentence}
+                    </div>
+                  </div>
+                )}
+
+                {/* Giải thích chi tiết (cho cả Từ vựng và Ngữ pháp) */}
+                {currentCard.explanation && (
+                  <div className="mt-2 px-4 py-2 bg-slate-50 border border-slate-200/90 rounded-xl max-w-lg w-full text-xs text-slate-600 leading-relaxed text-left">
+                    <span className="font-bold text-slate-800">💡 Giải thích:</span> {currentCard.explanation}
+                  </div>
+                )}
               </div>
 
               {/* Khoảng đệm đáy giữ cân đối trục dọc */}
-              <div className="h-4" />
+              <div className="h-2 shrink-0" />
             </div>
           </div>
         </div>
@@ -1180,108 +1295,113 @@ export const FlashcardSessionView: React.FC = () => {
           )}
         </div>
 
-        {/* ==================== KHUNG GIẢI THÍCH CHI TIẾT TÁCH RỜI BÊN DƯỚI (HIỆN KHI LẬT MẶT SAU) ==================== */}
-        {isFlipped &&
-          ((isGrammar && currentCard.explanation) ||
-            (!isGrammar && (currentCard.explanation || currentCard.exampleSentence))) && (
-            <div className="w-full max-w-[760px] mt-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-xs text-left text-xs space-y-2 transition-all">
-              {/* Với từ vựng: hiển thị câu ví dụ minh họa (nếu có) */}
-              {!isGrammar && currentCard.exampleSentence && (
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider">
-                      Câu ví dụ minh họa
-                    </div>
-                    <div className="text-sm font-bold text-slate-800 mt-0.5">
-                      {currentCard.exampleSentence}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => playAudio(currentCard.exampleSentence || '')}
-                    disabled={isRecording || isPlayingAudio}
-                    className={`px-2.5 py-1.5 border rounded-xl text-xs font-bold shrink-0 ${
-                      isRecording || isPlayingAudio
-                        ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
-                        : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 cursor-pointer'
-                    }`}
-                    title={
-                      isRecording
-                        ? 'Đang thu âm giọng nói, tạm khóa phát âm'
-                        : isPlayingAudio
-                        ? 'Đang phát âm...'
-                        : 'Nghe câu ví dụ'
-                    }
-                  >
-                    🔊 {isPlayingAudio ? 'Đang phát...' : 'Nghe ví dụ'}
-                  </button>
-                </div>
-              )}
+        {/* ==================== 3. ĐIỀU HƯỚNG ÔN TẬP TỰ DO vs SRS RATING BAR ==================== */}
+        {isExtraPractice ? (
+          <div className="w-full max-w-[760px] mt-6 space-y-3">
+            <div className="text-center text-xs font-semibold text-slate-500 flex items-center justify-center gap-1.5">
+              <span>↻ Chế độ duyệt tự do:</span>
+              <span className="text-blue-600 font-bold">Thẻ {currentIndex + 1} / {queue.length}</span>
+            </div>
 
-              {/* Giải thích chi tiết */}
-              {currentCard.explanation && (
-                <div
-                  className={`text-slate-600 text-xs leading-relaxed ${
-                    !isGrammar && currentCard.exampleSentence ? 'pt-2 border-t border-slate-100' : ''
-                  }`}
+            <div className="grid grid-cols-3 gap-3">
+              {/* Nút 1: Thẻ trước ◀ */}
+              <button
+                onClick={handlePrevCard}
+                disabled={currentIndex === 0}
+                className="py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Quay lại thẻ trước [←]"
+              >
+                <span className="text-base">◀</span>
+                <span className="text-xs sm:text-sm font-bold">Thẻ trước</span>
+              </button>
+
+              {/* Nút 2: Lật thẻ 🔄 */}
+              <button
+                onClick={handleToggleFlip}
+                className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer"
+                title="Lật thẻ [Space]"
+              >
+                <span className="text-base">🔄</span>
+                <span className="text-xs sm:text-sm font-bold">
+                  {isFlipped ? 'Mặt trước' : 'Lật xem nghĩa'}
+                </span>
+              </button>
+
+              {/* Nút 3: Thẻ tiếp theo ▶ hoặc Hoàn thành */}
+              {currentIndex < queue.length - 1 ? (
+                <button
+                  onClick={handleNextCard}
+                  className="py-3 px-4 rounded-2xl bg-[#2563EB] hover:bg-blue-700 text-white transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer"
+                  title="Sang thẻ tiếp theo [→]"
                 >
-                  💡 <span className="font-bold text-slate-800">Giải thích:</span> {currentCard.explanation}
-                </div>
+                  <span className="text-xs sm:text-sm font-bold">Thẻ tiếp theo</span>
+                  <span className="text-base">▶</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleFinishExtraPractice}
+                  className="py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all flex items-center justify-center gap-2 shadow-xs group cursor-pointer animate-pulse"
+                  title="Hoàn thành phiên ôn tập tự do"
+                >
+                  <span className="text-xs sm:text-sm font-extrabold">Hoàn thành</span>
+                  <span className="text-base">🎉</span>
+                </button>
               )}
             </div>
-          )}
-
-        {/* ==================== 3. SRS RATING BAR (3 Nút Đánh giá) ==================== */}
-        <div className="w-full max-w-[760px] mt-6 space-y-3">
-          <div className="text-center text-xs font-semibold text-slate-500">
-            Đánh giá mức độ nhớ của bạn:
           </div>
+        ) : (
+          <div className="w-full max-w-[760px] mt-6 space-y-3">
+            <div className="text-center text-xs font-semibold text-slate-500">
+              Đánh giá mức độ nhớ của bạn:
+            </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {/* 1. AGAIN */}
-            <button
-              onClick={() => handleRate('Again')}
-              className="py-3 px-4 rounded-2xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
-            >
-              <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-red-200 text-red-800 text-[10px] flex items-center justify-center font-black">1</span>
-                <span>Cần học lại</span>
-              </div>
-              <div className="text-[11px] text-red-700 font-medium">
-                {currentCardRetryAttempt < MAX_RETRIES_PER_CARD
-                  ? `Lặp lại cuối phiên (${currentCardRetryAttempt + 1}/${MAX_RETRIES_PER_CARD})`
-                  : 'Ghim vào Cần chú ý (Leech)'}
-              </div>
-            </button>
+            <div className="grid grid-cols-3 gap-3">
+              {/* 1. AGAIN */}
+              <button
+                onClick={() => handleRate('Again')}
+                className="py-3 px-4 rounded-2xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group cursor-pointer"
+              >
+                <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-sm bg-red-200 text-red-800 text-[10px] flex items-center justify-center font-black">1</span>
+                  <span>Cần học lại</span>
+                </div>
+                <div className="text-[11px] text-red-700 font-medium">
+                  {currentCardRetryAttempt < MAX_RETRIES_PER_CARD
+                    ? `Lặp lại cuối phiên (${currentCardRetryAttempt + 1}/${MAX_RETRIES_PER_CARD})`
+                    : 'Ghim vào Cần chú ý (Leech)'}
+                </div>
+              </button>
 
-            {/* 2. GOOD */}
-            <button
-              onClick={() => handleRate('Good')}
-              className="py-3 px-4 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group"
-            >
-              <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-blue-200 text-blue-800 text-[10px] flex items-center justify-center font-black">2</span>
-                <span>Tốt</span>
-              </div>
-              <div className="text-[11px] text-blue-700 font-medium">
-                Ôn lại sau {currentCard.intervalPreview.goodDays || 1} ngày
-              </div>
-            </button>
+              {/* 2. GOOD */}
+              <button
+                onClick={() => handleRate('Good')}
+                className="py-3 px-4 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group"
+              >
+                <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-sm bg-blue-200 text-blue-800 text-[10px] flex items-center justify-center font-black">2</span>
+                  <span>Tốt</span>
+                </div>
+                <div className="text-[11px] text-blue-700 font-medium">
+                  Ôn lại sau {currentCard.intervalPreview.goodDays || 1} ngày
+                </div>
+              </button>
 
-            {/* 3. EASY */}
-            <button
-              onClick={() => handleRate('Easy')}
-              className="py-3 px-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group"
-            >
-              <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-emerald-200 text-emerald-800 text-[10px] flex items-center justify-center font-black">3</span>
-                <span>Dễ</span>
-              </div>
-              <div className="text-[11px] text-emerald-700 font-medium">
-                Ôn lại sau {currentCard.intervalPreview.easyDays || 3} ngày
-              </div>
-            </button>
+              {/* 3. EASY */}
+              <button
+                onClick={() => handleRate('Easy')}
+                className="py-3 px-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 transition-all flex flex-col items-center justify-center gap-0.5 shadow-xs group"
+              >
+                <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-sm bg-emerald-200 text-emerald-800 text-[10px] flex items-center justify-center font-black">3</span>
+                  <span>Dễ</span>
+                </div>
+                <div className="text-[11px] text-emerald-700 font-medium">
+                  Ôn lại sau {currentCard.intervalPreview.easyDays || 3} ngày
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* ==================== 4. KEYBOARD SHORTCUTS DOCK ==================== */}
@@ -1291,10 +1411,17 @@ export const FlashcardSessionView: React.FC = () => {
             <kbd className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10px] font-bold text-slate-800">Space</kbd>
             <span>Lật thẻ</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <kbd className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10px] font-bold text-slate-800">1 / 2 / 3</kbd>
-            <span>Đánh giá</span>
-          </div>
+          {isExtraPractice ? (
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10px] font-bold text-slate-800">← / →</kbd>
+              <span>Thẻ trước / sau</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10px] font-bold text-slate-800">1 / 2 / 3</kbd>
+              <span>Đánh giá SRS</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5">
             <kbd className={`px-2 py-0.5 border rounded-md text-[10px] font-bold ${
               isGrammarFront || isRecording || isPlayingAudio

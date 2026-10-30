@@ -269,6 +269,27 @@ class FlashcardService {
       return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
     }
   }
+
+  // ============================================================
+  // 5. Debug / Simulation (SRS Testing)
+  // ============================================================
+
+  public async simulateDays(days: number): Promise<{ success: boolean; data?: boolean; message?: string }> {
+    try {
+      const res = await fetch(`${BASE_URL}/debug/simulate-days?days=${days}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        return { success: false, message: errJson?.message || `Lỗi giả lập ngày (${res.status})` };
+      }
+      const json = await res.json();
+      return this.unwrapResponse<boolean>(json, false);
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
+    }
+  }
 }
 
 export const flashcardService = new FlashcardService();
