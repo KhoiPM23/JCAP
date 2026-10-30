@@ -1,6 +1,7 @@
 using System.Data;
 using JCAP.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JCAP.Data.Seeds;
 
@@ -10,9 +11,9 @@ namespace JCAP.Data.Seeds;
 /// </summary>
 public static class LearningTopicSeeder
 {
-    public static async Task SeedAsync(IServiceProvider services)
+    public static async Task<LearningTopicSeedResult> SeedAsync(IServiceProvider services)
     {
-        await SeedAsync(services.GetRequiredService<AppDbContext>());
+        return await SeedAsync(services.GetRequiredService<AppDbContext>());
     }
 
     public static async Task<LearningTopicSeedResult> SeedAsync(AppDbContext db)
