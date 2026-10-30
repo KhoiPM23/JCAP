@@ -1259,6 +1259,11 @@ namespace JCAP.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<string>("JLPTLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1272,12 +1277,14 @@ namespace JCAP.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Name")
+                    b.HasIndex("Name", "JLPTLevel")
                         .IsUnique();
 
                     b.ToTable("LearningTopics", null, t =>
                         {
                             t.HasCheckConstraint("CK_LearningTopics_Code_NotBlank", "LEN(LTRIM(RTRIM([Code]))) > 0");
+
+                            t.HasCheckConstraint("CK_LearningTopics_JLPTLevel", "[JLPTLevel] IN ('N5','N4','N3','N2','N1')");
 
                             t.HasCheckConstraint("CK_LearningTopics_Name_NotBlank", "LEN(LTRIM(RTRIM([Name]))) > 0");
                         });

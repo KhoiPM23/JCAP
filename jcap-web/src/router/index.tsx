@@ -34,6 +34,7 @@ import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
 import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
+import { AdminLearningView } from '../views/admin/learning/AdminLearningView';
 import { AdminExploreView } from '../views/admin/AdminExploreView';
 import { AdminExplorePrefectureView } from '../views/admin/AdminExplorePrefectureView';
 import { AdminExploreSpotEditorView } from '../views/admin/AdminExploreSpotEditorView';
@@ -319,6 +320,9 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
+        <Route path="/admin/topics" element={<AdminLearningView key="topics" kind="topics" />} />
+        <Route path="/admin/vocabularies" element={<AdminLearningView key="vocabularies" kind="vocabularies" />} />
+        <Route path="/admin/grammars" element={<AdminLearningView key="grammars" kind="grammars" />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
         <Route path="/admin/scenarios/new" element={<AdminScenarioEditorView />} />
         <Route path="/admin/scenarios/new-scenario" element={<AdminScenarioEditorView />} />
