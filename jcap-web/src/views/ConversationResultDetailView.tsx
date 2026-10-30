@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { roleplayResultService } from '../services/roleplayResultService';
+import { roleplayService } from '../services/roleplayService';
 
 import { useAuth } from '../contexts/AuthContext';
 
@@ -73,7 +74,7 @@ const ScoreCard = ({ label, score, accent, subtext }: { label: string; score: nu
         </p>
       </div>
       <div className="pt-3 mt-auto">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200/50">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200/80 p-0.5 border border-slate-300/60 shadow-inner">
           <div 
             className={`h-full rounded-full transition-all duration-1000 ease-out shadow-xs ${accent}`} 
             style={{ width: `${animatedWidth}%` }} 
@@ -296,6 +297,25 @@ export const ConversationResultDetailView: React.FC = () => {
       setToastMessage(`✓ Đã thêm "${vocab.word}" vào Flashcard FSRS`);
       setTimeout(() => setToastMessage(null), 2500);
     } catch {}
+  };
+
+    const [isStartingBlind, setIsStartingBlind] = useState(false);
+
+  const handleStartBlindRetake = async () => {
+    if (!result?.scenarioId) return;
+    setIsStartingBlind(true);
+    try {
+      const res = await roleplayService.startSession(result.scenarioId, result.jlptLevel || 'N5', true);
+      if (res.success && res.data) {
+        navigate(`/scenarios/practice/${res.data.id}?mode=blind`);
+      } else {
+        navigate(`/scenarios/${result.scenarioId}?mode=blind`);
+      }
+    } catch {
+      navigate(`/scenarios/${result.scenarioId}?mode=blind`);
+    } finally {
+      setIsStartingBlind(false);
+    }
   };
 
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
@@ -974,11 +994,11 @@ export const ConversationResultDetailView: React.FC = () => {
 
         <div className="mt-6 grid gap-3.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 items-stretch">
 
-          <ScoreCard label="Ngữ pháp & Cấu trúc" score={result.grammarScore} accent="bg-[var(--ai)]" subtext={result.grammarScore >= 80 ? "Đúng cấu trúc & trợ từ" : "Cần lưu ý trợ từ & thể"} />
+          <ScoreCard label="Ngữ pháp & Cấu trúc" score={result.grammarScore} accent="bg-blue-600" subtext={result.grammarScore >= 80 ? "Đúng cấu trúc & trợ từ" : "Cần lưu ý trợ từ & thể"} />
 
           <ScoreCard label="Vốn từ vựng" score={result.vocabularyScore} accent="bg-emerald-600" subtext={result.vocabularyScore >= 80 ? "Từ ngữ đúng chủ đề" : "Cần mở rộng vốn từ"} />
 
-          <ScoreCard label="Kính ngữ & Văn phong" score={result.impressionScore} accent="bg-amber-600" subtext={result.impressionScore >= 80 ? "Lịch sự, tự nhiên" : "Cần chú ý thể Teinei"} />
+          <ScoreCard label="Kính ngữ & Văn phong" score={result.impressionScore} accent="bg-amber-500" subtext={result.impressionScore >= 80 ? "Lịch sự, tự nhiên" : "Cần chú ý thể Teinei"} />
 
           <ScoreCard
 
@@ -986,7 +1006,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
             score={result.fluencyScore ?? 85}
 
-            accent="bg-purple-500"
+            accent="bg-purple-600"
 
             subtext={result.averageResponseLatencySeconds ? `Phản xạ ~${result.averageResponseLatencySeconds.toFixed(1)}s/lượt` : 'Nhịp đối đáp ổn định'}
 
@@ -998,7 +1018,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
             score={result.speechConfidenceScore ?? 90}
 
-            accent="bg-teal-500"
+            accent="bg-teal-600"
 
             subtext={result.averageSpeechPace ? `Tốc độ ~${result.averageSpeechPace.toFixed(1)} ký tự/s` : 'Phát âm rõ ràng'}
 
@@ -1377,11 +1397,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
           <div className="flex items-center gap-3.5">
 
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white flex items-center justify-center text-2xl shadow-xs">
-
-              
-
-            </div>
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white flex items-center justify-center text-2xl shadow-xs"><TrophyIcon className="w-6 h-6 text-white" /></div>
 
             <div>
 
@@ -1444,8 +1460,7 @@ export const ConversationResultDetailView: React.FC = () => {
         <div className="mt-6 rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50/70 via-white to-pink-50/50 p-5 shadow-xs font-sans">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-400 text-white flex items-center justify-center text-2xl shadow-xs">
-                              </div>
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-400 text-white flex items-center justify-center text-2xl shadow-xs"><FlowerIcon className="w-6 h-6 text-white" /></div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-bold uppercase tracking-wider text-rose-800">
@@ -2597,10 +2612,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
             <div className="flex items-start gap-3">
 
-              <div className="w-10 h-10 rounded-2xl bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center shrink-0 border border-[var(--ai)]/20 shadow-2xs text-lg">
-
-                
-              </div>
+              <div className="w-10 h-10 rounded-2xl bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center shrink-0 border border-[var(--ai)]/20 shadow-2xs text-lg"><LightbulbIcon className="w-5 h-5 text-[var(--ai)]" /></div>
 
               <div>
 
@@ -2664,13 +2676,15 @@ export const ConversationResultDetailView: React.FC = () => {
               )}
 
               {result.scenarioId && (
-                <Link
-                  to={`/scenarios/${result.scenarioId}?mode=blind`}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 active:scale-95 transition"
+                <button
+                  type="button"
+                  onClick={handleStartBlindRetake}
+                  disabled={isStartingBlind}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 active:scale-95 transition cursor-pointer disabled:opacity-50"
                   title="Thử thách phản xạ thực chiến: Khóa gợi ý + Giới hạn 10s/lượt (+50% EXP)"
                 >
-                  <span>⚡ Thử thách Phản xạ 10s (Blind Retake)</span>
-                </Link>
+                  <span>{isStartingBlind ? 'Đang chuẩn bị...' : '⚡ Thử thách Phản xạ 10s (Blind Retake)'}</span>
+                </button>
               )}
               <Link
 
