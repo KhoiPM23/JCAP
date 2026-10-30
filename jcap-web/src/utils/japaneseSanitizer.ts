@@ -85,3 +85,36 @@ export function sanitizeDisplayJapanese(text: string): string {
 
   return withoutParen;
 }
+
+/**
+ * Phát hiện ảo giác Whisper (Whisper Hallucination Filter) khi âm thanh yên lặng hoặc lẫn tạp âm
+ */
+export function isWhisperHallucination(text?: string | null): boolean {
+  if (!text) return true;
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return true;
+
+  // Danh sách các câu ảo giác Whisper kinh điển khi micro thu khoảng lặng
+  const hallucinations = [
+    'ご視聴ありがとうございました',
+    '視聴ありがとうございました',
+    'チャンネル登録',
+    'おやすみなさい',
+    '高評価',
+    'Subtitles by',
+    'Thank you for watching',
+    '...',
+    '。。。',
+  ];
+
+  if (hallucinations.some((h) => trimmed.includes(h))) {
+    return true;
+  }
+
+  // Nếu chỉ toàn dấu chấm, dấu phẩy, khoảng trắng
+  if (/^[.\s,，。…、・!?！？]+$/.test(trimmed)) {
+    return true;
+  }
+
+  return false;
+}

@@ -10,7 +10,7 @@ import { LivingAvatar, type AvatarState, type MouthViseme } from '../components/
 import { EkiStampOverlay } from '../components/roleplay/EkiStampOverlay';
 import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
-import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze } from '../utils/japaneseSanitizer';
+import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination } from '../utils/japaneseSanitizer';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -364,6 +364,37 @@ export const RoleplayPracticeView: React.FC = () => {
   const rawReturnUrl = searchParams.get('return');
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : null;
   const [isEkiStampOpen, setIsEkiStampOpen] = useState(false);
+
+  // Blind Mode (Thử thách phản xạ 10s & Khóa gợi ý Active Recall)
+  const isBlindMode = searchParams.get('mode') === 'blind' || searchParams.get('blind') === 'true';
+  const [sttNotice, setSttNotice] = useState<string | null>(null);
+  const [reflexCountdown, setReflexCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isBlindMode || isPlayingAiSpeech || isSending || sessionConcludedRef.current) {
+      setReflexCountdown(null);
+      return;
+    }
+
+    setReflexCountdown(10);
+    const interval = setInterval(() => {
+      setReflexCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isBlindMode, isPlayingAiSpeech, isSending]);
+
+  useEffect(() => {
+    if (isRecordingMic || (inputText && inputText.length > 0)) {
+      setReflexCountdown(null);
+    }
+  }, [isRecordingMic, inputText]);
 
 
   // Adaptive Silence Ring state & timer
@@ -1267,6 +1298,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     setIsSending(true);
+    ukiyoSound.playAizuchi();
     setInputText('');
     setHint(null); // Đóng hint nếu đang mở
 
@@ -1520,6 +1552,19 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     if (textToSend && textToSend.trim().length > 0) {
+      if (isWhisperHallucination(textToSend)) {
+        console.warn('[Scenario STT] Filtered Whisper silence/hallucination:', textToSend);
+        setSttNotice('Âm thanh bị nhiễu hoặc chưa rõ lời. Chưa trừ lượt thoại, bạn hãy nói lại nhé!');
+        setTimeout(() => setSttNotice(null), 3500);
+        if (isHandsFreeModeRef.current && !sessionConcludedRef.current && !isSendingRef.current) {
+          setTimeout(() => {
+            if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current) {
+              startSpeechRecognition();
+            }
+          }, 400);
+        }
+        return;
+      }
       ukiyoSound.playSubtleTap();
       void handleSendMessage(textToSend.trim());
     } else {
@@ -1940,6 +1985,16 @@ export const RoleplayPracticeView: React.FC = () => {
                 <span className="shrink-0 rounded-full bg-[var(--ai-soft)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)] whitespace-nowrap">
                   JLPT {session.level || session.jlptLevel}
                 </span>
+                {isBlindMode && (
+                  <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 px-2.5 py-0.5 text-[10px] font-black text-white shadow-2xs">
+                    <span>⚡ 10s Phản xạ</span>
+                    {reflexCountdown !== null && (
+                      <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${reflexCountdown <= 3 ? 'bg-rose-700 animate-ping' : 'bg-black/30'}`}>
+                        {reflexCountdown}s
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
               <div className="text-[11px] text-[var(--sumi-faint)] flex items-center gap-1.5 truncate whitespace-nowrap mt-0.5 min-w-0">
                 <span className="hidden sm:inline shrink-0">Đối thoại cùng:</span>
@@ -2997,7 +3052,7 @@ export const RoleplayPracticeView: React.FC = () => {
                       scenarioTitle={session.scenarioTitle}
                       archetype={(session.sceneType as any) || undefined}
                       currentViseme="closed"
-                      isAizuchiActive={false}
+                      isAizuchiActive={true}
                       hideLabel
                     />
                   </div>
@@ -3041,6 +3096,12 @@ export const RoleplayPracticeView: React.FC = () => {
 
               {/* HỘP GỢI Ý DUY NHẤT: GraduatedHintCard ZPD 3 CẤP HOẶC FLOATING CHIP NHẸ NHÀNG */}
               {hint ? (
+                isBlindMode ? (
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-center text-xs font-bold text-amber-900 shadow-2xs flex items-center justify-center gap-2 animate-fade-in">
+                    <span className="text-base">⚡</span>
+                    <span>Chế độ Phản xạ (Blind Mode): Gợi ý tạm khóa để kích hoạt Active Recall. Hãy tự tin nói theo ý bạn!</span>
+                  </div>
+                ) : (
                 <GraduatedHintCard
                   missionTitle={session?.missions?.find((m) => !m.isCompleted)?.content || 'Nhiệm vụ tiếp theo'}
                   keywords={

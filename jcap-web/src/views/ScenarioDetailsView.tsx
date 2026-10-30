@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
@@ -82,6 +82,8 @@ export const ScenarioDetailsView: React.FC = () => {
 
   // Tab switch giữa từ vựng và ngữ pháp trọng tâm
   const [cheatsheetTab, setCheatsheetTab] = useState<'vocab' | 'grammar'>('vocab');
+  const [searchParams] = useSearchParams();
+  const isBlindRequested = searchParams.get('mode') === 'blind' || searchParams.get('blind') === 'true';
 
   useEffect(() => {
     let isMounted = true;
@@ -177,7 +179,7 @@ export const ScenarioDetailsView: React.FC = () => {
     if (result.success && result.data) {
       setConfirmModal(null);
       const targetSessionId = result.data.sessionId || result.data.id;
-      navigate(`/scenarios/practice/${targetSessionId}`);
+      navigate(`/scenarios/practice/${targetSessionId}${isBlindRequested ? "?mode=blind" : ""}`);
     } else {
       setConfirmModal(null);
       setStartError(result.message || 'Không thể bắt đầu phiên luyện tập. Vui lòng thử lại.');

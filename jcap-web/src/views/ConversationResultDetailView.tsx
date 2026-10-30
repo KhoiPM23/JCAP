@@ -264,6 +264,39 @@ export const ConversationResultDetailView: React.FC = () => {
   const [copyToast, setCopyToast] = useState(false);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [savedVocabIds, setSavedVocabIds] = useState<Set<number>>(new Set());
+  const [isAllSaved, setIsAllSaved] = useState(false);
+
+  const handleSaveAllToFlashcards = () => {
+    const vocabs = result?.targetVocabularies || [];
+    const grammars = result?.targetGrammars || [];
+    if (vocabs.length === 0 && grammars.length === 0) return;
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('jcap_saved_flashcards') || '[]');
+      const newItems = [
+        ...vocabs.map((v) => ({ type: 'vocab', word: v.word, reading: v.reading, meaning: v.meaning, addedAt: new Date().toISOString() })),
+        ...grammars.map((g) => ({ type: 'grammar', pattern: g.pattern, meaning: g.meaning, exampleSentence: g.exampleSentence, addedAt: new Date().toISOString() })),
+      ];
+      localStorage.setItem('jcap_saved_flashcards', JSON.stringify([...existing, ...newItems]));
+      setIsAllSaved(true);
+      setToastMessage(`🎉 Đã lưu ${newItems.length} mục kiến thức vào kho Flashcard ôn tập (FSRS)!`);
+      setTimeout(() => setToastMessage(null), 3500);
+    } catch (err) {
+      console.error('Error saving flashcards:', err);
+    }
+  };
+
+  const handleSaveSingleVocab = (vocab: any) => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('jcap_saved_flashcards') || '[]');
+      existing.push({ type: 'vocab', word: vocab.word, reading: vocab.reading, meaning: vocab.meaning, addedAt: new Date().toISOString() });
+      localStorage.setItem('jcap_saved_flashcards', JSON.stringify(existing));
+      setSavedVocabIds((prev) => new Set(prev).add(vocab.id));
+      setToastMessage(`✓ Đã thêm "${vocab.word}" vào Flashcard FSRS`);
+      setTimeout(() => setToastMessage(null), 2500);
+    } catch {}
+  };
 
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
 
@@ -1959,7 +1992,15 @@ export const ConversationResultDetailView: React.FC = () => {
                   </span>
 
                   <span>Từ vựng trọng tâm ({result.targetVocabularies.length} từ)</span>
-
+                  <button
+                    type="button"
+                    onClick={handleSaveAllToFlashcards}
+                    className="ml-auto inline-flex items-center gap-1 rounded-xl border border-[var(--ai)]/30 bg-[var(--ai-soft)] px-2.5 py-1 text-xs font-bold text-[var(--ai)] transition hover:bg-[var(--ai)] hover:text-white active:scale-95 shadow-2xs"
+                    title="Lưu toàn bộ từ vựng và ngữ pháp vào kho Flashcard lặp lại ngắt quãng (FSRS)"
+                  >
+                    <span>{isAllSaved ? '✓' : '＋'}</span>
+                    <span>{isAllSaved ? 'Đã lưu vào Flashcard (FSRS)' : 'Lưu vào Flashcard (FSRS)'}</span>
+                  </button>
                 </h3>
 
                 <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
@@ -2021,15 +2062,22 @@ export const ConversationResultDetailView: React.FC = () => {
                             type="button"
 
                             onClick={() => playJapaneseAudio(vocab.word)}
-
                             className="inline-flex h-7 w-7 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--paper-100)] text-xs text-[var(--ai)] transition hover:bg-[var(--ai)] hover:text-white active:scale-95"
-
                             title="Nghe phát âm từ vựng"
-
                           >
-
                             
-
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveSingleVocab(vocab)}
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-xl border text-xs transition active:scale-95 ${
+                              savedVocabIds.has(vocab.id)
+                                ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+                                : 'border-[var(--line)] bg-[var(--paper-100)] text-[var(--sumi-muted)] hover:bg-white hover:text-amber-600'
+                            }`}
+                            title="Lưu từ này vào Thẻ Flashcard FSRS"
+                          >
+                            {savedVocabIds.has(vocab.id) ? '✓' : '🔖'}
                           </button>
 
                         </div>
@@ -2223,6 +2271,18 @@ export const ConversationResultDetailView: React.FC = () => {
 
                           <div className="flex items-center gap-1.5">
 
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const textToShadow = sanitizeDisplayJapanese(msg.japaneseText);
+                                navigate(`/shadowing?query=${encodeURIComponent(textToShadow)}`);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] bg-[var(--paper-100)] px-2.5 py-1 text-[11px] font-semibold text-[var(--sumi-muted)] transition hover:border-[var(--ai)] hover:text-[var(--ai)] active:scale-95"
+                              title="Luyện phát âm & ngữ điệu câu này trong Shadowing"
+                            >
+                              <span>🎙️</span>
+                              <span>Shadowing</span>
+                            </button>
                             <button
 
                               type="button"
@@ -2603,6 +2663,15 @@ export const ConversationResultDetailView: React.FC = () => {
 
               )}
 
+              {result.scenarioId && (
+                <Link
+                  to={`/scenarios/${result.scenarioId}?mode=blind`}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 active:scale-95 transition"
+                  title="Thử thách phản xạ thực chiến: Khóa gợi ý + Giới hạn 10s/lượt (+50% EXP)"
+                >
+                  <span>⚡ Thử thách Phản xạ 10s (Blind Retake)</span>
+                </Link>
+              )}
               <Link
 
                 to="/scenarios"
