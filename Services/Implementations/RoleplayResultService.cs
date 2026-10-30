@@ -34,6 +34,10 @@ namespace JCAP.Services.Implementations
 
         private readonly ILogger<RoleplayResultService> _logger;
 
+        private readonly ITelemetryEvaluatorService? _telemetryEvaluator;
+
+        private readonly IPersonaMemoryService? _personaMemory;
+
         public RoleplayResultService(
 
             AppDbContext dbContext,
@@ -42,7 +46,11 @@ namespace JCAP.Services.Implementations
 
             IRoleplayEvaluationService evaluationService,
 
-            ILogger<RoleplayResultService> logger)
+            ILogger<RoleplayResultService> logger,
+
+            ITelemetryEvaluatorService? telemetryEvaluator = null,
+
+            IPersonaMemoryService? personaMemory = null)
 
         {
 
@@ -53,6 +61,10 @@ namespace JCAP.Services.Implementations
             _evaluationService = evaluationService;
 
             _logger = logger;
+
+            _telemetryEvaluator = telemetryEvaluator;
+
+            _personaMemory = personaMemory;
 
         }
 
@@ -304,6 +316,35 @@ namespace JCAP.Services.Implementations
             {
 
                 await _dbContext.SaveChangesAsync();
+
+                // Hoàn tất Telemetry ngầm và Hồ sơ năng lực (FSRS + IRT Theta + TikTok-style profile)
+                if (_telemetryEvaluator != null)
+                {
+                    try
+                    {
+                        await _telemetryEvaluator.FinalizeSessionTelemetryAsync(sessionId, userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Lỗi khi tổng hợp FinalizeSessionTelemetry cho session {SessionId}", sessionId);
+                    }
+                }
+
+                // Ghi nhận NPC Affinity và số buổi luyện tập hoàn thành
+                if (_personaMemory != null)
+                {
+                    try
+                    {
+                        string npcCode = !string.IsNullOrWhiteSpace(snapshot.ScenarioTitle)
+                            ? $"SCN_{session.ScenarioLevelConfigurationId}"
+                            : $"NPC_{session.ScenarioLevelConfigurationId}";
+                        await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, result.PassStatus);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Lỗi khi ghi nhận PersonaMemory cho session {SessionId}", sessionId);
+                    }
+                }
 
                 return BuildCompleteResponse(
 
