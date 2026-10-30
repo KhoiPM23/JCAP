@@ -22,14 +22,16 @@ public static class LearningContentModelConfiguration
             {
                 table.HasCheckConstraint("CK_LearningTopics_Code_NotBlank", "LEN(LTRIM(RTRIM([Code]))) > 0");
                 table.HasCheckConstraint("CK_LearningTopics_Name_NotBlank", "LEN(LTRIM(RTRIM([Name]))) > 0");
+                table.HasCheckConstraint("CK_LearningTopics_JLPTLevel", "[JLPTLevel] IN ('N5','N4','N3','N2','N1')");
             });
             entity.Property(t => t.Code).IsRequired().HasMaxLength(50);
             entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.JLPTLevel).IsRequired().HasMaxLength(10);
             entity.Property(t => t.Description).HasMaxLength(1000);
             entity.Property(t => t.IsActive).HasDefaultValue(true).HasSentinel(true);
             entity.Property(t => t.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             entity.HasIndex(t => t.Code).IsUnique();
-            entity.HasIndex(t => t.Name).IsUnique();
+            entity.HasIndex(t => new { t.Name, t.JLPTLevel }).IsUnique();
         });
 
         modelBuilder.Entity<TopicVocabulary>(entity =>

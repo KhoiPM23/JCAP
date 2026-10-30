@@ -121,7 +121,8 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(b => b.Vocabulary)
                 .Include(b => b.Grammar)
-                .Where(b => b.UserId == userId)
+                .Where(b => b.UserId == userId &&
+                    ((b.Vocabulary != null && b.Vocabulary.IsActive) || (b.Grammar != null && b.Grammar.IsActive)))
                 .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
 

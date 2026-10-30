@@ -1,12 +1,13 @@
 namespace JCAP.Models;
 
-/// <summary>A flat, reusable topic. Difficulty belongs to its contents, not the topic.</summary>
+/// <summary>A flat topic containing only vocabulary and grammar at its JLPT level.</summary>
 public class LearningTopic
 {
     public int Id { get; set; }
     // Stable key for Excel mappings; changing the display name does not break imports.
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string JLPTLevel { get; set; } = "N5";
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

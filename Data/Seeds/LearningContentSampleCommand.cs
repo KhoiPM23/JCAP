@@ -20,7 +20,7 @@ public static class LearningContentSampleCommand
             Console.WriteLine($"Local database: {connection.DataSource} / {connection.InitialCatalog}");
             var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
             Console.WriteLine("Pending migrations: " + JsonSerializer.Serialize(pending));
-            Console.WriteLine($"Sample: {data.Vocabularies.Length} vocabularies, {data.Grammars.Length} grammars; no topics/audio.");
+            Console.WriteLine($"Sample: {data.Vocabularies.Length} vocabularies, {data.Grammars.Length} grammars, {LearningTopicSeedData.Topics.Count} flat topics; no audio.");
             if (dryRun)
             {
                 if (!await db.Database.CanConnectAsync())
@@ -43,6 +43,12 @@ public static class LearningContentSampleCommand
             if (pending.Length > 0) await db.Database.MigrateAsync();
             var result = await LearningContentSampleImporter.ImportAsync(db, data);
             Console.WriteLine(JsonSerializer.Serialize(result, JsonOptions));
+            var topicResult = await LearningTopicSeeder.SeedAsync(db);
+            Console.WriteLine("Topic seed: " + JsonSerializer.Serialize(topicResult, JsonOptions));
+            Console.WriteLine(JsonSerializer.Serialize(await db.LearningTopics.AsNoTracking()
+                .Where(t => topicResult.TopicIds.Contains(t.Id)).OrderBy(t => t.Id)
+                .Select(t => new { t.Id, t.Code, t.Name, VocabularyCount = t.TopicVocabularies.Count,
+                    GrammarCount = t.TopicGrammars.Count }).ToListAsync(), JsonOptions));
             Console.WriteLine("Sample content in database:");
             Console.WriteLine(JsonSerializer.Serialize(await db.Vocabularies.AsNoTracking()
                 .Where(v => result.VocabularyIds.Contains(v.Id)).OrderBy(v => v.Id)

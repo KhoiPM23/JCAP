@@ -958,7 +958,7 @@ Trả về duy nhất JSON thuần túy theo schema:
 
         public async Task<ApiResponse<List<ShadowingVocabularyDto>>> GetSharedVocabulariesAsync(string? keyword = null, string? jlptLevel = null)
         {
-            var query = _context.Vocabularies.AsNoTracking().AsQueryable();
+            var query = _context.Vocabularies.AsNoTracking().Where(v => v.IsActive);
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -989,7 +989,7 @@ Trả về duy nhất JSON thuần túy theo schema:
 
         public async Task<ApiResponse<List<ShadowingGrammarDto>>> GetSharedGrammarsAsync(string? keyword = null, string? jlptLevel = null)
         {
-            var query = _context.Grammars.AsNoTracking().AsQueryable();
+            var query = _context.Grammars.AsNoTracking().Where(g => g.IsActive);
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {

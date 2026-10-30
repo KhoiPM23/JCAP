@@ -112,6 +112,7 @@ namespace JCAP.Services.Implementations
 
             var vocabList = dialogue.DialogueVocabularies != null && dialogue.DialogueVocabularies.Any()
                 ? dialogue.DialogueVocabularies
+                    .Where(dv => dv.Vocabulary.IsActive)
                     .OrderBy(dv => dv.OrderIndex)
                     .Select(dv => new ShadowingVocabularyDto
                     {
@@ -130,6 +131,7 @@ namespace JCAP.Services.Implementations
 
             var grammarList = dialogue.DialogueGrammars != null && dialogue.DialogueGrammars.Any()
                 ? dialogue.DialogueGrammars
+                    .Where(dg => dg.Grammar.IsActive)
                     .OrderBy(dg => dg.OrderIndex)
                     .Select(dg => new ShadowingGrammarDto
                     {

@@ -538,7 +538,7 @@ namespace JCAP.Services.Implementations
                 itemId = request.VocabularyId!.Value;
                 itemType = FlashcardContentType.Vocabulary;
                 var vocab = await _db.Vocabularies.AsNoTracking().FirstOrDefaultAsync(v => v.Id == itemId);
-                if (vocab == null)
+                if (vocab == null || !vocab.IsActive)
                 {
                     return ApiResponse<FlashcardReviewResultDto>.Fail("Không tìm thấy từ vựng.");
                 }
@@ -552,7 +552,7 @@ namespace JCAP.Services.Implementations
                 itemId = request.GrammarId!.Value;
                 itemType = FlashcardContentType.Grammar;
                 var grammar = await _db.Grammars.AsNoTracking().FirstOrDefaultAsync(g => g.Id == itemId);
-                if (grammar == null)
+                if (grammar == null || !grammar.IsActive)
                 {
                     return ApiResponse<FlashcardReviewResultDto>.Fail("Không tìm thấy mẫu ngữ pháp.");
                 }
@@ -673,7 +673,8 @@ namespace JCAP.Services.Implementations
         {
             var nowUtc = DateTime.UtcNow;
             var session = await _db.FlashcardStudySessions
-                .Include(s => s.ReviewLogs)
+                .Include(s => s.ReviewLogs).ThenInclude(l => l.Vocabulary)
+                .Include(s => s.ReviewLogs).ThenInclude(l => l.Grammar)
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
 
             if (session == null)
@@ -693,6 +694,7 @@ namespace JCAP.Services.Implementations
             int durationSec = Math.Max(1, (int)(endedAt - session.StartedAt).TotalSeconds);
 
             var difficultItems = session.ReviewLogs
+                .Where(l => (l.Vocabulary != null && l.Vocabulary.IsActive) || (l.Grammar != null && l.Grammar.IsActive))
                 .Where(l => l.Rating == FlashcardRating.Again)
                 .GroupBy(l => new { l.VocabularyId, l.GrammarId })
                 .Select(g => g.OrderByDescending(x => x.ReviewedAt).First())
@@ -732,7 +734,8 @@ namespace JCAP.Services.Implementations
         {
             var session = await _db.FlashcardStudySessions
                 .AsNoTracking()
-                .Include(s => s.ReviewLogs)
+                .Include(s => s.ReviewLogs).ThenInclude(l => l.Vocabulary)
+                .Include(s => s.ReviewLogs).ThenInclude(l => l.Grammar)
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
 
             if (session == null)
@@ -741,6 +744,7 @@ namespace JCAP.Services.Implementations
             }
 
             var logs = session.ReviewLogs
+                .Where(l => (l.Vocabulary != null && l.Vocabulary.IsActive) || (l.Grammar != null && l.Grammar.IsActive))
                 .OrderBy(l => l.ReviewedAt)
                 .ThenBy(l => l.Id)
                 .Select(MapReviewLogDto)

@@ -28,7 +28,8 @@ public class LearningContentModelTests
         var model = context.GetService<IDesignTimeModel>().Model;
         var topic = model.FindEntityType(typeof(LearningTopic))!;
         Assert.Null(topic.FindProperty("ParentTopicId"));
-        Assert.Null(topic.FindProperty("JLPTLevel"));
+        Assert.NotNull(topic.FindProperty("JLPTLevel"));
+        Assert.False(topic.FindProperty("JLPTLevel")!.IsNullable);
         Assert.Empty(topic.GetForeignKeys());
         Assert.Equal(new[] { typeof(TopicGrammar), typeof(TopicVocabulary) }.OrderBy(t => t.Name),
             model.GetEntityTypes().SelectMany(e => e.GetForeignKeys())
@@ -39,7 +40,7 @@ public class LearningContentModelTests
         Assert.Contains(topic.GetIndexes(), index => index.IsUnique
             && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "Code" }));
         Assert.Contains(topic.GetIndexes(), index => index.IsUnique
-            && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "Name" }));
+            && index.Properties.Select(p => p.Name).SequenceEqual(new[] { "Name", "JLPTLevel" }));
     }
 
     [Theory]
@@ -55,20 +56,21 @@ public class LearningContentModelTests
     }
 
     [Fact]
-    public async Task OneContent_CanBelongToMultipleTopicsWithDifferentLevelContents()
+    public async Task OneContent_CanBelongToMultipleTopicsAtItsOwnLevel()
     {
         using var context = CreateMemoryContext();
         var eating = new LearningTopic { Code = "DINING", Name = "Ăn uống" };
         var daily = new LearningTopic { Code = "DAILY_LIFE", Name = "Sinh hoạt hằng ngày" };
+        var advancedTopic = new LearningTopic { Code = "DINING_N3", Name = "Ăn uống", JLPTLevel = "N3" };
         var vocabulary = new Vocabulary { Word = "食べる", Reading = "たべる", Meaning = "Ăn", JLPTLevel = "N5" };
         var grammar = new Grammar { Pattern = "〜てもいい", Reading = "てもいい", Meaning = "Được phép", JLPTLevel = "N5" };
         var advanced = new Vocabulary { Word = "食欲", Reading = "しょくよく", Meaning = "Sự thèm ăn", JLPTLevel = "N3" };
         eating.TopicVocabularies.Add(new() { Vocabulary = vocabulary });
         daily.TopicVocabularies.Add(new() { Vocabulary = vocabulary });
-        eating.TopicVocabularies.Add(new() { Vocabulary = advanced, OrderIndex = 1 });
+        advancedTopic.TopicVocabularies.Add(new() { Vocabulary = advanced });
         eating.TopicGrammars.Add(new() { Grammar = grammar });
         daily.TopicGrammars.Add(new() { Grammar = grammar });
-        context.LearningTopics.AddRange(eating, daily);
+        context.LearningTopics.AddRange(eating, daily, advancedTopic);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
@@ -79,7 +81,7 @@ public class LearningContentModelTests
         var grammars = await context.Grammars
             .Where(g => g.TopicGrammars.Any(link => topicIds.Contains(link.TopicId)))
             .ToListAsync();
-        Assert.Equal(2, vocabularies.Count);
+        Assert.Single(vocabularies);
         Assert.Single(grammars);
         Assert.Equal(3, await context.TopicVocabularies.CountAsync());
         Assert.Equal(2, await context.TopicGrammars.CountAsync());
