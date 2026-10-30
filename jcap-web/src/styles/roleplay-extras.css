@@ -1,17 +1,29 @@
-﻿ruby {
+ruby {
   ruby-position: over;
   ruby-align: center;
 }
 
 rt {
-  font-size: 0.52em;
+  font-size: max(10px, 0.52em);
   line-height: 1;
   font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #0284c7;
+  letter-spacing: -0.01em;
+  color: var(--ai);
   user-select: none;
   position: relative;
   top: -2px;
+}
+
+/* User speech bubble contrast enhancement */
+.jc-bubble--me rt,
+.bubble-user rt {
+  color: var(--on-ai, #ffffff);
+  opacity: 0.88;
+}
+
+/* When furigana is hidden, maintain layout spacing to avoid jarring layout shifts */
+.no-furi rt {
+  visibility: hidden;
 }
 
 /* Motivation Micro-Animations: HeartBeat & Confetti Drop */

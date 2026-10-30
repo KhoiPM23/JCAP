@@ -45,25 +45,8 @@ import type {
 } from '../types/roleplay';
 
 
-// Helper đếm Mora chuẩn ngữ âm tiếng Nhật
-export const countJapaneseMora = (text: string): number => {
-  if (!text) return 0;
-  const clean = text.replace(/[\s\u3000\u3001\u3002,.!?！？、。]/g, '');
-  let moras = 0;
-  for (let i = 0; i < clean.length; i++) {
-    const char = clean[i];
-    if (/[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ]/.test(char)) continue;
-    if (/[\u4e00-\u9faf]/.test(char)) {
-      moras += 2;
-      continue;
-    }
-    if (/[\u3040-\u309f\u30a0-\u30ffー]/.test(char)) {
-      moras += 1;
-      continue;
-    }
-  }
-  return Math.max(1, moras);
-};
+import { countJapaneseMora } from '../utils/moraPhonetics.ts';
+export { countJapaneseMora };
 
 
 export const RoleplayPracticeView: React.FC = () => {
@@ -845,8 +828,8 @@ export const RoleplayPracticeView: React.FC = () => {
       return {
         label: 'Ban mai',
         subtext: '朝 (Asa)',
-        badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
-        stageGradient: 'bg-gradient-to-r from-[#FFFBEF] via-white to-[#F0F7FF]',
+        badgeClass: 'bg-[var(--sora-soft)] text-[var(--warning)] border-[var(--warning)]/30',
+        stageGradient: 'bg-gradient-to-r from-[var(--sora-soft)] via-[var(--paper-50)] to-[var(--ai-soft)]',
         icon: '',
       };
     }
@@ -854,16 +837,16 @@ export const RoleplayPracticeView: React.FC = () => {
       return {
         label: 'Ban trưa & chiều',
         subtext: '昼 (Hiru)',
-        badgeClass: 'bg-sky-100 text-sky-800 border-sky-300',
-        stageGradient: 'bg-gradient-to-r from-[#EAF4FF] via-white to-[#F0F7FF]',
+        badgeClass: 'bg-[var(--ai-soft)] text-[var(--ai)] border-[var(--ai)]/30',
+        stageGradient: 'bg-gradient-to-r from-[var(--ai-soft)] via-[var(--paper-50)] to-[var(--paper-100)]',
         icon: '',
       };
     }
     return {
       label: 'Đêm muộn',
       subtext: '夜 (Yoru)',
-      badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-      stageGradient: 'bg-gradient-to-r from-[#FAF2EC] via-[#FFF9F3] to-[#ECE7FA]',
+      badgeClass: 'bg-[var(--paper-200)] text-[var(--sumi)] border-[var(--line-strong)]',
+      stageGradient: 'bg-gradient-to-r from-[var(--paper-200)] via-[var(--sora-soft)] to-[var(--ai-soft)]',
       icon: '',
     };
   }, []);
@@ -2318,14 +2301,14 @@ export const RoleplayPracticeView: React.FC = () => {
                   style={{
                     width: `${progressPercent}%`,
                     background: progressPercent >= 100
-                      ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                      ? 'linear-gradient(90deg, var(--score-good), var(--success))'
                       : 'linear-gradient(90deg, var(--ai), var(--nami))',
                   }}
                 />
               </div>
               <div className="mt-1.5 flex justify-between text-[10px] font-semibold text-[var(--sumi-faint)]">
                 <span>Bắt đầu</span>
-                <span className={progressPercent >= 100 ? 'text-emerald-600 font-bold' : 'text-[var(--ai)]'}>
+                <span className={progressPercent >= 100 ? 'text-[var(--score-good)] font-bold' : 'text-[var(--ai)]'}>
                   {progressPercent}%
                 </span>
                 <span>Hoàn thành</span>
@@ -2482,22 +2465,22 @@ export const RoleplayPracticeView: React.FC = () => {
             <div className="mx-auto w-full max-w-[800px] space-y-4">
               {/* Scenario Context Banner Card (Cuộn tự nhiên ở đầu trang, KHÔNG sticky, hỗ trợ thu gọn linh hoạt để tối đa hóa chiều cao chat) */}
               {isContextBannerExpanded ? (
-                <div className={`rounded-3xl border border-[#B9D9FF]/80 ${circadianInfo.stageGradient} p-4 text-xs shadow-sm flex items-start justify-between gap-3 transition-all duration-300 animate-fadeIn font-sans`}>
+                <div className={`rounded-3xl border border-[var(--line)] ${circadianInfo.stageGradient} p-4 text-xs shadow-sm flex items-start justify-between gap-3 transition-all duration-300 animate-fadeIn font-sans`}>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 font-bold text-[#0878EE] text-[11px] flex-wrap font-sans">
+                    <div className="flex items-center gap-2 font-bold text-[var(--ai)] text-[11px] flex-wrap font-sans">
                       <span className="font-bold tracking-wide">BỐI CẢNH LUYỆN TẬP</span>
                       <span className="text-slate-300">•</span>
-                      <span className="text-[#071A44] font-semibold lowercase first-letter:uppercase">{session.aiPersona}</span>
+                      <span className="text-[var(--sumi)] font-semibold lowercase first-letter:uppercase">{session.aiPersona}</span>
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${circadianInfo.badgeClass}`} title="Ánh sáng sân khấu đổi theo giờ sinh học thực tế">
                         <span>{circadianInfo.icon}</span>
                         <span>{circadianInfo.label} · {circadianInfo.subtext}</span>
                       </span>
                     </div>
-                    <p className="mt-1.5 text-[#475569] leading-relaxed line-clamp-2 font-sans">{session.scenarioContext}</p>
+                    <p className="mt-1.5 text-[var(--sumi-muted)] leading-relaxed line-clamp-2 font-sans">{session.scenarioContext}</p>
                     {((session.npcAffinityScore && session.npcAffinityScore > 10) || (session.npcMemories && session.npcMemories.length > 0)) && (
-                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#B9D9FF]/40 text-[11px]">
+                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pt-2 border-t border-[var(--line)] text-[11px]">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold border border-rose-200 shadow-2xs font-sans">
-                                                    <span>{session.npcRelationshipTitle || 'Người quen thân '}</span>
+                          <span>{session.npcRelationshipTitle || 'Người quen thân '}</span>
                           <span className="opacity-70 text-[10px]">({session.npcAffinityScore || 10}%)</span>
                         </span>
                         {session.npcMemories && session.npcMemories.map((mem, idx) => {
@@ -2519,8 +2502,8 @@ export const RoleplayPracticeView: React.FC = () => {
                             .replace('travel: first_time_in_japan', 'Lần đầu sang Nhật')
                             .replace('travel: visited_japan_before', 'Đã từng sang Nhật');
                           return (
-                            <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/95 text-slate-700 font-medium border border-slate-200 shadow-2xs font-sans">
-                              <BookmarkIcon className="w-3 h-3 text-slate-400" />
+                            <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--paper-50)] text-[var(--sumi-muted)] font-medium border border-[var(--line)] shadow-2xs font-sans">
+                              <BookmarkIcon className="w-3 h-3 text-[var(--sumi-faint)]" />
                               <span>{cleanMem}</span>
                             </span>
                           );
@@ -2534,7 +2517,7 @@ export const RoleplayPracticeView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsContextBannerExpanded(false)}
-                      className="flex h-7 w-7 items-center justify-center rounded-xl border border-[#B9D9FF]/70 bg-white text-[#71809A] hover:text-[#071A44] hover:border-[#0878EE] active:scale-95 transition text-xs font-bold shadow-2xs cursor-pointer"
+                      className="flex h-7 w-7 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--paper-50)] text-[var(--sumi-muted)] hover:text-[var(--sumi)] hover:border-[var(--ai)] active:scale-95 transition text-xs font-bold shadow-2xs cursor-pointer"
                       title="Thu gọn bối cảnh"
                     >
                       ▲
@@ -2542,12 +2525,12 @@ export const RoleplayPracticeView: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className={`flex items-center justify-between px-3.5 py-2 rounded-2xl border border-[#B9D9FF]/70 ${circadianInfo.stageGradient} text-[11px] text-[#475569] shadow-2xs font-sans`}>
+                <div className={`flex items-center justify-between px-3.5 py-2 rounded-2xl border border-[var(--line)] ${circadianInfo.stageGradient} text-[11px] text-[var(--sumi-muted)] shadow-2xs font-sans`}>
                   <div className="flex items-center gap-2 truncate">
                     <span className="text-[10px] font-bold text-[var(--shu)] font-mono uppercase">BỐI CẢNH</span>
-                    <span className="font-semibold text-[#071A44]">{session.scenarioTitle}</span>
+                    <span className="font-semibold text-[var(--sumi)]">{session.scenarioTitle}</span>
                     <span className="text-slate-300">•</span>
-                    <span className="text-[#0878EE] font-medium">{session.aiPersona}</span>
+                    <span className="text-[var(--ai)] font-medium">{session.aiPersona}</span>
                     <span className="text-slate-300">•</span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${circadianInfo.badgeClass}`}>
                       <span>{circadianInfo.icon}</span>
@@ -2557,7 +2540,7 @@ export const RoleplayPracticeView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsContextBannerExpanded(true)}
-                    className="shrink-0 text-[10px] font-bold text-[#0878EE] hover:underline ml-2 cursor-pointer"
+                    className="shrink-0 text-[10px] font-bold text-[var(--ai)] hover:underline ml-2 cursor-pointer"
                   >
                     Chi tiết bối cảnh ▼
                   </button>
@@ -2625,7 +2608,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         style={{
                           left: `${(i * 6.25) + (Math.sin(i) * 3)}%`,
                           top: '-6px',
-                          backgroundColor: ['#fef08a', '#38bdf8', '#4ade80', '#f43f5e', '#c084fc', '#fb923c'][i % 6],
+                          backgroundColor: ['var(--sora)', 'var(--ai)', 'var(--score-good)', 'var(--shu)', 'var(--n3)', 'var(--credit-coin)'][i % 6],
                           animationDelay: `${(i % 5) * 80}ms`,
                           animationDuration: `${1.4 + (i % 3) * 0.4}s`
                         }}
@@ -2800,7 +2783,7 @@ export const RoleplayPracticeView: React.FC = () => {
                       {showTranslation && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
                         <div
                           className={`mt-2 border-t pt-2 text-xs leading-relaxed transition-all duration-500 ease-out ${
-                            isAi ? 'border-[#F1F5F9] text-[var(--sumi-faint)]' : 'border-blue-400/40 text-blue-100'
+                            isAi ? 'border-[var(--line)] text-[var(--sumi-muted)]' : 'border-white/20 text-white/90'
                           } ${
                             isAi && streamingAiMessageId === msg.id
                               ? 'opacity-0 translate-y-1 pointer-events-none'
@@ -3182,7 +3165,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         width="calc(100% - 6px)"
                         height="calc(100% - 6px)"
                         rx="14"
-                        stroke="#c63a24"
+                        stroke="var(--shu)"
                         strokeWidth="2.5"
                         fill="none"
                         strokeDasharray={140}
@@ -3198,9 +3181,9 @@ export const RoleplayPracticeView: React.FC = () => {
                     disabled={isSending || isProcessingStt}
                     className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                       isProcessingStt
-                        ? 'border border-blue-400 bg-blue-100 text-blue-700'
+                        ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
                         : isRecordingMic
-                        ? 'border border-red-500 bg-red-600 text-white ring-4 ring-red-400/40 shadow-lg'
+                        ? 'border border-[var(--shu)] bg-[var(--shu)] text-white ring-4 ring-[var(--shu)]/40 shadow-lg'
                         : 'border border-[var(--ai)] bg-[var(--ai)] text-white hover:bg-[var(--ai-hover)] hover:shadow-md'
                     }`}
                     title={
@@ -3261,7 +3244,7 @@ export const RoleplayPracticeView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handlePlayLearnerSample(inputText)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] px-2.5 sm:px-3 py-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[#D5E9FF] active:scale-95 transition"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] px-2.5 sm:px-3 py-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition"
                     title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
                   >
                     {isPlayingLearnerSample && playingLearnerText === inputText ? (

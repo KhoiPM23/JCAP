@@ -55,7 +55,7 @@ export const RoleplayStageHeader: React.FC<RoleplayStageHeaderProps> = ({
       case 'N3':
         return 'bg-[var(--n3-soft)] text-[var(--n3)] border-[var(--n3)]/30';
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'bg-[var(--paper-200)] text-[var(--sumi-muted)] border-[var(--line)]';
     }
   };
 

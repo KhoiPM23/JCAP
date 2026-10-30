@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
@@ -23,7 +23,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     text: 'text-emerald-800',
     border: 'border-emerald-200',
     ring: 'ring-emerald-500',
-    accent: '#2f6a2c',
+    accent: 'var(--n5)',
     badgeLabel: 'JLPT N5',
     descLabel: 'Cơ bản (Beginner)',
   },
@@ -32,7 +32,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     text: 'text-sky-800',
     border: 'border-sky-200',
     ring: 'ring-sky-500',
-    accent: '#1b627c',
+    accent: 'var(--n4)',
     badgeLabel: 'JLPT N4',
     descLabel: 'Sơ trung (Elementary)',
   },
@@ -41,7 +41,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     text: 'text-purple-800',
     border: 'border-purple-200',
     ring: 'ring-purple-500',
-    accent: '#673f8f',
+    accent: 'var(--n3)',
     badgeLabel: 'JLPT N3',
     descLabel: 'Trung cấp (Intermediate)',
   },

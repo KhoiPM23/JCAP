@@ -70,7 +70,8 @@ export const SumiBrushWaveform: React.FC<SumiBrushWaveformProps> = ({
           x += sliceWidth;
         }
 
-        ctx.strokeStyle = '#c63a24'; // Màu chu sa (Shu red)
+        const shuColor = getComputedStyle(document.documentElement).getPropertyValue('--shu').trim() || '#c63a24';
+        ctx.strokeStyle = shuColor; // Màu chu sa (Shu red)
         ctx.lineWidth = 3.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -104,7 +105,7 @@ export const SumiBrushWaveform: React.FC<SumiBrushWaveformProps> = ({
       <button
         type="button"
         onClick={onCancelRecording}
-        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-[var(--paper-200)] rounded-xl transition cursor-pointer"
+        className="p-2 text-[var(--sumi-faint)] hover:text-[var(--sumi)] hover:bg-[var(--paper-200)] rounded-xl transition cursor-pointer"
         title="Huỷ lượt thu âm này"
       >
         <span className="material-symbols-outlined text-lg">close</span>
@@ -126,12 +127,12 @@ export const SumiBrushWaveform: React.FC<SumiBrushWaveformProps> = ({
         {/* Vòng đếm ngược im lặng để tự động gửi lượt nói */}
         {silenceCountdownProgress > 0 && (
           <svg className="absolute -inset-1.5 w-11 h-11 transform -rotate-90 pointer-events-none">
-            <circle cx="22" cy="22" r="18" stroke="#fde6df" strokeWidth="2.5" fill="none" />
+            <circle cx="22" cy="22" r="18" stroke="var(--shu-soft)" strokeWidth="2.5" fill="none" />
             <circle
               cx="22"
               cy="22"
               r="18"
-              stroke="#c63a24"
+              stroke="var(--shu)"
               strokeWidth="2.5"
               fill="none"
               strokeDasharray={113}
@@ -145,7 +146,7 @@ export const SumiBrushWaveform: React.FC<SumiBrushWaveformProps> = ({
         <button
           type="button"
           onClick={onSubmitRecording}
-          className="w-8 h-8 rounded-full bg-[var(--shu)] hover:bg-[#a52c18] text-white flex items-center justify-center shadow-md active:scale-95 transition cursor-pointer"
+          className="w-8 h-8 rounded-full bg-[var(--shu)] hover:opacity-90 text-white flex items-center justify-center shadow-md active:scale-95 transition cursor-pointer"
           title="Dừng và gửi câu trả lời"
         >
           <span className="material-symbols-outlined text-lg">arrow_upward</span>

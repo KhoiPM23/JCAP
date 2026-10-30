@@ -101,11 +101,11 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
         bars.forEach((bar) => {
           const idx = Number(bar.getAttribute('data-bar-idx'));
           if (idx <= activeIdx && timeSec > 0) {
-            bar.classList.add(isUser ? 'bg-emerald-600' : 'bg-[#0878EE]');
-            bar.classList.remove(isUser ? 'bg-emerald-200/90' : 'bg-blue-200/90');
+            bar.classList.add(isUser ? 'bg-[var(--score-good)]' : 'bg-[var(--ai)]');
+            bar.classList.remove(isUser ? 'bg-[var(--score-good-soft)]' : 'bg-[var(--ai-soft)]');
           } else {
-            bar.classList.remove(isUser ? 'bg-emerald-600' : 'bg-[#0878EE]');
-            bar.classList.add(isUser ? 'bg-emerald-200/90' : 'bg-blue-200/90');
+            bar.classList.remove(isUser ? 'bg-[var(--score-good)]' : 'bg-[var(--ai)]');
+            bar.classList.add(isUser ? 'bg-[var(--score-good-soft)]' : 'bg-[var(--ai-soft)]');
           }
         });
       }
@@ -467,27 +467,31 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
   const currentRatio = effectiveDuration > 0 ? Math.min(1, Math.max(0, currentTime / effectiveDuration)) : 0;
   const activeBarIndex = Math.floor(currentRatio * BAR_COUNT);
 
-  // Bảng màu giao diện chuẩn hóa JCAP
+  // Bảng màu giao diện chuẩn hóa JCAP theo Gia Khôi Design System
   const theme = isUser
     ? {
-        bg: 'bg-emerald-50/80 hover:bg-emerald-50/95 border-emerald-200/90 shadow-2xs',
-        btnBg: effectivePlaying ? 'bg-emerald-600 text-white shadow-emerald-200 ring-2 ring-emerald-300/60' : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-200',
-        barActive: 'bg-emerald-600',
-        barInactive: 'bg-emerald-200/90',
-        barHover: 'bg-emerald-400',
-        needle: 'bg-emerald-600 shadow-emerald-300',
-        badgeBg: 'bg-emerald-100/90 text-emerald-800 border border-emerald-200/70',
-        timeColor: 'text-emerald-800',
+        bg: 'bg-[var(--score-good-soft)]/50 hover:bg-[var(--score-good-soft)]/75 border-[var(--line)] shadow-2xs',
+        btnBg: effectivePlaying
+          ? 'bg-[var(--score-good)] text-white ring-2 ring-[var(--score-good)]/60 shadow-sm'
+          : 'bg-[var(--score-good)] text-white hover:opacity-90 shadow-sm',
+        barActive: 'bg-[var(--score-good)]',
+        barInactive: 'bg-[var(--score-good-soft)]',
+        barHover: 'bg-[var(--score-good)]/70',
+        needle: 'bg-[var(--score-good)] shadow-xs',
+        badgeBg: 'bg-[var(--score-good-soft)] text-[var(--score-good)] border border-[var(--score-good)]/30',
+        timeColor: 'text-[var(--score-good)]',
       }
     : {
-        bg: 'bg-blue-50/80 hover:bg-blue-50/95 border-blue-200/90 shadow-2xs',
-        btnBg: effectivePlaying ? 'bg-[#0878EE] text-white shadow-blue-200 ring-2 ring-blue-300/60' : 'bg-[#0878EE] text-white hover:bg-blue-600 shadow-blue-200',
-        barActive: 'bg-[#0878EE]',
-        barInactive: 'bg-blue-200/90',
-        barHover: 'bg-blue-400',
-        needle: 'bg-[#0878EE] shadow-blue-300',
-        badgeBg: 'bg-blue-100/90 text-blue-800 border border-blue-200/70',
-        timeColor: 'text-blue-800',
+        bg: 'bg-[var(--ai-soft)]/50 hover:bg-[var(--ai-soft)]/75 border-[var(--line)] shadow-2xs',
+        btnBg: effectivePlaying
+          ? 'bg-[var(--ai)] text-white ring-2 ring-[var(--ai)]/60 shadow-sm'
+          : 'bg-[var(--ai)] text-white hover:opacity-90 shadow-sm',
+        barActive: 'bg-[var(--ai)]',
+        barInactive: 'bg-[var(--ai-soft)]',
+        barHover: 'bg-[var(--ai)]/70',
+        needle: 'bg-[var(--ai)] shadow-xs',
+        badgeBg: 'bg-[var(--ai-soft)] text-[var(--ai)] border border-[var(--ai)]/30',
+        timeColor: 'text-[var(--ai)]',
       };
 
   return (
@@ -579,7 +583,7 @@ export const AudioWaveformPlayer: React.FC<AudioWaveformPlayerProps> = ({
         {/* Tooltip hiển thị mốc giây khi rê chuột tua */}
         {isHovering && effectiveDuration > 0 && (
           <div
-            className="absolute -top-6 -translate-x-1/2 pointer-events-none rounded bg-[#071A44] px-1.5 py-0.5 text-[9px] font-mono font-bold text-white shadow-md z-20 whitespace-nowrap"
+            className="absolute -top-6 -translate-x-1/2 pointer-events-none rounded bg-[var(--sumi)] px-1.5 py-0.5 text-[9px] font-mono font-bold text-[var(--paper-50)] shadow-md z-20 whitespace-nowrap"
             style={{
               left: `${hoverFraction * 100}%`,
             }}

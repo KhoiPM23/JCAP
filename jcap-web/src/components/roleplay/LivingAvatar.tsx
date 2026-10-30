@@ -216,8 +216,8 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
         <div
           className={`w-full h-full rounded-full bg-gradient-to-b from-amber-50/80 via-white to-sky-50/60 border-2 shadow-sm overflow-hidden flex items-center justify-center transition-all duration-300 ${
             avatarState === 'speaking'
-              ? 'border-sky-500 shadow-md shadow-sky-200'
-              : 'border-slate-200 hover:border-slate-300'
+              ? 'border-[var(--ai)] shadow-md shadow-[var(--ai)]/20'
+              : 'border-[var(--line)] hover:border-[var(--line-strong)]'
           } ${avatarState === 'idle' ? 'animate-breathing' : ''} ${
             avatarState === 'bowing' ? 'transform translate-y-1.5 rotate-[2.5deg] scale-95 transition-all duration-500' : ''
           }`}
@@ -398,11 +398,11 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
 
       {!hideLabel && (
         <div className="text-center mt-2 max-w-[180px]">
-          <h4 className="text-xs md:text-sm font-bold text-slate-800 leading-tight">
+          <h4 className="text-xs md:text-sm font-bold text-[var(--sumi)] leading-tight">
             {personaName || 'AI Persona'}
           </h4>
           {personaRole && (
-            <p className="text-[10px] md:text-[11px] text-slate-500 mt-0.5">{personaRole}</p>
+            <p className="text-[10px] md:text-[11px] text-[var(--sumi-muted)] mt-0.5">{personaRole}</p>
           )}
         </div>
       )}

@@ -172,31 +172,18 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
         style={{
 
           background: score >= 80 
-
-            ? 'radial-gradient(circle, #38bdf8 0%, #6366f1 100%)' 
-
-            : 'radial-gradient(circle, #fb923c 0%, #ef4444 100%)'
-
+            ? 'radial-gradient(circle, var(--score-good) 0%, var(--ai) 100%)' 
+            : 'radial-gradient(circle, var(--score-mid) 0%, var(--score-low) 100%)'
         }}
-
       />
 
-
-
       <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 128 128">
-
         <defs>
-
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-
-            <stop offset="0%" stopColor="#38bdf8" />
-
-            <stop offset="50%" stopColor="#6366f1" />
-
-            <stop offset="100%" stopColor="#ec4899" />
-
+            <stop offset="0%" stopColor="var(--ai)" />
+            <stop offset="50%" stopColor="var(--ai-hover)" />
+            <stop offset="100%" stopColor="var(--score-good)" />
           </linearGradient>
-
         </defs>
 
         <circle
@@ -743,7 +730,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
         </div>
 
-        <header className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0c1a30] via-[#102344] to-[#1c385e] px-7 py-8 text-white shadow-xl md:px-10 md:py-10 border border-blue-900/40">
+        <header className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[var(--sumi)] via-[var(--sumi)] to-[var(--ai)] px-7 py-8 text-white shadow-xl md:px-10 md:py-10 border border-[var(--line)]/40">
 
           <div className="absolute right-0 top-0 h-full w-2/3 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.25),transparent_65%)] pointer-events-none" />
 
