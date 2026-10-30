@@ -571,6 +571,11 @@ export const RoleplayPracticeView: React.FC = () => {
               lastRecordedAudioUrlRef.current = serverUrl;
             }
           });
+          // Nếu cả Web Speech lẫn Whisper đều chưa bắt được từ nào
+          if (!inputText.trim() && !latestTranscriptRef.current) {
+            setToastMessage('Chưa nhận diện được giọng nói. Hãy nói to, rõ ràng bằng tiếng Nhật (VD: こんにちは, すみません) hoặc kiểm tra micro.');
+            setTimeout(() => setToastMessage(null), 4500);
+          }
         }
       }
     } catch (err) {
@@ -1735,6 +1740,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
   const startSpeechRecognition = () => {
     setMicError(null);
+    latestTranscriptRef.current = '';
     try {
       if (recognitionRef.current) {
         try {
@@ -1804,6 +1810,10 @@ export const RoleplayPracticeView: React.FC = () => {
           console.warn('[Scenario STT] Error:', err);
           if (err.error === 'not-allowed') {
             setMicError('Quyền truy cập micro đã bị từ chối.');
+          } else if (err.error === 'network') {
+            setMicError('Không thể kết nối máy chủ nhận diện Google STT. Hãy kiểm tra kết nối mạng.');
+          } else if (err.error === 'audio-capture') {
+            setMicError('Không tìm thấy thiết bị micro trên máy tính.');
           }
         },
         onEnd: () => {
