@@ -2888,145 +2888,78 @@ export const RoleplayPracticeView: React.FC = () => {
                       )}
 
 
-                      {/* Mini Acoustic & Autonomy Telemetry Badges */}
-                      {!isAi && msg.linguisticFeedback?.speechDelivery && (
-                        <div className="mt-2 flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-blue-400/30 text-[10px]">
-                          {msg.linguisticFeedback.speechDelivery.responseLatencySeconds != null && (
-                            <span className="inline-flex items-center gap-1 rounded bg-black/25 px-1.5 py-0.5 font-mono text-blue-100" title="Thời gian từ khi AI dứt lời đến khi bạn bắt đầu nói">
-                              <span>⚡</span>
-                              <span>{msg.linguisticFeedback.speechDelivery.responseLatencySeconds}s</span>
-                            </span>
-                          )}
-                          {msg.linguisticFeedback.speechDelivery.pronunciationClarityScore != null && (
-                            <span className="inline-flex items-center gap-1 rounded bg-black/25 px-1.5 py-0.5 font-mono text-blue-100" title="Độ rõ nét âm học (Acoustic Clarity)">
-                                                            <span>{msg.linguisticFeedback.speechDelivery.pronunciationClarityScore}% rõ</span>
-                            </span>
-                          )}
-                          {msg.linguisticFeedback.speechDelivery.moraRate != null && (
-                            <span className="inline-flex items-center gap-1 rounded bg-black/25 px-1.5 py-0.5 font-mono text-blue-100" title="Tốc độ Mora (Chuẩn người Nhật 5.0 - 7.5 mora/s)">
-                                                            <span>{msg.linguisticFeedback.speechDelivery.moraRate} mora/s</span>
-                            </span>
-                          )}
-                          {msg.linguisticFeedback.speechDelivery.turnAutonomyScore != null && (
-                            <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-semibold ${
-                              msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95
-                                ? 'bg-emerald-500/30 text-emerald-100 border border-emerald-400/40'
-                                : 'bg-amber-400/30 text-amber-100 border border-amber-300/40'
-                            }`} title={msg.linguisticFeedback.speechDelivery.autonomyAssessment || 'Độ tự chủ giao tiếp'}>
-                                                            <span>{msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95 ? 'Tự lập 100%' : `${msg.linguisticFeedback.speechDelivery.turnAutonomyScore}đ tự chủ`}</span>
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedMessageId(msg.id);
-                              setIsRightOpen(true);
-                            }}
-                            className="ml-auto inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-white/95 hover:bg-white/20 transition cursor-pointer"
-                            title="Mở bảng phân tích chi tiết cho câu này"
-                          >
-                                                        <span className="underline decoration-dotted">Đánh giá</span>
-                          </button>
-                        </div>
-                      )}
-
-
-                      {/* Inline grammar issue preview for User messages */}
-                      {!isAi && msg.linguisticFeedback?.details && msg.linguisticFeedback.details.length > 0 && (
-                        <div className="mt-1.5 flex items-center justify-between border-t border-blue-400/25 pt-1.5 text-[11px] text-blue-100">
-                          <span className="truncate pr-2">Góp ý: {(msg.linguisticFeedback.details[0] as any)?.comment || (msg.linguisticFeedback.details[0] as any)?.aspect || String(msg.linguisticFeedback.details[0])}</span>
-                          <span className="shrink-0 text-[10px] font-bold text-white/90 underline decoration-dotted">
-                            Xem sửa →
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Subtle Inline feedback preview for User messages */}
-                      {!isAi && msg.linguisticFeedback?.naturalAlternative && (
-                        <div className="mt-1.5 flex items-center justify-between border-t border-blue-400/25 pt-1.5 text-[11px] text-blue-100">
-                          <span className="truncate pr-2">Nâng cấp tự nhiên: {msg.linguisticFeedback.naturalAlternative}</span>
-                          <span className="shrink-0 text-[10px] font-bold text-white/90 underline decoration-dotted">
-                            Chi tiết ➔
-                          </span>
-                        </div>
-                      )}
-
-
-                      {/* Tinh giản: Thanh công cụ thanh lịch xuất hiện nhẹ nhàng khi hover/tương tác */}
+                      {/* Tinh giản Pro UI: Hàng trạng thái & công cụ nhẹ nhàng cho câu thoại của học viên */}
                       {!isAi && (
-                        <div className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5 border-t border-blue-400/25 pt-1.5 opacity-90 sm:opacity-75 group-hover:opacity-100 transition-opacity">
-                          {/* Nút Nói lại */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRedoTurn(msg.japaneseText);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold transition cursor-pointer bg-white/15 text-white hover:bg-white/25"
-                            title="Nói lại câu này để luyện phản xạ"
-                          >
-                            <RefreshIcon className="w-3 h-3" />
-                            <span>Nói lại</span>
-                          </button>
+                        <div className="mt-2 flex items-center justify-between gap-1.5 pt-1.5 border-t border-white/20 text-[10px]">
+                          {/* Điểm tự chủ & Rõ ràng */}
+                          <div className="flex items-center gap-1.5">
+                            {msg.linguisticFeedback?.speechDelivery?.turnAutonomyScore != null && (
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded font-mono font-bold ${
+                                msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95
+                                  ? 'bg-emerald-500/30 text-emerald-100'
+                                  : 'bg-amber-400/30 text-amber-100'
+                              }`}>
+                                {msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95 ? '✓ 100đ' : `${msg.linguisticFeedback.speechDelivery.turnAutonomyScore}đ`}
+                              </span>
+                            )}
+                            {msg.linguisticFeedback?.speechDelivery?.pronunciationClarityScore != null && (
+                              <span className="font-mono text-blue-200/80">
+                                {msg.linguisticFeedback.speechDelivery.pronunciationClarityScore}% rõ
+                              </span>
+                            )}
+                          </div>
 
-
-                          {/* Nút Nâng cấp tự nhiên nếu có gợi ý từ AI */}
-                          {msg.linguisticFeedback?.naturalAlternative && (
+                          {/* Action tools */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Nút Xem phân tích đánh giá */}
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleUpgradePhrasing(msg.linguisticFeedback!.naturalAlternative!);
+                                setSelectedMessageId(msg.id);
+                                setIsRightOpen(true);
                               }}
-                              className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold transition cursor-pointer bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-2xs"
-                              title="Nạp câu bản xứ tự nhiên hơn vào micro"
+                              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
+                              title="Xem chi tiết phân tích ngữ pháp & phát âm"
                             >
-                                                            <span>Nâng cấp</span>
+                              <span>💡</span>
+                              <span>Đánh giá</span>
                             </button>
-                          )}
 
-
-                          {/* Nút nghe lại giọng thu âm của học viên */}
-                          {(msg.userAudioUrl || userAudioMapRef.current.get(msg.id)) && (
+                            {/* Nút Nói lại */}
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const url = msg.userAudioUrl || userAudioMapRef.current.get(msg.id);
-                                if (url) handlePlayUserAudio(msg.id, url);
+                                handleRedoTurn(msg.japaneseText);
                               }}
-                              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold transition cursor-pointer ${
-                                playingUserAudioId === msg.id
-                                  ? 'bg-emerald-400 text-slate-900 font-bold shadow-2xs'
-                                  : 'bg-white/15 text-white hover:bg-white/25'
-                              }`}
-                              title="Nghe lại bản thu âm giọng bạn"
+                              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
+                              title="Nói lại câu này"
                             >
-                                                            <span>{playingUserAudioId === msg.id ? 'Đang phát...' : 'Giọng bạn'}</span>
+                              <RefreshIcon className="w-3 h-3" />
+                              <span>Nói lại</span>
                             </button>
-                          )}
 
-
-                          {/* Nút nghe đọc mẫu */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePlayLearnerSample(msg.japaneseText);
-                            }}
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold transition cursor-pointer ${
-                              isPlayingLearnerSample && playingLearnerText === msg.japaneseText
-                                ? 'bg-white/25 text-white font-bold shadow-2xs'
-                                : 'text-blue-100 hover:text-white hover:bg-white/15'
-                            }`}
-                            title="Nghe phát âm chuẩn câu này"
-                          >
-                                                        <span>{isPlayingLearnerSample && playingLearnerText === msg.japaneseText ? 'Đang đọc...' : 'Đọc mẫu'}</span>
-                          </button>
+                            {/* Nút nghe lại giọng bạn */}
+                            {(msg.userAudioUrl || userAudioMapRef.current.get(msg.id)) && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const url = msg.userAudioUrl || userAudioMapRef.current.get(msg.id);
+                                  if (url) handlePlayUserAudio(msg.id, url);
+                                }}
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded font-medium transition cursor-pointer ${
+                                  playingUserAudioId === msg.id ? 'bg-emerald-400 text-slate-900 font-bold' : 'text-white/90 hover:bg-white/20'
+                                }`}
+                                title="Nghe lại bản thu âm giọng bạn"
+                              >
+                                <span>{playingUserAudioId === msg.id ? 'Đang phát...' : 'Giọng bạn'}</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
-
 
                       {/* AI Audio button with Soundwave equalizer */}
                       {isAi && (
@@ -3194,36 +3127,19 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
               {/* Input Row */}
-              {/* Applied Hint Feedback Banner */}
+              {/* Applied Hint Feedback Banner - Monotonic locked */}
               {appliedHintTier !== null && (
-                <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-1.5 rounded-xl bg-amber-50/95 border border-amber-300 text-xs text-amber-900 shadow-2xs font-sans animate-fade-in">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span>
-                      Đang dùng gợi ý <strong>Cấp {appliedHintTier}</strong> ({appliedHintTier === 1 ? 'Từ khóa' : appliedHintTier === 2 ? 'Khung điền từ' : 'Mẫu câu'}) — Tự chủ lượt này: <strong>{appliedHintTier === 1 ? '90' : appliedHintTier === 2 ? '70' : '40'}/100đ</strong>
-                    </span>
-                    {appliedHintTier >= 2 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAppliedHintTier(1);
-                          hintLevelUsedRef.current = 1;
-                          setInputText('');
-                          setToastMessage('🌟 Thử thách Tự chủ: Hãy tự nói câu bằng Micro để lấy trọn 90+ điểm tự chủ!');
-                          setTimeout(() => setToastMessage(null), 4000);
-                          startSpeechRecognition();
-                        }}
-                        className="px-2.5 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-2xs transition active:scale-95 cursor-pointer"
-                        title="Tự nói bằng mic để lấy lại điểm tự chủ"
-                      >
-                        Thử thách Tự nói (Lấy 90đ) ➔
-                      </button>
-                    )}
+                <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-xl bg-amber-50/95 border border-amber-300 text-[11px] text-amber-900 shadow-2xs font-sans animate-fade-in">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-amber-700">🔒 Cấp {appliedHintTier}:</span>
+                    <span>Tự chủ tối đa: <strong>{appliedHintTier === 1 ? '90' : appliedHintTier === 2 ? '70' : '40'}/100đ</strong></span>
+                    <span className="text-[10px] text-amber-700/80">(Không hoàn lại khi đổi cấp)</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setAppliedHintTier(null)}
-                    className="text-amber-700 hover:text-amber-950 font-bold text-xs p-1 cursor-pointer"
-                    title="Đóng thông báo"
+                    className="text-amber-700 hover:text-amber-950 font-bold text-xs p-0.5 cursor-pointer"
+                    title="Ẩn thông báo"
                   >
                     ✕
                   </button>
@@ -3347,31 +3263,25 @@ export const RoleplayPracticeView: React.FC = () => {
                 />
 
 
-                {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi */}
+                {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi (compact icon) */}
                 {inputText.trim() && (
                   <button
                     type="button"
                     onClick={() => handlePlayLearnerSample(inputText)}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] px-2.5 sm:px-3 py-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition"
+                    className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] p-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition"
                     title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
                   >
                     {isPlayingLearnerSample && playingLearnerText === inputText ? (
-                      <span className="flex items-center gap-1 text-[var(--ai)]">
-                        <span className="flex items-end gap-0.5 h-3">
-                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
-                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
-                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
-                        </span>
-                        <span className="hidden md:inline text-[11px]">Đang đọc...</span>
+                      <span className="flex items-end gap-0.5 h-3">
+                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
                       </span>
                     ) : (
-                      <>
-                                                <span className="hidden md:inline">Đọc mẫu</span>
-                      </>
+                      <VolumeIcon className="w-4 h-4 text-[var(--ai)]" />
                     )}
                   </button>
                 )}
-
 
                 {/* Send Button */}
                 <button

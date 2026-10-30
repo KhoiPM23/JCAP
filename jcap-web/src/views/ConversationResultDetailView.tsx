@@ -66,7 +66,7 @@ const ScoreCard = ({ label, score, accent, subtext }: { label: string; score: nu
     <div className="group flex flex-col justify-between rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-blue-300 hover:shadow-md h-full min-h-[142px]">
       <div>
         <div className="mb-2 flex items-start justify-between gap-2 h-10">
-          <span className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wide font-sans line-clamp-2 leading-tight flex-1">{label}</span>
+          <span className="text-[11px] sm:text-xs font-bold text-slate-700 font-sans line-clamp-2 leading-tight flex-1 normal-case">{label}</span>
           <strong className="text-2xl font-black text-slate-800 font-sans shrink-0 leading-none">{score}</strong>
         </div>
         <p className="text-[11px] font-medium text-slate-400 font-sans h-4 leading-4 truncate">
@@ -2608,9 +2608,9 @@ export const ConversationResultDetailView: React.FC = () => {
 
         <div className="mt-6 rounded-3xl border border-[var(--line)] bg-[var(--paper-50)]/90 backdrop-blur-xs p-5 shadow-xs">
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
 
               <div className="w-10 h-10 rounded-2xl bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center shrink-0 border border-[var(--ai)]/20 shadow-2xs text-lg"><LightbulbIcon className="w-5 h-5 text-[var(--ai)]" /></div>
 
@@ -2642,7 +2642,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
 
 
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:shrink-0">
               {result.nextRecommendedScenarioId && (
                 <Link
                   to={`/scenarios/${result.nextRecommendedScenarioId}`}

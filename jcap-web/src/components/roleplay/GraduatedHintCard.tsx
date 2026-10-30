@@ -62,13 +62,13 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
   };
 
   return (
-    <div className="w-full p-3.5 bg-gradient-to-br from-amber-50/95 via-orange-50/80 to-amber-100/60 rounded-2xl border border-amber-300/80 shadow-md flex flex-col gap-2.5 animate-slide-up select-none">
+    <div className="w-full p-2.5 sm:p-3 bg-gradient-to-br from-amber-50/95 via-orange-50/80 to-amber-100/60 rounded-2xl border border-amber-300/80 shadow-md flex flex-col gap-2.5 animate-slide-up select-none">
       {/* Header thanh gợi ý giàn giáo */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-amber-600 font-bold text-base">💡</span>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-amber-950 uppercase tracking-wide">
+            <span className="text-xs font-bold text-amber-950 line-clamp-1 leading-snug">
               Giàn giáo ZPD: {missionTitle || 'Nhiệm vụ hiện tại'}
             </span>
             <span className="text-[10px] text-amber-900 font-medium">
@@ -100,7 +100,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
             setHintTier(1);
             onTierChange?.(1);
           }}
-          className={`py-1.5 px-1 text-[11px] font-bold rounded-lg transition ${
+          className={`py-1 px-1 text-[11px] font-bold rounded-lg transition ${
             hintTier === 1
               ? 'bg-white text-amber-950 shadow-xs'
               : 'text-amber-900/70 hover:text-amber-950 hover:bg-white/40'
@@ -116,7 +116,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
             setHintTier(2);
             onTierChange?.(2);
           }}
-          className={`py-1.5 px-1 text-[11px] font-bold rounded-lg transition ${
+          className={`py-1 px-1 text-[11px] font-bold rounded-lg transition ${
             hintTier === 2
               ? 'bg-white text-amber-950 shadow-xs'
               : 'text-amber-900/70 hover:text-amber-950 hover:bg-white/40'
@@ -132,7 +132,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
             setHintTier(3);
             onTierChange?.(3);
           }}
-          className={`py-1.5 px-1 text-[11px] font-bold rounded-lg transition ${
+          className={`py-1 px-1 text-[11px] font-bold rounded-lg transition ${
             hintTier === 3
               ? 'bg-white text-amber-950 shadow-xs'
               : 'text-amber-900/70 hover:text-amber-950 hover:bg-white/40'
