@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
 import { useAuth } from '../contexts/AuthContext';
+import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 
@@ -204,9 +205,9 @@ export const ScenarioDetailsView: React.FC = () => {
       <div data-theme="phong-luyen" className="min-h-screen bg-[var(--paper-100)] px-4 py-20 flex flex-col items-center justify-center text-center">
         <div className="relative flex items-center justify-center">
           <div className="h-14 w-14 rounded-full border-4 border-[var(--line)] border-t-[var(--ai)] animate-spin" />
-          <span className="absolute text-xs font-serif font-bold text-[var(--ai)]">AI</span>
+          <span className="absolute text-xs font-sans font-bold text-[var(--ai)]">AI</span>
         </div>
-        <p className="mt-5 text-sm font-serif font-bold tracking-wide text-[var(--sumi)]">
+        <p className="mt-5 text-sm font-sans font-bold tracking-wide text-[var(--sumi)]">
           Đang nạp dữ liệu kịch bản hội thoại...
         </p>
         <p className="mt-1 text-xs text-[var(--sumi-faint)]">
@@ -223,7 +224,7 @@ export const ScenarioDetailsView: React.FC = () => {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600">
             
           </div>
-          <h2 className="mt-4 text-lg font-bold font-serif text-[var(--sumi)]">
+          <h2 className="mt-4 text-lg font-bold font-sans text-[var(--sumi)]">
             Không thể tải thông tin kịch bản
           </h2>
           <p className="mt-2 text-xs leading-relaxed text-[var(--sumi-muted)]">
@@ -288,10 +289,10 @@ export const ScenarioDetailsView: React.FC = () => {
           <div className="min-w-0 space-y-6">
 
             {/* Scenario Identity Hero Card */}
-            <section className="relative overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] shadow-sm">
-              <div className="flex flex-col">
+            <section className="relative overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] shadow-sm p-5 md:p-7">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 md:gap-7">
                 {/* Thumbnail Container */}
-                <div className="relative group overflow-hidden border-b border-[var(--line)] bg-[var(--paper-100)] h-44 md:h-56 w-full" >
+                <div className="relative group overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--paper-100)] w-full sm:w-48 md:w-56 aspect-[4/3] sm:aspect-square shrink-0">
                   <img
                     src={scenario.thumbnail || '/images/scenario-placeholder.svg'}
                     alt={scenario.title}
@@ -306,7 +307,7 @@ export const ScenarioDetailsView: React.FC = () => {
                 </div>
 
                 {/* Info Text */}
-                <div className="flex flex-col min-w-0 p-6 md:p-8">
+                <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--ai)]">
                       Hội thoại tình huống 2 chiều
@@ -317,16 +318,16 @@ export const ScenarioDetailsView: React.FC = () => {
                     </span>
                   </div>
 
-                  <h1 className="text-2xl md:text-3xl font-black font-serif text-[var(--sumi)] leading-snug">
+                  <h1 className="text-2xl md:text-3xl font-black font-sans text-[var(--sumi)] leading-snug">
                     {scenario.title}
                   </h1>
 
-                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--sumi-muted)]">
+                  <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-[var(--sumi-muted)]">
                     {scenario.description}
                   </p>
 
                   {/* Level Quick Badges */}
-                  <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-[var(--line)]/50">
+                  <div className="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--line)]/50">
                     <span className="text-xs font-semibold text-[var(--sumi-faint)]">
                       Cấp độ hỗ trợ:
                     </span>
@@ -359,7 +360,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
-                    <h2 className="text-lg md:text-xl font-bold font-serif text-[var(--sumi)]">
+                    <h2 className="text-lg md:text-xl font-bold font-sans text-[var(--sumi)]">
                       Chọn cấp độ luyện tập
                     </h2>
                     <p className="text-xs text-[var(--sumi-faint)] mt-0.5">
@@ -396,7 +397,7 @@ export const ScenarioDetailsView: React.FC = () => {
                             : 'text-[var(--sumi-muted)] hover:bg-[var(--paper-50)]/60'
                         }`}
                       >
-                        <span className={`text-sm font-black font-serif ${isSelected ? meta.text : 'text-[var(--sumi)]'}`}>
+                        <span className={`text-sm font-black font-sans ${isSelected ? meta.text : 'text-[var(--sumi)]'}`}>
                           {level.jlptLevel}
                         </span>
                         <span className="text-[10px] font-semibold text-[var(--sumi-faint)] mt-0.5">
@@ -412,12 +413,19 @@ export const ScenarioDetailsView: React.FC = () => {
               <div className="grid gap-4 md:grid-cols-2 pt-2">
                 {/* AI Persona Dossier */}
                 <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-5 space-y-2">
-                  <div className="flex items-center gap-2">
-                                        <div>
+                  <div className="flex items-center gap-3">
+                    <LivingAvatar
+                      size="sm"
+                      avatarState="idle"
+                      personaName={selectedLevel.aiPersona}
+                      scenarioTitle={scenario.title}
+                      hideLabel
+                    />
+                    <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
                         Nhân vật AI đối thoại
                       </p>
-                      <h3 className="text-sm font-bold font-serif text-[var(--sumi)]">
+                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)]">
                         {selectedLevel.aiPersona}
                       </h3>
                     </div>
@@ -434,7 +442,7 @@ export const ScenarioDetailsView: React.FC = () => {
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
                         Bối cảnh giao tiếp
                       </p>
-                      <h3 className="text-sm font-bold font-serif text-[var(--sumi)] truncate">
+                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)] truncate">
                         {selectedLevel.title}
                       </h3>
                     </div>
@@ -450,7 +458,7 @@ export const ScenarioDetailsView: React.FC = () => {
             <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm md:p-8 space-y-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg md:text-xl font-bold font-serif text-[var(--sumi)]">
+                  <h2 className="text-lg md:text-xl font-bold font-sans text-[var(--sumi)]">
                     Nhiệm vụ cần hoàn thành
                   </h2>
                   <p className="text-xs text-[var(--sumi-faint)] mt-0.5">
@@ -469,7 +477,7 @@ export const ScenarioDetailsView: React.FC = () => {
                     className="group relative flex items-start gap-3.5 rounded-2xl border border-[var(--line)] bg-[var(--paper-50)] p-4 transition-all hover:border-[var(--line-strong)] hover:shadow-xs"
                   >
                     {/* Hanko-style Number Badge */}
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--paper-100)] font-serif text-xs font-black text-[var(--sumi)] border border-[var(--line)] group-hover:border-[var(--ai)] group-hover:text-[var(--ai)] group-hover:bg-[var(--ai-soft)] transition-colors">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--paper-100)] font-sans text-xs font-black text-[var(--sumi)] border border-[var(--line)] group-hover:border-[var(--ai)] group-hover:text-[var(--ai)] group-hover:bg-[var(--ai-soft)] transition-colors">
                       {String(mission.order || idx + 1).padStart(2, '0')}
                     </span>
 
@@ -581,7 +589,7 @@ export const ScenarioDetailsView: React.FC = () => {
                   <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
                     Cấp độ đang chọn
                   </p>
-                  <h3 className="text-xl font-bold font-serif text-[var(--sumi)]">
+                  <h3 className="text-xl font-bold font-sans text-[var(--sumi)]">
                     JLPT {selectedLevel.jlptLevel}
                   </h3>
                 </div>
@@ -660,7 +668,7 @@ export const ScenarioDetailsView: React.FC = () => {
             {/* Target Cheatsheet: Vocabularies & Grammars (Tabbed) */}
             <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-bold font-serif text-[var(--sumi)]">
+                <h3 className="text-base font-bold font-sans text-[var(--sumi)]">
                   Kiến thức trọng tâm
                 </h3>
                 <span className="text-[11px] text-[var(--sumi-faint)]">JLPT {selectedLevel.jlptLevel}</span>
@@ -781,7 +789,7 @@ export const ScenarioDetailsView: React.FC = () => {
                   {confirmModal.isSwitchingLevel ? '' : ''}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold font-serif text-[var(--sumi)]">
+                  <h3 className="text-base font-bold font-sans text-[var(--sumi)]">
                     {confirmModal.isSwitchingLevel
                       ? 'Chuyển sang cấp độ mới?'
                       : isAdmin

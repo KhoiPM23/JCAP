@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, JpText, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
+import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { useAuth } from '../contexts/AuthContext';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
@@ -308,7 +309,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
 
             {cfg.aiPersona && (
               <div className="flex items-center gap-3 rounded-jc-md bg-paper-100 px-3.5 py-3">
-                <span className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-full bg-sora font-bold text-on-sora">{cfg.aiPersona.trim().charAt(0).toUpperCase()}</span>
+                <LivingAvatar size="sm" avatarState="idle" personaName={cfg.aiPersona} scenarioTitle={details.title} hideLabel />
                 <span className="flex min-w-0 flex-col">
                   <span className="text-sm font-semibold leading-5">{`Bạn nói chuyện với ${cfg.aiPersona}`}</span>
                   {hasActive && progressText && <span className="text-[13px] leading-5 text-sumi-muted">{`Phiên đang dở ở cấp ${activeLevel}: ${progressText} nhiệm vụ`}</span>}

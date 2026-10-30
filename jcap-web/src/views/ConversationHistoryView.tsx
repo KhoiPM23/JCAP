@@ -23,7 +23,7 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
           JLPT {result.jlptLevel}
         </span>
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-bold font-serif ${
+          className={`rounded-full px-2.5 py-1 text-xs font-bold font-sans ${
             result.passStatus
               ? 'border border-[var(--shu)]/30 bg-[var(--shu-soft)] text-[var(--shu)]'
               : 'border border-amber-200 bg-amber-50 text-amber-700'
@@ -32,7 +32,7 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
           {result.passStatus ? '合格 ĐẠT' : '未達成 CHƯA ĐẠT'}
         </span>
       </div>
-      <h2 className="truncate text-lg font-bold font-serif text-[var(--sumi)]">{result.scenarioTitle}</h2>
+      <h2 className="truncate text-lg font-bold font-sans text-[var(--sumi)]">{result.scenarioTitle}</h2>
       <p className="mt-1 text-sm text-[var(--sumi-faint)]">Hoàn thành {formatDate(result.completedAt)}</p>
     </div>
 
@@ -115,7 +115,7 @@ export const ConversationHistoryView: React.FC = () => {
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-[#7FC2FF]">
             Lịch sử hội thoại
           </p>
-          <h1 className="text-3xl font-black font-serif tracking-tight md:text-4xl">Hành trình Kaiwa của bạn</h1>
+          <h1 className="text-3xl font-black font-sans tracking-tight md:text-4xl">Hành trình Kaiwa của bạn</h1>
           <p className="mt-3 text-sm leading-6 text-blue-100">
             Xem lại kết quả từng tình huống, theo dõi điểm số và mở phần nhận xét để biết
             điều nên cải thiện trong lần luyện tiếp theo.
