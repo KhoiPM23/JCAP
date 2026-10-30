@@ -481,6 +481,21 @@ public class RoleplaySessionServiceTests
             });
 
         var personaMemory = new Mock<IPersonaMemoryService>();
+        dbContext.LearnerSkillMasteries.Add(new LearnerSkillMastery
+        {
+            UserId = "user-test",
+            SkillCode = "E01_INTRANSITIVE_WO",
+            SkillName = "Trợ từ を với tự động từ (E01)",
+            Category = "Grammar",
+            Stability = 0.8,
+            Difficulty = 6.0,
+            Repetitions = 1,
+            Lapses = 1,
+            LastPracticedUtc = DateTime.UtcNow,
+            NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(-1)
+        });
+        await dbContext.SaveChangesAsync();
+
         var service = new RoleplaySessionService(
             dbContext,
             userManagerMock.Object,
@@ -500,6 +515,9 @@ public class RoleplaySessionServiceTests
         Assert.Equal(80.0, result.Data.KeigoCommandScore);
         Assert.Equal("大吉 (Đại Cát)", result.Data.OmikujiRank);
         Assert.NotEmpty(result.Data.Strengths);
+        Assert.Single(result.Data.DueReviewItems);
+        Assert.True(result.Data.DueReviewItems[0].IsDueForReview);
+        Assert.Equal("E01_INTRANSITIVE_WO", result.Data.DueReviewItems[0].SkillCode);
     }
 }
 
