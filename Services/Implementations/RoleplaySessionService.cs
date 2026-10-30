@@ -75,6 +75,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     {
         var activeSession = await _dbContext.RoleplaySessions
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)
@@ -332,6 +333,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     {
         var session = await _dbContext.RoleplaySessions
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.ScenarioLevelConfiguration)
@@ -476,6 +478,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         var session = await _dbContext.RoleplaySessions
+            .AsSplitQuery()
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.ScenarioLevelConfiguration)
@@ -1001,6 +1004,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     {
         var session = await _dbContext.RoleplaySessions
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)
@@ -1061,6 +1065,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         await _telemetryEvaluator.FinalizeSessionTelemetryAsync(sessionId, userId);
 
         var sessionWithConfig = await _dbContext.RoleplaySessions
+            .AsSplitQuery()
             .Include(s => s.ScenarioLevelConfiguration)
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)

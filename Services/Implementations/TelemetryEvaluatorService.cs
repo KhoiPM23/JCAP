@@ -160,6 +160,7 @@ namespace JCAP.Services.Implementations
 
             // 4. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
             var session = await _context.RoleplaySessions
+                .AsSplitQuery()
                 .Include(s => s.ScenarioLevelConfiguration)
                     .ThenInclude(c => c!.TargetVocabularies)
                 .Include(s => s.ScenarioLevelConfiguration)
