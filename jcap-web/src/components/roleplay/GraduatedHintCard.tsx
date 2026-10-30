@@ -72,7 +72,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               Giàn giáo ZPD: {missionTitle || 'Nhiệm vụ hiện tại'}
             </span>
             <span className="text-[10px] text-amber-900 font-medium">
-              👁️ Đang xem trước (Chưa trừ điểm) — {hintTier === 1 && 'Cấp 1: Từ khóa (Nếu áp dụng: -10đ tự chủ)'}{hintTier === 2 && 'Cấp 2: Khung điền khuyết (Nếu áp dụng: -30đ tự chủ)'}{hintTier === 3 && 'Cấp 3: Mẫu câu hoàn chỉnh (Nếu áp dụng: -60đ tự chủ)'}
+              👁️ Đang xem trước (Chưa trừ điểm) — Cấp {hintTier}: Tự chủ tối đa {hintTier === 1 ? '90đ (-10đ)' : hintTier === 2 ? '70đ (-30đ)' : '40đ (-60đ)'}
             </span>
           </div>
         </div>

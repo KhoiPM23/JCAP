@@ -1652,6 +1652,8 @@ export const RoleplayPracticeView: React.FC = () => {
 
     // 1. Nạp tức thì instant hint < 5ms để người dùng thấy nội dung ngay lập tức
     const instant = synthesizeInstantHint(session);
+    hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
+    setAppliedHintTier(1);
     setHint(instant);
 
 
@@ -3125,7 +3127,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
               {/* HỘP GỢI Ý DUY NHẤT: GraduatedHintCard ZPD 3 CẤP HOẶC FLOATING CHIP NHẸ NHÀNG */}
-              {hint ? (
+              {hint && !isSending ? (
                 isBlindMode ? (
                   <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-center text-xs font-bold text-amber-900 shadow-2xs flex items-center justify-center gap-2 animate-fade-in">
                     <span className="text-base">⚡</span>
@@ -3152,8 +3154,9 @@ export const RoleplayPracticeView: React.FC = () => {
                     setToastMessage(`Đã nạp gợi ý Cấp ${tier} vào ô nhập (Tự chủ dự kiến: ${100 - penalty}/100đ)`);
                     setTimeout(() => setToastMessage(null), 3500);
                   }}
-                  onTierChange={(_tier) => {
-                    // Xem trước các tab Cấp 1, 2, 3 hoàn toàn miễn phí, không trừ điểm
+                  onTierChange={(tier) => {
+                    hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
+                    setAppliedHintTier(tier);
                   }}
                   onPlaySampleAudio={() => {
                     const text = hint.suggestedJapaneseText || hint.japaneseSuggestion;
