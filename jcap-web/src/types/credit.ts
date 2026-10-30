@@ -55,6 +55,10 @@ export interface UserQuota {
   fiveHourResetsInText: string;
 
   extraCreditBalance: number;
+  planId?: string;
   planName: string;
   planTier: string;
+  hasActiveSubscription?: boolean;
+  subscriptionExpiresAt?: string | null;
+  subscriptionDaysRemaining?: number;
 }

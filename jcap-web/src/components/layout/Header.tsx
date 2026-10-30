@@ -122,6 +122,10 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
         <button 
           type="button"
           className="text-[#71809A] hover:text-[#0878EE] transition-colors relative p-1 rounded-full hover:bg-blue-50"
+          onClick={() => {
+            if (user?.role === 'Admin') navigate('/admin/notifications');
+          }}
+          title={user?.role === 'Admin' ? 'Quản lý & Cài đặt Thông báo' : 'Thông báo'}
           aria-label="Thông báo"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

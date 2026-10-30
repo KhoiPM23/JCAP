@@ -27,8 +27,11 @@ export const PaymentReturnView: React.FC = () => {
     const verify = async () => {
       setIsLoading(true);
 
-      // Nếu có query cancel=true hoặc status=CANCELLED
+      // Nếu có query cancel=true hoặc status=CANCELLED -> Tự động cập nhật trạng thái Đã hủy xuống DB
       if (cancelParam === 'true' || statusParam === 'CANCELLED') {
+        if (orderCodeParam) {
+          await creditService.cancelOrder(orderCodeParam).catch(() => {});
+        }
         setIsSuccess(false);
         setIsLoading(false);
         return;

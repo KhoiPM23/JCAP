@@ -32,4 +32,13 @@ public class RoleplaySessionDetailsDto
     public int RecommendedLearnerVoiceId { get; set; } = 2;
     public string RecommendedLearnerVoiceName { get; set; } = string.Empty;
     public Dictionary<string, int> RoleVoiceMappings { get; set; } = [];
+
+    // Scene Archetype (Bối cảnh: train, konbini, office, cafe, ramen, zen, medical)
+    public string SceneType { get; set; } = "ramen";
+
+    // NPC Memory & Affinity (Mối quan hệ & ký ức nhân vật với học viên)
+    public int NpcAffinityScore { get; set; } = 10;
+    public int CurrentDayStreak { get; set; }
+    public string NpcRelationshipTitle { get; set; } = "Lần đầu gặp gỡ 🌱";
+    public List<string> NpcMemories { get; set; } = [];
 }

@@ -6,6 +6,7 @@ import './styles/tailwind.css';
 import './styles/tokens.css';
 import './styles/jcap.css';
 import './styles/jcap-app.css';
+import './styles/roleplay-extras.css';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

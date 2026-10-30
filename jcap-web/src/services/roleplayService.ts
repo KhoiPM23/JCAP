@@ -4,6 +4,7 @@ import type {
   RoleplaySessionDetailsDto,
   RoleplayTurnResponseDto,
   RoleplayHintDto,
+  LearnerIntelligenceProfileDto,
 } from '../types/roleplay';
 
 const BASE_URL = '/api/roleplay';
@@ -112,12 +113,41 @@ class RoleplayService {
   /**
    * Gửi tin nhắn của học viên, nhận phản hồi từ AI và cập nhật tiến độ nhiệm vụ
    */
-  public async sendMessage(sessionId: number, message: string): Promise<ApiResponse<RoleplayTurnResponseDto>> {
+  public async sendMessage(
+    sessionId: number,
+    message: string,
+    delivery?: {
+      speakingDurationSeconds?: number;
+      responseLatencySeconds?: number;
+      speechConfidence?: number;
+      audioUrl?: string;
+      hintLevelUsed?: number;
+      translationPeekCount?: number;
+      retryCount?: number;
+      fallbackToTextInput?: boolean;
+      bargeInInterrupted?: boolean;
+      moraRate?: number;
+      pauseRatio?: number;
+    }
+  ): Promise<ApiResponse<RoleplayTurnResponseDto>> {
     try {
       const response = await fetch(`${BASE_URL}/sessions/${sessionId}/messages`, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          speakingDurationSeconds: delivery?.speakingDurationSeconds,
+          responseLatencySeconds: delivery?.responseLatencySeconds,
+          speechConfidence: delivery?.speechConfidence,
+          audioUrl: delivery?.audioUrl,
+          hintLevelUsed: delivery?.hintLevelUsed ?? 0,
+          translationPeekCount: delivery?.translationPeekCount ?? 0,
+          retryCount: delivery?.retryCount ?? 0,
+          fallbackToTextInput: delivery?.fallbackToTextInput ?? false,
+          bargeInInterrupted: delivery?.bargeInInterrupted ?? false,
+          moraRate: delivery?.moraRate,
+          pauseRatio: delivery?.pauseRatio,
+        }),
       });
 
       if (response.ok) {
@@ -187,6 +217,33 @@ class RoleplayService {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ để kết thúc phiên.',
+      };
+    }
+  }
+
+  /**
+   * Lấy hồ sơ trí tuệ học viên và các chỉ số phản xạ giao tiếp ngầm (TikTok-style Linguistic Intelligence Profile)
+   */
+  public async getIntelligenceProfile(): Promise<ApiResponse<LearnerIntelligenceProfileDto>> {
+    try {
+      const response = await fetch(`${BASE_URL}/intelligence-profile`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      const errData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errData?.message || `Lỗi lấy hồ sơ trí tuệ học viên (${response.status})`,
+      };
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ để lấy hồ sơ trí tuệ.',
       };
     }
   }

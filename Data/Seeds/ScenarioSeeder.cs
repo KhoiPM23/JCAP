@@ -59,6 +59,10 @@ namespace JCAP.Data.Seeds
                         }
                     }
                 }
+                else
+                {
+                    await dbContext.Scenarios.AddAsync(seedScenario);
+                }
             }
             await dbContext.SaveChangesAsync();
         }
