@@ -649,6 +649,7 @@ namespace JCAP.Services.Implementations
                     if (scenarioLevelConfigId > 0)
                     {
                         var fullConfig = await _dbContext.ScenarioLevelConfigurations
+                            .AsSplitQuery()
                             .Include(c => c.TargetVocabularies)
                             .Include(c => c.TargetGrammars)
                             .AsNoTracking()

@@ -11,6 +11,7 @@ export const FlashcardSetsView: React.FC = () => {
   const [sets, setSets] = useState<FlashcardSetSummary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [simulating, setSimulating] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -84,6 +85,23 @@ export const FlashcardSetsView: React.FC = () => {
     setUnlocking(false);
   };
 
+  // Giả lập thời gian trôi qua để kiểm thử SRS
+  const handleSimulateDays = async (days: number) => {
+    setSimulating(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const res = await flashcardService.simulateDays(days);
+    if (res.success) {
+      setSuccessMessage(res.message || `Đã giả lập tua nhanh ${days} ngày.`);
+      await loadData();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } else {
+      setErrorMessage(res.message || `Không thể giả lập qua ${days} ngày.`);
+    }
+    setSimulating(false);
+  };
+
   // An toàn với mảng dữ liệu (Defensive array)
   const safeSets = useMemo(() => (Array.isArray(sets) ? sets : []), [sets]);
 
@@ -98,6 +116,31 @@ export const FlashcardSetsView: React.FC = () => {
         (s.topicDescription && s.topicDescription.toLowerCase().includes(q))
     );
   }, [safeSets, searchQuery]);
+
+  // Phân trang danh sách bộ thẻ (10 bộ mỗi trang)
+  const PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset về trang 1 khi đổi bộ lọc hoặc từ khóa tìm kiếm
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [typeFilter, jlptFilter, searchQuery]);
+
+  // Tổng số trang
+  const totalPages = Math.max(1, Math.ceil(filteredSets.length / PAGE_SIZE));
+
+  // Tự động điều chỉnh trang nếu vượt quá tổng số trang hợp lệ
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  // Danh sách bộ thẻ hiển thị trên trang hiện tại
+  const paginatedSets = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredSets.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredSets, currentPage]);
 
   // Tổng số thẻ đến hạn hôm nay trong tất cả bộ
   const totalDueToday = useMemo(() => {
@@ -120,6 +163,32 @@ export const FlashcardSetsView: React.FC = () => {
             <p className="text-sm text-slate-500 mt-1">
               Ôn tập ngắt quãng (SRS SM-2) theo các chủ đề N5 – N3 và danh sách đánh dấu cá nhân
             </p>
+          </div>
+
+          {/* Công cụ giả lập kiểm thử SRS */}
+          <div className="flex items-center flex-wrap gap-2 bg-white/90 p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
+            <span className="text-xs font-bold text-slate-500 px-2 flex items-center gap-1">
+              <span>🧪</span>
+              <span className="hidden md:inline">Test SRS:</span>
+            </span>
+            <button
+              onClick={() => handleSimulateDays(1)}
+              disabled={simulating}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Lùi thời gian tiến độ của thẻ 1 ngày để kích hoạt các thẻ hẹn 1 ngày (hoặc Again) đến hạn ôn tập"
+            >
+              <span>⏩</span>
+              <span>{simulating ? 'Đang tua...' : 'Giả lập qua 1 ngày'}</span>
+            </button>
+            <button
+              onClick={() => handleSimulateDays(3)}
+              disabled={simulating}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Lùi thời gian tiến độ của thẻ 3 ngày để kiểm tra các thẻ hẹn 3 ngày đến hạn ôn tập"
+            >
+              <span>⏩</span>
+              <span>{simulating ? 'Đang tua...' : 'Giả lập qua 3 ngày'}</span>
+            </button>
           </div>
         </div>
 
@@ -456,8 +525,9 @@ export const FlashcardSetsView: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredSets.map((set) => {
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {paginatedSets.map((set) => {
               const isGrammar = set.contentType === 'Grammar';
               const hasDue = set.dueCards > 0;
               const isCompletedToday = !hasDue && set.learnedCards === set.totalCards && set.totalCards > 0;
@@ -577,6 +647,82 @@ export const FlashcardSetsView: React.FC = () => {
                 </div>
               );
             })}
+            </div>
+
+            {/* Thanh điều hướng phân trang (10 bộ thẻ / trang) */}
+            {filteredSets.length > PAGE_SIZE && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                {/* Thông tin số lượng hiển thị */}
+                <div className="text-xs text-slate-500 font-medium">
+                  Hiển thị <span className="font-bold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1}</span> – <span className="font-bold text-slate-800">{Math.min(currentPage * PAGE_SIZE, filteredSets.length)}</span> trên tổng số <span className="font-bold text-slate-800">{filteredSets.length}</span> bộ thẻ (Trang {currentPage}/{totalPages})
+                </div>
+
+                {/* Nút bấm chuyển trang */}
+                <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.max(1, prev - 1));
+                      window.scrollTo({ top: 380, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>◀</span>
+                    <span>Trước</span>
+                  </button>
+
+                  {/* Danh sách các số trang */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                    // Logic thu gọn số trang nếu tổng số trang > 7
+                    if (
+                      totalPages > 7 &&
+                      pageNum !== 1 &&
+                      pageNum !== totalPages &&
+                      Math.abs(pageNum - currentPage) > 1
+                    ) {
+                      if (pageNum === 2 || pageNum === totalPages - 1) {
+                        return (
+                          <span key={'ellipsis-' + pageNum} className="px-1.5 text-slate-400 text-xs select-none">
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    }
+
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          window.scrollTo({ top: 380, behavior: 'smooth' });
+                        }}
+                        className={'w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ' + (
+                          isActive
+                            ? 'bg-[#2563EB] text-white shadow-xs'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                        )}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                      window.scrollTo({ top: 380, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Sau</span>
+                    <span>▶</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

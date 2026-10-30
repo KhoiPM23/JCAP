@@ -199,5 +199,25 @@ namespace JCAP.Controllers
             }
             return Ok(result);
         }
+
+        /// <summary>
+        /// Giả lập thời gian trôi qua để kiểm thử chu kỳ lặp lại ngắt quãng (SRS) và hạn mức ngày.
+        /// </summary>
+        [HttpPost("debug/simulate-days")]
+        public async Task<ActionResult<ApiResponse<bool>>> SimulateDays([FromQuery] int days = 1)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<bool>.Fail("Chưa xác thực người dùng."));
+            }
+
+            var result = await _flashcardService.SimulateTimeAdvanceAsync(userId, days);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

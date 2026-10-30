@@ -88,6 +88,7 @@ namespace JCAP.DTOs.Flashcard
         public string ContentType { get; set; } = "Vocabulary"; // "Vocabulary" | "Grammar"
         public string SetTitle { get; set; } = string.Empty;
         public int TotalCards { get; set; }
+        public int TotalReviews { get; set; }
         public int LearnedCards { get; set; }
         public int DueCards { get; set; }
         public int NewCards { get; set; }
@@ -171,6 +172,7 @@ namespace JCAP.DTOs.Flashcard
     {
         public int SessionId { get; set; }
         public string SetTitle { get; set; } = string.Empty;
+        public bool IsExtraPractice { get; set; }
         public DateTime StartedAt { get; set; }
         public DateTime EndedAt { get; set; }
         public int DurationSeconds { get; set; }
@@ -209,6 +211,7 @@ namespace JCAP.DTOs.Flashcard
         public DateTime? EndedAt { get; set; }
         public int DurationSeconds { get; set; }
         public int TotalCards { get; set; }
+        public int TotalReviews { get; set; }
         public int AgainCount { get; set; }
         public int GoodCount { get; set; }
         public int EasyCount { get; set; }
