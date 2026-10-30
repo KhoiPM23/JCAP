@@ -29,6 +29,8 @@ namespace JCAP.Services.Implementations
             var query = _db.LearningTopics
                 .AsNoTracking()
                 .Where(t => t.IsActive);
+            if (!string.IsNullOrWhiteSpace(jlptLevelFilter))
+                query = query.Where(t => t.JLPTLevel == jlptLevelFilter.Trim().ToUpper());
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -55,14 +57,14 @@ namespace JCAP.Services.Implementations
             {
                 var matchedVocabs = topic.TopicVocabularies
                     .Select(tv => tv.Vocabulary)
-                    .Where(v => v != null && v.IsActive)
+                    .Where(v => v != null && v.IsActive && (v.JLPTLevel ?? "N5") == topic.JLPTLevel)
                     .Where(v => string.IsNullOrWhiteSpace(jlptLevelFilter) ||
                                 string.Equals(v.JLPTLevel ?? "N5", jlptLevelFilter.Trim(), StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 var matchedGrammars = topic.TopicGrammars
                     .Select(tg => tg.Grammar)
-                    .Where(g => g != null && g.IsActive)
+                    .Where(g => g != null && g.IsActive && (g.JLPTLevel ?? "N5") == topic.JLPTLevel)
                     .Where(g => string.IsNullOrWhiteSpace(jlptLevelFilter) ||
                                 string.Equals(g.JLPTLevel ?? "N5", jlptLevelFilter.Trim(), StringComparison.OrdinalIgnoreCase))
                     .ToList();
@@ -73,9 +75,7 @@ namespace JCAP.Services.Implementations
                 }
 
                 // Xác định JLPT Level đại diện cho Topic snapshot
-                string topicLevel = !string.IsNullOrWhiteSpace(jlptLevelFilter)
-                    ? jlptLevelFilter.Trim().ToUpper()
-                    : matchedVocabs.FirstOrDefault()?.JLPTLevel ?? matchedGrammars.FirstOrDefault()?.JLPTLevel ?? "N5";
+                string topicLevel = topic.JLPTLevel;
 
                 result.Add(new LearningTopicSnapshot(
                     topic.Id,
@@ -107,15 +107,15 @@ namespace JCAP.Services.Implementations
 
             var matchedVocabs = topic.TopicVocabularies
                 .Select(tv => tv.Vocabulary)
-                .Where(v => v != null && v.IsActive)
+                .Where(v => v != null && v.IsActive && (v.JLPTLevel ?? "N5") == topic.JLPTLevel)
                 .ToList();
 
             var matchedGrammars = topic.TopicGrammars
                 .Select(tg => tg.Grammar)
-                .Where(g => g != null && g.IsActive)
+                .Where(g => g != null && g.IsActive && (g.JLPTLevel ?? "N5") == topic.JLPTLevel)
                 .ToList();
 
-            string topicLevel = matchedVocabs.FirstOrDefault()?.JLPTLevel ?? matchedGrammars.FirstOrDefault()?.JLPTLevel ?? "N5";
+            string topicLevel = topic.JLPTLevel;
 
             return new LearningTopicSnapshot(
                 topic.Id,

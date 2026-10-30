@@ -132,7 +132,7 @@ public class LearnerFlashcardAndBookmarkServiceTests
     }
 
     [Fact]
-    public async Task GetBookmarks_WhenContentSoftDeleted_MarksUnavailableAndExcludesFromDueCount()
+    public async Task GetBookmarks_WhenContentSoftDeleted_HidesItemAndExcludesFromDueCount()
     {
         using var db = CreateInMemoryContext();
         var (vocab1, vocab2, _) = await SeedTestEntitiesAsync(db);
@@ -147,14 +147,13 @@ public class LearnerFlashcardAndBookmarkServiceTests
 
         var listRes = await bookmarkService.GetBookmarksAsync("learner-1");
         Assert.True(listRes.Success);
-        Assert.Equal(2, listRes.Data!.TotalCount);
+        Assert.Equal(1, listRes.Data!.TotalCount);
         Assert.Equal(1, listRes.Data.NewCount); // Only active vocab1 counts as New
 
         var activeItem = listRes.Data.Items.First();
-        var hiddenItem = listRes.Data.Items.Last();
         Assert.True(activeItem.IsAvailable);
-        Assert.False(hiddenItem.IsAvailable);
-        Assert.Equal(vocab2.Id, hiddenItem.ItemId);
+        Assert.DoesNotContain(listRes.Data.Items, item => item.ItemId == vocab2.Id);
+        Assert.Equal(2, await db.LearnerBookmarks.CountAsync()); // Hidden content can be restored without losing saved state.
     }
 
     [Fact]

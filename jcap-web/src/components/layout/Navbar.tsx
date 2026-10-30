@@ -79,6 +79,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={isAudioTab}
               />
               <NavItem
+                name="Chủ đề học tập"
+                path="/admin/topics"
+                icon={BookIcon}
+                forceActive={currentPath.startsWith('/admin/topics')}
+              />
+              <NavItem name="Kho Từ vựng" path="/admin/vocabularies" icon={BookIcon} forceActive={currentPath.startsWith('/admin/vocabularies')} />
+              <NavItem name="Kho Ngữ pháp" path="/admin/grammars" icon={BookIcon} forceActive={currentPath.startsWith('/admin/grammars')} />
+              <NavItem
                 name="Bản đồ Khám phá"
                 path="/admin/explore"
                 icon={CompassIcon}

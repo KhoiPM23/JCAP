@@ -1,19 +1,20 @@
 # Model học từ vựng, ngữ pháp và Topic
 
-Phạm vi: mở rộng kho `Vocabulary` / `Grammar` hiện có, thêm Topic phẳng,
-ví dụ và thông tin nguồn. Chưa triển khai API/UI/import hoặc nối Topic vào
-Scenario, Shadowing, Explore, Flashcard, tài khoản hay lịch sử học.
-
-Cập nhật 29/10/2026: đã có bộ nhập **mẫu phát triển** gồm 15 từ và 6 mẫu
-ngữ pháp, ví dụ và nguồn; xem [hướng dẫn bộ mẫu](../Data/Seeds/LearningContentSample/README.md).
-Chưa triển khai import Excel/admin hoặc nhập toàn bộ dataset; không nạp Topic.
+Phạm vi hiện tại (30/10/2026): kho `Vocabulary` / `Grammar` dùng chung,
+Topic phẳng **có JLPTLevel**, ví dụ, thông tin nguồn và API/UI quản trị.
+Một Topic chỉ nhận nội dung cùng level. Đã có bộ mẫu 15 từ, 6 ngữ pháp,
+42 ví dụ và 15 Topic theo N5–N3 (5 tên chủ đề × 3 level).
+Xem [bộ mẫu](../Data/Seeds/LearningContentSample/README.md) và
+[hướng dẫn admin](admin-learning.md). Chưa có import Excel hoặc xử lý audio.
+Đã merge develop `38848ab`; Flashcard dùng Topic thật qua `DefaultLearningTopicLookup`.
 
 ## Các quyết định đã áp dụng
 
 - Giữ một bản nội dung, liên kết được với nhiều Topic. Truy vấn gộp Topic nên
   dùng `Any` trên bảng nối hoặc loại trùng theo ID nội dung.
-- Topic không có cha/con và không có level. JLPT nằm ở Vocabulary/Grammar;
-  một Topic có thể chứa nội dung N5, N4, N3.
+- Topic không có cha/con. Topic, Vocabulary và Grammar có JLPTLevel;
+  API quản trị chỉ cho gán nội dung cùng level. Tên chủ đề có thể lặp giữa
+  các level, nhưng cặp Name + JLPTLevel phải duy nhất.
 - `Explanation` chứa giải thích nghĩa, cách dùng và ngữ cảnh. `UsageNotes`
   chứa lưu ý, ngoại lệ và lỗi dễ mắc; cả hai là văn bản dài và cho phép null.
   Nội dung Explanation cũ được giữ nguyên, không tự đoán để tách văn bản đã gộp.
@@ -33,7 +34,7 @@ Chưa triển khai import Excel/admin hoặc nhập toàn bộ dataset; không n
 |---|---|
 | Vocabularies | Giữ trường cũ; Meaning tăng từ 200 lên 1.000 ký tự; thêm UsageNotes nullable và navigation TopicVocabularies, Examples, Sources |
 | Grammars | Tương tự; thêm Reading (nullable, 200 ký tự), UsageNotes nullable; giữ ExampleSentence (500 ký tự) |
-| LearningTopics | Id, Code (50), Name (200), Description (1.000, nullable), IsActive, CreatedAt, UpdatedAt |
+| LearningTopics | Id, Code (50), Name (200), JLPTLevel (10, bắt buộc, N5–N1), Description (1.000, nullable), IsActive, CreatedAt, UpdatedAt |
 | TopicVocabularies | TopicId + VocabularyId là khóa chính ghép; OrderIndex không âm |
 | TopicGrammars | TopicId + GrammarId là khóa chính ghép; OrderIndex không âm |
 | VocabularyExamples | Id, VocabularyId, JapaneseText (2.000), VietnameseTranslation (2.000, nullable), Furigana (4.000, nullable), OrderIndex, SourceId?, ExternalId? |
@@ -42,8 +43,8 @@ Chưa triển khai import Excel/admin hoặc nhập toàn bộ dataset; không n
 | VocabularySources | VocabularyId + SourceId + ExternalId (200) là khóa chính ghép |
 | GrammarSources | GrammarId + SourceId + ExternalId (200) là khóa chính ghép |
 
-`Code` là mã Topic ổn định cho Excel, không phải mã JLPT. Code và Name là duy
-nhất trong danh mục. Tên hiển thị đổi được mà vẫn giữ mã liên kết.
+`Code` là mã Topic ổn định, duy nhất toàn kho. Name + JLPTLevel duy nhất;
+đổi tên không đổi ID hay Code. Đổi level phải gỡ nội dung khác level trước.
 
 JapaneseText bắt buộc, bản dịch và furigana có thể bổ sung sau. Khi nhập nguồn,
 giữ câu Nhật gốc riêng; Furigana chuẩn hóa về ký hiệu `{漢字|かな}`, ví dụ
@@ -78,9 +79,8 @@ TargetVocabulary/TargetGrammar của Scenario vẫn là các bảng riêng như 
 
 LearningTopics chỉ liên kết TopicVocabularies và TopicGrammars. Không thêm FK
 từ Scenario, Shadowing, Explore, User hoặc FlashcardStudySession đến Topic mới.
-`DefaultLearningTopicLookup` của Flashcard vẫn dùng danh mục giả theo level;
-`FlashcardStudySession.TopicId` chưa phải FK tới LearningTopics. Bước nối service
-này với Topic thật sẽ thực hiện riêng khi được yêu cầu.
+`DefaultLearningTopicLookup` của Flashcard đọc Topic thật và nội dung đang
+hiển thị cùng level. `FlashcardStudySession.TopicId` vẫn là scalar, không thêm FK.
 
 ## Migration và tương thích
 
