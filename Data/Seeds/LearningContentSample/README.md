@@ -1,8 +1,10 @@
 # Bộ mẫu từ vựng / ngữ pháp cho phát triển
 
 15 từ vựng (5 từ/mức N5–N3), 6 mẫu ngữ pháp (2 mẫu/mức), mỗi mục 2 câu
-ví dụ Nhật–Việt. Không tạo Topic, liên kết chủ đề, audio hoặc liên kết sang
-Scenario/Shadowing/Explore. Không cần gọi AI hay tải nguồn khi chạy import.
+ví dụ Nhật–Việt. Từ 30/10/2026 có 15 Topic phẳng (5 tên × N5/N4/N3), mỗi
+Topic chỉ nhận nội dung cùng level; chưa có audio hoặc liên kết Topic sang
+Scenario/Shadowing/Explore.
+Không cần gọi AI hay tải nguồn khi chạy import.
 
 ## Chạy trên máy thành viên
 
@@ -30,6 +32,42 @@ dotnet run --no-launch-profile -- --import-learning-sample
   dữ liệu. Dry run hiển thị ứng viên trùng tên để hỗ trợ đối chiếu.
 - Từ mới có `AudioUrl = null`; `Grammar.ExampleSentence` giữ câu đầu tiên
   cho các module vẫn đọc trường cũ. Ví dụ đầy đủ nằm ở hai bảng Examples.
+
+## Chủ đề mẫu
+
+Sau khi nhập bộ nội dung, cùng lệnh trên chạy `LearningTopicSeeder`:
+
+| Code | Chủ đề | Từ vựng | Ngữ pháp |
+|---|---|---:|---:|
+| DAILY_LIFE | Sinh hoạt hằng ngày | 7 | 5 |
+| DINING | Ăn uống | 5 | 3 |
+| SHOPPING | Mua sắm | 4 | 3 |
+| TRANSPORT | Di chuyển | 4 | 3 |
+| STUDY_WORK | Học tập và công việc | 8 | 6 |
+
+Các số lượng trong bảng là tổng của 3 level trong mỗi tên chủ đề.
+Tổng cộng 15 Topic, 28 liên kết từ vựng và 20 liên kết ngữ pháp; vẫn chỉ có
+15 từ và 6 mẫu gốc. Một nội dung xuất hiện trong nhiều chủ đề cùng level
+qua bảng nối, không nhân bản nội dung. Code N5 giữ mã gốc trong bảng;
+code N4/N3 có hậu tố `_N4`/`_N3`.
+
+Migration `20261030094500_AddLearningTopicLevel` chuyển 5 Topic hỗn hợp cũ
+thành các Topic theo level: giữ ID cũ cho level dễ nhất, tạo các Topic khác
+và chuyển liên kết sang đúng level. Không xóa từ/ngữ pháp, ví dụ hay snapshot
+lịch sử. Khi rollback, giữ các Topic đã tách và phân biệt tên để không vi
+phạm index tên duy nhất của schema cũ; không tự ghép lại dữ liệu.
+
+Seeder đối chiếu nguồn/phiên bản/ID nguồn, không dựa vào ID database hoặc
+tên hiển thị có thể bị admin đổi. Topic mới nhận các liên kết theo thứ tự
+đã định. Topic đã tồn tại theo Code được giữ nguyên, kể cả tên, mô tả,
+IsActive, thứ tự và các liên kết admin đã xóa; không tự khôi phục mỗi lần
+khởi động. Nếu dữ liệu nguồn chưa đủ, seeder bỏ qua Topic đó và trả về Code
+trong `SkippedTopicCodes`, không tạo chủ đề rỗng.
+
+`SeedManager` cũng gọi seeder khi mở backend, nhưng chỉ gắn bộ nội dung mẫu
+đã được nhập trước đó; không tự tải nguồn hoặc nhập thêm từ/ngữ pháp. Các
+module sử dụng `DefaultLearningTopicLookup` hiện đọc trực tiếp các bảng Topic
+và bảng nối này theo code develop đã merge, có lọc theo level của nội dung.
 
 ### Lưu ý khi tạo database từ đầu
 
@@ -78,9 +116,10 @@ phần ngữ pháp phái sinh giữ MIT. Không áp giấy phép dữ liệu lê
 ## Bảng có dữ liệu được thêm
 
 `Vocabularies`, `Grammars`, `VocabularyExamples`, `GrammarExamples`,
-`LearningContentSources`, `VocabularySources`, `GrammarSources`.
+`LearningContentSources`, `VocabularySources`, `GrammarSources`,
+`LearningTopics`, `TopicVocabularies`, `TopicGrammars`.
 
-Database mới sẽ có 15 / 6 / 30 / 12 / 3 / 15 / 6 bản ghi tương ứng.
+Database mới sẽ có 15 / 6 / 30 / 12 / 3 / 15 / 6 / 15 / 28 / 20 bản ghi tương ứng.
 Các bảng khác chỉ được tạo cấu trúc bởi migration, không nạp dữ liệu vào đó.
 Tài khoản thành viên hoặc dữ liệu module khác vẫn theo setup chung của team.
 
