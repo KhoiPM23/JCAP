@@ -22,6 +22,19 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Explicit local sample import; exits before web startup and all unrelated automatic seeders.
+if (args.Contains("--import-learning-sample"))
+{
+    using var loggerFactory = LoggerFactory.Create(logging =>
+        logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning));
+    await using var importDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+        .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseLoggerFactory(loggerFactory).Options);
+    Environment.ExitCode = await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(
+        importDb, args.Contains("--dry-run"));
+    return;
+}
+
 // 2. Cấu hình ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

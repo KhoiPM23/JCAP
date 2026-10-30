@@ -16,6 +16,7 @@ import { setFurigana, useFurigana } from './furigana';
 import { isStamped, useSpotProgress } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
 import { STAMP_INK } from './ExploreStamp';
+import { Icon } from '../../components/jcap';
 import { useFontVersion } from './measureText';
 import {
   prefectureLandmarks,
@@ -273,6 +274,10 @@ export interface JapanMapProps {
   reserveBottom: number;
   /** Gọi khi người dùng tự kéo/phóng to bản đồ lần đầu (để ẩn gợi ý thao tác) */
   onInteract?: () => void;
+  /** Nút "Chú giải" (đặt bên trái cột nút điều khiển ở góc dưới phải) */
+  legend?: React.ReactNode;
+  /** Ô tìm tỉnh (nằm trong cột nút, cạnh nút furigana) */
+  search?: React.ReactNode;
 }
 
 export const JapanMap: React.FC<JapanMapProps> = ({
@@ -284,6 +289,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   reserveRight,
   reserveBottom,
   onInteract,
+  legend,
+  search,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -1637,50 +1644,43 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         />
       )}
 
-      {/* Nút phóng to / thu nhỏ / đưa về khung nhìn */}
+      {/* Góc dưới phải: Chú giải, rồi cột nút [ふ · tìm tỉnh] và [+ · − · về toàn quốc] (không đặt nút nào ở góc trên phải) */}
       <div
-        data-map-ui
-        className="absolute z-30 flex flex-col overflow-hidden transition-[right,bottom] duration-300"
-        style={{
-          right: reserveRight + 16,
-          bottom: reserveBottom + 16,
-          background: T.paper,
-          border: `1px solid ${T.inkLine}`,
-          borderRadius: 8,
-          boxShadow: 'var(--sh-2)',
-        }}
+        className="absolute z-30 flex items-end gap-2.5 transition-[right,bottom] duration-300"
+        style={{ right: reserveRight + 20, bottom: reserveBottom + 20 }}
       >
-        <MapButton label="Phóng to" disabled={atMaxZoom || zoomLocked} onClick={() => zoomByButton(BUTTON_ZOOM_STEP)}>
-          <path strokeLinecap="round" strokeWidth="2" d="M12 5v14M5 12h14" />
-        </MapButton>
-        <div className="h-px" style={{ background: T.rule }} />
-        <MapButton label="Thu nhỏ" disabled={atMinZoom || zoomLocked} onClick={() => zoomByButton(1 / BUTTON_ZOOM_STEP)}>
-          <path strokeLinecap="round" strokeWidth="2" d="M5 12h14" />
-        </MapButton>
-        <div className="h-px" style={{ background: T.rule }} />
-        <MapButton label={selected ? 'Đưa về khung tỉnh' : 'Xem cả nước Nhật'} onClick={recenter}>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 9V5a1 1 0 011-1h4M15 4h4a1 1 0 011 1v4M20 15v4a1 1 0 01-1 1h-4M9 20H5a1 1 0 01-1-1v-4" />
-          <circle cx="12" cy="12" r="2.5" strokeWidth="2" />
-        </MapButton>
-        {selected && (
-          <>
-            <div className="h-px" style={{ background: T.rule }} />
+        {legend}
+        <div className="flex flex-col gap-2">
+          <div data-map-ui className="jm-ctlgroup">
             <button
               type="button"
               aria-pressed={furigana}
-              aria-label={furigana ? 'Tắt furigana' : 'Bật furigana'}
-              title={furigana ? 'Tắt furigana' : 'Bật furigana'}
+              aria-label={furigana ? 'Tắt furigana trên bản đồ' : 'Hiện furigana trên bản đồ'}
+              title="Furigana"
               onClick={() => setFurigana(!furigana)}
-              className="jm-focus flex h-11 w-11 items-center justify-center font-jp text-base font-bold transition-colors hover:bg-[var(--paper-2)]"
-              style={{ color: furigana ? T.shu : T.ghost }}
+              className={`jm-mapctl ${furigana ? 'on' : ''}`}
             >
               ふ
             </button>
-          </>
-        )}
+            {search}
+          </div>
+          <div data-map-ui className="jm-ctlgroup">
+            <MapButton label="Phóng to" disabled={atMaxZoom || zoomLocked} onClick={() => zoomByButton(BUTTON_ZOOM_STEP)} icon="add" />
+            <MapButton label="Thu nhỏ" disabled={atMinZoom || zoomLocked} onClick={() => zoomByButton(1 / BUTTON_ZOOM_STEP)} icon="remove" />
+            <MapButton label={selected ? 'Đưa về khung tỉnh' : 'Về toàn quốc'} onClick={recenter} icon="center_focus_strong" />
+          </div>
+        </div>
       </div>
 
       <style>{`
+        .jm-ctlgroup { display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50); overflow: hidden;
+          box-shadow: 0 6px 18px rgba(8,26,56,.22); }
+        .jm-mapctl { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent;
+          font-family: var(--font-jp); font-size: 16px; font-weight: 700; color: var(--sumi-muted); cursor: pointer; transition: background .12s, color .12s; }
+        .jm-mapctl:hover { background: var(--paper-200); color: var(--sumi); }
+        .jm-mapctl.on { color: var(--shu); }
+        .jm-mapctl:disabled { color: var(--sumi-faint); background: transparent; cursor: not-allowed; }
+        .jm-mapctl:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
         .jm-fade-in { animation: jm-fade-in 0.35s ease-out 0.45s both; }
         .jm-fade-quick { animation: jm-fade-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .jm-pin { animation: jm-fade-in 0.3s ease-out both; }
@@ -1756,29 +1756,15 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         }
         g[role='button']:focus-visible .jm-focus-ring > *:first-child,
         g[role='button']:focus-visible circle.jm-focus-ring,
-        path[role='button']:focus-visible { stroke: ${T.primary}; stroke-width: 3px; }
+        path[role='button']:focus-visible { stroke: var(--focus); stroke-width: 3px; }
       `}</style>
     </div>
   );
 };
 
-const MapButton: React.FC<{ label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }> = ({
-  label,
-  onClick,
-  disabled,
-  children,
-}) => (
-  <button
-    type="button"
-    aria-label={label}
-    title={label}
-    onClick={onClick}
-    disabled={disabled}
-    className="jm-focus w-11 h-11 flex items-center justify-center text-[var(--ink-2)] hover:bg-[var(--paper-2)] hover:text-[var(--ink)] transition-colors disabled:text-[var(--ghost)] disabled:hover:bg-transparent disabled:cursor-not-allowed"
-  >
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      {children}
-    </svg>
+const MapButton: React.FC<{ label: string; onClick: () => void; disabled?: boolean; icon: string }> = ({ label, onClick, disabled, icon }) => (
+  <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className="jm-mapctl">
+    <Icon name={icon} size={22} />
   </button>
 );
 

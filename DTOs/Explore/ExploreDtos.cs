@@ -116,6 +116,25 @@ namespace JCAP.DTOs.Explore
         public ExploreSpotProgressDto Progress { get; set; } = new();
     }
 
+    /// <summary>Sổ con dấu của người học: mọi mốc đã có con dấu (kể cả dấu son), để xem lại toàn hành trình.</summary>
+    public class ExploreStampBookDto
+    {
+        public List<ExploreStampedSpotDto> Stamps { get; set; } = new();
+    }
+
+    /// <summary>Một mốc đã có con dấu. Chỉ gồm mốc người học còn thấy được (đang dùng, tỉnh đã mở); tên mốc chưa công khai không lộ ra.</summary>
+    public class ExploreStampedSpotDto
+    {
+        public int SpotId { get; set; }
+        public int PrefectureId { get; set; }
+        public string IconId { get; set; } = string.Empty;
+        public string NameVi { get; set; } = string.Empty;
+        public string NameJp { get; set; } = string.Empty;
+        public DateTime? UnderstoodAt { get; set; }
+        public DateTime StampedAt { get; set; }
+        public DateTime? RedStampedAt { get; set; }
+    }
+
     public class ExploreLessonDto
     {
         public string JLPTLevel { get; set; } = "N5";

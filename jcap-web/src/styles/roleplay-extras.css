@@ -1,0 +1,79 @@
+﻿ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+
+rt {
+  font-size: 0.52em;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #0284c7;
+  user-select: none;
+  position: relative;
+  top: -2px;
+}
+
+/* Motivation Micro-Animations: HeartBeat & Confetti Drop */
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+
+  14% {
+    transform: scale(1.18);
+  }
+
+  28% {
+    transform: scale(1);
+  }
+
+  42% {
+    transform: scale(1.18);
+  }
+
+  70% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes confettiDrop {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(80px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseGold {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartBeat 2s ease-in-out infinite;
+}
+
+.animate-pulse-gold {
+  animation: pulseGold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Vietnamese-safe serif: Noto Serif covers Vietnamese diacritics, JP falls back */
+:root .font-serif {
+  font-family: "Noto Serif", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}

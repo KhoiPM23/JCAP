@@ -1,0 +1,745 @@
+{
+  "grammars": [
+    {
+      "slug": "te-kudasai",
+      "title": "てください",
+      "kana": "てください",
+      "romaji": "te kudasai",
+      "meaning": "please do ~ (polite request)",
+      "jlpt": 5,
+      "summary": "Makes a polite request or instruction: attach ください to the て form of a verb to ask someone to do something. It is the standard courteous way to tell or ask a person to perform an action, common in classrooms, signs, and everyday service situations.",
+      "structure": [
+        "Verb［て form］＋ ください"
+      ],
+      "pitfalls": [
+        "It is polite but still a request, so to a superior a softer form such as てくださいませんか sounds more respectful.",
+        "To ask someone NOT to do something, switch to the ない form: 〜ないでください."
+      ],
+      "examples": [
+        {
+          "ja": "ここに名前を書いてください。",
+          "en": "Please write your name here.",
+          "f": "ここに｜名前[なまえ]を｜書[か]いてください。"
+        },
+        {
+          "ja": "もう一度言ってください。",
+          "en": "Please say it one more time.",
+          "f": "もう｜一度[いちど]｜言[い]ってください。"
+        }
+      ],
+      "synonyms": [
+        {
+          "slug": "te-request",
+          "note": "Dropping ください leaves just 〜て, a casual version for friends and family."
+        }
+      ],
+      "antonyms": [
+        {
+          "slug": "naide-kudasai",
+          "note": "〜ないでください asks someone not to do something; てください asks them to do it."
+        }
+      ],
+      "related": [
+        {
+          "slug": "nasai",
+          "note": "なさい is a firmer command used by parents and teachers; てください is a neutral polite request."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ]
+    },
+    {
+      "slug": "temo-ii",
+      "title": "〜てもいい",
+      "kana": "てもいい",
+      "romaji": "te mo ii",
+      "meaning": "may ~; it's okay to ~",
+      "jlpt": 5,
+      "summary": "Grants or asks permission: attach もいい to the て form of a verb to say an action is allowed. As a question it politely asks whether something is okay to do; as a statement it gives the go-ahead.",
+      "structure": [
+        "Verb［て form］＋ も ＋ いい／いいです"
+      ],
+      "pitfalls": [
+        "As a request for permission it usually takes ですか — 入ってもいいですか ('may I come in?').",
+        "For nouns and な-adjectives, use でもいい instead of てもいい."
+      ],
+      "examples": [
+        {
+          "ja": "ここに座ってもいいですか。",
+          "en": "May I sit here?",
+          "f": "ここに｜座[すわ]ってもいいですか。"
+        },
+        {
+          "ja": "鉛筆で書いてもいいです。",
+          "en": "You may write in pencil.",
+          "f": "｜鉛筆[えんぴつ]で｜書[か]いてもいいです。"
+        }
+      ],
+      "synonyms": [
+        {
+          "slug": "temo-kamawanai",
+          "note": "てもかまわない ('I don't mind if') is a more indifferent-sounding permission than てもいい."
+        }
+      ],
+      "antonyms": [
+        {
+          "slug": "te-wa-ikenai",
+          "note": "てはいけない forbids the action; てもいい permits it."
+        }
+      ],
+      "related": [
+        {
+          "slug": "nakute-mo-ii",
+          "note": "なくてもいい says you don't HAVE to do it; てもいい says you MAY do it."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ]
+    },
+    {
+      "slug": "koto-ga-aru",
+      "title": "ことがある",
+      "kana": "ことがある",
+      "romaji": "koto ga aru",
+      "meaning": "there are times when; sometimes",
+      "jlpt": 4,
+      "summary": "With a verb in dictionary form, 〜ことがある says an action happens now and then — 'there are times when...'. 遅れることがある = the train is sometimes late. It describes occasional occurrence, and it's often paired with たまに or ときどき. Watch the tense: the past 〜たことがある means something completely different (past experience).",
+      "structure": [
+        "Verb［dictionary form］＋ ことがある"
+      ],
+      "pitfalls": [
+        "Dictionary form 〜ことがある = 'sometimes happens'; past 〜たことがある = 'have done before'. 食べることがある is 'I sometimes eat it', while 食べたことがある is 'I have eaten it'.",
+        "It states occasional events, so pairing it with たまに or ときどき reads naturally."
+      ],
+      "examples": [
+        {
+          "ja": "朝、時間がなくて朝ご飯を食べないことがあります。",
+          "en": "In the morning there are times I skip breakfast because I'm out of time.",
+          "f": "｜朝[あさ]、｜時間[じかん]がなくて｜朝[あさ]ご｜飯[はん]を｜食[た]べないことがあります。"
+        },
+        {
+          "ja": "この道はたまにとても混むことがある。",
+          "en": "This road sometimes gets very crowded.",
+          "f": "この｜道[みち]はたまにとても｜混[こ]むことがある。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "related": [
+        {
+          "slug": "ta-koto-ga-aru",
+          "note": "〜たことがある is the past-experience sibling ('have done'); this one is 'sometimes do'."
+        },
+        {
+          "slug": "koto",
+          "note": "This pattern is the こと nominalizer plus がある ('there are occasions of')."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ],
+      "levelNote": "bunpro lists N3"
+    },
+    {
+      "slug": "you-ni-naru",
+      "title": "ようになる",
+      "kana": "ようになる",
+      "romaji": "you ni naru",
+      "meaning": "to come to ~; to reach the point where",
+      "jlpt": 4,
+      "summary": "ようになる describes a change over time — you reach a state or ability you did not have before. It pairs naturally with potential verbs (話せるようになる = 'become able to speak') and marks arriving at a new normal. The negative なくなる shows losing a habit or ability.",
+      "structure": [
+        "Verb［dictionary form］＋ ようになる",
+        "Verb［potential form］＋ ようになる",
+        "Verb［ない form → なくなる, negative］"
+      ],
+      "pitfalls": [
+        "For 'stopped doing / can no longer', use なくなる, not ないようになる: 食べなくなった rather than 食べないようになった.",
+        "ようになる is a change that unfolds; ようにする is a conscious effort. 泳げるようになった (came to be able to swim) vs 泳ぐようにする (make a point of swimming).",
+        "ようになる highlights a gradual shift, so it pairs especially well with potential verbs."
+      ],
+      "examples": [
+        {
+          "ja": "練習して、自転車に乗れるようになりました。",
+          "en": "After practicing, I became able to ride a bicycle.",
+          "f": "｜練習[れんしゅう]して、｜自転車[じてんしゃ]に｜乗[の]れるようになりました。"
+        },
+        {
+          "ja": "最近、からい料理も食べられるようになった。",
+          "en": "Lately I've become able to eat spicy food too.",
+          "f": "｜最近[さいきん]、からい｜料理[りょうり]も｜食[た]べられるようになった。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "related": [
+        {
+          "slug": "you-ni-suru",
+          "note": "ようにする is deliberate effort; ようになる is the change itself coming about."
+        },
+        {
+          "slug": "koto-ni-naru",
+          "note": "ことになる is a decision or arrangement being settled; ようになる is a gradual change in ability or habit."
+        },
+        {
+          "slug": "rareru-potential",
+          "note": "Potential verbs pair with ようになる to say you've become able to do something."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ]
+    },
+    {
+      "slug": "ni-taishite",
+      "title": "に対して",
+      "kana": "にたいして",
+      "romaji": "ni taishite",
+      "meaning": "toward (a target); in contrast to ~",
+      "jlpt": 3,
+      "summary": "に対して has two jobs. It aims an action or feeling at a target — お客様に対して丁寧に話す ('speak politely toward customers'). It also sets two things in contrast — 兄が明るいのに対して弟は静かだ ('in contrast to the cheerful older brother, the younger one is quiet'). Before a noun, use に対する.",
+      "structure": [
+        "Noun ＋ に対して",
+        "Noun ＋ に対する ＋ Noun"
+      ],
+      "pitfalls": [
+        "Two jobs: aiming an action or feeling at someone ('toward'), and setting two things against each other ('in contrast to').",
+        "に対して directs something at a target; keep it apart from に関して／について, which mean 'on the topic of'."
+      ],
+      "examples": [
+        {
+          "ja": "お客様に対して、丁寧な言葉を使いましょう。",
+          "en": "Let's use polite language toward customers.",
+          "f": "お｜客様[きゃくさま]に｜対[たい]して、｜丁寧[ていねい]な｜言葉[ことば]を｜使[つか]いましょう。"
+        },
+        {
+          "ja": "兄が明るいのに対して、弟は静かだ。",
+          "en": "In contrast to the cheerful older brother, the younger one is quiet.",
+          "f": "｜兄[あに]が｜明[あか]るいのに｜対[たい]して、｜弟[おとうと]は｜静[しず]かだ。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "related": [
+        {
+          "slug": "ni-kurabete",
+          "note": "に比べて weighs one thing against a baseline; に対して sets two things side by side in contrast."
+        },
+        {
+          "slug": "ni-hanshite",
+          "note": "に反して means 'contrary to (what was expected)'; に対して's contrast sense is a neutral 'whereas'."
+        },
+        {
+          "slug": "ni-mukatte",
+          "note": "に向かって is aiming at a physical direction; に対して aims an action or attitude at a target."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ]
+    },
+    {
+      "slug": "wake-dewa-nai",
+      "title": "わけではない",
+      "kana": "わけではない",
+      "romaji": "wake dewa nai",
+      "meaning": "it doesn't (necessarily) mean that ~; it's not the case that ~ (partial denial)",
+      "jlpt": 3,
+      "summary": "〜わけではない gently denies a conclusion someone might jump to — 'that doesn't mean...', 'it's not that...'. 嫌いなわけではない = it's not that I dislike it. It denies part, not all, and often heads off a likely misunderstanding. Casual: わけじゃない.",
+      "structure": [
+        "Verb／い-adjective［plain form］＋ わけではない",
+        "な-adjective ＋ な／Noun ＋ という ＋ わけではない"
+      ],
+      "pitfalls": [
+        "It's a soft, partial denial ('not necessarily so'), far weaker than わけがない ('no way that's true') or a flat 〜ない.",
+        "It typically corrects an assumption the listener might otherwise make."
+      ],
+      "examples": [
+        {
+          "ja": "野菜が嫌いなわけではないが、あまり食べない。",
+          "en": "It's not that I dislike vegetables, but I don't eat many.",
+          "f": "｜野菜[やさい]が｜嫌[きら]いなわけではないが、あまり｜食[た]べない。"
+        },
+        {
+          "ja": "高いからといって、必ずおいしいわけではない。",
+          "en": "Just because it's expensive doesn't necessarily mean it's tasty.",
+          "f": "｜高[たか]いからといって、｜必[かなら]ずおいしいわけではない。"
+        }
+      ],
+      "synonyms": [
+        {
+          "slug": "kanarazushimo",
+          "note": "必ずしも〜ない is 'not always/necessarily'; it often teams up with わけではない for the same partial-denial nuance."
+        },
+        {
+          "slug": "to-iu-mono-dewa-nai",
+          "note": "というものではない denies that a general claim always holds; わけではない denies a specific inferred conclusion."
+        }
+      ],
+      "antonyms": [],
+      "related": [
+        {
+          "slug": "wake-ga-nai",
+          "note": "わけがない is a total 'impossible'; わけではない only chips away at part of a conclusion."
+        },
+        {
+          "slug": "wake-da",
+          "note": "わけだ affirms a natural conclusion; わけではない denies one."
+        }
+      ],
+      "sources": [
+        "jlptsensei",
+        "bunpro"
+      ]
+    }
+  ],
+  "vocabularies": [
+    {
+      "id": "8fa5a63fc7",
+      "word": "大きい",
+      "reading": "おおきい",
+      "romaji": "ookii",
+      "meanings": [
+        "big"
+      ],
+      "level": "N5",
+      "pos": [
+        "adj-i"
+      ],
+      "jmdict_id": 1588880,
+      "examples": [
+        {
+          "ja": "もっと大きいサイズはありますか。",
+          "furigana": "もっと{大|おお}きいサイズはありますか。",
+          "en": "Do you have a larger size?",
+          "tatoeba_id": 193236
+        },
+        {
+          "ja": "きみは何と大きい家を持っているんだろう。",
+          "furigana": "きみは{何|なん}と{大|おお}きい{家|いえ}を{持|も}っているんだろう。",
+          "en": "What a big house you have!",
+          "tatoeba_id": 225891
+        }
+      ]
+    },
+    {
+      "id": "dd8ac16bd2",
+      "word": "学校",
+      "reading": "がっこう",
+      "romaji": "gakkou",
+      "meanings": [
+        "school"
+      ],
+      "level": "N5",
+      "pos": [
+        "n"
+      ],
+      "jmdict_id": 1206730,
+      "examples": [
+        {
+          "ja": "この学校はたくさんの生徒がいます。",
+          "furigana": "この{学校|がっこう}はたくさんの{生徒|せいと}がいます。",
+          "en": "This school has many students.",
+          "tatoeba_id": 222600
+        },
+        {
+          "ja": "学校を出たあと、どうするつもり？",
+          "furigana": "{学校|がっこう}を{出|で}たあと、どうするつもり？",
+          "en": "What are you going to do after you leave school?",
+          "tatoeba_id": 184354
+        }
+      ]
+    },
+    {
+      "id": "86f67e2dc3",
+      "word": "食べる",
+      "reading": "たべる",
+      "romaji": "taberu",
+      "meanings": [
+        "to eat"
+      ],
+      "level": "N5",
+      "pos": [
+        "v1",
+        "vt"
+      ],
+      "jmdict_id": 1358280,
+      "examples": [
+        {
+          "ja": "ちょうど食べたかったものでした。",
+          "furigana": "ちょうど{食|た}べたかったものでした。",
+          "en": "That hit the spot.",
+          "tatoeba_id": 202896
+        },
+        {
+          "ja": "食べながら読んではいけません。",
+          "furigana": "{食|た}べながら{読|よ}んではいけません。",
+          "en": "You must not read while eating.",
+          "tatoeba_id": 145934
+        }
+      ]
+    },
+    {
+      "id": "62b5c13164",
+      "word": "電車",
+      "reading": "でんしゃ",
+      "romaji": "densha",
+      "meanings": [
+        "electric train"
+      ],
+      "level": "N5",
+      "pos": [
+        "n"
+      ],
+      "jmdict_id": 1443530,
+      "examples": [
+        {
+          "ja": "電車の中ですりにやられちゃったんだ。",
+          "furigana": "{電車|でんしゃ}の{中|なか}ですりにやられちゃったんだ。",
+          "en": "I had my pocket picked on the train.",
+          "tatoeba_id": 124800
+        },
+        {
+          "ja": "電車でポケットの中にあるものをすられた。",
+          "furigana": "{電車|でんしゃ}でポケットの{中|なか}にあるものをすられた。",
+          "en": "I had my pocket picked in the train.",
+          "tatoeba_id": 124816
+        }
+      ]
+    },
+    {
+      "id": "e0bcec9bd9",
+      "word": "飲む",
+      "reading": "のむ",
+      "romaji": "nomu",
+      "meanings": [
+        "to drink"
+      ],
+      "level": "N5",
+      "pos": [
+        "v5m",
+        "vt"
+      ],
+      "jmdict_id": 1169870,
+      "examples": [
+        {
+          "ja": "コーラはみんな飲んでしまったの。",
+          "furigana": "コーラはみんな{飲|の}んでしまったの。",
+          "en": "Has all the coke been drunk?",
+          "tatoeba_id": 224842
+        },
+        {
+          "ja": "今すぐにコーラが飲みたいんだ。",
+          "furigana": "{今|いま}すぐにコーラが{飲|の}みたいんだ。",
+          "en": "I am just dying for a Coke right now.",
+          "tatoeba_id": 172829
+        }
+      ]
+    },
+    {
+      "id": "ae8ce3986c",
+      "word": "遅れる",
+      "reading": "おくれる",
+      "romaji": "okureru",
+      "meanings": [
+        "to be late"
+      ],
+      "level": "N4",
+      "pos": [
+        "v1",
+        "vi"
+      ],
+      "jmdict_id": 1589040,
+      "examples": [
+        {
+          "ja": "電車はほとんど一時間遅れだった。",
+          "furigana": "{電車|でんしゃ}はほとんど{一時間|いちじかん}{遅|おく}れだった。",
+          "en": "The train was almost an hour behind time.",
+          "tatoeba_id": 124786
+        },
+        {
+          "ja": "月曜日にはバスはたいてい遅れる。",
+          "furigana": "{月曜日|げつようび}にはバスはたいてい{遅|おく}れる。",
+          "en": "On Mondays, the buses are late more often than not.",
+          "tatoeba_id": 175601
+        }
+      ]
+    },
+    {
+      "id": "83af91b7eb",
+      "word": "会議",
+      "reading": "かいぎ",
+      "romaji": "kaigi",
+      "meanings": [
+        "meeting"
+      ],
+      "level": "N4",
+      "pos": [
+        "n",
+        "vs",
+        "vi",
+        "vt"
+      ],
+      "jmdict_id": 1198360,
+      "examples": [
+        {
+          "ja": "会議は終わりに近づきつつあった。",
+          "furigana": "{会議|かいぎ}は{終|お}わりに{近|ちか}づきつつあった。",
+          "en": "The conference was drawing to an end.",
+          "tatoeba_id": 185354
+        },
+        {
+          "ja": "会議に彼は現れましたか。",
+          "furigana": "{会議|かいぎ}に{彼|かれ}は{現|あらわ}れましたか。",
+          "en": "Did he show up at the meeting?",
+          "tatoeba_id": 185390
+        }
+      ]
+    },
+    {
+      "id": "6ce523bcb6",
+      "word": "準備",
+      "reading": "じゅんび",
+      "romaji": "junbi",
+      "meanings": [
+        "to prepare"
+      ],
+      "level": "N4",
+      "pos": [
+        "n",
+        "vs",
+        "vt"
+      ],
+      "jmdict_id": 1341670,
+      "examples": [
+        {
+          "ja": "準備ができるまでちょっと待ってくれ。",
+          "furigana": "{準備|じゅんび}ができるまでちょっと{待|ま}ってくれ。",
+          "en": "Hang on a bit until I'm ready.",
+          "tatoeba_id": 147589
+        },
+        {
+          "ja": "母は私に昼食の準備をしてくれた。",
+          "furigana": "{母|はは}は{私|わたし}に{昼食|ちゅうしょく}の{準備|じゅんび}をしてくれた。",
+          "en": "Mother prepared lunch for me.",
+          "tatoeba_id": 82958
+        }
+      ]
+    },
+    {
+      "id": "6907fc706d",
+      "word": "必要",
+      "reading": "ひつよう",
+      "romaji": "hitsuyou",
+      "meanings": [
+        "necessary"
+      ],
+      "level": "N4",
+      "pos": [
+        "adj-na"
+      ],
+      "jmdict_id": 1487660,
+      "examples": [
+        {
+          "ja": "歯医者に行く必要はないですよ。",
+          "en": "You don't need to go to the dentist's.",
+          "tatoeba_id": 150948
+        },
+        {
+          "ja": "必要なら、すぐにまいりましょう。",
+          "furigana": "{必要|ひつよう}なら、すぐにまいりましょう。",
+          "en": "If necessary, I will come soon.",
+          "tatoeba_id": 85449
+        }
+      ]
+    },
+    {
+      "id": "ed37fe04b5",
+      "word": "予約",
+      "reading": "よやく",
+      "romaji": "yoyaku",
+      "meanings": [
+        "reservation"
+      ],
+      "level": "N4",
+      "pos": [
+        "n",
+        "vs",
+        "vt"
+      ],
+      "jmdict_id": 1543750,
+      "examples": [
+        {
+          "ja": "「ホテルの予約はしてありますか」「すみませんが、まだなんです」",
+          "furigana": "「ホテルの{予約|よやく}はしてありますか」「すみませんが、まだなんです」",
+          "en": "\"Have you reserved a hotel room?\" \"Sorry, not yet.\"",
+          "tatoeba_id": 236436
+        },
+        {
+          "ja": "前もって予約しなければならない。",
+          "furigana": "{前|まえ}もって{予約|よやく}しなければならない。",
+          "en": "You have to make reservations in advance.",
+          "tatoeba_id": 140958
+        }
+      ]
+    },
+    {
+      "id": "999fa2ee16",
+      "word": "確認",
+      "reading": "かくにん",
+      "romaji": "kakunin",
+      "meanings": [
+        "affirmation",
+        "confirmation"
+      ],
+      "level": "N3",
+      "pos": [
+        "n",
+        "vs",
+        "vt"
+      ],
+      "jmdict_id": 1205900,
+      "examples": [
+        {
+          "ja": "予約は確認されています。",
+          "furigana": "{予約|よやく}は{確認|かくにん}されています。",
+          "en": "I have a confirmed reservation.",
+          "tatoeba_id": 78975
+        },
+        {
+          "ja": "時計を確認すると、２１時ジャスト。",
+          "furigana": "{時計|とけい}を{確認|かくにん}すると、２１{時|じ}ジャスト。",
+          "en": "Checking the clock it was exactly 21:00.",
+          "tatoeba_id": 76068
+        }
+      ]
+    },
+    {
+      "id": "c8ca17553a",
+      "word": "環境",
+      "reading": "かんきょう",
+      "romaji": "kankyou",
+      "meanings": [
+        "environment",
+        "circumstance"
+      ],
+      "level": "N3",
+      "pos": [
+        "n"
+      ],
+      "jmdict_id": 1213280,
+      "examples": [
+        {
+          "ja": "彼は新しい環境にすばやく慣れた。",
+          "furigana": "{彼|かれ}は{新|あたら}しい{環境|かんきょう}にすばやく{慣|な}れた。",
+          "en": "He quickly accustomed himself to his new surroundings.",
+          "tatoeba_id": 103825
+        },
+        {
+          "ja": "環境の変化から新種の発生をみた。",
+          "furigana": "{環境|かんきょう}の{変化|へんか}から{新種|しんしゅ}の{発生|はっせい}をみた。",
+          "en": "Environmental changes gave rise to new species.",
+          "tatoeba_id": 183897
+        }
+      ]
+    },
+    {
+      "id": "8a5bd5d9d1",
+      "word": "管理",
+      "reading": "かんり",
+      "romaji": "kanri",
+      "meanings": [
+        "control",
+        "management (e.g. of a business)"
+      ],
+      "level": "N3",
+      "pos": [
+        "n",
+        "vs",
+        "vt"
+      ],
+      "jmdict_id": 1214200,
+      "examples": [
+        {
+          "ja": "彼に財産管理を任せた。",
+          "en": "I entrusted my property to him.",
+          "tatoeba_id": 118595
+        },
+        {
+          "ja": "その公園は市に管理されている。",
+          "furigana": "その{公園|こうえん}は{市|し}に{管理|かんり}されている。",
+          "en": "The park is governed by the city.",
+          "tatoeba_id": 210750
+        }
+      ]
+    },
+    {
+      "id": "23ba87bda6",
+      "word": "協力",
+      "reading": "きょうりょく",
+      "romaji": "kyouryoku",
+      "meanings": [
+        "cooperation",
+        "collaboration"
+      ],
+      "level": "N3",
+      "pos": [
+        "n",
+        "vs",
+        "vi"
+      ],
+      "jmdict_id": 1591720,
+      "examples": [
+        {
+          "ja": "彼らは協力してその絵を仕上げた。",
+          "furigana": "{彼|かれ}らは{協力|きょうりょく}してその{絵|え}を{仕上|しあ}げた。",
+          "en": "They completed the picture hand in hand.",
+          "tatoeba_id": 97330
+        },
+        {
+          "ja": "彼らは君に協力を期待している。",
+          "furigana": "{彼|かれ}らは{君|きみ}に{協力|きょうりょく}を{期待|きたい}している。",
+          "en": "They expect some cooperation of you.",
+          "tatoeba_id": 97296
+        }
+      ]
+    },
+    {
+      "id": "ce2ba9fec2",
+      "word": "参加",
+      "reading": "さんか",
+      "romaji": "sanka",
+      "meanings": [
+        "participation"
+      ],
+      "level": "N3",
+      "pos": [
+        "n",
+        "vs",
+        "vi"
+      ],
+      "jmdict_id": 1302090,
+      "examples": [
+        {
+          "ja": "あなたは競技に参加しましたか。",
+          "furigana": "あなたは{競技|きょうぎ}に{参加|さんか}しましたか。",
+          "en": "Did you take part in the game?",
+          "tatoeba_id": 232117
+        },
+        {
+          "ja": "彼女は美人コンテストに参加した。",
+          "furigana": "{彼女|かのじょ}は{美人|びじん}コンテストに{参加|さんか}した。",
+          "en": "She participated in the beauty contest.",
+          "tatoeba_id": 87076
+        }
+      ]
+    }
+  ]
+}

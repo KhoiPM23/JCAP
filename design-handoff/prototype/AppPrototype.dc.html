@@ -1,0 +1,2068 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Hành trình – bản tương tác</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}
+.app{--e:cubic-bezier(.2,.7,.2,1)}
+.mapfull{transform-origin:0 0;transform:none;transition:transform .45s cubic-bezier(.4,0,.2,1) .2s}
+.is-pref .mapfull{transform:translate(-8629.8px,-5203.4px) scale(9.2217);transition:transform .6s cubic-bezier(.4,0,.2,1) .2s}
+.natl{opacity:1;transition:opacity .16s linear .65s}
+.is-pref .natl{opacity:0;pointer-events:none;transition:opacity .2s linear 0s}
+.zoomL{opacity:0;pointer-events:none;transition:opacity .15s linear .2s}
+.is-pref .zoomL{opacity:1;pointer-events:auto;transition:opacity .25s linear .62s}
+.ppanel{transform:translateX(calc(100% + 24px));transition:transform .2s cubic-bezier(.4,0,1,1) .06s}
+.is-pref .ppanel{transform:none;transition:transform .28s var(--e) .8s}
+.backbtn{opacity:0;pointer-events:none;transition:opacity .08s linear 0s}
+.is-pref .backbtn{opacity:1;pointer-events:auto;transition:opacity .12s linear 1.08s}
+.side{left:12px;top:12px;bottom:12px;width:240px;border-radius:20px;border:1px solid var(--line);background:var(--paper-100);box-shadow:0 14px 36px rgba(8,26,56,.32);transition:width .2s var(--e) 0s,transform .16s var(--e) .65s,opacity .16s linear .65s,left .3s var(--e),top .3s var(--e),bottom .3s var(--e),border-radius .3s var(--e),box-shadow .3s linear,background-color .3s linear}
+.is-collapsed .side{width:72px;transition:width .2s var(--e) .09s,transform .16s var(--e) .65s,opacity .16s linear .65s,left .3s var(--e),top .3s var(--e),bottom .3s var(--e),border-radius .3s var(--e),box-shadow .3s linear,background-color .3s linear}
+.is-page .side{left:0;top:0;bottom:0;border-radius:0;border-width:0 1px 0 0;background:var(--paper-50);box-shadow:none}
+.is-pref .side,.is-pref.is-collapsed .side{transform:translateX(-120%);opacity:0;pointer-events:none;transition:width .2s 0s,transform .2s cubic-bezier(.4,0,1,1) 0s,opacity .2s linear 0s}
+.lbl{opacity:1;transition:opacity .12s linear .2s;white-space:nowrap;overflow:hidden}
+.is-collapsed .lbl{opacity:0;transition:opacity .09s linear 0s}
+.row{display:flex;align-items:center;gap:12px;width:100%;height:42px;box-sizing:border-box;padding:0 13px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi-muted);text-align:left;cursor:pointer;overflow:hidden}
+.row:hover{background:var(--paper-200);color:var(--sumi)}
+.row.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.brand{position:relative;display:flex;align-items:center;gap:10px;height:40px;padding:0 6px}
+.ib{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer;transition:background .12s,color .12s}
+.ib:hover,.ib:focus-visible{background:var(--paper-200);color:var(--sumi)}
+.brand-logo{cursor:pointer}
+.brand-name{padding:4px 8px;margin-left:-8px;border:0;border-radius:8px;background:transparent;font:inherit;color:inherit;cursor:pointer;transition:background .12s}
+.brand-name:hover{background:var(--paper-200)}
+.brand-name:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.bl-mark,.bl-open{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .12s linear}
+.bl-open{opacity:0}
+.is-collapsed .brand-logo:hover .bl-mark,.is-collapsed .brand-logo:focus-visible .bl-mark{opacity:0}
+.is-collapsed .brand-logo:hover .bl-open,.is-collapsed .brand-logo:focus-visible .bl-open{opacity:1}
+.brand-close{position:absolute;right:2px;top:2px;opacity:1;visibility:visible;transition:opacity .12s linear .2s,background .12s,color .12s,visibility 0s .2s}
+.is-collapsed .brand-close{opacity:0;visibility:hidden;transition:opacity .09s linear 0s,visibility 0s .09s}
+.tip{position:absolute;left:calc(100% + 28px);top:50%;z-index:60;padding:6px 10px;border-radius:8px;background:var(--sumi);color:var(--paper-50);font-size:12px;font-weight:600;line-height:16px;white-space:nowrap;pointer-events:none;opacity:0;transform:translate(-4px,-50%);transition:opacity .1s linear,transform .14s var(--e)}
+.tip::before{content:"";position:absolute;left:-4px;top:50%;width:8px;height:8px;margin-top:-4px;background:inherit;transform:rotate(45deg)}
+.brand-close:hover .tip,.brand-close:focus-visible .tip,.is-collapsed .brand-logo:hover .tip,.is-collapsed .brand-logo:focus-visible .tip{opacity:1;transform:translate(0,-50%);transition-delay:.25s}
+.dh{position:relative}
+.dh:hover,.dh.is-open{z-index:40}
+.fly{position:absolute;left:calc(100% + 12px);top:-3px;z-index:30;display:flex;flex-direction:column;align-items:flex-start;gap:8px;pointer-events:none}
+.fly::before{content:"";position:absolute;left:-16px;top:0;width:16px;height:48px}
+.dh:hover .fly,.dh:focus-within .fly,.dh.is-open .fly{pointer-events:auto}
+.pill{display:flex;align-items:center;gap:10px;height:48px;box-sizing:border-box;padding:0 6px 0 12px;border-radius:999px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 6px 18px rgba(8,26,56,.28);white-space:nowrap;font-size:14px;color:var(--sumi);opacity:0;visibility:hidden;clip-path:inset(0 100% 0 0 round 999px);transition:clip-path .2s var(--e),opacity .1s linear,visibility 0s .2s}
+.dh:hover .pill,.dh:focus-within .pill,.dh.is-open .pill{opacity:1;visibility:visible;clip-path:inset(-2px -2px -2px -2px round 999px);transition:clip-path .26s var(--e),opacity .1s linear,visibility 0s}
+.drop{width:340px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:16px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 14px 32px rgba(8,26,56,.3);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .14s linear,transform .2s var(--e),visibility 0s .2s}
+.dh.is-open .drop{opacity:1;visibility:visible;transform:none;transition:opacity .16s linear,transform .22s var(--e),visibility 0s}
+.chev{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--sumi);cursor:pointer;transition:transform .2s var(--e),background .12s}
+.chev:hover{background:var(--paper-200)}
+.dh.is-open .chev{transform:rotate(180deg);background:var(--paper-200)}
+.play{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:0;background:var(--ai);color:var(--on-ai);cursor:pointer}
+.sep{width:1px;height:22px;background:var(--line)}
+.dh:hover .row,.dh.is-open .row{background:var(--paper-200);color:var(--sumi)}
+.acct{position:relative}
+.acct-menu{position:absolute;left:0;bottom:calc(100% + 8px);z-index:50;width:248px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:8px;border-radius:16px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 14px 32px rgba(8,26,56,.3);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .12s linear,transform .18s var(--e),visibility 0s .18s}
+.acct.is-open .acct-menu{opacity:1;visibility:visible;transform:none;transition:opacity .14s linear,transform .2s var(--e),visibility 0s}
+.acct.is-open .row{background:var(--paper-200)}
+.acct-chev{transition:transform .2s var(--e)}
+.acct.is-open .acct-chev{transform:rotate(180deg)}
+.mi{display:flex;align-items:center;gap:12px;width:100%;min-height:42px;padding:0 10px;box-sizing:border-box;border:0;border-radius:10px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi);text-align:left;cursor:pointer}
+.mi.on{background:var(--shu-soft);font-weight:700}
+.mi.on .jc-icon{color:var(--shu)}
+.mi:hover{background:var(--paper-200)}
+.row.on .jc-icon{color:var(--shu)}
+.pgbg{position:absolute;inset:0;z-index:14;background:var(--paper-100);opacity:0;visibility:hidden;transition:opacity .28s linear,visibility 0s .28s}
+.is-page .pgbg{opacity:1;visibility:visible;transition:opacity .28s linear,visibility 0s}
+.pg{position:absolute;top:0;right:0;bottom:0;left:240px;z-index:15;overflow-y:auto;background:transparent;color:var(--sumi);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .14s linear,transform .2s var(--e),visibility 0s .2s,left .2s var(--e) 0s}
+.pg.on{opacity:1;visibility:visible;transform:none;transition:opacity .22s linear .14s,transform .32s var(--e) .14s,visibility 0s,left .2s var(--e) .09s}
+.is-collapsed .pg{left:72px}
+.row-btn:hover{border-color:var(--line-strong)}
+.is-page .pill{box-shadow:0 8px 22px rgba(8,26,56,.16)}
+.is-page .drop,.is-page .acct-menu{box-shadow:0 14px 32px rgba(8,26,56,.16)}
+.hot{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:0;background:transparent;cursor:pointer}
+.hot:hover{background:rgba(246,239,226,.28);box-shadow:0 0 0 2px var(--paper-50)}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1);opacity:.7}100%{transform:translate(-50%,-50%) scale(3);opacity:0}}
+.pulse{animation:pulse 1.6s var(--e) infinite}
+@media (prefers-reduced-motion: reduce){
+  .app *{transition-duration:.2s !important;transition-delay:0s !important;animation:none !important}
+  .is-pref .mapfull{transform:none}
+  .side,.is-pref .side,.is-pref.is-collapsed .side{transform:none}
+  .ppanel{transform:none;opacity:0}
+  .is-pref .ppanel{opacity:1}
+  .fly{transform:none}
+}
+.shf{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line)}
+.shf-tabs{display:flex;gap:2px}
+.shf-tab{position:relative;display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 10px;border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi-muted);cursor:pointer;transition:color .15s}
+.shf-tab:hover{color:var(--sumi)}
+.shf-tab:focus-visible{outline:2px solid var(--focus);outline-offset:-4px;border-radius:8px}
+.shf-tab::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:var(--ai);transform:scaleX(0);transition:transform .22s var(--e, cubic-bezier(.2,.7,.2,1))}
+.shf-tab.on{color:var(--sumi)}
+.shf-tab.on::after{transform:scaleX(1)}
+.shf-n{box-sizing:border-box;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--paper-200);font-size:11px;line-height:18px;font-weight:700;color:var(--sumi-muted);text-align:center;font-variant-numeric:tabular-nums;transition:background .15s,color .15s}
+.shf-tab.on .shf-n{background:var(--ai-soft);color:var(--ai)}
+.shf-lv{display:flex;align-items:center;gap:2px}
+.shf-chip{height:28px;min-width:36px;padding:0 10px;border:0;border-radius:8px;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--sumi-muted);cursor:pointer;transition:background .15s,color .15s}
+.shf-chip:hover{background:var(--paper-200);color:var(--sumi)}
+.shf-chip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.shf-chip.on{background:var(--paper-200);color:var(--sumi)}
+.shf-chip.on.lv-N5{background:var(--n5-soft);color:var(--n5)}
+.shf-chip.on.lv-N4{background:var(--n4-soft);color:var(--n4)}
+.shf-chip.on.lv-N3{background:var(--n3-soft);color:var(--n3)}
+.shf-sep{width:1px;height:20px;background:var(--line)}
+.shf-search{display:flex;align-items:center;width:36px;height:36px;margin-bottom:4px;border-radius:999px;overflow:hidden;transition:width .24s var(--e, cubic-bezier(.2,.7,.2,1)),background .15s,box-shadow .15s}
+.shf-search:hover{background:var(--paper-200)}
+.shf-search:focus-within,.shf-search.has-q{width:220px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line-strong)}
+.shf-search:focus-within{box-shadow:0 0 0 2px var(--focus)}
+.shf-search label{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;color:var(--sumi-muted);cursor:pointer}
+.shf-search input{flex:1;min-width:0;height:36px;padding:0 12px 0 0;border:0;background:transparent;font:inherit;font-size:14px;color:var(--sumi);outline:none}
+.room{--e:cubic-bezier(.2,.7,.2,1)}
+/* hội thoại cuộn được; khi ít câu thì dồn xuống đáy */
+.hist>:first-child{margin-top:auto}
+/* nền trung tính cho phòng luyện: bỏ ám xanh của nền giấy */
+.room[data-theme]{--paper-100:#f4f6f8;--paper-200:#e9edf1;--paper-300:#dde3e9;--line:#dce2e8;background-color:var(--paper-100);background-image:radial-gradient(circle,rgba(15,37,56,.10) 1px,transparent 1.4px);background-size:22px 22px}
+/* bóng thoại: chỉ đổi màu khi hover nếu bấm được (sửa lỗi hover chung trong bundle) */
+.room .jc-bubble__box{cursor:default}
+.room .jc-bubble--ai .jc-bubble__box:hover{background:var(--paper-50)}
+.room .ln.me .jc-bubble__box,.room .ln.me .jc-bubble__box:hover{background:var(--sumi);border-color:var(--sumi);color:#fff}
+.room .ln.me .jc-bubble__vi{color:rgba(255,255,255,.82)}
+.hist{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:22px;padding:28px 8px 8px 0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 44px);mask-image:linear-gradient(180deg,transparent 0,#000 44px)}
+.room .jc-bubble__col{max-width:100%}
+.room .jc-bubble__tools:empty{display:none}
+.ln{display:flex;align-items:flex-start;gap:12px}
+.ln.me{flex-direction:row-reverse}
+.ln-col{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:600px}
+.ln.me .ln-col{align-items:flex-end;max-width:660px}
+/* ô của người học to hơn ô của nhân viên một bậc */
+.ln.me .jc-bubble__box{padding:14px 22px;border-radius:22px;border-top-right-radius:6px}
+.ln.me .jc-jp{font-size:21px;line-height:38px;font-weight:600}
+.ln.me .jc-bubble__vi{font-size:15px;line-height:24px}
+.ln.ai .ln-col{max-width:560px}
+.ln.ai .ln-col{align-items:flex-start}
+.ln-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ln.ai .ln-tools{padding-left:48px}
+.me-av{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;margin-top:22px;border-radius:50%;background:var(--sora);color:var(--on-sora);font-size:14px;font-weight:700}
+.av-score{position:absolute;left:50%;top:-20px;transform:translateX(-50%);min-width:28px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;border:2px solid var(--paper-100);font-size:11px;line-height:14px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.room .ln.pending .jc-bubble__box,.room .ln.pending .jc-bubble__box:hover{background:var(--paper-50);color:var(--sumi);border:2px dashed var(--ai)}
+.ln.pending .jc-jp rt{color:var(--sumi-muted)}
+.ln.pending .jc-bubble__name{color:var(--ai)}
+.ln.enter{animation:lnIn .32s var(--e)}
+@keyframes lnIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.score{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700}
+.dock{flex:none;box-sizing:border-box;border-radius:24px;background:var(--paper-50);border:2px dashed var(--line-strong)}
+.wave{flex:1 1 auto;display:flex;align-items:center;gap:4px;height:52px}
+.wave i{display:block;flex:1 1 0;max-width:5px;height:var(--h);border-radius:3px;background:var(--ai);opacity:.75;transform-origin:center;animation:wv .9s var(--e) infinite alternate;animation-delay:var(--d)}
+@keyframes wv{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.side-sec{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sec-chev{transition:transform .2s var(--e)}
+.sec-chev.closed{transform:rotate(180deg)}
+.scene{position:relative;height:172px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--ai-soft),var(--paper-100) 78%)}
+.cloud{position:absolute;height:22px;border-radius:999px;background:var(--paper-50);opacity:.9}
+.cloud::before{content:"";position:absolute;left:22%;top:-12px;width:44%;height:26px;border-radius:999px;background:inherit}
+.ground{position:absolute;left:-10%;right:-10%;bottom:-38px;height:80px;border-radius:50%;background:var(--nami-soft)}
+.win{position:absolute;left:50%;top:22px;transform:translateX(-50%);width:92px;height:112px;border-radius:46px;background:linear-gradient(180deg,#bfe0f6,#eaf5fb);box-shadow:inset 0 0 0 7px var(--paper-50),0 8px 18px rgba(15,37,56,.12);display:flex;align-items:center;justify-content:center;color:var(--ai)}
+@media (prefers-reduced-motion: reduce){.wave i,.ln.enter{animation:none}}
+.rm-pg{position:absolute;inset:0;z-index:70;opacity:0;visibility:hidden;transform:scale(.985);transition:opacity .16s linear,transform .2s var(--e),visibility 0s .2s}
+.rm-pg.on{opacity:1;visibility:visible;transform:none;transition:opacity .22s linear,transform .3s var(--e),visibility 0s}
+.rm-bar{flex:none;display:flex;align-items:center;gap:12px;height:56px;padding:0 64px 0 104px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.rm-div{width:1px;height:18px;background:var(--line)}
+.rm-crumb{display:flex;align-items:center;gap:2px;min-width:0;font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.rm-crumb a{padding:4px 6px;border-radius:8px;color:inherit;text-decoration:none;transition:background .15s,color .15s}
+.rm-crumb a:hover{background:var(--paper-200);color:var(--sumi)}
+.rm-crumb a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.rm-title{padding:0 6px;font-size:15px;font-weight:700;color:var(--sumi);white-space:nowrap}
+.rm-lv{position:relative;display:inline-flex;align-items:center;height:24px;border-radius:999px;background:var(--n4-soft);color:var(--n4)}
+.rm-lv select{-webkit-appearance:none;appearance:none;height:24px;padding:0 22px 0 10px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:inherit;cursor:pointer;outline:none}
+.rm-lv .jc-icon{position:absolute;right:5px;pointer-events:none}
+.rm-lv:focus-within{box-shadow:0 0 0 2px var(--focus)}
+.cv{--e:cubic-bezier(.2,.7,.2,1)}
+/* cùng nền trung tính với phòng Shadowing */
+.cv[data-theme]{--paper-100:#f4f6f8;--paper-200:#e9edf1;--paper-300:#dde3e9;--line:#dce2e8;background-color:var(--paper-100);background-image:radial-gradient(circle,rgba(15,37,56,.10) 1px,transparent 1.4px);background-size:22px 22px}
+.cv-bar{flex:none;position:relative;z-index:30;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px 0 24px;background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.cv-div{width:1px;height:18px;background:var(--line)}
+.cv-crumb{display:flex;align-items:center;gap:2px;min-width:0;font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.cv-crumb a{padding:4px 6px;border-radius:8px;color:inherit;text-decoration:none}
+.cv-crumb a:hover{background:var(--paper-200);color:var(--sumi)}
+.cv-title{padding:0 6px;font-size:15px;font-weight:700;color:var(--sumi);white-space:nowrap}
+.cv-chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper-50);font:inherit;font-size:14px;font-weight:600;color:var(--sumi);cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.cv-chip:hover{border-color:var(--line-strong)}
+.cv-chip.on{background:var(--ai-soft);border-color:transparent;color:var(--ai)}
+.cv-chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.cv-chipn{font-size:12px;font-weight:700;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.cv-chip.on .cv-chipn{color:var(--ai)}
+.cv-setw{position:relative}
+.cv-setdot{position:absolute;right:6px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--ai);box-shadow:0 0 0 2px var(--paper-50);pointer-events:none}
+.cv-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:300px;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:18px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 16px 36px rgba(15,37,56,.16)}
+.cv-panel{flex:none;box-sizing:border-box;display:flex;flex-direction:column;border-radius:24px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 10px 30px rgba(15,37,56,.06);overflow:hidden}
+.cv-psec{display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.cv-psec+.cv-psec{border-top:1px solid var(--line)}
+.cv-lbl{font-size:13px;line-height:18px;font-weight:600;color:var(--sumi-muted)}
+.cv-mid{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:12px}
+.cv-hist{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:20px;padding:8px 10px 8px 0}
+.cv-hist>:first-child{margin-top:auto}
+.cv-inner{width:100%;max-width:760px;margin:0 auto}
+.cv-scene{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:var(--paper-50);border:1px solid var(--line);font-size:14px;line-height:22px;color:var(--sumi-muted)}
+/* bóng thoại: câu của người học nền xanh than đậm, bấm vào để xem nhận xét */
+.cv .jc-bubble__col{max-width:100%}
+.cv .jc-bubble--ai .jc-bubble__box{cursor:default}
+.cv .jc-bubble--ai .jc-bubble__box:hover{background:var(--paper-50)}
+.cv .jc-bubble--me .jc-bubble__box{background:var(--sumi);border-color:var(--sumi);color:#fff;padding:12px 18px}
+.cv .jc-bubble--me .jc-bubble__box:hover{background:#1d3a52}
+.cv .jc-bubble--me .jc-jp{font-size:19px;line-height:34px;font-weight:600}
+.cv .jc-bubble--me .jc-bubble__vi{color:rgba(255,255,255,.82)}
+.cv-ln.cv-enter{animation:cvIn .32s var(--e)}
+@keyframes cvIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.cv-composer{flex:none;display:flex;flex-direction:column;gap:8px}
+.cv-hint{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:18px;background:var(--sora-soft);border:1px solid #f3dcc0}
+.cv-cbar{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 10px;border-radius:999px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 8px 24px rgba(15,37,56,.08);transition:box-shadow .15s,border-color .15s}
+.cv-cbar:focus-within{border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft),0 8px 24px rgba(15,37,56,.08)}
+.cv-input{flex:1 1 auto;min-width:0;height:44px;padding:0 6px;border:0;background:transparent;font-family:var(--font-jp),var(--font-sans);font-size:16px;color:var(--sumi);outline:none}
+.cv-input::placeholder{font-family:var(--font-sans);color:var(--sumi-faint)}
+.cv-mic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--ai);color:var(--on-ai);cursor:pointer;transition:background .15s,transform .15s}
+.cv-mic:hover{background:var(--ai-hover)}
+.cv-mic:active{transform:scale(.96)}
+.cv-mic:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.cv-mic.cv-rec{background:var(--shu);color:var(--on-shu)}
+.cv-wave{flex:1 1 auto;display:flex;align-items:center;gap:3px;height:36px;padding:0 6px}
+.cv-wave i{display:block;flex:1 1 0;max-width:4px;height:var(--h);border-radius:2px;background:var(--shu);opacity:.8;animation:cvwv .9s var(--e) infinite alternate;animation-delay:var(--d)}
+@keyframes cvwv{from{transform:scaleY(.3)}to{transform:scaleY(1)}}
+.cv-recdot{width:8px;height:8px;border-radius:50%;background:var(--shu);animation:cvblink 1.2s steps(2) infinite}
+@keyframes cvblink{50%{opacity:.25}}
+.cv-eval{flex:none;width:360px}
+.cv-turn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--paper-50);font:inherit;text-align:left;color:var(--sumi);cursor:pointer}
+.cv-turn:hover{border-color:var(--line-strong)}
+.cv-turn.on{border-color:var(--ai);background:var(--ai-soft)}
+.cv-phrase{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){.cv-wave i,.cv-recdot,.cv-ln.cv-enter{animation:none}}
+.um{max-width:760px;margin:0 auto;display:flex;flex-direction:column}
+.um-sec{display:flex;flex-direction:column;padding:28px 0}
+.um-sec+.um-sec{border-top:1px solid var(--line)}
+.um-h{margin:0;font-size:17px;line-height:24px;font-weight:700}
+.um-row{display:grid;grid-template-columns:240px minmax(0,1fr) 96px;align-items:center;gap:24px;padding:12px 0}
+.um-lab{display:flex;flex-direction:column;gap:2px}
+.um-lab b{font-size:15px;line-height:22px;font-weight:600}
+.um-lab span{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.um-bar{height:6px;border-radius:3px;background:var(--paper-200);overflow:hidden}
+.um-bar i{display:block;height:100%;min-width:4px;border-radius:3px;background:var(--ai)}
+.um-val{text-align:right;font-size:13px;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.um-line{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.um-muted{margin:4px 0 0;font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.um-big{font-size:17px;line-height:24px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.um-link{border:0;padding:0;background:none;font:inherit;color:var(--ai);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.um-feat{margin:10px 0 0;padding:0 0 0 18px;font-size:14px;line-height:24px;color:var(--sumi-muted)}
+.legend{position:absolute;right:0;bottom:calc(100% + 10px);width:300px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:14px 16px 12px;border-radius:18px;background:var(--paper-50);border:1px solid var(--line);box-shadow:0 14px 32px rgba(8,26,56,.3);color:var(--sumi)}
+.lg-row{display:flex;align-items:center;gap:12px;padding:7px 0;font-size:13px;line-height:18px}
+.lg-row b{display:block;font-size:14px;line-height:20px;font-weight:600}
+.lg-row span{color:var(--sumi-muted)}
+.lg-sw{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:26px;border-radius:6px}
+.mapctl{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;font-family:var(--font-jp);font-size:16px;font-weight:700;color:var(--sumi-muted);cursor:pointer;transition:background .12s,color .12s}
+.mapctl:hover{background:var(--paper-200);color:var(--sumi)}
+.mapctl.on{color:var(--shu)}
+.mapctl:focus-visible{outline:2px solid var(--focus);outline-offset:-3px}
+/* ===== Chế độ tối (Cài đặt › Giao diện › Tối) ===== */
+[data-theme="hoc-tap-dem"]{--paper-50:#232220;--paper-100:#1a1917;--paper-200:#2c2a27;--paper-300:#37342f;--line:#38352f;--line-strong:#7a7468;--ai-soft:#2a2f46;--sumi:#efe9dc;--sumi-muted:#aaa395;--sumi-faint:#6a6459;--ai:#a9b8f0;--ai-hover:#c3cdf5;--on-ai:#15171f;--shu-soft:#3d211b;--nami-soft:#1f3234;--info-soft:#1d2e38;}
+[data-theme="phong-luyen-dem"]{--paper-50:#201f1c;--paper-100:#141311;--paper-200:#2a2825;--paper-300:#34312d;--line:#2f2c28;--line-strong:#756f64;--ai-soft:#272c42;--sumi:#efe9dc;--sumi-muted:#aaa395;--sumi-faint:#6a6459;--ai:#a9b8f0;--ai-hover:#c3cdf5;--on-ai:#15171f;--shu-soft:#3d211b;--nami-soft:#1f3234;--info-soft:#1d2e38;}
+.cv-hint-lbl{color:#7a4a00}
+[data-theme$="-dem"] .cv-hint-lbl{color:var(--sora)}
+[data-theme$="-dem"] .cv-hint{border-color:#4a4034}
+.room[data-theme="phong-luyen-dem"],.cv[data-theme="phong-luyen-dem"]{background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1.4px)}
+.room[data-theme="phong-luyen-dem"] .rm-bar,.cv[data-theme="phong-luyen-dem"] .cv-bar{background:rgba(32,31,28,.82)}
+.room[data-theme="phong-luyen-dem"] .ln.me:not(.pending) .jc-bubble__box,.room[data-theme="phong-luyen-dem"] .ln.me:not(.pending) .jc-bubble__box:hover,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__box,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__box:hover{background:var(--ai-soft);border-color:#3d4668;color:var(--sumi)}
+.room[data-theme="phong-luyen-dem"] .ln.me .jc-jp rt,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-jp rt{color:var(--sumi-muted);opacity:1}
+.room[data-theme="phong-luyen-dem"] .ln.me .jc-bubble__vi,.cv[data-theme="phong-luyen-dem"] .jc-bubble--me .jc-bubble__vi{color:var(--sumi-muted);border-top-color:var(--line)}
+[data-theme$="-dem"] .pill{box-shadow:0 8px 22px rgba(0,0,0,.45)}
+</style>
+</helmet>
+<div class="{{rootClass}}" data-theme="kham-pha" style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #26497B; font-family: var(--font-sans); color: var(--sumi);">
+
+  <img class="mapfull" src="/_blob/77286acadbf6922a4a56b8c84b3f8d58" alt="Bản đồ Nhật Bản 47 tỉnh" style="position: absolute; left: 0; top: 0; width: 1440px; height: 900px;">
+
+  <div class="natl">
+    <div aria-hidden="true">
+      <span style="position: absolute; left: 1171px; top: 135px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">北海道</span>
+        <span style="font-size: 11px; font-weight: 600;">Hokkaido</span>
+      </span>
+      <span style="position: absolute; left: 1024px; top: 262px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">東北</span>
+        <span style="font-size: 11px; font-weight: 600;">Tohoku</span>
+      </span>
+      <span style="position: absolute; left: 1006px; top: 532px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">関東</span>
+        <span style="font-size: 11px; font-weight: 700;">Kanto</span>
+      </span>
+      <span style="position: absolute; left: 905px; top: 492px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">中部</span>
+        <span style="font-size: 11px; font-weight: 600;">Chubu</span>
+      </span>
+      <span style="position: absolute; left: 812px; top: 650px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">関西</span>
+        <span style="font-size: 11px; font-weight: 600;">Kansai</span>
+      </span>
+      <span style="position: absolute; left: 698px; top: 606px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">中国</span>
+        <span style="font-size: 11px; font-weight: 600;">Chugoku</span>
+      </span>
+      <span style="position: absolute; left: 690px; top: 748px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">四国</span>
+        <span style="font-size: 11px; font-weight: 600;">Shikoku</span>
+      </span>
+      <span style="position: absolute; left: 530px; top: 728px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <span lang="ja" style="writing-mode: vertical-rl; padding: 6px 4px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 17px; line-height: 19px; font-weight: 700;">九州・沖縄</span>
+        <span style="font-size: 11px; font-weight: 600;">Kyushu</span>
+      </span>
+    </div>
+
+    <span aria-hidden="true" style="position: absolute; left: 1024px; top: 618px; transform: translate(-50%, -50%) rotate(-8deg); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--shu); background: rgba(246,239,226,.85); color: var(--shu); font-family: var(--font-mincho); font-size: 15px; font-weight: 700;">済</span>
+    <span aria-hidden="true" class="pulse" style="position: absolute; left: 979px; top: 604px; width: 14px; height: 14px; border-radius: 50%; background: var(--shu); transform: translate(-50%, -50%);"></span>
+    <span aria-hidden="true" style="position: absolute; left: 979px; top: 604px; width: 12px; height: 12px; border-radius: 50%; background: var(--shu); border: 2px solid var(--paper-50); transform: translate(-50%, -50%);"></span>
+
+    <button type="button" class="hot" aria-label="Vào tỉnh Chiba" title="Chiba · đang mở" onClick="{{enterPref}}" style="left: 1003px; top: 604px;"></button>
+    <button type="button" class="hot" aria-label="Kyoto, đang khoá" title="Kyoto · đang khoá" onClick="{{openKyoto}}" style="left: 748px; top: 604px;"></button>
+    <button type="button" class="hot" aria-label="Nara, đang khoá" title="Nara · đang khoá" onClick="{{openNara}}" style="left: 780px; top: 689px;"></button>
+
+    <sc-if value="{{hasLock}}" hint-placeholder-val="{{false}}">
+      <span aria-hidden="true" style="position: absolute; left: {{lock.x}}px; top: {{lock.y}}px; width: 58px; height: 58px; border-radius: 50%; border: 2px dashed var(--paper-50); transform: translate(-50%, -50%);"></span>
+      <span aria-hidden="true" style="position: absolute; left: {{lock.x}}px; top: {{lock.y}}px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--sumi); color: var(--paper-50);">
+        <x-import component-from-global-scope="JCAP.Icon" name="lock" size="{{i18}}" fill="{{yes}}"></x-import>
+      </span>
+      <div role="dialog" aria-label="{{lock.name}} đang khoá" style="position: absolute; left: {{lock.px}}px; top: {{lock.py}}px; width: 300px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; border-radius: 16px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 14px 36px rgba(8,26,56,.38);">
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+            <span style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-size: 17px; line-height: 24px; font-weight: 700;">{{lock.name}}</span>
+              <span lang="ja" style="font-family: var(--font-mincho); font-size: 15px; font-weight: 700;">{{lock.jp}}</span>
+            </span>
+            <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Chương 2 · Cố đô Kansai</span>
+          </span>
+          <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng" size="sm" on-click="{{closeLock}}"></x-import>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 22px;">Mở khi đạt 70% con dấu Chương 1. Bạn đang có <strong>3/10</strong>, cần thêm 4 dấu.</p>
+        <div style="position: relative; height: 8px; border-radius: 4px; background: var(--paper-200);">
+          <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; border-radius: 4px; background: var(--shu);"></span>
+          <span style="position: absolute; left: 70%; top: -4px; width: 2px; height: 16px; background: var(--sumi);"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: var(--sumi-muted);"><span>3 dấu</span><span>Mở khoá ở 7 dấu</span></div>
+        <x-import component-from-global-scope="JCAP.Button" variant="primary" block="{{yes}}" icon="travel_explore" on-click="{{enterPref}}">Học mốc tiếp theo ở Chiba</x-import>
+        <span aria-hidden="true" style="position: absolute; left: 143px; bottom: -8px; width: 14px; height: 14px; background: var(--paper-50); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg);"></span>
+      </div>
+    </sc-if>
+
+    <div style="position: absolute; right: 20px; bottom: 20px; display: flex; align-items: flex-end; gap: 10px;">
+      <div style="position: relative;">
+        <sc-if value="{{legendOpen}}" hint-placeholder-val="{{false}}">
+          <div class="legend" role="dialog" aria-label="Chú giải bản đồ">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <strong style="font-size: 15px;">Chú giải bản đồ</strong>
+              <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng chú giải" size="sm" on-click="{{toggleLegend}}"></x-import>
+            </div>
+            <div class="lg-row"><span class="lg-sw" style="background: #f6efe2; box-shadow: inset 0 0 0 2px var(--sumi);"></span><div><b>Tỉnh đã mở</b><span>Bấm vào để vào tỉnh và học</span></div></div>
+            <div class="lg-row"><span class="lg-sw" style="background: rgba(246,239,226,.38); box-shadow: inset 0 0 0 1px var(--line);"></span><div><b>Tỉnh đang khoá</b><span>Mở khi đủ con dấu của chương trước</span></div></div>
+            <div class="lg-row"><span class="lg-sw"><span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 12px; font-weight: 700;">印</span></span><div><b>Con dấu son</b><span>Mốc đã học xong</span></div></div>
+            <div class="lg-row"><span class="lg-sw"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--shu); box-shadow: 0 0 0 5px rgba(198,58,36,.25);"></span></span><div><b>Chấm đỏ</b><span>Mốc bạn đang học dở</span></div></div>
+            <div class="lg-row"><span class="lg-sw"><span lang="ja" style="writing-mode: vertical-rl; padding: 2px 1px; background: var(--paper-50); border: 3px double var(--sumi); font-family: var(--font-mincho); font-size: 10px; line-height: 11px; font-weight: 700;">関東</span></span><div><b>Nhãn vùng</b><span>Tên các vùng lớn của Nhật</span></div></div>
+            <div class="lg-row"><span class="lg-sw"><svg width="34" height="10" viewBox="0 0 34 10" aria-hidden="true"><path d="M2 5h30" stroke="var(--shu)" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round" fill="none"></path></svg></span><div><b>Lộ trình trong tỉnh</b><span>Đi qua các mốc theo thứ tự học</span></div></div>
+          </div>
+        </sc-if>
+        <button type="button" onClick="{{toggleLegend}}" aria-expanded="{{legendOpen}}" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper-50); color: var(--sumi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">
+        <x-import component-from-global-scope="JCAP.Icon" name="map" size="{{i20}}"></x-import>Chú giải</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50); overflow: hidden;">
+        <button type="button" class="{{furiMapCls}}" aria-pressed="{{furiMap}}" onClick="{{toggleFuriMap}}" aria-label="Hiện furigana trên bản đồ" title="Furigana">ふ</button>
+        <x-import component-from-global-scope="JCAP.IconButton" icon="search" label="Tìm tỉnh"></x-import>
+      </div>
+      <div style="display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50); overflow: hidden;">
+        <x-import component-from-global-scope="JCAP.IconButton" icon="add" label="Phóng to"></x-import>
+        <x-import component-from-global-scope="JCAP.IconButton" icon="remove" label="Thu nhỏ"></x-import>
+        <x-import component-from-global-scope="JCAP.IconButton" icon="center_focus_strong" label="Về toàn quốc"></x-import>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="zoomL" style="position: absolute; left: 0; top: 0; width: 1440px; height: 900px;">
+    <img src="/_blob/ba06a053a42688b5c1b0600ac206e4bb" alt="Bản đồ tỉnh Chiba" style="position: absolute; left: 0; top: 0; width: 1440px; height: 900px;">
+    <svg aria-hidden="true" width="1440" height="900" viewBox="0 0 1440 900" style="position: absolute; left: 0; top: 0;">
+      <polyline points="555,302 513,280 433,389 399,370" fill="none" stroke="#BF2E28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="399,370 580,429" fill="none" stroke="#1E2C48" stroke-width="2.5" stroke-dasharray="2 8" stroke-linecap="round" opacity="0.7"></polyline>
+    </svg>
+    <span aria-hidden="true" style="position: absolute; left: 300px; top: 318px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; opacity: .7;">
+      <span lang="ja" style="font-family: var(--font-mincho); font-size: 15px; font-weight: 700;">東京都</span>
+      <span style="font-size: 11px; font-weight: 600;">Tokyo</span>
+    </span>
+    <span aria-hidden="true" style="position: absolute; left: 500px; top: 560px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center;">
+      <span lang="ja" style="font-family: var(--font-mincho); font-size: 26px; font-weight: 700; letter-spacing: .2em;">千葉県</span>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: .08em;">Chiba</span>
+    </span>
+    <span title="1. Sân bay Narita · đã có dấu" style="position: absolute; left: 555px; top: 302px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--shu); background: var(--paper-50); color: var(--shu);">
+      <x-import component-from-global-scope="JCAP.Icon" name="flight" size="{{i22}}"></x-import>
+    </span>
+    <span title="2. Chùa Naritasan · đã có dấu" style="position: absolute; left: 513px; top: 280px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--shu); background: var(--paper-50); color: var(--shu);">
+      <x-import component-from-global-scope="JCAP.Icon" name="temple_buddhist" size="{{i22}}"></x-import>
+    </span>
+    <span title="3. Ga Chiba · đã có dấu" style="position: absolute; left: 433px; top: 389px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--shu); background: var(--paper-50); color: var(--shu);">
+      <x-import component-from-global-scope="JCAP.Icon" name="train" size="{{i22}}"></x-import>
+    </span>
+    <span aria-hidden="true" class="pulse" style="position: absolute; left: 399px; top: 370px; width: 52px; height: 52px; border-radius: 50%; background: var(--shu); transform: translate(-50%, -50%);"></span>
+    <span title="4. Makuhari Messe · đang học 2/4" style="position: absolute; left: 399px; top: 370px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--sumi); background: var(--shu); color: var(--on-shu); box-shadow: 0 6px 16px rgba(8,26,56,.35);">
+      <x-import component-from-global-scope="JCAP.Icon" name="stadium" size="{{i26}}"></x-import>
+    </span>
+    <span title="5. Bãi biển Kujukuri · chưa học" style="position: absolute; left: 580px; top: 429px; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 2px dashed var(--sumi); background: rgba(246,239,226,.85); color: var(--sumi-muted);">
+      <x-import component-from-global-scope="JCAP.Icon" name="beach_access" size="{{i22}}"></x-import>
+    </span>
+    <div style="position: absolute; left: 399px; top: 322px; transform: translate(-50%, -100%); display: flex; flex-direction: column; padding: 8px 12px; border-radius: 12px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 8px 20px rgba(8,26,56,.3); white-space: nowrap;">
+      <span style="font-size: 14px; line-height: 20px; font-weight: 700;">Makuhari Messe</span>
+      <span lang="ja" style="font-family: var(--font-jp); font-size: 12px; line-height: 16px; color: var(--sumi-muted);">幕張メッセ</span>
+      <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--shu);">Đang học 2/4</span>
+    </div>
+  </div>
+
+  <div class="backbtn" style="position: absolute; left: 20px; top: 20px; display: flex; align-items: center; gap: 12px;">
+    <button type="button" onClick="{{back}}" style="display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper-50); color: var(--sumi); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(8,26,56,.3);">
+      <x-import component-from-global-scope="JCAP.Icon" name="arrow_back" size="{{i22}}"></x-import>Toàn quốc
+    </button>
+    <nav aria-label="Vị trí" style="display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; background: rgba(246,239,226,.9); font-size: 13px; font-weight: 600;">
+      <span style="color: var(--sumi-muted);">Nhật Bản / Kanto /</span><span>Chiba</span>
+    </nav>
+  </div>
+
+  <aside class="ppanel" aria-label="Tỉnh Chiba" style="position: absolute; right: 12px; top: 12px; bottom: 12px; width: 400px; box-sizing: border-box; display: flex; flex-direction: column; border-radius: 20px; background: var(--paper-100); border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(8,26,56,.38); overflow: hidden;">
+    <div style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 18px 20px 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; background: var(--paper-50); border: 1px solid var(--line); font-size: 12px; font-weight: 600;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #843526;"></span>Vùng Kanto <span lang="ja" style="font-family: var(--font-jp);">関東</span>
+        </span>
+        <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng, về toàn quốc" size="sm" on-click="{{back}}"></x-import>
+      </div>
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column;">
+          <ruby lang="ja" style="font-family: var(--font-mincho); font-size: 42px; line-height: 50px; font-weight: 700; ruby-position: over;">千葉県<rt style="font-size: 13px; font-weight: 600; letter-spacing: .3em; color: var(--sumi-muted);">ちばけん</rt></ruby>
+          <span style="display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 600;">Chiba
+            <x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="Nghe tên tỉnh" size="sm"></x-import>
+          </span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+          <span style="font-size: 28px; line-height: 32px; font-weight: 700; color: var(--shu);">3/5</span>
+          <span style="font-size: 12px; color: var(--sumi-muted);">con dấu</span>
+        </div>
+      </div>
+      <section aria-label="Một từ ở tỉnh" style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft);">
+        <ruby lang="ja" style="font-family: var(--font-jp); font-size: 24px; line-height: 34px; font-weight: 700;">落花生<rt style="font-size: 11px; font-weight: 500; color: var(--sumi-muted);">らっかせい</rt></ruby>
+        <span style="flex-grow: 1; display: flex; flex-direction: column;">
+          <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--sumi-muted);">Một từ ở tỉnh</span>
+          <span style="font-size: 15px; line-height: 22px; font-weight: 600;">đậu phộng</span>
+          <span style="font-size: 12px; line-height: 18px; color: var(--sumi-muted);">Chiba trồng nhiều đậu phộng nhất Nhật Bản.</span>
+        </span>
+        <x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="Nghe từ 落花生" size="sm"></x-import>
+      </section>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700;">Địa điểm học <span style="font-weight: 500; color: var(--sumi-muted);">5</span></h2>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 16px; background: var(--paper-50); border: 2px solid var(--shu);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--shu); color: var(--on-shu);"><x-import component-from-global-scope="JCAP.Icon" name="stadium" size="{{i20}}"></x-import></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column;">
+              <span style="font-size: 15px; line-height: 22px; font-weight: 700;">4. Makuhari Messe</span>
+              <span lang="ja" style="font-family: var(--font-jp); font-size: 12px; color: var(--sumi-muted);">幕張メッセ</span>
+            </span>
+            <span style="font-size: 12px; font-weight: 700; color: var(--shu);">2/4</span>
+          </div>
+          <div style="padding: 10px 12px; border-radius: 10px; background: var(--paper-100);">
+            <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--sumi-muted);">Câu bạn sẽ học</span>
+            <x-import component-from-global-scope="JCAP.JpText" text="{幕張|まくはり}メッセにはどうやって{行|い}きますか。" size="sm" as="p"></x-import>
+            <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Đi đến Makuhari Messe bằng cách nào ạ?</span>
+          </div>
+          <x-import component-from-global-scope="JCAP.Stepper" steps="{{steps}}"></x-import>
+          <x-import component-from-global-scope="JCAP.Button" variant="primary" block="{{yes}}" icon="record_voice_over">Tiếp tục Shadowing (câu 3/6)</x-import>
+        </div>
+        <sc-for list="{{spots}}" as="s" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px;">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: {{s.border}}; color: {{s.color}};"><x-import component-from-global-scope="JCAP.Icon" name="{{s.icon}}" size="{{i18}}"></x-import></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 600;">{{s.name}}</span>
+              <span lang="ja" style="font-family: var(--font-jp); font-size: 12px; color: var(--sumi-muted);">{{s.jp}}</span>
+            </span>
+            <span style="font-size: 12px; font-weight: 700; color: {{s.color}};">{{s.status}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </aside>
+
+  <div class="pgbg" data-theme="{{thLearn}}" aria-hidden="true"></div>
+  <div class="{{pgRole}}" data-theme="{{thLearn}}" aria-hidden="{{hideRole}}">
+    <main style="padding: 32px 36px 56px;">
+      <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h1 style="margin: 0; font-size: 28px; line-height: 38px; font-weight: 700;">Hội thoại AI</h1>
+            <p style="margin: 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted);">Chọn một tình huống, nhập vai và nói chuyện với nhân vật AI. Mỗi lượt nói được nhận xét ngay.</p>
+          </div>
+          <div style="width: 320px; max-width: 100%;">
+            <x-import component-from-global-scope="JCAP.TextField" icon="search" placeholder="Tìm tình huống, VD: gọi món, sân bay" aria-label="Tìm tình huống"></x-import>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+          <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Chủ đề" options="{{cats}}" value="{{cat}}" on-change="{{setCat}}"></x-import>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Trình độ</span>
+            <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Trình độ" size="sm" options="{{lvFilters}}" value="{{lvFilter}}" on-change="{{setLvFilter}}"></x-import>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+
+          <div style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+            <sc-if value="{{rpEmpty}}" hint-placeholder-val="{{false}}">
+              <x-import component-from-global-scope="JCAP.EmptyState" icon="search_off" title="Chưa có tình huống ở bộ lọc này">Thử chọn chủ đề "Tất cả" hoặc đổi trình độ.</x-import>
+            </sc-if>
+            <sc-for list="{{rpGroups}}" as="g" hint-placeholder-count="3">
+              <section style="display: flex; flex-direction: column; gap: 10px;">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; line-height: 24px; font-weight: 600;">{{g.name}} <span style="font-size: 13px; font-weight: 500; color: var(--sumi-muted);">{{g.count}}</span></h2>
+                <sc-for list="{{g.items}}" as="s" hint-placeholder-count="2">
+                  <button type="button" class="row-btn" onClick="{{s.pick}}" aria-pressed="{{s.selected}}" style="display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 16px; text-align: left; font: inherit; color: var(--sumi); cursor: pointer; border-radius: var(--radius-lg); border: {{s.border}}; background: {{s.bg}};">
+                    <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 14px; background: var(--nami-soft); color: var(--nami);">
+                      <x-import component-from-global-scope="JCAP.Icon" name="{{s.icon}}" size="{{iconLg}}"></x-import>
+                    </span>
+                    <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                      <span style="font-size: 16px; line-height: 24px; font-weight: 600;">{{s.title}}</span>
+                      <span style="font-size: 14px; line-height: 20px; color: var(--sumi-muted);">{{s.goal}}</span>
+                      <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px;">
+                        <sc-for list="{{s.levels}}" as="l" hint-placeholder-count="2">
+                          <x-import component-from-global-scope="JCAP.JlptBadge" level="{{l}}" size="sm"></x-import>
+                        </sc-for>
+                        <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">khoảng {{s.minutes}} phút</span>
+                      </span>
+                    </span>
+                    <span style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                      <sc-if value="{{s.inProgress}}" hint-placeholder-val="{{false}}">
+                        <x-import component-from-global-scope="JCAP.Badge" tone="warning" icon="pending">{{s.progressText}}</x-import>
+                      </sc-if>
+                      <x-import component-from-global-scope="JCAP.CreditBadge" amount="{{s.cost}}" variant="cost" size="sm"></x-import>
+                    </span>
+                  </button>
+                </sc-for>
+              </section>
+            </sc-for>
+          </div>
+
+          <aside aria-label="Xem trước tình huống" style="flex: 1 1 380px; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-xl); background: var(--paper-50); border: 1px solid var(--line); box-shadow: var(--shadow-md);">
+            <div style="position: relative; height: 112px; background: var(--ai-soft);">
+              <div class="jc-seigaiha"></div>
+              <span style="position: absolute; left: 24px; bottom: -26px; display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 18px; background: var(--paper-50); color: var(--ai); box-shadow: var(--shadow-md);">
+                <x-import component-from-global-scope="JCAP.Icon" name="{{p.icon}}" size="{{iconXl}}"></x-import>
+              </span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px; padding: 40px 24px 24px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <h2 style="margin: 0; font-size: 22px; line-height: 30px; font-weight: 700;">{{p.title}}</h2>
+                <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">{{p.goal}}</p>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--paper-100);">
+                <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--sora); color: var(--on-sora); font-weight: 700;">{{p.initial}}</span>
+                <span style="display: flex; flex-direction: column; min-width: 0;">
+                  <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Bạn nói chuyện với {{p.persona}}</span>
+                  <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">{{p.personaNote}}</span>
+                </span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Chọn cấp độ</span>
+                <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Cấp độ luyện" block="{{yes}}" options="{{p.levelOpts}}" value="{{lv}}" on-change="{{setLv}}"></x-import>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Nhiệm vụ trong phiên</span>
+                <ol style="margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 22px;">
+                  <sc-for list="{{p.missions}}" as="m" hint-placeholder-count="4">
+                    <li>{{m}}</li>
+                  </sc-for>
+                </ol>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Từ sẽ gặp</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <sc-for list="{{p.vocab}}" as="v" hint-placeholder-count="4">
+                    <span style="padding: 2px 10px; border-radius: var(--radius-sm); background: var(--nami-soft);">
+                      <x-import component-from-global-scope="JCAP.JpText" text="{{v}}" size="sm"></x-import>
+                    </span>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line);">
+                <span style="display: flex; flex-direction: column;">
+                  <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Chi phí cấp {{lv}}</span>
+                  <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Còn {{after}} Credit sau khi bắt đầu</span>
+                </span>
+                <x-import component-from-global-scope="JCAP.CreditBadge" amount="{{cost}}" variant="cost"></x-import>
+              </div>
+
+              <sc-if value="{{p.inProgress}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <x-import component-from-global-scope="JCAP.Button" variant="primary" size="lg" block="{{yes}}" icon="play_arrow" on-click="{{goConv}}">Tiếp tục ({{p.progressText}})</x-import>
+                  <x-import component-from-global-scope="JCAP.Button" variant="ghost" block="{{yes}}" icon="restart_alt">Làm lại từ đầu</x-import>
+                </div>
+              </sc-if>
+              <sc-if value="{{p.notStarted}}" hint-placeholder-val="{{true}}">
+                <x-import component-from-global-scope="JCAP.Button" variant="primary" size="lg" block="{{yes}}" icon="forum" on-click="{{goConv}}">Bắt đầu hội thoại</x-import>
+              </sc-if>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="{{pgShadow}}" data-theme="{{thLearn}}" aria-hidden="{{hideShadow}}">
+    <main style="padding: 32px 36px 56px;">
+      <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px;">
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <h1 style="margin: 0; font-size: 28px; line-height: 38px; font-weight: 700;">Shadowing</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted);">Nghe câu của người bản xứ rồi nói theo. Hệ thống chấm từng âm và chỉ ra chỗ cần sửa.</p>
+        </div>
+
+        <section aria-label="Bài đang học" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 24px 28px; border-radius: var(--radius-xl); background: var(--nami-soft);">
+          <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; font-weight: 600; color: var(--nami);">
+              <x-import component-from-global-scope="JCAP.Icon" name="pending" size="{{iconSm}}"></x-import>
+              <span>Đang học dở</span>
+            </div>
+            <h2 style="margin: 0; font-size: 22px; line-height: 30px; font-weight: 700;">Makuhari Messe <span lang="ja" style="font-family: var(--font-jp); font-size: 16px; font-weight: 500; color: var(--sumi-muted);">幕張メッセ</span></h2>
+            <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Hành trình Chiba, mốc 4 · Bước 2/4 Shadowing. Bạn dừng ở câu 4:</p>
+            <div style="padding: 10px 14px; border-radius: var(--radius-md); background: var(--paper-50);">
+              <x-import component-from-global-scope="JCAP.JpText" text="{幕張|まくはり}メッセにはどうやって{行|い}きますか。" size="md" as="p"></x-import>
+            </div>
+          </div>
+          <div style="flex: 0 1 260px; display: flex; flex-direction: column; gap: 14px;">
+            <x-import component-from-global-scope="JCAP.ProgressBar" value="{{three}}" max="{{six}}" label="3/6 câu" show-value="{{yes}}" size="lg"></x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" size="lg" block="{{yes}}" icon="play_arrow" on-click="{{goRoom}}">Tiếp tục từ câu 4</x-import>
+          </div>
+        </section>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;">
+
+          <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+            <div class="shf" role="toolbar" aria-label="Lọc bài học">
+              <div class="shf-tabs" role="tablist" aria-label="Trạng thái">
+                <sc-for list="{{shfTabs}}" as="t" hint-placeholder-count="4">
+                  <button type="button" role="tab" class="{{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.pick}}">{{t.label}}<span class="shf-n">{{t.count}}</span></button>
+                </sc-for>
+              </div>
+              <div style="flex: 1 1 auto;"></div>
+              <div class="shf-lv" role="group" aria-label="Trình độ">
+                <sc-for list="{{shfLvs}}" as="v" hint-placeholder-count="4">
+                  <button type="button" class="{{v.cls}}" aria-pressed="{{v.sel}}" onClick="{{v.pick}}">{{v.label}}</button>
+                </sc-for>
+              </div>
+              <span class="shf-sep" aria-hidden="true"></span>
+              <div class="{{shfSearchCls}}">
+                <label for="shf-q-app" title="Tìm bài học"><x-import component-from-global-scope="JCAP.Icon" name="search" size="{{i20}}"></x-import></label>
+                <input id="shf-q-app" type="search" placeholder="Tìm bài học" aria-label="Tìm bài học" onInput="{{shfSetQ}}">
+              </div>
+            </div>
+
+            <sc-if value="{{shfEmpty}}" hint-placeholder-val="{{false}}">
+              <x-import component-from-global-scope="JCAP.EmptyState" icon="search_off" title="Không có bài nào khớp bộ lọc" compact="{{yes}}"></x-import>
+            </sc-if>
+
+            <sc-for list="{{shGroups}}" as="g" hint-placeholder-count="3">
+              <section style="display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--paper-200);">
+                  <x-import component-from-global-scope="JCAP.Icon" name="{{g.icon}}" size="{{iconMd}}" style="color: var(--nami);"></x-import>
+                  <h2 style="flex-grow: 1; margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">{{g.name}}</h2>
+                  <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">{{g.summary}}</span>
+                </div>
+                <sc-for list="{{g.lessons}}" as="l" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-top: 1px solid var(--line);">
+                    <x-import component-from-global-scope="JCAP.Icon" name="{{l.statusIcon}}" size="{{iconMd}}" fill="{{l.done}}" style="{{l.statusStyle}}" label="{{l.statusLabel}}"></x-import>
+                    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                      <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                        <span style="font-size: 15px; line-height: 22px; font-weight: 600;">{{l.title}}</span>
+                        <x-import component-from-global-scope="JCAP.JlptBadge" level="{{l.level}}" size="sm"></x-import>
+                      </span>
+                      <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">{{l.meta}}</span>
+                    </div>
+                    <sc-if value="{{l.hasScore}}" hint-placeholder-val="{{true}}">
+                      <span style="display: flex; flex-direction: column; align-items: flex-end; min-width: 72px;">
+                        <span style="font-size: 18px; line-height: 24px; font-weight: 700; font-variant-numeric: tabular-nums;">{{l.best}}</span>
+                        <span style="font-size: 12px; line-height: 16px; color: var(--sumi-muted);">điểm cao nhất</span>
+                      </span>
+                    </sc-if>
+                    <x-import component-from-global-scope="JCAP.IconButton" icon="bookmark" label="{{l.bookmarkLabel}}" active="{{l.saved}}" size="sm"></x-import>
+                    <x-import component-from-global-scope="JCAP.Button" variant="{{l.btnVariant}}" size="sm" icon="{{l.btnIcon}}" on-click="{{goRoom}}">{{l.btn}}</x-import>
+                  </div>
+                </sc-for>
+              </section>
+            </sc-for>
+          </div>
+
+          <aside aria-label="Lịch sử và mẹo" style="flex: 1 1 280px; max-width: 340px; display: flex; flex-direction: column; gap: 16px;">
+            <section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                <h2 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">Buổi luyện gần đây</h2>
+                <span style="font-size: 13px; color: var(--sumi-muted);">79 buổi</span>
+              </div>
+              <sc-for list="{{history}}" as="h" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <x-import component-from-global-scope="JCAP.ScoreRing" value="{{h.score}}" size="{{ring}}"></x-import>
+                  <div style="display: flex; flex-direction: column; min-width: 0;">
+                    <span style="font-size: 14px; line-height: 20px; font-weight: 600;">{{h.title}}</span>
+                    <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">{{h.meta}}</span>
+                  </div>
+                </div>
+              </sc-for>
+              <x-import component-from-global-scope="JCAP.Button" variant="secondary" block="{{yes}}" icon="history">Xem toàn bộ lịch sử</x-import>
+            </section>
+            <section style="display: flex; gap: 12px; padding: 16px 18px; border-radius: var(--radius-lg); background: var(--sora-soft);">
+              <x-import component-from-global-scope="JCAP.Icon" name="headphones" size="{{iconMd}}" style="color: var(--sumi);"></x-import>
+              <p style="margin: 0; font-size: 14px; line-height: 22px;">Đeo tai nghe có micro khi luyện: giọng mẫu không lọt vào bản thu nên điểm chấm chính xác hơn.</p>
+            </section>
+          </aside>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="{{pgProfile}}" data-theme="{{thLearn}}" aria-hidden="{{hideProfile}}">
+    <main style="padding: 32px 36px 56px;">
+      <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+
+        <h1 style="margin: 0; font-size: 28px; line-height: 38px; font-weight: 700;">Hồ sơ</h1>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+
+          <section aria-label="Thông tin chính" style="flex: 1 1 280px; max-width: 320px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 24px; border-radius: var(--radius-xl); background: var(--paper-50); border: 1px solid var(--line); text-align: center;">
+            <div style="position: relative;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 104px; height: 104px; border-radius: 50%; background: var(--sora); color: var(--on-sora); font-size: 40px; font-weight: 700;">H</span>
+              <button type="button" aria-label="Đổi ảnh đại diện" style="position: absolute; right: -2px; bottom: -2px; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--paper-50); background: var(--ai); color: var(--on-ai); cursor: pointer;">
+                <x-import component-from-global-scope="JCAP.Icon" name="photo_camera" size="{{i20}}"></x-import>
+              </button>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+              <h2 style="margin: 0; font-size: 22px; line-height: 30px; font-weight: 700;">Học Viên Luyện Nói 1</h2>
+              <span style="font-size: 14px; line-height: 20px; color: var(--sumi-muted);">learner1@jcap.com</span>
+              <span style="display: flex; gap: 6px;">
+                <x-import component-from-global-scope="JCAP.JlptBadge" level="N5"></x-import>
+                <x-import component-from-global-scope="JCAP.Badge" tone="neutral">Học viên</x-import>
+              </span>
+            </div>
+            <p style="margin: 0; font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Tham gia từ 15/09/2026</p>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" block="{{yes}}" icon="edit">Chỉnh sửa hồ sơ</x-import>
+          </section>
+
+          <div style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+
+            <section aria-labelledby="goal-h" style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <h2 id="goal-h" style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600;">Mục tiêu JLPT</h2>
+                  <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Kịch bản, bài Shadowing và từ vựng gợi ý sẽ ưu tiên cấp này.</p>
+                </div>
+                <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Cấp JLPT mục tiêu" options="{{goalLevels}}" default-value="N5"></x-import>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--paper-100);">
+                  <span style="font-size: 22px; line-height: 30px; font-weight: 700; font-variant-numeric: tabular-nums;">12</span>
+                  <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">phiên Hội thoại AI</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--paper-100);">
+                  <span style="font-size: 22px; line-height: 30px; font-weight: 700; font-variant-numeric: tabular-nums;">79</span>
+                  <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">buổi luyện Shadowing</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--paper-100);">
+                  <span style="font-size: 22px; line-height: 30px; font-weight: 700; font-variant-numeric: tabular-nums;">7</span>
+                  <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">con dấu Khám phá</span>
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="info-h" style="display: flex; flex-direction: column; padding: 8px 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <h2 id="info-h" style="margin: 14px 0 6px; font-size: 17px; line-height: 24px; font-weight: 600;">Thông tin tài khoản</h2>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-height: 56px; padding: 8px 0; border-top: 1px solid var(--line);">
+                  <x-import component-from-global-scope="JCAP.Icon" name="{{r.icon}}" size="{{iconMd}}" style="color: var(--sumi-muted);"></x-import>
+                  <span style="flex: 0 0 140px; font-size: 14px; line-height: 20px; color: var(--sumi-muted);">{{r.label}}</span>
+                  <span style="flex: 1 1 200px; min-width: 0; font-size: 15px; line-height: 22px; font-weight: 500;">{{r.value}}</span>
+                  <sc-if value="{{r.verified}}" hint-placeholder-val="{{false}}">
+                    <x-import component-from-global-scope="JCAP.Badge" tone="success" icon="verified">Đã xác minh</x-import>
+                  </sc-if>
+                  <sc-if value="{{r.missing}}" hint-placeholder-val="{{false}}">
+                    <x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" icon="add">Thêm số điện thoại</x-import>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </section>
+
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+              <section aria-labelledby="sec-h" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+                <h2 id="sec-h" style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600;">Bảo mật</h2>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                  <span style="display: flex; flex-direction: column;">
+                    <span style="font-size: 15px; line-height: 22px; font-weight: 500;">Mật khẩu</span>
+                    <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Chưa đổi từ khi tạo tài khoản</span>
+                  </span>
+                  <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="lock">Đổi mật khẩu</x-import>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line);">
+                  <span style="display: flex; flex-direction: column;">
+                    <span style="font-size: 15px; line-height: 22px; font-weight: 500;">Đăng nhập bằng Google</span>
+                    <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Chưa liên kết</span>
+                  </span>
+                  <x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" icon="link">Liên kết</x-import>
+                </div>
+              </section>
+              <section aria-labelledby="cr-h" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: var(--radius-lg); background: var(--credit-soft);">
+                <h2 id="cr-h" style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600;">Gói và Credit</h2>
+                <x-import component-from-global-scope="JCAP.CreditBadge" amount="{{credits}}" size="lg"></x-import>
+                <p style="margin: 0; font-size: 14px; line-height: 22px;">Bạn đang dùng gói miễn phí. Nâng cấp để có hạn mức luyện mỗi 5 giờ.</p>
+                <a href="#" onClick="{{goPlan}}" style="font-size: 14px; font-weight: 600; color: var(--ai);">Xem Gói &amp; Credit</a>
+              </section>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; padding-top: 8px;">
+              <x-import component-from-global-scope="JCAP.Button" variant="danger" icon="logout">Đăng xuất</x-import>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="{{pgPlan}}" data-theme="{{thLearn}}" aria-hidden="{{hidePlan}}">
+    <main style="padding: 40px 36px 64px;">
+      <div class="um">
+        <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px;">
+          <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 700;">Mức dùng của bạn</h1>
+          <span style="font-size: 14px; color: var(--sumi-muted);">Gói Tháng Pro</span>
+        </div>
+
+        <section class="um-sec" style="padding-top: 16px;" aria-labelledby="um-1">
+          <h2 id="um-1" class="um-h" style="padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid var(--line);">Ổn định. Bạn còn dư hạn mức tới lần hồi phục tiếp theo.</h2>
+          <div class="um-row">
+            <span class="um-lab"><b>Chu kỳ 5 giờ</b><span>Hồi đầy lúc 15:23 hôm nay</span></span>
+            <span class="um-bar" role="img" aria-label="Đã dùng 10% hạn mức 5 giờ"><i style="width: 10%;"></i></span>
+            <span class="um-val">10% đã dùng</span>
+          </div>
+          <div class="um-row">
+            <span class="um-lab"><b>Tuần này</b><span>Làm mới thứ Tư 04/11, 9:42</span></span>
+            <span class="um-bar" role="img" aria-label="Đã dùng 1% hạn mức tuần"><i style="width: 1%;"></i></span>
+            <span class="um-val">1% đã dùng</span>
+          </div>
+        </section>
+
+        <section class="um-sec" aria-labelledby="um-2">
+          <div class="um-line">
+            <div>
+              <h2 id="um-2" class="um-h">Gói Tháng Pro <span style="font-weight: 500; color: var(--sumi-muted);">Cơ bản</span></h2>
+              <p class="um-muted">Hết hạn 25/11/2026. Mỗi 5 giờ có 50 credit, mỗi tuần 1.000 credit.</p>
+            </div>
+            <span class="um-big">Còn 28 ngày</span>
+          </div>
+          <sc-if value="{{umFeat}}" hint-placeholder-val="{{false}}">
+            <ul class="um-feat">
+              <li>Mở kịch bản hội thoại không giới hạn</li>
+              <li>Chấm phát âm và trọng âm (pitch accent) chi tiết</li>
+              <li>Tự chuyển sang credit nạp thêm khi hết hạn mức</li>
+            </ul>
+          </sc-if>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px;">
+            <button type="button" class="um-link" onClick="{{umToggleFeat}}" aria-expanded="{{umFeat}}">{{umFeatLabel}}</button>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm">Đổi gói</x-import>
+          </div>
+        </section>
+
+        <section class="um-sec" aria-labelledby="um-3">
+          <div class="um-line">
+            <div>
+              <h2 id="um-3" class="um-h">Credit nạp thêm</h2>
+              <p class="um-muted">Không hết hạn. Chỉ dùng khi bạn chạm giới hạn của gói.</p>
+            </div>
+            <span class="um-big">3.800</span>
+          </div>
+          <div class="um-line" style="align-items: center; margin-top: 18px;">
+            <span style="font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Bật để tự dùng credit và học tiếp khi hết hạn mức. <a href="#" style="color: var(--ai); text-underline-offset: 3px;">Cách tính</a></span>
+            <x-import component-from-global-scope="JCAP.Switch" checked="{{umAuto}}" on-change="{{umToggle}}"></x-import>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="add">Nạp thêm credit</x-import>
+          </div>
+        </section>
+
+        <section class="um-sec" aria-labelledby="um-4">
+          <h2 id="um-4" class="um-h" style="margin-bottom: 6px;">Mức dùng tuần này theo kỹ năng</h2>
+          <div class="um-row">
+            <span class="um-lab"><b>Hội thoại AI</b></span>
+            <span class="um-bar" role="img" aria-label="80% mức dùng tuần"><i style="width: 80%;"></i></span>
+            <span class="um-val">4 credit</span>
+          </div>
+          <div class="um-row">
+            <span class="um-lab"><b>Shadowing</b></span>
+            <span class="um-bar" role="img" aria-label="20% mức dùng tuần"><i style="width: 20%;"></i></span>
+            <span class="um-val">1 credit</span>
+          </div>
+        </section>
+
+        <div style="display: flex; align-items: center; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--sumi-muted);">
+          <span style="flex: 1 1 auto;">Mô hình AI: Gemini 3.1 Flash / Live AI · {{umUpdated}}</span>
+          <button type="button" class="um-link" onClick="{{umRefresh}}">Làm mới</button>
+          <a href="#" style="color: var(--ai); text-underline-offset: 3px;">Lịch sử giao dịch</a>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="{{pgSettings}}" data-theme="{{thLearn}}" aria-hidden="{{hideSettings}}">
+    <main style="padding: 32px 36px 56px;">
+      <div style="max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h1 style="margin: 0; font-size: 28px; line-height: 38px; font-weight: 700;">Cài đặt</h1>
+            <p style="margin: 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted);">Chỉnh giọng AI, micro và cách hiển thị khi luyện. Thay đổi được lưu ngay.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start;">
+
+          <nav aria-label="Mục cài đặt" style="flex: 0 0 200px; display: flex; flex-direction: column; gap: 2px;">
+            <a href="#giong" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: var(--radius-md); background: var(--ai-soft); color: var(--ai); font-size: 14px; font-weight: 600;" aria-current="true">
+              <x-import component-from-global-scope="JCAP.Icon" name="record_voice_over" size="{{iconMd}}" fill="{{yes}}"></x-import>Giọng đọc AI</a>
+            <a href="#thietbi" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600;">
+              <x-import component-from-global-scope="JCAP.Icon" name="headphones" size="{{iconMd}}"></x-import>Micro và loa</a>
+            <a href="#luyentap" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600;">
+              <x-import component-from-global-scope="JCAP.Icon" name="tune" size="{{iconMd}}"></x-import>Khi luyện tập</a>
+            <a href="#giaodien" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600;">
+              <x-import component-from-global-scope="JCAP.Icon" name="contrast" size="{{iconMd}}"></x-import>Giao diện</a>
+          </nav>
+
+          <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+
+            <section id="giong" aria-labelledby="giong-h" style="display: flex; flex-direction: column; gap: 18px; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <h2 id="giong-h" style="margin: 0; font-size: 19px; line-height: 28px; font-weight: 600;">Giọng đọc AI</h2>
+                <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Dùng cho nhân vật AI trong Hội thoại AI và giọng mẫu Shadowing khi kịch bản không gán giọng riêng.</p>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 16px 18px; border-radius: var(--radius-lg); background: var(--sora-soft);">
+                <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 16px; background: var(--sora); color: var(--on-sora); font-family: var(--font-mincho); font-size: 24px; font-weight: 700;" lang="ja">{{voiceCur.mark}}</span>
+                <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Đang dùng</span>
+                  <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;">
+                    <span style="font-size: 18px; line-height: 26px; font-weight: 700;">{{voiceCur.name}}</span>
+                    <span lang="ja" style="font-family: var(--font-jp); font-size: 14px; color: var(--sumi-muted);">{{voiceCur.jp}}</span>
+                  </span>
+                  <span style="font-size: 14px; line-height: 20px;">{{voiceCur.desc}}</span>
+                </div>
+                <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="play_arrow">Nghe thử</x-import>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+                <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Chọn giọng khác</span>
+                <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Nhóm giọng" size="sm" options="{{voiceCats}}" value="{{voiceCat}}" on-change="{{setVoiceCat}}"></x-import>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+                <sc-for list="{{voices}}" as="v" hint-placeholder-count="3">
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: var(--radius-lg); border: {{v.border}}; background: {{v.bg}};">
+                    <button type="button" onClick="{{v.pick}}" aria-pressed="{{v.selected}}" style="display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; color: var(--sumi); cursor: pointer;">
+                      <span style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                        <span style="font-size: 15px; line-height: 22px; font-weight: 600;">{{v.name}}</span>
+                        <sc-if value="{{v.selected}}" hint-placeholder-val="{{false}}">
+                          <x-import component-from-global-scope="JCAP.Icon" name="check_circle" size="{{iconMd}}" fill="{{yes}}" style="color: var(--ai);"></x-import>
+                        </sc-if>
+                      </span>
+                      <span lang="ja" style="font-family: var(--font-jp); font-size: 13px; line-height: 18px; color: var(--sumi-muted);">{{v.jp}}</span>
+                      <span style="font-size: 13px; line-height: 20px;">{{v.desc}}</span>
+                    </button>
+                    <x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe thử"></x-import>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+
+            <section id="thietbi" aria-labelledby="tb-h" style="display: flex; flex-direction: column; gap: 18px; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <h2 id="tb-h" style="margin: 0; font-size: 19px; line-height: 28px; font-weight: 600;">Micro và loa</h2>
+                <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Kiểm tra trước khi vào phòng luyện để điểm phát âm được chấm chính xác.</p>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: var(--paper-100);">
+                  <x-import component-from-global-scope="JCAP.Select" label="Micro thu âm" options="{{mics}}" default-value="default"></x-import>
+                  <x-import component-from-global-scope="JCAP.ProgressBar" value="{{micLevel}}" label="Mức âm khi bạn nói" tone="success" size="lg"></x-import>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <x-import component-from-global-scope="JCAP.Badge" tone="success" icon="check_circle">Nghe rõ giọng bạn</x-import>
+                    <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="mic">Nói thử</x-import>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: var(--paper-100);">
+                  <x-import component-from-global-scope="JCAP.Select" label="Loa hoặc tai nghe" options="{{speakers}}" default-value="default"></x-import>
+                  <p style="margin: 0; font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Phát một câu mẫu tiếng Nhật để chỉnh âm lượng vừa nghe.</p>
+                  <div style="display: flex; justify-content: flex-end; margin-top: auto;">
+                    <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="volume_up">Phát âm thanh thử</x-import>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="luyentap" aria-labelledby="lt-h" style="display: flex; flex-direction: column; gap: 6px; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <h2 id="lt-h" style="margin: 0 0 6px; font-size: 19px; line-height: 28px; font-weight: 600;">Khi luyện tập</h2>
+              <x-import component-from-global-scope="JCAP.Switch" label="Hiện furigana" description="Cách đọc nhỏ phía trên chữ Kanji." default-checked="{{yes}}"></x-import>
+              <x-import component-from-global-scope="JCAP.Switch" label="Hiện nghĩa tiếng Việt" description="Bản dịch dưới mỗi câu của AI và câu mẫu." default-checked="{{yes}}"></x-import>
+              <x-import component-from-global-scope="JCAP.Switch" label="Tự động phát giọng AI" description="AI đọc to câu trả lời ngay khi hiện ra."></x-import>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; margin-top: 6px; border-top: 1px solid var(--line);">
+                <span style="display: flex; flex-direction: column;">
+                  <span style="font-size: 15px; line-height: 22px; font-weight: 500;">Tốc độ đọc của AI</span>
+                  <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Người mới nên bắt đầu ở mức chậm.</span>
+                </span>
+                <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Tốc độ đọc" options="{{speeds}}" default-value="1"></x-import>
+              </div>
+            </section>
+
+            <section id="giaodien" aria-labelledby="gd-h" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-50); border: 1px solid var(--line);">
+              <span style="display: flex; flex-direction: column;">
+                <h2 id="gd-h" style="margin: 0; font-size: 19px; line-height: 28px; font-weight: 600;">Giao diện</h2>
+                <span style="font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Chế độ tối dùng cả trong phòng luyện.</span>
+              </span>
+              <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Chế độ màu" options="{{themes}}" value="{{themeMode}}" on-change="{{setThemeMode}}"></x-import>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="{{rmCls}}" aria-hidden="{{rmHidden}}">
+<div class="room" data-theme="{{thRoom}}" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
+
+  <header class="rm-bar">
+    <x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{rm.i28}}" with-name="{{rm.no}}"></x-import>
+    <span class="rm-div" aria-hidden="true"></span>
+    <nav aria-label="Vị trí" class="rm-crumb">
+      <a href="#" onClick="{{rm.exit}}">Đi máy bay</a>
+      <x-import component-from-global-scope="JCAP.Icon" name="chevron_right" size="{{rm.i18}}"></x-import>
+      <span class="rm-title" aria-current="page">Lần đầu tiên đi máy bay</span>
+    </nav>
+    <label class="rm-lv" title="Đổi cấp độ của bài">
+      <select aria-label="Cấp độ của bài"><option value="N5">N5</option><option value="N4" selected>N4</option><option value="N3">N3</option></select>
+      <x-import component-from-global-scope="JCAP.Icon" name="expand_more" size="{{rm.i16}}"></x-import>
+    </label>
+    <div style="flex: 1 1 auto;"></div>
+    <x-import component-from-global-scope="JCAP.IconButton" icon="tune" label="Cài đặt âm thanh" variant="ghost"></x-import>
+  </header>
+
+  <div style="flex: 1 1 auto; min-height: 0; display: flex; gap: 40px; padding: 16px 64px 20px 104px;">
+
+    <aside aria-label="Bối cảnh bài học" style="flex: 0 0 380px; align-self: flex-start; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: 28px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(15,37,56,.06);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="arrow_back" on-click="{{rm.exit}}">Quay lại</x-import>
+        <x-import component-from-global-scope="JCAP.Button" variant="danger" size="sm" icon="stop_circle" on-click="{{rm.exit}}">Kết thúc</x-import>
+      </div>
+
+      <div style="position: relative; padding-bottom: 40px;">
+        <div class="scene" aria-hidden="true">
+          <span class="cloud" style="left: 26px; top: 40px; width: 70px;"></span>
+          <span class="cloud" style="right: 30px; top: 92px; width: 56px;"></span>
+          <span class="ground"></span>
+          <span class="win"><x-import component-from-global-scope="JCAP.Icon" name="flight" size="{{rm.i36}}"></x-import></span>
+        </div>
+        <span style="position: absolute; right: 12px; top: 12px; padding: 4px 12px; border-radius: 999px; background: var(--paper-50); font-size: 12px; font-weight: 700; color: var(--ai); box-shadow: 0 2px 6px rgba(15,37,56,.08);">Trên máy bay</span>
+        <div style="position: absolute; left: 14px; bottom: 0; display: flex; align-items: flex-end; gap: 12px;">
+          <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 76px; border-radius: 50%; border: 4px solid var(--paper-50); background: var(--paper-200); color: var(--ai); box-shadow: 0 6px 14px rgba(15,37,56,.12);">
+            <x-import component-from-global-scope="JCAP.Icon" name="face" size="{{rm.i36}}"></x-import>
+            <span style="position: absolute; right: 2px; bottom: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--paper-50); background: var(--success);" title="AI đang sẵn sàng"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; padding-bottom: 6px;">
+            <span style="font-size: 20px; line-height: 26px; font-weight: 700;">Nhân viên</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 16px; background: var(--paper-100); border: 1px solid var(--line);">
+        <span style="flex: 1 1 auto; font-size: 14px; line-height: 20px;"><strong>Khách hàng</strong></span>
+        <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="swap_horiz">Đổi vai</x-import>
+      </div>
+
+      <div class="side-sec">
+        <div class="sec-head">
+          <h2 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 700;">Tình huống</h2>
+          <button type="button" class="jc-audiochip" style="padding: 0 6px;" onClick="{{rm.toggleSit}}" aria-expanded="{{rm.sitOpen}}" aria-label="Thu gọn hoặc mở Tình huống"><span class="{{rm.sitChev}}" style="display: inline-flex;"><x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{rm.i22}}"></x-import></span></button>
+        </div>
+        <sc-if value="{{rm.sitOpen}}" hint-placeholder-val="{{true}}">
+          <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted);">Giao tiếp với tiếp viên hàng không: nhờ cất hành lý, nói mình hơi hồi hộp và gọi đồ uống.</p>
+        </sc-if>
+      </div>
+
+      <div class="side-sec">
+        <div class="sec-head">
+          <h2 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 700;">Nội dung bài học</h2>
+          <button type="button" class="jc-audiochip" style="padding: 0 6px;" onClick="{{rm.toggleLes}}" aria-expanded="{{rm.lesOpen}}" aria-label="Thu gọn hoặc mở Nội dung bài học"><span class="{{rm.lesChev}}" style="display: inline-flex;"><x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{rm.i22}}"></x-import></span></button>
+        </div>
+        <sc-if value="{{rm.lesOpen}}" hint-placeholder-val="{{true}}">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{rm.yes}}">Cả hội thoại</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{rm.yes}}">Từ vựng</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{rm.yes}}">Ngữ pháp</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </aside>
+
+    <section aria-label="Hội thoại luyện nói" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+      <div class="hist">
+          <sc-for list="{{rm.lines}}" as="l" hint-placeholder-count="4">
+            <div class="{{l.cls}}">
+              <sc-if value="{{l.isMe}}" hint-placeholder-val="{{false}}">
+                <span class="me-av"><span aria-hidden="true">H</span>
+                  <sc-if value="{{l.hasScore}}" hint-placeholder-val="{{false}}"><span class="{{l.scoreCls}}" title="{{l.scoreText}}" aria-label="{{l.scoreText}}">{{l.scoreNum}}</span></sc-if>
+                </span>
+              </sc-if>
+              <div class="ln-col">
+                <x-import component-from-global-scope="JCAPX.Bubble" side="{{l.side}}" name="{{l.name}}" jp="{{l.jp}}" vi="{{l.vi}}" show-furigana="{{rm.yes}}" show-translation="{{l.showVi}}" on-play="{{rm.nothing}}"></x-import>
+                <div class="ln-tools">
+                  <sc-if value="{{l.isMe}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.IconButton" icon="mic" label="Thu lại câu này" size="sm"></x-import></sc-if>
+                  <x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe mẫu"></x-import>
+                  <button type="button" class="jc-audiochip" aria-pressed="{{l.showVi}}" onClick="{{l.toggleVi}}"><x-import component-from-global-scope="JCAP.Icon" name="translate" size="{{rm.i18}}"></x-import>{{l.viLabel}}</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+      </div>
+
+      <div class="dock" aria-live="polite">
+        <sc-if value="{{rm.isIdle}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px;">
+            <x-import component-from-global-scope="JCAP.MicButton" state="idle" label="Bấm để nói câu đang viền xanh" hide-label="{{rm.yes}}" on-click="{{rm.startRec}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{rm.isRec}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 22px; padding: 20px 22px 20px 36px;">
+            <div class="wave" aria-label="Đang thu âm" role="img">
+              <sc-for list="{{rm.bars}}" as="b" hint-placeholder-count="60"><i style="--h: {{b.h}}; --d: {{b.d}};"></i></sc-for>
+            </div>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="stop" label="Dừng và huỷ bản thu" variant="secondary" fill="{{rm.yes}}" on-click="{{rm.cancelRec}}"></x-import>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="arrow_upward" label="Gửi để chấm điểm" variant="primary" on-click="{{rm.submitRec}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{rm.isUnclear}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 22px;">
+            <div style="display: flex; align-items: flex-start; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--line);">
+              <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: var(--warning-soft); color: var(--warning);"><x-import component-from-global-scope="JCAP.Icon" name="mic_off" size="{{rm.i22}}"></x-import></span>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="display: flex; align-items: center; gap: 8px;"><strong style="font-size: 16px; line-height: 24px;">Chưa thể đánh giá bản ghi</strong><x-import component-from-global-scope="JCAP.Badge" tone="neutral">Lần thử #{{rm.attempt}}</x-import></span>
+                <span style="font-size: 14px; line-height: 22px;">Không nghe rõ giọng nói. Hãy đọc to và rõ hơn rồi thử lại.</span>
+                <span style="font-size: 12px; line-height: 18px; color: var(--sumi-muted);">Bản ghi chưa được đánh giá sẽ không tính vào điểm tổng của bạn.</span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-radius: 14px; background: var(--paper-100); border: 1px solid var(--line);">
+              <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--sumi-muted);">Câu mẫu cần luyện</span>
+              <x-import component-from-global-scope="JCAP.JpText" text="{{rm.curJp}}" size="md" as="p"></x-import>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="play_arrow">Nghe lại bản thu</x-import>
+              <div style="flex: 1 1 auto;"></div>
+              <x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{rm.skip}}">Bỏ qua câu</x-import>
+              <x-import component-from-global-scope="JCAP.Button" variant="primary" icon="mic" on-click="{{rm.startRec}}">Thu âm lại</x-import>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{rm.isScored}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 22px;">
+            <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line);">
+              <x-import component-from-global-scope="JCAP.ScoreRing" value="{{rm.res.score}}" size="{{rm.i64}}"></x-import>
+              <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <x-import component-from-global-scope="JCAP.WordDiff" tokens="{{rm.res.tokens}}" show-legend="{{rm.no}}"></x-import>
+              </div>
+            </div>
+            <x-import component-from-global-scope="JCAP.FeedbackItem" tone="{{rm.res.tone}}" title="{{rm.res.title}}">{{rm.res.text}}</x-import>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="play_arrow">Nghe lại bản thu</x-import>
+              <div style="flex: 1 1 auto;"></div>
+              <x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="mic" on-click="{{rm.startRec}}">Thu âm lại</x-import>
+              <x-import component-from-global-scope="JCAP.Button" variant="primary" icon-right="arrow_forward" on-click="{{rm.next}}">{{rm.nextLabel}}</x-import>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{rm.isDone}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 22px;">
+            <x-import component-from-global-scope="JCAP.ScoreRing" value="{{rm.avg}}" size="{{rm.i64}}"></x-import>
+            <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+              <strong style="font-size: 17px; line-height: 24px;">Xong bài, điểm trung bình {{rm.avg}}</strong>
+              <span style="font-size: 14px; color: var(--sumi-muted);">Bạn đã nói {{rm.doneCount}} trên 4 câu. Luyện lại câu điểm thấp trước khi sang bài mới.</span>
+            </div>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="replay" on-click="{{rm.restart}}">Luyện lại</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" icon-right="arrow_forward" on-click="{{rm.exit}}">Về thư viện</x-import>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+  </div>
+</div>
+  </div>
+
+  <div class="{{cvCls}}" aria-hidden="{{cvHidden}}">
+<div class="cv" data-theme="{{thRoom}}" style="position: absolute; inset: 0; width: 1440px; height: 900px; overflow: hidden; display: flex; flex-direction: column; color: var(--sumi); font-family: var(--font-sans);">
+
+  <header class="cv-bar">
+    <x-import component-from-global-scope="JCAP.IconButton" icon="arrow_back" label="Rời phòng" variant="ghost" on-click="{{cv.exit}}"></x-import>
+    <x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{cv.i28}}" with-name="{{cv.no}}"></x-import>
+    <span class="cv-div" aria-hidden="true"></span>
+    <nav aria-label="Vị trí" class="cv-crumb">
+      <a href="#" onClick="{{cv.exit}}">Hội thoại AI</a>
+      <x-import component-from-global-scope="JCAP.Icon" name="chevron_right" size="{{cv.i18}}"></x-import>
+      <span class="cv-title" aria-current="page">Gọi món ramen tại Nhật</span>
+      <x-import component-from-global-scope="JCAP.JlptBadge" level="N5" size="sm"></x-import>
+    </nav>
+    <div style="flex: 1 1 auto;"></div>
+    <button type="button" class="{{cv.panelBtnCls}}" aria-pressed="{{cv.panelOpen}}" onClick="{{cv.togglePanel}}"><x-import component-from-global-scope="JCAP.Icon" name="checklist" size="{{cv.i20}}"></x-import>Nhiệm vụ <span class="cv-chipn">{{cv.doneN}}/3</span></button>
+    <button type="button" class="{{cv.evalBtnCls}}" aria-pressed="{{cv.evalOpen}}" onClick="{{cv.toggleEval}}"><x-import component-from-global-scope="JCAP.Icon" name="insights" size="{{cv.i20}}"></x-import>Đánh giá</button>
+    <x-import component-from-global-scope="JCAP.CreditBadge" amount="{{cv.credits}}"></x-import>
+    <div class="cv-setw">
+      <x-import component-from-global-scope="JCAP.IconButton" icon="tune" label="Cài đặt hội thoại" variant="ghost" active="{{cv.setOpen}}" on-click="{{cv.toggleSet}}"></x-import>
+      <sc-if value="{{cv.setChanged}}" hint-placeholder-val="{{false}}"><span class="cv-setdot" aria-hidden="true"></span></sc-if>
+      <sc-if value="{{cv.setOpen}}" hint-placeholder-val="{{false}}">
+        <div class="cv-pop" role="dialog" aria-label="Cài đặt hội thoại">
+          <x-import component-from-global-scope="JCAP.Switch" label="Furigana" description="Cách đọc phía trên chữ Kanji." checked="{{cv.furi}}" on-change="{{cv.setFuri}}"></x-import>
+          <x-import component-from-global-scope="JCAP.Switch" label="Hiện nghĩa tiếng Việt" description="Dưới mỗi câu của nhân vật AI." checked="{{cv.viAuto}}" on-change="{{cv.setViAuto}}"></x-import>
+          <x-import component-from-global-scope="JCAP.Switch" label="Tự phát giọng AI" default-checked="{{cv.yes}}"></x-import>
+          <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px solid var(--line);">
+            <span class="cv-lbl">Tốc độ giọng AI</span>
+            <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Tốc độ giọng" size="sm" block="{{cv.yes}}" options="{{cv.speeds}}" default-value="1"></x-import>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    <x-import component-from-global-scope="JCAP.Button" variant="danger" size="sm" on-click="{{cv.endEarly}}">Kết thúc sớm</x-import>
+  </header>
+
+  <div style="flex: 1 1 auto; min-height: 0; display: flex; gap: 20px; padding: 16px 20px 18px;">
+
+    <sc-if value="{{cv.panelOpen}}" hint-placeholder-val="{{true}}">
+      <aside class="cv-panel" style="width: 320px;" aria-label="Nhân vật và nhiệm vụ">
+        <div class="cv-psec">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--paper-200); color: var(--ai);"><x-import component-from-global-scope="JCAP.Icon" name="face" size="{{cv.i28}}"></x-import></span>
+            <span style="display: flex; flex-direction: column; min-width: 0;">
+              <span style="font-size: 16px; line-height: 22px; font-weight: 700;">Nhân viên phục vụ</span>
+              <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">Nói chậm, rõ và nhiệt tình</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="cv-psec">
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span class="cv-lbl">Tiến độ</span>
+            <span style="font-size: 13px; font-weight: 700;">{{cv.doneN}}/3 nhiệm vụ</span>
+          </div>
+          <x-import component-from-global-scope="JCAP.ProgressBar" value="{{cv.doneN}}" max="{{cv.three}}" label="Tiến độ nhiệm vụ" size="sm"></x-import>
+        </div>
+
+        <div style="flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line);">
+          <div style="padding: 6px 12px 0;"><x-import component-from-global-scope="JCAP.Tabs" aria-label="Nhiệm vụ và mẫu câu" items="{{cv.tabs}}" value="{{cv.tab}}" on-change="{{cv.setTab}}"></x-import></div>
+          <div style="flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 18px 18px;">
+            <sc-if value="{{cv.isMissions}}" hint-placeholder-val="{{true}}">
+              <x-import component-from-global-scope="JCAP.Stepper" orientation="vertical" steps="{{cv.missions}}"></x-import>
+            </sc-if>
+            <sc-if value="{{cv.isPhrases}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column;">
+                <sc-for list="{{cv.phrases}}" as="p" hint-placeholder-count="5">
+                  <div class="cv-phrase">
+                    <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;">
+                      <x-import component-from-global-scope="JCAP.JpText" text="{{p.jp}}" size="sm"></x-import>
+                      <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">{{p.vi}}</span>
+                    </span>
+                    <x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="{{p.label}}" size="sm"></x-import>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </aside>
+    </sc-if>
+
+    <section class="cv-mid" aria-label="Cuộc hội thoại">
+      <div class="cv-hist">
+        <div class="cv-inner" style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="cv-scene">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 12px; background: var(--sora-soft); color: var(--sumi);"><x-import component-from-global-scope="JCAP.Icon" name="ramen_dining" size="{{cv.i20}}"></x-import></span>
+            <span><strong style="color: var(--sumi);">Bối cảnh:</strong> quán ramen ở Tokyo giờ trưa. Bạn vào quán một mình, gọi món và cảm ơn nhân viên.</span>
+          </div>
+          <sc-for list="{{cv.msgs}}" as="m" hint-placeholder-count="3">
+            <div class="{{m.cls}}">
+              <x-import component-from-global-scope="JCAPX.Bubble" side="{{m.side}}" name="{{m.name}}" jp="{{m.jp}}" vi="{{m.vi}}" show-furigana="{{cv.furi}}" show-translation="{{m.showVi}}" score="{{m.score}}" selected="{{m.selected}}" on-select="{{m.select}}"></x-import>
+            </div>
+          </sc-for>
+          <sc-if value="{{cv.done}}" hint-placeholder-val="{{false}}">
+            <div class="cv-scene" style="background: var(--success-soft); border-color: transparent; color: var(--sumi);">
+              <x-import component-from-global-scope="JCAP.ScoreRing" value="{{cv.avg}}" size="{{cv.i48}}"></x-import>
+              <span style="flex: 1 1 auto;"><strong>Hoàn thành 3/3 nhiệm vụ.</strong> Điểm trung bình {{cv.avg}}. Xem nhận xét từng câu trước khi luyện lại.</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div class="cv-composer cv-inner">
+        <sc-if value="{{cv.showHint}}" hint-placeholder-val="{{false}}">
+          <div class="cv-hint" role="status">
+            <x-import component-from-global-scope="JCAP.Icon" name="lightbulb" size="{{cv.i22}}" fill="{{cv.yes}}" style="color: #b86e00; margin-top: 2px;"></x-import>
+            <div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;">
+              <span class="cv-lbl cv-hint-lbl">Gợi ý cho nhiệm vụ: {{cv.hint.mission}}</span>
+              <x-import component-from-global-scope="JCAP.JpText" text="{{cv.hint.jp}}" size="md" as="p"></x-import>
+              <span style="font-size: 13px; line-height: 18px; color: var(--sumi-muted);">{{cv.hint.vi}}</span>
+            </div>
+            <x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe"></x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" on-click="{{cv.useHint}}">Dùng câu này</x-import>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng gợi ý" size="sm" on-click="{{cv.closeHint}}"></x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{cv.isIdle}}" hint-placeholder-val="{{true}}">
+          <div class="cv-cbar">
+            <x-import component-from-global-scope="JCAP.IconButton" icon="lightbulb" label="Gợi ý câu tiếp theo" active="{{cv.showHint}}" on-click="{{cv.toggleHint}}"></x-import>
+            <input class="cv-input" type="text" value="{{cv.draft}}" onInput="{{cv.setDraft}}" onKeyDown="{{cv.onKey}}" placeholder="Nhập câu trả lời bằng tiếng Nhật, hoặc bấm mic để nói" aria-label="Câu trả lời của bạn">
+            <sc-if value="{{cv.hasDraft}}" hint-placeholder-val="{{false}}">
+              <x-import component-from-global-scope="JCAP.IconButton" icon="arrow_upward" label="Gửi (Enter)" variant="primary" on-click="{{cv.sendDraft}}"></x-import>
+            </sc-if>
+            <button type="button" class="cv-mic" onClick="{{cv.startRec}}" aria-label="Bấm để nói"><x-import component-from-global-scope="JCAP.Icon" name="mic" size="{{cv.i22}}" fill="{{cv.yes}}"></x-import></button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{cv.isRec}}" hint-placeholder-val="{{false}}">
+          <div class="cv-cbar" style="border-color: var(--shu);">
+            <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Huỷ bản thu" on-click="{{cv.cancelRec}}"></x-import>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--shu); font-variant-numeric: tabular-nums;"><span class="cv-recdot"></span>0:02</span>
+            <div class="cv-wave" aria-hidden="true"><sc-for list="{{cv.bars}}" as="b" hint-placeholder-count="40"><i style="--h: {{b.h}}; --d: {{b.d}};"></i></sc-for></div>
+            <button type="button" class="cv-mic cv-rec" onClick="{{cv.sendVoice}}" aria-label="Dừng và gửi"><x-import component-from-global-scope="JCAP.Icon" name="arrow_upward" size="{{cv.i22}}"></x-import></button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{cv.done}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="replay" on-click="{{cv.restart}}">Luyện lại</x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" icon="insights" on-click="{{cv.openSummary}}">Xem đánh giá</x-import>
+          </div>
+        </sc-if>
+
+        <span style="text-align: center; font-size: 12px; line-height: 16px; color: var(--sumi-muted);">Bấm vào câu của bạn để xem nhận xét chi tiết · mỗi lượt nói dùng 5 credit</span>
+      </div>
+    </section>
+
+    <sc-if value="{{cv.evalOpen}}" hint-placeholder-val="{{false}}">
+      <aside class="cv-panel cv-eval" aria-label="Đánh giá">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 10px 8px 18px;">
+          <strong style="font-size: 16px;">Đánh giá</strong>
+          <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng đánh giá" size="sm" on-click="{{cv.toggleEval}}"></x-import>
+        </div>
+        <div style="flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 4px 18px 18px;">
+          <sc-if value="{{cv.noTurns}}" hint-placeholder-val="{{false}}">
+            <x-import component-from-global-scope="JCAP.EmptyState" icon="forum" title="Chưa có câu nào để đánh giá" compact="{{cv.yes}}">Trả lời nhân viên phục vụ để nhận nhận xét đầu tiên.</x-import>
+          </sc-if>
+          <sc-if value="{{cv.hasSel}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <x-import component-from-global-scope="JCAP.ScoreRing" value="{{cv.ev.score}}" size="{{cv.i64}}" show-verdict="{{cv.yes}}"></x-import>
+              </div>
+              <x-import component-from-global-scope="JCAP.WordDiff" tokens="{{cv.ev.tokens}}" show-legend="{{cv.no}}"></x-import>
+              <x-import component-from-global-scope="JCAP.FeedbackItem" tone="{{cv.ev.tone}}" title="{{cv.ev.title}}" suggestion="{{cv.ev.sugg}}">{{cv.ev.text}}</x-import>
+            </div>
+          </sc-if>
+          <sc-if value="{{cv.hasTurns}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line);">
+              <span class="cv-lbl">Các câu của bạn · điểm trung bình {{cv.avg}}</span>
+              <sc-for list="{{cv.turns}}" as="t" hint-placeholder-count="2">
+                <button type="button" class="{{t.cls}}" onClick="{{t.select}}" aria-pressed="{{t.on}}">
+                  <x-import component-from-global-scope="JCAP.ScoreRing" value="{{t.score}}" size="{{cv.i36}}"></x-import>
+                  <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;">
+                    <span lang="ja" style="font-family: var(--font-jp); font-size: 14px; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{t.text}}</span>
+                    <span style="font-size: 12px; color: var(--sumi-muted);">{{t.mission}}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </aside>
+    </sc-if>
+  </div>
+</div>
+  </div>
+
+  <aside class="side" data-theme="{{sideTheme}}" aria-label="Thanh điều hướng" style="position: absolute; z-index: 20; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 16px 12px 12px; color: var(--sumi);">
+    <div class="brand">
+      <button type="button" class="ib brand-logo" onClick="{{logoClick}}" aria-label="{{logoLabel}}" title="{{logoTitle}}">
+        <span class="bl-mark"><x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{i36}}" with-name="{{no}}"></x-import></span>
+        <span class="bl-open"><x-import component-from-global-scope="JCAP.Icon" name="left_panel_open" size="{{i22}}"></x-import></span>
+        <span class="tip" role="tooltip">Mở thanh bên</span>
+      </button>
+      <button type="button" class="lbl brand-name" onClick="{{goHome}}" tabindex="{{nameTab}}" aria-label="JCAP, về trang chủ" style="font-size: 18px; font-weight: 700; letter-spacing: .08em;">JCAP</button>
+      <button type="button" class="ib brand-close" onClick="{{toggle}}" tabindex="{{closeTab}}" aria-label="Đóng thanh bên">
+        <x-import component-from-global-scope="JCAP.Icon" name="left_panel_close" size="{{i22}}"></x-import>
+        <span class="tip" role="tooltip">Đóng thanh bên</span>
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span class="lbl" style="height: 18px; padding: 0 13px; font-size: 12px; line-height: 18px; font-weight: 600; color: var(--shu);">Đang học</span>
+
+      <div class="{{chapCls}}">
+        <button type="button" class="row" aria-label="Chương 1, 3 trên 10 dấu" style="color: var(--sumi);">
+          <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 11px; font-weight: 700;" lang="ja">一</span>
+          <span class="lbl" style="flex-grow: 1;">Chương 1</span>
+          <span class="lbl" style="font-size: 12px; font-weight: 700; color: var(--shu);">3/10</span>
+        </button>
+        <div class="fly">
+          <div class="pill">
+            <span lang="ja" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 14px; font-weight: 700;">一</span>
+            <span style="font-weight: 600;">Chương 1 · Cửa ngõ Kanto</span>
+            <span class="sep"></span>
+            <span style="position: relative; width: 64px; height: 6px; border-radius: 3px; background: var(--paper-200); overflow: hidden;"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: var(--shu);"></span></span>
+            <span style="font-weight: 700;">3/10 dấu</span>
+            <button type="button" class="chev" onClick="{{toggleChap}}" aria-expanded="{{chapOpen}}" aria-label="Xem chi tiết chương"><x-import component-from-global-scope="JCAP.Icon" name="expand_more" size="{{i22}}"></x-import></button>
+          </div>
+          <div class="drop">
+            <span style="font-size: 12px; line-height: 16px; color: var(--sumi-muted);">Chiba và Tokyo · N5</span>
+            <div style="position: relative; height: 8px; border-radius: 4px; background: var(--paper-200);">
+              <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; border-radius: 4px; background: var(--shu);"></span>
+              <span style="position: absolute; left: 70%; top: -4px; width: 2px; height: 16px; background: var(--sumi);"></span>
+            </div>
+            <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);"><strong style="color: var(--sumi);">3/10 dấu.</strong> Chương 2 mở ở 7 dấu.</span>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <button type="button" onClick="{{enterPref}}" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 10px; background: var(--paper-100); font: inherit; font-size: 14px; color: var(--sumi); cursor: pointer;">
+                <span style="flex-grow: 1; text-align: left; font-weight: 600;">Chiba <span lang="ja" style="font-family: var(--font-jp); font-weight: 500; color: var(--sumi-muted);">千葉県</span></span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--shu);">3/5</span>
+                <x-import component-from-global-scope="JCAP.Icon" name="chevron_right" size="{{i18}}"></x-import>
+              </button>
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; font-size: 14px;">
+                <span style="flex-grow: 1; font-weight: 600;">Tokyo <span lang="ja" style="font-family: var(--font-jp); font-weight: 500; color: var(--sumi-muted);">東京都</span></span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--sumi-muted);">0/5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="{{contCls}}">
+        <button type="button" class="row" aria-label="Tiếp tục Makuhari Messe" style="color: var(--sumi);">
+          <span style="flex: none; position: relative; display: inline-flex;">
+            <x-import component-from-global-scope="JCAP.Icon" name="stadium" size="{{i22}}"></x-import>
+            <span class="pulse" style="position: absolute; right: -3px; top: -1px; width: 8px; height: 8px; border-radius: 50%; background: var(--shu);"></span>
+            <span style="position: absolute; right: -3px; top: -1px; width: 8px; height: 8px; border-radius: 50%; background: var(--shu); border: 1.5px solid var(--paper-100); box-sizing: border-box;"></span>
+          </span>
+          <span class="lbl" style="flex-grow: 1;">Makuhari Messe</span>
+          <span class="lbl" style="font-size: 12px; font-weight: 700; color: var(--shu);">3/6</span>
+        </button>
+        <div class="fly">
+          <div class="pill">
+            <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: var(--shu); box-shadow: 0 0 0 4px var(--shu-soft);"></span>
+            <span style="font-size: 13px; color: var(--sumi-muted);">Tiếp tục</span>
+            <span style="font-weight: 700;">Makuhari Messe</span>
+            <span style="font-size: 13px; color: var(--sumi-muted);">Shadowing 3/6</span>
+            <button type="button" class="play" onClick="{{playCont}}" aria-label="Tiếp tục Makuhari Messe"><x-import component-from-global-scope="JCAP.Icon" name="play_arrow" size="{{i20}}" fill="{{yes}}"></x-import></button>
+            <button type="button" class="chev" onClick="{{toggleCont}}" aria-expanded="{{contOpen}}" aria-label="Xem chi tiết bài đang học"><x-import component-from-global-scope="JCAP.Icon" name="expand_more" size="{{i22}}"></x-import></button>
+          </div>
+          <div class="drop">
+            <span style="display: flex; flex-direction: column;">
+              <span style="font-size: 15px; line-height: 22px; font-weight: 700;">Makuhari Messe <span lang="ja" style="font-family: var(--font-jp); font-size: 13px; font-weight: 500; color: var(--sumi-muted);">幕張メッセ</span></span>
+              <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Chiba · Bước 2/4: Shadowing, câu 3/6</span>
+            </span>
+            <div style="padding: 10px 12px; border-radius: 10px; background: var(--paper-100);">
+              <span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--sumi-muted);">Câu đang luyện</span>
+              <x-import component-from-global-scope="JCAP.JpText" text="{幕張|まくはり}メッセにはどうやって{行|い}きますか。" size="sm" as="p"></x-import>
+            </div>
+            <x-import component-from-global-scope="JCAP.ProgressBar" value="{{three}}" max="{{six}}" label="3/6 câu đã chấm" tone="shu" size="sm"></x-import>
+            <x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="map" block="{{yes}}" on-click="{{enterPref}}">Xem mốc trên bản đồ</x-import>
+          </div>
+        </div>
+      </div>
+
+      <div class="{{convCls}}">
+        <button type="button" class="row" aria-label="Tiếp tục Hội thoại AI Mua vé tàu ở ga">
+          <x-import component-from-global-scope="JCAP.Icon" name="forum" size="{{i22}}" style="color: var(--ai);"></x-import>
+          <span class="lbl" style="flex-grow: 1;">Mua vé tàu ở ga</span>
+          <span class="lbl" style="font-size: 12px; font-weight: 700;">2/4</span>
+        </button>
+        <div class="fly">
+          <div class="pill">
+            <x-import component-from-global-scope="JCAP.Icon" name="forum" size="{{i20}}" style="color: var(--ai);"></x-import>
+            <span style="font-size: 13px; color: var(--sumi-muted);">Hội thoại AI</span>
+            <span style="font-weight: 700;">Mua vé tàu ở ga</span>
+            <span style="font-size: 13px; color: var(--sumi-muted);">2/4 nhiệm vụ</span>
+            <button type="button" class="play" onClick="{{playConv}}" aria-label="Tiếp tục hội thoại Mua vé tàu ở ga"><x-import component-from-global-scope="JCAP.Icon" name="play_arrow" size="{{i20}}" fill="{{yes}}"></x-import></button>
+            <button type="button" class="chev" onClick="{{toggleConv}}" aria-expanded="{{convOpen}}" aria-label="Xem chi tiết phiên hội thoại"><x-import component-from-global-scope="JCAP.Icon" name="expand_more" size="{{i22}}"></x-import></button>
+          </div>
+          <div class="drop">
+            <span style="display: flex; flex-direction: column;">
+              <span style="font-size: 15px; line-height: 22px; font-weight: 700;">Mua vé tàu ở ga Shinjuku</span>
+              <span style="font-size: 13px; line-height: 20px; color: var(--sumi-muted);">Với Tanaka, nhân viên nhà ga · N5 · 9 lượt thoại</span>
+            </span>
+            <x-import component-from-global-scope="JCAP.Stepper" orientation="vertical" steps="{{missions}}"></x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav aria-label="Điều hướng chính" style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span class="lbl" style="height: 18px; padding: 0 13px; font-size: 12px; line-height: 18px; font-weight: 600; color: var(--sumi-muted);">Học</span>
+        <button type="button" class="{{nav.map}}" onClick="{{goMap}}" aria-current="{{cur.map}}" title="Hành trình"><x-import component-from-global-scope="JCAP.Icon" name="travel_explore" size="{{i22}}" fill="{{fill.map}}"></x-import><span class="lbl">Hành trình</span></button>
+        <button type="button" class="{{nav.role}}" onClick="{{goRole}}" aria-current="{{cur.role}}" title="Hội thoại AI"><x-import component-from-global-scope="JCAP.Icon" name="forum" size="{{i22}}" fill="{{fill.role}}"></x-import><span class="lbl">Hội thoại AI</span></button>
+        <button type="button" class="{{nav.shadow}}" onClick="{{goShadow}}" aria-current="{{cur.shadow}}" title="Shadowing"><x-import component-from-global-scope="JCAP.Icon" name="record_voice_over" size="{{i22}}" fill="{{fill.shadow}}"></x-import><span class="lbl">Shadowing</span></button>
+        <button type="button" class="row" title="Kết quả"><x-import component-from-global-scope="JCAP.Icon" name="insights" size="{{i22}}"></x-import><span class="lbl">Kết quả</span></button>
+        <button type="button" class="row" title="Sổ con dấu"><x-import component-from-global-scope="JCAP.Icon" name="approval" size="{{i22}}"></x-import><span class="lbl">Sổ con dấu</span></button>
+      </div>
+    </nav>
+
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--line);">
+      <a href="#" class="row" title="Số dư 3.800 Credit" onClick="{{goPlan}}">
+        <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--credit-coin); color: #3d2600;"><x-import component-from-global-scope="JCAP.Icon" name="toll" size="{{i16}}"></x-import></span>
+        <span class="lbl" style="flex-grow: 1;">Số dư</span>
+        <span class="lbl" style="font-size: 13px; font-weight: 700; color: var(--credit);">3.800</span>
+      </a>
+      <div class="{{acctCls}}">
+        <div class="acct-menu" role="menu" aria-label="Tài khoản">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px 10px; margin-bottom: 4px; border-bottom: 1px solid var(--line);">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--sora); color: var(--on-sora); font-weight: 700;">H</span>
+            <span style="display: flex; flex-direction: column; min-width: 0;">
+              <span style="font-size: 14px; line-height: 20px; font-weight: 700;">Học Viên Luyện Nói 1</span>
+              <span style="font-size: 12px; line-height: 16px; color: var(--sumi-muted);">learner1@jcap.com</span>
+            </span>
+          </div>
+          <button type="button" role="menuitem" class="{{mi.plan}}" onClick="{{goPlan}}" aria-current="{{cur.plan}}"><x-import component-from-global-scope="JCAP.Icon" name="toll" size="{{i20}}"></x-import><span style="flex-grow: 1;">Gói &amp; Credit</span><span style="font-size: 12px; font-weight: 700; color: var(--credit);">3.800</span></button>
+          <button type="button" role="menuitem" class="{{mi.profile}}" onClick="{{goProfile}}" aria-current="{{cur.profile}}"><x-import component-from-global-scope="JCAP.Icon" name="person" size="{{i20}}"></x-import><span style="flex-grow: 1;">Hồ sơ</span></button>
+          <button type="button" role="menuitem" class="{{mi.settings}}" onClick="{{goSettings}}" aria-current="{{cur.settings}}"><x-import component-from-global-scope="JCAP.Icon" name="settings" size="{{i20}}"></x-import><span style="flex-grow: 1;">Cài đặt</span></button>
+          <span style="height: 1px; margin: 4px 0; background: var(--line);"></span>
+          <a href="#" role="menuitem" class="mi" style="color: var(--danger);"><x-import component-from-global-scope="JCAP.Icon" name="logout" size="{{i20}}"></x-import><span style="flex-grow: 1;">Đăng xuất</span></a>
+        </div>
+        <button type="button" class="{{acctRow}}" onClick="{{toggleAcct}}" aria-haspopup="menu" aria-expanded="{{acctOpen}}" title="Tài khoản" style="height: 48px; padding-left: 8px; color: var(--sumi);">
+          <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--sora); color: var(--on-sora); font-weight: 700;">H</span>
+          <span class="lbl" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <span style="font-size: 14px; line-height: 20px;">Học Viên Luyện Nói 1</span>
+            <span style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--sumi-muted);">Mục tiêu JLPT N5</span>
+          </span>
+          <span class="lbl acct-chev" style="display: inline-flex;"><x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{i20}}"></x-import></span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+// "from" là thuộc tính dành riêng của x-import, nên bọc ChatBubble và truyền vai qua "side"
+function jcapxInstall() {
+  window.JCAPX = window.JCAPX || {};
+  if (!window.JCAPX.Bubble) {
+    window.JCAPX.Bubble = function (p) {
+      var o = {};
+      for (var k in p) { if (k !== 'side') o[k] = p[k]; }
+      o.from = p.side === 'me' ? 'me' : 'ai';
+      return window.React.createElement(window.JCAP.ChatBubble, o);
+    };
+  }
+}
+jcapxInstall();
+function roomVals(self, st) {
+  var rs = st.rm || { cur: 2, phase: 'idle', attempt: 0, scores: { 0: 88, 2: 74 }, done: false, vi: {}, sit: true, les: true };
+  function setRm(p) { var o = {}; for (var k in rs) o[k] = rs[k]; for (var k2 in p) o[k2] = p[k2]; self.setState({ rm: o }); }
+  var out = (function () {
+    var L = [
+      { me: true, jp: 'すみません、{荷物|にもつ}を{上|うえ}の{棚|たな}に{入|い}れてもいいですか。', vi: 'Xin lỗi, tôi để hành lý lên giá phía trên được không?' },
+      { me: false, jp: 'はい、もちろんです。お{荷物|にもつ}をお{持|も}ちしましょうか。', vi: 'Vâng, tất nhiên. Để tôi cầm hành lý giúp nhé?' },
+      { me: true, jp: 'ありがとうございます。{初|はじ}めて{飛行機|ひこうき}に{乗|の}るので、{少|すこ}し{緊張|きんちょう}しています。', vi: 'Cảm ơn chị. Lần đầu đi máy bay nên tôi hơi hồi hộp.' },
+      { me: false, jp: 'そうですか。{大丈夫|だいじょうぶ}ですよ。{何|なに}かあったら、いつでも{呼|よ}んでくださいね。', vi: 'Vậy à. Không sao đâu. Có gì cứ gọi tôi nhé.' },
+      { me: true, jp: '{助|たす}かります。{飲|の}み{物|もの}を{頼|たの}んでもいいですか。', vi: 'May quá. Cho tôi gọi đồ uống được không?' },
+      { me: false, jp: 'もちろんです。お{茶|ちゃ}とお{水|みず}がございます。', vi: 'Tất nhiên ạ. Có trà và nước.' },
+      { me: true, jp: 'お{茶|ちゃ}をお{願|ねが}いします。', vi: 'Cho tôi trà nhé.' }
+    ];
+    var mine = [0, 2, 4, 6];
+    var R = {
+      0: { score: 88, tone: 'success', title: 'Rõ ràng, đúng nhịp', text: 'Ngữ điệu câu hỏi lên giọng ở cuối rất tự nhiên.',
+        tokens: [{ text: 'すみません' }, { text: '荷物を', reading: 'にもつを' }, { text: '上の', reading: 'うえの' }, { text: '棚に', reading: 'たなに' }, { text: '入れても', reading: 'いれても' }, { text: 'いいですか' }] },
+      2: { score: 74, tone: 'warning', title: 'Trường âm trong 飛行機 và 緊張 còn ngắn', text: 'Kéo dài ひこう và きんちょう đủ hai nhịp như giọng mẫu.',
+        tokens: [{ text: 'ありがとうございます' }, { text: '初めて', reading: 'はじめて' }, { text: '飛行機に', reading: 'ひこうきに', status: 'wrong', error: 'chouon', expected: 'ひこうき' }, { text: '乗るので', reading: 'のるので' }, { text: '少し', reading: 'すこし' }, { text: '緊張して', reading: 'きんちょうして', status: 'wrong', error: 'chouon', expected: 'きんちょう' }, { text: 'います' }] },
+      4: { score: 82, tone: 'warning', title: 'Âm ん trong 頼んで chưa rõ', text: 'Giữ ん đủ một nhịp rồi mới nói で.',
+        tokens: [{ text: '助かります', reading: 'たすかります' }, { text: '飲み物を', reading: 'のみものを' }, { text: '頼んで', reading: 'たのんで', status: 'wrong', error: 'hatsuon', expected: 'たのんで' }, { text: 'も' }, { text: 'いいですか' }] },
+      6: { score: 91, tone: 'success', title: 'Rất tốt', text: 'Âm お và nhịp câu giống giọng mẫu.',
+        tokens: [{ text: 'お茶を', reading: 'おちゃを' }, { text: 'お願いします', reading: 'おねがいします' }] }
+    };
+    var curLine = rs.done ? L.length : mine[rs.cur];
+    var scores = rs.scores || {}, viMap = rs.vi || {};
+    function verdict(s) { return s >= 80 ? 'good' : s >= 60 ? 'mid' : 'low'; }
+    var ICON = { good: 'check_circle', mid: 'change_history', low: 'cancel' };
+    var lines = [];
+    L.forEach(function (l, i) {
+      if (i > curLine) return;
+      var pending = i === curLine && !rs.done;
+      var sc = l.me && !pending ? scores[i] : undefined;
+      lines.push({
+        cls: 'ln ' + (l.me ? 'me' : 'ai') + (pending ? ' pending' : '') + (i >= curLine - 1 ? ' enter' : ''),
+        isPending: pending, isMe: l.me, side: l.me ? 'me' : 'ai',
+        name: l.me ? (pending ? 'Lượt của bạn · Khách hàng' : 'Khách hàng') : 'Nhân viên',
+        jp: l.jp, vi: l.vi,
+        showVi: !!viMap[i],
+        viLabel: viMap[i] ? 'Ẩn dịch' : 'Dịch',
+        toggleVi: function () { var m = {}; for (var k in viMap) m[k] = viMap[k]; m[i] = !viMap[i]; setRm({ vi: m }); },
+        hasScore: sc !== undefined,
+        scoreCls: sc !== undefined ? 'av-score jc-v-' + verdict(sc) : 'av-score',
+        scoreNum: sc !== undefined ? String(sc) : '',
+        scoreIcon: sc !== undefined ? ICON[verdict(sc)] : 'check_circle',
+        scoreText: sc !== undefined ? 'Điểm câu này: ' + sc : ''
+      });
+    });
+    // cuộn khung hội thoại xuống câu mới nhất mỗi khi có thêm câu (người học vẫn cuộn lên xem lại được)
+    if (typeof window !== 'undefined' && window.requestAnimationFrame && window.__jcapHistN !== lines.length) {
+      window.__jcapHistN = lines.length;
+      window.requestAnimationFrame(function () { window.requestAnimationFrame(function () {
+        var els = document.querySelectorAll('.hist');
+        for (var q = 0; q < els.length; q++) els[q].scrollTop = els[q].scrollHeight;
+      }); });
+    }
+    var vals = Object.keys(scores).map(function (k) { return scores[k]; });
+    var avg = vals.length ? Math.round(vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) : 0;
+    function advance(withScore) {
+      var sc = {}; for (var k in scores) sc[k] = scores[k];
+      if (withScore) sc[curLine] = R[curLine].score;
+      if (rs.cur >= 3) setRm({ scores: sc, done: true, phase: 'done', attempt: 0 });
+      else setRm({ scores: sc, cur: rs.cur + 1, phase: 'idle', attempt: 0 });
+    }
+    var bars = [];
+    for (var b = 0; b < 64; b++) {
+      var env = Math.sin(Math.PI * b / 63);
+      var h = 6 + Math.round(42 * env * env * (0.7 + 0.3 * Math.abs(Math.sin(b * 0.9))));
+      bars.push({ h: h + 'px', d: (-(b % 9) * 0.1).toFixed(2) + 's' });
+    }
+    var res = R[curLine] || R[4];
+    return {
+      yes: true, no: false, nothing: null, i16: 16, i18: 18, i22: 22, i28: 28, i36: 36, i64: 64,
+      levels: [{ value: 'N5', label: 'JLPT N5' }, { value: 'N4', label: 'JLPT N4' }, { value: 'N3', label: 'JLPT N3' }],
+      sitOpen: !!rs.sit, lesOpen: !!rs.les,
+      sitChev: 'sec-chev' + (rs.sit ? '' : ' closed'), lesChev: 'sec-chev' + (rs.les ? '' : ' closed'),
+      toggleSit: function () { setRm({ sit: !rs.sit }); },
+      toggleLes: function () { setRm({ les: !rs.les }); },
+      lines: lines,
+      curJp: L[curLine] ? L[curLine].jp : '',
+      isIdle: rs.phase === 'idle', isRec: rs.phase === 'rec', isUnclear: rs.phase === 'unclear', isScored: rs.phase === 'scored', isDone: rs.phase === 'done',
+      attempt: rs.attempt,
+      bars: bars,
+      startRec: function () { setRm({ phase: 'rec' }); },
+      cancelRec: function () { setRm({ phase: rs.attempt > 0 ? 'unclear' : 'idle' }); },
+      submitRec: function () {
+        var n = rs.attempt + 1;
+        if (curLine === 4 && rs.attempt === 0) setRm({ phase: 'unclear', attempt: n });
+        else setRm({ phase: 'scored', attempt: n });
+      },
+      skip: function () { advance(false); },
+      next: function () { advance(true); },
+      nextLabel: rs.cur >= 3 ? 'Hoàn thành' : 'Câu tiếp',
+      res: { score: res.score, tone: res.tone, title: res.title, text: res.text, tokens: res.tokens },
+      avg: avg, doneCount: vals.length,
+      restart: function () { setRm({ cur: 0, phase: 'idle', attempt: 0, scores: {}, done: false, vi: {} }); }
+    };
+  })();
+  out.exit = function () { self.setState({ page: st.from === 'map' ? 'map' : 'shadow' }); };
+  return out;
+}
+function convVals(self, st) {
+  var cs = st.cv || { turn: 0, phase: 'idle', hint: false, draft: '', typed: {}, sel: null, evalOpen: false, panelOpen: true, tab: 'missions', furi: true, viAuto: true, setOpen: false, credits: 3795 };
+  function setCv(p) { var o = {}; for (var k in cs) o[k] = cs[k]; for (var k2 in p) o[k2] = p[k2]; self.setState({ cv: o }); }
+  var out = (function () {
+    var AI = [
+      { jp: 'いらっしゃいませ！{何名様|なんめいさま}ですか？', vi: 'Xin chào quý khách! Quý khách đi mấy người ạ?' },
+      { jp: 'こちらへどうぞ。ご{注文|ちゅうもん}はお{決|き}まりですか？', vi: 'Mời quý khách lối này. Quý khách chọn món chưa ạ?' },
+      { jp: 'かしこまりました。お{飲|の}み{物|もの}はいかがですか？', vi: 'Vâng ạ. Quý khách có dùng đồ uống không?' },
+      { jp: 'ありがとうございます。{少々|しょうしょう}お{待|ま}ちください。', vi: 'Cảm ơn quý khách. Xin vui lòng đợi một chút.' }
+    ];
+    var ME = [
+      { jp: 'こんにちは。{一人|ひとり}です。', vi: 'Xin chào. Tôi đi một mình.', score: 86, tone: 'success', title: 'Chào và nói số người rõ ràng', text: 'Ngữ điệu tự nhiên, đúng tốc độ.',
+        tokens: [{ text: 'こんにちは' }, { text: '一人です', reading: 'ひとりです' }], sugg: { jp: '{一人|ひとり}です。', vi: 'Khi nhân viên đã chào trước, có thể trả lời ngắn như vầy.' } },
+      { jp: 'しょうゆラーメンを{一|ひと}つください。', vi: 'Cho tôi một tô ramen shoyu.', score: 78, tone: 'warning', title: '一つ đọc là ひとつ', text: 'Bạn đọc thành いっこ. Với đồ ăn đếm bằng つ sẽ tự nhiên hơn.',
+        tokens: [{ text: 'しょうゆラーメンを' }, { text: '一つ', reading: 'ひとつ', status: 'wrong', error: 'word', expected: 'ひとつ' }, { text: 'ください' }], sugg: { jp: 'しょうゆラーメンを{一|ひと}つお{願|ねが}いします。', vi: 'Lịch sự hơn một chút.' } },
+      { jp: '{大丈夫|だいじょうぶ}です。ありがとうございます。', vi: 'Không cần đâu ạ. Cảm ơn.', score: 90, tone: 'success', title: 'Từ chối lịch sự, cảm ơn đúng lúc', text: 'Trường âm trong ございます đủ dài.',
+        tokens: [{ text: '大丈夫です', reading: 'だいじょうぶです' }, { text: 'ありがとうございます' }], sugg: null }
+    ];
+    var MISSION = [
+      { label: 'Chào hỏi', description: 'Mở đầu bằng câu chào và trả lời số người' },
+      { label: 'Gọi món', description: 'Nói rõ món mình muốn' },
+      { label: 'Xác nhận và cảm ơn', description: 'Trả lời câu hỏi thêm, cảm ơn lịch sự' }
+    ];
+    var turn = cs.turn, done = turn >= 3, typed = cs.typed || {};
+    function plain(t) { return t.replace(/\{([^|}]+)\|[^}]+\}/g, '$1'); }
+    function turnData(k) {
+      var base = ME[k];
+      if (!typed[k]) return base;
+      return { jp: typed[k], vi: '', score: 80, tone: 'tip', title: 'Câu bạn tự viết', text: 'Hiểu được ý. Thử nói lại theo câu gợi ý để nghe tự nhiên hơn.', tokens: [{ text: typed[k] }], sugg: { jp: base.jp, vi: base.vi } };
+    }
+    var msgs = [];
+    function aiMsg(i) {
+      msgs.push({ cls: 'cv-ln' + (i === turn ? ' cv-enter' : ''), side: 'ai', name: 'Nhân viên phục vụ', jp: AI[i].jp, vi: AI[i].vi, showVi: cs.viAuto ? true : undefined, score: undefined, selected: undefined, select: undefined });
+    }
+    aiMsg(0);
+    for (var k = 0; k < turn && k < 3; k++) {
+      (function (k) {
+        var d = turnData(k);
+        msgs.push({ cls: 'cv-ln' + (k === turn - 1 ? ' cv-enter' : ''), side: 'me', name: 'Bạn', jp: d.jp, vi: d.vi || undefined, showVi: undefined, score: d.score, selected: cs.sel === k,
+          select: function () { setCv({ sel: k, evalOpen: true, setOpen: false }); } });
+      })(k);
+      aiMsg(k + 1);
+    }
+    if (window.requestAnimationFrame && window.__cvHistN !== msgs.length + (cs.hint ? 1 : 0)) {
+      window.__cvHistN = msgs.length + (cs.hint ? 1 : 0);
+      window.requestAnimationFrame(function () { window.requestAnimationFrame(function () {
+        var els = document.querySelectorAll('.cv .cv-hist');
+        for (var q = 0; q < els.length; q++) els[q].scrollTop = els[q].scrollHeight;
+      }); });
+    }
+    var turns = [];
+    for (var j = 0; j < Math.min(turn, 3); j++) {
+      (function (j) {
+        var d = turnData(j);
+        turns.push({ cls: 'cv-turn' + (cs.sel === j ? ' on' : ''), on: cs.sel === j, score: d.score, text: plain(d.jp), mission: MISSION[j].label,
+          select: function () { setCv({ sel: j }); } });
+      })(j);
+    }
+    var avg = turns.length ? Math.round(turns.reduce(function (a, t) { return a + t.score; }, 0) / turns.length) : 0;
+    var selD = cs.sel !== null && cs.sel < turn ? turnData(cs.sel) : null;
+    function send(text) {
+      if (done) return;
+      var ty = {}; for (var x in typed) ty[x] = typed[x];
+      if (text) ty[turn] = text; else delete ty[turn];
+      setCv({ typed: ty, turn: turn + 1, draft: '', hint: false, phase: 'idle', credits: cs.credits - 5 });
+    }
+    var bars = [];
+    for (var b = 0; b < 48; b++) {
+      var env = Math.sin(Math.PI * b / 47);
+      bars.push({ h: (5 + Math.round(28 * env * (0.6 + 0.4 * Math.abs(Math.sin(b * 0.8))))) + 'px', d: (-(b % 7) * 0.12).toFixed(2) + 's' });
+    }
+    return {
+      yes: true, no: false, three: 3, i18: 18, i20: 20, i22: 22, i28: 28, i36: 36, i48: 48, i64: 64,
+      credits: cs.credits,
+      doneN: Math.min(turn, 3), done: done,
+      panelOpen: !!cs.panelOpen, panelBtnCls: 'cv-chip' + (cs.panelOpen ? ' on' : ''),
+      togglePanel: function () { setCv({ panelOpen: !cs.panelOpen }); },
+      evalOpen: !!cs.evalOpen, evalBtnCls: 'cv-chip' + (cs.evalOpen ? ' on' : ''),
+      toggleEval: function () { setCv({ evalOpen: !cs.evalOpen, setOpen: false, sel: cs.evalOpen ? cs.sel : (cs.sel !== null ? cs.sel : (turn > 0 ? turn - 1 : null)) }); },
+      openSummary: function () { setCv({ evalOpen: true, sel: 0 }); },
+      setOpen: !!cs.setOpen, toggleSet: function () { setCv({ setOpen: !cs.setOpen }); },
+      setChanged: !cs.furi || !cs.viAuto,
+      furi: !!cs.furi, viAuto: !!cs.viAuto,
+      setFuri: function (v) { setCv({ furi: typeof v === 'boolean' ? v : !cs.furi }); },
+      setViAuto: function (v) { setCv({ viAuto: typeof v === 'boolean' ? v : !cs.viAuto }); },
+      speeds: [{ value: '0.85', label: 'Chậm' }, { value: '1', label: 'Chuẩn' }, { value: '1.15', label: 'Nhanh' }],
+      endEarly: function () { setCv({ evalOpen: true, sel: turn > 0 ? 0 : null }); },
+      tabs: [{ id: 'missions', label: 'Nhiệm vụ', count: 3 }, { id: 'phrases', label: 'Mẫu câu', count: 5 }],
+      tab: cs.tab, setTab: function (v) { setCv({ tab: v }); },
+      isMissions: cs.tab === 'missions', isPhrases: cs.tab === 'phrases',
+      missions: MISSION.map(function (m, i) { return { label: m.label, description: m.description, status: i < turn ? 'done' : (i === turn ? 'current' : 'todo') }; }),
+      phrases: [
+        { jp: '{一人|ひとり}です / {二人|ふたり}です', vi: 'Một người / hai người', label: 'Nghe: ひとりです' },
+        { jp: '〜をください', vi: 'Cho tôi …', label: 'Nghe: をください' },
+        { jp: '〜をお{願|ねが}いします', vi: 'Làm ơn cho tôi … (lịch sự)', label: 'Nghe: をおねがいします' },
+        { jp: '{大丈夫|だいじょうぶ}です', vi: 'Không cần đâu / ổn ạ', label: 'Nghe: だいじょうぶです' },
+        { jp: 'お{会計|かいけい}お{願|ねが}いします', vi: 'Cho tôi tính tiền', label: 'Nghe: おかいけいおねがいします' }
+      ],
+      msgs: msgs,
+      avg: avg,
+      showHint: !!cs.hint && !done,
+      hint: done ? { mission: '', jp: '', vi: '' } : { mission: MISSION[turn].label, jp: ME[turn].jp, vi: ME[turn].vi },
+      toggleHint: function () { setCv({ hint: !cs.hint }); },
+      closeHint: function () { setCv({ hint: false }); },
+      useHint: function () { if (!done) setCv({ draft: plain(ME[turn].jp), hint: false }); },
+      isIdle: !done && cs.phase === 'idle', isRec: !done && cs.phase === 'rec',
+      draft: cs.draft || '', hasDraft: !!(cs.draft && cs.draft.trim()),
+      setDraft: function (e) { setCv({ draft: e && e.target ? e.target.value : '' }); },
+      onKey: function (e) { if (e && e.key === 'Enter' && cs.draft && cs.draft.trim()) { if (e.preventDefault) e.preventDefault(); send(cs.draft.trim() === plain(ME[turn].jp) ? null : cs.draft.trim()); } },
+      sendDraft: function () { if (cs.draft && cs.draft.trim()) send(cs.draft.trim() === plain(ME[turn].jp) ? null : cs.draft.trim()); },
+      startRec: function () { setCv({ phase: 'rec', setOpen: false }); },
+      cancelRec: function () { setCv({ phase: 'idle' }); },
+      sendVoice: function () { send(null); },
+      bars: bars,
+      restart: function () { setCv({ turn: 0, phase: 'idle', hint: false, draft: '', typed: {}, sel: null, evalOpen: false }); },
+      noTurns: turns.length === 0, hasTurns: turns.length > 0, hasSel: !!selD,
+      ev: selD ? { score: selD.score, tone: selD.tone, title: selD.title, text: selD.text, tokens: selD.tokens, sugg: selD.sugg || undefined } : { score: 0, tone: 'tip', title: '', text: '', tokens: [], sugg: undefined },
+      turns: turns
+    };
+  })();
+  out.exit = function () { self.setState({ page: st.from === 'map' ? 'map' : 'roleplay' }); };
+  return out;
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pref: false, collapsed: false, lock: null, open: null, acct: false, page: 'map', sel: 'vetau', lv: 'N5', cat: 'all', lvFilter: 'N5', voiceCat: 'vung', voice: 'metan', shTab: 'all', shLv: 'all', shQ: '' };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var themeMode = st.themeMode || 'light';
+    var isDark = themeMode === 'dark' || (themeMode === 'system' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var locks = {
+      kyoto: { name: 'Kyoto', jp: '京都府', x: 748, y: 604, px: 598, py: 340 },
+      nara: { name: 'Nara', jp: '奈良県', x: 780, y: 689, px: 630, py: 425 }
+    };
+    var data = [
+      { id: 'ramen', cat: 'an', icon: 'ramen_dining', title: 'Gọi món tại quán mì Ramen', goal: 'Chọn món, hỏi khẩu vị và thanh toán ở quán ramen.', levels: ['N5', 'N4', 'N3'], costs: { N5: 5, N4: 6, N3: 8 }, minutes: 8, persona: 'Sato, chủ quán', personaNote: 'Thân thiện, nói hơi nhanh khi quán đông khách', missions: ['Chào và gọi một tô ramen', 'Hỏi độ cay hoặc khẩu vị', 'Gọi thêm đồ uống', 'Thanh toán và cảm ơn'], vocab: ['{注文|ちゅうもん}', '{辛|から}い', 'お{会計|かいけい}', '{大盛|おおも}り'] },
+      { id: 'cho', cat: 'mua', icon: 'storefront', title: 'Lần đầu đi chợ', goal: 'Hỏi giá, chọn rau củ và hỏi cách nấu ở sạp chợ.', levels: ['N5', 'N3'], costs: { N5: 4, N3: 7 }, minutes: 7, persona: 'bà Yamamoto, người bán rau', personaNote: 'Kiên nhẫn, hay hỏi lại để chắc bạn hiểu', missions: ['Chào và hỏi giá một món', 'Hỏi món nào đang tươi', 'Mua và hỏi cách nấu', 'Cảm ơn và chào'], vocab: ['いくら', '{安|やす}い', 'これをください', '{袋|ふくろ}'] },
+      { id: 'vetau', cat: 'di', icon: 'train', title: 'Mua vé tàu ở ga Shinjuku', goal: 'Nói điểm đến, mua vé khứ hồi và hỏi tàu chạy ở sân ga nào.', levels: ['N5', 'N4'], costs: { N5: 5, N4: 6 }, minutes: 7, persona: 'Tanaka, nhân viên nhà ga', personaNote: 'Nói rõ ràng, hay chỉ lên bảng giờ tàu', missions: ['Nói điểm đến', 'Mua vé khứ hồi', 'Hỏi sân ga tàu chạy', 'Cảm ơn và chào'], vocab: ['{切符|きっぷ}', '{往復|おうふく}', '{何番線|なんばんせん}', '{新宿|しんじゅく}'], progress: { done: 2, total: 4 } },
+      { id: 'maybay', cat: 'di', icon: 'flight', title: 'Đi máy bay', goal: 'Làm thủ tục, hỏi chỗ ngồi và nhờ tiếp viên giúp trên chuyến bay.', levels: ['N5'], costs: { N5: 5 }, minutes: 8, persona: 'Kimura, tiếp viên', personaNote: 'Lịch sự, dùng nhiều kính ngữ', missions: ['Đưa vé và hộ chiếu', 'Xin chỗ ngồi cạnh cửa sổ', 'Hỏi giờ hạ cánh', 'Nhờ thêm chăn'], vocab: ['{窓側|まどがわ}', '{席|せき}', 'パスポート', '{毛布|もうふ}'] },
+      { id: 'landau', cat: 'di', icon: 'airplane_ticket', title: 'Lần đầu đi máy bay', goal: 'Hỏi tiếp viên khi gặp vấn đề: hành lý, đổi chỗ, chuyến nối.', levels: ['N5'], costs: { N5: 5 }, minutes: 9, persona: 'Kimura, tiếp viên', personaNote: 'Lịch sự, giải thích chậm rãi', missions: ['Nói bạn đi máy bay lần đầu', 'Hỏi chỗ để hành lý', 'Hỏi về chuyến bay nối', 'Cảm ơn tiếp viên'], vocab: ['{荷物|にもつ}', '{乗|の}り{換|か}え', '{初|はじ}めて', '{手伝|てつだ}う'] },
+      { id: 'baito', cat: 'cv', icon: 'work', title: 'Phỏng vấn xin việc làm thêm (Baito)', goal: 'Tự giới thiệu, nói ca có thể làm và trả lời câu hỏi của quản lý.', levels: ['N5', 'N4', 'N3'], costs: { N5: 5, N4: 7, N3: 9 }, minutes: 10, persona: 'anh Suzuki, quản lý cửa hàng', personaNote: 'Nghiêm túc nhưng dễ chịu, hỏi nhiều câu nối tiếp', missions: ['Chào và tự giới thiệu', 'Nói ngày giờ có thể làm', 'Trả lời vì sao muốn làm', 'Hỏi lại về lương và ca'], vocab: ['{面接|めんせつ}', '{週|しゅう}3{回|かい}', '{時給|じきゅう}', 'よろしくお{願|ねが}いします'] }
+    ];
+    var catNames = { an: 'Ăn uống', di: 'Di chuyển', mua: 'Mua sắm', cv: 'Công việc' };
+    var visible = data.filter(function (s) {
+      return (st.cat === 'all' || s.cat === st.cat) && (st.lvFilter === 'all' || s.levels.indexOf(st.lvFilter) >= 0);
+    });
+    var groups = ['an', 'di', 'mua', 'cv'].map(function (c) {
+      var items = visible.filter(function (s) { return s.cat === c; }).map(function (s) {
+        var on = s.id === st.sel;
+        return {
+          id: s.id, title: s.title, goal: s.goal, icon: s.icon, levels: s.levels, minutes: s.minutes,
+          cost: s.costs[st.lvFilter] || s.costs[s.levels[0]],
+          selected: on,
+          border: on ? '2px solid var(--ai)' : '1px solid var(--line)',
+          bg: on ? 'var(--ai-soft)' : 'var(--paper-50)',
+          inProgress: !!s.progress,
+          progressText: s.progress ? ('Đang dở ' + s.progress.done + '/' + s.progress.total) : '',
+          pick: function () {
+            var lv = s.levels.indexOf(st.lvFilter) >= 0 ? st.lvFilter : s.levels[0];
+            self.setState({ sel: s.id, lv: lv });
+          }
+        };
+      });
+      return { name: catNames[c], count: items.length, items: items };
+    }).filter(function (g) { return g.items.length > 0; });
+
+    var p = data.filter(function (s) { return s.id === st.sel; })[0] || data[0];
+    var lv = p.levels.indexOf(st.lv) >= 0 ? st.lv : p.levels[0];
+    var cost = p.costs[lv];
+    var credits = 3800;
+    function lesson(o) {
+      var done = o.state === 'done', doing = o.state === 'doing';
+      return {
+        st0: o.state, title: o.title, level: o.level, meta: o.meta, best: o.best, hasScore: o.best !== undefined, saved: !!o.saved,
+        bookmarkLabel: o.saved ? 'Bỏ lưu bài' : 'Lưu bài',
+        done: done,
+        statusIcon: done ? 'check_circle' : doing ? 'clock_loader_40' : 'radio_button_unchecked',
+        statusStyle: done ? 'color: var(--success);' : doing ? 'color: var(--nami);' : 'color: var(--sumi-faint);',
+        statusLabel: done ? 'Đã hoàn thành' : doing ? 'Đang học' : 'Chưa học',
+        btn: done ? 'Luyện lại' : doing ? 'Tiếp tục' : 'Bắt đầu',
+        btnIcon: done ? 'replay' : 'play_arrow',
+        btnVariant: doing ? 'secondary' : 'ghost'
+      };
+    }
+    var all = [
+      { id: 'hau', cat: 'chuan', name: 'Amehare Hau', jp: '雨晴はう', mark: 'は', desc: 'Nữ, đọc chậm và rõ. Hợp cho người mới.' },
+      { id: 'himari', cat: 'chuan', name: 'Meimei Himari', jp: '冥鳴ひまり', mark: 'ひ', desc: 'Nữ, giọng dịu, nhịp đều.' },
+      { id: 'takehiro', cat: 'chuan', name: 'Kurono Takehiro', jp: '玄野武宏', mark: '武', desc: 'Nam, trầm, phát âm chuẩn Tokyo.' },
+      { id: 'metan', cat: 'vung', name: 'Shikoku Metan', jp: '四国めたん', mark: 'め', desc: 'Nữ, trong trẻo, phong cách bình thường.' },
+      { id: 'sora', cat: 'vung', name: 'Kyushu Sora', jp: '九州そら', mark: 'そ', desc: 'Nữ, nhẹ nhàng, chất giọng miền Kyushu.' },
+      { id: 'ryusei', cat: 'vung', name: 'Aoyama Ryusei', jp: '青山龍星', mark: '龍', desc: 'Nam, ấm và chậm rãi.' },
+      { id: 'zunda', cat: 'khac', name: 'Zundamon', jp: 'ずんだもん', mark: 'ず', desc: 'Giọng hoạt hình, vui tươi, nói nhanh.' },
+      { id: 'tsumugi', cat: 'khac', name: 'Kasukabe Tsumugi', jp: '春日部つむぎ', mark: 'つ', desc: 'Nữ, năng động, giống học sinh.' },
+      { id: 'ritsu', cat: 'khac', name: 'Namine Ritsu', jp: '波音リツ', mark: 'リ', desc: 'Nữ, giọng hát, ngắt câu rõ.' }
+    ];
+    var voiceCur = all.filter(function (v) { return v.id === st.voice; })[0];
+    var shAll = [
+        { name: 'Gọi món tại quán mì Ramen', icon: 'ramen_dining', summary: '1/2 bài xong', lessons: [
+          lesson({ title: 'Bị lạc đường', level: 'N3', meta: 'Bài 1 · 10 câu · khoảng 5 phút', state: 'new' }),
+          lesson({ title: 'Gọi món Ramen và xin thêm nước', level: 'N5', meta: 'Bài 1 · 5 câu · khoảng 2 phút', state: 'done', best: 88 })
+        ] },
+        { name: 'Phỏng vấn xin việc làm thêm (Baito)', icon: 'work', summary: '2/2 bài xong', lessons: [
+          lesson({ title: 'Ngày giới thiệu câu lạc bộ', level: 'N4', meta: 'Bài 2 · 5 câu · khoảng 2 phút', state: 'done', best: 79 }),
+          lesson({ title: 'Trao đổi về lịch trình dự án IT', level: 'N3', meta: 'Bài 2 · 5 câu · khoảng 2 phút', state: 'done', best: 64 })
+        ] },
+        { name: 'Đi máy bay', icon: 'flight', summary: '1/1 bài xong', lessons: [
+          lesson({ title: 'Lần đầu tiên đi máy bay', level: 'N4', meta: 'Bài 19 · 6 câu · khoảng 3 phút', state: 'done', best: 91, saved: true })
+        ] }
+      ];
+    var shQ = (st.shQ || '').toLowerCase();
+    function shMatch(l, tab) {
+      var t = tab === 'all' || (tab === 'saved' ? l.saved : l.st0 === tab);
+      return t && (st.shLv === 'all' || l.level === st.shLv) && (!shQ || l.title.toLowerCase().indexOf(shQ) >= 0);
+    }
+    var shFiltered = shAll.map(function (g) {
+      var o = {}; for (var k in g) o[k] = g[k];
+      o.lessons = g.lessons.filter(function (l) { return shMatch(l, st.shTab); });
+      return o;
+    }).filter(function (g) { return g.lessons.length > 0; });
+    var shfTabs = [['all', 'Tất cả'], ['doing', 'Đang học'], ['new', 'Chưa học'], ['saved', 'Đã lưu']].map(function (t) {
+      var n = 0; shAll.forEach(function (g) { g.lessons.forEach(function (l) { if (shMatch(l, t[0])) n++; }); });
+      var on = st.shTab === t[0];
+      return { label: t[1], count: n, sel: on, cls: 'shf-tab' + (on ? ' on' : ''), pick: function () { self.setState({ shTab: t[0] }); } };
+    });
+    var shfLvs = [['all', 'Mọi cấp'], ['N5', 'N5'], ['N4', 'N4'], ['N3', 'N3']].map(function (v) {
+      var on = st.shLv === v[0];
+      return { label: v[1], sel: on, cls: 'shf-chip lv-' + v[0] + (on ? ' on' : ''),
+        pick: function () { self.setState({ shLv: on && v[0] !== 'all' ? 'all' : v[0] }); } };
+    });
+    function go(pg) { return function () { self.setState({ page: pg, open: null, acct: false, lock: null }); }; }
+    return {
+      yes: true, no: false, i16: 16, i18: 18, i20: 20, i22: 22, i26: 26, i36: 36,
+      rootClass: 'app' + (st.pref ? ' is-pref' : '') + (st.collapsed ? ' is-collapsed' : '') + (st.page !== 'map' ? ' is-page' : ''),
+      enterPref: function () { self.setState({ pref: true, lock: null, open: null, acct: false, page: 'map' }); },
+      three: 3, six: 6,
+      sideTheme: isDark ? 'hoc-tap-dem' : (st.page === 'map' ? 'kham-pha' : 'hoc-tap'),
+      thLearn: isDark ? 'hoc-tap-dem' : 'hoc-tap',
+      thRoom: isDark ? 'phong-luyen-dem' : 'phong-luyen',
+      themeMode: st.themeMode || 'light',
+      setThemeMode: function (v) { self.setState({ themeMode: v }); },
+      nav: { map: 'row' + (st.page === 'map' ? ' on' : ''), role: 'row' + (st.page === 'roleplay' ? ' on' : ''), shadow: 'row' + (st.page === 'shadow' ? ' on' : '') },
+      cur: { map: st.page === 'map' ? 'page' : 'false', role: st.page === 'roleplay' ? 'page' : 'false', shadow: st.page === 'shadow' ? 'page' : 'false', profile: st.page === 'profile' ? 'page' : 'false', settings: st.page === 'settings' ? 'page' : 'false', plan: st.page === 'plan' ? 'page' : 'false' },
+      mi: { profile: 'mi' + (st.page === 'profile' ? ' on' : ''), settings: 'mi' + (st.page === 'settings' ? ' on' : ''), plan: 'mi' + (st.page === 'plan' ? ' on' : '') },
+      acctRow: 'row' + (st.page === 'profile' || st.page === 'settings' || st.page === 'plan' ? ' on' : ''),
+      goProfile: go('profile'), goSettings: go('settings'), goPlan: go('plan'),
+      pgPlan: 'pg' + (st.page === 'plan' ? ' on' : ''), hidePlan: st.page === 'plan' ? 'false' : 'true',
+      plAuto: st.plAuto !== false,
+      plToggle: function (v) { self.setState({ plAuto: typeof v === 'boolean' ? v : st.plAuto === false }); },
+      plResCls: 'pl-res' + (st.plAuto === false ? ' off' : ''),
+      plResText: st.plAuto === false ? 'Đang tắt: bài học tạm dừng khi hết hạn mức.' : 'Tự trừ credit nạp thêm để học tiếp.',
+      plRefreshLabel: st.plFresh ? 'Đã làm mới' : 'Làm mới hạn mức',
+      plDotCls: 'pl-dot',
+      plFlowText: st.plAuto === false ? 'Đang tắt: bài học sẽ dừng lại và chờ hạn mức hồi phục.' : 'Tự trừ vào 3.800 credit nạp thêm để bạn học tiếp, không bị ngắt.',
+      plUpdated: st.plFresh ? 'Vừa cập nhật' : 'Cập nhật 2 phút trước',
+      plRefresh: function () { self.setState({ plFresh: true }); },
+      umFeat: !!st.umFeat, umFeatLabel: st.umFeat ? 'Ẩn quyền lợi' : 'Xem quyền lợi của gói',
+      umToggleFeat: function () { self.setState({ umFeat: !st.umFeat }); },
+      umAuto: st.umAuto !== false,
+      umToggle: function (v) { self.setState({ umAuto: typeof v === 'boolean' ? v : st.umAuto === false }); },
+      umUpdated: st.umFresh ? 'vừa cập nhật' : 'cập nhật 2 phút trước',
+      umRefresh: function () { self.setState({ umFresh: true }); },
+      plUsed5: 5, plUsedW: 5, pl50: 50, pl1000: 1000,
+      pgProfile: 'pg' + (st.page === 'profile' ? ' on' : ''), hideProfile: st.page === 'profile' ? 'false' : 'true',
+      pgSettings: 'pg' + (st.page === 'settings' ? ' on' : ''), hideSettings: st.page === 'settings' ? 'false' : 'true',
+      micLevel: 62,
+      voiceCur: voiceCur,
+      voiceCats: [{ value: 'chuan', label: 'Chuẩn' }, { value: 'vung', label: 'Vùng miền' }, { value: 'khac', label: 'Hoạt hình và khác' }],
+      voiceCat: st.voiceCat,
+      setVoiceCat: function (v) { self.setState({ voiceCat: v }); },
+      voices: all.filter(function (v) { return v.cat === st.voiceCat; }).map(function (v) {
+        var on = v.id === st.sel;
+        return { name: v.name, jp: v.jp, desc: v.desc, selected: on,
+          border: on ? '2px solid var(--ai)' : '1px solid var(--line)',
+          bg: on ? 'var(--ai-soft)' : 'var(--paper-50)',
+          pick: function () { self.setState({ voice: v.id }); } };
+      }),
+      mics: [{ value: 'default', label: 'Mặc định: Microphone (Realtek(R) Audio)' }, { value: 'headset', label: 'Tai nghe có micro (USB)' }],
+      speakers: [{ value: 'default', label: 'Mặc định: Loa (Realtek(R) Audio)' }, { value: 'headset', label: 'Tai nghe (USB)' }],
+      speeds: [{ value: '0.85', label: '0.85× chậm' }, { value: '1', label: '1.0× chuẩn' }, { value: '1.15', label: '1.15× nhanh' }],
+      themes: [{ value: 'light', label: 'Sáng', icon: 'light_mode' }, { value: 'dark', label: 'Tối', icon: 'dark_mode' }, { value: 'system', label: 'Theo máy', icon: 'computer' }],
+      goalLevels: [{ value: 'N5', label: 'N5' }, { value: 'N4', label: 'N4' }, { value: 'N3', label: 'N3' }],
+      rows: [
+        { icon: 'badge', label: 'Họ và tên', value: 'Học Viên Luyện Nói 1' },
+        { icon: 'mail', label: 'Email', value: 'learner1@jcap.com', verified: true },
+        { icon: 'call', label: 'Số điện thoại', value: 'Chưa có', missing: true },
+        { icon: 'calendar_month', label: 'Ngày tham gia', value: '15 tháng 9, 2026' }
+      ],
+      fill: { map: st.page === 'map', role: st.page === 'roleplay', shadow: st.page === 'shadow' },
+      goMap: go('map'), goRole: go('roleplay'), goShadow: go('shadow'),
+      rm: roomVals(self, st),
+      rmCls: 'rm-pg' + (st.page === 'room' ? ' on' : ''), rmHidden: st.page === 'room' ? 'false' : 'true',
+      goRoom: function () { self.setState({ page: 'room', from: 'shadow' }); },
+      cv: convVals(self, st),
+      cvCls: 'rm-pg' + (st.page === 'conv' ? ' on' : ''), cvHidden: st.page === 'conv' ? 'false' : 'true',
+      goConv: function () { self.setState({ page: 'conv', from: 'roleplay' }); },
+      playCont: function () { self.setState({ page: 'room', from: 'map', open: null, acct: false, lock: null }); },
+      playConv: function () { self.setState({ page: 'conv', from: 'map', open: null, acct: false, lock: null }); },
+      pgRole: 'pg' + (st.page === 'roleplay' ? ' on' : ''), hideRole: st.page === 'roleplay' ? 'false' : 'true',
+      pgShadow: 'pg' + (st.page === 'shadow' ? ' on' : ''), hideShadow: st.page === 'shadow' ? 'false' : 'true',
+      logoSize: 32, iconLg: 26, iconXl: 32, iconSm: 18, iconMd: 22, ring: 44, ten: 10, credits: credits,
+      cats: [{ value: 'all', label: 'Tất cả' }, { value: 'an', label: 'Ăn uống', icon: 'restaurant' }, { value: 'di', label: 'Di chuyển', icon: 'commute' }, { value: 'mua', label: 'Mua sắm', icon: 'shopping_bag' }, { value: 'cv', label: 'Công việc', icon: 'work' }],
+      cat: st.cat,
+      setCat: function (v) { self.setState({ cat: v }); },
+      lvFilters: [{ value: 'all', label: 'Tất cả' }, { value: 'N5', label: 'N5' }, { value: 'N4', label: 'N4' }, { value: 'N3', label: 'N3' }],
+      lvFilter: st.lvFilter,
+      setLvFilter: function (v) { self.setState({ lvFilter: v }); },
+      rpGroups: groups,
+      rpEmpty: groups.length === 0,
+      lv: lv,
+      setLv: function (v) { self.setState({ lv: v }); },
+      cost: cost,
+      after: (credits - cost).toLocaleString('vi-VN'),
+      p: {
+        icon: p.icon, title: p.title, goal: p.goal, persona: p.persona, personaNote: p.personaNote,
+        initial: p.persona.replace(/^(anh|bà|chị) /, '').charAt(0).toUpperCase(),
+        missions: p.missions, vocab: p.vocab,
+        levelOpts: ['N5', 'N4', 'N3'].map(function (l) { return { value: l, label: l, disabled: p.levels.indexOf(l) < 0 }; }),
+        inProgress: !!p.progress,
+        notStarted: !p.progress,
+        progressText: p.progress ? (p.progress.done + '/' + p.progress.total + ' nhiệm vụ') : ''
+      },
+      tabs: [{ value: 'all', label: 'Tất cả', count: 5 }, { value: 'doing', label: 'Đang học', count: 1 }, { value: 'new', label: 'Chưa học', count: 1 }, { value: 'saved', label: 'Đã lưu', icon: 'bookmark', count: 1 }],
+      levels: [{ value: 'all', label: 'Tất cả' }, { value: 'N5', label: 'N5' }, { value: 'N4', label: 'N4' }, { value: 'N3', label: 'N3' }],
+      shGroups: shFiltered,
+      shfTabs: shfTabs, shfLvs: shfLvs, shfEmpty: shFiltered.length === 0,
+      shfSearchCls: 'shf-search' + (st.shQ ? ' has-q' : ''),
+      shfSetQ: function (e) { var v = e && e.target ? e.target.value : (e || ''); self.setState({ shQ: v }); },
+      history: [
+        { score: 91, title: 'Lần đầu tiên đi máy bay', meta: 'Hôm nay · 3 phút 12 giây' },
+        { score: 79, title: 'Ngày giới thiệu câu lạc bộ', meta: 'Hôm qua · 2 phút 40 giây' },
+        { score: 64, title: 'Trao đổi về lịch trình dự án IT', meta: '25/10 · 2 phút 05 giây' }
+      ],
+      acctCls: 'acct' + (st.acct ? ' is-open' : ''),
+      acctOpen: !!st.acct,
+      toggleAcct: function () { self.setState({ acct: !st.acct }); },
+      chapCls: 'dh' + (st.open === 'chap' ? ' is-open' : ''),
+      contCls: 'dh' + (st.open === 'cont' ? ' is-open' : ''),
+      convCls: 'dh' + (st.open === 'conv' ? ' is-open' : ''),
+      chapOpen: st.open === 'chap', contOpen: st.open === 'cont', convOpen: st.open === 'conv',
+      toggleChap: function () { self.setState({ open: st.open === 'chap' ? null : 'chap' }); },
+      toggleCont: function () { self.setState({ open: st.open === 'cont' ? null : 'cont' }); },
+      toggleConv: function () { self.setState({ open: st.open === 'conv' ? null : 'conv' }); },
+      missions: [
+        { label: 'Nói điểm đến', status: 'done' },
+        { label: 'Mua vé khứ hồi', status: 'done' },
+        { label: 'Hỏi sân ga tàu chạy', status: 'current' },
+        { label: 'Cảm ơn và chào', status: 'todo' }
+      ],
+      back: function () { self.setState({ pref: false }); },
+      toggle: function () { self.setState({ collapsed: !st.collapsed }); },
+      nameTab: st.collapsed ? '-1' : '0',
+      goHome: function () { self.setState({ page: 'map', pref: false, lock: null, open: null, acct: false }); },
+      logoClick: function () { if (st.collapsed) self.setState({ collapsed: false }); else self.setState({ page: 'map', pref: false, lock: null, open: null, acct: false }); },
+      logoLabel: st.collapsed ? 'Mở thanh bên' : 'Về trang chủ',
+      logoTitle: st.collapsed ? '' : 'Về trang chủ',
+      closeTab: st.collapsed ? '-1' : '0',
+      furiMap: st.furiMap !== false, furiMapCls: 'mapctl' + (st.furiMap !== false ? ' on' : ''),
+      toggleFuriMap: function () { self.setState({ furiMap: st.furiMap === false }); },
+      legendOpen: !!st.legend, toggleLegend: function () { self.setState({ legend: !st.legend }); },
+      openKyoto: function () { self.setState({ lock: 'kyoto' }); },
+      openNara: function () { self.setState({ lock: 'nara' }); },
+      closeLock: function () { self.setState({ lock: null }); },
+      hasLock: !!st.lock,
+      lock: st.lock ? locks[st.lock] : locks.kyoto,
+      steps: [
+        { label: 'Hiểu', status: 'done' },
+        { label: 'Shadowing', status: 'current', description: 'Đạt từ 70' },
+        { label: 'Kiểm tra', status: 'locked', tag: 'Sắp có' },
+        { label: 'Hội thoại AI', status: 'todo', description: 'Nhận dấu son' }
+      ],
+      spots: [
+        { icon: 'flight', name: '1. Sân bay Narita', jp: '成田空港', status: 'Đã có dấu', border: '2px solid var(--shu)', color: 'var(--shu)' },
+        { icon: 'temple_buddhist', name: '2. Chùa Naritasan', jp: '成田山新勝寺', status: 'Đã có dấu', border: '2px solid var(--shu)', color: 'var(--shu)' },
+        { icon: 'train', name: '3. Ga Chiba', jp: '千葉駅', status: 'Đã có dấu', border: '2px solid var(--shu)', color: 'var(--shu)' },
+        { icon: 'beach_access', name: '5. Bãi biển Kujukuri', jp: '九十九里浜', status: 'Chưa học', border: '2px dashed var(--line-strong)', color: 'var(--sumi-muted)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

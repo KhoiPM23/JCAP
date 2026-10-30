@@ -1,5 +1,6 @@
 import React from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
+import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import { useAuth } from '../contexts/AuthContext';
 import { PrivateRoute } from '../components/PrivateRoute';
 import { MainLayout } from '../layouts/MainLayout';
@@ -13,6 +14,7 @@ import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
+import { StampBookView } from '../views/explore/StampBookView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
 import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
@@ -108,6 +110,39 @@ const LearnerHomeRoute: React.FC = () => {
   if (userRole === 'Admin') {
     return <Navigate to="/admin/dashboard" replace />;
   }
+  // Trang chủ của học viên là bản đồ Hành trình (design-handoff mục 3)
+  return <MapRoute />;
+};
+
+/**
+ * Ghi nhớ phiên Hội thoại AI đang mở để thanh bên hiện mục "đang dở" (không hiển thị gì, không đụng vào phòng hội thoại)
+ */
+const RememberRoleplaySession: React.FC = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  React.useEffect(() => {
+    const id = Number(sessionId);
+    if (id > 0) rememberRoleplaySession(id);
+  }, [sessionId]);
+  return null;
+};
+
+/** Bản đồ Hành trình (tải riêng vì nặng); nằm trong khung học viên, thanh bên nổi trên bản đồ */
+const MapRoute: React.FC = () => (
+  <React.Suspense
+    fallback={
+      <div className="min-h-screen flex items-center justify-center bg-paper-100">
+        <div className="w-10 h-10 border-4 border-line border-t-ai rounded-full animate-spin" />
+      </div>
+    }
+  >
+    <JapanMapView />
+  </React.Suspense>
+);
+
+/** Trang tổng quan cũ: chưa có trong thiết kế mới, vẫn mở được ở /dashboard */
+const LearnerDashboardRoute: React.FC = () => {
+  const { user } = useAuth();
+  if (user?.role === 'Admin') return <Navigate to="/admin/dashboard" replace />;
   return <LearnerDashboardView />;
 };
 
@@ -307,6 +342,7 @@ export const AppRouter: React.FC = () => {
         path="/scenarios/practice/:sessionId"
         element={
           <PrivateRoute>
+            <RememberRoleplaySession />
             <RoleplayPracticeView />
           </PrivateRoute>
         }
@@ -338,24 +374,6 @@ export const AppRouter: React.FC = () => {
         }
       />
 
-      {/* Khám phá: bản đồ Nhật Bản toàn màn hình (nằm ngoài MainLayout) */}
-      <Route
-        path="/explore"
-        element={
-          <PrivateRoute>
-            <React.Suspense
-              fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#F4F9FE]">
-                  <div className="w-10 h-10 border-4 border-blue-100 border-t-[#0878EE] rounded-full animate-spin" />
-                </div>
-              }
-            >
-              <JapanMapView />
-            </React.Suspense>
-          </PrivateRoute>
-        }
-      />
-
       {/* Fullscreen Flashcard SRS Study Session (Zen Mode, outside MainLayout) */}
       <Route
         path="/flashcards/study/:topicId/:contentType"
@@ -375,7 +393,11 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/" element={<LearnerHomeRoute />} />
-        <Route path="/dashboard" element={<LearnerHomeRoute />} />
+        {/* Khám phá = bản đồ Hành trình, cùng trang với trang chủ */}
+        <Route path="/explore" element={<MapRoute />} />
+        {/* Sổ con dấu: xem lại mọi con dấu của hành trình */}
+        <Route path="/stamps" element={<StampBookView />} />
+        <Route path="/dashboard" element={<LearnerDashboardRoute />} />
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         

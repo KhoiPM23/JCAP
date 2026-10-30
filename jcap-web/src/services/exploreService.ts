@@ -1,5 +1,5 @@
 import type { ApiResponse } from '../types/auth';
-import type { ExploreJourney, ExploreSyncResult } from '../types/explore';
+import type { ExploreJourney, ExploreStampBook, ExploreSyncResult } from '../types/explore';
 
 /** Bản đồ Khám phá phía người học: hành trình, các mốc học của từng tỉnh và con dấu của người học */
 class ExploreService {
@@ -31,6 +31,11 @@ class ExploreService {
   /** Các mốc của một tỉnh kèm tiến độ; server xét bằng chứng học của cả tỉnh và cấp con dấu vừa đạt trước khi trả */
   public syncPrefecture(id: number): Promise<ApiResponse<ExploreSyncResult>> {
     return this.send<ExploreSyncResult>('POST', `/api/explore/prefectures/${id}/sync`);
+  }
+
+  /** Sổ con dấu: các mốc đã có con dấu (chỉ đọc, không cấp dấu) */
+  public getStampBook(): Promise<ApiResponse<ExploreStampBook>> {
+    return this.send<ExploreStampBook>('GET', '/api/explore/stamps');
   }
 
   /** Ghi nhận "Đã hiểu" phần câu mẫu của mốc (rồi đồng bộ cả tỉnh) */

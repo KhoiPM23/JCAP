@@ -56,4 +56,49 @@ namespace JCAP.DTOs.Explore
     {
         public List<int> ChapterIds { get; set; } = new();
     }
+
+    /// <summary>Thống kê Khám phá cho admin: tổng quan, theo chương và phễu từng mốc đang dùng.</summary>
+    public class AdminExploreStatsDto
+    {
+        /// <summary>Số người học đã bắt đầu (có ít nhất một dòng tiến độ ở một mốc)</summary>
+        public int Learners { get; set; }
+        /// <summary>Tổng con dấu / dấu son mốc đã cấp (đã cấp thì không thu hồi, nên gồm cả mốc nay đã ngừng dùng)</summary>
+        public int Stamps { get; set; }
+        public int RedStamps { get; set; }
+        public int PrefectureStamps { get; set; }
+        public int PrefectureRedStamps { get; set; }
+        public List<AdminExploreChapterStatsDto> Chapters { get; set; } = new();
+        public List<AdminExploreSpotStatsDto> Spots { get; set; } = new();
+    }
+
+    public class AdminExploreChapterStatsDto
+    {
+        public int ChapterId { get; set; }
+        public int OrderIndex { get; set; }
+        public string Title { get; set; } = string.Empty;
+        /// <summary>Số mốc người học thấy được trong chương (mốc đang dùng của tỉnh đã mở)</summary>
+        public int SpotCount { get; set; }
+        /// <summary>Số người học đã mở chương (chương đầu = mọi người đã bắt đầu)</summary>
+        public int UnlockedLearners { get; set; }
+        /// <summary>Trung bình % mốc có con dấu của chương, tính trên những người đã mở chương; null khi chưa có số liệu</summary>
+        public double? AvgStampPercent { get; set; }
+    }
+
+    public class AdminExploreSpotStatsDto
+    {
+        public int SpotId { get; set; }
+        public string NameVi { get; set; } = string.Empty;
+        public int PrefectureId { get; set; }
+        public bool PrefectureIsOpen { get; set; }
+        /// <summary>Chương đang chứa tỉnh của mốc (chỉ tính chương đang dùng)</summary>
+        public int? ChapterId { get; set; }
+        /// <summary>Mốc có Hội thoại AI (kịch bản còn dùng) nên mới có dấu son</summary>
+        public bool HasRoleplay { get; set; }
+        public int Understood { get; set; }
+        public int Stamped { get; set; }
+        /// <summary>null khi mốc không có Hội thoại AI (không có dấu son để đạt)</summary>
+        public int? RedStamped { get; set; }
+        /// <summary>Đã hiểu nhưng chưa có con dấu: người học kẹt ở Shadowing</summary>
+        public int StuckAtShadowing { get; set; }
+    }
 }

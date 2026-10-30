@@ -14,6 +14,7 @@ import type {
 import { AdminExploreChapterSection, WarnIcon } from './AdminExploreChapterSection';
 import { AdminExploreMap, STATE_LABEL, prefectureState, type PrefectureState } from './AdminExploreMap';
 import { AdminExploreSpotTable } from './AdminExploreSpotTable';
+import { AdminExploreStats } from './AdminExploreStats';
 
 /**
  * Quản lý bản đồ Khám phá (giai đoạn 2): mở tỉnh cho người học và quản lý chương.
@@ -51,6 +52,7 @@ export const AdminExploreView: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const mapRef = useRef<HTMLDivElement>(null);
 
+  const tab: 'map' | 'stats' = searchParams.get('tab') === 'stats' ? 'stats' : 'map';
   const selectedId = (() => {
     const n = Number(searchParams.get('pref'));
     return Number.isInteger(n) && n >= 1 && n <= 47 ? n : null;
@@ -200,7 +202,30 @@ export const AdminExploreView: React.FC = () => {
         </p>
       </div>
 
-      {loadError && (
+      {/* Hai tab: Bản đồ (quản lý) và Thống kê (tiến độ người học). Chọn tỉnh chỉ có ở tab Bản đồ nên đổi tab bỏ ?pref */}
+      <div className="flex gap-1 border-b border-slate-200" role="tablist" aria-label="Chế độ xem">
+        {([
+          { id: 'map', label: 'Bản đồ & chương' },
+          { id: 'stats', label: 'Thống kê' },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setSearchParams(t.id === 'stats' ? { tab: 'stats' } : {}, { replace: true })}
+            className={`h-10 px-4 text-sm font-semibold border-b-2 -mb-px focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0878EE] rounded-t-lg ${
+              tab === t.id ? 'border-[#0878EE] text-[#0878EE]' : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'stats' && <AdminExploreStats />}
+
+      {tab === 'map' && loadError && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3" role="alert">
           <p className="text-sm text-red-800">Không tải được dữ liệu bản đồ: {loadError}</p>
           <button
@@ -213,9 +238,9 @@ export const AdminExploreView: React.FC = () => {
         </div>
       )}
 
-      {!overview && !loadError && <LoadingSkeleton />}
+      {tab === 'map' && !overview && !loadError && <LoadingSkeleton />}
 
-      {overview && (
+      {tab === 'map' && overview && (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Bản đồ */}
