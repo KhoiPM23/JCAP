@@ -157,6 +157,8 @@ export interface RoleplayHintDto {
   explanation?: string;
   keywords?: string[];
   clozeSentence?: string;
+  furiganaHtml?: string;
+  suggestedFuriganaHtml?: string;
 }
 
 export interface StartRoleplaySessionRequestDto {

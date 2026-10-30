@@ -118,3 +118,22 @@ export function isWhisperHallucination(text?: string | null): boolean {
 
   return false;
 }
+
+/**
+ * Chuẩn hóa câu tiếng Nhật tinh khiết cho VOICEVOX Engine:
+ * - Bỏ triệt để các thẻ <ruby>, <rt>...</rt>, và mọi tag HTML
+ * - Bỏ các chú thích tiếng Việt trong ngoặc
+ * Giúp VOICEVOX đọc đúng ngữ điệu tự nhiên, không đọc chữ cái HTML tiếng Anh r-u-b-y
+ */
+export function cleanJapaneseForTts(text?: string | null): string {
+  if (!text) return '';
+  // 1. Bỏ phần đọc bên trong <rt>...</rt>
+  let clean = text.replace(/<rt[^>]*>.*?<\/rt>/gi, '');
+  // 2. Bỏ tất cả thẻ HTML còn lại (<ruby>, </ruby>, <p>, v.v.)
+  clean = clean.replace(/<[^>]+>/g, '');
+  // 3. Bỏ cú pháp {kanji|furigana} nếu có
+  clean = clean.replace(/\{([^|}]+)\|[^}]+\}/g, '$1');
+  // 4. Bỏ chú thích tiếng Việt và khoảng trắng thừa
+  clean = sanitizeDisplayJapanese(clean).trim();
+  return clean;
+}

@@ -95,7 +95,7 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
   useEffect(() => {
 
-    const duration = 1200;
+    const duration = 1600;
 
     const startTime = performance.now();
 
@@ -107,7 +107,8 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
       const progress = Math.min(elapsed / duration, 1);
 
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      // Smooth deceleration: fast initial burst then gentle glide
+      const easeProgress = 1 - Math.pow(1 - progress, 4);
 
       
 
@@ -160,9 +161,9 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
       <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 128 128">
         <defs>
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--ai)" />
-            <stop offset="50%" stopColor="var(--ai-hover)" />
-            <stop offset="100%" stopColor="var(--score-good)" />
+            <stop offset="0%" stopColor="#38bdf8" />
+            <stop offset="55%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#fbbf24" />
           </linearGradient>
         </defs>
 
@@ -174,7 +175,7 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
           r={radius}
 
-          stroke="rgba(255, 255, 255, 0.12)"
+          stroke="rgba(255, 255, 255, 0.18)"
 
           strokeWidth="9"
 
@@ -206,7 +207,7 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
 
             transition: 'stroke-dashoffset 0.05s linear',
 
-            filter: 'drop-shadow(0 0 6px rgba(99, 102, 241, 0.6))',
+            filter: 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.65))',
 
           }}
 
@@ -1456,47 +1457,6 @@ export const ConversationResultDetailView: React.FC = () => {
 
 
 
-        {/* M5: NPC Affinity & Relationship Progression Card */}
-        <div className="mt-6 rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50/70 via-white to-pink-50/50 p-5 shadow-xs font-sans">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-400 text-white flex items-center justify-center text-2xl shadow-xs"><FlowerIcon className="w-6 h-6 text-white" /></div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold uppercase tracking-wider text-rose-800">
-                    Mối quan hệ nhân vật
-                  </span>
-                  <span className="rounded-full bg-rose-100 text-rose-800 px-2.5 py-0.5 text-xs font-bold border border-rose-200">
-                    {result.npcRelationshipTitle || (result.overallScore >= 80 ? 'Thân thiết sâu sắc ' : 'Người quen thân thuộc ')}
-                  </span>
-                  <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">
-                    +10 Điểm thân thiết 
-                  </span>
-                </div>
-                <p className="text-xs text-[var(--sumi)] font-medium mt-1">
-                  Đối thoại cùng: <strong className="font-semibold text-rose-950">{result.aiPersona || 'Nhân vật AI'}</strong> — Cuộc hội thoại hoàn thành giúp nhân vật ghi nhớ và thấu hiểu bạn sâu sắc hơn!
-                </p>
-              </div>
-            </div>
-
-            {/* Affinity Progress Visualizer */}
-            <div className="flex items-center gap-3 bg-white/90 rounded-2xl px-4 py-2.5 border border-rose-200 shadow-2xs">
-              <div className="text-right">
-                <span className="text-[10px] text-rose-700 font-medium block">Mức độ gắn kết</span>
-                <span className="text-sm font-extrabold text-rose-950 font-mono">
-                  {Math.min(100, (result.npcAffinityScore || 20))}%
-                </span>
-              </div>
-              <div className="w-24 h-2.5 bg-rose-100 rounded-full overflow-hidden p-0.5 border border-rose-200">
-                <div
-                  className="h-full bg-gradient-to-r from-rose-400 to-pink-500 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${Math.min(100, (result.npcAffinityScore || 20))}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Structured AI Feedback Section */}
 
         {(() => {
@@ -2604,112 +2564,40 @@ export const ConversationResultDetailView: React.FC = () => {
 
         )}
 
-        {/* Thẻ Khuyến nghị thích ứng tiếp theo (Actionable Next Steps - Tiktok-style Pampering) */}
-
-        <div className="mt-6 rounded-3xl border border-[var(--line)] bg-[var(--paper-50)]/90 backdrop-blur-xs p-5 shadow-xs">
-
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-
-            <div className="flex items-start gap-3 min-w-0 flex-1">
-
-              <div className="w-10 h-10 rounded-2xl bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center shrink-0 border border-[var(--ai)]/20 shadow-2xs text-lg"><LightbulbIcon className="w-5 h-5 text-[var(--ai)]" /></div>
-
-              <div>
-
-                <h3 className="text-sm font-bold text-[var(--sumi)] flex items-center gap-2 font-sans">
-
-                  <span>{result.passStatus ? 'Bước tiến đề xuất tiếp theo' : 'Gợi ý cải thiện trọng tâm'}</span>
-
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--ai-soft)] text-[var(--ai)] border border-[var(--ai)]/20">
-
-                    {result.passStatus ? 'Đề xuất thông minh' : 'Luyện tập mục tiêu'}
-
-                  </span>
-
-                </h3>
-
-                <p className="mt-1 text-xs text-[var(--sumi-muted)] leading-relaxed">
-                  {result.nextRecommendedReason
-                    ? result.nextRecommendedReason
-                    : result.passStatus
-                    ? 'Bạn đã hoàn thành xuất sắc thử thách này! Hệ thống FSRS Spaced-Repetition đã cập nhật tiến độ vào Hồ sơ Năng lực ngầm. Hãy tiếp tục khám phá kịch bản mới để tăng vốn từ vựng và phản xạ hội thoại.'
-                    : 'Đừng nản lòng! Hãy tận dụng Chế độ Đàm thoại Rảnh tay hoặc Gợi ý câu trả lời nhiều cấp độ (Hint Graduated) để nói trôi chảy và tự tin hơn.'}
-                </p>
-
-              </div>
-
-            </div>
-
-
-
-            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto lg:shrink-0">
-              {result.nextRecommendedScenarioId && (
-                <Link
-                  to={`/scenarios/${result.nextRecommendedScenarioId}`}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-4 py-2 text-xs font-bold text-white shadow-md active:scale-95 transition"
-                >
-                  <span>Luyện tiếp: {result.nextRecommendedScenarioTitle || 'Kịch bản kế tiếp'}</span>
-                  {result.predictedSuccessRateNextScenario && (
-                    <span className="ml-1 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-mono">
-                      {Math.round(result.predictedSuccessRateNextScenario * 100)}%
-                    </span>
-                  )}
-                  <span>→</span>
-                </Link>
-              )}
-
-              {!result.passStatus && result.scenarioId && (
-
-                <Link
-
-                  to={`/scenarios/${result.scenarioId}`}
-
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[var(--shu)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[var(--shu)]/90 active:scale-95 transition"
-
-                >
-
-                  
-                  <span>Luyện lại tình huống này</span>
-
-                </Link>
-
-              )}
-
-              {result.scenarioId && (
-                <button
-                  type="button"
-                  onClick={handleStartBlindRetake}
-                  disabled={isStartingBlind}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:opacity-95 active:scale-95 transition cursor-pointer disabled:opacity-50"
-                  title="Thử thách phản xạ thực chiến: Khóa gợi ý + Giới hạn 10s/lượt (+50% EXP)"
-                >
-                  <span>{isStartingBlind ? 'Đang chuẩn bị...' : '⚡ Thử thách Phản xạ 10s (Blind Retake)'}</span>
-                </button>
-              )}
-              <Link
-
-                to="/scenarios"
-
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-2xl bg-[var(--ai)] px-4 py-2 text-xs font-bold text-[var(--on-ai)] shadow-xs hover:bg-[var(--ai-hover)] active:scale-95 transition"
-
-              >
-
-                
-                <span>Khám phá kịch bản khác</span>
-
-              </Link>
-
-            </div>
-
-          </div>
-
+        {/* Thanh điều hướng tinh gọn chuẩn Pro UI */}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-6">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {result.scenarioId && (
+            <Link
+              to={`/scenarios/${result.scenarioId}`}
+              className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-95"
+            >
+              🔄 Luyện lại kịch bản này
+            </Link>
+          )}
+          <Link
+            to="/flashcards"
+            className="rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 px-4 py-2.5 text-xs font-bold text-amber-900 shadow-2xs transition active:scale-95"
+          >
+            🎴 Ôn tập từ vựng & Flashcards
+          </Link>
+          <Link
+            to="/scenarios"
+            className="rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition active:scale-95"
+          >
+            Khám phá kịch bản khác
+          </Link>
         </div>
-
+        <div>
+          <Link
+            to="/roleplay/results"
+            className="rounded-xl border border-[var(--line)] bg-[var(--paper-50)] hover:bg-white px-4 py-2.5 text-xs font-bold text-[var(--sumi-muted)] hover:text-[var(--sumi)] transition active:scale-95"
+          >
+            Xem toàn bộ lịch sử
+          </Link>
+        </div>
       </div>
 
-
-
-      <div className="mt-7 flex flex-wrap gap-3">
 
         {returnUrl && (
 

@@ -12,6 +12,7 @@ export interface GraduatedHintCardProps {
   clozeSentence?: string;
   fullJapaneseSample: string;
   vietnameseMeaning?: string;
+  furiganaHtml?: string;
   onUseHint: (text: string, tier: 1 | 2 | 3) => void;
   /** Callback fired immediately when user switches tier tab — used to record penalty level without waiting for "Dùng" button */
   onTierChange?: (tier: 1 | 2 | 3) => void;
@@ -25,6 +26,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
   clozeSentence,
   fullJapaneseSample,
   vietnameseMeaning,
+  furiganaHtml,
   onUseHint,
   onTierChange,
   onPlaySampleAudio,
@@ -187,9 +189,16 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               Mẫu câu hoàn chỉnh chuẩn Tokyo:
             </span>
             <div className="bg-white p-2.5 rounded-xl border border-amber-300 shadow-2xs space-y-1">
-              <p className="text-sm md:text-base font-bold text-amber-950 tracking-wide font-sans">
-                {cleanSample}
-              </p>
+              {furiganaHtml ? (
+                <div
+                  className="text-sm md:text-base font-bold text-amber-950 tracking-wide font-sans leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: furiganaHtml }}
+                />
+              ) : (
+                <p className="text-sm md:text-base font-bold text-amber-950 tracking-wide font-sans">
+                  {cleanSample}
+                </p>
+              )}
               {vietnameseMeaning && (
                 <p className="text-xs text-amber-900/80 italic border-t border-amber-100 pt-1">
                   Dịch nghĩa: {vietnameseMeaning}

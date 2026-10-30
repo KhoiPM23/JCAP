@@ -1,3 +1,4 @@
+import { cleanJapaneseForTts } from '../utils/japaneseSanitizer';
 import { voicevoxService, type VoiceOption } from './voicevoxService';
 
 /**
@@ -133,6 +134,11 @@ class ScenarioVoiceService {
     }
 
     this.isSpeechCancelled = false;
+    const cleanText = cleanJapaneseForTts(text);
+    if (!cleanText) {
+      onEnd?.();
+      return false;
+    }
 
     // Chữa lỗi trình duyệt Chrome/Edge bị tạm dừng SpeechSynthesis ngầm
     if (window.speechSynthesis.paused) {
@@ -140,7 +146,7 @@ class ScenarioVoiceService {
     }
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     // Lưu tham chiếu utterance vào biến instance để tránh bị Garbage Collector của Chrome thu dọn giữa chừng
     this.currentUtterance = utterance;
     utterance.lang = 'ja-JP';
@@ -200,8 +206,14 @@ class ScenarioVoiceService {
 
     const resolvedRate = rate ?? this.getSpeechRate();
 
+    const cleanText = cleanJapaneseForTts(text);
+    if (!cleanText) {
+      onEnd?.();
+      return;
+    }
+
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(text, resolvedVoiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
       const audio = new Audio(audioUrl);
       audio.playbackRate = resolvedRate;
       this.currentAudio = audio;

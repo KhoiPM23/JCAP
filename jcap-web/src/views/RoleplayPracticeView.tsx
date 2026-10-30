@@ -664,7 +664,7 @@ export const RoleplayPracticeView: React.FC = () => {
           if (deadlockTimerRef.current) clearTimeout(deadlockTimerRef.current);
           deadlockTimerRef.current = setTimeout(() => {
             if (isHandsFreeModeRef.current && !isSendingRef.current && !sessionConcludedRef.current) {
-              setShowProactiveHint(true);
+              // setShowProactiveHint(true); (Tắt tự động bung để không làm phiền học viên)
             }
           }, 10000);
         }
@@ -832,7 +832,7 @@ export const RoleplayPracticeView: React.FC = () => {
     if (proactiveDismissedTurnRef.current === session?.messages.length) return;
     if (!isHandsFreeMode && !isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded && !hint) {
       idleTimerRef.current = setTimeout(() => {
-        setShowProactiveHint(true);
+        // setShowProactiveHint(true); (Tắt tự động bung để không làm phiền học viên)
       }, 12000); // Sau 12s không có hoạt động ở chế độ thủ công -> hiện banner nhắc nhẹ nhàng
     }
   }, [isHandsFreeMode, isSending, isPlayingAiSpeech, session?.isNaturallyConcluded, hint]);
@@ -1650,24 +1650,26 @@ export const RoleplayPracticeView: React.FC = () => {
     setShowProactiveHint(false);
 
 
-    // 1. Nạp tức thì instant hint < 5ms để người dùng thấy nội dung ngay lập tức
-    const instant = synthesizeInstantHint(session);
-    hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
-    setAppliedHintTier(1);
-    setHint(instant);
-
-
-    // 2. Nạp sâu từ LLM ngầm mà KHÔNG ghi đè làm giật nảy giao diện
+    // Chỉ nạp và mở bảng gợi ý khi LLM backend đã trả về dữ liệu thực tế, tránh lộ mock giật lag
     const currentSessionId = session.sessionId || session.id || sessionId;
     setIsLoadingHint(true);
     try {
       const res = await roleplayService.getHint(currentSessionId);
       if (res.success && res.data) {
-        // Chỉ cập nhật bổ sung trường chi tiết nếu người dùng vẫn đang mở xem hint
-        setHint((prev) => (prev ? { ...prev, ...res.data } : res.data));
+        hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
+        setAppliedHintTier(1);
+        setHint(res.data);
+      } else {
+        const fallback = synthesizeInstantHint(session);
+        hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
+        setAppliedHintTier(1);
+        setHint(fallback);
       }
     } catch {
-      // Giữ nguyên instant hint đã tổng hợp
+      const fallback = synthesizeInstantHint(session);
+      hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
+      setAppliedHintTier(1);
+      setHint(fallback);
     } finally {
       setIsLoadingHint(false);
     }
@@ -2031,11 +2033,7 @@ export const RoleplayPracticeView: React.FC = () => {
               <div className="text-[11px] text-[var(--sumi-faint)] flex items-center gap-1.5 truncate whitespace-nowrap mt-0.5 min-w-0">
                 <span className="hidden sm:inline shrink-0">Đối thoại cùng:</span>
                 <span className="font-semibold text-[var(--sumi)] truncate">{session.aiPersona}</span>
-                {session.recommendedAiVoiceName && (
-                  <span className="hidden md:inline-flex shrink-0 items-center gap-1 rounded-md bg-[var(--ai-soft)] px-1.5 py-0.2 text-[10px] font-bold text-[var(--ai)] border border-[var(--line)]/60" title="Giọng nói tự động gán phù hợp với nhân vật">
-                                        <span>{session.recommendedAiVoiceName.split('(')[0].trim()}</span>
-                  </span>
-                )}
+                
               </div>
             </div>
           </div>
@@ -2044,44 +2042,6 @@ export const RoleplayPracticeView: React.FC = () => {
 
         {/* Center/Right: Compact Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* M1: Day Streak Counter */}
-          <div
-            className="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50/90 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-amber-800 shrink-0 whitespace-nowrap shadow-2xs select-none font-sans"
-            title="Chuỗi ngày luyện tập liên tiếp của bạn"
-          >
-            <FlameIcon className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-            <span>{session.currentDayStreak || 0} ngày</span>
-          </div>
-
-          {/* M5: NPC Affinity Heartbeat Pill */}
-          <div
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/90 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-rose-700 shrink-0 whitespace-nowrap shadow-2xs cursor-help select-none hover:bg-rose-100 transition font-sans"
-            title={`Mối quan hệ với ${session.aiPersona}: ${session.npcAffinityScore || 10}/100. Hoàn thành trọn vẹn kịch bản này để tăng thêm +10 điểm thân thiết!`}
-          >
-            <FlowerIcon className="w-3.5 h-3.5 text-rose-600 animate-heartbeat" />
-            <span className="hidden xl:inline">{session.npcRelationshipTitle ? session.npcRelationshipTitle.replace(/[]/g, '').trim() : 'Lần đầu gặp gỡ'}</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-rose-200/80 text-rose-900 font-bold">
-              {session.npcAffinityScore || 10}%
-            </span>
-          </div>
-
-          {/* Credit balance pill (chỉ hiển thị cho Learner, ẩn đối với Admin) */}
-          {!isAdmin && (
-            <Link
-              to="/credits"
-              className="hidden xl:flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 shrink-0 whitespace-nowrap"
-              title="Số dư credit hiện tại"
-            >
-              <CoinsIcon className="w-3.5 h-3.5 text-amber-600" />
-              <span>{session.creditBalance ?? 0}</span>
-            </Link>
-          )}
-
-
-
-
-
-
           {/* Toggle Chế độ Đàm thoại Rảnh tay liên tục (Hands-Free Call Mode) */}
           <button
             type="button"
@@ -2570,39 +2530,7 @@ export const RoleplayPracticeView: React.FC = () => {
                       </span>
                     </div>
                     <p className="mt-1.5 text-[var(--sumi-muted)] leading-relaxed line-clamp-2 font-sans">{session.scenarioContext}</p>
-                    {((session.npcAffinityScore && session.npcAffinityScore > 10) || (session.npcMemories && session.npcMemories.length > 0)) && (
-                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pt-2 border-t border-[var(--line)] text-[11px]">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold border border-rose-200 shadow-2xs font-sans">
-                          <span>{session.npcRelationshipTitle || 'Người quen thân '}</span>
-                          <span className="opacity-70 text-[10px]">({session.npcAffinityScore || 10}%)</span>
-                        </span>
-                        {session.npcMemories && session.npcMemories.map((mem, idx) => {
-                          const cleanMem = mem
-                            .replace('likes: tonkotsu_ramen', 'Thích mì Tonkotsu')
-                            .replace('likes: shoyu_ramen', 'Thích mì Shoyu')
-                            .replace('likes: miso_ramen', 'Thích mì Miso')
-                            .replace('likes: sushi', 'Thích Sushi')
-                            .replace('likes: japanese_sake', 'Thích rượu Sake')
-                            .replace('likes: sweets', 'Thích đồ ngọt')
-                            .replace('likes: spicy_food', 'Thích ăn cay')
-                            .replace('dislikes: spicy_food', 'Không ăn được cay')
-                            .replace('origin: Da Nang', 'Từ Đà Nẵng')
-                            .replace('origin: Hanoi', 'Từ Hà Nội')
-                            .replace('origin: Ho Chi Minh City', 'Từ TP.HCM')
-                            .replace('origin: Vietnam', 'Người Việt Nam')
-                            .replace('career: IT engineer', 'Kỹ sư IT')
-                            .replace('status: student', 'Du học sinh')
-                            .replace('travel: first_time_in_japan', 'Lần đầu sang Nhật')
-                            .replace('travel: visited_japan_before', 'Đã từng sang Nhật');
-                          return (
-                            <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--paper-50)] text-[var(--sumi-muted)] font-medium border border-[var(--line)] shadow-2xs font-sans">
-                              <BookmarkIcon className="w-3 h-3 text-[var(--sumi-faint)]" />
-                              <span>{cleanMem}</span>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
+                    
                   </div>
 
 
@@ -2798,16 +2726,7 @@ export const RoleplayPracticeView: React.FC = () => {
                           >
                             {isAi ? session.aiPersona : 'Bạn'}
                           </span>
-                          {isAi && playingMessageId === msg.id && isPlayingAiSpeech && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-blue-50 text-[var(--ai)] text-[9px] font-bold border border-blue-200 animate-pulse">
-                              <span className="flex items-end gap-0.5 h-2.5">
-                                <span className="w-0.5 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite] h-2.5" />
-                                <span className="w-0.5 bg-[var(--ai)] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-1.5" />
-                                <span className="w-0.5 bg-[var(--ai)] rounded-full animate-[pulse_0.35s_ease-in-out_infinite_0.2s] h-3" />
-                              </span>
-                              <span>Đang đọc...</span>
-                            </span>
-                          )}
+                          
                         </div>
 
 
@@ -3076,6 +2995,7 @@ export const RoleplayPracticeView: React.FC = () => {
                   }
                   clozeSentence={hint.clozeSentence}
                   fullJapaneseSample={hint.suggestedJapaneseText || hint.japaneseSuggestion || ''}
+                  furiganaHtml={hint.furiganaHtml || (hint as any).suggestedFuriganaHtml}
                   vietnameseMeaning={hint.suggestedVietnameseMeaning || hint.vietnameseMeaning}
                   onUseHint={(sentence, tier) => {
                     // Chỉ ghi nhận mức phạt tự chủ khi người học thực sự bấm áp dụng
