@@ -1,3 +1,4 @@
+using JCAP.Services.Subscriptions;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Credit;
@@ -196,7 +197,7 @@ namespace JCAP.Controllers
                 var transactions = await _context.CreditTransactions
                     .Include(t => t.User)
                     .AsNoTracking()
-                    .Where(t => t.Type == "TopUp" || t.Type == "Subscription")
+                    .Where(t => (t.Type == "TopUp" || t.Type == "Subscription") && t.Status == "Paid")
                     .OrderByDescending(t => t.CreatedAt)
                     .Take(limit)
                     .ToListAsync();
@@ -215,33 +216,36 @@ namespace JCAP.Controllers
                         pkgName = pkgName.Substring("Nạp ".Length).Trim();
                     }
 
-                    decimal vndAmount = 0;
-                    if (isSub)
+                    decimal vndAmount = t.AmountVnd;
+                    if (vndAmount <= 0)
                     {
-                        if (pkgName.Contains("promax", StringComparison.OrdinalIgnoreCase) ||
-                            pkgName.Contains("Chuyên Sâu", StringComparison.OrdinalIgnoreCase) ||
-                            t.Amount >= 2500)
+                        if (isSub)
                         {
-                            vndAmount = 349000;
+                            if (pkgName.Contains("promax", StringComparison.OrdinalIgnoreCase) ||
+                                pkgName.Contains("Chuyên Sâu", StringComparison.OrdinalIgnoreCase) ||
+                                t.Amount >= 2500)
+                            {
+                                vndAmount = 349000;
+                            }
+                            else
+                            {
+                                vndAmount = 199000;
+                            }
                         }
                         else
                         {
-                            vndAmount = 199000;
-                        }
-                    }
-                    else
-                    {
-                        var matchedPkg = packages.FirstOrDefault(p =>
-                            p.Credits == t.Amount ||
-                            (!string.IsNullOrEmpty(p.Name) && pkgName.Contains(p.Name, StringComparison.OrdinalIgnoreCase)));
+                            var matchedPkg = packages.FirstOrDefault(p =>
+                                p.Credits == t.Amount ||
+                                (!string.IsNullOrEmpty(p.Name) && pkgName.Contains(p.Name, StringComparison.OrdinalIgnoreCase)));
 
-                        if (matchedPkg != null)
-                        {
-                            vndAmount = matchedPkg.Price;
-                        }
-                        else
-                        {
-                            vndAmount = t.Amount * 350;
+                            if (matchedPkg != null)
+                            {
+                                vndAmount = matchedPkg.Price;
+                            }
+                            else
+                            {
+                                vndAmount = t.Amount * 350;
+                            }
                         }
                     }
 

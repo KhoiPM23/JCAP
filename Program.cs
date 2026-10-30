@@ -20,7 +20,13 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 
 // 1. Cấu hình DbContext kết nối SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions =>
+        {
+            sqlServerOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            sqlServerOptions.CommandTimeout(60);
+        }));
 
 // Explicit local sample import; exits before web startup and all unrelated automatic seeders.
 if (args.Contains("--import-learning-sample"))
@@ -122,9 +128,15 @@ builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxK
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
+builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
+builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
+builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
+builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
+builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
 builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
 builder.Services.AddRateLimiter(options =>

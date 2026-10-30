@@ -5,6 +5,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { LearnerShell } from '../components/jcap/shell/LearnerShell';
 import { useAuth } from '../contexts/AuthContext';
+import { AdminAnnouncementModalHost } from '../components/admin/AdminAnnouncementPopup';
 
 export const MainLayout: React.FC = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ export const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-[#F4F9FE] font-sans text-[#071A44]">
       {/* Fixed Header */}
       <Header />
+      <AdminAnnouncementModalHost />
 
       {/* Main Content Area */}
       <div className="flex flex-1">

@@ -48,6 +48,12 @@ namespace JCAP.Data
         public DbSet<RoleplayMessage> RoleplayMessages { get; set; } = null!;
         public DbSet<RoleplaySessionMission> RoleplaySessionMissions { get; set; } = null!;
 
+        // Implicit Learner Intelligence & Persona Memory (FE-03 Telemetry)
+        public DbSet<LearnerIntelligenceProfile> LearnerIntelligenceProfiles { get; set; } = null!;
+        public DbSet<LearnerSkillMastery> LearnerSkillMasteries { get; set; } = null!;
+        public DbSet<LearnerBehaviorSignal> LearnerBehaviorSignals { get; set; } = null!;
+        public DbSet<UserNpcRelationship> UserNpcRelationships { get; set; } = null!;
+
         // Explore (bản đồ hành trình học) DbSets - cấu hình ở ExploreModelConfiguration
         public DbSet<ExplorePrefecture> ExplorePrefectures { get; set; } = null!;
         public DbSet<ExploreChapter> ExploreChapters { get; set; } = null!;
@@ -66,6 +72,11 @@ namespace JCAP.Data
         public DbSet<FlashcardReviewLog> FlashcardReviewLogs { get; set; } = null!;
         public DbSet<LearnerDailyFlashcardQuota> LearnerDailyFlashcardQuotas { get; set; } = null!;
 
+        // Anonymous Feedback & Support Box (UC-09 & UC-59) DbSets
+        public DbSet<FeedbackTicket> FeedbackTickets { get; set; } = null!;
+        public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
+        public DbSet<FeedbackAttachment> FeedbackAttachments { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -75,6 +86,9 @@ namespace JCAP.Data
 
             // Flashcard & Bookmark (FE-05)
             FlashcardModelConfiguration.Configure(modelBuilder);
+
+            // Anonymous Feedback & Support Box (UC-09 & UC-59)
+            FeedbackModelConfiguration.Configure(modelBuilder);
 
             // ApplicationUser configuration
             modelBuilder.Entity<ApplicationUser>(entity =>
@@ -112,6 +126,20 @@ namespace JCAP.Data
 
                 entity.Property(e => e.PayOsOrderCode)
                     .HasMaxLength(100);
+
+                entity.Property(e => e.AmountVnd)
+                    .HasPrecision(18, 2);
+
+                entity.Property(e => e.SubscriptionPlanId)
+                    .HasMaxLength(50);
+
+                // Truy vấn quota lọc theo UserId + Type + CoveredBySubscription + CreatedAt
+                entity.HasIndex(e => new { e.UserId, e.Type, e.CoveredBySubscription, e.CreatedAt })
+                    .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
+
+                // Đối soát webhook/verify-order tra theo mã đơn hàng
+                entity.HasIndex(e => e.PayOsOrderCode)
+                    .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
 
                 // ApplicationUser 1 - N CreditTransaction
                 entity.HasOne(e => e.User)
@@ -506,6 +534,28 @@ namespace JCAP.Data
                     .WithMany(m => m.SessionMissions)
                     .HasForeignKey(e => e.MissionId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Implicit Learner Intelligence & Persona Memory configurations
+            modelBuilder.Entity<LearnerIntelligenceProfile>(entity =>
+            {
+                entity.HasIndex(e => e.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<LearnerSkillMastery>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.SkillCode }).IsUnique();
+                entity.HasIndex(e => new { e.UserId, e.NextRecommendedReviewUtc });
+            });
+
+            modelBuilder.Entity<LearnerBehaviorSignal>(entity =>
+            {
+                entity.HasIndex(e => new { e.SessionId, e.TurnIndex });
+            });
+
+            modelBuilder.Entity<UserNpcRelationship>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.NpcCode }).IsUnique();
             });
 
             // ShadowingPracticeSession: lịch sử bất biến, không xóa cứng (Restrict để không mất lịch sử theo dây chuyền)

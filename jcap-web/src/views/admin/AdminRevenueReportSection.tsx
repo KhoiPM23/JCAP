@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { formatDateTime } from '../../utils/dateUtils';
 
 export type TimeRange = 'day' | 'week' | 'month' | 'year';
 
@@ -83,32 +84,7 @@ export interface AdminRecentTransaction {
   createdAt: string;
 }
 
-// Helper tính khoảng thời gian tương đối
-const formatRelativeTime = (dateInput: string): string => {
-  try {
-    const raw = dateInput.endsWith('Z') || dateInput.includes('+') ? dateInput : `${dateInput}Z`;
-    const d = new Date(raw);
-    if (isNaN(d.getTime())) return 'Vừa xong';
 
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffSec = Math.floor(diffMs / 1000);
-    if (diffSec < 60) return 'Vừa xong';
-
-    const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin} phút trước`;
-
-    const diffHours = Math.floor(diffMin / 60);
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-
-    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  } catch {
-    return 'Vừa xong';
-  }
-};
 
 interface AdminRevenueReportSectionProps {
   onExportReport?: () => void;
@@ -125,8 +101,10 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
   const [isLoadingTx, setIsLoadingTx] = useState<boolean>(true);
   const [txError, setTxError] = useState<string | null>(null);
 
-  const fetchRecentTransactions = useCallback(async () => {
-    setIsLoadingTx(true);
+  const fetchRecentTransactions = useCallback(async (silent: boolean = false) => {
+    if (!silent) {
+      setIsLoadingTx(true);
+    }
     setTxError(null);
     try {
       const token = localStorage.getItem('jcap_token');
@@ -140,20 +118,49 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
       if (response.ok) {
         const resData = await response.json();
         if (resData.success && Array.isArray(resData.data)) {
-          setRecentTransactions(resData.data);
+          // Chỉ hiển thị các giao dịch đã thanh toán thành công (Paid)
+          const paidOnly = resData.data.filter(
+            (tx: AdminRecentTransaction) => tx.status?.toLowerCase() === 'paid'
+          );
+          setRecentTransactions(paidOnly);
         }
-      } else {
+      } else if (!silent) {
         setTxError('Không thể tải dữ liệu giao dịch');
       }
     } catch (err: any) {
-      setTxError(err.message || 'Lỗi kết nối máy chủ');
+      if (!silent) {
+        setTxError(err.message || 'Lỗi kết nối máy chủ');
+      }
     } finally {
-      setIsLoadingTx(false);
+      if (!silent) {
+        setIsLoadingTx(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchRecentTransactions();
+    void fetchRecentTransactions(false);
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchRecentTransactions(true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocusOrVisible);
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void fetchRecentTransactions(true);
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocusOrVisible);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
+      clearInterval(interval);
+    };
   }, [fetchRecentTransactions]);
 
   const formatVnd = (val: number): string => {
@@ -730,7 +737,7 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={fetchRecentTransactions}
+              onClick={() => void fetchRecentTransactions(false)}
               disabled={isLoadingTx}
               className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full font-medium transition cursor-pointer"
               title="Làm mới dòng giao dịch"
@@ -753,11 +760,11 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
             </div>
           ) : txError ? (
             <div className="p-8 text-center text-xs text-red-500">
-              {txError} - <button onClick={fetchRecentTransactions} className="underline font-bold ml-1 cursor-pointer">Thử lại</button>
+              {txError} - <button onClick={() => void fetchRecentTransactions(false)} className="underline font-bold ml-1 cursor-pointer">Thử lại</button>
             </div>
           ) : recentTransactions.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
-              Chưa có giao dịch mua nào được ghi nhận trong hệ thống.
+              Chưa có giao dịch thanh toán thành công nào được ghi nhận trong hệ thống.
             </div>
           ) : (
             recentTransactions.map((tx) => (
@@ -783,15 +790,11 @@ export const AdminRevenueReportSection: React.FC<AdminRevenueReportSectionProps>
                 <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1">
                   <span className="font-black text-slate-900 text-sm">{formatVnd(tx.amount)}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-slate-400">{formatRelativeTime(tx.createdAt)}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      tx.status === 'Paid'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : tx.status === 'Pending'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {tx.status === 'Paid' ? 'Thành công' : tx.status === 'Pending' ? 'Chờ thanh toán' : 'Đã hủy'}
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      {formatDateTime(tx.createdAt)}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      Thành công
                     </span>
                   </div>
                 </div>

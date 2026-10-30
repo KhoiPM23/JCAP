@@ -8,5 +8,6 @@ public class RoleplayMessageDto
     public string? VietnameseMeaning { get; set; }
     public string? FuriganaHtml { get; set; }
     public LinguisticFeedbackDto? LinguisticFeedback { get; set; }
+    public string? AudioUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 }

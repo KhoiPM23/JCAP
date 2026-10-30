@@ -55,20 +55,23 @@ public sealed record RoleplaySocialRegister
             };
         }
 
-        // 2. Interviewer / Cấp trên / Tuyển dụng
-        if (combined.Contains("phỏng vấn") ||
+        // 2. Interviewer / Cấp trên / Tuyển dụng (Chỉ khớp khi thực sự là phỏng vấn xin việc/baito hoặc cấp trên)
+        // Lưu ý: "店長" (Chủ quán Ramen/nhà hàng/tiệm) tuyệt đối không được tự suy ra là Interviewer!
+        var isInterview = combined.Contains("phỏng vấn") ||
             combined.Contains("xin việc") ||
             combined.Contains("baito") ||
             combined.Contains("tuyển dụng") ||
-            combined.Contains("sếp") ||
-            combined.Contains("giám đốc") ||
-            combined.Contains("quản lý") ||
-            combined.Contains("tiền bối") ||
             combined.Contains("面接") ||
             combined.Contains("採用") ||
-            combined.Contains("店長") ||
+            combined.Contains("応募");
+
+        var isOfficeHierarchy = combined.Contains("sếp") ||
+            combined.Contains("giám đốc") ||
+            combined.Contains("tiền bối") ||
             combined.Contains("上司") ||
-            combined.Contains("先輩"))
+            combined.Contains("先輩");
+
+        if (isInterview || isOfficeHierarchy)
         {
             return new RoleplaySocialRegister
             {
@@ -370,77 +373,185 @@ public sealed record RoleplaySocialRegister
 
             if (criteria.Contains("giúp") || criteria.Contains("help") || criteria.Contains("đề nghị") || criteria.Contains("hỗ trợ"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "はい、喜んでお手伝いします。一緒に渡りましょう。",
                     RomajiOrReading = "Hai, yorokonde otetsudai shimasu. Issho ni watarimashou.",
                     VietnameseMeaning = $"Vâng, {reg.LearnerSelf} rất sẵn lòng giúp đỡ ạ. Chúng ta cùng sang đường nhé {reg.LearnerAddressAi}.",
                     ContextExplanation = $"Cách đề nghị giúp đỡ nhiệt tình, lịch sự phù hợp với {reg.LearnerAddressAi}."
-                };
+                });
             }
 
             if (criteria.Contains("hướng") || criteria.Contains("điểm đến") || criteria.Contains("direction") || criteria.Contains("đâu"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "どちらまで行かれますか。お手伝いしましょうか。",
                     RomajiOrReading = "Dochira made ikaremasu ka. Otetsudai shimashou ka.",
                     VietnameseMeaning = $"{reg.LearnerAddressAi} định đi đến đâu vậy ạ? Để {reg.LearnerSelf} giúp {reg.LearnerAddressAi} nhé.",
                     ContextExplanation = "Hỏi điểm đến bằng kính ngữ tôn kính (ikaremasu ka)."
-                };
+                });
             }
 
             if (criteria.Contains("chào") || criteria.Contains("greet") || criteria.Contains("giới thiệu") || criteria.Contains("intro"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "はじめまして。よろしくお願いします。",
                     RomajiOrReading = "Hajimemashite. Yoroshiku onegaishimasu.",
                     VietnameseMeaning = $"Rất vui được gặp {reg.LearnerAddressAi} lần đầu. Rất mong được {reg.LearnerAddressAi} giúp đỡ ạ.",
                     ContextExplanation = "Chào hỏi chuẩn mực khi bắt đầu đối thoại."
-                };
+                });
             }
 
             if (criteria.Contains("tạm biệt") || criteria.Contains("kết thúc") || criteria.Contains("cảm ơn") || criteria.Contains("bye"))
             {
                 if (reg.RegisterType == SocialRegisterType.Elderly)
                 {
-                    return new RoleplayHintDto
+                    return EnrichScaffolding(new RoleplayHintDto
                     {
                         JapaneseSuggestion = "いいえ、どういたしまして。お気をつけてお大事に。",
                         RomajiOrReading = "Iie, dou itashimashite. O ki wo tsukete odaiji ni.",
                         VietnameseMeaning = $"Dạ không có gì đâu ạ. Chúc {reg.LearnerAddressAi} đi lại cẩn thận và giữ gìn sức khỏe nhé ạ.",
                         ContextExplanation = "Lời đáp lại lời cảm ơn và lời chúc lễ phép, ấm áp dành cho người già."
-                    };
+                    });
                 }
 
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "どうもありがとうございました。失礼いたします。",
                     RomajiOrReading = "Doumo arigatou gozaimashita. Shitsurei itashimasu.",
                     VietnameseMeaning = $"Cảm ơn {reg.LearnerAddressAi} rất nhiều. {reg.LearnerSelf} xin phép chào {reg.LearnerAddressAi} ạ.",
                     ContextExplanation = "Lời chào tạm biệt và cảm ơn chuẩn mực trong giao tiếp tiếng Nhật."
-                };
+                });
             }
 
             if (criteria.Contains("price") || criteria.Contains("giá") || criteria.Contains("order") || criteria.Contains("gọi món"))
             {
-                return new RoleplayHintDto
+                return EnrichScaffolding(new RoleplayHintDto
                 {
                     JapaneseSuggestion = "すみません、これはいくらですか？",
                     RomajiOrReading = "Sumimasen, kore wa ikura desu ka?",
                     VietnameseMeaning = "Xin lỗi, món này bao nhiêu tiền vậy ạ?",
                     ContextExplanation = "Hỏi giá tiền một cách lịch sự bằng thể Desu ka."
-                };
+                });
             }
         }
 
-        return new RoleplayHintDto
+        var defaultHint = new RoleplayHintDto
         {
             JapaneseSuggestion = "はい、わかりました。よろしくお願いします。",
             RomajiOrReading = "Hai, wakarimashita. Yoroshiku onegaishimasu.",
             VietnameseMeaning = $"Vâng, {reg.LearnerSelf} đã hiểu rõ. Rất mong được {reg.LearnerAddressAi} giúp đỡ.",
             ContextExplanation = "Mẫu câu hồi đáp đồng ý và hợp tác lịch sự."
+        };
+        return EnrichScaffolding(defaultHint);
+    }
+
+    /// <summary>
+    /// Bổ sung tự động danh sách từ khóa (Tier 1) và mẫu câu điền khuyết (Tier 2) cho giàn giáo thích ứng
+    /// </summary>
+    public static RoleplayHintDto EnrichScaffolding(RoleplayHintDto dto)
+    {
+        if (dto == null) return new RoleplayHintDto();
+
+        if (dto.Keywords == null || dto.Keywords.Count == 0)
+        {
+            var matches = Regex.Matches(dto.JapaneseSuggestion ?? string.Empty, @"[゠-ヿ]{2,}|[一-龯]+[぀-ゟ]*");
+            dto.Keywords = matches.Select(m => m.Value).Distinct().Take(4).ToList();
+            if (dto.Keywords.Count == 0 && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+            {
+                dto.Keywords.Add(dto.JapaneseSuggestion.Length > 5 ? dto.JapaneseSuggestion.Substring(0, 5) : dto.JapaneseSuggestion);
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.ClozeSentence) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        {
+            var mainWord = dto.Keywords.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(mainWord) && dto.JapaneseSuggestion.Contains(mainWord))
+            {
+                dto.ClozeSentence = dto.JapaneseSuggestion.Replace(mainWord, " [ ______ ] ");
+            }
+            else if (dto.JapaneseSuggestion.Length > 6)
+            {
+                int mid = dto.JapaneseSuggestion.Length / 2;
+                dto.ClozeSentence = dto.JapaneseSuggestion.Substring(0, Math.Max(2, mid - 2)) + " [ ______ ] " + dto.JapaneseSuggestion.Substring(Math.Min(dto.JapaneseSuggestion.Length, mid + 2));
+            }
+            else
+            {
+                dto.ClozeSentence = dto.JapaneseSuggestion + " [ ______ ]";
+            }
+        }
+
+        return dto;
+    }
+
+    /// <summary>
+    /// Kiểm tra xem học viên có nói hoàn toàn bằng tiếng Việt hoặc tiếng Anh không (không có chữ Kana/Kanji nào).
+    /// </summary>
+    public static bool IsPureForeignOrVietnamese(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        var trimmed = text.Trim();
+        // Có chữ Hiragana, Katakana hoặc Kanji không?
+        bool hasJapanese = Regex.IsMatch(trimmed, @"[぀-ゟ゠-ヿ一-龯]");
+        if (hasJapanese) return false;
+
+        // Nếu hoàn toàn không có tiếng Nhật và có chữ cái Latin/dấu tiếng Việt
+        bool hasLatin = Regex.IsMatch(trimmed, @"[a-zA-ZÀ-ỹ]");
+        return hasLatin;
+    }
+
+    /// <summary>
+    /// Xử lý tất định 0ms không tốn token LLM khi học viên nói nhầm tiếng Việt/ngoại ngữ.
+    /// Nhắc nhở lịch sự và nhập vai theo đúng Persona.
+    /// </summary>
+    public static AiTurnResult ProcessForeignLanguageTurn(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string userMessage)
+    {
+        var reg = Deduce(scenario?.Title, levelConfig?.AiPersona, levelConfig?.Description);
+        string jaText = "すみません、ここは日本ですので、日本語でお話しいただけますか？";
+        string viMeaning = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói lại bằng tiếng Nhật được không ạ?";
+
+        if (reg.RegisterType == SocialRegisterType.ServiceStaff)
+        {
+            jaText = "恐れ入ります、日本語でお話しいただけますでしょうか。ご注文やご用件をお伺いします。";
+            viMeaning = $"Kính xin {reg.AiAddressLearner} vui lòng dùng tiếng Nhật ạ. {reg.AiSelf} xin phép được lắng nghe yêu cầu của quý khách.";
+        }
+        else if (reg.RegisterType == SocialRegisterType.Elderly)
+        {
+            jaText = "おや、日本語で話してくれるかい？ わしには外国語はちと難しくてねぇ。";
+            viMeaning = $"Ôi, {reg.AiAddressLearner} có thể nói tiếng Nhật được không? Già này tiếng nước ngoài khó hiểu quá à.";
+        }
+
+        return new AiTurnResult
+        {
+            JapaneseReply = jaText,
+            VietnameseMeaning = viMeaning,
+            FuriganaHtml = GenerateFuriganaHtml(jaText),
+            UserVietnameseMeaning = userMessage,
+            UserFuriganaHtml = userMessage,
+            CompletedMissionIds = new List<int>(),
+            IsNaturallyConcluded = false,
+            LinguisticFeedback = new LinguisticFeedbackDto
+            {
+                Status = "Error",
+                Summary = "Vui lòng sử dụng tiếng Nhật",
+                EvaluationSource = "PreFlightGuard",
+                Details = new List<LinguisticDetailItemDto>
+                {
+                    new()
+                    {
+                        Type = "error",
+                        Aspect = "Ngôn ngữ",
+                        Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng nói lại bằng tiếng Nhật."
+                    }
+                },
+                NaturalAlternative = "すみません、日本語で話します。",
+                CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+            }
         };
     }
 
@@ -646,55 +757,225 @@ public sealed record RoleplaySocialRegister
     }
 
     /// <summary>
-    /// Tạo Furigana HTML cho các từ vựng chữ Hán thông dụng trong câu của người học
+    /// Tạo Furigana HTML cho các từ vựng chữ Hán thông dụng trong câu của người học và AI
     /// </summary>
     public static string GenerateFuriganaHtml(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return text;
+        if (text.Contains("<ruby>") && text.Contains("</ruby>")) return text;
 
-        var furiganaMap = new (string Word, string Ruby)[]
+        var furiganaDictionary = new (string Word, string Ruby)[]
         {
+            // Cụm 4-5 chữ Hán
+            ("志望動機", "<ruby>志望動機<rt>しぼうどうき</rt></ruby>"),
+            ("自己紹介", "<ruby>自己紹介<rt>じこしょうかい</rt></ruby>"),
+            ("電話番号", "<ruby>電話番号<rt>でんわばんごう</rt></ruby>"),
+            ("営業時間", "<ruby>営業時間<rt>えいぎょうじかん</rt></ruby>"),
+            
+            // Cụm 3 chữ Hán
+            ("何名様", "<ruby>何名様<rt>なんめいさま</rt></ruby>"),
+            ("領収書", "<ruby>領収書<rt>りょうしゅうしょ</rt></ruby>"),
+            ("改札口", "<ruby>改札口<rt>かいさつぐち</rt></ruby>"),
+            ("地下鉄", "<ruby>地下鉄<rt>ちかてつ</rt></ruby>"),
+            ("新幹線", "<ruby>新幹線<rt>しんかんせん</rt></ruby>"),
+            ("留学生", "<ruby>留学生<rt>りゅうがくせい</rt></ruby>"),
+            ("履歴書", "<ruby>履歴書<rt>りれきしょ</rt></ruby>"),
+            ("交差点", "<ruby>交差点<rt>こうさてん</rt></ruby>"),
+            ("処方箋", "<ruby>処方箋<rt>しょほうせん</rt></ruby>"),
+            ("向こう側", "<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>"),
+            ("少々お待ち", "<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ち"),
+            ("乗り換え", "<ruby>乗<rt>の</rt></ruby>り<ruby>換<rt>か</rt></ruby>え"),
+            ("真っ直ぐ", "<ruby>真<rt>ま</rt></ruby>っ<ruby>直<rt>す</rt></ruby>ぐ"),
+            
+            // Cụm 2 chữ Hán thông dụng
             ("大丈夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>"),
+            ("お会計", "お<ruby>会計<rt>かいけい</rt></ruby>"),
+            ("お勘定", "お<ruby>勘定<rt>かんじょう</rt></ruby>"),
+            ("お待ち", "お<ruby>待<rt>ま</rt></ruby>ち"),
+            ("お願い", "お<ruby>願<rt>ねが</rt></ruby>い"),
+            ("お手伝い", "お<ruby>手伝<rt>てつだ</rt></ruby>い"),
             ("手伝", "<ruby>手伝<rt>てつだ</rt></ruby>"),
-            ("渡", "<ruby>渡<rt>わた</rt></ruby>"),
-            ("道", "<ruby>道<rt>みち</rt></ruby>"),
-            ("元気", "<ruby>元気<rt>げんき</rt></ruby>"),
-            ("私", "<ruby>私<rt>わたし</rt></ruby>"),
-            ("僕", "<ruby>僕<rt>ぼく</rt></ruby>"),
-            ("駅", "<ruby>駅<rt>えき</rt></ruby>"),
-            ("病院", "<ruby>病院<rt>びょういん</rt></ruby>"),
-            ("痛", "<ruby>痛<rt>いた</rt></ruby>"),
-            ("薬", "<ruby>薬<rt>くすり</rt></ruby>"),
-            ("頭", "<ruby>頭<rt>あたま</rt></ruby>"),
-            ("喉", "<ruby>喉<rt>のど</rt></ruby>"),
-            ("熱", "<ruby>熱<rt>ねつ</rt></ruby>"),
-            ("何", "<ruby>何<rt>なに</rt></ruby>"),
-            ("行", "<ruby>行<rt>い</rt></ruby>"),
-            ("来", "<ruby>来<rt>き</rt></ruby>"),
-            ("見", "<ruby>見<rt>み</rt></ruby>"),
-            ("聞", "<ruby>聞<rt>き</rt></ruby>"),
-            ("話", "<ruby>話<rt>はな</rt></ruby>"),
-            ("買", "<ruby>買<rt>か</rt></ruby>"),
-            ("食", "<ruby>食<rt>た</rt></ruby>"),
-            ("飲", "<ruby>飲<rt>の</rt></ruby>"),
+            ("注文", "<ruby>注文<rt>ちゅうもん</rt></ruby>"),
+            ("会計", "<ruby>会計<rt>かいけい</rt></ruby>"),
+            ("豚骨", "<ruby>豚骨<rt>とんこつ</rt></ruby>"),
+            ("醤油", "<ruby>醤油<rt>しょうゆ</rt></ruby>"),
+            ("一杯", "<ruby>一杯<rt>いっぱい</rt></ruby>"),
+            ("大盛", "<ruby>大盛<rt>おおも</rt></ruby>り"),
+            ("定食", "<ruby>定食<rt>ていしょく</rt></ruby>"),
+            ("店員", "<ruby>店員<rt>てんいん</rt></ruby>"),
+            ("切符", "<ruby>切符<rt>きっぷ</rt></ruby>"),
+            ("電車", "<ruby>電車<rt>でんしゃ</rt></ruby>"),
+            ("時間", "<ruby>時間<rt>じかん</rt></ruby>"),
+            ("場所", "<ruby>場所<rt>ばしょ</rt></ruby>"),
+            ("面接", "<ruby>面接<rt>めんせつ</rt></ruby>"),
+            ("担当", "<ruby>担当<rt>たんとう</rt></ruby>"),
+            ("応募", "<ruby>応募<rt>おうぼ</rt></ruby>"),
+            ("長所", "<ruby>長所<rt>ちょうしょ</rt></ruby>"),
+            ("短所", "<ruby>短所<rt>たんしょ</rt></ruby>"),
+            ("日本語", "<ruby>日本語<rt>にほんご</rt></ruby>"),
+            ("英語", "<ruby>英語<rt>えいご</rt></ruby>"),
+            ("大学", "<ruby>大学<rt>だいがく</rt></ruby>"),
+            ("学生", "<ruby>学生<rt>がくせい</rt></ruby>"),
             ("先生", "<ruby>先生<rt>せんせい</rt></ruby>"),
             ("友達", "<ruby>友達<rt>ともだち</rt></ruby>"),
             ("会社", "<ruby>会社<rt>かいしゃ</rt></ruby>"),
             ("仕事", "<ruby>仕事<rt>しごと</rt></ruby>"),
+            ("住所", "<ruby>住所<rt>じゅうしょ</rt></ruby>"),
+            ("確認", "<ruby>確認<rt>かくにん</rt></ruby>"),
+            ("病院", "<ruby>病院<rt>びょういん</rt></ruby>"),
+            ("薬局", "<ruby>薬局<rt>やっきょく</rt></ruby>"),
+            ("症状", "<ruby>症状<rt>しょうじょう</rt></ruby>"),
+            ("診察", "<ruby>診察<rt>しんさつ</rt></ruby>"),
+            ("風邪", "<ruby>風邪<rt>かぜ</rt></ruby>"),
+            ("頭痛", "<ruby>頭痛<rt>ずつう</rt></ruby>"),
+            ("腹痛", "<ruby>腹痛<rt>ふくつう</rt></ruby>"),
+            ("食前", "<ruby>食前<rt>しょくぜん</rt></ruby>"),
+            ("食後", "<ruby>食後<rt>しょくご</rt></ruby>"),
+            ("毎日", "<ruby>毎日<rt>まいにち</rt></ruby>"),
+            ("一日", "<ruby>一日<rt>いちにち</rt></ruby>"),
+            ("一回", "<ruby>一回<rt>いっかい</rt></ruby>"),
+            ("二回", "<ruby>二回<rt>にかい</rt></ruby>"),
+            ("三回", "<ruby>三回<rt>さんかい</rt></ruby>"),
+            ("一人", "<ruby>一人<rt>ひとり</rt></ruby>"),
+            ("二人", "<ruby>二人<rt>ふたり</rt></ruby>"),
+            ("三人", "<ruby>三人<rt>さんにん</rt></ruby>"),
+            ("四人", "<ruby>四人<rt>よにん</rt></ruby>"),
+            ("交差点", "<ruby>交差点<rt>こうさてん</rt></ruby>"),
+            ("信号", "<ruby>信号<rt>しんごう</rt></ruby>"),
+            ("本日", "<ruby>本日<rt>ほんじつ</rt></ruby>"),
             ("今日", "<ruby>今日<rt>きょう</rt></ruby>"),
             ("明日", "<ruby>明日<rt>あした</rt></ruby>"),
-            ("信号", "<ruby>信号<rt>しんごう</rt></ruby>"),
+            ("昨日", "<ruby>昨日<rt>きのう</rt></ruby>"),
+            ("来週", "<ruby>来週<rt>らいしゅう</rt></ruby>"),
+            ("来月", "<ruby>来月<rt>らいげつ</rt></ruby>"),
+            ("今月", "<ruby>今月<rt>こんげつ</rt></ruby>"),
+            ("今年", "<ruby>今年<rt>ことし</rt></ruby>"),
+            ("現金", "<ruby>現金<rt>げんきん</rt></ruby>"),
+            ("値段", "<ruby>値段<rt>ねだん</rt></ruby>"),
+            ("質問", "<ruby>質問<rt>しつもん</rt></ruby>"),
+            ("練習", "<ruby>練習<rt>れんしゅう</rt></ruby>"),
+            ("勉強", "<ruby>勉強<rt>べんきょう</rt></ruby>"),
+            ("元気", "<ruby>元気<rt>げんき</rt></ruby>"),
+            
+            // Chữ đơn lẻ / động từ căn bản
+            ("私", "<ruby>私<rt>わたし</rt></ruby>"),
+            ("僕", "<ruby>僕<rt>ぼく</rt></ruby>"),
+            ("駅", "<ruby>駅<rt>えき</rt></ruby>"),
+            ("道", "<ruby>道<rt>みち</rt></ruby>"),
+            ("熱", "<ruby>熱<rt>ねつ</rt></ruby>"),
+            ("薬", "<ruby>薬<rt>くすり</rt></ruby>"),
+            ("頭", "<ruby>頭<rt>あたま</rt></ruby>"),
+            ("喉", "<ruby>喉<rt>のど</rt></ruby>"),
+            ("足", "<ruby>足<rt>あし</rt></ruby>"),
+            ("痛", "<ruby>痛<rt>いた</rt></ruby>"),
+            ("渡", "<ruby>渡<rt>わた</rt></ruby>"),
+            ("何", "<ruby>何<rt>なに</rt></ruby>"),
+            ("行", "<ruby>行<rt>い</rt></ruby>"),
+            ("来", "<ruby>来<rt>き</rt></ruby>"),
+            ("帰", "<ruby>帰<rt>かえ</rt></ruby>"),
+            ("見", "<ruby>見<rt>み</rt></ruby>"),
+            ("聞", "<ruby>聞<rt>き</rt></ruby>"),
+            ("話", "<ruby>話<rt>はな</rt></ruby>"),
+            ("読", "<ruby>読<rt>よ</rt></ruby>"),
+            ("書", "<ruby>書<rt>か</rt></ruby>"),
+            ("買", "<ruby>買<rt>か</rt></ruby>"),
+            ("食", "<ruby>食<rt>た</rt></ruby>"),
+            ("飲", "<ruby>飲<rt>の</rt></ruby>"),
+            ("座", "<ruby>座<rt>すわ</rt></ruby>"),
+            ("始", "<ruby>始<rt>はじ</rt></ruby>"),
+            ("終", "<ruby>終<rt>お</rt></ruby>"),
+            ("願", "<ruby>願<rt>ねが</rt></ruby>"),
+            ("右", "<ruby>右<rt>みぎ</rt></ruby>"),
+            ("左", "<ruby>左<rt>ひだり</rt></ruby>"),
+            ("角", "<ruby>角<rt>かど</rt></ruby>"),
+            ("朝", "<ruby>朝<rt>あさ</rt></ruby>"),
+            ("昼", "<ruby>昼<rt>ひる</rt></ruby>"),
+            ("夜", "<ruby>夜<rt>よる</rt></ruby>"),
+            ("円", "<ruby>円<rt>えん</rt></ruby>"),
             ("気", "<ruby>気<rt>き</rt></ruby>")
         };
 
+        // Sắp xếp theo chiều dài từ giảm dần để ưu tiên ghép từ ghép trước
+        var orderedMap = furiganaDictionary.OrderByDescending(f => f.Word.Length).ToList();
+        var placeholders = new Dictionary<string, string>();
         var result = text;
-        foreach (var (word, ruby) in furiganaMap)
+
+        for (int i = 0; i < orderedMap.Count; i++)
         {
-            if (result.Contains(word) && !result.Contains($"<ruby>{word}"))
+            var item = orderedMap[i];
+            if (result.Contains(item.Word))
             {
-                result = result.Replace(word, ruby);
+                var token = $"__RUBY_{i}__";
+                placeholders[token] = item.Ruby;
+                result = result.Replace(item.Word, token);
             }
         }
+
+        foreach (var kvp in placeholders)
+        {
+            result = result.Replace(kvp.Key, kvp.Value);
+        }
+
         return result;
+    }
+
+    private static readonly Regex VietnameseCharOrWordRegex = new(
+        @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(cháu|cụ|bác|ông|bà|anh|chi|chị|em|bạn|tôi|mình|thật|tốt|bụng|cẩn|thận|nhé|đi|về|nhiều|lắm|người|cảm|ơn|xin|chào|dịch|nghĩa|rất|hãy)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex JapaneseCharacterRegex = new(
+        @"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Kiểm tra xem chuỗi có bị rò rỉ ký tự hoặc từ ngữ tiếng Việt hay không.
+    /// </summary>
+    public static bool HasVietnameseLeak(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        return VietnameseCharOrWordRegex.IsMatch(text);
+    }
+
+    /// <summary>
+    /// Khử sạch hoàn toàn tiếng Việt bị rò rỉ vào câu thoại tiếng Nhật (Japanese Utterance),
+    /// bảo đảm câu thoại AI luôn 100% tiếng Nhật chuẩn mực.
+    /// </summary>
+    public static string SanitizeJapaneseReply(string? jaText, string? fallbackJa = null)
+    {
+        if (string.IsNullOrWhiteSpace(jaText))
+        {
+            return fallbackJa ?? "本当にありがとうございました。";
+        }
+
+        var text = jaText.Trim();
+
+        // 1. Loại bỏ các phần chú thích trong ngoặc đơn nếu có chữ Latin/tiếng Việt
+        // ví dụ: "本当にありがとうございます。(Cháu đi cẩn thận nhé)" -> "本当にありがとうございます。"
+        text = Regex.Replace(text, @"[\(（][^\)）]*[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\)）]*[\)）]", "").Trim();
+
+        // 2. Nếu phát hiện tiếng Việt bị nối sau câu tiếng Nhật (VD: "本当にありがとうございます。 cháu thật là một người tốt bụng...")
+        var match = VietnameseCharOrWordRegex.Match(text);
+        if (match.Success)
+        {
+            // Cắt lấy phần câu tiếng Nhật trước vị trí rò rỉ tiếng Việt
+            var cutIndex = match.Index;
+            var cleanPrefix = text.Substring(0, cutIndex).Trim();
+
+            // Nếu phần prefix có chứa chữ Hán/Hiragana/Katakana hợp lệ, giữ lại phần đó
+            if (JapaneseCharacterRegex.IsMatch(cleanPrefix))
+            {
+                cleanPrefix = cleanPrefix.TrimEnd(' ', '　', ',', '、');
+                if (!cleanPrefix.EndsWith("。") && !cleanPrefix.EndsWith("！") && !cleanPrefix.EndsWith("？") && !cleanPrefix.EndsWith("!"))
+                {
+                    cleanPrefix += "。";
+                }
+                return cleanPrefix;
+            }
+
+            // Nếu toàn bộ chuỗi đều là tiếng Việt, trả về câu tiếng Nhật chuẩn dự phòng
+            return fallbackJa ?? "本当にありがとうございました。気をつけてお帰りください。";
+        }
+
+        return text;
     }
 }

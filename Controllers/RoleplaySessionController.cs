@@ -195,6 +195,28 @@ public class RoleplaySessionController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// GET /api/roleplay/intelligence-profile
+    /// Lấy hồ sơ trí tuệ học viên và các chỉ số phản xạ giao tiếp ngầm (TikTok-style Linguistic Intelligence Profile)
+    /// </summary>
+    [HttpGet("intelligence-profile")]
+    public async Task<IActionResult> GetIntelligenceProfile(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(ApiResponse<LearnerIntelligenceProfileDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+        }
+
+        var result = await _roleplaySessionService.GetIntelligenceProfileAsync(userId, cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     private string? GetCurrentUserId()
     {
         return User.FindFirstValue(ClaimTypes.NameIdentifier)

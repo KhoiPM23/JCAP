@@ -42,12 +42,75 @@ namespace JCAP.DTOs.Roleplay
         public int GrammarScore { get; set; }
         public int VocabularyScore { get; set; }
         public int ImpressionScore { get; set; }
+        public int FluencyScore { get; set; }
+        public int SpeechConfidenceScore { get; set; }
+        public int AutonomyScore { get; set; } = 100;
+        public int PronunciationScore { get; set; } = 85;
+        public double AverageResponseLatencySeconds { get; set; }
+        public double AverageSpeechPace { get; set; }
         public string GeneralFeedbackText { get; set; } = string.Empty;
         public List<CompletedMissionResultDto> CompletedMissions { get; set; } = [];
         public List<RoleplayMissionProgressDto> AllMissions { get; set; } = [];
         public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
         public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
         public List<RoleplayMessageDto> Messages { get; set; } = [];
+        public RoleplayAttemptComparisonDto? AttemptComparison { get; set; }
+        public string? AwardedEkiStampName { get; set; }
+        public int? ExploreSpotId { get; set; }
+        public int? ExplorePrefectureId { get; set; }
+        public ScoreBreakdownDto? ScoreBreakdown { get; set; }
+        public string? AiPersona { get; set; }
+        public int NpcAffinityScore { get; set; } = 20;
+        public string? NpcRelationshipTitle { get; set; }
+        public int? NextRecommendedScenarioId { get; set; }
+        public string? NextRecommendedScenarioTitle { get; set; }
+        public string? NextRecommendedReason { get; set; }
+        public double? PredictedSuccessRateNextScenario { get; set; }
+    }
+
+    public class ScoreBreakdownDto
+    {
+        public int MissionCompletionPoints { get; set; }
+        public int MissionCount { get; set; }
+        public int TotalMissionCount { get; set; }
+        public int GrammarPoints { get; set; }
+        public int GrammarBaseScore { get; set; }
+        public int VocabularyPoints { get; set; }
+        public int VocabularyBaseScore { get; set; }
+        public int ImpressionPoints { get; set; }
+        public int ImpressionBaseScore { get; set; }
+        public bool NaturalConclusionBonus { get; set; }
+        public int AutonomyScore { get; set; } = 100;
+        public int FluencyScore { get; set; } = 85;
+        public double AverageLatencySeconds { get; set; }
+        public double AveragePace { get; set; }
+        public bool IsCappedDueToIncomplete { get; set; }
+        public int FinalOverallScore { get; set; }
+        public List<ScoreAdjustmentItemDto> Adjustments { get; set; } = [];
+    }
+
+    public class ScoreAdjustmentItemDto
+    {
+        public string Category { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int DeltaPoints { get; set; }
+        public bool IsPositive => DeltaPoints >= 0;
+    }
+
+    public class RoleplayAttemptComparisonDto
+    {
+        public int AttemptNumber { get; set; }
+        public bool IsPersonalBest { get; set; }
+        public int? PreviousOverallScore { get; set; }
+        public int ScoreDelta => PreviousOverallScore.HasValue ? OverallScore - PreviousOverallScore.Value : 0;
+        public int OverallScore { get; set; }
+        public double? PreviousLatencySeconds { get; set; }
+        public double? LatencyDeltaSeconds => PreviousLatencySeconds.HasValue ? Math.Round(CurrentLatencySeconds - PreviousLatencySeconds.Value, 1) : null;
+        public double CurrentLatencySeconds { get; set; }
+        public double? PreviousPace { get; set; }
+        public double? PaceDelta => PreviousPace.HasValue ? Math.Round(CurrentPace - PreviousPace.Value, 1) : null;
+        public double CurrentPace { get; set; }
+        public string ProgressSummary { get; set; } = string.Empty;
     }
 
     public class RoleplayResultHistoryResponseDto

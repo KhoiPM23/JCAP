@@ -46,6 +46,9 @@ import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
 import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
 import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
 import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
+import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
+import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
+import { AdminNotificationView } from '../views/admin/AdminNotificationView';
 
 // Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
 const JapanMapView = React.lazy(() =>
@@ -334,7 +337,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
         {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
         <Route path="/admin/users" element={<AdminUserManagementView />} />
-        <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/feedback" element={<AdminFeedbackView />} />
+        <Route path="/admin/notifications" element={<AdminNotificationView />} />
         <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         
         {/* Catch-all cho các route admin không tồn tại */}
@@ -347,6 +351,14 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <RememberRoleplaySession />
+            <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/roleplay/:sessionId"
+        element={
+          <PrivateRoute>
             <RoleplayPracticeView />
           </PrivateRoute>
         }
@@ -434,6 +446,8 @@ export const AppRouter: React.FC = () => {
 
         {/* UC: Cai dat he thong (Giong doc AI & Thiet bi am thanh) */}
         <Route path="/settings" element={<SettingsView />} />
+        <Route path="/feedback" element={<LearnerFeedbackView />} />
+        <Route path="/help" element={<LearnerFeedbackView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}

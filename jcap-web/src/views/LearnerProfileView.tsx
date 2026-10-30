@@ -8,6 +8,7 @@ import { shadowingService } from '../services/shadowingService';
 import { formatDateFull } from '../utils/dateUtils';
 import type { JLPTLevel, LearnerProfile } from '../types/profile';
 import { useExploreJourney } from './explore/exploreStore';
+import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 
 /**
  * Hồ sơ học viên (design-handoff mục 5): cột trái thẻ danh tính, cột phải mục tiêu JLPT + số liệu học, thông tin tài khoản,
@@ -239,6 +240,11 @@ export const LearnerProfileView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Báo cáo Năng lực Hội thoại AI ngầm (TikTok-style Linguistic Radar) */}
+        <section aria-label="Năng lực Kaiwa ngầm" className="w-full">
+          <LearnerIntelligenceRadarCard />
+        </section>
       </div>
     </div>
   );

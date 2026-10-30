@@ -37,6 +37,84 @@ public class AiRoleplayServiceTests
     }
 
     [Fact]
+    public async Task ProcessTurnAsync_ReturnsPreFlightGuardInstantly_WhenLearnerSpeaksVietnamese()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        var service = new AiRoleplayService(
+            mockAiClient.Object,
+            new Mock<ILogger<AiRoleplayService>>().Object);
+
+        var result = await service.ProcessTurnAsync(
+            new Scenario { Title = "Gọi món tại quán Ramen" },
+            new ScenarioLevelConfiguration { JLPTLevel = "N5" },
+            [],
+            "Cho toi mot bat ramen",
+            []);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
+        Assert.Equal("PreFlightGuard", result.LinguisticFeedback.EvaluationSource);
+        Assert.Equal("Error", result.LinguisticFeedback.Status);
+        Assert.Contains("日本語", result.JapaneseReply);
+        // Verify that LLM was NEVER called (0 tokens spent)
+        mockAiClient.Verify(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_InjectsPersonaDirective_IntoSystemPrompt()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        AiRequest? capturedRequest = null;
+        mockAiClient
+            .Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<AiRequest, CancellationToken>((req, _) => capturedRequest = req)
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""replyJapanese"": ""いらっしゃい！"",
+                ""replyVietnamese"": ""Chào mừng!"",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [] }
+            }"));
+
+        var service = new AiRoleplayService(
+            mockAiClient.Object,
+            new Mock<ILogger<AiRoleplayService>>().Object);
+
+        await service.ProcessTurnAsync(
+            new Scenario { Title = "Gọi món tại quán Ramen" },
+            new ScenarioLevelConfiguration { JLPTLevel = "N5" },
+            [],
+            "こんにちは。",
+            [],
+            personaDirective: "[MEM: affinity=30, visits=3, likes='shoyu_ramen']");
+
+        Assert.NotNull(capturedRequest);
+        Assert.Contains("[NPC MEMORY DIRECTIVE]", capturedRequest.SystemInstruction);
+        Assert.Contains("shoyu_ramen", capturedRequest.SystemInstruction);
+    }
+
+    [Fact]
+    public async Task GenerateOpeningMessageAsync_UsesCircadianGreetingDirectly()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        var service = new AiRoleplayService(
+            mockAiClient.Object,
+            new Mock<ILogger<AiRoleplayService>>().Object);
+
+        var result = await service.GenerateOpeningMessageAsync(
+            new Scenario { Title = "Gọi món tại quán Ramen" },
+            new ScenarioLevelConfiguration { JLPTLevel = "N5" },
+            circadianGreeting: "こんばんは！今日もお疲れ様でした。夜の練習も頑張りましょう！");
+
+        Assert.NotNull(result);
+        Assert.Equal("こんばんは！今日もお疲れ様でした。夜の練習も頑張りましょう！", result.JapaneseText);
+        Assert.NotNull(result.FuriganaHtml);
+        Assert.Contains("<ruby>", result.FuriganaHtml);
+        // AI client not invoked when circadian greeting is ready
+        mockAiClient.Verify(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ProcessTurnAsync_UsesAiResponse_WhenAiClientSucceeds()
     {
         var mockAiClient = new Mock<IAiClient>();

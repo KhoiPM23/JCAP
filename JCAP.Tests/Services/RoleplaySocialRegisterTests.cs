@@ -97,4 +97,30 @@ public class RoleplaySocialRegisterTests
         Assert.DoesNotContain("/", turn3.VietnameseMeaning);
         Assert.DoesNotContain("/", turn3.UserVietnameseMeaning ?? "");
     }
+
+    [Fact]
+    public void SanitizeJapaneseReply_StripsLeakedVietnamese_AndPreservesPureJapanese()
+    {
+        // Bug reported by user: Vietnamese appended to Japanese utterance
+        var bugInput = "本当にありがとうございます。 cháu thật là một người tốt bụng. Cháu hãy đi cẩn thận nhé.";
+        var sanitized = RoleplaySocialRegister.SanitizeJapaneseReply(bugInput);
+        Assert.Equal("本当にありがとうございます。", sanitized);
+        Assert.False(RoleplaySocialRegister.HasVietnameseLeak(sanitized));
+
+        // Parenthesized Vietnamese translation leak
+        var parenInput = "本当にありがとうございます。(Cụ cảm ơn cháu rất nhiều)";
+        var parenSanitized = RoleplaySocialRegister.SanitizeJapaneseReply(parenInput);
+        Assert.Equal("本当にありがとうございます。", parenSanitized);
+
+        // Entire string is Vietnamese
+        var pureViInput = "cháu thật là một người tốt bụng";
+        var pureViSanitized = RoleplaySocialRegister.SanitizeJapaneseReply(pureViInput, "本当にありがとうございました。");
+        Assert.Equal("本当にありがとうございました。", pureViSanitized);
+
+        // Clean Japanese remains untouched
+        var cleanJa = "とんこつラーメンですね。少々お待ちください。";
+        var cleanSanitized = RoleplaySocialRegister.SanitizeJapaneseReply(cleanJa);
+        Assert.Equal(cleanJa, cleanSanitized);
+        Assert.False(RoleplaySocialRegister.HasVietnameseLeak(cleanSanitized));
+    }
 }

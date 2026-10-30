@@ -10,8 +10,15 @@ public sealed class RoleplayEvaluationResult
     public int GrammarScore { get; init; }
     public int VocabularyScore { get; init; }
     public int ImpressionScore { get; init; }
+    public int FluencyScore { get; init; }
+    public int SpeechConfidenceScore { get; init; }
+    public int AutonomyScore { get; init; } = 100;
+    public int PronunciationScore { get; init; } = 85;
+    public double AverageResponseLatencySeconds { get; init; }
+    public double AverageSpeechPace { get; init; }
     public int MissionProgressScore { get; init; }
     public bool AllMissionsCompleted { get; init; }
     public string GeneralFeedbackText { get; init; } = string.Empty;
     public int EvaluatedTurnCount { get; init; }
+    public JCAP.DTOs.Roleplay.ScoreBreakdownDto? ScoreBreakdown { get; init; }
 }

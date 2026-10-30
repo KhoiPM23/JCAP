@@ -881,9 +881,12 @@ export const AdminScenarioListView: React.FC = () => {
     if (!term) return true;
     if (term.length < 2) return false;
     const q = term.toLowerCase();
+    const standardCode = `scn_${item.id}`;
     return (
       item.title.toLowerCase().includes(q) ||
       item.description.toLowerCase().includes(q) ||
+      standardCode.includes(q) ||
+      `#${item.id}`.includes(q) ||
       (item.scenarioCode && item.scenarioCode.toLowerCase().includes(q))
     );
   });
@@ -1002,9 +1005,7 @@ export const AdminScenarioListView: React.FC = () => {
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-6 font-mono text-xs text-slate-500">
                         <span className="font-bold text-[#071A44]">#{item.id}</span>
-                        {item.scenarioCode && (
-                          <span className="block text-slate-400 mt-0.5">{item.scenarioCode}</span>
-                        )}
+                        <span className="block text-slate-400 mt-0.5">{`SCN_${item.id}`}</span>
                       </td>
                       <td className="py-4 px-6 max-w-md">
                         <div className="font-bold text-[#071A44]">{item.title}</div>
