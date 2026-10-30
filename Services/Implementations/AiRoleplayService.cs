@@ -39,11 +39,36 @@ public class AiRoleplayService : IAiRoleplayService
         _logger = logger;
     }
 
-    public async Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+    public Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         CancellationToken cancellationToken = default)
+        => GenerateOpeningMessageAsync(scenario, levelConfig, null, cancellationToken);
+
+    public async Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string? circadianGreeting,
+        CancellationToken cancellationToken = default)
     {
+        if (!string.IsNullOrWhiteSpace(circadianGreeting))
+        {
+            var reg = RoleplaySocialRegister.Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+            var fHtml = RoleplaySocialRegister.GenerateFuriganaHtml(circadianGreeting);
+            var viGreeting = circadianGreeting.Contains("おはよう")
+                ? $"Chào buổi sáng! Rất vui được gặp lại {reg.AiAddressLearner}. Hôm nay chúng ta cùng cố gắng nhé!"
+                : circadianGreeting.Contains("こんばんは")
+                    ? $"Chào buổi tối! {reg.AiAddressLearner} hôm nay cũng vất vả rồi. Cùng cố gắng luyện tập buổi tối nhé!"
+                    : $"Chào {reg.AiAddressLearner}! Hôm nay chúng ta cùng luyện tập nhé!";
+
+            return new AiOpeningMessageResult
+            {
+                JapaneseText = circadianGreeting.Trim(),
+                FuriganaHtml = fHtml,
+                VietnameseMeaning = viGreeting
+            };
+        }
+
         try
         {
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
@@ -68,10 +93,13 @@ Return strictly pure JSON matching:
 
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
+                    ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja);
                     return new AiOpeningMessageResult
                     {
                         JapaneseText = ja.Trim(),
-                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) ? fHtml.Trim() : null,
+                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                            ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
+                            : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim()),
                         VietnameseMeaning = vi.Trim()
                     };
                 }
@@ -89,18 +117,68 @@ Return strictly pure JSON matching:
         return GenerateSimulatorOpeningMessage(scenario, levelConfig);
     }
 
-    public async Task<AiTurnResult> ProcessTurnAsync(
+    public Task<AiTurnResult> ProcessTurnAsync(
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         List<RoleplayMessage> conversationHistory,
         string userMessage,
         List<Mission> pendingMissions,
         CancellationToken cancellationToken = default)
+        => ProcessTurnAsync(scenario, levelConfig, conversationHistory, userMessage, pendingMissions, null, cancellationToken);
+
+    public async Task<AiTurnResult> ProcessTurnAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        List<RoleplayMessage> conversationHistory,
+        string userMessage,
+        List<Mission> pendingMissions,
+        string? personaDirective,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             var reg = RoleplaySocialRegister.Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+
+            // PRE-FLIGHT GUARD (0 tokens, <1ms):
+            // Chặn ngay các lượt nói tiếng Việt hoặc ngoại ngữ trước khi gọi LLM
+            if (IsLikelyForeignOrVietnamese(userMessage))
+            {
+                var confusedJa = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                var confusedVi = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói bằng tiếng Nhật được không ạ?";
+                return new AiTurnResult
+                {
+                    JapaneseReply = confusedJa,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(confusedJa),
+                    VietnameseMeaning = confusedVi,
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = userMessage,
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Error",
+                        Summary = "Vui lòng sử dụng tiếng Nhật",
+                        EvaluationSource = "PreFlightGuard",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "error",
+                                Aspect = "Ngôn ngữ",
+                                Comment = "Hệ thống chỉ hỗ trợ luyện tập bằng tiếng Nhật. Vui lòng không sử dụng tiếng Việt hoặc ngoại ngữ khác."
+                            }
+                        },
+                        NaturalAlternative = null,
+                        CulturalTip = "Tại các cửa hàng hoặc môi trường làm việc ở Nhật Bản, giao tiếp bằng tiếng Nhật là yêu cầu cơ bản."
+                    }
+                };
+            }
+
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
+            if (!string.IsNullOrWhiteSpace(personaDirective))
+            {
+                systemPrompt += $"\n\n[NPC MEMORY DIRECTIVE]\n{personaDirective}\nMaintain continuity with these prior facts subtly and naturally.";
+            }
 
             var sbHistory = new StringBuilder();
             foreach (var msg in conversationHistory.TakeLast(10))
@@ -132,9 +210,15 @@ TASK INSTRUCTIONS:
      * replyVietnamese: 'Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?'
      * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
      * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
-2. NORMAL JAPANESE EVALUATION (Only if learner spoke entirely in Japanese/Romaji):
-   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}.
-   - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text.
+2. STRICT ANTI-REPETITION & CONVERSATIONAL MOMENTUM (PREVENTS REPETITIVE LOOPS):
+   - CAREFULLY inspect RECENT CONVERSATION HISTORY. NEVER repeat the same question, confirmation, or prompt that was already asked or answered in the last 2-3 turns.
+   - For example: If you already inquired about cash payment ('お会計は現金のみとなりますが、よろしいでしょうか') and the learner replied ('はい', 'いいえ', 'OK です', or agreed/refused), YOU MUST NEVER ASK THAT QUESTION AGAIN.
+   - Acknowledge their response and ADVANCE THE SCENE:
+     * If they agreed to cash payment: state the total bill ('ありがとうございます！合計で〇〇円になります'), accept their money/provide change, and transition toward concluding the transaction.
+     * If there are still pending missions (e.g. learner needs to inquire about payment methods / card): DO NOT loop the cash question! Instead, provide a natural conversational bridge, such as: 'お支払いは現金のみとなっておりますが、カードなど他の決済方法をご希望でしたでしょうか？'
+3. NORMAL JAPANESE EVALUATION & REFINED LINGUISTIC FEEDBACK:
+   - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}. PURE JAPANESE ONLY (STRICTLY NO VIETNAMESE WORDS, ENGLISH, OR TRANSLATIONS INSIDE replyJapanese).
+   - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text. PURE JAPANESE RUBY ONLY.
    - replyVietnamese: Natural translation in Vietnamese strictly adhering to the social register: use '{reg.AiSelf}' and address learner as '{reg.AiAddressLearner}'. ABSOLUTELY ZERO SLASHES ('/').
    - userVietnameseMeaning: Accurate Vietnamese translation of what the learner said in Japanese, strictly phrased from the learner's perspective ('{reg.LearnerSelf}' addressing '{reg.LearnerAddressAi}'). ABSOLUTELY ZERO SLASHES ('/').
    - completedMissionIds: Array of Mission IDs satisfied in the current turn. Follow STRICT rules:
@@ -143,22 +227,28 @@ TASK INSTRUCTIONS:
      * Sequential Flow: Missions are ordered by conversation flow. NEVER mark the final departure/closing mission completed if earlier transactional/core missions are still unfulfilled.
      * Concurrency: Typically at most ONE mission should be completed per turn, unless the learner explicitly combines multiple distinct intents in one compound sentence. Return [] if none.
    - isNaturallyConcluded: Boolean (true ONLY IF all scenario missions are accomplished and the learner and AI exchanged closing/departure greetings).
-   - linguisticFeedback: Linguistic evaluation of the learner's utterance (MUST write all explanations/comments in Vietnamese):
+   - linguisticFeedback: Rigorous, realistic linguistic evaluation in Vietnamese (NO HOLLOW FLATTERY, STRICT PEDAGOGICAL ACCURACY):
      * status: ""Good"" | ""Warning"" | ""Error""
-     * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"")
+     * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"", hoặc ""Cần diễn đạt câu hoàn chỉnh"")
      * details: Array of items:
        - type: ""success"" | ""warning"" | ""error""
-       - aspect: Aspect in Vietnamese (""Ngữ cảnh"" | ""Trợ từ"" | ""Văn phong"" | ""Kính ngữ"" | ""Từ vựng"")
+       - aspect: Aspect in Vietnamese (""Ngữ pháp"" | ""Từ vựng"" | ""Văn phong"" | ""Kính ngữ"" | ""Cấu trúc"" | ""Trợ từ"")
        - comment: Specific constructive feedback in Vietnamese
-       - For every normal Japanese utterance, include at least one grammar-related item
-         (""Ngữ pháp"", ""Trợ từ"", ""Cấu trúc"" or ""Chia động từ""), one ""Từ vựng""
-         item, and one communication-impression item (""Ngữ cảnh"", ""Văn phong"", ""Kính ngữ"" or ""Lịch sự"").
-       - Contextual Keigo and Social Register Check:
-         * If Scenario is Business / Job Interview: Learner must use formal Teineigo (です/ます) or Keigo. If casual/tameguchi form is used, mark aspect ""Kính ngữ"" with type ""warning"" or ""error"" and guide them to be formal.
-         * If Scenario is Service Encounter: Learner should speak politely with ください / お願いします.
-         * If Scenario is Casual: Casual form is acceptable.
-       - Positive usage MUST be recorded as type ""success""; do not return only mistakes.
-     * naturalAlternative: More natural native phrasing in Japanese (or null if already natural)
+       - ANTI-FLATTERY RULE FOR SHORT UTTERANCES:
+         * If the learner only said a bare minimal affirmative/negative word ('はい', 'いいえ', 'そうです'):
+           status should be 'Good' or 'Warning'.
+           DO NOT fabricate exaggerated praise like 'Sử dụng từ はい rất lịch sự'.
+           Instead, comment: 'Đã biểu đạt đúng ý muốn, nhưng trong giao tiếp thực tế nên mở rộng thành câu hoàn chỉnh như はい、お願いします hoặc いいえ、結構です để tự nhiên hơn.'
+       - ACCURATE DETECTION OF COMMON LEARNER MISTAKES:
+         * Bare Nouns when ordering (e.g. '卵です', '水です'): Mark aspect 'Văn phong', type 'warning'. Explain: 'Khi gọi món tại quán ăn Nhật Bản, chỉ nói tên món kèm です bị cộc lốc. Nên nói 味玉をお願いします hoặc 味玉を追加してください.'
+         * Missing Verb/Predicates (e.g. '〜を注文', '〜を追加'): Mark aspect 'Cấu trúc', type 'warning'. Explain: 'Thiếu vị ngữ hoàn chỉnh. Cần nói 〜を注文します hoặc 〜をお願いします.'
+         * Potential Form Confusion (e.g. '使うことですか'): Mark aspect 'Ngữ pháp', type 'warning'. Explain: 'Hỏi về khả năng/chấp nhận thanh toán cần dùng thể khả năng 使えますか, không ghép động từ nguyên mẫu với ことですか.'
+         * Slang / Loanword in Service context (e.g. 'OK です'): Mark aspect 'Văn phong', type 'warning'. Explain: 'Trong môi trường dịch vụ Nhật Bản, tránh dùng OK. Nên nói 大丈夫です hoặc かしこまりました.'
+       - TARGET VOCABULARY & GRAMMAR REINFORCEMENT:
+         * When learner successfully uses scenario target words (e.g. 味玉, 固め) or target grammar, record a type 'success' explicitly praising that target usage.
+         * If learner used a simpler general word instead of the scenario target (e.g. saying 卵 instead of 味玉), suggest the target word in naturalAlternative.
+       - ONLY mark type 'success' when the learner genuinely uses correct sentence structures, appropriate politeness, or scenario target vocabulary.
+     * naturalAlternative: More natural native phrasing in Japanese (incorporating scenario target words if applicable)
      * culturalTip: Relevant practical cultural tip in Vietnamese
 
 Return strictly pure JSON matching this schema:
@@ -259,6 +349,15 @@ Return strictly pure JSON matching this schema:
 
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
+                    ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja,
+                        levelConfig.AiPersona.Contains("cụ") || scenario.Title.Contains("cụ")
+                            ? "本当にありがとうね。気をつけて帰ってね。"
+                            : "丁寧にご対応いただき、誠にありがとうございました。");
+
+                    var resolvedReplyFurigana = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                        ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
+                        : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim());
+
                     var resolvedUserFurigana = !string.IsNullOrWhiteSpace(userFHtml)
                         ? userFHtml.Trim()
                         : RoleplaySocialRegister.GenerateFuriganaHtml(userMessage);
@@ -266,7 +365,7 @@ Return strictly pure JSON matching this schema:
                     return new AiTurnResult
                     {
                         JapaneseReply = ja.Trim(),
-                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) ? fHtml.Trim() : null,
+                        FuriganaHtml = resolvedReplyFurigana,
                         VietnameseMeaning = vi.Trim(),
                         UserVietnameseMeaning = !string.IsNullOrWhiteSpace(userVi) ? userVi.Trim() : null,
                         UserFuriganaHtml = resolvedUserFurigana,
@@ -328,13 +427,18 @@ Return strictly pure JSON:
             {
                 using var doc = JsonDocument.Parse(response.Content);
                 var root = doc.RootElement;
-                return new RoleplayHintDto
+                var hintDto = new RoleplayHintDto
                 {
                     JapaneseSuggestion = root.TryGetProperty("japaneseSuggestion", out var jProp) ? jProp.GetString() ?? "" : "",
                     RomajiOrReading = root.TryGetProperty("romajiOrReading", out var rProp) ? rProp.GetString() ?? "" : "",
                     VietnameseMeaning = root.TryGetProperty("vietnameseMeaning", out var vProp) ? vProp.GetString() ?? "" : "",
-                    ContextExplanation = root.TryGetProperty("contextExplanation", out var cProp) ? cProp.GetString() ?? "" : ""
+                    ContextExplanation = root.TryGetProperty("contextExplanation", out var cProp) ? cProp.GetString() ?? "" : "",
+                    Keywords = root.TryGetProperty("keywords", out var kProp) && kProp.ValueKind == JsonValueKind.Array
+                        ? kProp.EnumerateArray().Select(e => e.GetString() ?? "").Where(s => !string.IsNullOrWhiteSpace(s)).ToList()
+                        : new List<string>(),
+                    ClozeSentence = root.TryGetProperty("clozeSentence", out var clProp) ? clProp.GetString() : null
                 };
+                return RoleplaySocialRegister.EnrichScaffolding(hintDto);
             }
             else
             {
@@ -366,9 +470,28 @@ Return strictly pure JSON:
         sb.AppendLine("- ADAPTIVE NUANCE: Deeply understand the real interpersonal relationship and tone from the scenario context. If the context reflects a specific relationship (e.g., close friends/buddies -> mày/tao or cậu/tớ; school/work seniors -> anh/chị - em; family -> bố/mẹ - con; service encounter -> tôi - quý khách; elderly -> cháu - cụ), adopt the single most culturally natural Vietnamese pronoun pair.");
         sb.AppendLine("- ZERO-SLASH ENFORCEMENT: STRICTLY FORBIDDEN to use slash alternatives (NEVER write 'mày/cậu', 'cụ/bạn', 'cháu/em', 'ông/bà', 'tôi/mình') in ANY Vietnamese output. Pick and use ONLY ONE single, definitive, culturally authentic pronoun pair.");
         sb.AppendLine("- CONSISTENCY: Maintain that chosen pronoun pair consistently across all Vietnamese fields (userVietnameseMeaning, replyVietnamese, and linguisticFeedback).");
+        if (levelConfig.TargetVocabularies?.Count > 0)
+        {
+            sb.AppendLine("[SCENARIO TARGET VOCABULARIES TO REINFORCE]");
+            foreach (var v in levelConfig.TargetVocabularies)
+            {
+                sb.AppendLine($"- {v.Word}{(string.IsNullOrWhiteSpace(v.Reading) ? "" : $" ({v.Reading})")}: {v.Meaning}");
+            }
+        }
+        if (levelConfig.TargetGrammars?.Count > 0)
+        {
+            sb.AppendLine("[SCENARIO TARGET GRAMMAR PATTERNS TO REINFORCE]");
+            foreach (var g in levelConfig.TargetGrammars)
+            {
+                sb.AppendLine($"- {g.Pattern}: {g.Meaning}{(string.IsNullOrWhiteSpace(g.ExampleSentence) ? "" : $" (VD: {g.ExampleSentence})")}");
+            }
+        }
         sb.AppendLine("[CORE GUARDRAILS]");
         sb.AppendLine($"- Roleplay fidelity: Stay in character naturally; never break persona.");
-        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"- STRICT MONOLINGUAL PERSONA: You are a native Japanese resident who speaks and understands ONLY Japanese. You have ZERO comprehension of Vietnamese (both accented and unaccented), English, or any foreign language.");
+        sb.AppendLine($"  * replyJapanese MUST contain 100% Japanese text ONLY (Kanji, Hiragana, Katakana, and Japanese punctuation).");
+        sb.AppendLine($"  * ABSOLUTELY NEVER include, leak, append, or interpolate ANY Vietnamese words, Roman letters, English words, or translations inside replyJapanese (e.g. NEVER write 'cháu...', 'cảm ơn...', or '(dịch nghĩa...)').");
+        sb.AppendLine($"  * All Vietnamese meanings and translations belong EXCLUSIVELY in replyVietnamese.");
         sb.AppendLine($"  * If the learner uses ANY non-Japanese words, Vietnamese text, or foreign language (e.g., 'toi muon', 'cho toi', 'hello', 'want', 'order'):");
         sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
         sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");

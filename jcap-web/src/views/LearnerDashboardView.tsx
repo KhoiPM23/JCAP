@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { shadowingStorageService } from '../services/shadowingStorageService';
 import type { ShadowingProgress } from '../types/shadowingProgress';
 import { ContinueShadowingCard } from '../components/shadowing/ContinueShadowingCard';
+import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 
 export const LearnerDashboardView: React.FC = () => {
   const { user } = useAuth();
@@ -28,10 +29,13 @@ export const LearnerDashboardView: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
-      {/* Main Hero Resume Section: "Tiếp tục học Shadowing" */}
+      {/* 1. Main Hero Resume Section: "Tiếp tục học Shadowing" */}
       <ContinueShadowingCard progress={latestInProgress} showEmptyState={true} />
+
+      {/* 2. AI Roleplay Intelligence & Behavioral Radar Card (FE-03 Habit Loop) */}
+      <section className="space-y-3">
+        <LearnerIntelligenceRadarCard />
+      </section>
     </div>
   );
 };
-
-

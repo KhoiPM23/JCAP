@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace JCAP.DTOs.Roleplay;
 
 public class RoleplayHintDto
@@ -12,4 +14,14 @@ public class RoleplayHintDto
 
     public string? ContextExplanation { get; set; }
     public string Explanation { get => ContextExplanation ?? string.Empty; set => ContextExplanation = value; }
+
+    /// <summary>
+    /// Danh sách từ khóa trọng tâm (Tier 1 Scaffolding)
+    /// </summary>
+    public List<string> Keywords { get; set; } = new();
+
+    /// <summary>
+    /// Mẫu câu điền khuyết với chỗ trống [ ______ ] (Tier 2 Scaffolding)
+    /// </summary>
+    public string? ClozeSentence { get; set; }
 }

@@ -170,6 +170,7 @@ namespace JCAP.Services.Implementations
             var textHash = ComputeTextHash(trimmedText);
             var speakerDir = Path.Combine(_cacheRootPath, speakerId.ToString());
             var diskFilePath = Path.Combine(speakerDir, $"{textHash}.wav");
+            var visemeDiskPath = Path.Combine(speakerDir, $"{textHash}.visemes.json");
 
             if (File.Exists(diskFilePath))
             {
@@ -177,6 +178,17 @@ namespace JCAP.Services.Implementations
                 {
                     var diskBytes = await File.ReadAllBytesAsync(diskFilePath, cancellationToken);
                     _audioCache[cacheKey] = diskBytes;
+
+                    if (File.Exists(visemeDiskPath) && !_visemesCache.ContainsKey(cacheKey))
+                    {
+                        try
+                        {
+                            var vJson = await File.ReadAllTextAsync(visemeDiskPath, cancellationToken);
+                            _visemesCache[cacheKey] = vJson;
+                        }
+                        catch {}
+                    }
+
                     _logger.LogInformation("Phát audio VOICEVOX từ Persistent Disk Cache (wwwroot): speaker={SpeakerId}, file={File}", speakerId, diskFilePath);
                     return diskBytes;
                 }
@@ -201,6 +213,22 @@ namespace JCAP.Services.Implementations
                 }
 
                 var queryJson = await queryResponse.Content.ReadAsStringAsync(cancellationToken);
+
+                // Tính toán và lưu trước timeline visemes khẩu hình miệng
+                var timeline = ParseTimeline(queryJson);
+                if (timeline != null)
+                {
+                    _timelineCache[cacheKey] = timeline;
+                    var visemeList = ConvertTimelineToVisemes(timeline);
+                    var visemesJson = JsonSerializer.Serialize(visemeList);
+                    _visemesCache[cacheKey] = visemesJson;
+                    try
+                    {
+                        if (!Directory.Exists(speakerDir)) Directory.CreateDirectory(speakerDir);
+                        await File.WriteAllTextAsync(visemeDiskPath, visemesJson, cancellationToken);
+                    }
+                    catch {}
+                }
 
                 // Bước 2: Gọi synthesis tạo âm thanh WAV
                 var synthesisUrl = $"/synthesis?speaker={speakerId}";
@@ -242,6 +270,40 @@ namespace JCAP.Services.Implementations
         }
 
         private static readonly ConcurrentDictionary<string, IReadOnlyList<MoraTiming>> _timelineCache = new(StringComparer.Ordinal);
+        private static readonly ConcurrentDictionary<string, string> _visemesCache = new(StringComparer.Ordinal);
+
+        public sealed record VisemeTimelineEntry(double t, string v);
+
+        public static List<VisemeTimelineEntry> ConvertTimelineToVisemes(IReadOnlyList<MoraTiming> timeline)
+        {
+            var visemes = new List<VisemeTimelineEntry>();
+            foreach (var mora in timeline)
+            {
+                if (mora.IsPause || string.IsNullOrEmpty(mora.Vowel) || mora.Vowel.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                {
+                    visemes.Add(new VisemeTimelineEntry(Math.Round(mora.StartSec, 3), "closed"));
+                }
+                else
+                {
+                    // Chuyển khẩu hình miệng đồng bộ tự nhiên trước khi nguyên âm phát ra
+                    var triggerTime = Math.Max(0, mora.StartSec + (mora.ConsonantSec * 0.35));
+                    visemes.Add(new VisemeTimelineEntry(Math.Round(triggerTime, 3), mora.Vowel));
+                }
+            }
+            if (timeline.Count > 0)
+            {
+                var last = timeline[^1];
+                visemes.Add(new VisemeTimelineEntry(Math.Round(last.EndSec, 3), "closed"));
+            }
+            return visemes;
+        }
+
+        public string? GetVisemesJson(string text, int speakerId)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            var key = $"{speakerId}:{text.Trim()}";
+            return _visemesCache.TryGetValue(key, out var json) ? json : null;
+        }
         private const int MaxTimelineCacheEntries = 2000;
 
         public async Task<IReadOnlyList<MoraTiming>?> GetMoraTimelineAsync(string text, int speakerId, CancellationToken cancellationToken = default)
@@ -300,7 +362,18 @@ namespace JCAP.Services.Implementations
                         var text = mora.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
                         var consonant = Num(mora, "consonant_length");
                         var vowel = Num(mora, "vowel_length");
-                        list.Add(new MoraTiming(text, cursor, consonant, vowel, IsPause: false));
+                        var rawVowel = mora.TryGetProperty("vowel", out var vProp) && vProp.ValueKind == JsonValueKind.String ? vProp.GetString() ?? "" : "";
+                        var mappedVowel = rawVowel.ToUpperInvariant() switch
+                        {
+                            "A" => "A",
+                            "I" => "I",
+                            "U" => "U",
+                            "E" => "E",
+                            "O" => "O",
+                            "N" => "N",
+                            _ => "closed"
+                        };
+                        list.Add(new MoraTiming(text, cursor, consonant, vowel, IsPause: false, Vowel: mappedVowel));
                         cursor += consonant + vowel;
                     }
                 }
@@ -308,7 +381,7 @@ namespace JCAP.Services.Implementations
                 if (phrase.TryGetProperty("pause_mora", out var pause) && pause.ValueKind == JsonValueKind.Object)
                 {
                     var length = Num(pause, "vowel_length") * Math.Max(0.0, root.TryGetProperty("pauseLengthScale", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetDouble() : 1.0);
-                    list.Add(new MoraTiming("", cursor, 0, length, IsPause: true));
+                    list.Add(new MoraTiming("", cursor, 0, length, IsPause: true, Vowel: "closed"));
                     cursor += length;
                 }
             }
