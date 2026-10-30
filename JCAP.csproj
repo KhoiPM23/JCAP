@@ -34,11 +34,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="JCAP.Tests" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\sample.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include=".github\upgrades\roleplay-model-contract.md" />
     <None Include=".github\upgrades\scenarios\nuget-package-upgrade\tasks\03-build-and-test\progress-details.md" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.29.3" />
     <PackageReference Include="MailKit" Version="4.18.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />

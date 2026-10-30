@@ -1,41 +1,167 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
-import { formatDateTime } from '../utils/dateUtils';
+import { formatDateTime, parseDateTime } from '../utils/dateUtils';
 import type { CreditTransaction, CreditHistoryResponse } from '../types/credit';
+
+const PENDING_TIMEOUT_MS = 10 * 60 * 1000; // Thời gian tự hủy đơn treo: 10 phút (đồng bộ PayOS)
 
 export const CreditHistoryView: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<CreditHistoryResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [cancelTargetTx, setCancelTargetTx] = useState<CreditTransaction | null>(null);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoCancellingIdsRef = useRef<Set<number>>(new Set());
   const pageSize = 10;
 
-  const fetchHistory = async (page: number) => {
-    setIsLoading(true);
-    setError(null);
+  const showNotification = useCallback((text: string | null, type: 'success' | 'error' = 'success') => {
+    if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+
+    if (!text) {
+      setNotification(null);
+      setIsFadingOut(false);
+      return;
+    }
+
+    setIsFadingOut(false);
+    setNotification({ type, text });
+
+    // Tự động làm mờ sau 5 giây (chuẩn style Add Scenario)
+    fadeTimerRef.current = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 5000);
+
+    // Xóa hoàn toàn sau 5.5 giây
+    clearTimerRef.current = setTimeout(() => {
+      setNotification(null);
+      setIsFadingOut(false);
+    }, 5500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+    };
+  }, []);
+
+  const fetchHistory = useCallback(async (page: number, silent: boolean = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
+    
     try {
       const res = await creditService.getHistory(page, pageSize);
       if (res.success && res.data) {
         setData(res.data);
         refreshUser();
-      } else {
-        setError(res.message || 'Không thể tải lịch sử giao dịch.');
+      } else if (!silent) {
+        showNotification(res.message || 'Không thể tải lịch sử giao dịch.', 'error');
       }
     } catch (err: any) {
-      setError(err.message || 'Lỗi kết nối máy chủ.');
+      if (!silent) {
+        showNotification(err.message || 'Lỗi kết nối máy chủ.', 'error');
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [pageSize, refreshUser, showNotification]);
 
   useEffect(() => {
-    fetchHistory(currentPage);
-  }, [currentPage]);
+    void fetchHistory(currentPage, false);
+  }, [currentPage, fetchHistory]);
+
+  // Tự động đồng bộ khi người dùng chuyển từ tab PayOS quay lại tab Lịch sử giao dịch
+  // hoặc đang treo song song 2 tab mà có giao dịch ở trạng thái Pending
+  const hasPendingTransactions = Boolean(
+    data?.transactions?.some((tx) => tx.status.toLowerCase() === 'pending')
+  );
+
+  useEffect(() => {
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchHistory(currentPage, true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocusOrVisible);
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
+
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let countdownTimer: ReturnType<typeof setInterval> | null = null;
+    if (hasPendingTransactions) {
+      setNowMs(Date.now());
+      countdownTimer = setInterval(() => {
+        setNowMs(Date.now());
+      }, 1000);
+
+      pollTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          void fetchHistory(currentPage, true);
+        }
+      }, 3000);
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocusOrVisible);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
+      if (pollTimer) clearInterval(pollTimer);
+      if (countdownTimer) clearInterval(countdownTimer);
+    };
+  }, [currentPage, hasPendingTransactions, fetchHistory]);
+
+  const getRemainingSeconds = useCallback((createdAtStr: string, currentNowMs: number): number => {
+    const createdDate = parseDateTime(createdAtStr);
+    if (!createdDate) return 0;
+    const expiresAtMs = createdDate.getTime() + PENDING_TIMEOUT_MS;
+    return Math.max(0, Math.ceil((expiresAtMs - currentNowMs) / 1000));
+  }, []);
+
+  const formatCountdown = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // Khi đồng hồ đếm ngược 10 phút về 00:00 -> tự động kích hoạt hủy giao dịch và làm mới danh sách
+  useEffect(() => {
+    if (!data?.transactions) return;
+
+    const expiredPendingTxs = data.transactions.filter(
+      (tx) =>
+        tx.status.toLowerCase() === 'pending' &&
+        getRemainingSeconds(tx.createdAt, nowMs) <= 0 &&
+        !autoCancellingIdsRef.current.has(tx.id)
+    );
+
+    if (expiredPendingTxs.length === 0) return;
+
+    expiredPendingTxs.forEach((tx) => {
+      autoCancellingIdsRef.current.add(tx.id);
+    });
+
+    void (async () => {
+      await Promise.allSettled(
+        expiredPendingTxs.map((tx) =>
+          tx.payOsOrderCode ? creditService.cancelOrder(tx.payOsOrderCode) : Promise.resolve()
+        )
+      );
+      await fetchHistory(currentPage, true);
+    })();
+  }, [nowMs, data?.transactions, currentPage, fetchHistory, getRemainingSeconds]);
 
   const handleContinuePayment = async (orderCode?: string) => {
     if (!orderCode) return;
@@ -45,35 +171,38 @@ export const CreditHistoryView: React.FC = () => {
       if (res.success && res.data) {
         if (res.data.checkoutUrl) {
           window.location.href = res.data.checkoutUrl;
-        } else if (res.data.isMock) {
-          await fetchHistory(currentPage);
+        } else {
+          showNotification(res.data.message || 'Đơn hàng đã thanh toán thành công và quyền lợi đã được kích hoạt!', 'success');
+          await fetchHistory(currentPage, false);
         }
       } else {
-        alert(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.');
+        showNotification(res.message || 'Không thể tiếp tục thanh toán đơn hàng này.', 'error');
+        await fetchHistory(currentPage, true);
       }
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi tiếp tục thanh toán.');
+      showNotification(err.message || 'Lỗi khi tiếp tục thanh toán.', 'error');
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  const handleCancelOrder = async (orderCode?: string) => {
-    if (!orderCode) return;
-    if (!window.confirm('Bạn có chắc chắn muốn hủy giao dịch nạp credit này không?')) {
-      return;
-    }
-
+  const handleConfirmCancel = async () => {
+    if (!cancelTargetTx || !cancelTargetTx.payOsOrderCode) return;
+    const orderCode = cancelTargetTx.payOsOrderCode;
     setActionLoadingId(`cancel-${orderCode}`);
     try {
       const res = await creditService.cancelOrder(orderCode);
+      setCancelTargetTx(null);
       if (res.success) {
+        showNotification('Đã hủy giao dịch thành công.', 'success');
         await fetchHistory(currentPage);
       } else {
-        alert(res.message || 'Không thể hủy đơn hàng này.');
+        showNotification(res.message || 'Không thể hủy đơn hàng này.', 'error');
+        await fetchHistory(currentPage);
       }
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi hủy đơn hàng.');
+      setCancelTargetTx(null);
+      showNotification(err.message || 'Lỗi khi hủy đơn hàng.', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -81,7 +210,8 @@ export const CreditHistoryView: React.FC = () => {
 
   const formatDate = (dateStr: string) => formatDateTime(dateStr);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (tx: CreditTransaction) => {
+    const status = tx.status;
     switch (status.toLowerCase()) {
       case 'paid':
         return (
@@ -89,12 +219,35 @@ export const CreditHistoryView: React.FC = () => {
             Thành công
           </span>
         );
-      case 'pending':
+      case 'pending': {
+        const remainingSec = getRemainingSeconds(tx.createdAt, nowMs);
+        if (remainingSec <= 0) {
+          return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+              Đã hủy
+            </span>
+          );
+        }
+        const isUrgent = remainingSec <= 120;
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            Chờ thanh toán
-          </span>
+          <div className="inline-flex flex-col items-start gap-1">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              Chờ thanh toán
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md ${
+                isUrgent
+                  ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+              title="Đơn hàng sẽ tự động hủy sau 10 phút nếu chưa hoàn tất thanh toán"
+            >
+              <span>⏳</span>
+              <span>Tự hủy: {formatCountdown(remainingSec)}</span>
+            </span>
+          </div>
         );
+      }
       case 'cancelled':
       case 'failed':
         return (
@@ -120,6 +273,8 @@ export const CreditHistoryView: React.FC = () => {
     switch (type.toLowerCase()) {
       case 'topup':
         return 'Nạp Credit';
+      case 'subscription':
+        return 'Đăng ký Gói Tháng';
       case 'deduct':
         return 'Sử dụng hội thoại';
       case 'voucher':
@@ -130,15 +285,31 @@ export const CreditHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
+      {/* Breadcrumb & Nút Thoát / Quay lại */}
+      <div className="w-full flex items-center justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
+          <Link to="/" className="hover:text-[#0878EE] transition">Trang chủ</Link>
+          <span>/</span>
+          <Link to="/subscription" className="hover:text-[#0878EE] transition">Gói Dịch Vụ & Hạn Mức</Link>
+          <span>/</span>
+          <span className="text-slate-800 font-semibold">Lịch sử giao dịch</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/subscription')}
+          className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition cursor-pointer flex-shrink-0"
+          title="Quay lại trang Gói Dịch Vụ & Hạn Mức"
+        >
+          <span>←</span>
+          <span>Quay lại Gói & Hạn Mức</span>
+        </button>
+      </div>
+
       {/* Header & Balance card */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-6 border-b border-[#E6EDF5]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link to="/credits" className="text-xs text-[#0878EE] hover:underline font-medium">
-              ← Quay lại Nạp Credit
-            </Link>
-          </div>
           <h1 className="text-2xl font-bold text-[#071A44]">Lịch Sử Giao Dịch Credit</h1>
           <p className="text-xs text-[#71809A] mt-1">
             Tra cứu biến động số dư và theo dõi các khoản nạp qua cổng PayOS.
@@ -164,10 +335,17 @@ export const CreditHistoryView: React.FC = () => {
         </div>
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-[#D92D20]/30 rounded-xl flex items-center gap-3 text-sm text-[#D92D20]">
-          <span className="text-xl">⚠️</span>
-          <span>{error}</span>
+      {/* Toast Notification Banner (Chuẩn phong cách Add Scenario - tự làm mờ sau 5s, không in đậm) */}
+      {notification && (
+        <div
+          className={`mb-6 px-4 py-3 rounded-2xl text-xs sm:text-sm border flex items-center gap-2.5 shadow-xs transition-opacity duration-500 ease-in-out ${
+            notification.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-700'
+          } ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+        >
+          <span className="text-base">{notification.type === 'success' ? '✅' : '⚠️'}</span>
+          <span>{notification.text}</span>
         </div>
       )}
 
@@ -208,7 +386,9 @@ export const CreditHistoryView: React.FC = () => {
               <tbody className="divide-y divide-[#E6EDF5]">
                 {data.transactions.map((tx: CreditTransaction) => {
                   const isPositive = tx.amount > 0;
-                  const isPending = tx.status.toLowerCase() === 'pending';
+                  const isPending =
+                    tx.status.toLowerCase() === 'pending' &&
+                    getRemainingSeconds(tx.createdAt, nowMs) > 0;
 
                   return (
                     <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
@@ -219,17 +399,25 @@ export const CreditHistoryView: React.FC = () => {
                         {getTypeLabel(tx.type)}
                       </td>
                       <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <span
-                          className={`font-bold text-sm ${
-                            isPositive ? 'text-emerald-600' : 'text-red-600'
-                          }`}
-                        >
-                          {isPositive ? `+${tx.amount}` : tx.amount}
-                        </span>{' '}
-                        <span className="text-[11px] text-[#71809A]">Credits</span>
+                        {tx.type.toLowerCase() === 'subscription' ? (
+                          <span className="font-bold text-xs text-[#0878EE] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                            Hạn mức {tx.amount} Credits/tuần
+                          </span>
+                        ) : (
+                          <>
+                            <span
+                              className={`font-bold text-sm ${
+                                isPositive ? 'text-emerald-600' : 'text-red-600'
+                              }`}
+                            >
+                              {isPositive ? `+${tx.amount}` : tx.amount}
+                            </span>{' '}
+                            <span className="text-[11px] text-[#71809A]">Credits</span>
+                          </>
+                        )}
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
-                        {getStatusBadge(tx.status)}
+                        {getStatusBadge(tx)}
                       </td>
                       <td className="py-4 px-6 text-[#475467] max-w-xs truncate">
                         {formatDescription(tx.description)}
@@ -257,8 +445,8 @@ export const CreditHistoryView: React.FC = () => {
                             <button
                               type="button"
                               disabled={!!actionLoadingId}
-                              onClick={() => handleCancelOrder(tx.payOsOrderCode)}
-                              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                              onClick={() => setCancelTargetTx(tx)}
+                              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                               title="Hủy đơn nạp tiền này"
                             >
                               {actionLoadingId === `cancel-${tx.payOsOrderCode}` ? (
@@ -309,6 +497,61 @@ export const CreditHistoryView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal for Hủy giao dịch nạp tiền */}
+      {cancelTargetTx && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-xl shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-[#071A44]">
+                  Xác nhận hủy giao dịch nạp credit?
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Đơn hàng mã #{cancelTargetTx.payOsOrderCode} (+{cancelTargetTx.amount} Credits)
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3.5 mb-5 text-xs text-amber-900 leading-relaxed">
+              <p className="font-bold mb-1">📌 Lưu ý quan trọng:</p>
+              <p>
+                Nếu bạn chọn hủy, mã thanh toán PayOS liên kết với giao dịch này sẽ bị đóng lại. Nếu bạn đã thực hiện chuyển khoản qua ứng dụng ngân hàng, vui lòng không hủy đơn và chờ vài phút để hệ thống đối soát tự động.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={!!actionLoadingId}
+                onClick={() => setCancelTargetTx(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs transition cursor-pointer disabled:opacity-50"
+              >
+                Không, giữ lại
+              </button>
+
+              <button
+                type="button"
+                disabled={!!actionLoadingId}
+                onClick={handleConfirmCancel}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {actionLoadingId === `cancel-${cancelTargetTx.payOsOrderCode}` ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Đang hủy...</span>
+                  </>
+                ) : (
+                  <span>Đồng ý hủy giao dịch</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,18 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/jcap-favicon.svg?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JCAP - Luyện nói tiếng Nhật cùng AI</title>
-    <!-- Nhúng Tailwind CSS trực tiếp để dùng ngay mọi class tiện ích -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts & Icons -->
+    <!-- Tailwind được biên dịch lúc build (tailwind.config.js, src/styles/tailwind.css), không còn nạp qua CDN -->
+    <!-- Fonts & Icons: Be Vietnam Pro (chữ Việt), Noto Sans JP (tiếng Nhật), Noto Serif JP (chữ trang trí) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" rel="stylesheet">
+    <!-- Tạm giữ bộ Outlined cho các màn chưa làm lại (Shadowing, VoiceVoxTest); bỏ khi không còn chỗ nào dùng -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
-      body { font-family: 'Inter', 'Noto Sans', 'Plus Jakarta Sans', sans-serif; }
+      body { font-family: var(--font-sans); }
+      ruby { ruby-position: over; }
+      ruby rt {
+        font-size: 0.65em;
+        font-weight: 500;
+        line-height: 1;
+        user-select: none;
+      }
+      .bubble-ai ruby rt { color: #0878EE; }
+      .bubble-user ruby rt { color: #BAE6FD; }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up {
+        animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+        50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      }
+      .animate-pulse-glow {
+        animation: pulseGlow 1.5s ease-in-out infinite;
+      }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-800 antialiased">

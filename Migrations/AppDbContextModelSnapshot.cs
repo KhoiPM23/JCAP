@@ -93,6 +93,15 @@ namespace JCAP.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("SubscriptionExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubscriptionPlanId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SubscriptionStartedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -155,6 +164,13 @@ namespace JCAP.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("AmountVnd")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("CoveredBySubscription")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -171,6 +187,10 @@ namespace JCAP.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("SubscriptionPlanId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -182,9 +202,548 @@ namespace JCAP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PayOsOrderCode")
+                        .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
+
+                    b.HasIndex("UserId", "Type", "CoveredBySubscription", "CreatedAt")
+                        .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
 
                     b.ToTable("CreditTransactions");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaxLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("MinLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("UnlockThresholdPercent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderIndex");
+
+                    b.ToTable("ExploreChapters");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapterPrefecture", b =>
+                {
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChapterId", "PrefectureId");
+
+                    b.HasIndex("PrefectureId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreChapterPrefectures");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapterUnlock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChapterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChapterId");
+
+                    b.HasIndex("UserId", "ChapterId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreChapterUnlocks", (string)null);
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefecture", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OpenedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExplorePrefectures", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExplorePrefecture_Id", "[Id] BETWEEN 1 AND 47");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefectureStamp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RedStampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrefectureId");
+
+                    b.HasIndex("UserId", "PrefectureId")
+                        .IsUnique();
+
+                    b.ToTable("ExplorePrefectureStamps", (string)null);
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
+                {
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kana")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("PrefectureId");
+
+                    b.ToTable("ExploreProvinceWords");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IconId")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("NameJp")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameKana")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameVi")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PrefectureId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrefectureId", "Status", "IsActive");
+
+                    b.ToTable("ExploreSpots");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PassThreshold")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId", "OrderIndex");
+
+                    b.ToTable("ExploreSpotActivities");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EstimatedMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GrammarNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("JLPTLevel")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("N5");
+
+                    b.Property<string>("Meaning")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RealUse")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SentenceJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Situation")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpotId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreSpotLessons");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonGrammar", b =>
+                {
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LessonId", "GrammarId");
+
+                    b.HasIndex("GrammarId");
+
+                    b.ToTable("ExploreSpotLessonGrammars");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonVocabulary", b =>
+                {
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LessonId", "VocabularyId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.ToTable("ExploreSpotLessonVocabularies");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("RedStampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RoleplaySessionId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ShadowingPracticeSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StampedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UnderstoodAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpotId");
+
+                    b.HasIndex("UserId", "SpotId")
+                        .IsUnique();
+
+                    b.ToTable("ExploreSpotProgresses", (string)null);
+                });
+
+            modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FrontTextSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntervalAfter")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntervalBefore")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsNewCard")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MeaningSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Rating")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrammarId");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.HasIndex("UserId", "IsNewCard", "ReviewedAt");
+
+                    b.ToTable("FlashcardReviewLogs", t =>
+                        {
+                            t.HasCheckConstraint("CK_FlashcardReviewLogs_ExactlyOneItem", "([VocabularyId] IS NOT NULL AND [GrammarId] IS NULL) OR ([VocabularyId] IS NULL AND [GrammarId] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.FlashcardStudySession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AgainCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("Vocabulary");
+
+                    b.Property<int>("EasyCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GoodCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsExtraPractice")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SetTitleSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("TopicSet");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TopicId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCards")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "StartedAt");
+
+                    b.ToTable("FlashcardStudySessions");
                 });
 
             modelBuilder.Entity("JCAP.Models.Grammar", b =>
@@ -204,25 +763,531 @@ namespace JCAP.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Explanation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Formation")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("JLPTLevel")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Meaning")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Pattern")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Reading")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UsageNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Pattern", "Meaning");
+                    b.HasIndex("Pattern");
 
                     b.ToTable("Grammars");
+                });
+
+            modelBuilder.Entity("JCAP.Models.GrammarExample", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Furigana")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("JapaneseText")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VietnameseTranslation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceId");
+
+                    b.HasIndex("GrammarId", "OrderIndex");
+
+                    b.ToTable("GrammarExamples", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_GrammarExamples_JapaneseText_NotBlank", "LEN(LTRIM(RTRIM([JapaneseText]))) > 0");
+
+                            t.HasCheckConstraint("CK_GrammarExamples_OrderIndex", "[OrderIndex] >= 0");
+
+                            t.HasCheckConstraint("CK_GrammarExamples_SourceReference", "[ExternalId] IS NULL OR [SourceId] IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.GrammarSource", b =>
+                {
+                    b.Property<int>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("GrammarId", "SourceId", "ExternalId");
+
+                    b.HasIndex("SourceId", "ExternalId");
+
+                    b.ToTable("GrammarSources", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_GrammarSources_ExternalId_NotBlank", "LEN(LTRIM(RTRIM([ExternalId]))) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerBehaviorSignal", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("BargeInInterrupted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DetectedRuleErrorCodes")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("FallbackToTextInput")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("HintLevelUsed")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LatencyMs")
+                        .HasColumnType("int");
+
+                    b.Property<double>("MoraRate")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PauseRatio")
+                        .HasColumnType("float");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TranslationPeekCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TurnIndex")
+                        .HasColumnType("int");
+
+                    b.Property<double>("TurnScore")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId", "TurnIndex");
+
+                    b.ToTable("LearnerBehaviorSignals");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerBookmark", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrammarId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("UserId", "GrammarId")
+                        .IsUnique()
+                        .HasFilter("[GrammarId] IS NOT NULL");
+
+                    b.HasIndex("UserId", "VocabularyId")
+                        .IsUnique()
+                        .HasFilter("[VocabularyId] IS NOT NULL");
+
+                    b.ToTable("LearnerBookmarks", t =>
+                        {
+                            t.HasCheckConstraint("CK_LearnerBookmarks_ExactlyOneItem", "([VocabularyId] IS NOT NULL AND [GrammarId] IS NULL) OR ([VocabularyId] IS NULL AND [GrammarId] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerDailyFlashcardQuota", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("DateVn")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ExtraUnlockedCards")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "DateVn")
+                        .IsUnique();
+
+                    b.ToTable("LearnerDailyFlashcardQuotas");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerFlashcardProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("EaseFactor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(2.5);
+
+                    b.Property<int?>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntervalDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LastRating")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Good");
+
+                    b.Property<DateTime>("LastReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NextReviewAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Repetitions")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrammarId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.HasIndex("UserId", "GrammarId")
+                        .IsUnique()
+                        .HasFilter("[GrammarId] IS NOT NULL");
+
+                    b.HasIndex("UserId", "NextReviewAt");
+
+                    b.HasIndex("UserId", "VocabularyId")
+                        .IsUnique()
+                        .HasFilter("[VocabularyId] IS NOT NULL");
+
+                    b.ToTable("LearnerFlashcardProgresses", t =>
+                        {
+                            t.HasCheckConstraint("CK_LearnerFlashcardProgresses_ExactlyOneItem", "([VocabularyId] IS NOT NULL AND [GrammarId] IS NULL) OR ([VocabularyId] IS NULL AND [GrammarId] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerIntelligenceProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("AverageMoraRate")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CommunicativeConfidenceScore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CommunicativeProficiencyIndex")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("HintDependencyRate")
+                        .HasColumnType("float");
+
+                    b.Property<string>("InferredTraitsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("KeigoCommandScore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ParticleAccuracyRate")
+                        .HasColumnType("float");
+
+                    b.Property<double>("SpeakingReflexIndex")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ThetaEstimate")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("LearnerIntelligenceProfiles");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerSkillMastery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double>("Difficulty")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Lapses")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastPracticedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NextRecommendedReviewUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Repetitions")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SkillCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SkillName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<double>("Stability")
+                        .HasColumnType("float");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "NextRecommendedReviewUtc");
+
+                    b.HasIndex("UserId", "SkillCode")
+                        .IsUnique();
+
+                    b.ToTable("LearnerSkillMasteries");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearningContentSource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Attribution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("License")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LicenseUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SourceUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name", "Version")
+                        .IsUnique();
+
+                    b.ToTable("LearningContentSources", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LearningContentSources_Provenance_NotBlank", "LEN(LTRIM(RTRIM([Name]))) > 0 AND LEN(LTRIM(RTRIM([Version]))) > 0 AND LEN(LTRIM(RTRIM([SourceUrl]))) > 0 AND LEN(LTRIM(RTRIM([License]))) > 0 AND LEN(LTRIM(RTRIM([LicenseUrl]))) > 0 AND LEN(LTRIM(RTRIM([Attribution]))) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearningTopic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("JLPTLevel")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Name", "JLPTLevel")
+                        .IsUnique();
+
+                    b.ToTable("LearningTopics", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LearningTopics_Code_NotBlank", "LEN(LTRIM(RTRIM([Code]))) > 0");
+
+                            t.HasCheckConstraint("CK_LearningTopics_JLPTLevel", "[JLPTLevel] IN ('N5','N4','N3','N2','N1')");
+
+                            t.HasCheckConstraint("CK_LearningTopics_Name_NotBlank", "LEN(LTRIM(RTRIM([Name]))) > 0");
+                        });
                 });
 
             modelBuilder.Entity("JCAP.Models.Mission", b =>
@@ -626,6 +1691,75 @@ namespace JCAP.Migrations
                     b.ToTable("ShadowingDialogueVocabularies");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AudioQualityStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ContentMatchScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FluencyScore")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LearnerRole")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<int>("LearnerSentenceCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RankTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ScoredSentenceCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScoringVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ShadowingDialogueId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WeightedOverallScore")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShadowingDialogueId");
+
+                    b.HasIndex("UserId", "CompletedAt");
+
+                    b.ToTable("ShadowingPracticeSessions");
+                });
+
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
                 {
                     b.Property<int>("Id")
@@ -671,6 +1805,86 @@ namespace JCAP.Migrations
                     b.HasIndex("ShadowingDialogueId", "OrderIndex");
 
                     b.ToTable("ShadowingSentences");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AudioQualityStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ComparisonMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ContentMatchScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiffTokensJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EvaluationStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Feedback")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("OverallScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecognitionSource")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("RecognizedText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ScoringVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ShadowingPracticeSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ShadowingSentenceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tier")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShadowingPracticeSessionId");
+
+                    b.HasIndex("ShadowingSentenceId");
+
+                    b.HasIndex("UserId", "ShadowingSentenceId", "CreatedAt");
+
+                    b.ToTable("ShadowingSentenceEvaluations");
                 });
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
@@ -737,6 +1951,90 @@ namespace JCAP.Migrations
                     b.ToTable("TargetVocabularies");
                 });
 
+            modelBuilder.Entity("JCAP.Models.TopicGrammar", b =>
+                {
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GrammarId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.HasKey("TopicId", "GrammarId");
+
+                    b.HasIndex("GrammarId");
+
+                    b.HasIndex("TopicId", "OrderIndex");
+
+                    b.ToTable("TopicGrammars", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TopicGrammars_OrderIndex", "[OrderIndex] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.TopicVocabulary", b =>
+                {
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.HasKey("TopicId", "VocabularyId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.HasIndex("TopicId", "OrderIndex");
+
+                    b.ToTable("TopicVocabularies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_TopicVocabularies_OrderIndex", "[OrderIndex] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.UserNpcRelationship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AffinityScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompletedSessionsCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastInteractedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MemoryCapsuleJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NpcCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "NpcCode")
+                        .IsUnique();
+
+                    b.ToTable("UserNpcRelationships");
+                });
+
             modelBuilder.Entity("JCAP.Models.Vocabulary", b =>
                 {
                     b.Property<int>("Id")
@@ -745,10 +2043,22 @@ namespace JCAP.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AudioUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Explanation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("JLPTLevel")
                         .HasMaxLength(10)
@@ -756,12 +2066,22 @@ namespace JCAP.Migrations
 
                     b.Property<string>("Meaning")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PartOfSpeech")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Reading")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UsageNotes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Word")
                         .IsRequired()
@@ -770,9 +2090,81 @@ namespace JCAP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Word", "Meaning");
+                    b.HasIndex("Word");
 
                     b.ToTable("Vocabularies");
+                });
+
+            modelBuilder.Entity("JCAP.Models.VocabularyExample", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Furigana")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("JapaneseText")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VietnameseTranslation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceId");
+
+                    b.HasIndex("VocabularyId", "OrderIndex");
+
+                    b.ToTable("VocabularyExamples", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VocabularyExamples_JapaneseText_NotBlank", "LEN(LTRIM(RTRIM([JapaneseText]))) > 0");
+
+                            t.HasCheckConstraint("CK_VocabularyExamples_OrderIndex", "[OrderIndex] >= 0");
+
+                            t.HasCheckConstraint("CK_VocabularyExamples_SourceReference", "[ExternalId] IS NULL OR [SourceId] IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("JCAP.Models.VocabularySource", b =>
+                {
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("VocabularyId", "SourceId", "ExternalId");
+
+                    b.HasIndex("SourceId", "ExternalId");
+
+                    b.ToTable("VocabularySources", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VocabularySources_ExternalId_NotBlank", "LEN(LTRIM(RTRIM([ExternalId]))) > 0");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -919,6 +2311,333 @@ namespace JCAP.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapterPrefecture", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreChapter", "Chapter")
+                        .WithMany("Prefectures")
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithOne("ChapterLink")
+                        .HasForeignKey("JCAP.Models.ExploreChapterPrefecture", "PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Chapter");
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreChapterUnlock", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreChapter", "Chapter")
+                        .WithMany()
+                        .HasForeignKey("ChapterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Chapter");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefectureStamp", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithMany()
+                        .HasForeignKey("PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreProvinceWord", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithOne("Word")
+                        .HasForeignKey("JCAP.Models.ExploreProvinceWord", "PrefectureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.HasOne("JCAP.Models.ExplorePrefecture", "Prefecture")
+                        .WithMany("Spots")
+                        .HasForeignKey("PrefectureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Prefecture");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotActivity", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("Activities")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpot", "Spot")
+                        .WithOne("Lesson")
+                        .HasForeignKey("JCAP.Models.ExploreSpotLesson", "SpotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spot");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonGrammar", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("LessonGrammars")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLessonVocabulary", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpotLesson", "Lesson")
+                        .WithMany("LessonVocabularies")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotProgress", b =>
+                {
+                    b.HasOne("JCAP.Models.ExploreSpot", "Spot")
+                        .WithMany()
+                        .HasForeignKey("SpotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Spot");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.FlashcardStudySession", "Session")
+                        .WithMany("ReviewLogs")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Session");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FlashcardStudySession", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.GrammarExample", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany("Examples")
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.LearningContentSource", "Source")
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Source");
+                });
+
+            modelBuilder.Entity("JCAP.Models.GrammarSource", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany("Sources")
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.LearningContentSource", "Source")
+                        .WithMany("GrammarSources")
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Source");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerBehaviorSignal", b =>
+                {
+                    b.HasOne("JCAP.Models.RoleplaySession", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerBookmark", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerDailyFlashcardQuota", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerFlashcardProgress", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany()
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerIntelligenceProfile", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerSkillMastery", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCAP.Models.Mission", b =>
                 {
                     b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
@@ -1058,6 +2777,25 @@ namespace JCAP.Migrations
                     b.Navigation("Vocabulary");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
+                        .WithMany()
+                        .HasForeignKey("ShadowingDialogueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingDialogue");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCAP.Models.ShadowingSentence", b =>
                 {
                     b.HasOne("JCAP.Models.ShadowingDialogue", "ShadowingDialogue")
@@ -1067,6 +2805,32 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("ShadowingDialogue");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingPracticeSession", "ShadowingPracticeSession")
+                        .WithMany("SentenceEvaluations")
+                        .HasForeignKey("ShadowingPracticeSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.ShadowingSentence", "ShadowingSentence")
+                        .WithMany()
+                        .HasForeignKey("ShadowingSentenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingPracticeSession");
+
+                    b.Navigation("ShadowingSentence");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JCAP.Models.TargetGrammar", b =>
@@ -1089,6 +2853,92 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("ScenarioLevelConfiguration");
+                });
+
+            modelBuilder.Entity("JCAP.Models.TopicGrammar", b =>
+                {
+                    b.HasOne("JCAP.Models.Grammar", "Grammar")
+                        .WithMany("TopicGrammars")
+                        .HasForeignKey("GrammarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.LearningTopic", "Topic")
+                        .WithMany("TopicGrammars")
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grammar");
+
+                    b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("JCAP.Models.TopicVocabulary", b =>
+                {
+                    b.HasOne("JCAP.Models.LearningTopic", "Topic")
+                        .WithMany("TopicVocabularies")
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany("TopicVocabularies")
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Topic");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.UserNpcRelationship", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.VocabularyExample", b =>
+                {
+                    b.HasOne("JCAP.Models.LearningContentSource", "Source")
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany("Examples")
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Source");
+
+                    b.Navigation("Vocabulary");
+                });
+
+            modelBuilder.Entity("JCAP.Models.VocabularySource", b =>
+                {
+                    b.HasOne("JCAP.Models.LearningContentSource", "Source")
+                        .WithMany("VocabularySources")
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JCAP.Models.Vocabulary", "Vocabulary")
+                        .WithMany("Sources")
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Source");
+
+                    b.Navigation("Vocabulary");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1142,9 +2992,62 @@ namespace JCAP.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("JCAP.Models.ExploreChapter", b =>
+                {
+                    b.Navigation("Prefectures");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExplorePrefecture", b =>
+                {
+                    b.Navigation("ChapterLink");
+
+                    b.Navigation("Spots");
+
+                    b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpot", b =>
+                {
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ExploreSpotLesson", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("LessonGrammars");
+
+                    b.Navigation("LessonVocabularies");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FlashcardStudySession", b =>
+                {
+                    b.Navigation("ReviewLogs");
+                });
+
             modelBuilder.Entity("JCAP.Models.Grammar", b =>
                 {
+                    b.Navigation("Examples");
+
                     b.Navigation("ShadowingDialogueGrammars");
+
+                    b.Navigation("Sources");
+
+                    b.Navigation("TopicGrammars");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearningContentSource", b =>
+                {
+                    b.Navigation("GrammarSources");
+
+                    b.Navigation("VocabularySources");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearningTopic", b =>
+                {
+                    b.Navigation("TopicGrammars");
+
+                    b.Navigation("TopicVocabularies");
                 });
 
             modelBuilder.Entity("JCAP.Models.Mission", b =>
@@ -1188,9 +3091,20 @@ namespace JCAP.Migrations
                     b.Navigation("Sentences");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingPracticeSession", b =>
+                {
+                    b.Navigation("SentenceEvaluations");
+                });
+
             modelBuilder.Entity("JCAP.Models.Vocabulary", b =>
                 {
+                    b.Navigation("Examples");
+
                     b.Navigation("ShadowingDialogueVocabularies");
+
+                    b.Navigation("Sources");
+
+                    b.Navigation("TopicVocabularies");
                 });
 #pragma warning restore 612, 618
         }

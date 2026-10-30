@@ -124,6 +124,44 @@ public class RoleplayEvaluationServiceTests
         Assert.Null(result);
     }
 
+    [Fact]
+    public void Evaluate_CalculatesFluencyAndConfidenceFromDeliveryMetrics()
+    {
+        var feedbackWithSpeech = """
+        {
+          "evaluationSource": "AI",
+          "status": "Good",
+          "summary": "Rất chính xác",
+          "details": [
+            { "type": "success", "aspect": "Ngữ pháp", "comment": "Ngữ pháp chuẩn." },
+            { "type": "success", "aspect": "Từ vựng", "comment": "Từ vựng tốt." },
+            { "type": "success", "aspect": "Kính ngữ", "comment": "Kính ngữ chuẩn." }
+          ],
+          "speechDelivery": {
+            "speakingDurationSeconds": 2.5,
+            "responseLatencySeconds": 2.1,
+            "speechConfidence": 0.94,
+            "speechPace": 4.2,
+            "turnFluencyScore": 95
+          }
+        }
+        """;
+
+        var result = _service.Evaluate(
+            [feedbackWithSpeech],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(95, result.FluencyScore);
+        Assert.Equal(94, result.SpeechConfidenceScore);
+        Assert.Equal(2.1, result.AverageResponseLatencySeconds);
+        Assert.Equal(4.2, result.AverageSpeechPace);
+        Assert.Contains("Độ trôi chảy & Phát âm", result.GeneralFeedbackText);
+        Assert.Contains("2.1s", result.GeneralFeedbackText);
+    }
+
     private const string GoodFeedbackJson = """
     {
       "evaluationSource": "AI",

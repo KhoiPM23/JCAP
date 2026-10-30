@@ -55,4 +55,11 @@ public interface IRoleplaySessionService
         string userId,
         int sessionId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lấy hồ sơ trí tuệ học viên và các chỉ số phản xạ giao tiếp ngầm (TikTok-style Linguistic Intelligence Profile)
+    /// </summary>
+    Task<ApiResponse<LearnerIntelligenceProfileDto>> GetIntelligenceProfileAsync(
+        string userId,
+        CancellationToken cancellationToken = default);
 }

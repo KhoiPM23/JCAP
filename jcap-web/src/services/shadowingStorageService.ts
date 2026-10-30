@@ -3,6 +3,7 @@ import type {
   ShadowingPracticeSession,
   ShadowingBookmark,
 } from '../types/shadowingProgress';
+import { normalizeHistoryList } from '../utils/shadowingHistory';
 
 const KEYS = {
   PROGRESS: 'shadowing_progress',
@@ -280,11 +281,13 @@ class ShadowingStorageService {
   // ============================================================
 
   /**
-   * Lấy danh sách lịch sử luyện tập của learner (sắp xếp mới nhất lên đầu)
+   * Lịch sử CŨ còn lưu trong trình duyệt (trước khi lịch sử được lưu ở backend). Chỉ đọc: buổi luyện mới được lưu ở backend.
+   * Sắp xếp mới nhất lên đầu.
    */
   public getHistoryList(learnerId: string): ShadowingPracticeSession[] {
     if (!learnerId) return [];
-    const all = safeGetJson<ShadowingPracticeSession[]>(KEYS.HISTORY, []);
+    // normalizeHistoryList chịu được bản ghi cũ thiếu trường mới, không bịa giá trị còn thiếu.
+    const all = normalizeHistoryList(safeGetJson<unknown>(KEYS.HISTORY, []));
     const userHistory = all.filter((item) => item.learnerId === learnerId);
     userHistory.sort((a, b) => {
       const timeA = new Date(a.completedAt || a.startedAt || 0).getTime();
@@ -292,22 +295,6 @@ class ShadowingStorageService {
       return timeB - timeA;
     });
     return userHistory;
-  }
-
-  /**
-   * Thêm một bản ghi lịch sử buổi luyện tập mới (không ghi đè lịch sử cũ)
-   */
-  public addHistorySession(
-    session: Omit<ShadowingPracticeSession, 'id'>
-  ): ShadowingPracticeSession {
-    const all = safeGetJson<ShadowingPracticeSession[]>(KEYS.HISTORY, []);
-    const newRecord: ShadowingPracticeSession = {
-      ...session,
-      id: generateId(),
-    };
-    all.push(newRecord);
-    safeSetJson(KEYS.HISTORY, all);
-    return newRecord;
   }
 
   // ============================================================

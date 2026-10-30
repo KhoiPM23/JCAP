@@ -170,6 +170,7 @@ namespace JCAP.Services.Implementations
             var textHash = ComputeTextHash(trimmedText);
             var speakerDir = Path.Combine(_cacheRootPath, speakerId.ToString());
             var diskFilePath = Path.Combine(speakerDir, $"{textHash}.wav");
+            var visemeDiskPath = Path.Combine(speakerDir, $"{textHash}.visemes.json");
 
             if (File.Exists(diskFilePath))
             {
@@ -177,6 +178,17 @@ namespace JCAP.Services.Implementations
                 {
                     var diskBytes = await File.ReadAllBytesAsync(diskFilePath, cancellationToken);
                     _audioCache[cacheKey] = diskBytes;
+
+                    if (File.Exists(visemeDiskPath) && !_visemesCache.ContainsKey(cacheKey))
+                    {
+                        try
+                        {
+                            var vJson = await File.ReadAllTextAsync(visemeDiskPath, cancellationToken);
+                            _visemesCache[cacheKey] = vJson;
+                        }
+                        catch {}
+                    }
+
                     _logger.LogInformation("Phát audio VOICEVOX từ Persistent Disk Cache (wwwroot): speaker={SpeakerId}, file={File}", speakerId, diskFilePath);
                     return diskBytes;
                 }
@@ -201,6 +213,22 @@ namespace JCAP.Services.Implementations
                 }
 
                 var queryJson = await queryResponse.Content.ReadAsStringAsync(cancellationToken);
+
+                // Tính toán và lưu trước timeline visemes khẩu hình miệng
+                var timeline = ParseTimeline(queryJson);
+                if (timeline != null)
+                {
+                    _timelineCache[cacheKey] = timeline;
+                    var visemeList = ConvertTimelineToVisemes(timeline);
+                    var visemesJson = JsonSerializer.Serialize(visemeList);
+                    _visemesCache[cacheKey] = visemesJson;
+                    try
+                    {
+                        if (!Directory.Exists(speakerDir)) Directory.CreateDirectory(speakerDir);
+                        await File.WriteAllTextAsync(visemeDiskPath, visemesJson, cancellationToken);
+                    }
+                    catch {}
+                }
 
                 // Bước 2: Gọi synthesis tạo âm thanh WAV
                 var synthesisUrl = $"/synthesis?speaker={speakerId}";
@@ -239,6 +267,126 @@ namespace JCAP.Services.Implementations
                 _logger.LogWarning("Mất kết nối tới VOICEVOX Engine tại {BaseUrl}: {Message}", _baseUrl, ex.Message);
                 throw new InvalidOperationException("VOICEVOX Engine is not running. Vui lòng đảm bảo VOICEVOX đang chạy ở port 50021.", ex);
             }
+        }
+
+        private static readonly ConcurrentDictionary<string, IReadOnlyList<MoraTiming>> _timelineCache = new(StringComparer.Ordinal);
+        private static readonly ConcurrentDictionary<string, string> _visemesCache = new(StringComparer.Ordinal);
+
+        public sealed record VisemeTimelineEntry(double t, string v);
+
+        public static List<VisemeTimelineEntry> ConvertTimelineToVisemes(IReadOnlyList<MoraTiming> timeline)
+        {
+            var visemes = new List<VisemeTimelineEntry>();
+            foreach (var mora in timeline)
+            {
+                if (mora.IsPause || string.IsNullOrEmpty(mora.Vowel) || mora.Vowel.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                {
+                    visemes.Add(new VisemeTimelineEntry(Math.Round(mora.StartSec, 3), "closed"));
+                }
+                else
+                {
+                    // Chuyển khẩu hình miệng đồng bộ tự nhiên trước khi nguyên âm phát ra
+                    var triggerTime = Math.Max(0, mora.StartSec + (mora.ConsonantSec * 0.35));
+                    visemes.Add(new VisemeTimelineEntry(Math.Round(triggerTime, 3), mora.Vowel));
+                }
+            }
+            if (timeline.Count > 0)
+            {
+                var last = timeline[^1];
+                visemes.Add(new VisemeTimelineEntry(Math.Round(last.EndSec, 3), "closed"));
+            }
+            return visemes;
+        }
+
+        public string? GetVisemesJson(string text, int speakerId)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            var key = $"{speakerId}:{text.Trim()}";
+            return _visemesCache.TryGetValue(key, out var json) ? json : null;
+        }
+        private const int MaxTimelineCacheEntries = 2000;
+
+        public async Task<IReadOnlyList<MoraTiming>?> GetMoraTimelineAsync(string text, int speakerId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+
+            var trimmed = text.Trim();
+            var key = $"{speakerId}:{trimmed}";
+            if (_timelineCache.TryGetValue(key, out var cached)) return cached;
+
+            try
+            {
+                var url = $"/audio_query?text={Uri.EscapeDataString(trimmed)}&speaker={speakerId}";
+                using var response = await _httpClient.PostAsync(url, null, cancellationToken);
+                if (!response.IsSuccessStatusCode) return null;
+
+                var timeline = ParseTimeline(await response.Content.ReadAsStringAsync(cancellationToken));
+                if (timeline == null) return null;
+
+                if (_timelineCache.Count >= MaxTimelineCacheEntries) _timelineCache.Clear();
+                _timelineCache[key] = timeline;
+                return timeline;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is HttpRequestException or JsonException or OperationCanceledException)
+            {
+                _logger.LogWarning("Không lấy được mốc mora từ VOICEVOX (speaker {Speaker}): {Message}", speakerId, ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Dựng mốc thời gian từ audio_query: prePhonemeLength, rồi lần lượt từng mora (phụ âm + nguyên âm) và pause_mora.
+        /// Độ dài trong query là giá trị ước lượng của engine nên tổng có thể lệch vài % so với audio thật.
+        /// </summary>
+        internal static IReadOnlyList<MoraTiming>? ParseTimeline(string json)
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("accent_phrases", out var phrases) || phrases.ValueKind != JsonValueKind.Array) return null;
+
+            double Num(JsonElement e, string name) =>
+                e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : 0;
+
+            var cursor = Num(root, "prePhonemeLength");
+            var list = new List<MoraTiming>();
+            foreach (var phrase in phrases.EnumerateArray())
+            {
+                if (phrase.TryGetProperty("moras", out var moras) && moras.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var mora in moras.EnumerateArray())
+                    {
+                        var text = mora.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
+                        var consonant = Num(mora, "consonant_length");
+                        var vowel = Num(mora, "vowel_length");
+                        var rawVowel = mora.TryGetProperty("vowel", out var vProp) && vProp.ValueKind == JsonValueKind.String ? vProp.GetString() ?? "" : "";
+                        var mappedVowel = rawVowel.ToUpperInvariant() switch
+                        {
+                            "A" => "A",
+                            "I" => "I",
+                            "U" => "U",
+                            "E" => "E",
+                            "O" => "O",
+                            "N" => "N",
+                            _ => "closed"
+                        };
+                        list.Add(new MoraTiming(text, cursor, consonant, vowel, IsPause: false, Vowel: mappedVowel));
+                        cursor += consonant + vowel;
+                    }
+                }
+
+                if (phrase.TryGetProperty("pause_mora", out var pause) && pause.ValueKind == JsonValueKind.Object)
+                {
+                    var length = Num(pause, "vowel_length") * Math.Max(0.0, root.TryGetProperty("pauseLengthScale", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetDouble() : 1.0);
+                    list.Add(new MoraTiming("", cursor, 0, length, IsPause: true, Vowel: "closed"));
+                    cursor += length;
+                }
+            }
+
+            return list.Count(m => !m.IsPause) == 0 ? null : list;
         }
 
         private static string TranslateStyle(string styleName)

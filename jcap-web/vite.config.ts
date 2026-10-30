@@ -13,6 +13,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/whisper': {
+        target: 'http://127.0.0.1:50022',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/whisper/, ''),
+        secure: false,
+      },
       '/api': {
         target: 'http://localhost:5254',
         changeOrigin: true,

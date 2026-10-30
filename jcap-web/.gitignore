@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Icon EXPERIENCE JAPAN PICTOGRAMS (Nippon Design Center): điều khoản không cho phân phối lại file icon,
+# nên không đưa lên repo công khai. Mỗi máy tự chép lại từ bộ icon tải về:
+#   node scripts/copy-pictograms.mjs <thư-mục-EXPERIENCE_JAPAN_PICTOGRAM>
+public/pictograms/

@@ -57,7 +57,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode,
+            ScenarioCode = $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -94,7 +94,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = scenario.ScenarioCode,
+            ScenarioCode = $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
@@ -237,10 +237,26 @@ public class ScenarioService : IScenarioService
     public async Task<ApiResponse<List<ScenarioListDto>>> GetAllScenariosForAdminAsync(CancellationToken cancellationToken = default)
     {
         var scenarios = await _dbContext.Scenarios
-            .AsNoTracking()
             .Include(s => s.LevelConfigurations)
-            .OrderByDescending(s => s.Id)
+            .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
+
+        // Tự động chuẩn hóa ScenarioCode trong DB về định dạng SCN_{id}
+        bool hasNormalizedCodes = false;
+        foreach (var s in scenarios)
+        {
+            var expectedCode = $"SCN_{s.Id}";
+            if (s.ScenarioCode != expectedCode)
+            {
+                s.ScenarioCode = expectedCode;
+                hasNormalizedCodes = true;
+            }
+        }
+
+        if (hasNormalizedCodes)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         var result = scenarios.Select(s => new ScenarioListDto
         {
@@ -249,7 +265,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode,
+            ScenarioCode = $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -286,7 +302,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = scenario.ScenarioCode,
+            ScenarioCode = $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
@@ -303,12 +319,17 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail("Dữ liệu tạo kịch bản không hợp lệ.");
         }
 
+        // Tự động sinh ScenarioCode duy nhất nếu không được truyền vào
+        var generatedCode = !string.IsNullOrWhiteSpace(dto.ScenarioCode)
+            ? dto.ScenarioCode.Trim().ToUpperInvariant()
+            : $"SCN_{DateTime.UtcNow:yyyyMMdd}_{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+
         var scenario = new Scenario
         {
             Title = dto.Title.Trim(),
             Description = dto.Description.Trim(),
             Thumbnail = dto.Thumbnail?.Trim(),
-            ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant(),
+            ScenarioCode = generatedCode,
             IsActive = dto.IsActive
         };
 
@@ -384,6 +405,13 @@ public class ScenarioService : IScenarioService
         _dbContext.Scenarios.Add(scenario);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        if (string.IsNullOrWhiteSpace(dto.ScenarioCode))
+        {
+            // Tự động gán mã kịch bản chuẩn theo ID: SCN_{id} nếu chưa có
+            scenario.ScenarioCode = $"SCN_{scenario.Id}";
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         return await GetAdminScenarioDetailsAsync(scenario.Id, cancellationToken);
     }
 
@@ -411,7 +439,14 @@ public class ScenarioService : IScenarioService
         scenario.Title = dto.Title.Trim();
         scenario.Description = dto.Description.Trim();
         scenario.Thumbnail = dto.Thumbnail?.Trim();
-        scenario.ScenarioCode = dto.ScenarioCode?.Trim().ToUpperInvariant();
+        if (!string.IsNullOrWhiteSpace(dto.ScenarioCode))
+        {
+            scenario.ScenarioCode = dto.ScenarioCode.Trim().ToUpperInvariant();
+        }
+        else if (string.IsNullOrWhiteSpace(scenario.ScenarioCode))
+        {
+            scenario.ScenarioCode = $"SCN_{scenario.Id}";
+        }
         scenario.IsActive = dto.IsActive;
 
         if (dto.LevelConfigurations != null)

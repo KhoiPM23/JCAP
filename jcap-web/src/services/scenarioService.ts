@@ -209,6 +209,26 @@ export const scenarioService = {
     }
   },
 
+  async uploadThumbnail(file: File): Promise<ApiResponse<string>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/scenarios/upload-thumbnail', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<string> | null;
+      return result || { success: false, message: 'Không thể tải ảnh lên máy chủ.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối khi tải ảnh.' };
+    }
+  },
+
   async deleteScenario(scenarioId: number): Promise<ApiResponse<boolean>> {
     const token = localStorage.getItem('jcap_token');
     try {

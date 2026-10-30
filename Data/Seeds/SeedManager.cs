@@ -27,6 +27,15 @@ namespace JCAP.Data.Seeds
                 // 4. Seed bài hội thoại Shadowing mẫu (DEV SAMPLE / NON-PRODUCTION)
                 await ShadowingSeeder.SeedAsync(services);
 
+                // 4b. Seed bản đồ Khám phá: 47 tỉnh, chương, mốc học thử (Chiba/Tokyo/Kyoto/Nara)
+                await ExploreSeeder.SeedAsync(services);
+
+                // 4c. Gắn bộ mẫu đã import với 5 chủ đề phẳng; giữ nguyên chủ đề admin đã sửa.
+                await LearningTopicSeeder.SeedAsync(services);
+
+                // 4d. Seed hòm thư góp ý ẩn danh mẫu (FeedbackTickets, FeedbackMessages, FeedbackAttachments)
+                await FeedbackSeeder.SeedAsync(services);
+
                 // 5. Chuẩn hóa diễn giải các giao dịch đã tạo trước đây trong DB
                 var oldTransactions = await context.CreditTransactions
                     .Where(t => t.Description != null && (t.Description.Contains("Nạp gói Gói") || t.Description.Contains("Nạp gói gói")))

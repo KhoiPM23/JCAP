@@ -1,433 +1,422 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { voicevoxService, VoiceOption } from '../services/voicevoxService';
-import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsModal';
+import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { AudioDeviceSettingsModal } from '../components/shadowing/AudioDeviceSettingsModal';
-import { Toast } from '../components/ui/Toast';
-import { Button } from '../components/ui/Button';
+import { Button, Icon, SegmentedControl, Select, Switch } from '../components/jcap';
+import { cx } from '../components/jcap/utils';
+import { useTheme, type ThemeMode } from '../contexts/ThemeContext';
+import { getPracticePrefs, setPracticePref, type PracticePrefs } from '../utils/practicePrefs';
 
+const SAMPLE_TEXT = 'こんにちは！JCAPで日本語を一緒に練習しましょう。';
+
+type VoiceCat = 'standard' | 'region' | 'other';
+const REGIONAL = ['tohoku', 'sendai', 'miyagi', 'aomori', 'akita', 'fukushima', 'kansai', 'kyoto', 'nara', 'osaka', 'shikoku', 'chubu', 'toyama', 'nagano', 'nagoya', 'hokuriku', 'kyushu', 'oita', 'hokkaido', 'chugoku', 'okinawa'];
+
+/** Nhóm giọng: Chuẩn (nam/nữ, giọng toàn quốc), Vùng miền (giọng địa phương), Hoạt hình và khác (linh vật, robot…) */
+function voiceCategory(v: VoiceOption): VoiceCat {
+  if (v.gender !== 'Female' && v.gender !== 'Male') return 'other';
+  const r = (v.region || '').toLowerCase();
+  return REGIONAL.some((k) => r.includes(k)) ? 'region' : 'standard';
+}
+
+/** Mỗi nhân vật một thẻ: lấy kiểu giọng "bình thường" (ノーマル) nếu có, không thì kiểu đầu tiên */
+function characters(voices: VoiceOption[]): VoiceOption[] {
+  const map = new Map<string, VoiceOption>();
+  voices.forEach((v) => {
+    const cur = map.get(v.speakerName);
+    if (!cur || (cur.styleName !== 'ノーマル' && v.styleName === 'ノーマル')) map.set(v.speakerName, v);
+  });
+  return Array.from(map.values());
+}
+
+const SECTIONS = [
+  { id: 'giong', label: 'Giọng đọc AI', icon: 'record_voice_over' },
+  { id: 'thietbi', label: 'Micro và loa', icon: 'headphones' },
+  { id: 'luyentap', label: 'Khi luyện tập', icon: 'tune' },
+  { id: 'giaodien', label: 'Giao diện', icon: 'contrast' },
+];
+
+/**
+ * Cài đặt (design-handoff mục 6): menu mục con bên trái (cuộn tới mục), giọng đọc AI dạng lưới thẻ, micro và loa,
+ * tuỳ chọn khi luyện, giao diện. Thay đổi lưu ngay (cùng khoá localStorage như trước).
+ */
 export const SettingsView: React.FC = () => {
-
-  // Voice States
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
+  // Giọng đọc
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const [isLoadingVoices, setIsLoadingVoices] = useState<boolean>(true);
-  const initialSavedVoiceId = Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3;
-  const [selectedVoiceId, setSelectedVoiceId] = useState<number>(initialSavedVoiceId);
+  const [selectedVoiceId, setSelectedVoiceId] = useState<number>(Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3);
+  const [voiceCat, setVoiceCat] = useState<VoiceCat>('standard');
 
-  // Modals
-  const [isAiVoiceModalOpen, setIsAiVoiceModalOpen] = useState<boolean>(false);
+  // Thiết bị âm thanh
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
+  const [selectedInputId, setSelectedInputId] = useState<string>(localStorage.getItem('jcap_audio_input_device') || '');
+  const [selectedOutputId, setSelectedOutputId] = useState<string>(localStorage.getItem('jcap_audio_output_device') || '');
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
-  // Audio Device States
-  const [selectedInputId, setSelectedInputId] = useState<string>(
-    localStorage.getItem('jcap_audio_input_device') || ''
-  );
-  const [selectedOutputId, setSelectedOutputId] = useState<string>(
-    localStorage.getItem('jcap_audio_output_device') || ''
-  );
-  const [deviceLabels, setDeviceLabels] = useState<{ input: string; output: string }>({
-    input: 'Mặc định hệ thống',
-    output: 'Mặc định hệ thống',
-  });
-
-  // Audio Playback Preview State
-  const [isPlayingSample, setIsPlayingSample] = useState<boolean>(false);
-  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
+  // Nghe thử: id giọng đang phát (null = không phát)
+  const [playingId, setPlayingId] = useState<number | null>(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // Toast notification
+  // Khi luyện tập
+  const [prefs, setPrefs] = useState<PracticePrefs>(getPracticePrefs);
+  const [speechRate, setSpeechRate] = useState<number>(() => scenarioVoiceService.getSpeechRate());
+
+  const [activeSection, setActiveSection] = useState('giong');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load Voices & Audio Devices
   useEffect(() => {
     let isMounted = true;
-
-    // 1. Fetch available VOICEVOX voices
     setIsLoadingVoices(true);
     voicevoxService
       .getVoices()
       .then((voices) => {
         if (!isMounted) return;
         setAvailableVoices(voices);
-
-        // Ensure valid voice selection
         const savedId = Number(localStorage.getItem('jcap_voicevox_selected_id'));
-        if (savedId && voices.some((v) => v.id === savedId)) {
-          setSelectedVoiceId(savedId);
-        } else if (voices.length > 0 && !voices.some((v) => v.id === selectedVoiceId)) {
-          setSelectedVoiceId(voices[0].id);
-        }
+        const current = voices.find((v) => v.id === (savedId || selectedVoiceId));
+        if (current) {
+          setSelectedVoiceId(current.id);
+          setVoiceCat(voiceCategory(current));
+        } else if (voices.length > 0) setSelectedVoiceId(voices[0].id);
       })
-      .catch((err) => {
-        console.warn('Cannot fetch VOICEVOX voices:', err);
-      })
-      .finally(() => {
-        if (isMounted) setIsLoadingVoices(false);
-      });
+      .catch((err) => console.warn('Cannot fetch VOICEVOX voices:', err))
+      .finally(() => isMounted && setIsLoadingVoices(false));
 
-    // 2. Fetch Audio Device Labels
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    const loadDevices = () =>
       navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-          if (!isMounted) return;
-          const currentIn = devices.find((d) => d.kind === 'audioinput' && d.deviceId === selectedInputId);
-          const currentOut = devices.find((d) => d.kind === 'audiooutput' && d.deviceId === selectedOutputId);
-
-          setDeviceLabels({
-            input: currentIn?.label || (selectedInputId ? 'Thiết bị đã lưu' : 'Mặc định hệ thống'),
-            output: currentOut?.label || (selectedOutputId ? 'Thiết bị đã lưu' : 'Mặc định hệ thống'),
-          });
-        })
+        ?.enumerateDevices()
+        .then((d) => isMounted && setDevices(d))
         .catch(() => {});
-    }
+    loadDevices();
+    navigator.mediaDevices?.addEventListener?.('devicechange', loadDevices);
 
     return () => {
       isMounted = false;
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current = null;
-      }
+      navigator.mediaDevices?.removeEventListener?.('devicechange', loadDevices);
+      audioPlayerRef.current?.pause();
+      audioPlayerRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Currently active voice detail object
-  const activeVoice = availableVoices.find((v) => v.id === selectedVoiceId) || {
-    id: selectedVoiceId,
-    speakerName: '四国めたん',
-    romajiName: 'Shikoku Metan',
-    gender: 'Female',
-    region: 'Tohoku (Đông Bắc)',
-    description: 'Giọng nữ trong trẻo, tự nhiên chuẩn bản xứ Nhật Bản.',
-    styleName: 'ノーマル',
-    styleVietnamese: 'Bình thường',
-    speakerUuid: '',
-    displayName: 'Shikoku Metan - Bình thường',
-  };
+  useEffect(() => {
+    if (!toastMessage) return;
+    const t = window.setTimeout(() => setToastMessage(null), 3500);
+    return () => window.clearTimeout(t);
+  }, [toastMessage]);
 
-  // Play test sample audio
-  const handlePlaySample = async () => {
-    if (isPlayingSample) {
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-        audioPlayerRef.current.currentTime = 0;
-      }
-      setIsPlayingSample(false);
+  const activeVoice = availableVoices.find((v) => v.id === selectedVoiceId);
+  const groups = useMemo(() => characters(availableVoices), [availableVoices]);
+  const shown = groups.filter((v) => voiceCategory(v) === voiceCat);
+  const catCount = (c: VoiceCat) => groups.filter((v) => voiceCategory(v) === c).length;
+
+  /** Phát câu mẫu bằng một giọng; bấm lại khi đang phát thì dừng */
+  const playSample = async (voiceId: number) => {
+    if (playingId === voiceId) {
+      audioPlayerRef.current?.pause();
+      if (audioPlayerRef.current) audioPlayerRef.current.currentTime = 0;
+      window.speechSynthesis?.cancel();
+      setPlayingId(null);
       return;
     }
-
-    setIsLoadingAudio(true);
-    const sampleText = 'こんにちは！JCAPで日本語を一緒に練習しましょう。';
+    audioPlayerRef.current?.pause();
+    setLoadingId(voiceId);
     try {
-      const url = await voicevoxService.getAudioUrl(sampleText, selectedVoiceId);
-      if (!audioPlayerRef.current) {
-        audioPlayerRef.current = new Audio();
-      }
-      audioPlayerRef.current.src = url;
-      audioPlayerRef.current.onended = () => setIsPlayingSample(false);
-      audioPlayerRef.current.onerror = () => setIsPlayingSample(false);
-      await audioPlayerRef.current.play();
-      setIsPlayingSample(true);
-    } catch (err: any) {
+      const url = await voicevoxService.getAudioUrl(SAMPLE_TEXT, voiceId);
+      if (!audioPlayerRef.current) audioPlayerRef.current = new Audio();
+      const audio = audioPlayerRef.current;
+      audio.src = url;
+      // Phát qua loa đã chọn nếu trình duyệt hỗ trợ
+      const sink = (audio as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }).setSinkId;
+      if (sink && selectedOutputId) await sink.call(audio, selectedOutputId).catch(() => {});
+      audio.onended = () => setPlayingId(null);
+      audio.onerror = () => setPlayingId(null);
+      await audio.play();
+      setPlayingId(voiceId);
+    } catch (err) {
       console.warn('Error playing sample audio:', err);
-      // Fallback to Web Speech API
+      // Không gọi được VOICEVOX: đọc bằng giọng có sẵn của trình duyệt
       if ('speechSynthesis' in window) {
-        const u = new SpeechSynthesisUtterance(sampleText);
+        const u = new SpeechSynthesisUtterance(SAMPLE_TEXT);
         u.lang = 'ja-JP';
-        u.onend = () => setIsPlayingSample(false);
-        u.onerror = () => setIsPlayingSample(false);
+        u.onend = () => setPlayingId(null);
+        u.onerror = () => setPlayingId(null);
         window.speechSynthesis.speak(u);
-        setIsPlayingSample(true);
+        setPlayingId(voiceId);
       }
     } finally {
-      setIsLoadingAudio(false);
+      setLoadingId(null);
     }
   };
 
-  // Handle saving new voice from modal
-  const handleSaveVoice = (newVoiceId: number) => {
-    setSelectedVoiceId(newVoiceId);
-    localStorage.setItem('jcap_voicevox_selected_id', newVoiceId.toString());
+  const pickVoice = (v: VoiceOption) => {
+    setSelectedVoiceId(v.id);
+    localStorage.setItem('jcap_voicevox_selected_id', v.id.toString());
     window.dispatchEvent(new Event('jcap_voicevox_changed'));
-
-    const newVoice = availableVoices.find((v) => v.id === newVoiceId);
-    const name = newVoice ? `${newVoice.romajiName || newVoice.speakerName}` : 'mới';
-    setToastMessage(`Đã áp dụng giọng đọc AI (${name}) cho toàn bộ hệ thống!`);
+    setToastMessage(`Đã chọn giọng ${v.romajiName || v.speakerName}.`);
   };
 
-  // Handle saving audio devices from modal
-  const handleSaveAudioDevices = (inId: string, outId: string) => {
+  const saveDevices = (inId: string, outId: string) => {
     setSelectedInputId(inId);
     setSelectedOutputId(outId);
     localStorage.setItem('jcap_audio_input_device', inId);
     localStorage.setItem('jcap_audio_output_device', outId);
+    setToastMessage('Đã cập nhật thiết bị âm thanh.');
+  };
 
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then((devices) => {
-        const currentIn = devices.find((d) => d.kind === 'audioinput' && d.deviceId === inId);
-        const currentOut = devices.find((d) => d.kind === 'audiooutput' && d.deviceId === outId);
-        setDeviceLabels({
-          input: currentIn?.label || (inId ? 'Thiết bị đã chọn' : 'Mặc định hệ thống'),
-          output: currentOut?.label || (outId ? 'Thiết bị đã chọn' : 'Mặc định hệ thống'),
-        });
-      });
-    }
+  const setPref = <K extends keyof PracticePrefs>(key: K, value: PracticePrefs[K]) => setPrefs(setPracticePref(key, value));
 
-    setToastMessage('Đã cập nhật thiết bị âm thanh thành công!');
+  const deviceOptions = (kind: MediaDeviceKind) => [
+    { value: '', label: 'Mặc định hệ thống' },
+    ...devices
+      .filter((d) => d.kind === kind && d.deviceId && d.deviceId !== 'default')
+      .map((d, i) => ({ value: d.deviceId, label: d.label || `${kind === 'audioinput' ? 'Micro' : 'Loa'} ${i + 1}` })),
+  ];
+
+  const goSection = (id: string) => {
+    setActiveSection(id);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-4 sm:py-6 px-4 space-y-6">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-          <Toast
-            id="settings-toast"
-            message={toastMessage}
-            type="success"
-            duration={4000}
-            onClose={() => setToastMessage(null)}
-          />
+    <div className="bg-transparent">
+      <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
+        <div className="flex flex-col gap-1">
+          <h1 className="m-0 text-[28px] font-bold leading-[38px]">Cài đặt</h1>
+          <p className="m-0 text-[15px] leading-6 text-sumi-muted">Chỉnh giọng AI, micro và cách hiển thị khi luyện. Thay đổi được lưu ngay.</p>
         </div>
-      )}
 
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E6EDF5]">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#EEF6FE] border border-[#BCDDFB] flex items-center justify-center text-[#0878EE] shadow-2xs">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#071A44] tracking-tight">
-                Cài đặt hệ thống
-              </h1>
-            </div>
+        {toastMessage && (
+          <div role="status" className="fixed right-6 top-6 z-50 flex items-center gap-2 rounded-jc-md border border-line bg-paper-50 px-4 py-3 text-sm font-medium shadow-jc-md">
+            <Icon name="check_circle" size={20} fill style={{ color: 'var(--success)' }} />
+            {toastMessage}
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-start gap-8">
+          <nav aria-label="Mục cài đặt" className="sticky top-0 flex flex-[0_0_200px] flex-col gap-0.5">
+            {SECTIONS.map((s) => {
+              const on = activeSection === s.id;
+              return (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goSection(s.id);
+                  }}
+                  aria-current={on ? 'true' : undefined}
+                  className={cx(
+                    'flex min-h-11 items-center gap-2.5 rounded-jc-md px-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus',
+                    on ? 'bg-ai-soft text-ai' : 'text-sumi hover:bg-paper-200',
+                  )}
+                >
+                  <Icon name={s.icon} size={22} fill={on} />
+                  {s.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-5">
+            {/* Giọng đọc AI */}
+            <section id="giong" aria-labelledby="giong-h" className="flex scroll-mt-6 flex-col gap-[18px] rounded-jc-lg border border-line bg-paper-50 p-6">
+              <div className="flex flex-col gap-0.5">
+                <h2 id="giong-h" className="m-0 text-[19px] font-semibold leading-7">
+                  Giọng đọc AI
+                </h2>
+                <p className="m-0 text-sm leading-[22px] text-sumi-muted">
+                  Dùng cho nhân vật AI trong Hội thoại AI và giọng mẫu Shadowing khi kịch bản không gán giọng riêng.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 rounded-jc-lg bg-sora-soft px-[18px] py-4">
+                <span className="inline-flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-sora font-mincho text-2xl font-bold text-on-sora" lang="ja">
+                  {(activeVoice?.speakerName || '声').charAt(0)}
+                </span>
+                <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-1">
+                  <span className="text-[13px] leading-5 text-sumi-muted">Đang dùng</span>
+                  <span className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-lg font-bold leading-[26px]">{activeVoice?.romajiName || activeVoice?.speakerName || (isLoadingVoices ? 'Đang tải…' : `Giọng #${selectedVoiceId}`)}</span>
+                    {activeVoice && (
+                      <span className="font-jp text-sm text-sumi-muted" lang="ja">
+                        {activeVoice.speakerName}
+                        {activeVoice.styleVietnamese ? ` · ${activeVoice.styleVietnamese}` : ''}
+                      </span>
+                    )}
+                  </span>
+                  {activeVoice?.description && <span className="text-sm leading-5">{activeVoice.description}</span>}
+                </div>
+                <Button
+                  variant="secondary"
+                  icon={playingId === selectedVoiceId ? 'stop' : 'play_arrow'}
+                  loading={loadingId === selectedVoiceId}
+                  onClick={() => playSample(selectedVoiceId)}
+                >
+                  {playingId === selectedVoiceId ? 'Dừng' : 'Nghe thử'}
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <span className="text-sm font-semibold leading-5">Chọn giọng khác</span>
+                <SegmentedControl
+                  ariaLabel="Nhóm giọng"
+                  size="sm"
+                  value={voiceCat}
+                  onChange={(v) => setVoiceCat(v as VoiceCat)}
+                  options={[
+                    { value: 'standard', label: 'Chuẩn', count: catCount('standard') },
+                    { value: 'region', label: 'Vùng miền', count: catCount('region') },
+                    { value: 'other', label: 'Hoạt hình và khác', count: catCount('other') },
+                  ]}
+                />
+              </div>
+
+              {isLoadingVoices ? (
+                <p className="m-0 text-sm text-sumi-muted" role="status">
+                  Đang tải danh sách giọng…
+                </p>
+              ) : shown.length === 0 ? (
+                <p className="m-0 text-sm text-sumi-muted">Chưa có giọng nào trong nhóm này.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {shown.map((v) => {
+                    const selected = activeVoice ? v.speakerName === activeVoice.speakerName : v.id === selectedVoiceId;
+                    return (
+                      <div
+                        key={v.speakerName}
+                        className={cx('flex flex-col gap-2 rounded-jc-lg p-3.5', selected ? 'bg-ai-soft' : 'bg-paper-50')}
+                        style={{ border: selected ? '2px solid var(--ai)' : '1px solid var(--line)' }}
+                      >
+                        <button type="button" onClick={() => pickVoice(v)} aria-pressed={selected} className="flex flex-col gap-1 border-0 bg-transparent p-0 text-left text-sumi">
+                          <span className="flex items-center justify-between gap-1.5">
+                            <span className="text-[15px] font-semibold leading-[22px]">{v.romajiName || v.speakerName}</span>
+                            {selected && <Icon name="check_circle" size={22} fill style={{ color: 'var(--ai)' }} />}
+                          </span>
+                          <span className="font-jp text-[13px] leading-[18px] text-sumi-muted" lang="ja">
+                            {v.speakerName}
+                          </span>
+                          <span className="line-clamp-2 text-[13px] leading-5">{v.description || v.region}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={cx('jc-audiochip self-start', playingId === v.id && 'is-playing')}
+                          onClick={() => playSample(v.id)}
+                          aria-label={`${playingId === v.id ? 'Dừng' : 'Nghe thử'} giọng ${v.romajiName || v.speakerName}`}
+                        >
+                          <Icon name={loadingId === v.id ? 'progress_activity' : playingId === v.id ? 'stop_circle' : 'volume_up'} size={18} spin={loadingId === v.id} fill={playingId === v.id} />
+                          {playingId === v.id ? 'Dừng' : 'Nghe thử'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* Micro và loa */}
+            <section id="thietbi" aria-labelledby="tb-h" className="flex scroll-mt-6 flex-col gap-[18px] rounded-jc-lg border border-line bg-paper-50 p-6">
+              <div className="flex flex-col gap-0.5">
+                <h2 id="tb-h" className="m-0 text-[19px] font-semibold leading-7">
+                  Micro và loa
+                </h2>
+                <p className="m-0 text-sm leading-[22px] text-sumi-muted">Kiểm tra trước khi vào phòng luyện để điểm phát âm được chấm chính xác.</p>
+              </div>
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="flex flex-col gap-3 rounded-jc-lg bg-paper-100 p-4">
+                  <Select
+                    label="Micro thu âm"
+                    options={deviceOptions('audioinput')}
+                    value={selectedInputId}
+                    onChange={(e) => saveDevices(e.target.value, selectedOutputId)}
+                  />
+                  <p className="m-0 text-[13px] leading-5 text-sumi-muted">Nói thử để xem mức âm và kiểm tra micro nghe rõ giọng bạn.</p>
+                  <div className="mt-auto flex justify-end">
+                    <Button variant="secondary" size="sm" icon="mic" onClick={() => setIsAudioDeviceModalOpen(true)}>
+                      Nói thử
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 rounded-jc-lg bg-paper-100 p-4">
+                  <Select
+                    label="Loa hoặc tai nghe"
+                    options={deviceOptions('audiooutput')}
+                    value={selectedOutputId}
+                    onChange={(e) => saveDevices(selectedInputId, e.target.value)}
+                  />
+                  <p className="m-0 text-[13px] leading-5 text-sumi-muted">Phát một câu mẫu tiếng Nhật để chỉnh âm lượng vừa nghe.</p>
+                  <div className="mt-auto flex justify-end">
+                    <Button variant="secondary" size="sm" icon="volume_up" loading={loadingId === selectedVoiceId} onClick={() => playSample(selectedVoiceId)}>
+                      Phát âm thanh thử
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Khi luyện tập */}
+            <section id="luyentap" aria-labelledby="lt-h" className="flex scroll-mt-6 flex-col gap-1.5 rounded-jc-lg border border-line bg-paper-50 p-6">
+              <h2 id="lt-h" className="mb-1.5 mt-0 text-[19px] font-semibold leading-7">
+                Khi luyện tập
+              </h2>
+              <Switch label="Hiện furigana" description="Cách đọc nhỏ phía trên chữ Kanji." checked={prefs.furigana} onChange={(v) => setPref('furigana', v)} />
+              <Switch label="Hiện nghĩa tiếng Việt" description="Tự hiện bản dịch dưới mỗi câu. Tắt thì chỉ hiện khi bạn bấm Dịch." checked={prefs.translation} onChange={(v) => setPref('translation', v)} />
+              <Switch label="Tự động phát giọng AI" description="AI đọc to câu trả lời ngay khi hiện ra." checked={prefs.autoPlay} onChange={(v) => setPref('autoPlay', v)} />
+              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+                <span className="flex flex-col">
+                  <span className="text-[15px] font-medium leading-[22px]">Tốc độ đọc của AI</span>
+                  <span className="text-[13px] leading-5 text-sumi-muted">Người mới nên bắt đầu ở mức chậm.</span>
+                </span>
+                <SegmentedControl
+                  ariaLabel="Tốc độ đọc"
+                  value={String(speechRate)}
+                  onChange={(v) => {
+                    const rate = parseFloat(v);
+                    setSpeechRate(rate);
+                    scenarioVoiceService.setSpeechRate(rate);
+                  }}
+                  options={[
+                    { value: '0.8', label: 'Chậm' },
+                    { value: '1', label: 'Vừa' },
+                    { value: '1.2', label: 'Nhanh' },
+                  ]}
+                />
+              </div>
+            </section>
+
+            {/* Giao diện: Sáng / Tối / Theo máy, lưu ở trình duyệt (ThemeProvider) */}
+            <section id="giaodien" aria-labelledby="gd-h" className="flex scroll-mt-6 flex-wrap items-center justify-between gap-3 rounded-jc-lg border border-line bg-paper-50 p-6">
+              <span className="flex flex-col">
+                <h2 id="gd-h" className="m-0 text-[19px] font-semibold leading-7">
+                  Giao diện
+                </h2>
+                <span className="text-sm leading-[22px] text-sumi-muted">Chế độ tối dùng cả trong phòng luyện.</span>
+              </span>
+              <SegmentedControl
+                ariaLabel="Chế độ màu"
+                value={themeMode}
+                onChange={(v) => setThemeMode(v as ThemeMode)}
+                options={[
+                  { value: 'light', label: 'Sáng', icon: 'light_mode' },
+                  { value: 'dark', label: 'Tối', icon: 'dark_mode' },
+                  { value: 'system', label: 'Theo máy', icon: 'computer' },
+                ]}
+              />
+            </section>
           </div>
         </div>
       </div>
 
-      {/* Section 1: Giọng đọc AI toàn hệ thống (VOICEVOX TTS) */}
-      <section className="bg-white rounded-3xl border border-[#E6EDF5] p-6 sm:p-8 shadow-xs relative overflow-hidden">
-        {/* Decorative corner glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-blue-50/70 via-sky-50/30 to-transparent rounded-bl-full pointer-events-none -mr-16 -mt-16" />
-
-        <div className="relative z-10 space-y-6">
-          {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-[#071A44]">
-                  Giọng đọc AI đại diện
-                </h2>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-                  Đang hoạt động
-                </span>
-              </div>
-              <p className="text-xs text-[#556987] font-medium mt-1">
-                Giọng đọc này được áp dụng tự động cho các nhân vật đối thoại AI trong bài tập Shadowing và Hội thoại Roleplay.
-              </p>
-            </div>
-
-            {/* Quick Change Voice Button */}
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => setIsAiVoiceModalOpen(true)}
-              className="flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-md shadow-blue-500/20"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <rect x="9" y="2.5" width="6" height="11" rx="3" />
-                <path d="M9 5.5h6" />
-                <path d="M9 8h6" />
-                <path d="M9 10.5h6" />
-                <path d="M5.5 10.5a6.5 6.5 0 0013 0" />
-                <path d="M12 17v4" />
-                <path d="M8.5 21h7" />
-              </svg>
-              <span>Đổi giọng đọc AI</span>
-            </Button>
-          </div>
-
-          {/* Active Voice Spotlight Card */}
-          <div className="rounded-2xl border-2 border-[#BCDDFB] bg-gradient-to-r from-[#F4F9FE] via-white to-[#F4F9FE] p-5 sm:p-6 shadow-xs">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              {/* Character Details */}
-              <div className="flex items-start sm:items-center gap-4">
-                {/* Character Avatar Circle */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#0878EE] to-[#38BDF8] flex items-center justify-center text-white text-3xl shadow-lg shadow-blue-500/20 flex-shrink-0">
-                  {activeVoice.gender === 'Female' ? '👧' : activeVoice.gender === 'Male' ? '👦' : '🦊'}
-                </div>
-
-                {/* Details */}
-                <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg sm:text-xl font-black text-[#071A44]">
-                      {activeVoice.romajiName || activeVoice.speakerName}
-                    </h3>
-                    <span className="text-xs font-semibold text-slate-500">
-                      ({activeVoice.speakerName})
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-[#0878EE]">
-                      ID: {activeVoice.id}
-                    </span>
-                  </div>
-
-                  {/* Pills (Gender, Style, Region) */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg font-bold bg-[#E6EDF5] text-[#071A44]">
-                      {activeVoice.gender === 'Female' ? 'Nữ' : activeVoice.gender === 'Male' ? 'Nam' : 'Anime / Khác'}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                      Phong cách: {activeVoice.styleVietnamese || activeVoice.styleName}
-                    </span>
-                    {activeVoice.region && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg font-medium bg-slate-100 text-slate-700">
-                         {activeVoice.region}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-[#556987] font-normal leading-relaxed max-w-xl">
-                    {activeVoice.description || 'Giọng đọc chuẩn tiếng Nhật tự nhiên được hỗ trợ bởi engine VOICEVOX.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action: Listen to sample voice */}
-              <div className="flex flex-col sm:flex-row md:flex-col gap-2 self-stretch md:self-center md:min-w-[200px] justify-center">
-                <button
-                  type="button"
-                  onClick={handlePlaySample}
-                  disabled={isLoadingAudio}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-2xs border ${
-                    isPlayingSample
-                      ? 'bg-rose-50 border-rose-300 text-rose-600 hover:bg-rose-100'
-                      : 'bg-white border-[#BCDDFB] text-[#0878EE] hover:bg-[#EEF6FE] hover:border-[#0878EE]'
-                  }`}
-                >
-                  {isLoadingAudio ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Đang nạp giọng...</span>
-                    </>
-                  ) : isPlayingSample ? (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-                      <span>Dừng nghe thử</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 text-[#0878EE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                      <span>Nghe thử giọng mẫu</span>
-                    </>
-                  )}
-                </button>
-
-                <p className="text-[11px] text-center text-[#71809A] italic">
-                  &ldquo;こんにちは！JCAPで日本語を一緒に練習しましょう。&rdquo;
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* Section 2: Thiết bị âm thanh (Microphone & Loa) */}
-      <section className="bg-white rounded-3xl border border-[#E6EDF5] p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E6EDF5]">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-[#071A44]">
-                Thiết bị âm thanh (Microphone & Loa / Tai nghe)
-              </h2>
-            </div>
-            <p className="text-xs text-[#556987] font-medium mt-1">
-              Kiểm tra khả năng bắt âm thanh từ microphone và âm lượng loa trước khi tham gia luyện tập Shadowing.
-            </p>
-          </div>
-
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => setIsAudioDeviceModalOpen(true)}
-            className="flex items-center gap-2 self-start sm:self-auto cursor-pointer"
-          >
-            <svg className="w-4 h-4 text-[#0878EE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 10a3 3 0 010 4" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 7.5a6.5 6.5 0 010 9" />
-            </svg>
-            <span>Kiểm tra thiết bị</span>
-          </Button>
-        </div>
-
-        {/* Devices Summary Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Microphone Card */}
-          <div className="p-4 rounded-2xl border border-[#E6EDF5] bg-[#F8FAFC] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0878EE] flex-shrink-0">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <rect x="9" y="2.5" width="6" height="11" rx="3" />
-                <path d="M5.5 10.5a6.5 6.5 0 0013 0" />
-                <path d="M12 17v4" />
-                <path d="M8.5 21h7" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#71809A]">
-                Microphone thu âm
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-[#071A44] truncate" title={deviceLabels.input}>
-                {deviceLabels.input}
-              </div>
-            </div>
-          </div>
-
-          {/* Speaker Card */}
-          <div className="p-4 rounded-2xl border border-[#E6EDF5] bg-[#F8FAFC] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 flex-shrink-0">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 4.5L5.5 8.5H2.5a1 1 0 00-1 1v5a1 1 0 001 1h3l5 4V4.5z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 10a3 3 0 010 4" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 7.5a6.5 6.5 0 010 9" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20 5a10 10 0 010 14" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#71809A]">
-                Loa / Tai nghe phát âm
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-[#071A44] truncate" title={deviceLabels.output}>
-                {deviceLabels.output}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 1. Modal Cài đặt Giọng đọc AI (VOICEVOX TTS) */}
-      <AiVoiceSettingsModal
-        isOpen={isAiVoiceModalOpen}
-        onClose={() => setIsAiVoiceModalOpen(false)}
-        selectedVoiceId={selectedVoiceId}
-        availableVoices={availableVoices}
-        onSave={handleSaveVoice}
-      />
-
-      {/* 2. Modal Cài đặt Thiết bị âm thanh (Microphone & Loa) */}
+      {/* Nói thử micro: tái dùng modal kiểm tra thiết bị có sẵn (đo mức âm, ghi thử) */}
       <AudioDeviceSettingsModal
         isOpen={isAudioDeviceModalOpen}
         onClose={() => setIsAudioDeviceModalOpen(false)}
         selectedInputId={selectedInputId}
         selectedOutputId={selectedOutputId}
-        onSave={handleSaveAudioDevices}
+        onSave={saveDevices}
       />
     </div>
   );

@@ -14,6 +14,13 @@ public class GeminiAiClient : IAiClient
     private readonly IConfiguration _configuration;
     private readonly ILogger<GeminiAiClient> _logger;
 
+    private static readonly string[] DefaultFallbackModels =
+    [
+        "gemini-3.5-flash-lite",
+        "gemini-3.1-flash-lite",
+        "gemini-3-flash-preview"
+    ];
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -43,18 +50,64 @@ public class GeminiAiClient : IAiClient
         return null;
     }
 
+    private List<string> BuildCandidateModels()
+    {
+        var models = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void AddModel(string? modelName)
+        {
+            if (!string.IsNullOrWhiteSpace(modelName))
+            {
+                var trimmed = modelName.Trim();
+                if (seen.Add(trimmed))
+                {
+                    models.Add(trimmed);
+                }
+            }
+        }
+
+        AddModel(ResolveConfig("AI:Model", "Gemini:Model"));
+
+        foreach (var sectionKey in new[] { "AI:FallbackModels", "Gemini:FallbackModels" })
+        {
+            var configuredFallbacks = _configuration.GetSection(sectionKey).Get<string[]>();
+            if (configuredFallbacks != null)
+            {
+                foreach (var fb in configuredFallbacks)
+                {
+                    AddModel(fb);
+                }
+            }
+        }
+
+        foreach (var defaultModel in DefaultFallbackModels)
+        {
+            AddModel(defaultModel);
+        }
+
+        return models;
+    }
+
+    private static bool ShouldFallbackToNextModel(HttpStatusCode statusCode)
+    {
+        var code = (int)statusCode;
+        return statusCode == HttpStatusCode.ServiceUnavailable // 503
+            || statusCode == HttpStatusCode.NotFound           // 404
+            || code == 429                                     // TooManyRequests
+            || code >= 500;                                    // 5xx Server Errors
+    }
+
     public async Task<AiResponse> GenerateAsync(AiRequest request, CancellationToken cancellationToken = default)
     {
         var apiKey = ResolveConfig("AI:ApiKey", "Gemini:ApiKey");
-        var model = ResolveConfig("AI:Model", "Gemini:Model") ?? "gemini-3.1-flash-lite";
+        var candidateModels = BuildCandidateModels();
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             _logger.LogWarning("Gemini API Key chưa được cấu hình trong AI:ApiKey hoặc Gemini:ApiKey.");
             return AiResponse.Fail("Gemini API Key chưa được cấu hình.");
         }
-
-        var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
         // Map messages sang format contents của Gemini
         var contents = new List<object>();
@@ -115,71 +168,82 @@ public class GeminiAiClient : IAiClient
         var json = JsonSerializer.Serialize(requestBody, JsonOptions);
 
         var httpClient = _httpClientFactory.CreateClient("GeminiAiClient");
-        HttpResponseMessage? response = null;
-        string responseString = string.Empty;
+        int? lastStatusCode = null;
+        string lastError = "Không nhận được phản hồi thành công từ Gemini API.";
 
-        for (int attempt = 0; attempt < 2; attempt++)
+        for (int i = 0; i < candidateModels.Count; i++)
         {
+            var model = candidateModels[i];
+            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+
             try
             {
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
-                response = await httpClient.PostAsync(endpoint, content, cancellationToken);
-                responseString = await response.Content.ReadAsStringAsync(cancellationToken);
+                using var response = await httpClient.PostAsync(endpoint, content, cancellationToken);
+                var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    break;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(responseString);
+                        var root = doc.RootElement;
+                        if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                        {
+                            var candidate = candidates[0];
+                            if (candidate.TryGetProperty("content", out var contentElem) &&
+                                contentElem.TryGetProperty("parts", out var parts) &&
+                                parts.GetArrayLength() > 0)
+                            {
+                                var text = parts[0].GetProperty("text").GetString() ?? string.Empty;
+                                return AiResponse.Ok(text);
+                            }
+                        }
+
+                        lastError = $"Gemini model '{model}' trả về phản hồi không chứa candidate hợp lệ.";
+                        _logger.LogWarning("{Error} Chuyển sang model tiếp theo (nếu có)...", lastError);
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Lỗi parse JSON kết quả từ Gemini model '{Model}'. Response: {Response}", model, responseString);
+                        lastError = $"Lỗi parse kết quả Gemini API ({model}): {ex.Message}";
+                        continue;
+                    }
                 }
 
-                if ((response.StatusCode == HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429) && attempt == 0)
+                lastStatusCode = (int)response.StatusCode;
+                lastError = $"Gemini API error ({model} - {response.StatusCode}): {responseString}";
+
+                if (ShouldFallbackToNextModel(response.StatusCode) && i < candidateModels.Count - 1)
                 {
-                    _logger.LogWarning("Gemini API bận (status {StatusCode}), tự động thử lại sau 1.2s...", response.StatusCode);
-                    await Task.Delay(1200, cancellationToken);
+                    var nextModel = candidateModels[i + 1];
+                    _logger.LogWarning(
+                        "Gemini model '{Model}' gặp lỗi {StatusCode}, tự động fallback sang model '{NextModel}'...",
+                        model,
+                        (int)response.StatusCode,
+                        nextModel);
                     continue;
                 }
 
-                _logger.LogWarning("Gemini API trả về lỗi status {StatusCode}: {Response}", response.StatusCode, responseString);
-                return AiResponse.Fail($"Gemini API error ({response.StatusCode}): {responseString}", (int)response.StatusCode);
+                _logger.LogWarning("Gemini model '{Model}' trả về lỗi status {StatusCode}: {Response}", model, response.StatusCode, responseString);
+                return AiResponse.Fail(lastError, lastStatusCode);
             }
-            catch (Exception ex) when (attempt == 0 && !cancellationToken.IsCancellationRequested)
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning(ex, "Lỗi kết nối khi gọi Gemini API, thử lại sau 1.2s...");
-                await Task.Delay(1200, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi ngoại lệ khi gọi Gemini API.");
-                return AiResponse.Fail($"Lỗi kết nối Gemini API: {ex.Message}");
-            }
-        }
-
-        if (response == null || !response.IsSuccessStatusCode)
-        {
-            return AiResponse.Fail("Không nhận được phản hồi thành công từ Gemini API.");
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(responseString);
-            var root = doc.RootElement;
-            if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
-            {
-                var candidate = candidates[0];
-                if (candidate.TryGetProperty("content", out var contentElem) &&
-                    contentElem.TryGetProperty("parts", out var parts) &&
-                    parts.GetArrayLength() > 0)
+                lastError = $"Lỗi kết nối Gemini API ({model}): {ex.Message}";
+                if (i < candidateModels.Count - 1)
                 {
-                    var text = parts[0].GetProperty("text").GetString() ?? string.Empty;
-                    return AiResponse.Ok(text);
+                    var nextModel = candidateModels[i + 1];
+                    _logger.LogWarning(ex, "Lỗi kết nối tới Gemini model '{Model}', tự động fallback sang model '{NextModel}'...", model, nextModel);
+                    continue;
                 }
-            }
 
-            return AiResponse.Fail("Gemini API trả về phản hồi không chứa candidate hợp lệ.");
+                _logger.LogError(ex, "Lỗi ngoại lệ khi gọi model cuối cùng '{Model}' trong chuỗi Gemini API.", model);
+                return AiResponse.Fail(lastError, lastStatusCode);
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Lỗi parse JSON kết quả từ Gemini API. Response: {Response}", responseString);
-            return AiResponse.Fail($"Lỗi parse kết quả Gemini API: {ex.Message}");
-        }
+
+        return AiResponse.Fail(lastError, lastStatusCode);
     }
 }

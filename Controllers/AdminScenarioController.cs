@@ -1,9 +1,16 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Scenario;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace JCAP.Controllers;
 
@@ -14,11 +21,47 @@ public class AdminScenarioController : ControllerBase
 {
     private readonly IScenarioService _scenarioService;
     private readonly IConfiguration _configuration;
+    private readonly ICloudStorageService _cloudStorageService;
 
-    public AdminScenarioController(IScenarioService scenarioService, IConfiguration configuration)
+    public AdminScenarioController(IScenarioService scenarioService, IConfiguration configuration, ICloudStorageService cloudStorageService)
     {
         _scenarioService = scenarioService;
         _configuration = configuration;
+        _cloudStorageService = cloudStorageService;
+    }
+
+    /// <summary>
+    /// POST /api/admin/scenarios/upload-thumbnail - Tải ảnh đại diện kịch bản lên Cloudinary.
+    /// </summary>
+    [HttpPost("upload-thumbnail")]
+    public async Task<IActionResult> UploadThumbnail(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(ApiResponse<string>.Fail("Vui lòng chọn tệp hình ảnh."));
+        }
+
+        if (file.Length > 5 * 1024 * 1024)
+        {
+            return BadRequest(ApiResponse<string>.Fail("Dung lượng hình ảnh không được vượt quá 5MB."));
+        }
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(ext))
+        {
+            return BadRequest(ApiResponse<string>.Fail("Chỉ chấp nhận các định dạng ảnh: .jpg, .jpeg, .png, .webp, .gif"));
+        }
+
+        try
+        {
+            var imageUrl = await _cloudStorageService.UploadFileAsync(file, folder: "scenarios");
+            return Ok(ApiResponse<string>.Ok(imageUrl, "Tải ảnh lên Cloud thành công."));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResponse<string>.Fail($"Không thể tải ảnh lên Cloud: {ex.Message}"));
+        }
     }
 
     /// <summary>

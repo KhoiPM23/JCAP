@@ -26,17 +26,19 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
     private static readonly string[] GrammarAspects =
     [
         "ngữ pháp", "ngu phap", "trợ từ", "tro tu", "cấu trúc", "cau truc",
-        "chia động từ", "chia dong tu"
+        "chia động từ", "chia dong tu", "thể", "the te", "mẫu câu", "mau cau"
     ];
 
     private static readonly string[] VocabularyAspects =
     [
-        "từ vựng", "tu vung", "dùng từ", "dung tu"
+        "từ vựng", "tu vung", "dùng từ", "dung tu", "từ nối", "tu noi",
+        "từ chỉ định", "tu chi dinh", "thuật ngữ", "thuat ngu"
     ];
 
     private static readonly string[] ImpressionAspects =
     [
-        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su"
+        "ngữ cảnh", "ngu canh", "văn phong", "van phong", "lịch sự", "lich su",
+        "kính ngữ", "kinh ngu", "keigo", "khiêm nhường", "khiem nhuong", "tôn kính", "ton kinh", "teinei"
     ];
 
     public RoleplayEvaluationResult? Evaluate(
@@ -63,6 +65,8 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         var impressionLanguageScore = AverageAndRound(feedbacks.Select(feedback =>
             GetCategoryScore(feedback, ImpressionAspects)));
 
+        var (fluencyScore, confidenceScore, autonomyScore, pronScore, avgLatency, avgPace) = CalculateDeliveryMetrics(feedbacks);
+
         var normalizedTotalMissionCount = Math.Max(totalMissionCount, 0);
         var normalizedCompletedMissionCount = Math.Clamp(
             completedMissionCount,
@@ -87,12 +91,107 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             ? calculatedOverallScore
             : Math.Min(calculatedOverallScore, IncompleteMissionScoreCap);
 
+        var missionCompletionPoints = ClampAndRound(missionCompletionScore * MissionProgressWeight);
+        var grammarPoints = ClampAndRound(grammarScore * GrammarWeight);
+        var vocabularyPoints = ClampAndRound(vocabularyScore * VocabularyWeight);
+        var impressionPoints = ClampAndRound(impressionScore * ImpressionWeight);
+        var isCapped = !allMissionsCompleted;
+
+        var adjustments = new List<ScoreAdjustmentItemDto>
+        {
+            new()
+            {
+                Category = "Nhiệm vụ kịch bản (50%)",
+                Description = allMissionsCompleted
+                    ? $"Hoàn thành trọn vẹn {normalizedCompletedMissionCount}/{normalizedTotalMissionCount} mục tiêu kịch bản"
+                    : $"Hoàn thành {normalizedCompletedMissionCount}/{normalizedTotalMissionCount} mục tiêu (Cần xong 100% để đạt)",
+                DeltaPoints = missionCompletionPoints
+            },
+            new()
+            {
+                Category = "Ngữ pháp & Cấu trúc (20%)",
+                Description = $"Độ chính xác thể, chia động từ và trợ từ tiếng Nhật ({grammarScore}/100)",
+                DeltaPoints = grammarPoints
+            },
+            new()
+            {
+                Category = "Vốn từ vựng (20%)",
+                Description = $"Sử dụng đúng từ ngữ chủ đề và phản xạ từ vựng ({vocabularyScore}/100)",
+                DeltaPoints = vocabularyPoints
+            },
+            new()
+            {
+                Category = "Kính ngữ & Văn phong (10%)",
+                Description = isNaturallyConcluded
+                    ? $"Văn phong phù hợp bối cảnh ({impressionLanguageScore}/100) + Thưởng nghi thức chào kết thúc chuẩn mực (+2đ)"
+                    : $"Văn phong giao tiếp ({impressionLanguageScore}/100)",
+                DeltaPoints = impressionPoints
+            }
+        };
+
+        if (autonomyScore < 95)
+        {
+            adjustments.Add(new()
+            {
+                Category = "Độ tự chủ giao tiếp (Autonomy)",
+                Description = $"Điểm tự chủ {autonomyScore}/100 (Có sử dụng giàn giáo gợi ý hoặc hỗ trợ bản dịch)",
+                DeltaPoints = -(100 - autonomyScore) / 10
+            });
+        }
+        else
+        {
+            adjustments.Add(new()
+            {
+                Category = "Độ tự chủ giao tiếp (Autonomy)",
+                Description = "Tự chủ 100% (Phản xạ độc lập, hoàn toàn không dựa dẫm gợi ý)",
+                DeltaPoints = 0
+            });
+        }
+
+        if (isCapped)
+        {
+            adjustments.Add(new()
+            {
+                Category = "Giới hạn Chưa đạt",
+                Description = $"Chưa hoàn thành đủ 100% nhiệm vụ nên điểm tổng bị giới hạn trần ở mức tối đa {IncompleteMissionScoreCap}đ",
+                DeltaPoints = overallScore - calculatedOverallScore
+            });
+        }
+
+        var scoreBreakdown = new ScoreBreakdownDto
+        {
+            MissionCompletionPoints = missionCompletionPoints,
+            MissionCount = normalizedCompletedMissionCount,
+            TotalMissionCount = normalizedTotalMissionCount,
+            GrammarPoints = grammarPoints,
+            GrammarBaseScore = grammarScore,
+            VocabularyPoints = vocabularyPoints,
+            VocabularyBaseScore = vocabularyScore,
+            ImpressionPoints = impressionPoints,
+            ImpressionBaseScore = impressionScore,
+            NaturalConclusionBonus = isNaturallyConcluded,
+            AutonomyScore = autonomyScore,
+            FluencyScore = fluencyScore,
+            AverageLatencySeconds = avgLatency,
+            AveragePace = avgPace,
+            IsCappedDueToIncomplete = isCapped,
+            FinalOverallScore = overallScore,
+            Adjustments = adjustments
+        };
+
         return new RoleplayEvaluationResult
         {
             OverallScore = overallScore,
+            ScoreBreakdown = scoreBreakdown,
             GrammarScore = grammarScore,
             VocabularyScore = vocabularyScore,
             ImpressionScore = impressionScore,
+            FluencyScore = fluencyScore,
+            SpeechConfidenceScore = confidenceScore,
+            AutonomyScore = autonomyScore,
+            PronunciationScore = pronScore,
+            AverageResponseLatencySeconds = avgLatency,
+            AverageSpeechPace = avgPace,
             MissionProgressScore = ClampAndRound(missionCompletionScore),
             AllMissionsCompleted = allMissionsCompleted,
             GeneralFeedbackText = BuildGeneralFeedback(
@@ -100,7 +199,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                 overallScore,
                 normalizedCompletedMissionCount,
                 normalizedTotalMissionCount,
-                allMissionsCompleted),
+                allMissionsCompleted,
+                fluencyScore,
+                confidenceScore,
+                autonomyScore,
+                pronScore,
+                avgLatency,
+                avgPace),
             EvaluatedTurnCount = feedbacks.Count
         };
     }
@@ -188,12 +293,95 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         return (int)Math.Round(Math.Clamp(value, 0, 100), MidpointRounding.AwayFromZero);
     }
 
+    private static (int FluencyScore, int ConfidenceScore, int AutonomyScore, int PronScore, double AvgLatency, double AvgPace) CalculateDeliveryMetrics(
+        IReadOnlyCollection<LinguisticFeedbackDto> feedbacks)
+    {
+        var speechDeliveries = feedbacks
+            .Select(f => f.SpeechDelivery)
+            .Where(d => d != null)
+            .Cast<SpeechDeliveryMetricsDto>()
+            .ToList();
+
+        double avgLatency = 0;
+        double avgPace = 0;
+        int fluencyScore;
+        int confidenceScore;
+        int autonomyScore;
+        int pronScore;
+
+        if (speechDeliveries.Count > 0)
+        {
+            var validLatencies = speechDeliveries
+                .Where(d => d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
+                .Select(d => d.ResponseLatencySeconds!.Value)
+                .ToList();
+            avgLatency = validLatencies.Count > 0 ? Math.Round(validLatencies.Average(), 1) : 0;
+
+            var validPaces = speechDeliveries
+                .Where(d => d.SpeechPace.HasValue && d.SpeechPace.Value > 0)
+                .Select(d => d.SpeechPace!.Value)
+                .ToList();
+            avgPace = validPaces.Count > 0 ? Math.Round(validPaces.Average(), 1) : 0;
+
+            var turnFluencyScores = speechDeliveries
+                .Where(d => d.TurnFluencyScore.HasValue)
+                .Select(d => (double)d.TurnFluencyScore!.Value)
+                .ToList();
+            fluencyScore = turnFluencyScores.Count > 0
+                ? (int)Math.Round(turnFluencyScores.Average())
+                : 85;
+
+            var confidences = speechDeliveries
+                .Where(d => d.SpeechConfidence.HasValue)
+                .Select(d => d.SpeechConfidence!.Value * 100)
+                .ToList();
+            confidenceScore = confidences.Count > 0
+                ? (int)Math.Round(Math.Clamp(confidences.Average(), 0, 100))
+                : 90;
+
+            var autonomyScores = speechDeliveries
+                .Where(d => d.TurnAutonomyScore.HasValue)
+                .Select(d => (double)d.TurnAutonomyScore!.Value)
+                .ToList();
+            autonomyScore = autonomyScores.Count > 0
+                ? (int)Math.Round(Math.Clamp(autonomyScores.Average(), 20, 100))
+                : 100;
+
+            var pronScores = speechDeliveries
+                .Where(d => d.PronunciationClarityScore.HasValue)
+                .Select(d => (double)d.PronunciationClarityScore!.Value)
+                .ToList();
+            pronScore = pronScores.Count > 0
+                ? (int)Math.Round(Math.Clamp(pronScores.Average(), 30, 100))
+                : confidenceScore;
+        }
+        else
+        {
+            var goodCount = feedbacks.Count(f => string.Equals(f.Status, "Good", StringComparison.OrdinalIgnoreCase));
+            var warningCount = feedbacks.Count(f => string.Equals(f.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+            var errorCount = feedbacks.Count(f => string.Equals(f.Status, "Error", StringComparison.OrdinalIgnoreCase));
+
+            fluencyScore = ClampAndRound(85.0 + (goodCount * 3) - (warningCount * 5) - (errorCount * 12));
+            confidenceScore = ClampAndRound(88.0 + (goodCount * 2) - (warningCount * 4) - (errorCount * 10));
+            autonomyScore = 100;
+            pronScore = confidenceScore;
+        }
+
+        return (fluencyScore, confidenceScore, autonomyScore, pronScore, avgLatency, avgPace);
+    }
+
     private static string BuildGeneralFeedback(
         IReadOnlyCollection<LinguisticFeedbackDto> feedbacks,
         int overallScore,
         int completedMissionCount,
         int totalMissionCount,
-        bool allMissionsCompleted)
+        bool allMissionsCompleted,
+        int fluencyScore,
+        int confidenceScore,
+        int autonomyScore,
+        int pronScore,
+        double avgLatency,
+        double avgPace)
     {
         var overview = !allMissionsCompleted
             ? totalMissionCount > 0
@@ -227,9 +415,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(2)
             .ToList();
-        var naturalAlternative = feedbacks
+        var naturalAlternatives = feedbacks
             .Select(feedback => feedback.NaturalAlternative?.Trim())
-            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Cast<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToList();
         var turnSummaries = feedbacks
             .Select(feedback => feedback.Summary?.Trim())
             .Where(summary => !string.IsNullOrWhiteSpace(summary))
@@ -254,9 +446,47 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             sections.Add($"Điểm cần cải thiện: {string.Join("; ", improvements)}");
         }
 
-        if (!string.IsNullOrWhiteSpace(naturalAlternative))
+        if (naturalAlternatives.Count > 0)
         {
-            sections.Add($"Cách diễn đạt tự nhiên hơn: {naturalAlternative}");
+            sections.Add($"Cách diễn đạt tự nhiên hơn: {string.Join(" | ", naturalAlternatives)}");
+        }
+
+        if (avgLatency > 0 || avgPace > 0)
+        {
+            var jlpt = feedbacks
+                .Select(f => f.SpeechDelivery?.JlptLevel)
+                .FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
+            var jlptPrefix = !string.IsNullOrWhiteSpace(jlpt) ? $" (Chuẩn {jlpt})" : "";
+
+            var deliveryParts = new List<string>();
+            if (avgLatency > 0)
+            {
+                var latencyComment = avgLatency <= 4.0
+                    ? "phản xạ đối đáp nhanh nhẹn"
+                    : avgLatency <= 8.0
+                        ? "tốc độ phản xạ ổn định"
+                        : "cần phản xạ nhanh hơn khi giao tiếp";
+                deliveryParts.Add($"phản xạ trung bình {avgLatency:0.0}s ({latencyComment})");
+            }
+            if (avgPace > 0)
+            {
+                deliveryParts.Add($"nhịp nói ~{avgPace:0.0} ký tự/s");
+            }
+            if (confidenceScore > 0)
+            {
+                var confDesc = confidenceScore >= 85 ? "rõ ràng, tự tin" : "cần đọc tròn vành rõ chữ hơn";
+                deliveryParts.Add($"độ tự tin phát âm {confidenceScore}% ({confDesc})");
+            }
+            sections.Add($"Độ trôi chảy & Phát âm{jlptPrefix}: Điểm {fluencyScore}/100, {string.Join(", ", deliveryParts)}.");
+        }
+
+        if (autonomyScore < 95)
+        {
+            sections.Add($"Mức độ tự chủ giao tiếp: {autonomyScore}/100 (Có dùng giàn giáo gợi ý hoặc hỗ trợ bản dịch).");
+        }
+        else
+        {
+            sections.Add($"Mức độ tự chủ giao tiếp: {autonomyScore}/100 (Rất tốt, phản xạ độc lập không dựa dẫm gợi ý).");
         }
 
         return string.Join(" ", sections);

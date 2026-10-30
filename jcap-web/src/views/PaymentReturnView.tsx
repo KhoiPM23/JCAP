@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import { creditService } from '../services/creditService';
+import { subscriptionPlanService, type SubscriptionPlanItem } from '../services/subscriptionPlanService';
 import { formatDateTime } from '../utils/dateUtils';
 import type { CreditTransaction } from '../types/credit';
 
@@ -14,21 +15,56 @@ export const PaymentReturnView: React.FC = () => {
   const orderCodeParam = searchParams.get('orderCode');
   const statusParam = searchParams.get('status');
   const cancelParam = searchParams.get('cancel');
+  const typeParam = searchParams.get('type');
+  const planIdParam = searchParams.get('planId');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [transaction, setTransaction] = useState<CreditTransaction | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [activatedSubscription, setActivatedSubscription] = useState<SubscriptionPlanItem | null>(null);
 
   useEffect(() => {
     const verify = async () => {
       setIsLoading(true);
 
-      // Nếu có query cancel=true hoặc status=CANCELLED
+      // Nếu có query cancel=true hoặc status=CANCELLED -> Tự động cập nhật trạng thái Đã hủy xuống DB
       if (cancelParam === 'true' || statusParam === 'CANCELLED') {
+        if (orderCodeParam) {
+          await creditService.cancelOrder(orderCodeParam).catch(() => {});
+        }
         setIsSuccess(false);
         setIsLoading(false);
         return;
       }
+
+      const applySubscriptionIfMatching = (trans?: CreditTransaction | null) => {
+        const isSubscription =
+          typeParam === 'subscription' ||
+          trans?.type?.toLowerCase() === 'subscription' ||
+          (trans?.description && trans.description.includes('Đăng ký'));
+
+        if (isSubscription) {
+          const plans = subscriptionPlanService.getPlans();
+          let matchedPlan: SubscriptionPlanItem | undefined;
+
+          if (planIdParam) {
+            matchedPlan = plans.find((p) => p.id === planIdParam);
+          }
+          if (!matchedPlan && trans?.description) {
+            matchedPlan = plans.find(
+              (p) => trans.description?.includes(p.name) || trans.description?.includes(p.id)
+            );
+          }
+          if (!matchedPlan) {
+            matchedPlan = plans[0];
+          }
+
+          if (matchedPlan) {
+            subscriptionPlanService.setUserSubscription(matchedPlan);
+            setActivatedSubscription(matchedPlan);
+          }
+        }
+      };
 
       if (orderCodeParam) {
         try {
@@ -38,6 +74,7 @@ export const PaymentReturnView: React.FC = () => {
             const success = res.data.status === 'Paid' || statusParam === 'PAID';
             setIsSuccess(success);
             if (success) {
+              applySubscriptionIfMatching(res.data);
               // Đồng bộ số dư mới nhất về Header và AuthContext ngay lập tức
               await Promise.all([
                 creditService.getHistory(1, 1),
@@ -48,6 +85,7 @@ export const PaymentReturnView: React.FC = () => {
             const success = statusParam === 'PAID';
             setIsSuccess(success);
             if (success) {
+              applySubscriptionIfMatching(null);
               await Promise.all([
                 creditService.getHistory(1, 1),
                 refreshUser(),
@@ -58,6 +96,7 @@ export const PaymentReturnView: React.FC = () => {
           const success = statusParam === 'PAID';
           setIsSuccess(success);
           if (success) {
+            applySubscriptionIfMatching(null);
             await Promise.all([
               creditService.getHistory(1, 1),
               refreshUser(),
@@ -70,6 +109,7 @@ export const PaymentReturnView: React.FC = () => {
         const success = statusParam === 'PAID';
         setIsSuccess(success);
         if (success) {
+          applySubscriptionIfMatching(null);
           await Promise.all([
             creditService.getHistory(1, 1),
             refreshUser(),
@@ -80,15 +120,15 @@ export const PaymentReturnView: React.FC = () => {
     };
 
     verify();
-  }, [orderCodeParam, statusParam, cancelParam, refreshUser]);
+  }, [orderCodeParam, statusParam, cancelParam, typeParam, planIdParam, refreshUser]);
 
   if (isLoading) {
     return (
       <div className="max-w-xl mx-auto py-16 px-4">
         <div className="bg-white rounded-2xl border border-[#E6EDF5] p-12 text-center shadow-sm">
           <div className="w-12 h-12 border-4 border-blue-200 border-t-[#0878EE] rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-base font-bold text-[#071A44]">Đang xác minh kết quả thanh toán...</h2>
-          <p className="text-xs text-[#71809A] mt-1">Hệ thống đang đồng bộ dữ liệu với cổng PayOS, vui lòng chờ trong giây lát.</p>
+          <h2 className="text-base font-bold text-[#071A44]">Đang xác minh kết quả thanh toán PayOS...</h2>
+          <p className="text-xs text-[#71809A] mt-1">Hệ thống đang đồng bộ dữ liệu giao dịch trực tiếp với PayOS, vui lòng chờ trong giây lát.</p>
         </div>
       </div>
     );
@@ -104,14 +144,16 @@ export const PaymentReturnView: React.FC = () => {
           </div>
 
           <span className="text-xs uppercase tracking-wider text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-3">
-            Thanh Toán Thành Công
+            {activatedSubscription ? 'Nâng Cấp Gói Thành Công' : 'Thanh Toán Thành Công'}
           </span>
 
           <h1 className="text-2xl font-extrabold text-[#071A44] mb-2">
-            Nạp Credit Hoàn Tất!
+            {activatedSubscription ? `Kích Hoạt ${activatedSubscription.name}!` : 'Nạp Credit Hoàn Tất!'}
           </h1>
           <p className="text-xs text-[#71809A] max-w-sm mx-auto mb-6">
-            Giao dịch thanh toán qua cổng PayOS đã được xử lý thành công. Số dư credit của bạn đã được cập nhật.
+            {activatedSubscription
+              ? 'Giao dịch qua cổng PayOS đã hoàn tất. Hạn ngạch AI mỗi 5 giờ và mỗi tuần của bạn đã được cập nhật thành công!'
+              : 'Giao dịch thanh toán qua cổng PayOS đã được xử lý thành công. Số dư credit của bạn đã được cập nhật.'}
           </p>
 
           {/* Details Box */}
@@ -122,18 +164,40 @@ export const PaymentReturnView: React.FC = () => {
                 {user?.fullName || user?.email || 'Tài khoản JCAP'}
               </span>
             </div>
+
+            {activatedSubscription && (
+              <>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-[#71809A]">Gói hội viên kích hoạt:</span>
+                  <span className="font-bold text-[#0878EE]">{activatedSubscription.name}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-[#71809A]">Hạn mức phục hồi:</span>
+                  <span className="font-semibold text-emerald-700">
+                    {activatedSubscription.creditsAmount} credits/tuần & {activatedSubscription.fiveHourQuota} credits/5h
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-[#71809A]">Thời hạn sử dụng:</span>
+                  <span className="font-medium text-[#071A44]">30 ngày (Kể từ hôm nay)</span>
+                </div>
+              </>
+            )}
+
             {orderCodeParam && (
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                 <span className="text-[#71809A]">Mã đơn hàng PayOS:</span>
                 <span className="font-mono font-bold text-[#071A44]">#{orderCodeParam}</span>
               </div>
             )}
-            {transaction && (
+
+            {transaction && transaction.type !== 'Subscription' && (
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                 <span className="text-[#71809A]">Số credit được cộng:</span>
                 <span className="font-bold text-emerald-600">+{transaction.amount} Credits</span>
               </div>
             )}
+
             <div className="flex justify-between items-center border-b border-gray-100 pb-2">
               <span className="text-[#71809A]">Số dư ví tài khoản:</span>
               <span className="font-extrabold text-[#0878EE] flex items-center gap-1">
@@ -142,6 +206,7 @@ export const PaymentReturnView: React.FC = () => {
                 <span>Credits</span>
               </span>
             </div>
+
             {transaction && (
               <div className="flex justify-between items-center">
                 <span className="text-[#71809A]">Thời gian giao dịch:</span>
@@ -154,22 +219,45 @@ export const PaymentReturnView: React.FC = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full sm:w-auto font-bold"
-              onClick={() => navigate('/scenarios')}
-            >
-              Vào Luyện Nói Ngay ➔
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              className="w-full sm:w-auto"
-              onClick={() => navigate('/credits/history')}
-            >
-              Xem Lịch Sử Giao Dịch
-            </Button>
+            {activatedSubscription ? (
+              <>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full sm:w-auto font-bold"
+                  onClick={() => navigate('/subscription')}
+                >
+                  Xem Gói & Hạn Mức ➔
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="w-full sm:w-auto"
+                  onClick={() => navigate('/scenarios')}
+                >
+                  Vào Luyện Nói Ngay
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full sm:w-auto font-bold"
+                  onClick={() => navigate('/scenarios')}
+                >
+                  Vào Luyện Nói Ngay ➔
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="w-full sm:w-auto"
+                  onClick={() => navigate('/credits/history')}
+                >
+                  Xem Lịch Sử Giao Dịch
+                </Button>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -221,3 +309,4 @@ export const PaymentReturnView: React.FC = () => {
     </div>
   );
 };
+

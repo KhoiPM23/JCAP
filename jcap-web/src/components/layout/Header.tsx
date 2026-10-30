@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { creditService } from '../../services/creditService';
 import type { User } from '../../types/auth';
 
@@ -13,56 +13,8 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
   const { user: authUser, logout } = useAuth();
   const [currentUser, setCurrentUser] = React.useState<User | null>(propUser !== undefined ? propUser : authUser);
   const handleLogout = onLogout || logout;
-
-  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const currentQuery = searchParams.get('query') || searchParams.get('search') || '';
-  const [searchTerm, setSearchTerm] = React.useState(currentQuery);
-
-  React.useEffect(() => {
-    setSearchTerm(currentQuery);
-  }, [currentQuery]);
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    if (location.pathname === '/scenarios' || location.pathname === '/') {
-      const trimmed = value.trim();
-      const newParams = new URLSearchParams(searchParams);
-      if (trimmed.length > 0) {
-        newParams.set('query', trimmed);
-      } else {
-        newParams.delete('query');
-        newParams.delete('search');
-      }
-      setSearchParams(newParams, { replace: true });
-    }
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = searchTerm.trim();
-    if (trimmed.length === 0) {
-      // clear search
-      if (location.pathname !== '/scenarios') {
-        navigate('/scenarios');
-      } else {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('query');
-        newParams.delete('search');
-        setSearchParams(newParams, { replace: true });
-      }
-      return;
-    }
-    if (location.pathname !== '/scenarios') {
-      navigate(`/scenarios?query=${encodeURIComponent(trimmed)}`);
-    } else {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set('query', trimmed);
-      setSearchParams(newParams, { replace: true });
-    }
-  };
 
   // Đồng bộ propUser hoặc authUser vào currentUser
   React.useEffect(() => {
@@ -155,32 +107,14 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
     <header className="h-[64px] bg-white border-b border-[#E6EDF5] flex items-center justify-between px-8 sticky top-0 z-40">
       {/* Left: Logo/Brand */}
       <div className="flex items-center gap-4">
-        <Link to={user?.role === 'Admin' ? "/admin/dashboard" : "/"} className="text-2xl font-bold text-[#0878EE] tracking-tight">
+        <Link to={user?.role === 'Admin' ? "/admin/dashboard" : "/"} className="flex items-center gap-2 text-2xl font-bold text-[#0878EE] tracking-tight">
+          <img src="/jcap-torii.svg" alt="" width={32} height={32} className="h-8 w-8" />
           JCAP
         </Link>
       </div>
 
-      {/* Center: Search */}
-      {isAdminArea ? (
-        <div className="flex-1" />
-      ) : (
-      <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8">
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-[#71809A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-[#E6EDF5] rounded-lg leading-5 bg-gray-50 placeholder-[#71809A] focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0878EE] focus:border-[#0878EE] sm:text-sm transition-colors"
-            placeholder="Tìm kiếm khóa học, bài học..."
-          />
-        </div>
-      </form>
-      )}
+      {/* Center Spacer */}
+      <div className="flex-1" />
 
       {/* Right: Actions & User Info */}
       <div className="flex items-center gap-4 sm:gap-6">
@@ -188,6 +122,10 @@ export const Header: React.FC<HeaderProps> = ({ user: propUser, onLogout }) => {
         <button 
           type="button"
           className="text-[#71809A] hover:text-[#0878EE] transition-colors relative p-1 rounded-full hover:bg-blue-50"
+          onClick={() => {
+            if (user?.role === 'Admin') navigate('/admin/notifications');
+          }}
+          title={user?.role === 'Admin' ? 'Quản lý & Cài đặt Thông báo' : 'Thông báo'}
           aria-label="Thông báo"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

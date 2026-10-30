@@ -3,9 +3,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Shadowing;
+using JCAP.Models;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
 
 namespace JCAP.Controllers
 {
@@ -14,19 +17,26 @@ namespace JCAP.Controllers
     [Authorize]
     public class ShadowingController : ControllerBase
     {
+        // 5MB audio + các trường form; khớp Shadowing:Audio:MaxBytes mặc định trong ShadowingEvaluationService.
+        private const int MaxEvaluateRequestBytes = 8 * 1024 * 1024;
+        private const int MaxAnalysisWavBytes = 2 * 1024 * 1024; // ~60 s WAV 16 kHz mono 16-bit
+
         private readonly IShadowingService _shadowingService;
         private readonly IAiShadowingAssessmentService _aiAssessmentService;
+        private readonly ILogger<ShadowingController> _logger;
 
         public ShadowingController(
             IShadowingService shadowingService,
-            IAiShadowingAssessmentService aiAssessmentService)
+            IAiShadowingAssessmentService aiAssessmentService,
+            ILogger<ShadowingController> logger)
         {
             _shadowingService = shadowingService;
             _aiAssessmentService = aiAssessmentService;
+            _logger = logger;
         }
 
         /// <summary>
-        /// UC-25 & UC-26: Lấy danh sách bài học Shadowing (hỗ trợ tìm kiếm từ khóa, lọc theo JLPT Level và ScenarioId).
+        /// UC-25 và UC-26: Lấy danh sách bài học Shadowing (hỗ trợ tìm kiếm từ khóa, lọc theo JLPT Level và ScenarioId).
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<ShadowingDialogueListDto>>>> GetCatalog(
@@ -53,7 +63,8 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Lưu lại tiến trình hoàn thành buổi luyện tập Shadowing (không tính phí).
+        /// Hoàn thành buổi luyện: backend lấy điểm từ các kết quả chấm câu đã lưu (theo EvaluationIds), tính điểm tổng
+        /// và lưu ShadowingPracticeSession vào lịch sử. Không nhận điểm từ client.
         /// </summary>
         [HttpPost("session/complete")]
         public async Task<ActionResult<ApiResponse<ShadowingSessionCompleteResponseDto>>> CompleteSession(
@@ -74,43 +85,44 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Yêu cầu phân tích phát âm AI chuyên sâu (tính phí 15 AI Credits).
+        /// Lịch sử các buổi luyện Shadowing đã hoàn thành của người dùng hiện tại (mới nhất trước).
         /// </summary>
-        [HttpPost("session/ai-analysis")]
-        public async Task<ActionResult<ApiResponse<ShadowingAiAnalysisResponseDto>>> RequestAiAnalysis(
-            [FromBody] ShadowingAiAnalysisRequestDto request)
+        [HttpGet("history")]
+        public async Task<ActionResult<ApiResponse<List<ShadowingPracticeSessionDto>>>> GetHistory()
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<ShadowingAiAnalysisResponseDto>.Fail("Không xác định được danh tính người dùng."));
+                return Unauthorized(ApiResponse<List<ShadowingPracticeSessionDto>>.Fail("Không xác định được danh tính người dùng."));
             }
 
-            var result = await _shadowingService.RequestAiAnalysisAsync(userId, request);
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-            return Ok(result);
+            return Ok(await _shadowingService.GetHistoryAsync(userId));
         }
 
         /// <summary>
-        /// Phân tích và chấm điểm âm thanh của từng câu Shadowing bằng Gemini AI.
+        /// Đánh giá một câu Shadowing: nhận dạng giọng nói, so khớp với câu mẫu và chấm điểm (backend là nguồn điểm duy nhất).
+        /// Yêu cầu đăng nhập (JWT); giới hạn dung lượng và tần suất để tránh lạm dụng API trả phí.
         /// </summary>
         [HttpPost("evaluate-audio")]
-        [AllowAnonymous]
+        [RequestSizeLimit(MaxEvaluateRequestBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxEvaluateRequestBytes)]
+        [EnableRateLimiting("shadowing-evaluate")]
         public async Task<ActionResult<ApiResponse<ShadowingAudioEvaluationResponseDto>>> EvaluateAudio(
             [FromForm] ShadowingAudioEvaluationRequestDto request,
             CancellationToken cancellationToken)
         {
-            if (request.Audio == null || request.Audio.Length == 0)
+            var userId = GetCurrentUserId();
+
+            // Có SentenceId: câu mẫu lấy từ CSDL (không tin câu mẫu do client gửi) và kết quả chấm được lưu lại.
+            ShadowingSentence? sentence = null;
+            if (request.SentenceId is { } sentenceId)
             {
-                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                sentence = await _shadowingService.FindPracticeSentenceAsync(sentenceId);
+                if (sentence == null)
                 {
-                    EvaluationStatus = "unavailable",
-                    ErrorCode = "EMPTY_AUDIO",
-                    ErrorMessage = "Không tìm thấy dữ liệu âm thanh."
-                }, "Dữ liệu âm thanh trống."));
+                    return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Không tìm thấy câu luyện tập."));
+                }
+                request.TargetText = sentence.JapaneseText;
             }
 
             if (string.IsNullOrWhiteSpace(request.TargetText))
@@ -118,35 +130,81 @@ namespace JCAP.Controllers
                 return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Thiếu câu mẫu tiếng Nhật cần đánh giá."));
             }
 
-            try
-            {
-                using var stream = request.Audio.OpenReadStream();
-                var result = await _aiAssessmentService.EvaluateAudioAsync(
-                    stream,
-                    request.Audio.ContentType,
-                    request.TargetText,
-                    cancellationToken);
-
-                if (result == null)
-                {
-                    return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
-                    {
-                        EvaluationStatus = "partial",
-                        Source = "client_fallback",
-                        ErrorCode = "AI_UNAVAILABLE",
-                        ErrorMessage = "Dịch vụ AI không khả dụng, sử dụng bộ đánh giá nội bộ."
-                    }, "Chuyển sang bộ đánh giá cục bộ."));
-                }
-
-                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Phân tích âm thanh thành công."));
-            }
-            catch (Exception ex)
+            if (request.Audio == null || request.Audio.Length == 0)
             {
                 return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
                 {
+                    EvaluationStatus = "unavailable",
+                    RecognitionStatus = "unavailable",
+                    RecognitionSource = "none",
+                    Source = "none",
+                    TargetText = request.TargetText,
+                    ErrorCode = "EMPTY_AUDIO",
+                    ErrorMessage = "Không tìm thấy dữ liệu âm thanh."
+                }, "Dữ liệu âm thanh trống."));
+            }
+
+            try
+            {
+                using var buffer = new MemoryStream();
+                await request.Audio.CopyToAsync(buffer, cancellationToken);
+
+                byte[]? analysisWav = null;
+                if (request.AnalysisWav is { Length: > 0 and <= MaxAnalysisWavBytes })
+                {
+                    using var wavBuffer = new MemoryStream();
+                    await request.AnalysisWav.CopyToAsync(wavBuffer, cancellationToken);
+                    analysisWav = wavBuffer.ToArray();
+                }
+
+                var result = await _aiAssessmentService.EvaluateAsync(
+                    new ShadowingAudioEvaluationInput
+                    {
+                        AnalysisWav = analysisWav,
+                        ReferenceSpeakerId = request.ReferenceSpeakerId,
+                        Audio = buffer.ToArray(),
+                        MimeType = request.Audio.ContentType,
+                        TargetText = request.TargetText,
+                        ClientTranscript = request.ClientTranscript,
+                        ClientRecognitionStatus = request.ClientRecognitionStatus,
+                        ClientRecognitionError = request.ClientRecognitionError,
+                        AudioGateStatus = request.AudioGateStatus,
+                        AudioGateDetail = request.AudioGateDetail
+                    },
+                    cancellationToken);
+
+                if (sentence != null && !string.IsNullOrEmpty(userId))
+                {
+                    result.SentenceId = sentence.Id;
+                    try
+                    {
+                        result.EvaluationId = await _shadowingService.RecordSentenceEvaluationAsync(userId, sentence.Id, result);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Không lưu được chỉ làm câu này không vào được lịch sử; người học vẫn thấy điểm.
+                        _logger.LogError(ex, "Không lưu được kết quả chấm câu {SentenceId}.", sentence.Id);
+                    }
+                }
+
+                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Đã xử lý yêu cầu đánh giá."));
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                // Không trả ex.Message cho client để tránh lộ thông tin nội bộ.
+                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                {
                     EvaluationStatus = "failed",
-                    ErrorCode = "EXCEPTION",
-                    ErrorMessage = ex.Message
+                    RecognitionStatus = "unavailable",
+                    RecognitionSource = "none",
+                    Source = "none",
+                    TargetText = request.TargetText,
+                    ErrorCode = "EVALUATION_EXCEPTION",
+                    ErrorMessage = "Đã xảy ra lỗi khi đánh giá. Điểm chưa được ghi nhận, hãy thử lại."
                 }, "Đã xảy ra lỗi khi phân tích."));
             }
         }

@@ -25,20 +25,70 @@ namespace JCAP.Data
         public DbSet<Vocabulary> Vocabularies { get; set; } = null!;
         public DbSet<Grammar> Grammars { get; set; } = null!;
 
+        // Self-study topics, examples and dataset provenance (no cross-module topic links).
+        public DbSet<LearningTopic> LearningTopics { get; set; } = null!;
+        public DbSet<TopicVocabulary> TopicVocabularies { get; set; } = null!;
+        public DbSet<TopicGrammar> TopicGrammars { get; set; } = null!;
+        public DbSet<VocabularyExample> VocabularyExamples { get; set; } = null!;
+        public DbSet<GrammarExample> GrammarExamples { get; set; } = null!;
+        public DbSet<LearningContentSource> LearningContentSources { get; set; } = null!;
+        public DbSet<VocabularySource> VocabularySources { get; set; } = null!;
+        public DbSet<GrammarSource> GrammarSources { get; set; } = null!;
+
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;
         public DbSet<ShadowingSentence> ShadowingSentences { get; set; } = null!;
         public DbSet<ShadowingDialogueVocabulary> ShadowingDialogueVocabularies { get; set; } = null!;
         public DbSet<ShadowingDialogueGrammar> ShadowingDialogueGrammars { get; set; } = null!;
+        public DbSet<ShadowingPracticeSession> ShadowingPracticeSessions { get; set; } = null!;
+        public DbSet<ShadowingSentenceEvaluation> ShadowingSentenceEvaluations { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
         public DbSet<RoleplayMessage> RoleplayMessages { get; set; } = null!;
         public DbSet<RoleplaySessionMission> RoleplaySessionMissions { get; set; } = null!;
 
+        // Implicit Learner Intelligence & Persona Memory (FE-03 Telemetry)
+        public DbSet<LearnerIntelligenceProfile> LearnerIntelligenceProfiles { get; set; } = null!;
+        public DbSet<LearnerSkillMastery> LearnerSkillMasteries { get; set; } = null!;
+        public DbSet<LearnerBehaviorSignal> LearnerBehaviorSignals { get; set; } = null!;
+        public DbSet<UserNpcRelationship> UserNpcRelationships { get; set; } = null!;
+
+        // Explore (bản đồ hành trình học) DbSets - cấu hình ở ExploreModelConfiguration
+        public DbSet<ExplorePrefecture> ExplorePrefectures { get; set; } = null!;
+        public DbSet<ExploreChapter> ExploreChapters { get; set; } = null!;
+        public DbSet<ExploreChapterPrefecture> ExploreChapterPrefectures { get; set; } = null!;
+        public DbSet<ExploreSpot> ExploreSpots { get; set; } = null!;
+        public DbSet<ExploreSpotLesson> ExploreSpotLessons { get; set; } = null!;
+        public DbSet<ExploreSpotLessonGrammar> ExploreSpotLessonGrammars { get; set; } = null!;
+        public DbSet<ExploreSpotLessonVocabulary> ExploreSpotLessonVocabularies { get; set; } = null!;
+        public DbSet<ExploreSpotActivity> ExploreSpotActivities { get; set; } = null!;
+        public DbSet<ExploreProvinceWord> ExploreProvinceWords { get; set; } = null!;
+
+        // Flashcard & Bookmark (FE-05) DbSets - cấu hình ở FlashcardModelConfiguration
+        public DbSet<LearnerBookmark> LearnerBookmarks { get; set; } = null!;
+        public DbSet<LearnerFlashcardProgress> LearnerFlashcardProgresses { get; set; } = null!;
+        public DbSet<FlashcardStudySession> FlashcardStudySessions { get; set; } = null!;
+        public DbSet<FlashcardReviewLog> FlashcardReviewLogs { get; set; } = null!;
+        public DbSet<LearnerDailyFlashcardQuota> LearnerDailyFlashcardQuotas { get; set; } = null!;
+
+        // Anonymous Feedback & Support Box (UC-09 & UC-59) DbSets
+        public DbSet<FeedbackTicket> FeedbackTickets { get; set; } = null!;
+        public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
+        public DbSet<FeedbackAttachment> FeedbackAttachments { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Explore (bản đồ hành trình học)
+            ExploreModelConfiguration.Configure(modelBuilder);
+
+            // Flashcard & Bookmark (FE-05)
+            FlashcardModelConfiguration.Configure(modelBuilder);
+
+            // Anonymous Feedback & Support Box (UC-09 & UC-59)
+            FeedbackModelConfiguration.Configure(modelBuilder);
 
             // ApplicationUser configuration
             modelBuilder.Entity<ApplicationUser>(entity =>
@@ -76,6 +126,20 @@ namespace JCAP.Data
 
                 entity.Property(e => e.PayOsOrderCode)
                     .HasMaxLength(100);
+
+                entity.Property(e => e.AmountVnd)
+                    .HasPrecision(18, 2);
+
+                entity.Property(e => e.SubscriptionPlanId)
+                    .HasMaxLength(50);
+
+                // Truy vấn quota lọc theo UserId + Type + CoveredBySubscription + CreatedAt
+                entity.HasIndex(e => new { e.UserId, e.Type, e.CoveredBySubscription, e.CreatedAt })
+                    .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
+
+                // Đối soát webhook/verify-order tra theo mã đơn hàng
+                entity.HasIndex(e => e.PayOsOrderCode)
+                    .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
 
                 // ApplicationUser 1 - N CreditTransaction
                 entity.HasOne(e => e.User)
@@ -286,13 +350,27 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.Property(e => e.PartOfSpeech)
+                    .HasMaxLength(100);
+
                 entity.Property(e => e.JLPTLevel)
                     .HasMaxLength(10);
+
+                entity.Property(e => e.Explanation)
+                    .HasColumnType("nvarchar(max)");
+
+                entity.Property(e => e.AudioUrl)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
 
-                entity.HasIndex(e => new { e.Word, e.Meaning });
+                // Meaning can be long; keep it outside SQL Server's index-key size limit.
+                entity.HasIndex(e => e.Word);
             });
 
             // Shared Master Grammar configuration
@@ -306,17 +384,30 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(200);
 
+                entity.Property(e => e.Formation)
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.Explanation)
+                    .HasColumnType("nvarchar(max)");
+
                 entity.Property(e => e.ExampleSentence)
                     .HasMaxLength(500);
 
                 entity.Property(e => e.JLPTLevel)
                     .HasMaxLength(10);
 
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
+
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");
 
-                entity.HasIndex(e => new { e.Pattern, e.Meaning });
+                entity.HasIndex(e => e.Pattern);
             });
+
+            // Apply self-study extensions after the legacy master-field mappings.
+            LearningContentModelConfiguration.Configure(modelBuilder);
 
             // ShadowingDialogueVocabulary join configuration
             modelBuilder.Entity<ShadowingDialogueVocabulary>(entity =>
@@ -442,6 +533,81 @@ namespace JCAP.Data
                 entity.HasOne(e => e.Mission)
                     .WithMany(m => m.SessionMissions)
                     .HasForeignKey(e => e.MissionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Implicit Learner Intelligence & Persona Memory configurations
+            modelBuilder.Entity<LearnerIntelligenceProfile>(entity =>
+            {
+                entity.HasIndex(e => e.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<LearnerSkillMastery>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.SkillCode }).IsUnique();
+                entity.HasIndex(e => new { e.UserId, e.NextRecommendedReviewUtc });
+            });
+
+            modelBuilder.Entity<LearnerBehaviorSignal>(entity =>
+            {
+                entity.HasIndex(e => new { e.SessionId, e.TurnIndex });
+            });
+
+            modelBuilder.Entity<UserNpcRelationship>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.NpcCode }).IsUnique();
+            });
+
+            // ShadowingPracticeSession: lịch sử bất biến, không xóa cứng (Restrict để không mất lịch sử theo dây chuyền)
+            modelBuilder.Entity<ShadowingPracticeSession>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.CompletedAt });
+
+                entity.Property(e => e.LearnerRole).IsRequired().HasMaxLength(5);
+                entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.RankTitle).IsRequired().HasMaxLength(200);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingDialogue)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingSentenceEvaluation: kết quả chấm từng câu do backend tạo
+            modelBuilder.Entity<ShadowingSentenceEvaluation>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.ShadowingSentenceId, e.CreatedAt });
+                entity.HasIndex(e => e.ShadowingPracticeSessionId);
+
+                entity.Property(e => e.RecognizedText).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.Tier).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.EvaluationStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.RecognitionSource).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ComparisonMethod).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Feedback).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.DiffTokensJson).IsRequired().HasColumnType("nvarchar(max)");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingSentence)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingSentenceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingPracticeSession)
+                    .WithMany(s => s.SentenceEvaluations)
+                    .HasForeignKey(e => e.ShadowingPracticeSessionId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }

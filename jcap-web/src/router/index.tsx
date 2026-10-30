@@ -1,5 +1,6 @@
 import React from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
+import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import { useAuth } from '../contexts/AuthContext';
 import { PrivateRoute } from '../components/PrivateRoute';
 import { MainLayout } from '../layouts/MainLayout';
@@ -13,8 +14,10 @@ import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
+import { StampBookView } from '../views/explore/StampBookView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
+import { SubscriptionQuotaView } from '../views/SubscriptionQuotaView';
 import { CreditHistoryView } from '../views/CreditHistoryView';
 import { PaymentReturnView } from '../views/PaymentReturnView';
 import { DevShowcaseView } from '../views/DevShowcaseView';
@@ -27,17 +30,30 @@ import { LearnerDashboardView } from '../views/LearnerDashboardView';
 import { LearnerShadowingListView } from '../views/shadowing/LearnerShadowingListView';
 import { LearnerShadowingDetailView } from '../views/shadowing/LearnerShadowingDetailView';
 import { LearnerShadowingPracticeView } from '../views/shadowing/LearnerShadowingPracticeView';
-import { LearnerShadowingTextbookListView } from '../views/shadowing/LearnerShadowingTextbookListView';
-import { LearnerShadowingChapterListView } from '../views/shadowing/LearnerShadowingChapterListView';
-import { LearnerShadowingDialogueListView } from '../views/shadowing/LearnerShadowingDialogueListView';
 import { AdminShadowingListView } from '../views/admin/AdminShadowingListView';
 import { AdminScenarioListView } from '../views/admin/AdminScenarioListView';
 import { AdminScenarioEditorView } from '../views/admin/AdminScenarioEditorView';
 import { AdminUserManagementView } from '../views/admin/AdminUserManagementView';
+import { AdminLearningView } from '../views/admin/learning/AdminLearningView';
+import { AdminExploreView } from '../views/admin/AdminExploreView';
+import { AdminExplorePrefectureView } from '../views/admin/AdminExplorePrefectureView';
+import { AdminExploreSpotEditorView } from '../views/admin/AdminExploreSpotEditorView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
 import { ConversationHistoryView } from '../views/ConversationHistoryView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 import { SettingsView } from '../views/SettingsView';
+import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
+import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
+import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
+import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
+import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
+import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
+import { AdminNotificationView } from '../views/admin/AdminNotificationView';
+
+// Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
+const JapanMapView = React.lazy(() =>
+  import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
+);
 
 // ============================================================
 // Route Wrappers
@@ -98,6 +114,39 @@ const LearnerHomeRoute: React.FC = () => {
   if (userRole === 'Admin') {
     return <Navigate to="/admin/dashboard" replace />;
   }
+  // Trang chủ của học viên là bản đồ Hành trình (design-handoff mục 3)
+  return <MapRoute />;
+};
+
+/**
+ * Ghi nhớ phiên Hội thoại AI đang mở để thanh bên hiện mục "đang dở" (không hiển thị gì, không đụng vào phòng hội thoại)
+ */
+const RememberRoleplaySession: React.FC = () => {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  React.useEffect(() => {
+    const id = Number(sessionId);
+    if (id > 0) rememberRoleplaySession(id);
+  }, [sessionId]);
+  return null;
+};
+
+/** Bản đồ Hành trình (tải riêng vì nặng); nằm trong khung học viên, thanh bên nổi trên bản đồ */
+const MapRoute: React.FC = () => (
+  <React.Suspense
+    fallback={
+      <div className="min-h-screen flex items-center justify-center bg-paper-100">
+        <div className="w-10 h-10 border-4 border-line border-t-ai rounded-full animate-spin" />
+      </div>
+    }
+  >
+    <JapanMapView />
+  </React.Suspense>
+);
+
+/** Trang tổng quan cũ: chưa có trong thiết kế mới, vẫn mở được ở /dashboard */
+const LearnerDashboardRoute: React.FC = () => {
+  const { user } = useAuth();
+  if (user?.role === 'Admin') return <Navigate to="/admin/dashboard" replace />;
   return <LearnerDashboardView />;
 };
 
@@ -271,6 +320,9 @@ export const AppRouter: React.FC = () => {
       >
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminDashboardView />} />
+        <Route path="/admin/topics" element={<AdminLearningView key="topics" kind="topics" />} />
+        <Route path="/admin/vocabularies" element={<AdminLearningView key="vocabularies" kind="vocabularies" />} />
+        <Route path="/admin/grammars" element={<AdminLearningView key="grammars" kind="grammars" />} />
         <Route path="/admin/scenarios" element={<AdminScenarioListView />} />
         <Route path="/admin/scenarios/new" element={<AdminScenarioEditorView />} />
         <Route path="/admin/scenarios/new-scenario" element={<AdminScenarioEditorView />} />
@@ -278,10 +330,15 @@ export const AppRouter: React.FC = () => {
         <Route path="/admin/scenarios/edit/:id" element={<AdminScenarioEditorView />} />
         <Route path="/admin/shadowing" element={<AdminShadowingListView />} />
         <Route path="/admin/audio" element={<AdminShadowingListView />} />
+        <Route path="/admin/explore" element={<AdminExploreView />} />
+        <Route path="/admin/explore/prefectures/:id" element={<AdminExplorePrefectureView />} />
+        <Route path="/admin/explore/prefectures/:id/spots/new" element={<AdminExploreSpotEditorView key="new" />} />
+        <Route path="/admin/explore/spots/:spotId" element={<AdminExploreSpotEditorView />} />
         <Route path="/admin/credits/packages" element={<AdminCreditPackagesView />} />
         {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
         <Route path="/admin/users" element={<AdminUserManagementView />} />
-        <Route path="/admin/ai-config" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cấu hình AI & Prompt</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
+        <Route path="/admin/feedback" element={<AdminFeedbackView />} />
+        <Route path="/admin/notifications" element={<AdminNotificationView />} />
         <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         
         {/* Catch-all cho các route admin không tồn tại */}
@@ -291,6 +348,15 @@ export const AppRouter: React.FC = () => {
       {/* Fullscreen Interactive Roleplay Practice Room (FE-03) */}
       <Route
         path="/scenarios/practice/:sessionId"
+        element={
+          <PrivateRoute>
+            <RememberRoleplaySession />
+            <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/roleplay/:sessionId"
         element={
           <PrivateRoute>
             <RoleplayPracticeView />
@@ -316,6 +382,16 @@ export const AppRouter: React.FC = () => {
         }
       />
 
+      {/* Fullscreen Flashcard SRS Study Session (Zen Mode, outside MainLayout) */}
+      <Route
+        path="/flashcards/study/:topicId/:contentType"
+        element={
+          <PrivateRoute>
+            <FlashcardSessionView />
+          </PrivateRoute>
+        }
+      />
+
       {/* Protected routes wrapped in MainLayout */}
       <Route
         element={
@@ -325,7 +401,11 @@ export const AppRouter: React.FC = () => {
         }
       >
         <Route path="/" element={<LearnerHomeRoute />} />
-        <Route path="/dashboard" element={<LearnerHomeRoute />} />
+        {/* Khám phá = bản đồ Hành trình, cùng trang với trang chủ */}
+        <Route path="/explore" element={<MapRoute />} />
+        {/* Sổ con dấu: xem lại mọi con dấu của hành trình */}
+        <Route path="/stamps" element={<StampBookView />} />
+        <Route path="/dashboard" element={<LearnerDashboardRoute />} />
         <Route path="/scenarios" element={<ScenarioRoute />} />
         <Route path="/scenarios/:scenarioId" element={<ScenarioDetailsView />} />
         
@@ -337,6 +417,11 @@ export const AppRouter: React.FC = () => {
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
+
+        {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
+        <Route path="/flashcards" element={<FlashcardSetsView />} />
+        <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
+        <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />
@@ -349,6 +434,9 @@ export const AppRouter: React.FC = () => {
 
         {/* UC11 & UC12: Danh sach goi & Mua credits */}
         <Route path="/credits" element={<CreditPackagesView />} />
+        {/* Goi hoi vien & Dual-Window Rolling Quota (Kieu Antigravity) */}
+        <Route path="/subscription" element={<SubscriptionQuotaView />} />
+        <Route path="/credits/subscription" element={<SubscriptionQuotaView />} />
 
         {/* UC13: Lich su giao dich credit */}
         <Route path="/credits/history" element={<CreditHistoryView />} />
@@ -358,6 +446,8 @@ export const AppRouter: React.FC = () => {
 
         {/* UC: Cai dat he thong (Giong doc AI & Thiet bi am thanh) */}
         <Route path="/settings" element={<SettingsView />} />
+        <Route path="/feedback" element={<LearnerFeedbackView />} />
+        <Route path="/help" element={<LearnerFeedbackView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}

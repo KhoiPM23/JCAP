@@ -1,15 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
+import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl } from '../components/jcap';
+import { useAuth } from '../contexts/AuthContext';
 import { profileService } from '../services/profileService';
+import { roleplayResultService } from '../services/roleplayResultService';
+import { shadowingService } from '../services/shadowingService';
 import { formatDateFull } from '../utils/dateUtils';
-import type { LearnerProfile } from '../types/profile';
+import type { JLPTLevel, LearnerProfile } from '../types/profile';
+import { useExploreJourney } from './explore/exploreStore';
+import { LearnerIntelligenceRadarCard } from '../components/roleplay/LearnerIntelligenceRadarCard';
 
+/**
+ * Hồ sơ học viên (design-handoff mục 5): cột trái thẻ danh tính, cột phải mục tiêu JLPT + số liệu học, thông tin tài khoản,
+ * bảo mật, Gói và Credit, Đăng xuất. Dữ liệu thật từ profileService; số liệu học đọc từ lịch sử có sẵn.
+ */
 export const LearnerProfileView: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const journey = useExploreJourney();
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [savingLevel, setSavingLevel] = useState(false);
+  const [levelError, setLevelError] = useState<string | null>(null);
+  const [roleplayCount, setRoleplayCount] = useState<number | null>(null);
+  const [shadowingCount, setShadowingCount] = useState<number | null>(null);
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -30,207 +45,214 @@ export const LearnerProfileView: React.FC = () => {
 
   useEffect(() => {
     fetchProfile();
+    // Số liệu học: số phiên Hội thoại AI và buổi Shadowing đã lưu (chỉ đọc)
+    roleplayResultService
+      .getHistory(1, 1)
+      .then((r) => r.success && r.data && setRoleplayCount(r.data.totalCount))
+      .catch(() => {});
+    shadowingService
+      .getHistory()
+      .then((r) => r.success && r.data && setShadowingCount(r.data.length))
+      .catch(() => {});
 
     const handleProfileUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<LearnerProfile>;
-      if (customEvent.detail) {
-        setProfile(customEvent.detail);
-      }
+      if (customEvent.detail && 'jlptLevel' in customEvent.detail) setProfile(customEvent.detail);
     };
-
     window.addEventListener('jcap_profile_updated', handleProfileUpdated);
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, []);
 
+  /** Đổi mục tiêu JLPT ngay tại trang (cùng API với trang Chỉnh sửa hồ sơ) */
+  const changeLevel = async (level: string) => {
+    if (!profile || level === profile.jlptLevel) return;
+    setSavingLevel(true);
+    setLevelError(null);
+    const res = await profileService.updateProfile({
+      fullName: profile.fullName,
+      phoneNumber: profile.phoneNumber,
+      profilePictureUrl: profile.profilePictureUrl,
+      jlptLevel: level as JLPTLevel,
+    });
+    setSavingLevel(false);
+    if (res.success && res.data) setProfile(res.data);
+    else setLevelError(res.message || 'Chưa đổi được mục tiêu. Hãy thử lại.');
+  };
+
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto py-12">
-        <div className="bg-white rounded-xl border border-[#E6EDF5] p-12 text-center shadow-sm">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-[#0878EE] rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm font-medium text-[#71809A]">Đang tải thông tin hồ sơ học viên...</p>
-        </div>
+      <div className="mx-auto max-w-[1040px] py-16 text-center text-sm text-sumi-muted" role="status">
+        <Icon name="progress_activity" spin size={28} className="mx-auto mb-3 text-ai" />
+        Đang tải hồ sơ…
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="max-w-4xl mx-auto py-12">
-        <div className="bg-white rounded-xl border border-red-200 p-8 text-center shadow-sm">
-          <div className="w-12 h-12 bg-red-50 text-[#D92D20] rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">
-            !
-          </div>
-          <h3 className="text-lg font-bold text-[#071A44] mb-2">Không thể tải thông tin hồ sơ</h3>
-          <p className="text-sm text-[#71809A] mb-6 max-w-md mx-auto">{error || 'Dữ liệu hồ sơ không tìm thấy.'}</p>
-          <Button variant="primary" onClick={fetchProfile}>
-            Thử lại
-          </Button>
-        </div>
+      <div className="mx-auto max-w-[1040px] py-12">
+        <EmptyState icon="error" title="Không thể tải thông tin hồ sơ" action={<Button variant="primary" onClick={fetchProfile}>Thử lại</Button>}>
+          {error || 'Dữ liệu hồ sơ không tìm thấy.'}
+        </EmptyState>
       </div>
     );
   }
 
-  const formattedJoinDate = formatDateFull(profile.createdAt);
-
   const avatarInitial = profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U';
+  const stamps = journey.data?.chapters.reduce((sum, c) => sum + c.stampCount, 0);
+  const credit = typeof profile.creditBalance === 'number' ? profile.creditBalance : 0;
+
+  const rows: Array<{ icon: string; label: string; value: React.ReactNode; extra?: React.ReactNode }> = [
+    { icon: 'mail', label: 'Email', value: profile.email, extra: <Badge tone="success" icon="verified">Đã xác minh</Badge> },
+    {
+      icon: 'call',
+      label: 'Số điện thoại',
+      value: profile.phoneNumber || <span className="text-sumi-muted">Chưa có</span>,
+      extra: !profile.phoneNumber ? (
+        <Button variant="ghost" size="sm" icon="add" onClick={() => navigate('/profile/edit')}>
+          Thêm số điện thoại
+        </Button>
+      ) : undefined,
+    },
+    { icon: 'calendar_month', label: 'Ngày tham gia', value: formatDateFull(profile.createdAt) },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Page Heading & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#071A44] tracking-tight">Hồ sơ học viên</h1>
-          <p className="text-sm text-[#71809A] mt-1">
-            Quản lý thông tin tài khoản và trình độ tiếng Nhật của bạn
-          </p>
-        </div>
-      </div>
+    <div className="bg-transparent">
+      <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
+        <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hồ sơ</h1>
 
-      {/* Main Profile Card */}
-      <div className="bg-white rounded-xl border border-[#E6EDF5] shadow-sm overflow-hidden">
-        {/* Banner Decorative Header */}
-        <div className="h-32 sm:h-36 bg-gradient-to-r from-[#0878EE] via-blue-500 to-sky-400"></div>
-
-        <div className="px-6 sm:px-8 pb-8">
-          {/* Avatar & Identity Header - Avatar overlaps banner, text sits comfortably on white card */}
-          <div className="relative flex flex-col md:flex-row md:items-end justify-between -mt-14 sm:-mt-16 mb-8 gap-6">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left">
-              {/* Avatar circle */}
-              <div className="relative flex-shrink-0">
-                {profile.profilePictureUrl ? (
-                  <img
-                    src={profile.profilePictureUrl}
-                    alt={profile.fullName}
-                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-md bg-white ring-1 ring-[#E6EDF5]"
-                  />
-                ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-blue-100 text-[#0878EE] font-bold text-3xl sm:text-4xl flex items-center justify-center border-4 border-white shadow-md ring-1 ring-[#E6EDF5]">
-                    {avatarInitial}
-                  </div>
-                )}
-                <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" title="Tài khoản đang hoạt động"></span>
-              </div>
-
-              {/* Name, Badge & Email Group - Placed clearly on white background below banner */}
-              <div className="flex flex-col justify-end pt-3 sm:pt-5 pb-1 gap-1.5">
-                <div className="flex items-center gap-3.5 justify-center sm:justify-start flex-wrap">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[#071A44] tracking-tight leading-tight">
-                    {profile.fullName}
-                  </h2>
-                  <span className="inline-flex items-center bg-blue-50 text-[#0878EE] text-xs font-bold px-3 py-1 rounded-full border border-blue-200/80 shadow-xs tracking-wide">
-                    JLPT {profile.jlptLevel}
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-[#71809A]">{profile.email}</p>
-                <div className="flex items-center gap-2 justify-center sm:justify-start mt-0.5">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700">
-                    {profile.role === 'Learner' ? 'Học viên (Learner)' : profile.role}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Actions */}
-            <div className="flex flex-col sm:flex-row justify-center md:justify-end gap-3 pb-1">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/profile/change-password')}
-                className="shadow-sm"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v4H6a2 2 0 00-2 2v6a2 2 0 002 2zm3-10V7a3 3 0 016 0v4H9z" />
-                </svg>
-                Đổi mật khẩu
-              </Button>
-              <Button
-                variant="primary"
+        <div className="flex flex-wrap items-start gap-6">
+          {/* Thẻ danh tính */}
+          <section
+            aria-label="Thông tin chính"
+            className="flex max-w-[320px] flex-[1_1_280px] flex-col items-center gap-3.5 rounded-jc-xl border border-line bg-paper-50 px-6 py-7 text-center"
+          >
+            <div className="relative">
+              {profile.profilePictureUrl ? (
+                <img src={profile.profilePictureUrl} alt={profile.fullName} className="h-[104px] w-[104px] rounded-full object-cover" />
+              ) : (
+                <span className="inline-flex h-[104px] w-[104px] items-center justify-center rounded-full bg-sora text-[40px] font-bold text-on-sora">
+                  {avatarInitial}
+                </span>
+              )}
+              <button
+                type="button"
+                aria-label="Đổi ảnh đại diện"
                 onClick={() => navigate('/profile/edit')}
-                className="shadow-sm"
+                className="absolute -bottom-0.5 -right-0.5 inline-flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-paper-50 bg-ai text-on-ai hover:bg-ai-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-                Chỉnh sửa hồ sơ
+                <Icon name="photo_camera" size={20} />
+              </button>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <h2 className="m-0 text-[22px] font-bold leading-[30px]">{profile.fullName}</h2>
+              <span className="text-sm text-sumi-muted">{profile.email}</span>
+              <span className="flex gap-1.5">
+                <JlptBadge level={profile.jlptLevel} />
+                <Badge tone="neutral">{profile.role === 'Learner' ? 'Học viên' : profile.role}</Badge>
+              </span>
+            </div>
+            <p className="m-0 text-[13px] leading-5 text-sumi-muted">{`Tham gia từ ${formatDateFull(profile.createdAt)}`}</p>
+            <Button variant="secondary" block icon="edit" onClick={() => navigate('/profile/edit')}>
+              Chỉnh sửa hồ sơ
+            </Button>
+          </section>
+
+          <div className="flex min-w-0 flex-[999_1_460px] flex-col gap-4">
+            {/* Mục tiêu JLPT + số liệu */}
+            <section aria-labelledby="goal-h" className="flex flex-col gap-3.5 rounded-jc-lg border border-line bg-paper-50 px-6 py-[22px]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-col gap-0.5">
+                  <h2 id="goal-h" className="m-0 text-[17px] font-semibold leading-6">
+                    Mục tiêu JLPT
+                  </h2>
+                  <p className="m-0 text-sm leading-[22px] text-sumi-muted">Kịch bản, bài Shadowing và từ vựng gợi ý sẽ ưu tiên cấp này.</p>
+                </div>
+                <SegmentedControl ariaLabel="Cấp JLPT mục tiêu" options={['N5', 'N4', 'N3']} value={profile.jlptLevel} onChange={changeLevel} />
+              </div>
+              {(savingLevel || levelError) && (
+                <p role="status" className={`m-0 text-[13px] ${levelError ? 'text-danger' : 'text-sumi-muted'}`}>
+                  {levelError || 'Đang lưu mục tiêu…'}
+                </p>
+              )}
+              <div className="grid grid-cols-3 gap-3">
+                <Stat value={roleplayCount} label="phiên Hội thoại AI" />
+                <Stat value={shadowingCount} label="buổi luyện Shadowing" />
+                <Stat value={stamps ?? null} label="con dấu Khám phá" />
+              </div>
+              <div>
+                <Button variant="ghost" size="sm" iconRight="arrow_forward" onClick={() => navigate('/stamps')}>
+                  Xem sổ con dấu
+                </Button>
+              </div>
+            </section>
+
+            {/* Thông tin tài khoản */}
+            <section aria-labelledby="info-h" className="flex flex-col rounded-jc-lg border border-line bg-paper-50 px-6 py-2">
+              <h2 id="info-h" className="mb-1.5 mt-3.5 text-[17px] font-semibold leading-6">
+                Thông tin tài khoản
+              </h2>
+              {rows.map((r) => (
+                <div key={r.label} className="flex min-h-14 flex-wrap items-center gap-3 border-t border-line py-2">
+                  <Icon name={r.icon} size={22} style={{ color: 'var(--sumi-muted)' }} />
+                  <span className="flex-[0_0_140px] text-sm text-sumi-muted">{r.label}</span>
+                  <span className="min-w-0 flex-[1_1_200px] text-[15px] font-medium leading-[22px]">{r.value}</span>
+                  {r.extra}
+                </div>
+              ))}
+            </section>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Bảo mật */}
+              <section aria-labelledby="sec-h" className="flex flex-col gap-3 rounded-jc-lg border border-line bg-paper-50 px-6 py-[22px]">
+                <h2 id="sec-h" className="m-0 text-[17px] font-semibold leading-6">
+                  Bảo mật
+                </h2>
+                <div className="flex items-center justify-between gap-2.5">
+                  <span className="flex flex-col">
+                    <span className="text-[15px] font-medium leading-[22px]">Mật khẩu</span>
+                    <span className="text-[13px] leading-5 text-sumi-muted">Đổi định kỳ để giữ tài khoản an toàn</span>
+                  </span>
+                  <Button variant="secondary" size="sm" icon="lock" onClick={() => navigate('/profile/change-password')}>
+                    Đổi mật khẩu
+                  </Button>
+                </div>
+              </section>
+
+              {/* Gói và Credit */}
+              <section aria-labelledby="cr-h" className="flex flex-col gap-3 rounded-jc-lg bg-credit-soft px-6 py-[22px]">
+                <h2 id="cr-h" className="m-0 text-[17px] font-semibold leading-6">
+                  Gói và Credit
+                </h2>
+                <CreditBadge amount={credit} size="lg" />
+                <p className="m-0 text-sm leading-[22px]">Credit dùng cho Hội thoại AI và mở thêm thẻ học khi hết hạn mức của gói.</p>
+                <button type="button" onClick={() => navigate('/subscription')} className="self-start text-sm font-semibold text-ai hover:underline">
+                  Xem Gói &amp; Credit
+                </button>
+              </section>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button variant="danger" icon="logout" onClick={() => logout()}>
+                Đăng xuất
               </Button>
             </div>
           </div>
-
-          {/* Detailed Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Email Field */}
-            <div className="flex items-start gap-3.5 p-5 rounded-xl bg-[#F4F9FE] border border-[#E6EDF5]">
-              <div className="p-2.5 bg-white text-[#0878EE] rounded-lg border border-[#E6EDF5] shadow-xs">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold text-[#71809A] uppercase tracking-wider">
-                  Địa chỉ Email
-                </span>
-                <span className="text-base font-semibold text-[#071A44]">{profile.email}</span>
-              </div>
-            </div>
-
-            {/* Phone Number Field */}
-            <div className="flex items-start gap-3.5 p-5 rounded-xl bg-[#F4F9FE] border border-[#E6EDF5]">
-              <div className="p-2.5 bg-white text-[#0878EE] rounded-lg border border-[#E6EDF5] shadow-xs">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold text-[#71809A] uppercase tracking-wider">
-                  Số điện thoại
-                </span>
-                <span className="text-base font-semibold text-[#071A44]">
-                  {profile.phoneNumber || 'Chưa cập nhật số điện thoại'}
-                </span>
-              </div>
-            </div>
-
-            {/* JLPT Level Target */}
-            <div className="flex items-start gap-3.5 p-5 rounded-xl bg-[#F4F9FE] border border-[#E6EDF5]">
-              <div className="p-2.5 bg-white text-[#0878EE] rounded-lg border border-[#E6EDF5] shadow-xs flex-shrink-0">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <span className="text-xs font-semibold text-[#71809A] uppercase tracking-wider">
-                  Trình độ JLPT mục tiêu
-                </span>
-                <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                  <span className="text-base font-bold text-[#0878EE] whitespace-nowrap">
-                    Cấp độ {profile.jlptLevel}
-                  </span>
-                  <span className="inline-flex items-center text-xs font-medium text-[#71809A] bg-white px-2 py-0.5 rounded border border-[#E6EDF5]">
-                    Chuẩn N5 – N3
-                  </span>
-                </div>
-                <p className="text-xs text-[#71809A] mt-0.5">
-                  Áp dụng cho bài học, từ vựng và kịch bản hội thoại AI
-                </p>
-              </div>
-            </div>
-
-            {/* Join Date */}
-            <div className="flex items-start gap-3.5 p-5 rounded-xl bg-[#F4F9FE] border border-[#E6EDF5]">
-              <div className="p-2.5 bg-white text-[#0878EE] rounded-lg border border-[#E6EDF5] shadow-xs">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-semibold text-[#71809A] uppercase tracking-wider">
-                  Ngày tham gia
-                </span>
-                <span className="text-base font-semibold text-[#071A44]">{formattedJoinDate}</span>
-              </div>
-            </div>
-          </div>
         </div>
+
+        {/* Báo cáo Năng lực Hội thoại AI ngầm (TikTok-style Linguistic Radar) */}
+        <section aria-label="Năng lực Kaiwa ngầm" className="w-full">
+          <LearnerIntelligenceRadarCard />
+        </section>
       </div>
     </div>
   );
 };
+
+const Stat: React.FC<{ value: number | null; label: string }> = ({ value, label }) => (
+  <div className="flex flex-col gap-0.5 rounded-jc-md bg-paper-100 px-3.5 py-3">
+    <span className="text-[22px] font-bold leading-[30px] tabular-nums">{value === null ? '—' : value.toLocaleString('vi-VN')}</span>
+    <span className="text-[13px] leading-[18px] text-sumi-muted">{label}</span>
+  </div>
+);

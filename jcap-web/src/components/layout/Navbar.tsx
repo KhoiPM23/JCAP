@@ -19,14 +19,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Trang chủ', path: '/', icon: HomeIcon, matchPrefix: false },
     { name: 'Học tập', path: '/scenarios', icon: BookIcon, matchPrefix: true },
     { name: 'Shadowing', path: '/shadowing', icon: MicIcon, matchPrefix: true },
+    { name: 'Flashcard', path: '/flashcards', icon: CardsIcon, matchPrefix: true },
     { name: 'Lịch học', path: '/schedule', icon: CalendarIcon, matchPrefix: true },
     { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon, matchPrefix: true },
+    { name: 'Gói & Hạn mức', path: '/subscription', icon: SubscriptionIcon, matchPrefix: true },
     { name: 'Hồ sơ', path: '/profile', icon: UserIcon, matchPrefix: true },
     { name: 'Cài đặt', path: '/settings', icon: SettingsIcon, matchPrefix: true },
+    { name: 'Khám phá', path: '/explore', icon: CompassIcon, matchPrefix: true },
   ];
 
   const bottomItems = [
-    { name: 'Trợ giúp', path: '/help', icon: HelpIcon, matchPrefix: true },
+    { name: 'Góp ý ẩn danh', path: '/feedback', icon: HelpIcon, matchPrefix: true },
   ];
 
   // If user is Admin, render the Admin Sidebar matching mockup image media_1790526792509.png
@@ -75,6 +78,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 icon={AudioWavesIcon}
                 forceActive={isAudioTab}
               />
+              <NavItem
+                name="Chủ đề học tập"
+                path="/admin/topics"
+                icon={BookIcon}
+                forceActive={currentPath.startsWith('/admin/topics')}
+              />
+              <NavItem name="Kho Từ vựng" path="/admin/vocabularies" icon={BookIcon} forceActive={currentPath.startsWith('/admin/vocabularies')} />
+              <NavItem name="Kho Ngữ pháp" path="/admin/grammars" icon={BookIcon} forceActive={currentPath.startsWith('/admin/grammars')} />
+              <NavItem
+                name="Bản đồ Khám phá"
+                path="/admin/explore"
+                icon={CompassIcon}
+                forceActive={currentPath.startsWith('/admin/explore')}
+              />
             </div>
           </div>
 
@@ -91,7 +108,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/admin/users')}
               />
               <NavItem
-                name="Quản lý Gói Credit"
+                name="Hòm thư Góp ý"
+                path="/admin/feedback"
+                icon={ChatBubbleIcon}
+                forceActive={currentPath.startsWith('/admin/feedback')}
+              />
+              <NavItem
+                name="Quản lý Gói và Credit"
                 path="/admin/credits/packages"
                 icon={CoinCardIcon}
                 forceActive={currentPath.startsWith('/admin/credits')}
@@ -103,10 +126,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/profile')}
               />
               <NavItem
-                name="Cấu hình AI & Prompt"
-                path="/admin/ai-config"
-                icon={BrainGearIcon}
-                forceActive={currentPath.startsWith('/admin/ai-config')}
+                name="Cài đặt Thông báo"
+                path="/admin/notifications"
+                icon={MegaphoneIcon}
+                forceActive={currentPath.startsWith('/admin/notifications')}
               />
               <NavItem
                 name="Cài đặt hệ thống"
@@ -141,7 +164,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
           <NavItem
             key={item.path}
             {...item}
-            forceActive={item.matchPrefix ? currentPath.startsWith(item.path.split('?')[0]) : currentPath === item.path}
+            forceActive={
+              (item.path === '/subscription' && (currentPath.startsWith('/subscription') || currentPath.startsWith('/credits')))
+                ? true
+                : (item.matchPrefix ? currentPath.startsWith(item.path.split('?')[0]) : currentPath === item.path)
+            }
           />
         ))}
       </nav>
@@ -151,7 +178,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
           <NavItem
             key={item.path}
             {...item}
-            forceActive={item.matchPrefix ? currentPath.startsWith(item.path) : currentPath === item.path}
+            forceActive={
+              item.path === '/feedback'
+                ? currentPath.startsWith('/feedback') || currentPath.startsWith('/help')
+                : item.matchPrefix
+                ? currentPath.startsWith(item.path)
+                : currentPath === item.path
+            }
           />
         ))}
         <button
@@ -259,6 +292,15 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function CompassIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle cx="12" cy="12" r="9" strokeWidth="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.5 8.5l-2 5-5 2 2-5 5-2z" />
+    </svg>
+  );
+}
+
 function HelpIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -307,14 +349,6 @@ function UsersTalkIcon({ className }: { className?: string }) {
   );
 }
 
-function ListLinesIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
-    </svg>
-  );
-}
-
 function AudioWavesIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -331,10 +365,10 @@ function UsersGroupIcon({ className }: { className?: string }) {
   );
 }
 
-function BrainGearIcon({ className }: { className?: string }) {
+function MegaphoneIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
     </svg>
   );
 }
@@ -343,6 +377,22 @@ function CoinCardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function SubscriptionIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  );
+}
+
+function CardsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     </svg>
   );
 }

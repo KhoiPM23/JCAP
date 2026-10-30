@@ -11,6 +11,24 @@ namespace JCAP.Models
         public int CreditBalance { get; set; } = 0;
         public string JLPTLevel { get; set; } = "N5"; // Domain restricted to N5, N4, N3
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Thời điểm hết hạn gói tháng của người dùng (UTC).
+        /// Null = chưa mua gói, có giá trị quá khứ = gói đã hết hạn.
+        /// Được set bởi webhook/verify khi thanh toán Subscription thành công.
+        /// </summary>
+        public DateTime? SubscriptionExpiresAt { get; set; }
+
+        /// <summary>
+        /// Mã gói tháng đang sử dụng (ví dụ "plan-pro", "plan-promax").
+        /// Dùng để tra hạn mức quota trong <see cref="JCAP.Services.Subscriptions.SubscriptionPlanCatalog"/>.
+        /// Null = chưa từng mua gói tháng.
+        /// </summary>
+        public string? SubscriptionPlanId { get; set; }
+
+        /// <summary>
+        /// Thời điểm kích hoạt gói tháng hiện tại (UTC). Dùng để hiển thị và đối soát.
+        /// </summary>
+        public DateTime? SubscriptionStartedAt { get; set; }
     }
 }
-

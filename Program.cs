@@ -1,5 +1,6 @@
 using JCAP.Data;
 using JCAP.DTOs.Credit;
+using JCAP.DTOs.Flashcard;
 using JCAP.Models;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
@@ -8,7 +9,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +20,26 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 
 // 1. Cấu hình DbContext kết nối SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions =>
+        {
+            sqlServerOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            sqlServerOptions.CommandTimeout(60);
+        }));
+
+// Explicit local sample import; exits before web startup and all unrelated automatic seeders.
+if (args.Contains("--import-learning-sample"))
+{
+    using var loggerFactory = LoggerFactory.Create(logging =>
+        logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning));
+    await using var importDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+        .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseLoggerFactory(loggerFactory).Options);
+    Environment.ExitCode = await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(
+        importDb, args.Contains("--dry-run"));
+    return;
+}
 
 // 2. Cấu hình ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -74,6 +96,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<PayOsSettings>(builder.Configuration.GetSection(PayOsSettings.SectionName));
+builder.Services.Configure<FlashcardQuotaOptions>(builder.Configuration.GetSection(FlashcardQuotaOptions.SectionName));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICreditService, CreditService>();
@@ -83,15 +106,54 @@ builder.Services.AddScoped<IRoleplaySessionSnapshotProvider, RoleplaySessionSnap
 builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
+builder.Services.AddScoped<AdminLearningService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IExploreService, ExploreService>();
+builder.Services.AddScoped<IAdminExploreService, AdminExploreService>();
+builder.Services.AddScoped<IAdminExploreSpotService, AdminExploreSpotService>();
+builder.Services.AddSingleton<ISrsCalculationService, SrsCalculationService>();
+builder.Services.AddScoped<ILearningTopicLookup, DefaultLearningTopicLookup>();
+builder.Services.AddScoped<ILearnerBookmarkService, LearnerBookmarkService>();
+builder.Services.AddScoped<ILearnerFlashcardService, LearnerFlashcardService>();
 builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
-builder.Services.AddScoped<IAiShadowingAssessmentService, GeminiShadowingAssessmentService>();
+builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
+builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
+// Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
+// không dùng bảng tra tự viết để đoán cách đọc.
+builder.Services.AddHttpClient<VoiceVoxKanaReader>();
+builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
+builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
+builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
+builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
+builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
+builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
+builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
+builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
+builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+// Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("shadowing-evaluate", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -154,6 +216,7 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 
@@ -161,4 +224,3 @@ app.MapControllers();
 await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
 
 app.Run();
-

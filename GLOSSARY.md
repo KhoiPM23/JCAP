@@ -28,6 +28,10 @@ _Avoid_: Chat thread, bot conversation
 An immutable historical record capturing a completed learner shadowing practice session with weighted scores, performance rank, and audio duration.
 _Avoid_: Practice log, attempt, drill result
 
+**ShadowingSentenceEvaluation**:
+A backend-produced, stored scoring result for one sentence spoken by a learner; the only source of scores when a ShadowingPracticeSession is completed.
+_Avoid_: Sentence attempt, client score, sentence log
+
 **AiPronunciationDiagnostic**:
 A deep 5-dimension AI speech evaluation report assessing Tokyo Intonation, Vowel Clarity, Rhythm Tempo, Pitch Accent, and Long Vowel Precision.
 _Avoid_: AI check, audio grade, phonetic score
