@@ -72,6 +72,11 @@ namespace JCAP.Data
         public DbSet<FlashcardReviewLog> FlashcardReviewLogs { get; set; } = null!;
         public DbSet<LearnerDailyFlashcardQuota> LearnerDailyFlashcardQuotas { get; set; } = null!;
 
+        // Anonymous Feedback & Support Box (UC-09 & UC-59) DbSets
+        public DbSet<FeedbackTicket> FeedbackTickets { get; set; } = null!;
+        public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
+        public DbSet<FeedbackAttachment> FeedbackAttachments { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -81,6 +86,9 @@ namespace JCAP.Data
 
             // Flashcard & Bookmark (FE-05)
             FlashcardModelConfiguration.Configure(modelBuilder);
+
+            // Anonymous Feedback & Support Box (UC-09 & UC-59)
+            FeedbackModelConfiguration.Configure(modelBuilder);
 
             // ApplicationUser configuration
             modelBuilder.Entity<ApplicationUser>(entity =>
@@ -118,6 +126,20 @@ namespace JCAP.Data
 
                 entity.Property(e => e.PayOsOrderCode)
                     .HasMaxLength(100);
+
+                entity.Property(e => e.AmountVnd)
+                    .HasPrecision(18, 2);
+
+                entity.Property(e => e.SubscriptionPlanId)
+                    .HasMaxLength(50);
+
+                // Truy vấn quota lọc theo UserId + Type + CoveredBySubscription + CreatedAt
+                entity.HasIndex(e => new { e.UserId, e.Type, e.CoveredBySubscription, e.CreatedAt })
+                    .HasDatabaseName("IX_CreditTransactions_QuotaLookup");
+
+                // Đối soát webhook/verify-order tra theo mã đơn hàng
+                entity.HasIndex(e => e.PayOsOrderCode)
+                    .HasDatabaseName("IX_CreditTransactions_PayOsOrderCode");
 
                 // ApplicationUser 1 - N CreditTransaction
                 entity.HasOne(e => e.User)

@@ -57,7 +57,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode ?? $"SCN_{s.Id}",
+            ScenarioCode = $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -94,7 +94,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = scenario.ScenarioCode,
+            ScenarioCode = $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
@@ -237,10 +237,26 @@ public class ScenarioService : IScenarioService
     public async Task<ApiResponse<List<ScenarioListDto>>> GetAllScenariosForAdminAsync(CancellationToken cancellationToken = default)
     {
         var scenarios = await _dbContext.Scenarios
-            .AsNoTracking()
             .Include(s => s.LevelConfigurations)
             .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
+
+        // Tự động chuẩn hóa ScenarioCode trong DB về định dạng SCN_{id}
+        bool hasNormalizedCodes = false;
+        foreach (var s in scenarios)
+        {
+            var expectedCode = $"SCN_{s.Id}";
+            if (s.ScenarioCode != expectedCode)
+            {
+                s.ScenarioCode = expectedCode;
+                hasNormalizedCodes = true;
+            }
+        }
+
+        if (hasNormalizedCodes)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         var result = scenarios.Select(s => new ScenarioListDto
         {
@@ -249,7 +265,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = s.ScenarioCode ?? $"SCN_{s.Id}",
+            ScenarioCode = $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -286,7 +302,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = scenario.ScenarioCode,
+            ScenarioCode = $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)

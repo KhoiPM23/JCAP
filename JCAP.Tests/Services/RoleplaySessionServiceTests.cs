@@ -519,5 +519,46 @@ public class RoleplaySessionServiceTests
         Assert.True(result.Data.DueReviewItems[0].IsDueForReview);
         Assert.Equal("E01_INTRANSITIVE_WO", result.Data.DueReviewItems[0].SkillCode);
     }
+
+    [Fact]
+    public async Task StartSessionAsync_WhenSubscriptionQuotaExceededAndNoExtraCredits_ReturnsFailure()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var (scenario, levelConfig, _) = SeedBasicScenario(dbContext); // CreditCost = 5
+
+        var user = new ApplicationUser
+        {
+            Id = "user-sub-quota-full",
+            CreditBalance = 0,
+            SubscriptionPlanId = "plan-pro", // FiveHourQuota = 50
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(15)
+        };
+
+        // Đã dùng 48/50 credits trong 5 giờ qua -> Cần thêm 5 credits (48 + 5 = 53 > 50) -> Vượt trần!
+        dbContext.CreditTransactions.Add(new CreditTransaction
+        {
+            UserId = user.Id,
+            Amount = -48,
+            Type = "Deduct",
+            Status = "Paid",
+            CoveredBySubscription = true,
+            Description = "[Gói tháng] Luyện tập trước đó",
+            CreatedAt = DateTime.UtcNow.AddHours(-1)
+        });
+        await dbContext.SaveChangesAsync();
+
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Act
+        var result = await service.StartSessionAsync(user.Id, scenario.Id, levelConfig.JLPTLevel, new StartRoleplaySessionRequestDto());
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("hết hạn ngạch 5 giờ", result.Message);
+    }
 }
 

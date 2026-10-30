@@ -129,6 +129,7 @@ builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
 builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
 builder.Services.AddRateLimiter(options =>
