@@ -2576,7 +2576,7 @@ export const ConversationResultDetailView: React.FC = () => {
             </Link>
           )}
           <Link
-            to="/flashcards"
+            to={`/flashcards?level=${result.jlptLevel || "All"}`}
             className="rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 px-4 py-2.5 text-xs font-bold text-amber-900 shadow-2xs transition active:scale-95"
           >
             🎴 Ôn tập từ vựng & Flashcards

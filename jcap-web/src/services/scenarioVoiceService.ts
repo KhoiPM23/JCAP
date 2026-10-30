@@ -552,7 +552,7 @@ class ScenarioVoiceService {
     // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn) với Timeout 4.5s
     try {
       const controller1 = new AbortController();
-      const timeout1 = setTimeout(() => controller1.abort(), 4500);
+      const timeout1 = setTimeout(() => controller1.abort(), 7500);
       const res = await fetch('/api/stt/transcribe?language=ja', {
         method: 'POST',
         body: formData,
@@ -578,7 +578,7 @@ class ScenarioVoiceService {
     // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe với Timeout 4.5s
     try {
       const controller2 = new AbortController();
-      const timeout2 = setTimeout(() => controller2.abort(), 4500);
+      const timeout2 = setTimeout(() => controller2.abort(), 7500);
       const directRes = await fetch('/whisper/transcribe?language=ja', {
         method: 'POST',
         body: formData,

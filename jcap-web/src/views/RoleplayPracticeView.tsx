@@ -1545,12 +1545,18 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
         setIsProcessingStt(true);
-        // Whisper race với 2500ms timeout để không ngắt nhịp phản xạ
-        const whisperPromise = scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
-        const timeoutPromise = new Promise<{ text: string; confidence?: number; audioUrl?: string } | null>((resolve) =>
-          setTimeout(() => resolve(null), 2500)
-        );
-        const whisperRes = await Promise.race([whisperPromise, timeoutPromise]);
+        // Whisper STT: Nếu Web Speech đã bắt được câu (textToSend) -> race 2500ms để chốt nhanh
+        // Nếu Web Speech rỗng -> cho Whisper tối đa 6500ms để giải mã trên CPU, không huỷ oan câu nói
+        let whisperRes: { text: string; confidence?: number; audioUrl?: string } | null = null;
+        if (textToSend) {
+          const whisperPromise = scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
+          const timeoutPromise = new Promise<{ text: string; confidence?: number; audioUrl?: string } | null>((resolve) =>
+            setTimeout(() => resolve(null), 2500)
+          );
+          whisperRes = await Promise.race([whisperPromise, timeoutPromise]);
+        } else {
+          whisperRes = await scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
+        }
 
 
         if (whisperRes && whisperRes.text && whisperRes.text.trim()) {
@@ -3075,7 +3081,15 @@ export const RoleplayPracticeView: React.FC = () => {
                         <svg className={`w-3.5 h-3.5 shrink-0 ${isRecordingMic ? 'text-white' : 'text-[var(--ai)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
-                        <span className="whitespace-nowrap">{isRecordingMic ? `${recordingDurationSec.toFixed(1)}s` : 'Nói'}</span>
+                        <span className="whitespace-nowrap flex items-center gap-1.5">
+                          <span>{isRecordingMic ? `${recordingDurationSec.toFixed(1)}s` : 'Nói'}</span>
+                          {!isRecordingMic && (
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${isWhisperEngineOnline ? 'bg-emerald-500 shadow-xs' : 'bg-amber-400'}`}
+                              title={isWhisperEngineOnline ? 'Whisper STT (Local Engine) đang hoạt động' : 'Web Speech API (Trình duyệt)'}
+                            />
+                          )}
+                        </span>
                       </span>
                     )}
                   </button>

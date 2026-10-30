@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType } from '../../types/flashcard';
 
@@ -17,8 +17,10 @@ export const FlashcardSetsView: React.FC = () => {
 
   // Filters
   const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>('sets');
+  const [searchParams] = useSearchParams();
+  const initialJlpt = searchParams.get('level') || 'All';
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
-  const [jlptFilter, setJlptFilter] = useState<string>('All');
+  const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Tải dữ liệu thật từ API

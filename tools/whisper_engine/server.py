@@ -52,8 +52,8 @@ def health():
 
 @app.post("/save-audio")
 async def save_audio(file: UploadFile = File(...)):
-    suffix = os.path.splitext(file.filename or "")[1] or ".webm"
-    file_id = f"stt_{uuid.uuid4().hex[:12]}{suffix}"
+    suffix = os.path.splitext(file.filename or "")[1] or ".wav"
+    file_id = f"user_{uuid.uuid4().hex[:12]}{suffix}"
     dest_path = os.path.join(AUDIO_DIR, file_id)
     content = await file.read()
     with open(dest_path, "wb") as f:
@@ -84,12 +84,16 @@ async def transcribe(
         persisted_url = None
 
     try:
+        # Grounding initial_prompt prevents YouTube outro hallucinations on short utterances
+        # min_silence_duration_ms=250 ensures short conversational words (hai, sumimasen) aren't dropped
         segments, info = model.transcribe(
             tmp_path,
             language=language if language != "auto" else None,
             beam_size=5,
+            temperature=0.0,
+            initial_prompt="こんにちは。日常会話の日本語です。",
             vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=400)
+            vad_parameters=dict(min_silence_duration_ms=250)
         )
 
         segment_list = []
