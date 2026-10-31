@@ -798,6 +798,9 @@ public sealed record RoleplaySocialRegister
             ("真っ直ぐ", "<ruby>真<rt>ま</rt></ruby>っ<ruby>直<rt>す</rt></ruby>ぐ"),
             
             // Cụm 2 chữ Hán thông dụng
+            ("来ました", "<ruby>来<rt>き</rt></ruby>ました"),
+            ("来ます", "<ruby>来<rt>き</rt></ruby>ます"),
+            ("行きます", "<ruby>行<rt>い</rt></ruby>きます"),
             ("大丈夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>"),
             ("お会計", "お<ruby>会計<rt>かいけい</rt></ruby>"),
             ("お勘定", "お<ruby>勘定<rt>かんじょう</rt></ruby>"),
