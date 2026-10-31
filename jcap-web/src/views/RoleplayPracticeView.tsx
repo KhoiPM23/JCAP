@@ -119,7 +119,7 @@ export const RoleplayPracticeView: React.FC = () => {
   }, [isRecordingMic]);
 
 
-  // Chế độ Đàm thoại Rảnh tay 2 chiều liên tục (Hands-Free Call Mode: tự động nghe sau khi AI nói, tự động gửi khi dứt câu)
+  // Chế độ Đàm thoại Rảnh tay 2 chiều liên tục (Mặc định: BẬT - tự động nghe sau khi AI nói, có guard chống gửi lặp)
   const [isHandsFreeMode, setIsHandsFreeMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     try {
@@ -1706,8 +1706,7 @@ export const RoleplayPracticeView: React.FC = () => {
     }
 
 
-    let textToSend = latestTranscriptRef.current || inputText.trim();
-
+    let textToSend = (latestTranscriptRef.current || '').trim();
 
     try {
       const audioResult = await scenarioVoiceService.stopAudioRecording();
@@ -1718,10 +1717,9 @@ export const RoleplayPracticeView: React.FC = () => {
         const recordedUrl = URL.createObjectURL(audioResult.blob);
         lastRecordedAudioUrlRef.current = recordedUrl;
 
-
         setIsProcessingStt(true);
         // Whisper STT: Nếu Web Speech đã bắt được câu (textToSend) -> race 2500ms để chốt nhanh
-        // Nếu Web Speech rỗng -> cho Whisper tối đa 6500ms để giải mã trên CPU, không huỷ oan câu nói
+        // Nếu Web Speech rỗng -> cho Whisper tối đa 5500ms để giải mã
         let whisperRes: { text: string; confidence?: number; audioUrl?: string } | null = null;
         if (textToSend) {
           const whisperPromise = scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
@@ -1733,9 +1731,11 @@ export const RoleplayPracticeView: React.FC = () => {
           whisperRes = await scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
         }
 
-
         if (whisperRes && whisperRes.text && whisperRes.text.trim()) {
-          textToSend = whisperRes.text.trim();
+          const rawWhisper = whisperRes.text.trim();
+          if (!isWhisperHallucination(rawWhisper)) {
+            textToSend = rawWhisper;
+          }
           if (typeof whisperRes.confidence === 'number' && whisperRes.confidence > 0) {
             lastSpeechConfidenceRef.current = whisperRes.confidence;
           }
@@ -1756,6 +1756,21 @@ export const RoleplayPracticeView: React.FC = () => {
       setIsProcessingStt(false);
     }
 
+    // Chặn gửi lặp: nếu câu nói chuẩn bị gửi trùng lặp hoàn toàn với câu học viên đã gửi trước đó
+    const lastUserMsg = session?.messages?.filter((m) => m.sender === 'User').slice(-1)[0];
+    if (lastUserMsg && textToSend && textToSend === lastUserMsg.japaneseText.trim()) {
+      console.warn('[Scenario STT] Chặn gửi lặp câu cũ trong đàm thoại rảnh tay:', textToSend);
+      latestTranscriptRef.current = '';
+      setInputText('');
+      if (isHandsFreeModeRef.current && !sessionConcludedRef.current && !isSendingRef.current) {
+        setTimeout(() => {
+          if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current) {
+            startSpeechRecognition();
+          }
+        }, 500);
+      }
+      return;
+    }
 
     if (textToSend && textToSend.trim().length > 0) {
       if (isWhisperHallucination(textToSend)) {
