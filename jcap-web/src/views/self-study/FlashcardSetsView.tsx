@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType } from '../../types/flashcard';
+import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
 export const FlashcardSetsView: React.FC = () => {
   const navigate = useNavigate();
@@ -15,13 +15,35 @@ export const FlashcardSetsView: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Phát âm từ vựng / câu mẫu
+  const playJapaneseSpeech = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+  };
+
+  // Toggle/Bỏ bookmark trực tiếp từ tab Bookmark
+  const handleRemoveBookmark = async (item: BookmarkItem) => {
+    const res = await flashcardService.toggleBookmark(item.itemType, item.itemId);
+    if (res.success) {
+      setBookmarks((prev) => prev.filter((b) => !(b.itemType === item.itemType && b.itemId === item.itemId)));
+    }
+  };
+
   // Filters
-  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>('sets');
   const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'bookmarks' ? 'bookmarks' : 'sets';
   const initialJlpt = searchParams.get('level') || 'All';
+  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>(initialTab);
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
   const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState<boolean>(false);
 
   // Tải dữ liệu thật từ API
   const loadData = async () => {
@@ -69,6 +91,27 @@ export const FlashcardSetsView: React.FC = () => {
       window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
     };
   }, [typeFilter, jlptFilter]);
+
+  const loadBookmarks = async () => {
+    setBookmarksLoading(true);
+    const res = await flashcardService.getBookmarks(typeFilter, jlptFilter, searchQuery);
+    if (res.success && res.data && Array.isArray(res.data.items)) {
+      setBookmarks(res.data.items);
+    } else {
+      setBookmarks([]);
+    }
+    setBookmarksLoading(false);
+  };
+
+  useEffect(() => {
+    loadBookmarks();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'bookmarks') {
+      loadBookmarks();
+    }
+  }, [activeTab, typeFilter, jlptFilter, searchQuery]);
 
   // Mở thêm 10 thẻ mới bằng Credits thực sự qua API
   const handleUnlockExtra = async () => {
@@ -226,20 +269,18 @@ export const FlashcardSetsView: React.FC = () => {
             <span>Bộ thẻ theo Chủ đề ({safeSets.length})</span>
           </button>
 
-          {/* Tab 2: Bookmark (Đang bảo lưu để làm bước kế tiếp) */}
-          <div className="relative group">
-            <button
-              disabled
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-slate-400 border border-slate-200 flex items-center gap-2 cursor-not-allowed opacity-75"
-              title="Tính năng Bookmark đang được phát triển ở bước tiếp theo"
-            >
-              <span>🔖</span>
-              <span>Đã lưu (Bookmark)</span>
-              <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md ml-1">
-                Sắp ra mắt
-              </span>
-            </button>
-          </div>
+          {/* Tab 2: Bookmark (Đã kích hoạt với API SQL Server) */}
+          <button
+            onClick={() => setActiveTab('bookmarks')}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'bookmarks'
+                ? 'bg-[#2563EB] text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <span>🔖</span>
+            <span>Đã lưu (Bookmark) ({bookmarks.length})</span>
+          </button>
 
           {/* Tab 3: Lịch sử ôn tập */}
           <Link
@@ -377,8 +418,159 @@ export const FlashcardSetsView: React.FC = () => {
           </div>
         </div>
 
-        {/* ==================== 5. FLASHCARD SETS GRID ==================== */}
-        {loading ? (
+        {/* ==================== 5. BOOKMARKS TAB VIEW ==================== */}
+        {activeTab === 'bookmarks' ? (
+          <div className="space-y-6">
+            {/* Header thanh điều khiển luyện tập Bookmark */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white border border-amber-200 flex items-center justify-center text-2xl shadow-xs">
+                  🔖
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black text-slate-800">
+                      Kho thẻ cá nhân đã lưu
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                      {bookmarks.length} thẻ
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Các từ vựng và cấu trúc ngữ pháp bạn đã đánh dấu từ kịch bản hội thoại và các bộ thẻ để tự rèn luyện.
+                  </p>
+                </div>
+              </div>
+
+              {bookmarks.length > 0 && (
+                <button
+                  onClick={() => navigate('/flashcards/study/0/Mixed?source=bookmark')}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>🔥</span>
+                  <span>Luyện tập ngay ({bookmarks.length} thẻ)</span>
+                  <span>➔</span>
+                </button>
+              )}
+            </div>
+
+            {/* Danh sách thẻ Bookmarks */}
+            {bookmarksLoading ? (
+              <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3">
+                <div className="w-10 h-10 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin" />
+                <p className="text-sm font-medium">Đang tải thẻ đã lưu từ cơ sở dữ liệu...</p>
+              </div>
+            ) : bookmarks.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-4">
+                <div className="text-5xl">🔖</div>
+                <h3 className="text-base font-bold text-slate-800">
+                  Bạn chưa lưu thẻ flashcard nào
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Khi thực hành đàm thoại trong kịch bản (Scenario) hoặc xem kết quả phân tích ngôn ngữ, hãy nhấn vào biểu tượng 🔖 để lưu các từ vựng & ngữ pháp trọng tâm vào đây.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => setActiveTab('sets')}
+                    className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-xl text-xs transition border border-blue-200 cursor-pointer"
+                  >
+                    Khám phá bộ thẻ theo chủ đề ➔
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {bookmarks.map((item) => (
+                  <div
+                    key={`${item.itemType}_${item.itemId}`}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-amber-300 hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                            {item.jlptLevel || 'N5'}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                              item.itemType === 'Grammar'
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}
+                          >
+                            {item.itemType === 'Grammar' ? '🧩 Ngữ pháp' : '📘 Từ vựng'}
+                          </span>
+                        </div>
+
+                        {/* SRS State Badge */}
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            item.srsState === 'Due'
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                              : item.srsState === 'Learning'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {item.srsState === 'Due'
+                            ? '🔥 Đến hạn'
+                            : item.srsState === 'Learning'
+                            ? `📖 Lặp lại (${item.intervalDays}d)`
+                            : '✨ Mới'}
+                        </span>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <h4 className="text-lg font-black text-slate-900 font-serif">
+                            {item.frontText}
+                          </h4>
+                          {item.readingOrFormation && (
+                            <span className="text-xs text-blue-600 font-medium font-mono">
+                              {item.readingOrFormation}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 mt-1 leading-relaxed">
+                          {item.meaning}
+                        </p>
+                        {item.exampleSentence && (
+                          <p className="text-[11px] text-slate-500 italic mt-2 border-l-2 border-slate-200 pl-2">
+                            {item.exampleSentence}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => playJapaneseSpeech(item.frontText)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                        title="Nghe phát âm"
+                      >
+                        <span>🔊</span>
+                        <span>Nghe</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBookmark(item)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition cursor-pointer"
+                        title="Bỏ lưu khỏi bookmark"
+                      >
+                        <span>✕</span>
+                        <span>Bỏ lưu</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ==================== 5. FLASHCARD SETS GRID ==================== */
+          loading ? (
           <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3">
             <div className="w-10 h-10 border-4 border-blue-200 border-t-[#2563EB] rounded-full animate-spin" />
             <p className="text-sm font-medium">Đang tải danh sách bộ thẻ từ máy chủ...</p>
@@ -726,7 +918,8 @@ export const FlashcardSetsView: React.FC = () => {
               </div>
             )}
           </div>
-        )}
+        )
+      )}
       </div>
     </div>
   );

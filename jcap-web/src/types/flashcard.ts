@@ -158,3 +158,29 @@ export interface ToggleBookmarkResponse {
   vocabularyId?: number | null;
   grammarId?: number | null;
 }
+
+export interface BookmarkItem {
+  bookmarkId: number;
+  itemType: FlashcardContentType;
+  itemId: number;
+  frontText: string;
+  readingOrFormation?: string | null;
+  meaning: string;
+  partOfSpeech?: string | null;
+  explanation?: string | null;
+  exampleSentence?: string | null;
+  audioUrl?: string | null;
+  jlptLevel: string;
+  isAvailable: boolean;
+  srsState: FlashcardSrsState;
+  intervalDays: number;
+  nextReviewAt?: string | null;
+  bookmarkedAt: string;
+}
+
+export interface BookmarkListResponse {
+  items: BookmarkItem[];
+  totalCount: number;
+  dueCount: number;
+  newCount: number;
+}

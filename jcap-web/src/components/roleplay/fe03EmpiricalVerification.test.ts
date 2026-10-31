@@ -79,7 +79,7 @@ describe('FE-03 Adversarial: GraduatedHintCard Scaffolding & Autonomy Scenarios'
     assert.ok(html.includes('一つ'), 'Should display keyword 一つ');
     assert.ok(html.includes('お願いします'), 'Should display keyword お願いします');
     assert.ok(html.includes('(-10đ)'), 'Should denote -10đ autonomy deduction for tier 1');
-    assert.ok(html.includes('👁️ Đang xem trước (Chưa trừ điểm)'), 'Should explicitly show preview warning');
+    assert.ok(html.includes('Khóa điểm tự chủ lượt này'), 'Should explicitly show locked autonomy warning');
   });
 
   it('Tier 1 Fallback: Extracts Japanese keywords automatically when keywords prop is empty', () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { roleplayService } from '../../services/roleplayService';
 import { roleplayResultService } from '../../services/roleplayResultService';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
@@ -347,30 +347,46 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           </div>
         </div>
 
-        {/* Kỹ năng & Mẫu câu trọng điểm đã thực hành */}
+        {/* Kỹ năng & Mẫu câu trọng điểm đã thực hành (FSRS Spaced Repetition Integration) */}
         {profile.dueReviewItems && profile.dueReviewItems.length > 0 && (
           <div className="pt-5 border-t border-[var(--line)]">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--sumi-muted)] flex items-center gap-2">
-                <BookmarkIcon className="w-4 h-4 text-[var(--ai)]" />
-                <span>Từ vựng & Mẫu câu trọng tâm đã tích lũy</span>
-              </h4>
-              <span className="text-xs text-[var(--ai)] font-semibold">
-                {profile.dueReviewItems.length} mục đã luyện
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--sumi-muted)] flex items-center gap-2">
+                  <BookmarkIcon className="w-4 h-4 text-[var(--ai)]" />
+                  <span>Từ vựng & Mẫu câu trọng tâm đã tích lũy</span>
+                </h4>
+                <p className="text-[11px] text-[var(--sumi-faint)] mt-0.5">
+                  Tự động tối ưu chu kỳ ghi nhớ dài hạn (FSRS) qua từng câu bạn đối thoại thực tế
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs text-[var(--ai)] font-semibold">
+                  {profile.dueReviewItems.length} mục đã luyện
+                </span>
+                <Link
+                  to="/flashcards"
+                  className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:brightness-105 active:scale-95 cursor-pointer"
+                >
+                  <span>🎴 Mở Flashcard luyện ngay</span>
+                  <span>➔</span>
+                </Link>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {profile.dueReviewItems.map((item, idx) => (
-                <div
+                <Link
+                  to={`/flashcards?search=${encodeURIComponent(item.skillName.split(':')[1]?.trim() || item.skillName)}`}
                   key={idx}
-                  className={`p-3 rounded-xl border text-xs transition-all ${
+                  className={`group p-3 rounded-xl border text-xs transition-all hover:border-[var(--ai)] hover:shadow-xs cursor-pointer block ${
                     item.isDueForReview
-                      ? 'border-amber-200 bg-amber-50/60 shadow-2xs'
-                      : 'border-[var(--line)] bg-white shadow-2xs'
+                      ? 'border-amber-200 bg-amber-50/60'
+                      : 'border-[var(--line)] bg-white'
                   }`}
+                  title="Nhấp để ôn tập mục này trong bộ thẻ Flashcard cá nhân"
                 >
                   <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="font-semibold text-[var(--sumi)] truncate max-w-[180px]" title={item.skillName}>
+                    <span className="font-semibold text-[var(--sumi)] group-hover:text-[var(--ai)] transition truncate max-w-[180px]" title={item.skillName}>
                       {item.skillName}
                     </span>
                     <span className={`font-bold text-[10px] px-2 py-0.5 rounded-full ${
@@ -383,9 +399,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   </div>
                   <div className="text-[10px] text-[var(--sumi-muted)] pt-1.5 border-t border-[var(--line)] mt-1 flex items-center justify-between">
                     <span>Đã đối thoại: <strong>{item.repetitions} lần</strong></span>
-                    <span className="text-slate-400">Tự động tối ưu</span>
+                    <span className="text-[var(--ai)] group-hover:underline flex items-center gap-0.5">
+                      <span>Ôn thẻ</span>
+                      <span>➔</span>
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -452,38 +471,55 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             </div>
           </div>
 
-          {/* Next Best Scenario Recommendation (Gợi ý định hướng thực tế) */}
+          {/* Next Best Scenario Recommendation (Gợi ý định hướng thực tế & Deep-links) */}
           {profile.nextRecommendedScenarioTitle && (
-            <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-[var(--ai-soft)]/60 via-[var(--paper-50)] to-[var(--paper-100)] border border-[var(--line)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[var(--ai-soft)]/60 via-[var(--paper-50)] to-[var(--paper-100)] border border-[var(--line)] shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1.5 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-md bg-[var(--ai)] text-white text-[10px] font-bold uppercase tracking-wider">
-                    Đề xuất tiếp theo dành cho bạn
+                    🌟 Đề xuất thích ứng theo Năng lực
                   </span>
-                  <span className="text-xs font-bold text-[var(--sumi)] truncate">
+                  <span className="text-xs font-bold text-[var(--sumi)]">
                     {profile.nextRecommendedScenarioTitle}
                   </span>
+                  {profile.predictedSuccessRateNextScenario && (
+                    <span className="text-[10.5px] font-extrabold text-[var(--score-good)] font-mono bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Dự báo thành công: {profile.predictedSuccessRateNextScenario}%
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-[var(--sumi-muted)] leading-relaxed">
+                <p className="text-xs text-[var(--sumi-muted)] leading-relaxed max-w-2xl">
                   {profile.nextRecommendedReason || 'Luyện tập tình huống tiếp theo để tối ưu hóa sự tự tin và phản xạ giao tiếp tự nhiên.'}
                 </p>
               </div>
 
-              <div className="shrink-0 flex items-center gap-4">
-                <div className="text-right hidden sm:block">
-                  <span className="block text-[10px] text-[var(--sumi-muted)] font-semibold">Dự báo thành công</span>
-                  <span className="text-xs font-bold text-[var(--score-good)]">
-                    {profile.predictedSuccessRateNextScenario ? `${profile.predictedSuccessRateNextScenario}%` : '88%'}
-                  </span>
-                </div>
+              <div className="shrink-0 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={handleLaunchRecommended}
-                  className="px-4 py-2 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95"
                 >
-                  <span>Bắt đầu ngay</span>
+                  <span>Vào kịch bản này</span>
                   <ArrowRightIcon className="w-3.5 h-3.5" />
                 </button>
+
+                <Link
+                  to="/flashcards?tab=bookmarks"
+                  className="px-3 py-2 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                  title="Mở kho Flashcard ôn luyện từ vựng"
+                >
+                  <span>🎴</span>
+                  <span>Flashcard</span>
+                </Link>
+
+                <Link
+                  to={`/shadowing?query=${encodeURIComponent(profile.nextRecommendedScenarioTitle)}`}
+                  className="px-3 py-2 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                  title="Luyện nói Shadowing ngữ điệu câu thoại kịch bản"
+                >
+                  <span>🎙️</span>
+                  <span>Shadowing</span>
+                </Link>
               </div>
             </div>
           )}

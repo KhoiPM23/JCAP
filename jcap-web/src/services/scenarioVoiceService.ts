@@ -214,6 +214,9 @@ class ScenarioVoiceService {
 
     try {
       const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
+      if (this.isSpeechCancelled) {
+        return;
+      }
       const audio = new Audio(audioUrl);
       audio.playbackRate = resolvedRate;
       this.currentAudio = audio;
@@ -261,14 +264,17 @@ class ScenarioVoiceService {
 
       audio.onerror = () => {
         this.currentAudio = null;
+        if (this.isSpeechCancelled) return;
         this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       };
 
       await audio.play().catch(() => {
         this.currentAudio = null;
+        if (this.isSpeechCancelled) return;
         this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       });
     } catch {
+      if (this.isSpeechCancelled) return;
       this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
     }
   }

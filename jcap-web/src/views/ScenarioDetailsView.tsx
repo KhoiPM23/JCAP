@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'reac
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
+import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { useAuth } from '../contexts/AuthContext';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
+import { AlertCircleIcon, RefreshIcon, CompassIcon } from '../components/common/Icons';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 
@@ -57,6 +59,19 @@ const jlptRank: Record<string, number> = {
   N1: 5,
 };
 
+const sortLevelsByRank = (levels: ScenarioLevelConfiguration[]): ScenarioLevelConfiguration[] => {
+  return [...levels].sort((a, b) => {
+    const rankA = jlptRank[a.jlptLevel] ?? 99;
+    const rankB = jlptRank[b.jlptLevel] ?? 99;
+    return rankA - rankB;
+  });
+};
+
+const checkHasActiveSession = (session?: ActiveRoleplaySessionDto | null): boolean => {
+  if (!session) return false;
+  return Boolean(session.hasActiveSession ?? Boolean(session.sessionId || session.activeSessionId));
+};
+
 export const ScenarioDetailsView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -101,11 +116,7 @@ export const ScenarioDetailsView: React.FC = () => {
 
       if (scenarioRes.success && scenarioRes.data) {
         setScenario(scenarioRes.data);
-        const sorted = [...scenarioRes.data.levelConfigurations].sort((a, b) => {
-          const rankA = jlptRank[a.jlptLevel] ?? 99;
-          const rankB = jlptRank[b.jlptLevel] ?? 99;
-          return rankA - rankB;
-        });
+        const sorted = sortLevelsByRank(scenarioRes.data.levelConfigurations);
         const lowestLevel = sorted[0]?.jlptLevel;
         if (lowestLevel) setActiveLevel(lowestLevel);
       } else {
@@ -114,7 +125,7 @@ export const ScenarioDetailsView: React.FC = () => {
 
       if (sessionRes.success && sessionRes.data) {
         setActiveSession(sessionRes.data);
-        const hasActive = sessionRes.data.hasActiveSession ?? Boolean(sessionRes.data.sessionId || sessionRes.data.activeSessionId);
+        const hasActive = checkHasActiveSession(sessionRes.data);
         const sessionLevel = sessionRes.data.level || sessionRes.data.jlptLevel;
         // Nếu đang có session dở dang, tự động chọn tab level đó cho tiện
         if (hasActive && sessionLevel) {
@@ -135,21 +146,14 @@ export const ScenarioDetailsView: React.FC = () => {
     };
   }, [scenarioId]);
 
-  const hasActiveSession = Boolean(
-    activeSession &&
-      (activeSession.hasActiveSession ?? Boolean(activeSession.sessionId || activeSession.activeSessionId))
-  );
+  const hasActiveSession = checkHasActiveSession(activeSession);
   const activeSessionId = activeSession?.activeSessionId || activeSession?.sessionId;
   const activeSessionLevel = activeSession?.level || activeSession?.jlptLevel;
 
   // Danh sách cấp độ được sắp xếp tăng dần theo độ khó (N5 -> N4 -> N3)
   const sortedLevelConfigurations = useMemo(() => {
     if (!scenario?.levelConfigurations) return [];
-    return [...scenario.levelConfigurations].sort((a, b) => {
-      const rankA = jlptRank[a.jlptLevel] ?? 99;
-      const rankB = jlptRank[b.jlptLevel] ?? 99;
-      return rankA - rankB;
-    });
+    return sortLevelsByRank(scenario.levelConfigurations);
   }, [scenario?.levelConfigurations]);
 
   const selectedLevel = useMemo(
@@ -224,7 +228,7 @@ export const ScenarioDetailsView: React.FC = () => {
       <div data-theme="phong-luyen" className="min-h-screen bg-[var(--paper-100)] px-4 py-16">
         <div className="mx-auto w-full max-w-xl rounded-3xl border border-red-200 bg-[var(--paper-50)] p-8 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600">
-            
+            <AlertCircleIcon className="w-8 h-8 text-red-600" />
           </div>
           <h2 className="mt-4 text-lg font-bold font-sans text-[var(--sumi)]">
             Không thể tải thông tin kịch bản
@@ -278,7 +282,11 @@ export const ScenarioDetailsView: React.FC = () => {
                 className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 shadow-xs active:scale-95"
                 title="Mở trong hệ thống CMS Quản trị"
               >
-                                <span>Chỉnh sửa CMS</span>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span>Chỉnh sửa CMS</span>
               </Link>
             )}
           </div>
@@ -439,17 +447,20 @@ export const ScenarioDetailsView: React.FC = () => {
 
                 {/* Scenario Context */}
                 <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-5 space-y-2">
-                  <div className="flex items-center gap-2">
-                                        <div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+                      <CompassIcon className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
                         Bối cảnh giao tiếp
                       </p>
-                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)] truncate">
+                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)] break-words leading-snug" title={selectedLevel.title}>
                         {selectedLevel.title}
                       </h3>
                     </div>
                   </div>
-                  <p className="text-xs leading-relaxed text-[var(--sumi-muted)] pt-1 line-clamp-3">
+                  <p className="text-xs leading-relaxed text-[var(--sumi-muted)] pt-1 break-words">
                     {selectedLevel.description}
                   </p>
                 </div>
@@ -617,8 +628,9 @@ export const ScenarioDetailsView: React.FC = () => {
 
               {startError && (
                 <div className="rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 space-y-1">
-                  <p className="font-bold flex items-center gap-1">
-                                        <span>Không thể khởi tạo phòng:</span>
+                  <p className="font-bold flex items-center gap-1.5">
+                    <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Không thể khởi tạo phòng:</span>
                   </p>
                   <p className="leading-relaxed">{startError}</p>
                   {startError.includes('credit') && !isAdmin && (
@@ -715,15 +727,20 @@ export const ScenarioDetailsView: React.FC = () => {
                         key={vocab.id}
                         className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 hover:bg-[var(--paper-100)] transition-colors"
                       >
-                        <div className="flex items-baseline justify-between gap-2">
-                          <span className="font-bold text-sm text-[var(--sumi)]">
+                        <div className="flex items-center justify-between gap-2">
+                          <ruby className="text-base font-bold text-[var(--sumi)] font-jp">
                             {vocab.word}
-                          </span>
-                          {vocab.reading && (
-                            <span className="text-[11px] font-medium text-[var(--ai)]">
-                              {vocab.reading}
-                            </span>
-                          )}
+                            {vocab.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{vocab.reading}</rt>}
+                          </ruby>
+                          <button
+                            type="button"
+                            onClick={() => void scenarioVoiceService.playAiSpeech(vocab.word, 2)}
+                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                            title="Nghe phát âm chuẩn Tokyo (VoiceVox)"
+                            aria-label={`Nghe phát âm ${vocab.word}`}
+                          >
+                            🔊
+                          </button>
                         </div>
                         <p className="mt-1 text-xs text-[var(--sumi-muted)]">
                           {vocab.meaning}
@@ -754,8 +771,8 @@ export const ScenarioDetailsView: React.FC = () => {
                           {grammar.meaning}
                         </p>
                         {grammar.exampleSentence && (
-                          <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40">
-                            <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block">
+                          <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
+                            <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
                               Ví dụ mẫu:
                             </span>
                             {grammar.exampleSentence}
@@ -788,7 +805,16 @@ export const ScenarioDetailsView: React.FC = () => {
                       : 'bg-blue-100 text-[var(--ai)]'
                   }`}
                 >
-                  {confirmModal.isSwitchingLevel ? '' : ''}
+                  {confirmModal.isSwitchingLevel ? (
+                    <svg className="w-5 h-5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m16 3 4 4-4 4" />
+                      <path d="M20 7H4" />
+                      <path d="m8 21-4-4 4-4" />
+                      <path d="M4 17h16" />
+                    </svg>
+                  ) : (
+                    <RefreshIcon className="w-5 h-5 text-[var(--ai)]" />
+                  )}
                 </div>
                 <div>
                   <h3 className="text-base font-bold font-sans text-[var(--sumi)]">

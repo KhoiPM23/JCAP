@@ -13,10 +13,11 @@ export interface GraduatedHintCardProps {
   fullJapaneseSample: string;
   vietnameseMeaning?: string;
   furiganaHtml?: string;
+  lockedTier?: number;
   onUseHint: (text: string, tier: 1 | 2 | 3) => void;
   /** Callback fired immediately when user switches tier tab — used to record penalty level without waiting for "Dùng" button */
   onTierChange?: (tier: 1 | 2 | 3) => void;
-  onPlaySampleAudio?: () => void;
+  onPlaySampleAudio?: (textToPlay: string) => void;
   onClose: () => void;
 }
 
@@ -27,12 +28,14 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
   fullJapaneseSample,
   vietnameseMeaning,
   furiganaHtml,
+  lockedTier,
   onUseHint,
   onTierChange,
   onPlaySampleAudio,
   onClose,
 }) => {
   const [hintTier, setHintTier] = useState<1 | 2 | 3>(1);
+  const effectiveLockedTier = Math.max(hintTier, lockedTier || 1);
 
   const cleanSample = sanitizeDisplayJapanese(fullJapaneseSample);
 
@@ -74,7 +77,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               Giàn giáo ZPD: {missionTitle || 'Nhiệm vụ hiện tại'}
             </span>
             <span className="text-[10px] text-amber-900 font-medium">
-              👁️ Đang xem trước (Chưa trừ điểm) — Cấp {hintTier}: Tự chủ tối đa {hintTier === 1 ? '90đ (-10đ)' : hintTier === 2 ? '70đ (-30đ)' : '40đ (-60đ)'}
+              🔒 Đã mở Cấp {effectiveLockedTier}: {effectiveLockedTier === 1 ? 'Từ khóa (Tự chủ tối đa 90đ)' : effectiveLockedTier === 2 ? 'Khung điền từ (Tự chủ tối đa 70đ)' : 'Mẫu câu Tokyo (Tự chủ tối đa 40đ)'} (Khóa điểm tự chủ lượt này){effectiveLockedTier > hintTier ? ` • Đang xem Cấp ${hintTier}` : ''}
             </span>
           </div>
         </div>
@@ -146,7 +149,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
       </div>
 
       {/* Nội dung hiển thị riêng biệt theo Tier */}
-      <div className="py-1">
+      <div className="py-1 min-h-[115px] flex flex-col justify-center">
         {hintTier === 1 && (
           <div className="flex flex-col gap-2">
             <span className="text-[11px] font-semibold text-amber-900/80">
@@ -221,7 +224,18 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
           {onPlaySampleAudio && (
             <button
               type="button"
-              onClick={onPlaySampleAudio}
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                let textToPlay = cleanSample;
+                if (hintTier === 1) {
+                  textToPlay = resolvedKeywords.length > 0 ? resolvedKeywords.join('、 ') : cleanSample;
+                } else if (hintTier === 2) {
+                  textToPlay = derivedCloze.replace(/\[\s*[_.\s]+\s*\]/g, 'ここ');
+                } else {
+                  textToPlay = cleanSample;
+                }
+                onPlaySampleAudio(textToPlay);
+              }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition shadow-2xs cursor-pointer"
             >
               <span>🔊</span>

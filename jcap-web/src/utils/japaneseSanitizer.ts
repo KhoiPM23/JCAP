@@ -94,7 +94,7 @@ export function isWhisperHallucination(text?: string | null): boolean {
   const trimmed = text.trim();
   if (trimmed.length === 0) return true;
 
-  // Danh sách các câu ảo giác Whisper kinh điển khi micro thu khoảng lặng
+  // Danh sách các câu ảo giác Whisper kinh điển khi micro thu khoảng lặng hoặc lặp prompt mồi
   const hallucinations = [
     'ご視聴ありがとうございました',
     '視聴ありがとうございました',
@@ -103,6 +103,8 @@ export function isWhisperHallucination(text?: string | null): boolean {
     '高評価',
     'Subtitles by',
     'Thank you for watching',
+    '日常会話の日本語',
+    '日常会話',
     '...',
     '。。。',
   ];

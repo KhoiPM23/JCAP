@@ -10,6 +10,9 @@ import type {
   FlashcardSessionSummary,
   FlashcardSessionHistoryItem,
   FlashcardSessionHistoryDetail,
+  BookmarkItem,
+  BookmarkListResponse,
+  ToggleBookmarkResponse,
 } from '../types/flashcard';
 import { creditService } from './creditService';
 
@@ -288,6 +291,83 @@ class FlashcardService {
       return this.unwrapResponse<boolean>(json, false);
     } catch (err: any) {
       return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
+    }
+  }
+
+  // ============================================================
+  // 6. Bookmarks (UC-52, UC-53)
+  // ============================================================
+
+  public async toggleBookmark(itemType: 'Vocabulary' | 'Grammar', itemId: number): Promise<{
+    success: boolean;
+    data?: ToggleBookmarkResponse;
+    message?: string;
+  }> {
+    try {
+      const payload: { vocabularyId?: number; grammarId?: number } = {};
+      if (itemType.toLowerCase() === 'grammar') {
+        payload.grammarId = itemId;
+      } else {
+        payload.vocabularyId = itemId;
+      }
+
+      const res = await fetch('/api/bookmarks/toggle', {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        return { success: false, message: errJson?.message || `Lỗi lưu thẻ (${res.status})` };
+      }
+      const json = await res.json();
+      return this.unwrapResponse<ToggleBookmarkResponse>(json);
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
+    }
+  }
+
+  public async getBookmarks(itemType?: string, jlptLevel?: string, keyword?: string): Promise<{
+    success: boolean;
+    data?: BookmarkListResponse;
+    message?: string;
+  }> {
+    try {
+      const params = new URLSearchParams();
+      if (itemType && itemType !== 'All') params.append('itemType', itemType);
+      if (jlptLevel && jlptLevel !== 'All') params.append('jlptLevel', jlptLevel);
+      if (keyword && keyword.trim()) params.append('keyword', keyword.trim());
+
+      const res = await fetch(`/api/bookmarks?${params.toString()}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        return {
+          success: false,
+          data: { items: [], totalCount: 0, dueCount: 0, newCount: 0 },
+          message: errJson?.message || `Lỗi tải danh sách thẻ đã lưu (${res.status})`,
+        };
+      }
+      const json = await res.json();
+      const unwrapped = this.unwrapResponse<BookmarkListResponse>(json, {
+        items: [],
+        totalCount: 0,
+        dueCount: 0,
+        newCount: 0,
+      });
+      if (unwrapped.data && !Array.isArray(unwrapped.data.items)) {
+        unwrapped.data.items = [];
+      }
+      return unwrapped;
+    } catch (err: any) {
+      return {
+        success: false,
+        data: { items: [], totalCount: 0, dueCount: 0, newCount: 0 },
+        message: err.message || 'Không thể kết nối đến máy chủ backend.',
+      };
     }
   }
 }
