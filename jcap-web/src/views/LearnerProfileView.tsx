@@ -63,6 +63,20 @@ export const LearnerProfileView: React.FC = () => {
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
   }, []);
 
+  // Tự động cuộn mượt xuống Bản đồ Năng lực khi truy cập từ trang Kết quả (#radar-map hoặc #radar)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#radar' || hash === '#radar-map') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById('radar-map') || document.getElementById('radar');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   /** Đổi mục tiêu JLPT ngay tại trang (cùng API với trang Chỉnh sửa hồ sơ) */
   const changeLevel = async (level: string) => {
     if (!profile || level === profile.jlptLevel) return;
@@ -233,18 +247,24 @@ export const LearnerProfileView: React.FC = () => {
               </section>
             </div>
 
-            <div className="flex justify-end pt-2">
-              <Button variant="danger" icon="logout" onClick={() => logout()}>
-                Đăng xuất
-              </Button>
-            </div>
           </div>
         </div>
 
         {/* Báo cáo Năng lực Hội thoại AI ngầm (TikTok-style Linguistic Radar) */}
-        <section aria-label="Năng lực Kaiwa ngầm" className="w-full">
+        <section id="radar" aria-label="Năng lực Kaiwa ngầm" className="w-full scroll-mt-20">
+          <div id="radar-map" className="scroll-mt-24" />
           <LearnerIntelligenceRadarCard />
         </section>
+
+        {/* Chân trang tài khoản & Đăng xuất */}
+        <div className="flex items-center justify-between border-t border-[var(--line)] pt-6 mt-4">
+          <p className="text-xs text-[var(--sumi-muted)]">
+            Phiên bản JCAP • Phản xạ đối thoại & Đánh giá năng lực tự động
+          </p>
+          <Button variant="danger" icon="logout" onClick={() => logout()}>
+            Đăng xuất
+          </Button>
+        </div>
       </div>
     </div>
   );

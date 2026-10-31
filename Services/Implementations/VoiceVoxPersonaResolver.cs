@@ -95,7 +95,7 @@ public static class VoiceVoxPersonaResolver
             roleMappings["Cấp trên"] = aiVoiceId;
         }
         // 4. Nhóm Dịch vụ, Quán ăn, Cửa hàng, Nhà ga (Service / Retail / Hospitality)
-        else if (Regex.IsMatch(combinedText, @"(nhân viên|phục vụ|bán hàng|quán ăn|nhà hàng|tiệm|siêu thị|combini|konbini|quầy vé|khách sạn|thu ngân|店員|接客|レジ|waiter|staff|clerk)"))
+        else if (Regex.IsMatch(combinedText, @"(nhân viên|phục vụ|bán hàng|quán ăn|nhà hàng|tiệm|siêu thị|combini|konbini|quầy vé|khách sạn|thu ngân|quán cafe|cà phê|cafe|barista|バリスタ|店員|接客|レジ|waiter|staff|clerk)"))
         {
             if (Regex.IsMatch(combinedText, @"(nam|anh|male)"))
             {
@@ -109,6 +109,8 @@ public static class VoiceVoxPersonaResolver
             }
             roleMappings["Nhân viên"] = aiVoiceId;
             roleMappings["Phục vụ"] = aiVoiceId;
+            roleMappings["Barista"] = aiVoiceId;
+            roleMappings["バリスタ"] = aiVoiceId;
         }
         // 5. Nhóm Bạn bè, Đồng nghiệp ngang hàng, Bạn cùng lớp (Friends / Casual)
         else if (Regex.IsMatch(combinedText, @"(bạn bè|bạn thân|đồng nghiệp|bạn cùng lớp|bạn học|rủ rê|tiệc tùng|hẹn hò|友達|同僚|クラスメイト|friend|classmate|coworker)"))

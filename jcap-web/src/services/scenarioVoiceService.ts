@@ -1,3 +1,4 @@
+import { cleanJapaneseForTts } from '../utils/japaneseSanitizer';
 import { voicevoxService, type VoiceOption } from './voicevoxService';
 
 /**
@@ -133,6 +134,11 @@ class ScenarioVoiceService {
     }
 
     this.isSpeechCancelled = false;
+    const cleanText = cleanJapaneseForTts(text);
+    if (!cleanText) {
+      onEnd?.();
+      return false;
+    }
 
     // Chữa lỗi trình duyệt Chrome/Edge bị tạm dừng SpeechSynthesis ngầm
     if (window.speechSynthesis.paused) {
@@ -140,7 +146,7 @@ class ScenarioVoiceService {
     }
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     // Lưu tham chiếu utterance vào biến instance để tránh bị Garbage Collector của Chrome thu dọn giữa chừng
     this.currentUtterance = utterance;
     utterance.lang = 'ja-JP';
@@ -200,8 +206,17 @@ class ScenarioVoiceService {
 
     const resolvedRate = rate ?? this.getSpeechRate();
 
+    const cleanText = cleanJapaneseForTts(text);
+    if (!cleanText) {
+      onEnd?.();
+      return;
+    }
+
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(text, resolvedVoiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
+      if (this.isSpeechCancelled) {
+        return;
+      }
       const audio = new Audio(audioUrl);
       audio.playbackRate = resolvedRate;
       this.currentAudio = audio;
@@ -249,14 +264,17 @@ class ScenarioVoiceService {
 
       audio.onerror = () => {
         this.currentAudio = null;
+        if (this.isSpeechCancelled) return;
         this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       };
 
       await audio.play().catch(() => {
         this.currentAudio = null;
+        if (this.isSpeechCancelled) return;
         this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
       });
     } catch {
+      if (this.isSpeechCancelled) return;
       this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
     }
   }
@@ -540,7 +558,7 @@ class ScenarioVoiceService {
     // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn) với Timeout 4.5s
     try {
       const controller1 = new AbortController();
-      const timeout1 = setTimeout(() => controller1.abort(), 4500);
+      const timeout1 = setTimeout(() => controller1.abort(), 7500);
       const res = await fetch('/api/stt/transcribe?language=ja', {
         method: 'POST',
         body: formData,
@@ -566,7 +584,7 @@ class ScenarioVoiceService {
     // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe với Timeout 4.5s
     try {
       const controller2 = new AbortController();
-      const timeout2 = setTimeout(() => controller2.abort(), 4500);
+      const timeout2 = setTimeout(() => controller2.abort(), 7500);
       const directRes = await fetch('/whisper/transcribe?language=ja', {
         method: 'POST',
         body: formData,

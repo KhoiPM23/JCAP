@@ -5,6 +5,7 @@ import {
   containsJapanese,
   extractJapaneseKeywords,
   deriveJapaneseCloze,
+  isWhisperHallucination,
 } from './japaneseSanitizer.ts';
 
 describe('japaneseSanitizer', () => {
@@ -52,5 +53,12 @@ describe('japaneseSanitizer', () => {
     const sentence = 'スープには具体的に何が入っていますか';
     const cloze = deriveJapaneseCloze(sentence);
     assert.ok(cloze.includes('[ ______ ]'));
+  });
+  it('isWhisperHallucination should catch YouTube subtitle and silent hallucinations', () => {
+    assert.equal(isWhisperHallucination('ご視聴ありがとうございました'), true);
+    assert.equal(isWhisperHallucination('チャンネル登録お願いします'), true);
+    assert.equal(isWhisperHallucination('...'), true);
+    assert.equal(isWhisperHallucination(''), true);
+    assert.equal(isWhisperHallucination('ラーメンを一つお願いします'), false);
   });
 });

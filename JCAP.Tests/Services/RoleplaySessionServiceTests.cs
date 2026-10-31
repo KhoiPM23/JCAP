@@ -551,7 +551,7 @@ public class RoleplaySessionServiceTests
         var userManagerMock = CreateUserManagerMock(user);
         var aiMock = new Mock<IAiRoleplayService>();
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = CreateService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, scenario.Id, levelConfig.JLPTLevel, new StartRoleplaySessionRequestDto());

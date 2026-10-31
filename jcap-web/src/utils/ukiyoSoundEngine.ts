@@ -133,6 +133,48 @@ class UkiyoSoundEngine {
   }
 
   /**
+   * Âm phản xạ đệm tức thì Aizuchi (Harmonic conversational acknowledgment cue).
+   * Phát ngay khi người học nhấn gửi để xoá bỏ dead-air trong lúc chờ Gemini & VOICEVOX.
+   */
+  public playAizuchi() {
+    if (this.isMuted) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    // 2 tone nhẹ nhàng mô phỏng phản xạ "はい / うん" ấm áp
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(440, now);
+    osc1.frequency.exponentialRampToValueAtTime(554.37, now + 0.12);
+
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(330, now);
+    osc2.frequency.exponentialRampToValueAtTime(440, now + 0.12);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2200, now);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.38, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.4);
+    osc2.stop(now + 0.4);
+  }
+
+  /**
    * Chuỗi chuông ngũ cung Hirajoshi (Migoto Chime): Cung điệu truyền thống Nhật Bản (C, Db, F, G, Ab).
    * Dùng khi hoàn thành nhiệm vụ (Mission Complete) hoặc kết thúc hội thoại thành công.
    */

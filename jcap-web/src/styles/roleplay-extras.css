@@ -85,6 +85,73 @@ rt {
   animation: pulseGold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Modal Pop In: scale spring animation for modal dialog */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-modal-pop {
+  animation: modalPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Japanese Hanko Ink Stamp Slam Animation */
+@keyframes hankoStampSlam {
+  0% {
+    opacity: 0;
+    transform: scale(2.8) rotate(-18deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.92) rotate(-3deg);
+  }
+  80% {
+    transform: scale(1.05) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-4deg);
+  }
+}
+
+.animate-stamp-slam {
+  animation: hankoStampSlam 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Game-like Floating Score Deduction Pill (-10đ Tự chủ, -30đ Tự chủ, etc.) */
+@keyframes floatScoreDeduct {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.08);
+  }
+  40% {
+    transform: translate(-50%, -4px) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -18px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -34px) scale(0.9);
+  }
+}
+
+.animate-float-deduct {
+  animation: floatScoreDeduct 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+
 /* Vietnamese-safe serif: Noto Serif covers Vietnamese diacritics, JP falls back */
 :root .font-serif {
   font-family: "Noto Serif", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;

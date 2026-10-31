@@ -300,7 +300,12 @@ public sealed record RoleplaySocialRegister
             return $"Chúng ta cùng sang đường nhé {reg.LearnerAddressAi}.";
         }
 
-        return $"Câu đối thoại lịch sự bằng tiếng Nhật gửi đến {reg.LearnerAddressAi}.";
+        if (lower.Contains("甘さ") || lower.Contains("甘い"))
+        {
+            return $"Yêu cầu về độ ngọt của {reg.LearnerSelf} gửi đến {reg.LearnerAddressAi}.";
+        }
+
+        return $"Lời thoại của bạn gửi đến {reg.LearnerAddressAi}.";
     }
 
     public static AiOpeningMessageResult GenerateOpeningMessage(Scenario scenario, ScenarioLevelConfiguration levelConfig)
@@ -481,6 +486,11 @@ public sealed record RoleplaySocialRegister
             {
                 dto.ClozeSentence = dto.JapaneseSuggestion + " [ ______ ]";
             }
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.FuriganaHtml) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        {
+            dto.FuriganaHtml = GenerateFuriganaHtml(dto.JapaneseSuggestion);
         }
 
         return dto;
@@ -788,6 +798,9 @@ public sealed record RoleplaySocialRegister
             ("真っ直ぐ", "<ruby>真<rt>ま</rt></ruby>っ<ruby>直<rt>す</rt></ruby>ぐ"),
             
             // Cụm 2 chữ Hán thông dụng
+            ("来ました", "<ruby>来<rt>き</rt></ruby>ました"),
+            ("来ます", "<ruby>来<rt>き</rt></ruby>ます"),
+            ("行きます", "<ruby>行<rt>い</rt></ruby>きます"),
             ("大丈夫", "<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>"),
             ("お会計", "お<ruby>会計<rt>かいけい</rt></ruby>"),
             ("お勘定", "お<ruby>勘定<rt>かんじょう</rt></ruby>"),

@@ -275,7 +275,7 @@ public class ScenarioServiceTests
         Assert.True(response.Success);
         Assert.NotNull(response.Data);
         Assert.Equal("Kịch bản Mới", response.Data!.Title);
-        Assert.Equal($"SCN_{response.Data.Id}", response.Data.ScenarioCode);
+        Assert.Equal("SCN_NEW_01", response.Data.ScenarioCode);
         Assert.Single(response.Data.LevelConfigurations);
     }
 
@@ -311,7 +311,7 @@ public class ScenarioServiceTests
         // Assert
         Assert.True(response.Success);
         Assert.Equal("Tên Mới Cập Nhật", response.Data!.Title);
-        Assert.Equal("SCN_1", response.Data.ScenarioCode);
+        Assert.Equal("SCN_UPDATED", response.Data.ScenarioCode);
     }
 
     [Fact]

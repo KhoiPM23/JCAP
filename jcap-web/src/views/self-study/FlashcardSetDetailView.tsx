@@ -58,17 +58,51 @@ export const FlashcardSetDetailView: React.FC = () => {
     }
   };
 
-  // Toggle Bookmark item
-  const handleToggleBookmark = (item: FlashcardCardItem) => {
+  // Toggle Bookmark item (Đồng bộ Backend SQL Server qua API /api/bookmarks/toggle)
+  const handleToggleBookmark = async (item: FlashcardCardItem) => {
     if (!detail) return;
-    setDetail({
-      ...detail,
-      cards: detail.cards.map((c) =>
-        c.itemId === item.itemId && c.itemType === item.itemType
-          ? { ...c, isBookmarked: !c.isBookmarked }
-          : c
-      ),
+    const prevStatus = item.isBookmarked;
+    // Optimistic UI Update
+    setDetail((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        cards: prev.cards.map((c) =>
+          c.itemId === item.itemId && c.itemType === item.itemType
+            ? { ...c, isBookmarked: !prevStatus }
+            : c
+        ),
+      };
     });
+
+    const res = await flashcardService.toggleBookmark(item.itemType, item.itemId);
+    if (!res.success) {
+      // Rollback on failure
+      setDetail((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          cards: prev.cards.map((c) =>
+            c.itemId === item.itemId && c.itemType === item.itemType
+              ? { ...c, isBookmarked: prevStatus }
+              : c
+          ),
+        };
+      });
+    } else if (res.data) {
+      // Sync confirmed state from server
+      setDetail((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          cards: prev.cards.map((c) =>
+            c.itemId === item.itemId && c.itemType === item.itemType
+              ? { ...c, isBookmarked: res.data!.isBookmarked }
+              : c
+          ),
+        };
+      });
+    }
   };
 
   // Lọc thẻ
