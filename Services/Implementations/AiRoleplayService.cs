@@ -216,6 +216,14 @@ TASK INSTRUCTIONS:
    - Acknowledge their response and ADVANCE THE SCENE:
      * If they agreed to cash payment: state the total bill ('ありがとうございます！合計で〇〇円になります'), accept their money/provide change, and transition toward concluding the transaction.
      * If there are still pending missions (e.g. learner needs to inquire about payment methods / card): DO NOT loop the cash question! Instead, provide a natural conversational bridge, such as: 'お支払いは現金のみとなっておりますが、カードなど他の決済方法をご希望でしたでしょうか？'
+    - REPEATED COMPLETED MISSIONS BY LEARNER:
+      * If the learner repeats a request/statement for an already satisfied mission (e.g. they already ordered ramen or greeted in a prior turn, and now repeat it):
+      * DO NOT re-add that mission to completedMissionIds.
+      * DO NOT be confused or loop. Politely acknowledge that you already noted their previous order/statement ('先ほどのご注文ですね、承知しておりますよ' or 'はい、かしこまりました'), and steer them forward toward remaining pending missions.
+    - AMBIGUOUS OR DEVIATING UTTERANCES (CONFIRMATION BEFORE TICKING):
+      * If the learner speaks an ambiguous fragment, unclear request, or slightly off-topic intent (e.g. saying just '甘さ' without specifying level, or an incomplete preference):
+      * In replyJapanese, ask for clarification/confirmation: '〜ということでよろしいでしょうか？' or '〜をご希望でしょうか？'
+      * DO NOT mark the mission completed in completedMissionIds until the learner clearly confirms in a subsequent turn.
 3. NORMAL JAPANESE EVALUATION & REFINED LINGUISTIC FEEDBACK:
    - replyJapanese: Natural Japanese response matching your persona and JLPT {levelConfig.JLPTLevel}. PURE JAPANESE ONLY (STRICTLY NO VIETNAMESE WORDS, ENGLISH, OR TRANSLATIONS INSIDE replyJapanese).
    - replyFuriganaHtml: HTML ruby tag markup for replyJapanese for reading assistance (e.g., '<ruby>豚骨<rt>とんこつ</rt></ruby>ラーメン<ruby>一杯<rt>いっぱい</rt></ruby>ですね。'). All kanji characters MUST have accurate hiragana readings in <ruby><rt> tags. Kana-only characters remain plain text. PURE JAPANESE RUBY ONLY.
@@ -239,6 +247,14 @@ TASK INSTRUCTIONS:
            status should be 'Good' or 'Warning'.
            DO NOT fabricate exaggerated praise like 'Sử dụng từ はい rất lịch sự'.
            Instead, comment: 'Đã biểu đạt đúng ý muốn, nhưng trong giao tiếp thực tế nên mở rộng thành câu hoàn chỉnh như はい、お願いします hoặc いいえ、結構です để tự nhiên hơn.'
+       - BARE NOUNS / INCOMPLETE FRAGMENTS RULE (STRICT):
+         * If the learner only said an isolated bare noun, noun phrase, or non-sentence without predicate or copula (e.g. '甘さ', 'ラーメン', '水', 'これ', 'ホット', 'クレープ'):
+           status MUST BE 'Warning' (NEVER 'Good'!).
+           summary: 'Chưa thành câu hoàn chỉnh • Cần thêm vị ngữ hoặc đuôi câu lịch sự'
+           Mark aspect 'Văn phong' or 'Cấu trúc', type 'warning'.
+           Explain: 'Chỉ nói một từ hoặc danh từ đơn lẻ sẽ cộc lốc trong giao tiếp tiếng Nhật. Cần diễn đạt trọn vẹn thành câu với vị ngữ hoặc đuôi câu lịch sự.'
+           DO NOT praise bare words as 'lịch sự chu đáo', 'chuẩn mực', or 'cấu trúc câu gãy gọn'!
+           naturalAlternative MUST NOT be the same bare noun! It MUST be a complete polite sentence (e.g. for '甘さ' -> '甘さ控えめにできますか？' or '甘さは普通でお願いします。'; for 'ラーメン' -> 'ラーメンをお願いします。').
        - ACCURATE DETECTION OF COMMON LEARNER MISTAKES:
          * Bare Nouns when ordering (e.g. '卵です', '水です'): Mark aspect 'Văn phong', type 'warning'. Explain: 'Khi gọi món tại quán ăn Nhật Bản, chỉ nói tên món kèm です bị cộc lốc. Nên nói 味玉をお願いします hoặc 味玉を追加してください.'
          * Missing Verb/Predicates (e.g. '〜を注文', '〜を追加'): Mark aspect 'Cấu trúc', type 'warning'. Explain: 'Thiếu vị ngữ hoàn chỉnh. Cần nói 〜を注文します hoặc 〜をお願いします.'
@@ -290,9 +306,64 @@ Return strictly pure JSON matching this schema:
                 {
                     foreach (var elem in idsProp.EnumerateArray())
                     {
-                        if (elem.TryGetInt32(out var id) && pendingMissions.Any(m => m.Id == id))
+                        int? parsedId = null;
+                        if (elem.ValueKind == JsonValueKind.Number && elem.TryGetInt32(out var n)) parsedId = n;
+                        else if (elem.ValueKind == JsonValueKind.String && int.TryParse(elem.GetString(), out var s)) parsedId = s;
+
+                        if (parsedId.HasValue)
                         {
-                            completedIds.Add(id);
+                            var matched = pendingMissions.FirstOrDefault(m => m.Id == parsedId.Value || m.Order == parsedId.Value);
+                            if (matched != null && !completedIds.Contains(matched.Id))
+                            {
+                                completedIds.Add(matched.Id);
+                            }
+                        }
+                    }
+                }
+
+                // Cân bằng sư phạm: Nếu câu của học viên biểu đạt rõ ràng mục tiêu nhiệm vụ (không lỗi ngoại ngữ)
+                // đảm bảo nhiệm vụ được tick chính xác, không bị phụ thuộc vào việc LLM trả về ID hay Order
+                if (completedIds.Count == 0 && !IsLikelyForeignOrVietnamese(userMessage) && pendingMissions.Count > 0)
+                {
+                    var currentMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
+                    if (currentMission != null)
+                    {
+                        var crit = (currentMission.CompletionCriteriaJson ?? "").ToLowerInvariant();
+                        var content = (currentMission.Content ?? "").ToLowerInvariant();
+                        var cleanUserMsg = userMessage.Trim();
+
+                        bool matchesIntent = false;
+                        if ((crit.Contains("soy milk") || content.Contains("sữa thực vật") || crit.Contains("sweetness") || content.Contains("độ ngọt")) &&
+                            (cleanUserMsg.Contains("豆乳") || cleanUserMsg.Contains("甘さ控えめ") || cleanUserMsg.Contains("甘さは") || cleanUserMsg.Contains("ソイミルク")))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("recommend") || content.Contains("tư vấn") || content.Contains("bánh ngọt")) &&
+                                 (cleanUserMsg.Contains("おすすめ") || cleanUserMsg.Contains("クレープ") || cleanUserMsg.Contains("スイーツ")))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("order") || content.Contains("chọn") || content.Contains("ăn kèm")) &&
+                                 (cleanUserMsg.Contains("ください") || cleanUserMsg.Contains("お願いします") || cleanUserMsg.Contains("にします")))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("topping") || crit.Contains("egg") || crit.Contains("ajitama") || content.Contains("topping") || content.Contains("trứng") || content.Contains("味玉")) &&
+                                 (cleanUserMsg.Contains("味玉") || cleanUserMsg.Contains("たまご") || cleanUserMsg.Contains("トッピング") || cleanUserMsg.Contains("卵")) &&
+                                 (cleanUserMsg.Contains("追加") || cleanUserMsg.Contains("購入") || cleanUserMsg.Contains("お願いします") || cleanUserMsg.Contains("ください") || cleanUserMsg.Contains("もらえますか") || cleanUserMsg.Contains("つけて")))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("card") || crit.Contains("payment") || content.Contains("thanh toán") || content.Contains("thẻ")) &&
+                                 (cleanUserMsg.Contains("カード") || cleanUserMsg.Contains("電子マネー") || cleanUserMsg.Contains("クレカ") || cleanUserMsg.Contains("支払") || cleanUserMsg.Contains("会計")) &&
+                                 (cleanUserMsg.Contains("使え") || cleanUserMsg.Contains("でき") || cleanUserMsg.Contains("いいですか") || cleanUserMsg.Contains("ですか") || cleanUserMsg.Contains("払え")))
+                        {
+                            matchesIntent = true;
+                        }
+
+                        if (matchesIntent)
+                        {
+                            completedIds.Add(currentMission.Id);
                         }
                     }
                 }
@@ -343,6 +414,64 @@ Return strictly pure JSON matching this schema:
                         if (string.IsNullOrWhiteSpace(feedback.Summary) || feedback.Summary.Contains("tốt", StringComparison.OrdinalIgnoreCase))
                         {
                             feedback.Summary = "Vui lòng sử dụng tiếng Nhật";
+                        }
+                    }
+                }
+
+                // Programmatic anti-flattery guard: Detect bare single nouns and non-sentences (e.g. "甘さ", "ラーメン", "これ", "ホットコーヒー")
+                if (!isForeignLanguage && feedback != null)
+                {
+                    var trimmedUserMsg = userMessage.Trim();
+                    var cleanUserMsg = Regex.Replace(trimmedUserMsg, @"[\s\.,?!。、？！]", "");
+                    var hasPoliteEnding = Regex.IsMatch(trimmedUserMsg, @"(です|ます|でした|ました|ません|ください|おねがい|お願い|いただけ|でしょうか|ですか|たいです|ましょう|頼み|頼む)");
+                    var isBareFragment = cleanUserMsg.Length <= 12 && !hasPoliteEnding && !Regex.IsMatch(cleanUserMsg, @"^(はい|いいえ|ええ|うん|ううん|こんにちは|ありがとう|すみません)$");
+
+                    if (isBareFragment)
+                    {
+                        if (string.Equals(feedback.Status, "Good", StringComparison.OrdinalIgnoreCase))
+                        {
+                            feedback.Status = "Warning";
+                        }
+                        if (string.IsNullOrWhiteSpace(feedback.Summary) || feedback.Summary.Contains("tự nhiên", StringComparison.OrdinalIgnoreCase) || feedback.Summary.Contains("chuẩn", StringComparison.OrdinalIgnoreCase) || feedback.Summary.Contains("tốt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            feedback.Summary = "Chưa thành câu hoàn chỉnh • Cần thêm vị ngữ hoặc đuôi câu lịch sự";
+                        }
+
+                        if (feedback.Details != null)
+                        {
+                            foreach (var item in feedback.Details)
+                            {
+                                if (item.Comment != null && (item.Comment.Contains("chuẩn mực") || item.Comment.Contains("gãy gọn") || item.Comment.Contains("chu đáo") || item.Comment.Contains("rất tự nhiên") || item.Comment.Contains("lễ phép")))
+                                {
+                                    item.Type = "warning";
+                                    item.Aspect = "Văn phong";
+                                    item.Comment = "Từ vựng đúng ngữ cảnh nhưng chỉ nói từ đơn lẻ sẽ cộc lốc trong tiếng Nhật. Nên mở rộng thành câu hoàn chỉnh kèm vị ngữ hoặc đuôi câu lịch sự (〜をお願いします / 〜にできますか).";
+                                }
+                            }
+                        }
+
+                        if (string.IsNullOrWhiteSpace(feedback.NaturalAlternative) || feedback.NaturalAlternative.Trim() == trimmedUserMsg)
+                        {
+                            if (trimmedUserMsg.Contains("甘さ"))
+                            {
+                                feedback.NaturalAlternative = "甘さ控えめにできますか？";
+                            }
+                            else
+                            {
+                                feedback.NaturalAlternative = $"{trimmedUserMsg}をお願いします。";
+                            }
+                        }
+                    }
+                    else if (!hasPoliteEnding && feedback.Details != null)
+                    {
+                        foreach (var item in feedback.Details)
+                        {
+                            if (item.Comment != null && (item.Comment.Contains("thể lịch sự") || item.Comment.Contains("chuẩn mực") || item.Comment.Contains("chu đáo và lễ phép")))
+                            {
+                                item.Type = "warning";
+                                item.Aspect = "Văn phong";
+                                item.Comment = "Câu thiếu thể lịch sự chuẩn mực (Desu/Masu/Kudasai). Trong giao tiếp thực tế nên thêm đuôi câu lịch sự.";
+                            }
                         }
                     }
                 }

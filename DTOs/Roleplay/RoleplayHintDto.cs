@@ -24,4 +24,10 @@ public class RoleplayHintDto
     /// Mẫu câu điền khuyết với chỗ trống [ ______ ] (Tier 2 Scaffolding)
     /// </summary>
     public string? ClozeSentence { get; set; }
+
+    /// <summary>
+    /// HTML Ruby Furigana markup cho câu mẫu tiếng Nhật (Tier 3 Scaffolding)
+    /// </summary>
+    public string? FuriganaHtml { get; set; }
+    public string? SuggestedFuriganaHtml { get => FuriganaHtml; set => FuriganaHtml = value; }
 }

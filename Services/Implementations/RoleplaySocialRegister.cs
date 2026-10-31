@@ -300,7 +300,12 @@ public sealed record RoleplaySocialRegister
             return $"Chúng ta cùng sang đường nhé {reg.LearnerAddressAi}.";
         }
 
-        return $"Câu đối thoại lịch sự bằng tiếng Nhật gửi đến {reg.LearnerAddressAi}.";
+        if (lower.Contains("甘さ") || lower.Contains("甘い"))
+        {
+            return $"Yêu cầu về độ ngọt của {reg.LearnerSelf} gửi đến {reg.LearnerAddressAi}.";
+        }
+
+        return $"Lời thoại của bạn gửi đến {reg.LearnerAddressAi}.";
     }
 
     public static AiOpeningMessageResult GenerateOpeningMessage(Scenario scenario, ScenarioLevelConfiguration levelConfig)
@@ -481,6 +486,11 @@ public sealed record RoleplaySocialRegister
             {
                 dto.ClozeSentence = dto.JapaneseSuggestion + " [ ______ ]";
             }
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.FuriganaHtml) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        {
+            dto.FuriganaHtml = GenerateFuriganaHtml(dto.JapaneseSuggestion);
         }
 
         return dto;
