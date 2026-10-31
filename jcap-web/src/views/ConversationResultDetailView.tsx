@@ -394,7 +394,7 @@ function buildAdaptiveRecommendations(
       description: s.description,
       matchScore: 96,
       isTopPick: true,
-      tag: '🌟 Khuyên chọn hàng đầu',
+      tag: '🌟 Khuyên chọn',
       icon: s.icon,
       weaknessFocus: s.focusText,
       actionReason: `Trọng tâm: ${s.focusText}. Khắc phục trực tiếp điểm yếu lớn nhất từ lượt vừa rồi.`,
@@ -411,7 +411,7 @@ function buildAdaptiveRecommendations(
       description: s.description,
       matchScore: 89,
       isTopPick: false,
-      tag: '✨ Lựa chọn tương thích',
+      tag: '✨ Tương thích',
       icon: s.icon,
       weaknessFocus: s.focusText,
       actionReason: `Củng cố: ${s.focusText}. Tình huống thực tế bổ trợ rất tốt cho cấp độ hiện tại.`,
@@ -428,7 +428,7 @@ function buildAdaptiveRecommendations(
       description: s.description,
       matchScore: 83,
       isTopPick: false,
-      tag: '🎯 Luyện tập mở rộng',
+      tag: '🎯 Mở rộng',
       icon: s.icon,
       weaknessFocus: s.focusText,
       actionReason: `Mở rộng: ${s.focusText}. Thích hợp luyện đàm thoại đa bối cảnh.`,
@@ -2494,66 +2494,71 @@ export const ConversationResultDetailView: React.FC = () => {
                 </div>
               </div>
 
-              {/* LƯỚI 3 THẺ KỊCH BẢN ĐỀ XUẤT - CÂN HÀNG HOÀN HẢO THEO CHUẨN PRO UI/UX */}
+              {/* LƯỚI 3 THẺ KỊCH BẢN ĐỀ XUẤT - BỐ CỤC ĐẲNG CẤP CHUẨN PRO UI/UX */}
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
                 {recItems.map((item) => (
                   <div
                     key={item.id}
                     className={`relative flex flex-col justify-between rounded-3xl p-5 sm:p-6 transition-all duration-300 h-full ${
                       item.isTopPick
-                        ? "border-2 border-amber-400/90 bg-gradient-to-b from-amber-50/80 via-white to-amber-50/30 shadow-lg shadow-amber-500/10 ring-2 ring-amber-400/20"
+                        ? "border-2 border-amber-400 bg-gradient-to-b from-amber-50/70 via-white to-amber-50/20 shadow-lg shadow-amber-500/10 ring-2 ring-amber-400/20"
                         : "border border-[var(--line)] bg-white hover:border-[var(--line-strong)] hover:shadow-md shadow-2xs"
                     }`}
                   >
                     <div className="flex flex-col flex-1">
-                      {/* Top Bar: Badge phân loại & Huy hiệu Match Score nổi bật */}
-                      <div className="flex items-center justify-between gap-2 mb-3.5 min-h-[28px]">
+                      {/* Top Row: Phân loại bên trái & Match Score bên phải trên 1 dòng chuẩn xác, không bao giờ gãy chữ */}
+                      <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[var(--line)]/60">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold select-none shadow-2xs ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold whitespace-nowrap select-none shrink-0 ${
                             item.isTopPick
-                              ? "bg-amber-100 text-amber-950 border border-amber-300"
+                              ? "bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs"
                               : "bg-slate-100 text-slate-700 border border-slate-200"
                           }`}
                         >
                           <span>{item.tag}</span>
                         </span>
 
-                        {/* Điểm Phù Hợp Nổi Bật Siêu Đẹp */}
+                        {/* Điểm Phù Hợp: Pill sang trọng, số to rõ ràng, không bao giờ ngắt dòng */}
                         <div
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black font-mono shadow-2xs select-none ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold font-mono whitespace-nowrap select-none shrink-0 shadow-2xs ${
                             item.isTopPick
-                              ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white ring-2 ring-emerald-400/30 shadow-emerald-500/20"
+                              ? "bg-emerald-600 text-white shadow-emerald-500/20"
                               : "bg-sky-50 text-sky-800 border border-sky-300/80"
                           }`}
                           title={`Mức độ phù hợp với 6 trục năng lực: ${item.matchScore}%`}
                         >
                           <span className="text-[10px] opacity-90">✨</span>
-                          <span className="tracking-tight">{item.matchScore}%</span>
-                          <span className="text-[10px] font-semibold opacity-85">Phù hợp</span>
+                          <span className="font-black text-sm tracking-tight leading-none">{item.matchScore}%</span>
+                          <span className="text-[10px] font-medium opacity-90">phù hợp</span>
                         </div>
                       </div>
 
-                      {/* Header kịch bản: Icon & Tiêu đề cố định độ cao 2 dòng */}
-                      <div className="flex items-start gap-3 mb-2.5">
-                        <span className="text-3xl shrink-0 select-none drop-shadow-2xs">{item.icon}</span>
+                      {/* Header Kịch bản: Bố cục Đỉnh cao với Avatar/Icon khung vuông tinh tế */}
+                      <div className="flex items-start gap-3.5 mb-3">
+                        {/* Hộp Icon 3D phong cách Nhật Bản Wabi-Sabi */}
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-[var(--line)] flex items-center justify-center shrink-0 shadow-2xs text-2xl select-none">
+                          {item.icon}
+                        </div>
+
+                        {/* Tiêu đề & Cấp độ JLPT xếp tầng khoa học */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="px-2 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-black font-mono border border-[var(--ai)]/20 shadow-2xs">
+                            <span className="px-2 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 shadow-2xs uppercase tracking-wide">
                               JLPT {item.level}
                             </span>
                           </div>
-                          <h4 className="text-sm sm:text-base font-bold text-[var(--sumi)] leading-snug line-clamp-2 min-h-[2.6rem] flex items-center">
+                          <h4 className="text-base font-bold text-[var(--sumi)] leading-snug line-clamp-2 min-h-[2.75rem] flex items-center">
                             {item.title}
                           </h4>
                         </div>
                       </div>
 
-                      {/* Bối cảnh tình huống cố định 2 dòng */}
-                      <p className="text-xs text-[var(--sumi-muted)] leading-relaxed line-clamp-2 min-h-[2.4rem] mb-3.5">
+                      {/* Mô tả bối cảnh tình huống: 2 dòng tinh tế */}
+                      <p className="text-xs text-[var(--sumi-muted)] leading-relaxed line-clamp-2 min-h-[2.4rem] mb-3.5 pl-0.5">
                         {item.description}
                       </p>
 
-                      {/* Khối Trọng tâm rèn luyện cố định 3 dòng cân hàng tuyệt đối */}
+                      {/* Khối Trọng tâm rèn luyện: Nền thẻ dịu mắt, cân hàng đều đặn */}
                       <div className="rounded-2xl bg-[var(--paper-100)] p-3 border border-[var(--line)]/70 text-xs space-y-1 mb-4 flex-1 flex flex-col justify-center min-h-[4.75rem]">
                         <div className="font-bold text-[var(--sumi)] flex items-center gap-1.5 text-[11.5px]">
                           <span className="text-rose-500">🎯</span>
