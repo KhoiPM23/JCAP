@@ -397,7 +397,7 @@ function buildAdaptiveRecommendations(
       tag: '🌟 Khuyên chọn hàng đầu',
       icon: s.icon,
       weaknessFocus: s.focusText,
-      actionReason: weaknessSummary,
+      actionReason: `Trọng tâm: ${s.focusText}. Khắc phục trực tiếp điểm yếu lớn nhất từ lượt vừa rồi.`,
     });
   }
 
@@ -2494,84 +2494,95 @@ export const ConversationResultDetailView: React.FC = () => {
                 </div>
               </div>
 
-              {/* LƯỚI 3 THẺ KỊCH BẢN ĐỀ XUẤT */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4.5 items-stretch">
+              {/* LƯỚI 3 THẺ KỊCH BẢN ĐỀ XUẤT - CÂN HÀNG HOÀN HẢO THEO CHUẨN PRO UI/UX */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
                 {recItems.map((item) => (
                   <div
                     key={item.id}
-                    className={`relative flex flex-col justify-between rounded-2xl p-5 transition-all duration-300 ${
+                    className={`relative flex flex-col justify-between rounded-3xl p-5 sm:p-6 transition-all duration-300 h-full ${
                       item.isTopPick
-                        ? "border-2 border-amber-300 bg-gradient-to-b from-amber-50/70 via-white to-amber-50/30 shadow-md ring-1 ring-amber-400/20"
-                        : "border border-[var(--line)] bg-white hover:border-[var(--line-strong)] hover:shadow-xs"
+                        ? "border-2 border-amber-400/90 bg-gradient-to-b from-amber-50/80 via-white to-amber-50/30 shadow-lg shadow-amber-500/10 ring-2 ring-amber-400/20"
+                        : "border border-[var(--line)] bg-white hover:border-[var(--line-strong)] hover:shadow-md shadow-2xs"
                     }`}
                   >
-                    <div>
-                      {/* Badge phân loại & Match Score */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex flex-col flex-1">
+                      {/* Top Bar: Badge phân loại & Huy hiệu Match Score nổi bật */}
+                      <div className="flex items-center justify-between gap-2 mb-3.5 min-h-[28px]">
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold select-none shadow-2xs ${
                             item.isTopPick
-                              ? "bg-amber-100 text-amber-900 border border-amber-300"
+                              ? "bg-amber-100 text-amber-950 border border-amber-300"
                               : "bg-slate-100 text-slate-700 border border-slate-200"
                           }`}
                         >
                           <span>{item.tag}</span>
                         </span>
 
-                        <span className="text-[11px] font-extrabold text-[var(--ai)] font-mono">
-                          {item.matchScore}% Phù hợp
-                        </span>
+                        {/* Điểm Phù Hợp Nổi Bật Siêu Đẹp */}
+                        <div
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black font-mono shadow-2xs select-none ${
+                            item.isTopPick
+                              ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white ring-2 ring-emerald-400/30 shadow-emerald-500/20"
+                              : "bg-sky-50 text-sky-800 border border-sky-300/80"
+                          }`}
+                          title={`Mức độ phù hợp với 6 trục năng lực: ${item.matchScore}%`}
+                        >
+                          <span className="text-[10px] opacity-90">✨</span>
+                          <span className="tracking-tight">{item.matchScore}%</span>
+                          <span className="text-[10px] font-semibold opacity-85">Phù hợp</span>
+                        </div>
                       </div>
 
-                      {/* Header kịch bản */}
-                      <div className="flex items-start gap-2.5 mb-2.5">
-                        <span className="text-2xl shrink-0 select-none">{item.icon}</span>
-                        <div className="min-w-0">
+                      {/* Header kịch bản: Icon & Tiêu đề cố định độ cao 2 dòng */}
+                      <div className="flex items-start gap-3 mb-2.5">
+                        <span className="text-3xl shrink-0 select-none drop-shadow-2xs">{item.icon}</span>
+                        <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="px-1.5 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[9px] font-black font-mono border border-[var(--ai)]/20">
+                            <span className="px-2 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-black font-mono border border-[var(--ai)]/20 shadow-2xs">
                               JLPT {item.level}
                             </span>
                           </div>
-                          <h4 className="text-sm font-bold text-[var(--sumi)] leading-snug line-clamp-2">
+                          <h4 className="text-sm sm:text-base font-bold text-[var(--sumi)] leading-snug line-clamp-2 min-h-[2.6rem] flex items-center">
                             {item.title}
                           </h4>
                         </div>
                       </div>
 
-                      <p className="text-xs text-[var(--sumi-muted)] leading-relaxed line-clamp-2 mb-3">
+                      {/* Bối cảnh tình huống cố định 2 dòng */}
+                      <p className="text-xs text-[var(--sumi-muted)] leading-relaxed line-clamp-2 min-h-[2.4rem] mb-3.5">
                         {item.description}
                       </p>
 
-                      {/* Mục tiêu rèn luyện */}
-                      <div className="rounded-xl bg-[var(--paper-100)] p-2.5 border border-[var(--line)]/60 text-[11px] space-y-1 mb-4">
-                        <div className="font-bold text-[var(--sumi)] flex items-center gap-1">
-                          <span>🎯</span>
+                      {/* Khối Trọng tâm rèn luyện cố định 3 dòng cân hàng tuyệt đối */}
+                      <div className="rounded-2xl bg-[var(--paper-100)] p-3 border border-[var(--line)]/70 text-xs space-y-1 mb-4 flex-1 flex flex-col justify-center min-h-[4.75rem]">
+                        <div className="font-bold text-[var(--sumi)] flex items-center gap-1.5 text-[11.5px]">
+                          <span className="text-rose-500">🎯</span>
                           <span>Trọng tâm rèn luyện:</span>
                         </div>
-                        <p className="text-[var(--sumi-muted)] leading-tight text-[10.5px]">
+                        <p className="text-[var(--sumi-muted)] leading-relaxed text-[11px] line-clamp-2">
                           {item.actionReason}
                         </p>
                       </div>
                     </div>
 
-                    {/* Bộ 3 nút bấm sâu: Vào kịch bản, Flashcards, Shadowing */}
-                    <div className="pt-3 border-t border-[var(--line)]/80 space-y-2 mt-auto">
+                    {/* Bộ 3 nút bấm sâu: Cân hàng tuyệt đối ở đáy */}
+                    <div className="pt-3.5 border-t border-[var(--line)]/80 space-y-2 mt-auto">
                       <Link
                         to={`/scenarios/${item.id}`}
-                        className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition active:scale-95 shadow-xs ${
+                        className={`w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition active:scale-95 shadow-sm ${
                           item.isTopPick
-                            ? "bg-gradient-to-r from-amber-500 via-amber-600 to-teal-600 hover:from-amber-600 hover:to-teal-700 text-white"
+                            ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-emerald-600/20"
                             : "bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white"
                         }`}
                       >
                         <span>Vào kịch bản này</span>
-                        <span>➔</span>
+                        <span className="text-sm">➔</span>
                       </Link>
 
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-2 gap-2">
                         <Link
                           to={`/flashcards?tab=bookmarks&level=${item.level}`}
-                          className="inline-flex items-center justify-center gap-1 rounded-lg border border-amber-300 bg-amber-50/70 hover:bg-amber-100 py-1.5 text-[10.5px] font-bold text-amber-900 transition active:scale-95"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-amber-300/80 bg-amber-50/80 hover:bg-amber-100/90 py-2 text-xs font-bold text-amber-900 transition active:scale-95 shadow-2xs"
                           title="Luyện từ vựng trọng tâm của kịch bản"
                         >
                           <span>🎴</span>
@@ -2580,7 +2591,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
                         <Link
                           to={`/shadowing?query=${encodeURIComponent(item.title)}`}
-                          className="inline-flex items-center justify-center gap-1 rounded-lg border border-teal-200 bg-teal-50/70 hover:bg-teal-100 py-1.5 text-[10.5px] font-bold text-teal-800 transition active:scale-95"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-teal-300/80 bg-teal-50/80 hover:bg-teal-100/90 py-2 text-xs font-bold text-teal-900 transition active:scale-95 shadow-2xs"
                           title="Luyện nói Shadowing ngữ điệu câu thoại"
                         >
                           <span>🎙️</span>
