@@ -107,6 +107,8 @@ export const LearnerShell: React.FC = () => {
   currentKey.current = pathname;
   const ghostRef = useRef<HTMLDivElement>(null);
   const lightIsland = isDark && !mapRoute && !isThemedPath(pathname);
+  // Sổ con dấu: cả trang (kể cả thanh bên) theo giấy Khám phá + sóng biển; chế độ tối giữ tông tối, chỉ cuốn sổ giữ giấy sáng
+  const stampsPage = pathname.replace(/\/+$/, '') === '/stamps';
 
   // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
   useEffect(() => {
@@ -146,7 +148,7 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={themeFor('learn')}>
+    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
       <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
@@ -168,7 +170,7 @@ export const LearnerShell: React.FC = () => {
       <div className="jx-pgbg" aria-hidden="true" />
 
       {!mapRoute && (
-        <main className={cx('jx-page', pending && 'is-pending')}>
+        <main className={cx('jx-page', pending && 'is-pending', stampsPage && 'jx-waves')}>
           <PageFrame key={pathname} routeKey={pathname} currentKey={currentKey} ghostRef={ghostRef} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">

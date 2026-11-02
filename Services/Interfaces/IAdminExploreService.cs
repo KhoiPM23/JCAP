@@ -9,10 +9,15 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<AdminExploreOverviewDto>> GetOverviewAsync();
 
         /// <summary>
-        /// Mở tỉnh cho người học. Chỉ mở được khi tỉnh có ít nhất một mốc đang dùng.
-        /// Không có thao tác đóng: tỉnh đã công khai chỉ tạm ngưng được qua chế độ bảo trì (phát triển sau).
+        /// Mở tỉnh cho người học. Chỉ mở được khi tỉnh có đủ số mốc đang dùng tối thiểu.
         /// </summary>
         Task<ApiResponse<AdminExplorePrefectureDto>> OpenPrefectureAsync(int prefectureId);
+
+        /// <summary>
+        /// Đóng tỉnh lại (admin tự đóng/mở, không cần chế độ bảo trì). Người học không vào được tỉnh nữa; mốc, con dấu và tiến độ
+        /// đã có vẫn được giữ nguyên trong CSDL và hiện lại khi mở tỉnh.
+        /// </summary>
+        Task<ApiResponse<AdminExplorePrefectureDto>> ClosePrefectureAsync(int prefectureId);
 
         /// <summary>Đưa tỉnh vào một chương, hoặc bỏ khỏi chương (chapterId = null).</summary>
         Task<ApiResponse<AdminExploreOverviewDto>> AssignPrefectureChapterAsync(int prefectureId, int? chapterId);

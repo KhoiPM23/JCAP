@@ -69,7 +69,7 @@ export const AdminExploreChapterSection: React.FC<Props> = ({
             Chương của hành trình
           </h2>
           <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-            Người học đi theo thứ tự chương. Chương sau mở khi người học đạt tỷ lệ con dấu đã đặt ở chương trước.
+            Chương để nhóm các tỉnh theo trình độ; người học học thoải mái ở mọi chương, không bị khoá theo thứ tự.
             Mỗi tỉnh chỉ thuộc một chương; đặt chương cho tỉnh ở bảng bên phải bản đồ.
           </p>
         </div>
@@ -203,7 +203,7 @@ const ChapterCard: React.FC<CardProps> = ({
               {levelText}
             </span>
             <span className="text-[11px] font-medium text-slate-500">
-              {isFirst ? 'Chương đầu · luôn mở' : `Mở khi đạt ${c.unlockThresholdPercent}% con dấu chương trước`}
+              Mở sẵn cho người học
             </span>
           </div>
           {c.description && <p className="text-xs text-slate-600 mt-1 leading-relaxed">{c.description}</p>}
@@ -375,23 +375,6 @@ const ChapterForm: React.FC<FormProps> = ({ initial, heading, submitLabel, busy,
               <option key={l}>{l}</option>
             ))}
           </select>
-        </Field>
-        <Field
-          label="Tỷ lệ mở chương sau (%)"
-          htmlFor="chapter-threshold"
-          error={errors.unlockThresholdPercent}
-          hint="Tỷ lệ con dấu cần có ở chương này."
-        >
-          <input
-            id="chapter-threshold"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={100}
-            value={Number.isNaN(form.unlockThresholdPercent) ? '' : form.unlockThresholdPercent}
-            onChange={(e) => set('unlockThresholdPercent', e.target.value === '' ? NaN : Number(e.target.value))}
-            className={inputClass(!!errors.unlockThresholdPercent)}
-          />
         </Field>
       </div>
 

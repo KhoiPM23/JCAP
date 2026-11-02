@@ -545,7 +545,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         {/* Vùng + nút đóng */}
         <div className="flex items-center justify-between">
           <span className="jm-region-chip">
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: region.ink }} aria-hidden="true" />
             Vùng {REGION_NAME[pref.region]}
             <span className="font-jp font-medium" lang="ja">
               {REGION_JP.get(pref.region)}
@@ -591,7 +590,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         {/* Một từ ở tỉnh */}
         {word && (
           <section aria-label="Một từ ở tỉnh" className="jm-word">
-            <span className="font-jp text-2xl font-bold leading-[34px]" lang="ja">
+            <span className="shrink-0 whitespace-nowrap font-jp text-2xl font-bold leading-[34px]" lang="ja">
               {furigana && word[1] ? (
                 <ruby>
                   {word[0]}
