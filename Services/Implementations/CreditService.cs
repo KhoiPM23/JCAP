@@ -91,7 +91,7 @@ namespace JCAP.Services.Implementations
             if (_payOSClient == null || !_payOsSettings.IsConfigured)
             {
                 // Cho phép chạy Mock Payment trong môi trường Test / Development khi PayOS chưa cấu hình
-                if (string.IsNullOrEmpty(_configuration["FrontendUrl"]) || _configuration.GetValue<bool>("PayOS:AllowMock", false))
+                if (string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogInformation("PayOS chưa cấu hình thông tin. Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
 
@@ -300,7 +300,24 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<CreditHistoryResponseDto>.Fail("Không tìm thấy người dùng.");
             }
 
-            // Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
+            bool hasStatusChanges = false;
+
+            // 1. Tự động hủy các giao dịch Pending đã quá hạn 10 phút (theo timeout chuẩn của PayOS)
+            var timeoutThreshold = DateTime.UtcNow.AddMinutes(-PendingOrderTimeoutMinutes);
+            var expiredPendingTxs = await _dbContext.CreditTransactions
+                .Where(t => t.UserId == userId && t.Status == "Pending" && t.CreatedAt <= timeoutThreshold)
+                .ToListAsync();
+
+            if (expiredPendingTxs.Any())
+            {
+                foreach (var expTx in expiredPendingTxs)
+                {
+                    expTx.Status = "Cancelled";
+                    hasStatusChanges = true;
+                }
+            }
+
+            // 2. Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
             // (Giúp đồng bộ tức thì khi người dùng bấm Hủy hoặc Thanh toán ở tab PayOS song song rồi mở/quay lại Lịch sử giao dịch)
             if (_payOSClient != null && _payOsSettings.IsConfigured)
             {
@@ -310,7 +327,6 @@ namespace JCAP.Services.Implementations
                     .Take(pageSize)
                     .ToListAsync();
 
-                bool hasStatusChanges = false;
                 foreach (var pendingTx in pendingTxs)
                 {
                     if (!long.TryParse(pendingTx.PayOsOrderCode, out var pendingOrderCode))
@@ -338,16 +354,18 @@ namespace JCAP.Services.Implementations
                         _logger.LogDebug(ex, "Không thể đối soát trạng thái đơn Pending #{OrderCode} từ PayOS khi tải lịch sử.", pendingOrderCode);
                     }
                 }
-
-                if (hasStatusChanges)
-                {
-                    await _dbContext.SaveChangesAsync();
-                }
             }
 
+            if (hasStatusChanges)
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Issue #118: Chỉ hiển thị giao dịch nạp (TopUp, Subscription), không hiển thị các khoản tiêu dùng (Deduct)
+            // để tránh nổ database và giữ lịch sử giao dịch sạch sẽ.
             var query = _dbContext.CreditTransactions
                 .AsNoTracking()
-                .Where(t => t.UserId == userId);
+                .Where(t => t.UserId == userId && t.Type != "Deduct");
 
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);

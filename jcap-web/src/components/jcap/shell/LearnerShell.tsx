@@ -3,6 +3,7 @@ import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { cx } from '../utils';
 import { AppSidebar } from './AppSidebar';
+import { LearnerNotificationBell } from '../../learner/LearnerNotificationBell';
 
 const COLLAPSE_KEY = 'jcap.sidebar.collapsed';
 
@@ -184,7 +185,10 @@ export const LearnerShell: React.FC = () => {
       )}
 
       {/* Bản sao mờ dần của trang vừa rời đi */}
+      {/* Bản sao mờ dần của trang vừa rời đi */}
       <div ref={ghostRef} className="jx-ghosts" aria-hidden="true" />
+      {/* Chuông thông báo chỉ hiện ở góc trên bên trái của Trang chủ / Hành trình */}
+      <LearnerNotificationBell />
     </div>
   );
 };

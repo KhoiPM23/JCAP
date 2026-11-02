@@ -174,7 +174,8 @@ public class RoleplaySessionService : IRoleplaySessionService
             && user.SubscriptionExpiresAt.HasValue
             && user.SubscriptionExpiresAt.Value > DateTime.UtcNow;
 
-        int creditDeducted = isAdmin ? 0 : levelConfig.CreditCost;
+        // Bỏ trừ 5 credit khi bắt đầu vào học: Bắt đầu phiên thoại hoàn toàn miễn phí (0 credit)
+        int creditDeducted = 0;
         bool useSubQuotaForInit = false;
 
         if (!isAdmin && creditDeducted > 0)
