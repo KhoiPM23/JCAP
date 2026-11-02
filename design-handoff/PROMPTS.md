@@ -40,6 +40,10 @@ Dán lần lượt từng câu vào khung chat Claude Code. Gõ `@` để gắn 
 
 > Làm mục 9b trong @design-handoff/HANDOFF.md: thêm ThemeProvider, nối SegmentedControl "Chế độ màu" ở SettingsView (Sáng / Tối / Theo máy, lưu localStorage), đổi data-theme các khu vực sang hoc-tap-dem / phong-luyen-dem. Rà và thay các màu cứng còn sót (bg-white, text-slate-*, mã hex) bằng token. Đối chiếu khối CSS "Chế độ tối" trong prototype.
 
+## Bước 9 · Sổ con dấu
+
+> Làm mục 9c trong @design-handoff/HANDOFF.md cho @jcap-web/src/views/explore/StampBookView.tsx, đối chiếu @design-handoff/prototype/StampBook.dc.html. Dùng lại SpotStampMark và PrefectureStampMark trong ExploreStamp.tsx, giữ nguyên useExploreJourney và exploreService.getStampBook. Chỉ đổi giao diện. Lập kế hoạch trước và chờ tôi duyệt.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

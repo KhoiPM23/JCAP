@@ -133,6 +133,60 @@ Prototype: SegmentedControl "Chế độ màu" trong trang `pgSettings`, giá tr
 - Không còn mã màu cứng nào được phép phụ thuộc chế độ sáng: rà các `bg-white`, `text-slate-*`, `#...` cũ trong các view khi chuyển sang token.
 - Logo trên nền tối tự nằm trên tấm `--logo-plate` (component Logo đã xử lý).
 
+## 9c. Sổ con dấu (`/stamps`, `views/explore/StampBookView.tsx`)
+
+Prototype: `prototype/StampBook.dc.html` (bấm Play để thử tab vùng, lật trang, Tổng quan, Mục lục). `prototype/StampKit.dc.html` chỉ để tham khảo trạng thái tải, lỗi và hoạt ảnh đóng dấu.
+
+Chỉ đổi giao diện. Dữ liệu giữ nguyên: `useExploreJourney()` (chương, tỉnh) và `exploreService.getStampBook()` (mốc đã có dấu). Trang vẫn chỉ đọc, không cấp dấu.
+
+**Con dấu: dùng lại `SpotStampMark` và `PrefectureStampMark` trong `ExploreStamp.tsx`.** Con dấu trong prototype chỉ là bản vẽ minh hoạ. Bản thật đã có biểu tượng NDC và hình tỉnh lấy từ dữ liệu bản đồ, lại giống hệt con dấu trên bản đồ. Cỡ: dấu mốc 72px (ô rộng 84px), dấu tỉnh 80px.
+
+Bố cục, từ trên xuống, cột rộng 1000px căn giữa:
+
+- **Nền trang:** cả trang (kể cả thanh bên) đặt `data-theme="kham-pha"`. `main` có nền `--paper-100` và hoa văn sóng biển (seigaiha) rất nhạt, vẽ bằng `radial-gradient` màu `--paper-300` 55%. Lấy nguyên CSS của `main` trong prototype.
+- **Dòng đầu (một hàng):** bên trái là dấu 旅 nhỏ (khung đỏ son, nghiêng −6°) và tiêu đề "Sổ con dấu". Bên phải có ba nút:
+  - "Về chương đang học": chỉ hiện khi đang xem chương khác.
+  - "Tổng quan": bật/tắt một bảng nổi, `aria-expanded`.
+  - "Mục lục": mở ngăn kéo bên phải.
+  - Không có dòng mô tả và 4 ô số liệu ở đầu trang nữa, các thứ này nằm trong bảng Tổng quan.
+- **Bảng Tổng quan** (rộng 440px, neo dưới nút, bấm ra ngoài hoặc Esc để đóng). Có ba phần:
+  - 4 số liệu xếp 2×2, số dùng font Mincho.
+  - Bản đồ nhỏ: các tỉnh vẽ từ `PREFECTURES` (khung `HOME_VIEWBOX`). Vùng đang xem tô `--ai` 32%. Tỉnh có dấu tỉnh: vòng đỏ son. Tỉnh chỉ có dấu mốc: chấm `--ai`. Đường đã đi: nét đứt đỏ son. Có nút "Mở bản đồ" dẫn về `/`.
+  - "Cách đọc sổ": ba dòng, mỗi dòng có một con dấu thật cỡ 40px (mực xanh, dấu son, ô trống).
+- **Thông tin chương (nằm ngoài cuốn sổ, ngay trên sổ):** chia hai cột.
+  - Cột trái: dòng "Chương N · Vùng" kèm JlptBadge (và Badge "Đang học" nếu là chương đang học), tên chương, mô tả, rồi ProgressBar nhỏ "Con dấu trong chương" (`stampCount/spotCount`).
+  - Cột phải, rộng 380px: mỗi tỉnh một dòng gồm tên Việt + Nhật, "x/y địa điểm có con dấu · z dấu son" và link "Mở" dẫn tới `/explore?tinh=slug`.
+  - Chương chưa mở: Badge "Chưa mở" ở cột trái. Cột phải là khung ổ khoá ghi điều kiện mở, kèm chip tên các tỉnh.
+- **Cuốn sổ chỉ chứa con dấu, không có chữ nội dung:**
+  - Bìa màu `--sumi`, bo 12px 22px 22px 12px, có đường chỉ đứt nét `--sora` 55% chạy cách mép 4px, và hai lớp giấy chồng ở góc dưới phải. Mỗi lần chỉ hiện một chương, dạng trang đôi.
+  - Trang trái: con dấu tỉnh của chương ở cỡ lớn 116px, nghiêng xen kẽ −5° và 4°, căn giữa trang. Dưới mỗi dấu là "x/y" và tên tỉnh.
+  - Trang phải: theo từng tỉnh, trước hết là tên tỉnh tiếng Nhật nhỏ, rồi lưới con dấu mốc đã đóng kèm tên tiếng Việt, rồi `spotCount − stampCount` ô trống tròn nét đứt, không ghi tên.
+  - Số chương in mờ bằng chữ kanji (零 一 二 … 十 十一 … 四十九), viết dọc ở góc dưới phải trang trái, màu `--paper-200`. Cỡ chữ: 150px nếu một chữ, 96px nếu hai hoặc ba chữ.
+  - Chương chưa mở: trang trái chỉ có số kanji. Trang phải chỉ có ấn 未開放 mờ.
+  - Lật trang: nút "‹ Chương N−1" và "Chương N+1 ›" ở hai góc dưới của trang giấy. Hỗ trợ cả phím ← →.
+  - Chương đang học có thẻ đánh dấu sách 栞 (shiori) treo ở mép trên trang phải: dải giấy hẹp, viền đỏ son, chữ dọc 学習中, dây đỏ và tua. Lấy nguyên SVG `.shiori` trong prototype.
+- **Tab vùng ở mép phải sổ:** 7 tab là vùng, không phải chương: 関東, 中部, 関西, 中四国, 九州, 東北, 北海道. Tab đang chọn màu đỏ son, vùng chưa mở có ổ khoá. Bấm tab sẽ nhảy tới chương đầu của vùng, hoặc tới chương đang học nếu chương đó nằm trong vùng.
+- **Dưới sổ:** một hàng chấm cho các chương trong vùng (chấm đặc là có dấu, viền đứt là chưa mở, chấm dài đỏ là trang đang mở; bấm được). Kèm dòng "Kanto · chương 3 trên 8 · 3 / 50".
+- **Ngăn kéo Mục lục** (rộng 440px, có lớp phủ, khoá focus, Esc để đóng):
+  - Ô tìm theo tên chương hoặc tỉnh.
+  - Chip lọc: Tất cả / Đã mở / Có dấu / Chưa mở, kèm số lượng.
+  - Danh sách theo vùng, gập/mở được. Mặc định chỉ mở vùng đang xem. Khi đang tìm hoặc lọc thì mở mọi vùng có kết quả.
+  - Mỗi chương một dòng: số, tên, cấp, các tỉnh, "x/y" hoặc ổ khoá, nhãn "Đang học". Bấm vào là nhảy tới chương và đóng ngăn kéo.
+
+Dữ liệu cần suy ra ở client (API không có sẵn):
+
+- **Vùng của chương:** lấy theo vùng của tỉnh đầu tiên trong `prefectureIds`, tra trong `PREFECTURES[].region`. Gộp `chugoku` và `shikoku` thành 中四国, `kyushu` gồm cả Okinawa.
+- **Chương đang học:** chương có `isUnlocked` với `orderIndex` lớn nhất. Trang mở mặc định vào chương này.
+- **Điều kiện mở:** chương trước cùng vùng thì ghi "Mở khi đạt {unlockThresholdPercent}% con dấu của “{tên chương trước}” (x/y)". Chương đầu vùng mới thì ghi "Mở khi xong vùng {tên vùng} (Chương N · {tên})".
+- **Ngoài các chương** (phần `UnassignedOpen` hiện có): một trang đôi sau chương cuối, kèm một nhóm cuối trong Mục lục. Chỉ hiện khi có dữ liệu.
+
+Trạng thái và yêu cầu khác:
+
+- **Đang tải:** khung cuốn sổ xám nhạt kèm 2 khối giấy. **Lỗi:** giữ khung báo lỗi đỏ nhạt có nút "Thử lại" như hiện tại.
+- **Chế độ tối:** cuốn sổ và các bảng nổi luôn dùng `kham-pha`. Nền trang đổi sang `--paper-100` của `hoc-tap-dem` (sóng biển dùng `--line`).
+- **Chuyển động:** đổi chương thì làm mờ trang và trượt 8px theo hướng lật, 200ms. Khi `prefers-reduced-motion` thì chỉ đổi ngay.
+- **Đóng dấu mới:** nếu muốn mừng dấu mới thì dùng thuộc tính `pressing` sẵn có của `SpotStampMark`, đúng một lần.
+
 ## 10. Thứ tự làm và cách nghiệm thu
 
 | Bước | Nội dung | Xong khi |
@@ -145,6 +199,7 @@ Prototype: SegmentedControl "Chế độ màu" trong trang `pgSettings`, giá tr
 | 6 | Phòng Hội thoại AI (9) | Gợi ý, mic, gõ chữ, đánh giá từng câu |
 | 7 | Bản đồ Hành trình (3) | Chuyển động vào/ra tỉnh, chú giải, điều khiển |
 | 8 | Chế độ tối (9b) | Chuyển Sáng/Tối/Theo máy ở Cài đặt, mọi màn đọc rõ, không còn màu cứng |
+| 9 | Sổ con dấu (9c) | Tab vùng, lật trang, Mục lục tìm/lọc, Tổng quan, đúng dữ liệu thật, không lộ tên mốc chưa đóng |
 
 Mỗi bước: chạy `npm run build` (typecheck) và `npm test`, chụp màn hình so với prototype, commit riêng.
 
