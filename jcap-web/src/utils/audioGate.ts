@@ -44,7 +44,9 @@ const CLIPPING_BLOCK_RATIO = 0.3;
 const FRAMES_PER_UNNATURAL_PAUSE = 72; // ~1.2s ở 60 khung/giây
 
 /** Dưới mức này (RMS giọng) coi là mic quá nhỏ. 0.008 ≈ -42 dB. */
-const MIN_VOICE_RMS = 0.008;
+export const MIN_VOICE_RMS = 0.008;
+/** Từ mức này trở lên (RMS giọng) mới được xếp "Tốt" về âm lượng; dưới đó chỉ "Chấp nhận được". 0.025 ≈ -32 dB. */
+export const GOOD_VOICE_RMS = 0.025;
 const MIN_DURATION_MS = 400;
 /** Khung được coi là "đang có tiếng" nếu RMS ≥ tỷ lệ này của mức tham chiếu (phân vị 95). */
 const ACTIVE_FRAME_RATIO = 0.25;
@@ -128,7 +130,7 @@ export function computeGateMetrics(
     gateLabel = 'Cần thu lại';
     gateDetail = 'Môi trường quá nhiều tiếng ồn xung quanh';
     isValidForAssessment = false;
-  } else if (snrDb < 12 || averageVoiceRms < 0.025 || clippingCount > CLIPPING_WARN_FRAMES) {
+  } else if (snrDb < 12 || averageVoiceRms < GOOD_VOICE_RMS || clippingCount > CLIPPING_WARN_FRAMES) {
     gateStatus = 'acceptable';
     gateLabel = 'Chấp nhận được';
     gateDetail = clippingCount > CLIPPING_WARN_FRAMES
@@ -158,6 +160,32 @@ export function computeGateMetrics(
     activeSpeechMs,
     durationMs,
   };
+}
+
+/** Mức âm lượng giọng khi thử mic, dùng đúng ngưỡng của cổng kiểm định để "Vừa đủ" nghĩa là bản thu sẽ không bị chặn. */
+export type MicTestLevel = 'silent' | 'too_quiet' | 'ok' | 'good';
+
+/**
+ * Đánh giá một cửa sổ RMS theo khung (~vài giây gần nhất) khi thử mic, cùng cách tính RMS giọng với computeGateMetrics:
+ * silent = không có tín hiệu, too_quiet = dưới MIN_VOICE_RMS (bản thu sẽ bị chặn), ok = đủ nhưng nhỏ, good = từ GOOD_VOICE_RMS.
+ */
+export function assessMicLevel(rmsFrames: ArrayLike<number>): { level: MicTestLevel; voiceRms: number } {
+  const sorted = Array.from(rmsFrames).sort((a, b) => a - b);
+  const maxRms = sorted.length ? sorted[sorted.length - 1] : 0;
+  if (maxRms < NO_SIGNAL_RMS) return { level: 'silent', voiceRms: 0 };
+  const voiceRms = voiceRmsOf(sorted);
+  if (voiceRms < MIN_VOICE_RMS) return { level: 'too_quiet', voiceRms };
+  if (voiceRms < GOOD_VOICE_RMS) return { level: 'ok', voiceRms };
+  return { level: 'good', voiceRms };
+}
+
+/** Đáy thang đo của thanh mic (dBFS). */
+export const METER_FLOOR_DB = -60;
+
+/** Đổi RMS (0..1) sang % thanh đo theo dBFS, thang -60..0 dB; ngưỡng cổng nằm ở ~30% (MIN_VOICE_RMS) và ~47% (GOOD_VOICE_RMS). */
+export function rmsToMeterPercent(rms: number): number {
+  const db = 20 * Math.log10(Math.max(rms, 1e-6));
+  return Math.round(Math.min(100, Math.max(0, ((db - METER_FLOOR_DB) / -METER_FLOOR_DB) * 100)));
 }
 
 /** Chia mẫu PCM thành khung ~60/giây và tính RMS + số khung vỡ tiếng. Dùng cho bản ghi đã giải mã. */

@@ -1,6 +1,13 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import { computeGateMetrics, frameRmsFromPcm } from './audioGate.ts';
+import {
+  assessMicLevel,
+  computeGateMetrics,
+  frameRmsFromPcm,
+  GOOD_VOICE_RMS,
+  MIN_VOICE_RMS,
+  rmsToMeterPercent,
+} from './audioGate.ts';
 
 const repeat = (v: number, n: number) => Array.from({ length: n }, () => v);
 // ~3 giây ở 60 khung/giây
@@ -106,4 +113,31 @@ test('Mức giọng không đổi khi bản ghi dài thêm khoảng lặng', () 
 test('volumeDb khớp volumeRms (0.1 ≈ -20 dB)', () => {
   const m = computeGateMetrics([...repeat(0.004, 30), ...repeat(0.1, 150)], 0, 3000);
   assert.strictEqual(m.volumeDb, -20);
+});
+
+test('assessMicLevel: im lặng / quá nhỏ / vừa đủ / tốt khớp ngưỡng của cổng', () => {
+  assert.strictEqual(assessMicLevel([]).level, 'silent');
+  assert.strictEqual(assessMicLevel(repeat(0.001, 120)).level, 'silent');
+  // ~ -48 dBFS: cổng sẽ chặn "mic quá nhỏ"
+  assert.strictEqual(assessMicLevel([...repeat(0.0005, 40), ...repeat(0.004, 80)]).level, 'too_quiet');
+  // ~ -34 dBFS: chấp nhận được
+  assert.strictEqual(assessMicLevel([...repeat(0.0005, 40), ...repeat(0.02, 80)]).level, 'ok');
+  // ~ -18 dBFS: tốt
+  assert.strictEqual(assessMicLevel([...repeat(0.0005, 40), ...repeat(0.12, 80)]).level, 'good');
+});
+
+test('assessMicLevel: kết quả nhất quán với computeGateMetrics về việc bị chặn vì quá nhỏ', () => {
+  for (const v of [0.004, 0.02, 0.12]) {
+    const frames = [...repeat(0.0005, 40), ...repeat(v, 80)];
+    const tooQuiet = assessMicLevel(frames).level === 'too_quiet';
+    const blockedAsQuiet = computeGateMetrics(frames, 0, 3000).gateDetail.includes('quá nhỏ');
+    assert.strictEqual(tooQuiet, blockedAsQuiet, `rms=${v}`);
+  }
+});
+
+test('rmsToMeterPercent: thang dBFS -60..0, ngưỡng cổng ở ~30% và ~47%', () => {
+  assert.strictEqual(rmsToMeterPercent(0), 0);
+  assert.strictEqual(rmsToMeterPercent(1), 100);
+  assert.strictEqual(rmsToMeterPercent(MIN_VOICE_RMS), 30);
+  assert.strictEqual(rmsToMeterPercent(GOOD_VOICE_RMS), 47);
 });
