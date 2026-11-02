@@ -42,7 +42,8 @@ const NAV: NavDef[] = [
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
   { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
-  { id: 'feedback', label: 'Góp ý ẩn danh', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
+  { id: 'community', label: 'Diễn đàn', icon: 'groups', to: '/community', match: (p) => p.startsWith('/community') || p.startsWith('/forum') },
+  { id: 'feedback', label: 'Hỗ trợ & Góp ý', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
 ];
 
 export interface AppSidebarProps {
@@ -201,7 +202,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             </MenuItem>
             <MenuItem icon="person" label="Hồ sơ" on={path.startsWith('/profile')} onClick={() => go('/profile')} />
             <MenuItem icon="settings" label="Cài đặt" on={path.startsWith('/settings')} onClick={() => go('/settings')} />
-            <MenuItem icon="help" label="Góp ý ẩn danh" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
+            <MenuItem icon="help" label="Hỗ trợ & Góp ý" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
             <span style={{ height: 1, margin: '4px 0', background: 'var(--line)' }} />
             <button type="button" role="menuitem" className="jx-mi" style={{ color: 'var(--danger)' }} onClick={() => logout()}>
               <Icon name="logout" size={20} />
