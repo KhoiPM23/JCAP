@@ -17,8 +17,8 @@ import { AdminExploreSpotTable } from './AdminExploreSpotTable';
 import { AdminExploreStats } from './AdminExploreStats';
 
 /**
- * Quản lý bản đồ Khám phá (giai đoạn 2): mở tỉnh cho người học và quản lý chương.
- * Soạn mốc học trong tỉnh là giai đoạn 3. Tỉnh đã mở không đóng lại ở đây: tạm ngưng sẽ đi qua chế độ bảo trì.
+ * Quản lý bản đồ Khám phá (giai đoạn 2): mở/đóng tỉnh cho người học và quản lý chương.
+ * Soạn mốc học trong tỉnh là giai đoạn 3. Admin tự đóng/mở tỉnh bất cứ lúc nào; đóng tỉnh không xoá con dấu hay tiến độ của người học.
  */
 
 const SHAPE_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
@@ -119,6 +119,16 @@ export const AdminExploreView: React.FC = () => {
       const updated = res.data;
       setOverview((o) => o && { ...o, prefectures: o.prefectures.map((p) => (p.id === id ? updated : p)) });
       toast(`Đã mở ${SHAPE_BY_ID.get(id)?.nameVi} cho người học.`);
+    }
+    return res.success;
+  };
+
+  const handleShut = async (id: number) => {
+    const res = await run(() => adminExploreService.closePrefecture(id));
+    if (res.success && res.data) {
+      const updated = res.data;
+      setOverview((o) => o && { ...o, prefectures: o.prefectures.map((p) => (p.id === id ? updated : p)) });
+      toast(`Đã đóng ${SHAPE_BY_ID.get(id)?.nameVi}.`);
     }
     return res.success;
   };
@@ -262,6 +272,7 @@ export const AdminExploreView: React.FC = () => {
                   busy={busy}
                   onClose={() => select(null)}
                   onOpen={handleOpen}
+                  onShut={handleShut}
                   onAssign={handleAssign}
                 />
               ) : (
@@ -369,11 +380,13 @@ interface PanelProps {
   busy: boolean;
   onClose: () => void;
   onOpen: (id: number) => Promise<boolean>;
+  onShut: (id: number) => Promise<boolean>;
   onAssign: (id: number, chapterId: number | null) => void;
 }
 
-const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClose, onOpen, onAssign }) => {
+const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClose, onOpen, onShut, onAssign }) => {
   const [confirming, setConfirming] = useState(false);
+  const [shutting, setShutting] = useState(false);
   const shape = SHAPE_BY_ID.get(id)!;
   const state = prefectureState(data);
   const published = data?.publishedSpotCount ?? 0;
@@ -462,16 +475,52 @@ const PrefecturePanel: React.FC<PanelProps> = ({ id, data, chapters, busy, onClo
               Đang mở{data.openedAt ? ` từ ${new Date(data.openedAt).toLocaleDateString('vi-VN')}` : ''}
             </p>
             <p className="text-xs text-emerald-900/80 mt-1 leading-relaxed">
-              Tỉnh đã công khai không đóng lại ngay được vì người học có thể đang học dở. Việc tạm ngưng sẽ làm qua
-              chế độ bảo trì (sắp có). Nội dung mốc vẫn sửa được bình thường.
+              Người học đang vào được tỉnh này. Nội dung mốc vẫn sửa được bình thường.
             </p>
+            {shutting ? (
+              <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3" role="alertdialog" aria-label="Xác nhận đóng tỉnh">
+                <p className="text-sm font-semibold text-amber-900">Đóng {shape.nameVi} lại?</p>
+                <ul className="text-xs text-amber-900/90 mt-1.5 space-y-1 list-disc pl-4 leading-relaxed">
+                  <li>Người học không vào được tỉnh nữa, họ thấy "Sẽ cập nhật trong tương lai".</li>
+                  <li>Con dấu và tiến độ đã có vẫn được giữ, sẽ hiện lại khi bạn mở tỉnh.</li>
+                </ul>
+                <div className="flex justify-end gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShutting(false)}
+                    className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0878EE]"
+                  >
+                    Huỷ
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={async () => {
+                      if (await onShut(id)) setShutting(false);
+                    }}
+                    className="h-9 px-3 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-600"
+                  >
+                    {busy ? 'Đang đóng…' : 'Xác nhận đóng'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShutting(true)}
+                className="mt-3 w-full h-9 rounded-lg border border-rose-300 bg-white text-rose-700 text-xs font-semibold hover:bg-rose-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+              >
+                Đóng tỉnh
+              </button>
+            )}
           </div>
         ) : confirming ? (
           <div className="rounded-xl border border-amber-300 bg-amber-50 p-3" role="alertdialog" aria-label="Xác nhận mở tỉnh">
             <p className="text-sm font-semibold text-amber-900">Mở {shape.nameVi} cho người học?</p>
             <ul className="text-xs text-amber-900/90 mt-1.5 space-y-1 list-disc pl-4 leading-relaxed">
               <li>Người học vào được tỉnh và thấy {published} mốc đang dùng.</li>
-              <li>Sau khi mở, tỉnh không đóng lại ngay được; tạm ngưng phải qua chế độ bảo trì.</li>
+              <li>Bạn có thể đóng tỉnh lại bất cứ lúc nào; con dấu của người học vẫn được giữ.</li>
               {draft > 0 && <li>{draft} mốc nháp vẫn ẩn với người học cho đến khi chuyển sang "Đang dùng".</li>}
               {!chapter && <li className="font-semibold">Tỉnh chưa thuộc chương nào nên chưa nằm trong lộ trình chương.</li>}
             </ul>

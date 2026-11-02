@@ -154,15 +154,13 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task Stats_Chapters_FirstUsesAllLearners_NextUsesUnlockRowsAndAveragesStamps()
+        public async Task Stats_Chapters_EveryChapterCountsAllLearnersAndAveragesStamps()
         {
             var w = await NewWorld("chapters");
             using var db = w.Db;
-            // 2 người học; "a" có con dấu ở 3/3 mốc Chiba, "b" ở 0/3
+            // 2 người học; "a" có con dấu ở 3/3 mốc Chiba và 1/2 mốc Tokyo, "b" chỉ có dấu ở Chiba 0/3
             foreach (var s in w.ChibaSpots) Progress(db, "a", s.Id, stamped: true);
             Progress(db, "b", w.ChibaSpots[0].Id);
-            // Chỉ "a" mở chương Tokyo và có con dấu ở 1/2 mốc
-            db.Set<ExploreChapterUnlock>().Add(new ExploreChapterUnlock { UserId = "a", ChapterId = w.Chapter1.Id });
             Progress(db, "a", w.TokyoSpots[0].Id, stamped: true);
             await db.SaveChangesAsync();
 
@@ -174,10 +172,11 @@ namespace JCAP.Tests.Services
             Assert.Equal(3, first.SpotCount);
             Assert.Equal(50.0, first.AvgStampPercent); // 3 con dấu / (3 mốc × 2 người)
 
+            // Chương sau cũng mở sẵn cho mọi người học
             var second = data.Chapters[1];
-            Assert.Equal(1, second.UnlockedLearners);
+            Assert.Equal(2, second.UnlockedLearners);
             Assert.Equal(2, second.SpotCount); // nháp và ngừng dùng không tính
-            Assert.Equal(50.0, second.AvgStampPercent); // 1 con dấu / (2 mốc × 1 người)
+            Assert.Equal(25.0, second.AvgStampPercent); // 1 con dấu / (2 mốc × 2 người)
         }
 
         [Fact]

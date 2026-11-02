@@ -34,11 +34,19 @@ namespace JCAP.Controllers
             return Ok(await _service.GetStatsAsync());
         }
 
-        /// <summary>Mở tỉnh cho người học (cần ít nhất 1 mốc đang dùng). Không có thao tác đóng tỉnh.</summary>
+        /// <summary>Mở tỉnh cho người học (cần đủ số mốc đang dùng tối thiểu).</summary>
         [HttpPost("prefectures/{id:int}/open")]
         public async Task<ActionResult<ApiResponse<AdminExplorePrefectureDto>>> OpenPrefecture(int id)
         {
             var result = await _service.OpenPrefectureAsync(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>Đóng tỉnh lại: người học không vào được, dữ liệu học được giữ nguyên và hiện lại khi mở tỉnh.</summary>
+        [HttpPost("prefectures/{id:int}/close")]
+        public async Task<ActionResult<ApiResponse<AdminExplorePrefectureDto>>> ClosePrefecture(int id)
+        {
+            var result = await _service.ClosePrefectureAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

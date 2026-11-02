@@ -51,9 +51,14 @@ class AdminExploreService {
     return this.send<AdminExploreOverview>('GET', BASE);
   }
 
-  /** Mở tỉnh cho người học (cần ít nhất MIN_SPOTS_TO_OPEN mốc đang dùng). Không có thao tác đóng. */
+  /** Mở tỉnh cho người học (cần ít nhất MIN_SPOTS_TO_OPEN mốc đang dùng) */
   public openPrefecture(id: number) {
     return this.send<AdminExplorePrefecture>('POST', `${BASE}/prefectures/${id}/open`);
+  }
+
+  /** Đóng tỉnh lại: người học không vào được, con dấu và tiến độ đã có vẫn được giữ và hiện lại khi mở tỉnh */
+  public closePrefecture(id: number) {
+    return this.send<AdminExplorePrefecture>('POST', `${BASE}/prefectures/${id}/close`);
   }
 
   /** Đưa tỉnh vào chương; null = bỏ khỏi chương */
