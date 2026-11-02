@@ -36,6 +36,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="JCAP.Tests" />
     <EmbeddedResource Include="Data\Seeds\LearningContentSample\sample.json" />
+    <EmbeddedResource Include="Data\Seeds\ExploreContent\explore-content.json" />
   </ItemGroup>
 
   <ItemGroup>
