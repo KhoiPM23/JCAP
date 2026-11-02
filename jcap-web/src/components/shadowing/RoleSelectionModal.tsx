@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { DefaultAvatarImage } from './DefaultAvatarImage';
 
 interface RoleSelectionModalProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                   {roleAName}
                 </h4>
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-blue-100 flex-shrink-0">
-                  <img src="/default_avatar.png" alt={roleAName} className="w-full h-full object-cover" />
+                  <DefaultAvatarImage alt={roleAName} className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
@@ -118,7 +119,7 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
                   {roleBName}
                 </h4>
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-purple-100 flex-shrink-0">
-                  <img src="/default_avatar.png" alt={roleBName} className="w-full h-full object-cover" />
+                  <DefaultAvatarImage alt={roleBName} className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>

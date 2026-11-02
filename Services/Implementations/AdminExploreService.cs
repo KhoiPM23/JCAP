@@ -86,6 +86,23 @@ namespace JCAP.Services.Implementations
             return ApiResponse<AdminExplorePrefectureDto>.Ok(overview.Data!.Prefectures.Single(p => p.Id == prefectureId), "Đã mở tỉnh cho người học.");
         }
 
+        public async Task<ApiResponse<AdminExplorePrefectureDto>> ClosePrefectureAsync(int prefectureId)
+        {
+            if (!IsValidPrefecture(prefectureId)) return ApiResponse<AdminExplorePrefectureDto>.Fail("Mã tỉnh không hợp lệ.");
+
+            var prefecture = await GetOrCreatePrefectureAsync(prefectureId);
+            if (!prefecture.IsOpen) return ApiResponse<AdminExplorePrefectureDto>.Fail("Tỉnh này đang đóng.");
+
+            // Chỉ đổi cờ mở: mốc, con dấu, tiến độ của người học không bị xoá, mở lại tỉnh là hiện đủ như cũ
+            prefecture.IsOpen = false;
+            prefecture.OpenedAt = null;
+            prefecture.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            var overview = await GetOverviewAsync();
+            return ApiResponse<AdminExplorePrefectureDto>.Ok(overview.Data!.Prefectures.Single(p => p.Id == prefectureId), "Đã đóng tỉnh.");
+        }
+
         public async Task<ApiResponse<AdminExploreOverviewDto>> AssignPrefectureChapterAsync(int prefectureId, int? chapterId)
         {
             if (!IsValidPrefecture(prefectureId)) return ApiResponse<AdminExploreOverviewDto>.Fail("Mã tỉnh không hợp lệ.");
@@ -199,12 +216,6 @@ namespace JCAP.Services.Implementations
                 .ToDictionary(x => x.SpotId);
 
             var prefectureStamps = _context.Set<ExplorePrefectureStamp>().AsNoTracking();
-            var unlockedByChapter = (await _context.Set<ExploreChapterUnlock>().AsNoTracking()
-                .GroupBy(u => u.ChapterId)
-                .Select(g => new { ChapterId = g.Key, Count = g.Count() })
-                .ToListAsync())
-                .ToDictionary(x => x.ChapterId, x => x.Count);
-
             // Chỉ mốc người học có thể thấy trong danh sách: đang dùng và chưa ngừng dùng. Dấu son chỉ có khi kịch bản còn Published.
             var spots = await _context.ExploreSpots.AsNoTracking()
                 .Where(s => s.IsActive && s.Status == ExploreSpotStatus.Published)
@@ -247,11 +258,11 @@ namespace JCAP.Services.Implementations
                 };
             }).ToList();
 
-            var chapterStats = chapters.Select((c, i) =>
+            var chapterStats = chapters.Select(c =>
             {
                 // Cùng cách tính với người học: chỉ mốc của tỉnh đã mở mới tính vào chương
                 var visible = spotStats.Where(s => s.ChapterId == c.Id && s.PrefectureIsOpen).ToList();
-                var unlocked = i == 0 ? learners : unlockedByChapter.GetValueOrDefault(c.Id);
+                var unlocked = learners; // mọi chương đều mở sẵn nên người học nào cũng tính
                 double? avg = null;
                 if (visible.Count > 0 && unlocked > 0)
                 {

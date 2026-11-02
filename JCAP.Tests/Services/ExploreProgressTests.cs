@@ -262,43 +262,29 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task NextChapter_LockedUntilThreshold_ThenUnlockedForGood()
+        public async Task AllChapters_OpenFromStart_NoLockingByPreviousChapter()
         {
             var w = await NewWorld("chapter");
             using var db = w.Db;
             var service = new ExploreService(db);
 
-            // Chưa có con dấu nào: Tokyo (chương 1) khoá, không lộ mốc, không cho bấm "Đã hiểu"
+            // Chưa có con dấu nào mà Tokyo (chương 1) vẫn học được: thấy mốc, bấm "Đã hiểu" được
             var tokyo = (await service.GetPrefectureAsync(User, Tokyo)).Data!;
-            Assert.True(tokyo.IsLocked);
-            Assert.Empty(tokyo.Spots);
-            Assert.False((await service.MarkUnderstoodAsync(User, w.TokyoSpots[0])).Success);
-            Assert.False((await service.GetSpotAsync(User, w.TokyoSpots[0])).Success);
+            Assert.False(tokyo.IsLocked);
+            Assert.NotEmpty(tokyo.Spots);
+            Assert.True((await service.MarkUnderstoodAsync(User, w.TokyoSpots[0])).Success);
+            Assert.True((await service.GetSpotAsync(User, w.TokyoSpots[0])).Success);
 
-            // 2/3 con dấu = 66% < 70%: vẫn khoá
-            AddShadowing(db, 101, 80);
-            AddShadowing(db, 102, 80);
-            await db.SaveChangesAsync();
-            await service.MarkUnderstoodAsync(User, w.ChibaSpots[0]);
-            var second = (await service.MarkUnderstoodAsync(User, w.ChibaSpots[1])).Data!;
-            Assert.Empty(second.Awards.UnlockedChapterIds);
-            Assert.True((await service.GetJourneyAsync(User)).Data!.Prefectures.Single(p => p.Id == Tokyo).IsLocked);
-
-            // 3/3: chương 1 mở và được báo đúng một lần
-            AddShadowing(db, 103, 80);
-            await db.SaveChangesAsync();
-            var third = (await service.MarkUnderstoodAsync(User, w.ChibaSpots[2])).Data!;
-            Assert.Equal(new[] { w.Chapter1 }, third.Awards.UnlockedChapterIds);
-            Assert.Empty((await service.SyncPrefectureAsync(User, Chiba)).Data!.Awards.UnlockedChapterIds);
-
-            // Admin thêm 3 mốc vào Chiba: tỷ lệ tụt còn 50%, nhưng chương đã mở thì mở mãi
-            db.ExploreSpots.AddRange(NewSpot(Chiba, 104, null), NewSpot(Chiba, 105, null), NewSpot(Chiba, 106, null));
-            await db.SaveChangesAsync();
             var journey = (await service.GetJourneyAsync(User)).Data!;
-            Assert.True(journey.Chapters.Single(c => c.Id == w.Chapter1).IsUnlocked);
-            Assert.Equal(6, journey.Chapters.Single(c => c.Id == w.Chapter0).SpotCount);
-            Assert.Equal(3, journey.Chapters.Single(c => c.Id == w.Chapter0).StampCount);
-            Assert.False((await service.GetPrefectureAsync(User, Tokyo)).Data!.IsLocked);
+            Assert.All(journey.Chapters, c => Assert.True(c.IsUnlocked));
+            Assert.All(journey.Prefectures.Where(p => p.IsOpen), p => Assert.False(p.IsLocked));
+
+            // Học xong ở Chiba cũng không phát sinh sự kiện "mở chương" và không lưu bản ghi mở chương
+            AddShadowing(db, 101, 80);
+            await db.SaveChangesAsync();
+            var result = (await service.MarkUnderstoodAsync(User, w.ChibaSpots[0])).Data!;
+            Assert.Empty(result.Awards.UnlockedChapterIds);
+            Assert.Empty(db.Set<ExploreChapterUnlock>());
         }
 
         [Fact]
@@ -361,28 +347,22 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public void ChapterStates_FirstAlwaysOpen_EmptyPreviousCountsAsMet_ChainNeedsPreviousUnlocked()
+        public void ChapterStates_EveryChapterIsUnlocked_AndStillCountsSpotsAndStamps()
         {
             var chapters = new[]
             {
                 new ExploreService.ChapterInput(1, 70, new[] { 12 }),
                 new ExploreService.ChapterInput(2, 70, new[] { 13 }),
                 new ExploreService.ChapterInput(3, 70, new[] { 26 }),
-                new ExploreService.ChapterInput(4, 70, new[] { 29 }),
             };
-            // Chương 1 chưa có mốc nào; chương 2 có 2 mốc, chưa có con dấu
             var spots = new List<(int Id, int PrefectureId)> { (10, 13), (11, 13) };
 
-            var states = ExploreService.ComputeChapterStates(chapters, spots, new HashSet<int>(), new HashSet<int>());
+            var states = ExploreService.ComputeChapterStates(chapters, spots, new HashSet<int> { 10 }, new HashSet<int>());
 
-            Assert.True(states[0].Unlocked);
-            Assert.True(states[1].Unlocked); // chương trước chưa soạn mốc: không kẹt hành trình
-            Assert.False(states[2].Unlocked); // 0/2 < 70%
-            Assert.False(states[3].Unlocked); // chương trước còn khoá thì chương này cũng khoá
-
-            var persisted = ExploreService.ComputeChapterStates(chapters, spots, new HashSet<int>(), new HashSet<int> { 3 });
-            Assert.True(persisted[2].Unlocked);
-            Assert.True(persisted[3].Unlocked); // chương 3 chưa có mốc nào
+            Assert.All(states, s => Assert.True(s.Unlocked));
+            Assert.Equal(0, states[0].SpotCount);
+            Assert.Equal(2, states[1].SpotCount);
+            Assert.Equal(1, states[1].StampCount);
         }
     }
 }

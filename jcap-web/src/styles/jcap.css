@@ -469,3 +469,12 @@ button.jc-bubble__box { cursor: pointer; }
 .jc-fb__sugg { margin-top: var(--space-2); padding: var(--space-3); background: var(--paper-200); border-radius: var(--radius-md); }
 .jc-fb__vi { margin: 0; font-size: 13px; line-height: 20px; color: var(--sumi-muted); }
 .jc-fb__tools { display: flex; gap: 2px; margin: 4px 0 -4px -8px; }
+
+/* Xổ xuống / thu lại: đổi chiều cao bằng grid 0fr -> 1fr (không đo px), kèm mờ dần và trượt nhẹ */
+.jc-collapse { display: grid; grid-template-rows: 0fr; margin-top: calc(var(--collapse-gap, 0px) * -1); opacity: 0; transform: translateY(-8px); transition: grid-template-rows .46s cubic-bezier(.4,0,.2,1), margin-top .46s cubic-bezier(.4,0,.2,1), opacity .32s ease, transform .46s cubic-bezier(.4,0,.2,1); }
+.jc-collapse.is-open { grid-template-rows: 1fr; margin-top: 0; opacity: 1; transform: none; }
+/* Lề trong 3px để viền focus của phần tử sát mép không bị cắt; lề âm bù lại để bố cục không lệch */
+.jc-collapse__in { min-height: 0; overflow: hidden; padding: 3px; margin: -3px; }
+.jc-chev { transition: transform .3s var(--ease); }
+.jc-chev.is-open { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .jc-collapse, .jc-chev { transition: none; } }
