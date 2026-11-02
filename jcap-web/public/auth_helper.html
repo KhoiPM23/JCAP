@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Auth Helper</title>
+</head>
+<body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const user = params.get('user');
+    const route = params.get('route') || '/';
+
+    if (token) {
+      localStorage.setItem('jcap_token', token);
+      localStorage.setItem('token', token);
+    }
+    if (user) {
+      localStorage.setItem('jcap_user', decodeURIComponent(user));
+      localStorage.setItem('user', decodeURIComponent(user));
+    }
+    localStorage.setItem('jcap_level', 'N3');
+    window.location.href = route;
+  </script>
+</body>
+</html>

@@ -42,21 +42,15 @@ namespace JCAP.Data.Seeds
             var learner3 = learners.FirstOrDefault(u =>
                 string.Equals(u.Email, "learner3@jcap.com", StringComparison.OrdinalIgnoreCase));
 
-            // Các tài khoản học viên chính (bao gồm learner1@jcap.com và tài khoản học viên bạn đang đăng nhập)
-            var primaryLearners = learners
-                .Where(u => u.Id != learner2?.Id && u.Id != learner3?.Id)
-                .ToList();
-
-            if (primaryLearners.Count == 0)
-            {
-                primaryLearners.Add(learners[0]);
-            }
+            // Chỉ chọn duy nhất 1 tài khoản học viên chính (ưu tiên learner1@jcap.com) để gán bộ ticket mẫu,
+            // tránh lặp lại cùng một mã ticket mẫu (#ANON-8492, #ANON-5194,...) cho nhiều người dùng dẫn đến hiển thị trùng lặp trên trang Admin
+            var primary = learners.FirstOrDefault(u =>
+                string.Equals(u.Email, "learner1@jcap.com", StringComparison.OrdinalIgnoreCase))
+                ?? learners.FirstOrDefault(u => u.Id != learner2?.Id && u.Id != learner3?.Id)
+                ?? learners[0];
 
             var now = DateTime.UtcNow;
             var ticketsToAdd = new List<FeedbackTicket>();
-
-            foreach (var primary in primaryLearners)
-            {
                 // 1. IN_PROGRESS: Đang trò chuyện 2 chiều với Admin (có đính kèm ảnh & file log trên Cloudinary)
                 var t1 = new FeedbackTicket
                 {
@@ -79,11 +73,11 @@ namespace JCAP.Data.Seeds
                             {
                                 new FeedbackAttachment
                                 {
-                                    FileName = "screenshot_yoyaku_n4.svg",
+                                    FileName = "screenshot_yoyaku_n4.png",
                                     FileSize = 188420,
                                     FileType = "IMAGE",
-                                    MimeType = "image/svg+xml",
-                                    CloudinaryUrl = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+                                    MimeType = "image/png",
+                                    CloudinaryUrl = "/screenshots/screenshot_yoyaku_n4.png",
                                     CloudinaryPublicId = "issues/screenshot_yoyaku_n4",
                                     CreatedAt = now.AddHours(-6)
                                 }
@@ -178,7 +172,6 @@ namespace JCAP.Data.Seeds
                 };
 
                 ticketsToAdd.AddRange(new[] { t1, t2, t3, t4 });
-            }
 
             // Bài của Học viên 2 (ẩn hoàn toàn với Học viên 1, chỉ Admin mới thấy)
             if (learner2 != null)
