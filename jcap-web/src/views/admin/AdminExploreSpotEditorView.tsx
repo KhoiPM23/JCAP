@@ -12,6 +12,7 @@ import type {
   SaveExploreSpot,
 } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
+import { orderForAdmin } from '../explore/routeOrder';
 import { WarnIcon } from './AdminExploreChapterSection';
 import { IconPicker } from './AdminExploreIconPicker';
 import { LookupChip, LookupSearch, UsedByText } from './AdminExplorePickers';
@@ -235,14 +236,15 @@ export const AdminExploreSpotEditorView: React.FC = () => {
   const coords = parseLatLon(form.coords);
   const pick = useMemo(() => (coords && inJapan(...coords) ? { lat: coords[0], lon: coords[1] } : null), [coords?.[0], coords?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
   // Mốc đang soạn được vẽ bằng chấm vị trí (pick), các mốc khác giữ đúng số thứ tự của chúng trong tỉnh
+  const orderedSpots = useMemo(() => orderForAdmin(allSpots), [allSpots]);
   const mapSpots = useMemo<MapSpot[]>(
     () =>
-      allSpots
-        .map((s, i) => ({ id: s.id, no: i + 1, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi }))
+      orderedSpots
+        .map(({ spot: s, no }) => ({ id: s.id, no, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi }))
         .filter((s) => s.id !== spotId),
-    [allSpots, spotId],
+    [orderedSpots, spotId],
   );
-  const pickNo = spotId ? allSpots.findIndex((s) => s.id === spotId) + 1 || null : null;
+  const pickNo = spotId ? orderedSpots.find(({ spot: s }) => s.id === spotId)?.no ?? null : null;
   const otherSpots = useMemo(() => allSpots.filter((s) => s.id !== spotId), [allSpots, spotId]);
 
   const backTo = prefectureId ? `/admin/explore/prefectures/${prefectureId}` : '/admin/explore';
