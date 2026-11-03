@@ -48,8 +48,13 @@ export const FlashcardSessionView: React.FC = () => {
 
   const isExtraPractice = searchParams.get('extraPractice') === 'true';
   const isDemo = topicId === 'demo' || topicId === '0';
-  const currentTopicId = topicId && !isDemo ? parseInt(topicId, 10) : 101;
-  const currentContentType = contentType?.toLowerCase() === 'grammar' ? 'Grammar' : 'Vocabulary';
+  const isDueReview = topicId === 'due';
+  const currentTopicId = topicId && !isDemo && !isDueReview ? parseInt(topicId, 10) : 101;
+  const currentContentType = contentType?.toLowerCase() === 'grammar'
+    ? 'Grammar'
+    : contentType?.toLowerCase() === 'mixed'
+    ? 'Mixed'
+    : 'Vocabulary';
   const isGrammar = currentContentType === 'Grammar';
 
   const MAX_RETRIES_PER_CARD = 2; // Mỗi thẻ được quay lại hàng đợi tối đa 2 lần trong phiên chính
@@ -67,6 +72,7 @@ export const FlashcardSessionView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [isEarlyExit, setIsEarlyExit] = useState<boolean>(false);
   const [summary, setSummary] = useState<FlashcardSessionSummary | null>(null);
 
   // Ratings tracking
@@ -121,8 +127,8 @@ export const FlashcardSessionView: React.FC = () => {
       }
 
       const res = await flashcardService.startSession({
-        sourceType: 'TopicSet',
-        topicId: currentTopicId,
+        sourceType: isDueReview ? 'DueReview' : 'TopicSet',
+        topicId: isDueReview ? null : currentTopicId,
         contentType: currentContentType,
         isExtraPractice,
       });
@@ -131,16 +137,21 @@ export const FlashcardSessionView: React.FC = () => {
         const initialCards = Array.isArray(res.data.cards) ? res.data.cards : [];
         setSession(res.data);
         setQueue(initialCards);
-        setTotalOriginalCards(initialCards.length);
+        setTotalOriginalCards(res.data.totalCardsInSession || initialCards.length);
+        if (res.data.previouslyReviewedCount) {
+          setResolvedCardsCount(res.data.previouslyReviewedCount);
+        }
       }
       setLoading(false);
     };
 
     initSession();
-  }, [currentTopicId, currentContentType, isExtraPractice, isDemo]);
+  }, [currentTopicId, currentContentType, isExtraPractice, isDemo, isDueReview]);
 
   // Current Card
   const currentCard: FlashcardCardItem | undefined = queue[currentIndex];
+  // Với phiên hỗn hợp (Mixed), kiểm tra linh hoạt theo từng thẻ hiện tại
+  const isCurrentCardGrammar = currentCard ? currentCard.itemType === 'Grammar' : isGrammar;
 
   // Dừng phát âm mẫu an toàn
   const stopAudio = useCallback(() => {
@@ -306,7 +317,7 @@ export const FlashcardSessionView: React.FC = () => {
   // Phát âm mục tiêu: Với ngữ pháp phát âm câu ví dụ mẫu; với từ vựng phát âm từ vựng
   const playTargetAudio = useCallback(() => {
     if (!currentCard) return;
-    if (isGrammar) {
+    if (isCurrentCardGrammar) {
       if (!isFlipped) return; // Không phát khi ở mặt trước để tránh lộ bài
       const { ja } = extractJapaneseSentence(currentCard.exampleSentence);
       if (ja) {
@@ -324,12 +335,12 @@ export const FlashcardSessionView: React.FC = () => {
     if (!currentCard) return;
 
     // 1. Khóa chéo: Nếu đang phát âm mẫu HOẶC đang ở mặt trước của thẻ ngữ pháp
-    if (isPlayingAudio || (isGrammar && !isFlipped)) {
+    if (isPlayingAudio || (isCurrentCardGrammar && !isFlipped)) {
       return;
     }
 
     // Xác định mục tiêu nhận diện (Với ngữ pháp: câu ví dụ mẫu; với từ vựng: frontText)
-    const targetJaText = isGrammar && currentCard.exampleSentence
+    const targetJaText = isCurrentCardGrammar && currentCard.exampleSentence
       ? extractJapaneseSentence(currentCard.exampleSentence).ja
       : currentCard.frontText;
 
@@ -337,7 +348,7 @@ export const FlashcardSessionView: React.FC = () => {
     if (isRecording) {
       stopVoicePractice('manual');
       if (lastTranscriptRef.current) {
-        evaluateTranscript(lastTranscriptRef.current, currentCard, isGrammar);
+        evaluateTranscript(lastTranscriptRef.current, currentCard, isCurrentCardGrammar);
       } else {
         setSpeechFeedback({
           success: false,
@@ -674,6 +685,40 @@ export const FlashcardSessionView: React.FC = () => {
     setQueue([...queue]);
   }, [currentCard, queue]);
 
+  // Xử lý thoát phiên giữa chừng và lưu trữ tiến độ các thẻ đã ôn
+  const handleExitSession = useCallback(async () => {
+    if (isCompleted || isDemo) {
+      navigate('/flashcards');
+      return;
+    }
+
+    const totalRated = ratingCounts.again + ratingCounts.good + ratingCounts.easy;
+
+    // Nếu chưa đánh giá thẻ nào -> dọn phiên rỗng và trở về danh sách
+    if (totalRated === 0) {
+      if (session?.sessionId) {
+        try {
+          await flashcardService.getSessionSummary(session.sessionId, true);
+        } catch {}
+      }
+      navigate('/flashcards');
+      return;
+    }
+
+    // Nếu đã đánh giá >= 1 thẻ -> chốt trạng thái dừng giữa chừng (isEarlyExit: true)
+    if (session?.sessionId) {
+      try {
+        const summaryRes = await flashcardService.getSessionSummary(session.sessionId, true);
+        if (summaryRes.success && summaryRes.data) {
+          setSummary(summaryRes.data);
+        }
+      } catch {}
+    }
+
+    setIsEarlyExit(true);
+    setIsCompleted(true);
+  }, [isCompleted, isDemo, ratingCounts, session, navigate]);
+
   // Bắt phím tắt bàn phím: Space (Lật), 1/2/3 (Đánh giá), A (Nghe), M (Thử nói), B (Bookmark), Esc (Thoát)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -716,7 +761,7 @@ export const FlashcardSessionView: React.FC = () => {
         handleToggleBookmark();
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        navigate('/flashcards');
+        handleExitSession();
       }
     };
 
@@ -732,6 +777,7 @@ export const FlashcardSessionView: React.FC = () => {
     playTargetAudio,
     handleVoicePractice,
     handleToggleBookmark,
+    handleExitSession,
     navigate,
     isRecording,
     isPlayingAudio,
@@ -785,20 +831,42 @@ export const FlashcardSessionView: React.FC = () => {
           </div>
           <div>
             <h2 className="text-2xl font-black text-[#071A44]">
-              {isExtraPractice
+              {isEarlyExit
+                ? 'Đã tạm dừng phiên học'
+                : isExtraPractice
                 ? 'Hoàn thành ôn tập tự do!'
                 : isMiniRound
                 ? 'Hoàn thành Mini-round!'
                 : 'Hoàn thành phiên học!'}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              {isExtraPractice
+              {isEarlyExit
+                ? 'Tiến độ của các thẻ bạn vừa ôn đã được lưu lại an toàn vào lịch trình SRS.'
+                : isExtraPractice
                 ? `Bạn đã duyệt qua toàn bộ ${queue.length} thẻ trong phiên ôn tập tự do này.`
                 : isMiniRound
                 ? 'Bạn đã ôn nhanh xong các thẻ khó trong danh sách Cần chú ý.'
                 : `Bạn đã hoàn thành ${totalOriginalCards} / ${totalOriginalCards} thẻ của phiên học này.`}
             </p>
           </div>
+
+          {/* Thống kê số thẻ đã ôn & chưa ôn khi thoát giữa chừng */}
+          {isEarlyExit && (
+            <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+              <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                <div className="text-[10px] font-bold text-emerald-700 uppercase">Đã ghi nhận SRS</div>
+                <div className="text-xl font-black text-emerald-900">
+                  {summary?.reviewedCardsCount ?? resolvedCardsCount} thẻ
+                </div>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <div className="text-[10px] font-bold text-amber-700 uppercase">Chưa ôn trong phiên</div>
+                <div className="text-xl font-black text-amber-900">
+                  {summary?.unreviewedCardsCount ?? Math.max(0, totalOriginalCards - resolvedCardsCount)} thẻ
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Thống kê đánh giá */}
           {isExtraPractice ? (
@@ -876,6 +944,17 @@ export const FlashcardSessionView: React.FC = () => {
           )}
 
           <div className="space-y-2.5 pt-2">
+            {isEarlyExit && (
+              <button
+                onClick={() => {
+                  setIsCompleted(false);
+                  setIsEarlyExit(false);
+                }}
+                className="w-full py-3 bg-[#2563EB] hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs cursor-pointer"
+              >
+                ▶ Tiếp tục ôn tập phiên này
+              </button>
+            )}
             {!isExtraPractice && leechCards.length > 0 && !isMiniRound && (
               <button
                 onClick={handleStartMiniRound}
@@ -887,7 +966,7 @@ export const FlashcardSessionView: React.FC = () => {
             )}
             <button
               onClick={() => navigate('/flashcards')}
-              className="w-full py-3 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs cursor-pointer"
+              className={`w-full py-3 font-bold rounded-xl text-xs transition-colors cursor-pointer ${isEarlyExit ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs'}`}
             >
               ← Quay về danh sách bộ thẻ
             </button>
@@ -911,7 +990,7 @@ export const FlashcardSessionView: React.FC = () => {
     .filter((c) => (cardAgainMap[`${c.itemType}_${c.itemId}`] || 0) > 0).length;
   const safeTotalOriginal = Math.max(1, totalOriginalCards);
   const progressPercent = isExtraPractice ? Math.min(100, Math.round(((currentIndex + 1) / Math.max(1, queue.length)) * 100)) : Math.min(100, Math.round((resolvedCardsCount / safeTotalOriginal) * 100));
-  const isGrammarFront = isGrammar && !isFlipped;
+  const isGrammarFront = isCurrentCardGrammar && !isFlipped;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between font-sans selection:bg-blue-100">
@@ -921,9 +1000,9 @@ export const FlashcardSessionView: React.FC = () => {
         {/* VÙNG 1 (TRÁI): Nút thoát phiên */}
         <div className="flex items-center shrink-0 min-w-[120px] sm:w-64">
           <button
-            onClick={() => navigate('/flashcards')}
+            onClick={handleExitSession}
             className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Thoát phiên học và quay lại danh sách bộ thẻ [Esc]"
+            title="Tạm dừng/thoát phiên học và lưu tiến độ [Esc]"
           >
             <span>✕</span>
             <span>Thoát phiên</span>
@@ -938,12 +1017,12 @@ export const FlashcardSessionView: React.FC = () => {
             </span>
             <span
               className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
-                isGrammar
+                isCurrentCardGrammar
                   ? 'bg-purple-50 text-purple-700 border border-purple-200'
                   : 'bg-blue-50 text-blue-700 border border-blue-200'
               }`}
             >
-              {isGrammar ? '🧩 Ngữ pháp' : '📘 Từ vựng'}
+              {isCurrentCardGrammar ? '🧩 Ngữ pháp' : '📘 Từ vựng'}
             </span>
             <h2 className="text-sm sm:text-base font-black text-[#071A44] leading-tight">
               {session?.setTitle || 'Đang ôn tập'}
@@ -962,6 +1041,13 @@ export const FlashcardSessionView: React.FC = () => {
           {isMiniRound && (
             <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 hidden md:inline-block">
               ⚡ MINI-ROUND
+            </span>
+          )}
+
+          {/* Badge phiên tiếp tục đang dở */}
+          {session?.isResumedSession && (
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 hidden sm:inline-block">
+              🔄 TIẾP TỤC PHIÊN DỞ
             </span>
           )}
 
@@ -990,7 +1076,7 @@ export const FlashcardSessionView: React.FC = () => {
 
           {/* Số thẻ hoàn thành */}
           <div className="px-3 py-1 bg-slate-100/90 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center gap-1 shadow-2xs">
-            <span className="hidden sm:inline text-slate-500">{isExtraPractice ? 'Thẻ:' : 'Đã thuộc:'}</span>
+            <span className="hidden sm:inline text-slate-500">{isExtraPractice ? 'Thẻ:' : 'Đã học:'}</span>
             <strong className="text-[#071A44] font-black">
               {isExtraPractice ? `${currentIndex + 1}/${queue.length}` : `${resolvedCardsCount}/${safeTotalOriginal}`}
             </strong>
@@ -1061,7 +1147,7 @@ export const FlashcardSessionView: React.FC = () => {
               <div className="flex-1 flex items-center justify-center text-center px-4">
                 <h1
                   className={`text-5xl sm:text-6xl font-black tracking-wide leading-tight ${
-                    isGrammar ? 'text-purple-950' : 'text-[#071A44]'
+                    isCurrentCardGrammar ? 'text-purple-950' : 'text-[#071A44]'
                   }`}
                 >
                   {currentCard.frontText}
@@ -1075,7 +1161,7 @@ export const FlashcardSessionView: React.FC = () => {
             {/* ==================== MẶT SAU (CẤU TRÚC / CÁCH ĐỌC + NGHĨA + CÂU MẪU + GIẢI THÍCH) ==================== */}
             <div
               className={`absolute inset-0 w-full h-full bg-white rounded-3xl border-2 p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col justify-between overflow-y-auto ${
-                isGrammar ? 'border-purple-200' : 'border-blue-200'
+                isCurrentCardGrammar ? 'border-purple-200' : 'border-blue-200'
               }`}
               style={{
                 backfaceVisibility: 'hidden',
@@ -1087,7 +1173,7 @@ export const FlashcardSessionView: React.FC = () => {
               <div className="flex items-center justify-between shrink-0">
                 <span
                   className={`text-[10px] font-bold uppercase tracking-widest ${
-                    isGrammar ? 'text-purple-400' : 'text-blue-400'
+                    isCurrentCardGrammar ? 'text-purple-400' : 'text-blue-400'
                   }`}
                 >
                   Mặt sau
@@ -1104,7 +1190,7 @@ export const FlashcardSessionView: React.FC = () => {
                 {currentCard.readingOrFormation && (
                   <div
                     className={`text-lg sm:text-xl font-bold ${
-                      isGrammar ? 'text-purple-700' : 'text-blue-600'
+                      isCurrentCardGrammar ? 'text-purple-700' : 'text-blue-600'
                     }`}
                   >
                     {currentCard.readingOrFormation}
@@ -1116,7 +1202,7 @@ export const FlashcardSessionView: React.FC = () => {
                 </h2>
 
                 {/* Với thẻ Ngữ pháp: Hiển thị câu mẫu minh họa ngay bên dưới dịch nghĩa */}
-                {isGrammar && currentCard.exampleSentence && (() => {
+                {isCurrentCardGrammar && currentCard.exampleSentence && (() => {
                   const { ja, vi } = extractJapaneseSentence(currentCard.exampleSentence);
                   return (
                     <div className="mt-2 px-4 py-2.5 bg-purple-50/70 border border-purple-200/90 rounded-2xl max-w-lg w-full text-center shadow-2xs">
@@ -1137,7 +1223,7 @@ export const FlashcardSessionView: React.FC = () => {
                 })()}
 
                 {/* Với thẻ Từ vựng: Hiển thị câu ví dụ minh họa (nếu có) */}
-                {!isGrammar && currentCard.exampleSentence && (
+                {!isCurrentCardGrammar && currentCard.exampleSentence && (
                   <div className="mt-2 px-4 py-2.5 bg-blue-50/60 border border-blue-200/80 rounded-2xl max-w-lg w-full text-center shadow-2xs">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">

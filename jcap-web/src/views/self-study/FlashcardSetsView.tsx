@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType } from '../../types/flashcard';
@@ -20,6 +21,19 @@ export const FlashcardSetsView: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
   const [jlptFilter, setJlptFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isDueModalOpen, setIsDueModalOpen] = useState<boolean>(false);
+
+  // Đóng modal khi nhấn phím Esc
+  useEffect(() => {
+    if (!isDueModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDueModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDueModalOpen]);
 
   // Tải dữ liệu thật từ API
   const loadData = async () => {
@@ -142,10 +156,13 @@ export const FlashcardSetsView: React.FC = () => {
     return filteredSets.slice(startIndex, startIndex + PAGE_SIZE);
   }, [filteredSets, currentPage]);
 
-  // Tổng số thẻ đến hạn hôm nay trong tất cả bộ
+  // Tổng số thẻ đến hạn hôm nay (ưu tiên số liệu độc nhất từ backend, không bị nhân đôi theo số chủ đề)
   const totalDueToday = useMemo(() => {
+    if (typeof quota?.totalDueCardsToday === 'number') {
+      return quota.totalDueCardsToday;
+    }
     return safeSets.reduce((acc, curr) => acc + (curr?.dueCards || 0), 0);
-  }, [safeSets]);
+  }, [quota, safeSets]);
 
   return (
     <div className="min-h-screen bg-[#F4F9FE] py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -266,6 +283,15 @@ export const FlashcardSetsView: React.FC = () => {
                 <p className="text-xs text-slate-600 mt-0.5">
                   Thẻ ôn lại luôn hoàn toàn miễn phí và không tính vào hạn mức thẻ mới.
                 </p>
+                {totalDueToday > 0 && (
+                  <button
+                    onClick={() => setIsDueModalOpen(true)}
+                    className="mt-2.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>⚡</span>
+                    <span>Ôn tập tất cả đến hạn ({totalDueToday} thẻ)</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -725,6 +751,136 @@ export const FlashcardSetsView: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* ==================== MODAL CHỌN CHẾ ĐỘ ÔN THẺ ĐẾN HẠN ==================== */}
+        {isDueModalOpen &&
+          createPortal(
+            <div
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setIsDueModalOpen(false);
+              }}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 space-y-5 my-auto"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🔥</span>
+                    <div>
+                      <h3 className="text-base font-black text-[#071A44]">
+                        Ôn tập tất cả thẻ đến hạn
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Tổng cộng {totalDueToday} thẻ đã đến hạn cần ôn lại hôm nay
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsDueModalOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-slate-600">
+                    Chọn chế độ ôn tập bạn muốn bắt đầu:
+                  </p>
+
+                  {/* Chế độ 1: Từ vựng */}
+                  <button
+                    onClick={() => {
+                      setIsDueModalOpen(false);
+                      navigate('/flashcards/study/due/vocabulary');
+                    }}
+                    disabled={!quota || (quota.dueVocabularyCount ?? 0) === 0}
+                    className="w-full p-4 rounded-2xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/70 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">📘</span>
+                      <div>
+                        <div className="text-sm font-black text-blue-950 group-hover:text-blue-700">
+                          Chỉ ôn Từ vựng
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Tập trung rèn luyện trí nhớ từ mới
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-blue-200/80 text-blue-900">
+                      {quota?.dueVocabularyCount ?? 0} thẻ
+                    </span>
+                  </button>
+
+                  {/* Chế độ 2: Ngữ pháp */}
+                  <button
+                    onClick={() => {
+                      setIsDueModalOpen(false);
+                      navigate('/flashcards/study/due/grammar');
+                    }}
+                    disabled={!quota || (quota.dueGrammarCount ?? 0) === 0}
+                    className="w-full p-4 rounded-2xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100/70 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🧩</span>
+                      <div>
+                        <div className="text-sm font-black text-purple-950 group-hover:text-purple-700">
+                          Chỉ ôn Ngữ pháp
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Ôn tập các mẫu câu và ngữ pháp
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-purple-200/80 text-purple-900">
+                      {quota?.dueGrammarCount ?? 0} thẻ
+                    </span>
+                  </button>
+
+                  {/* Chế độ 3: Hỗn hợp */}
+                  <button
+                    onClick={() => {
+                      setIsDueModalOpen(false);
+                      navigate('/flashcards/study/due/mixed');
+                    }}
+                    disabled={totalDueToday === 0}
+                    className="w-full p-4 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 transition-all text-left flex items-center justify-between group cursor-pointer shadow-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">⚡</span>
+                      <div>
+                        <div className="text-sm font-black text-amber-950 flex items-center gap-1.5">
+                          <span>Hỗn hợp (Toàn bộ)</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900">
+                            Khuyên dùng
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Gom cả Từ vựng và Ngữ pháp vào cùng một phiên
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-amber-500 text-white shadow-2xs">
+                      {totalDueToday} thẻ
+                    </span>
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex justify-end">
+                  <button
+                    onClick={() => setIsDueModalOpen(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
       </div>
     </div>
   );
