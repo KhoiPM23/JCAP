@@ -101,6 +101,7 @@ builder.Services.AddScoped<IScenarioService, ScenarioService>();
 builder.Services.AddScoped<IShadowingService, ShadowingService>();
 builder.Services.AddScoped<IAdminShadowingService, AdminShadowingService>();
 builder.Services.AddScoped<AdminLearningService>();
+builder.Services.AddScoped<AdminLearningImportService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IExploreService, ExploreService>();
 builder.Services.AddScoped<IAdminExploreService, AdminExploreService>();
