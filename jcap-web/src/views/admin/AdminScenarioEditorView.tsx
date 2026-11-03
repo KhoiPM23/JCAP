@@ -297,9 +297,7 @@ export const AdminScenarioEditorView: React.FC = () => {
   }, [isEditMode]);
 
   const currentScenarioId = isEditMode ? scenarioId : (predictedId ?? 1);
-  const currentScenarioCode = isEditMode
-    ? (scenarioId ? `SCN_${scenarioId}` : formData.scenarioCode)
-    : (formData.scenarioCode || (predictedId ? `SCN_${predictedId}` : 'SCN_1'));
+  const currentScenarioCode = formData.scenarioCode || (isEditMode && scenarioId ? `SCN_${scenarioId}` : (predictedId ? `SCN_${predictedId}` : 'SCN_1'));
 
   // Tải chi tiết kịch bản khi vào chế độ Edit
   useEffect(() => {
@@ -373,7 +371,7 @@ export const AdminScenarioEditorView: React.FC = () => {
           setFormData({
             title: full.title,
             description: full.description,
-            scenarioCode: full.id ? `SCN_${full.id}` : (full.scenarioCode || ''),
+            scenarioCode: full.scenarioCode || (full.id ? `SCN_${full.id}` : ''),
             thumbnail: full.thumbnail || '',
             isActive: full.isActive,
             levels: loadedLevels,

@@ -94,6 +94,85 @@ public class AiRoleplayServiceTests
     }
 
     [Fact]
+    public async Task ProcessTurnAsync_BareNoun_DowngradesGoodStatusToWarning_AndSanitizesFlattery()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient
+            .Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""replyJapanese"": ""はい、かしこまりました。"",
+                ""replyVietnamese"": ""Dạ vâng tôi hiểu rồi."",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": {
+                    ""status"": ""Good"",
+                    ""summary"": ""Phản xạ tự nhiên • Đúng ngữ cảnh"",
+                    ""details"": [
+                        { ""type"": ""success"", ""aspect"": ""Văn phong"", ""comment"": ""Sử dụng thể lịch sự chuẩn mực, thể hiện thái độ chu đáo và lễ phép."" },
+                        { ""type"": ""success"", ""aspect"": ""Cấu trúc"", ""comment"": ""Cấu trúc câu gãy gọn rõ ràng."" }
+                    ],
+                    ""naturalAlternative"": ""甘さ""
+                }
+            }"));
+
+        var service = new AiRoleplayService(
+            mockAiClient.Object,
+            new Mock<ILogger<AiRoleplayService>>().Object);
+
+        var result = await service.ProcessTurnAsync(
+            new Scenario { Title = "Đặt cà phê tại Harajuku" },
+            new ScenarioLevelConfiguration { JLPTLevel = "N4", AiPersona = "Barista" },
+            [],
+            "甘さ",
+            []);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
+        Assert.Equal("Warning", result.LinguisticFeedback.Status);
+        Assert.DoesNotContain("chuẩn mực", result.LinguisticFeedback.Details[0].Comment);
+        Assert.NotEqual("甘さ", result.LinguisticFeedback.NaturalAlternative);
+        Assert.Contains("甘さ控えめにできますか？", result.LinguisticFeedback.NaturalAlternative);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_SevenCharBareNoun_DowngradesGoodStatusToWarning()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient
+            .Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""replyJapanese"": ""はい、かしこまりました。"",
+                ""replyVietnamese"": ""Dạ vâng tôi hiểu rồi."",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": {
+                    ""status"": ""Good"",
+                    ""summary"": ""Phản xạ tự nhiên • Đúng ngữ cảnh"",
+                    ""details"": [
+                        { ""type"": ""success"", ""aspect"": ""Văn phong"", ""comment"": ""Sử dụng thể lịch sự chuẩn mực, thể hiện thái độ chu đáo và lễ phép."" }
+                    ],
+                    ""naturalAlternative"": ""ホットコーヒー""
+                }
+            }"));
+
+        var service = new AiRoleplayService(
+            mockAiClient.Object,
+            new Mock<ILogger<AiRoleplayService>>().Object);
+
+        var result = await service.ProcessTurnAsync(
+            new Scenario { Title = "Đặt cà phê tại Harajuku" },
+            new ScenarioLevelConfiguration { JLPTLevel = "N4", AiPersona = "Barista" },
+            [],
+            "ホットコーヒー",
+            []);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
+        Assert.Equal("Warning", result.LinguisticFeedback.Status);
+        Assert.Contains("ホットコーヒーをお願いします。", result.LinguisticFeedback.NaturalAlternative);
+    }
+
+    [Fact]
     public async Task GenerateOpeningMessageAsync_UsesCircadianGreetingDirectly()
     {
         var mockAiClient = new Mock<IAiClient>();

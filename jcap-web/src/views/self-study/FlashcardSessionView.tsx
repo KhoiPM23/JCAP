@@ -121,9 +121,10 @@ export const FlashcardSessionView: React.FC = () => {
         return;
       }
 
+      const isBookmarkSource = searchParams.get('source') === 'bookmark';
       const res = await flashcardService.startSession({
-        sourceType: isDueReview ? 'DueReview' : 'TopicSet',
-        topicId: isDueReview ? null : currentTopicId,
+        sourceType: isDueReview ? 'DueReview' : isBookmarkSource ? 'Bookmark' : 'TopicSet',
+        topicId: isDueReview ? null : isBookmarkSource ? undefined : currentTopicId,
         contentType: currentContentType,
         isExtraPractice,
       });
@@ -413,12 +414,29 @@ export const FlashcardSessionView: React.FC = () => {
     }
   }, [currentIndex, queue.length, session, currentCard, isDemo, handleFinishExtraPractice]);
 
-  // Toggle Bookmark
-  const handleToggleBookmark = useCallback(() => {
+  // Toggle Bookmark (Đồng bộ Backend SQL Server qua API /api/bookmarks/toggle)
+  const handleToggleBookmark = useCallback(async () => {
     if (!currentCard) return;
-    currentCard.isBookmarked = !currentCard.isBookmarked;
+    const prevStatus = !!currentCard.isBookmarked;
+    const targetItemType = currentCard.itemType;
+    const targetItemId = currentCard.itemId;
+
+    // Optimistic UI update
+    currentCard.isBookmarked = !prevStatus;
     setQueue([...queue]);
-  }, [currentCard, queue]);
+
+    if (!isDemo) {
+      const res = await flashcardService.toggleBookmark(targetItemType, targetItemId);
+      if (!res.success) {
+        // Rollback
+        currentCard.isBookmarked = prevStatus;
+        setQueue([...queue]);
+      } else if (res.data) {
+        currentCard.isBookmarked = res.data.isBookmarked;
+        setQueue([...queue]);
+      }
+    }
+  }, [currentCard, queue, isDemo]);
 
   // Xử lý thoát phiên giữa chừng và lưu trữ tiến độ các thẻ đã ôn
   const handleExitSession = useCallback(async () => {

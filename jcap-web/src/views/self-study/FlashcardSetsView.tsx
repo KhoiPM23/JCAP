@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
-import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType } from '../../types/flashcard';
+import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
 export const FlashcardSetsView: React.FC = () => {
   const navigate = useNavigate();
@@ -16,12 +16,36 @@ export const FlashcardSetsView: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Phát âm từ vựng / câu mẫu
+  const playJapaneseSpeech = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+  };
+
+  // Toggle/Bỏ bookmark trực tiếp từ tab Bookmark
+  const handleRemoveBookmark = async (item: BookmarkItem) => {
+    const res = await flashcardService.toggleBookmark(item.itemType, item.itemId);
+    if (res.success) {
+      setBookmarks((prev) => prev.filter((b) => !(b.itemType === item.itemType && b.itemId === item.itemId)));
+    }
+  };
+
   // Filters
-  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>('sets');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'bookmarks' ? 'bookmarks' : 'sets';
+  const initialJlpt = searchParams.get('level') || 'All';
+  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>(initialTab);
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
-  const [jlptFilter, setJlptFilter] = useState<string>('All');
+  const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDueModalOpen, setIsDueModalOpen] = useState<boolean>(false);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState<boolean>(false);
 
   // Đóng modal khi nhấn phím Esc
   useEffect(() => {
@@ -81,6 +105,27 @@ export const FlashcardSetsView: React.FC = () => {
       window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
     };
   }, [typeFilter, jlptFilter]);
+
+  const loadBookmarks = async () => {
+    setBookmarksLoading(true);
+    const res = await flashcardService.getBookmarks(typeFilter, jlptFilter, searchQuery);
+    if (res.success && res.data && Array.isArray(res.data.items)) {
+      setBookmarks(res.data.items);
+    } else {
+      setBookmarks([]);
+    }
+    setBookmarksLoading(false);
+  };
+
+  useEffect(() => {
+    loadBookmarks();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'bookmarks') {
+      loadBookmarks();
+    }
+  }, [activeTab, typeFilter, jlptFilter, searchQuery]);
 
   // Mở thêm 10 thẻ mới bằng Credits thực sự qua API
   const handleUnlockExtra = async () => {
@@ -240,20 +285,18 @@ export const FlashcardSetsView: React.FC = () => {
             <span>Bộ thẻ theo Chủ đề ({safeSets.length})</span>
           </button>
 
-          {/* Tab 2: Bookmark (Đang bảo lưu để làm bước kế tiếp) */}
-          <div className="relative group">
-            <button
-              disabled
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-faint border border-line flex items-center gap-2 cursor-not-allowed opacity-75"
-              title="Tính năng Bookmark đang được phát triển ở bước tiếp theo"
-            >
-              <span>🔖</span>
-              <span>Đã lưu (Bookmark)</span>
-              <span className="text-[10px] font-bold uppercase bg-warning-soft text-warning px-1.5 py-0.5 rounded-md ml-1">
-                Sắp ra mắt
-              </span>
-            </button>
-          </div>
+          {/* Tab 2: Bookmark (Đã kích hoạt với API SQL Server & Dark Mode) */}
+          <button
+            onClick={() => setActiveTab('bookmarks')}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'bookmarks'
+                ? 'bg-ai text-on-ai shadow-xs'
+                : 'bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line'
+            }`}
+          >
+            <span>🔖</span>
+            <span>Đã lưu (Bookmark) ({bookmarks.length})</span>
+          </button>
 
           {/* Tab 3: Lịch sử ôn tập */}
           <Link
@@ -400,10 +443,161 @@ export const FlashcardSetsView: React.FC = () => {
           </div>
         </div>
 
-        {/* ==================== 5. FLASHCARD SETS GRID ==================== */}
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-sumi-muted space-y-3">
-            <div className="w-10 h-10 border-4 border-line border-t-ai rounded-full animate-spin" />
+        {/* ==================== 5. BOOKMARKS TAB VIEW vs SETS GRID ==================== */}
+        {activeTab === 'bookmarks' ? (
+          <div className="space-y-6">
+            {/* Header thanh điều khiển luyện tập Bookmark */}
+            <div className="bg-warning-soft/30 border border-warning/30 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-paper-50 border border-warning/30 flex items-center justify-center text-2xl shadow-xs">
+                  🔖
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black text-sumi">
+                      Kho thẻ cá nhân đã lưu
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-warning-soft text-warning border border-warning/30">
+                      {bookmarks.length} thẻ
+                    </span>
+                  </div>
+                  <p className="text-xs text-sumi-muted mt-1">
+                    Các từ vựng và cấu trúc ngữ pháp bạn đã đánh dấu từ kịch bản hội thoại và các bộ thẻ để tự rèn luyện.
+                  </p>
+                </div>
+              </div>
+
+              {bookmarks.length > 0 && (
+                <button
+                  onClick={() => navigate('/flashcards/study/0/Mixed?source=bookmark')}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>🔥</span>
+                  <span>Luyện tập ngay ({bookmarks.length} thẻ)</span>
+                  <span>➔</span>
+                </button>
+              )}
+            </div>
+
+            {/* Danh sách thẻ Bookmarks */}
+            {bookmarksLoading ? (
+              <div className="py-20 flex flex-col items-center justify-center text-sumi-muted space-y-3">
+                <div className="w-10 h-10 border-4 border-warning/40 border-t-amber-600 rounded-full animate-spin" />
+                <p className="text-sm font-medium">Đang tải thẻ đã lưu từ cơ sở dữ liệu...</p>
+              </div>
+            ) : bookmarks.length === 0 ? (
+              <div className="bg-paper-50 rounded-2xl border border-line p-12 text-center space-y-4">
+                <div className="text-5xl">🔖</div>
+                <h3 className="text-base font-bold text-sumi">
+                  Bạn chưa lưu thẻ flashcard nào
+                </h3>
+                <p className="text-xs text-sumi-muted max-w-md mx-auto leading-relaxed">
+                  Khi thực hành đàm thoại trong kịch bản (Scenario) hoặc xem kết quả phân tích ngôn ngữ, hãy nhấn vào biểu tượng 🔖 để lưu các từ vựng & ngữ pháp trọng tâm vào đây.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => setActiveTab('sets')}
+                    className="px-4 py-2 bg-ai-soft text-ai hover:opacity-90 font-bold rounded-xl text-xs transition border border-ai/20 cursor-pointer"
+                  >
+                    Khám phá bộ thẻ theo chủ đề ➔
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {bookmarks.map((item) => (
+                  <div
+                    key={`${item.itemType}_${item.itemId}`}
+                    className="bg-paper-50 rounded-2xl border border-line p-5 shadow-xs hover:border-warning/50 hover:shadow-md transition-all flex flex-col justify-between space-y-3 text-sumi"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-paper-100 text-sumi border border-line">
+                            {item.jlptLevel || 'N5'}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                              item.itemType === 'Grammar'
+                                ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                                : 'bg-ai-soft text-ai border border-ai/20'
+                            }`}
+                          >
+                            {item.itemType === 'Grammar' ? '🧩 Ngữ pháp' : '📘 Từ vựng'}
+                          </span>
+                        </div>
+
+                        {/* SRS State Badge */}
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            item.srsState === 'Due'
+                              ? 'bg-warning-soft text-warning border border-warning/30 animate-pulse'
+                              : item.srsState === 'Learning'
+                              ? 'bg-ai-soft text-ai border border-ai/20'
+                              : 'bg-success-soft text-success border border-success/30'
+                          }`}
+                        >
+                          {item.srsState === 'Due'
+                            ? '🔥 Đến hạn'
+                            : item.srsState === 'Learning'
+                            ? `📖 Lặp lại (${item.intervalDays}d)`
+                            : '✨ Mới'}
+                        </span>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <h4 className="text-lg font-black text-sumi font-serif">
+                            {item.frontText}
+                          </h4>
+                          {item.readingOrFormation && (
+                            <span className="text-xs text-ai font-medium font-mono">
+                              {item.readingOrFormation}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-sumi mt-1 leading-relaxed">
+                          {item.meaning}
+                        </p>
+                        {item.exampleSentence && (
+                          <p className="text-[11px] text-sumi-muted italic mt-2 border-l-2 border-line pl-2">
+                            {item.exampleSentence}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-line">
+                      <button
+                        type="button"
+                        onClick={() => playJapaneseSpeech(item.frontText)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-sumi-muted hover:bg-paper-100 hover:text-sumi transition cursor-pointer border border-line"
+                        title="Nghe phát âm"
+                      >
+                        <span>🔊</span>
+                        <span>Nghe</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBookmark(item)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-danger hover:bg-danger-soft border border-transparent hover:border-danger/30 transition cursor-pointer"
+                        title="Bỏ lưu khỏi bookmark"
+                      >
+                        <span>✕</span>
+                        <span>Bỏ lưu</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ==================== 5. FLASHCARD SETS GRID ==================== */
+          loading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-sumi-muted space-y-3">
+              <div className="w-10 h-10 border-4 border-line border-t-ai rounded-full animate-spin" />
             <p className="text-sm font-medium">Đang tải danh sách bộ thẻ từ máy chủ...</p>
           </div>
         ) : filteredSets.length === 0 ? (
@@ -765,137 +959,138 @@ export const FlashcardSetsView: React.FC = () => {
               </div>
             )}
           </div>
-        )}
+        )
+      )}
 
-        {/* ==================== MODAL CHỌN CHẾ ĐỘ ÔN THẺ ĐẾN HẠN ==================== */}
-        {isDueModalOpen &&
-          createPortal(
+      {/* ==================== MODAL CHỌN CHẾ ĐỘ ÔN THẺ ĐẾN HẠN ==================== */}
+      {isDueModalOpen &&
+        createPortal(
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsDueModalOpen(false);
+            }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+          >
             <div
-              onClick={(e) => {
-                if (e.target === e.currentTarget) setIsDueModalOpen(false);
-              }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-paper-50 rounded-3xl border border-line max-w-md w-full shadow-2xl p-6 space-y-5 my-auto"
             >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="bg-paper-50 rounded-3xl border border-line max-w-md w-full shadow-2xl p-6 space-y-5 my-auto"
-              >
-                <div className="flex items-center justify-between border-b border-line pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">🔥</span>
+              <div className="flex items-center justify-between border-b border-line pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🔥</span>
+                  <div>
+                    <h3 className="text-base font-black text-sumi">
+                      Ôn tập tất cả thẻ đến hạn
+                    </h3>
+                    <p className="text-xs text-sumi-muted">
+                      Tổng cộng {totalDueToday} thẻ đã đến hạn cần ôn lại hôm nay
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsDueModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 text-sumi-muted hover:text-sumi font-bold flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-sumi-muted">
+                  Chọn chế độ ôn tập bạn muốn bắt đầu:
+                </p>
+
+                {/* Chế độ 1: Từ vựng */}
+                <button
+                  onClick={() => {
+                    setIsDueModalOpen(false);
+                    navigate('/flashcards/study/due/vocabulary');
+                  }}
+                  disabled={!quota || (quota.dueVocabularyCount ?? 0) === 0}
+                  className="w-full p-4 rounded-2xl border border-line bg-ai-soft/30 hover:bg-ai-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📘</span>
                     <div>
-                      <h3 className="text-base font-black text-sumi">
-                        Ôn tập tất cả thẻ đến hạn
-                      </h3>
-                      <p className="text-xs text-sumi-muted">
-                        Tổng cộng {totalDueToday} thẻ đã đến hạn cần ôn lại hôm nay
-                      </p>
+                      <div className="text-sm font-black text-sumi group-hover:text-ai">
+                        Chỉ ôn Từ vựng
+                      </div>
+                      <div className="text-xs text-sumi-muted">
+                        Tập trung rèn luyện trí nhớ từ mới
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsDueModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 text-sumi-muted hover:text-sumi font-bold flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
+                  <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-ai-soft text-ai border border-ai/30">
+                    {quota?.dueVocabularyCount ?? 0} thẻ
+                  </span>
+                </button>
 
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-sumi-muted">
-                    Chọn chế độ ôn tập bạn muốn bắt đầu:
-                  </p>
-
-                  {/* Chế độ 1: Từ vựng */}
-                  <button
-                    onClick={() => {
-                      setIsDueModalOpen(false);
-                      navigate('/flashcards/study/due/vocabulary');
-                    }}
-                    disabled={!quota || (quota.dueVocabularyCount ?? 0) === 0}
-                    className="w-full p-4 rounded-2xl border border-line bg-ai-soft/30 hover:bg-ai-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">📘</span>
-                      <div>
-                        <div className="text-sm font-black text-sumi group-hover:text-ai">
-                          Chỉ ôn Từ vựng
-                        </div>
-                        <div className="text-xs text-sumi-muted">
-                          Tập trung rèn luyện trí nhớ từ mới
-                        </div>
+                {/* Chế độ 2: Ngữ pháp */}
+                <button
+                  onClick={() => {
+                    setIsDueModalOpen(false);
+                    navigate('/flashcards/study/due/grammar');
+                  }}
+                  disabled={!quota || (quota.dueGrammarCount ?? 0) === 0}
+                  className="w-full p-4 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🧩</span>
+                    <div>
+                      <div className="text-sm font-black text-sumi group-hover:text-purple-400">
+                        Chỉ ôn Ngữ pháp
+                      </div>
+                      <div className="text-xs text-sumi-muted">
+                        Ôn tập các mẫu câu và ngữ pháp
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-ai-soft text-ai border border-ai/30">
-                      {quota?.dueVocabularyCount ?? 0} thẻ
-                    </span>
-                  </button>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                    {quota?.dueGrammarCount ?? 0} thẻ
+                  </span>
+                </button>
 
-                  {/* Chế độ 2: Ngữ pháp */}
-                  <button
-                    onClick={() => {
-                      setIsDueModalOpen(false);
-                      navigate('/flashcards/study/due/grammar');
-                    }}
-                    disabled={!quota || (quota.dueGrammarCount ?? 0) === 0}
-                    className="w-full p-4 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🧩</span>
-                      <div>
-                        <div className="text-sm font-black text-sumi group-hover:text-purple-400">
-                          Chỉ ôn Ngữ pháp
-                        </div>
-                        <div className="text-xs text-sumi-muted">
-                          Ôn tập các mẫu câu và ngữ pháp
-                        </div>
+                {/* Chế độ 3: Hỗn hợp */}
+                <button
+                  onClick={() => {
+                    setIsDueModalOpen(false);
+                    navigate('/flashcards/study/due/mixed');
+                  }}
+                  disabled={totalDueToday === 0}
+                  className="w-full p-4 rounded-2xl border-2 border-warning/40 bg-warning-soft/30 hover:bg-warning-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer shadow-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <div>
+                      <div className="text-sm font-black text-sumi flex items-center gap-1.5">
+                        <span>Hỗn hợp (Toàn bộ)</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-warning-soft text-warning border border-warning/30">
+                          Khuyên dùng
+                        </span>
+                      </div>
+                      <div className="text-xs text-sumi-muted">
+                        Gom cả Từ vựng và Ngữ pháp vào cùng một phiên
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-purple-500/20 text-purple-700 dark:text-purple-300">
-                      {quota?.dueGrammarCount ?? 0} thẻ
-                    </span>
-                  </button>
-
-                  {/* Chế độ 3: Hỗn hợp */}
-                  <button
-                    onClick={() => {
-                      setIsDueModalOpen(false);
-                      navigate('/flashcards/study/due/mixed');
-                    }}
-                    disabled={totalDueToday === 0}
-                    className="w-full p-4 rounded-2xl border-2 border-warning/40 bg-warning-soft/30 hover:bg-warning-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer shadow-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">⚡</span>
-                      <div>
-                        <div className="text-sm font-black text-sumi flex items-center gap-1.5">
-                          <span>Hỗn hợp (Toàn bộ)</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-warning-soft text-warning border border-warning/30">
-                            Khuyên dùng
-                          </span>
-                        </div>
-                        <div className="text-xs text-sumi-muted">
-                          Gom cả Từ vựng và Ngữ pháp vào cùng một phiên
-                        </div>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-warning text-white shadow-2xs">
-                      {totalDueToday} thẻ
-                    </span>
-                  </button>
-                </div>
-
-                <div className="pt-2 border-t border-line flex justify-end">
-                  <button
-                    onClick={() => setIsDueModalOpen(false)}
-                    className="px-4 py-2 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs border border-line transition-colors cursor-pointer"
-                  >
-                    Đóng
-                  </button>
-                </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-xl text-xs font-black bg-warning text-white shadow-2xs">
+                    {totalDueToday} thẻ
+                  </span>
+                </button>
               </div>
-            </div>,
-            document.body
-          )}
+
+              <div className="pt-2 border-t border-line flex justify-end">
+                <button
+                  onClick={() => setIsDueModalOpen(false)}
+                  className="px-4 py-2 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs border border-line transition-colors cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

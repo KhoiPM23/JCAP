@@ -39,8 +39,8 @@ export const EkiStampOverlay: React.FC<EkiStampOverlayProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--sumi)]/75 backdrop-blur-xs select-none animate-slide-up">
-      <div className="w-full max-w-md bg-[var(--paper-50)] rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-[var(--line)] flex flex-col items-center text-center relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--sumi)]/75 backdrop-blur-sm select-none transition-opacity duration-300 animate-fade-in">
+      <div className="w-full max-w-md bg-[var(--paper-50)] rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-[var(--line)] flex flex-col items-center text-center relative overflow-hidden animate-modal-pop">
         {/* Hoa văn Seigaiha / sóng nền nhẹ phía sau */}
         <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-[var(--sora-soft)] opacity-40 pointer-events-none" />
 

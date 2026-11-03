@@ -57,7 +57,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = $"SCN_{s.Id}",
+            ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -94,7 +94,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = $"SCN_{scenario.Id}",
+            ScenarioCode = !string.IsNullOrWhiteSpace(scenario.ScenarioCode) ? scenario.ScenarioCode : $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
@@ -241,19 +241,18 @@ public class ScenarioService : IScenarioService
             .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
 
-        // Tự động chuẩn hóa ScenarioCode trong DB về định dạng SCN_{id}
-        bool hasNormalizedCodes = false;
+        // Tự động bổ sung ScenarioCode trong DB nếu bản ghi bị thiếu
+        bool hasMissingCodes = false;
         foreach (var s in scenarios)
         {
-            var expectedCode = $"SCN_{s.Id}";
-            if (s.ScenarioCode != expectedCode)
+            if (string.IsNullOrWhiteSpace(s.ScenarioCode))
             {
-                s.ScenarioCode = expectedCode;
-                hasNormalizedCodes = true;
+                s.ScenarioCode = $"SCN_{s.Id}";
+                hasMissingCodes = true;
             }
         }
 
-        if (hasNormalizedCodes)
+        if (hasMissingCodes)
         {
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -265,7 +264,7 @@ public class ScenarioService : IScenarioService
             Description = s.Description,
             Thumbnail = s.Thumbnail,
             IsActive = s.IsActive,
-            ScenarioCode = $"SCN_{s.Id}",
+            ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
             SupportedJLPTLevels = s.LevelConfigurations
                 .Where(lc => lc.Status == "Published")
                 .OrderBy(lc => lc.JLPTLevel)
@@ -302,7 +301,7 @@ public class ScenarioService : IScenarioService
             Description = scenario.Description,
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
-            ScenarioCode = $"SCN_{scenario.Id}",
+            ScenarioCode = !string.IsNullOrWhiteSpace(scenario.ScenarioCode) ? scenario.ScenarioCode : $"SCN_{scenario.Id}",
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)

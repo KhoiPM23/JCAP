@@ -1,0 +1,84 @@
+{
+  "spots": {
+    "spot-18": [
+      {
+        "prefectureId": 45,
+        "iconId": "C_shrines",
+        "nameVi": "Đền Udo Jingu",
+        "nameJp": "鵜戸神宮",
+        "nameKana": "うどじんぐう",
+        "latitude": 32.69436,
+        "longitude": 131.66585,
+        "status": "Published",
+        "isActive": true,
+        "lesson": {
+          "level": "N5",
+          "situation": "Người học đến quầy bán bùa và đá may mắn (Undama) bên trong hang đá của đền Udo Jingu để hỏi mua đá ném cầu may.",
+          "realUse": "Dùng khi muốn hỏi mua đồ lưu niệm, bùa may mắn hoặc xin phép mua thứ gì đó tại các điểm tham quan.",
+          "sentence": [
+            {
+              "text": "すみません、"
+            },
+            {
+              "text": "運玉",
+              "reading": "うんだま"
+            },
+            {
+              "text": "を "
+            },
+            {
+              "text": "買",
+              "reading": "か"
+            },
+            {
+              "text": "いたいんですが、いくらですか。"
+            }
+          ],
+          "meaning": "Xin lỗi, tôi muốn mua đá may mắn Undama, giá bao nhiêu vậy ạ?",
+          "grammarNote": "Thể hiện mong muốn làm gì của bản thân.",
+          "estimatedMinutes": 5,
+          "grammars": [
+            "てください"
+          ],
+          "vocabularies": [
+            "大きい"
+          ],
+          "activities": [
+            {
+              "type": "Shadowing",
+              "dialogueTitle": "Bị lạc đường",
+              "scenarioTitle": null,
+              "scenarioLevel": null,
+              "passThreshold": 0,
+              "order": 0
+            },
+            {
+              "type": "Roleplay",
+              "dialogueTitle": null,
+              "scenarioTitle": "Đặt cà phê & bánh ngọt tại quán cafe Harajuku",
+              "scenarioLevel": "N5",
+              "passThreshold": null,
+              "order": 1
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "chapters": {
+    "3": [
+      {
+        "orderIndex": 3,
+        "title": "Chương 3 · Miyazaki",
+        "description": "Du lịch Miyazaki cùng bạn bè: mua bùa may mắn, nhờ chụp ảnh, hỏi thuê thuyền và xe điện.",
+        "minLevel": "N5",
+        "maxLevel": "N5",
+        "prefectureIds": [
+          45
+        ]
+      }
+    ]
+  },
+  "words": {},
+  "prefectures": {}
+}

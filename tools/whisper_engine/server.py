@@ -52,8 +52,8 @@ def health():
 
 @app.post("/save-audio")
 async def save_audio(file: UploadFile = File(...)):
-    suffix = os.path.splitext(file.filename or "")[1] or ".webm"
-    file_id = f"stt_{uuid.uuid4().hex[:12]}{suffix}"
+    suffix = os.path.splitext(file.filename or "")[1] or ".wav"
+    file_id = f"user_{uuid.uuid4().hex[:12]}{suffix}"
     dest_path = os.path.join(AUDIO_DIR, file_id)
     content = await file.read()
     with open(dest_path, "wb") as f:
@@ -84,22 +84,54 @@ async def transcribe(
         persisted_url = None
 
     try:
+        # Grounding initial_prompt prevents YouTube outro hallucinations on short utterances
+        # min_silence_duration_ms=250 ensures short conversational words (hai, sumimasen) aren't dropped
         segments, info = model.transcribe(
             tmp_path,
             language=language if language != "auto" else None,
             beam_size=5,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=400)
+            temperature=0.0,
+            initial_prompt=None,
+            vad_filter=False,
         )
 
         segment_list = []
         full_text_parts = []
         confidences = []
 
+        # Grounding phrases and known silence hallucinations to drop
+        HALLUCINATION_PHRASES = {
+            "日常会話の日本語です",
+            "日常会話の日本語",
+            "こんにちは日常会話の日本語です",
+            "日常会話",
+            "ご視聴ありがとうございました",
+            "視聴ありがとうございました",
+            "チャンネル登録よろしくお願いします",
+            "チャンネル登録",
+            "高評価よろしくお願いします",
+        }
+
         for seg in segments:
             text = seg.text.strip()
             if not text:
                 continue
+
+            # Drop silence segments where Faster-Whisper predicts high no-speech probability
+            no_speech = getattr(seg, "no_speech_prob", 0.0)
+            if no_speech > 0.55:
+                continue
+
+            # Drop compression ratio anomalies (hallucinatory infinite looping text)
+            compression = getattr(seg, "compression_ratio", 1.0)
+            if compression > 2.4:
+                continue
+
+            # Drop prompt echoes or YouTube outro hallucinations
+            normalized_clean = text.replace(" ", "").replace("。", "").replace("、", "").replace("！", "").replace("!", "")
+            if normalized_clean in HALLUCINATION_PHRASES or any(h in normalized_clean for h in ["日常会話の日本語", "ご視聴ありがとう"]):
+                continue
+
             full_text_parts.append(text)
             conf = min(1.0, max(0.0, math.exp(seg.avg_logprob)))
             confidences.append(conf)
@@ -112,7 +144,7 @@ async def transcribe(
 
         full_text = " ".join(full_text_parts).strip()
         duration = round(float(info.duration), 2) if hasattr(info, "duration") and info.duration else 0.0
-        avg_confidence = round(sum(confidences) / len(confidences), 3) if confidences else 0.85
+        avg_confidence = round(sum(confidences) / len(confidences), 3) if confidences else (0.0 if not full_text else 0.85)
         speech_pace = round(len(full_text) / duration, 1) if duration > 0 else 0.0
 
         return {

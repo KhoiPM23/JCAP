@@ -70,16 +70,14 @@ namespace JCAP.Data.Seeds
             }
             if (addedWord) await db.SaveChangesAsync();
 
-            // 5. Gói nội dung admin soạn (Data/Seeds/ExploreContent). Chỉ chạy khi host có cấu hình, nên các test không có
+            // 5. Dữ liệu roadmap của người soạn (Data/Seeds/ExploreContent). Chỉ chạy khi host có cấu hình, nên các test không có
             // IConfiguration vẫn thấy đúng bộ mẫu ra mắt ở trên. Tắt bằng "Explore:ImportContentPack": false
             var config = serviceProvider.GetService<IConfiguration>();
             if (config != null && config.GetValue("Explore:ImportContentPack", true))
             {
-                var result = await ExploreContentSeeder.ImportAsync(db, ExploreContentPack.Load());
+                var result = await ExploreContentSeeder.ImportAsync(db, ExploreContentPack.Load(), ExploreContentHistory.Load());
                 var log = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger("ExploreContentSeeder");
-                log?.LogInformation(
-                    "Explore content pack: +{Chapters} chương, +{Spots} mốc, {Linked} mốc bổ sung liên kết, mở {Opened} tỉnh, +{Words} từ ở tỉnh",
-                    result.ChaptersAdded, result.SpotsAdded, result.SpotsLinked, result.PrefecturesOpened, result.WordsAdded);
+                log?.LogInformation("Explore content pack: {Result}", result with { UnresolvedLinks = Array.Empty<string>() });
                 foreach (var u in result.UnresolvedLinks)
                     log?.LogWarning("Explore content pack: không tìm thấy {Link} trên máy này, bỏ qua liên kết", u);
             }
