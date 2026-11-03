@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
@@ -447,6 +447,7 @@ export const FlashcardSetsView: React.FC = () => {
         {activeTab === 'bookmarks' ? (
           <div className="space-y-6">
             {/* Header thanh điều khiển luyện tập Bookmark */}
+            <div className="bg-warning-soft/30 border border-warning/30 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-paper-50 border border-warning/30 flex items-center justify-center text-2xl shadow-xs">
                   🔖
