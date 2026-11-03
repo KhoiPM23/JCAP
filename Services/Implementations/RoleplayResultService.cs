@@ -251,65 +251,6 @@ namespace JCAP.Services.Implementations
 
             _dbContext.RoleplayResults.Add(result);
 
-            // Ghi nhận con dấu son Hanko (Red Stamp) vào Bản đồ Khám phá (Explore Spot Progress)
-            if (result.PassStatus)
-            {
-                try
-                {
-                    var configId = session.ScenarioLevelConfigurationId;
-                    if (configId > 0)
-                    {
-                        var spotActivity = await _dbContext.ExploreSpotActivities
-                            .Include(a => a.Lesson)
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(a => a.ActivityType == ExploreActivityType.Roleplay && a.ReferenceId == configId);
-
-                        int? targetSpotId = null;
-                        if (spotActivity?.Lesson != null)
-                        {
-                            targetSpotId = spotActivity.Lesson.SpotId;
-                        }
-                        else if (spotActivity != null && spotActivity.LessonId > 0)
-                        {
-                            var lesson = await _dbContext.ExploreSpotLessons.AsNoTracking().FirstOrDefaultAsync(l => l.Id == spotActivity.LessonId);
-                            if (lesson != null)
-                            {
-                                targetSpotId = lesson.SpotId;
-                            }
-                        }
-
-                        if (targetSpotId.HasValue && targetSpotId.Value > 0)
-                        {
-                            var spotProgress = await _dbContext.Set<ExploreSpotProgress>()
-                                .FirstOrDefaultAsync(p => p.UserId == userId && p.SpotId == targetSpotId.Value);
-
-                            if (spotProgress == null)
-                            {
-                                spotProgress = new ExploreSpotProgress
-                                {
-                                    UserId = userId,
-                                    SpotId = targetSpotId.Value,
-                                    RedStampedAt = completedAt,
-                                    StampedAt = completedAt,
-                                    RoleplaySessionId = sessionId,
-                                    UpdatedAt = completedAt
-                                };
-                                _dbContext.Set<ExploreSpotProgress>().Add(spotProgress);
-                            }
-                            else
-                            {
-                                spotProgress.RedStampedAt = completedAt;
-                                spotProgress.RoleplaySessionId = sessionId;
-                                spotProgress.UpdatedAt = completedAt;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Không thể ghi nhận con dấu son Hanko cho RoleplaySession {SessionId}", sessionId);
-                }
-            }
 
             try
 
@@ -915,50 +856,22 @@ namespace JCAP.Services.Implementations
 
                 }
 
-                if (linkedSpot == null)
-
-                {
-
-                    var directProg = await _dbContext.Set<ExploreSpotProgress>()
-
-                        .Include(p => p.Spot)
-
-                        .AsNoTracking()
-
-                        .FirstOrDefaultAsync(p => p.UserId == userId && p.RoleplaySessionId == result.RoleplaySessionId);
-
-                    if (directProg?.Spot != null)
-
-                    {
-
-                        linkedSpot = directProg.Spot;
-
-                    }
-
-                }
-
                 if (linkedSpot != null)
-
                 {
-
                     exploreSpotId = linkedSpot.Id;
-
                     explorePrefectureId = linkedSpot.PrefectureId;
 
-                    // Chỉ trao con dấu Eki-stamp khi phiên này đạt yêu cầu (PassStatus == true)
+                    // Chỉ hiển thị con dấu Eki-stamp nếu đã được AwardAsync cấp thật sự
+                    var spotProgress = await _dbContext.Set<ExploreSpotProgress>()
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.UserId == userId && p.SpotId == linkedSpot.Id);
 
-                    if (result.PassStatus)
-
+                    if (spotProgress?.RedStampedAt != null)
                     {
-
                         awardedEkiStampName = !string.IsNullOrWhiteSpace(linkedSpot.NameVi)
-
                             ? linkedSpot.NameVi
-
                             : linkedSpot.NameJp;
-
                     }
-
                 }
 
             }
