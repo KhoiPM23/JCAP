@@ -102,6 +102,28 @@ export const authService = {
   },
 
   /**
+   * Gửi lại email xác minh tài khoản
+   */
+  async resendConfirmationEmail(email: string): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/resend-confirmation-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      return await parseResponse<string>(response);
+    } catch {
+      return {
+        success: false,
+        message: 'Không thể kết nối đến máy chủ Backend.',
+      };
+    }
+  },
+
+  /**
    * Lấy thông tin tài khoản người dùng đang đăng nhập bằng JWT Bearer Token
    */
   async getCurrentUser(token: string): Promise<ApiResponse<AuthResponseDto>> {
@@ -210,4 +232,3 @@ export const authService = {
     return 'http://localhost:5254/api/auth/google';
   },
 };
-

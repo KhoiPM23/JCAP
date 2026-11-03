@@ -400,4 +400,151 @@ public class AuthServiceTests
             x => x.ChangePasswordAsync(user, "OldPassword123", "NewPassword123"),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ResendConfirmationEmailAsync_WithUnverifiedUser_SendsEmail()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-unverified",
+            Email = "unverified@example.com",
+            FullName = "Nguyen Unverified",
+            IsActive = true,
+            EmailConfirmed = false
+        };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+        userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(user)).ReturnsAsync("new-confirm-token");
+
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ResendConfirmationEmailAsync(new ResendConfirmationEmailDto
+        {
+            Email = user.Email
+        });
+
+        Assert.True(result.Success);
+        Assert.Contains("Liên kết xác nhận mới đã được gửi", result.Message);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                user.Email,
+                "Xác minh email tài khoản JCAP",
+                It.Is<string>(body => body.Contains("confirm-email") && body.Contains("new-confirm-token")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ResendConfirmationEmailAsync_WithAlreadyVerifiedUser_ReturnsNoticeWithoutSendingEmail()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-verified",
+            Email = "verified@example.com",
+            FullName = "Nguyen Verified",
+            IsActive = true,
+            EmailConfirmed = true
+        };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ResendConfirmationEmailAsync(new ResendConfirmationEmailDto
+        {
+            Email = user.Email
+        });
+
+        Assert.True(result.Success);
+        Assert.Contains("Email này đã được xác minh trước đó", result.Message);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ResendConfirmationEmailAsync_WithUnknownEmail_ReturnsGenericSuccessWithoutSendingEmail()
+    {
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock
+            .Setup(x => x.FindByEmailAsync("unknown@example.com"))
+            .ReturnsAsync((ApplicationUser?)null);
+
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ResendConfirmationEmailAsync(new ResendConfirmationEmailDto
+        {
+            Email = "unknown@example.com"
+        });
+
+        Assert.True(result.Success);
+        Assert.Contains("Nếu email tồn tại và chưa được xác minh", result.Message);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ResendConfirmationEmailAsync_WithInactiveUser_ReturnsFailure()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-banned",
+            Email = "banned@example.com",
+            FullName = "Nguyen Banned",
+            IsActive = false,
+            EmailConfirmed = false
+        };
+        var userManagerMock = CreateUserManagerMock();
+        userManagerMock.Setup(x => x.FindByEmailAsync(user.Email)).ReturnsAsync(user);
+
+        var emailServiceMock = new Mock<IEmailService>();
+        var authService = new AuthService(
+            userManagerMock.Object,
+            CreateRoleManagerMock().Object,
+            CreateConfiguration(),
+            new Mock<IHttpClientFactory>().Object,
+            emailServiceMock.Object);
+
+        var result = await authService.ResendConfirmationEmailAsync(new ResendConfirmationEmailDto
+        {
+            Email = user.Email
+        });
+
+        Assert.False(result.Success);
+        Assert.Equal("Tài khoản của bạn đã bị khóa.", result.Message);
+        emailServiceMock.Verify(
+            x => x.SendAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }
