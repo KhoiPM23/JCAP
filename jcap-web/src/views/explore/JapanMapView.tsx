@@ -10,6 +10,7 @@ import { AwardOverlay } from './AwardOverlay';
 import { PrefectureStampMark, STAMP_CSS, STAMP_INK, SpotStampMark } from './ExploreStamp';
 import { THEME_CSS_VARS, T } from './exploreTheme';
 import { PictogramIcon } from './exploreUi';
+import { ProvinceWordCard } from './ProvinceWordCard';
 import { Button, Icon, IconButton } from '../../components/jcap';
 import { speakJa, useCanSpeakJa } from './speak';
 import { useFurigana } from './furigana';
@@ -383,8 +384,11 @@ export const JapanMapView: React.FC<{
           .jm-ppanel { background: var(--paper-100); border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(8,26,56,.38); color: var(--sumi); }
           .jm-region-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px;
             background: var(--paper-50); border: 1px solid var(--line); font-size: 12px; font-weight: 600; white-space: nowrap; }
-          .jm-word { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft); }
+          .jm-word { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft); }
+          .jm-word ruby { ruby-align: start; }
           .jm-word rt { font-size: 11px; }
+          .jm-word-note { overflow: hidden; transition: max-height .28s var(--ease); }
+          @media (prefers-reduced-motion: reduce) { .jm-word-note { transition: none; } }
           .jm-panel-right { animation: jm-slide-left 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-bottom { animation: jm-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-right.jm-closing { animation: jm-slide-left-out ${PANEL_EXIT_MS}ms ease-in both; }
@@ -588,26 +592,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </div>
 
         {/* Một từ ở tỉnh */}
-        {word && (
-          <section aria-label="Một từ ở tỉnh" className="jm-word">
-            <span className="shrink-0 whitespace-nowrap font-jp text-2xl font-bold leading-[34px]" lang="ja">
-              {furigana && word[1] ? (
-                <ruby>
-                  {word[0]}
-                  <rt className="text-[11px] font-medium text-[var(--sumi-muted)]">{word[1]}</rt>
-                </ruby>
-              ) : (
-                word[0]
-              )}
-            </span>
-            <span className="flex min-w-0 flex-grow flex-col">
-              <span className="text-xs font-semibold leading-4 text-[var(--sumi-muted)]">Một từ ở tỉnh</span>
-              <span className="text-[15px] font-semibold leading-[22px]">{word[2]}</span>
-              {word[3] && <span className="text-xs leading-[18px] text-[var(--sumi-muted)]">{word[3]}</span>}
-            </span>
-            {canSpeak && <IconButton icon="volume_up" label={`Nghe từ ${word[0]}`} size="sm" onClick={() => speakJa(word[1] || word[0])} />}
-          </section>
-        )}
+        {word && <ProvinceWordCard key={pref.id} word={word} furigana={furigana} />}
 
         <div className="flex flex-col gap-2">
         <h3 className="m-0 text-[15px] font-bold leading-[22px] text-[var(--sumi)]">
