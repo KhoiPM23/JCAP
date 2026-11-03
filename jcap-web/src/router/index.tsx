@@ -391,6 +391,14 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/flashcards/study/:topicId"
+        element={
+          <PrivateRoute>
+            <FlashcardSessionView />
+          </PrivateRoute>
+        }
+      />
 
       {/* Protected routes wrapped in MainLayout */}
       <Route
