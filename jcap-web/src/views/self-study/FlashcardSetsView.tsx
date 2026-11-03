@@ -165,33 +165,32 @@ export const FlashcardSetsView: React.FC = () => {
   }, [quota, safeSets]);
 
   return (
-    <div className="min-h-screen bg-[#F4F9FE] py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== 1. PAGE HEADER ==================== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🗂️</span>
-              <h1 className="text-2xl sm:text-3xl font-black text-[#071A44] tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black text-sumi tracking-tight">
                 Flashcard
               </h1>
             </div>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-sumi-muted mt-1">
               Ôn tập ngắt quãng (SRS SM-2) theo các chủ đề N5 – N3 và danh sách đánh dấu cá nhân
             </p>
           </div>
 
           {/* Công cụ giả lập kiểm thử SRS */}
-          <div className="flex items-center flex-wrap gap-2 bg-white/90 p-1.5 rounded-2xl border border-slate-200 shadow-xs self-start sm:self-auto">
-            <span className="text-xs font-bold text-slate-500 px-2 flex items-center gap-1">
+          <div className="flex items-center flex-wrap gap-2 bg-paper-50 p-1.5 rounded-2xl border border-line shadow-xs self-start sm:self-auto">
+            <span className="text-xs font-bold text-sumi-muted px-2 flex items-center gap-1">
               <span>🧪</span>
               <span className="hidden md:inline">Test SRS:</span>
             </span>
             <button
               onClick={() => handleSimulateDays(1)}
               disabled={simulating}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-warning-soft hover:opacity-90 text-warning border border-warning/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Lùi thời gian tiến độ của thẻ 1 ngày để kích hoạt các thẻ hẹn 1 ngày (hoặc Again) đến hạn ôn tập"
             >
               <span>⏩</span>
@@ -200,7 +199,7 @@ export const FlashcardSetsView: React.FC = () => {
             <button
               onClick={() => handleSimulateDays(3)}
               disabled={simulating}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-ai-soft hover:opacity-90 text-ai border border-ai/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               title="Lùi thời gian tiến độ của thẻ 3 ngày để kiểm tra các thẻ hẹn 3 ngày đến hạn ôn tập"
             >
               <span>⏩</span>
@@ -211,30 +210,30 @@ export const FlashcardSetsView: React.FC = () => {
 
         {/* Toast thông báo lỗi / thành công */}
         {errorMessage && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
+          <div className="bg-danger-soft border border-danger/30 text-danger px-4 py-3 rounded-xl text-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span>⚠️</span>
               <span>{errorMessage}</span>
             </div>
-            <button onClick={() => setErrorMessage(null)} className="text-red-400 hover:text-red-600 font-bold ml-4 cursor-pointer">✕</button>
+            <button onClick={() => setErrorMessage(null)} className="text-danger hover:opacity-80 font-bold ml-4 cursor-pointer">✕</button>
           </div>
         )}
         {successMessage && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
+          <div className="bg-success-soft border border-success/30 text-success px-4 py-3 rounded-xl text-sm flex items-center justify-between">
             <span>✅ {successMessage}</span>
-            <button onClick={() => setSuccessMessage(null)} className="text-emerald-500 hover:text-emerald-700 font-bold ml-4 cursor-pointer">✕</button>
+            <button onClick={() => setSuccessMessage(null)} className="text-success hover:opacity-80 font-bold ml-4 cursor-pointer">✕</button>
           </div>
         )}
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
           {/* Tab 1: Bộ thẻ theo chủ đề (Active) */}
           <button
             onClick={() => setActiveTab('sets')}
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'sets'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-ai text-on-ai shadow-xs'
+                : 'bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line'
             }`}
           >
             <span>🗂️</span>
@@ -245,12 +244,12 @@ export const FlashcardSetsView: React.FC = () => {
           <div className="relative group">
             <button
               disabled
-              className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-slate-400 border border-slate-200 flex items-center gap-2 cursor-not-allowed opacity-75"
+              className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-faint border border-line flex items-center gap-2 cursor-not-allowed opacity-75"
               title="Tính năng Bookmark đang được phát triển ở bước tiếp theo"
             >
               <span>🔖</span>
               <span>Đã lưu (Bookmark)</span>
-              <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md ml-1">
+              <span className="text-[10px] font-bold uppercase bg-warning-soft text-warning px-1.5 py-0.5 rounded-md ml-1">
                 Sắp ra mắt
               </span>
             </button>
@@ -259,7 +258,7 @@ export const FlashcardSetsView: React.FC = () => {
           {/* Tab 3: Lịch sử ôn tập */}
           <Link
             to="/flashcards/history"
-            className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-2"
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line transition-all flex items-center gap-2"
           >
             <span>🕒</span>
             <span>Lịch sử ôn tập</span>
@@ -268,19 +267,19 @@ export const FlashcardSetsView: React.FC = () => {
 
         {/* ==================== 3. DAILY QUOTA & DUE REMINDER BANNER ==================== */}
         {quota ? (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div className="bg-paper-50 border border-line rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Cột 1: Nhắc thẻ đến hạn */}
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-2xl shadow-xs border border-blue-100">
+              <div className="w-12 h-12 rounded-2xl bg-paper-100 flex items-center justify-center text-2xl shadow-xs border border-line">
                 🔥
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-blue-950">
+                <h3 className="text-sm font-extrabold text-sumi">
                   {totalDueToday > 0
                     ? `Hôm nay bạn có ${totalDueToday} thẻ đến hạn cần ôn lại!`
                     : 'Tuyệt vời! Bạn đã hoàn thành hết thẻ đến hạn hôm nay!'}
                 </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
+                <p className="text-xs text-sumi-muted mt-0.5">
                   Thẻ ôn lại luôn hoàn toàn miễn phí và không tính vào hạn mức thẻ mới.
                 </p>
                 {totalDueToday > 0 && (
@@ -296,16 +295,16 @@ export const FlashcardSetsView: React.FC = () => {
             </div>
 
             {/* Cột 2: Thanh tiến độ hạn mức thẻ mới */}
-            <div className="border-t md:border-t-0 md:border-l border-blue-200/80 pt-4 md:pt-0 md:pl-6 space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-900">
-                <span>HẠN MỨC THẺ MỚI HÔM NAY</span>
-                <span className="text-[#2563EB]">
+            <div className="border-t md:border-t-0 md:border-l border-line pt-4 md:pt-0 md:pl-6 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-sumi">
+                <span className="text-sumi-muted">HẠN MỨC THẺ MỚI HÔM NAY</span>
+                <span className="text-ai">
                   Đã học {quota.studiedNewCardsToday} / {quota.totalAllowedNewCardsToday} thẻ
                 </span>
               </div>
-              <div className="w-full bg-white h-2.5 rounded-full overflow-hidden border border-blue-100">
+              <div className="w-full bg-paper-200 h-2.5 rounded-full overflow-hidden border border-line">
                 <div
-                  className="bg-[#2563EB] h-full rounded-full transition-all duration-300"
+                  className="bg-ai h-full rounded-full transition-all duration-300"
                   style={{
                     width: `${Math.min(
                       100,
@@ -314,51 +313,51 @@ export const FlashcardSetsView: React.FC = () => {
                   }}
                 />
               </div>
-              <div className="text-[11px] text-slate-500">
-                Còn <span className="font-bold text-blue-700">{quota.remainingNewCardsToday} thẻ mới</span> miễn phí hôm nay
+              <div className="text-[11px] text-sumi-muted">
+                Còn <span className="font-bold text-ai">{quota.remainingNewCardsToday} thẻ mới</span> miễn phí hôm nay
               </div>
             </div>
 
             {/* Cột 3: Nút Mở thêm thẻ mới bằng Credit thực sự */}
-            <div className="border-t md:border-t-0 md:border-l border-blue-200/80 pt-4 md:pt-0 md:pl-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="border-t md:border-t-0 md:border-l border-line pt-4 md:pt-0 md:pl-6 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="text-left w-full sm:w-auto">
-                <div className="text-xs text-slate-500">Số dư hiện có:</div>
-                <div className="text-sm font-extrabold text-amber-700 flex items-center gap-1">
+                <div className="text-xs text-sumi-muted">Số dư hiện có:</div>
+                <div className="text-sm font-extrabold text-warning flex items-center gap-1">
                   🪙 {quota.userCreditBalance} Credits
                 </div>
               </div>
               <button
                 onClick={handleUnlockExtra}
                 disabled={unlocking}
-                className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-blue-50 border border-blue-300 text-[#1D4ED8] rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 bg-paper-100 hover:bg-paper-200 border border-line text-sumi rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
                 <span>{unlocking ? 'Đang mở...' : '+ Mở thêm 10 thẻ mới'}</span>
-                <span className="text-amber-600 font-extrabold">({quota.unlockCreditCost} Credits)</span>
+                <span className="text-warning font-extrabold">({quota.unlockCreditCost} Credits)</span>
               </button>
             </div>
           </div>
         ) : (
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 flex items-center gap-2">
+          <div className="bg-paper-50 border border-line rounded-2xl p-4 text-xs text-sumi-muted flex items-center gap-2">
             <span className="text-base">ℹ️</span>
             <span>Đang kết nối hạn mức thẻ từ máy chủ backend...</span>
           </div>
         )}
 
         {/* ==================== 4. FILTER & SEARCH BAR ==================== */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-600">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-paper-50 p-4 rounded-2xl border border-line shadow-xs">
+          <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-sumi-muted">
             {/* Filter Loại Bộ Thẻ */}
             <div className="flex items-center gap-1.5">
               <span>LOẠI:</span>
-              <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+              <div className="inline-flex rounded-lg border border-line p-0.5 bg-paper-100">
                 {(['All', 'Vocabulary', 'Grammar'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTypeFilter(t)}
                     className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                       typeFilter === t
-                        ? 'bg-[#071A44] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-ai text-on-ai shadow-xs'
+                        : 'text-sumi-muted hover:text-sumi'
                     }`}
                   >
                     {t === 'All' ? 'Tất cả' : t === 'Vocabulary' ? '📘 Từ vựng' : '🧩 Ngữ pháp'}
@@ -370,15 +369,15 @@ export const FlashcardSetsView: React.FC = () => {
             {/* Filter Trình độ JLPT */}
             <div className="flex items-center gap-1.5">
               <span>JLPT:</span>
-              <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+              <div className="inline-flex rounded-lg border border-line p-0.5 bg-paper-100">
                 {['All', 'N5', 'N4', 'N3'].map((lvl) => (
                   <button
                     key={lvl}
                     onClick={() => setJlptFilter(lvl)}
                     className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                       jlptFilter === lvl
-                        ? 'bg-[#2563EB] text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-ai text-on-ai shadow-xs'
+                        : 'text-sumi-muted hover:text-sumi'
                     }`}
                   >
                     {lvl === 'All' ? 'Tất cả' : lvl}
@@ -390,50 +389,50 @@ export const FlashcardSetsView: React.FC = () => {
 
           {/* Search Box */}
           <div className="relative w-full lg:w-72">
-            <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+            <span className="absolute left-3 top-2.5 text-sumi-faint text-xs">🔍</span>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm chủ đề bộ thẻ..."
-              className="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#2563EB] focus:bg-white transition-all"
+              className="w-full pl-8 pr-4 py-2 bg-paper-100 border border-line rounded-xl text-xs text-sumi placeholder:text-sumi-faint focus:outline-hidden focus:ring-2 focus:ring-ai focus:bg-paper-50 transition-all"
             />
           </div>
         </div>
 
         {/* ==================== 5. FLASHCARD SETS GRID ==================== */}
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3">
-            <div className="w-10 h-10 border-4 border-blue-200 border-t-[#2563EB] rounded-full animate-spin" />
+          <div className="py-20 flex flex-col items-center justify-center text-sumi-muted space-y-3">
+            <div className="w-10 h-10 border-4 border-line border-t-ai rounded-full animate-spin" />
             <p className="text-sm font-medium">Đang tải danh sách bộ thẻ từ máy chủ...</p>
           </div>
         ) : filteredSets.length === 0 ? (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
+            <div className="bg-paper-50 rounded-2xl border border-line p-8 text-center space-y-3">
               <div className="text-4xl">🗂️</div>
-              <h3 className="text-base font-bold text-slate-800">
+              <h3 className="text-base font-bold text-sumi">
                 Chưa có bộ thẻ Flashcard nào trong hệ thống
               </h3>
-              <p className="text-xs text-slate-500 max-w-lg mx-auto leading-relaxed">
+              <p className="text-xs text-sumi-muted max-w-lg mx-auto leading-relaxed">
                 Hiện tại cơ sở dữ liệu chưa có danh mục Từ vựng hoặc Ngữ pháp độc lập nào được nạp vào. Khi quản trị viên nhập liệu hoặc import danh mục học tập (UC-33 → UC-51), các bộ thẻ chính thức sẽ tự động hiển thị tại đây.
               </p>
             </div>
 
             {/* Khối trải nghiệm Sandbox Demo */}
-            <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 border border-blue-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-100 pb-3">
+            <div className="bg-paper-50 border border-line rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🧪</span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-[#071A44]">
+                      <h4 className="text-sm font-black text-sumi">
                         Bộ thẻ mẫu trải nghiệm (Sandbox Mode)
                       </h4>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-ai-soft text-ai border border-ai/30">
                         KHÔNG LƯU DB
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-sumi-muted mt-0.5">
                       Trải nghiệm ngay luồng học thẻ 3D, nghe audio TTS, đánh giá ngắt quãng SRS và xem màn hình tổng kết trên RAM.
                     </p>
                   </div>
@@ -443,51 +442,51 @@ export const FlashcardSetsView: React.FC = () => {
               {/* 2 thẻ mẫu: Từ vựng & Ngữ pháp */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* 1. Demo Từ vựng */}
-                <div className="bg-white rounded-xl border border-blue-100 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                <div className="bg-paper-100/60 rounded-xl border border-line p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
                   <div>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-n5-soft text-n5 border border-line">
                           N5
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-paper-200 text-sumi border border-line">
                           📘 Từ vựng
                         </span>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-success-soft text-success border border-success/30">
                         ✨ 5 thẻ mẫu
                       </span>
                     </div>
 
-                    <h5 className="text-base font-black text-[#071A44] mt-3">
+                    <h5 className="text-base font-black text-sumi mt-3">
                       Từ vựng N5 – Chào hỏi & Giao tiếp cơ bản
                     </h5>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    <p className="text-xs text-sumi-muted mt-1 line-clamp-2">
                       Bộ thẻ mẫu 5 từ vựng nền tảng (こんにちは, ありがとう, すみません...) giúp bạn kiểm tra trọn vẹn flow học thẻ.
                     </p>
                   </div>
 
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                  <div className="space-y-1.5 pt-2 border-t border-line">
+                    <div className="flex items-center justify-between text-xs font-semibold text-sumi-muted">
                       <span>Tiến độ mẫu: 0 / 5 thẻ (0%)</span>
-                      <span className="text-[11px] text-slate-400">⚪ 5 thẻ mới</span>
+                      <span className="text-[11px] text-sumi-faint">⚪ 5 thẻ mới</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full w-0" />
+                    <div className="w-full bg-paper-200 h-2 rounded-full overflow-hidden">
+                      <div className="h-full bg-success rounded-full w-0" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => navigate('/flashcards/sets/demo/vocabulary')}
-                      className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-3 py-2 bg-paper-200 hover:bg-paper-300 text-sumi font-bold rounded-xl text-xs transition-colors border border-line flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>📋</span>
                       <span>Xem thẻ</span>
                     </button>
                     <button
                       onClick={() => navigate('/flashcards/study/demo/vocabulary')}
-                      className="px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-3 py-2 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>▶</span>
                       <span>Học thử</span>
@@ -496,51 +495,51 @@ export const FlashcardSetsView: React.FC = () => {
                 </div>
 
                 {/* 2. Demo Ngữ pháp */}
-                <div className="bg-white rounded-xl border border-purple-100 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                <div className="bg-paper-100/60 rounded-xl border border-line p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4">
                   <div>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-n5-soft text-n5 border border-line">
                           N5
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                           🧩 Ngữ pháp
                         </span>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                         ✨ 4 thẻ mẫu
                       </span>
                     </div>
 
-                    <h5 className="text-base font-black text-[#071A44] mt-3">
+                    <h5 className="text-base font-black text-sumi mt-3">
                       Ngữ pháp N5 – Mẫu câu danh từ cơ bản
                     </h5>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    <p className="text-xs text-sumi-muted mt-1 line-clamp-2">
                       Bộ thẻ mẫu 4 mẫu câu khẳng định, phủ định và câu hỏi (〜は〜です, 〜ではありません...) để kiểm tra giao diện thẻ ngữ pháp.
                     </p>
                   </div>
 
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                  <div className="space-y-1.5 pt-2 border-t border-line">
+                    <div className="flex items-center justify-between text-xs font-semibold text-sumi-muted">
                       <span>Tiến độ mẫu: 0 / 4 thẻ (0%)</span>
-                      <span className="text-[11px] text-slate-400">⚪ 4 thẻ mới</span>
+                      <span className="text-[11px] text-sumi-faint">⚪ 4 thẻ mới</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-600 rounded-full w-0" />
+                    <div className="w-full bg-paper-200 h-2 rounded-full overflow-hidden">
+                      <div className="h-full bg-purple-600 dark:bg-purple-500 rounded-full w-0" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => navigate('/flashcards/sets/demo/grammar')}
-                      className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-3 py-2 bg-paper-200 hover:bg-paper-300 text-sumi font-bold rounded-xl text-xs transition-colors border border-line flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>📋</span>
                       <span>Xem thẻ</span>
                     </button>
                     <button
                       onClick={() => navigate('/flashcards/study/demo/grammar')}
-                      className="px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-3 py-2 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>▶</span>
                       <span>Học thử</span>
@@ -558,18 +557,21 @@ export const FlashcardSetsView: React.FC = () => {
               const hasDue = set.dueCards > 0;
               const isCompletedToday = !hasDue && set.learnedCards === set.totalCards && set.totalCards > 0;
               const isBrandNew = set.learnedCards === 0;
+              const isPartiallyLearned = !hasDue && !isCompletedToday && set.learnedCards > 0;
 
               return (
                 <div
                   key={`${set.topicId}_${set.contentType}`}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-5"
+                  className="bg-paper-50 rounded-2xl border border-line p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-5"
                 >
                   {/* Top: Badges & Status */}
                   <div>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         {/* JLPT Badge */}
-                        <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold border border-line ${
+                          set.jlptLevel === 'N5' ? 'bg-n5-soft text-n5' : set.jlptLevel === 'N4' ? 'bg-n4-soft text-n4' : 'bg-n3-soft text-n3'
+                        }`}>
                           {set.jlptLevel}
                         </span>
 
@@ -577,8 +579,8 @@ export const FlashcardSetsView: React.FC = () => {
                         <span
                           className={`px-2.5 py-0.5 rounded-md text-xs font-bold ${
                             isGrammar
-                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                              : 'bg-slate-100 text-slate-700 border border-slate-200'
+                              ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                              : 'bg-paper-200 text-sumi border border-line'
                           }`}
                         >
                           {isGrammar ? '🧩 Ngữ pháp' : '📘 Từ vựng'}
@@ -587,45 +589,50 @@ export const FlashcardSetsView: React.FC = () => {
 
                       {/* State Badge */}
                       {hasDue && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-warning-soft text-warning border border-warning/30 animate-pulse">
                           🔥 {set.dueCards} thẻ đến hạn
                         </span>
                       )}
+                      {isPartiallyLearned && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-ai-soft text-ai border border-ai/30">
+                          📖 Đang học
+                        </span>
+                      )}
                       {isCompletedToday && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-success-soft text-success border border-success/30">
                           ✅ Hoàn thành hôm nay
                         </span>
                       )}
                       {isBrandNew && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-paper-200 text-sumi-muted border border-line">
                           ✨ Chưa học
                         </span>
                       )}
                     </div>
 
                     {/* Set Title & Description */}
-                    <h2 className="text-lg font-black text-[#071A44] mt-3">
+                    <h2 className="text-lg font-black text-sumi mt-3">
                       {set.setTitle}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    <p className="text-xs text-sumi-muted mt-1 line-clamp-2">
                       {set.topicDescription || 'Bộ thẻ tự học hỗ trợ rèn luyện trí nhớ ngắt quãng theo chủ đề.'}
                     </p>
                   </div>
 
                   {/* Middle: Progress Bar */}
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                  <div className="space-y-1.5 pt-2 border-t border-line">
+                    <div className="flex items-center justify-between text-xs font-semibold text-sumi-muted">
                       <span>Tiến độ đã học: {set.learnedCards} / {set.totalCards} thẻ ({Math.round((set.learnedCards / Math.max(1, set.totalCards)) * 100)}%)</span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-sumi-faint">
                         {isCompletedToday && set.nextDueAt
                           ? `Đến hạn kế tiếp: ${new Date(set.nextDueAt).toLocaleDateString('vi-VN')}`
                           : `🟢 ${set.learnedCards - set.dueCards}  •  🟠 ${set.dueCards}  •  ⚪ ${set.newCards}`}
                       </span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-paper-200 h-2 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
-                          isGrammar ? 'bg-purple-600' : 'bg-emerald-500'
+                          isGrammar ? 'bg-purple-600 dark:bg-purple-500' : 'bg-success'
                         }`}
                         style={{
                           width: `${(set.learnedCards / Math.max(1, set.totalCards)) * 100}%`,
@@ -638,7 +645,7 @@ export const FlashcardSetsView: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     <button
                       onClick={() => navigate(`/flashcards/sets/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                      className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2.5 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs transition-colors border border-line flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>📋</span>
                       <span>Xem danh sách thẻ</span>
@@ -647,7 +654,7 @@ export const FlashcardSetsView: React.FC = () => {
                     {hasDue ? (
                       <button
                         onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                        className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <span>▶</span>
                         <span>Ôn tập ngay</span>
@@ -655,15 +662,23 @@ export const FlashcardSetsView: React.FC = () => {
                     ) : isCompletedToday ? (
                       <button
                         onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}?extraPractice=true`)}
-                        className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition-all border border-blue-200 flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2.5 bg-ai-soft hover:bg-ai-soft/80 text-ai font-bold rounded-xl text-xs transition-all border border-ai/30 flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <span>↻</span>
                         <span>Ôn thêm tự do</span>
                       </button>
+                    ) : set.learnedCards > 0 ? (
+                      <button
+                        onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
+                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span>▶</span>
+                        <span>Tiếp tục ôn</span>
+                      </button>
                     ) : (
                       <button
                         onClick={() => navigate(`/flashcards/study/${set.topicId}/${set.contentType.toLowerCase()}`)}
-                        className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2.5 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <span>▶</span>
                         <span>Bắt đầu học</span>
@@ -677,10 +692,10 @@ export const FlashcardSetsView: React.FC = () => {
 
             {/* Thanh điều hướng phân trang (10 bộ thẻ / trang) */}
             {filteredSets.length > PAGE_SIZE && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-paper-50 p-4 rounded-2xl border border-line shadow-xs">
                 {/* Thông tin số lượng hiển thị */}
-                <div className="text-xs text-slate-500 font-medium">
-                  Hiển thị <span className="font-bold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1}</span> – <span className="font-bold text-slate-800">{Math.min(currentPage * PAGE_SIZE, filteredSets.length)}</span> trên tổng số <span className="font-bold text-slate-800">{filteredSets.length}</span> bộ thẻ (Trang {currentPage}/{totalPages})
+                <div className="text-xs text-sumi-muted font-medium">
+                  Hiển thị <span className="font-bold text-sumi">{(currentPage - 1) * PAGE_SIZE + 1}</span> – <span className="font-bold text-sumi">{Math.min(currentPage * PAGE_SIZE, filteredSets.length)}</span> trên tổng số <span className="font-bold text-sumi">{filteredSets.length}</span> bộ thẻ (Trang {currentPage}/{totalPages})
                 </div>
 
                 {/* Nút bấm chuyển trang */}
@@ -691,7 +706,7 @@ export const FlashcardSetsView: React.FC = () => {
                       window.scrollTo({ top: 380, behavior: 'smooth' });
                     }}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-line bg-paper-100 hover:bg-paper-200 text-sumi disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
                   >
                     <span>◀</span>
                     <span>Trước</span>
@@ -708,7 +723,7 @@ export const FlashcardSetsView: React.FC = () => {
                     ) {
                       if (pageNum === 2 || pageNum === totalPages - 1) {
                         return (
-                          <span key={'ellipsis-' + pageNum} className="px-1.5 text-slate-400 text-xs select-none">
+                          <span key={'ellipsis-' + pageNum} className="px-1.5 text-sumi-faint text-xs select-none">
                             ...
                           </span>
                         );
@@ -726,8 +741,8 @@ export const FlashcardSetsView: React.FC = () => {
                         }}
                         className={'w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ' + (
                           isActive
-                            ? 'bg-[#2563EB] text-white shadow-xs'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                            ? 'bg-ai text-on-ai shadow-xs'
+                            : 'bg-paper-100 hover:bg-paper-200 text-sumi border border-line'
                         )}
                       >
                         {pageNum}
@@ -741,7 +756,7 @@ export const FlashcardSetsView: React.FC = () => {
                       window.scrollTo({ top: 380, behavior: 'smooth' });
                     }}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-line bg-paper-100 hover:bg-paper-200 text-sumi disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1"
                   >
                     <span>Sau</span>
                     <span>▶</span>
@@ -759,34 +774,34 @@ export const FlashcardSetsView: React.FC = () => {
               onClick={(e) => {
                 if (e.target === e.currentTarget) setIsDueModalOpen(false);
               }}
-              className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl p-6 space-y-5 my-auto"
+                className="bg-paper-50 rounded-3xl border border-line max-w-md w-full shadow-2xl p-6 space-y-5 my-auto"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-line pb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🔥</span>
                     <div>
-                      <h3 className="text-base font-black text-[#071A44]">
+                      <h3 className="text-base font-black text-sumi">
                         Ôn tập tất cả thẻ đến hạn
                       </h3>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-sumi-muted">
                         Tổng cộng {totalDueToday} thẻ đã đến hạn cần ôn lại hôm nay
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsDueModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-paper-100 hover:bg-paper-200 text-sumi-muted hover:text-sumi font-bold flex items-center justify-center transition-colors cursor-pointer"
                   >
                     ✕
                   </button>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-bold text-slate-600">
+                  <p className="text-xs font-bold text-sumi-muted">
                     Chọn chế độ ôn tập bạn muốn bắt đầu:
                   </p>
 
@@ -797,20 +812,20 @@ export const FlashcardSetsView: React.FC = () => {
                       navigate('/flashcards/study/due/vocabulary');
                     }}
                     disabled={!quota || (quota.dueVocabularyCount ?? 0) === 0}
-                    className="w-full p-4 rounded-2xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/70 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full p-4 rounded-2xl border border-line bg-ai-soft/30 hover:bg-ai-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">📘</span>
                       <div>
-                        <div className="text-sm font-black text-blue-950 group-hover:text-blue-700">
+                        <div className="text-sm font-black text-sumi group-hover:text-ai">
                           Chỉ ôn Từ vựng
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-sumi-muted">
                           Tập trung rèn luyện trí nhớ từ mới
                         </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-blue-200/80 text-blue-900">
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-ai-soft text-ai border border-ai/30">
                       {quota?.dueVocabularyCount ?? 0} thẻ
                     </span>
                   </button>
@@ -822,20 +837,20 @@ export const FlashcardSetsView: React.FC = () => {
                       navigate('/flashcards/study/due/grammar');
                     }}
                     disabled={!quota || (quota.dueGrammarCount ?? 0) === 0}
-                    className="w-full p-4 rounded-2xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100/70 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full p-4 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 transition-all text-left flex items-center justify-between group cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">🧩</span>
                       <div>
-                        <div className="text-sm font-black text-purple-950 group-hover:text-purple-700">
+                        <div className="text-sm font-black text-sumi group-hover:text-purple-400">
                           Chỉ ôn Ngữ pháp
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-sumi-muted">
                           Ôn tập các mẫu câu và ngữ pháp
                         </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-purple-200/80 text-purple-900">
+                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-purple-500/20 text-purple-700 dark:text-purple-300">
                       {quota?.dueGrammarCount ?? 0} thẻ
                     </span>
                   </button>
@@ -847,32 +862,32 @@ export const FlashcardSetsView: React.FC = () => {
                       navigate('/flashcards/study/due/mixed');
                     }}
                     disabled={totalDueToday === 0}
-                    className="w-full p-4 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 transition-all text-left flex items-center justify-between group cursor-pointer shadow-xs"
+                    className="w-full p-4 rounded-2xl border-2 border-warning/40 bg-warning-soft/30 hover:bg-warning-soft/60 transition-all text-left flex items-center justify-between group cursor-pointer shadow-xs"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">⚡</span>
                       <div>
-                        <div className="text-sm font-black text-amber-950 flex items-center gap-1.5">
+                        <div className="text-sm font-black text-sumi flex items-center gap-1.5">
                           <span>Hỗn hợp (Toàn bộ)</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-200 text-amber-900">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-warning-soft text-warning border border-warning/30">
                             Khuyên dùng
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-sumi-muted">
                           Gom cả Từ vựng và Ngữ pháp vào cùng một phiên
                         </div>
                       </div>
                     </div>
-                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-amber-500 text-white shadow-2xs">
+                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-warning text-white shadow-2xs">
                       {totalDueToday} thẻ
                     </span>
                   </button>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex justify-end">
+                <div className="pt-2 border-t border-line flex justify-end">
                   <button
                     onClick={() => setIsDueModalOpen(false)}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs border border-line transition-colors cursor-pointer"
                   >
                     Đóng
                   </button>
@@ -881,7 +896,6 @@ export const FlashcardSetsView: React.FC = () => {
             </div>,
             document.body
           )}
-      </div>
     </div>
   );
 };

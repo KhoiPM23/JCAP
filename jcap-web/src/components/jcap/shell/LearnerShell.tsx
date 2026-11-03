@@ -26,8 +26,8 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * Các trang đã làm lại theo design system nên có chế độ tối. Trang còn lại (Credit, Flashcard, Kết quả, chi tiết kịch bản…)
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
-const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
-const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
+const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards'];
+const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/') || p.startsWith('/flashcards');
 
 /**
  * Một trang trong khung. Khi bị gỡ vì đã sang trang khác, để lại một bản sao DOM (chỉ để nhìn) mờ dần trong 0,14s như prototype
