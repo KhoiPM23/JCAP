@@ -422,7 +422,7 @@ export const FlashcardSetsView: React.FC = () => {
         {activeTab === 'bookmarks' ? (
           <div className="space-y-6">
             {/* Header thanh điều khiển luyện tập Bookmark */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center gap-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white border border-amber-200 flex items-center justify-center text-2xl shadow-xs">
                   🔖
@@ -443,12 +443,27 @@ export const FlashcardSetsView: React.FC = () => {
               </div>
 
               {bookmarks.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 shrink-0 md:ml-auto">
+                <button
+                  type="button"
+                  onClick={() => navigate('/flashcards/test/bookmarks/mixed?source=bookmark')}
+                  className="md:ml-auto px-4 py-3 rounded-xl bg-white hover:bg-amber-100/60 text-amber-900 border border-amber-300 font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>📝</span>
+                  <span>Kiểm tra ({bookmarks.length} thẻ)</span>
+                </button>
                 <button
                   onClick={() => navigate('/flashcards/study/0/Mixed?source=bookmark')}
                   className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
                 >
                   <span>🔥</span>
                   <span>Luyện tập ngay ({bookmarks.length} thẻ)</span>
+                  <span>➔</span>
+                </button>
+              </div>
+              )}
+              {false && (
+                <button>
                   <span>➔</span>
                 </button>
               )}
@@ -645,13 +660,21 @@ export const FlashcardSetsView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="grid grid-cols-3 gap-2 pt-1">
                     <button
                       onClick={() => navigate('/flashcards/sets/demo/vocabulary')}
                       className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>📋</span>
                       <span>Xem thẻ</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/flashcards/test/demo/vocabulary')}
+                      className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors border border-indigo-200 flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>📝</span>
+                      <span>Kiểm tra</span>
                     </button>
                     <button
                       onClick={() => navigate('/flashcards/study/demo/vocabulary')}
@@ -698,13 +721,21 @@ export const FlashcardSetsView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="grid grid-cols-3 gap-2 pt-1">
                     <button
                       onClick={() => navigate('/flashcards/sets/demo/grammar')}
                       className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>📋</span>
                       <span>Xem thẻ</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/flashcards/test/demo/grammar')}
+                      className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors border border-indigo-200 flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>📝</span>
+                      <span>Kiểm tra</span>
                     </button>
                     <button
                       onClick={() => navigate('/flashcards/study/demo/grammar')}
@@ -803,13 +834,22 @@ export const FlashcardSetsView: React.FC = () => {
                   </div>
 
                   {/* Bottom: Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                       onClick={() => navigate(`/flashcards/sets/${set.topicId}/${set.contentType.toLowerCase()}`)}
                       className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>📋</span>
-                      <span>Xem danh sách thẻ</span>
+                      <span>Xem thẻ</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/flashcards/test/${set.topicId}/${set.contentType.toLowerCase()}`)}
+                      className="px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors border border-indigo-200 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>📝</span>
+                      <span>Kiểm tra</span>
                     </button>
 
                     {hasDue ? (

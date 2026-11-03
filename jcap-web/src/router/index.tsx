@@ -45,6 +45,7 @@ import { SettingsView } from '../views/SettingsView';
 import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
 import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
 import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
+import { FlashcardTestView } from '../views/self-study/FlashcardTestView';
 import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
 import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
 import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
@@ -380,6 +381,16 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Fullscreen Flashcard Quizlet-style Test Mode */}
+      <Route
+        path="/flashcards/test/:topicId/:contentType"
+        element={
+          <PrivateRoute>
+            <FlashcardTestView />
           </PrivateRoute>
         }
       />

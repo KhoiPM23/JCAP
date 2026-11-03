@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
@@ -9,7 +9,7 @@ import { subscriptionPlanService, type SubscriptionPlanItem } from '../services/
 
 export const CreditPackagesView: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const cancelParam = searchParams.get('cancel');
   const statusParam = searchParams.get('status');
@@ -295,9 +295,25 @@ export const CreditPackagesView: React.FC = () => {
 
     try {
       const res = await creditService.purchasePackage(pkg.id);
-      if (res.success && res.data?.checkoutUrl) {
-        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
-        window.location.href = res.data.checkoutUrl;
+      if (res.success && res.data) {
+        if (res.data.checkoutUrl) {
+          // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+          window.location.href = res.data.checkoutUrl;
+        } else if (res.data.isMock) {
+          // Chế độ Mock Test (Nạp thẳng không qua chuyển khoản)
+          setSuccessMessage(
+            res.data.message || `Đã nạp thành công +${res.data.addedCredits ?? pkg.credits} Credits vào tài khoản (Chế độ Thử nghiệm)!`
+          );
+          if (typeof res.data.newCreditBalance === 'number') {
+            setCurrentBalance(res.data.newCreditBalance);
+            creditService.updateLocalCreditBalance(res.data.newCreditBalance);
+          }
+          void refreshUser();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setSuccessMessage(res.message || 'Nạp credit thành công!');
+          void refreshUser();
+        }
       } else {
         setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói credit.');
       }
@@ -315,9 +331,26 @@ export const CreditPackagesView: React.FC = () => {
 
     try {
       const res = await creditService.purchaseSubscriptionPlan(plan);
-      if (res.success && res.data?.checkoutUrl) {
-        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
-        window.location.href = res.data.checkoutUrl;
+      if (res.success && res.data) {
+        if (res.data.checkoutUrl) {
+          // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+          window.location.href = res.data.checkoutUrl;
+        } else if (res.data.isMock) {
+          // Chế độ Mock Test: kích hoạt gói tháng trực tiếp
+          subscriptionPlanService.setUserSubscription(plan);
+          setSuccessMessage(
+            res.data.message || `Đã kích hoạt thành công ${plan.name} (Chế độ Thử nghiệm)!`
+          );
+          if (typeof res.data.newCreditBalance === 'number') {
+            setCurrentBalance(res.data.newCreditBalance);
+            creditService.updateLocalCreditBalance(res.data.newCreditBalance);
+          }
+          void refreshUser();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setSuccessMessage(res.message || 'Đăng ký gói tháng thành công!');
+          void refreshUser();
+        }
       } else {
         setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói tháng.');
       }

@@ -242,6 +242,17 @@ export const FlashcardSetDetailView: React.FC = () => {
                   <span>▶</span>
                   <span>Bắt đầu học bộ {isGrammar ? 'ngữ pháp' : 'từ vựng'} này</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/flashcards/test/${isDemo ? 'demo' : currentTopicId}/${currentContentType.toLowerCase()}`)
+                  }
+                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>📝</span>
+                  <span>Kiểm tra nhanh (Quizlet Test)</span>
+                </button>
               </div>
             </div>
 
