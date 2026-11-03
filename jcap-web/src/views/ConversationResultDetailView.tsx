@@ -1011,26 +1011,21 @@ export const ConversationResultDetailView: React.FC = () => {
           </div>
         </header>
 
-        {/* Thẻ Con Dấu Eki-Stamp Hanko Son Đỏ kết nối Bản Đồ Khám Phá Explore Map */}
-
-        {result.awardedEkiStampName && (
-          <div className="mt-6 rounded-3xl border-2 border-red-200/90 bg-gradient-to-r from-red-50/80 via-white to-amber-50/60 p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
+        {/* Thẻ Chiến Tích Đàm Thoại (MIGOTO CREST) — Gamification độc lập của Scenario */}
+        {result.passStatus && (
+          <div className="mt-6 rounded-3xl border border-emerald-200/90 bg-gradient-to-r from-emerald-50/80 via-white to-teal-50/60 p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
             <div className="flex items-center gap-4 text-left w-full md:w-auto">
-              {/* Con dấu son Hanko truyền thống Nhật Bản */}
-
               <div className="relative shrink-0 flex items-center justify-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-3 border-dashed border-red-600/90 bg-red-100/70 flex flex-col items-center justify-center text-red-700 shadow-md rotate-[-4deg] p-1 select-none">
-                  <div className="w-full h-full rounded-full border border-red-500/80 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-3 border-dashed border-emerald-600/90 bg-emerald-100/70 flex flex-col items-center justify-center text-emerald-800 shadow-md rotate-[-3deg] p-1 select-none">
+                  <div className="w-full h-full rounded-full border border-emerald-500/80 flex flex-col items-center justify-center">
                     <span className="text-[8px] md:text-[9px] font-bold tracking-widest uppercase">
-                      駅印 · HANKO
+                      会話達成
                     </span>
-
                     <span className="text-base md:text-xl font-extrabold font-serif my-0.5 tracking-wider">
                       見事
                     </span>
-
                     <span className="text-[7px] md:text-[8px] font-bold uppercase tracking-wider">
-                      合格
+                      {result.overallScore >= 90 ? "達人" : result.overallScore >= 75 ? "上手" : "合格"}
                     </span>
                   </div>
                 </div>
@@ -1038,50 +1033,49 @@ export const ConversationResultDetailView: React.FC = () => {
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-extrabold uppercase tracking-wide">
-                    Eki-Stamp Đã Khắc
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wide">
+                    Chiến Tích Đàm Thoại
                   </span>
-
                   <span className="text-xs text-slate-400">•</span>
-
                   <span className="text-xs font-semibold text-slate-600">
-                    Bản đồ Hành trình Khám phá
+                    Phản Xạ & Giao Tiếp AI
                   </span>
                 </div>
 
                 <h3 className="text-lg md:text-xl font-extrabold text-[var(--sumi)] mt-1 font-sans">
-                  {result.awardedEkiStampName}
+                  {result.scenarioTitle || "Hoàn thành mục tiêu kịch bản"}
                 </h3>
 
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Bạn đã hoàn thành xuất sắc kịch bản hội thoại gắn với địa danh
-                  này. Con dấu son đỏ đã được ghi nhận vào bản đồ hành trình!
+                  Bạn đã hoàn thành xuất sắc các thử thách đàm thoại thực tế với AI. Dữ liệu tiến độ và năng lực ngôn ngữ đã được đồng bộ vào hồ sơ học tập cá nhân.
                 </p>
               </div>
             </div>
 
             <div className="shrink-0 w-full md:w-auto">
-              <Link
-                to={
-                  returnUrl ||
-                  (result.explorePrefectureId
-                    ? `/explore?tinh=${PREFECTURES.find((p) => p.id === result.explorePrefectureId)?.slug || ""}&dd=${result.exploreSpotId ?? 1}&hoc=1`
-                    : "/explore")
-                }
-
-                className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-red-500/20 transition cursor-pointer"
-              >
-                <CompassIcon className="w-4 h-4" />
-                <span>Quay lại mốc trên Bản đồ Khám phá</span>
-
-                <span>→</span>
-              </Link>
+              {returnUrl ? (
+                <Link
+                  to={returnUrl}
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer"
+                >
+                  <CompassIcon className="w-4 h-4" />
+                  <span>Quay lại Bản đồ Hành trình</span>
+                  <span>→</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/scenarios"
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] active:scale-95 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition cursor-pointer"
+                >
+                  <span>Khám phá kịch bản tiếp theo</span>
+                  <span>→</span>
+                </Link>
+              )}
             </div>
           </div>
         )}
 
-        {/* Thử Thách Con Dấu Eki-Stamp khi chưa đạt nhưng kịch bản gắn liền với Explore Spot */}
-
+        {/* Khối gợi ý liên kết Explore Map khi kịch bản gắn liền với mốc bản đồ */}
         {!result.passStatus && result.exploreSpotId && (
           <div className="mt-6 rounded-3xl border border-amber-200/90 bg-gradient-to-r from-amber-50/80 via-white to-orange-50/60 p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
             <div className="flex items-center gap-4 text-left w-full md:w-auto">
@@ -1092,37 +1086,27 @@ export const ConversationResultDetailView: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wide">
-                    Địa Danh Explore Map
+                    Địa Danh Bản Đồ Khám Phá
                   </span>
-
                   <span className="text-xs text-slate-400">•</span>
-
                   <span className="text-xs font-semibold text-slate-600">
-                    Thử thách Con Dấu Son
+                    Liên kết Hành trình
                   </span>
                 </div>
 
                 <h3 className="text-base md:text-lg font-bold text-[var(--sumi)] mt-1 font-sans">
-                  Chinh phục con dấu Eki-stamp địa danh
+                  Luyện tập hoàn thành mốc địa danh
                 </h3>
 
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Kịch bản này gắn với một địa danh trên Bản đồ Khám phá. Hãy
-                  tiếp tục luyện tập để đạt điểm đỗ và khắc con dấu son đỏ vào
-                  sổ hành trình!
+                  Kịch bản này được liên kết với một mốc trên Bản đồ Khám phá. Hãy hoàn thành phiên giao tiếp tự nhiên và quay lại bản đồ để đồng bộ tiến độ nhé!
                 </p>
               </div>
             </div>
 
             <div className="shrink-0 w-full md:w-auto flex gap-2">
               <Link
-                to={
-                  returnUrl ||
-                  (result.explorePrefectureId
-                    ? `/explore?tinh=${PREFECTURES.find((p) => p.id === result.explorePrefectureId)?.slug || ""}&dd=${result.exploreSpotId}&hoc=1`
-                    : "/explore")
-                }
-
+                to={returnUrl || "/explore"}
                 className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs transition cursor-pointer"
               >
                 <CompassIcon className="w-3.5 h-3.5" />
@@ -1554,7 +1538,7 @@ export const ConversationResultDetailView: React.FC = () => {
 
             <div
               className="w-10 h-10 rounded-full border-2 border-dashed border-red-500 bg-red-50 flex items-center justify-center text-red-600 font-serif font-black text-xs select-none shadow-xs rotate-[-8deg]"
-              title="Con dấu Eki-stamp hoàn thành phiên"
+              title="Ấn triện hoàn tất phiên (済 - Đã hoàn thành)"
             >
               済
             </div>
