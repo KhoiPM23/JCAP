@@ -1,15 +1,16 @@
 using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
+using JCAP.Models;
+using JCAP.Services.Helpers;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Net.Http.Headers;
-using JCAP.Models;
 
 namespace JCAP.Services.Implementations
 {
@@ -82,16 +83,7 @@ namespace JCAP.Services.Implementations
                 $"?userId={Uri.EscapeDataString(user.Id)}" +
                 $"&token={Uri.EscapeDataString(confirmationToken)}";
 
-            var fullName = System.Net.WebUtility.HtmlEncode(user.FullName ?? user.Email);
-            var encodedConfirmationUrl = System.Net.WebUtility.HtmlEncode(confirmationUrl);
-            var emailBody = $"""
-                <p>Xin chào {fullName},</p>
-                <p>Cảm ơn bạn đã đăng ký tài khoản JCAP.</p>
-                <p>Vui lòng nhấn vào liên kết bên dưới để xác minh email:</p>
-                <p><a href="{encodedConfirmationUrl}">Xác minh email</a></p>
-                <p>Nếu bạn không thực hiện đăng ký này, bạn có thể bỏ qua email.</p>
-                <p>Trân trọng,<br/>JCAP</p>
-                """;
+            var emailBody = EmailTemplateHelper.BuildEmailConfirmationBody(user.FullName ?? user.Email!, confirmationUrl);
 
             try
             {
@@ -138,6 +130,57 @@ namespace JCAP.Services.Implementations
             }
 
             return ApiResponse<bool>.Ok(true, "Xác minh email thành công.");
+        }
+
+        public async Task<ApiResponse<string>> ResendConfirmationEmailAsync(ResendConfirmationEmailDto dto)
+        {
+            const string genericSuccessMessage = "Nếu email tồn tại và chưa được xác minh, liên kết xác nhận mới đã được gửi. Vui lòng kiểm tra hộp thư của bạn.";
+
+            if (string.IsNullOrWhiteSpace(dto.Email))
+            {
+                return ApiResponse<string>.Fail("Vui lòng nhập địa chỉ email.");
+            }
+
+            var trimmedEmail = dto.Email.Trim();
+            var user = await _userManager.FindByEmailAsync(trimmedEmail);
+
+            // Bảo vệ bảo mật: Không tiết lộ danh tính người dùng khi email không tồn tại
+            if (user == null)
+            {
+                return ApiResponse<string>.Ok(string.Empty, genericSuccessMessage);
+            }
+
+            if (!user.IsActive)
+            {
+                return ApiResponse<string>.Fail("Tài khoản của bạn đã bị khóa.");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return ApiResponse<string>.Ok(string.Empty, "Email này đã được xác minh trước đó. Bạn có thể đăng nhập ngay.");
+            }
+
+            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var backendUrl = _configuration["BackendUrl"] ?? "http://localhost:5254";
+            var confirmationUrl = $"{backendUrl.TrimEnd('/')}/api/auth/confirm-email" +
+                $"?userId={Uri.EscapeDataString(user.Id)}" +
+                $"&token={Uri.EscapeDataString(confirmationToken)}";
+
+            var emailBody = EmailTemplateHelper.BuildEmailConfirmationBody(user.FullName ?? user.Email!, confirmationUrl);
+
+            try
+            {
+                await _emailService.SendAsync(
+                    user.Email!,
+                    "Xác minh email tài khoản JCAP",
+                    emailBody);
+            }
+            catch
+            {
+                return ApiResponse<string>.Fail("Không thể gửi email xác minh lúc này. Vui lòng thử lại sau.");
+            }
+
+            return ApiResponse<string>.Ok(string.Empty, "Liên kết xác nhận mới đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.");
         }
 
         public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto dto)
@@ -226,15 +269,8 @@ namespace JCAP.Services.Implementations
             var resetUrl = $"{frontendUrl.TrimEnd('/')}/reset-password" +
                 $"?token={Uri.EscapeDataString(token)}" +
                 $"&email={Uri.EscapeDataString(user.Email!)}";
-            var encodedResetUrl = System.Net.WebUtility.HtmlEncode(resetUrl);
-            var displayName = System.Net.WebUtility.HtmlEncode(user.FullName ?? user.Email);
-            var emailBody = $"""
-                <p>Xin chào {displayName},</p>
-                <p>JCAP đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
-                <p><a href="{encodedResetUrl}">Đặt lại mật khẩu</a></p>
-                <p>Nếu bạn không gửi yêu cầu này, bạn có thể bỏ qua email.</p>
-                <p>Trân trọng,<br/>JCAP</p>
-                """;
+
+            var emailBody = EmailTemplateHelper.BuildPasswordResetBody(user.FullName ?? user.Email!, resetUrl);
 
             try
             {
@@ -505,4 +541,3 @@ namespace JCAP.Services.Implementations
         }
     }
 }
-
