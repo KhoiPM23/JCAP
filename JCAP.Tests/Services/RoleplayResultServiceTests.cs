@@ -418,6 +418,12 @@ namespace JCAP.Tests.Services
 
             var result = CreateResult(session.Id, "learner-eki", passStatus: true, DateTime.UtcNow);
             dbContext.RoleplayResults.Add(result);
+            dbContext.Set<ExploreSpotProgress>().Add(new ExploreSpotProgress
+            {
+                UserId = "learner-eki",
+                SpotId = 101,
+                RedStampedAt = DateTime.UtcNow
+            });
             await dbContext.SaveChangesAsync();
 
             var service = CreateService(dbContext, new Mock<IRoleplaySessionSnapshotProvider>().Object);
@@ -480,6 +486,35 @@ namespace JCAP.Tests.Services
             // Nhưng vẫn liên kết đúng vị trí trên Explore Map để tạo động lực luyện lại
             Assert.Equal(102, response.Data.ExploreSpotId);
             Assert.Equal(13, response.Data.ExplorePrefectureId);
+        }
+
+        [Fact]
+        public async Task CompleteSessionAsync_DoesNotCreateOrModifyExploreSpotProgress()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.Add(CreateSession(105, "learner-clean"));
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider
+                .Setup(item => item.GetCompletableSessionAsync(105, "learner-clean"))
+                .ReturnsAsync(new RoleplaySessionSnapshot
+                {
+                    SessionId = 105,
+                    UserId = "learner-clean",
+                    ScenarioTitle = "Gọi món tại quán Ramen",
+                    JLPTLevel = "N5",
+                    CompletedMissions =
+                    [
+                        new CompletedMissionSnapshot { MissionId = 1, Title = "Gọi một tô ramen" }
+                    ]
+                });
+
+            var service = CreateService(dbContext, provider.Object);
+            var response = await service.CompleteSessionAsync("learner-clean", 105);
+
+            Assert.True(response.Success);
+            Assert.Empty(await dbContext.Set<ExploreSpotProgress>().ToListAsync());
         }
 
         private static RoleplayResult CreateResult(
