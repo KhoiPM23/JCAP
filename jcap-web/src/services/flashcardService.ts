@@ -198,9 +198,9 @@ class FlashcardService {
     }
   }
 
-  public async getSessionSummary(sessionId: number): Promise<{ success: boolean; data?: FlashcardSessionSummary; message?: string }> {
+  public async getSessionSummary(sessionId: number, isEarlyExit: boolean = false): Promise<{ success: boolean; data?: FlashcardSessionSummary; message?: string }> {
     try {
-      const res = await fetch(`${BASE_URL}/sessions/${sessionId}/complete`, {
+      const res = await fetch(`${BASE_URL}/sessions/${sessionId}/complete?isEarlyExit=${isEarlyExit}`, {
         method: 'POST',
         headers: this.getHeaders(),
       });
