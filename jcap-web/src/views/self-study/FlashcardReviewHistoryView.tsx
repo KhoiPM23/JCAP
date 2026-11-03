@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardSessionHistoryItem, FlashcardSessionHistoryDetail } from '../../types/flashcard';
@@ -24,7 +25,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
 
   // Filters
   const [timeFilter, setTimeFilter] = useState<'7days' | '30days' | 'all'>('7days');
-  const [contentTypeFilter, setContentTypeFilter] = useState<'All' | 'Vocabulary' | 'Grammar' | 'Bookmark'>('All');
+  const [contentTypeFilter, setContentTypeFilter] = useState<'All' | 'Vocabulary' | 'Grammar' | 'Mixed'>('All');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
@@ -33,6 +34,18 @@ export const FlashcardReviewHistoryView: React.FC = () => {
   const [sessionDetail, setSessionDetail] = useState<FlashcardSessionHistoryDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
 
+  // Đóng modal khi nhấn phím Esc
+  useEffect(() => {
+    if (!selectedSessionId) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCloseDetail();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedSessionId]);
+
   useEffect(() => {
     const loadHistory = async () => {
       setLoading(true);
@@ -40,7 +53,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
       const res = await flashcardService.getReviewHistory(
         currentPage,
         pageSize,
-        contentTypeFilter === 'Bookmark' ? 'All' : contentTypeFilter
+        contentTypeFilter
       );
 
       if (res.success && res.data) {
@@ -74,11 +87,15 @@ export const FlashcardReviewHistoryView: React.FC = () => {
   // Tính toán các chỉ số thống kê từ danh sách phiên học thật từ API
   const stats = useMemo(() => {
     const totalSessions = historyItems.length;
+    let completedSessions = 0;
     let totalReviewed = 0;
     let totalGoodOrEasy = 0;
 
     historyItems.forEach((item) => {
-      const reviewed = item.againCount + item.goodCount + item.easyCount || item.totalCards;
+      if (!item.isIncomplete) {
+        completedSessions += 1;
+      }
+      const reviewed = item.reviewedCardsCount ?? (item.againCount + item.goodCount + item.easyCount || item.totalCards);
       totalReviewed += reviewed;
       totalGoodOrEasy += (item.goodCount + item.easyCount);
     });
@@ -96,6 +113,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
     return {
       totalReviewed,
       totalSessions,
+      completedSessions,
       retentionRate,
       streak,
     };
@@ -221,7 +239,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
             <div>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phiên hoàn thành</div>
               <div className="text-2xl font-black text-purple-900 mt-0.5">
-                {stats.totalSessions} <span className="text-xs font-semibold text-slate-500">phiên</span>
+                {stats.completedSessions} <span className="text-xs font-semibold text-slate-500">/ {stats.totalSessions} phiên</span>
               </div>
             </div>
           </div>
@@ -264,7 +282,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                   <button
                     key={tf}
                     onClick={() => setTimeFilter(tf)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                       timeFilter === tf
                         ? 'bg-[#071A44] text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
@@ -280,17 +298,17 @@ export const FlashcardReviewHistoryView: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span>NỘI DUNG:</span>
               <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-                {(['All', 'Vocabulary', 'Grammar'] as const).map((ct) => (
+                {(['All', 'Vocabulary', 'Grammar', 'Mixed'] as const).map((ct) => (
                   <button
                     key={ct}
                     onClick={() => setContentTypeFilter(ct)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                       contentTypeFilter === ct
                         ? 'bg-[#2563EB] text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    {ct === 'All' ? 'Tất cả' : ct === 'Vocabulary' ? '📘 Từ vựng' : '🧩 Ngữ pháp'}
+                    {ct === 'All' ? 'Tất cả' : ct === 'Vocabulary' ? '📘 Từ vựng' : ct === 'Grammar' ? '🧩 Ngữ pháp' : '⚡ Hỗn hợp'}
                   </button>
                 ))}
               </div>
@@ -319,10 +337,14 @@ export const FlashcardReviewHistoryView: React.FC = () => {
         ) : (
           <div className="space-y-3">
             {historyItems.map((item) => {
+              const isDueReview = item.sourceType === 'DueReview';
               const isGrammar = item.contentType?.toLowerCase() === 'grammar';
+              const isMixed = item.contentType?.toLowerCase() === 'mixed';
               const total = item.againCount + item.goodCount + item.easyCount || item.totalCards;
               const durationMinutes = Math.floor(item.durationSeconds / 60);
               const durationSecs = item.durationSeconds % 60;
+              const reviewedCards = item.reviewedCardsCount ?? (item.isIncomplete ? Math.max(0, item.totalCards - (item.unreviewedCardsCount ?? 0)) : item.totalCards);
+              const unreviewedCount = item.unreviewedCardsCount ?? (item.isIncomplete ? Math.max(0, item.totalCards - reviewedCards) : 0);
 
               return (
                 <div
@@ -333,10 +355,16 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                   <div className="flex items-start gap-4">
                     <div
                       className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0 ${
-                        isGrammar ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
+                        isDueReview
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : isGrammar
+                          ? 'bg-purple-50 text-purple-700 border border-purple-100'
+                          : isMixed
+                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                          : 'bg-blue-50 text-blue-700 border border-blue-100'
                       }`}
                     >
-                      {isGrammar ? '🧩' : '📘'}
+                      {isDueReview ? '⚡' : isGrammar ? '🧩' : isMixed ? '🔀' : '📘'}
                     </div>
 
                     <div className="space-y-1">
@@ -344,9 +372,33 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                         <h2 className="text-base font-black text-[#071A44]">
                           {item.setTitle}
                         </h2>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">
-                          {item.sourceType === 'Bookmark' ? 'Thẻ đã lưu' : 'Theo chủ đề'}
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            isDueReview
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : item.sourceType === 'Bookmark'
+                              ? 'bg-slate-100 text-slate-600'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {isDueReview ? '⚡ Thẻ đến hạn' : item.sourceType === 'Bookmark' ? 'Thẻ đã lưu' : 'Theo chủ đề'}
                         </span>
+                        {isMixed && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                            Hỗn hợp
+                          </span>
+                        )}
+                        {item.isIncomplete ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-100 text-orange-700 border border-orange-200 flex items-center gap-1">
+                            <span>⏳</span>
+                            <span>Chưa hoàn thành</span>
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                            <span>✓</span>
+                            <span>Đã hoàn thành</span>
+                          </span>
+                        )}
                         {item.isExtraPractice && (
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
                             ↻ Ôn tập thêm
@@ -354,13 +406,31 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                         )}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {formatVnDateTime(item.startedAt)} • Thời lượng:{' '}
+                        {item.isIncomplete ? (
+                          <span className="font-bold text-orange-950">
+                            Lần ôn gần nhất: {formatVnDateTime(item.lastActivityAt || item.startedAt)}
+                          </span>
+                        ) : (
+                          <span>{formatVnDateTime(item.startedAt)}</span>
+                        )}{' '}
+                        • Thời lượng:{' '}
                         <span className="font-semibold text-slate-700">
                           {durationMinutes > 0 ? `${durationMinutes}m ` : ''}
                           {durationSecs}s
                         </span>{' '}
                         • Quy mô:{' '}
-                        <span className="font-bold text-[#2563EB]">{item.totalCards} thẻ</span>
+                        {item.isIncomplete ? (
+                          <span>
+                            Đã ôn: <span className="font-bold text-[#2563EB]">{reviewedCards}/{item.totalCards} thẻ</span>
+                            {unreviewedCount > 0 && (
+                              <span className="text-amber-800 font-extrabold ml-1.5 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                                (Còn {unreviewedCount} thẻ chưa ôn)
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="font-bold text-[#2563EB]">{item.totalCards} thẻ</span>
+                        )}
                         {total > item.totalCards && !item.isExtraPractice && (
                           <span className="text-slate-400 font-medium ml-1">
                             ({total} lượt ôn)
@@ -402,11 +472,27 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Right: View Detail Button */}
-                  <div>
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2 w-full lg:w-auto">
+                    {item.isIncomplete && (
+                      <Link
+                        to={
+                          item.sourceType === 'DueReview'
+                            ? `/flashcards/study/due/${item.contentType?.toLowerCase() || 'mixed'}`
+                            : item.topicId
+                            ? `/flashcards/study/${item.topicId}?type=${item.contentType?.toLowerCase() || 'vocabulary'}`
+                            : '/flashcards'
+                        }
+                        className="px-3.5 py-2 bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+                        title="Tiếp tục phiên ôn tập chưa hoàn thành"
+                      >
+                        <span>▶</span>
+                        <span>Tiếp tục ôn</span>
+                      </Link>
+                    )}
                     <button
                       onClick={() => handleOpenDetail(item.sessionId)}
-                      className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 w-full lg:w-auto"
+                      className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 flex-1 lg:flex-initial cursor-pointer"
                     >
                       <span>👁️</span>
                       <span>Xem chi tiết thẻ</span>
@@ -419,9 +505,18 @@ export const FlashcardReviewHistoryView: React.FC = () => {
         )}
 
         {/* ==================== 6. MODAL XEM CHI TIẾT PHIÊN LỊCH SỬ ==================== */}
-        {selectedSessionId && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
-            <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col">
+        {selectedSessionId &&
+          createPortal(
+            <div
+              onClick={(e) => {
+                if (e.target === e.currentTarget) handleCloseDetail();
+              }}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-[9999] animate-fade-in overflow-y-auto"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col my-auto"
+              >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="text-base font-black text-[#071A44] flex items-center gap-2">
                   <span>📋</span>
@@ -429,7 +524,7 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                 </h3>
                 <button
                   onClick={handleCloseDetail}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors cursor-pointer"
                 >
                   ✕
                 </button>
@@ -441,64 +536,80 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                   <p className="text-xs font-medium">Đang tải nhật ký từng thẻ...</p>
                 </div>
               ) : sessionDetail ? (
-                <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-                  <div className="text-xs text-slate-500 pb-2">
+                <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+                  <div className="text-xs text-slate-500">
                     {sessionDetail.session.setTitle} •{' '}
                     {sessionDetail.session.isExtraPractice
                       ? `Ôn tập tự do (${groupedLogs.length} thẻ)`
-                      : `Quy mô: ${groupedLogs.length} thẻ (${sessionDetail.logs.length} lượt đánh giá)`}
+                      : sessionDetail.session.isIncomplete
+                      ? `Đã ôn ${sessionDetail.session.reviewedCardsCount ?? groupedLogs.length}/${sessionDetail.session.totalCards} thẻ (${sessionDetail.logs.length} lượt đánh giá)`
+                      : `Quy mô: ${sessionDetail.session.totalCards} thẻ (${sessionDetail.logs.length} lượt đánh giá)`}
                   </div>
 
-                  {groupedLogs.map((item) => (
-                    <div
-                      key={item.key}
-                      className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs gap-3"
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-[#071A44] text-sm">{item.frontText}</span>
-                          {item.againCount > 0 && !sessionDetail.session.isExtraPractice && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
-                              🔄 {item.againCount} lượt học lại
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-slate-500 text-[11px] line-clamp-1">{item.meaning}</div>
+                  {sessionDetail.session.isIncomplete && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">⏳</span>
+                        <span className="font-extrabold">Phiên ôn tập đang tạm dừng (Chưa hoàn thành)</span>
                       </div>
-
-                      <div className="flex items-center gap-3 text-right shrink-0">
-                        <div className="text-[11px] text-slate-400">
-                          {sessionDetail.session.isExtraPractice ? (
-                            <span className="text-slate-500 font-medium">Ôn tự do</span>
-                          ) : (
-                            <>
-                              {item.intervalBefore} ngày ➔{' '}
-                              <span className="font-bold text-slate-700">{item.intervalAfter} ngày</span>
-                            </>
-                          )}
-                        </div>
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
-                            sessionDetail.session.isExtraPractice
-                              ? 'bg-blue-100 text-blue-800'
-                              : item.finalRating === 'Again'
-                              ? 'bg-red-100 text-red-800'
-                              : item.finalRating === 'Good'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {sessionDetail.session.isExtraPractice
-                            ? 'Đã duyệt'
-                            : item.finalRating === 'Again'
-                            ? 'Học lại'
-                            : item.finalRating === 'Good'
-                            ? 'Tốt'
-                            : 'Dễ'}
-                        </span>
+                      <div className="font-bold text-amber-800">
+                        Đã ôn: {sessionDetail.session.reviewedCardsCount ?? groupedLogs.length}/{sessionDetail.session.totalCards} thẻ • Còn {sessionDetail.session.unreviewedCardsCount ?? Math.max(0, sessionDetail.session.totalCards - (sessionDetail.session.reviewedCardsCount ?? groupedLogs.length))} thẻ chưa ôn
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  <div className="space-y-2">
+                    {groupedLogs.map((item) => (
+                      <div
+                        key={item.key}
+                        className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs gap-3"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-[#071A44] text-sm">{item.frontText}</span>
+                            {item.againCount > 0 && !sessionDetail.session.isExtraPractice && (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
+                                🔄 {item.againCount} lượt học lại
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-slate-500 text-[11px] line-clamp-1">{item.meaning}</div>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-right shrink-0">
+                          <div className="text-[11px] text-slate-400">
+                            {sessionDetail.session.isExtraPractice ? (
+                              <span className="text-slate-500 font-medium">Ôn tự do</span>
+                            ) : (
+                              <>
+                                {item.intervalBefore} ngày ➔{' '}
+                                <span className="font-bold text-slate-700">{item.intervalAfter} ngày</span>
+                              </>
+                            )}
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+                              sessionDetail.session.isExtraPractice
+                                ? 'bg-blue-100 text-blue-800'
+                                : item.finalRating === 'Again'
+                                ? 'bg-red-100 text-red-800'
+                                : item.finalRating === 'Good'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            {sessionDetail.session.isExtraPractice
+                              ? 'Đã duyệt'
+                              : item.finalRating === 'Again'
+                              ? 'Học lại'
+                              : item.finalRating === 'Good'
+                              ? 'Tốt'
+                              : 'Dễ'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="py-8 text-center text-xs text-slate-400">
@@ -506,16 +617,34 @@ export const FlashcardReviewHistoryView: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-2 border-t border-slate-100 text-right">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                {sessionDetail && sessionDetail.session.isIncomplete ? (
+                  <Link
+                    to={
+                      sessionDetail.session.sourceType === 'DueReview'
+                        ? `/flashcards/study/due/${sessionDetail.session.contentType?.toLowerCase() || 'mixed'}`
+                        : sessionDetail.session.topicId
+                        ? `/flashcards/study/${sessionDetail.session.topicId}?type=${sessionDetail.session.contentType?.toLowerCase() || 'vocabulary'}`
+                        : '/flashcards'
+                    }
+                    className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>▶</span>
+                    <span>Tiếp tục ôn tập phiên này</span>
+                  </Link>
+                ) : (
+                  <div />
+                )}
                 <button
                   onClick={handleCloseDetail}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
                 >
                   Đóng
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>
