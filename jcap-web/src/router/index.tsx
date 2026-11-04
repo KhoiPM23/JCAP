@@ -45,10 +45,12 @@ import { SettingsView } from '../views/SettingsView';
 import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
 import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
 import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
+import { FlashcardTestView } from '../views/self-study/FlashcardTestView';
 import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
 import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
 import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
 import { AdminNotificationView } from '../views/admin/AdminNotificationView';
+import { CommunityForumView } from '../views/CommunityForumView';
 
 // Bản đồ Khám phá chứa dữ liệu hình dạng 47 tỉnh nên tách chunk riêng, chỉ tải khi mở trang
 const JapanMapView = React.lazy(() =>
@@ -338,6 +340,7 @@ export const AppRouter: React.FC = () => {
         {/* FE-06: Quản lý Học viên (UC-54 & UC-55) */}
         <Route path="/admin/users" element={<AdminUserManagementView />} />
         <Route path="/admin/feedback" element={<AdminFeedbackView />} />
+        <Route path="/admin/community" element={<CommunityForumView />} />
         <Route path="/admin/notifications" element={<AdminNotificationView />} />
         <Route path="/admin/settings" element={<div className="p-8 text-center bg-white m-6 rounded-2xl border border-slate-200 shadow-sm"><h2 className="text-xl font-bold text-slate-800">Cài đặt hệ thống</h2><p className="text-slate-500 mt-2">Tính năng đang được phát triển.</p></div>} />
         
@@ -378,6 +381,16 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <LearnerShadowingPracticeView />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Fullscreen Flashcard Quizlet-style Test Mode */}
+      <Route
+        path="/flashcards/test/:topicId/:contentType"
+        element={
+          <PrivateRoute>
+            <FlashcardTestView />
           </PrivateRoute>
         }
       />
@@ -456,6 +469,8 @@ export const AppRouter: React.FC = () => {
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/feedback" element={<LearnerFeedbackView />} />
         <Route path="/help" element={<LearnerFeedbackView />} />
+        <Route path="/community" element={<CommunityForumView />} />
+        <Route path="/forum" element={<CommunityForumView />} />
       </Route>
 
       {/* Temporary Development-Only Showcase Route */}

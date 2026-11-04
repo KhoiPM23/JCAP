@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -308,9 +308,61 @@ export const AdminCreditPackagesView: React.FC = () => {
     }
   }, [setErrorMessage]);
 
+  const [isMockMode, setIsMockMode] = useState<boolean>(false);
+  const [isTogglingMock, setIsTogglingMock] = useState<boolean>(false);
+
+  const fetchPaymentMode = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payment-mode`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const modeData = result?.data ?? result;
+        if (typeof modeData?.isMockMode === 'boolean') {
+          setIsMockMode(modeData.isMockMode);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleToggleMockMode = async (nextMockState: boolean) => {
+    setIsTogglingMock(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/payment-mode`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ isMockMode: nextMockState }),
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.message || 'Không thể chuyển đổi chế độ thanh toán.');
+      }
+
+      const modeData = result?.data ?? result;
+      const updated = typeof modeData?.isMockMode === 'boolean' ? modeData.isMockMode : nextMockState;
+      setIsMockMode(updated);
+      setSuccessMessage(
+        result?.message ||
+          (updated
+            ? 'Đã bật chế độ Thanh toán Thử nghiệm (Mock Mode) — Nạp thẳng không cần chuyển khoản!'
+            : 'Đã chuyển về chế độ Thanh toán PayOS Thật (VietQR).')
+      );
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Lỗi khi cập nhật chế độ thanh toán.');
+    } finally {
+      setIsTogglingMock(false);
+    }
+  };
+
   useEffect(() => {
     fetchPackages();
-  }, [fetchPackages]);
+    fetchPaymentMode();
+  }, [fetchPackages, fetchPaymentMode]);
 
   const createPackageApi = async (payload: CreateCreditPackageDto): Promise<CreditPackage> => {
     const response = await fetch(API_BASE_URL, {
@@ -749,6 +801,26 @@ export const AdminCreditPackagesView: React.FC = () => {
                   </label>
                 </div>
               )}
+
+              <div className="pt-2 border-t border-slate-100">
+                <label className="inline-flex items-start gap-2.5 cursor-pointer bg-amber-50/70 border border-amber-200/80 rounded-xl p-3.5 w-full">
+                  <input
+                    type="checkbox"
+                    checked={isMockMode}
+                    disabled={isTogglingMock}
+                    onChange={(e) => handleToggleMockMode(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 text-amber-600 rounded border-amber-300 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-amber-900 block">
+                      ⚡ Chế độ Thanh toán Thử nghiệm (Mock Mode — Nạp thẳng không cần chuyển khoản QR)
+                    </span>
+                    <span className="text-[11px] text-amber-700 mt-0.5 block">
+                      Khi tích chọn, người test bấm mua gói bất kỳ sẽ được cộng thẳng Credit/Gói tháng ngay lập tức mà không cần quét mã PayOS.
+                    </span>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
@@ -915,6 +987,26 @@ export const AdminCreditPackagesView: React.FC = () => {
                   </span>
                 </label>
               </div>
+
+              <div className="pt-2 border-t border-slate-100">
+                <label className="inline-flex items-start gap-2.5 cursor-pointer bg-amber-50/70 border border-amber-200/80 rounded-xl p-3.5 w-full">
+                  <input
+                    type="checkbox"
+                    checked={isMockMode}
+                    disabled={isTogglingMock}
+                    onChange={(e) => handleToggleMockMode(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 text-amber-600 rounded border-amber-300 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-amber-900 block">
+                      ⚡ Chế độ Thanh toán Thử nghiệm (Mock Mode — Kích hoạt thẳng không qua chuyển khoản)
+                    </span>
+                    <span className="text-[11px] text-amber-700 mt-0.5 block">
+                      Khi tích chọn, người test bấm đăng ký gói tháng sẽ được kích hoạt ngay lập tức mà không cần quét mã PayOS.
+                    </span>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
@@ -1020,8 +1112,31 @@ export const AdminCreditPackagesView: React.FC = () => {
           </p>
         </div>
 
-        {/* Nút hành động */}
-        {mainCategory === 'subscription' ? (
+        {/* Công tắc Chế độ Thanh toán Toàn hệ thống + Nút hành động */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div
+            className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all ${
+              isMockMode
+                ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-700'
+            }`}
+            title="Bật chế độ Mock Test để nạp thẳng Credit / Gói tháng không cần quét QR chuyển khoản"
+          >
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isMockMode}
+                disabled={isTogglingMock}
+                onChange={(e) => handleToggleMockMode(e.target.checked)}
+                className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer"
+              />
+              <span>
+                {isMockMode ? '⚡ Chế độ: Mock Test (Nạp thẳng)' : '💳 Chế độ: PayOS Thật (VietQR)'}
+              </span>
+            </label>
+          </div>
+
+          {mainCategory === 'subscription' ? (
           <button
             type="button"
             onClick={handleOpenCreateMonthlyEditor}
@@ -1049,7 +1164,8 @@ export const AdminCreditPackagesView: React.FC = () => {
             <span>📥</span>
             <span>Xuất Báo Cáo Excel (CSV)</span>
           </button>
-        )}
+          )}
+        </div>
       </div>
 
       {/* 2. Alert Messages (Chuẩn phong cách Add Scenario - tự làm mờ sau 5s, không in đậm, không nút X) */}

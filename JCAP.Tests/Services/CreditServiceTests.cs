@@ -200,7 +200,8 @@ namespace JCAP.Tests.Services
 
             dbContext.CreditTransactions.AddRange(
                 new CreditTransaction { Id = 1, UserId = "user-test-hist", Amount = 100, Type = "TopUp", Status = "Paid", CreatedAt = DateTime.UtcNow.AddMinutes(-10) },
-                new CreditTransaction { Id = 2, UserId = "user-test-hist", Amount = -20, Type = "Deduct", Status = "Paid", CreatedAt = DateTime.UtcNow.AddMinutes(-5) },
+                new CreditTransaction { Id = 2, UserId = "user-test-hist", Amount = 1000, Type = "Subscription", Status = "Paid", CreatedAt = DateTime.UtcNow.AddMinutes(-5) },
+                new CreditTransaction { Id = 99, UserId = "user-test-hist", Amount = -5, Type = "Deduct", Status = "Paid", CreatedAt = DateTime.UtcNow.AddMinutes(-2) },
                 new CreditTransaction { Id = 3, UserId = "another-user", Amount = 300, Type = "TopUp", Status = "Paid", CreatedAt = DateTime.UtcNow }
             );
             await dbContext.SaveChangesAsync();

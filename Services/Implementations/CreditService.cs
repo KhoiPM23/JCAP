@@ -1,4 +1,4 @@
-using JCAP.Data;
+﻿using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Credit;
 using JCAP.Models;
@@ -88,17 +88,21 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
 
-            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
+                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+
+            if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {
-                // Cho phép chạy Mock Payment trong môi trường Test / Development khi PayOS chưa cấu hình
-                if (string.IsNullOrEmpty(_configuration["FrontendUrl"]) || _configuration.GetValue<bool>("PayOS:AllowMock", false))
+                // Cho phép chạy Mock Payment khi Admin bật chế độ Thử nghiệm (Mock Mode) hoặc cấu hình AllowMock = true
+                if (isMockMode)
                 {
-                    _logger.LogInformation("PayOS chưa cấu hình thông tin. Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
+                    _logger.LogInformation("Chạy chế độ Mock Payment cho User: {UserId}, Package: {PackageId}", userId, packageId);
 
                     var mockTransaction = new CreditTransaction
                     {
                         UserId = userId,
                         Amount = package.Credits,
+                        AmountVnd = package.Price,
                         Type = "TopUp",
                         Description = $"Nạp {package.Name} (+{package.Credits} credits) [Mock]",
                         PayOsOrderCode = null,
@@ -115,7 +119,7 @@ namespace JCAP.Services.Implementations
                     return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
                     {
                         Success = true,
-                        Message = $"Nạp thành công {package.Credits} credits vào tài khoản (Chế độ Mock).",
+                        Message = $"Nạp thành công {package.Credits} credits vào tài khoản (Chế độ Thử nghiệm).",
                         IsMock = true,
                         AddedCredits = package.Credits,
                         NewCreditBalance = user.CreditBalance
@@ -213,8 +217,51 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
 
-            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
+                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+
+            if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {
+                if (isMockMode)
+                {
+                    _logger.LogInformation("Chạy chế độ Mock Payment khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, plan.Id);
+
+                    var now = DateTime.UtcNow;
+                    var startFrom = user.SubscriptionExpiresAt.HasValue && user.SubscriptionExpiresAt.Value > now
+                        ? user.SubscriptionExpiresAt.Value
+                        : now;
+
+                    user.SubscriptionPlanId = plan.Id;
+                    user.SubscriptionStartedAt = now;
+                    user.SubscriptionExpiresAt = startFrom.AddDays(plan.DurationDays);
+
+                    var mockSubTx = new CreditTransaction
+                    {
+                        UserId = userId,
+                        Amount = plan.WeeklyQuota,
+                        AmountVnd = plan.Price,
+                        SubscriptionPlanId = plan.Id,
+                        Type = "Subscription",
+                        Description = $"Đăng ký {plan.Name} ({plan.Id}) [Mock]",
+                        PayOsOrderCode = null,
+                        Status = "Paid",
+                        CreatedAt = now
+                    };
+
+                    await _dbContext.CreditTransactions.AddAsync(mockSubTx);
+                    await _userManager.UpdateAsync(user);
+                    await _dbContext.SaveChangesAsync();
+
+                    return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                    {
+                        Success = true,
+                        Message = $"Kích hoạt thành công {plan.Name} (Chế độ Thử nghiệm).",
+                        IsMock = true,
+                        AddedCredits = plan.WeeklyQuota,
+                        NewCreditBalance = user.CreditBalance
+                    }, "Đăng ký gói tháng thành công (Mock).");
+                }
+
                 _logger.LogError("PayOS chưa cấu hình thông tin khi mua gói tháng cho User: {UserId}, Plan: {PlanId}", userId, plan.Id);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán PayOS chưa được kích hoạt hoặc cấu hình chưa đầy đủ. Vui lòng liên hệ quản trị viên.");
             }
@@ -300,7 +347,24 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<CreditHistoryResponseDto>.Fail("Không tìm thấy người dùng.");
             }
 
-            // Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
+            bool hasStatusChanges = false;
+
+            // 1. Tự động hủy các giao dịch Pending đã quá hạn 10 phút (theo timeout chuẩn của PayOS)
+            var timeoutThreshold = DateTime.UtcNow.AddMinutes(-PendingOrderTimeoutMinutes);
+            var expiredPendingTxs = await _dbContext.CreditTransactions
+                .Where(t => t.UserId == userId && t.Status == "Pending" && t.CreatedAt <= timeoutThreshold)
+                .ToListAsync();
+
+            if (expiredPendingTxs.Any())
+            {
+                foreach (var expTx in expiredPendingTxs)
+                {
+                    expTx.Status = "Cancelled";
+                    hasStatusChanges = true;
+                }
+            }
+
+            // 2. Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API
             // (Giúp đồng bộ tức thì khi người dùng bấm Hủy hoặc Thanh toán ở tab PayOS song song rồi mở/quay lại Lịch sử giao dịch)
             if (_payOSClient != null && _payOsSettings.IsConfigured)
             {
@@ -310,7 +374,6 @@ namespace JCAP.Services.Implementations
                     .Take(pageSize)
                     .ToListAsync();
 
-                bool hasStatusChanges = false;
                 foreach (var pendingTx in pendingTxs)
                 {
                     if (!long.TryParse(pendingTx.PayOsOrderCode, out var pendingOrderCode))
@@ -338,16 +401,18 @@ namespace JCAP.Services.Implementations
                         _logger.LogDebug(ex, "Không thể đối soát trạng thái đơn Pending #{OrderCode} từ PayOS khi tải lịch sử.", pendingOrderCode);
                     }
                 }
-
-                if (hasStatusChanges)
-                {
-                    await _dbContext.SaveChangesAsync();
-                }
             }
 
+            if (hasStatusChanges)
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Issue #118: Chỉ hiển thị giao dịch nạp (TopUp, Subscription), không hiển thị các khoản tiêu dùng (Deduct)
+            // để tránh nổ database và giữ lịch sử giao dịch sạch sẽ.
             var query = _dbContext.CreditTransactions
                 .AsNoTracking()
-                .Where(t => t.UserId == userId);
+                .Where(t => t.UserId == userId && t.Type != "Deduct");
 
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -672,8 +737,29 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Đơn hàng này đã bị hủy.");
             }
 
-            if (_payOSClient == null || !_payOsSettings.IsConfigured)
+            bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
+                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+
+            if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {
+                if (isMockMode)
+                {
+                    if (!string.IsNullOrEmpty(transaction.Description) && !transaction.Description.Contains("[Mock]"))
+                    {
+                        transaction.Description += " [Mock]";
+                    }
+                    var (_, updatedBalance) = await ActivateTransactionAsync(transaction);
+                    return ApiResponse<PurchaseCreditResponseDto>.Ok(new PurchaseCreditResponseDto
+                    {
+                        Success = true,
+                        Message = "Đã kích hoạt đơn hàng thành công (Chế độ Thử nghiệm).",
+                        OrderCode = orderCode,
+                        IsMock = true,
+                        AddedCredits = transaction.Amount,
+                        NewCreditBalance = updatedBalance
+                    }, "Thanh toán thành công (Mock).");
+                }
+
                 _logger.LogError("PayOS chưa cấu hình thông tin. Từ chối tiếp tục thanh toán cho User: {UserId}, OrderCode: {OrderCode}", userId, orderCode);
                 return ApiResponse<PurchaseCreditResponseDto>.Fail("Cổng thanh toán trực tuyến PayOS chưa được cấu hình hoặc gặp sự cố. Vui lòng liên hệ quản trị viên.");
             }

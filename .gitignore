@@ -530,3 +530,7 @@ skills-lock.json
 
 # Local Japan Map / Pictograms guide
 MapJP/
+
+# Local Uploads fallback
+wwwroot/uploads/
+jcap-web/public/uploads/
