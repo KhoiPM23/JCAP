@@ -51,6 +51,9 @@ import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewH
 const JapanMapView = React.lazy(() =>
   import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
 );
+const LearningTopicsView = React.lazy(() => import('../views/learning/LearningTopicsView').then(m => ({ default: m.LearningTopicsView })));
+const LearningTopicContentsView = React.lazy(() => import('../views/learning/LearningTopicContentsView').then(m => ({ default: m.LearningTopicContentsView })));
+const LearningContentDetailView = React.lazy(() => import('../views/learning/LearningContentDetailView').then(m => ({ default: m.LearningContentDetailView })));
 
 // ============================================================
 // Route Wrappers
@@ -408,6 +411,12 @@ export const AppRouter: React.FC = () => {
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />
+        <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>
+          <Route index element={<Navigate to="topics" replace />} />
+          <Route path="topics" element={<LearningTopicsView />} />
+          <Route path="topics/:topicId" element={<LearningTopicContentsView />} />
+          <Route path="topics/:topicId/:kind/:contentId" element={<LearningContentDetailView />} />
+        </Route>
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
         

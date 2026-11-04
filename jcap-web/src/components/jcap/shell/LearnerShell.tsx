@@ -27,7 +27,7 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
 const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
-const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
+const isThemedPath = (p: string) => p === '/learning' || p.startsWith('/learning/') || THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
 
 /**
  * Một trang trong khung. Khi bị gỡ vì đã sang trang khác, để lại một bản sao DOM (chỉ để nhìn) mờ dần trong 0,14s như prototype
