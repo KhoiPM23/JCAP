@@ -5,12 +5,14 @@ import { JLPT_LEVELS, type ContentDetail, type ContentKind, type ContentRow, typ
 import { useAdminToasts } from '../AdminExploreToasts';
 import { ContentEditor } from './ContentEditor';
 import { TopicEditor, TopicManager } from './TopicManager';
+import { LearningImportModal } from './LearningImportModal';
 import { actionClass, ErrorBox, inputClass, LearningModal, LevelBadge, primaryClass, secondaryClass, StatusBadge, TopicChoices } from './LearningUi';
 
 type Editor = { type: 'topic'; detail: TopicDetail | null } | { type: 'content'; detail: ContentDetail | null; readOnly: boolean } | { type: 'manager'; detail: TopicDetail } | { type: 'status'; id: number; name: string; active: boolean } | { type: 'bulkStatus'; active: boolean } | { type: 'assign' };
 const names: Record<LearningKind, string> = { topics: 'Chủ đề', vocabularies: 'Từ vựng', grammars: 'Ngữ pháp' };
 export function AdminLearningView({ kind }: { kind: LearningKind }) {
   const isTopic = kind === 'topics';
+  const [importOpen, setImportOpen] = useState(false);
   const [keyword, setKeyword] = useState(''); const [level, setLevel] = useState(''); const [topic, setTopic] = useState(''); const [status, setStatus] = useState(''); const [pos, setPos] = useState(''); const [page, setPage] = useState(1);
   const [topics, setTopics] = useState<TopicOption[]>([]); const [rows, setRows] = useState<(TopicRow | ContentRow)[]>([]); const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<number[]>([]); const [assignTopics, setAssignTopics] = useState<number[]>([]);
@@ -53,6 +55,7 @@ export function AdminLearningView({ kind }: { kind: LearningKind }) {
       <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="mb-1 text-xs text-slate-400">Quản trị nội dung / Kho học liệu</p><h1 className="text-2xl font-bold tracking-tight">Quản lý {names[kind].toLowerCase()}</h1><p className="mt-1.5 text-sm text-slate-500">{isTopic ? 'Tổ chức nội dung theo chủ đề và level JLPT.' : 'Quản lý nội dung dùng chung, ví dụ và các chủ đề liên quan.'}</p></div><button className={primaryClass} disabled={busy} onClick={() => { setModalError(''); setEditor(isTopic ? { type: 'topic', detail: null } : { type: 'content', detail: null, readOnly: false }); }}><span className="text-lg leading-none">+</span> Thêm {names[kind].toLowerCase()}</button></div>
       <div className="flex gap-6 border-b border-[#E6EDF5]">{(['topics', 'vocabularies', 'grammars'] as const).map(value => <Link key={value} to={`/admin/${value}`} className={`border-b-2 px-1 pb-3 text-sm font-semibold ${kind === value ? 'border-[#0878EE] text-[#0878EE]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>{names[value]}</Link>)}</div>
       <ErrorBox message={error} />
+      <div className="flex justify-end"><button className={secondaryClass} disabled={busy} onClick={() => setImportOpen(true)}>Nhập Excel</button></div>
       <section className="rounded-xl border border-[#E6EDF5] bg-white shadow-sm">
         <div className="flex flex-wrap gap-3 border-b border-[#E6EDF5] p-4">
           <input className={`${inputClass} min-w-48 flex-1 sm:max-w-xs`} aria-label="Tìm kiếm" placeholder={isTopic ? 'Tìm tên hoặc mã chủ đề…' : 'Tìm từ, cách đọc hoặc nghĩa…'} value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }} />
@@ -78,6 +81,7 @@ export function AdminLearningView({ kind }: { kind: LearningKind }) {
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E6EDF5] px-5 py-3 text-xs text-slate-400"><span>{total} {names[kind].toLowerCase()} · Trang {page}/{maxPage}</span><div className="flex gap-2"><button className={secondaryClass} disabled={page <= 1 || loading} onClick={() => setPage(p => p - 1)}>← Trước</button><button className={secondaryClass} disabled={page >= maxPage || loading} onClick={() => setPage(p => p + 1)}>Sau →</button></div></footer>
       </section>
     </div>
+    {importOpen && <LearningImportModal onClose={() => setImportOpen(false)} onSaved={() => { setImportOpen(false); refresh(); }} />}
     {editor?.type === 'topic' && <TopicEditor detail={editor.detail} onClose={close} onSaved={refresh} />}
     {editor?.type === 'content' && <ContentEditor kind={kind as ContentKind} detail={editor.detail} topics={topics} readOnly={editor.readOnly} onClose={close} onSaved={refresh} />}
     {editor?.type === 'manager' && <TopicManager detail={editor.detail} onClose={close} onSaved={refresh} />}

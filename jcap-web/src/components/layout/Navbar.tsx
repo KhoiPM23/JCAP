@@ -19,6 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Trang chủ', path: '/', icon: HomeIcon, matchPrefix: false },
     { name: 'Học tập', path: '/scenarios', icon: BookIcon, matchPrefix: true },
     { name: 'Shadowing', path: '/shadowing', icon: MicIcon, matchPrefix: true },
+    { name: 'Kho học liệu', path: '/learning/topics', icon: BookIcon, matchPrefix: true },
     { name: 'Flashcard', path: '/flashcards', icon: CardsIcon, matchPrefix: true },
     { name: 'Diễn đàn', path: '/community', icon: UsersTalkIcon, matchPrefix: true },
     { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon, matchPrefix: true },
