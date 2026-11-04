@@ -146,8 +146,21 @@ namespace JCAP.Services.Implementations
             {
                 try
                 {
-                    var localPath = Path.Combine(_env.WebRootPath ?? "wwwroot", publicId.TrimStart('/'));
-                    if (File.Exists(localPath)) File.Delete(localPath);
+                    var webRoot = _env.WebRootPath;
+                    if (string.IsNullOrWhiteSpace(webRoot))
+                    {
+                        webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    }
+                    var uploadsRoot = Path.GetFullPath(Path.Combine(webRoot, "uploads"));
+                    var fullLocalPath = Path.GetFullPath(Path.Combine(webRoot, publicId.TrimStart('/')));
+
+                    // Kiểm tra Path Traversal: Cần đảm bảo Path.GetFullPath(localPath) nằm trọn trong thư mục uploads trước khi gọi File.Delete.
+                    if (!fullLocalPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
+                    if (File.Exists(fullLocalPath)) File.Delete(fullLocalPath);
                     return true;
                 }
                 catch { return false; }
