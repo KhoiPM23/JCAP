@@ -1078,38 +1078,6 @@ public class RoleplaySessionService : IRoleplaySessionService
             string npcCode = sessionWithConfig.ScenarioLevelConfiguration.Scenario.ScenarioCode ?? $"SCN_{sessionWithConfig.ScenarioLevelConfiguration.Scenario.Id}";
             await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, allDone);
 
-            if (allDone)
-            {
-                var spotActivity = await _dbContext.ExploreSpotActivities
-                    .Include(a => a.Lesson)
-                    .FirstOrDefaultAsync(a => a.ActivityType == ExploreActivityType.Roleplay && a.ReferenceId == sessionWithConfig.ScenarioLevelConfigurationId, cancellationToken);
-
-                if (spotActivity?.Lesson != null)
-                {
-                    var spotProgress = await _dbContext.Set<ExploreSpotProgress>()
-                        .FirstOrDefaultAsync(p => p.UserId == userId && p.SpotId == spotActivity.Lesson.SpotId, cancellationToken);
-                    if (spotProgress == null)
-                    {
-                        spotProgress = new ExploreSpotProgress
-                        {
-                            UserId = userId,
-                            SpotId = spotActivity.Lesson.SpotId,
-                            RedStampedAt = DateTime.UtcNow,
-                            RoleplaySessionId = sessionId,
-                            UpdatedAt = DateTime.UtcNow
-                        };
-                        _dbContext.Set<ExploreSpotProgress>().Add(spotProgress);
-                        await _dbContext.SaveChangesAsync(cancellationToken);
-                    }
-                    else if (!spotProgress.RedStampedAt.HasValue)
-                    {
-                        spotProgress.RedStampedAt = DateTime.UtcNow;
-                        spotProgress.RoleplaySessionId = sessionId;
-                        spotProgress.UpdatedAt = DateTime.UtcNow;
-                        await _dbContext.SaveChangesAsync(cancellationToken);
-                    }
-                }
-            }
         }
 
         return ApiResponse<bool>.Ok(true, "Phiên luyện tập đã kết thúc thành công.");

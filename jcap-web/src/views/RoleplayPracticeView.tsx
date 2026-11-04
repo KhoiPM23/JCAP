@@ -8,7 +8,6 @@ import { voicevoxService, type VoiceOption } from '../services/voicevoxService';
 import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsModal';
 import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
 import { LivingAvatar, type AvatarState, type MouthViseme } from '../components/roleplay/LivingAvatar';
-import { EkiStampOverlay } from '../components/roleplay/EkiStampOverlay';
 import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
 import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination } from '../utils/japaneseSanitizer';
@@ -420,7 +419,6 @@ export const RoleplayPracticeView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const rawReturnUrl = searchParams.get('return');
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : null;
-  const [isEkiStampOpen, setIsEkiStampOpen] = useState(false);
 
   // Blind Mode (Thử thách phản xạ 10s & Khóa gợi ý Active Recall)
   const isBlindMode = searchParams.get('mode') === 'blind' || searchParams.get('blind') === 'true';
@@ -2527,7 +2525,7 @@ export const RoleplayPracticeView: React.FC = () => {
           {isAllMissionsCompleted ? (
             <button
               type="button"
-              onClick={() => setIsEkiStampOpen(true)}
+              onClick={() => void handleConfirmEnd()}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-emerald-600 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 animate-pulse whitespace-nowrap"
               title={
                 session.isNaturallyConcluded
@@ -3991,28 +3989,6 @@ export const RoleplayPracticeView: React.FC = () => {
         </div>
       )}
 
-      {session && (
-        <EkiStampOverlay
-          isOpen={isEkiStampOpen}
-          scenarioTitle={session.scenarioTitle}
-          averageScore={averageScore}
-          completedMissionsCount={completedMissionsCount}
-          totalMissionsCount={totalMissionsCount}
-          isExploreMode={Boolean(returnUrl)}
-          onReviewSummary={() => {
-            setIsEkiStampOpen(false);
-            void handleConfirmEnd();
-          }}
-          onRestart={() => {
-            setIsEkiStampOpen(false);
-            void handleRestartSession();
-          }}
-          onExit={() => {
-            setIsEkiStampOpen(false);
-            handleConfirmLeave();
-          }}
-        />
-      )}
     </div>
   );
 };
