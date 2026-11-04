@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Icon } from './Icon';
 import { cx, fmt, type Jlpt, type Tone } from './utils';
 
@@ -31,7 +31,7 @@ export interface CreditBadgeProps {
 }
 
 export const CreditBadge: React.FC<CreditBadgeProps> = ({ amount, variant = 'balance', size = 'md', low, unit, onClick, className }) => {
-  const text = variant === 'cost' ? `${fmt(amount)} Credit` : fmt(amount);
+  const text = variant === 'cost' ? (amount <= 0 ? 'Miễn phí' : fmt(amount) + ' Credit') : fmt(amount);
   const inner = (
     <>
       <span className="jc-credit__coin" aria-hidden="true">

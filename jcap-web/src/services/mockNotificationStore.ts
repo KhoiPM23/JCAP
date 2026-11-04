@@ -1,8 +1,10 @@
 // ============================================================================
-// Mock Store cho Quản lý & Cài đặt Thông báo Hệ thống (Admin Notification Config)
-// - Hỗ trợ chọn nhiều nơi hiển thị (Multi-placement: Trang chủ/Dashboard, Hội thoại, Shadowing...)
-// - Hỗ trợ cài đặt thời gian xuất hiện / thời gian tắt (Không bắt buộc: bỏ trống sẽ auto hiện)
-// - Hỗ trợ người xem bấm: Đóng (tắt trong phiên), Ẩn 6 tiếng, Ẩn 24 tiếng
+// Mock Store cho Quản lý & Cài đặt Thông báo Hệ thống (Admin cài đặt -> Hiển thị bên Learner)
+// - Admin cấu hình thông báo tại /admin/notifications
+// - Thông báo hiển thị ở biểu tượng Chuông góc trên cùng bên phải màn hình Trang chủ / Hành trình (Learner)
+// - Có chấm đỏ khi có thông báo chưa đọc
+// - Mốc thời gian thực tế: hiển thị rõ ràng ngày giờ tạo / ngày bắt đầu / ngày kết thúc
+// - Đồng bộ 2 chiều tức thời giữa 2 role (Admin lưu / sửa -> Learner nhận ngay lập tức qua CustomEvent & storage)
 // ============================================================================
 
 export type NotificationStyleType = 'ANNOUNCEMENT' | 'MAINTENANCE' | 'PROMOTION';
@@ -11,10 +13,11 @@ export type NotificationPlacementKey =
   | 'HOME_DASHBOARD'
   | 'SCENARIOS'
   | 'SHADOWING'
-  | 'EXPLORE'
+  | 'FLASHCARDS'
+  | 'RESULTS_STAMPS'
   | 'CREDITS'
   | 'FEEDBACK'
-  | 'USERS';
+  | 'PROFILE_SETTINGS';
 
 export interface NotificationItem {
   id: string;
@@ -22,9 +25,9 @@ export interface NotificationItem {
   content: string;
   styleType: NotificationStyleType;
   placements: NotificationPlacementKey[];
-  /** ISO string hoặc chuỗi datetime-local (YYYY-MM-DDTHH:mm). Rỗng/undefined = hiện ngay lập tức */
+  /** Chuỗi datetime-local (YYYY-MM-DDTHH:mm) hoặc ISO string. Rỗng/undefined = hiện ngay lập tức */
   startAt?: string;
-  /** ISO string hoặc chuỗi datetime-local (YYYY-MM-DDTHH:mm). Rỗng/undefined = không giới hạn thời gian tắt */
+  /** Chuỗi datetime-local (YYYY-MM-DDTHH:mm) hoặc ISO string. Rỗng/undefined = không giới hạn thời gian tắt */
   endAt?: string;
   isEnabled: boolean;
   createdAt: string;
@@ -46,6 +49,7 @@ export const STYLE_TYPE_META: Record<
     outlineBtnText: string;
     outlineBtnBorder: string;
     accentColor: string;
+    icon: string;
   }
 > = {
   ANNOUNCEMENT: {
@@ -59,6 +63,7 @@ export const STYLE_TYPE_META: Record<
     outlineBtnText: 'text-[#2563EB]',
     outlineBtnBorder: 'border-[#93C5FD] hover:bg-blue-50',
     accentColor: '#2563EB',
+    icon: 'campaign',
   },
   MAINTENANCE: {
     label: 'Bảo trì chức năng',
@@ -71,6 +76,7 @@ export const STYLE_TYPE_META: Record<
     outlineBtnText: 'text-[#D97706]',
     outlineBtnBorder: 'border-[#FCD34D] hover:bg-amber-50',
     accentColor: '#D97706',
+    icon: 'build',
   },
   PROMOTION: {
     label: 'Sự kiện / Ưu đãi',
@@ -83,6 +89,7 @@ export const STYLE_TYPE_META: Record<
     outlineBtnText: 'text-[#E11D48]',
     outlineBtnBorder: 'border-[#FDA4AF] hover:bg-rose-50',
     accentColor: '#E11D48',
+    icon: 'celebration',
   },
 };
 
@@ -91,66 +98,74 @@ export interface PlacementMeta {
   label: string;
   description: string;
   icon: string;
-  adminPathPrefixes: string[];
-  adminNavigatePath: string;
+  learnerPathHint: string;
+  learnerPathPrefixes: string[];
 }
 
 export const PLACEMENT_OPTIONS: PlacementMeta[] = [
   {
     key: 'HOME_DASHBOARD',
-    label: 'Trang chủ / Dashboard',
-    description: 'Hiện ngay khi mở trang Tổng quan Dashboard',
-    icon: '🏠',
-    adminPathPrefixes: ['/admin/dashboard'],
-    adminNavigatePath: '/admin/dashboard',
+    label: 'Trang chủ / Hành trình Khám phá',
+    description: 'Hiện khi Học viên vào Trang chủ hoặc Bản đồ Hành trình',
+    icon: '🗾',
+    learnerPathHint: '/, /explore, /dashboard',
+    learnerPathPrefixes: ['/explore', '/dashboard'],
   },
   {
     key: 'SCENARIOS',
-    label: 'Kịch bản Hội thoại AI',
-    description: 'Hiện khi vào mục Kịch bản Hội thoại / Roleplay',
+    label: 'Hội thoại AI (Roleplay)',
+    description: 'Hiện khi Học viên bấm vào mục Hội thoại AI',
     icon: '💬',
-    adminPathPrefixes: ['/admin/scenarios'],
-    adminNavigatePath: '/admin/scenarios',
+    learnerPathHint: '/scenarios',
+    learnerPathPrefixes: ['/scenarios'],
   },
   {
     key: 'SHADOWING',
-    label: 'Luyện nói Shadowing & Âm thanh',
-    description: 'Hiện khi vào mục Quản lý Shadowing hoặc Kho âm thanh',
+    label: 'Luyện nói Shadowing',
+    description: 'Hiện khi Học viên bấm vào mục Luyện nói Shadowing',
     icon: '🎧',
-    adminPathPrefixes: ['/admin/shadowing', '/admin/audio'],
-    adminNavigatePath: '/admin/shadowing',
+    learnerPathHint: '/shadowing',
+    learnerPathPrefixes: ['/shadowing'],
   },
   {
-    key: 'EXPLORE',
-    label: 'Bản đồ Khám phá',
-    description: 'Hiện khi vào mục Bản đồ Khám phá 47 tỉnh thành',
-    icon: '🗾',
-    adminPathPrefixes: ['/admin/explore'],
-    adminNavigatePath: '/admin/explore',
+    key: 'FLASHCARDS',
+    label: 'Thẻ ghi nhớ (Flashcard)',
+    description: 'Hiện khi Học viên bấm vào mục Tự học Flashcard SRS',
+    icon: '🃏',
+    learnerPathHint: '/flashcards',
+    learnerPathPrefixes: ['/flashcards'],
+  },
+  {
+    key: 'RESULTS_STAMPS',
+    label: 'Kết quả & Sổ con dấu',
+    description: 'Hiện khi Học viên xem Kết quả hội thoại hoặc Sổ con dấu',
+    icon: '📊',
+    learnerPathHint: '/roleplay/results, /stamps',
+    learnerPathPrefixes: ['/roleplay/results', '/stamps'],
   },
   {
     key: 'CREDITS',
-    label: 'Gói nạp & Credit',
-    description: 'Hiện khi vào mục Quản lý Gói và Credit',
+    label: 'Gói Hội viên & Nạp Credit',
+    description: 'Hiện khi Học viên vào trang Số dư, Gói học hoặc Nạp Credit',
     icon: '🪙',
-    adminPathPrefixes: ['/admin/credits'],
-    adminNavigatePath: '/admin/credits/packages',
+    learnerPathHint: '/subscription, /credits',
+    learnerPathPrefixes: ['/subscription', '/credits'],
   },
   {
     key: 'FEEDBACK',
-    label: 'Hòm thư Góp ý',
-    description: 'Hiện khi vào mục Hòm thư Góp ý & Hỗ trợ',
+    label: 'Góp ý ẩn danh',
+    description: 'Hiện khi Học viên mở mục Góp ý ẩn danh & Hỗ trợ',
     icon: '📬',
-    adminPathPrefixes: ['/admin/feedback'],
-    adminNavigatePath: '/admin/feedback',
+    learnerPathHint: '/feedback, /help',
+    learnerPathPrefixes: ['/feedback', '/help'],
   },
   {
-    key: 'USERS',
-    label: 'Quản lý Học viên',
-    description: 'Hiện khi vào mục Quản lý tài khoản Học viên',
-    icon: '👥',
-    adminPathPrefixes: ['/admin/users'],
-    adminNavigatePath: '/admin/users',
+    key: 'PROFILE_SETTINGS',
+    label: 'Hồ sơ & Cài đặt',
+    description: 'Hiện khi Học viên mở trang Hồ sơ cá nhân hoặc Cài đặt',
+    icon: '⚙️',
+    learnerPathHint: '/profile, /settings',
+    learnerPathPrefixes: ['/profile', '/settings'],
   },
 ];
 
@@ -162,49 +177,62 @@ export const PLACEMENT_MAP: Record<NotificationPlacementKey, PlacementMeta> = PL
   {} as Record<NotificationPlacementKey, PlacementMeta>,
 );
 
-const STORAGE_KEY = 'jcap_admin_notifications_mock_v1';
-const DISMISS_STORAGE_KEY = 'jcap_admin_notifications_dismissed_v1';
-const SESSION_CLOSED_KEY = 'jcap_admin_notifications_session_closed_v1';
+const STORAGE_KEY = 'jcap_learner_notifications_mock_v2';
+const READ_STORAGE_KEY = 'jcap_learner_notifications_read_v1';
+
+// Tạo mốc thời gian thực tế rõ ràng chuẩn ngày giờ thực
+const now = new Date();
+const pad = (n: number) => n.toString().padStart(2, '0');
+const toLocalISOString = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+const d1 = new Date(now.getTime() - 2 * 3600 * 1000); // 2 giờ trước
+const d2 = new Date(now.getTime() - 5 * 3600 * 1000); // 5 giờ trước
+const d2End = new Date(now.getTime() + 2 * 3600 * 1000); // 2 giờ tới
+const d3 = new Date(now.getTime() - 24 * 3600 * 1000); // 1 ngày trước
+const d3End = new Date(now.getTime() + 6 * 24 * 3600 * 1000); // 6 ngày tới
 
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'NOTIF-1001',
-    title: 'THÔNG BÁO',
+    title: 'Cập nhật Bản đồ Hành trình & Hội thoại AI',
     content:
-      'Hệ thống JCAP vừa cập nhật bộ dữ liệu Bản đồ Khám phá Nhật Bản và nâng cấp tốc độ phản hồi hội thoại AI.\nMọi thắc mắc hoặc góp ý vui lòng gửi tại Hòm thư Góp ý hoặc liên hệ nhóm hỗ trợ:\nhttps://jcap.edu.vn/support-community',
+      'Hệ thống vừa cập nhật thêm dữ liệu địa danh mới trên Bản đồ Hành trình và tối ưu hóa độ trễ phản hồi hội thoại AI.\nTham gia cộng đồng học viên để chia sẻ kinh nghiệm học tập:\nhttps://jcap.edu.vn/support-community',
     styleType: 'ANNOUNCEMENT',
     placements: ['HOME_DASHBOARD'],
-    startAt: '',
+    startAt: toLocalISOString(d1),
     endAt: '',
     isEnabled: true,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 5).toISOString(),
-    updatedAt: new Date(Date.now() - 3600 * 1000 * 5).toISOString(),
+    createdAt: d1.toISOString(),
+    updatedAt: d1.toISOString(),
   },
   {
     id: 'NOTIF-1002',
-    title: 'THÔNG BÁO BẢO TRÌ',
+    title: 'Bảo trì máy chủ âm thanh VoiceVox',
     content:
-      'Chức năng tổng hợp giọng nói VoiceVox cho bài luyện Shadowing và Kịch bản Hội thoại sẽ bảo trì định kỳ từ 23:30 đến 00:15 tối nay để nâng cấp máy chủ âm thanh.\nTrong thời gian này, việc tạo audio mới có thể chậm hơn bình thường.',
+      'Hệ thống tổng hợp giọng nói AI cho bài tập Shadowing và Hội thoại đang được nâng cấp máy chủ định kỳ nhằm tăng tốc độ tải âm thanh.\nThời gian dự kiến kết thúc vào lúc ' +
+      d2End.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+      '. Rất mong các bạn học viên thông cảm!',
     styleType: 'MAINTENANCE',
-    placements: ['SCENARIOS', 'SHADOWING'],
-    startAt: '',
-    endAt: '',
+    placements: ['HOME_DASHBOARD', 'SCENARIOS', 'SHADOWING'],
+    startAt: toLocalISOString(d2),
+    endAt: toLocalISOString(d2End),
     isEnabled: true,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
-    updatedAt: new Date(Date.now() - 3600 * 1000 * 2).toISOString(),
+    createdAt: d2.toISOString(),
+    updatedAt: d2.toISOString(),
   },
   {
     id: 'NOTIF-1003',
-    title: 'BẢO TRÌ CỔNG THANH TOÁN',
+    title: 'Sự kiện Tuần lễ Tích lũy Credit Mùa Đông',
     content:
-      'Cổng thanh toán QR PayOS đang được kiểm tra đối soát định kỳ. Vui lòng kiểm tra kỹ bảng giá gói Credit trước khi điều chỉnh.',
-    styleType: 'MAINTENANCE',
-    placements: ['CREDITS'],
-    startAt: '',
-    endAt: '',
-    isEnabled: false,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
-    updatedAt: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
+      'Hoàn thành 3 bài luyện Shadowing hoặc kích hoạt gói Hội viên trong tuần để nhận ngay 50 Credit thưởng vào tài khoản.\nXem chi tiết điều kiện tại mục Gói & Credit!',
+    styleType: 'PROMOTION',
+    placements: ['HOME_DASHBOARD', 'CREDITS'],
+    startAt: toLocalISOString(d3),
+    endAt: toLocalISOString(d3End),
+    isEnabled: true,
+    createdAt: d3.toISOString(),
+    updatedAt: d3.toISOString(),
   },
 ];
 
@@ -259,111 +287,78 @@ export function computeNotificationStatus(
   return 'ACTIVE_NOW';
 }
 
-export function resolvePlacementFromAdminPath(pathname: string): NotificationPlacementKey | null {
-  for (const option of PLACEMENT_OPTIONS) {
-    if (option.adminPathPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(prefix + '/'))) {
-      return option.key;
-    }
-  }
-  return null;
-}
-
-interface DismissRecord {
-  untilMs: number;
-  updatedAtVersion: string;
-}
-
-function getDismissMap(): Record<string, DismissRecord> {
+/**
+ * Lấy danh sách ID các thông báo đã đọc bên Học viên
+ */
+export function getReadNotificationIds(): string[] {
   try {
-    const raw = localStorage.getItem(DISMISS_STORAGE_KEY);
+    const raw = localStorage.getItem(READ_STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return {};
-}
-
-function getSessionClosedMap(): Record<string, string> {
-  try {
-    const raw = sessionStorage.getItem(SESSION_CLOSED_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return {};
+  return [];
 }
 
 /**
- * Đóng thông báo:
- * - hours = 0: Chỉ đóng tạm thời cho phiên hiện tại tại vị trí đó (`key = notifId:placement`)
- * - hours > 0 (VD: 6 hoặc 24): Ẩn trong `hours` tiếng (lưu vào localStorage)
+ * Đánh dấu thông báo là đã đọc
  */
-export function dismissNotification(
-  notification: NotificationItem,
-  placement: NotificationPlacementKey,
-  hours: 0 | 6 | 24,
-) {
-  const compositeKey = `${notification.id}__${placement}`;
+export function markNotificationAsRead(id: string) {
+  try {
+    const ids = getReadNotificationIds();
+    if (!ids.includes(id)) {
+      ids.push(id);
+      localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(ids));
+      emitChange();
+    }
+  } catch (e) {
+    console.error('Lỗi lưu read state:', e);
+  }
+}
 
-  if (hours === 0) {
-    try {
-      const map = getSessionClosedMap();
-      map[compositeKey] = notification.updatedAt;
-      sessionStorage.setItem(SESSION_CLOSED_KEY, JSON.stringify(map));
-    } catch {}
+/**
+ * Đánh dấu tất cả thông báo đang hoạt động là đã đọc
+ */
+export function markAllNotificationsAsRead() {
+  try {
+    const active = getActiveLearnerNotifications();
+    const ids = active.map((n) => n.id);
+    localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(ids));
     emitChange();
-    return;
+  } catch (e) {
+    console.error('Lỗi lưu markAllAsRead:', e);
   }
-
-  try {
-    const map = getDismissMap();
-    map[compositeKey] = {
-      untilMs: Date.now() + hours * 3600 * 1000,
-      updatedAtVersion: notification.updatedAt,
-    };
-    localStorage.setItem(DISMISS_STORAGE_KEY, JSON.stringify(map));
-  } catch {}
-  emitChange();
 }
 
 /**
- * Xoá toàn bộ lịch sử bấm "Đóng / Ẩn 6h / Ẩn 24h" để Admin có thể test lại tất cả Popup ngay lập tức
+ * Đặt lại trạng thái đọc (để test)
  */
-export function clearAllDismissals() {
+export function clearAllReadStatus() {
   try {
-    localStorage.removeItem(DISMISS_STORAGE_KEY);
-    sessionStorage.removeItem(SESSION_CLOSED_KEY);
+    localStorage.removeItem(READ_STORAGE_KEY);
+    emitChange();
   } catch {}
-  emitChange();
 }
 
-export function getActiveNotificationsForPlacement(
-  placement: NotificationPlacementKey,
-  nowMs: number = Date.now(),
-): NotificationItem[] {
+/**
+ * Lấy tất cả thông báo đang có hiệu lực dành cho Học viên
+ */
+export function getActiveLearnerNotifications(nowMs: number = Date.now()): NotificationItem[] {
   const all = getNotifications();
-  const dismissMap = getDismissMap();
-  const sessionMap = getSessionClosedMap();
+  return all
+    .filter((item) => computeNotificationStatus(item, nowMs) === 'ACTIVE_NOW')
+    .sort((a, b) => {
+      const timeA = a.startAt ? new Date(a.startAt).getTime() : new Date(a.createdAt).getTime();
+      const timeB = b.startAt ? new Date(b.startAt).getTime() : new Date(b.createdAt).getTime();
+      return timeB - timeA;
+    });
+}
 
-  return all.filter((item) => {
-    if (!item.placements.includes(placement)) return false;
-    if (computeNotificationStatus(item, nowMs) !== 'ACTIVE_NOW') return false;
-
-    const compositeKey = `${item.id}__${placement}`;
-
-    // Kiểm tra đóng trong phiên (nếu Admin vừa cập nhật lại thông báo thì updatedAt mới sẽ tự hiện lại)
-    if (sessionMap[compositeKey] && sessionMap[compositeKey] === item.updatedAt) {
-      return false;
-    }
-
-    // Kiểm tra ẩn 6 tiếng / 24 tiếng
-    const dismissRecord = dismissMap[compositeKey];
-    if (
-      dismissRecord &&
-      dismissRecord.updatedAtVersion === item.updatedAt &&
-      nowMs < dismissRecord.untilMs
-    ) {
-      return false;
-    }
-
-    return true;
-  });
+/**
+ * Đếm số lượng thông báo chưa đọc bên Học viên
+ */
+export function getUnreadNotificationCount(nowMs: number = Date.now()): number {
+  const active = getActiveLearnerNotifications(nowMs);
+  const readIds = getReadNotificationIds();
+  return active.filter((item) => !readIds.includes(item.id)).length;
 }
 
 export function createNotification(
@@ -409,6 +404,5 @@ export function deleteNotification(id: string): boolean {
 
 export function resetDefaultNotifications() {
   saveNotifications([...DEFAULT_NOTIFICATIONS]);
-  clearAllDismissals();
+  clearAllReadStatus();
 }
-

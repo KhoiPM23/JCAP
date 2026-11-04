@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
@@ -411,7 +411,7 @@ export const ScenarioDetailsView: React.FC = () => {
                           {level.jlptLevel}
                         </span>
                         <span className="text-[10px] font-semibold text-[var(--sumi-faint)] mt-0.5">
-                          {isAdmin ? 'Miễn phí' : `${level.creditCost} credits`}
+                          {isAdmin || !level.creditCost ? 'Miễn phí' : level.creditCost + ' credits'}
                         </span>
                       </button>
                     );
@@ -607,7 +607,7 @@ export const ScenarioDetailsView: React.FC = () => {
                   </h3>
                 </div>
                 <span className={`rounded-full border px-3 py-1 text-xs font-bold ${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`}>
-                  {isAdmin ? 'Miễn phí (Admin)' : `${selectedLevel.creditCost} credits`}
+                  {isAdmin || !selectedLevel.creditCost ? 'Miễn phí' : selectedLevel.creditCost + ' credits'}
                 </span>
               </div>
 
@@ -675,7 +675,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <p className="text-center text-[11px] leading-relaxed text-[var(--sumi-faint)]">
                 {isAdmin
                   ? 'Chế độ Quản trị: Kiểm thử toàn quyền mà không tốn credit tài khoản.'
-                  : `* Hệ thống sẽ trừ ${selectedLevel.creditCost} credits vào số dư khi phòng bắt đầu.`}
+                  : '* Miễn phí bắt đầu phòng thoại. Credit chỉ tính theo từng lượt trả lời của AI.'}
               </p>
             </section>
 
@@ -848,7 +848,7 @@ export const ScenarioDetailsView: React.FC = () => {
                       <span className="font-medium text-[var(--sumi)]">
                         {isAdmin
                           ? 'Miễn phí (Admin)'
-                          : `${targetLevelConfig?.creditCost ?? 0} credits`}
+                          : (isAdmin || !targetLevelConfig?.creditCost ? 'Miễn phí' : (targetLevelConfig?.creditCost ?? 0) + ' credits')}
                       </span>
                     </div>
                   </>

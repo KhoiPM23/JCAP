@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, JpText, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
@@ -363,7 +363,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               <span className="flex flex-col">
                 <span className="text-sm font-semibold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
                 <span className="text-[13px] leading-5 text-sumi-muted">
-                  {resumeHere ? 'Tiếp tục phiên đang dở không trừ thêm Credit' : `Còn ${Math.max(0, credit - cost).toLocaleString('vi-VN')} Credit sau khi bắt đầu`}
+                  {resumeHere ? 'Tiếp tục phiên đang dở không trừ thêm Credit' : (cost > 0 ? 'Còn ' + Math.max(0, credit - cost).toLocaleString('vi-VN') + ' Credit sau khi bắt đầu' : 'Miễn phí bắt đầu phòng thoại')}
                 </span>
               </span>
               <CreditBadge amount={cost} variant="cost" low={credit < cost} />

@@ -173,7 +173,7 @@ public class ScenarioService : IScenarioService
             Title = level.Title,
             Description = level.Description,
             AiPersona = level.AiPersona,
-            CreditCost = level.CreditCost,
+            CreditCost = 0, // Bỏ phí 5 credit khi bắt đầu vào học: Phí khởi tạo phiên thoại luôn = 0
             Status = level.Status,
             Missions = level.Missions
                 .Where(mission => mission.IsActive)
