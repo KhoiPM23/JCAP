@@ -239,7 +239,7 @@ public class UtcDateTimeJsonConverter : System.Text.Json.Serialization.JsonConve
 
     public override void Write(System.Text.Json.Utf8JsonWriter writer, DateTime value, System.Text.Json.JsonSerializerOptions options)
     {
-        writer.WriteStringValue(DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ"));
+        writer.WriteStringValue(value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ"));
     }
 }
 
@@ -255,7 +255,7 @@ public class NullableUtcDateTimeJsonConverter : System.Text.Json.Serialization.J
     {
         if (value.HasValue)
         {
-            writer.WriteStringValue(DateTime.SpecifyKind(value.Value, DateTimeKind.Utc).ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ"));
+            writer.WriteStringValue(value.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ"));
         }
         else
         {
