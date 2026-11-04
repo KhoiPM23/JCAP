@@ -65,6 +65,31 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
+        /// Gửi lại email xác minh cho tài khoản chưa được xác minh.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("resend-confirmation-email")]
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(ApiResponse<string>.Fail("Dữ liệu không hợp lệ.", errors));
+            }
+
+            var result = await _authService.ResendConfirmationEmailAsync(dto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Đăng nhập tài khoản và nhận JWT Bearer token
         /// </summary>
         [HttpPost("login")]
@@ -203,4 +228,3 @@ namespace JCAP.Controllers
         }
     }
 }
-

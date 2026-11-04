@@ -75,6 +75,9 @@ namespace JCAP.DTOs.Flashcard
         public int UnlockCreditCost { get; set; }
         public int UserCreditBalance { get; set; }
         public bool HasActiveSubscription { get; set; }
+        public int TotalDueCardsToday { get; set; }
+        public int DueVocabularyCount { get; set; }
+        public int DueGrammarCount { get; set; }
     }
 
     // ==================== FLASHCARD SET DTOs (UC-55, UC-56) ====================
@@ -88,6 +91,7 @@ namespace JCAP.DTOs.Flashcard
         public string ContentType { get; set; } = "Vocabulary"; // "Vocabulary" | "Grammar"
         public string SetTitle { get; set; } = string.Empty;
         public int TotalCards { get; set; }
+        public int TotalReviews { get; set; }
         public int LearnedCards { get; set; }
         public int DueCards { get; set; }
         public int NewCards { get; set; }
@@ -125,7 +129,7 @@ namespace JCAP.DTOs.Flashcard
 
     public class StartFlashcardSessionRequestDto
     {
-        public string SourceType { get; set; } = "TopicSet"; // "TopicSet" | "Bookmark"
+        public string SourceType { get; set; } = "TopicSet"; // "TopicSet" | "Bookmark" | "DueReview"
         public int? TopicId { get; set; }
         public string ContentType { get; set; } = "Vocabulary"; // "Vocabulary" | "Grammar" | "Mixed"
         public string? JLPTLevelFilter { get; set; }
@@ -140,6 +144,8 @@ namespace JCAP.DTOs.Flashcard
         public string SetTitle { get; set; } = string.Empty;
         public string ContentType { get; set; } = string.Empty;
         public bool IsExtraPractice { get; set; }
+        public bool IsResumedSession { get; set; }
+        public int PreviouslyReviewedCount { get; set; }
         public DateTime StartedAt { get; set; }
         public List<FlashcardCardItemDto> Cards { get; set; } = new();
         public FlashcardQuotaDto Quota { get; set; } = new();
@@ -171,9 +177,14 @@ namespace JCAP.DTOs.Flashcard
     {
         public int SessionId { get; set; }
         public string SetTitle { get; set; } = string.Empty;
+        public bool IsExtraPractice { get; set; }
+        public bool IsEarlyExit { get; set; }
         public DateTime StartedAt { get; set; }
         public DateTime EndedAt { get; set; }
         public int DurationSeconds { get; set; }
+        public int TotalCardsInSession { get; set; }
+        public int ReviewedCardsCount { get; set; }
+        public int UnreviewedCardsCount { get; set; }
         public int TotalReviewed { get; set; }
         public int AgainCount { get; set; }
         public int GoodCount { get; set; }
@@ -205,10 +216,15 @@ namespace JCAP.DTOs.Flashcard
         public string SetTitle { get; set; } = string.Empty;
         public string ContentType { get; set; } = string.Empty;
         public bool IsExtraPractice { get; set; }
+        public bool IsIncomplete { get; set; }
         public DateTime StartedAt { get; set; }
         public DateTime? EndedAt { get; set; }
+        public DateTime LastActivityAt { get; set; }
         public int DurationSeconds { get; set; }
         public int TotalCards { get; set; }
+        public int ReviewedCardsCount { get; set; }
+        public int UnreviewedCardsCount { get; set; }
+        public int TotalReviews { get; set; }
         public int AgainCount { get; set; }
         public int GoodCount { get; set; }
         public int EasyCount { get; set; }

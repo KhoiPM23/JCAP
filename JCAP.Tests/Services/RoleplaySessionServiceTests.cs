@@ -82,8 +82,35 @@ public class RoleplaySessionServiceTests
         return (scenario, levelConfig, mission);
     }
 
+    private static RoleplaySessionService CreateRoleplaySessionService(
+        AppDbContext dbContext,
+        UserManager<ApplicationUser> userManager,
+        IAiRoleplayService aiRoleplayService,
+        ILogger<RoleplaySessionService> logger)
+    {
+        var errorDetector = new Mock<IVietnameseLearnerErrorDetector>();
+        errorDetector.Setup(d => d.DetectErrors(It.IsAny<string>()))
+            .Returns(new List<DetectedGrammarIssue>());
+
+        var telemetryEvaluator = new Mock<ITelemetryEvaluatorService>();
+        telemetryEvaluator.Setup(t => t.RecordAndEvaluateTurnAsync(It.IsAny<TurnTelemetryInput>()))
+            .ReturnsAsync(new DynamicScaffoldingDecision { SpeedScale = 1.0 });
+
+        var personaMemory = new Mock<IPersonaMemoryService>();
+
+        return new RoleplaySessionService(
+            dbContext,
+            userManager,
+            aiRoleplayService,
+            logger,
+            errorDetector.Object,
+            telemetryEvaluator.Object,
+            personaMemory.Object);
+    }
+
+
     [Fact]
-    public async Task StartSessionAsync_Fails_WhenCreditIsInsufficient()
+    public async Task StartSessionAsync_AllowsStarting_WithoutUpfrontCreditCost()
     {
         // Arrange
         using var dbContext = CreateInMemoryDbContext();
@@ -92,21 +119,27 @@ public class RoleplaySessionServiceTests
         var user = new ApplicationUser { Id = "user-poor", CreditBalance = 2 };
         var userManagerMock = CreateUserManagerMock(user);
         var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult
+            {
+                JapaneseText = "いらっしゃいませ！",
+                VietnameseMeaning = "Kính chào quý khách!"
+            });
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
 
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("Số dư credit của bạn không đủ", result.Message);
+        // Assert: Bắt đầu vào học là miễn phí, không trừ 5 credit
+        Assert.True(result.Success);
         Assert.Equal(2, user.CreditBalance); // Không bị trừ
+        Assert.Empty(dbContext.CreditTransactions);
     }
 
     [Fact]
-    public async Task StartSessionAsync_DeductsCredit_AndCreatesSession_WhenCreditIsSufficient()
+    public async Task StartSessionAsync_FreeToStart_AndCreatesSession_WhenCreditIsSufficient()
     {
         // Arrange
         using var dbContext = CreateInMemoryDbContext();
@@ -123,17 +156,16 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
 
-        // Assert
+        // Assert: Bắt đầu vào học miễn phí, không trừ 5 credit
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
-        Assert.Equal(15, user.CreditBalance); // Đã trừ 5 credit
-        Assert.Single(dbContext.CreditTransactions);
-        Assert.Equal(-5, dbContext.CreditTransactions.First().Amount);
+        Assert.Equal(20, user.CreditBalance); // Không bị trừ credit khởi tạo
+        Assert.Empty(dbContext.CreditTransactions);
         Assert.Equal("Active", result.Data.Status);
         Assert.Single(result.Data.Messages);
         Assert.Equal("いらっしゃいませ！", result.Data.Messages[0].JapaneseText);
@@ -159,7 +191,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(adminUser.Id, 1, "N5", new StartRoleplaySessionRequestDto());
@@ -205,7 +237,7 @@ public class RoleplaySessionServiceTests
         });
         await dbContext.SaveChangesAsync();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act - Bắt đầu session mà không force restart
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto { ForceRestart = false });
@@ -243,7 +275,7 @@ public class RoleplaySessionServiceTests
         dbContext.RoleplaySessions.Add(existingSession);
         await dbContext.SaveChangesAsync();
 
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto { ForceRestart = true });
@@ -251,7 +283,7 @@ public class RoleplaySessionServiceTests
         // Assert
         Assert.True(result.Success);
         Assert.NotEqual(55, result.Data!.SessionId);
-        Assert.Equal(5, user.CreditBalance); // Bị trừ 5 credit cho session mới
+        Assert.Equal(10, user.CreditBalance); // Không bị trừ thêm credit vì vào học miễn phí
 
         var oldSession = await dbContext.RoleplaySessions.FindAsync(55);
         Assert.Equal("Abandoned", oldSession!.Status);
@@ -308,7 +340,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.SendMessageAsync(user.Id, 101, new SendRoleplayMessageRequestDto
@@ -388,7 +420,7 @@ public class RoleplaySessionServiceTests
             });
 
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = new RoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.SendMessageAsync(user.Id, 202, new SendRoleplayMessageRequestDto
@@ -427,6 +459,111 @@ public class RoleplaySessionServiceTests
         Assert.Equal(2, RoleplaySessionService.EstimateCreditCost(new string('あ', 60)));
         // 90 chars → 90/30 = 3 credits
         Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 90)));
+    }
+
+    [Fact]
+    public async Task GetIntelligenceProfileAsync_ReturnsSuccess_WithComputedMetrics()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var user = new ApplicationUser { Id = "user-test", UserName = "tester" };
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiRoleplayMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        var errorDetector = new Mock<IVietnameseLearnerErrorDetector>();
+        var telemetryEvaluator = new Mock<ITelemetryEvaluatorService>();
+        telemetryEvaluator.Setup(t => t.GetOrCreateProfileAsync("user-test"))
+            .ReturnsAsync(new LearnerIntelligenceProfile
+            {
+                UserId = "user-test",
+                SpeakingReflexIndex = 75.0,
+                KeigoCommandScore = 80.0,
+                ParticleAccuracyRate = 85.0,
+                AverageMoraRate = 4.8,
+                CommunicativeProficiencyIndex = 88.0,
+                CommunicativeConfidenceScore = 82.0
+            });
+
+        var personaMemory = new Mock<IPersonaMemoryService>();
+        dbContext.LearnerSkillMasteries.Add(new LearnerSkillMastery
+        {
+            UserId = "user-test",
+            SkillCode = "E01_INTRANSITIVE_WO",
+            SkillName = "Trợ từ を với tự động từ (E01)",
+            Category = "Grammar",
+            Stability = 0.8,
+            Difficulty = 6.0,
+            Repetitions = 1,
+            Lapses = 1,
+            LastPracticedUtc = DateTime.UtcNow,
+            NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(-1)
+        });
+        await dbContext.SaveChangesAsync();
+
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiRoleplayMock.Object,
+            loggerMock.Object,
+            errorDetector.Object,
+            telemetryEvaluator.Object,
+            personaMemory.Object);
+
+        // Act
+        var result = await service.GetIntelligenceProfileAsync("user-test");
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(75.0, result.Data!.SpeakingReflexIndex);
+        Assert.Equal(80.0, result.Data.KeigoCommandScore);
+        Assert.Equal("大吉 (Đại Cát)", result.Data.OmikujiRank);
+        Assert.NotEmpty(result.Data.Strengths);
+        Assert.Single(result.Data.DueReviewItems);
+        Assert.True(result.Data.DueReviewItems[0].IsDueForReview);
+        Assert.Equal("E01_INTRANSITIVE_WO", result.Data.DueReviewItems[0].SkillCode);
+    }
+
+    [Fact]
+    public async Task StartSessionAsync_WhenSubscriptionQuotaExceeded_AllowsEntryWithoutUpfrontCost()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var (scenario, levelConfig, _) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-sub-quota-full",
+            CreditBalance = 0,
+            SubscriptionPlanId = "plan-pro",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(15)
+        };
+
+        dbContext.CreditTransactions.Add(new CreditTransaction
+        {
+            UserId = user.Id,
+            Amount = -50,
+            Type = "Deduct",
+            Status = "Paid",
+            CoveredBySubscription = true,
+            Description = "[Gói tháng] Luyện tập trước đó",
+            CreatedAt = DateTime.UtcNow.AddHours(-1)
+        });
+        await dbContext.SaveChangesAsync();
+
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult { JapaneseText = "新しいセッションです。" });
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Act: Bắt đầu vào phiên là miễn phí
+        var result = await service.StartSessionAsync(user.Id, scenario.Id, levelConfig.JLPTLevel, new StartRoleplaySessionRequestDto());
+
+        // Assert: Phiên tạo thành công, không bị chặn bởi phí khởi tạo
+        Assert.True(result.Success);
     }
 }
 

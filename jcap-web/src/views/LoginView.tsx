@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 
@@ -14,6 +16,10 @@ export const LoginView: React.FC<LoginViewProps> = ({
   onSwitchToRegister,
   onForgotPassword,
 }) => {
+  const [searchParams] = useSearchParams();
+  const confirmed = searchParams.get('confirmed');
+  const confirmationError = searchParams.get('error');
+
   const {
     login,
     loginWithGoogle,
@@ -28,6 +34,9 @@ export const LoginView: React.FC<LoginViewProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [resendStatus, setResendStatus] = useState<{ message: string; isError?: boolean } | null>(null);
+  const [isResending, setIsResending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +65,27 @@ export const LoginView: React.FC<LoginViewProps> = ({
     }
   };
 
+  const handleResendFromLogin = async () => {
+    if (!email.trim()) {
+      setClientError('Vui lòng nhập địa chỉ Email ở ô bên dưới trước khi yêu cầu gửi lại.');
+      return;
+    }
+    setIsResending(true);
+    setResendStatus(null);
+    try {
+      const res = await authService.resendConfirmationEmail(email.trim());
+      if (res.success) {
+        setResendStatus({ message: res.message || 'Đã gửi lại email xác thực thành công. Vui lòng kiểm tra hộp thư.' });
+      } else {
+        setResendStatus({ message: res.message || 'Không thể gửi lại email xác thực.', isError: true });
+      }
+    } catch {
+      setResendStatus({ message: 'Không thể kết nối đến máy chủ Backend.', isError: true });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const displayedError = clientError || loginError || googleError;
 
   return (
@@ -81,10 +111,60 @@ export const LoginView: React.FC<LoginViewProps> = ({
         <div className="border-t border-[#E6EDF5] w-full"></div>
       </div>
 
+      {confirmed === 'true' && (
+        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-xs flex items-start gap-2" role="status">
+          <span className="font-bold">✅</span>
+          <span>Xác minh email thành công! Bạn có thể đăng nhập ngay để bắt đầu học.</span>
+        </div>
+      )}
+
+      {confirmed === 'false' && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs flex flex-col gap-1.5" role="alert">
+          <div className="flex items-start gap-2">
+            <span className="font-bold">⚠️</span>
+            <span>{confirmationError ? decodeURIComponent(confirmationError) : 'Liên kết xác minh email không hợp lệ hoặc đã hết hạn.'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleResendFromLogin}
+            disabled={isResending}
+            className="text-xs text-[#0878EE] font-semibold hover:underline text-left pl-5 cursor-pointer"
+          >
+            {isResending ? 'Đang gửi lại...' : 'Gửi lại liên kết xác minh qua email →'}
+          </button>
+        </div>
+      )}
+
+      {resendStatus && (
+        <div
+          className={`mb-4 p-3 rounded-lg text-xs flex items-start gap-2 ${
+            resendStatus.isError
+              ? 'bg-red-50 border border-red-200 text-red-600'
+              : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+          }`}
+          role="status"
+        >
+          <span>{resendStatus.isError ? '⚠️' : '✅'}</span>
+          <span>{resendStatus.message}</span>
+        </div>
+      )}
+
       {displayedError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs flex items-start gap-2" role="alert">
-          <span className="font-bold">⚠️</span>
-          <span>{displayedError}</span>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs flex flex-col gap-1.5" role="alert">
+          <div className="flex items-start gap-2">
+            <span className="font-bold">⚠️</span>
+            <span>{displayedError}</span>
+          </div>
+          {displayedError.toLowerCase().includes('chưa được xác minh') && (
+            <button
+              type="button"
+              onClick={handleResendFromLogin}
+              disabled={isResending}
+              className="text-xs text-[#0878EE] font-semibold hover:underline text-left pl-5 cursor-pointer"
+            >
+              {isResending ? 'Đang gửi lại...' : 'Nhấn vào đây để gửi lại email xác thực →'}
+            </button>
+          )}
         </div>
       )}
 
@@ -125,7 +205,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <button
             type="button"
             onClick={onForgotPassword}
-            className="text-xs font-semibold text-[#0878EE] hover:underline"
+            className="text-xs font-semibold text-[#0878EE] hover:underline cursor-pointer"
           >
             Quên mật khẩu?
           </button>
@@ -138,7 +218,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
 
       <div className="mt-6 text-center text-sm text-[#71809A]">
         Chưa có tài khoản?{' '}
-        <button type="button" onClick={onSwitchToRegister} className="text-[#0878EE] font-bold hover:underline">
+        <button type="button" onClick={onSwitchToRegister} className="text-[#0878EE] font-bold hover:underline cursor-pointer">
           Đăng ký ngay
         </button>
       </div>

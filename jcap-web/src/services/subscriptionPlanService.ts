@@ -19,7 +19,7 @@ export interface UserSubscriptionState {
   planId: string;
   planName: string;
   planTier: string;
-  status: 'Active' | 'Expired';
+  status: 'Active' | 'Expired' | 'None';
   activatedAt: string;
   expiresAt: string;
   daysRemaining: number;
@@ -156,12 +156,29 @@ export const subscriptionPlanService = {
     this.savePlans(updated);
   },
 
+  getUserStorageKey(): string {
+    try {
+      const userStr = localStorage.getItem('jcap_user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        const uid = u?.id || u?.userId || u?.email;
+        if (uid) {
+          return `${USER_SUBSCRIPTION_KEY}_${uid}`;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return USER_SUBSCRIPTION_KEY;
+  },
+
   /**
-   * Lấy thông tin gói hội viên hiện tại của người dùng
+   * Lấy thông tin gói hội viên hiện tại của người dùng (Không tự động gán gói Pro giả nếu chưa đăng ký)
    */
   getUserSubscription(): UserSubscriptionState {
     try {
-      const saved = localStorage.getItem(USER_SUBSCRIPTION_KEY);
+      const key = this.getUserStorageKey();
+      const saved = localStorage.getItem(key);
       if (saved) {
         const sub = JSON.parse(saved) as UserSubscriptionState;
         if (sub && sub.planName && sub.expiresAt) {
@@ -178,24 +195,32 @@ export const subscriptionPlanService = {
       console.error('Lỗi khi đọc gói người dùng:', e);
     }
 
-    // Gói mặc định ban đầu nếu chưa kích hoạt gói nào
-    const defaultPlan = DEFAULT_PLANS[0];
-    const activatedAt = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + 24 * 24 * 60 * 60 * 1000).toISOString();
-    const initialSub: UserSubscriptionState = {
-      planId: defaultPlan.id,
-      planName: defaultPlan.name,
-      planTier: 'Pro',
-      status: 'Active',
-      activatedAt,
-      expiresAt,
-      daysRemaining: 24,
-      monthlyPrice: defaultPlan.price,
-      features: defaultPlan.features,
-      creditsAmount: defaultPlan.creditsAmount,
-      fiveHourQuota: defaultPlan.fiveHourQuota,
+    // Mặc định khi người dùng chưa đăng ký bất kỳ gói tháng nào
+    return {
+      planId: '',
+      planName: 'Chưa đăng ký gói hội viên',
+      planTier: 'Free',
+      status: 'None',
+      activatedAt: '',
+      expiresAt: '',
+      daysRemaining: 0,
+      monthlyPrice: 0,
+      features: DEFAULT_PLANS[0].features,
+      creditsAmount: 0,
+      fiveHourQuota: 0,
     };
-    return initialSub;
+  },
+
+  /**
+   * Xóa cache gói tháng cục bộ khi Backend xác nhận người dùng chưa có gói hoặc đã hết hạn
+   */
+  clearUserSubscription(): void {
+    try {
+      localStorage.removeItem(this.getUserStorageKey());
+      localStorage.removeItem(USER_SUBSCRIPTION_KEY);
+    } catch {
+      // ignore
+    }
   },
 
   /**
@@ -220,9 +245,8 @@ export const subscriptionPlanService = {
       fiveHourQuota: plan.fiveHourQuota,
     };
 
-    localStorage.setItem(USER_SUBSCRIPTION_KEY, JSON.stringify(sub));
+    localStorage.setItem(this.getUserStorageKey(), JSON.stringify(sub));
     window.dispatchEvent(new CustomEvent('jcap_subscription_updated', { detail: sub }));
     return sub;
   },
 };
-

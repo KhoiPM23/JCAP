@@ -17,6 +17,7 @@ import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDevice
 import { voicevoxService, type VoiceOption } from '../../services/voicevoxService';
 import RecordingBar from '../../components/shadowing/RecordingBar';
 import { audioMetricsService, measureRecordedBlob, type AudioQualityMetrics, type AudioGateStatus } from '../../services/audioMetricsService';
+import { acquireMicStream, describeMicError } from '../../utils/audioDevice';
 import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
 import { pickRecordingMimeType, resolveRecordedMime } from '../../utils/recordingMime';
@@ -25,6 +26,7 @@ import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingS
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
 import { useTheme } from '../../contexts/ThemeContext';
+import { DefaultAvatarImage } from '../../components/shadowing/DefaultAvatarImage';
 
 // Chặn trên (ms) khi chờ sự kiện kết thúc của MediaRecorder / Web Speech sau khi bấm dừng.
 const RECORDER_SETTLE_TIMEOUT_MS = 2000;
@@ -96,6 +98,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [sentenceAttemptsMap, setSentenceAttemptsMap] = useState<Map<number, number>>(new Map());
   const latestAttemptIsBestRef = useRef<boolean>(true);
   const [micError, setMicError] = useState<string | null>(null);
+  // Thông báo không phải lỗi (vd. đã chuyển sang micro mặc định vì micro đã chọn không còn kết nối)
+  const [micNotice, setMicNotice] = useState<string | null>(null);
   const [isOpponentPausedForResume, setIsOpponentPausedForResume] = useState<boolean>(false);
 
   // Audio Playback
@@ -806,6 +810,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     isRecordingRef.current = true;
     recognitionRestartCountRef.current = 0;
     setMicError(null);
+    setMicNotice(null);
     setCurrentRecognizedText('');
 
     if (audioPlayerRef.current) audioPlayerRef.current.pause();
@@ -818,15 +823,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     recordedAudioChunksRef.current = [];
     recordedMimeRef.current = '';
     try {
-      const audioConstraints: MediaTrackConstraints = {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-        channelCount: 1,
-        sampleRate: 48000,
-        ...(selectedAudioInputDeviceId ? { deviceId: { exact: selectedAudioInputDeviceId } } : {}),
-      };
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      // Micro đã chọn không còn (rút tai nghe, đổi máy): tự dùng micro mặc định và báo cho người học, không để thanh ghi âm chạy giả
+      const { stream, usedFallback } = await acquireMicStream(selectedAudioInputDeviceId);
+      if (usedFallback) {
+        setMicNotice('Micro đã chọn không còn kết nối, đang dùng micro mặc định. Bạn có thể đổi lại ở "Cài đặt âm thanh".');
+      }
       // Phân tích Web Audio API (cổng mic): heuristic, chỉ dùng để kiểm định đầu vào.
       audioMetricsService.startAnalysis(stream);
 
@@ -854,10 +855,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
       mediaRecorder.start(100);
     } catch (err: any) {
-      console.warn('Microphone access denied:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setMicError('Quyền truy cập micro đã bị từ chối.');
-      }
+      console.warn('Cannot open microphone:', err);
+      setMicError(describeMicError(err));
     }
 
     // 2. Web Speech (ja-JP): nguồn dự phòng + hiển thị trực tiếp
@@ -1433,7 +1432,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 )}
                 <div className="absolute bottom-0 left-3.5 flex items-end gap-3">
                   <span className="relative inline-flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full border-4 border-paper-50 bg-paper-200 shadow-jc-md">
-                    <img src="/default_avatar.png" alt={opponentName} className="h-full w-full object-cover" />
+                    <DefaultAvatarImage alt={opponentName} className="h-full w-full object-cover" />
                     <span className="absolute bottom-1 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-paper-50 bg-success" title="AI đang sẵn sàng" />
                   </span>
                   <span className="pb-1.5 text-xl font-bold leading-[26px]">{opponentName}</span>
@@ -1564,7 +1563,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   return (
                     <div key={s.id} className="flex items-start gap-3 w-full max-w-xl">
                       <div className="w-10 h-10 rounded-full border-2 border-paper-50 shadow-sm bg-ai-soft overflow-hidden flex-shrink-0 mt-0.5">
-                        <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
+                        <DefaultAvatarImage alt={opponentName} className="w-full h-full object-cover" />
                       </div>
 
                       <div className="flex flex-col items-start min-w-0">
@@ -1663,7 +1662,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                         {/* Circular Avatar */}
                         <div className="w-8 h-8 rounded-full border border-line overflow-hidden flex-shrink-0 shadow-xs mt-1">
-                          <img src="/default_avatar.png" alt={learnerName} className="w-full h-full object-cover" />
+                          <DefaultAvatarImage alt={learnerName} className="w-full h-full object-cover" />
                         </div>
                       </div>
 
@@ -1741,6 +1740,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <button onClick={() => setMicError(null)} className="font-bold text-danger">×</button>
                   </div>
                 )}
+                {micNotice && (
+                  <div role="status" className="w-full mb-3 p-2 bg-warning-soft rounded-xl text-warning text-xs flex items-center justify-between gap-2">
+                    <span>{micNotice}</span>
+                    <button onClick={() => setMicNotice(null)} aria-label="Đóng thông báo" className="font-bold text-warning">×</button>
+                  </div>
+                )}
 
                 {/* CHỈ THU ÂM CÂU CỦA NGƯỜI HỌC (userRole) - KHÔNG THU ÂM CÂU CỦA ĐỐI PHƯƠNG */}
                 {currentSentence?.speakerRole !== userRole ? (
@@ -1748,7 +1753,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     <div className="w-full flex flex-col items-center justify-center py-2 px-4 gap-2.5 animate-in fade-in">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-ai-soft border border-line-strong overflow-hidden flex items-center justify-center font-bold text-base shadow-sm">
-                          <img src="/default_avatar.png" alt={opponentName} className="w-full h-full object-cover" />
+                          <DefaultAvatarImage alt={opponentName} className="w-full h-full object-cover" />
                         </div>
                         <div className="text-left">
                           <div className="flex items-center gap-2">
@@ -1899,7 +1904,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   >
                     {s.speakerRole !== userRole && (
                       <div className="w-8 h-8 rounded-full bg-ai-soft overflow-hidden flex-shrink-0 mt-1">
-                        <img src="/default_avatar.png" alt="Opponent" className="w-full h-full object-cover" />
+                        <DefaultAvatarImage alt="Opponent" className="w-full h-full object-cover" />
                       </div>
                     )}
 
@@ -1931,7 +1936,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                     {s.speakerRole === userRole && (
                       <div className="w-8 h-8 rounded-full border border-line overflow-hidden flex-shrink-0 mt-1">
-                        <img src="/default_avatar.png" alt="Learner" className="w-full h-full object-cover" />
+                        <DefaultAvatarImage alt="Learner" className="w-full h-full object-cover" />
                       </div>
                     )}
                   </div>

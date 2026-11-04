@@ -7,6 +7,7 @@ namespace JCAP.Models
     {
         public const string TopicSet = "TopicSet";
         public const string Bookmark = "Bookmark";
+        public const string DueReview = "DueReview";
     }
 
     public static class FlashcardContentType

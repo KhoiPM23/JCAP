@@ -43,6 +43,8 @@ const NAV: NavDef[] = [
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
   { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
+  { id: 'community', label: 'Diễn đàn', icon: 'groups', to: '/community', match: (p) => p.startsWith('/community') || p.startsWith('/forum') },
+  { id: 'feedback', label: 'Hỗ trợ & Góp ý', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
 ];
 
 export interface AppSidebarProps {
@@ -99,7 +101,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
   const go = (to: string) => navigate(to);
   const name = user?.fullName || user?.email || 'Học viên';
   const initial = name.trim().charAt(0).toUpperCase();
-  const accountPages = ['/subscription', '/credits', '/profile', '/settings'];
+  const accountPages = ['/subscription', '/credits', '/profile', '/settings', '/feedback', '/help'];
   const onAccountPage = accountPages.some((p) => path.startsWith(p));
 
   // Trên bản đồ thanh bên dùng theme kham-pha (nền --paper-100 = #F6EFE2); ở các trang khác dùng hoc-tap (nền --paper-50 = #FFFFFF).
@@ -201,6 +203,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             </MenuItem>
             <MenuItem icon="person" label="Hồ sơ" on={path.startsWith('/profile')} onClick={() => go('/profile')} />
             <MenuItem icon="settings" label="Cài đặt" on={path.startsWith('/settings')} onClick={() => go('/settings')} />
+            <MenuItem icon="help" label="Hỗ trợ & Góp ý" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
             <span style={{ height: 1, margin: '4px 0', background: 'var(--line)' }} />
             <button type="button" role="menuitem" className="jx-mi" style={{ color: 'var(--danger)' }} onClick={() => logout()}>
               <Icon name="logout" size={20} />

@@ -101,4 +101,17 @@ public class VoiceVoxPersonaResolverTests
 
         Assert.Equal("こんにちは、どうぞ。", furigana);
     }
+
+    [Fact]
+    public void Resolve_CafeBaristaPersona_ReturnsServiceStaffVoice()
+    {
+        var res = VoiceVoxPersonaResolver.Resolve(
+            aiPersona: "Barista trưởng - バリスタ",
+            scenarioTitle: "Đặt cà phê & bánh ngọt tại quán cafe Harajuku",
+            scenarioContext: "Yêu cầu đổi sang sữa đậu nành, ít ngọt và gọi thêm bánh crepe dâu.");
+
+        Assert.Equal(VoiceVoxPersonaResolver.VoiceShikokuMetan, res.RecommendedAiVoiceId);
+        Assert.True(res.RoleVoiceMappings.ContainsKey("Barista"));
+        Assert.True(res.RoleVoiceMappings.ContainsKey("バリスタ"));
+    }
 }

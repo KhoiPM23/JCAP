@@ -78,3 +78,13 @@ Các API admin/import hiện tại giữ nguyên.
 
 Kiểm chứng lúc triển khai: unit test nghiệp vụ và trạng thái URL; smoke HTTP trên SQL Server
 với 23 mục mỗi loại, ẩn/khôi phục và link trực tiếp; thao tác thật bằng tài khoản learner.
+
+## Đồng bộ develop ngày 04/11/2026
+
+Phần learner không đổi model, nhưng develop bổ sung hai migration Intelligence/Subscription
+và model Feedback trước đó được tạo bảng qua seeder. Bản merge có thêm
+`20261104045633_ReconcileDevelopFeedbackSchema` để EF quản lý ba bảng Feedback.
+Migration nhận lại các bảng đã có từ seeder hoặc tạo khi thiếu, giữ dữ liệu hiện tại;
+Down không xóa bảng Feedback vì có thể các bảng đã tồn tại trước migration này.
+Sau khi lấy code, chạy `dotnet ef database update` (hoặc startup theo SeedManager hiện có).
+Không cần xóa DB hay tạo lại các migration cũ.

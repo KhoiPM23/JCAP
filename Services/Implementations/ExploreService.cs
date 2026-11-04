@@ -297,17 +297,6 @@ namespace JCAP.Services.Implementations
 
             if (!await SaveIgnoringRaceAsync()) return new ExploreAwardsDto();
 
-            // Chương: lưu mọi chương đã đủ điều kiện (để không bao giờ khoá lại), nhưng chỉ báo "vừa mở" chương nhờ lần này
-            var after = ChapterStates(await LoadProgressAsync(userId));
-            var unlockedBefore = statesBefore.Where(s => s.Unlocked).Select(s => s.Id).ToHashSet();
-            var unlocks = _context.Set<ExploreChapterUnlock>();
-            foreach (var s in after.Where(s => s.Unlocked && !s.Persisted && !s.IsFirst))
-            {
-                unlocks.Add(new ExploreChapterUnlock { UserId = userId, ChapterId = s.Id, UnlockedAt = now });
-                if (!unlockedBefore.Contains(s.Id)) awards.UnlockedChapterIds.Add(s.Id);
-            }
-            if (!await SaveIgnoringRaceAsync()) awards.UnlockedChapterIds.Clear();
-
             return awards;
         }
 
@@ -339,9 +328,9 @@ namespace JCAP.Services.Implementations
         public sealed record ChapterInput(int Id, int UnlockThresholdPercent, IReadOnlyCollection<int> PrefectureIds);
 
         /// <summary>
-        /// Chương đầu luôn mở. Chương sau mở khi đã lưu là mở, hoặc chương ngay trước đang mở và số mốc có con dấu của
-        /// chương trước / số mốc người học thấy được của chương trước ≥ ngưỡng của chương này. Chương trước chưa có mốc nào
-        /// (chưa soạn nội dung) thì coi như đạt, để hành trình không bị kẹt vì phần admin chưa làm.
+        /// Mọi chương đều mở sẵn: người học học thoải mái, không bị khoá theo con dấu của chương trước. Vẫn đếm số mốc và số
+        /// con dấu của từng chương để hiện tiến độ. (Ngưỡng UnlockThresholdPercent và bảng ExploreChapterUnlock còn trong CSDL
+        /// nhưng không còn được dùng.)
         /// </summary>
         public static List<ChapterState> ComputeChapterStates(
             IReadOnlyList<ChapterInput> chapters,
@@ -356,16 +345,7 @@ namespace JCAP.Services.Implementations
                 var prefs = c.PrefectureIds.ToHashSet();
                 var spots = visibleSpots.Where(s => prefs.Contains(s.PrefectureId)).ToList();
                 var stamped = spots.Count(s => stampedSpotIds.Contains(s.Id));
-                var persisted = persistedChapterIds.Contains(c.Id);
-                bool unlocked;
-                if (i == 0) unlocked = true;
-                else
-                {
-                    var prev = result[i - 1];
-                    var met = prev.SpotCount == 0 || prev.StampCount * 100 >= c.UnlockThresholdPercent * prev.SpotCount;
-                    unlocked = persisted || (prev.Unlocked && met);
-                }
-                result.Add(new ChapterState(c.Id, i == 0, unlocked, persisted, spots.Count, stamped));
+                result.Add(new ChapterState(c.Id, i == 0, true, persistedChapterIds.Contains(c.Id), spots.Count, stamped));
             }
             return result;
         }

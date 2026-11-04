@@ -381,6 +381,142 @@ namespace JCAP.Tests.Services
             Assert.Null(response.Data);
         }
 
+        [Fact]
+        public async Task GetDetailAsync_SurfacesEkiStampMetadata_WhenLinkedToExploreSpot()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var lesson = new ExploreSpotLesson
+            {
+                Id = 201,
+                SpotId = 101,
+                Activities = new List<ExploreSpotActivity>()
+            };
+            var activity = new ExploreSpotActivity
+            {
+                Id = 301,
+                LessonId = 201,
+                ActivityType = ExploreActivityType.Roleplay,
+                ReferenceId = 1,
+                OrderIndex = 1
+            };
+            lesson.Activities.Add(activity);
+            var spot = new ExploreSpot
+            {
+                Id = 101,
+                PrefectureId = 13,
+                NameVi = "Ga Tokyo",
+                NameJp = "東京駅",
+                Lesson = lesson
+            };
+            dbContext.ExploreSpots.Add(spot);
+            dbContext.ExploreSpotLessons.Add(lesson);
+            dbContext.ExploreSpotActivities.Add(activity);
+
+            var session = CreateSession(99, "learner-eki");
+            dbContext.RoleplaySessions.Add(session);
+            await dbContext.SaveChangesAsync();
+
+            var result = CreateResult(session.Id, "learner-eki", passStatus: true, DateTime.UtcNow);
+            dbContext.RoleplayResults.Add(result);
+            dbContext.Set<ExploreSpotProgress>().Add(new ExploreSpotProgress
+            {
+                UserId = "learner-eki",
+                SpotId = 101,
+                RedStampedAt = DateTime.UtcNow
+            });
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, new Mock<IRoleplaySessionSnapshotProvider>().Object);
+            var response = await service.GetDetailAsync("learner-eki", result.Id);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            Assert.Equal("Ga Tokyo", response.Data.AwardedEkiStampName);
+            Assert.Equal(101, response.Data.ExploreSpotId);
+            Assert.Equal(13, response.Data.ExplorePrefectureId);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_DoesNotAwardEkiStamp_WhenPassStatusIsFalse()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var lesson = new ExploreSpotLesson
+            {
+                Id = 202,
+                SpotId = 102,
+                Activities = new List<ExploreSpotActivity>()
+            };
+            var activity = new ExploreSpotActivity
+            {
+                Id = 302,
+                LessonId = 202,
+                ActivityType = ExploreActivityType.Roleplay,
+                ReferenceId = 1,
+                OrderIndex = 1
+            };
+            lesson.Activities.Add(activity);
+            var spot = new ExploreSpot
+            {
+                Id = 102,
+                PrefectureId = 13,
+                NameVi = "Ga Shinjuku",
+                NameJp = "新宿駅",
+                Lesson = lesson
+            };
+            dbContext.ExploreSpots.Add(spot);
+            dbContext.ExploreSpotLessons.Add(lesson);
+            dbContext.ExploreSpotActivities.Add(activity);
+
+            var session = CreateSession(100, "learner-fail");
+            dbContext.RoleplaySessions.Add(session);
+            await dbContext.SaveChangesAsync();
+
+            // Phiên chưa đạt: PassStatus = false
+            var result = CreateResult(session.Id, "learner-fail", passStatus: false, DateTime.UtcNow);
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var service = CreateService(dbContext, new Mock<IRoleplaySessionSnapshotProvider>().Object);
+            var response = await service.GetDetailAsync("learner-fail", result.Id);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            // Không được cấp con dấu vì chưa đạt
+            Assert.Null(response.Data.AwardedEkiStampName);
+            // Nhưng vẫn liên kết đúng vị trí trên Explore Map để tạo động lực luyện lại
+            Assert.Equal(102, response.Data.ExploreSpotId);
+            Assert.Equal(13, response.Data.ExplorePrefectureId);
+        }
+
+        [Fact]
+        public async Task CompleteSessionAsync_DoesNotCreateOrModifyExploreSpotProgress()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            dbContext.RoleplaySessions.Add(CreateSession(105, "learner-clean"));
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            provider
+                .Setup(item => item.GetCompletableSessionAsync(105, "learner-clean"))
+                .ReturnsAsync(new RoleplaySessionSnapshot
+                {
+                    SessionId = 105,
+                    UserId = "learner-clean",
+                    ScenarioTitle = "Gọi món tại quán Ramen",
+                    JLPTLevel = "N5",
+                    CompletedMissions =
+                    [
+                        new CompletedMissionSnapshot { MissionId = 1, Title = "Gọi một tô ramen" }
+                    ]
+                });
+
+            var service = CreateService(dbContext, provider.Object);
+            var response = await service.CompleteSessionAsync("learner-clean", 105);
+
+            Assert.True(response.Success);
+            Assert.Empty(await dbContext.Set<ExploreSpotProgress>().ToListAsync());
+        }
+
         private static RoleplayResult CreateResult(
             int sessionId,
             string userId,

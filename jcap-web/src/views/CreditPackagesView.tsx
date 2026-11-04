@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
@@ -9,10 +9,11 @@ import { subscriptionPlanService, type SubscriptionPlanItem } from '../services/
 
 export const CreditPackagesView: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const cancelParam = searchParams.get('cancel');
   const statusParam = searchParams.get('status');
+  const orderCodeParam = searchParams.get('orderCode');
 
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -91,6 +92,9 @@ export const CreditPackagesView: React.FC = () => {
 
     if (cancelParam === 'true' || statusParam === 'CANCELLED') {
       setError('Yêu cầu thanh toán đã bị hủy. Bạn có thể chọn gói khác để thử lại.');
+      if (orderCodeParam) {
+        creditService.cancelOrder(orderCodeParam).catch(() => {});
+      }
     }
 
     creditService.getHistory(1, 1).then((res) => {
@@ -117,7 +121,7 @@ export const CreditPackagesView: React.FC = () => {
 
     window.addEventListener('jcap_profile_updated', handleProfileUpdated);
     return () => window.removeEventListener('jcap_profile_updated', handleProfileUpdated);
-  }, [cancelParam, statusParam]);
+  }, [cancelParam, statusParam, orderCodeParam]);
 
   const displayBalance = useMemo(() => {
     if (typeof currentBalance === 'number') {
@@ -289,42 +293,32 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
-    /* =========================================================================
-     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
-     * =========================================================================
     try {
       const res = await creditService.purchasePackage(pkg.id);
-      if (res.success && res.data?.checkoutUrl) {
-        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
-        window.location.href = res.data.checkoutUrl;
+      if (res.success && res.data) {
+        if (res.data.checkoutUrl) {
+          // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+          window.location.href = res.data.checkoutUrl;
+        } else if (res.data.isMock) {
+          // Chế độ Mock Test (Nạp thẳng không qua chuyển khoản)
+          setSuccessMessage(
+            res.data.message || `Đã nạp thành công +${res.data.addedCredits ?? pkg.credits} Credits vào tài khoản (Chế độ Thử nghiệm)!`
+          );
+          if (typeof res.data.newCreditBalance === 'number') {
+            setCurrentBalance(res.data.newCreditBalance);
+            creditService.updateLocalCreditBalance(res.data.newCreditBalance);
+          }
+          void refreshUser();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setSuccessMessage(res.message || 'Nạp credit thành công!');
+          void refreshUser();
+        }
       } else {
         setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói credit.');
       }
     } catch (err: any) {
       setError(err.message || 'Đã xảy ra lỗi khi kết nối đến cổng PayOS.');
-    } finally {
-      setPurchasingId(null);
-    }
-    ========================================================================= */
-
-    // =========================================================================
-    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG NẠP CREDIT NGAY, BỎ QUA BƯỚC NẠP TIỀN PAYOS
-    // =========================================================================
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const addedCredits = pkg.credits;
-      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
-      const newBalance = prevBalance + addedCredits;
-
-      setCurrentBalance(newBalance);
-      creditService.updateLocalCreditBalance(newBalance);
-
-      setSuccessMessage(
-        `Nạp thành công ${pkg.name}! (+${addedCredits.toLocaleString('vi-VN')} credits vào tài khoản). (Chế độ Test: Đã bỏ qua bước nạp tiền)`
-      );
-    } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi khi nạp credit test.');
     } finally {
       setPurchasingId(null);
     }
@@ -335,14 +329,28 @@ export const CreditPackagesView: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
-    /* =========================================================================
-     * CODE CŨ (GỌI PAYOS THANH TOÁN THẬT) - TẠM ĐÓNG ĐỂ PHỤC VỤ TEST CHỨC NĂNG
-     * =========================================================================
     try {
       const res = await creditService.purchaseSubscriptionPlan(plan);
-      if (res.success && res.data?.checkoutUrl) {
-        // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
-        window.location.href = res.data.checkoutUrl;
+      if (res.success && res.data) {
+        if (res.data.checkoutUrl) {
+          // Chuyển hướng người dùng sang cổng thanh toán VietQR PayOS thật
+          window.location.href = res.data.checkoutUrl;
+        } else if (res.data.isMock) {
+          // Chế độ Mock Test: kích hoạt gói tháng trực tiếp
+          subscriptionPlanService.setUserSubscription(plan);
+          setSuccessMessage(
+            res.data.message || `Đã kích hoạt thành công ${plan.name} (Chế độ Thử nghiệm)!`
+          );
+          if (typeof res.data.newCreditBalance === 'number') {
+            setCurrentBalance(res.data.newCreditBalance);
+            creditService.updateLocalCreditBalance(res.data.newCreditBalance);
+          }
+          void refreshUser();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          setSuccessMessage(res.message || 'Đăng ký gói tháng thành công!');
+          void refreshUser();
+        }
       } else {
         setError(res.message || 'Không thể khởi tạo giao dịch PayOS cho gói tháng.');
       }
@@ -351,36 +359,7 @@ export const CreditPackagesView: React.FC = () => {
     } finally {
       setSubscribingPlanId(null);
     }
-    ========================================================================= */
-
-    // =========================================================================
-    // CODE TEST CHỨC NĂNG: TỰ ĐỘNG MUA & KÍCH HOẠT GÓI NGAY, BỎ QUA NẠP TIỀN PAYOS
-    // =========================================================================
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 1. Kích hoạt và lưu thông tin gói hội viên vào hệ thống / LocalStorage
-      subscriptionPlanService.setUserSubscription(plan);
-
-      // 2. Tự động cộng số credit của gói vào số dư hiện tại của tài khoản
-      const addedCredits = plan.creditsAmount || 2500;
-      const prevBalance = typeof currentBalance === 'number' ? currentBalance : (user?.creditBalance || 0);
-      const newBalance = prevBalance + addedCredits;
-
-      setCurrentBalance(newBalance);
-      creditService.updateLocalCreditBalance(newBalance);
-
-      // 3. Hiển thị thông báo mua thành công
-      setSuccessMessage(
-        `Đã kích hoạt thành công ${plan.name}! Bạn được cấp ${addedCredits.toLocaleString('vi-VN')} credits/tuần và hạn mức mới. (Chế độ Test: Đã tự động mua, bỏ qua bước nạp tiền)`
-      );
-    } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi khi kích hoạt gói test.');
-    } finally {
-      setSubscribingPlanId(null);
-    }
   };
-
   const formatVnd = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
