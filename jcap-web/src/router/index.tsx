@@ -441,6 +441,7 @@ export const AppRouter: React.FC = () => {
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />
+        <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
         
