@@ -618,6 +618,142 @@ namespace JCAP.Migrations
                     b.ToTable("ExploreSpotProgresses", (string)null);
                 });
 
+            modelBuilder.Entity("JCAP.Models.FeedbackAttachment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CloudinaryPublicId")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("CloudinaryUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeedbackMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedbackMessageId")
+                        .HasDatabaseName("IX_FeedbackAttachments_MessageId");
+
+                    b.ToTable("FeedbackAttachments", (string)null);
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeedbackTicketId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SenderRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedbackTicketId", "CreatedAt")
+                        .HasDatabaseName("IX_FeedbackMessages_TicketId_CreatedAt");
+
+                    b.ToTable("FeedbackMessages", (string)null);
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackTicket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AdminSeenAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AnonymousCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "UpdatedAt")
+                        .HasDatabaseName("IX_FeedbackTickets_Status_UpdatedAt");
+
+                    b.HasIndex("UserId", "UpdatedAt")
+                        .HasDatabaseName("IX_FeedbackTickets_UserId_UpdatedAt");
+
+                    b.ToTable("FeedbackTickets", (string)null);
+                });
+
             modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
                 {
                     b.Property<int>("Id")
@@ -2463,6 +2599,39 @@ namespace JCAP.Migrations
                     b.Navigation("Spot");
                 });
 
+            modelBuilder.Entity("JCAP.Models.FeedbackAttachment", b =>
+                {
+                    b.HasOne("JCAP.Models.FeedbackMessage", "FeedbackMessage")
+                        .WithMany("Attachments")
+                        .HasForeignKey("FeedbackMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeedbackMessage");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackMessage", b =>
+                {
+                    b.HasOne("JCAP.Models.FeedbackTicket", "FeedbackTicket")
+                        .WithMany("Messages")
+                        .HasForeignKey("FeedbackTicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeedbackTicket");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackTicket", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCAP.Models.FlashcardReviewLog", b =>
                 {
                     b.HasOne("JCAP.Models.Grammar", "Grammar")
@@ -3018,6 +3187,16 @@ namespace JCAP.Migrations
                     b.Navigation("LessonGrammars");
 
                     b.Navigation("LessonVocabularies");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackMessage", b =>
+                {
+                    b.Navigation("Attachments");
+                });
+
+            modelBuilder.Entity("JCAP.Models.FeedbackTicket", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("JCAP.Models.FlashcardStudySession", b =>

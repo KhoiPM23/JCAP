@@ -38,6 +38,7 @@ const NAV: NavDef[] = [
   { id: 'map', label: 'Hành trình', icon: 'travel_explore', to: '/', match: MAP_PATHS },
   { id: 'role', label: 'Hội thoại AI', icon: 'forum', to: '/scenarios', match: (p) => p.startsWith('/scenarios') },
   { id: 'shadow', label: 'Shadowing', icon: 'record_voice_over', to: '/shadowing', match: (p) => p.startsWith('/shadowing') },
+  { id: 'learning', label: 'Kho học liệu', icon: 'auto_stories', to: '/learning/topics', match: (p) => p === '/learning' || p.startsWith('/learning/') },
   // Flashcard có trong code nhưng chưa có trong thiết kế: đặt ngay dưới Shadowing, cùng kiểu
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },

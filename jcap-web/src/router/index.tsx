@@ -56,6 +56,9 @@ import { CommunityForumView } from '../views/CommunityForumView';
 const JapanMapView = React.lazy(() =>
   import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
 );
+const LearningTopicsView = React.lazy(() => import('../views/learning/LearningTopicsView').then(m => ({ default: m.LearningTopicsView })));
+const LearningTopicContentsView = React.lazy(() => import('../views/learning/LearningTopicContentsView').then(m => ({ default: m.LearningTopicContentsView })));
+const LearningContentDetailView = React.lazy(() => import('../views/learning/LearningContentDetailView').then(m => ({ default: m.LearningContentDetailView })));
 
 // ============================================================
 // Route Wrappers
@@ -444,6 +447,14 @@ export const AppRouter: React.FC = () => {
         <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+
+        {/* Kho học liệu (Learning Topics & Content) */}
+        <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>
+          <Route index element={<Navigate to="topics" replace />} />
+          <Route path="topics" element={<LearningTopicsView />} />
+          <Route path="topics/:topicId" element={<LearningTopicContentsView />} />
+          <Route path="topics/:topicId/:kind/:contentId" element={<LearningContentDetailView />} />
+        </Route>
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />

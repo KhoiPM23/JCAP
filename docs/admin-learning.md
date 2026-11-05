@@ -5,8 +5,9 @@
 - `/admin/topics`, `/admin/vocabularies`, `/admin/grammars` trong menu admin.
 - Giao diện dùng lại khung Header/Navbar, Modal và Toast của admin hiện có;
   danh sách, bộ lọc, form thêm/sửa, quản lý ví dụ và gán nội dung dùng popup.
-- Chưa có import file, upload audio, tự sinh giọng đọc hoặc liên kết Topic
-  sang Scenario/Shadowing/Explore.
+- Có nhập Excel bằng nút **Nhập Excel** trên cả ba trang, tải mẫu, kiểm tra
+  theo dòng rồi xác nhận lưu toàn bộ. Xem [quy định và cách test import](learning-content-import.md).
+- Chưa có upload audio, tự sinh giọng đọc hoặc liên kết Topic sang Scenario/Shadowing/Explore.
 
 ## Quy tắc
 
@@ -60,6 +61,9 @@ Tất cả endpoint `/api/admin/learning` yêu cầu JWT với role Admin.
 | PUT {topics,vocabularies,grammars}/{id}/status | Ẩn/khôi phục |
 | POST assign-topics | Gán nhiều nội dung cùng level vào nhiều Topic cùng level |
 | POST bulk-status | Ẩn/khôi phục nhiều từ hoặc mẫu ngữ pháp; kiểm tra đủ ID trước khi thay đổi |
+| GET import/template | Tải mẫu Excel v1 có hướng dẫn và dữ liệu minh họa |
+| POST import/preview | Multipart file .xlsx; kiểm tra dữ liệu, trả dự kiến và lỗi/lưu ý theo dòng; không ghi DB |
+| POST import/confirm | Multipart cùng file và fileHash từ preview; kiểm tra lại dữ liệu hiện tại rồi nhập trong một transaction |
 
 Hai GET API cũ `/api/admin/vocabularies`, `/api/admin/grammars` giữ nguyên
 định dạng DTO cho các module khác, lọc mục đang hiển thị. Trang quản lý kho
