@@ -39,7 +39,7 @@ export const FlashcardSessionView: React.FC = () => {
   const navigate = useNavigate();
   const { themeFor, isDark } = useTheme();
 
-  const isExtraPractice = searchParams.get('extraPractice') === 'true';
+  const isExtraPractice = searchParams.get('extraPractice') === 'true' || searchParams.get('mode') === 'extra';
   const isDemo = topicId === 'demo' || topicId === '0';
   const isDueReview = topicId === 'due';
   const currentTopicId = topicId && !isDemo && !isDueReview ? parseInt(topicId, 10) : 101;
@@ -714,12 +714,26 @@ export const FlashcardSessionView: React.FC = () => {
             >
               ← Quay về danh sách bộ thẻ
             </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full py-3 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs transition-colors cursor-pointer border border-line"
-            >
-              ↻ Luyện tập lại bộ thẻ này từ đầu
-            </button>
+            {!isEarlyExit && !isDueReview && (
+              <button
+                onClick={() => {
+                  if (isDemo) {
+                    window.location.reload();
+                    return;
+                  }
+                  if (searchParams.get('source') === 'bookmark') {
+                    navigate('/flashcards/study/0/Mixed?source=bookmark&mode=extra');
+                    window.location.reload();
+                    return;
+                  }
+                  navigate(`/flashcards/study/${currentTopicId}/${currentContentType.toLowerCase()}?mode=extra`);
+                  window.location.reload();
+                }}
+                className="w-full py-3 bg-paper-100 hover:bg-paper-200 text-sumi font-bold rounded-xl text-xs transition-colors cursor-pointer border border-line"
+              >
+                ↻ Ôn tập tự do bộ thẻ này
+              </button>
+            )}
           </div>
         </div>
       </div>
