@@ -94,6 +94,25 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task OpenPrefecture_WithASingleLiveSpot_Opens_ButNotWhenThatSpotIsOnlyDraftOrInactive()
+        {
+            using var db = await SeededContext("open-one");
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Nháp", NameJp = "下書き", Status = ExploreSpotStatus.Draft });
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Ngừng", NameJp = "停止", Status = ExploreSpotStatus.Published, IsActive = false });
+            await db.SaveChangesAsync();
+            var service = new AdminExploreService(db);
+
+            Assert.False((await service.OpenPrefectureAsync(1)).Success);
+
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Dùng", NameJp = "使用中", Status = ExploreSpotStatus.Published });
+            await db.SaveChangesAsync();
+
+            Assert.Equal(1, AdminExploreService.MinSpotsToOpen);
+            Assert.True((await service.OpenPrefectureAsync(1)).Success);
+            Assert.True((await db.ExplorePrefectures.FindAsync(1))!.IsOpen);
+        }
+
+        [Fact]
         public async Task OpenPrefecture_AlreadyOpenOrInvalidId_Fails()
         {
             using var db = await SeededContext("open-bad");
@@ -102,6 +121,52 @@ namespace JCAP.Tests.Services
             Assert.False((await service.OpenPrefectureAsync(13)).Success);
             Assert.False((await service.OpenPrefectureAsync(0)).Success);
             Assert.False((await service.OpenPrefectureAsync(48)).Success);
+        }
+
+        [Fact]
+        public async Task ClosePrefecture_OpenPrefecture_ClosesAndKeepsLearnerData()
+        {
+            using var db = await SeededContext("close");
+            db.Set<ExploreSpotProgress>().Add(new ExploreSpotProgress { UserId = "a", SpotId = db.ExploreSpots.First(s => s.PrefectureId == 13).Id, UnderstoodAt = DateTime.UtcNow, StampedAt = DateTime.UtcNow });
+            await db.SaveChangesAsync();
+
+            var result = await new AdminExploreService(db).ClosePrefectureAsync(13);
+
+            Assert.True(result.Success);
+            Assert.False(result.Data!.IsOpen);
+            var prefecture = (await db.ExplorePrefectures.FindAsync(13))!;
+            Assert.False(prefecture.IsOpen);
+            Assert.Null(prefecture.OpenedAt);
+            // Mốc và con dấu của người học vẫn còn nguyên
+            Assert.Equal(5, db.ExploreSpots.Count(s => s.PrefectureId == 13 && s.IsActive && s.Status == ExploreSpotStatus.Published));
+            Assert.Equal(1, db.Set<ExploreSpotProgress>().Count(p => p.StampedAt != null));
+        }
+
+        [Fact]
+        public async Task ClosePrefecture_ThenOpenAgain_Works()
+        {
+            using var db = await SeededContext("close-reopen");
+            var service = new AdminExploreService(db);
+
+            Assert.True((await service.ClosePrefectureAsync(13)).Success);
+            var reopened = await service.OpenPrefectureAsync(13);
+
+            Assert.True(reopened.Success);
+            Assert.True((await db.ExplorePrefectures.FindAsync(13))!.IsOpen);
+            Assert.NotNull((await db.ExplorePrefectures.FindAsync(13))!.OpenedAt);
+        }
+
+        [Fact]
+        public async Task ClosePrefecture_AlreadyClosedOrInvalidId_Fails()
+        {
+            using var db = await SeededContext("close-bad");
+            var service = new AdminExploreService(db);
+
+            Assert.False((await service.ClosePrefectureAsync(1)).Success);
+            Assert.False((await service.ClosePrefectureAsync(0)).Success);
+            Assert.False((await service.ClosePrefectureAsync(48)).Success);
+            Assert.True((await service.ClosePrefectureAsync(13)).Success);
+            Assert.False((await service.ClosePrefectureAsync(13)).Success);
         }
 
         [Fact]

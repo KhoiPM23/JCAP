@@ -103,7 +103,7 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// UC-54 & UC-57: Bắt đầu một phiên học Flashcard (từ Bộ thẻ Topic hoặc từ Bookmark).
+        /// UC-54 & UC-57: Bắt đầu một phiên học Flashcard (từ Bộ thẻ Topic, từ Bookmark, hoặc gom thẻ đến hạn DueReview).
         /// </summary>
         [HttpPost("sessions/start")]
         public async Task<ActionResult<ApiResponse<FlashcardSessionDto>>> StartSession([FromBody] StartFlashcardSessionRequestDto request)
@@ -145,10 +145,12 @@ namespace JCAP.Controllers
         }
 
         /// <summary>
-        /// Kết thúc phiên học và nhận bảng tổng kết.
+        /// Kết thúc phiên học (hoặc lưu trạng thái khi thoát phiên giữa chừng) và nhận bảng tổng kết.
         /// </summary>
         [HttpPost("sessions/{sessionId:int}/complete")]
-        public async Task<ActionResult<ApiResponse<CompleteFlashcardSessionResponseDto>>> CompleteSession([FromRoute] int sessionId)
+        public async Task<ActionResult<ApiResponse<CompleteFlashcardSessionResponseDto>>> CompleteSession(
+            [FromRoute] int sessionId,
+            [FromQuery] bool isEarlyExit = false)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -156,7 +158,7 @@ namespace JCAP.Controllers
                 return Unauthorized(ApiResponse<CompleteFlashcardSessionResponseDto>.Fail("Chưa xác thực người dùng."));
             }
 
-            var result = await _flashcardService.CompleteSessionAsync(userId, sessionId);
+            var result = await _flashcardService.CompleteSessionAsync(userId, sessionId, isEarlyExit);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -213,6 +215,26 @@ namespace JCAP.Controllers
             }
 
             var result = await _flashcardService.SimulateTimeAdvanceAsync(userId, days);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// DEBUG / TEST: Xóa sạch toàn bộ tiến độ và lịch sử flashcard của người dùng hiện tại để test lại từ đầu.
+        /// </summary>
+        [HttpPost("debug/reset-progress")]
+        public async Task<ActionResult<ApiResponse<bool>>> ResetProgress()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<bool>.Fail("Chưa xác thực người dùng."));
+            }
+
+            var result = await _flashcardService.ResetUserProgressAsync(userId);
             if (!result.Success)
             {
                 return BadRequest(result);

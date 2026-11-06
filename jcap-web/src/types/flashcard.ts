@@ -1,12 +1,15 @@
 export type FlashcardContentType = 'Vocabulary' | 'Grammar';
-export type FlashcardSessionSource = 'TopicSet' | 'Bookmark';
+export type FlashcardSessionSource = 'TopicSet' | 'Bookmark' | 'DueReview';
 export type FlashcardSrsState = 'New' | 'Learning' | 'Due';
 export type FlashcardRating = 'Again' | 'Good' | 'Easy';
 
 export interface SrsIntervalPreview {
-  againDays: number;
-  goodDays: number;
-  easyDays: number;
+  againDays?: number;
+  goodDays?: number;
+  easyDays?: number;
+  againIntervalDays?: number;
+  goodIntervalDays?: number;
+  easyIntervalDays?: number;
 }
 
 export interface FlashcardQuota {
@@ -19,6 +22,9 @@ export interface FlashcardQuota {
   unlockCreditCost: number;
   userCreditBalance: number;
   hasActiveSubscription: boolean;
+  totalDueCardsToday?: number;
+  dueVocabularyCount?: number;
+  dueGrammarCount?: number;
 }
 
 export interface FlashcardSetSummary {
@@ -75,6 +81,8 @@ export interface FlashcardSession {
   setTitle: string;
   contentType: string;
   isExtraPractice: boolean;
+  isResumedSession?: boolean;
+  previouslyReviewedCount?: number;
   totalCardsInSession: number;
   remainingCardsCount: number;
   requeuedCount: number;
@@ -108,9 +116,13 @@ export interface FlashcardSessionSummary {
   setTitle: string;
   contentType: string;
   isExtraPractice: boolean;
+  isEarlyExit?: boolean;
   startedAt: string;
   endedAt: string;
   durationSeconds: number;
+  totalCardsInSession?: number;
+  reviewedCardsCount?: number;
+  unreviewedCardsCount?: number;
   totalReviewed: number;
   againCount: number;
   goodCount: number;
@@ -138,10 +150,14 @@ export interface FlashcardSessionHistoryItem {
   setTitle: string;
   contentType: string;
   isExtraPractice: boolean;
+  isIncomplete?: boolean;
   startedAt: string;
   endedAt?: string | null;
+  lastActivityAt?: string | null;
   durationSeconds: number;
   totalCards: number;
+  reviewedCardsCount?: number;
+  unreviewedCardsCount?: number;
   totalReviews?: number;
   againCount: number;
   goodCount: number;
@@ -157,4 +173,30 @@ export interface ToggleBookmarkResponse {
   isBookmarked: boolean;
   vocabularyId?: number | null;
   grammarId?: number | null;
+}
+
+export interface BookmarkItem {
+  bookmarkId: number;
+  itemType: FlashcardContentType;
+  itemId: number;
+  frontText: string;
+  readingOrFormation?: string | null;
+  meaning: string;
+  partOfSpeech?: string | null;
+  explanation?: string | null;
+  exampleSentence?: string | null;
+  audioUrl?: string | null;
+  jlptLevel: string;
+  isAvailable: boolean;
+  srsState: FlashcardSrsState;
+  intervalDays: number;
+  nextReviewAt?: string | null;
+  bookmarkedAt: string;
+}
+
+export interface BookmarkListResponse {
+  items: BookmarkItem[];
+  totalCount: number;
+  dueCount: number;
+  newCount: number;
 }

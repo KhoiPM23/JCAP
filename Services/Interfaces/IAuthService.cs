@@ -7,6 +7,7 @@ namespace JCAP.Services.Interfaces
     {
         Task<ApiResponse<RegisterResponseDto>> RegisterAsync(RegisterDto dto);
         Task<ApiResponse<bool>> ConfirmEmailAsync(string userId, string token);
+        Task<ApiResponse<string>> ResendConfirmationEmailAsync(ResendConfirmationEmailDto dto);
         Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto dto);
         Task<ApiResponse<AuthResponseDto>> GetCurrentUserAsync(string userId);
         Task<ApiResponse<string>> ForgotPasswordAsync(ForgotPasswordDto dto);
@@ -16,4 +17,3 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<AuthResponseDto>> ProcessGoogleCallbackAsync(string code);
     }
 }
-

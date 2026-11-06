@@ -102,7 +102,7 @@ const ChapterStats: React.FC<{ stats: Stats }> = ({ stats }) => (
         Theo chương
       </h2>
       <p className="text-xs text-slate-500 mt-1 max-w-2xl">
-        Số người đã mở chương và tỉ lệ mốc có con dấu trung bình trên những người đó. Chỉ tính mốc đang dùng của tỉnh đã
+        Số người học và tỉ lệ mốc có con dấu trung bình trên các người học đó. Chỉ tính mốc đang dùng của tỉnh đã
         mở.
       </p>
     </div>
@@ -117,7 +117,7 @@ const ChapterStats: React.FC<{ stats: Stats }> = ({ stats }) => (
               <div className="text-xs text-slate-500">{c.spotCount} mốc</div>
             </div>
             <div className="text-sm text-slate-700 tabular-nums">
-              <span className="font-bold">{c.unlockedLearners}</span> người đã mở
+              <span className="font-bold">{c.unlockedLearners}</span> người học
             </div>
             <div className="w-full sm:w-56">
               {c.avgStampPercent == null ? (

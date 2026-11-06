@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Sổ con dấu · Bộ con dấu và trạng thái</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;display:inline-block}
+.mincho{font-family:var(--font-mincho)}
+.tnum{font-variant-numeric:tabular-nums}
+/* ---- con dấu mốc ---- */
+.stp{--ink:var(--ai);position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--s,72px);height:var(--s,72px);color:var(--ink);transform:rotate(var(--r,0deg));filter:url(#inkfx);mix-blend-mode:multiply;box-sizing:border-box;vertical-align:top}
+.stp.son{--ink:var(--shu)}
+.stp .in{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;line-height:1}
+.stp .msr{font-size:calc(var(--s,72px)*.27)}
+.stp b{font-family:var(--font-mincho);font-weight:700;font-size:calc(var(--s,72px)*.15);line-height:1.08;letter-spacing:.02em;white-space:pre-line}
+.stp i{font-style:normal;font-size:calc(var(--s,72px)*.105);font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.stp--ring{border:3px solid var(--ink);border-radius:50%}
+.stp--ring::before{content:"";position:absolute;inset:4px;border:1px solid var(--ink);border-radius:50%}
+.stp--sq{border:3px double var(--ink);border-radius:9px}
+.stp--sq b{font-size:calc(var(--s,72px)*.2)}
+.stp--oval{height:calc(var(--s,72px)*.78);border:2.5px solid var(--ink);border-radius:50%}
+.stp--oval::before{content:"";position:absolute;inset:3.5px;border:1px solid var(--ink);border-radius:50%}
+.stp--band{border:2.5px solid var(--ink);border-radius:8px;overflow:hidden;align-items:stretch;justify-content:flex-start;flex-direction:column}
+.stp--band .top{background:var(--ink);color:var(--paper-50);display:flex;align-items:center;justify-content:center;height:34%;padding:0 4px}
+.stp--band .top b{font-size:calc(var(--s,72px)*.17)}
+.stp--band .in{flex:1;gap:2px}
+/* ô trống (chưa có) */
+.slot{width:var(--s,72px);height:var(--s,72px);box-sizing:border-box;border:1.5px dashed var(--line-strong);border-radius:50%;opacity:.55;display:inline-flex;align-items:center;justify-content:center;color:var(--sumi-faint);flex:none}
+.slot--sq{border-radius:12px}
+/* ---- con dấu tỉnh ---- */
+.pst{display:inline-flex;flex-direction:column;align-items:center;gap:6px;flex:none;width:var(--s,88px)}
+.pst svg{width:var(--s,88px);height:var(--s,88px);display:block;overflow:visible}
+.pst{color:var(--ink,var(--sumi-muted))}.pst.ink{--ink:var(--ai)}.pst.son{--ink:var(--shu)}
+.pst.ink svg,.pst.son svg{filter:url(#inkfx);mix-blend-mode:multiply;transform:rotate(var(--r,-4deg))}
+.pcap{font-size:12px;line-height:16px;font-weight:700;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+/* ---- giấy ---- */
+.paper{background:var(--paper-50);color:var(--sumi);border:1px solid var(--line)}
+.grain{background-image:repeating-linear-gradient(0deg,transparent 0 27px,var(--paper-100) 27px 28px)}
+.stat-n{font-family:var(--font-mincho);font-weight:700;font-variant-numeric:tabular-nums}
+@keyframes stampdown{0%{transform:scale(1.7) rotate(var(--r,0deg));opacity:0}55%{transform:scale(.94) rotate(var(--r,0deg));opacity:1}100%{transform:scale(1) rotate(var(--r,0deg));opacity:1}}
+@keyframes ripple{0%{transform:scale(.7);opacity:.5}100%{transform:scale(1.35);opacity:0}}
+.ripple.off{display:none}
+.skl{border-radius:14px;background:var(--paper-200);animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.skl{animation:none}}
+.pressed{animation:stampdown .42s cubic-bezier(.2,.8,.2,1) .25s both}
+.ripple{position:absolute;inset:0;border-radius:50%;border:2px solid var(--shu);animation:ripple .9s ease-out .55s both;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.ripple.off{display:none}
+.skl{border-radius:14px;background:var(--paper-200);animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.skl{animation:none}}
+.pressed{animation:none}.ripple{display:none}}
+.row{display:flex;align-items:center;gap:12px;width:100%;height:42px;box-sizing:border-box;padding:0 13px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi-muted);cursor:pointer;text-align:left;text-decoration:none}
+.row:hover{background:var(--paper-200);color:var(--sumi)}
+.row.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.row.on .jc-icon{color:var(--shu)}
+.ib{display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.ib:hover{background:var(--paper-200);color:var(--sumi)}
+.glbl{height:18px;padding:0 13px;font-size:12px;line-height:18px;font-weight:600}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+
+.sec{display:flex;flex-direction:column;gap:14px;padding:22px 24px 24px;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.sec h2{margin:0;font-size:17px;line-height:24px;font-weight:700}
+.sec p.n{margin:0;font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.cellf{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;line-height:16px;color:var(--sumi-muted);text-align:center}
+.sw{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.sw i{width:18px;height:18px;border-radius:5px;border:1px solid var(--line)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:0;font-size:13px;line-height:20px}
+.kv dt{color:var(--sumi-muted)}.kv dd{margin:0}
+
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<filter id="inkfx" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+  <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n1"/>
+  <feDisplacementMap in="SourceGraphic" in2="n1" scale="1.7" result="d"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="11" result="n2"/>
+  <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.6 2.75" result="m"/>
+  <feComposite in="d" in2="m" operator="in"/>
+</filter></defs></svg>
+<div data-theme="hoc-tap" style="min-height: 1840px; background: var(--paper-100); color: var(--sumi); font-family: var(--font-sans);">
+  <div style="display: flex; align-items: stretch; min-height: inherit;">
+
+    <main style="flex: 1 1 0; min-width: 0; padding: 32px 40px 64px;">
+      <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+        <div><h1 style="margin: 0; font-size: 28px; line-height: 38px; font-weight: 700;">Bộ con dấu của Sổ con dấu</h1><p style="margin: 6px 0 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted); max-width: 720px;">Dùng chung cho mọi phương án. Con dấu là hình in trên giấy nên luôn sáng, kể cả khi app ở chế độ tối.</p></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <section class="sec" data-theme="kham-pha"><h2>Con dấu mốc: 4 kiểu, mực và son</h2><p class="n">Kiểu theo loại địa điểm. Mỗi cặp: mực thường bên trái, dấu son bên phải.</p><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px 12px;"><div class="cellf"><div style="display: flex; gap: 12px;"><span class="stp stp--ring" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:72px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span><span class="stp stp--ring son" role="img" aria-label="Con dấu Ga, dấu son, ngày 13/09/26" style="--s:72px;--r:4deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span></div><b style="color: var(--sumi); font-size: 13px;">Tròn kép</b><span>Sân bay, cảng</span></div><div class="cellf"><div style="display: flex; gap: 12px;"><span class="stp stp--sq" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:72px;--r:-5deg;"><span class="in"><b lang="ja">成田駅</b><i>13.09.26</i></span></span><span class="stp stp--sq son" role="img" aria-label="Con dấu Ga, dấu son, ngày 13/09/26" style="--s:72px;--r:4deg;"><span class="in"><b lang="ja">成田駅</b><i>13.09.26</i></span></span></div><b style="color: var(--sumi); font-size: 13px;">Vuông viền kép</b><span>Nhà ga</span></div><div class="cellf"><div style="display: flex; gap: 12px;"><span class="stp stp--oval" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:72px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">local_florist</span><b lang="ja">ひたち
+海浜</b><i>13.09.26</i></span></span><span class="stp stp--oval son" role="img" aria-label="Con dấu Ga, dấu son, ngày 13/09/26" style="--s:72px;--r:4deg;"><span class="in"><span class="msr" aria-hidden="true">local_florist</span><b lang="ja">ひたち
+海浜</b><i>13.09.26</i></span></span></div><b style="color: var(--sumi); font-size: 13px;">Bầu dục</b><span>Công viên, chùa</span></div><div class="cellf"><div style="display: flex; gap: 12px;"><span class="stp stp--band" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:72px;--r:-5deg;"><span class="top"><b lang="ja">大宮駅</b></span><span class="in"><span class="msr" aria-hidden="true">train</span><i>13.09.26</i></span></span><span class="stp stp--band son" role="img" aria-label="Con dấu Ga, dấu son, ngày 13/09/26" style="--s:72px;--r:4deg;"><span class="top"><b lang="ja">大宮駅</b></span><span class="in"><span class="msr" aria-hidden="true">train</span><i>13.09.26</i></span></span></div><b style="color: var(--sumi); font-size: 13px;">Băng tiêu đề</b><span>Phố, quán, chợ</span></div></div></section>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <section class="sec" data-theme="kham-pha"><h2>Kích thước</h2><div style="display: flex; align-items: flex-end; gap: 26px;"><div class="cellf"><span class="stp stp--ring" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:56px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span><span class="tnum">56px</span></div><div class="cellf"><span class="stp stp--ring" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:72px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span><span class="tnum">72px</span></div><div class="cellf"><span class="stp stp--ring" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:96px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span><span class="tnum">96px</span></div><div class="cellf"><span class="stp stp--ring" role="img" aria-label="Con dấu Ga, ngày 13/09/26" style="--s:124px;--r:-5deg;"><span class="in"><span class="msr" aria-hidden="true">flight_land</span><b lang="ja">成田
+空港</b><i>13.09.26</i></span></span><span class="tnum">124px</span></div></div></section>
+            <section class="sec" data-theme="kham-pha"><h2>Con dấu tỉnh: 3 trạng thái</h2><div style="display: flex; gap: 28px;"><div class="cellf"><span class="pst " style="--s:88px;--r:-4deg"><svg viewBox="0 0 100 100" role="img" aria-label="Chưa có con dấu tỉnh Chiba"><circle cx="50" cy="50" r="47" fill="none" stroke="var(--line-strong)" stroke-width="1.6" stroke-dasharray="3 4"/><path d="M20 16 L34 9 L50 13 L64 8 L74 14 L70 30 L62 46 L66 62 L62 78 L52 90 L42 96 L32 90 L26 78 L30 66 L24 56 L30 44 L24 34 L18 26 Z" transform="translate(15 12) scale(.7)" fill="none" stroke="var(--line-strong)" stroke-width="1.8" stroke-dasharray="3 3" stroke-linejoin="round" opacity=".8"/><text x="50" y="55" text-anchor="middle" font-size="19" font-weight="700" fill="var(--sumi-faint)" style="font-family:var(--font-mincho)">千葉</text></svg><span class="pcap">2/5</span></span><b style="color: var(--sumi); font-size: 13px;">Chưa có</b><span>Viền đứt, chữ nhạt</span></div><div class="cellf"><span class="pst ink" style="--s:88px;--r:-4deg"><svg viewBox="0 0 100 100" role="img" aria-label="Con dấu tỉnh Chiba"><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="1"/><pattern id="hch1" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3.6" stroke="currentColor" stroke-width="1.5"/></pattern><path d="M20 16 L34 9 L50 13 L64 8 L74 14 L70 30 L62 46 L66 62 L62 78 L52 90 L42 96 L32 90 L26 78 L30 66 L24 56 L30 44 L24 34 L18 26 Z" transform="translate(15 12) scale(.7)" fill="url(#hch1)" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><text x="50" y="56" text-anchor="middle" font-size="21" font-weight="700" fill="currentColor" stroke="var(--paper-50)" stroke-width="5" paint-order="stroke" stroke-linejoin="round" style="font-family:var(--font-mincho)">千葉</text></svg><span class="pcap">2/5</span></span><b style="color: var(--sumi); font-size: 13px;">Có dấu</b><span>Mực xanh, nền gạch chéo</span></div><div class="cellf"><span class="pst son" style="--s:88px;--r:-4deg"><svg viewBox="0 0 100 100" role="img" aria-label="Dấu son tỉnh Chiba"><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="1"/><line x1="89.0" y1="50.0" x2="92.0" y2="50.0" stroke="currentColor" stroke-width="1.4"/><line x1="87.7" y1="60.1" x2="90.6" y2="60.9" stroke="currentColor" stroke-width="1.4"/><line x1="83.8" y1="69.5" x2="86.4" y2="71.0" stroke="currentColor" stroke-width="1.4"/><line x1="77.6" y1="77.6" x2="79.7" y2="79.7" stroke="currentColor" stroke-width="1.4"/><line x1="69.5" y1="83.8" x2="71.0" y2="86.4" stroke="currentColor" stroke-width="1.4"/><line x1="60.1" y1="87.7" x2="60.9" y2="90.6" stroke="currentColor" stroke-width="1.4"/><line x1="50.0" y1="89.0" x2="50.0" y2="92.0" stroke="currentColor" stroke-width="1.4"/><line x1="39.9" y1="87.7" x2="39.1" y2="90.6" stroke="currentColor" stroke-width="1.4"/><line x1="30.5" y1="83.8" x2="29.0" y2="86.4" stroke="currentColor" stroke-width="1.4"/><line x1="22.4" y1="77.6" x2="20.3" y2="79.7" stroke="currentColor" stroke-width="1.4"/><line x1="16.2" y1="69.5" x2="13.6" y2="71.0" stroke="currentColor" stroke-width="1.4"/><line x1="12.3" y1="60.1" x2="9.4" y2="60.9" stroke="currentColor" stroke-width="1.4"/><line x1="11.0" y1="50.0" x2="8.0" y2="50.0" stroke="currentColor" stroke-width="1.4"/><line x1="12.3" y1="39.9" x2="9.4" y2="39.1" stroke="currentColor" stroke-width="1.4"/><line x1="16.2" y1="30.5" x2="13.6" y2="29.0" stroke="currentColor" stroke-width="1.4"/><line x1="22.4" y1="22.4" x2="20.3" y2="20.3" stroke="currentColor" stroke-width="1.4"/><line x1="30.5" y1="16.2" x2="29.0" y2="13.6" stroke="currentColor" stroke-width="1.4"/><line x1="39.9" y1="12.3" x2="39.1" y2="9.4" stroke="currentColor" stroke-width="1.4"/><line x1="50.0" y1="11.0" x2="50.0" y2="8.0" stroke="currentColor" stroke-width="1.4"/><line x1="60.1" y1="12.3" x2="60.9" y2="9.4" stroke="currentColor" stroke-width="1.4"/><line x1="69.5" y1="16.2" x2="71.0" y2="13.6" stroke="currentColor" stroke-width="1.4"/><line x1="77.6" y1="22.4" x2="79.7" y2="20.3" stroke="currentColor" stroke-width="1.4"/><line x1="83.8" y1="30.5" x2="86.4" y2="29.0" stroke="currentColor" stroke-width="1.4"/><line x1="87.7" y1="39.9" x2="90.6" y2="39.1" stroke="currentColor" stroke-width="1.4"/><pattern id="hch2" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="3.6" stroke="currentColor" stroke-width="1.5"/></pattern><path d="M20 16 L34 9 L50 13 L64 8 L74 14 L70 30 L62 46 L66 62 L62 78 L52 90 L42 96 L32 90 L26 78 L30 66 L24 56 L30 44 L24 34 L18 26 Z" transform="translate(15 12) scale(.7)" fill="url(#hch2)" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><text x="50" y="56" text-anchor="middle" font-size="21" font-weight="700" fill="currentColor" stroke="var(--paper-50)" stroke-width="5" paint-order="stroke" stroke-linejoin="round" style="font-family:var(--font-mincho)">千葉</text></svg><span class="pcap">2/5</span></span><b style="color: var(--sumi); font-size: 13px;">Dấu son</b><span>Mực đỏ, vành răng cưa</span></div></div></section>
+          </div>
+          <section class="sec" data-theme="kham-pha"><h2>Chưa có</h2><p class="n">Chỉ hiện ô trống khi phương án muốn cho thấy còn bao nhiêu chỗ. Không bao giờ ghi tên mốc chưa học.</p><div style="display: flex; align-items: center; gap: 32px;"><div class="cellf"><span class="slot" style="--s:72px" aria-hidden="true"></span><span>Ô trống (chỉ khi cần)</span></div><div class="cellf"><div style="width: 150px; height: 120px; border: 1.5px dashed var(--line-strong); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--sumi-faint);"><span class="msr" style="font-size: 30px; opacity: .6;" aria-hidden="true">help</span></div><span>Thẻ “?”, không lộ tên mốc</span></div></div><div style="display: flex; align-items: center; gap: 18px; padding: 18px 20px; border-radius: var(--radius-lg); border: 1px dashed var(--line-strong);"><span class="pst " style="--s:64px;--r:-4deg"><svg viewBox="0 0 100 100" role="img" aria-label="Chưa có con dấu tỉnh Chiba"><circle cx="50" cy="50" r="47" fill="none" stroke="var(--line-strong)" stroke-width="1.6" stroke-dasharray="3 4"/><path d="M20 16 L34 9 L50 13 L64 8 L74 14 L70 30 L62 46 L66 62 L62 78 L52 90 L42 96 L32 90 L26 78 L30 66 L24 56 L30 44 L24 34 L18 26 Z" transform="translate(15 12) scale(.7)" fill="none" stroke="var(--line-strong)" stroke-width="1.8" stroke-dasharray="3 3" stroke-linejoin="round" opacity=".8"/><text x="50" y="55" text-anchor="middle" font-size="19" font-weight="700" fill="var(--sumi-faint)" style="font-family:var(--font-mincho)">千葉</text></svg><span class="pcap"></span></span><div style="flex: 1 1 0; font-size: 14px; line-height: 22px;"><b>Chưa có con dấu nào ở Chiba.</b><br><span style="color: var(--sumi-muted);">Mở tỉnh trên bản đồ để bắt đầu.</span></div><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="map">Mở Chiba</x-import></div></section>
+          <section class="sec" data-theme="kham-pha"><h2>Đóng dấu mới</h2><p class="n">Hoạt ảnh đúng một lần, trả lời hành động vừa hoàn thành.</p><div style="display: flex; align-items: center; gap: 26px;"><div style="position: relative; width: 168px; height: 168px; display: flex; align-items: center; justify-content: center; flex: none;"><span class="{{rip}}" aria-hidden="true"></span><span class="{{prs}}" style="--r:4deg; display: inline-flex;"><span class="stp stp--sq son" role="img" aria-label="Con dấu Ga, dấu son, ngày 13/09/26" style="--s:120px;--r:4deg;"><span class="in"><b lang="ja">成田駅</b><i>13.09.26</i></span></span></span></div>
+          <div style="flex: 1 1 0; display: flex; flex-direction: column; gap: 12px;"><dl class="kv"><dt>Đóng dấu</dt><dd>Phóng to 1.7 lần về 1 lần, mờ vào, 420ms, độ trễ 250ms</dd><dt>Gợn sóng</dt><dd>Vòng đỏ nở ra 0.7 → 1.9, 900ms, bắt đầu lúc 550ms</dd><dt>Khi nào chạy</dt><dd>Một lần khi có dấu mới (và chỉ dấu mới)</dd><dt>Giảm chuyển động</dt><dd>Bỏ hoạt ảnh, dấu hiện ngay</dd></dl><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="replay" on-click="{{replay}}">Chạy lại hoạt ảnh</x-import></div></div></section>
+          <section class="sec" data-theme="kham-pha"><h2>Đang tải</h2><p class="n">4 ô số liệu và một khối lớn.</p><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;"><div class="skl" style="height: 76px;"></div><div class="skl" style="height: 76px;"></div><div class="skl" style="height: 76px;"></div><div class="skl" style="height: 76px;"></div></div><div class="skl" style="height: 170px; margin-top: 10px;"></div></section>
+          <section class="sec" data-theme="kham-pha"><h2>Lỗi</h2><div style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start;"><x-import component-from-global-scope="JCAP.Alert" tone="danger" title="Không tải được Sổ con dấu">Kiểm tra kết nối rồi thử lại. Con dấu của bạn vẫn an toàn.</x-import><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="refresh">Thử lại</x-import></div></section>
+          <section class="sec" data-theme="kham-pha" style="grid-column: 1 / -1;"><h2>Quy ước thiết kế</h2><dl class="kv"><dt>Mực thường</dt><dd><span class="sw"><i style="background: var(--ai);"></i>--ai</span></dd><dt>Dấu son</dt><dd><span class="sw"><i style="background: var(--shu);"></i>--shu</span></dd><dt>Giấy</dt><dd><span class="sw"><i style="background: var(--paper-50);"></i>--paper-50</span> <span class="sw"><i style="background: var(--paper-100);"></i>--paper-100</span> luôn <code>data-theme="kham-pha"</code></dd><dt>Chữ trên dấu</dt><dd>--font-mincho (Noto Serif JP, 700)</dd><dt>Hiệu ứng mực</dt><dd>SVG filter <code>#inkfx</code> (nhiễu + lệch 1.7px, lỗ mực) và <code>mix-blend-mode: multiply</code></dd><dt>Góc nghiêng</dt><dd>−9° đến 7°, cố định theo id mốc, không ngẫu nhiên mỗi lần vẽ</dd><dt>Chữ chú thích</dt><dd>Tên tiếng Việt luôn nằm ngoài con dấu, dấu chỉ là hình</dd></dl></section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1840}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { on: true };
+  }
+  renderVals() {
+    var self = this, st = this.state || {};
+    return {
+      yes: true, no: false, i16: 16, i20: 20, i22: 22, i36: 36, iconSm: 20, iconMd: 22,
+rip: st.on ? 'ripple' : 'ripple off', prs: st.on ? 'pressed' : '', 
+      replay: function () { self.setState({ on: false }); setTimeout(function () { self.setState({ on: true }); }, 40); }
+    };
+  }
+}
+</script>
+</body>
+</html>

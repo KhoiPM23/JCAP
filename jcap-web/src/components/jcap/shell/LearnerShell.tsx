@@ -3,6 +3,7 @@ import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { cx } from '../utils';
 import { AppSidebar } from './AppSidebar';
+import { LearnerNotificationBell } from '../../learner/LearnerNotificationBell';
 
 const COLLAPSE_KEY = 'jcap.sidebar.collapsed';
 
@@ -26,8 +27,8 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * Các trang đã làm lại theo design system nên có chế độ tối. Trang còn lại (Credit, Flashcard, Kết quả, chi tiết kịch bản…)
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
-const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings'];
-const isThemedPath = (p: string) => THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
+const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards'];
+const isThemedPath = (p: string) => p === '/learning' || p.startsWith('/learning/') || THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/') || p.startsWith('/flashcards');
 
 /**
  * Một trang trong khung. Khi bị gỡ vì đã sang trang khác, để lại một bản sao DOM (chỉ để nhìn) mờ dần trong 0,14s như prototype
@@ -107,6 +108,8 @@ export const LearnerShell: React.FC = () => {
   currentKey.current = pathname;
   const ghostRef = useRef<HTMLDivElement>(null);
   const lightIsland = isDark && !mapRoute && !isThemedPath(pathname);
+  // Sổ con dấu: cả trang (kể cả thanh bên) theo giấy Khám phá + sóng biển; chế độ tối giữ tông tối, chỉ cuốn sổ giữ giấy sáng
+  const stampsPage = pathname.replace(/\/+$/, '') === '/stamps';
 
   // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
   useEffect(() => {
@@ -146,7 +149,7 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={themeFor('learn')}>
+    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
       <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}
@@ -168,7 +171,7 @@ export const LearnerShell: React.FC = () => {
       <div className="jx-pgbg" aria-hidden="true" />
 
       {!mapRoute && (
-        <main className={cx('jx-page', pending && 'is-pending')}>
+        <main className={cx('jx-page', pending && 'is-pending', stampsPage && 'jx-waves')}>
           <PageFrame key={pathname} routeKey={pathname} currentKey={currentKey} ghostRef={ghostRef} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">
@@ -182,7 +185,10 @@ export const LearnerShell: React.FC = () => {
       )}
 
       {/* Bản sao mờ dần của trang vừa rời đi */}
+      {/* Bản sao mờ dần của trang vừa rời đi */}
       <div ref={ghostRef} className="jx-ghosts" aria-hidden="true" />
+      {/* Chuông thông báo chỉ hiện ở góc trên bên trái của Trang chủ / Hành trình */}
+      <LearnerNotificationBell />
     </div>
   );
 };

@@ -19,8 +19,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
     { name: 'Trang chủ', path: '/', icon: HomeIcon, matchPrefix: false },
     { name: 'Học tập', path: '/scenarios', icon: BookIcon, matchPrefix: true },
     { name: 'Shadowing', path: '/shadowing', icon: MicIcon, matchPrefix: true },
+    { name: 'Kho học liệu', path: '/learning/topics', icon: BookIcon, matchPrefix: true },
     { name: 'Flashcard', path: '/flashcards', icon: CardsIcon, matchPrefix: true },
-    { name: 'Lịch học', path: '/schedule', icon: CalendarIcon, matchPrefix: true },
+    { name: 'Diễn đàn', path: '/community', icon: UsersTalkIcon, matchPrefix: true },
     { name: 'Kết quả', path: '/roleplay/results', icon: ChartIcon, matchPrefix: true },
     { name: 'Gói & Hạn mức', path: '/subscription', icon: SubscriptionIcon, matchPrefix: true },
     { name: 'Hồ sơ', path: '/profile', icon: UserIcon, matchPrefix: true },
@@ -29,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
   ];
 
   const bottomItems = [
-    { name: 'Góp ý ẩn danh', path: '/feedback', icon: HelpIcon, matchPrefix: true },
+    { name: 'Hỗ trợ & Góp ý', path: '/feedback', icon: HelpIcon, matchPrefix: true },
   ];
 
   // If user is Admin, render the Admin Sidebar matching mockup image media_1790526792509.png
@@ -108,10 +109,16 @@ export const Navbar: React.FC<NavbarProps> = ({ activePath, onLogout }) => {
                 forceActive={currentPath.startsWith('/admin/users')}
               />
               <NavItem
-                name="Hòm thư Góp ý"
+                name="Hỗ trợ & Góp ý"
                 path="/admin/feedback"
                 icon={ChatBubbleIcon}
                 forceActive={currentPath.startsWith('/admin/feedback')}
+              />
+              <NavItem
+                name="Diễn đàn Cộng đồng"
+                path="/admin/community"
+                icon={UsersTalkIcon}
+                forceActive={currentPath.startsWith('/admin/community')}
               />
               <NavItem
                 name="Quản lý Gói và Credit"
@@ -255,14 +262,6 @@ function BookIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-    </svg>
-  );
-}
-
-function CalendarIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
 }

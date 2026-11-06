@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   type NotificationItem,
   type NotificationPlacementKey,
@@ -13,7 +12,7 @@ import {
   updateNotification,
   deleteNotification,
   computeNotificationStatus,
-  clearAllDismissals,
+  clearAllReadStatus,
   resetDefaultNotifications,
 } from '../../services/mockNotificationStore';
 import { AnnouncementPopupCard } from '../../components/admin/AdminAnnouncementPopup';
@@ -23,7 +22,7 @@ const STATUS_BADGE_META: Record<
   { label: string; bg: string; text: string; border: string; dot: string }
 > = {
   ACTIVE_NOW: {
-    label: 'Đang hiển thị',
+    label: 'Đang hiển thị bên Learner',
     bg: 'bg-emerald-50',
     text: 'text-emerald-700',
     border: 'border-emerald-200',
@@ -66,7 +65,6 @@ function formatDateTimeDisplay(val?: string): string {
 }
 
 export const AdminNotificationView: React.FC = () => {
-  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [nowMs, setNowMs] = useState<number>(Date.now());
 
@@ -182,7 +180,7 @@ export const AdminNotificationView: React.FC = () => {
       return;
     }
     if (placements.length === 0) {
-      setFormError('Vui lòng chọn ít nhất 1 nơi xuất hiện thông báo.');
+      setFormError('Vui lòng chọn ít nhất 1 nơi xuất hiện thông báo bên giao diện Học viên.');
       return;
     }
     if (startAt && endAt) {
@@ -204,7 +202,7 @@ export const AdminNotificationView: React.FC = () => {
         endAt: endAt.trim(),
         isEnabled,
       });
-      showToast('Đã cập nhật cài đặt thông báo thành công!');
+      showToast('Đã cập nhật thông báo! Thay đổi đã có hiệu lực bên giao diện Học viên (Learner).');
       resetFormToCreate();
     } else {
       createNotification({
@@ -216,7 +214,7 @@ export const AdminNotificationView: React.FC = () => {
         endAt: endAt.trim(),
         isEnabled,
       });
-      showToast('Đã tạo thông báo mới! Bạn có thể bấm vào chức năng tương ứng để xem Popup.');
+      showToast('Đã tạo thông báo mới! Học viên khi vào các mục đã chọn sẽ thấy Popup xuất hiện.');
       resetFormToCreate();
     }
   };
@@ -225,7 +223,7 @@ export const AdminNotificationView: React.FC = () => {
     updateNotification(item.id, { isEnabled: !item.isEnabled });
     showToast(
       !item.isEnabled
-        ? `Đã bật hiển thị thông báo "${item.title}"`
+        ? `Đã bật hiển thị thông báo "${item.title}" bên Learner`
         : `Đã tạm tắt thông báo "${item.title}"`,
     );
   };
@@ -240,8 +238,8 @@ export const AdminNotificationView: React.FC = () => {
   };
 
   const handleResetSnooze = () => {
-    clearAllDismissals();
-    showToast('Đã đặt lại trạng thái ẩn (Đóng / 6h / 24h). Tất cả thông báo đang bật sẽ hiện lại ngay!');
+    clearAllReadStatus();
+    showToast('Đã đặt lại trạng thái đã đọc. Học viên sẽ thấy lại chấm đỏ thông báo mới!');
   };
 
   const stats = useMemo(() => {
@@ -296,13 +294,13 @@ export const AdminNotificationView: React.FC = () => {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-200 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-              <span>📢</span> Quản lý & Cài đặt Thông báo Hệ thống
+              <span>📢</span> Quản lý & Cài đặt Thông báo cho Học viên (Learner)
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Cài đặt Popup Thông báo & Bảo trì theo Chức năng
             </h1>
             <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
-              Thiết lập thông báo xuất hiện tại Trang chủ (Dashboard) hoặc hiển thị ngay khi truy cập vào từng chức năng cụ thể (Hội thoại AI, Shadowing, Khám phá, Gói nạp Credit...).
+              Thiết lập thông báo hiển thị bên <strong>giao diện Học viên (Learner)</strong> khi học viên vào Trang chủ/Hành trình hoặc bấm vào từng chức năng cụ thể (Hội thoại AI, Shadowing, Flashcard, Gói nạp Credit...).
             </p>
           </div>
 
@@ -311,16 +309,9 @@ export const AdminNotificationView: React.FC = () => {
               type="button"
               onClick={handleResetSnooze}
               className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
-              title="Nếu bạn đã bấm Đóng / Ẩn 6 tiếng / Ẩn 24 tiếng, nhấn nút này để hiện lại Popup ngay"
+              title="Đặt lại trạng thái đã đọc để test lại chấm đỏ thông báo bên phía Học viên"
             >
-              <span>🔄</span> Bật lại các Popup đã ẩn (Test nhanh)
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/admin/dashboard')}
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer flex items-center gap-2"
-            >
-              <span>🏠</span> Về Dashboard xem thử
+              <span>🔄</span> Đặt lại thông báo chưa đọc bên Learner (Test chấm đỏ)
             </button>
           </div>
         </div>
@@ -340,7 +331,7 @@ export const AdminNotificationView: React.FC = () => {
 
         <div className="bg-white p-4 rounded-2xl border border-emerald-200/80 shadow-2xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-emerald-700 uppercase">Đang hiển thị</p>
+            <p className="text-xs font-semibold text-emerald-700 uppercase">Đang hiện bên Learner</p>
             <p className="text-2xl font-black text-emerald-600 mt-1">{stats.activeNow}</p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
@@ -384,7 +375,7 @@ export const AdminNotificationView: React.FC = () => {
                   {editingId ? `Chỉnh sửa thông báo (${editingId})` : 'Cài đặt Thông báo mới'}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Điền tiêu đề, nội dung, thời gian (tuỳ chọn) và chọn một hoặc nhiều nơi xuất hiện
+                  Cấu hình nội dung, thời gian (tuỳ chọn) và chọn các trang bên Học viên sẽ xuất hiện Popup
                 </p>
               </div>
             </div>
@@ -488,11 +479,11 @@ export const AdminNotificationView: React.FC = () => {
               </div>
             </div>
 
-            {/* 4. Chọn nơi xuất hiện thông báo (Multi-select) */}
+            {/* 4. Chọn nơi xuất hiện thông báo bên Learner (Multi-select) */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  4. Chọn nơi xuất hiện thông báo (Chọn được nhiều chỗ) <span className="text-red-500">*</span>
+                  4. Chọn nơi xuất hiện bên Học viên (Chọn được nhiều chỗ) <span className="text-red-500">*</span>
                 </label>
                 <button
                   type="button"
@@ -532,6 +523,9 @@ export const AdminNotificationView: React.FC = () => {
                         <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
                           {opt.description}
                         </p>
+                        <span className="inline-block mt-1 text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Route: {opt.learnerPathHint}
+                        </span>
                       </div>
                     </label>
                   );
@@ -618,7 +612,7 @@ export const AdminNotificationView: React.FC = () => {
                   className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm font-bold text-slate-800">
-                  Kích hoạt thông báo này ngay sau khi lưu
+                  Kích hoạt hiển thị bên Learner ngay sau khi lưu
                 </span>
               </label>
 
@@ -658,10 +652,10 @@ export const AdminNotificationView: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 block">
-                  Live Preview
+                  Live Preview (Giao diện Học viên)
                 </span>
                 <h3 className="text-sm font-bold text-white">
-                  Xem trước giao diện Popup thực tế
+                  Xem trước Popup sẽ hiện bên Learner
                 </h3>
               </div>
               <span className="px-2.5 py-1 rounded-full bg-white/10 text-slate-300 text-[11px] font-medium">
@@ -680,14 +674,14 @@ export const AdminNotificationView: React.FC = () => {
                     (placements.length > 1 ? ` (+${placements.length - 1} nơi khác)` : '')
                   : 'Chưa chọn nơi thông báo'
               }
-              onClose={() => showToast('Nút [Đóng]: Sẽ đóng Popup trong phiên làm việc hiện tại.')}
-              onHide6Hours={() => showToast('Nút [Ẩn 6 tiếng]: Sẽ tạm ẩn Popup này trong 6 giờ.')}
-              onHide24Hours={() => showToast('Nút [Ẩn 24 tiếng]: Sẽ tạm ẩn Popup này trong 24 giờ.')}
+              onClose={() => showToast('Nút [Đóng]: Học viên đóng Popup trong phiên hiện tại.')}
+              onHide6Hours={() => showToast('Nút [Ẩn 6 tiếng]: Học viên tạm ẩn Popup này trong 6 giờ.')}
+              onHide24Hours={() => showToast('Nút [Ẩn 24 tiếng]: Học viên tạm ẩn Popup này trong 24 giờ.')}
               isInlinePreview
             />
 
             <p className="text-[11px] text-slate-400 text-center mt-4 leading-relaxed">
-              Khi Admin truy cập vào các trang đã đánh dấu (VD: <strong>Dashboard</strong>, <strong>Kịch bản Hội thoại</strong>, <strong>Shadowing</strong>...), Popup này sẽ tự động bật lên giữa màn hình.
+              Khi <strong>Học viên (Learner)</strong> truy cập vào các trang đã đánh dấu (VD: <strong>Trang chủ / Hành trình</strong>, <strong>Hội thoại AI</strong>, <strong>Shadowing</strong>...), Popup này sẽ tự động bật lên giữa màn hình.
             </p>
           </div>
         </div>
@@ -701,7 +695,7 @@ export const AdminNotificationView: React.FC = () => {
               <span>📑</span> Danh sách các Thông báo đã cài đặt ({filteredList.length})
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Bấm vào nhãn vị trí trên từng thông báo để chuyển thẳng tới chức năng đó và kiểm tra Popup
+              Các thông báo dưới đây sẽ tự động xuất hiện bên tài khoản Học viên (Learner) theo đúng vị trí và khung giờ đã cấu hình
             </p>
           </div>
 
@@ -736,7 +730,7 @@ export const AdminNotificationView: React.FC = () => {
               className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none focus:border-blue-500"
             >
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="ACTIVE_NOW">🟢 Đang hiển thị</option>
+              <option value="ACTIVE_NOW">🟢 Đang hiển thị bên Learner</option>
               <option value="SCHEDULED">⏰ Chờ đến giờ hiện</option>
               <option value="EXPIRED">⌛ Đã qua giờ tắt</option>
               <option value="DISABLED">⏸️ Đang tắt</option>
@@ -813,10 +807,10 @@ export const AdminNotificationView: React.FC = () => {
                       {item.content}
                     </p>
 
-                    {/* Các nơi thông báo (Bấm vào để nhảy tới trang đó xem thử) */}
+                    {/* Các nơi thông báo bên Learner */}
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
                       <span className="text-xs font-semibold text-slate-400 mr-1">
-                        Nơi xuất hiện:
+                        Nơi hiện bên Learner:
                       </span>
                       {item.placements.map((pKey) => {
                         const pMeta = PLACEMENT_MAP[pKey];
@@ -825,16 +819,22 @@ export const AdminNotificationView: React.FC = () => {
                           <button
                             key={pKey}
                             type="button"
-                            onClick={() => {
-                              clearAllDismissals();
-                              navigate(pMeta.adminNavigatePath);
-                            }}
-                            title={`Nhấn để mở "${pMeta.label}" và xem Popup xuất hiện`}
+                            onClick={() =>
+                              setPreviewModalItem({
+                                title: item.title,
+                                content: item.content,
+                                styleType: item.styleType,
+                                placementLabel: `${pMeta.label} (${pMeta.learnerPathHint})`,
+                              })
+                            }
+                            title={`Nhấn để xem thử Popup tại trang "${pMeta.label}" (${pMeta.learnerPathHint})`}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-xs font-semibold transition-colors cursor-pointer"
                           >
                             <span>{pMeta.icon}</span>
                             <span>{pMeta.label}</span>
-                            <span className="text-[10px] opacity-70">↗</span>
+                            <span className="text-[10px] text-blue-500 font-mono">
+                              ({pMeta.learnerPathHint.split(',')[0]})
+                            </span>
                           </button>
                         );
                       })}
@@ -923,4 +923,3 @@ export const AdminNotificationView: React.FC = () => {
     </div>
   );
 };
-

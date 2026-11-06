@@ -110,7 +110,7 @@ public class RoleplaySessionServiceTests
 
 
     [Fact]
-    public async Task StartSessionAsync_Fails_WhenCreditIsInsufficient()
+    public async Task StartSessionAsync_AllowsStarting_WithoutUpfrontCreditCost()
     {
         // Arrange
         using var dbContext = CreateInMemoryDbContext();
@@ -119,6 +119,12 @@ public class RoleplaySessionServiceTests
         var user = new ApplicationUser { Id = "user-poor", CreditBalance = 2 };
         var userManagerMock = CreateUserManagerMock(user);
         var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult
+            {
+                JapaneseText = "いらっしゃいませ！",
+                VietnameseMeaning = "Kính chào quý khách!"
+            });
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
 
         var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
@@ -126,14 +132,14 @@ public class RoleplaySessionServiceTests
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
 
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("Số dư credit của bạn không đủ", result.Message);
+        // Assert: Bắt đầu vào học là miễn phí, không trừ 5 credit
+        Assert.True(result.Success);
         Assert.Equal(2, user.CreditBalance); // Không bị trừ
+        Assert.Empty(dbContext.CreditTransactions);
     }
 
     [Fact]
-    public async Task StartSessionAsync_DeductsCredit_AndCreatesSession_WhenCreditIsSufficient()
+    public async Task StartSessionAsync_FreeToStart_AndCreatesSession_WhenCreditIsSufficient()
     {
         // Arrange
         using var dbContext = CreateInMemoryDbContext();
@@ -155,12 +161,11 @@ public class RoleplaySessionServiceTests
         // Act
         var result = await service.StartSessionAsync(user.Id, 1, "N5", new StartRoleplaySessionRequestDto());
 
-        // Assert
+        // Assert: Bắt đầu vào học miễn phí, không trừ 5 credit
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
-        Assert.Equal(15, user.CreditBalance); // Đã trừ 5 credit
-        Assert.Single(dbContext.CreditTransactions);
-        Assert.Equal(-5, dbContext.CreditTransactions.First().Amount);
+        Assert.Equal(20, user.CreditBalance); // Không bị trừ credit khởi tạo
+        Assert.Empty(dbContext.CreditTransactions);
         Assert.Equal("Active", result.Data.Status);
         Assert.Single(result.Data.Messages);
         Assert.Equal("いらっしゃいませ！", result.Data.Messages[0].JapaneseText);
@@ -278,7 +283,7 @@ public class RoleplaySessionServiceTests
         // Assert
         Assert.True(result.Success);
         Assert.NotEqual(55, result.Data!.SessionId);
-        Assert.Equal(5, user.CreditBalance); // Bị trừ 5 credit cho session mới
+        Assert.Equal(10, user.CreditBalance); // Không bị trừ thêm credit vì vào học miễn phí
 
         var oldSession = await dbContext.RoleplaySessions.FindAsync(55);
         Assert.Equal("Abandoned", oldSession!.Status);
@@ -521,25 +526,24 @@ public class RoleplaySessionServiceTests
     }
 
     [Fact]
-    public async Task StartSessionAsync_WhenSubscriptionQuotaExceededAndNoExtraCredits_ReturnsFailure()
+    public async Task StartSessionAsync_WhenSubscriptionQuotaExceeded_AllowsEntryWithoutUpfrontCost()
     {
         // Arrange
         using var dbContext = CreateInMemoryDbContext();
-        var (scenario, levelConfig, _) = SeedBasicScenario(dbContext); // CreditCost = 5
+        var (scenario, levelConfig, _) = SeedBasicScenario(dbContext);
 
         var user = new ApplicationUser
         {
             Id = "user-sub-quota-full",
             CreditBalance = 0,
-            SubscriptionPlanId = "plan-pro", // FiveHourQuota = 50
+            SubscriptionPlanId = "plan-pro",
             SubscriptionExpiresAt = DateTime.UtcNow.AddDays(15)
         };
 
-        // Đã dùng 48/50 credits trong 5 giờ qua -> Cần thêm 5 credits (48 + 5 = 53 > 50) -> Vượt trần!
         dbContext.CreditTransactions.Add(new CreditTransaction
         {
             UserId = user.Id,
-            Amount = -48,
+            Amount = -50,
             Type = "Deduct",
             Status = "Paid",
             CoveredBySubscription = true,
@@ -550,15 +554,16 @@ public class RoleplaySessionServiceTests
 
         var userManagerMock = CreateUserManagerMock(user);
         var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult { JapaneseText = "新しいセッションです。" });
         var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
-        var service = CreateService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
 
-        // Act
+        // Act: Bắt đầu vào phiên là miễn phí
         var result = await service.StartSessionAsync(user.Id, scenario.Id, levelConfig.JLPTLevel, new StartRoleplaySessionRequestDto());
 
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("hết hạn ngạch 5 giờ", result.Message);
+        // Assert: Phiên tạo thành công, không bị chặn bởi phí khởi tạo
+        Assert.True(result.Success);
     }
 }
 

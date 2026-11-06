@@ -20,7 +20,8 @@ import { useLearnerAccount } from './useLearnerAccount';
 
 const PREF_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
 /** Chữ Hán cho thứ tự chương (mẫu: 一, 二, 三…). Chương 0 là chương nhập môn: dùng 序 (mở đầu) thay cho 〇 vì 〇 trông như hai vòng tròn lồng nhau */
-const KANJI_NUM = ['序', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+/** Số chương bằng chữ Hán, theo thứ tự trong hành trình: chương đầu tiên (orderIndex 0) là 一 */
+const KANJI_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
 interface NavDef {
   id: string;
@@ -38,11 +39,13 @@ const NAV: NavDef[] = [
   { id: 'map', label: 'Hành trình', icon: 'travel_explore', to: '/', match: MAP_PATHS },
   { id: 'role', label: 'Hội thoại AI', icon: 'forum', to: '/scenarios', match: (p) => p.startsWith('/scenarios') },
   { id: 'shadow', label: 'Shadowing', icon: 'record_voice_over', to: '/shadowing', match: (p) => p.startsWith('/shadowing') },
+  { id: 'learning', label: 'Kho học liệu', icon: 'auto_stories', to: '/learning/topics', match: (p) => p === '/learning' || p.startsWith('/learning/') },
   // Flashcard có trong code nhưng chưa có trong thiết kế: đặt ngay dưới Shadowing, cùng kiểu
   { id: 'flash', label: 'Flashcard', icon: 'style', to: '/flashcards', match: (p) => p.startsWith('/flashcards') },
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
   { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
-  { id: 'feedback', label: 'Góp ý ẩn danh', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
+  { id: 'community', label: 'Diễn đàn', icon: 'groups', to: '/community', match: (p) => p.startsWith('/community') || p.startsWith('/forum') },
+  { id: 'feedback', label: 'Hỗ trợ & Góp ý', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
 ];
 
 export interface AppSidebarProps {
@@ -201,7 +204,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
             </MenuItem>
             <MenuItem icon="person" label="Hồ sơ" on={path.startsWith('/profile')} onClick={() => go('/profile')} />
             <MenuItem icon="settings" label="Cài đặt" on={path.startsWith('/settings')} onClick={() => go('/settings')} />
-            <MenuItem icon="help" label="Góp ý ẩn danh" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
+            <MenuItem icon="help" label="Hỗ trợ & Góp ý" on={path.startsWith('/feedback') || path.startsWith('/help')} onClick={() => go('/feedback')} />
             <span style={{ height: 1, margin: '4px 0', background: 'var(--line)' }} />
             <button type="button" role="menuitem" className="jx-mi" style={{ color: 'var(--danger)' }} onClick={() => logout()}>
               <Icon name="logout" size={20} />
@@ -339,10 +342,10 @@ const LearningGroup: React.FC<{
             aria-label={`${chapter.title}, ${chapter.stampCount} trên ${chapter.spotCount} dấu`}
           >
             <span className="jx-kanji" lang="ja">
-              {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex}
+              {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex + 1}
             </span>
             <span className="jx-lbl" style={{ flexGrow: 1 }}>
-              {`Chương ${chapter.orderIndex}`}
+              {`Chương ${chapter.orderIndex + 1}`}
             </span>
             <span className="jx-lbl jx-lbl-fixed" style={{ fontSize: 12, fontWeight: 700, color: 'var(--shu)' }}>
               {`${chapter.stampCount}/${chapter.spotCount}`}
@@ -351,7 +354,7 @@ const LearningGroup: React.FC<{
           <div className="jx-fly">
             <div className="jx-pill">
               <span className="jx-kanji jx-kanji--lg" lang="ja">
-                {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex}
+                {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex + 1}
               </span>
               <span className="jx-pill-title" style={{ fontWeight: 600 }} title={chapter.title}>
                 {chapter.title}
@@ -373,7 +376,7 @@ const LearningGroup: React.FC<{
                 <strong style={{ color: 'var(--sumi)' }}>{`${chapter.stampCount}/${chapter.spotCount} dấu.`}</strong>
                 {next &&
                   !next.isUnlocked &&
-                  ` Chương ${next.orderIndex} mở ở ${Math.ceil((next.unlockThresholdPercent * chapter.spotCount) / 100)} dấu.`}
+                  ` Chương ${next.orderIndex + 1} mở ở ${Math.ceil((next.unlockThresholdPercent * chapter.spotCount) / 100)} dấu.`}
               </span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {chapter.prefectureIds.map((id) => {

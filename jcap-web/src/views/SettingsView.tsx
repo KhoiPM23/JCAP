@@ -1,33 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { voicevoxService, VoiceOption } from '../services/voicevoxService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { AudioDeviceSettingsModal } from '../components/shadowing/AudioDeviceSettingsModal';
+import { VoiceBrowser } from '../components/shadowing/VoiceBrowser';
 import { Button, Icon, SegmentedControl, Select, Switch } from '../components/jcap';
 import { cx } from '../components/jcap/utils';
 import { useTheme, type ThemeMode } from '../contexts/ThemeContext';
 import { getPracticePrefs, setPracticePref, type PracticePrefs } from '../utils/practicePrefs';
 
 const SAMPLE_TEXT = 'こんにちは！JCAPで日本語を一緒に練習しましょう。';
-
-type VoiceCat = 'standard' | 'region' | 'other';
-const REGIONAL = ['tohoku', 'sendai', 'miyagi', 'aomori', 'akita', 'fukushima', 'kansai', 'kyoto', 'nara', 'osaka', 'shikoku', 'chubu', 'toyama', 'nagano', 'nagoya', 'hokuriku', 'kyushu', 'oita', 'hokkaido', 'chugoku', 'okinawa'];
-
-/** Nhóm giọng: Chuẩn (nam/nữ, giọng toàn quốc), Vùng miền (giọng địa phương), Hoạt hình và khác (linh vật, robot…) */
-function voiceCategory(v: VoiceOption): VoiceCat {
-  if (v.gender !== 'Female' && v.gender !== 'Male') return 'other';
-  const r = (v.region || '').toLowerCase();
-  return REGIONAL.some((k) => r.includes(k)) ? 'region' : 'standard';
-}
-
-/** Mỗi nhân vật một thẻ: lấy kiểu giọng "bình thường" (ノーマル) nếu có, không thì kiểu đầu tiên */
-function characters(voices: VoiceOption[]): VoiceOption[] {
-  const map = new Map<string, VoiceOption>();
-  voices.forEach((v) => {
-    const cur = map.get(v.speakerName);
-    if (!cur || (cur.styleName !== 'ノーマル' && v.styleName === 'ノーマル')) map.set(v.speakerName, v);
-  });
-  return Array.from(map.values());
-}
 
 const SECTIONS = [
   { id: 'giong', label: 'Giọng đọc AI', icon: 'record_voice_over' },
@@ -44,9 +25,9 @@ export const SettingsView: React.FC = () => {
   const { mode: themeMode, setMode: setThemeMode } = useTheme();
   // Giọng đọc
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
+  const [isVoiceListOpen, setIsVoiceListOpen] = useState<boolean>(false);
   const [isLoadingVoices, setIsLoadingVoices] = useState<boolean>(true);
   const [selectedVoiceId, setSelectedVoiceId] = useState<number>(Number(localStorage.getItem('jcap_voicevox_selected_id')) || 3);
-  const [voiceCat, setVoiceCat] = useState<VoiceCat>('standard');
 
   // Thiết bị âm thanh
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
@@ -78,7 +59,6 @@ export const SettingsView: React.FC = () => {
         const current = voices.find((v) => v.id === (savedId || selectedVoiceId));
         if (current) {
           setSelectedVoiceId(current.id);
-          setVoiceCat(voiceCategory(current));
         } else if (voices.length > 0) setSelectedVoiceId(voices[0].id);
       })
       .catch((err) => console.warn('Cannot fetch VOICEVOX voices:', err))
@@ -108,9 +88,6 @@ export const SettingsView: React.FC = () => {
   }, [toastMessage]);
 
   const activeVoice = availableVoices.find((v) => v.id === selectedVoiceId);
-  const groups = useMemo(() => characters(availableVoices), [availableVoices]);
-  const shown = groups.filter((v) => voiceCategory(v) === voiceCat);
-  const catCount = (c: VoiceCat) => groups.filter((v) => voiceCategory(v) === c).length;
 
   /** Phát câu mẫu bằng một giọng; bấm lại khi đang phát thì dừng */
   const playSample = async (voiceId: number) => {
@@ -151,11 +128,12 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const pickVoice = (v: VoiceOption) => {
-    setSelectedVoiceId(v.id);
-    localStorage.setItem('jcap_voicevox_selected_id', v.id.toString());
+  const saveVoice = (id: number) => {
+    const v = availableVoices.find((x) => x.id === id);
+    setSelectedVoiceId(id);
+    localStorage.setItem('jcap_voicevox_selected_id', id.toString());
     window.dispatchEvent(new Event('jcap_voicevox_changed'));
-    setToastMessage(`Đã chọn giọng ${v.romajiName || v.speakerName}.`);
+    if (v) setToastMessage(`Đã chọn giọng ${v.romajiName || v.speakerName}${v.styleVietnamese ? ` · ${v.styleVietnamese}` : ''}.`);
   };
 
   const saveDevices = (inId: string, outId: string) => {
@@ -248,7 +226,6 @@ export const SettingsView: React.FC = () => {
                       </span>
                     )}
                   </span>
-                  {activeVoice?.description && <span className="text-sm leading-5">{activeVoice.description}</span>}
                 </div>
                 <Button
                   variant="secondary"
@@ -258,61 +235,35 @@ export const SettingsView: React.FC = () => {
                 >
                   {playingId === selectedVoiceId ? 'Dừng' : 'Nghe thử'}
                 </Button>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <span className="text-sm font-semibold leading-5">Chọn giọng khác</span>
-                <SegmentedControl
-                  ariaLabel="Nhóm giọng"
-                  size="sm"
-                  value={voiceCat}
-                  onChange={(v) => setVoiceCat(v as VoiceCat)}
-                  options={[
-                    { value: 'standard', label: 'Chuẩn', count: catCount('standard') },
-                    { value: 'region', label: 'Vùng miền', count: catCount('region') },
-                    { value: 'other', label: 'Hoạt hình và khác', count: catCount('other') },
-                  ]}
-                />
+                {/* Hai nhãn xếp chồng trong cùng một ô lưới nên nút luôn rộng bằng nhãn dài nhất; đổi trạng thái chỉ đổi chữ, không co giãn hay lệch */}
+                <Button
+                  variant="primary"
+                  aria-expanded={isVoiceListOpen}
+                  aria-controls="danh-sach-giong"
+                  disabled={isLoadingVoices || availableVoices.length === 0}
+                  onClick={() => setIsVoiceListOpen((o) => !o)}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-grid text-center">
+                      <span style={{ gridArea: '1 / 1', visibility: isVoiceListOpen ? 'hidden' : 'visible' }}>Đổi giọng</span>
+                      <span style={{ gridArea: '1 / 1', visibility: isVoiceListOpen ? 'visible' : 'hidden' }}>Thu gọn</span>
+                    </span>
+                    <Icon name="expand_more" size={20} className={cx('jc-chev', isVoiceListOpen && 'is-open')} />
+                  </span>
+                </Button>
               </div>
 
               {isLoadingVoices ? (
                 <p className="m-0 text-sm text-sumi-muted" role="status">
                   Đang tải danh sách giọng…
                 </p>
-              ) : shown.length === 0 ? (
-                <p className="m-0 text-sm text-sumi-muted">Chưa có giọng nào trong nhóm này.</p>
+              ) : availableVoices.length === 0 ? (
+                <p className="m-0 text-sm text-sumi-muted">VOICEVOX chưa chạy nên chưa có danh sách giọng. Hãy mở VOICEVOX trên máy rồi tải lại trang.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {shown.map((v) => {
-                    const selected = activeVoice ? v.speakerName === activeVoice.speakerName : v.id === selectedVoiceId;
-                    return (
-                      <div
-                        key={v.speakerName}
-                        className={cx('flex flex-col gap-2 rounded-jc-lg p-3.5', selected ? 'bg-ai-soft' : 'bg-paper-50')}
-                        style={{ border: selected ? '2px solid var(--ai)' : '1px solid var(--line)' }}
-                      >
-                        <button type="button" onClick={() => pickVoice(v)} aria-pressed={selected} className="flex flex-col gap-1 border-0 bg-transparent p-0 text-left text-sumi">
-                          <span className="flex items-center justify-between gap-1.5">
-                            <span className="text-[15px] font-semibold leading-[22px]">{v.romajiName || v.speakerName}</span>
-                            {selected && <Icon name="check_circle" size={22} fill style={{ color: 'var(--ai)' }} />}
-                          </span>
-                          <span className="font-jp text-[13px] leading-[18px] text-sumi-muted" lang="ja">
-                            {v.speakerName}
-                          </span>
-                          <span className="line-clamp-2 text-[13px] leading-5">{v.description || v.region}</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={cx('jc-audiochip self-start', playingId === v.id && 'is-playing')}
-                          onClick={() => playSample(v.id)}
-                          aria-label={`${playingId === v.id ? 'Dừng' : 'Nghe thử'} giọng ${v.romajiName || v.speakerName}`}
-                        >
-                          <Icon name={loadingId === v.id ? 'progress_activity' : playingId === v.id ? 'stop_circle' : 'volume_up'} size={18} spin={loadingId === v.id} fill={playingId === v.id} />
-                          {playingId === v.id ? 'Dừng' : 'Nghe thử'}
-                        </button>
-                      </div>
-                    );
-                  })}
+                <div id="danh-sach-giong" className={cx('jc-collapse', isVoiceListOpen && 'is-open')} style={{ '--collapse-gap': '18px' } as React.CSSProperties} inert={!isVoiceListOpen}>
+                  <div className="jc-collapse__in">
+                    <VoiceBrowser voices={availableVoices} selectedVoiceId={selectedVoiceId} playingId={playingId} loadingId={loadingId} onSelect={saveVoice} onPlay={playSample} />
+                  </div>
                 </div>
               )}
             </section>

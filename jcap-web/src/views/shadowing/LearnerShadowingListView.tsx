@@ -45,7 +45,7 @@ export const LearnerShadowingListView: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [keyword, setKeyword] = useState<string>('');
+  const [keyword, setKeyword] = useState<string>(() => searchParams.get('q') || searchParams.get('query') || '');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
 
   // History filtering

@@ -1,7 +1,7 @@
 namespace JCAP.DTOs.Explore
 {
     /// <summary>
-    /// Các mục kiểm tra trước khi chuyển mốc sang "Đang dùng". Trả về danh sách khoá còn thiếu (Missing).
+    /// Các mục gợi ý trước khi chuyển mốc sang "Đang dùng" (không bắt buộc). Trả về danh sách khoá còn thiếu (Missing).
     /// </summary>
     public static class ExploreSpotCheck
     {
@@ -17,9 +17,6 @@ namespace JCAP.DTOs.Explore
         public const string RealUse = "realUse";
         /// <summary>Đã gắn bài Shadowing đang dùng</summary>
         public const string Shadowing = "shadowing";
-
-        /// <summary>Mốc đang dùng không được để trống những mục người học đang thấy.</summary>
-        public static readonly string[] VisibleToLearner = { Place, Sentence, Situation, RealUse };
     }
 
     /// <summary>Nội dung một tỉnh phía admin: mọi mốc (nháp và đang dùng) và "Một từ ở tỉnh".</summary>

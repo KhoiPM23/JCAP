@@ -176,9 +176,11 @@ export const LearnerShadowingDetailView: React.FC = () => {
             >
               JLPT {dialogue.jlptLevel}
             </span>
-            <span className="text-xs text-[#71809A]">
-              Kịch bản: <strong>{dialogue.scenarioTitle}</strong>
-            </span>
+            {dialogue.scenarioTitle && (
+              <span className="text-xs text-[#71809A]">
+                Kịch bản: <strong>{dialogue.scenarioTitle}</strong>
+              </span>
+            )}
           </div>
 
           <h1 className="text-2xl font-bold text-[#071A44]">{dialogue.title}</h1>
