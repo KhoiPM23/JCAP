@@ -219,9 +219,14 @@ namespace JCAP.Services.Implementations
                 Email = user.Email!,
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
+                JLPTLevel = string.IsNullOrWhiteSpace(user.JLPTLevel) ? "N5" : user.JLPTLevel,
                 CreditBalance = user.CreditBalance,
                 HasPassword = await _userManager.HasPasswordAsync(user),
-                ExpiresAt = expiresAt
+                ExpiresAt = expiresAt,
+                PlacementTestStatus = string.IsNullOrWhiteSpace(user.PlacementTestStatus) ? "NotStarted" : user.PlacementTestStatus,
+                HasSeenPlacementPrompt = user.HasSeenPlacementPrompt,
+                InitialEstimatedLevel = user.InitialEstimatedLevel,
+                InitialConfidenceTier = user.InitialConfidenceTier
             };
 
             return ApiResponse<AuthResponseDto>.Ok(response, "Đăng nhập thành công.");
@@ -245,9 +250,14 @@ namespace JCAP.Services.Implementations
                 Email = user.Email!,
                 FullName = user.FullName ?? string.Empty,
                 Role = role,
+                JLPTLevel = string.IsNullOrWhiteSpace(user.JLPTLevel) ? "N5" : user.JLPTLevel,
                 CreditBalance = user.CreditBalance,
                 HasPassword = await _userManager.HasPasswordAsync(user),
-                ExpiresAt = DateTime.UtcNow
+                ExpiresAt = DateTime.UtcNow,
+                PlacementTestStatus = string.IsNullOrWhiteSpace(user.PlacementTestStatus) ? "NotStarted" : user.PlacementTestStatus,
+                HasSeenPlacementPrompt = user.HasSeenPlacementPrompt,
+                InitialEstimatedLevel = user.InitialEstimatedLevel,
+                InitialConfidenceTier = user.InitialConfidenceTier
             };
 
             return ApiResponse<AuthResponseDto>.Ok(response, "Lấy thông tin người dùng thành công.");
@@ -491,9 +501,14 @@ namespace JCAP.Services.Implementations
                     Email = user.Email!,
                     FullName = user.FullName ?? string.Empty,
                     Role = userRole,
+                    JLPTLevel = string.IsNullOrWhiteSpace(user.JLPTLevel) ? "N5" : user.JLPTLevel,
                     CreditBalance = user.CreditBalance,
                     HasPassword = await _userManager.HasPasswordAsync(user),
-                    ExpiresAt = expiresAt
+                    ExpiresAt = expiresAt,
+                    PlacementTestStatus = string.IsNullOrWhiteSpace(user.PlacementTestStatus) ? "NotStarted" : user.PlacementTestStatus,
+                    HasSeenPlacementPrompt = user.HasSeenPlacementPrompt,
+                    InitialEstimatedLevel = user.InitialEstimatedLevel,
+                    InitialConfidenceTier = user.InitialConfidenceTier
                 };
 
                 return ApiResponse<AuthResponseDto>.Ok(response, "Đăng nhập Google thành công.");
