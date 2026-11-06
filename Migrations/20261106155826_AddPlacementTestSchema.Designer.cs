@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JCAP.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261106124445_AddPlacementTestSchema")]
+    [Migration("20261106155826_AddPlacementTestSchema")]
     partial class AddPlacementTestSchema
     {
         /// <inheritdoc />
@@ -1789,7 +1789,7 @@ namespace JCAP.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int>("ScenarioId")
+                    b.Property<int?>("ScenarioId")
                         .HasColumnType("int");
 
                     b.Property<string>("SourceDescription")
@@ -2941,8 +2941,7 @@ namespace JCAP.Migrations
                     b.HasOne("JCAP.Models.Scenario", "Scenario")
                         .WithMany("ShadowingDialogues")
                         .HasForeignKey("ScenarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Scenario");
                 });
