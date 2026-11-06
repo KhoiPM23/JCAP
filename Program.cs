@@ -130,6 +130,8 @@ builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxK
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
+builder.Services.AddScoped<PlacementAssessmentEngine>();
+builder.Services.AddScoped<IPlacementTestService, PlacementTestService>();
 builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
 builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
 builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
