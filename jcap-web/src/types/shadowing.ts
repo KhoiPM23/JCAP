@@ -29,7 +29,7 @@ export interface ShadowingGrammarItem {
 
 export interface ShadowingDialogueItem {
   id: number;
-  scenarioId: number;
+  scenarioId?: number | null;
   scenarioTitle: string;
   textbookId?: string;
   textbookTitle?: string;
@@ -302,7 +302,8 @@ export interface CreateShadowingSentencePayload {
 }
 
 export interface CreateShadowingDialoguePayload {
-  scenarioId: number;
+  /** Không bắt buộc: bỏ trống thì bài Shadowing không gắn kịch bản */
+  scenarioId?: number | null;
   title: string;
   jlptLevel: 'N5' | 'N4' | 'N3';
   sourceDescription?: string | null;

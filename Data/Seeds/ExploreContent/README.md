@@ -32,7 +32,7 @@ Tự chạy mỗi lần khởi động backend (`SeedManager` → `ExploreSeeder
 | Thành phần | Quy tắc |
 |---|---|
 | Ngữ pháp, từ vựng, kịch bản, bài Shadowing | Thêm nếu chưa có (theo mẫu câu, từ, tiêu đề). Đã có thì không đụng tới |
-| Chương | Thêm chương chưa có, cập nhật theo quy tắc trên. Chỉ gắn thêm các tỉnh chưa thuộc chương nào, không chuyển tỉnh giữa các chương |
+| Chương | Thêm chương chưa có, cập nhật theo quy tắc trên. Chỉ gắn thêm các tỉnh chưa thuộc chương nào, không chuyển tỉnh giữa các chương. Chương người soạn đã xoá (không còn trong file) thì tắt theo như admin xoá chương, nếu máy đó chưa tự sửa chương ấy |
 | Mốc | Tìm theo phiên bản đã biết, rồi theo (tỉnh, `nameJp`, cấp độ). Không thấy thì thêm. Xoá khỏi file không xoá trên máy thành viên |
 | Liên kết bài | Ngữ pháp, từ vựng: thay khi đang trống hoặc đúng phiên bản cũ. Hoạt động: xử lý từng loại (Shadowing, Roleplay) theo cùng quy tắc |
 | Tỉnh | Mở tỉnh vừa được thêm mốc đang dùng. Tỉnh người soạn từng đổi trạng thái thì theo trạng thái mới nhất của người soạn |

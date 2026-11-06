@@ -1,8 +1,8 @@
-import { prefectureCities, prefectureLandmarks } from './prefectureDetail';
+import { prefectureLandmarks } from './prefectureDetail';
 
 /**
- * Lộ trình học của một tỉnh: bắt đầu ở địa điểm gần thủ phủ nhất, sau đó luôn đi tới địa điểm gần nhất chưa ghé.
- * Tính một lần cho mỗi tỉnh (theo toạ độ bản đồ, cùng hệ với vị trí ghim).
+ * Lộ trình học của một tỉnh: đi theo thứ tự admin tạo mốc (API trả mốc theo ID tăng dần).
+ * Tính một lần cho mỗi tỉnh.
  */
 export interface LearnRoute {
   /** Chỉ số địa điểm (trong prefectureLandmarks) theo thứ tự đi */
@@ -21,32 +21,8 @@ export function prefectureRoute(prefId: number): LearnRoute | null {
   if (cached !== undefined) return cached;
   let result: LearnRoute | null = null;
   if (spots.length >= 2) {
-    const capital = prefectureCities(prefId).find((c) => c.capital);
-    // Không có thủ phủ thì xuất phát từ trọng tâm các địa điểm
-    const origin: [number, number] = capital
-      ? capital.xy
-      : [spots.reduce((s, p) => s + p.xy[0], 0) / spots.length, spots.reduce((s, p) => s + p.xy[1], 0) / spots.length];
-    const dist = (a: [number, number], b: [number, number]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-    const left = new Set(spots.map((_, i) => i));
-    const route: number[] = [];
-    let at = origin;
-    while (left.size) {
-      let best = -1;
-      let bestD = Infinity;
-      for (const i of left) {
-        const d = dist(at, spots[i].xy);
-        if (d < bestD) {
-          bestD = d;
-          best = i;
-        }
-      }
-      left.delete(best);
-      route.push(best);
-      at = spots[best].xy;
-    }
-    const stop: number[] = [];
-    route.forEach((spot, n) => (stop[spot] = n + 1));
-    result = { route, stop };
+    const route = spots.map((_, i) => i);
+    result = { route, stop: route.map((i) => i + 1) };
   }
   routeCache.set(spots, result);
   return result;

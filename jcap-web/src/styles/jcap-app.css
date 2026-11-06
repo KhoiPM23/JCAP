@@ -88,7 +88,7 @@
   display: flex; align-items: center; gap: 10px; height: 48px; box-sizing: border-box; padding: 0 6px 0 12px; border-radius: 999px;
   background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(8, 26, 56, .28); white-space: nowrap;
   font-size: 14px; color: var(--sumi); opacity: 0; visibility: hidden; clip-path: inset(0 100% 0 0 round 999px);
-  max-width: min(480px, calc(100vw - 300px));
+  max-width: min(640px, calc(100vw - 300px));
   transition: clip-path .2s var(--e), opacity .1s linear, visibility 0s .2s;
 }
 .jx-dh.is-show .jx-pill {

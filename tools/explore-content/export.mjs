@@ -140,6 +140,13 @@ function diffAndRecord(oldPack, next, history) {
     if (!o) { changes.push(`+ Chương mới: ${c.title}`); continue; }
     if (!same(o, c)) { pushVersion(history.chapters, String(c.orderIndex), o); changes.push(`~ Chương sửa: ${c.title}`); }
   }
+  // Chương người soạn đã xoá (ngừng dùng): ghi bản cuối vào lịch sử để máy thành viên nhận ra và tắt theo nếu chưa tự sửa
+  const nextOrders = new Set(next.chapters.map((c) => c.orderIndex));
+  for (const o of oldChapters.values()) {
+    if (nextOrders.has(o.orderIndex)) continue;
+    pushVersion(history.chapters, String(o.orderIndex), o);
+    changes.push(`- Chương không còn dùng: ${o.title}`);
+  }
 
   const oldWords = new Map((oldPack.provinceWords ?? []).map((w) => [w.prefectureId, w]));
   for (const w of next.provinceWords) {

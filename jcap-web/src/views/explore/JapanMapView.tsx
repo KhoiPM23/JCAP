@@ -10,12 +10,13 @@ import { AwardOverlay } from './AwardOverlay';
 import { PrefectureStampMark, STAMP_CSS, STAMP_INK, SpotStampMark } from './ExploreStamp';
 import { THEME_CSS_VARS, T } from './exploreTheme';
 import { PictogramIcon } from './exploreUi';
+import { ProvinceWordCard } from './ProvinceWordCard';
 import { Button, Icon, IconButton } from '../../components/jcap';
 import { speakJa, useCanSpeakJa } from './speak';
 import { useFurigana } from './furigana';
 import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
-import { BOUNDARY_CREDIT, prefectureFoods, prefectureLandmarks } from './prefectureDetail';
+import { BOUNDARY_CREDIT, prefectureLandmarks } from './prefectureDetail';
 import { SpotFocusCard } from './SpotFocusCard';
 import { SpotLesson, shadowingPracticeUrl } from './SpotLesson';
 import { WordCard } from './WordCard';
@@ -298,8 +299,6 @@ export const JapanMapView: React.FC<{
             <ClosedNotice
               key={notice.key}
               pref={PREFECTURE_BY_ID.get(notice.prefId)!}
-              word={toProvinceWord(journey.prefecture(notice.prefId)?.word)}
-              furigana={furigana}
               onClose={() => setNotice(null)}
             />
           ))}
@@ -383,8 +382,11 @@ export const JapanMapView: React.FC<{
           .jm-ppanel { background: var(--paper-100); border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(8,26,56,.38); color: var(--sumi); }
           .jm-region-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px;
             background: var(--paper-50); border: 1px solid var(--line); font-size: 12px; font-weight: 600; white-space: nowrap; }
-          .jm-word { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft); }
+          .jm-word { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--sora-soft); }
+          .jm-word ruby { ruby-align: start; }
           .jm-word rt { font-size: 11px; }
+          .jm-word-note { overflow: hidden; transition: max-height .28s var(--ease); }
+          @media (prefers-reduced-motion: reduce) { .jm-word-note { transition: none; } }
           .jm-panel-right { animation: jm-slide-left 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-bottom { animation: jm-slide-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
           .jm-panel-right.jm-closing { animation: jm-slide-left-out ${PANEL_EXIT_MS}ms ease-in both; }
@@ -495,7 +497,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   const region = REGION_STYLE[pref.region];
   const headingId = useId();
   const landmarks = prefectureLandmarks(pref.id);
-  const foods = prefectureFoods(pref.id);
   const spotsData = usePrefectureData(pref.id);
   const journeyForWord = useExploreJourney();
   const summary = journeyForWord.prefecture(pref.id);
@@ -588,26 +589,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </div>
 
         {/* Một từ ở tỉnh */}
-        {word && (
-          <section aria-label="Một từ ở tỉnh" className="jm-word">
-            <span className="shrink-0 whitespace-nowrap font-jp text-2xl font-bold leading-[34px]" lang="ja">
-              {furigana && word[1] ? (
-                <ruby>
-                  {word[0]}
-                  <rt className="text-[11px] font-medium text-[var(--sumi-muted)]">{word[1]}</rt>
-                </ruby>
-              ) : (
-                word[0]
-              )}
-            </span>
-            <span className="flex min-w-0 flex-grow flex-col">
-              <span className="text-xs font-semibold leading-4 text-[var(--sumi-muted)]">Một từ ở tỉnh</span>
-              <span className="text-[15px] font-semibold leading-[22px]">{word[2]}</span>
-              {word[3] && <span className="text-xs leading-[18px] text-[var(--sumi-muted)]">{word[3]}</span>}
-            </span>
-            {canSpeak && <IconButton icon="volume_up" label={`Nghe từ ${word[0]}`} size="sm" onClick={() => speakJa(word[1] || word[0])} />}
-          </section>
-        )}
+        {word && <ProvinceWordCard key={pref.id} word={word} furigana={furigana} />}
 
         <div className="flex flex-col gap-2">
         <h3 className="m-0 text-[15px] font-bold leading-[22px] text-[var(--sumi)]">
@@ -685,24 +667,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </ul>
         </div>
 
-        {foods.length > 0 && (
-          <>
-            <h3 className="m-0 flex items-center gap-2 text-[15px] font-bold text-[var(--sumi)]">
-              Đặc sản <span className="font-medium text-[var(--sumi-muted)]">{foods.length}</span>
-            </h3>
-            <ul className="-mt-2 grid grid-cols-2 gap-2">
-              {foods.map((p) => (
-                <li key={p.id} className="flex items-center gap-2.5 rounded-[12px] bg-[var(--paper-50)] p-2.5">
-                  <PictogramIcon id={p.id} color={region.ink} className="w-8 h-8 shrink-0" />
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold leading-snug text-balance text-[var(--ink)]">{p.nameVi}</div>
-                    <div className="font-jp text-xs text-[var(--ink-2)]">{p.nameJp}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </div>
 
       {/* Ghi nguồn: một dòng cố định ở đáy panel (không cuộn theo danh sách); tên đầy đủ trong title */}
@@ -952,15 +916,9 @@ const LegendRow: React.FC<{ sw: React.ReactNode; title: string; text: string }> 
 );
 
 /**
- * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh, "Sẽ cập nhật trong tương lai",
- * kèm "Một từ ở tỉnh" nếu có để người học vẫn có chút gì để xem. Tự ẩn sau vài giây.
+ * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh và "Sẽ cập nhật trong tương lai". Tự ẩn sau vài giây.
  */
-const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; furigana: boolean; onClose: () => void }> = ({
-  pref,
-  word,
-  furigana,
-  onClose,
-}) => (
+const ClosedNotice: React.FC<{ pref: PrefectureShape; onClose: () => void }> = ({ pref, onClose }) => (
   <div
     role="status"
     className="jm-reveal absolute z-20 top-5 left-1/2 -translate-x-1/2 w-[min(360px,calc(100%-2rem))] rounded-[16px] bg-[var(--paper-50)] border border-[var(--line)] px-4 py-3 shadow-[0_14px_36px_rgba(8,26,56,.38)] text-[var(--sumi)]"
@@ -974,22 +932,6 @@ const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null;
       </div>
       <IconButton icon="close" label="Đóng thông báo" size="sm" onClick={onClose} />
     </div>
-    {word && (
-      <div className="mt-2 border-t border-[var(--line)] pt-2 text-sm text-[var(--sumi-muted)]">
-        Một từ ở {pref.nameVi}:{' '}
-        <span className="font-jp font-bold text-[var(--sumi)]" lang="ja">
-          {furigana ? (
-            <ruby>
-              {word[0]}
-              <rt>{word[1]}</rt>
-            </ruby>
-          ) : (
-            word[0]
-          )}
-        </span>{' '}
-        · {word[2]}
-      </div>
-    )}
   </div>
 );
 

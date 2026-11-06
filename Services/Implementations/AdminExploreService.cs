@@ -10,9 +10,10 @@ namespace JCAP.Services.Implementations
     public class AdminExploreService : IAdminExploreService
     {
         /// <summary>
-        /// Số mốc đang dùng tối thiểu để mở một tỉnh: con dấu tỉnh cần đủ mọi mốc, tỉnh chỉ 1-2 mốc thì con dấu đến quá dễ.
+        /// Số mốc đang dùng tối thiểu để mở một tỉnh. Cùng mức mà tỉnh đang mở phải giữ khi chuyển mốc về Nháp
+        /// (AdminExploreSpotService), nên một tỉnh mở rồi không bao giờ rơi xuống dưới mức này.
         /// </summary>
-        public const int MinSpotsToOpen = 3;
+        public const int MinSpotsToOpen = 1;
 
         /// <summary>Thứ tự độ khó: N5 dễ nhất</summary>
         private static readonly string[] Levels = { "N5", "N4", "N3" };
