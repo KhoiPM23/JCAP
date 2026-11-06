@@ -16,7 +16,7 @@ import { speakJa, useCanSpeakJa } from './speak';
 import { useFurigana } from './furigana';
 import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
-import { BOUNDARY_CREDIT, prefectureFoods, prefectureLandmarks } from './prefectureDetail';
+import { BOUNDARY_CREDIT, prefectureLandmarks } from './prefectureDetail';
 import { SpotFocusCard } from './SpotFocusCard';
 import { SpotLesson, shadowingPracticeUrl } from './SpotLesson';
 import { WordCard } from './WordCard';
@@ -299,8 +299,6 @@ export const JapanMapView: React.FC<{
             <ClosedNotice
               key={notice.key}
               pref={PREFECTURE_BY_ID.get(notice.prefId)!}
-              word={toProvinceWord(journey.prefecture(notice.prefId)?.word)}
-              furigana={furigana}
               onClose={() => setNotice(null)}
             />
           ))}
@@ -499,7 +497,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   const region = REGION_STYLE[pref.region];
   const headingId = useId();
   const landmarks = prefectureLandmarks(pref.id);
-  const foods = prefectureFoods(pref.id);
   const spotsData = usePrefectureData(pref.id);
   const journeyForWord = useExploreJourney();
   const summary = journeyForWord.prefecture(pref.id);
@@ -670,24 +667,6 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
         </ul>
         </div>
 
-        {foods.length > 0 && (
-          <>
-            <h3 className="m-0 flex items-center gap-2 text-[15px] font-bold text-[var(--sumi)]">
-              Đặc sản <span className="font-medium text-[var(--sumi-muted)]">{foods.length}</span>
-            </h3>
-            <ul className="-mt-2 grid grid-cols-2 gap-2">
-              {foods.map((p) => (
-                <li key={p.id} className="flex items-center gap-2.5 rounded-[12px] bg-[var(--paper-50)] p-2.5">
-                  <PictogramIcon id={p.id} color={region.ink} className="w-8 h-8 shrink-0" />
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold leading-snug text-balance text-[var(--ink)]">{p.nameVi}</div>
-                    <div className="font-jp text-xs text-[var(--ink-2)]">{p.nameJp}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </div>
 
       {/* Ghi nguồn: một dòng cố định ở đáy panel (không cuộn theo danh sách); tên đầy đủ trong title */}
@@ -937,15 +916,9 @@ const LegendRow: React.FC<{ sw: React.ReactNode; title: string; text: string }> 
 );
 
 /**
- * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh, "Sẽ cập nhật trong tương lai",
- * kèm "Một từ ở tỉnh" nếu có để người học vẫn có chút gì để xem. Tự ẩn sau vài giây.
+ * Thông báo nổi khi bấm vào tỉnh admin chưa mở: tên tỉnh và "Sẽ cập nhật trong tương lai". Tự ẩn sau vài giây.
  */
-const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null; furigana: boolean; onClose: () => void }> = ({
-  pref,
-  word,
-  furigana,
-  onClose,
-}) => (
+const ClosedNotice: React.FC<{ pref: PrefectureShape; onClose: () => void }> = ({ pref, onClose }) => (
   <div
     role="status"
     className="jm-reveal absolute z-20 top-5 left-1/2 -translate-x-1/2 w-[min(360px,calc(100%-2rem))] rounded-[16px] bg-[var(--paper-50)] border border-[var(--line)] px-4 py-3 shadow-[0_14px_36px_rgba(8,26,56,.38)] text-[var(--sumi)]"
@@ -959,22 +932,6 @@ const ClosedNotice: React.FC<{ pref: PrefectureShape; word: ProvinceWord | null;
       </div>
       <IconButton icon="close" label="Đóng thông báo" size="sm" onClick={onClose} />
     </div>
-    {word && (
-      <div className="mt-2 border-t border-[var(--line)] pt-2 text-sm text-[var(--sumi-muted)]">
-        Một từ ở {pref.nameVi}:{' '}
-        <span className="font-jp font-bold text-[var(--sumi)]" lang="ja">
-          {furigana ? (
-            <ruby>
-              {word[0]}
-              <rt>{word[1]}</rt>
-            </ruby>
-          ) : (
-            word[0]
-          )}
-        </span>{' '}
-        · {word[2]}
-      </div>
-    )}
   </div>
 );
 
