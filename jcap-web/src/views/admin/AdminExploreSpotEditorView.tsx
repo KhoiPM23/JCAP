@@ -27,7 +27,6 @@ import { formatFurigana, parseFurigana } from './furiganaNotation';
  */
 
 const LEVELS: ExploreLevel[] = ['N5', 'N4', 'N3'];
-const VISIBLE_TO_LEARNER: ExploreSpotCheckKey[] = ['place', 'sentence', 'situation', 'realUse'];
 const DEFAULT_PASS = 60;
 
 interface SpotForm {
@@ -230,8 +229,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
   const shownErrors: FieldErrors = showErrors ? errors : {};
   const missing = missingChecks(form);
   const status = spot?.status ?? 'Draft';
-  const blankedVisible = status === 'Published' ? missing.filter((m) => VISIBLE_TO_LEARNER.includes(m)) : [];
-  const canSave = Object.keys(errors).length === 0 && blankedVisible.length === 0;
+  const canSave = Object.keys(errors).length === 0;
 
   const coords = parseLatLon(form.coords);
   const pick = useMemo(() => (coords && inJapan(...coords) ? { lat: coords[0], lon: coords[1] } : null), [coords?.[0], coords?.[1]]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -506,7 +504,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-700">Ngữ pháp và từ vựng mục tiêu</span>
                 <CheckDot ok={!missing.includes('target')} />
               </div>
-              <p className="text-[11px] text-slate-500 mb-2">Lấy từ kho ngữ pháp/từ vựng dùng chung của hệ thống; cần ít nhất một mục.</p>
+              <p className="text-[11px] text-slate-500 mb-2">Lấy từ kho ngữ pháp/từ vựng dùng chung của hệ thống; nên có ít nhất một mục.</p>
               <TargetList
                 kind="grammar"
                 spotId={spotId}
@@ -574,7 +572,8 @@ export const AdminExploreSpotEditorView: React.FC = () => {
         {/* ---------------- Cột phải ---------------- */}
         <aside className="lg:col-span-4 space-y-4" aria-label="Kiểm tra và lưu mốc">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <h2 className="text-sm font-bold text-slate-900">Kiểm tra trước khi dùng</h2>
+            <h2 className="text-sm font-bold text-slate-900">Gợi ý trước khi dùng</h2>
+            <p className="mt-1 text-[11px] text-slate-500">Không bắt buộc: mốc vẫn chuyển sang Đang dùng được khi còn thiếu.</p>
             <ul className="mt-3 space-y-2">
               {SPOT_CHECKS.map((c) => {
                 const ok = !missing.includes(c.key);
@@ -603,17 +602,10 @@ export const AdminExploreSpotEditorView: React.FC = () => {
                 ))}
               </ul>
             )}
-            {blankedVisible.length > 0 && (
-              <p className="mt-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                Mốc đang dùng: người học đang thấy mốc này nên không được để trống{' '}
-                {SPOT_CHECKS.filter((c) => blankedVisible.includes(c.key)).map((c) => c.label.toLowerCase()).join(', ')}.
-              </p>
-            )}
-
             <div className="mt-4 space-y-2">
               <button
                 type="button"
-                disabled={busy || (!!spotId && !dirty) || blankedVisible.length > 0}
+                disabled={busy || (!!spotId && !dirty)}
                 onClick={() => run(async () => void (await save()))}
                 className="w-full h-10 rounded-xl bg-[#0878EE] text-white text-sm font-semibold hover:bg-[#0667cc] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0878EE]"
               >
@@ -623,9 +615,8 @@ export const AdminExploreSpotEditorView: React.FC = () => {
               {spotId && status === 'Draft' && (
                 <button
                   type="button"
-                  disabled={busy || missing.length > 0}
+                  disabled={busy}
                   onClick={publish}
-                  title={missing.length > 0 ? 'Cần đủ các mục kiểm tra' : undefined}
                   className="w-full h-10 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-600"
                 >
                   {dirty ? 'Lưu và chuyển sang Đang dùng' : 'Chuyển sang Đang dùng'}
@@ -690,7 +681,7 @@ export const AdminExploreSpotEditorView: React.FC = () => {
           <span className="text-xs font-semibold text-amber-700">Có thay đổi chưa lưu</span>
           <button
             type="button"
-            disabled={busy || blankedVisible.length > 0}
+            disabled={busy}
             onClick={() => run(async () => void (await save()))}
             className="h-9 px-4 rounded-lg bg-[#0878EE] text-white text-xs font-semibold hover:bg-[#0667cc] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0878EE]"
           >
