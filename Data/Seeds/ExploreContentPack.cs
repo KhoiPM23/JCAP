@@ -40,7 +40,7 @@ namespace JCAP.Data.Seeds
         public record TargetGrammarEntry(string Pattern, string Meaning, string? ExampleSentence);
 
         public record DialogueEntry(
-            string Title, string ScenarioTitle, string JlptLevel, string? SourceDescription,
+            string Title, string? ScenarioTitle, string JlptLevel, string? SourceDescription,
             string SpeakerRoleA_Name, string SpeakerRoleB_Name, string? SpeakerRolesJson,
             SentenceEntry[] Sentences, DialogueWordEntry[] Vocabularies, DialoguePatternEntry[] Grammars);
 
