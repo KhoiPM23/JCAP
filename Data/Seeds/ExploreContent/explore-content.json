@@ -345,6 +345,12 @@
       ]
     },
     {
+      "title": "Lần đầu đi máy bay",
+      "description": "Tôi lần đầu đi máy bay và chưa biêt hỏi ai về cách xử lý khi gặp vấn đề, tôi phải hỏi tiếp viên hàng không",
+      "thumbnail": "",
+      "levels": []
+    },
+    {
       "title": "Đặt cà phê & bánh ngọt tại quán cafe Harajuku",
       "description": "Thực hành gọi món nước, chọn size, tùy chỉnh độ ngọt, chọn bánh kem và tìm chỗ ngồi tại quán cafe phong cách Harajuku.",
       "thumbnail": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
@@ -403,6 +409,180 @@
               "pattern": "～でお願いします",
               "meaning": "Cho tôi chọn...",
               "exampleSentence": "店内でお願いします。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Gặp người đón ở sân bay Narita",
+      "description": "Gặp người đón ở sân bay Narita",
+      "thumbnail": "",
+      "levels": [
+        {
+          "jlptLevel": "N5",
+          "title": "Gặp người đón ở sân bay Narita (N5)",
+          "description": "Cấu hình N5 cho Gặp người đón ở sân bay Narita",
+          "aiPersona": "Bạn của gia đình - 田中 (thân thiện, nói chậm)",
+          "creditCost": 5,
+          "status": "Published",
+          "missions": [
+            {
+              "content": "Chào ông Tanaka và giới thiệu tên của bạn",
+              "order": 1,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"Self-introduction (\\u306F\\u3058\\u3081\\u307E\\u3057\\u3066\\u3001\\u301C\\u3067\\u3059)\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Nói bạn đến từ Việt Nam",
+              "order": 2,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u30D9\\u30C8\\u30CA\\u30E0\\u304B\\u3089\\u6765\\u307E\\u3057\\u305F\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Đáp lại lời hỏi thăm về chuyến bay dài từ ông Tanaka",
+              "order": 3,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"Reply to \\u304A\\u75B2\\u308C\\u3055\\u307E\\u3067\\u3057\\u305F\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Hỏi xem bây giờ chúng ta sẽ đi đâu",
+              "order": 4,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"H\\u1ECFi v\\u1EC1 \\u0111i\\u1EC3m \\u0111\\u1EBFn ti\\u1EBFp theo\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Xác nhận hành lý đã lấy đủ chưa",
+              "order": 5,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"X\\u00E1c nh\\u1EADn \\u0111\\u1ED3 \\u0111\\u1EA1c\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Nói cảm ơn và nhờ ông giúp đỡ trong thời gian tới",
+              "order": 6,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"C\\u1EA3m \\u01A1n v\\u00E0 ch\\u00E0o k\\u1EBFt th\\u00FAc\",\"conditions\":[]}",
+              "isActive": true
+            }
+          ],
+          "targetVocabularies": [
+            {
+              "word": "名前",
+              "reading": "なまえ",
+              "meaning": "tên"
+            },
+            {
+              "word": "来る",
+              "reading": "くる",
+              "meaning": "đến"
+            },
+            {
+              "word": "疲れる",
+              "reading": "つかれる",
+              "meaning": "mệt mỏi"
+            }
+          ],
+          "targetGrammars": [
+            {
+              "pattern": "N です",
+              "meaning": "Là N (dùng để giới thiệu, xác định danh tính)",
+              "exampleSentence": "私はアンです。"
+            },
+            {
+              "pattern": "N から来ました",
+              "meaning": "Đến từ N (quốc gia, thành phố)",
+              "exampleSentence": "ベトナムから来ました。"
+            },
+            {
+              "pattern": "お疲れさまでした",
+              "meaning": "Cám ơn đã vất vả (lời chào hỏi khi ai đó vừa hoàn thành chặng đường dài)",
+              "exampleSentence": "遠いところ、お疲れさまでした。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Nhận phòng khách sạn",
+      "description": "Bạn đến khách sạn ở Narita để nhận phòng. Lễ tân ban đầu không tìm thấy tên bạn trong danh sách đặt phòng.",
+      "thumbnail": "",
+      "levels": [
+        {
+          "jlptLevel": "N5",
+          "title": "Nhận phòng khách sạn (N5)",
+          "description": "Cấu hình N5 cho Nhận phòng khách sạn",
+          "aiPersona": "Lễ tân khách sạn - フロントスタッフ (lịch sự)",
+          "creditCost": 5,
+          "status": "Published",
+          "missions": [
+            {
+              "content": "Chào lễ tân và nói bạn muốn nhận phòng",
+              "order": 1,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u3053\\u3093\\u306B\\u3061\\u306F\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Báo tên và nói bạn đã đặt phòng",
+              "order": 2,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u4E88\\u7D04\\u3057\\u307E\\u3057\\u305F\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Xử lý khi lễ tân không tìm thấy tên bằng cách đọc lại tên hoặc đưa hộ chiếu",
+              "order": 3,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"Repeat the name or show the passport\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Xác nhận số đêm ở lại khách sạn",
+              "order": 4,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u4E8C\\u6CCA\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Hỏi số phòng của bạn",
+              "order": 5,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u90E8\\u5C4B\\u306F\\u4F55\\u53F7\\u5BA4\\u3067\\u3059\\u304B\",\"conditions\":[]}",
+              "isActive": true
+            },
+            {
+              "content": "Cảm ơn lễ tân và kết thúc",
+              "order": 6,
+              "completionCriteriaJson": "{\"intent\":\"CompleteMission\",\"target\":\"\\u3042\\u308A\\u304C\\u3068\\u3046\\u3054\\u3056\\u3044\\u307E\\u3059\",\"conditions\":[]}",
+              "isActive": true
+            }
+          ],
+          "targetVocabularies": [
+            {
+              "word": "ホテル",
+              "reading": "ほてる",
+              "meaning": "khách sạn"
+            },
+            {
+              "word": "パスポート",
+              "reading": "ぱすぽーと",
+              "meaning": "hộ chiếu"
+            },
+            {
+              "word": "部屋",
+              "reading": "へや",
+              "meaning": "phòng"
+            }
+          ],
+          "targetGrammars": [
+            {
+              "pattern": "〜ました",
+              "meaning": "Đã làm gì đó (thì quá khứ của động từ)",
+              "exampleSentence": "ホテルの予約をしました。"
+            },
+            {
+              "pattern": "N です",
+              "meaning": "Là (dùng để khẳng định danh từ)",
+              "exampleSentence": "私の名前です。"
+            },
+            {
+              "pattern": "〜泊",
+              "meaning": "Đếm số đêm ở lại",
+              "exampleSentence": "二泊です。"
             }
           ]
         }
@@ -801,59 +981,489 @@
           "note": null
         }
       ]
+    },
+    {
+      "title": "Thủ tục nhập cảnh",
+      "scenarioTitle": "Lần đầu đi máy bay",
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn vừa đến Nhật bản và đang làm thủ tục ở quầy nhập cảnh.",
+      "speakerRoleA_Name": "Người nhập cảnh",
+      "speakerRoleB_Name": "Nhân viên an ninh",
+      "speakerRolesJson": "[\"Ng\\u01B0\\u1EDDi nh\\u1EADp c\\u1EA3nh\",\"Nh\\u00E2n vi\\u00EAn an ninh\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "こんにちは。入国の目的は何ですか。",
+          "romajiText": "Konnichiwa. Nyuukoku no mokuteki wa nan desu ka.",
+          "vietnameseTranslation": "Xin chào. Mục đích nhập cảnh của bạn là gì?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "観光です。",
+          "romajiText": "Kankou desu.",
+          "vietnameseTranslation": "Tôi đi du lịch.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "パスポートを見せてください。",
+          "romajiText": "Pasupooto o misete kudasai.",
+          "vietnameseTranslation": "Xin cho tôi xem hộ chiếu.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "はい、どうぞ。",
+          "romajiText": "Hai, douzo.",
+          "vietnameseTranslation": "Vâng. Xin mời.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "何日、日本にいますか。",
+          "romajiText": "Nannichi, Nihon ni imasu ka.",
+          "vietnameseTranslation": "Bạn ở Nhật mấy ngày?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "一週間です。",
+          "romajiText": "Isshuukan desu.",
+          "vietnameseTranslation": "Một tuần.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Mua thẻ sim",
+      "scenarioTitle": "Lần đầu đi máy bay",
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn cần phải mua thẻ sim để có thể sử dụng điện thoại tại Nhật Bản",
+      "speakerRoleA_Name": "Khách hàng",
+      "speakerRoleB_Name": "Nhân viên sân bay",
+      "speakerRolesJson": "[\"Kh\\u00E1ch h\\u00E0ng\",\"Nh\\u00E2n vi\\u00EAn s\\u00E2n bay\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "いらっしゃいませ。",
+          "romajiText": "Irasshaimase.",
+          "vietnameseTranslation": "Xin chào quý khách.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "すみません、SIMカードを一つください。",
+          "romajiText": "Sumimasen, shimu kaado o hitotsu kudasai.",
+          "vietnameseTranslation": "Xin lỗi, cho tôi một thẻ SIM.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "はい、三千円です。",
+          "romajiText": "Hai, sanzen en desu.",
+          "vietnameseTranslation": "Vâng, 3.000 yên ạ.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "はい、どうぞ。",
+          "romajiText": "Hai, douzo.",
+          "vietnameseTranslation": "Vâng. Xin mời.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "ありがとうございました。",
+          "romajiText": "Arigatou gozaimashita.",
+          "vietnameseTranslation": "Xin cảm ơn quý khách.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "すみません、両替所はどこですか。",
+          "romajiText": "Sumimasen, ryougaejo wa doko desu ka.",
+          "vietnameseTranslation": "Xin lỗi, quầy đổi tiền ở đâu ạ?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 7,
+          "speakerRole": "A",
+          "japaneseText": "あちらです。",
+          "romajiText": "Achira desu.",
+          "vietnameseTranslation": "Ở đằng kia ạ.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 8,
+          "speakerRole": "B",
+          "japaneseText": "ありがとうございます。",
+          "romajiText": "Arigatou gozaimasu.",
+          "vietnameseTranslation": "Xin cảm ơn.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Tìm người đón",
+      "scenarioTitle": "Lần đầu đi máy bay",
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn vừa làm xong thủ tục nhập cảnh và gặp được người đón mình tại sảnh chờ.",
+      "speakerRoleA_Name": "Người đón",
+      "speakerRoleB_Name": "Bạn",
+      "speakerRolesJson": "[\"Ng\\u01B0\\u1EDDi \\u0111\\u00F3n\",\"B\\u1EA1n\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "ミンさんですか。はじめまして、田中です。",
+          "romajiText": "Min-san desu ka. Hajimemashite, Tanaka desu.",
+          "vietnameseTranslation": "Bạn là Minh phải không? Rất vui được gặp, tôi là Tanaka.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "はじめまして、ミンです。",
+          "romajiText": "Hajimemashite, Min desu.",
+          "vietnameseTranslation": "Rất vui được gặp. Tôi là Minh.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "ベトナムから来ましたか。",
+          "romajiText": "Betonamu kara kimashita ka.",
+          "vietnameseTranslation": "Bạn đến từ Việt Nam à?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "はい、ベトナムから来ました。",
+          "romajiText": "Hai, Betonamu kara kimashita.",
+          "vietnameseTranslation": "Vâng, tôi đến từ Việt Nam.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "長い時間、お疲れさまでした。",
+          "romajiText": "Nagai jikan, otsukaresama deshita.",
+          "vietnameseTranslation": "Bạn đã vất vả vì chuyến bay dài rồi.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "ありがとうございます。",
+          "romajiText": "Arigatou gozaimasu.",
+          "vietnameseTranslation": "Xin cảm ơn.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Xin hỗ trợ về việc làm thẻ tàu",
+      "scenarioTitle": null,
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn phải có thẻ tàu để có thể di chuyển tiện lợi ở Nhật",
+      "speakerRoleA_Name": "Nhân viên",
+      "speakerRoleB_Name": "Khách hàng",
+      "speakerRolesJson": "[\"Nh\\u00E2n vi\\u00EAn\",\"Kh\\u00E1ch h\\u00E0ng\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "B",
+          "japaneseText": "すみません、スイカを一枚ください。",
+          "romajiText": "Sumimasen, Suika o ichimai kudasai.",
+          "vietnameseTranslation": "Xin lỗi, cho tôi một thẻ Suica.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "A",
+          "japaneseText": "はい。チャージは、いくらにしますか。",
+          "romajiText": "Hai. Chaaji wa, ikura ni shimasu ka.",
+          "vietnameseTranslation": "Vâng. Bạn muốn nạp bao nhiêu tiền?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "B",
+          "japaneseText": "三千円、チャージしてください。",
+          "romajiText": "Sanzen en, chaaji shite kudasai.",
+          "vietnameseTranslation": "Xin nạp 3.000 yên.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "A",
+          "japaneseText": "三千円ですね。はい、どうぞ。",
+          "romajiText": "Sanzen en desu ne. Hai, douzo.",
+          "vietnameseTranslation": "3.000 yên nhỉ. Vâng, của bạn đây.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "B",
+          "japaneseText": "改札では、どうしますか。",
+          "romajiText": "Kaisatsu dewa, doushimasu ka.",
+          "vietnameseTranslation": "Ở cổng soát vé thì làm thế nào ạ?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "A",
+          "japaneseText": "ここに、カードをタッチしてください。",
+          "romajiText": "Koko ni, kaado o tacchi shite kudasai.",
+          "vietnameseTranslation": "Xin chạm thẻ vào đây.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 7,
+          "speakerRole": "B",
+          "japaneseText": "わかりました。ありがとうございます。",
+          "romajiText": "Wakarimashita. Arigatou gozaimasu.",
+          "vietnameseTranslation": "Tôi hiểu rồi. Xin cảm ơn.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Nhận phòng khách sạn",
+      "scenarioTitle": null,
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn hỏi lễ tân về thủ tục nhận phòng",
+      "speakerRoleA_Name": "Nhân viên",
+      "speakerRoleB_Name": "Khách hàng",
+      "speakerRolesJson": "[\"Nh\\u00E2n vi\\u00EAn\",\"Kh\\u00E1ch h\\u00E0ng\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "いらっしゃいませ。ご予約のお名前をお願いします。",
+          "romajiText": "Irasshaimase. Goyoyaku no onamae o onegai shimasu.",
+          "vietnameseTranslation": "Xin chào. Xin cho biết tên đặt phòng ạ.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "ミンです。予約しました。",
+          "romajiText": "Min desu. Yoyaku shimashita.",
+          "vietnameseTranslation": "Tôi là Minh. Tôi đã đặt phòng.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "ミンさん……はい、二泊ですね。",
+          "romajiText": "Min-san... Hai, nihaku desu ne.",
+          "vietnameseTranslation": "Minh... À vâng, hai đêm nhỉ.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "はい、二泊です。",
+          "romajiText": "Hai, nihaku desu.",
+          "vietnameseTranslation": "Vâng, hai đêm.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "パスポートを見せてください。",
+          "romajiText": "Pasupooto o misete kudasai.",
+          "vietnameseTranslation": "Xin cho tôi xem hộ chiếu.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "はい、これです。",
+          "romajiText": "Hai, kore desu.",
+          "vietnameseTranslation": "Vâng, đây ạ.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 7,
+          "speakerRole": "A",
+          "japaneseText": "ありがとうございます。三〇一号室です。",
+          "romajiText": "Arigatou gozaimasu. Sanmaruichi goushitsu desu.",
+          "vietnameseTranslation": "Xin cảm ơn. Phòng của bạn là phòng 301.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 8,
+          "speakerRole": "B",
+          "japaneseText": "ありがとうございます。",
+          "romajiText": "Arigatou gozaimasu.",
+          "vietnameseTranslation": "Xin cảm ơn.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Cửa hàng tiện lợi",
+      "scenarioTitle": null,
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn cần mua đồ tại cửa hàng tiện lợi",
+      "speakerRoleA_Name": "Nhân viên combini",
+      "speakerRoleB_Name": "Khách hàng",
+      "speakerRolesJson": "[\"Nh\\u00E2n vi\\u00EAn combini\",\"Kh\\u00E1ch h\\u00E0ng\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "いらっしゃいませ。",
+          "romajiText": "Irasshaimase.",
+          "vietnameseTranslation": "Xin chào quý khách.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "これをお願いします。",
+          "romajiText": "Kore o onegai shimasu.",
+          "vietnameseTranslation": "Cho tôi cái này.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "四百八十円です。袋はいりますか。",
+          "romajiText": "Yonhyaku hachijuu en desu. Fukuro wa irimasu ka.",
+          "vietnameseTranslation": "480 yên ạ. Bạn có cần túi không?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "いいえ、袋はいりません。",
+          "romajiText": "Iie, fukuro wa irimasen.",
+          "vietnameseTranslation": "Không, tôi không cần túi.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "ポイントカードはありますか。",
+          "romajiText": "Pointo kaado wa arimasu ka.",
+          "vietnameseTranslation": "Bạn có thẻ tích điểm không?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "いいえ、ありません。",
+          "romajiText": "Iie, arimasen.",
+          "vietnameseTranslation": "Không, tôi không có.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
+    },
+    {
+      "title": "Đi tham quan đền chùa",
+      "scenarioTitle": null,
+      "jlptLevel": "N5",
+      "sourceDescription": "Bạn đến thăm quan một ngôi đền ở Narita",
+      "speakerRoleA_Name": "Nhân viên quản lý",
+      "speakerRoleB_Name": "Người tham quan",
+      "speakerRolesJson": "[\"Nh\\u00E2n vi\\u00EAn qu\\u1EA3n l\\u00FD\",\"Ng\\u01B0\\u1EDDi tham quan\"]",
+      "sentences": [
+        {
+          "orderIndex": 1,
+          "speakerRole": "A",
+          "japaneseText": "こんにちは。ようこそ、成田山へ。",
+          "romajiText": "Konnichiwa. Youkoso, Naritasan e.",
+          "vietnameseTranslation": "Xin chào. Chào mừng đến Naritasan.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 2,
+          "speakerRole": "B",
+          "japaneseText": "こんにちは。ここで写真を撮ってもいいですか。",
+          "romajiText": "Konnichiwa. Koko de shashin o totte mo ii desu ka.",
+          "vietnameseTranslation": "Xin chào. Tôi chụp ảnh ở đây có được không?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 3,
+          "speakerRole": "A",
+          "japaneseText": "はい、いいですよ。でも、本堂の中はだめです。",
+          "romajiText": "Hai, ii desu yo. Demo, hondou no naka wa dame desu.",
+          "vietnameseTranslation": "Vâng, được ạ. Nhưng bên trong chính điện thì không được.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 4,
+          "speakerRole": "B",
+          "japaneseText": "わかりました。ありがとうございます。",
+          "romajiText": "Wakarimashita. Arigatou gozaimasu.",
+          "vietnameseTranslation": "Tôi hiểu rồi. Xin cảm ơn.",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 5,
+          "speakerRole": "A",
+          "japaneseText": "明日はどこへ行きますか。",
+          "romajiText": "Ashita wa doko e ikimasu ka.",
+          "vietnameseTranslation": "Ngày mai bạn đi đâu?",
+          "audioDurationMs": null
+        },
+        {
+          "orderIndex": 6,
+          "speakerRole": "B",
+          "japaneseText": "明日は東京へ行きます。",
+          "romajiText": "Ashita wa Toukyou e ikimasu.",
+          "vietnameseTranslation": "Ngày mai tôi đi Tokyo.",
+          "audioDurationMs": null
+        }
+      ],
+      "vocabularies": [],
+      "grammars": []
     }
   ],
   "chapters": [
     {
       "orderIndex": 0,
-      "title": "Chương 0 · Đến Nhật",
-      "description": "Hạ cánh ở sân bay Narita: trả lời nhập cảnh, giới thiệu bản thân, hỏi đường trong sân bay.",
+      "title": "Chương 1 - Lần đầu đến Nhật Bản",
+      "description": "Bạn vừa từ Việt Nam di chuyển đến Nhật Bản để bắt đầu một trải nghiệm mới",
       "minLevel": "N5",
       "maxLevel": "N5",
       "prefectureIds": [
-        1,
         12
-      ]
-    },
-    {
-      "orderIndex": 1,
-      "title": "Chương 1 · Tokyo",
-      "description": "Mua sắm, tìm đồ, xin phép, hỏi giờ và gọi món ở thủ đô.",
-      "minLevel": "N5",
-      "maxLevel": "N5",
-      "prefectureIds": [
-        13
-      ]
-    },
-    {
-      "orderIndex": 2,
-      "title": "Chương 2 · Kyoto – Nara",
-      "description": "Cố đô: mua quà, nhận xét, hỏi đường, nhờ giúp đỡ và kể lại chuyến đi.",
-      "minLevel": "N5",
-      "maxLevel": "N4",
-      "prefectureIds": [
-        26,
-        29
-      ]
-    },
-    {
-      "orderIndex": 3,
-      "title": "Chương 3 - Khám phá Okinawa",
-      "description": "Bạn sẽ du lịch Okinawa với bạn",
-      "minLevel": "N5",
-      "maxLevel": "N5",
-      "prefectureIds": [
-        45
       ]
     }
   ],
   "openPrefectures": [
-    1,
-    12,
-    13,
-    26,
-    29,
-    45
+    12
   ],
   "spots": [
     {
@@ -865,8 +1475,8 @@
       "nameKana": "ならこうえん",
       "latitude": 44.36798,
       "longitude": 142.69931,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "k",
@@ -964,8 +1574,8 @@
       "nameKana": "なりたくうこう にゅうこくしんさ",
       "latitude": 35.7653,
       "longitude": 140.3856,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Bạn vừa xuống máy bay. Nhân viên ở quầy nhập cảnh hỏi mục đích chuyến đi của bạn.",
@@ -1009,8 +1619,8 @@
       "nameKana": "なりたくうこう てにもつうけとりしょ",
       "latitude": 35.47934,
       "longitude": 140.27772,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Đang chờ hành lý, bạn cần tìm nhà vệ sinh và hỏi một nhân viên sân bay.",
@@ -1050,8 +1660,8 @@
       "nameKana": "なりたくうこう とうちゃくロビー",
       "latitude": 35.78153,
       "longitude": 140.50846,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Ở sảnh đến, người đón bạn hỏi bạn từ đâu tới.",
@@ -1098,6 +1708,403 @@
       }
     },
     {
+      "key": "spot-23",
+      "prefectureId": 12,
+      "iconId": "B_immigration",
+      "nameVi": "Sân bay Narita · Quầy nhập cảnh",
+      "nameJp": "成田空港 入国審査",
+      "nameKana": "なりたくうこう にゅうこくしんさ",
+      "latitude": 35.77973,
+      "longitude": 140.34752,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn vừa xuống máy bay và đang xếp hàng ở quầy nhập cảnh. Nhân viên hỏi mục đích chuyến đi của bạn.",
+        "realUse": "Trả lời câu hỏi 「入国の目的は何ですか」 khi làm thủ tục nhập cảnh ở bất kỳ sân bay Nhật nào.",
+        "sentence": [
+          {
+            "text": "観光",
+            "reading": "かんこう"
+          },
+          {
+            "text": "です。"
+          }
+        ],
+        "meaning": "Tôi đi du lịch.",
+        "grammarNote": "N です: \"là N\".",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Thủ tục nhập cảnh",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-24",
+      "prefectureId": 12,
+      "iconId": "B_baggage-claim",
+      "nameVi": "Sân bay Narita · Khu nhận hành lý",
+      "nameJp": "成田空港 手荷物受取所",
+      "nameKana": "なりたくうこう てにもつうけとりしょ",
+      "latitude": 35.76937,
+      "longitude": 140.49767,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn lấy xong hành lý và đi qua quầy hải quan. Nhân viên hỏi bạn có gì cần khai báo không.",
+        "realUse": "Trả lời câu hỏi của hải quan, hoặc nói \"không có\" khi được hỏi về bất cứ thứ gì.",
+        "sentence": [
+          {
+            "text": "申告",
+            "reading": "しんこく"
+          },
+          {
+            "text": "するものはありません。"
+          }
+        ],
+        "meaning": "Tôi không có gì cần khai báo.",
+        "grammarNote": "N はありません: không có N. Hỏi thì 「N はありますか」.",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": []
+      }
+    },
+    {
+      "key": "spot-25",
+      "prefectureId": 12,
+      "iconId": "B_smartphone",
+      "nameVi": "Sân bay Narita · Quầy SIM và đổi tiền",
+      "nameJp": "成田空港 SIM・両替",
+      "nameKana": "なりたくうこう しむ・りょうがえ",
+      "latitude": 35.66578,
+      "longitude": 140.44545,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Ở sảnh đến, bạn cần một thẻ SIM để dùng điện thoại và cần đổi tiền sang yên.",
+        "realUse": "Mua một món đồ và hỏi vị trí quầy dịch vụ ở sân bay, nhà ga, trung tâm thương mại.",
+        "sentence": [
+          {
+            "text": "SIMカードを"
+          },
+          {
+            "text": "一",
+            "reading": "ひと"
+          },
+          {
+            "text": "つください。"
+          }
+        ],
+        "meaning": "Cho tôi một thẻ SIM.",
+        "grammarNote": "N をください: xin/mua N. Thêm số lượng trước ください: 一つ, 二つ.",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Mua thẻ sim",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-26",
+      "prefectureId": 12,
+      "iconId": "B_meeting-point",
+      "nameVi": "Sân bay Narita · Sảnh đón khách",
+      "nameJp": "成田空港 到着ロビー",
+      "nameKana": "なりたくうこう とうちゃくろびー",
+      "latitude": 35.49227,
+      "longitude": 140.36384,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn ra sảnh đến. Người bạn của gia đình chủ nhà đang chờ và hỏi bạn từ đâu tới.",
+        "realUse": "Giới thiệu bản thân với người mới gặp: chủ nhà, đồng nghiệp, bạn học.",
+        "sentence": [
+          {
+            "text": "ベトナムから"
+          },
+          {
+            "text": "来",
+            "reading": "き"
+          },
+          {
+            "text": "ました。"
+          }
+        ],
+        "meaning": "Tôi đến từ Việt Nam.",
+        "grammarNote": "N から来ました: đến từ N (quê, đất nước).",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Tìm người đón",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          },
+          {
+            "type": "Roleplay",
+            "dialogueTitle": null,
+            "scenarioTitle": "Gặp người đón ở sân bay Narita",
+            "scenarioLevel": "N5",
+            "passThreshold": null,
+            "order": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-27",
+      "prefectureId": 12,
+      "iconId": "B_tickets",
+      "nameVi": "Ga sân bay Narita · Làm thẻ IC",
+      "nameJp": "成田空港駅 サービスセンター",
+      "nameKana": "なりたくうこうえき きっぷうりば",
+      "latitude": 35.30322,
+      "longitude": 140.30508,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn đến quầy dịch vụ của ga sân bay Narita để mua một thẻ Suica dùng đi tàu. Nhân viên hỏi bạn muốn nạp bao nhiêu tiền, rồi chỉ cách chạm thẻ ở cổng soát vé.",
+        "realUse": "Mua thẻ đi tàu và nạp tiền ở bất cứ quầy nào của ga. Cũng dùng khi nạp thêm tiền: 「三千円、チャージしてください」.",
+        "sentence": [
+          {
+            "text": "三千円",
+            "reading": "さんぜんえん"
+          },
+          {
+            "text": "、チャージしてください。"
+          }
+        ],
+        "meaning": "Xin nạp 3.000 yên.",
+        "grammarNote": "V てください: nhờ/yêu cầu làm gì. チャージする: nạp tiền vào thẻ. Nạp trước, rồi chạm thẻ ở cổng soát vé (改札).",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Xin hỗ trợ về việc làm thẻ tàu",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-28",
+      "prefectureId": 12,
+      "iconId": "B_tickets",
+      "nameVi": "Ga sân bay Narita · Mua vé tàu tốc hành",
+      "nameJp": "成田空港駅 きっぷ売り場",
+      "nameKana": "なりたのほてる ふろんと",
+      "latitude": 35.18668,
+      "longitude": 140.1843,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn ra quầy bán vé của ga sân bay Narita để đi tàu tốc hành đến Tokyo. Nhân viên hỏi giờ bạn muốn đi, rồi báo giờ khởi hành, số toa, số ghế, giá vé và đường ray.",
+        "realUse": "Mua vé tàu tốc hành có chỗ ngồi đặt trước ở bất kỳ ga nào: nói điểm đến, chọn chuyến, nghe nhắc lại giờ, toa, ghế.",
+        "sentence": [
+          {
+            "text": "東京駅",
+            "reading": "とうきょうえき"
+          },
+          {
+            "text": "まで、"
+          },
+          {
+            "text": "切符",
+            "reading": "きっぷ"
+          },
+          {
+            "text": "を"
+          },
+          {
+            "text": "一枚",
+            "reading": "いちまい"
+          },
+          {
+            "text": "ください。"
+          }
+        ],
+        "meaning": "Cho tôi một vé đến ga Tokyo",
+        "grammarNote": "N まで: đến N. 切符を一枚ください: xin một vé.",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": []
+      }
+    },
+    {
+      "key": "spot-29",
+      "prefectureId": 12,
+      "iconId": "B_department-store",
+      "nameVi": "Khách sạn ở Narita · Quầy lễ tân",
+      "nameJp": "成田のホテル フロント",
+      "nameKana": "なりたのほてる ふろんと",
+      "latitude": 35.14006,
+      "longitude": 139.92642,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn đến khách sạn ở Narita. Lễ tân hỏi tên đặt phòng và yêu cầu xem hộ chiếu.",
+        "realUse": "Nhận phòng ở khách sạn, nhà trọ hoặc ký túc xá: báo tên và nói bạn đã đặt chỗ.",
+        "sentence": [
+          {
+            "text": "予約",
+            "reading": "よやく"
+          },
+          {
+            "text": "しました。"
+          }
+        ],
+        "meaning": "Tôi đã đặt phòng.",
+        "grammarNote": "V ました: đã làm gì. Bỏ ます, thêm ました.",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Nhận phòng khách sạn",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          },
+          {
+            "type": "Roleplay",
+            "dialogueTitle": null,
+            "scenarioTitle": "Nhận phòng khách sạn",
+            "scenarioLevel": "N5",
+            "passThreshold": null,
+            "order": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-30",
+      "prefectureId": 12,
+      "iconId": "P_shinshoji",
+      "nameVi": "Chùa Naritasan Shinshoji",
+      "nameJp": "成田山新勝寺",
+      "nameKana": "なりたさんしんしょうじ",
+      "latitude": 35.34983,
+      "longitude": 140.07005,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Bạn đi dạo đến chùa Naritasan. Bạn muốn chụp ảnh và nhân viên chùa trò chuyện với bạn, hỏi ngày mai bạn đi đâu.",
+        "realUse": "Xin phép trước khi chụp ảnh, ở đền chùa, bảo tàng hoặc nhà người khác.",
+        "sentence": [
+          {
+            "text": "ここで"
+          },
+          {
+            "text": "写真",
+            "reading": "しゃしん"
+          },
+          {
+            "text": "を"
+          },
+          {
+            "text": "撮",
+            "reading": "と"
+          },
+          {
+            "text": "ってもいいですか。"
+          }
+        ],
+        "meaning": "",
+        "grammarNote": "V てもいいですか: xin phép làm gì. Trả lời: 「はい、いいですよ」 / 「すみません、ちょっと…」",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Đi tham quan đền chùa",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "spot-31",
+      "prefectureId": 12,
+      "iconId": "B_convenience-store",
+      "nameVi": "Cửa hàng tiện lợi",
+      "nameJp": "コンビニ",
+      "nameKana": "こんびに",
+      "latitude": 35.51558,
+      "longitude": 140.16798,
+      "status": "Published",
+      "isActive": true,
+      "lesson": {
+        "level": "N5",
+        "situation": "Buổi tối bạn ghé cửa hàng tiện lợi gần khách sạn mua đồ ăn. Nhân viên hỏi bạn có cần túi không.",
+        "realUse": "Từ chối túi nilon hoặc thẻ tích điểm ở bất cứ cửa hàng nào ở Nhật.",
+        "sentence": [
+          {
+            "text": "袋",
+            "reading": "ふくろ"
+          },
+          {
+            "text": "はいりません。"
+          }
+        ],
+        "meaning": "Tôi không cần túi.",
+        "grammarNote": "N はいりません: không cần N. Hỏi thì 「N はいりますか」.",
+        "estimatedMinutes": 5,
+        "grammars": [],
+        "vocabularies": [],
+        "activities": [
+          {
+            "type": "Shadowing",
+            "dialogueTitle": "Cửa hàng tiện lợi",
+            "scenarioTitle": null,
+            "scenarioLevel": null,
+            "passThreshold": 0,
+            "order": 0
+          }
+        ]
+      }
+    },
+    {
       "key": "spot-4",
       "prefectureId": 13,
       "iconId": "P_asakusa",
@@ -1106,8 +2113,8 @@
       "nameKana": "あさくさ",
       "latitude": 35.75011,
       "longitude": 139.77463,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Trên phố Nakamise trước chùa Senso-ji, bạn muốn mua một món quà lưu niệm.",
@@ -1156,8 +2163,8 @@
       "nameKana": "あきはばら",
       "latitude": 35.69833,
       "longitude": 139.77306,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Điện thoại sắp hết pin, bạn vào một cửa hàng điện tử ở Akihabara.",
@@ -1188,8 +2195,8 @@
       "nameKana": "めいじじんぐう",
       "latitude": 35.67611,
       "longitude": 139.69917,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Ở đền Minh Trị, bạn muốn chụp ảnh nhưng không chắc có được phép không.",
@@ -1227,8 +2234,8 @@
       "nameKana": "とうきょうスカイツリー",
       "latitude": 35.71656,
       "longitude": 139.8416,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Bạn muốn lên đài quan sát của Skytree vào buổi tối và hỏi nhân viên giờ đóng cửa.",
@@ -1259,8 +2266,8 @@
       "nameKana": "とよすしじょう",
       "latitude": 35.64567,
       "longitude": 139.78564,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Bạn vào một quán sushi trong chợ Toyosu và chưa biết nên gọi món gì.",
@@ -1294,8 +2301,8 @@
       "nameKana": "ふしみいなりたいしゃ",
       "latitude": 34.96694,
       "longitude": 135.77306,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N4",
         "situation": "Trước con đường hàng nghìn cổng torii, bạn hỏi người địa phương đường lên đỉnh núi mất bao lâu.",
@@ -1326,8 +2333,8 @@
       "nameKana": "きよみずでら",
       "latitude": 35.02726,
       "longitude": 135.80644,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N4",
         "situation": "Trên sân gỗ của chùa Kiyomizu, bạn muốn có một tấm ảnh và nhờ người bên cạnh chụp giúp.",
@@ -1368,8 +2375,8 @@
       "nameKana": "ろくおんじ（きんかくじ）",
       "latitude": 35.0394,
       "longitude": 135.72936,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Tham quan chùa Vàng xong, bạn nhắn tin kể cho bạn bè.",
@@ -1400,8 +2407,8 @@
       "nameKana": "ならこうえん",
       "latitude": 34.64977,
       "longitude": 135.91166,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Đàn nai vây quanh bạn ở công viên Nara. Bạn mua một gói bánh cho nai ở quầy bên đường.",
@@ -1439,8 +2446,8 @@
       "nameKana": "とうだいじだいぶつ",
       "latitude": 34.68759,
       "longitude": 135.80508,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Đứng trước tượng Đại Phật trong chùa Todai-ji, bạn nói với bạn đồng hành.",
@@ -1481,8 +2488,8 @@
       "nameKana": "ほうりゅうじ",
       "latitude": 34.61474,
       "longitude": 135.73417,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N4",
         "situation": "Hướng dẫn viên giới thiệu chùa Horyu-ji, công trình gỗ lâu đời bậc nhất thế giới.",
@@ -1541,8 +2548,8 @@
       "nameKana": "きいさんちのれいじょうとさんけいみち",
       "latitude": 34.3564,
       "longitude": 135.8706,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Bạn đi bộ trên đường hành hương qua núi Yoshino và kể lại cho bạn bè.",
@@ -1593,8 +2600,8 @@
       "nameKana": "うどじんぐう",
       "latitude": 32.69436,
       "longitude": 131.66585,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Người học đến quầy bán bùa và đá may mắn (Undama) bên trong hang đá của đền Udo Jingu để hỏi mua đá ném cầu may.",
@@ -1717,8 +2724,8 @@
       "nameKana": "あおしま",
       "latitude": 31.71903,
       "longitude": 131.27341,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "Người học đi bộ qua cầu nối sang đảo Aoshima và muốn nhờ một khách du lịch gần đó chụp hộ một bức ảnh kỷ niệm cùng bờ đá \"Bàn giặt của quỷ\" (Oni no Sentakuiwa).",
@@ -1765,8 +2772,8 @@
       "nameKana": "さんめっせにちなん",
       "latitude": 32.04944,
       "longitude": 130.97708,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N4",
         "situation": "Người học đến công viên tượng Moai bên bờ biển Nichinan và hỏi nhân viên quầy vé về cách thuê xe điện (golf cart) để di chuyển tham quan ngọn đồi dốc.",
@@ -1824,8 +2831,8 @@
       "nameKana": "さんめっせにちなん",
       "latitude": 32.64353,
       "longitude": 131.30545,
-      "status": "Published",
-      "isActive": true,
+      "status": "Draft",
+      "isActive": false,
       "lesson": {
         "level": "N5",
         "situation": "k",
@@ -1888,7 +2895,7 @@
       "prefectureId": 12,
       "word": "落花生",
       "kana": "らっかせい",
-      "meaning": "lạc (đậu phộng)",
+      "meaning": "đậu phộng",
       "note": "Chiba là vùng trồng lạc nổi tiếng nhất Nhật Bản.",
       "status": "Published"
     },

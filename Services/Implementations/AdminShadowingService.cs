@@ -64,7 +64,7 @@ namespace JCAP.Services.Implementations
                 {
                     Id = d.Id,
                     ScenarioId = d.ScenarioId,
-                    ScenarioTitle = d.Scenario.Title,
+                    ScenarioTitle = d.Scenario != null ? d.Scenario.Title : string.Empty,
                     Title = d.Title,
                     JLPTLevel = d.JLPTLevel,
                     SourceDescription = d.SourceDescription,
@@ -106,10 +106,10 @@ namespace JCAP.Services.Implementations
 
         public async Task<ApiResponse<ShadowingDialogueDetailDto>> CreateDialogueAsync(CreateShadowingDialogueDto dto)
         {
-            var scenarioExists = await _context.Scenarios.AnyAsync(s => s.Id == dto.ScenarioId);
-            if (!scenarioExists)
+            // Kịch bản liên kết không bắt buộc; chỉ kiểm tra khi admin có chọn
+            if (dto.ScenarioId.HasValue && !await _context.Scenarios.AnyAsync(s => s.Id == dto.ScenarioId.Value))
             {
-                return ApiResponse<ShadowingDialogueDetailDto>.Fail($"Kịch bản cha (ScenarioId = {dto.ScenarioId}) không tồn tại trong hệ thống.");
+                return ApiResponse<ShadowingDialogueDetailDto>.Fail($"Kịch bản liên kết (ScenarioId = {dto.ScenarioId}) không tồn tại trong hệ thống.");
             }
 
             var rolesList = ResolveSpeakerRoles(dto.SpeakerRoles, dto.SpeakerRoleA_Name, dto.SpeakerRoleB_Name);

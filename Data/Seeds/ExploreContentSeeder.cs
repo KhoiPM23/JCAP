@@ -14,7 +14,7 @@ namespace JCAP.Data.Seeds
     /// một dòng đang đúng y bản mẫu ra mắt hoặc một phiên bản cũ trong explore-content.history.json thì được cập nhật theo bản mới;
     /// khác tất cả thì coi là đã sửa trên máy đó và giữ nguyên.
     /// - ngữ pháp, từ vựng, kịch bản, bài Shadowing mà mốc tham chiếu: thêm nếu máy chưa có (theo mẫu câu, từ, tiêu đề);
-    /// - chương: thêm chương chưa có; gắn thêm các tỉnh chưa thuộc chương nào;
+    /// - chương: thêm chương chưa có; gắn thêm các tỉnh chưa thuộc chương nào; chương người soạn đã xoá thì tắt theo nếu máy này chưa sửa nó;
     /// - mốc: tìm theo phiên bản đã biết, rồi theo (tỉnh, tên Nhật, cấp độ); không thấy thì thêm;
     /// - liên kết của bài: ngữ pháp/từ vựng thay khi đang trống hoặc trùng phiên bản cũ; hoạt động xử lý theo từng loại;
     /// - tỉnh: mở tỉnh vừa được thêm mốc đang dùng; tỉnh người soạn từng đổi trạng thái thì theo trạng thái mới nhất của người soạn.
@@ -216,16 +216,13 @@ namespace JCAP.Data.Seeds
                 .GroupBy(v => v.Word).ToDictionary(g => g.Key, g => g.Min(x => x.Id));
             foreach (var d in pack.Dialogues.Where(d => !dialogueTitles.Contains(d.Title)))
             {
-                var scenario = scenarios.Where(x => x.Title == d.ScenarioTitle).OrderBy(x => x.Id).FirstOrDefault();
-                if (scenario == null)
-                {
-                    unresolved.Add($"Kịch bản “{d.ScenarioTitle}” của bài Shadowing “{d.Title}”");
-                    continue;
-                }
+                // Bài Shadowing không bắt buộc gắn kịch bản; có ghi tên kịch bản mà máy này không có thì vẫn tạo bài, bỏ liên kết
+                var scenario = d.ScenarioTitle == null ? null : scenarios.Where(x => x.Title == d.ScenarioTitle).OrderBy(x => x.Id).FirstOrDefault();
+                if (d.ScenarioTitle != null && scenario == null) unresolved.Add($"Kịch bản “{d.ScenarioTitle}” của bài Shadowing “{d.Title}”");
                 db.ShadowingDialogues.Add(new ShadowingDialogue
                 {
                     Title = d.Title,
-                    ScenarioId = scenario.Id,
+                    ScenarioId = scenario?.Id,
                     JLPTLevel = d.JlptLevel,
                     SourceDescription = d.SourceDescription,
                     SpeakerRoleA_Name = d.SpeakerRoleA_Name,
@@ -255,8 +252,9 @@ namespace JCAP.Data.Seeds
         {
             var added = 0;
             var updated = 0;
-            var chapters = await db.ExploreChapters.Include(c => c.Prefectures).ToListAsync();
+            var chapters = await db.ExploreChapters.Include(c => c.Prefectures).Where(c => c.IsActive).ToListAsync();
             var assigned = chapters.SelectMany(c => c.Prefectures).Select(p => p.PrefectureId).ToHashSet();
+            var claimed = new HashSet<ExploreChapter>();
             foreach (var c in pack.Chapters)
             {
                 var free = c.PrefectureIds.Where(p => !assigned.Contains(p)).ToList();
@@ -276,9 +274,16 @@ namespace JCAP.Data.Seeds
                     added++;
                     continue;
                 }
+                claimed.Add(row);
                 foreach (var p in free) row.Prefectures.Add(new ExploreChapterPrefecture { PrefectureId = p });
                 var versions = history.Chapters.TryGetValue(c.OrderIndex.ToString(), out var old) ? old : Array.Empty<ExploreContentPack.ChapterEntry>();
-                if (SameChapter(row, c) || !versions.Any(v => SameChapter(row, v))) continue;
+                if (SameChapter(row, c) || !(IsLaunchChapter(row) || versions.Any(v => SameChapter(row, v)))) continue;
+                // Chương chưa ai sửa: theo đúng bản mới, kể cả bỏ các tỉnh người soạn đã gỡ khỏi chương
+                foreach (var link in row.Prefectures.Where(x => !c.PrefectureIds.Contains(x.PrefectureId)).ToList())
+                {
+                    row.Prefectures.Remove(link);
+                    db.ExploreChapterPrefectures.Remove(link);
+                }
                 row.Title = c.Title;
                 row.Description = c.Description;
                 row.MinLevel = c.MinLevel;
@@ -286,8 +291,29 @@ namespace JCAP.Data.Seeds
                 row.UpdatedAt = now;
                 updated++;
             }
+
+            // Chương có trên máy này nhưng không còn trong gói: người soạn đã xoá. Chỉ tắt chương đúng y một bản người soạn từng có
+            // (hoặc bản mẫu ra mắt); chương máy này tự tạo hay đã sửa thì giữ. Tắt giống admin: IsActive = false và gỡ tỉnh.
+            var known = history.Chapters.Values.SelectMany(v => v).ToList();
+            var removed = chapters.Where(r => !claimed.Contains(r) && (IsLaunchChapter(r) || known.Any(v => SameChapter(r, v)))).ToList();
+            foreach (var r in removed)
+            {
+                r.IsActive = false;
+                r.UpdatedAt = now;
+                db.ExploreChapterPrefectures.RemoveRange(r.Prefectures);
+                updated++;
+            }
+            if (removed.Count > 0)
+            {
+                // Dồn thứ tự các chương còn dùng cho liền mạch (0, 1, 2...) như khi admin xoá chương
+                var rest = chapters.Except(removed).OrderBy(r => r.OrderIndex).ToList();
+                for (var i = 0; i < rest.Count; i++) rest[i].OrderIndex = i;
+            }
             return (added, updated);
         }
+
+        private static bool IsLaunchChapter(ExploreChapter row) => ExploreSeedData.Chapters.Any(s =>
+            row.Title == s.Title && row.Description == s.Description && row.MinLevel == s.MinLevel && row.MaxLevel == s.MaxLevel);
 
         private static bool SameChapter(ExploreChapter row, ExploreContentPack.ChapterEntry c) =>
             row.Title == c.Title && row.Description == c.Description && row.MinLevel == c.MinLevel && row.MaxLevel == c.MaxLevel;

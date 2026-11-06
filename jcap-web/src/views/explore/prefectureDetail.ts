@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PREFECTURES, projectLonLat, type PrefectureShape } from '../../data/japanMap';
-import { PICTOGRAMS, PREFECTURE_PICTOGRAMS, pictogramInfo, type Pictogram } from '../../data/japanPictograms';
+import { pictogramInfo, type Pictogram } from '../../data/japanPictograms';
 import { PREFECTURE_CITIES } from '../../data/japanPlaces';
 import type { LearnLevel, Phrase } from '../../data/learnContent';
 import type { ExplorePrefectureDetail, ExploreSpot } from '../../types/explore';
@@ -71,11 +71,6 @@ export function prefectureLandmarks(prefId: number): MapLandmark[] {
     landmarkCache.set(detail, list);
   }
   return list;
-}
-
-/** Đặc sản của tỉnh (biểu tượng không có vị trí trên bản đồ) */
-export function prefectureFoods(prefId: number): Pictogram[] {
-  return (PREFECTURE_PICTOGRAMS[prefId] ?? []).map((id) => PICTOGRAMS[id]).filter((p) => p.kind === 'food');
 }
 
 const cityCache = new Map<number, MapCity[]>();

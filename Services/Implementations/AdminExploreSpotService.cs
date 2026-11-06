@@ -143,17 +143,6 @@ namespace JCAP.Services.Implementations
             spot.Lesson ??= new ExploreSpotLesson();
             Apply(spot, dto);
 
-            if (spot.Status == ExploreSpotStatus.Published)
-            {
-                var visibleGaps = Missing(spot, null).Intersect(ExploreSpotCheck.VisibleToLearner).ToList();
-                if (visibleGaps.Count > 0)
-                {
-                    return ApiResponse<AdminExploreSpotDto>.Fail(
-                        "Mốc đang dùng: người học đang thấy mốc này nên không được để trống " + string.Join(", ", visibleGaps.Select(CheckLabel)) + ".",
-                        visibleGaps.Select(CheckLabel).ToList());
-                }
-            }
-
             await _context.SaveChangesAsync();
             return await ReloadAsync(spot.Id, "Đã lưu mốc.");
         }
@@ -169,17 +158,8 @@ namespace JCAP.Services.Implementations
             if (spot == null) return ApiResponse<AdminExploreSpotDto>.Fail("Không tìm thấy mốc.");
             if (spot.Status == status) return ApiResponse<AdminExploreSpotDto>.Ok(await ToSpotDtoAsync(spot));
 
-            if (status == ExploreSpotStatus.Published)
-            {
-                var missing = Missing(spot, await AvailableShadowingIdsAsync(new[] { spot }));
-                if (missing.Count > 0)
-                {
-                    return ApiResponse<AdminExploreSpotDto>.Fail(
-                        "Chưa chuyển sang Đang dùng được: còn thiếu " + string.Join(", ", missing.Select(CheckLabel)) + ".",
-                        missing.Select(CheckLabel).ToList());
-                }
-            }
-            else
+            // Chuyển sang Đang dùng không đòi đủ mục kiểm tra (Missing chỉ để gợi ý); chỉ chiều ngược lại mới có chốt chặn
+            if (status != ExploreSpotStatus.Published)
             {
                 var guard = await GuardLastPublishedAsync(spot);
                 if (guard != null) return ApiResponse<AdminExploreSpotDto>.Fail(guard);
@@ -241,14 +221,14 @@ namespace JCAP.Services.Implementations
                 case "shadowing":
                     items = await _context.ShadowingDialogues.AsNoTracking()
                         .Where(d => d.IsActive && (lv == null || d.JLPTLevel == lv)
-                            && (string.IsNullOrEmpty(q) || d.Title.Contains(q) || d.Scenario.Title.Contains(q)))
+                            && (string.IsNullOrEmpty(q) || d.Title.Contains(q) || (d.Scenario != null && d.Scenario.Title.Contains(q))))
                         .OrderBy(d => d.JLPTLevel).ThenBy(d => d.Title)
                         .Take(LookupLimit)
                         .Select(d => new ExploreLookupItemDto
                         {
                             Id = d.Id,
                             Title = d.Title,
-                            Subtitle = d.Scenario.Title + " · " + d.Sentences.Count + " câu",
+                            Subtitle = (d.Scenario != null ? d.Scenario.Title + " · " : "") + d.Sentences.Count + " câu",
                             JLPTLevel = d.JLPTLevel,
                         })
                         .ToListAsync();
@@ -684,7 +664,7 @@ namespace JCAP.Services.Implementations
                 {
                     Id = d.Id,
                     Title = d.Title,
-                    Subtitle = d.Scenario.Title + " · " + d.Sentences.Count + " câu",
+                    Subtitle = (d.Scenario != null ? d.Scenario.Title + " · " : "") + d.Sentences.Count + " câu",
                     JLPTLevel = d.JLPTLevel,
                     Available = d.IsActive,
                 })

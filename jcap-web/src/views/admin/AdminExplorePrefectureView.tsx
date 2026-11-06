@@ -4,6 +4,7 @@ import { PREFECTURES } from '../../data/japanMap';
 import { MIN_SPOTS_TO_OPEN, adminExploreService } from '../../services/adminExploreService';
 import type { AdminExplorePrefectureContent, AdminExploreWord, ExploreSpotStatus } from '../../types/adminExplore';
 import { PictogramIcon } from '../explore/exploreUi';
+import { orderForAdmin } from '../explore/routeOrder';
 import { AdminExplorePrefectureMap, type MapSpot } from './AdminExplorePrefectureMap';
 import { LoadError, useAdminToasts } from './AdminExploreToasts';
 import { SPOT_CHECKS, STATUS_BADGE, STATUS_LABEL } from './adminExploreSpots';
@@ -39,9 +40,11 @@ export const AdminExplorePrefectureView: React.FC = () => {
     if (shape) load();
   }, [shape, load]);
 
+  // Cùng thứ tự và số với bản đồ người học (thứ tự tạo mốc); mốc nháp xếp sau
+  const orderedSpots = useMemo(() => orderForAdmin(content?.spots ?? []), [content]);
   const mapSpots = useMemo<MapSpot[]>(
-    () => (content?.spots ?? []).map((s, i) => ({ id: s.id, no: i + 1, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi })),
-    [content],
+    () => orderedSpots.map(({ spot: s, no }) => ({ id: s.id, no, lat: s.latitude, lon: s.longitude, status: s.status, label: s.nameVi })),
+    [orderedSpots],
   );
 
   if (!shape) {
@@ -149,7 +152,7 @@ export const AdminExplorePrefectureView: React.FC = () => {
                 </div>
               ) : (
                 <ol className="divide-y divide-slate-100">
-                  {content.spots.map((s, i) => {
+                  {orderedSpots.map(({ spot: s, no }) => {
                     const missing = SPOT_CHECKS.filter((c) => s.missing.includes(c.key));
                     return (
                       <li key={s.id}>
@@ -167,7 +170,7 @@ export const AdminExplorePrefectureView: React.FC = () => {
                             }`}
                             aria-hidden="true"
                           >
-                            {i + 1}
+                            {no}
                           </span>
                           <span className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                             <PictogramIcon id={s.iconId} color="#334155" className="w-6 h-6" />

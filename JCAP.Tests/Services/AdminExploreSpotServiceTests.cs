@@ -149,25 +149,22 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
-        public async Task Publish_RequiresAllChecks()
+        public async Task Publish_DoesNotRequireChecks_ButStillReportsWhatIsMissing()
         {
             var (db, r) = await SeededContext("publish");
             using var _db = db;
             var service = new AdminExploreSpotService(db);
             var draft = (await service.CreateSpotAsync(Hokkaido, Minimal())).Data!;
+            Assert.Contains(ExploreSpotCheck.Shadowing, draft.Missing);
 
-            var refused = await service.SetStatusAsync(draft.Id, ExploreSpotStatus.Published);
-            Assert.False(refused.Success);
-            Assert.Contains("bài Shadowing", refused.Errors!);
-
-            await service.UpdateSpotAsync(draft.Id, Complete(r));
             var published = await service.SetStatusAsync(draft.Id, ExploreSpotStatus.Published);
             Assert.True(published.Success);
             Assert.Equal(ExploreSpotStatus.Published, published.Data!.Status);
+            Assert.Contains(ExploreSpotCheck.Shadowing, published.Data.Missing);
         }
 
         [Fact]
-        public async Task Publish_FailsWhenShadowingDialogueWasDeactivatedLater()
+        public async Task Publish_SucceedsEvenWhenShadowingDialogueWasDeactivatedLater_AndReportsIt()
         {
             var (db, r) = await SeededContext("stale");
             using var _db = db;
@@ -178,12 +175,12 @@ namespace JCAP.Tests.Services
             await db.SaveChangesAsync();
 
             var result = await service.SetStatusAsync(draft.Id, ExploreSpotStatus.Published);
-            Assert.False(result.Success);
+            Assert.True(result.Success);
             Assert.Contains(ExploreSpotCheck.Shadowing, (await service.GetSpotAsync(draft.Id)).Data!.Missing);
         }
 
         [Fact]
-        public async Task UpdatePublishedSpot_CannotBlankWhatLearnersSee_ButCanSaveOtherwise()
+        public async Task UpdatePublishedSpot_CanLeaveContentBlank_AndReportsMissing()
         {
             var (db, r) = await SeededContext("update-published");
             using var _db = db;
@@ -192,8 +189,10 @@ namespace JCAP.Tests.Services
 
             var blank = Complete(r);
             blank.Situation = "";
-            Assert.False((await service.UpdateSpotAsync(asakusa.Id, blank)).Success);
-            Assert.NotEqual("", (await db.ExploreSpotLessons.AsNoTracking().FirstAsync(l => l.SpotId == asakusa.Id)).Situation);
+            var blanked = await service.UpdateSpotAsync(asakusa.Id, blank);
+            Assert.True(blanked.Success);
+            Assert.Equal(ExploreSpotStatus.Published, blanked.Data!.Status);
+            Assert.Contains(ExploreSpotCheck.Situation, blanked.Data.Missing);
 
             // Mốc seed (chưa gắn mục tiêu) vẫn lưu dần được
             var partial = Complete(r);

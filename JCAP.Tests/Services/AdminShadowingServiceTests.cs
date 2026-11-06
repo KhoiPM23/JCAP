@@ -192,6 +192,43 @@ public class AdminShadowingServiceTests
     }
 
     [Fact]
+    public async Task CreateDialogueAsync_WithoutScenario_CreatesStandaloneDialogue()
+    {
+        // Arrange: kịch bản liên kết không bắt buộc
+        using var context = CreateInMemoryDbContext();
+        var service = CreateService(context);
+
+        var dto = new CreateShadowingDialogueDto
+        {
+            ScenarioId = null,
+            Title = "Quầy nhập cảnh",
+            JLPTLevel = "N5",
+            SpeakerRoleA_Name = "Nhân viên",
+            SpeakerRoleB_Name = "Bạn",
+            Sentences = new List<CreateShadowingSentenceDto>
+            {
+                new() { OrderIndex = 1, SpeakerRole = "A", JapaneseText = "入国の目的は何ですか。", VietnameseTranslation = "Mục đích nhập cảnh là gì?", NativeAudioUrl = "/a.mp3" },
+                new() { OrderIndex = 2, SpeakerRole = "B", JapaneseText = "観光です。", VietnameseTranslation = "Tôi đi du lịch.", NativeAudioUrl = "/b.mp3" }
+            }
+        };
+
+        // Act
+        var created = await service.CreateDialogueAsync(dto);
+
+        // Assert
+        Assert.True(created.Success);
+        Assert.Null(created.Data!.ScenarioId);
+        Assert.Equal(string.Empty, created.Data.ScenarioTitle);
+
+        var detail = await service.GetAdminDetailAsync(created.Data.Id);
+        Assert.True(detail.Success);
+        Assert.Null(detail.Data!.ScenarioId);
+
+        var catalog = await service.GetAdminCatalogAsync();
+        Assert.Contains(catalog.Data!, d => d.Id == created.Data.Id && d.ScenarioId == null);
+    }
+
+    [Fact]
     public async Task UpdateDialogueAsync_WhenDialogueNotFound_ReturnsFailure()
     {
         // Arrange

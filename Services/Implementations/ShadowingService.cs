@@ -28,14 +28,14 @@ namespace JCAP.Services.Implementations
                 .AsNoTracking()
                 .Include(d => d.Scenario)
                 .Include(d => d.Sentences)
-                .Where(d => d.IsActive && d.Scenario.IsActive);
+                .Where(d => d.IsActive && (d.Scenario == null || d.Scenario.IsActive));
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var term = keyword.Trim().ToLower();
                 query = query.Where(d => d.Title.ToLower().Contains(term)
                     || (d.SourceDescription != null && d.SourceDescription.ToLower().Contains(term))
-                    || d.Scenario.Title.ToLower().Contains(term));
+                    || (d.Scenario != null && d.Scenario.Title.ToLower().Contains(term)));
             }
 
             if (!string.IsNullOrWhiteSpace(jlptLevel) && jlptLevel != "ALL")
@@ -55,7 +55,7 @@ namespace JCAP.Services.Implementations
                 {
                     Id = d.Id,
                     ScenarioId = d.ScenarioId,
-                    ScenarioTitle = d.Scenario.Title,
+                    ScenarioTitle = d.Scenario != null ? d.Scenario.Title : string.Empty,
                     Title = d.Title,
                     JLPTLevel = d.JLPTLevel,
                     SourceDescription = d.SourceDescription,
@@ -78,7 +78,7 @@ namespace JCAP.Services.Implementations
                 .Include(d => d.Sentences.OrderBy(s => s.OrderIndex))
                 .Include(d => d.DialogueVocabularies).ThenInclude(dv => dv.Vocabulary)
                 .Include(d => d.DialogueGrammars).ThenInclude(dg => dg.Grammar)
-                .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && d.Scenario.IsActive);
+                .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && (d.Scenario == null || d.Scenario.IsActive));
 
             if (dialogue == null)
             {
@@ -152,8 +152,8 @@ namespace JCAP.Services.Implementations
             {
                 Id = dialogue.Id,
                 ScenarioId = dialogue.ScenarioId,
-                ScenarioTitle = dialogue.Scenario.Title,
-                ScenarioDescription = dialogue.Scenario.Description,
+                ScenarioTitle = dialogue.Scenario?.Title ?? string.Empty,
+                ScenarioDescription = dialogue.Scenario?.Description,
                 ScenarioLevelDescription = levelConfig?.Description,
                 Title = dialogue.Title,
                 JLPTLevel = dialogue.JLPTLevel,

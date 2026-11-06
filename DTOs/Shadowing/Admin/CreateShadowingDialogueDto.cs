@@ -5,9 +5,9 @@ namespace JCAP.DTOs.Shadowing.Admin
 {
     public class CreateShadowingDialogueDto
     {
-        [Required]
+        /// <summary>Kịch bản liên kết, không bắt buộc.</summary>
         [Range(1, int.MaxValue, ErrorMessage = "ScenarioId không hợp lệ.")]
-        public int ScenarioId { get; set; }
+        public int? ScenarioId { get; set; }
 
         [Required(ErrorMessage = "Tiêu đề không được để trống.")]
         [MaxLength(200)]

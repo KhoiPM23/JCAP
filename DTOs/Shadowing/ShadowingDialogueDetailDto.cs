@@ -6,7 +6,7 @@ namespace JCAP.DTOs.Shadowing
     public class ShadowingDialogueDetailDto
     {
         public int Id { get; set; }
-        public int ScenarioId { get; set; }
+        public int? ScenarioId { get; set; }
         public string ScenarioTitle { get; set; } = string.Empty;
         public string? ScenarioDescription { get; set; }
         public string? ScenarioLevelDescription { get; set; }

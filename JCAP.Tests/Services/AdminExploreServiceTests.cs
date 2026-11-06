@@ -94,6 +94,25 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task OpenPrefecture_WithASingleLiveSpot_Opens_ButNotWhenThatSpotIsOnlyDraftOrInactive()
+        {
+            using var db = await SeededContext("open-one");
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Nháp", NameJp = "下書き", Status = ExploreSpotStatus.Draft });
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Ngừng", NameJp = "停止", Status = ExploreSpotStatus.Published, IsActive = false });
+            await db.SaveChangesAsync();
+            var service = new AdminExploreService(db);
+
+            Assert.False((await service.OpenPrefectureAsync(1)).Success);
+
+            db.ExploreSpots.Add(new ExploreSpot { PrefectureId = 1, IconId = "P_test", NameVi = "Dùng", NameJp = "使用中", Status = ExploreSpotStatus.Published });
+            await db.SaveChangesAsync();
+
+            Assert.Equal(1, AdminExploreService.MinSpotsToOpen);
+            Assert.True((await service.OpenPrefectureAsync(1)).Success);
+            Assert.True((await db.ExplorePrefectures.FindAsync(1))!.IsOpen);
+        }
+
+        [Fact]
         public async Task OpenPrefecture_AlreadyOpenOrInvalidId_Fails()
         {
             using var db = await SeededContext("open-bad");

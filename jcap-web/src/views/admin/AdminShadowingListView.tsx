@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { Toast, ToastType } from '../../components/ui/Toast';
 import { adminShadowingService } from '../../services/adminShadowingService';
-import { scenarioService } from '../../services/scenarioService';
 import type {
   ShadowingDialogueItem,
   ShadowingDialogueDetail,
@@ -20,7 +19,6 @@ import {
   ensureRolesCoverSentences,
   getDialogueRoleName,
 } from '../../utils/shadowingRoleUtils';
-import type { ScenarioListItem } from '../../types/scenarioDetails';
 
 export interface ImportVocabItem {
   word: string;
@@ -46,10 +44,6 @@ export interface ImportPreviewData {
   format: 'csv' | 'json';
   title?: string;
   jlptLevel?: 'N5' | 'N4' | 'N3';
-  scenarioId?: number;
-  scenarioCode?: string;
-  matchedScenarioTitle?: string;
-  scenarioWarning?: string;
   contextDescription?: string;
   speakerRoles?: string[];
   sentences: CreateShadowingSentencePayload[];
@@ -67,7 +61,6 @@ export interface ToastMessage {
 
 export const AdminShadowingListView: React.FC = () => {
   const [items, setItems] = useState<ShadowingDialogueItem[]>([]);
-  const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -84,7 +77,6 @@ export const AdminShadowingListView: React.FC = () => {
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
-  const [filterScenario, setFilterScenario] = useState<string>('ALL');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
   // Form Modal state (UC-30 Create / UC-31 Edit)
@@ -93,7 +85,6 @@ export const AdminShadowingListView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Form Data
-  const [formScenarioId, setFormScenarioId] = useState<number>(1);
   const [formTitle, setFormTitle] = useState<string>('');
   const [formLevel, setFormLevel] = useState<'N5' | 'N4' | 'N3'>('N5');
   const [formContextDescription, setFormContextDescription] = useState<string>('');
@@ -158,16 +149,10 @@ export const AdminShadowingListView: React.FC = () => {
 
   const loadData = async () => {
     setIsLoading(true);
-    const [resCatalog, resScenarios] = await Promise.all([
-      adminShadowingService.getCatalog(),
-      scenarioService.getScenarios()
-    ]);
+    const resCatalog = await adminShadowingService.getCatalog();
 
     if (resCatalog.success && resCatalog.data) {
       setItems(resCatalog.data);
-    }
-    if (resScenarios.success && resScenarios.data) {
-      setScenarios(resScenarios.data);
     }
     setIsLoading(false);
   };
@@ -181,37 +166,24 @@ export const AdminShadowingListView: React.FC = () => {
 
   const handleOpenCreate = () => {
     setEditingId(null);
-    setFormScenarioId(scenarios[0]?.id || 1);
     setFormTitle('');
     setFormLevel('N5');
     setFormContextDescription('');
     setFormSpeakerRoles(['Khách hàng (Học viên)', 'Nhân viên']);
     setFormIsActive(true);
+    // Bài mới bắt đầu trống: một dòng câu thoại để nhập, chưa có từ vựng và ngữ pháp
     setFormSentences([
       {
         orderIndex: 1,
         speakerRole: 'A',
-        japaneseText: 'すみません、ラーメンをひとつお願いします。',
-        romajiText: 'Sumimasen, raamen wo hitotsuonegai shimasu.',
-        vietnameseTranslation: 'Xin lỗi, cho tôi xin một tô mì ramen.',
-        nativeAudioUrl: null,
-      },
-      {
-        orderIndex: 2,
-        speakerRole: 'B',
-        japaneseText: 'はい、かしこまりました。トッピングはいかがですか。',
-        romajiText: 'Hai, kashikomarimashita. Toppingu wa ikaga desu ka.',
-        vietnameseTranslation: 'Vâng, tôi đã rõ. Quý khách có muốn thêm topping gì không ạ?',
+        japaneseText: '',
+        romajiText: '',
+        vietnameseTranslation: '',
         nativeAudioUrl: null,
       },
     ]);
-    setFormVocabularies([
-      { word: 'ラーメン', reading: 'らーめん', meaning: 'Mì ramen' },
-      { word: '注文', reading: 'ちゅうもん', meaning: 'Gọi món' }
-    ]);
-    setFormGrammars([
-      { pattern: '～をお願いします', meaning: 'Làm ơn cho tôi...', exampleSentence: 'お水をお願いします。' }
-    ]);
+    setFormVocabularies([]);
+    setFormGrammars([]);
     setFormErrors([]);
     setActiveFormTab('sentences');
     setRecordedAudioPreview(null);
@@ -244,7 +216,6 @@ export const AdminShadowingListView: React.FC = () => {
     const res = await adminShadowingService.getDetail(item.id);
     if (res.success && res.data) {
       const d = res.data;
-      setFormScenarioId(d.scenarioId);
       setFormTitle(d.title);
       setFormLevel(d.jlptLevel);
       setFormContextDescription(d.sourceDescription || '');
@@ -434,8 +405,7 @@ export const AdminShadowingListView: React.FC = () => {
 
   // AI Dialogue Full Generation (In-form Draft Workflow)
   const handleGenerateDialogue = async () => {
-    const selectedScenario = scenarios.find((s) => s.id === formScenarioId);
-    const contextTitle = formTitle.trim() || selectedScenario?.title || 'Hội thoại giao tiếp đời sống';
+    const contextTitle = formTitle.trim() || 'Hội thoại giao tiếp đời sống';
 
     const safeSentenceCount = Math.max(2, Math.min(12, Number(aiSentenceCount) || 4));
     const safeVocabCount = Math.max(1, Math.min(8, Number(aiVocabCount) || 3));
@@ -443,9 +413,8 @@ export const AdminShadowingListView: React.FC = () => {
 
     setIsAiGenerating(true);
     const payload: GenerateShadowingDialoguePayload = {
-      scenarioId: formScenarioId,
       contextTitle,
-      contextDescription: formContextDescription.trim() || selectedScenario?.description,
+      contextDescription: formContextDescription.trim() || undefined,
       jlptLevel: formLevel,
       speakerRoles: formSpeakerRoles,
       sentenceCount: safeSentenceCount,
@@ -762,28 +731,6 @@ export const AdminShadowingListView: React.FC = () => {
             }
           }
 
-          // 2. Scenario matching
-          let resolvedScenarioId: number | undefined = undefined;
-          let matchedScenarioTitle: string | undefined = undefined;
-          let scenarioWarning: string | undefined = undefined;
-
-          if (parsed.scenarioCode || parsed.scenarioId) {
-            const matched = scenarios.find(
-              (s) =>
-                (parsed.scenarioCode && s.scenarioCode === parsed.scenarioCode) ||
-                (parsed.scenarioId && s.id === Number(parsed.scenarioId))
-            );
-            if (matched) {
-              resolvedScenarioId = matched.id;
-              matchedScenarioTitle = `#${matched.id} - ${matched.title}`;
-            } else {
-              scenarioWarning = `Không tìm thấy kịch bản khớp với '${parsed.scenarioCode || parsed.scenarioId}'. Bạn sẽ cần chọn Kịch bản thủ công trên form sau khi nạp.`;
-              warnings.push(scenarioWarning);
-            }
-          } else {
-            scenarioWarning = 'Tệp JSON không chỉ định kịch bản cha. Kịch bản của form hiện tại sẽ được giữ nguyên.';
-          }
-
           // 3. Sentences validation
           const rawSentences: any[] = Array.isArray(parsed.sentences) ? parsed.sentences : [];
           if (rawSentences.length === 0) {
@@ -896,10 +843,6 @@ export const AdminShadowingListView: React.FC = () => {
             format: 'json',
             title: parsed.title ? String(parsed.title).trim() : formTitle,
             jlptLevel: resolvedLevel,
-            scenarioId: resolvedScenarioId,
-            scenarioCode: parsed.scenarioCode,
-            matchedScenarioTitle,
-            scenarioWarning,
             contextDescription: parsed.contextDescription || parsed.sourceDescription || formContextDescription,
             speakerRoles:
               Array.isArray(parsed.speakerRoles) && parsed.speakerRoles.length > 0
@@ -971,7 +914,7 @@ export const AdminShadowingListView: React.FC = () => {
 
     if (importPreview.format === 'csv') {
       // CSV = Quick Dialogue Import
-      // ONLY replace sentences, preserve formTitle, formLevel, formScenarioId, formContextDescription, formSpeakerRoles, formVocabularies, formGrammars
+      // ONLY replace sentences, preserve formTitle, formLevel, formContextDescription, formSpeakerRoles, formVocabularies, formGrammars
       setFormSentences(importPreview.sentences);
       addToast('Đã áp dụng dữ liệu câu thoại vào form.', 'success');
     } else {
@@ -981,9 +924,6 @@ export const AdminShadowingListView: React.FC = () => {
       }
       if (importPreview.jlptLevel) {
         setFormLevel(importPreview.jlptLevel);
-      }
-      if (importPreview.scenarioId) {
-        setFormScenarioId(importPreview.scenarioId);
       }
       if (importPreview.contextDescription) {
         setFormContextDescription(importPreview.contextDescription);
@@ -1111,7 +1051,6 @@ export const AdminShadowingListView: React.FC = () => {
     } else {
       // UC-30 Create
       const payload: CreateShadowingDialoguePayload = {
-        scenarioId: formScenarioId,
         title: formTitle,
         jlptLevel: formLevel,
         sourceDescription: formContextDescription || null,
@@ -1152,11 +1091,11 @@ export const AdminShadowingListView: React.FC = () => {
   const handleExportExcel = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      ['ID,Tiêu đề,Cấp độ,Kịch bản,Trạng thái,Số câu']
+      ['ID,Tiêu đề,Cấp độ,Trạng thái,Số câu']
         .concat(
           filteredItems.map(
             (i) =>
-              `"${i.id}","${i.title}","${i.jlptLevel}","${i.scenarioTitle}","${i.isActive ? 'Hoạt động' : 'Tạm ngưng'}","${i.totalSentences}"`
+              `"${i.id}","${i.title}","${i.jlptLevel}","${i.isActive ? 'Hoạt động' : 'Tạm ngưng'}","${i.totalSentences}"`
           )
         )
         .join('\n');
@@ -1174,7 +1113,6 @@ export const AdminShadowingListView: React.FC = () => {
   const resetFilters = () => {
     setSearchTerm('');
     setFilterLevel('ALL');
-    setFilterScenario('ALL');
     setFilterStatus('ALL');
   };
 
@@ -1185,10 +1123,9 @@ export const AdminShadowingListView: React.FC = () => {
     if (term.length < 2) return false;
     const q = term.toLowerCase();
     const matchTitle = item.title.toLowerCase().includes(q);
-    const matchCode = `SHD_${item.id}`.toLowerCase().includes(q) || (item.scenarioTitle && item.scenarioTitle.toLowerCase().includes(q));
+    const matchCode = `SHD_${item.id}`.toLowerCase().includes(q);
     if (!matchTitle && !matchCode) return false;
     if (filterLevel !== 'ALL' && item.jlptLevel !== filterLevel) return false;
-    if (filterScenario !== 'ALL' && item.scenarioTitle !== filterScenario) return false;
     if (filterStatus === 'ACTIVE' && !item.isActive) return false;
     if (filterStatus === 'INACTIVE' && item.isActive) return false;
     return true;
@@ -1197,7 +1134,6 @@ export const AdminShadowingListView: React.FC = () => {
   const totalCount = items.length;
   const activeCount = items.filter((i) => i.isActive).length;
   const inactiveCount = items.filter((i) => !i.isActive).length;
-  const uniqueScenarios = Array.from(new Set(items.map((i) => i.scenarioTitle).filter(Boolean)));
 
   const getRoleBadgeColor = (roleChar: string) => {
     switch (roleChar) {
@@ -1368,7 +1304,7 @@ export const AdminShadowingListView: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm theo tiêu đề bài học, mã kịch bản, từ khóa..."
+            placeholder="Tìm theo tiêu đề bài học, mã bài, từ khóa..."
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0878EE] transition"
           />
         </div>
@@ -1383,17 +1319,6 @@ export const AdminShadowingListView: React.FC = () => {
             <option value="N5">JLPT N5</option>
             <option value="N4">JLPT N4</option>
             <option value="N3">JLPT N3</option>
-          </select>
-
-          <select
-            value={filterScenario}
-            onChange={(e) => setFilterScenario(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0878EE] cursor-pointer max-w-[180px] truncate"
-          >
-            <option value="ALL">Kịch bản: Tất cả</option>
-            {uniqueScenarios.map((scen) => (
-              <option key={scen} value={scen}>{scen}</option>
-            ))}
           </select>
 
           <select
@@ -1434,7 +1359,6 @@ export const AdminShadowingListView: React.FC = () => {
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-3 px-4">Bài học</th>
-                  <th className="py-3 px-4">Kịch bản liên kết</th>
                   <th className="py-3 px-4">Bối cảnh</th>
                   <th className="py-3 px-4">Vai hội thoại</th>
                   <th className="py-3 px-4 text-center">Trạng thái</th>
@@ -1454,11 +1378,6 @@ export const AdminShadowingListView: React.FC = () => {
                       <div className="text-[11px] text-slate-400 mt-0.5">
                         Mã: <span className="font-mono text-slate-500 font-semibold">SHD_{item.id}</span> • {item.totalSentences} câu thoại
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium text-[11px] border border-slate-200">
-                        {item.scenarioTitle || 'Chưa gắn'}
-                      </span>
                     </td>
                     <td className="py-3 px-4 max-w-xs truncate text-slate-500">
                       {item.sourceDescription || '—'}
@@ -1539,7 +1458,7 @@ export const AdminShadowingListView: React.FC = () => {
                   {editingId ? `Chỉnh sửa bài Shadowing #${editingId}` : 'Thêm mới bài Shadowing'}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Cấu hình kịch bản, các vai nhân vật và nội dung câu thoại luyện nói.
+                  Cấu hình các vai nhân vật và nội dung câu thoại luyện nói.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1612,12 +1531,6 @@ export const AdminShadowingListView: React.FC = () => {
                   {/* Context Auto-detection Info */}
                   <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-indigo-100 grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px] text-slate-600">
                     <div>
-                      <span className="font-bold text-slate-700 block">Kịch bản cha:</span>
-                      <span className="text-indigo-900 font-medium truncate block">
-                        #{formScenarioId} - {scenarios.find((s) => s.id === formScenarioId)?.title || 'Chưa chọn'}
-                      </span>
-                    </div>
-                    <div>
                       <span className="font-bold text-slate-700 block">Cấp độ JLPT:</span>
                       <span className="font-bold text-[#0878EE]">{formLevel}</span>
                     </div>
@@ -1637,7 +1550,7 @@ export const AdminShadowingListView: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        value={formTitle || scenarios.find((s) => s.id === formScenarioId)?.title || ''}
+                        value={formTitle}
                         onChange={(e) => setFormTitle(e.target.value)}
                         placeholder="Ví dụ: Đặt bàn ăn tối tại nhà hàng Tokyo..."
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -1991,22 +1904,7 @@ export const AdminShadowingListView: React.FC = () => {
               )}
 
               {/* Basic Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">Kịch bản cha liên kết *</label>
-                  <select
-                    value={formScenarioId}
-                    onChange={(e) => setFormScenarioId(parseInt(e.target.value, 10))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#0878EE] focus:outline-none"
-                  >
-                    {scenarios.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        #{s.id} - {s.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Cấp độ JLPT *</label>
                   <select
@@ -2810,7 +2708,7 @@ export const AdminShadowingListView: React.FC = () => {
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       Dùng khi bạn đã có bài học và muốn nhập nhanh nhiều câu thoại từ Excel hoặc Google Sheets.
-                      Kịch bản, JLPT, bối cảnh và vai nhân vật được kế thừa từ form hiện tại.
+                      JLPT, bối cảnh và vai nhân vật được kế thừa từ form hiện tại.
                     </p>
                     <p className="text-[10px] text-amber-700 bg-amber-50/80 p-2 rounded-lg border border-amber-200/70 mt-2 font-medium">
                       ⚠️ <strong>Lưu ý mã hóa:</strong> Hãy lưu/xuất file CSV ở bảng mã <strong>UTF-8</strong> để tiếng Nhật và tiếng Việt hiển thị chính xác, không bị lỗi font.
@@ -2845,7 +2743,7 @@ export const AdminShadowingListView: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Dùng khi bạn muốn nhập một bài học Shadowing hoàn chỉnh, bao gồm tiêu đề, kịch bản cha, cấp độ JLPT, vai đối thoại, danh sách câu thoại, từ vựng và ngữ pháp.
+                      Dùng khi bạn muốn nhập một bài học Shadowing hoàn chỉnh, bao gồm tiêu đề, cấp độ JLPT, vai đối thoại, danh sách câu thoại, từ vựng và ngữ pháp.
                     </p>
                     <p className="text-[10px] text-indigo-700 bg-indigo-50/80 p-2 rounded-lg border border-indigo-200/70 mt-2 font-medium">
                       ℹ️ <strong>Master Data:</strong> Từ vựng & ngữ pháp sẽ tự động so khớp với kho Master Data để tái sử dụng. Các mục chưa có sẽ được gắn cảnh báo để bạn quyết định tạo mới hay bỏ qua.
@@ -2896,10 +2794,7 @@ export const AdminShadowingListView: React.FC = () => {
                     <div>
                       <h4 className="font-bold text-slate-800 text-xs mb-1">2. Cấu trúc tệp JSON (Full Lesson):</h4>
                       <p className="mb-1">
-                        Chứa các trường: <code className="text-purple-700 font-mono">title</code>, <code className="text-purple-700 font-mono">jlptLevel</code> (N5/N4/N3), <code className="text-purple-700 font-mono">scenarioCode</code>, <code className="text-purple-700 font-mono">speakerRoles</code>, <code className="text-purple-700 font-mono">sentences</code>, <code className="text-purple-700 font-mono">targetVocabularies</code>, <code className="text-purple-700 font-mono">targetGrammars</code>.
-                      </p>
-                      <p className="text-slate-500">
-                        • Hệ thống không tự ý gán bài học vào kịch bản đầu tiên nếu không khớp mã.
+                        Chứa các trường: <code className="text-purple-700 font-mono">title</code>, <code className="text-purple-700 font-mono">jlptLevel</code> (N5/N4/N3), <code className="text-purple-700 font-mono">speakerRoles</code>, <code className="text-purple-700 font-mono">sentences</code>, <code className="text-purple-700 font-mono">targetVocabularies</code>, <code className="text-purple-700 font-mono">targetGrammars</code>.
                       </p>
                     </div>
                   </div>
@@ -3010,18 +2905,6 @@ export const AdminShadowingListView: React.FC = () => {
                     <div>
                       <div className="text-slate-500 text-[11px]">Cấp độ JLPT:</div>
                       <div className="font-bold text-[#0878EE] text-xs mt-0.5">{importPreview.jlptLevel || formLevel}</div>
-                    </div>
-                    <div>
-                      <div className="text-slate-500 text-[11px]">Kịch bản cha:</div>
-                      <div className="font-semibold text-slate-800 text-xs mt-0.5">
-                        {importPreview.format === 'csv' ? (
-                          <span className="text-slate-500 italic">Kế thừa từ form hiện tại (#{formScenarioId})</span>
-                        ) : importPreview.matchedScenarioTitle ? (
-                          <span className="text-emerald-700">✓ {importPreview.matchedScenarioTitle}</span>
-                        ) : (
-                          <span className="text-amber-700">⚠️ Chưa gán (chọn thủ công trên form)</span>
-                        )}
-                      </div>
                     </div>
                     <div>
                       <div className="text-slate-500 text-[11px]">Các vai nhân vật:</div>
@@ -3236,7 +3119,12 @@ export const AdminShadowingListView: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Kịch bản: <strong>{previewDialogue.scenarioTitle}</strong> • {previewDialogue.sentences.length} câu đối thoại
+                  {previewDialogue.scenarioTitle && (
+                    <>
+                      Kịch bản: <strong>{previewDialogue.scenarioTitle}</strong> •{' '}
+                    </>
+                  )}
+                  {previewDialogue.sentences.length} câu đối thoại
                 </p>
               </div>
               <button

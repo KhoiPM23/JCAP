@@ -11,7 +11,6 @@ namespace JCAP.Tests.Services
     {
         private const int Hokkaido = 1;
         private const int Tokyo = 13;
-        private const int Nara = 29;
         private const int Miyazaki = 45;
         private const string CafeScenario = "Đặt cà phê & bánh ngọt tại quán cafe Harajuku";
 
@@ -27,8 +26,10 @@ namespace JCAP.Tests.Services
         private static ExploreContentPack OneSpot(ExploreContentPack.SpotEntry spot) =>
             ExploreContentPack.Load() with { Spots = new[] { spot }, Chapters = Array.Empty<ExploreContentPack.ChapterEntry>(), ProvinceWords = Array.Empty<ExploreContentPack.WordEntry>() };
 
+        /// <summary>Một mốc đang dùng của gói mà bộ mẫu ra mắt không có (để không trùng tên với mốc mẫu trên máy).</summary>
         private static ExploreContentPack.SpotEntry SampleSpot() =>
-            ExploreContentPack.Load().Spots.First(s => s.PrefectureId == Miyazaki && s.Status == ExploreSpotStatus.Published) with { Key = "spot-test" };
+            ExploreContentPack.Load().Spots.First(s => s.Status == ExploreSpotStatus.Published && s.IsActive
+                && ExploreSeedData.Spots.All(l => l.NameJp != s.NameJp)) with { Key = "spot-test" };
 
         private static ExploreContentHistory History(params ExploreContentPack.SpotEntry[] old) =>
             ExploreContentHistory.Empty with { Spots = new() { ["spot-test"] = old } };
@@ -73,7 +74,8 @@ namespace JCAP.Tests.Services
                     if (a.Type == ExploreActivityType.Roleplay) Assert.Contains((a.ScenarioTitle!, a.ScenarioLevel!), levels);
                 }
             }
-            Assert.All(pack.Dialogues, d => Assert.Contains(d.ScenarioTitle, scenarioTitles));
+            // Bài Shadowing không bắt buộc gắn kịch bản; có gắn thì kịch bản phải nằm trong gói
+            Assert.All(pack.Dialogues.Where(d => d.ScenarioTitle != null), d => Assert.Contains(d.ScenarioTitle!, scenarioTitles));
             Assert.All(pack.Dialogues, d => Assert.All(d.Grammars, g => Assert.Contains(g.Pattern, patterns)));
             Assert.All(pack.Dialogues, d => Assert.All(d.Vocabularies, v => Assert.Contains(v.Word, words)));
         }
@@ -95,7 +97,52 @@ namespace JCAP.Tests.Services
                 Assert.Equal(p.Status, spot.Status);
                 Assert.Equal(p.IsActive, spot.IsActive);
             }
-            Assert.True(await db.ExploreSpots.AnyAsync(s => s.PrefectureId == Nara && s.IconId == "N_kiisanchi" && s.Status == ExploreSpotStatus.Published));
+            // Mốc mẫu ra mắt mà người soạn đã gỡ thì tắt theo: người học chỉ thấy đúng các mốc đang dùng trong gói
+            Assert.Equal(pack.Spots.Count(s => s.Status == ExploreSpotStatus.Published && s.IsActive),
+                await db.ExploreSpots.CountAsync(s => s.Status == ExploreSpotStatus.Published && s.IsActive));
+        }
+
+        [Fact]
+        public async Task Import_ChapterRemovedByTheAuthor_IsTurnedOff_UnlessEditedOnThisMachine()
+        {
+            using var db = await SeededContext("chapter-removed");
+            // Bộ mẫu ra mắt có 3 chương; máy này tự đổi tên chương thứ ba
+            var edited = await db.ExploreChapters.SingleAsync(c => c.OrderIndex == 2);
+            edited.Title = "Chương riêng của máy này";
+            await db.SaveChangesAsync();
+            var removed = await db.ExploreChapters.SingleAsync(c => c.OrderIndex == 1);
+            var pack = new ExploreContentPack(
+                Array.Empty<ExploreContentPack.GrammarEntry>(), Array.Empty<ExploreContentPack.VocabularyEntry>(),
+                Array.Empty<ExploreContentPack.ScenarioEntry>(), Array.Empty<ExploreContentPack.DialogueEntry>(),
+                new[] { new ExploreContentPack.ChapterEntry(0, "Chương mới", null, "N5", "N5", new[] { 12 }) },
+                new[] { 12 }, Array.Empty<ExploreContentPack.SpotEntry>(), Array.Empty<ExploreContentPack.WordEntry>());
+
+            await ExploreContentSeeder.ImportAsync(db, pack, ExploreContentHistory.Empty);
+
+            var active = await db.ExploreChapters.Include(c => c.Prefectures).Where(c => c.IsActive).OrderBy(c => c.OrderIndex).ToListAsync();
+            Assert.Equal(new[] { "Chương mới", "Chương riêng của máy này" }, active.Select(c => c.Title));
+            Assert.Equal(new[] { 0, 1 }, active.Select(c => c.OrderIndex));
+            Assert.Equal(new[] { 12 }, active[0].Prefectures.Select(p => p.PrefectureId));
+            var off = await db.ExploreChapters.Include(c => c.Prefectures).SingleAsync(c => c.Id == removed.Id);
+            Assert.False(off.IsActive);
+            Assert.Empty(off.Prefectures);
+        }
+
+        [Fact]
+        public async Task Import_DialogueWithoutScenario_IsCreatedWithoutScenario()
+        {
+            using var db = await SeededContext("no-scenario");
+            var pack = ExploreContentPack.Load();
+            var standalone = pack.Dialogues.Where(d => d.ScenarioTitle == null).Select(d => d.Title).ToList();
+            Assert.NotEmpty(standalone);
+
+            var result = await ExploreContentSeeder.ImportAsync(db, pack, ExploreContentHistory.Load());
+
+            Assert.Empty(result.UnresolvedLinks);
+            foreach (var title in standalone)
+            {
+                Assert.Null((await db.ShadowingDialogues.SingleAsync(d => d.Title == title)).ScenarioId);
+            }
         }
 
         [Fact]
@@ -270,30 +317,30 @@ namespace JCAP.Tests.Services
             var pack = ExploreContentPack.Load();
             await ExploreContentSeeder.ImportAsync(db, pack, ExploreContentHistory.Load());
 
-            var c1 = pack.Chapters.Single(c => c.OrderIndex == 1);
+            var c0 = pack.Chapters.Single(c => c.OrderIndex == 0);
             var word = pack.ProvinceWords.Single(w => w.PrefectureId == Tokyo);
             var next = pack with
             {
-                Chapters = pack.Chapters.Select(c => c.OrderIndex == 1 ? c with { Title = "Chương 1 đổi tên" } : c).ToArray(),
+                Chapters = pack.Chapters.Select(c => c.OrderIndex == 0 ? c with { Title = "Chương đổi tên" } : c).ToArray(),
                 ProvinceWords = pack.ProvinceWords.Select(w => w.PrefectureId == Tokyo ? w with { Meaning = "nghĩa mới" } : w).ToArray(),
             };
             var history = ExploreContentHistory.Empty with
             {
-                Chapters = new() { ["1"] = new[] { c1 } },
+                Chapters = new() { ["0"] = new[] { c0 } },
                 Words = new() { [Tokyo.ToString()] = new[] { word } },
             };
             await ExploreContentSeeder.ImportAsync(db, next, history);
 
-            Assert.Equal("Chương 1 đổi tên", (await db.ExploreChapters.SingleAsync(c => c.OrderIndex == 1)).Title);
+            Assert.Equal("Chương đổi tên", (await db.ExploreChapters.SingleAsync(c => c.IsActive && c.OrderIndex == 0)).Title);
             Assert.Equal("nghĩa mới", (await db.ExploreProvinceWords.SingleAsync(w => w.PrefectureId == Tokyo)).Meaning);
 
             // Chương admin tự đổi tên trên máy này thì giữ nguyên
-            var c2 = await db.ExploreChapters.SingleAsync(c => c.OrderIndex == 2);
-            c2.Title = "Tên riêng";
+            var mine = await db.ExploreChapters.SingleAsync(c => c.IsActive && c.OrderIndex == 0);
+            mine.Title = "Tên riêng";
             await db.SaveChangesAsync();
-            var renamed = pack with { Chapters = pack.Chapters.Select(c => c.OrderIndex == 2 ? c with { Title = "Bản mới" } : c).ToArray() };
-            await ExploreContentSeeder.ImportAsync(db, renamed, ExploreContentHistory.Empty with { Chapters = new() { ["2"] = new[] { pack.Chapters.Single(c => c.OrderIndex == 2) } } });
-            Assert.Equal("Tên riêng", (await db.ExploreChapters.SingleAsync(c => c.OrderIndex == 2)).Title);
+            var renamed = pack with { Chapters = pack.Chapters.Select(c => c.OrderIndex == 0 ? c with { Title = "Bản mới" } : c).ToArray() };
+            await ExploreContentSeeder.ImportAsync(db, renamed, ExploreContentHistory.Empty with { Chapters = new() { ["0"] = new[] { c0 } } });
+            Assert.Equal("Tên riêng", (await db.ExploreChapters.SingleAsync(c => c.Id == mine.Id)).Title);
         }
 
         [Fact]
