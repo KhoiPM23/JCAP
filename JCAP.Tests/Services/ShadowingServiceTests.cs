@@ -113,6 +113,40 @@ public class ShadowingServiceTests
         Assert.Equal(2, result.Data[1].TotalSentences);
     }
 
+    [Fact]
+    public async Task Learner_SeesActiveDialoguesWithoutScenario()
+    {
+        // Arrange: bài Shadowing không gắn kịch bản vẫn phải hiện cho học viên
+        using var context = CreateInMemoryDbContext();
+        await SeedTestDataAsync(context);
+        context.ShadowingDialogues.Add(new ShadowingDialogue
+        {
+            Id = 50,
+            ScenarioId = null,
+            Title = "Quầy nhập cảnh",
+            JLPTLevel = "N5",
+            IsActive = true,
+            Sentences = new List<ShadowingSentence>
+            {
+                new() { Id = 501, OrderIndex = 1, SpeakerRole = "A", JapaneseText = "観光です。", VietnameseTranslation = "Tôi đi du lịch.", NativeAudioUrl = "/audio/501.mp3" }
+            }
+        });
+        await context.SaveChangesAsync();
+        var service = new ShadowingService(context);
+
+        // Act
+        var catalog = await service.GetLearnerCatalogAsync(null, null, null);
+        var searched = await service.GetLearnerCatalogAsync("nhập cảnh", null, null);
+        var detail = await service.GetLearnerDetailAsync(50);
+
+        // Assert
+        Assert.Contains(catalog.Data!, d => d.Id == 50 && d.ScenarioId == null);
+        Assert.Single(searched.Data!);
+        Assert.True(detail.Success);
+        Assert.Null(detail.Data!.ScenarioId);
+        Assert.Single(detail.Data.Sentences);
+    }
+
     [Theory]
     [InlineData("Ramen", 1)]
     [InlineData("nhà ga", 1)]

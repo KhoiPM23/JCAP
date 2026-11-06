@@ -19,7 +19,7 @@ import type {
 const BASE = '/api/admin/explore';
 
 /** Số mốc đang dùng tối thiểu để mở một tỉnh (khớp AdminExploreService.MinSpotsToOpen ở backend) */
-export const MIN_SPOTS_TO_OPEN = 3;
+export const MIN_SPOTS_TO_OPEN = 1;
 
 /** Quản lý bản đồ Khám phá phía admin: mở tỉnh và quản lý chương */
 class AdminExploreService {

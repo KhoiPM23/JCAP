@@ -20,7 +20,8 @@ import { useLearnerAccount } from './useLearnerAccount';
 
 const PREF_BY_ID = new Map(PREFECTURES.map((p) => [p.id, p]));
 /** Chữ Hán cho thứ tự chương (mẫu: 一, 二, 三…). Chương 0 là chương nhập môn: dùng 序 (mở đầu) thay cho 〇 vì 〇 trông như hai vòng tròn lồng nhau */
-const KANJI_NUM = ['序', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+/** Số chương bằng chữ Hán, theo thứ tự trong hành trình: chương đầu tiên (orderIndex 0) là 一 */
+const KANJI_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
 interface NavDef {
   id: string;
@@ -341,10 +342,10 @@ const LearningGroup: React.FC<{
             aria-label={`${chapter.title}, ${chapter.stampCount} trên ${chapter.spotCount} dấu`}
           >
             <span className="jx-kanji" lang="ja">
-              {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex}
+              {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex + 1}
             </span>
             <span className="jx-lbl" style={{ flexGrow: 1 }}>
-              {`Chương ${chapter.orderIndex}`}
+              {`Chương ${chapter.orderIndex + 1}`}
             </span>
             <span className="jx-lbl jx-lbl-fixed" style={{ fontSize: 12, fontWeight: 700, color: 'var(--shu)' }}>
               {`${chapter.stampCount}/${chapter.spotCount}`}
@@ -353,7 +354,7 @@ const LearningGroup: React.FC<{
           <div className="jx-fly">
             <div className="jx-pill">
               <span className="jx-kanji jx-kanji--lg" lang="ja">
-                {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex}
+                {KANJI_NUM[chapter.orderIndex] ?? chapter.orderIndex + 1}
               </span>
               <span className="jx-pill-title" style={{ fontWeight: 600 }} title={chapter.title}>
                 {chapter.title}
@@ -375,7 +376,7 @@ const LearningGroup: React.FC<{
                 <strong style={{ color: 'var(--sumi)' }}>{`${chapter.stampCount}/${chapter.spotCount} dấu.`}</strong>
                 {next &&
                   !next.isUnlocked &&
-                  ` Chương ${next.orderIndex} mở ở ${Math.ceil((next.unlockThresholdPercent * chapter.spotCount) / 100)} dấu.`}
+                  ` Chương ${next.orderIndex + 1} mở ở ${Math.ceil((next.unlockThresholdPercent * chapter.spotCount) / 100)} dấu.`}
               </span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {chapter.prefectureIds.map((id) => {

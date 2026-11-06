@@ -18,12 +18,12 @@ namespace JCAP.Services.Interfaces
         Task<ApiResponse<AdminExploreSpotDto>> CreateSpotAsync(int prefectureId, SaveExploreSpotDto dto);
 
         /// <summary>
-        /// Lưu mốc. Mốc đang dùng không được để trống những gì người học đang thấy (tên, vị trí, câu mẫu, tình huống, cách dùng).
+        /// Lưu mốc. Chỉ kiểm tra dữ liệu hợp lệ (tên, vị trí, độ dài...); các mục kiểm tra còn thiếu không chặn việc lưu.
         /// </summary>
         Task<ApiResponse<AdminExploreSpotDto>> UpdateSpotAsync(int spotId, SaveExploreSpotDto dto);
 
         /// <summary>
-        /// Chuyển Nháp ↔ Đang dùng. Sang "Đang dùng" phải qua đủ danh sách kiểm tra;
+        /// Chuyển Nháp ↔ Đang dùng. Sang "Đang dùng" không đòi đủ danh sách kiểm tra;
         /// về "Nháp" không được làm tỉnh đang mở mất mốc đang dùng cuối cùng.
         /// </summary>
         Task<ApiResponse<AdminExploreSpotDto>> SetStatusAsync(int spotId, string status);
