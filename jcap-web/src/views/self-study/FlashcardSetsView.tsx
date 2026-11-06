@@ -1,11 +1,12 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
 export const FlashcardSetsView: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // State
   const [quota, setQuota] = useState<FlashcardQuota | null>(null);
@@ -13,6 +14,7 @@ export const FlashcardSetsView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [unlocking, setUnlocking] = useState<boolean>(false);
   const [simulating, setSimulating] = useState<boolean>(false);
+  const [resetting, setResetting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -37,9 +39,14 @@ export const FlashcardSetsView: React.FC = () => {
 
   // Filters
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') === 'bookmarks' ? 'bookmarks' : 'sets';
+  const isBookmarkRoute = location.pathname.endsWith('/bookmarks') || searchParams.get('tab') === 'bookmarks';
   const initialJlpt = searchParams.get('level') || 'All';
-  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'sets' | 'bookmarks' | 'history'>(isBookmarkRoute ? 'bookmarks' : 'sets');
+
+  useEffect(() => {
+    const isBookmark = location.pathname.endsWith('/bookmarks') || searchParams.get('tab') === 'bookmarks';
+    setActiveTab(isBookmark ? 'bookmarks' : 'sets');
+  }, [location.pathname, searchParams]);
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
   const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -161,6 +168,28 @@ export const FlashcardSetsView: React.FC = () => {
     setSimulating(false);
   };
 
+  // Xóa toàn bộ tiến độ và lịch sử Flashcard để kiểm thử lại từ đầu
+  const handleResetProgress = async () => {
+    const confirmed = window.confirm(
+      'Bạn có chắc chắn muốn xóa toàn bộ tiến độ học và lịch sử phiên Flashcard của bạn không? Toàn bộ thẻ sẽ trở về trạng thái mới (New) để kiểm thử lại từ đầu.'
+    );
+    if (!confirmed) return;
+
+    setResetting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const res = await flashcardService.resetProgress();
+    if (res.success) {
+      setSuccessMessage(res.message || 'Đã đặt lại toàn bộ tiến độ và lịch sử Flashcard!');
+      await loadData();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } else {
+      setErrorMessage(res.message || 'Không thể đặt lại tiến độ.');
+    }
+    setResetting(false);
+  };
+
   // An toàn với mảng dữ liệu (Defensive array)
   const safeSets = useMemo(() => (Array.isArray(sets) ? sets : []), [sets]);
 
@@ -250,6 +279,15 @@ export const FlashcardSetsView: React.FC = () => {
               <span>⏩</span>
               <span>{simulating ? 'Đang tua...' : 'Giả lập qua 3 ngày'}</span>
             </button>
+            <button
+              onClick={handleResetProgress}
+              disabled={resetting || simulating}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-danger-soft hover:opacity-90 text-danger border border-danger/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Xóa toàn bộ tiến độ và lịch sử Flashcard của tài khoản để test lại từ đầu"
+            >
+              <span>🗑️</span>
+              <span>{resetting ? 'Đang reset...' : 'Reset tiến độ test'}</span>
+            </button>
           </div>
         </div>
 
@@ -272,9 +310,9 @@ export const FlashcardSetsView: React.FC = () => {
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
         <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
-          {/* Tab 1: Bộ thẻ theo chủ đề (Active) */}
-          <button
-            onClick={() => setActiveTab('sets')}
+          {/* Tab 1: Bộ thẻ theo chủ đề */}
+          <Link
+            to="/flashcards"
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'sets'
                 ? 'bg-ai text-on-ai shadow-xs'
@@ -283,11 +321,11 @@ export const FlashcardSetsView: React.FC = () => {
           >
             <span>🗂️</span>
             <span>Bộ thẻ theo Chủ đề ({safeSets.length})</span>
-          </button>
+          </Link>
 
           {/* Tab 2: Bookmark (Đã kích hoạt với API SQL Server & Dark Mode) */}
-          <button
-            onClick={() => setActiveTab('bookmarks')}
+          <Link
+            to="/flashcards/bookmarks"
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'bookmarks'
                 ? 'bg-ai text-on-ai shadow-xs'
@@ -296,7 +334,7 @@ export const FlashcardSetsView: React.FC = () => {
           >
             <span>🔖</span>
             <span>Đã lưu (Bookmark) ({bookmarks.length})</span>
-          </button>
+          </Link>
 
           {/* Tab 3: Lịch sử ôn tập */}
           <Link
@@ -310,7 +348,7 @@ export const FlashcardSetsView: React.FC = () => {
 
         {/* ==================== 3. DAILY QUOTA & DUE REMINDER BANNER ==================== */}
         {quota ? (
-          <div className="bg-paper-50 border border-line rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div className="bg-paper-50 border border-line rounded-2xl p-5 shadow-xs grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             {/* Cột 1: Nhắc thẻ đến hạn */}
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-paper-100 flex items-center justify-center text-2xl shadow-xs border border-line">
@@ -356,27 +394,20 @@ export const FlashcardSetsView: React.FC = () => {
                   }}
                 />
               </div>
-              <div className="text-[11px] text-sumi-muted">
-                Còn <span className="font-bold text-ai">{quota.remainingNewCardsToday} thẻ mới</span> miễn phí hôm nay
+              <div className="flex items-center justify-between text-[11px] text-sumi-muted pt-0.5">
+                <span>
+                  Còn <span className="font-bold text-ai">{quota.remainingNewCardsToday} thẻ mới</span> miễn phí hôm nay
+                </span>
+                <button
+                  onClick={handleUnlockExtra}
+                  disabled={unlocking}
+                  className="px-2.5 py-1 bg-paper-100 hover:bg-paper-200 border border-line text-sumi rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:shadow-xs flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                  title="Mở thêm 10 thẻ mới bằng Credit"
+                >
+                  <span>{unlocking ? 'Đang mở...' : '+ 10 thẻ'}</span>
+                  <span className="text-warning font-extrabold">({quota.unlockCreditCost} 🪙)</span>
+                </button>
               </div>
-            </div>
-
-            {/* Cột 3: Nút Mở thêm thẻ mới bằng Credit thực sự */}
-            <div className="border-t md:border-t-0 md:border-l border-line pt-4 md:pt-0 md:pl-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-left w-full sm:w-auto">
-                <div className="text-xs text-sumi-muted">Số dư hiện có:</div>
-                <div className="text-sm font-extrabold text-warning flex items-center gap-1">
-                  🪙 {quota.userCreditBalance} Credits
-                </div>
-              </div>
-              <button
-                onClick={handleUnlockExtra}
-                disabled={unlocking}
-                className="w-full sm:w-auto px-4 py-2.5 bg-paper-100 hover:bg-paper-200 border border-line text-sumi rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
-              >
-                <span>{unlocking ? 'Đang mở...' : '+ Mở thêm 10 thẻ mới'}</span>
-                <span className="text-warning font-extrabold">({quota.unlockCreditCost} Credits)</span>
-              </button>
             </div>
           </div>
         ) : (
@@ -487,11 +518,7 @@ export const FlashcardSetsView: React.FC = () => {
                 </button>
               </div>
               )}
-              {false && (
-                <button>
-                  <span>➔</span>
-                </button>
-              )}
+
             </div>
 
             {/* Danh sách thẻ Bookmarks */}
@@ -510,12 +537,12 @@ export const FlashcardSetsView: React.FC = () => {
                   Khi thực hành đàm thoại trong kịch bản (Scenario) hoặc xem kết quả phân tích ngôn ngữ, hãy nhấn vào biểu tượng 🔖 để lưu các từ vựng & ngữ pháp trọng tâm vào đây.
                 </p>
                 <div className="pt-2">
-                  <button
-                    onClick={() => setActiveTab('sets')}
-                    className="px-4 py-2 bg-ai-soft text-ai hover:opacity-90 font-bold rounded-xl text-xs transition border border-ai/20 cursor-pointer"
+                  <Link
+                    to="/flashcards"
+                    className="inline-block px-4 py-2 bg-ai-soft text-ai hover:opacity-90 font-bold rounded-xl text-xs transition border border-ai/20 cursor-pointer"
                   >
                     Khám phá bộ thẻ theo chủ đề ➔
-                  </button>
+                  </Link>
                 </div>
               </div>
             ) : (

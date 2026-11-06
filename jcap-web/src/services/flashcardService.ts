@@ -293,6 +293,22 @@ class FlashcardService {
       return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
     }
   }
+  public async resetProgress(): Promise<{ success: boolean; data?: boolean; message?: string }> {
+    try {
+      const res = await fetch(`${BASE_URL}/debug/reset-progress`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        return { success: false, message: errJson?.message || `Lỗi đặt lại tiến độ (${res.status})` };
+      }
+      const json = await res.json();
+      return this.unwrapResponse<boolean>(json, false);
+    } catch (err: any) {
+      return { success: false, message: err.message || 'Không thể kết nối đến máy chủ backend.' };
+    }
+  }
 
   // ============================================================
   // 6. Bookmarks (UC-52, UC-53)
