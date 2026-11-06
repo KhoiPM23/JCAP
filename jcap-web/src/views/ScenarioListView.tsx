@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, JpText, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
@@ -127,7 +127,18 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hội thoại AI</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hội thoại AI</h1>
+            <button
+              type="button"
+              onClick={() => navigate('/placement-test')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs cursor-pointer"
+              title="Xem thử giao diện phòng hội thoại Placement Test (Mock Room)"
+            >
+              <span>🏨</span>
+              <span>Xem thử Placement Test Room</span>
+            </button>
+          </div>
           <p className="m-0 text-[15px] leading-6 text-sumi-muted">Chọn một tình huống, nhập vai và nói chuyện với nhân vật AI. Mỗi lượt nói được nhận xét ngay.</p>
         </div>
         <div className="w-[320px] max-w-full">

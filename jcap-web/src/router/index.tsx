@@ -13,6 +13,7 @@ import { EmailVerificationPendingView } from '../views/EmailVerificationPendingV
 import { ScenarioListView, type Scenario } from '../views/ScenarioListView';
 import { ScenarioDetailsView } from '../views/ScenarioDetailsView';
 import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
+import { PlacementTestRoomView } from '../views/PlacementTestRoomView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
 import { StampBookView } from '../views/explore/StampBookView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
@@ -366,6 +367,15 @@ export const AppRouter: React.FC = () => {
         element={
           <PrivateRoute>
             <RoleplayPracticeView />
+          </PrivateRoute>
+        }
+      />
+      {/* Placement Test Interactive Practice Room */}
+      <Route
+        path="/placement-test"
+        element={
+          <PrivateRoute>
+            <PlacementTestRoomView />
           </PrivateRoute>
         }
       />
