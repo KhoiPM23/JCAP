@@ -221,5 +221,25 @@ namespace JCAP.Controllers
             }
             return Ok(result);
         }
+
+        /// <summary>
+        /// DEBUG / TEST: Xóa sạch toàn bộ tiến độ và lịch sử flashcard của người dùng hiện tại để test lại từ đầu.
+        /// </summary>
+        [HttpPost("debug/reset-progress")]
+        public async Task<ActionResult<ApiResponse<bool>>> ResetProgress()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<bool>.Fail("Chưa xác thực người dùng."));
+            }
+
+            var result = await _flashcardService.ResetUserProgressAsync(userId);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

@@ -444,14 +444,17 @@ export const AppRouter: React.FC = () => {
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />
+        <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
+        <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
+        <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+
+        {/* Kho học liệu (Learning Topics & Content) */}
         <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>
           <Route index element={<Navigate to="topics" replace />} />
           <Route path="topics" element={<LearningTopicsView />} />
           <Route path="topics/:topicId" element={<LearningTopicContentsView />} />
           <Route path="topics/:topicId/:kind/:contentId" element={<LearningContentDetailView />} />
         </Route>
-        <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
-        <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />

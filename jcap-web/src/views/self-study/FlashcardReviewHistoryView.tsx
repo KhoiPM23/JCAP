@@ -196,16 +196,13 @@ export const FlashcardReviewHistoryView: React.FC = () => {
             <span>Bộ thẻ theo Chủ đề</span>
           </Link>
 
-          <button
-            disabled
-            className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-faint border border-line flex items-center gap-2 cursor-not-allowed opacity-75"
+          <Link
+            to="/flashcards/bookmarks"
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-paper-50 text-sumi-muted hover:bg-paper-100 hover:text-sumi border border-line transition-all flex items-center gap-2"
           >
             <span>🔖</span>
             <span>Đã lưu (Bookmark)</span>
-            <span className="text-[10px] font-bold uppercase bg-warning-soft text-warning px-1.5 py-0.5 rounded-md ml-1">
-              Sắp ra mắt
-            </span>
-          </button>
+          </Link>
 
           <button
             className="px-4 py-2 rounded-xl text-sm font-bold bg-ai text-on-ai shadow-xs flex items-center gap-2"

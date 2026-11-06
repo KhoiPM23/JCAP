@@ -1078,6 +1078,41 @@ namespace JCAP.Services.Implementations
 
             return ApiResponse<bool>.Ok(true, $"Đã giả lập tua nhanh {days} ngày.");
         }
+        public async Task<ApiResponse<bool>> ResetUserProgressAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return ApiResponse<bool>.Fail("Chưa xác thực người dùng.");
+            }
+
+            // 1. Xóa toàn bộ log ôn tập
+            var logs = await _db.FlashcardReviewLogs
+                .Where(l => l.UserId == userId)
+                .ToListAsync();
+            _db.FlashcardReviewLogs.RemoveRange(logs);
+
+            // 2. Xóa các phiên học
+            var sessions = await _db.FlashcardStudySessions
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+            _db.FlashcardStudySessions.RemoveRange(sessions);
+
+            // 3. Xóa toàn bộ tiến độ Flashcard của user
+            var progresses = await _db.LearnerFlashcardProgresses
+                .Where(p => p.UserId == userId)
+                .ToListAsync();
+            _db.LearnerFlashcardProgresses.RemoveRange(progresses);
+
+            // 4. Xóa / Reset hạn mức (Quota) của user
+            var quotas = await _db.LearnerDailyFlashcardQuotas
+                .Where(q => q.UserId == userId)
+                .ToListAsync();
+            _db.LearnerDailyFlashcardQuotas.RemoveRange(quotas);
+
+            await _db.SaveChangesAsync();
+
+            return ApiResponse<bool>.Ok(true, "Đã xóa toàn bộ tiến độ và lịch sử Flashcard để kiểm thử lại từ đầu.");
+        }
 
         private async Task SyncOtherIncompleteSessionsOnCardReviewedAsync(
             string userId,
