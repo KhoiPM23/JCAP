@@ -11,12 +11,7 @@ public static class LearningContentSampleCommand
         try
         {
             var data = LearningContentSampleData.Load();
-            var connection = new SqlConnectionStringBuilder(db.Database.GetConnectionString());
-            // This command intentionally only targets the team's local development database.
-            var host = connection.DataSource.Split('\\')[0].Split(',')[0];
-            if (!new[] { ".", "(local)", "(localdb)", "localhost", "127.0.0.1", Environment.MachineName }
-                .Contains(host, StringComparer.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Sample import requires a local SQL Server connection.");
+            var connection = RequireLocalConnection(db);
             Console.WriteLine($"Local database: {connection.DataSource} / {connection.InitialCatalog}");
             var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
             Console.WriteLine("Pending migrations: " + JsonSerializer.Serialize(pending));
@@ -68,6 +63,16 @@ public static class LearningContentSampleCommand
                 Console.Error.WriteLine(error.Message);
             return 1;
         }
+    }
+
+    internal static SqlConnectionStringBuilder RequireLocalConnection(AppDbContext db)
+    {
+        var connection = new SqlConnectionStringBuilder(db.Database.GetConnectionString());
+        var host = connection.DataSource.Split('\\')[0].Split(',')[0];
+        if (!new[] { ".", "(local)", "(localdb)", "localhost", "127.0.0.1", Environment.MachineName }
+            .Contains(host, StringComparer.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Learning import requires a local SQL Server connection.");
+        return connection;
     }
 
     private static readonly JsonSerializerOptions JsonOptions = new()

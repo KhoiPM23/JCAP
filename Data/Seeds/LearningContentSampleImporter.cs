@@ -7,11 +7,11 @@ namespace JCAP.Data.Seeds;
 /// <summary>Explicit, insert-only sample import. Existing content and admin edits are preserved.</summary>
 public static class LearningContentSampleImporter
 {
-    public static async Task<SampleImportResult> ImportAsync(AppDbContext db, LearningContentSampleData data)
+    public static async Task<SampleImportResult> ImportAsync(AppDbContext db, LearningContentSampleData data, bool full = false)
     {
-        data.Validate();
+        data.Validate(full);
         // Serialize runs of this importer; all seven target tables commit atomically.
-        await using var transaction = db.Database.IsRelational()
+        await using var transaction = db.Database.IsRelational() && db.Database.CurrentTransaction is null
             ? await db.Database.BeginTransactionAsync(IsolationLevel.Serializable) : null;
         if (db.Database.IsSqlServer())
         {
