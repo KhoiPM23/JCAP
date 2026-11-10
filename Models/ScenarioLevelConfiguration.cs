@@ -10,6 +10,9 @@ namespace JCAP.Models
         public string AiPersona { get; set; } = string.Empty;
         public int CreditCost { get; set; } = 5;
         public string Status { get; set; } = "Draft"; // Draft, Published, Archived
+        public int SpeakRegister { get; set; } = 1; // 0 = Tameguchi, 1 = Teineigo, 2 = Keigo
+        public int ExpectedLearnerRegister { get; set; } = 1; // 0 = Tameguchi, 1 = Teineigo, 2 = Keigo
+        public string? CompatibleEventsJson { get; set; } // e.g. ["EV_SOLD_OUT", "EV_SPEAK_FAST", "EV_MISHEARD"]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 

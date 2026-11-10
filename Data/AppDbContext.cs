@@ -53,6 +53,8 @@ namespace JCAP.Data
         public DbSet<LearnerSkillMastery> LearnerSkillMasteries { get; set; } = null!;
         public DbSet<LearnerBehaviorSignal> LearnerBehaviorSignals { get; set; } = null!;
         public DbSet<UserNpcRelationship> UserNpcRelationships { get; set; } = null!;
+        public DbSet<LearnerMemory> LearnerMemories { get; set; } = null!;
+        public DbSet<CharacterMemory> CharacterMemories { get; set; } = null!;
 
         // Explore (bản đồ hành trình học) DbSets - cấu hình ở ExploreModelConfiguration
         public DbSet<ExplorePrefecture> ExplorePrefectures { get; set; } = null!;
@@ -197,6 +199,15 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(20)
                     .HasDefaultValue("Draft");
+
+                entity.Property(e => e.SpeakRegister)
+                    .HasDefaultValue(1);
+
+                entity.Property(e => e.ExpectedLearnerRegister)
+                    .HasDefaultValue(1);
+
+                entity.Property(e => e.CompatibleEventsJson)
+                    .HasColumnType("nvarchar(max)");
 
                 entity.HasMany(e => e.Missions)
                     .WithOne(e => e.ScenarioLevelConfiguration)
@@ -556,6 +567,40 @@ namespace JCAP.Data
             modelBuilder.Entity<UserNpcRelationship>(entity =>
             {
                 entity.HasIndex(e => new { e.UserId, e.NpcCode }).IsUnique();
+            });
+
+            // LearnerMemory configuration (FE-03 Cross-session Memory)
+            modelBuilder.Entity<LearnerMemory>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.Category, e.Key });
+                entity.Property(e => e.Category).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Visibility).HasMaxLength(50).HasDefaultValue("WorldKnown");
+                entity.Property(e => e.Confidence).HasDefaultValue(1.0);
+                entity.Property(e => e.CreatedAtUtc).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.LastConfirmedAtUtc).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // CharacterMemory configuration (FE-03 Persona Encounter Memory)
+            modelBuilder.Entity<CharacterMemory>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.CharacterPersonaKey });
+                entity.Property(e => e.CharacterPersonaKey).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.AffinityScore).HasDefaultValue(0);
+                entity.Property(e => e.EncounterCount).HasDefaultValue(1);
+                entity.Property(e => e.LastInteractionSummary).HasMaxLength(200);
+                entity.Property(e => e.LastMetAtUtc).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ShadowingPracticeSession: lịch sử bất biến, không xóa cứng (Restrict để không mất lịch sử theo dây chuyền)

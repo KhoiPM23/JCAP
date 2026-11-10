@@ -81,6 +81,78 @@ namespace JCAP.Data.Seeds
                                     });
                                 }
                             }
+
+                            // Đồng bộ TargetVocabularies (khớp theo Word để cập nhật hoặc thêm mới)
+                            var seedWords = seedLevel.TargetVocabularies
+                                .Select(v => v.Word.Trim())
+                                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                            var vocabsToRemove = existingLevel.TargetVocabularies
+                                .Where(v => !seedWords.Contains(v.Word.Trim()))
+                                .ToList();
+
+                            foreach (var obsoleteVocab in vocabsToRemove)
+                            {
+                                existingLevel.TargetVocabularies.Remove(obsoleteVocab);
+                                dbContext.TargetVocabularies.Remove(obsoleteVocab);
+                            }
+
+                            foreach (var seedVocab in seedLevel.TargetVocabularies)
+                            {
+                                var existingVocab = existingLevel.TargetVocabularies
+                                    .FirstOrDefault(v => v.Word.Trim().Equals(seedVocab.Word.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                                if (existingVocab != null)
+                                {
+                                    existingVocab.Reading = seedVocab.Reading;
+                                    existingVocab.Meaning = seedVocab.Meaning;
+                                }
+                                else
+                                {
+                                    existingLevel.TargetVocabularies.Add(new TargetVocabulary
+                                    {
+                                        Word = seedVocab.Word,
+                                        Reading = seedVocab.Reading,
+                                        Meaning = seedVocab.Meaning
+                                    });
+                                }
+                            }
+
+                            // Đồng bộ TargetGrammars (khớp theo Pattern để cập nhật hoặc thêm mới)
+                            var seedPatterns = seedLevel.TargetGrammars
+                                .Select(g => g.Pattern.Trim())
+                                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                            var grammarsToRemove = existingLevel.TargetGrammars
+                                .Where(g => !seedPatterns.Contains(g.Pattern.Trim()))
+                                .ToList();
+
+                            foreach (var obsoleteGrammar in grammarsToRemove)
+                            {
+                                existingLevel.TargetGrammars.Remove(obsoleteGrammar);
+                                dbContext.TargetGrammars.Remove(obsoleteGrammar);
+                            }
+
+                            foreach (var seedGrammar in seedLevel.TargetGrammars)
+                            {
+                                var existingGrammar = existingLevel.TargetGrammars
+                                    .FirstOrDefault(g => g.Pattern.Trim().Equals(seedGrammar.Pattern.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                                if (existingGrammar != null)
+                                {
+                                    existingGrammar.Meaning = seedGrammar.Meaning;
+                                    existingGrammar.ExampleSentence = seedGrammar.ExampleSentence;
+                                }
+                                else
+                                {
+                                    existingLevel.TargetGrammars.Add(new TargetGrammar
+                                    {
+                                        Pattern = seedGrammar.Pattern,
+                                        Meaning = seedGrammar.Meaning,
+                                        ExampleSentence = seedGrammar.ExampleSentence
+                                    });
+                                }
+                            }
                         }
                         else
                         {

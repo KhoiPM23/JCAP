@@ -34,6 +34,34 @@ namespace JCAP.Services.Implementations
             if (hasVocab)
             {
                 int vocabId = request.VocabularyId!.Value;
+                var vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == vocabId && v.IsActive);
+                if (vocab == null)
+                {
+                    var targetVocab = await _db.TargetVocabularies
+                        .Include(tv => tv.ScenarioLevelConfiguration)
+                        .FirstOrDefaultAsync(tv => tv.Id == vocabId);
+
+                    if (targetVocab != null)
+                    {
+                        vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Word == targetVocab.Word && v.IsActive);
+                        if (vocab == null)
+                        {
+                            vocab = new Vocabulary
+                            {
+                                Word = targetVocab.Word,
+                                Reading = targetVocab.Reading,
+                                Meaning = targetVocab.Meaning,
+                                JLPTLevel = targetVocab.ScenarioLevelConfiguration?.JLPTLevel ?? "N3",
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _db.Vocabularies.Add(vocab);
+                            await _db.SaveChangesAsync();
+                        }
+                        vocabId = vocab.Id;
+                    }
+                }
+
                 var existing = await _db.LearnerBookmarks
                     .FirstOrDefaultAsync(b => b.UserId == userId && b.VocabularyId == vocabId);
 
@@ -49,7 +77,6 @@ namespace JCAP.Services.Implementations
                     }, "Đã bỏ lưu từ vựng.");
                 }
 
-                var vocab = await _db.Vocabularies.AsNoTracking().FirstOrDefaultAsync(v => v.Id == vocabId && v.IsActive);
                 if (vocab == null)
                 {
                     return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy từ vựng khả dụng.");
@@ -72,6 +99,34 @@ namespace JCAP.Services.Implementations
             else
             {
                 int grammarId = request.GrammarId!.Value;
+                var grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == grammarId && g.IsActive);
+                if (grammar == null)
+                {
+                    var targetGrammar = await _db.TargetGrammars
+                        .Include(tg => tg.ScenarioLevelConfiguration)
+                        .FirstOrDefaultAsync(tg => tg.Id == grammarId);
+
+                    if (targetGrammar != null)
+                    {
+                        grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Pattern == targetGrammar.Pattern && g.IsActive);
+                        if (grammar == null)
+                        {
+                            grammar = new Grammar
+                            {
+                                Pattern = targetGrammar.Pattern,
+                                Meaning = targetGrammar.Meaning,
+                                ExampleSentence = targetGrammar.ExampleSentence,
+                                JLPTLevel = targetGrammar.ScenarioLevelConfiguration?.JLPTLevel ?? "N3",
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _db.Grammars.Add(grammar);
+                            await _db.SaveChangesAsync();
+                        }
+                        grammarId = grammar.Id;
+                    }
+                }
+
                 var existing = await _db.LearnerBookmarks
                     .FirstOrDefaultAsync(b => b.UserId == userId && b.GrammarId == grammarId);
 
@@ -87,7 +142,6 @@ namespace JCAP.Services.Implementations
                     }, "Đã bỏ lưu mẫu ngữ pháp.");
                 }
 
-                var grammar = await _db.Grammars.AsNoTracking().FirstOrDefaultAsync(g => g.Id == grammarId && g.IsActive);
                 if (grammar == null)
                 {
                     return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy mẫu ngữ pháp khả dụng.");

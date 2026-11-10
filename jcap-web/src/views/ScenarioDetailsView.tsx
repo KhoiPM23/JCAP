@@ -1,12 +1,14 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
+import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
 import { useAuth } from '../contexts/AuthContext';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
-import { AlertCircleIcon, RefreshIcon, CompassIcon } from '../components/common/Icons';
+import { AlertCircleIcon, RefreshIcon, CompassIcon, VolumeIcon } from '../components/common/Icons';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 
@@ -69,7 +71,7 @@ const sortLevelsByRank = (levels: ScenarioLevelConfiguration[]): ScenarioLevelCo
 
 const checkHasActiveSession = (session?: ActiveRoleplaySessionDto | null): boolean => {
   if (!session) return false;
-  return Boolean(session.hasActiveSession ?? Boolean(session.sessionId || session.activeSessionId));
+  return session.hasActiveSession === true;
 };
 
 export const ScenarioDetailsView: React.FC = () => {
@@ -82,6 +84,12 @@ export const ScenarioDetailsView: React.FC = () => {
   // Ưu tiên param trong URL > state > fallback 1
   const rawId = params.scenarioId || (location.state as { scenarioId?: number } | null)?.scenarioId;
   const scenarioId = Number(rawId) > 0 ? Number(rawId) : 1;
+
+  const [searchParams] = useSearchParams();
+  const rawReturnUrl = searchParams.get('return');
+  const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
+    ? rawReturnUrl
+    : ((location.state as any)?.returnUrl ?? null);
 
   const [scenario, setScenario] = useState<ScenarioDetails | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveRoleplaySessionDto | null>(null);
@@ -97,7 +105,6 @@ export const ScenarioDetailsView: React.FC = () => {
 
   // Tab switch giữa từ vựng và ngữ pháp trọng tâm
   const [cheatsheetTab, setCheatsheetTab] = useState<'vocab' | 'grammar'>('vocab');
-  const [searchParams] = useSearchParams();
   const isBlindRequested = searchParams.get('mode') === 'blind' || searchParams.get('blind') === 'true';
 
   useEffect(() => {
@@ -183,7 +190,9 @@ export const ScenarioDetailsView: React.FC = () => {
     if (result.success && result.data) {
       setConfirmModal(null);
       const targetSessionId = result.data.sessionId || result.data.id;
-      navigate(`/scenarios/practice/${targetSessionId}${isBlindRequested ? "?mode=blind" : ""}`);
+      const blindSuffix = isBlindRequested ? "?mode=blind" : "";
+      const returnParam = returnUrl ? `${blindSuffix ? "&" : "?"}return=${encodeURIComponent(returnUrl)}` : "";
+      navigate(`/scenarios/practice/${targetSessionId}${blindSuffix}${returnParam}`);
     } else {
       setConfirmModal(null);
       setStartError(result.message || 'Không thể bắt đầu phiên luyện tập. Vui lòng thử lại.');
@@ -217,7 +226,7 @@ export const ScenarioDetailsView: React.FC = () => {
           Đang nạp dữ liệu kịch bản hội thoại...
         </p>
         <p className="mt-1 text-xs text-[var(--sumi-faint)]">
-          Chuẩn bị bối cảnh, nhiệm vụ thực chiến và nhân vật VOICEVOX
+          Chuẩn bị bối cảnh, nhiệm vụ thực chiến và nhân vật đàm thoại
         </p>
       </div>
     );
@@ -237,8 +246,8 @@ export const ScenarioDetailsView: React.FC = () => {
             {error || 'Kịch bản yêu cầu không tồn tại hoặc đã được chuyển vào kho lưu trữ.'}
           </p>
           <div className="mt-6 flex justify-center gap-3">
-            <Button type="button" onClick={() => navigate('/scenarios')} className="shadow-xs">
-              ← Quay lại Thư viện kịch bản
+            <Button type="button" onClick={() => navigate(returnUrl || '/scenarios')} className="shadow-xs">
+              ← {returnUrl ? 'Quay lại Bản đồ Khám phá' : 'Quay lại Thư viện kịch bản'}
             </Button>
           </div>
         </div>
@@ -257,11 +266,11 @@ export const ScenarioDetailsView: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => navigate('/scenarios')}
+              onClick={() => navigate(returnUrl || '/scenarios')}
               className="group inline-flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--paper-50)] px-3.5 py-2 text-xs font-semibold text-[var(--sumi-muted)] transition-all hover:border-[var(--ai)] hover:text-[var(--ai)] hover:shadow-xs active:scale-95"
             >
               <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">←</span>
-              <span>Thư viện tình huống</span>
+              <span>{returnUrl ? 'Bản đồ Khám phá' : 'Thư viện tình huống'}</span>
             </button>
             <span className="text-xs text-[var(--sumi-faint)]">/</span>
             <span className="text-xs font-bold text-[var(--sumi)] truncate max-w-[200px] sm:max-w-xs">
@@ -320,11 +329,11 @@ export const ScenarioDetailsView: React.FC = () => {
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--ai)]">
-                      Hội thoại tình huống 2 chiều
+                      Hội thoại AI phản xạ
                     </span>
                     <span className="text-[var(--sumi-faint)]">•</span>
                     <span className="text-[11px] font-semibold text-[var(--sumi-faint)]">
-                      Giọng đọc VOICEVOX
+                      Giọng đọc tự nhiên
                     </span>
                   </div>
 
@@ -349,11 +358,10 @@ export const ScenarioDetailsView: React.FC = () => {
                           key={lvl.id}
                           type="button"
                           onClick={() => setActiveLevel(lvl.jlptLevel)}
-                          className={`rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all ${
-                            isCurrent
+                          className={`rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all ${isCurrent
                               ? `${meta.bg} ${meta.text} border ${meta.border} shadow-xs ring-1 ${meta.ring}`
                               : 'bg-[var(--paper-100)] text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
-                          }`}
+                            }`}
                         >
                           {lvl.jlptLevel}
                         </button>
@@ -401,17 +409,16 @@ export const ScenarioDetailsView: React.FC = () => {
                           setActiveLevel(level.jlptLevel);
                           setStartError(null);
                         }}
-                        className={`flex flex-col items-center justify-center py-2.5 px-3 rounded-xl transition-all ${
-                          isSelected
+                        className={`flex flex-col items-center justify-center py-2.5 px-3 rounded-xl transition-all ${isSelected
                             ? 'bg-[var(--paper-50)] shadow-xs border border-[var(--line)]'
                             : 'text-[var(--sumi-muted)] hover:bg-[var(--paper-50)]/60'
-                        }`}
+                          }`}
                       >
                         <span className={`text-sm font-black font-sans ${isSelected ? meta.text : 'text-[var(--sumi)]'}`}>
                           {level.jlptLevel}
                         </span>
                         <span className="text-[10px] font-semibold text-[var(--sumi-faint)] mt-0.5">
-                          {isAdmin || !level.creditCost ? 'Miễn phí' : level.creditCost + ' credits'}
+                          {isAdmin ? 'Miễn phí' : 'Trừ theo lượt'}
                         </span>
                       </button>
                     );
@@ -489,7 +496,7 @@ export const ScenarioDetailsView: React.FC = () => {
                     key={mission.id}
                     className="group relative flex items-start gap-3.5 rounded-2xl border border-[var(--line)] bg-[var(--paper-50)] p-4 transition-all hover:border-[var(--line-strong)] hover:shadow-xs"
                   >
-                    {/* Hanko-style Number Badge */}
+                    {/* Step Number Badge */}
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--paper-100)] font-sans text-xs font-black text-[var(--sumi)] border border-[var(--line)] group-hover:border-[var(--ai)] group-hover:text-[var(--ai)] group-hover:bg-[var(--ai-soft)] transition-colors">
                       {String(mission.order || idx + 1).padStart(2, '0')}
                     </span>
@@ -499,21 +506,6 @@ export const ScenarioDetailsView: React.FC = () => {
                       <p className="text-sm font-bold text-[var(--sumi)] leading-snug">
                         {mission.content}
                       </p>
-
-                      {/* Intent Criteria tag if available */}
-                      {mission.completionCriteria?.intent && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-[var(--paper-100)] px-2 py-0.5 text-[10px] font-semibold text-[var(--sumi-faint)]">
-                            <span className="text-[var(--ai)]">Ý đồ:</span>
-                            <span>{mission.completionCriteria.intent}</span>
-                          </span>
-                          {mission.completionCriteria.target && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-[var(--paper-100)] px-2 py-0.5 text-[10px] font-semibold text-[var(--sumi-faint)]">
-                              <span>Mục tiêu: {mission.completionCriteria.target}</span>
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -524,78 +516,35 @@ export const ScenarioDetailsView: React.FC = () => {
           {/* Right Column: Sticky Action Box & Cheatsheet */}
           <aside className="space-y-6 xl:sticky xl:top-6 self-start">
 
-            {/* Resume Card (Hiển thị nổi bật khi có phiên dở dang) */}
-            {hasActiveSession && activeSessionId && (
-              <section className="relative overflow-hidden rounded-3xl border-2 border-[var(--ai)] bg-[var(--ai-soft)]/40 p-6 shadow-sm">
+            {/* Mini Resume Banner (Chỉ hiện khi học viên đang chọn cấp độ KHÁC với cấp độ dở dang) */}
+            {hasActiveSession && activeSessionId && !isSelectedLevelActive && (
+              <section className="relative overflow-hidden rounded-3xl border border-amber-300 bg-amber-50/70 p-4 shadow-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
                     </span>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ai)]">
-                      Phiên đang dở dang
-                    </span>
+                    <p className="text-xs font-bold text-amber-950 truncate">
+                      Đang có phiên dở dang tại JLPT {activeSessionLevel}
+                    </p>
                   </div>
-                  <span className="rounded-full bg-[var(--paper-50)] border border-[var(--line)] px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)]">
-                    JLPT {activeSessionLevel}
-                  </span>
-                </div>
-
-                <p className="mt-2 text-xs leading-relaxed text-[var(--sumi-muted)]">
-                  Bạn có một lượt đàm thoại chưa hoàn thành. Hãy tiếp tục để không làm gián đoạn tiến trình.
-                </p>
-
-                {/* Progress breakdown */}
-                <div className="mt-4 rounded-2xl bg-[var(--paper-50)] p-3.5 space-y-2 border border-[var(--line)] text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[var(--sumi-faint)]">Tiến độ nhiệm vụ:</span>
-                    <span className="font-bold text-emerald-700">
-                      {activeSession?.completedMissionsCount ?? 0} / {activeSession?.totalMissionsCount ?? 0} hoàn thành
-                    </span>
-                  </div>
-
-                  {/* Progress Mini-bar */}
-                  <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${
-                          activeSession?.totalMissionsCount
-                            ? Math.min(100, Math.round(((activeSession.completedMissionsCount ?? 0) / activeSession.totalMissionsCount) * 100))
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center pt-1 text-[11px]">
-                    <span className="text-[var(--sumi-faint)]">Lượt hội thoại:</span>
-                    <span className="font-medium text-[var(--sumi)]">{activeSession?.messageCount ?? 0} lượt</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <Button
-                    type="button"
-                    className="w-full shadow-xs active:scale-[0.98]"
-                    onClick={() => navigate(`/scenarios/practice/${activeSessionId}`)}
-                  >
-                    Tiếp tục phiên này →
-                  </Button>
                   <button
                     type="button"
-                    disabled={isStarting}
-                    onClick={() => handleStartPractice(true, activeSessionLevel)}
-                    className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95"
+                    onClick={() => {
+                      if (activeSessionLevel === 'N5' || activeSessionLevel === 'N4' || activeSessionLevel === 'N3') {
+                        setActiveLevel(activeSessionLevel);
+                      }
+                    }}
+                    className="text-[11px] font-bold text-amber-800 hover:text-amber-950 underline shrink-0 cursor-pointer"
                   >
-                    Hoặc làm lại từ đầu (JLPT {activeSessionLevel})
+                    Xem phiên đó →
                   </button>
                 </div>
               </section>
             )}
 
-            {/* Main Action Box: Bắt đầu đàm thoại */}
+            {/* Main Action Box: Bắt đầu hoặc Tiếp tục đàm thoại */}
             <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--line)]/60">
                 <div>
@@ -606,19 +555,59 @@ export const ScenarioDetailsView: React.FC = () => {
                     JLPT {selectedLevel.jlptLevel}
                   </h3>
                 </div>
-                <span className={`rounded-full border px-3 py-1 text-xs font-bold ${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`}>
-                  {isAdmin || !selectedLevel.creditCost ? 'Miễn phí' : selectedLevel.creditCost + ' credits'}
+                <span className={`rounded-full border px-3 py-1 text-xs font-bold ${
+                  isSelectedLevelActive
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    : `${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`
+                }`}>
+                  {isAdmin
+                    ? 'Miễn phí (Admin)'
+                    : isSelectedLevelActive
+                      ? 'Phiên đang dở dang'
+                      : 'Trừ theo lượt thoại'}
                 </span>
               </div>
+
+              {/* Progress Breakdown khi có phiên đang dở ở cấp độ này */}
+              {isSelectedLevelActive && activeSession && (
+                <div className="rounded-2xl bg-[var(--paper-100)] p-3.5 space-y-2 border border-[var(--line)] text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[var(--sumi-faint)]">Tiến độ nhiệm vụ:</span>
+                    <span className="font-bold text-emerald-700">
+                      {activeSession.completedMissionsCount ?? 0} / {activeSession.totalMissionsCount ?? 0} hoàn thành
+                    </span>
+                  </div>
+
+                  {/* Progress Mini-bar */}
+                  <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${activeSession.totalMissionsCount
+                            ? Math.min(100, Math.round(((activeSession.completedMissionsCount ?? 0) / activeSession.totalMissionsCount) * 100))
+                            : 0
+                          }%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center pt-0.5 text-[11px]">
+                    <span className="text-[var(--sumi-faint)]">Lượt hội thoại:</span>
+                    <span className="font-medium text-[var(--sumi)]">{activeSession.messageCount ?? 0} lượt</span>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2 text-xs text-[var(--sumi-muted)]">
                 <div className="flex items-center justify-between">
                   <span>Thời lượng khuyến nghị:</span>
-                  <span className="font-semibold text-[var(--sumi)]">5 - 10 phút</span>
+                  <span className="font-semibold text-[var(--sumi)]">
+                    {Math.max(5, (selectedLevel.missions?.length ?? 3) * 2)} - {Math.max(10, (selectedLevel.missions?.length ?? 3) * 3)} phút
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Chế độ đối thoại:</span>
-                  <span className="font-semibold text-[var(--sumi)]">2 chiều (Hands-Free Call)</span>
+                  <span className="font-semibold text-[var(--sumi)]">Phản xạ tự nhiên (Hands-Free)</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Nhận xét phát âm & phản xạ:</span>
@@ -644,38 +633,55 @@ export const ScenarioDetailsView: React.FC = () => {
                 </div>
               )}
 
-              <Button
-                type="button"
-                className="w-full text-sm font-bold shadow-sm active:scale-[0.98]"
-                disabled={isStarting}
-                onClick={() => {
-                  if (isSelectedLevelActive) {
-                    navigate(`/scenarios/practice/${activeSessionId}`);
-                  } else if (hasActiveSession) {
-                    handleStartPractice(true, selectedLevel.jlptLevel);
-                  } else {
-                    handleStartPractice(false, selectedLevel.jlptLevel);
-                  }
-                }}
-              >
-                {isStarting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                    Đang thiết lập phòng thoại...
-                  </span>
-                ) : isSelectedLevelActive ? (
-                  `Tiếp tục luyện tập (JLPT ${selectedLevel.jlptLevel}) →`
-                ) : hasActiveSession ? (
-                  `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
-                ) : (
-                  `Bắt đầu hội thoại ngay (JLPT ${selectedLevel.jlptLevel}) →`
+              <div className="space-y-2 pt-1">
+                <Button
+                  type="button"
+                  className="w-full text-sm font-bold shadow-sm active:scale-[0.98]"
+                  disabled={isStarting}
+                  onClick={() => {
+                    ukiyoSound.playTaikoThud();
+                    if (isSelectedLevelActive) {
+                      const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : "";
+                      navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
+                    } else if (hasActiveSession) {
+                      handleStartPractice(true, selectedLevel.jlptLevel);
+                    } else {
+                      handleStartPractice(false, selectedLevel.jlptLevel);
+                    }
+                  }}
+                >
+                  {isStarting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                      Đang thiết lập phòng thoại...
+                    </span>
+                  ) : isSelectedLevelActive ? (
+                    `Tiếp tục phiên này (JLPT ${selectedLevel.jlptLevel}) →`
+                  ) : hasActiveSession ? (
+                    `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
+                  ) : (
+                    `Bắt đầu hội thoại ngay (JLPT ${selectedLevel.jlptLevel}) →`
+                  )}
+                </Button>
+
+                {isSelectedLevelActive && (
+                  <button
+                    type="button"
+                    disabled={isStarting}
+                    onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
+                    className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer"
+                  >
+                    Hoặc làm lại từ đầu (JLPT {selectedLevel.jlptLevel})
+                  </button>
                 )}
-              </Button>
+              </div>
 
               <p className="text-center text-[11px] leading-relaxed text-[var(--sumi-faint)]">
                 {isAdmin
                   ? 'Chế độ Quản trị: Kiểm thử toàn quyền mà không tốn credit tài khoản.'
-                  : '* Miễn phí bắt đầu phòng thoại. Credit chỉ tính theo từng lượt trả lời của AI.'}
+                  : isSelectedLevelActive
+                    ? 'Phiên đang dở dang: Tiếp tục không trừ thêm phí mở phòng.'
+                    : '* Hệ thống tự động trừ credit theo từng lượt thoại thực tế.'}
               </p>
             </section>
 
@@ -692,23 +698,27 @@ export const ScenarioDetailsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)] text-xs font-bold">
                 <button
                   type="button"
-                  onClick={() => setCheatsheetTab('vocab')}
-                  className={`py-1.5 px-2 rounded-lg transition-all ${
-                    cheatsheetTab === 'vocab'
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    setCheatsheetTab('vocab');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg transition-all ${cheatsheetTab === 'vocab'
                       ? 'bg-[var(--paper-50)] text-[var(--ai)] shadow-xs'
                       : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
-                  }`}
+                    }`}
                 >
                   Từ vựng ({selectedLevel.targetVocabularies.length})
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCheatsheetTab('grammar')}
-                  className={`py-1.5 px-2 rounded-lg transition-all ${
-                    cheatsheetTab === 'grammar'
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    setCheatsheetTab('grammar');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg transition-all ${cheatsheetTab === 'grammar'
                       ? 'bg-[var(--paper-50)] text-[var(--ai)] shadow-xs'
                       : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
-                  }`}
+                    }`}
                 >
                   Ngữ pháp ({selectedLevel.targetGrammars.length})
                 </button>
@@ -722,31 +732,50 @@ export const ScenarioDetailsView: React.FC = () => {
                       Chưa có từ vựng chỉ định cho cấp độ này.
                     </p>
                   ) : (
-                    selectedLevel.targetVocabularies.map((vocab) => (
-                      <div
-                        key={vocab.id}
-                        className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 hover:bg-[var(--paper-100)] transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <ruby className="text-base font-bold text-[var(--sumi)] font-jp">
-                            {vocab.word}
-                            {vocab.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{vocab.reading}</rt>}
-                          </ruby>
-                          <button
-                            type="button"
-                            onClick={() => void scenarioVoiceService.playAiSpeech(vocab.word, 2)}
-                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
-                            title="Nghe phát âm chuẩn Tokyo (VoiceVox)"
-                            aria-label={`Nghe phát âm ${vocab.word}`}
-                          >
-                            🔊
-                          </button>
+                    selectedLevel.targetVocabularies.map((vocab) => {
+                      const posMatch = vocab.meaning.match(/\[(.*?)\]/);
+                      const parts = vocab.meaning.split('•').map((p) => p.trim());
+                      const mainMeaning = cleanPedagogicMeaning(vocab.meaning);
+                      const example = parts.length > 2 ? parts.slice(2).join(' • ') : null;
+
+                      return (
+                        <div
+                          key={vocab.id}
+                          className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 hover:bg-[var(--paper-100)] transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <ruby className="text-base font-bold text-[var(--sumi)] font-jp">
+                                {vocab.word}
+                                {vocab.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{vocab.reading}</rt>}
+                              </ruby>
+                              {posMatch && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[var(--paper-200)] text-[var(--sumi-muted)]">
+                                  {posMatch[1]}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void scenarioVoiceService.playAiSpeech(vocab.word, 2)}
+                              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                              title="Nghe phát âm chuẩn Tokyo"
+                              aria-label={`Nghe phát âm ${vocab.word}`}
+                            >
+                              <VolumeIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <p className="mt-1 text-xs text-[var(--sumi)] font-medium">
+                            {mainMeaning}
+                          </p>
+                          {example && (
+                            <p className="mt-1 text-[11px] text-[var(--sumi-muted)] italic font-jp">
+                              {example}
+                            </p>
+                          )}
                         </div>
-                        <p className="mt-1 text-xs text-[var(--sumi-muted)]">
-                          {vocab.meaning}
-                        </p>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -759,27 +788,39 @@ export const ScenarioDetailsView: React.FC = () => {
                       Chưa có cấu trúc ngữ pháp chỉ định cho cấp độ này.
                     </p>
                   ) : (
-                    selectedLevel.targetGrammars.map((grammar) => (
-                      <div
-                        key={grammar.id}
-                        className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 space-y-1 hover:bg-[var(--paper-100)] transition-colors"
-                      >
-                        <p className="font-bold font-mono text-xs text-[var(--ai)]">
-                          {grammar.pattern}
-                        </p>
-                        <p className="text-xs text-[var(--sumi-muted)]">
-                          {grammar.meaning}
-                        </p>
-                        {grammar.exampleSentence && (
-                          <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
-                            <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
-                              Ví dụ mẫu:
-                            </span>
-                            {grammar.exampleSentence}
+                    selectedLevel.targetGrammars.map((grammar) => {
+                      const formulaMatch = grammar.meaning.match(/\[(.*?)\]/);
+                      const cleanMeaning = cleanPedagogicMeaning(grammar.meaning);
+
+                      return (
+                        <div
+                          key={grammar.id}
+                          className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 space-y-1 hover:bg-[var(--paper-100)] transition-colors"
+                        >
+                          <div className="flex items-center gap-2 flex-wrap justify-between">
+                            <p className="font-bold font-mono text-xs text-[var(--ai)]">
+                              {grammar.pattern}
+                            </p>
+                            {formulaMatch && (
+                              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                                {formulaMatch[1]}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))
+                          <p className="text-xs text-[var(--sumi)] font-medium">
+                            {cleanMeaning}
+                          </p>
+                          {grammar.exampleSentence && (
+                            <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
+                              <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
+                                Ví dụ mẫu:
+                              </span>
+                              {grammar.exampleSentence}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -799,11 +840,10 @@ export const ScenarioDetailsView: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${
-                    confirmModal.isSwitchingLevel
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${confirmModal.isSwitchingLevel
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-blue-100 text-[var(--ai)]'
-                  }`}
+                    }`}
                 >
                   {confirmModal.isSwitchingLevel ? (
                     <svg className="w-5 h-5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -821,8 +861,8 @@ export const ScenarioDetailsView: React.FC = () => {
                     {confirmModal.isSwitchingLevel
                       ? 'Chuyển sang cấp độ mới?'
                       : isAdmin
-                      ? 'Làm lại phiên kiểm thử?'
-                      : 'Làm lại từ đầu phiên luyện tập?'}
+                        ? 'Làm lại phiên kiểm thử?'
+                        : 'Làm lại từ đầu phiên luyện tập?'}
                   </h3>
                   <p className="text-xs text-[var(--sumi-faint)] truncate max-w-xs">
                     Kịch bản: {scenario.title}
@@ -848,7 +888,7 @@ export const ScenarioDetailsView: React.FC = () => {
                       <span className="font-medium text-[var(--sumi)]">
                         {isAdmin
                           ? 'Miễn phí (Admin)'
-                          : (isAdmin || !targetLevelConfig?.creditCost ? 'Miễn phí' : (targetLevelConfig?.creditCost ?? 0) + ' credits')}
+                          : `Trừ theo lượt thoại thực tế`}
                       </span>
                     </div>
                   </>
@@ -877,7 +917,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <p className="text-xs text-[var(--sumi-muted)] leading-relaxed">
                 {confirmModal.isSwitchingLevel ? (
                   <>
-                    Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu ở <strong>JLPT {confirmModal.targetLevel}</strong>, phiên cũ sẽ kết thúc{!isAdmin && ' và tính credit phiên mới'}.
+                    Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu ở <strong>JLPT {confirmModal.targetLevel}</strong>, phiên cũ sẽ kết thúc{!isAdmin && ' và bắt đầu tính credit theo lượt phiên mới'}.
                   </>
                 ) : (
                   <>
@@ -899,11 +939,10 @@ export const ScenarioDetailsView: React.FC = () => {
                   type="button"
                   onClick={() => executeStartSession(confirmModal.targetLevel, true)}
                   disabled={isStarting}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 active:scale-95 ${
-                    confirmModal.isSwitchingLevel
+                  className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 active:scale-95 ${confirmModal.isSwitchingLevel
                       ? 'bg-[var(--ai)] hover:bg-[var(--ai-hover)]'
                       : 'bg-amber-600 hover:bg-amber-700'
-                  }`}
+                    }`}
                 >
                   {isStarting ? (
                     <span className="flex items-center gap-1.5">

@@ -30,7 +30,97 @@ public class ScenarioService : IScenarioService
         _configuration = configuration;
     }
 
-    public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(string? query = null, CancellationToken cancellationToken = default)
+    public static string ResolveScenarioTopicCode(Scenario s)
+    {
+        var code = (s.ScenarioCode ?? string.Empty).ToUpperInvariant();
+        var title = (s.Title ?? string.Empty).ToLowerInvariant();
+        var desc = (s.Description ?? string.Empty).ToLowerInvariant();
+
+        if (code.Contains("RAMEN") || code.Contains("CAFE") || code.Contains("DINING") || code.Contains("RESTAURANT")
+            || title.Contains("mì") || title.Contains("cà phê") || title.Contains("quán") || title.Contains("ăn") || title.Contains("uống")
+            || desc.Contains("ramen") || desc.Contains("cà phê") || desc.Contains("món"))
+            return "DINING";
+
+        if (code.Contains("SHINJUKU") || code.Contains("TRAIN") || code.Contains("TRANSPORT") || code.Contains("STATION")
+            || title.Contains("vé tàu") || title.Contains("ga") || title.Contains("hỏi đường") || title.Contains("xe buýt")
+            || desc.Contains("tàu") || desc.Contains("ga"))
+            return "TRANSPORT";
+
+        if (code.Contains("7ELEVEN") || code.Contains("SHOPPING") || code.Contains("KONBINI")
+            || title.Contains("mua sắm") || title.Contains("tiện lợi") || title.Contains("siêu thị")
+            || desc.Contains("thanh toán") || desc.Contains("cửa hàng tiện lợi"))
+            return "SHOPPING";
+
+        if (code.Contains("BAITO") || code.Contains("OFFICE") || code.Contains("WORK") || code.Contains("JOB")
+            || title.Contains("phỏng vấn") || title.Contains("công sở") || title.Contains("xin việc") || title.Contains("làm thêm")
+            || desc.Contains("phỏng vấn") || desc.Contains("công việc"))
+            return "STUDY_WORK";
+
+        return "DAILY_LIFE";
+    }
+
+    public static (string Name, string Icon, bool IsPrimary) GetTopicMetadata(string topicCode) => topicCode switch
+    {
+        "DINING" => ("Ẩm thực", "restaurant", true),
+        "TRANSPORT" => ("Di chuyển", "train", true),
+        "DAILY_LIFE" => ("Đời sống", "home", true),
+        "SHOPPING" => ("Mua sắm", "shopping_bag", false),
+        "STUDY_WORK" => ("Công sở", "work", false),
+        _ => ("Đời sống", "category", false)
+    };
+
+    public async Task<ApiResponse<List<ScenarioTopicDto>>> GetTopicsAsync(CancellationToken cancellationToken = default)
+    {
+        var dbTopics = await _dbContext.LearningTopics
+            .AsNoTracking()
+            .Where(t => t.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var scenarios = await _dbContext.Scenarios
+            .AsNoTracking()
+            .Where(s => s.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var baseDbCodes = dbTopics
+            .Select(t => t.Code.Contains('_') ? t.Code.Split('_')[0] : t.Code)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        var topicCodes = new[] { "DINING", "TRANSPORT", "DAILY_LIFE", "SHOPPING", "STUDY_WORK" }
+            .Union(baseDbCodes, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var result = new List<ScenarioTopicDto>();
+        int autoId = 1;
+
+        foreach (var code in topicCodes)
+        {
+            var meta = GetTopicMetadata(code);
+            var matchingScenarios = scenarios.Count(s => ResolveScenarioTopicCode(s) == code);
+            var matchedDbTopic = dbTopics.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase) || t.Code.StartsWith(code + "_", StringComparison.OrdinalIgnoreCase));
+            var displayName = matchedDbTopic != null && !string.IsNullOrWhiteSpace(matchedDbTopic.Name) && !new[] { "DINING", "TRANSPORT", "DAILY_LIFE", "SHOPPING", "STUDY_WORK" }.Contains(code)
+                ? matchedDbTopic.Name
+                : meta.Name;
+
+            result.Add(new ScenarioTopicDto
+            {
+                Id = matchedDbTopic?.Id ?? autoId++,
+                Code = code,
+                Name = displayName,
+                Description = matchedDbTopic?.Description ?? $"Các tình huống đàm thoại chủ đề {displayName}",
+                ScenarioCount = matchingScenarios,
+                IsPrimary = meta.IsPrimary,
+                Icon = meta.Icon
+            });
+        }
+
+        return ApiResponse<List<ScenarioTopicDto>>.Ok(result, "Lấy danh sách chủ đề kịch bản thành công.");
+    }
+
+    public async Task<ApiResponse<List<ScenarioListDto>>> GetScenariosAsync(
+        string? query = null,
+        string? topic = null,
+        CancellationToken cancellationToken = default)
     {
         var scenariosQuery = _dbContext.Scenarios
             .AsNoTracking()
@@ -50,21 +140,42 @@ public class ScenarioService : IScenarioService
             .OrderBy(s => s.Id)
             .ToListAsync(cancellationToken);
 
-        var result = scenarios.Select(s => new ScenarioListDto
-        {
-            Id = s.Id,
-            Title = s.Title,
-            Description = s.Description,
-            Thumbnail = s.Thumbnail,
-            IsActive = s.IsActive,
-            ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
-            SupportedJLPTLevels = s.LevelConfigurations
-                .Where(lc => lc.Status == "Published")
-                .OrderBy(lc => lc.JLPTLevel)
-                .Select(lc => lc.JLPTLevel)
-                .ToList()
-        }).ToList();
+        var dbTopics = await _dbContext.LearningTopics
+            .AsNoTracking()
+            .Where(t => t.IsActive)
+            .ToListAsync(cancellationToken);
 
+        var dtos = scenarios.Select(s =>
+        {
+            var tCode = ResolveScenarioTopicCode(s);
+            var meta = GetTopicMetadata(tCode);
+            var dbTopic = dbTopics.FirstOrDefault(t => t.Code == tCode || t.Code.StartsWith(tCode + "_"));
+            return new ScenarioListDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Description = s.Description,
+                Thumbnail = s.Thumbnail,
+                IsActive = s.IsActive,
+                ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
+                TopicId = dbTopic?.Id,
+                TopicCode = tCode,
+                TopicName = meta.Name,
+                SupportedJLPTLevels = s.LevelConfigurations
+                    .Where(lc => lc.Status == "Published")
+                    .OrderBy(lc => lc.JLPTLevel)
+                    .Select(lc => lc.JLPTLevel)
+                    .ToList()
+            };
+        });
+
+        if (!string.IsNullOrWhiteSpace(topic) && !string.Equals(topic, "ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            var normTopic = topic.Trim().ToUpperInvariant();
+            dtos = dtos.Where(s => s.TopicCode == normTopic || (s.TopicName != null && s.TopicName.Equals(topic.Trim(), StringComparison.OrdinalIgnoreCase)));
+        }
+
+        var result = dtos.ToList();
         return ApiResponse<List<ScenarioListDto>>.Ok(result, "Lấy danh sách scenarios thành công.");
     }
 
@@ -257,19 +368,33 @@ public class ScenarioService : IScenarioService
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var result = scenarios.Select(s => new ScenarioListDto
+        var dbTopics = await _dbContext.LearningTopics
+            .AsNoTracking()
+            .Where(t => t.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var result = scenarios.Select(s =>
         {
-            Id = s.Id,
-            Title = s.Title,
-            Description = s.Description,
-            Thumbnail = s.Thumbnail,
-            IsActive = s.IsActive,
-            ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
-            SupportedJLPTLevels = s.LevelConfigurations
-                .Where(lc => lc.Status == "Published")
-                .OrderBy(lc => lc.JLPTLevel)
-                .Select(lc => lc.JLPTLevel)
-                .ToList()
+            var tCode = ResolveScenarioTopicCode(s);
+            var meta = GetTopicMetadata(tCode);
+            var dbTopic = dbTopics.FirstOrDefault(t => t.Code == tCode || t.Code.StartsWith(tCode + "_"));
+            return new ScenarioListDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Description = s.Description,
+                Thumbnail = s.Thumbnail,
+                IsActive = s.IsActive,
+                ScenarioCode = !string.IsNullOrWhiteSpace(s.ScenarioCode) ? s.ScenarioCode : $"SCN_{s.Id}",
+                TopicId = dbTopic?.Id,
+                TopicCode = tCode,
+                TopicName = meta.Name,
+                SupportedJLPTLevels = s.LevelConfigurations
+                    .Where(lc => lc.Status == "Published")
+                    .OrderBy(lc => lc.JLPTLevel)
+                    .Select(lc => lc.JLPTLevel)
+                    .ToList()
+            };
         }).ToList();
 
         return ApiResponse<List<ScenarioListDto>>.Ok(result, "Lấy toàn bộ danh sách scenario (Admin) thành công.");

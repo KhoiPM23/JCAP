@@ -362,6 +362,10 @@ namespace JCAP.Services.Implementations
                     expTx.Status = "Cancelled";
                     hasStatusChanges = true;
                 }
+                if (hasStatusChanges)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
             }
 
             // 2. Tự động đối soát các giao dịch đang Pending gần nhất với PayOS API

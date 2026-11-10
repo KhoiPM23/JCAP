@@ -1,24 +1,27 @@
 ruby {
   ruby-position: over;
   ruby-align: center;
+  letter-spacing: normal;
 }
 
 rt {
   font-size: max(10px, 0.52em);
   line-height: 1;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
   color: var(--ai);
   user-select: none;
   position: relative;
   top: -2px;
+  white-space: nowrap;
 }
 
 /* User speech bubble contrast enhancement */
 .jc-bubble--me rt,
 .bubble-user rt {
-  color: var(--on-ai, #ffffff);
-  opacity: 0.88;
+  color: #ffffff;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* When furigana is hidden, maintain layout spacing to avoid jarring layout shifts */
@@ -149,6 +152,46 @@ rt {
 
 .animate-float-deduct {
   animation: floatScoreDeduct 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Hanabi Golden Sparkle & Sakura Petal Burst (Game-like celebratory burst) */
+@keyframes hanabiSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(var(--tx, 20px), var(--ty, -30px)) scale(1.1) rotate(45deg);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translate(var(--tx, 40px), var(--ty, -10px)) scale(0.95) rotate(120deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 50px), var(--ty, 30px)) scale(0.3) rotate(220deg);
+  }
+}
+
+.animate-hanabi-sparkle {
+  animation: hanabiSparkle 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Combo Streak Golden Flame Glow */
+@keyframes comboGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5), inset 0 0 6px rgba(251, 191, 36, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.85), inset 0 0 10px rgba(251, 191, 36, 0.6);
+    transform: scale(1.04);
+  }
+}
+
+.animate-combo-glow {
+  animation: comboGlow 1.6s ease-in-out infinite;
 }
 
 

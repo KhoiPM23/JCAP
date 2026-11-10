@@ -146,19 +146,7 @@ namespace JCAP.Services.Implementations
             double sessionHintDep = Math.Clamp(avgHintLevel * 33.3, 0.0, 100.0);
             profile.HintDependencyRate = Math.Round(profile.HintDependencyRate * 0.8 + sessionHintDep * 0.2, 1);
 
-            // 3. Cập nhật KeigoCommandScore (Kiểm tra thể lịch sự / kính ngữ)
-            var userMsgs = await _context.RoleplayMessages
-                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
-                .Select(m => m.JapaneseText)
-                .ToListAsync();
-            if (userMsgs.Count > 0)
-            {
-                int politeCount = userMsgs.Count(t => t.Contains("です") || t.Contains("ます") || t.Contains("ございます") || t.Contains("でした") || t.Contains("ません") || t.Contains("ください"));
-                double sessionKeigoScore = Math.Clamp(politeCount / (double)userMsgs.Count * 100.0, 20.0, 100.0);
-                profile.KeigoCommandScore = Math.Round(profile.KeigoCommandScore * 0.8 + sessionKeigoScore * 0.2, 1);
-            }
-
-            // 4. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
+            // 3. Tải thông tin Session & Scenario để suy luận SocialRegister phù hợp
             var session = await _context.RoleplaySessions
                 .AsSplitQuery()
                 .Include(s => s.ScenarioLevelConfiguration)
@@ -166,12 +154,50 @@ namespace JCAP.Services.Implementations
                 .Include(s => s.ScenarioLevelConfiguration)
                     .ThenInclude(c => c!.TargetGrammars)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+            var scenarioTitle = session?.ScenarioLevelConfiguration?.Scenario?.Title ?? string.Empty;
+            if (string.IsNullOrEmpty(scenarioTitle) && session?.ScenarioLevelConfiguration?.ScenarioId > 0)
+            {
+                var scenario = await _context.Scenarios.FindAsync(session.ScenarioLevelConfiguration.ScenarioId);
+                scenarioTitle = scenario?.Title ?? string.Empty;
+            }
+
+            var aiPersona = session?.ScenarioLevelConfiguration?.AiPersona ?? string.Empty;
+            var description = session?.ScenarioLevelConfiguration?.Description ?? string.Empty;
+            var reg = RoleplaySocialRegister.Deduce(scenarioTitle, aiPersona, description);
+            // 4. Cập nhật KeigoCommandScore (Kiểm tra thể lịch sự / kính ngữ thích ứng theo vai vế xã hội)
+            var userMsgs = await _context.RoleplayMessages
+                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
+                .Select(m => m.JapaneseText)
+                .ToListAsync();
+            if (userMsgs.Count > 0)
+            {
+                double sessionKeigoScore;
+                if (reg.RegisterType == SocialRegisterType.PeerFriend)
+                {
+                    // Với bối cảnh bạn bè thân mật (PeerFriend): Thể thân mật (Tamego) là tự nhiên và đúng chuẩn văn hóa.
+                    // Đánh giá dựa trên độ tự nhiên của văn phong thân mật (hạt từ đệm, liên từ, câu hội thoại tự nhiên)
+                    int naturalCasualCount = userMsgs.Count(t =>
+                        t.Contains("ね") || t.Contains("よ") || t.Contains("かな") || t.Contains("うん") ||
+                        t.Contains("だ") || t.Contains("ありがとう") || t.Contains("そう") || t.Contains("いい") ||
+                        t.Contains("です") || t.Contains("ます"));
+                    sessionKeigoScore = Math.Clamp(naturalCasualCount / (double)userMsgs.Count * 100.0, 60.0, 100.0);
+                }
+                else
+                {
+                    int politeCount = userMsgs.Count(t => t.Contains("です") || t.Contains("ます") || t.Contains("ございます") || t.Contains("でした") || t.Contains("ません") || t.Contains("ください"));
+                    sessionKeigoScore = Math.Clamp(politeCount / (double)userMsgs.Count * 100.0, 20.0, 100.0);
+                }
+                profile.KeigoCommandScore = Math.Round(profile.KeigoCommandScore * 0.8 + sessionKeigoScore * 0.2, 1);
+            }
+
+            // 5. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
             string jlpt = session?.ScenarioLevelConfiguration?.JLPTLevel ?? "N5";
             double jlptWeight = jlpt == "N3" ? 2.5 : jlpt == "N4" ? 1.5 : 0.5;
             double estimatedTheta = Math.Clamp((avgScore - 70.0) / 25.0 + (jlptWeight - 1.0), -2.5, 2.8);
             profile.ThetaEstimate = Math.Round(profile.ThetaEstimate * 0.8 + estimatedTheta * 0.2, 2);
 
-            // 5. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
+            // 6. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
             var strengths = new System.Collections.Generic.List<string>();
             var weaknesses = new System.Collections.Generic.List<string>();
 
@@ -181,8 +207,8 @@ namespace JCAP.Services.Implementations
             if (profile.ParticleAccuracyRate >= 75) strengths.Add("Dùng chuẩn xác trợ từ は/が/を/に");
             else weaknesses.Add("Dễ nhầm lẫn cặp trợ từ に vs で, は vs が");
 
-            if (profile.KeigoCommandScore >= 70) strengths.Add("Làm chủ tốt thể lịch sự Desu/Masu");
-            else weaknesses.Add("Cần củng cố thể lịch sự khi giao tiếp với người lạ");
+            if (profile.KeigoCommandScore >= 70) strengths.Add("Làm chủ tốt thể lịch sự và văn phong ngữ cảnh");
+            else weaknesses.Add("Cần củng cố văn phong giao tiếp phù hợp đối tượng");
 
             if (profile.AverageMoraRate >= 4.2) strengths.Add("Tốc độ phát âm tự nhiên theo nhịp phách Tokyo");
             if (profile.HintDependencyRate <= 20) strengths.Add("Tự tin đối thoại chủ động không lệ thuộc gợi ý");
@@ -371,7 +397,7 @@ namespace JCAP.Services.Implementations
                 foreach (var grammar in session.ScenarioLevelConfiguration.TargetGrammars)
                 {
                     if (string.IsNullOrWhiteSpace(grammar.Pattern)) continue;
-                    var key = grammar.Pattern.Replace("～", "").Replace("~", "").Trim();
+                    var key = string.Concat(grammar.Pattern.Where(c => c != '～' && c != '~')).Trim();
                     if (!string.IsNullOrWhiteSpace(key) && combinedUserText.Contains(key))
                     {
                         var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";

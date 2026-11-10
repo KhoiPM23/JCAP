@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, JpText, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
@@ -6,8 +6,10 @@ import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { useAuth } from '../contexts/AuthContext';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
+import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
-import type { ScenarioDetails, ScenarioListItem, ScenarioLevelConfiguration } from '../types/scenarioDetails';
+import type { ScenarioDetails, ScenarioListItem, ScenarioLevelConfiguration, ScenarioTopic } from '../types/scenarioDetails';
 
 export interface Scenario {
   id: number;
@@ -33,10 +35,19 @@ interface ScenarioListViewProps {
 const LEVEL_RANK: Record<string, number> = { N5: 1, N4: 2, N3: 3 };
 type Level = ScenarioLevelConfiguration['jlptLevel'];
 
+const DEFAULT_TOPICS: ScenarioTopic[] = [
+  { id: 1, code: 'DINING', name: 'Ẩm thực', scenarioCount: 2, isPrimary: true, icon: 'restaurant' },
+  { id: 2, code: 'TRANSPORT', name: 'Di chuyển', scenarioCount: 1, isPrimary: true, icon: 'train' },
+  { id: 3, code: 'DAILY_LIFE', name: 'Đời sống', scenarioCount: 0, isPrimary: true, icon: 'home' },
+  { id: 4, code: 'SHOPPING', name: 'Mua sắm', scenarioCount: 1, isPrimary: false, icon: 'shopping_bag' },
+  { id: 5, code: 'STUDY_WORK', name: 'Công sở', scenarioCount: 2, isPrimary: false, icon: 'work' },
+];
+
 /**
- * Thư viện Hội thoại AI (design-handoff mục 7): bên trái tìm kiếm, lọc trình độ và danh sách tình huống; bên phải panel
- * xem trước tình huống đang chọn (nhân vật, cấp độ, nhiệm vụ, từ sẽ gặp, chi phí) với nút bắt đầu / tiếp tục.
- * Bắt đầu phiên dùng đúng các lời gọi của trang chi tiết (getDetails, getActiveSession, startSession).
+ * Thư viện Hội thoại AI (Master-Detail 2 cột chuẩn Gia Khôi+):
+ * - Bộ lọc CategoryChips kết nối LearningTopics database (tập trung sâu 3 chủ đề trọng tâm: Ẩm thực, Di chuyển, Đời sống).
+ * - Cột trái: Tìm kiếm, lọc trình độ & danh sách tình huống phân loại theo chủ đề.
+ * - Cột phải: Sticky Preview Card xem trước persona, nhiệm vụ, từ vựng & ngữ pháp với nút bắt đầu / tiếp tục.
  */
 export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScenario }) => {
   const navigate = useNavigate();
@@ -44,26 +55,36 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   const { credit } = useLearnerAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('query') || searchParams.get('search') || '';
+  const initialTopic = searchParams.get('topic') || 'ALL';
 
   const [scenarios, setScenarios] = useState<ScenarioListItem[]>([]);
+  const [topics, setTopics] = useState<ScenarioTopic[]>(DEFAULT_TOPICS);
   const [searchTerm, setSearchTerm] = useState<string>(searchQuery);
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
+  const [filterTopic, setFilterTopic] = useState<string>(initialTopic);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchScenarios = async () => {
+    const fetchScenariosAndTopics = async () => {
       setLoading(true);
       setError(null);
-      const response = await scenarioService.getScenarios();
+      const [scnRes, topicRes] = await Promise.all([
+        scenarioService.getScenarios(),
+        scenarioService.getTopics(),
+      ]);
       if (!isMounted) return;
-      if (response.success && response.data) setScenarios(response.data);
-      else setError(response.message || 'Không thể tải danh sách tình huống.');
+      if (scnRes.success && scnRes.data) setScenarios(scnRes.data);
+      else setError(scnRes.message || 'Không thể tải danh sách tình huống.');
+
+      if (topicRes.success && topicRes.data && topicRes.data.length > 0) {
+        setTopics(topicRes.data);
+      }
       setLoading(false);
     };
-    fetchScenarios();
+    fetchScenariosAndTopics();
     return () => {
       isMounted = false;
     };
@@ -80,28 +101,62 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
     setSearchParams(newParams, { replace: true });
   };
 
-  // Lọc theo trình độ hỗ trợ và từ khoá, sắp theo id tăng dần
+  const handleTopicChange = (code: string) => {
+    setFilterTopic(code);
+    const newParams = new URLSearchParams(searchParams);
+    if (code !== 'ALL') newParams.set('topic', code);
+    else newParams.delete('topic');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  // Đồng bộ hoá khi URL searchParams thay đổi (ví dụ: chuyển từ profile Adaptive Trial sang)
+  useEffect(() => {
+    const t = searchParams.get('topic');
+    if (t && t !== filterTopic) {
+      setFilterTopic(t);
+    }
+  }, [searchParams]);
+
+  // Tính số lượng tình huống cho từng chủ đề
+  const topicCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: scenarios.length };
+    scenarios.forEach((s) => {
+      const code = s.topicCode || 'DAILY_LIFE';
+      counts[code] = (counts[code] || 0) + 1;
+    });
+    return counts;
+  }, [scenarios]);
+
+  // Lọc theo trình độ hỗ trợ, chủ đề CategoryChips và từ khoá
   const filteredScenarios = useMemo(
     () =>
       scenarios
         .filter((scenario) => {
           if (filterLevel !== 'ALL' && !scenario.supportedJLPTLevels?.includes(filterLevel)) return false;
+          const itemTopic = scenario.topicCode || 'DAILY_LIFE';
+          if (filterTopic !== 'ALL' && itemTopic !== filterTopic) return false;
           const term = searchTerm.trim().toLowerCase();
           if (!term) return true;
           return (
             scenario.title?.toLowerCase().includes(term) ||
             scenario.description?.toLowerCase().includes(term) ||
-            scenario.scenarioCode?.toLowerCase().includes(term)
+            scenario.scenarioCode?.toLowerCase().includes(term) ||
+            scenario.topicName?.toLowerCase().includes(term)
           );
         })
         .sort((a, b) => a.id - b.id),
-    [scenarios, filterLevel, searchTerm],
+    [scenarios, filterLevel, filterTopic, searchTerm],
   );
 
-  // Chọn sẵn tình huống đầu tiên của danh sách đang lọc
+  // Chọn sẵn tình huống đầu tiên của danh sách đang lọc, hoặc xoá chọn khi danh sách trống
   useEffect(() => {
-    if (filteredScenarios.length === 0) return;
-    if (!filteredScenarios.some((s) => s.id === selectedId)) setSelectedId(filteredScenarios[0].id);
+    if (filteredScenarios.length === 0) {
+      if (selectedId !== null) setSelectedId(null);
+      return;
+    }
+    if (!filteredScenarios.some((s) => s.id === selectedId)) {
+      setSelectedId(filteredScenarios[0].id);
+    }
   }, [filteredScenarios, selectedId]);
 
   const toScenario = (item: ScenarioListItem): Scenario => ({
@@ -112,6 +167,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
     scenarioCode: item.scenarioCode,
     supportedJLPTLevels: item.supportedJLPTLevels,
     level: item.supportedJLPTLevels?.[0] || 'N5',
+    category: item.topicName,
   });
 
   return (
@@ -141,20 +197,82 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2.5">
-        <span className="text-[13px] leading-5 text-sumi-muted">Trình độ</span>
-        <SegmentedControl
-          ariaLabel="Trình độ"
-          size="sm"
-          value={filterLevel}
-          onChange={setFilterLevel}
-          options={[
-            { value: 'ALL', label: 'Tất cả' },
-            { value: 'N5', label: 'N5' },
-            { value: 'N4', label: 'N4' },
-            { value: 'N3', label: 'N3' },
-          ]}
-        />
+      {/* CategoryChips & JLPT Level Filter Bar */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* CategoryChips Filter */}
+          <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Bộ lọc chủ đề tình huống">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filterTopic === 'ALL'}
+              onClick={() => handleTopicChange('ALL')}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                filterTopic === 'ALL'
+                  ? 'bg-ai text-white shadow-xs'
+                  : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
+              }`}
+            >
+              <Icon name="apps" size={16} />
+              <span>Tất cả</span>
+              <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
+                filterTopic === 'ALL' ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
+              }`}>
+                {topicCounts['ALL'] || scenarios.length}
+              </span>
+            </button>
+
+            {topics.map((t) => {
+              const active = filterTopic === t.code;
+              const count = topicCounts[t.code] ?? t.scenarioCount ?? 0;
+              return (
+                <button
+                  key={t.code}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    handleTopicChange(t.code);
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                    active
+                      ? 'bg-ai text-white shadow-xs'
+                      : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
+                  }`}
+                >
+                  <Icon name={t.icon || 'bookmark'} size={16} />
+                  <span>{t.name}</span>
+                  <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
+                    active ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Level Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] leading-5 text-sumi-muted">Trình độ</span>
+            <SegmentedControl
+              ariaLabel="Trình độ"
+              size="sm"
+              value={filterLevel}
+              onChange={(lvl) => {
+                ukiyoSound.playSubtleTap();
+                setFilterLevel(lvl);
+              }}
+              options={[
+                { value: 'ALL', label: 'Tất cả' },
+                { value: 'N5', label: 'N5' },
+                { value: 'N4', label: 'N4' },
+                { value: 'N3', label: 'N3' },
+              ]}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-start gap-6">
@@ -183,7 +301,10 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setSelectedId(s.id)}
+                    onClick={() => {
+                      ukiyoSound.playSubtleTap();
+                      setSelectedId(s.id);
+                    }}
                     aria-pressed={selected}
                     className="flex w-full items-center gap-4 rounded-jc-lg px-4 py-3.5 text-left text-sumi transition-colors hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus"
                     style={{ border: selected ? '2px solid var(--ai)' : '1px solid var(--line)', background: selected ? 'var(--ai-soft)' : 'var(--paper-50)' }}
@@ -198,6 +319,12 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                         {levels.map((l) => (
                           <JlptBadge key={l} level={l as Level} size="sm" />
                         ))}
+                        {s.topicName && (
+                          <span className="inline-flex items-center gap-1 rounded-jc-sm bg-paper-100 px-2 py-0.5 text-[11px] font-medium text-sumi-muted border border-line">
+                            <Icon name={(topics.find((t) => t.code === s.topicCode)?.icon as string) || 'bookmark'} size={12} />
+                            <span>{s.topicName}</span>
+                          </span>
+                        )}
                         {s.scenarioCode && <span className="text-[13px] leading-5 text-sumi-muted">{s.scenarioCode}</span>}
                       </span>
                     </span>
@@ -268,11 +395,13 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
   const activeId = active?.activeSessionId || active?.sessionId;
   const activeLevel = active?.level || active?.jlptLevel;
   const resumeHere = hasActive && activeLevel === cfg?.jlptLevel;
+  const hasMeaningfulProgress = (active?.messageCount ?? 0) > 2 || (active?.completedMissionsCount ?? 0) > 0;
   const progressText = active?.totalMissionsCount ? `${active.completedMissionsCount ?? 0}/${active.totalMissionsCount}` : undefined;
   const cost = cfg?.creditCost ?? 0;
 
   const start = async (forceRestart: boolean) => {
     if (!cfg) return;
+    ukiyoSound.playTaikoThud();
     setStarting(true);
     setStartError(null);
     const result = await roleplayService.startSession(scenarioId, cfg.jlptLevel, forceRestart);
@@ -302,9 +431,20 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
           <p className="m-0 text-sm text-sumi-muted">Tình huống này chưa có cấp độ nào để luyện.</p>
         ) : (
           <>
-            <div className="flex flex-col gap-1.5">
-              <h2 className="m-0 text-[22px] font-bold leading-[30px]">{cfg.title || details.title}</h2>
-              <p className="m-0 text-sm leading-[22px] text-sumi-muted">{cfg.description || details.description}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <h2 className="m-0 text-[22px] font-bold leading-[30px]">{cfg.title || details.title}</h2>
+                <p className="m-0 text-sm leading-[22px] text-sumi-muted">{cfg.description || details.description}</p>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className="inline-flex items-center gap-1 shrink-0 rounded-jc-sm px-2 py-1 text-xs font-semibold text-ai hover:bg-ai-soft hover:underline transition-colors mt-0.5"
+                title="Xem toàn bộ cấu hình, từ vựng, ngữ pháp và cốt truyện"
+              >
+                <span>Chi tiết</span>
+                <Icon name="arrow_forward" size={14} />
+              </button>
             </div>
 
             {cfg.aiPersona && (
@@ -359,15 +499,45 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
-              <span className="flex flex-col">
-                <span className="text-sm font-semibold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
-                <span className="text-[13px] leading-5 text-sumi-muted">
-                  {resumeHere ? 'Tiếp tục phiên đang dở không trừ thêm Credit' : (cost > 0 ? 'Còn ' + Math.max(0, credit - cost).toLocaleString('vi-VN') + ' Credit sau khi bắt đầu' : 'Miễn phí bắt đầu phòng thoại')}
+            {cfg.targetGrammars?.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-semibold leading-5">Mẫu ngữ pháp trọng tâm</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {cfg.targetGrammars.map((g) => (
+                    <span
+                      key={g.id}
+                      className="rounded-jc-sm bg-paper-100 border border-line px-2.5 py-1 text-xs text-sumi flex items-center gap-1.5"
+                      title={g.meaning}
+                    >
+                      <span className="font-japanese font-semibold text-sumi-strong">{g.pattern}</span>
+                      <span className="text-sumi-muted text-[11px] truncate max-w-[220px]">
+                        ({cleanPedagogicMeaning(g.meaning)})
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {resumeHere ? (
+              <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
+                <span className="flex flex-col">
+                  <span className="text-sm font-semibold text-emerald-700 leading-5">Phiên đang diễn ra</span>
+                  <span className="text-[13px] leading-5 text-sumi-muted">Tiếp tục hội thoại không trừ thêm Credit</span>
                 </span>
-              </span>
-              <CreditBadge amount={cost} variant="cost" low={credit < cost} />
-            </div>
+                <Badge tone="success" icon="check_circle">Miễn phí tiếp tục</Badge>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
+                  <CreditBadge amount={cost} variant="cost" low={credit < cost} />
+                </div>
+                <span className="text-[13px] leading-5 text-sumi-muted">
+                  {`Số dư hiện tại: ${credit.toLocaleString('vi-VN')} Credit (còn ${Math.max(0, credit - cost).toLocaleString('vi-VN')} Credit sau khi bắt đầu)`}
+                </span>
+              </div>
+            )}
 
             {startError && (
               <p role="alert" className="m-0 text-[13px] text-danger">
@@ -378,11 +548,15 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
             {resumeHere ? (
               <div className="flex flex-col gap-2">
                 <Button variant="primary" size="lg" block icon="play_arrow" onClick={() => navigate(`/scenarios/practice/${activeId}`)}>
-                  {progressText ? `Tiếp tục (${progressText})` : 'Tiếp tục'}
+                  {active?.completedMissionsCount && active.completedMissionsCount > 0
+                    ? `Tiếp tục (${active.completedMissionsCount}/${active.totalMissionsCount ?? cfg.missions.length})`
+                    : 'Tiếp tục hội thoại'}
                 </Button>
-                <Button variant="ghost" block icon="restart_alt" loading={starting} onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}>
-                  {confirmRestart ? 'Bấm lần nữa để làm lại từ đầu' : 'Làm lại từ đầu'}
-                </Button>
+                {hasMeaningfulProgress && (
+                  <Button variant="ghost" block icon="restart_alt" loading={starting} onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}>
+                    {confirmRestart ? 'Bấm lần nữa để xác nhận làm lại từ đầu' : 'Làm lại từ đầu'}
+                  </Button>
+                )}
               </div>
             ) : hasActive ? (
               <div className="flex flex-col gap-2">
@@ -396,9 +570,6 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                 Bắt đầu hội thoại
               </Button>
             )}
-            <button type="button" onClick={onOpenDetails} className="self-center text-sm font-semibold text-ai hover:underline">
-              Xem chi tiết tình huống
-            </button>
           </>
         )}
       </div>

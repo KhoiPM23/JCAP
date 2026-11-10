@@ -53,6 +53,9 @@ namespace JCAP.DTOs.Roleplay
         public List<RoleplayMissionProgressDto> AllMissions { get; set; } = [];
         public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
         public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
+        public List<WeakVocabularyDto> WeakVocabularies { get; set; } = [];
+        public List<WeakGrammarDto> WeakGrammars { get; set; } = [];
+        public List<RecommendedShadowingDialogueDto> RecommendedShadowingDialogues { get; set; } = [];
         public List<RoleplayMessageDto> Messages { get; set; } = [];
         public RoleplayAttemptComparisonDto? AttemptComparison { get; set; }
         public string? AwardedEkiStampName { get; set; }
@@ -66,6 +69,10 @@ namespace JCAP.DTOs.Roleplay
         public string? NextRecommendedScenarioTitle { get; set; }
         public string? NextRecommendedReason { get; set; }
         public double? PredictedSuccessRateNextScenario { get; set; }
+        public string? HankoStampType { get; set; }
+        public string? KanjiRank { get; set; }
+        public string? HankoStampText { get; set; }
+        public List<string> CompetencyBadges { get; set; } = [];
     }
 
     public class ScoreBreakdownDto
@@ -73,6 +80,9 @@ namespace JCAP.DTOs.Roleplay
         public int MissionCompletionPoints { get; set; }
         public int MissionCount { get; set; }
         public int TotalMissionCount { get; set; }
+        public int LinguisticPoints { get; set; }
+        public int FluencyReflexPoints { get; set; }
+        public int AutonomyPoints { get; set; }
         public int GrammarPoints { get; set; }
         public int GrammarBaseScore { get; set; }
         public int VocabularyPoints { get; set; }
@@ -120,5 +130,38 @@ namespace JCAP.DTOs.Roleplay
         public int Page { get; set; }
         public int PageSize { get; set; }
         public int TotalPages { get; set; }
+    }
+
+    public class WeakVocabularyDto
+    {
+        public int Id { get; set; }
+        public string Word { get; set; } = string.Empty;
+        public string? Reading { get; set; }
+        public string Meaning { get; set; } = string.Empty;
+        public int MasteryScore { get; set; }
+        public string Status { get; set; } = string.Empty; // "NeedsPractice" | "NotAttempted"
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    public class WeakGrammarDto
+    {
+        public int Id { get; set; }
+        public string Pattern { get; set; } = string.Empty;
+        public string Meaning { get; set; } = string.Empty;
+        public string? ExampleSentence { get; set; }
+        public int MasteryScore { get; set; }
+        public string Status { get; set; } = string.Empty; // "NeedsPractice" | "NotAttempted"
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    public class RecommendedShadowingDialogueDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string JLPTLevel { get; set; } = "N5";
+        public int? ScenarioId { get; set; }
+        public string MatchReason { get; set; } = string.Empty;
+        public int Score { get; set; }
+        public int SentencesCount { get; set; }
     }
 }

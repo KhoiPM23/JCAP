@@ -2,6 +2,19 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { VoiceOption, voicevoxService } from '../../services/voicevoxService';
+const MicSvg: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+);
+const SparkleSvg: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+);
+const VolumeSvg: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+);
+const InfoSvg: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>
+);
+
 
 export interface AiVoiceSettingsModalProps {
   isOpen: boolean;
@@ -230,7 +243,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
       };
     } catch (err: any) {
       setIsPlayingPreview(false);
-      setPreviewError(err?.message || 'Không thể kết nối tới VOICEVOX để nghe thử giọng.');
+      setPreviewError(err?.message || 'Không thể kết nối tới luồng âm thanh thử giọng.');
     }
   };
 
@@ -338,9 +351,9 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
       title={
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-lg">🎙️</span>
+            <MicSvg className="w-5 h-5 text-[#0878EE]" />
             <span className="font-bold text-[#071A44] text-base sm:text-lg">
-              Cài đặt giọng đọc AI (VOICEVOX TTS)
+              Cài đặt giọng đọc AI bản xứ
             </span>
           </div>
           <p className="text-xs text-[#556987] font-normal mt-0.5">
@@ -371,10 +384,10 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
         {availableVoices.length === 0 ? (
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 space-y-1">
             <p className="font-bold flex items-center gap-1.5">
-              <span>⚠️</span> VOICEVOX Engine chưa sẵn sàng
+              <InfoSvg className="w-4 h-4 text-amber-600 inline" /> Đang đồng bộ luồng giọng đọc bản xứ
             </p>
             <p className="text-[11px] text-amber-700 leading-relaxed">
-              Hệ thống đang sử dụng giọng đọc mặc định của trình duyệt. Hãy mở ứng dụng VOICEVOX trên máy để trải nghiệm các giọng đọc AI tự nhiên chất lượng cao.
+              Hệ thống đang sử dụng giọng đọc mẫu trình duyệt trong lúc bộ âm thanh bản xứ chất lượng cao đang được đồng bộ.
             </p>
           </div>
         ) : (
@@ -383,7 +396,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
             {recommendedVoiceId && (
               <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-xs text-blue-900 shadow-2xs">
                 <span className="flex items-center gap-2 font-medium">
-                  <span className="text-base">✨</span>
+                  <SparkleSvg className="w-4 h-4 text-amber-500 inline" />
                   <span>
                     Giọng AI tối ưu cho vai thoại này:{' '}
                     <strong className="text-[#0878EE]">
@@ -543,7 +556,7 @@ export const AiVoiceSettingsModal: React.FC<AiVoiceSettingsModalProps> = ({
               <div className="bg-[#F8FAFD] border border-[#BCDDFB] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start sm:items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-blue-50 text-[#0878EE] flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-                    <span className="text-base">{isPlayingPreview ? '🔊' : '🔈'}</span>
+                    <VolumeSvg className={`w-4 h-4 ${isPlayingPreview ? 'text-[#0878EE] animate-pulse' : 'text-slate-400'}`} />
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-[#071A44] leading-relaxed">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { roleplayService } from '../../services/roleplayService';
 import { roleplayResultService } from '../../services/roleplayResultService';
@@ -20,6 +20,77 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   const [profile, setProfile] = useState<LearnerIntelligenceProfileDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Tìm trục kỹ năng cần củng cố nhất để thiết lập Thử thách Thích ứng (Adaptive Mastery Trial)
+  const adaptiveTrial = useMemo(() => {
+    if (!profile) return null;
+    const reflex = profile.speakingReflexIndex ?? 80;
+    const keigo = profile.keigoCommandScore ?? 80;
+    const particles = profile.particleAccuracyRate ?? 80;
+    const moraNorm = Math.min(100, Math.round(((profile.averageMoraRate ?? 4.0) / 5.5) * 100));
+    const confidence = profile.communicativeConfidenceScore ?? 80;
+    const autonomy = Math.max(0, 100 - Math.round(profile.hintDependencyRate ?? 20));
+
+    const metrics = [
+      {
+        axis: 'particle',
+        score: particles,
+        title: 'Độ chuẩn xác Trợ từ (は, が, に, で)',
+        topicCode: 'TRANSPORT',
+        topicName: 'Di chuyển / Giao thông',
+        description: 'Tập trung chuẩn hóa các cặp trợ từ không gian & phương hướng trong ngữ cảnh hỏi đường ga tàu.',
+        icon: 'train',
+      },
+      {
+        axis: 'keigo',
+        score: keigo,
+        title: 'Kính ngữ & Thể lịch sự (Desu/Masu)',
+        topicCode: 'STUDY_WORK',
+        topicName: 'Công sở / Giao tiếp',
+        description: 'Tôi luyện phong cách ứng xử doanh nghiệp chuẩn mực, tránh lỗi dùng sai thể thân mật.',
+        icon: 'work',
+      },
+      {
+        axis: 'reflex',
+        score: reflex,
+        title: 'Tốc độ Phản xạ Giao tiếp (< 2.0s)',
+        topicCode: 'DINING',
+        topicName: 'Ẩm thực / Nhà hàng',
+        description: 'Tăng tốc phản xạ đàm thoại thời gian thực khi gọi món ăn và phản hồi nhanh với nhân viên quán.',
+        icon: 'restaurant',
+      },
+      {
+        axis: 'mora',
+        score: moraNorm,
+        title: 'Nhịp phát âm Tokyo (3.0 - 5.0 mora/s)',
+        topicCode: 'DAILY_LIFE',
+        topicName: 'Đời sống thường nhật',
+        description: 'Rèn luyện ngắt nhịp và phân bổ trường âm tự nhiên trong giao tiếp sinh hoạt hàng ngày.',
+        icon: 'home',
+      },
+      {
+        axis: 'autonomy',
+        score: autonomy,
+        title: 'Tính tự chủ đối thoại (Độc lập ZPD)',
+        topicCode: 'DINING',
+        topicName: 'Ẩm thực / Tự chủ',
+        description: 'Thử thách đàm thoại hoàn toàn độc lập, không mở thẻ gợi ý và mở rộng câu tự nhiên.',
+        icon: 'restaurant',
+      },
+      {
+        axis: 'confidence',
+        score: confidence,
+        title: 'Độ tự tin phát âm âm vị học',
+        topicCode: 'SHOPPING',
+        topicName: 'Mua sắm / Tiện lợi',
+        description: 'Tự tin phát âm rõ ràng, giao dịch nhanh chóng với nhân viên thu ngân.',
+        icon: 'shopping_bag',
+      },
+    ];
+
+    metrics.sort((a, b) => a.score - b.score);
+    return metrics[0];
+  }, [profile]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -193,115 +264,171 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Metric 1: Phản xạ giao tiếp */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <SparkIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
-                  <span>Phản xạ giao tiếp</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.speakingReflexIndex)}/100</span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <SparkIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+                    <span>Phản xạ giao tiếp</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.speakingReflexIndex)}/100</span>
+                </div>
+                <p className="text-[11px] font-semibold text-[var(--ai)] mb-2.5">{getReflexLevel(profile.speakingReflexIndex)}</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-sky-400 to-[var(--ai)]"
+                    style={{ width: `${Math.min(profile.speakingReflexIndex, 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--ai)] mb-2.5">{getReflexLevel(profile.speakingReflexIndex)}</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-400 to-[var(--ai)]"
-                  style={{ width: `${Math.min(profile.speakingReflexIndex, 100)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Tư duy: <strong>Phản xạ độc lập</strong></span>
+                <Link to="/scenarios?topic=DINING" className="text-[var(--ai)] font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện phản xạ</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
 
             {/* Metric 2: Làm chủ Kính ngữ */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--warning)]/40 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <BookmarkIcon className="w-3.5 h-3.5 text-[var(--warning)]" />
-                  <span>Kính ngữ & Thể lịch sự</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.keigoCommandScore)}/100</span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--warning)]/40 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <BookmarkIcon className="w-3.5 h-3.5 text-[var(--warning)]" />
+                    <span>Kính ngữ & Thể lịch sự</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.keigoCommandScore)}/100</span>
+                </div>
+                <p className="text-[11px] font-semibold text-[var(--warning)] mb-2.5">Desu/Masu chuẩn phong cách Nhật</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[var(--warning)]"
+                    style={{ width: `${Math.min(profile.keigoCommandScore, 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--warning)] mb-2.5">Desu/Masu chuẩn phong cách Nhật</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[var(--warning)]"
-                  style={{ width: `${Math.min(profile.keigoCommandScore, 100)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Môi trường: <strong>Hội thoại trang nhã</strong></span>
+                <Link to="/scenarios?topic=STUDY_WORK" className="text-[var(--warning)] font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện kính ngữ</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
 
             {/* Metric 3: Chuẩn xác Trợ từ */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-purple-200 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <TargetIcon className="w-3.5 h-3.5 text-purple-600" />
-                  <span>Độ chuẩn xác trợ từ</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.particleAccuracyRate)}%</span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-purple-200 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <TargetIcon className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Độ chuẩn xác trợ từ</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.particleAccuracyRate)}%</span>
+                </div>
+                <p className="text-[11px] font-semibold text-purple-700 mb-2.5">Phân định は, が, に, で chính xác</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-purple-400 to-indigo-600"
+                    style={{ width: `${Math.min(profile.particleAccuracyRate, 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-purple-700 mb-2.5">Phân định は, が, に, で chính xác</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-purple-400 to-indigo-600"
-                  style={{ width: `${Math.min(profile.particleAccuracyRate, 100)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Phạm vi: <strong>Toàn bộ kịch bản</strong></span>
+                <Link to="/scenarios?topic=TRANSPORT" className="text-purple-600 font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện trợ từ</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
 
             {/* Metric 4: Tốc độ phát âm Mora */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--nami)]/40 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <SparkIcon className="w-3.5 h-3.5 text-[var(--nami)]" />
-                  <span>Nhịp phát âm (Mora Cadence)</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">
-                  {profile.averageMoraRate.toFixed(1)} <span className="text-[10px] font-normal text-[var(--sumi-faint)]">mora/s</span>
-                </span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--nami)]/40 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <SparkIcon className="w-3.5 h-3.5 text-[var(--nami)]" />
+                    <span>Nhịp phát âm (Mora Cadence)</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">
+                    {profile.averageMoraRate.toFixed(1)} <span className="text-[10px] font-normal text-[var(--sumi-faint)]">mora/s</span>
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold text-[var(--nami)] mb-2.5">{getMoraAssessment(profile.averageMoraRate)}</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[var(--nami-soft)] to-[var(--nami)]"
+                    style={{ width: `${Math.min((profile.averageMoraRate / 7.0) * 100, 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--nami)] mb-2.5">{getMoraAssessment(profile.averageMoraRate)}</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[var(--nami-soft)] to-[var(--nami)]"
-                  style={{ width: `${Math.min((profile.averageMoraRate / 7.0) * 100, 100)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Độ tự nhiên: <strong>Nhịp nói bản xứ</strong></span>
+                <Link to="/scenarios?topic=DAILY_LIFE" className="text-[var(--nami)] font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện nhịp Mora</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
 
             {/* Metric 5: Độ tự tin & Rõ ràng */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <SparkIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
-                  <span>Độ tự tin phát âm</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.communicativeConfidenceScore)}/100</span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <SparkIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+                    <span>Độ tự tin phát âm</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.communicativeConfidenceScore)}/100</span>
+                </div>
+                <p className="text-[11px] font-semibold text-[var(--ai)] mb-2.5">Khẩu hình và trường độ âm tiết rõ ràng</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-[var(--ai)]"
+                    style={{ width: `${Math.min(profile.communicativeConfidenceScore, 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--ai)] mb-2.5">Khẩu hình và trường độ âm tiết rõ ràng</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue-400 to-[var(--ai)]"
-                  style={{ width: `${Math.min(profile.communicativeConfidenceScore, 100)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Khẩu hình: <strong>Phát âm rõ ràng</strong></span>
+                <Link to="/scenarios?topic=SHOPPING" className="text-[var(--ai)] font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện phát âm</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
 
             {/* Metric 6: Tính tự chủ hội thoại */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--score-good)]/40 transition-colors">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
-                  <TargetIcon className="w-3.5 h-3.5 text-[var(--score-good)]" />
-                  <span>Mức độ tự chủ đối thoại</span>
-                </span>
-                <span className="text-base font-bold text-[var(--sumi)]">{Math.max(0, 100 - Math.round(profile.hintDependencyRate))}%</span>
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--score-good)]/40 transition-colors flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
+                    <TargetIcon className="w-3.5 h-3.5 text-[var(--score-good)]" />
+                    <span>Mức độ tự chủ đối thoại</span>
+                  </span>
+                  <span className="text-base font-bold text-[var(--sumi)]">{Math.max(0, 100 - Math.round(profile.hintDependencyRate))}%</span>
+                </div>
+                <p className="text-[11px] font-semibold text-[var(--score-good)] mb-2.5">Chủ động tư duy diễn đạt tự nhiên</p>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-[var(--score-good)]"
+                    style={{ width: `${Math.max(0, 100 - profile.hintDependencyRate)}%` }}
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-[var(--score-good)] mb-2.5">Chủ động tư duy diễn đạt tự nhiên</p>
-              <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-[var(--score-good)]"
-                  style={{ width: `${Math.max(0, 100 - profile.hintDependencyRate)}%` }}
-                />
+              <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
+                <span className="text-[var(--sumi-muted)]">Tư duy: <strong>Phản xạ độc lập</strong></span>
+                <Link to="/scenarios?topic=DINING" className="text-[var(--score-good)] font-semibold hover:underline flex items-center gap-0.5">
+                  <span>Luyện tự chủ</span>
+                  <span>➔</span>
+                </Link>
               </div>
             </div>
           </div>
+
+
         </div>
 
         {/* Strengths & Focus Areas Section */}
@@ -368,7 +495,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   to="/flashcards"
                   className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:brightness-105 active:scale-95 cursor-pointer"
                 >
-                  <span>🎴 Mở Flashcard luyện ngay</span>
+                  <span>Mở Flashcard luyện ngay</span>
                   <span>➔</span>
                 </Link>
               </div>
@@ -418,7 +545,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               <span>Định hướng Luyện tập Thích ứng theo Năng lực</span>
             </h4>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--ai-soft)] text-[var(--ai)] border border-[var(--line)]">
-              <span>🌱</span>
+              
               <span>
                 {profile.adaptiveLearningPathStatus === 'Mastery_Autonomous'
                   ? 'Thành thạo Độc lập'
@@ -477,7 +604,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               <div className="space-y-1.5 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-md bg-[var(--ai)] text-white text-[10px] font-bold uppercase tracking-wider">
-                    🌟 Đề xuất thích ứng theo Năng lực
+                    Đề xuất thích ứng theo Năng lực
                   </span>
                   <span className="text-xs font-bold text-[var(--sumi)]">
                     {profile.nextRecommendedScenarioTitle}
@@ -508,7 +635,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   className="px-3 py-2 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
                   title="Mở kho Flashcard ôn luyện từ vựng"
                 >
-                  <span>🎴</span>
+                  
                   <span>Flashcard</span>
                 </Link>
 
@@ -517,7 +644,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   className="px-3 py-2 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
                   title="Luyện nói Shadowing ngữ điệu câu thoại kịch bản"
                 >
-                  <span>🎙️</span>
+                  
                   <span>Shadowing</span>
                 </Link>
               </div>

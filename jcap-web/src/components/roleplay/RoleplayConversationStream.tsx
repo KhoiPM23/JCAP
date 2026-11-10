@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import type { RoleplayMessageDto } from '../../types/roleplay';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
+import { SumiInkIndicator } from './SumiInkIndicator';
+import { cleanFuriganaHtml } from '../../utils/japaneseSanitizer';
 
 export interface RoleplayConversationStreamProps {
   messages: RoleplayMessageDto[];
@@ -55,7 +57,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
       return (
         <span
           className={isUser ? 'bubble-user text-base font-sans' : 'bubble-ai text-base font-sans'}
-          dangerouslySetInnerHTML={{ __html: sanitizeDisplayJapanese(msg.furiganaHtml) }}
+          dangerouslySetInnerHTML={{ __html: cleanFuriganaHtml(msg.furiganaHtml) }}
         />
       );
     }
@@ -190,6 +192,16 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                         )}
                       </div>
                     )}
+
+                  {/* Vết mực Sumi vi mô & Vòng tự sửa 1-Click */}
+                  {msg.linguisticFeedback?.sumiInk && (
+                    <div className="mt-2 flex justify-end">
+                      <SumiInkIndicator
+                        feedback={msg.linguisticFeedback.sumiInk}
+                        onRedo={onRedoTurn ? () => onRedoTurn(msg) : undefined}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
