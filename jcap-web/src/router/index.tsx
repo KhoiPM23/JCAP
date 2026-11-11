@@ -58,6 +58,8 @@ import { CommunityForumView } from '../views/CommunityForumView';
 const JapanMapView = React.lazy(() =>
   import('../views/explore/JapanMapView').then((m) => ({ default: m.JapanMapView })),
 );
+// Landing cho khách (vẽ bản đồ từ dữ liệu 47 tỉnh) cũng tách chunk riêng
+const LandingView = React.lazy(() => import('../views/landing/LandingView').then((m) => ({ default: m.LandingView })));
 const LearningTopicsView = React.lazy(() => import('../views/learning/LearningTopicsView').then(m => ({ default: m.LearningTopicsView })));
 const LearningTopicContentsView = React.lazy(() => import('../views/learning/LearningTopicContentsView').then(m => ({ default: m.LearningTopicContentsView })));
 const LearningContentDetailView = React.lazy(() => import('../views/learning/LearningContentDetailView').then(m => ({ default: m.LearningContentDetailView })));
@@ -107,6 +109,23 @@ const AdminRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   }
 
   return <>{children || <Outlet />}</>;
+};
+
+/**
+ * "/" cho khách chưa đăng nhập là landing page (design-handoff mục 9d); mọi trường hợp khác giữ nguyên khung bên trong.
+ * Bọc quanh khối học viên thay vì tách "/" ra route riêng, để LearnerShell không bị dựng lại khi rời bản đồ.
+ */
+const GuestLandingGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const { pathname } = useLocation();
+  if (!isAuthenticated && pathname === '/') {
+    return (
+      <React.Suspense fallback={null}>
+        <LandingView />
+      </React.Suspense>
+    );
+  }
+  return <>{children}</>;
 };
 
 const LearnerHomeRoute: React.FC = () => {
@@ -439,9 +458,11 @@ export const AppRouter: React.FC = () => {
       {/* Protected routes wrapped in MainLayout */}
       <Route
         element={
-          <PrivateRoute>
-            <MainLayout />
-          </PrivateRoute>
+          <GuestLandingGate>
+            <PrivateRoute>
+              <MainLayout />
+            </PrivateRoute>
+          </GuestLandingGate>
         }
       >
         <Route path="/" element={<LearnerHomeRoute />} />

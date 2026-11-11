@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { Button } from '../components/jcap';
+import { AuthField, AuthHeading, AuthMessage } from './auth/AuthUi';
 import { authService } from '../services/authService';
 
 interface ForgotPasswordViewProps {
@@ -30,42 +30,29 @@ export function ForgotPasswordView({ onBackToLogin }: ForgotPasswordViewProps) {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-7 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0878EE]">Khôi phục tài khoản</p>
-        <h1 className="mt-2 text-2xl font-bold text-[#071A44]">Quên mật khẩu?</h1>
-        <p className="mt-2 text-sm leading-6 text-[#71809A]">
-          Nhập email đã đăng ký. Nếu tài khoản tồn tại, JCAP sẽ gửi một liên kết đặt lại mật khẩu.
-        </p>
-      </div>
+    <div className="au-box">
+      <AuthHeading title="Quên mật khẩu?" lead="Nhập email bạn đã đăng ký. Chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu." />
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <Input
+      <form onSubmit={handleSubmit}>
+        <AuthField
           id="forgot-email"
-          label="Địa chỉ email"
+          label="Email"
+          icon="mail"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="learner@jcap.com"
+          placeholder="ban@example.com"
         />
 
-        {message ? (
-          <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-800">
-            {message}
-          </p>
-        ) : null}
-        {error ? (
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
+        {message ? <AuthMessage tone="ok">{message}</AuthMessage> : null}
+        {error ? <AuthMessage tone="err">{error}</AuthMessage> : null}
 
-        <Button type="submit" isLoading={isSubmitting} className="w-full">
+        <Button type="submit" variant="primary" block loading={isSubmitting}>
           {isSubmitting ? 'Đang gửi...' : 'Gửi hướng dẫn đặt lại'}
         </Button>
-        <Button type="button" variant="secondary" onClick={onBackToLogin} className="w-full">
+        <Button type="button" variant="secondary" block onClick={onBackToLogin}>
           Quay lại đăng nhập
         </Button>
       </form>

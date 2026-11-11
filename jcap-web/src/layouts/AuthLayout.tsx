@@ -1,23 +1,46 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import logoMark from '../assets/jcap-logo-mark.svg';
+import '../views/auth/auth.css';
 
+// Hình bên trái vẽ bản đồ từ dữ liệu 47 tỉnh: tách chunk riêng, form vẫn hiện ngay khi hình chưa tải xong
+const AuthArt = React.lazy(() => import('../views/auth/AuthArt'));
+
+/** Câu ở góc dưới phần hình, đổi theo trang (design-handoff mục 9e) */
+const artTitle = (path: string) => {
+  if (path.startsWith('/login')) return 'Hành trình của bạn vẫn đang chờ.';
+  if (path.startsWith('/forgot-password') || path.startsWith('/reset-password')) return 'Lấy lại tài khoản, đi tiếp hành trình.';
+  return 'Đường ngàn dặm cũng bắt đầu từ một câu nói';
+};
+
+/**
+ * Khung chung của Đăng nhập, Đăng ký, Kiểm tra email, Quên/Đặt lại mật khẩu.
+ * Trái: bản đồ minh hoạ (ẩn trên điện thoại). Phải: form của từng trang (Outlet).
+ */
 export const AuthLayout: React.FC = () => {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-[#F4F9FE] flex flex-col justify-center items-center font-sans text-[#071A44] p-4 pt-24 pb-20 overflow-y-auto">
-      {/* Simple header for Auth */}
-      <div className="absolute top-0 left-0 w-full p-8 flex justify-center sm:justify-start">
-        <span className="text-3xl font-bold text-[#0878EE] tracking-tight">JCAP</span>
+    <div className="auth" data-theme="kham-pha">
+      <div className="au-art">
+        <React.Suspense fallback={null}>
+          <AuthArt />
+        </React.Suspense>
+        <div className="au-top">
+          <button type="button" className="home" onClick={() => navigate('/')} aria-label="Về trang giới thiệu JCAP">
+            <img src={logoMark} alt="" />
+            JCAP
+          </button>
+        </div>
+        <div className="copy">
+          <h2>{artTitle(pathname)}</h2>
+          <p>Luyện nói qua những tình huống bạn sẽ gặp ở Nhật, cho người Việt từ N5 đến N3.</p>
+        </div>
       </div>
-      
-      {/* Auth Form Container */}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[#E6EDF5] overflow-hidden">
+      <main className="au-form">
         <Outlet />
-      </div>
-      
-      {/* Simple footer for Auth */}
-      <div className="w-full mt-8 text-center text-sm text-[#71809A]">
-        &copy; {new Date().getFullYear()} Japanese Conversation AI Platform.
-      </div>
+      </main>
     </div>
   );
 };
