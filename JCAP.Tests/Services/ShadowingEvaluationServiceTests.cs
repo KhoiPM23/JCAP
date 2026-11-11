@@ -21,11 +21,41 @@ public class ShadowingEvaluationServiceTests
         return data;
     }
 
-    private static ShadowingEvaluationService CreateService(IKanaReader? reader = null, IFluencyAnalyzer? fluencyAnalyzer = null) =>
+    /// <summary>
+    /// Mô hình âm vị giả: "nghe" ra đúng chuỗi kana cho trước (không có xác suất từng khung → chấm kiểu tự do).
+    /// Từ M1, đây là NGUỒN CHẤM DUY NHẤT; chữ Web Speech của trình duyệt không bao giờ được chấm.
+    /// </summary>
+    private sealed class HearsKana : IPhonemeRecognizer
+    {
+        private readonly string? _kana;
+        public HearsKana(string? kana) => _kana = kana;
+        public bool IsAvailable => _kana != null;
+        public PhonemeRecognitionResult? Recognize(float[] samples16k) => _kana == null ? null : new PhonemeRecognitionResult
+        {
+            Kana = _kana,
+            Phonemes = JapaneseMora.FromKana(_kana).Select((m, i) => new RecognizedPhoneme(m.Canon, i * 100, i * 100 + 100, 0.9)).ToList(),
+            FrameMs = 20,
+        };
+    }
+
+    private static readonly KanaMoraComparer Comparer = new(new IKanaReader[] { new TestKanaReader() });
+
+    /// <summary>Cách đọc (kana) của một câu theo nguồn cách đọc của test — thứ mô hình âm vị sẽ "nghe" khi người học đọc câu đó.</summary>
+    private static string KanaOf(string text)
+    {
+        var reading = Comparer.ReadTargetAsync(text).GetAwaiter().GetResult();
+        return reading == null ? text : JapaneseMora.Join(reading.Moras);
+    }
+
+    /// <param name="hears">Câu người học đọc (chữ thường); mô hình nghe ra cách đọc của nó. null = không có mô hình.</param>
+    private static ShadowingEvaluationService CreateService(
+        IKanaReader? reader = null, IFluencyAnalyzer? fluencyAnalyzer = null, string? hears = Target, bool hearsRawKana = false,
+        IReferenceVoiceProvider? provider = null, Dictionary<string, string?>? config = null) =>
         new(new KanaMoraComparer(new IKanaReader[] { reader ?? new TestKanaReader() }),
-            new ConfigurationBuilder().Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
-            fluencyAnalyzer);
+            fluencyAnalyzer, provider,
+            new HearsKana(hears == null ? null : hearsRawKana ? hears : KanaOf(hears)));
 
     private static byte[] FluencyWav()
     {
@@ -56,7 +86,6 @@ public class ShadowingEvaluationServiceTests
             Audio = WebmBytes(), MimeType = "audio/webm", TargetText = Target, AudioGateStatus = "good",
             ClientTranscript = Target, ClientRecognitionStatus = "final", AnalysisWav = FluencyWav()
         });
-        var withoutWav = await service.EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
 
         Assert.NotNull(withWav.Fluency);
         Assert.Equal("available", withWav.Fluency!.Status);
@@ -64,13 +93,12 @@ public class ShadowingEvaluationServiceTests
         Assert.Equal(JapaneseMora.FromKana(withWav.TargetReading).Count, withWav.Fluency.MoraCount);
         Assert.Null(withWav.FluencyScore);                       // vẫn chưa có điểm Fluency
         Assert.Contains("fluency", withWav.UnavailableDimensions);
-        Assert.Null(withoutWav.Fluency);
-        Assert.Equal(withoutWav.OverallScore, withWav.OverallScore);
-        Assert.Equal(withoutWav.ContentMatchScore, withWav.ContentMatchScore);
+        Assert.Equal(100, withWav.ContentMatchScore); // nhịp nói chỉ đi kèm, không đổi điểm nội dung
+        Assert.Equal(100, withWav.OverallScore);
     }
 
     [Fact]
-    public async Task Fluency_BadWav_NeverBreaksTheContentScore()
+    public async Task BadAnalysisWav_IsRejectedByTheBackend_BeforeScoring()
     {
         var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer());
 
@@ -80,10 +108,10 @@ public class ShadowingEvaluationServiceTests
             ClientTranscript = Target, ClientRecognitionStatus = "final", AnalysisWav = new byte[500]
         });
 
-        Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal(100, result.ContentMatchScore);
-        Assert.Equal("unavailable", result.Fluency!.Status);
-        Assert.Equal("INVALID_WAV", result.Fluency.ReasonCode);
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("INVALID_AUDIO_FORMAT", result.ErrorCode);
+        Assert.Null(result.ContentMatchScore);
+        Assert.Null(result.Fluency);
     }
 
     [Fact]
@@ -115,16 +143,10 @@ public class ShadowingEvaluationServiceTests
         return provider.Object;
     }
 
-    private static ShadowingEvaluationService ServiceWithReference(IReferenceVoiceProvider provider)
-    {
-        var s = new FluencyAnalyzer();
-        return new ShadowingEvaluationService(
-            new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
-            new ConfigurationBuilder().Build(),
-            new Mock<ILogger<ShadowingEvaluationService>>().Object,
-            s, provider);
-    }
+    private static ShadowingEvaluationService ServiceWithReference(IReferenceVoiceProvider provider, string hears = Target) =>
+        CreateService(fluencyAnalyzer: new FluencyAnalyzer(), provider: provider, hears: hears);
 
+    /// <param name="transcript">Chữ của trình duyệt: KHÔNG được chấm; thứ được chấm là cái mô hình âm vị nghe.</param>
     private static ShadowingAudioEvaluationInput InputWith(byte[] wav, string transcript, int? speaker = null) => new()
     {
         Audio = WebmBytes(), MimeType = "audio/webm", TargetText = Target, AudioGateStatus = "good",
@@ -149,7 +171,7 @@ public class ShadowingEvaluationServiceTests
         Assert.Equal(same.OverallScore, slow.OverallScore); // nhịp nói không đổi điểm nội dung
     }
 
-    private static ShadowingEvaluationService ServiceWithDurationConfig(IReferenceVoiceProvider provider, Dictionary<string, string?>? extra = null)
+    private static ShadowingEvaluationService ServiceWithDurationConfig(IReferenceVoiceProvider provider, Dictionary<string, string?>? extra = null, string hears = Target)
     {
         var settings = new Dictionary<string, string?>
         {
@@ -159,11 +181,7 @@ public class ShadowingEvaluationServiceTests
         };
         if (extra != null) foreach (var kv in extra) settings[kv.Key] = kv.Value;
 
-        return new ShadowingEvaluationService(
-            new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
-            new ConfigurationBuilder().AddInMemoryCollection(settings).Build(),
-            new Mock<ILogger<ShadowingEvaluationService>>().Object,
-            new FluencyAnalyzer(), provider);
+        return CreateService(fluencyAnalyzer: new FluencyAnalyzer(), provider: provider, hears: hears, config: settings);
     }
 
     private static IReferenceVoiceProvider SyntheticReference(bool withTimeline = true)
@@ -222,7 +240,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task MoraDuration_NotAttempted_WhenContentMatchTooLow()
     {
-        var service = ServiceWithDurationConfig(SyntheticReference());
+        var service = ServiceWithDurationConfig(SyntheticReference(), hears: "ぜんぜんちがうぶんです。");
         var result = await service.EvaluateAsync(InputWith(TestAudio.Wav(MoraDurationTests.Render(k => k == 2 ? 0 : 1.0)), "ぜんぜんちがうぶんです。"));
 
         Assert.Null(result.Fluency!.Duration);
@@ -244,7 +262,7 @@ public class ShadowingEvaluationServiceTests
     public async Task FluencyComparison_LowContentMatch_IsNotCompared_AndSkipsReferenceLookup()
     {
         var provider = new Mock<IReferenceVoiceProvider>(MockBehavior.Strict);
-        var service = ServiceWithReference(provider.Object);
+        var service = ServiceWithReference(provider.Object, hears: "ぜんぜんちがうぶんです。");
 
         var result = await service.EvaluateAsync(InputWith(LearnerWavFor(1.9), "ぜんぜんちがうぶんです。"));
 
@@ -293,7 +311,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task Fluency_NotAttached_WhenNothingWasScored()
     {
-        var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer());
+        var service = CreateService(fluencyAnalyzer: new FluencyAnalyzer(), hears: "", hearsRawKana: true);
 
         var result = await service.EvaluateAsync(new ShadowingAudioEvaluationInput
         {
@@ -305,55 +323,72 @@ public class ShadowingEvaluationServiceTests
         Assert.Null(result.Fluency);
     }
 
-    // Nhận dạng chạy trên trình duyệt: backend chỉ chấm theo transcript Web Speech ĐÃ CHỐT do client gửi
-    [Fact]
-    public async Task FinalBrowserTranscript_IsScored()
-    {
-        var result = await CreateService().EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
-
-        Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal("web_speech", result.RecognitionSource);
-        Assert.Equal("web_speech", result.Source);
-        Assert.Null(result.FallbackReason);
-        Assert.Equal(100, result.ContentMatchScore);
-    }
-
-    [Fact]
-    public async Task AudioBytes_AreNotNeeded_ForScoring()
-    {
-        var result = await CreateService().EvaluateAsync(
-            Input(clientTranscript: Target, clientStatus: "final", audio: new byte[10], mime: "audio/unknown"));
-
-        Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal(100, result.ContentMatchScore);
-    }
-
-    // Không có transcript đã chốt: "chưa chấm được", không bao giờ là điểm 0 và không thay bằng câu mẫu
+    // Web Speech của trình duyệt KHÔNG BAO GIỜ là nguồn chấm (kể cả dự phòng): chỉ mô hình âm vị trên chính bản ghi.
     [Theory]
-    [InlineData("empty", "NO_SPEECH_DETECTED")]
-    [InlineData("interim", "NO_SPEECH_DETECTED")]
-    [InlineData("unsupported", "BROWSER_STT_UNSUPPORTED")]
-    [InlineData("error", "BROWSER_STT_ERROR")]
-    [InlineData(null, "NO_SPEECH_DETECTED")]
-    public async Task WithoutFinalTranscript_IsUnavailableNotZero(string? clientStatus, string expectedCode)
+    [InlineData("final")]
+    [InlineData("empty")]
+    [InlineData("error")]
+    [InlineData(null)]
+    public async Task BrowserTranscript_IsNeverScored_WhenTheModelIsUnavailable(string? clientStatus)
     {
-        var result = await CreateService().EvaluateAsync(Input(clientTranscript: Target, clientStatus: clientStatus));
+        var result = await CreateService(hears: null).EvaluateAsync(Input(clientTranscript: Target, clientStatus: clientStatus));
 
         Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal(expectedCode, result.ErrorCode);
+        Assert.Equal("RECOGNIZER_UNAVAILABLE", result.ErrorCode);
         Assert.Null(result.ContentMatchScore);
-        Assert.Null(result.OverallScore);
+        Assert.Null(result.OverallScore); // KHÔNG phải 0
         Assert.Equal(string.Empty, result.Tier);
         Assert.Equal(string.Empty, result.RecognizedText);
+        Assert.NotEqual("web_speech", result.RecognitionSource);
     }
 
     [Fact]
-    public async Task FinalTranscriptContainingOnlyPunctuation_IsNotUsable()
+    public async Task BrowserTranscript_IsIgnored_WhatTheModelHeardIsScored()
     {
-        var result = await CreateService().EvaluateAsync(Input(clientTranscript: " 。、 ", clientStatus: "final"));
+        var result = await CreateService(hears: "おはよう").EvaluateAsync(Input(clientTranscript: Target, clientStatus: "final"));
+
+        Assert.Equal("completed", result.EvaluationStatus);
+        Assert.Equal("phoneme", result.RecognitionSource);
+        Assert.True(result.ContentMatchScore < 100);
+    }
+
+    [Fact]
+    public async Task RawRecording_IsOptional_TheAnalysisWavIsWhatIsScored()
+    {
+        var result = await CreateService().EvaluateAsync(Input(audio: Array.Empty<byte>()));
+
+        Assert.Equal("completed", result.EvaluationStatus);
+        Assert.Equal(100, result.ContentMatchScore);
+    }
+
+    [Fact]
+    public async Task RawRecordingOfUnknownFormat_IsRejected_RegardlessOfItsContentType()
+    {
+        var result = await CreateService().EvaluateAsync(Input(audio: new byte[10], mime: "audio/webm"));
+
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("INVALID_AUDIO_FORMAT", result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task OldClientWithoutAnalysisWav_IsUnavailable_NotScoredFromTheBrowser()
+    {
+        var input = Input(clientTranscript: Target, clientStatus: "final", noAnalysisWav: true);
+        var result = await CreateService().EvaluateAsync(input);
+
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("ANALYSIS_AUDIO_MISSING", result.ErrorCode);
+        Assert.Null(result.OverallScore);
+    }
+
+    [Fact]
+    public async Task NothingHeard_IsNoSpeech_NotZero()
+    {
+        var result = await CreateService(hears: "", hearsRawKana: true).EvaluateAsync(Input());
 
         Assert.Equal("unavailable", result.EvaluationStatus);
         Assert.Equal("NO_SPEECH_DETECTED", result.ErrorCode);
+        Assert.Null(result.OverallScore);
     }
 
     private static ShadowingAudioEvaluationInput Input(
@@ -362,24 +397,29 @@ public class ShadowingEvaluationServiceTests
         string? gate = "good",
         byte[]? audio = null,
         string mime = "audio/webm;codecs=opus",
-        string? target = null) => new()
+        string? target = null,
+        byte[]? analysisWav = null,
+        bool noAnalysisWav = false) => new()
     {
         Audio = audio ?? WebmBytes(),
         MimeType = mime,
         TargetText = target ?? Target,
         ClientTranscript = clientTranscript,
         ClientRecognitionStatus = clientStatus,
-        AudioGateStatus = gate
+        AudioGateStatus = gate,
+        AnalysisWav = noAnalysisWav ? null : analysisWav ?? FluencyWav(), // mặc định có tiếng nói, đúng định dạng
     };
 
-    private static ShadowingAudioEvaluationInput Spoken(string transcript, string? target = null, string? gate = "good") =>
-        Input(clientTranscript: transcript, clientStatus: "final", target: target, gate: gate);
+    /// <summary>Người học đọc <paramref name="spoken"/>: mô hình âm vị nghe ra cách đọc của nó.</summary>
+    private static Task<ShadowingAudioEvaluationResponseDto> Speak(string spoken, string? target = null, string? gate = "good",
+        IKanaReader? reader = null, bool rawKana = false) =>
+        CreateService(reader, hears: spoken, hearsRawKana: rawKana).EvaluateAsync(Input(target: target, gate: gate));
 
     // 1. Transcript đúng
     [Fact]
     public async Task CorrectTranscript_ScoresFullContentMatch_AndLeavesUnmeasuredDimensionsNull()
     {
-        var result = await CreateService().EvaluateAsync(Spoken(Target));
+        var result = await Speak(Target);
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal("recognized", result.RecognitionStatus);
@@ -398,7 +438,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task PartiallyIncorrectTranscript_ScoresBetween0And100_AndDerivesErrorListsFromDiff()
     {
-        var result = await CreateService().EvaluateAsync(Spoken("ひとりです。テーブル席でおねがいします。"));
+        var result = await Speak("ひとりです。テーブル席でおねがいします。");
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.InRange(result.ContentMatchScore!.Value, 1, 99);
@@ -414,7 +454,7 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task CompletelyIncorrectTranscript_IsALegitimateZero()
     {
-        var result = await CreateService().EvaluateAsync(Spoken("おはよう", target: "すみません。"));
+        var result = await Speak("おはよう", target: "すみません。");
 
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.Equal(0, result.ContentMatchScore);
@@ -427,23 +467,23 @@ public class ShadowingEvaluationServiceTests
     [Fact]
     public async Task ReadingSourceDown_IsNotScored_AndKeepsWhatWasHeard()
     {
-        var result = await CreateService(new UnavailableKanaReader()).EvaluateAsync(Spoken(Target));
+        var result = await Speak("ひとりです。かうんたーせきでおねがいします。", reader: new UnavailableKanaReader(), rawKana: true);
 
         Assert.Equal("failed", result.EvaluationStatus);
         Assert.Equal("READING_UNAVAILABLE", result.ErrorCode);
         Assert.Null(result.ContentMatchScore);
         Assert.Null(result.OverallScore);
         Assert.Equal(string.Empty, result.Tier);
-        Assert.Equal(Target, result.RecognizedText); // vẫn cho người học thấy hệ thống nghe được gì
+        Assert.Equal("ひとりです。かうんたーせきでおねがいします。", result.RecognizedText); // vẫn cho người học thấy hệ thống nghe được gì
         Assert.Equal("recognized", result.RecognitionStatus);
-        Assert.Equal("web_speech", result.RecognitionSource);
+        Assert.Equal("phoneme", result.RecognitionSource);
         Assert.Empty(result.DiffTokens);
     }
 
     [Fact]
     public async Task UnreadableKanjiInTarget_IsNotScored()
     {
-        var result = await CreateService().EvaluateAsync(Spoken("とうきょうへいきました", target: "東京へ行きました。"));
+        var result = await Speak("とうきょうへいきました", target: "東京へ行きました。", rawKana: true);
 
         Assert.Equal("failed", result.EvaluationStatus);
         Assert.Equal("READING_UNAVAILABLE", result.ErrorCode);
@@ -452,26 +492,27 @@ public class ShadowingEvaluationServiceTests
 
     // Âm thanh không đạt không được gán "good" bịa; có transcript không chứng minh âm thanh đủ tốt
     [Fact]
-    public async Task NeedsRetryAudio_IsNotScored_EvenThoughClientHasTranscript_AndIsNeverReportedGood()
+    public async Task SilentRecording_IsRejectedByTheBackend_EvenWhenTheClientSaysGood()
     {
-        var result = await CreateService().EvaluateAsync(Spoken(Target, gate: "needs_retry"));
+        var input = Input(gate: "good", analysisWav: TestAudio.Wav(TestAudio.Zeros(1500)));
+        var result = await CreateService().EvaluateAsync(input);
 
         Assert.Equal("unavailable", result.EvaluationStatus);
-        Assert.Equal("AUDIO_QUALITY_INSUFFICIENT", result.ErrorCode);
+        Assert.Equal("AUDIO_SILENT", result.ErrorCode);
         Assert.Equal("needs_retry", result.AudioQualityStatus);
         Assert.Null(result.OverallScore);
     }
 
     [Theory]
+    [InlineData("needs_retry")]
     [InlineData(null)]
-    [InlineData("")]
     [InlineData("excellent")]
-    public async Task MissingOrUnknownGate_IsReportedAsUnmeasured_NotGood(string? gate)
+    public async Task ClientGate_DoesNotDecide_TheBackendCheckDoes(string? gate)
     {
-        var result = await CreateService().EvaluateAsync(Spoken(Target, gate: gate));
+        var result = await Speak(Target, gate: gate);
 
         Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal("unmeasured", result.AudioQualityStatus);
+        Assert.Contains(result.AudioQualityStatus, new[] { "good", "acceptable" }); // do backend đo, không lấy từ client
     }
 
     // Điểm và diff cùng dựa trên đúng một cặp (target, recognized)
@@ -479,13 +520,13 @@ public class ShadowingEvaluationServiceTests
     public async Task ScoreAndDiff_AreBothDerivedFromTheSameTargetAndRecognizedText()
     {
         const string spoken = "ひとりです。テーブル席でおねがいします。";
-        var result = await CreateService().EvaluateAsync(Spoken(spoken));
+        var result = await Speak(spoken);
 
         var recomputed = await new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() })
-            .CompareAsync(Target, result.RecognizedText);
+            .CompareWithReadingAsync(Target, result.RecognizedText);
 
         Assert.Equal(Target, result.TargetText);
-        Assert.Equal(spoken, result.RecognizedText);
+        Assert.Equal(KanaOf(spoken), result.RecognizedText); // thứ được chấm là kana mô hình nghe
         Assert.Equal(recomputed.ContentMatchScore, result.ContentMatchScore);
         Assert.Equal(
             recomputed.Tokens.Select(t => (t.Text, t.Status)),
@@ -497,8 +538,8 @@ public class ShadowingEvaluationServiceTests
     public async Task SameTranscript_YieldsSameScore()
     {
         const string transcript = "ひとりです。テーブル席でおねがいします。";
-        var first = await CreateService().EvaluateAsync(Spoken(transcript));
-        var second = await CreateService().EvaluateAsync(Spoken(transcript));
+        var first = await Speak(transcript);
+        var second = await Speak(transcript);
 
         Assert.Equal(first.ContentMatchScore, second.ContentMatchScore);
         Assert.Equal(first.OverallScore, second.OverallScore);

@@ -200,37 +200,87 @@ namespace JCAP.Services.Implementations
                 .FirstOrDefaultAsync(s => s.Id == sentenceId && s.ShadowingDialogue.IsActive);
         }
 
-        public async Task<Guid?> RecordSentenceEvaluationAsync(string userId, int sentenceId, ShadowingAudioEvaluationResponseDto result)
+        public async Task<Guid?> RecordSentenceEvaluationAsync(
+            string userId, int sentenceId, ShadowingAudioEvaluationResponseDto result,
+            Guid? progressId = null, Guid? clientSubmissionId = null)
         {
-            // Chỉ lưu lượt có điểm. "Chưa chấm được" không phải điểm 0 nên không được đưa vào điểm tổng.
+            if (string.IsNullOrEmpty(userId)) return null;
+
+            // MỖI lần gửi chấm là một dòng, kể cả "chưa chấm được": điểm để null (KHÔNG phải 0) và ghi lý do.
+            // Buổi luyện chỉ tính các dòng có điểm.
             var scored = (result.EvaluationStatus == "completed" || result.EvaluationStatus == "partial")
                 && result.ContentMatchScore.HasValue
                 && result.OverallScore.HasValue;
-            if (!scored || string.IsNullOrEmpty(userId)) return null;
 
             var evaluation = new ShadowingSentenceEvaluation
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 ShadowingSentenceId = sentenceId,
+                ShadowingPracticeProgressId = progressId,
+                ClientSubmissionId = clientSubmissionId,
                 RecognizedText = Truncate(result.RecognizedText, MaxRecognizedTextLength),
-                ContentMatchScore = result.ContentMatchScore!.Value,
-                OverallScore = result.OverallScore!.Value,
-                Tier = result.Tier,
-                EvaluationStatus = result.EvaluationStatus,
-                RecognitionSource = result.RecognitionSource,
-                ScoringVersion = result.ScoringVersion,
-                ComparisonMethod = result.ComparisonMethod,
-                AudioQualityStatus = result.AudioQualityStatus,
+                ContentMatchScore = scored ? result.ContentMatchScore : null,
+                OverallScore = scored ? result.OverallScore : null,
+                Tier = scored ? result.Tier ?? string.Empty : string.Empty,
+                EvaluationStatus = Truncate(result.EvaluationStatus, 20),
+                ErrorCode = scored ? null : TruncateOrNull(result.ErrorCode, 50),
+                RecognitionSource = Truncate(result.RecognitionSource, 20),
+                RecognitionMode = Truncate(result.RecognitionMode, 20),
+                ScoringVersion = Truncate(result.ScoringVersion, 100),
+                ComparisonMethod = Truncate(result.ComparisonMethod, 50),
+                AudioQualityStatus = Truncate(result.AudioQualityStatus, 20),
                 Feedback = Truncate(result.Feedback, MaxFeedbackLength),
-                DiffTokensJson = JsonSerializer.Serialize(result.DiffTokens, JsonOptions),
+                DiffTokensJson = JsonSerializer.Serialize(result.DiffTokens ?? new List<ShadowingDiffTokenDto>(), JsonOptions),
                 CreatedAt = DateTime.UtcNow,
             };
 
             _context.ShadowingSentenceEvaluations.Add(evaluation);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (clientSubmissionId.HasValue && ShadowingPracticeProgressService.IsUniqueViolation(ex))
+            {
+                // Hai request cùng một lần gửi chấm đến gần như đồng thời: giữ dòng đã lưu, không tạo dòng thứ hai.
+                _context.Entry(evaluation).State = EntityState.Detached;
+                var existing = await FindEvaluationBySubmissionAsync(userId, clientSubmissionId.Value);
+                if (existing == null) throw;
+                return existing.Id;
+            }
             return evaluation.Id;
         }
+
+        public Task<ShadowingSentenceEvaluation?> FindEvaluationBySubmissionAsync(string userId, Guid clientSubmissionId) =>
+            _context.ShadowingSentenceEvaluations.AsNoTracking()
+                .FirstOrDefaultAsync(e => e.UserId == userId && e.ClientSubmissionId == clientSubmissionId);
+
+        /// <summary>
+        /// Dựng lại kết quả trả cho client từ một lần chấm đã lưu (dùng khi client gửi lại cùng ClientSubmissionId).
+        /// Chỉ gồm các trường đã lưu; số liệu nhịp nói không được lưu nên để null.
+        /// </summary>
+        public static ShadowingAudioEvaluationResponseDto ToStoredResult(ShadowingSentenceEvaluation e, string targetText) => new()
+        {
+            EvaluationId = e.Id,
+            SentenceId = e.ShadowingSentenceId,
+            EvaluationStatus = e.EvaluationStatus,
+            RecognitionStatus = e.OverallScore.HasValue ? "recognized" : "unavailable",
+            RecognitionSource = e.RecognitionSource,
+            Source = e.RecognitionSource,
+            RecognitionMode = e.RecognitionMode,
+            AudioQualityStatus = e.AudioQualityStatus,
+            ScoringVersion = e.ScoringVersion,
+            ComparisonMethod = e.ComparisonMethod,
+            TargetText = targetText,
+            RecognizedText = e.RecognizedText,
+            ContentMatchScore = e.ContentMatchScore,
+            OverallScore = e.OverallScore,
+            Tier = e.Tier,
+            Feedback = e.Feedback,
+            DiffTokens = ReadDiffTokens(e.DiffTokensJson),
+            ErrorCode = e.ErrorCode,
+            ErrorMessage = e.OverallScore.HasValue ? null : "Lần gửi này chưa chấm được. Hãy thu lại.",
+        };
 
         public async Task<ApiResponse<ShadowingSessionCompleteResponseDto>> CompleteSessionAsync(string userId, ShadowingSessionCompleteDto dto)
         {
@@ -240,7 +290,38 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Vai luyện tập không hợp lệ.");
             }
 
-            var ids = (dto.EvaluationIds ?? new List<Guid>()).Distinct().Take(MaxEvaluationsPerSession).ToList();
+            // Có phiên luyện ở server: lấy các lần chấm của phiên (không cần client gửi danh sách Id).
+            // Không có (client cũ): dùng EvaluationIds như trước.
+            ShadowingPracticeProgress? progress = null;
+            List<Guid> ids;
+            if (dto.ProgressId is { } progressId)
+            {
+                progress = await _context.ShadowingPracticeProgresses.FirstOrDefaultAsync(p => p.Id == progressId && p.UserId == userId);
+                if (progress == null)
+                    return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Không tìm thấy phiên luyện.");
+                if (progress.Status == ShadowingPracticeProgress.StatusCompleted && progress.ShadowingPracticeSessionId is { } doneId)
+                {
+                    // Gọi lại (mất mạng, bấm hai lần): trả buổi đã tạo, không tạo buổi thứ hai.
+                    var done = await BuildCompleteResponseAsync(doneId);
+                    return done == null
+                        ? ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Không tìm thấy buổi luyện đã lưu.")
+                        : ApiResponse<ShadowingSessionCompleteResponseDto>.Ok(done, "Buổi luyện này đã được lưu trước đó.");
+                }
+                if (progress.Status != ShadowingPracticeProgress.StatusInProgress)
+                    return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Phiên luyện đã kết thúc.");
+                if (progress.ShadowingDialogueId != dto.DialogueId || progress.LearnerRole != role)
+                    return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Phiên luyện không khớp bài hoặc vai.");
+
+                ids = await _context.ShadowingSentenceEvaluations
+                    .Where(e => e.ShadowingPracticeProgressId == progress.Id)
+                    .Select(e => e.Id)
+                    .ToListAsync();
+            }
+            else
+            {
+                ids = (dto.EvaluationIds ?? new List<Guid>()).Distinct().Take(MaxEvaluationsPerSession).ToList();
+            }
+
             if (ids.Count == 0)
             {
                 return ApiResponse<ShadowingSessionCompleteResponseDto>.Fail("Chưa có câu nào được chấm trong buổi luyện này.");
@@ -289,11 +370,13 @@ namespace JCAP.Services.Implementations
 
             var completedAt = DateTime.UtcNow;
             var duration = Math.Clamp(dto.DurationSeconds, 0, MaxSessionSeconds);
-            var startedAt = dto.StartedAt?.ToUniversalTime() is { } started
-                && started <= completedAt
-                && started >= completedAt.AddSeconds(-MaxSessionSeconds)
-                ? started
-                : completedAt.AddSeconds(-duration);
+            var startedAt = progress != null
+                ? progress.StartedAt // thời điểm bắt đầu do server ghi, không lấy từ client
+                : dto.StartedAt?.ToUniversalTime() is { } started
+                    && started <= completedAt
+                    && started >= completedAt.AddSeconds(-MaxSessionSeconds)
+                    ? started
+                    : completedAt.AddSeconds(-duration);
 
             var session = new ShadowingPracticeSession
             {
@@ -317,26 +400,41 @@ namespace JCAP.Services.Implementations
 
             _context.ShadowingPracticeSessions.Add(session);
             foreach (var evaluation in chosen) evaluation.ShadowingPracticeSessionId = session.Id;
+            if (progress != null)
+            {
+                progress.Status = ShadowingPracticeProgress.StatusCompleted;
+                progress.CompletedAt = completedAt;
+                progress.LastActivityAt = completedAt;
+                progress.ShadowingPracticeSessionId = session.Id;
+            }
             await _context.SaveChangesAsync();
 
-            var response = new ShadowingSessionCompleteResponseDto
-            {
-                SessionId = session.Id,
-                DialogueId = dialogue.Id,
-                DialogueTitle = dialogue.Title,
-                OverallAccuracyScore = contentMatch,
-                OverallFluencyScore = fluency,
-                AudioQualityStatus = session.AudioQualityStatus,
-                WeightedOverallScore = overall,
-                ScoringVersion = session.ScoringVersion,
-                RankTitle = session.RankTitle,
-                SummaryFeedback = SummaryFeedbackFor(overall),
-                LearnerSentenceCount = learnerSentenceCount,
-                ScoredSentenceCount = chosen.Count,
-            };
-
-            return ApiResponse<ShadowingSessionCompleteResponseDto>.Ok(response, "Đã lưu buổi luyện Shadowing vào lịch sử.");
+            return ApiResponse<ShadowingSessionCompleteResponseDto>.Ok(ToCompleteResponse(session, dialogue.Title), "Đã lưu buổi luyện Shadowing vào lịch sử.");
         }
+
+        private async Task<ShadowingSessionCompleteResponseDto?> BuildCompleteResponseAsync(Guid sessionId)
+        {
+            var session = await _context.ShadowingPracticeSessions.AsNoTracking()
+                .Include(s => s.ShadowingDialogue)
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
+            return session == null ? null : ToCompleteResponse(session, session.ShadowingDialogue?.Title ?? string.Empty);
+        }
+
+        private static ShadowingSessionCompleteResponseDto ToCompleteResponse(ShadowingPracticeSession session, string dialogueTitle) => new()
+        {
+            SessionId = session.Id,
+            DialogueId = session.ShadowingDialogueId,
+            DialogueTitle = dialogueTitle,
+            OverallAccuracyScore = session.ContentMatchScore,
+            OverallFluencyScore = session.FluencyScore,
+            AudioQualityStatus = session.AudioQualityStatus,
+            WeightedOverallScore = session.WeightedOverallScore,
+            ScoringVersion = session.ScoringVersion,
+            RankTitle = session.RankTitle,
+            SummaryFeedback = SummaryFeedbackFor(session.WeightedOverallScore),
+            LearnerSentenceCount = session.LearnerSentenceCount,
+            ScoredSentenceCount = session.ScoredSentenceCount,
+        };
 
         public async Task<ApiResponse<List<ShadowingPracticeSessionDto>>> GetHistoryAsync(string userId)
         {
@@ -432,5 +530,8 @@ namespace JCAP.Services.Implementations
 
         private static string Truncate(string? value, int max) =>
             string.IsNullOrEmpty(value) ? string.Empty : value.Length <= max ? value : value[..max];
+
+        private static string? TruncateOrNull(string? value, int max) =>
+            string.IsNullOrEmpty(value) ? null : Truncate(value, max);
     }
 }

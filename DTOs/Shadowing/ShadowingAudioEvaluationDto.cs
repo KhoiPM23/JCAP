@@ -14,6 +14,15 @@ namespace JCAP.DTOs.Shadowing
         /// </summary>
         public int? SentenceId { get; set; }
 
+        /// <summary>Phiên luyện ở server mà lần chấm này thuộc về (tùy chọn; client cũ không gửi).</summary>
+        public Guid? ProgressId { get; set; }
+
+        /// <summary>
+        /// Id do client sinh cho MỘT lần bấm "Gửi chấm" (tùy chọn). Gửi lại cùng Id (mất mạng, quá hạn) thì backend trả kết quả đã lưu,
+        /// không chấm và không lưu thêm lần nữa.
+        /// </summary>
+        public Guid? ClientSubmissionId { get; set; }
+
         /// <summary>Câu mẫu tiếng Nhật. Chỉ dùng để đối chiếu, KHÔNG gửi cho nhà cung cấp STT. Bị bỏ qua khi có SentenceId.</summary>
         public string TargetText { get; set; } = string.Empty;
 

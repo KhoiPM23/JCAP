@@ -49,7 +49,7 @@ public class ShadowingPhonemeSourceTests
 
     private static ShadowingAudioEvaluationInput Input(string? clientTranscript = null, byte[]? wav = null, string gate = "good") => new()
     {
-        Audio = new byte[2048],
+        Audio = Array.Empty<byte>(), // bản ghi gốc tùy chọn; chấm trên AnalysisWav
         MimeType = "audio/webm",
         TargetText = Target,
         AudioGateStatus = gate,
@@ -215,64 +215,69 @@ public class ShadowingPhonemeSourceTests
         Assert.Equal("phoneme", result.RecognitionSource);
     }
 
+    // Không có nguồn chấm dự phòng: model hỏng/thiếu, WAV hỏng → "chưa chấm được" kèm mã lỗi, KHÔNG chấm bằng chữ Web Speech.
     [Fact]
-    public async Task ModelNotAvailable_FallsBackToTheBrowserTranscript()
+    public async Task ModelNotAvailable_IsUnavailable_NotScoredFromTheBrowser()
     {
         var recognizer = new FakePhonemeRecognizer(() => Heard("x")) { IsAvailable = false };
         var result = await Service(recognizer).EvaluateAsync(Input(clientTranscript: Target));
 
-        Assert.Equal("web_speech", result.RecognitionSource);
-        Assert.Equal(100, result.ContentMatchScore);
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("RECOGNIZER_UNAVAILABLE", result.ErrorCode);
+        Assert.Null(result.ContentMatchScore);
         Assert.Equal(0, recognizer.Calls);
     }
 
     [Fact]
-    public async Task NoRecognizerRegistered_FallsBackToTheBrowserTranscript()
+    public async Task NoRecognizerRegistered_IsUnavailable()
     {
         var result = await Service(recognizer: null).EvaluateAsync(Input(clientTranscript: Target));
-        Assert.Equal("web_speech", result.RecognitionSource);
+        Assert.Equal("RECOGNIZER_UNAVAILABLE", result.ErrorCode);
+        Assert.Null(result.OverallScore);
     }
 
     [Fact]
-    public async Task CorruptAnalysisWav_FallsBackToTheBrowserTranscript()
+    public async Task CorruptAnalysisWav_IsRejected_BeforeTheModelRuns()
     {
         var recognizer = new FakePhonemeRecognizer(() => Heard("x"));
         var result = await Service(recognizer).EvaluateAsync(Input(clientTranscript: Target, wav: new byte[300]));
 
-        Assert.Equal("web_speech", result.RecognitionSource);
+        Assert.Equal("INVALID_AUDIO_FORMAT", result.ErrorCode);
         Assert.Equal(0, recognizer.Calls);
     }
 
     [Fact]
-    public async Task ConfiguredToUseTheBrowser_DoesNotRunTheModel()
+    public async Task OldBrowserSourceSetting_NoLongerTurnsOffTheModel()
     {
         var recognizer = new FakePhonemeRecognizer(() => Heard("x"));
         var service = Service(recognizer, new() { ["Shadowing:Recognition:Source"] = "web_speech" });
 
         var result = await service.EvaluateAsync(Input(clientTranscript: Target));
 
-        Assert.Equal("web_speech", result.RecognitionSource);
-        Assert.Equal(0, recognizer.Calls);
+        Assert.Equal("phoneme", result.RecognitionSource);
+        Assert.Equal(1, recognizer.Calls);
     }
 
     [Fact]
-    public async Task RecognizerCrash_FallsBackToTheBrowserTranscript()
+    public async Task RecognizerCrash_IsUnavailable_NotZero()
     {
         var recognizer = new FakePhonemeRecognizer(() => throw new InvalidOperationException("onnx"));
         var result = await Service(recognizer).EvaluateAsync(Input(clientTranscript: Target));
 
-        Assert.Equal("completed", result.EvaluationStatus);
-        Assert.Equal("web_speech", result.RecognitionSource);
+        Assert.Equal("unavailable", result.EvaluationStatus);
+        Assert.Equal("RECOGNIZER_UNAVAILABLE", result.ErrorCode);
+        Assert.Null(result.OverallScore);
     }
 
     [Fact]
-    public async Task AudioGateNeedsRetry_StopsBeforeRecognition()
+    public async Task ClientGateNeedsRetry_DoesNotStopABackendCheckedRecording()
     {
-        var recognizer = new FakePhonemeRecognizer(() => Heard("x"));
+        var reading = await TargetReading();
+        var recognizer = new FakePhonemeRecognizer(() => Heard(reading));
         var result = await Service(recognizer).EvaluateAsync(Input(clientTranscript: Target, gate: "needs_retry"));
 
-        Assert.Equal("AUDIO_QUALITY_INSUFFICIENT", result.ErrorCode);
-        Assert.Equal(0, recognizer.Calls);
+        Assert.Equal("completed", result.EvaluationStatus);
+        Assert.Equal(1, recognizer.Calls);
     }
 }
 

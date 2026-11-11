@@ -20,6 +20,12 @@ namespace JCAP.DTOs.Shadowing
         public DateTime? StartedAt { get; set; }
 
         public List<Guid> EvaluationIds { get; set; } = new();
+
+        /// <summary>
+        /// Phiên luyện ở server (ShadowingPracticeProgress). Có thì backend tự lấy các lần chấm của phiên (bỏ qua EvaluationIds),
+        /// chuyển phiên sang completed; gọi lại trả về đúng buổi đã tạo. Không có: chạy như cũ theo EvaluationIds (client cũ).
+        /// </summary>
+        public Guid? ProgressId { get; set; }
     }
 
     public class ShadowingSessionCompleteResponseDto

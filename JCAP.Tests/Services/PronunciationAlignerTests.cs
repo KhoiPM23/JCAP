@@ -177,7 +177,7 @@ public class ShadowingAlignedScoringTests
 
     private static ShadowingAudioEvaluationInput Input() => new()
     {
-        Audio = new byte[2048],
+        Audio = Array.Empty<byte>(),
         MimeType = "audio/webm",
         TargetText = Target,
         AudioGateStatus = "good",

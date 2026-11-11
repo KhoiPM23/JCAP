@@ -13,27 +13,23 @@ namespace JCAP.Services.Implementations
     /// <summary>
     /// Điều phối đánh giá một câu Shadowing. Backend là nơi DUY NHẤT tính điểm cuối cùng.
     ///
-    /// Nguồn transcript để chấm (theo thứ tự):
-    ///  1. Bộ nhận dạng âm vị chạy trên CHÍNH bản ghi của JCAP (bản WAV phân tích): cùng micro người học đã chọn,
-    ///     ra thẳng cách đọc (kana), ít "sửa" lỗi phát âm hơn nhận dạng của trình duyệt. RecognitionSource = "phoneme".
-    ///  2. Không dùng được (tắt bằng `Shadowing:Recognition:Source = web_speech`, thiếu mô hình, thiếu/hỏng bản WAV):
-    ///     transcript Web Speech ĐÃ CHỐT (final) do client gửi, không bao giờ dùng interim. RecognitionSource = "web_speech".
-    /// Web Speech vẫn chạy trên trình duyệt để hiện chữ trực tiếp khi người học nói.
-    /// Không có tiếng nói / transcript hợp lệ → "chưa chấm được" (unavailable), KHÔNG phải điểm 0.
+    /// Thứ tự:
+    ///  1. Backend tự kiểm tra âm thanh (ShadowingAudioValidator: định dạng thật, kích thước, thời lượng, có giọng nói, vỡ tiếng).
+    ///     Kết quả kiểm tra của trình duyệt (audioGateStatus) KHÔNG còn quyết định có chấm hay không.
+    ///  2. Nhận dạng âm vị trên CHÍNH bản ghi (WAV phân tích), giới hạn số lượt chạy đồng thời (ShadowingRecognitionThrottle).
+    ///  3. Chấm theo câu mẫu (aligned) hoặc nhận dạng tự do khi đọc câu khác (free).
+    /// KHÔNG có nguồn chấm dự phòng: thiếu mô hình / bản ghi không dùng được → "chưa chấm được" (unavailable) kèm mã lỗi,
+    /// không bao giờ là điểm 0 và không chấm bằng transcript Web Speech của trình duyệt (Web Speech chỉ hiện chữ trực tiếp).
     /// </summary>
     public class ShadowingEvaluationService : IAiShadowingAssessmentService
     {
-        private const int MaxClientTranscriptLength = 500;
-        private const int MaxGateDetailLength = 200;
-
-        private static readonly string[] ValidGateStatuses = { "good", "acceptable", "needs_retry", "unmeasured" };
-
         private readonly IJapaneseTextComparer _comparer;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ShadowingEvaluationService> _logger;
         private readonly IFluencyAnalyzer? _fluencyAnalyzer;
         private readonly IReferenceVoiceProvider? _referenceProvider;
         private readonly IPhonemeRecognizer? _phonemeRecognizer;
+        private readonly ShadowingRecognitionThrottle? _throttle;
 
         /// <summary>Kết quả chỉ một mora mà độ tự tin thấp hơn mức này coi là nhiễu (mô hình đôi khi nghe nền ồn thành 「あ」).</summary>
         private const double MinSingleMoraConfidence = 0.6;
@@ -44,7 +40,8 @@ namespace JCAP.Services.Implementations
             ILogger<ShadowingEvaluationService> logger,
             IFluencyAnalyzer? fluencyAnalyzer = null,
             IReferenceVoiceProvider? referenceProvider = null,
-            IPhonemeRecognizer? phonemeRecognizer = null)
+            IPhonemeRecognizer? phonemeRecognizer = null,
+            ShadowingRecognitionThrottle? throttle = null)
         {
             _comparer = comparer;
             _configuration = configuration;
@@ -52,6 +49,7 @@ namespace JCAP.Services.Implementations
             _fluencyAnalyzer = fluencyAnalyzer;
             _referenceProvider = referenceProvider;
             _phonemeRecognizer = phonemeRecognizer;
+            _throttle = throttle;
         }
 
         public async Task<ShadowingAudioEvaluationResponseDto> EvaluateAsync(
@@ -65,41 +63,58 @@ namespace JCAP.Services.Implementations
                 return Unavailable(response, "MISSING_TARGET_TEXT", "Thiếu câu mẫu cần đối chiếu.");
             }
 
-            // Chất lượng âm thanh do client đo (heuristic): needs_retry thì không chấm.
-            if (response.AudioQualityStatus == "needs_retry")
+            // 1. Kiểm tra âm thanh phía backend (không tin kết quả do trình duyệt gửi).
+            var audio = ShadowingAudioValidator.Validate(input.AnalysisWav, input.Audio);
+            response.AudioQualityStatus = audio.QualityStatus;
+            response.AudioQualityDetail = audio.Message;
+            if (!audio.IsValid)
             {
-                return Unavailable(response, "AUDIO_QUALITY_INSUFFICIENT",
-                    response.AudioQualityDetail ?? "Chất lượng âm thanh chưa đạt, hãy thu âm lại.");
+                return Unavailable(response, audio.ErrorCode!, audio.Message!);
             }
 
-            var fromRecording = RecognizeFromRecording(input);
-            if (fromRecording != null)
+            // 2. Nhận dạng âm vị trên chính bản ghi. Không có nguồn dự phòng.
+            if (_phonemeRecognizer == null || !_phonemeRecognizer.IsAvailable)
             {
-                response.RecognitionSource = "phoneme";
-                if (fromRecording.Value.NoSpeech)
-                {
-                    response.RecognitionStatus = "no_speech";
-                    return Unavailable(response, "NO_SPEECH_DETECTED",
-                        "Không nghe rõ giọng nói trong bản ghi. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
-                }
-
-                response.EvaluationStatus = "completed";
-                response.FreeRecognizedText = fromRecording.Value.Kana;
-
-                // Chấm theo câu mẫu (mặc định); không dùng được hoặc người học đọc câu khác thì dùng nhận dạng tự do như trước.
-                var aligned = await TryAlignWithTargetAsync(input, fromRecording.Value.Result, cancellationToken);
-                if (aligned != null)
-                {
-                    response.RecognitionMode = "aligned";
-                    return await ScoreTranscriptAsync(input, response, JapaneseMora.Join(aligned.Value.Heard.Heard), cancellationToken,
-                        transcriptIsReading: true, precomputed: aligned.Value.Comparison);
-                }
-
-                response.RecognitionMode = "free";
-                return await ScoreTranscriptAsync(input, response, fromRecording.Value.Kana, cancellationToken, transcriptIsReading: true);
+                _logger.LogWarning("Chưa có mô hình nhận dạng âm vị; lượt này không chấm được (chạy scripts/download-speech-models).");
+                return Unavailable(response, "RECOGNIZER_UNAVAILABLE",
+                    "Hệ thống chấm phát âm đang tạm ngừng. Điểm chưa được ghi nhận, hãy thử lại sau.");
             }
 
-            return await EvaluateBrowserTranscriptAsync(input, response, cancellationToken);
+            using var slot = _throttle == null ? null : await _throttle.TryEnterAsync(cancellationToken);
+            if (_throttle != null && slot == null)
+            {
+                return Unavailable(response, "SERVER_BUSY", "Hệ thống đang bận chấm cho nhiều người. Hãy gửi lại sau vài giây.");
+            }
+
+            var recognized = RecognizeFromRecording(audio.Samples16k!);
+            if (recognized == null)
+            {
+                return Unavailable(response, "RECOGNIZER_UNAVAILABLE",
+                    "Không phân tích được bản ghi lúc này. Điểm chưa được ghi nhận, hãy thử lại.");
+            }
+
+            response.RecognitionSource = "phoneme";
+            if (recognized.Value.NoSpeech)
+            {
+                response.RecognitionStatus = "no_speech";
+                return Unavailable(response, "NO_SPEECH_DETECTED",
+                    "Không nghe rõ giọng nói trong bản ghi. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
+            }
+
+            response.EvaluationStatus = "completed";
+            response.FreeRecognizedText = recognized.Value.Kana;
+
+            // 3. Chấm theo câu mẫu (mặc định); không dùng được hoặc người học đọc câu khác thì dùng nhận dạng tự do.
+            var aligned = await TryAlignWithTargetAsync(input, recognized.Value.Result, cancellationToken);
+            if (aligned != null)
+            {
+                response.RecognitionMode = "aligned";
+                return await ScoreTranscriptAsync(input, response, JapaneseMora.Join(aligned.Value.Heard.Heard), cancellationToken,
+                    precomputed: aligned.Value.Comparison);
+            }
+
+            response.RecognitionMode = "free";
+            return await ScoreTranscriptAsync(input, response, recognized.Value.Kana, cancellationToken);
         }
 
         /// <summary>
@@ -144,20 +159,13 @@ namespace JCAP.Services.Implementations
         }
 
         /// <summary>
-        /// Nhận dạng âm vị trên chính bản ghi của JCAP. Trả null khi không dùng được nguồn này (tắt, thiếu mô hình,
-        /// thiếu/hỏng bản WAV) để quay về transcript của trình duyệt; lỗi ở đây không bao giờ làm hỏng lượt chấm.
+        /// Nhận dạng âm vị trên mẫu 16 kHz đã được kiểm tra. Null khi mô hình lỗi (lỗi ở đây không bao giờ thành điểm 0).
         /// </summary>
-        private (bool NoSpeech, string Kana, PhonemeRecognitionResult Result)? RecognizeFromRecording(ShadowingAudioEvaluationInput input)
+        private (bool NoSpeech, string Kana, PhonemeRecognitionResult Result)? RecognizeFromRecording(float[] samples)
         {
-            var source = _configuration["Shadowing:Recognition:Source"];
-            if (string.Equals(source, "web_speech", StringComparison.OrdinalIgnoreCase)) return null;
-            if (_phonemeRecognizer == null || input.AnalysisWav == null || input.AnalysisWav.Length == 0) return null;
-
             try
             {
-                if (!_phonemeRecognizer.IsAvailable) return null;
-                var samples = WavPcmReader.ReadMono16k(input.AnalysisWav);
-                var result = _phonemeRecognizer.Recognize(samples);
+                var result = _phonemeRecognizer!.Recognize(samples);
                 if (result == null) return null;
 
                 var moras = JapaneseMora.FromKana(result.Kana, preserveLongVowelSpelling: false);
@@ -170,50 +178,11 @@ namespace JCAP.Services.Implementations
 
                 return (false, result.Kana, result);
             }
-            catch (WavFormatException ex)
-            {
-                _logger.LogInformation("Bản WAV phân tích không đọc được ({Code}); dùng transcript của trình duyệt.", ex.Code);
-                return null;
-            }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex, "Nhận dạng âm vị lỗi; dùng transcript của trình duyệt.");
+                _logger.LogWarning(ex, "Nhận dạng âm vị lỗi; lượt này không chấm được.");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Chấm theo transcript Web Speech ĐÃ CHỐT do client gửi. Điểm chỉ là so khớp nội dung;
-        /// thiếu transcript hợp lệ thì "chưa chấm được", không phải điểm 0.
-        /// </summary>
-        private async Task<ShadowingAudioEvaluationResponseDto> EvaluateBrowserTranscriptAsync(
-            ShadowingAudioEvaluationInput input,
-            ShadowingAudioEvaluationResponseDto response,
-            CancellationToken cancellationToken)
-        {
-            response.RecognitionSource = "web_speech";
-
-            var transcript = TryUseClientTranscript(input);
-            if (transcript == null)
-            {
-                var status = input.ClientRecognitionStatus?.Trim().ToLowerInvariant();
-                switch (status)
-                {
-                    case "unsupported":
-                        return Unavailable(response, "BROWSER_STT_UNSUPPORTED",
-                            "Trình duyệt này không hỗ trợ nhận dạng giọng nói. Hãy dùng Chrome hoặc Edge.");
-                    case "error":
-                        return Unavailable(response, "BROWSER_STT_ERROR",
-                            "Trình duyệt chưa nhận dạng được giọng nói (kiểm tra quyền micro), hãy thử lại.");
-                    default:
-                        response.RecognitionStatus = "no_speech";
-                        return Unavailable(response, "NO_SPEECH_DETECTED",
-                            "Không nghe rõ giọng nói. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
-                }
-            }
-
-            response.EvaluationStatus = "completed";
-            return await ScoreTranscriptAsync(input, response, transcript, cancellationToken);
         }
 
         private async Task<ShadowingAudioEvaluationResponseDto> ScoreTranscriptAsync(
@@ -221,14 +190,11 @@ namespace JCAP.Services.Implementations
             ShadowingAudioEvaluationResponseDto response,
             string transcript,
             CancellationToken cancellationToken,
-            bool transcriptIsReading = false,
             JapaneseTextComparison? precomputed = null)
         {
-            // So khớp + chấm điểm (một công thức duy nhất). Transcript đã là cách đọc (từ âm vị) thì không đọc lại.
+            // So khớp + chấm điểm (một công thức duy nhất). Transcript là cách đọc (kana từ mô hình âm vị) nên không đọc lại.
             var comparison = precomputed
-                ?? (transcriptIsReading
-                    ? await _comparer.CompareWithReadingAsync(input.TargetText, transcript, cancellationToken)
-                    : await _comparer.CompareAsync(input.TargetText, transcript, cancellationToken));
+                ?? await _comparer.CompareWithReadingAsync(input.TargetText, transcript, cancellationToken);
             if (comparison.ReadingUnavailable)
             {
                 // Không chuyển được sang cách đọc đáng tin cậy (engine VOICEVOX tắt/ký tự lạ): KHÔNG đoán và KHÔNG cho điểm.
@@ -452,20 +418,14 @@ namespace JCAP.Services.Implementations
 
         private ShadowingAudioEvaluationResponseDto NewResponse(ShadowingAudioEvaluationInput input)
         {
-            var gate = (input.AudioGateStatus ?? string.Empty).Trim().ToLowerInvariant();
-            if (!ValidGateStatuses.Contains(gate)) gate = "unmeasured";
-
-            var detail = input.AudioGateDetail?.Trim();
-            if (detail != null && detail.Length > MaxGateDetailLength) detail = detail[..MaxGateDetailLength];
-
+            // Chất lượng âm thanh do BACKEND kiểm tra (đặt lại sau ShadowingAudioValidator); giá trị client gửi không được dùng.
             return new ShadowingAudioEvaluationResponseDto
             {
                 EvaluationStatus = "completed",
                 RecognitionStatus = "unavailable",
                 RecognitionSource = "none",
                 Source = "none",
-                AudioQualityStatus = gate,
-                AudioQualityDetail = string.IsNullOrEmpty(detail) ? null : detail,
+                AudioQualityStatus = "unmeasured",
                 ScoringVersion = ShadowingScoring.Version,
                 ComparisonMethod = _comparer.MethodId,
                 TargetText = input.TargetText ?? string.Empty,
@@ -485,18 +445,6 @@ namespace JCAP.Services.Implementations
             response.Tier = string.Empty;
             response.Source = response.RecognitionSource;
             return response;
-        }
-
-        /// <summary>Chỉ nhận transcript ĐÃ CHỐT, không rỗng sau chuẩn hóa. Không bao giờ dùng interim.</summary>
-        private static string? TryUseClientTranscript(ShadowingAudioEvaluationInput input)
-        {
-            if (!string.Equals(input.ClientRecognitionStatus, "final", StringComparison.OrdinalIgnoreCase)) return null;
-
-            var text = input.ClientTranscript?.Trim();
-            if (string.IsNullOrEmpty(text)) return null;
-            if (JapaneseMora.Normalize(text).Length == 0) return null;
-
-            return text.Length > MaxClientTranscriptLength ? text[..MaxClientTranscriptLength] : text;
         }
     }
 }
