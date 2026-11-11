@@ -28,16 +28,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             sqlServerOptions.CommandTimeout(60);
         }));
 
-// Explicit local sample import; exits before web startup and all unrelated automatic seeders.
-if (args.Contains("--import-learning-sample"))
+// Explicit local imports exit before web startup and all unrelated automatic seeders.
+const string fullImportOption = "--import-learning-full=";
+var fullImport = args.FirstOrDefault(arg => arg.StartsWith(fullImportOption, StringComparison.Ordinal));
+if (args.Contains("--import-learning-sample") || fullImport is not null)
 {
     using var loggerFactory = LoggerFactory.Create(logging =>
         logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning));
     await using var importDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
         .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
         .UseLoggerFactory(loggerFactory).Options);
-    Environment.ExitCode = await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(
-        importDb, args.Contains("--dry-run"));
+    var dryRun = args.Contains("--dry-run");
+    Environment.ExitCode = fullImport is null
+        ? await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(importDb, dryRun)
+        : await JCAP.Data.Seeds.LearningContentFullCommand.RunAsync(importDb, fullImport[fullImportOption.Length..], dryRun);
     return;
 }
 
