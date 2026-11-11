@@ -293,16 +293,21 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
 
 
-  // Đồng bộ số lần đã dùng gợi ý trong phiên từ lịch sử tin nhắn
+  // Đồng bộ số lần đã dùng gợi ý và xem bản dịch trong phiên từ Backend DTO hoặc lịch sử tin nhắn
   useEffect(() => {
-    if (session?.messages && session.messages.length > 0) {
-      const priorHints = session.messages.filter(
+    if (session) {
+      const msgHints = session.messages?.filter(
         (m) => m.sender === 'User' && m.linguisticFeedback?.speechDelivery?.hintLevelUsed != null && m.linguisticFeedback.speechDelivery.hintLevelUsed > 0
-      ).length;
+      ).length || 0;
+      const priorHints = Math.max(session.totalHintTurnsUsed || 0, msgHints);
       sessionHintUseCountRef.current = priorHints;
       setSessionHintUseCount(priorHints);
+
+      const priorPeeks = session.totalTranslationPeeksUsed || 0;
+      sessionTranslationPeeksUsedRef.current = priorPeeks;
+      setSessionTranslationPeeksUsed(priorPeeks);
     }
-  }, [session?.messages]);
+  }, [session?.id, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
 
   // Phím tắt bàn phím (Escape đóng menu/modal)
   useEffect(() => {
@@ -366,8 +371,18 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   // Theo dõi ID của tin nhắn AI mới nhất đang chạy hiệu ứng máy đánh chữ mượt mà (Claude style)
   const [streamingAiMessageId, setStreamingAiMessageId] = useState<number | null>(null);
 
-  // M3: Danh sách ID tin nhắn AI đã mở soi nghĩa tiếng Việt trong phiên
+  // M3: Danh sách ID tin nhắn đã mở soi nghĩa tiếng Việt trong phiên
   const [revealedAiTranslationIds, setRevealedAiTranslationIds] = useState<Set<number>>(() => new Set());
+  const unlockedTranslationMsgIdsRef = useRef<Set<number>>(new Set());
+  const [sessionTranslationPeeksUsed, setSessionTranslationPeeksUsed] = useState<number>(0);
+  const sessionTranslationPeeksUsedRef = useRef<number>(0);
+  const [turnPeekPenalty, setTurnPeekPenalty] = useState<number>(0);
+
+  // Game-like Floating Score Deduction Pill (-10đ Tự chủ, -30đ Tự chủ, etc.)
+  const [floatingDeduction, setFloatingDeduction] = useState<{ text: string; id: number } | null>(null);
+  const maxDeductedTierRef = useRef<number>(0);
+  const maxDeductedPenaltyInTurnRef = useRef<number>(0);
+
   // M3: Túi đồ Vé soi nghĩa dự phòng (Roguelike Game Token)
   const [bonusPeekTokens, setBonusPeekTokens] = useState<number>(() => {
     try {
@@ -378,6 +393,31 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     }
   });
 
+  // Điều phối thông báo trừ điểm tự chủ: Toast chỉ hiển thị đúng 1 lần trong lượt nói
+  // NGOẠI LỆ DUY NHẤT: khi mức phạt tăng cao hơn (vd: Cấp 1 -> Cấp 2 hoặc 5đ -> 10đ)
+  const notifyDeduction = useCallback((penalty: number, label: string) => {
+    if (penalty > 0) {
+      setFloatingDeduction({ text: `-${penalty}đ Tự chủ`, id: Date.now() });
+    } else {
+      setFloatingDeduction({ text: '0đ (Ưu đãi lần đầu)', id: Date.now() });
+    }
+    setTimeout(() => {
+      setFloatingDeduction((prev) => (prev?.id ? null : prev));
+    }, 1800);
+
+    // Kiểm tra quy tắc Toast duy nhất 1 lần (trừ phi mức phạt tăng cao hơn)
+    if (penalty > 0 && penalty <= maxDeductedPenaltyInTurnRef.current) {
+      return;
+    }
+    if (penalty === 0 && maxDeductedPenaltyInTurnRef.current > 0) {
+      return;
+    }
+    maxDeductedPenaltyInTurnRef.current = Math.max(maxDeductedPenaltyInTurnRef.current, penalty);
+
+    setToastMessage(label);
+    setTimeout(() => setToastMessage(null), 3200);
+  }, []);
+
   const toggleAiTranslationPeek = (messageId: number) => {
     setRevealedAiTranslationIds((prev) => {
       const next = new Set(prev);
@@ -385,30 +425,49 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         next.delete(messageId);
       } else {
         next.add(messageId);
-        const isFirst = prev.size === 0;
-        if (!isFirst) {
+        // Chỉ trừ điểm nếu chưa từng mở câu này trong phiên
+        if (!unlockedTranslationMsgIdsRef.current.has(messageId)) {
+          unlockedTranslationMsgIdsRef.current.add(messageId);
+          const isFirstInSession = sessionTranslationPeeksUsedRef.current === 0;
+          sessionTranslationPeeksUsedRef.current += 1;
+          setSessionTranslationPeeksUsed((c) => c + 1);
           translationPeekCountRef.current += 1;
           hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
-          if (bonusPeekTokens > 0) {
-            setBonusPeekTokens((t) => {
-              const u = Math.max(0, t - 1);
-              try { window.localStorage.setItem('jcap_bonus_peek_tokens', u.toString()); } catch {}
-              return u;
-            });
-            setFloatingDeduction({ text: 'Dùng 1 Vé soi nghĩa', id: Date.now() });
+
+          if (isFirstInSession) {
+            notifyDeduction(0, 'Bản dịch miễn phí (Lượt đầu tiên trong phiên)');
           } else {
-            setFloatingDeduction({ text: '-5đ Tự chủ', id: Date.now() });
+            setTurnPeekPenalty((prevPenalty) => {
+              const newPenalty = prevPenalty + 5;
+              notifyDeduction(newPenalty, `Xem dịch nghĩa: -${newPenalty}đ Tự chủ cho lượt này`);
+              return newPenalty;
+            });
           }
-          setTimeout(() => setFloatingDeduction(null), 1400);
-        } else {
-          setFloatingDeduction({ text: 'Bản dịch miễn phí (Lượt 1)', id: Date.now() });
-          setTimeout(() => setFloatingDeduction(null), 1400);
         }
       }
       return next;
     });
   };
 
+  // Tính trần tự chủ tối đa thời gian thực cho lượt nói hiện tại
+  const currentTurnMaxAutonomy = useMemo(() => {
+    const isFirstHint = sessionHintUseCount === 0;
+    let hintCeiling = 100;
+    let hintPenalty = 0;
+    if (appliedHintTier === 1) {
+      hintCeiling = isFirstHint ? 90 : 85;
+      hintPenalty = isFirstHint ? 0 : 10;
+    } else if (appliedHintTier === 2) {
+      hintCeiling = isFirstHint ? 80 : 70;
+      hintPenalty = isFirstHint ? 15 : 30;
+    } else if (appliedHintTier === 3) {
+      hintCeiling = isFirstHint ? 60 : 50;
+      hintPenalty = isFirstHint ? 40 : 60;
+    }
+    const totalPenalty = hintPenalty + turnPeekPenalty;
+    const rawAutonomy = Math.max(20, 100 - totalPenalty);
+    return Math.min(rawAutonomy, hintCeiling);
+  }, [appliedHintTier, sessionHintUseCount, turnPeekPenalty]);
 
   // Gợi ý Hint
   const [hint, setHint] = useState<RoleplayHintDto | null>(null);
@@ -537,15 +596,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [sttNotice, setSttNotice] = useState<string | null>(null);
   const [reflexCountdown, setReflexCountdown] = useState<number | null>(null);
 
-  // Game-like Floating Score Deduction Pill (-10đ Tự chủ, -30đ Tự chủ, etc.)
-  const [floatingDeduction, setFloatingDeduction] = useState<{ text: string; id: number } | null>(null);
-
-  const maxDeductedTierRef = useRef<number>(0);
-
   const triggerFloatingDeduction = useCallback((tier: number) => {
-    // Chỉ kích hoạt floating feedback khi mở cấp độ có mức trừ phạt cao hơn mức đã từng mở trong lượt này
-    if (tier <= maxDeductedTierRef.current) return;
-    maxDeductedTierRef.current = tier;
+    // Chỉ kích hoạt khi mở cấp độ có mức trừ phạt cao hơn mức đã từng mở trong lượt này
+    if (tier <= maxDeductedTierRef.current && maxDeductedTierRef.current > 0) return;
+    maxDeductedTierRef.current = Math.max(maxDeductedTierRef.current, tier);
 
     const isFirstTime = sessionHintUseCountRef.current === 0;
     const penalty = tier === 1
@@ -554,15 +608,16 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         ? (isFirstTime ? 15 : 30)
         : (isFirstTime ? 40 : 60);
 
-    if (penalty > 0) {
-      setFloatingDeduction({ text: `-${penalty}đ Tự chủ`, id: Date.now() });
-    } else {
-      setFloatingDeduction({ text: `0đ (Ưu đãi lần đầu)`, id: Date.now() });
-    }
-    setTimeout(() => {
-      setFloatingDeduction((prev) => (prev?.id ? null : prev));
-    }, 1800);
-  }, []);
+    const expectedMax = isFirstTime
+      ? (tier === 1 ? 90 : tier === 2 ? 80 : 60)
+      : (tier === 1 ? 85 : tier === 2 ? 70 : 50);
+
+    const label = penalty > 0
+      ? `Gợi ý Cấp ${tier}: -${penalty}đ Tự chủ (Tự chủ tối đa: ${expectedMax}/100đ${isFirstTime ? ' - Ưu đãi lần đầu' : ''})`
+      : `Gợi ý Cấp 1: Miễn phí (Tự chủ tối đa: ${expectedMax}/100đ - Ưu đãi lần đầu)`;
+
+    notifyDeduction(penalty, label);
+  }, [notifyDeduction]);
 
   const [isLearnerUttering, setIsLearnerUttering] = useState(false);
   const learnerUtterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1687,6 +1742,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     lastSpeechConfidenceRef.current = null;
     hintLevelUsedRef.current = 0;
     maxDeductedTierRef.current = 0;
+    maxDeductedPenaltyInTurnRef.current = 0;
+    setTurnPeekPenalty(0);
     cachedTurnHintRef.current = null;
     setAppliedHintTier(null);
     retryCountRef.current = 0;
@@ -1722,6 +1779,15 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         };
       });
 
+
+      if (deliveryPayload.hintLevelUsed > 0) {
+        sessionHintUseCountRef.current += 1;
+        setSessionHintUseCount((c) => c + 1);
+      }
+      if (deliveryPayload.translationPeekCount > 0) {
+        sessionTranslationPeeksUsedRef.current += deliveryPayload.translationPeekCount;
+        setSessionTranslationPeeksUsed((c) => c + deliveryPayload.translationPeekCount);
+      }
 
       if (turn.userMessage.linguisticFeedback) {
         setSelectedMessageId(turn.userMessage.id);
@@ -1855,6 +1921,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
     hintLevelUsedRef.current = 0;
     maxDeductedTierRef.current = 0;
+    maxDeductedPenaltyInTurnRef.current = 0;
+    setTurnPeekPenalty(0);
     translationPeekCountRef.current = 0;
     retryCountRef.current = 0;
     micStartedAtRef.current = null;
@@ -2612,47 +2680,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     ✕
                   </button>
                 </div>
-
-
-                {/* Quy tắc Dịch nghĩa từng câu */}
-                <div className="flex items-center justify-between py-1">
-                  <div>
-                    <p className="font-semibold text-xs text-[var(--sumi)]">Dịch nghĩa tiếng Việt</p>
-                    <p className="text-[11px] text-[var(--sumi-faint)]">Bấm nút [Dịch] ở từng câu thoại (Lần 1 miễn phí, lần sau -5đ Tự chủ)</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
-                    Từng câu một
-                  </span>
-                </div>
-
-
-                {/* Toggle Furigana */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--sumi)]">Phiên âm Furigana</p>
-                    <p className="text-[11px] text-[var(--sumi-faint)]">Cách đọc Hiragana trên Kanji</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowFurigana((prev) => {
-                        const next = !prev;
-                        setPracticePref('furigana', next);
-                        return next;
-                      });
-                    }}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                      showFurigana ? 'bg-[var(--ai)]' : 'bg-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        showFurigana ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
 
                 {/* Toggle Giọng AI */}
                 <div className="flex items-center justify-between">
@@ -3473,8 +3500,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     const expectedMax = isFirstTime
                       ? (tier === 1 ? 90 : tier === 2 ? 80 : 60)
                       : (tier === 1 ? 85 : tier === 2 ? 70 : 50);
-                    setToastMessage(`Đã nạp gợi ý Cấp ${tier} vào ô nhập (Tự chủ tối đa: ${expectedMax}/100đ${isFirstTime ? ' - Ưu đãi lần đầu' : ''})`);
-                    setTimeout(() => setToastMessage(null), 3500);
+                    const penalty = tier === 1
+                      ? (isFirstTime ? 0 : 10)
+                      : tier === 2
+                        ? (isFirstTime ? 15 : 30)
+                        : (isFirstTime ? 40 : 60);
+                    notifyDeduction(penalty, `Đã nạp gợi ý Cấp ${tier} vào ô nhập (Tự chủ tối đa: ${expectedMax}/100đ${isFirstTime ? ' - Ưu đãi lần đầu' : ''})`);
                   }}
                   onTierChange={(tier) => {
                     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
@@ -3521,20 +3552,24 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
               {/* Input Row */}
-              {/* Applied Hint Feedback Banner - Monotonic locked */}
-              {appliedHintTier !== null && !hint && (
-                <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-xl bg-amber-50/95 border border-amber-300 text-[11px] text-amber-900 shadow-2xs font-sans animate-fade-in">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-amber-700">Cấp {appliedHintTier}:</span>
+              {/* Applied Assistance Feedback Banner (Hint and/or Translation Peek) - Monotonic locked & real-time */}
+              {(turnPeekPenalty > 0 || (appliedHintTier !== null && !hint)) && (
+                <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-amber-50/95 border border-amber-300 text-[11px] text-amber-900 shadow-2xs font-sans animate-fade-in">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {appliedHintTier !== null && (
+                      <span className="font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                        Cấp {appliedHintTier}
+                      </span>
+                    )}
+                    {turnPeekPenalty > 0 && (
+                      <span className="font-bold text-rose-700 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-md">
+                        Xem dịch: -{turnPeekPenalty}đ Tự chủ
+                      </span>
+                    )}
                     <span>
-                      Tự chủ tối đa: <strong>
-                        {sessionHintUseCount === 0
-                          ? (appliedHintTier === 1 ? '90' : appliedHintTier === 2 ? '80' : '60')
-                          : (appliedHintTier === 1 ? '85' : appliedHintTier === 2 ? '70' : '50')
-                        }/100đ
-                      </strong>
+                      Tự chủ tối đa: <strong>{currentTurnMaxAutonomy}/100đ</strong>
                       <span className="text-[10px] text-amber-800 ml-1">
-                        {sessionHintUseCount === 0 ? '(Ưu đãi lần đầu)' : '(Mức chuẩn)'}
+                        {sessionHintUseCount === 0 && appliedHintTier !== null ? '(Ưu đãi lần đầu)' : '(Cập nhật thời gian thực)'}
                       </span>
                     </span>
                     <span className="text-[10px] text-amber-700/80">(Không hoàn lại khi đổi cấp)</span>

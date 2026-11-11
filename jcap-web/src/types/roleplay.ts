@@ -136,6 +136,8 @@ export interface RoleplaySessionDetailsDto {
   currentDayStreak?: number;
   npcRelationshipTitle?: string;
   npcMemories?: string[];
+  totalHintTurnsUsed?: number;
+  totalTranslationPeeksUsed?: number;
 }
 
 export interface DetectedGrammarIssue {

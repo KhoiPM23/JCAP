@@ -486,6 +486,14 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         dto.CurrentDayStreak = await ComputeDayStreakAsync(session.UserId, cancellationToken);
 
+        dto.TotalHintTurnsUsed = await _dbContext.LearnerBehaviorSignals
+            .AsNoTracking()
+            .CountAsync(s => s.SessionId == session.Id && s.HintLevelUsed > 0, cancellationToken);
+
+        dto.TotalTranslationPeeksUsed = await _dbContext.LearnerBehaviorSignals
+            .AsNoTracking()
+            .CountAsync(s => s.SessionId == session.Id && s.TranslationPeekCount > 0, cancellationToken);
+
         try
         {
             var rel = await _dbContext.UserNpcRelationships
@@ -975,11 +983,13 @@ public class RoleplaySessionService : IRoleplaySessionService
                 string autonomyAssessment = "Tự chủ 100% (Không dùng trợ giúp)";
                 if (request.HintLevelUsed > 0)
                 {
-                    int totalPriorHintTurnsInSession = await _dbContext.LearnerBehaviorSignals
+                    int priorHintTurnsCount = await _dbContext.LearnerBehaviorSignals
                         .AsNoTracking()
                         .CountAsync(s => s.SessionId == session.Id && s.HintLevelUsed > 0, cancellationToken);
 
-                    int timesUsed = totalPriorHintTurnsInSession + 1;
+                    // Signal của lượt hiện tại đã được ghi ở RecordAndEvaluateTurnAsync (nếu có HintLevelUsed > 0)
+                    // Do đó priorHintTurnsCount đã bao gồm lượt này.
+                    int timesUsed = Math.Max(1, priorHintTurnsCount);
                     bool isFirstHintInSession = timesUsed <= 1;
 
                     var (penalty, ceiling) = AssistancePolicy.GetHintTierCost(request.HintLevelUsed, timesUsed);
@@ -1005,11 +1015,35 @@ public class RoleplaySessionService : IRoleplaySessionService
                     }
                 }
 
-                if (request.TranslationPeekCount > 1)
+                if (request.TranslationPeekCount > 0)
                 {
-                    int peekPenalty = AssistancePolicy.CalculatePeekPenalty(request.TranslationPeekCount, true);
-                    turnAutonomy = Math.Max(20, turnAutonomy - peekPenalty);
-                    autonomyAssessment += $", xem bản dịch {request.TranslationPeekCount} lần (-{peekPenalty}đ)";
+                    int totalPeeksInSession = await _dbContext.LearnerBehaviorSignals
+                        .AsNoTracking()
+                        .Where(s => s.SessionId == session.Id && s.TranslationPeekCount > 0)
+                        .SumAsync(s => s.TranslationPeekCount, cancellationToken);
+
+                    int priorPeeksInSession = Math.Max(0, totalPeeksInSession - request.TranslationPeekCount);
+                    bool hasUsedFreeQuota = priorPeeksInSession > 0;
+
+                    int peekPenalty = 0;
+                    if (!hasUsedFreeQuota)
+                    {
+                        // Lượt xem dịch đầu tiên trong phiên được miễn phí 1 lần
+                        int chargeablePeeks = Math.Max(0, request.TranslationPeekCount - 1);
+                        peekPenalty = chargeablePeeks * 5;
+                    }
+                    else
+                    {
+                        // Đã dùng lượt miễn phí trước đó trong phiên: trừ 5đ/lần
+                        peekPenalty = request.TranslationPeekCount * 5;
+                    }
+
+                    peekPenalty = Math.Min(peekPenalty, 20); // Trần phạt bản dịch tối đa 20đ
+                    if (peekPenalty > 0)
+                    {
+                        turnAutonomy = Math.Max(20, turnAutonomy - peekPenalty);
+                        autonomyAssessment += $", xem bản dịch {request.TranslationPeekCount} lần (-{peekPenalty}đ)";
+                    }
                 }
 
                 // Cụm từ sinh tồn (Survival Phrases) được miễn trừ hoàn toàn điểm phạt tự chủ
