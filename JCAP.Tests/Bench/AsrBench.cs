@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace JCAP.Tests.Bench;
 
-/// <summary>Chạy khi JCAP_BENCH=1 và có JCAP_ASR_URL (dịch vụ services/faster-whisper đang chạy). Cần VOICEVOX để lấy cách đọc.</summary>
+/// <summary>Chạy khi JCAP_BENCH=1 và có JCAP_ASR_URL (dịch vụ tools/shadowing-asr đang chạy). Cần VOICEVOX để lấy cách đọc.</summary>
 public sealed class AsrBenchFactAttribute : FactAttribute
 {
     public AsrBenchFactAttribute()

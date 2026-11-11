@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace JCAP.Services.Implementations
 {
     /// <summary>
-    /// Gọi dịch vụ Faster-Whisper riêng (services/faster-whisper) qua HTTP nội bộ. Không lưu âm thanh, không log nội dung lời nói.
+    /// Gọi dịch vụ Faster-Whisper riêng (tools/shadowing-asr) qua HTTP nội bộ. Không lưu âm thanh, không log nội dung lời nói.
     /// Cấu hình: `Shadowing:Asr:BaseUrl` (mặc định http://127.0.0.1:50023), `Shadowing:Asr:Token` (header X-Internal-Token),
     /// `Shadowing:Asr:TimeoutMs` (mặc định 20000).
     /// </summary>

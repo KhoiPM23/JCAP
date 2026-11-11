@@ -540,5 +540,5 @@ jcap-web/public/uploads/
 /models/phoneme/
 
 # Dịch vụ ASR (Python): môi trường ảo và bytecode
-/services/faster-whisper/.venv/
+/tools/shadowing-asr/.venv/
 __pycache__/
