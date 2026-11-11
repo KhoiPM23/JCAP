@@ -731,7 +731,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                     Status = "Paid",
                     CoveredBySubscription = true,
                     SubscriptionPlanId = plan.Id,
-                    Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario?.Title} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
                 // Không gọi UpdateAsync vì CreditBalance không thay đổi
@@ -764,7 +764,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                         Type = "Deduct",
                         Status = "Paid",
                         CoveredBySubscription = false,
-                        Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                        Description = $"Lượt hội thoại AI: {levelConfig.Scenario?.Title} ({levelConfig.JLPTLevel})",
                         CreatedAt = DateTime.UtcNow
                     });
                     await _userManager.UpdateAsync(userForDeduct);
