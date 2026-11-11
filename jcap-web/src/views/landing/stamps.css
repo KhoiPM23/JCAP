@@ -1,0 +1,23 @@
+/*
+ * Con dấu minh hoạ và icon dùng chung giữa landing (.lp) và các trang đăng nhập/đăng ký (.auth).
+ * Bộ lọc vệt mực #jc-inkfx nằm trong InkFilter (landingArt.tsx).
+ */
+:is(.lp, .auth) .msr { font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none;
+  white-space: nowrap; direction: ltr; font-feature-settings: 'liga'; font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; display: inline-block; }
+:is(.lp, .auth) .stp { --ink: var(--ai); position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--s, 72px);
+  height: var(--s, 72px); color: var(--ink); transform: rotate(var(--r, 0deg)); filter: url(#jc-inkfx); mix-blend-mode: multiply; box-sizing: border-box; vertical-align: top; }
+:is(.lp, .auth) .stp.son { --ink: var(--shu); }
+:is(.lp, .auth) .stp .in { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-align: center; line-height: 1; }
+:is(.lp, .auth) .stp .msr { font-size: calc(var(--s, 72px) * 0.27); }
+:is(.lp, .auth) .stp b { font-family: var(--font-mincho); font-weight: 700; font-size: calc(var(--s, 72px) * 0.15); line-height: 1.08; letter-spacing: 0.02em; white-space: pre-line; }
+:is(.lp, .auth) .stp i { font-style: normal; font-size: calc(var(--s, 72px) * 0.105); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+:is(.lp, .auth) .stp--ring { border: 3px solid var(--ink); border-radius: 50%; }
+:is(.lp, .auth) .stp--ring::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--ink); border-radius: 50%; }
+:is(.lp, .auth) .stp--sq { border: 3px double var(--ink); border-radius: 9px; }
+:is(.lp, .auth) .stp--sq b { font-size: calc(var(--s, 72px) * 0.2); }
+:is(.lp, .auth) .stp--band { border: 2.5px solid var(--ink); border-radius: 8px; overflow: hidden; align-items: stretch; justify-content: flex-start; flex-direction: column; }
+:is(.lp, .auth) .stp--band .top { background: var(--ink); color: var(--paper-50); display: flex; align-items: center; justify-content: center; height: 34%; padding: 0 4px; }
+:is(.lp, .auth) .stp--band .top b { font-size: calc(var(--s, 72px) * 0.17); }
+:is(.lp, .auth) .stp--band .in { flex: 1; gap: 2px; }
+:is(.lp, .auth) .slot { width: var(--s, 72px); height: var(--s, 72px); box-sizing: border-box; border: 1.5px dashed var(--line-strong); border-radius: 50%; opacity: 0.55;
+  display: inline-flex; align-items: center; justify-content: center; color: var(--sumi-faint); flex: none; }
