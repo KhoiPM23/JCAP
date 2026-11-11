@@ -1,7 +1,26 @@
 # Shadowing: nhận diện giọng nói và chấm điểm
 
-Tài liệu mô tả **toàn bộ logic hiện tại** (scoring version `shadowing-score/p2-content-word`, so khớp `kana-word-v1`).
-Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ dẫn file để đối chiếu.
+> **Shadowing V2 (scoring version `shadowing-score/v3-dimensions`) — đọc phần này trước; các mục bên dưới mô tả phần còn dùng lại.**
+>
+> - **Chấm theo chiều** (`dimensions` trong kết quả, mỗi chiều có `status` COMPLETED/UNAVAILABLE/FAILED, `score`, `reason`, `source`):
+>   - **Nội dung (Content)**: transcript của **Faster-Whisper** (`tools/shadowing-asr`, `ISpeechRecognitionService`) so với câu mẫu bằng `KanaMoraComparer`
+>     (`CompareWithReadingAsync` với cách đọc OpenJTalk do dịch vụ trả nếu có, không thì `CompareAsync`). Đây là chiều DUY NHẤT có điểm.
+>     ASR tắt/bận/quá hạn → `UNAVAILABLE` (`ASR_UNAVAILABLE`, `ASR_BUSY`, `ASR_TIMEOUT`), **không tự chuyển nguồn khác**;
+>     transcript lặp vô nghĩa (compression ratio > 2.4) → `ASR_UNRELIABLE` (không coi là lỗi người học).
+>     `Shadowing:Content:Provider = phoneme` giữ đường mô hình âm vị cũ (mục "Chấm theo câu mẫu") làm lựa chọn chuyển tiếp tường minh.
+>   - **Phát âm**: `UNAVAILABLE / INSUFFICIENT_ACOUSTIC_EVIDENCE` cho tới khi phương pháp được kiểm chứng trên giọng người học. Không suy ra từ điểm nội dung.
+>     ASR "sửa" lỗi phát âm (benchmark giọng VOICEVOX: 28/78 câu đọc sai một âm bị nghe thành câu đúng) nên KHÔNG dùng transcript để chấm phát âm.
+>   - **Lưu loát**: số đo nhịp nói (mục "Nhịp nói"), `COMPLETED` khi đo được nhưng **không có điểm** (`SCORE_NOT_VALIDATED`).
+>   - **Ngữ điệu**: `UNAVAILABLE / NOT_IMPLEMENTED`.
+>   - `overallScore` = điểm nội dung, kèm `overallScoreBasis = "content"` → giao diện ghi "Điểm nội dung".
+> - **Kiểm tra âm thanh phía backend** trước khi gọi ASR (xem đoạn "Không có nguồn chấm dự phòng" bên dưới).
+> - **Lúc chấm không cần VOICEVOX**: cách đọc câu mẫu, Furigana và giọng mẫu (so nhịp nói) đọc từ `ShadowingSentenceAssets` tính sẵn
+>   (tác vụ nền khi khởi động + `POST /api/admin/shadowing-assets/dialogues/{id}/generate`). Tắt hẳn VOICEVOX lúc chấm:
+>   `Shadowing:Reading:UseVoiceVox=false`, `Shadowing:Fluency:UseVoiceVoxAtRuntime=false` (khi đó transcript cần cách đọc từ dịch vụ ASR — cài `pyopenjtalk-plus`).
+> - **Lưu trữ**: mỗi lần gửi chấm là một `ShadowingSentenceEvaluation` (kể cả chưa chấm được) kèm `DimensionsJson`, `AsrModel`, `ProcessingMs`.
+>   Tổng kết buổi, lịch sử từng lần gửi và gợi ý luyện tập: `docs/shadowing-v2/FINAL-REPORT.md`.
+>
+> Phần bên dưới mô tả logic so khớp, nhịp nói và (đường chuyển tiếp) mô hình âm vị — vẫn đúng với mã nguồn.
 
 > **Nguồn transcript để chấm: nhận dạng âm vị trên chính bản ghi của JCAP** (`OnnxPhonemeRecognizer`, mô hình HuBERT phoneme-CTC chạy trong backend,
 > tải bằng `scripts/download-speech-models.*`): dùng bản WAV phân tích (cùng micro người học chọn), ra thẳng cách đọc (kana), `recognitionSource = phoneme`;
