@@ -44,6 +44,14 @@ Dán lần lượt từng câu vào khung chat Claude Code. Gõ `@` để gắn 
 
 > Làm mục 9c trong @design-handoff/HANDOFF.md cho @jcap-web/src/views/explore/StampBookView.tsx, đối chiếu @design-handoff/prototype/StampBook.dc.html. Dùng lại SpotStampMark và PrefectureStampMark trong ExploreStamp.tsx, giữ nguyên useExploreJourney và exploreService.getStampBook. Chỉ đổi giao diện. Lập kế hoạch trước và chờ tôi duyệt.
 
+## Bước 10 · Landing page
+
+> Làm mục 9d trong @design-handoff/HANDOFF.md (bản 3), đối chiếu @design-handoff/prototype/Landing.dc.html. Tạo LandingView cho khách chưa đăng nhập ở "/", người đã đăng nhập vẫn vào bản đồ. Thêm font Lora (500;600;700) vào link Google Fonts trong index.html cho tiêu đề phần đầu. Bản đồ ở phần đầu và mục Lộ trình vẽ từ PREFECTURES trong src/data/japanMap.ts. Đọc giá từ creditService và subscriptionPlanService, không chép số cứng. Không đưa lên trang quy tắc "đủ 70% con dấu mới mở chương". Kiểm tra router/index.tsx trước khi sửa vì có thể có code của người khác. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 11 · Đăng nhập và Đăng ký
+
+> Làm mục 9e trong @design-handoff/HANDOFF.md cho LoginView, RegisterView, EmailVerificationPendingView, ForgotPasswordView và AuthLayout, đối chiếu khối .auth trong @design-handoff/prototype/AppPrototype.dc.html. Giữ nguyên toàn bộ logic auth và AuthContext, chỉ đổi giao diện. Lập kế hoạch trước và chờ tôi duyệt.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

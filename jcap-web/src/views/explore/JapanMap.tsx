@@ -46,6 +46,10 @@ const SHORE_PASSES = [
   { stroke: T.foam, width: 4 },
 ] as const;
 
+/** Tỉnh đã mở nhô lên LIFT_PX pixel màn hình khi rê chuột; thành bên dựng từ các lớp cách nhau khoảng 1px để không hở */
+const LIFT_PX = 8;
+const LIFT_SIDE_STEPS = Array.from({ length: LIFT_PX }, (_, i) => i / LIFT_PX);
+
 const ShoreLayer = memo<{ d: string }>(({ d }) => (
   <g pointerEvents="none" aria-hidden="true">
     {SHORE_PASSES.map((s, i) => (
@@ -152,6 +156,11 @@ const SPOT_KEEP_MARGIN_PX = 64;
 const CLUSTER_PX = 46;
 /** Giới hạn phóng to tối đa: số px màn hình trên một đơn vị bản đồ (~1 độ = 100 đơn vị) */
 const MAX_PX_PER_UNIT = 60;
+/**
+ * Ở bản đồ toàn quốc người học chỉ tự phóng to tới mức này (~ thấy trọn vùng Kanto - Chubu, tỉnh Chiba rộng ~190px).
+ * Xem chi tiết hơn thì bấm vào tỉnh; trong tỉnh vẫn dùng MAX_PX_PER_UNIT cho các chuyến bay do ứng dụng chạy.
+ */
+const NATIONAL_MAX_PX_PER_UNIT = 2.2;
 /** Nhãn to tối đa bao nhiêu lần so với cỡ gốc (tỉnh: chữ 12px -> ~29px, biểu tượng 22px -> ~53px) */
 const PREF_LABEL_MAX_SCALE = 2.4;
 const REGION_LABEL_MAX_SCALE = 1.25;
@@ -630,7 +639,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     const full = fitViewBox(JAPAN_VIEWBOX, cw, ch, 0, 0);
     const minPpu = cw / full[2];
     const homePpu = cw / fitViewBox(HOME_VIEWBOX, cw, ch, 0, 0)[2];
-    const ppu = Math.min(Math.max(cw / w, minPpu), MAX_PX_PER_UNIT);
+    const maxPpu = selectedIdRef.current == null ? Math.max(NATIONAL_MAX_PX_PER_UNIT, minPpu) : MAX_PX_PER_UNIT;
+    const ppu = Math.min(Math.max(cw / w, minPpu), maxPpu);
     const nw = cw / ppu;
     const nh = ch / ppu;
 
@@ -728,7 +738,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       // Chuột có nấc: cộng dồn vào mức đích (lăn tiếp khi đang trượt vẫn liền mạch), giới hạn trong khoảng phóng được
       const minPpu = cw / fitViewBox(JAPAN_VIEWBOX, cw, ch, 0, 0)[2];
       const from = wheelTargetRef.current?.ppu ?? cw / vb[2];
-      wheelTargetRef.current = { ppu: Math.min(Math.max(from * factor, minPpu), MAX_PX_PER_UNIT), x, y };
+      const maxPpu = selectedIdRef.current == null ? Math.max(NATIONAL_MAX_PX_PER_UNIT, minPpu) : MAX_PX_PER_UNIT;
+      wheelTargetRef.current = { ppu: Math.min(Math.max(from * factor, minPpu), maxPpu), x, y };
       if (!wheelFrameRef.current) {
         last = 0;
         wheelFrameRef.current = requestAnimationFrame(slide);
@@ -897,6 +908,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
     if (id != null) prefetchTimerRef.current = window.setTimeout(() => prefetchPrefecture(id), 120);
   }, []);
 
+  // Vào/rời một tỉnh thì bỏ trạng thái rê chuột cũ: con trỏ rời tỉnh lúc đang xem tỉnh không báo lại, nên khi quay về
+  // toàn quốc tỉnh vừa bấm sẽ vẫn nhô lên dù chuột không còn ở đó. Rê chuột lại thì nhô lên như thường.
+  useEffect(() => {
+    setHoverId(null);
+  }, [selectedId]);
+
   const hovered = hoverId != null && !selected ? PREFECTURE_BY_ID.get(hoverId) ?? null : null;
 
   const [grain, setGrain] = useState<string | null>(null);
@@ -909,7 +926,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const minPxPerUnit = size.w && size.h ? size.w / fitViewBox(JAPAN_VIEWBOX, size.w, size.h, 0, 0)[2] : 0;
   // Ở mức nhỏ nhất bản đồ bị khóa: không hiện con trỏ "kéo" và làm mờ nút thu nhỏ
   const atMinZoom = pxPerUnit <= minPxPerUnit * 1.001;
-  const atMaxZoom = pxPerUnit >= MAX_PX_PER_UNIT * 0.999;
+  const atMaxZoom = pxPerUnit >= (selected ? MAX_PX_PER_UNIT : Math.max(NATIONAL_MAX_PX_PER_UNIT, minPxPerUnit)) * 0.999;
   const reducedMotion = prefersReducedMotion();
   const toScreen = (x: number, y: number) => (view ? { x: (x - view[0]) * pxPerUnit, y: (y - view[1]) * pxPerUnit } : null);
   // Nội dung trong <svg> bản đồ tính theo khung đã vẽ (renderView), không theo camera thật: nhờ vậy lúc kéo/phóng
@@ -1261,6 +1278,43 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               onSelect={onSelect}
             />
           ))}
+          {/* Toàn quốc: tỉnh đã mở luôn hiện như lúc rê chuột (màu vùng đậm, viền màu vùng), vẽ đè để không bị tỉnh bên cạnh che.
+              Rê chuột/focus thì tỉnh nhô lên kèm bóng mềm; cùng một phần tử nên lúc nhô lên và hạ xuống đều có chuyển động.
+              Độ nhô, độ nhoè tính theo pixel màn hình rồi quy đổi ra đơn vị bản đồ. */}
+          {!selected &&
+            journey.status === 'ok' &&
+            PREFECTURES.filter((p) => !isClosed(p.id)).map((p) => (
+              <g
+                key={`open-${p.id}`}
+                className={`jm-open${hoverId === p.id && !dragging ? ' is-up' : ''}`}
+                style={{ '--lift': `${-LIFT_PX * rpx}px`, '--sh-y': `${3 * rpx}px`, '--sh-blur': `${5 * rpx}px` } as React.CSSProperties}
+                pointerEvents="none"
+                aria-hidden="true"
+              >
+                <path className="jm-open-shadow" d={p.d} fillRule="evenodd" fill={T.shadow} />
+                {/* Thành bên của khối: các lớp xếp chồng giữa mặt đất và mặt trên, màu vùng đậm hơn, để khối nhìn đặc */}
+                {LIFT_SIDE_STEPS.map((k) => (
+                  <path
+                    key={k}
+                    className="jm-open-side"
+                    style={{ '--k': k } as React.CSSProperties}
+                    d={p.d}
+                    fillRule="evenodd"
+                    fill={mix(REGION_STYLE[p.region].hover, REGION_STYLE[p.region].ink, 0.6)}
+                  />
+                ))}
+                <path
+                  className="jm-open-top"
+                  d={p.d}
+                  fillRule="evenodd"
+                  fill={REGION_STYLE[p.region].hover}
+                  stroke={REGION_STYLE[p.region].ink}
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
+            ))}
           {/* Viền tỉnh đang chọn vẽ đè lên trên để không bị các tỉnh bên cạnh che (thay cho việc dời tỉnh xuống cuối) */}
           {selected && !details.has(selected.id) && (
             <path
@@ -1328,12 +1382,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
           </g>
         )}
 
-        {/* Rê chuột: tỉnh đổi sang màu đậm hơn, viền màu vùng (vẽ đè để không bị tỉnh bên cạnh che) */}
-        {hovered && !dragging && (
+        {/* Rê chuột vào tỉnh chưa mở: đổi sang màu đậm hơn (tỉnh đã mở nhô lên, xem lớp jm-open ở trên) */}
+        {hovered && !dragging && isClosed(hovered.id) && (
           <path
             d={hovered.d}
             fillRule="evenodd"
-            fill={isClosed(hovered.id) ? REGION_STYLE[hovered.region].tint : REGION_STYLE[hovered.region].hover}
+            fill={REGION_STYLE[hovered.region].tint}
             stroke={REGION_STYLE[hovered.region].ink}
             strokeWidth={1.6}
             strokeLinejoin="round"
@@ -1688,6 +1742,11 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pin:hover .jm-pin-body { transform: scale(1.08); }
         .jm-ripple { transform-box: fill-box; transform-origin: center; animation: jm-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
         .jm-label-fade { animation: jm-fade-in 0.2s ease-out both; }
+        .jm-open-top, .jm-open-side { transition: transform .26s cubic-bezier(0.4, 0, 0.2, 1); }
+        .jm-open.is-up .jm-open-top { transform: translateY(var(--lift)); transition: transform .36s cubic-bezier(0.34, 1.45, 0.64, 1); }
+        .jm-open.is-up .jm-open-side { transform: translateY(calc(var(--lift) * var(--k))); transition: transform .36s cubic-bezier(0.34, 1.45, 0.64, 1); }
+        .jm-open-shadow { opacity: 0; filter: blur(var(--sh-blur)); transform: translateY(var(--sh-y)); transition: opacity .26s ease-out; }
+        .jm-open.is-up .jm-open-shadow { opacity: .38; }
         @keyframes jm-fade-in { from { opacity: 0; } to { opacity: 1; } }
         @keyframes jm-ripple { from { transform: scale(0.9); opacity: 0.7; } to { transform: scale(1.9); opacity: 0; } }
         .jm-rlabel { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; white-space: nowrap; line-height: 1; }
@@ -1750,6 +1809,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-word-jp rt { font-size: 11px; }
         @media (prefers-reduced-motion: reduce) {
           .jm-fade-in, .jm-fade-quick, .jm-pin, .jm-label-fade, .jm-ripple, .jm-route-in, .jm-spotcard { animation: none; }
+          .jm-open-top, .jm-open-side, .jm-open.is-up .jm-open-top, .jm-open.is-up .jm-open-side, .jm-open-shadow { transition: none; }
           .jm-plabel-group, .jm-plabel-group.jm-on { transition: none; }
           .jm-next-ring { display: none; }
           .jm-pin-body { transition: none; }
@@ -1821,7 +1881,9 @@ const PrefecturePath = memo<PrefecturePathProps>(({ shape, mode, hidden, closed,
       // Gọi lại khi di chuột để tỉnh sáng lại ngay sau khi vừa kéo bản đồ xong (lúc kéo thì tắt làm nổi)
       onPointerMove={interactive ? () => onHover(shape.id) : undefined}
       onPointerLeave={interactive ? () => onHover(null) : undefined}
-      onFocus={interactive ? () => onHover(shape.id) : undefined}
+      // Chỉ làm nổi khi focus bằng bàn phím: lúc quay về toàn quốc, trang trả focus lại cho tỉnh vừa xem bằng code;
+      // nếu người dùng vừa dùng chuột thì focus đó không phải focus-visible và tỉnh không nên nhô lên
+      onFocus={interactive ? (e) => e.currentTarget.matches(':focus-visible') && onHover(shape.id) : undefined}
       onBlur={interactive ? () => onHover(null) : undefined}
       onClick={(e) => {
         e.stopPropagation();
