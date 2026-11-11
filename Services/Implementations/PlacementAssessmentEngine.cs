@@ -67,12 +67,16 @@ namespace JCAP.Services.Implementations
                 return "AbusiveOrSpam";
             }
 
-            // 3. Khó khăn giao tiếp (Học viên bày tỏ không hiểu, xin nói lại, nói chậm lại)
-            foreach (var phrase in CommunicationDifficultyPhrases)
+            // 3. Khó khăn giao tiếp cấp độ bế tắc (Chỉ áp dụng khi người học nói cụt lủn dưới 8 ký tự như "え？", "わかりません")
+            // Nếu người học nói cả câu hoặc có thể nhờ vả, câu sẽ chuyển vào LLM để phân tích trọn vẹn và không bị đè câu.
+            if (trimmed.Length <= 8)
             {
-                if (trimmed.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+                foreach (var phrase in CommunicationDifficultyPhrases)
                 {
-                    return "CommunicationDifficulty";
+                    if (trimmed.Equals(phrase, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return "CommunicationDifficulty";
+                    }
                 }
             }
 
@@ -157,7 +161,7 @@ namespace JCAP.Services.Implementations
                 if (state.CurrentDifficultyBand == "N3") state.CurrentDifficultyBand = "N4";
                 else if (state.CurrentDifficultyBand == "N4") state.CurrentDifficultyBand = "N5";
 
-                var commOutcome = GenerateScaffoldingAiReply(state);
+                var commOutcome = GenerateScaffoldingAiReply(state, userText);
 
                 var commEvidence = new PlacementTurnEvidence
                 {
@@ -229,10 +233,26 @@ namespace JCAP.Services.Implementations
                     grammarScore = Math.Max(40, grammarScore - (errorCodes.Count * 10));
                 }
 
+                // BẢO VỆ CHIẾN LƯỢC GIAO TIẾP (Communication Repair / Clarification Strategy)
+                // Các ý định xin giải thích đơn giản hơn, hỏi lại, bày tỏ chưa hiểu, hỏi chi tiết:
+                // HOÀN TOÀN HỢP LỆ VÀ THUỘC BỐI CẢNH, TUYỆT ĐỐI KHÔNG COI LÀ OFFTOPIC.
+                var isClarificationOrStrategy = detectedIntent.Contains("Simplif", StringComparison.OrdinalIgnoreCase)
+                    || detectedIntent.Contains("Clarif", StringComparison.OrdinalIgnoreCase)
+                    || detectedIntent.Contains("Repeat", StringComparison.OrdinalIgnoreCase)
+                    || detectedIntent.Contains("Repetition", StringComparison.OrdinalIgnoreCase)
+                    || detectedIntent.Contains("Ask", StringComparison.OrdinalIgnoreCase)
+                    || detectedIntent.Equals("CommunicationDifficulty", StringComparison.OrdinalIgnoreCase);
+
+                if (isClarificationOrStrategy)
+                {
+                    inputCat = "Valid";
+                    pragmaticsScore = Math.Max(pragmaticsScore, 75); // Ghi nhận kỹ năng thương lượng giao tiếp lịch thiệp
+                }
+
                 // XỬ LÝ OFF-TOPIC STRIKE
                 bool isStrikeWarning = false;
                 string? strikeWarningMsg = null;
-                if (inputCat == "OffTopic" || detectedIntent.Equals("OffTopic", StringComparison.OrdinalIgnoreCase))
+                if (!isClarificationOrStrategy && (inputCat == "OffTopic" || detectedIntent.Equals("OffTopic", StringComparison.OrdinalIgnoreCase)))
                 {
                     state.ConsecutiveOffTopicCount++;
                     if (state.ConsecutiveOffTopicCount >= 3)
@@ -292,7 +312,12 @@ namespace JCAP.Services.Implementations
                     IsStrikeWarning = isStrikeWarning,
                     StrikeWarningMessage = strikeWarningMsg,
                     IsConcluded = isConcluded,
-                    TerminationReason = state.TerminationReason
+                    TerminationReason = state.TerminationReason,
+                    TaskFulfillmentScore = taskScore,
+                    GrammarAccuracyScore = grammarScore,
+                    VocabularyRangeScore = vocabScore,
+                    PragmaticsScore = pragmaticsScore,
+                    EvidenceNote = evidenceNote
                 });
             }
             catch (Exception ex)
@@ -340,7 +365,7 @@ namespace JCAP.Services.Implementations
                     break;
 
                 case "EVT-02":
-                    if (detectedIntent is "RequestRoomChange" or "ExpressConcernNearElevator")
+                    if (detectedIntent is "RequestRoomChange")
                     {
                         state.RoomChangeRequested = true;
                         RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
@@ -352,10 +377,23 @@ namespace JCAP.Services.Implementations
                     {
                         state.SelectedRoom = "Standard_512";
                         RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
-                        // Nếu đã có >= 3 lượt bằng chứng thì có thể qua EVT-05 hoặc hỏi bữa sáng ở EVT-04
-                        state.CurrentEvent = state.ValidEvidenceTurnCount < 3 ? "EVT-04" : "EVT-05";
+                        state.CurrentEvent = "EVT-04";
                         state.CurrentEventScaffoldingStep = 0;
                         state.CurrentEventStayCount = 0;
+                    }
+                    else
+                    {
+                        // Khách hỏi thêm về phòng 512, tiếng ồn thang máy hoặc băn khoăn: duy trì ở EVT-02
+                        state.CurrentEventStayCount++;
+                        if (state.CurrentEventStayCount >= 4)
+                        {
+                            // Nếu hỏi nhiều lượt về phòng 512 mà chưa chốt, Lễ tân chủ động giới thiệu Deluxe
+                            state.RoomChangeRequested = true;
+                            RecordEventSummary(state, "Fulfilled", demonstratedBand, "Khách băn khoăn về phòng 512 cạnh thang máy; Lễ tân chủ động giới thiệu Deluxe.");
+                            state.CurrentEvent = "EVT-03";
+                            state.CurrentEventScaffoldingStep = 0;
+                            state.CurrentEventStayCount = 0;
+                        }
                     }
                     break;
 
@@ -364,7 +402,7 @@ namespace JCAP.Services.Implementations
                     {
                         state.SelectedRoom = "Deluxe_Upgrade";
                         RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
-                        state.CurrentEvent = state.ValidEvidenceTurnCount < 3 ? "EVT-04" : "EVT-05";
+                        state.CurrentEvent = "EVT-04";
                         state.CurrentEventScaffoldingStep = 0;
                         state.CurrentEventStayCount = 0;
                     }
@@ -372,17 +410,21 @@ namespace JCAP.Services.Implementations
                     {
                         state.SelectedRoom = "Standard_512";
                         RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
-                        state.CurrentEvent = state.ValidEvidenceTurnCount < 3 ? "EVT-04" : "EVT-05";
+                        state.CurrentEvent = "EVT-04";
                         state.CurrentEventScaffoldingStep = 0;
                         state.CurrentEventStayCount = 0;
                     }
-                    else if (detectedIntent == "AskUpgradeDetails")
+                    else
                     {
-                        // Giữ ở EVT-03 để giải đáp chi phí nâng hạng
+                        // Khách hỏi thêm chi phí, so sánh phòng, hoặc cân nhắc giữ Standard cũ: BẮT BUỘC GIỮ Ở EVT-03
                         state.CurrentEventStayCount++;
-                        if (state.CurrentEventStayCount >= 2)
+                        if (state.CurrentEventStayCount >= 5)
                         {
-                            state.CurrentEvent = "EVT-05";
+                            // Chỉ chuyển tiếp khi đã vượt quá 4 lượt trao đổi mà học viên vẫn không đưa ra quyết định
+                            RecordEventSummary(state, "InsufficientEvidence", demonstratedBand, "Khách chưa đưa ra quyết định chọn phòng sau nhiều lượt trao đổi; hệ thống chuyển sang bước tiếp theo.");
+                            state.CurrentEvent = "EVT-04";
+                            state.CurrentEventScaffoldingStep = 0;
+                            state.CurrentEventStayCount = 0;
                         }
                     }
                     break;
@@ -396,18 +438,29 @@ namespace JCAP.Services.Implementations
                         state.CurrentEventScaffoldingStep = 0;
                         state.CurrentEventStayCount = 0;
                     }
-                    else if (detectedIntent == "AskBreakfastInfo")
+                    else
                     {
+                        // Khách hỏi giờ ăn, giá ăn, thực đơn: duy trì ở EVT-04
                         state.CurrentEventStayCount++;
-                        if (state.CurrentEventStayCount >= 2)
+                        if (state.CurrentEventStayCount >= 4)
                         {
+                            RecordEventSummary(state, "Fulfilled", demonstratedBand, "Đã trao đổi thông tin bữa sáng; chuyển sang hoàn tất thủ tục.");
                             state.CurrentEvent = "EVT-05";
+                            state.CurrentEventScaffoldingStep = 0;
+                            state.CurrentEventStayCount = 0;
                         }
                     }
                     break;
 
                 case "EVT-05":
-                    if (detectedIntent is "ConfirmAndThank" or "GeneralResponse")
+                    var isEvt5Concluding = detectedIntent is "ConfirmAndThank" or "GeneralResponse" or "PaymentConfirmation"
+                        || detectedIntent.Contains("Thank", StringComparison.OrdinalIgnoreCase)
+                        || detectedIntent.Contains("Confirm", StringComparison.OrdinalIgnoreCase)
+                        || detectedIntent.Contains("Cảm ơn", StringComparison.OrdinalIgnoreCase)
+                        || detectedIntent.Contains("Xác nhận", StringComparison.OrdinalIgnoreCase)
+                        || taskScore >= 60;
+
+                    if (isEvt5Concluding)
                     {
                         RecordEventSummary(state, "Fulfilled", demonstratedBand, evidenceNote);
                         state.CurrentEvent = "CONCLUDED";
@@ -507,13 +560,18 @@ namespace JCAP.Services.Implementations
                 UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userText),
                 InputClassification = "Valid",
                 DetectedIntent = "GeneralResponse",
-                DemonstratedBand = "N5",
+                DemonstratedBand = "N4",
                 IsConcluded = false,
-                TerminationReason = "None"
+                TerminationReason = "None",
+                TaskFulfillmentScore = 70,
+                GrammarAccuracyScore = 70,
+                VocabularyRangeScore = 70,
+                PragmaticsScore = 70,
+                EvidenceNote = "Phản hồi hợp lệ trong bối cảnh nhận phòng khách sạn."
             });
         }
 
-        private static EngineTurnOutcome GenerateScaffoldingAiReply(PlacementAssessmentState state)
+        private static EngineTurnOutcome GenerateScaffoldingAiReply(PlacementAssessmentState state, string userText)
         {
             string ja;
             string vi;
@@ -564,14 +622,19 @@ namespace JCAP.Services.Implementations
                 AiReplyJapanese = ja,
                 AiReplyVietnamese = vi,
                 AiReplyFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(ja),
-                UserVietnameseMeaning = "Tôi chưa hiểu rõ / Xin nói lại.",
-                UserFuriganaHtml = "わかりません",
+                UserVietnameseMeaning = userText,
+                UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userText),
                 InputClassification = "CommunicationDifficulty",
                 DetectedIntent = "CommunicationDifficulty",
                 DemonstratedBand = "N5",
                 IsStrikeWarning = false,
                 IsConcluded = false,
-                TerminationReason = "None"
+                TerminationReason = "None",
+                TaskFulfillmentScore = 65,
+                GrammarAccuracyScore = 70,
+                VocabularyRangeScore = 60,
+                PragmaticsScore = 75,
+                EvidenceNote = "Người học sử dụng chiến lược giao tiếp nhờ nhắc lại hoặc xin giải thích đơn giản. Hệ thống hạ độ khó câu hỏi của AI."
             };
         }
 
@@ -579,7 +642,7 @@ namespace JCAP.Services.Implementations
         {
             return $@"Bạn là Lễ tân khách sạn Sakura (ホテルさくら フロント係 - 山田), đóng vai giao tiếp trong bài Kiểm tra xếp lớp đầu vào (Placement Test) của nền tảng JCAP.
 Nhiệm vụ của bạn:
-1. Tiếp đón khách hàng (Tên: {userFullName}, đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
+1. Tiếp đón khách hàng (Tên khách: {userFullName} / 田中 様 / タナカ, đã đặt phòng Standard Room 3 đêm từ 10/11 - 13/11, có ghi chú 'Ưu tiên phòng yên tĩnh / 静かな部屋を希望').
 2. Thực hiện hội thoại tự nhiên, lịch thiệp theo chuẩn văn hóa dịch vụ khách sạn Nhật Bản (Teineigo/Keigo phù hợp).
 3. Căn cứ vào Conditional Event Directives của sự kiện hiện tại ({state.CurrentEvent}) để dẫn dắt tình huống.
 4. Điều chỉnh độ khó câu thoại của bạn theo bậc mục tiêu: {state.CurrentDifficultyBand} (N5: ngắn gọn, từ vựng cơ bản desu/masu; N4: câu ghép lịch sự tiêu chuẩn; N3: kính ngữ dịch vụ tự nhiên, linh hoạt).
@@ -600,6 +663,14 @@ CHỈ THỊ ĐIỀU KIỆN SỰ KIỆN (CONDITIONAL EVENT DIRECTIVES):
 
 CÂU NÓI CỦA HỌC VIÊN:
 ""{userUtterance}""
+
+HƯỚNG DẪN ĐÁNH GIÁ (TURN ANALYSIS GUIDANCE):
+1. inputCategory:
+   - ""Valid"": Câu nói thuộc bối cảnh nhận phòng khách sạn. ĐẶC BIỆT: Khi khách bày tỏ chưa hiểu, xin giải thích đơn giản hơn (RequestSimplification), xin nói chậm lại (RequestRepetition), hoặc hỏi chi tiết phòng/dịch vụ, ĐÂY LÀ CHIẾN LƯỢC GIAO TIẾP HỢP LỆ VÀ BẮT BUỘC ĐÁNH DẤU LÀ ""Valid"" (TUYỆT ĐỐI KHÔNG coi là OffTopic). Khi đó Lễ tân vui vẻ giải thích lại ngắn gọn, dễ hiểu ở bậc N5/N4.
+   - ""OffTopic"": CHỈ KHI khách hoàn toàn nói về chủ đề khác (thời tiết bên ngoài, bóng đá, đồ ăn ngoài, rủ đi chơi...).
+2. userVietnameseMeaning & userFuriganaHtml:
+   - BẮT BUỘC dịch chính xác câu thực tế của học viên sang tiếng Việt tự nhiên và sinh Furigana HTML cho đúng câu học viên vừa nói. TUYỆT ĐỐI KHÔNG tự ý thay đổi nội dung câu học viên đã nói thành câu khác (như không được đổi thành 'wakarimasen').
+3. Điểm số (0-100): Đánh giá chân thực theo từng câu nói của học viên (taskFulfillmentScore, grammarAccuracyScore, vocabularyRangeScore, pragmaticsScore).
 
 YÊU CẦU ĐÁNH GIÁ VÀ TRẢ LỜI:
 Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp lệ có đúng cấu trúc sau (không kèm markdown ngoài JSON):
@@ -625,27 +696,28 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
         private static string GetConditionalDirectivesForEvent(PlacementAssessmentState state) => state.CurrentEvent switch
         {
             "EVT-01" => @"Sự kiện EVT-01 (Greeting & Reservation Confirmation):
-- Nhánh 1 (ConfirmReservation): Khách xác nhận tên và đặt phòng -> Lễ tân cảm ơn, thông báo tìm thấy đặt phòng Standard 3 đêm, nhưng phòng được xếp là Phòng 512 nằm ngay cạnh thang máy (chuyển sang EVT-02).
-- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách xác nhận kèm nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi vì phòng xếp hiện tại (512) ở cạnh thang máy, hỏi ý kiến khách (chuyển sang EVT-02).
+- Nhánh 1 (ConfirmReservation): Khách xác nhận tên (Tanaka / 田中 / タナカ) và đặt phòng -> Lễ tân cảm ơn, thông báo tìm thấy đặt phòng Standard 3 đêm, nhưng phòng được xếp là Phòng 512 nằm ngay cạnh thang máy (chuyển sang EVT-02).
+- Nhánh 2 (ConfirmReservationWithQuietRequest): Khách xác nhận tên (Tanaka / 田中 / タナカ) kèm nhắc lại yêu cầu phòng yên tĩnh -> Lễ tân xin lỗi vì phòng xếp hiện tại (512) ở cạnh thang máy, hỏi ý kiến khách (chuyển sang EVT-02).
 - Nhánh 3 (OffTopic): Khách nói nội dung không liên quan -> Lễ tân lịch sự hỏi lại xem có phải khách đến nhận phòng không.",
 
             "EVT-02" => @"Sự kiện EVT-02 (Room Assignment Problem - Room 512 near elevator):
-- Nhánh 1 (RequestRoomChange / ExpressConcernNearElevator): Khách ngại ồn hoặc đề nghị đổi phòng khác -> Lễ tân kiểm tra hệ thống, báo phòng Standard khác và Twin đều đã kín (満室), chỉ còn Deluxe Room xa thang máy nhưng có phụ phí +2,000 Yên/đêm (tổng 6,000 Yên cho 3 đêm) (chuyển sang EVT-03).
-- Nhánh 2 (AcceptAssignedRoom): Khách đồng ý ở phòng 512 -> Lễ tân cảm ơn và hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/ngày) không (chuyển sang EVT-04 hoặc EVT-05).
-- Nhánh 3 (OffTopic): Nhắc khéo khách về việc xác nhận phòng 512.",
+- Nhánh 1 (RequestRoomChange): Khách đề nghị đổi phòng hoặc muốn tìm phòng yên tĩnh hơn -> Lễ tân kiểm tra hệ thống, báo phòng Standard khác và Twin đều đã kín (満室), chỉ còn Deluxe Room xa thang máy nhưng có phụ phí +2,000 Yên/đêm (tổng 6,000 Yên cho 3 đêm) (chuyển sang EVT-03).
+- Nhánh 2 (AcceptAssignedRoom): Khách đồng ý ở phòng 512 -> Lễ tân cảm ơn và hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/ngày) không (chuyển sang EVT-04).
+- Nhánh 3 (AskRoomInfo / ExpressConcernNearElevator): Khách hỏi thêm về phòng 512, hỏi tiếng ồn thang máy, hoặc hỏi tầng -> Lễ tân giải thích phòng 18m2 tầng 5 có cửa cách âm, tuy nhiên vào giờ cao điểm có thể nghe tiếng thang máy; sau đó lịch sự hỏi xem khách có chấp nhận phòng 512 này không hay muốn tìm phương án phòng khác (duy trì ở EVT-02).
+- Nhánh 4 (OffTopic): Nhắc khéo khách về việc xác nhận phòng 512.",
 
             "EVT-03" => @"Sự kiện EVT-03 (Alternative Room Availability - Deluxe Room Offer):
-- Nhánh 1 (AcceptDeluxeUpgrade): Khách đồng ý nâng lên Deluxe +2,000 Yên/đêm -> Lễ tân xác nhận đổi phòng Deluxe yên tĩnh (chuyển sang EVT-04 hoặc EVT-05).
-- Nhánh 2 (KeepOriginalStandardRoom): Khách chọn giữ phòng cũ 512 -> Lễ tân xác nhận giữ phòng Standard 512 (chuyển sang EVT-04 hoặc EVT-05).
-- Nhánh 3 (AskUpgradeDetails): Khách hỏi chi tiết giá hoặc tiện ích phòng Deluxe -> Lễ tân giải thích rõ phòng 28m2 giường lớn xa thang máy, phụ phí 2,000 Yên/đêm.
+- Nhánh 1 (AcceptDeluxeUpgrade): Khách đồng ý nâng lên Deluxe +2,000 Yên/đêm -> Lễ tân xác nhận đổi phòng Deluxe yên tĩnh, đồng thời hỏi khách có muốn dùng thêm bữa sáng buffet (1,500 Yên/người) không (chuyển sang EVT-04).
+- Nhánh 2 (KeepOriginalStandardRoom): Khách chọn giữ phòng cũ 512 (hoặc đồng ý ở lại phòng Standard ban đầu) -> Lễ tân xác nhận giữ phòng Standard 512, đồng thời hỏi khách có muốn đăng ký thêm bữa sáng (1,500 Yên/người) không (chuyển sang EVT-04).
+- Nhánh 3 (AskUpgradeDetails / Inquire): Khách hỏi chi tiết giá (tổng 3 đêm là 6,000 Yên), hỏi diện tích/tiện ích phòng Deluxe, hoặc hỏi xem có thể quay lại giữ phòng Standard cũ được không -> Lễ tân giải thích rõ ràng, trung thực và lịch sự (ví dụ: 3 đêm Deluxe là 6,000 Yên; nếu giữ Standard 512 thì không mất phí; Twin đã kín). ĐẶC BIỆT: Sau khi giải đáp thông tin, Lễ tân CHỦ ĐỘNG TÓM TẮT 2 phương án và lịch sự hỏi khách muốn chọn phương án nào (nâng hạng Deluxe hay giữ phòng Standard 512 ban đầu). Duy trì ở EVT-03 cho đến khi khách đưa ra quyết định.
 - Nhánh 4 (OffTopic): Lễ tân mời khách chọn giữa nâng hạng Deluxe hoặc giữ phòng cũ.",
 
             "EVT-04" => @"Sự kiện EVT-04 (Additional Service Inquiry - Breakfast):
 - Nhánh 1 (AddBreakfast / DeclineBreakfast): Khách đăng ký hoặc từ chối bữa sáng -> Lễ tân ghi nhận và chuyển sang tổng kết chốt phương án trao chìa khóa (EVT-05).
-- Nhánh 2 (AskBreakfastInfo): Khách hỏi giờ hoặc thông tin -> Lễ tân giải thích phục vụ từ 7:00 đến 10:00 tại nhà hàng tầng 1.",
+- Nhánh 2 (AskBreakfastInfo): Khách hỏi giờ hoặc thông tin bữa sáng -> Lễ tân giải thích phục vụ từ 7:00 đến 10:00 tại nhà hàng tầng 1, giá 1,500 Yên/người buffet món Nhật và Tây; sau đó hỏi khách có muốn đăng ký dùng bữa sáng không (duy trì ở EVT-04 cho đến khi khách quyết định).",
 
             "EVT-05" => @"Sự kiện EVT-05 (Solution Confirmation & Natural Hand-off):
-- Khách xác nhận và cảm ơn -> Lễ tân trao chìa khóa phòng, chúc khách có kỳ nghỉ thoải mái và kết thúc buổi nhận phòng.",
+- Nhánh 1 (ConfirmAndThank): Khách xác nhận thông tin thanh toán, nhận chìa khóa hoặc cảm ơn lễ tân (ví dụ: はい確認しました, 有難うございます, よろしくお願いします) -> Lễ tân chúc khách có kỳ nghỉ thoải mái, trao chìa khóa và hoàn tất thủ tục nhận phòng.",
 
             _ => "Duy trì đối thoại lịch sự theo bối cảnh lễ tân khách sạn."
         };
@@ -705,10 +777,10 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
                 cConsistency = distinct == 1 ? 1.0 : (distinct == 2 ? 0.8 : 0.5);
             }
 
-            int unpromptedEvents = state.EventSummaries.Count(e => e.ScaffoldingStepsNeeded == 0);
-            double cAutonomy = state.EventSummaries.Count > 0 ? (double)unpromptedEvents / state.EventSummaries.Count : 0.5;
+            // Mức độ tin cậy của dữ liệu đánh giá: Tỷ lệ lượt hợp lệ / tổng lượt hội thoại
+            double cDataReliability = state.TurnEvidences.Count > 0 ? (double)validTurns.Count / state.TurnEvidences.Count : 1.0;
 
-            double confidenceScore = (0.35 * cQuantity) + (0.30 * cCoverage) + (0.20 * cConsistency) + (0.15 * cAutonomy);
+            double confidenceScore = (0.35 * cQuantity) + (0.35 * cCoverage) + (0.20 * cConsistency) + (0.10 * cDataReliability);
 
             string confidenceTier = "Medium";
             if (confidenceScore >= 0.75 && validTurns.Count >= 4 && fulfilledEventsCount >= 3)
@@ -784,5 +856,10 @@ Hãy phân tích câu nói của học viên và trả lời bằng 1 JSON hợp
         public string? StrikeWarningMessage { get; set; }
         public bool IsConcluded { get; set; }
         public string TerminationReason { get; set; } = "None";
+        public int TaskFulfillmentScore { get; set; }
+        public int GrammarAccuracyScore { get; set; }
+        public int VocabularyRangeScore { get; set; }
+        public int PragmaticsScore { get; set; }
+        public string EvidenceNote { get; set; } = string.Empty;
     }
 }

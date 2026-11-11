@@ -59,14 +59,14 @@ namespace JCAP.Services.Implementations
                 InitialProficiencySnapshotJson = user.InitialProficiencySnapshotJson,
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : "Tanaka (田中)"
+                    GuestName = "Tanaka (田中 様)"
                 }
             };
 
             return ApiResponse<PlacementTestStatusDto>.Ok(statusDto);
         }
 
-        public async Task<ApiResponse<PlacementTestStartResponseDto>> StartOrResumeSessionAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<PlacementTestStartResponseDto>> StartOrResumeSessionAsync(string userId, bool reset = false, CancellationToken cancellationToken = default)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
             if (user == null)
@@ -74,52 +74,65 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<PlacementTestStartResponseDto>.Fail("Không tìm thấy thông tin người dùng.");
             }
 
-            // 1. Kiểm tra ràng buộc làm 1 lần duy nhất (BR-PT-01, BR-PT-17)
-            if (user.PlacementTestStatus == "Completed")
+                        if (reset)
             {
-                return ApiResponse<PlacementTestStartResponseDto>.Fail("Bạn đã hoàn thành bài kiểm tra xếp lớp trước đó. Kết quả đã được lưu cố định.");
-            }
+                var activeSessions = await _dbContext.RoleplaySessions
+                    .Where(s => s.UserId == userId && s.SessionType == "PlacementTest" && s.Status == "Active")
+                    .ToListAsync(cancellationToken);
 
-            // 2. Kiểm tra xem có phiên InProgress đang dở không để Resume (BR-PT-16)
-            var existingSession = await _dbContext.RoleplaySessions
-                .Include(s => s.Messages)
-                .FirstOrDefaultAsync(s => s.UserId == userId && s.SessionType == "PlacementTest" && s.Status == "Active", cancellationToken);
-
-            if (existingSession != null)
-            {
-                var existingState = !string.IsNullOrWhiteSpace(existingSession.AssessmentStateJson)
-                    ? JsonSerializer.Deserialize<PlacementAssessmentState>(existingSession.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
-                    : new PlacementAssessmentState();
-
-                var history = existingSession.Messages
-                    .OrderBy(m => m.CreatedAt)
-                    .Select(m => new PlacementTestTurnMessageDto
-                    {
-                        Id = m.Id,
-                        Sender = m.Sender,
-                        JapaneseText = m.JapaneseText,
-                        VietnameseMeaning = m.VietnameseMeaning,
-                        FuriganaHtml = m.FuriganaHtml,
-                        CreatedAt = m.CreatedAt
-                    })
-                    .ToList();
-
-                var opening = history.FirstOrDefault(m => m.Sender == "Ai") ?? new PlacementTestTurnMessageDto();
-
-                return ApiResponse<PlacementTestStartResponseDto>.Ok(new PlacementTestStartResponseDto
+                foreach (var s in activeSessions)
                 {
-                    SessionId = existingSession.Id,
-                    Status = existingSession.Status,
-                    CurrentEvent = existingState.CurrentEvent,
-                    CurrentDifficultyBand = existingState.CurrentDifficultyBand,
-                    IsResumed = true,
-                    OpeningMessage = opening,
-                    MessageHistory = history,
-                    ContextPackage = new HotelContextPackageDto
+                    // Phien dang do ma bi reset: Danh dau la Abandoned, tuyet doi khong gan Completed
+                    s.Status = "Abandoned";
+                    s.CompletedAt = DateTime.UtcNow;
+                }
+                user.PlacementTestStatus = "InProgress";
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                // Kiểm tra xem có phiên InProgress đang dở không để Resume (BR-PT-16)
+                var existingSession = await _dbContext.RoleplaySessions
+                    .Include(s => s.Messages)
+                    .FirstOrDefaultAsync(s => s.UserId == userId && s.SessionType == "PlacementTest" && s.Status == "Active", cancellationToken);
+
+                if (existingSession != null)
+                {
+                    var existingState = !string.IsNullOrWhiteSpace(existingSession.AssessmentStateJson)
+                        ? JsonSerializer.Deserialize<PlacementAssessmentState>(existingSession.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
+                        : new PlacementAssessmentState();
+
+                    var history = existingSession.Messages
+                        .OrderBy(m => m.CreatedAt)
+                        .Select(m => new PlacementTestTurnMessageDto
+                        {
+                            Id = m.Id,
+                            Sender = m.Sender,
+                            JapaneseText = m.JapaneseText,
+                            VietnameseMeaning = m.VietnameseMeaning,
+                            FuriganaHtml = m.FuriganaHtml,
+                            CreatedAt = m.CreatedAt
+                        })
+                        .ToList();
+
+                    var opening = history.FirstOrDefault(m => m.Sender == "Ai") ?? new PlacementTestTurnMessageDto();
+
+                    return ApiResponse<PlacementTestStartResponseDto>.Ok(new PlacementTestStartResponseDto
                     {
-                        GuestName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : "Tanaka (田中)"
-                    }
-                }, "Tiếp tục bài kiểm tra xếp lớp đang dở.");
+                        SessionId = existingSession.Id,
+                        Status = existingSession.Status,
+                        CurrentEvent = existingState.CurrentEvent,
+                        CurrentDifficultyBand = existingState.CurrentDifficultyBand,
+                        IsResumed = true,
+                        OpeningMessage = opening,
+                        MessageHistory = history,
+                        ContextPackage = new HotelContextPackageDto
+                        {
+                            GuestName = "Tanaka (田中 様)"
+                        },
+                        EventSummaries = existingState.EventSummaries
+                    }, "Tiếp tục bài kiểm tra xếp lớp đang dở.");
+                }
             }
 
             // 3. Khởi tạo phiên mới (BR-PT-05: CreditDeducted = 0)
@@ -207,7 +220,7 @@ namespace JCAP.Services.Implementations
                 MessageHistory = [openingDto],
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : "Tanaka (田中)"
+                    GuestName = "Tanaka (田中 様)"
                 }
             }, "Bắt đầu bài kiểm tra xếp lớp thành công.");
         }
@@ -255,14 +268,14 @@ namespace JCAP.Services.Implementations
             }
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-            var userFullName = user?.FullName ?? "Tanaka";
+            const string guestName = "Tanaka (田中)";
 
             var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
                 ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
                 : new PlacementAssessmentState();
 
             // Gọi Engine thích ứng
-            var (updatedState, outcome) = await _engine.EvaluateTurnAsync(state, request, userFullName, cancellationToken);
+            var (updatedState, outcome) = await _engine.EvaluateTurnAsync(state, request, guestName, cancellationToken);
 
             // Lưu tin nhắn User
             var userMsg = new RoleplayMessage
@@ -377,7 +390,14 @@ namespace JCAP.Services.Implementations
                 IsConcluded = outcome.IsConcluded,
                 TerminationReason = outcome.TerminationReason,
                 IsStrikeWarning = outcome.IsStrikeWarning,
-                StrikeWarningMessage = outcome.StrikeWarningMessage
+                StrikeWarningMessage = outcome.StrikeWarningMessage,
+                TaskFulfillmentScore = outcome.TaskFulfillmentScore,
+                GrammarAccuracyScore = outcome.GrammarAccuracyScore,
+                VocabularyRangeScore = outcome.VocabularyRangeScore,
+                PragmaticsScore = outcome.PragmaticsScore,
+                EvidenceNote = outcome.EvidenceNote,
+                EstimatedLevelSoFar = updatedState.CurrentDifficultyBand,
+                EventSummaries = updatedState.EventSummaries
             };
 
             return ApiResponse<PlacementTestMessageResponseDto>.Ok(responseDto);
@@ -426,6 +446,110 @@ namespace JCAP.Services.Implementations
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return ApiResponse<PlacementTestCompleteResponseDto>.Ok(finalResult, "Hoàn tất bài kiểm tra xếp lớp.");
+        }
+    
+        public async Task<ApiResponse<List<PlacementTestHistoryItemDto>>> GetHistoryListAsync(
+            string userId,
+            CancellationToken cancellationToken = default)
+        {
+            var sessions = await _dbContext.RoleplaySessions
+                .Include(s => s.Messages)
+                .Where(s => s.UserId == userId && s.SessionType == "PlacementTest" && s.Status != "Abandoned")
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+            var items = new List<PlacementTestHistoryItemDto>();
+
+            foreach (var session in sessions)
+            {
+                var userMessageCount = session.Messages.Count(m => m.Sender == "User");
+                var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
+                    ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
+                    : new PlacementAssessmentState();
+
+                // Loc bo phien rac/trung lap: khong co bat ky cau noi nao cua nguoi hoc hoac khong co bang chung
+                if (userMessageCount == 0 && state.TurnEvidences.Count == 0)
+                {
+                    continue;
+                }
+
+                var finalResult = _engine.ComputeFinalResult(session.Id, state);
+
+                items.Add(new PlacementTestHistoryItemDto
+                {
+                    SessionId = session.Id,
+                    Status = session.Status,
+                    InitialEstimatedLevel = finalResult.InitialEstimatedLevel,
+                    InitialConfidenceTier = finalResult.InitialConfidenceTier,
+                    OverallScore = finalResult.OverallScore,
+                    TaskFulfillmentScore = finalResult.TaskFulfillmentScore,
+                    GrammarAccuracyScore = finalResult.GrammarAccuracyScore,
+                    VocabularyRangeScore = finalResult.VocabularyRangeScore,
+                    PragmaticsScore = finalResult.PragmaticsScore,
+                    TotalTurns = state.TurnEvidences.Count > 0 ? state.TurnEvidences.Count : userMessageCount,
+                    FulfilledEventsCount = state.EventSummaries.Count(e => e.OutcomeStatus.StartsWith("Fulfilled")),
+                    CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
+                    CompletedAt = session.CompletedAt.HasValue ? DateTime.SpecifyKind(session.CompletedAt.Value, DateTimeKind.Utc) : null
+                });
+            }
+
+            return ApiResponse<List<PlacementTestHistoryItemDto>>.Ok(items);
+        }
+
+        public async Task<ApiResponse<PlacementTestHistoryDetailDto>> GetHistoryDetailAsync(
+            string userId,
+            int sessionId,
+            CancellationToken cancellationToken = default)
+        {
+            var session = await _dbContext.RoleplaySessions
+                .Include(s => s.Messages)
+                .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId && s.SessionType == "PlacementTest", cancellationToken);
+
+            if (session == null)
+            {
+                return ApiResponse<PlacementTestHistoryDetailDto>.Fail("Không tìm thấy phiên kiểm tra xếp lớp.");
+            }
+
+            var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
+                ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
+                : new PlacementAssessmentState();
+
+            var finalResult = _engine.ComputeFinalResult(session.Id, state);
+
+            var messages = session.Messages
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => new PlacementTestTurnMessageDto
+                {
+                    Id = m.Id,
+                    Sender = m.Sender,
+                    JapaneseText = m.JapaneseText,
+                    VietnameseMeaning = m.VietnameseMeaning,
+                    FuriganaHtml = m.FuriganaHtml,
+                    CreatedAt = DateTime.SpecifyKind(m.CreatedAt, DateTimeKind.Utc)
+                })
+                .ToList();
+
+            var detail = new PlacementTestHistoryDetailDto
+            {
+                SessionId = session.Id,
+                Status = session.Status,
+                InitialEstimatedLevel = finalResult.InitialEstimatedLevel,
+                InitialConfidenceTier = finalResult.InitialConfidenceTier,
+                OverallScore = finalResult.OverallScore,
+                TaskFulfillmentScore = finalResult.TaskFulfillmentScore,
+                GrammarAccuracyScore = finalResult.GrammarAccuracyScore,
+                VocabularyRangeScore = finalResult.VocabularyRangeScore,
+                PragmaticsScore = finalResult.PragmaticsScore,
+                SummaryFeedback = finalResult.SummaryFeedback,
+                Disclaimer = finalResult.Disclaimer,
+                CreatedAt = DateTime.SpecifyKind(session.CreatedAt, DateTimeKind.Utc),
+                CompletedAt = session.CompletedAt.HasValue ? DateTime.SpecifyKind(session.CompletedAt.Value, DateTimeKind.Utc) : null,
+                EventSummaries = state.EventSummaries,
+                TurnEvidences = state.TurnEvidences,
+                MessageHistory = messages
+            };
+
+            return ApiResponse<PlacementTestHistoryDetailDto>.Ok(detail);
         }
     }
 }

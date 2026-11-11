@@ -51,7 +51,7 @@ namespace JCAP.Controllers
         /// Bắt đầu hoặc tiếp tục (Resume) bài kiểm tra xếp lớp (0 Credit - BR-PT-05).
         /// </summary>
         [HttpPost("start")]
-        public async Task<IActionResult> Start(CancellationToken cancellationToken)
+        public async Task<IActionResult> Start([FromQuery] bool reset = false, CancellationToken cancellationToken = default)
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
@@ -59,7 +59,7 @@ namespace JCAP.Controllers
                 return Unauthorized(ApiResponse<PlacementTestStartResponseDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
             }
 
-            var result = await _placementTestService.StartOrResumeSessionAsync(userId, cancellationToken);
+            var result = await _placementTestService.StartOrResumeSessionAsync(userId, reset, cancellationToken);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -139,6 +139,55 @@ namespace JCAP.Controllers
             }
 
             var result = await _placementTestService.CompleteSessionAsync(userId, sessionId, cancellationToken);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// GET /api/placement-test/history
+        /// Lấy danh sách lịch sử các phiên kiểm tra xếp lớp của người dùng.
+        /// </summary>
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory(CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<List<PlacementTestHistoryItemDto>>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            var result = await _placementTestService.GetHistoryListAsync(userId, cancellationToken);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// GET /api/placement-test/history/{sessionId}
+        /// Lấy chi tiết bằng chứng và nhận xét của một phiên kiểm tra xếp lớp cụ thể.
+        /// </summary>
+        [HttpGet("history/{sessionId:int}")]
+        public async Task<IActionResult> GetHistoryDetail(int sessionId, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<PlacementTestHistoryDetailDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+            }
+
+            if (sessionId <= 0)
+            {
+                return BadRequest(ApiResponse<PlacementTestHistoryDetailDto>.Fail("SessionId không hợp lệ."));
+            }
+
+            var result = await _placementTestService.GetHistoryDetailAsync(userId, sessionId, cancellationToken);
             if (!result.Success)
             {
                 return BadRequest(result);

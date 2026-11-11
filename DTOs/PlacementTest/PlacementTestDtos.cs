@@ -12,6 +12,7 @@ namespace JCAP.DTOs.PlacementTest
         public string? InitialConfidenceTier { get; set; }
         public string? InitialProficiencySnapshotJson { get; set; }
         public HotelContextPackageDto ContextPackage { get; set; } = new();
+        public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
     }
 
     /// <summary>
@@ -27,6 +28,7 @@ namespace JCAP.DTOs.PlacementTest
         public PlacementTestTurnMessageDto OpeningMessage { get; set; } = new();
         public List<PlacementTestTurnMessageDto> MessageHistory { get; set; } = [];
         public HotelContextPackageDto ContextPackage { get; set; } = new();
+        public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
     }
 
     /// <summary>
@@ -73,6 +75,13 @@ namespace JCAP.DTOs.PlacementTest
         public string TerminationReason { get; set; } = "None"; // None | CompletedNormally | AbuseOrSpamLimit | OffTopicLimit | InsufficientEvidence
         public bool IsStrikeWarning { get; set; }
         public string? StrikeWarningMessage { get; set; }
+        public int? TaskFulfillmentScore { get; set; }
+        public int? GrammarAccuracyScore { get; set; }
+        public int? VocabularyRangeScore { get; set; }
+        public int? PragmaticsScore { get; set; }
+        public string? EvidenceNote { get; set; }
+        public string? EstimatedLevelSoFar { get; set; }
+        public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
     }
 
     /// <summary>
@@ -94,5 +103,49 @@ namespace JCAP.DTOs.PlacementTest
         public string SummaryFeedback { get; set; } = string.Empty;
         public string Disclaimer { get; set; } = "Lưu ý: Kết quả này là ước lượng năng lực giao tiếp ban đầu trên hệ thống JCAP nhằm cá nhân hóa lộ trình học tập, không phải là chứng chỉ hay kết quả kỳ thi năng lực Nhật ngữ JLPT chính thức.";
         public DateTime CompletedAtUtc { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// DTO tóm tắt lịch sử một phiên kiểm tra xếp lớp (phục vụ danh sách lịch sử).
+    /// </summary>
+    public sealed class PlacementTestHistoryItemDto
+    {
+        public int SessionId { get; set; }
+        public string Status { get; set; } = "Completed"; // Completed | InsufficientEvidence | Active | TerminatedEarly
+        public string InitialEstimatedLevel { get; set; } = "Chưa xác định";
+        public string InitialConfidenceTier { get; set; } = "Low";
+        public int OverallScore { get; set; }
+        public int TaskFulfillmentScore { get; set; }
+        public int GrammarAccuracyScore { get; set; }
+        public int VocabularyRangeScore { get; set; }
+        public int PragmaticsScore { get; set; }
+        public int TotalTurns { get; set; }
+        public int FulfilledEventsCount { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+    }
+
+    /// <summary>
+    /// DTO chi tiết toàn diện của một phiên kiểm tra xếp lớp trong lịch sử.
+    /// </summary>
+    public sealed class PlacementTestHistoryDetailDto
+    {
+        public int SessionId { get; set; }
+        public string Status { get; set; } = "Completed";
+        public string InitialEstimatedLevel { get; set; } = "Chưa xác định";
+        public string InitialConfidenceTier { get; set; } = "Low";
+        public int OverallScore { get; set; }
+        public int TaskFulfillmentScore { get; set; }
+        public int GrammarAccuracyScore { get; set; }
+        public int VocabularyRangeScore { get; set; }
+        public int PragmaticsScore { get; set; }
+        public string SummaryFeedback { get; set; } = string.Empty;
+        public string Disclaimer { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+
+        public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
+        public List<PlacementTurnEvidence> TurnEvidences { get; set; } = [];
+        public List<PlacementTestTurnMessageDto> MessageHistory { get; set; } = [];
     }
 }
