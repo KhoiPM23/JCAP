@@ -1129,7 +1129,7 @@ Return strictly pure JSON matching this schema:
                         ? RoleplaySocialRegister.CleanFuriganaHtml(RoleplaySocialRegister.SanitizeJapaneseReply(fHtml))
                         : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim());
 
-                    var resolvedUserFurigana = !string.IsNullOrWhiteSpace(userFHtml)
+                    var resolvedUserFurigana = (!string.IsNullOrWhiteSpace(userFHtml) && userFHtml.Contains("<ruby>"))
                         ? RoleplaySocialRegister.CleanFuriganaHtml(userFHtml.Trim())
                         : RoleplaySocialRegister.GenerateFuriganaHtml(userMessage);
 

@@ -13,7 +13,7 @@ import { HanabiSparkleBurst } from '../components/roleplay/HanabiSparkleBurst';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
-import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml } from '../utils/japaneseSanitizer';
+import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml, cleanPedagogicMeaning, generateClientFuriganaHtml } from '../utils/japaneseSanitizer';
 import { getPracticePrefs, setPracticePref } from '../utils/practicePrefs';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
@@ -87,6 +87,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       return next;
     });
   }, []);
+
+  const getResolvedMessageFurigana = useCallback((msg: RoleplayMessageDto): string => {
+    if (msg.furiganaHtml && msg.furiganaHtml.includes('<ruby>')) {
+      return cleanFuriganaHtml(msg.furiganaHtml);
+    }
+    return generateClientFuriganaHtml(msg.japaneseText);
+  }, []);
+
   const [autoPlayAudio, setAutoPlayAudio] = useState(() => getPracticePrefs().autoPlay);
   const autoPlayAudioRef = useRef(getPracticePrefs().autoPlay);
   useEffect(() => {
@@ -582,8 +590,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const inputEpochRef = useRef<number>(0);
 
 
-  // Tab Cheat Sheet (Từ vựng vs Ngữ pháp)
-  const [cheatSheetTab, setCheatSheetTab] = useState<'vocab' | 'grammar'>('vocab');
+  // Tab Bên trái: Nhiệm vụ vs Kiến thức trọng tâm
+  const [sidebarTab, setSidebarTab] = useState<'missions' | 'knowledge'>('missions');
+  // Phân tab Kiến thức trọng tâm: Từ vựng vs Ngữ pháp
+  const [knowledgeSubTab, setKnowledgeSubTab] = useState<'vocab' | 'grammar'>('vocab');
 
 
   // Direction A & B augmentations: Return URL, LivingAvatar visemes, Telemetry counters
@@ -1761,6 +1771,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       }
       const finalUserMsg: RoleplayMessageDto = {
         ...turn.userMessage,
+        furiganaHtml: (turn.userMessage.furiganaHtml && turn.userMessage.furiganaHtml.includes('<ruby>'))
+          ? turn.userMessage.furiganaHtml
+          : generateClientFuriganaHtml(turn.userMessage.japaneseText),
         audioUrl: turn.userMessage.audioUrl || userAudioToAttach || undefined,
         userAudioUrl: userAudioToAttach ?? undefined,
       };
@@ -2852,13 +2865,16 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             </div>
 
 
-            {/* Tab selector: Nhiệm vụ vs Cheat Sheet */}
-            <div className="flex border-b border-[var(--line)] bg-[var(--paper-50)] text-xs">
+            {/* Tab selector: Nhiệm vụ vs Kiến thức trọng tâm */}
+            <div className="flex border-b border-[var(--line)] bg-[var(--paper-50)] text-xs font-bold">
               <button
                 type="button"
-                onClick={() => setCheatSheetTab('vocab')}
-                className={`flex-1 py-2 font-semibold transition ${
-                  cheatSheetTab === 'vocab'
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setSidebarTab('missions');
+                }}
+                className={`flex-1 py-2.5 font-semibold transition ${
+                  sidebarTab === 'missions'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
                 }`}
@@ -2867,21 +2883,24 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setCheatSheetTab('grammar')}
-                className={`flex-1 py-2 font-semibold transition ${
-                  cheatSheetTab === 'grammar'
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setSidebarTab('knowledge');
+                }}
+                className={`flex-1 py-2.5 font-semibold transition ${
+                  sidebarTab === 'knowledge'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
                 }`}
               >
-                Cheat Sheet
+                Kiến thức trọng tâm
               </button>
             </div>
 
 
             {/* Content list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {cheatSheetTab === 'vocab' ? (
+              {sidebarTab === 'missions' ? (
                 // DANH SÁCH NHIỆM VỤ TỰ ĐỘNG TICK
                 <div className="space-y-2.5">
                   {(session?.missions || []).map((mission: RoleplayMissionDto) => {
@@ -2929,70 +2948,168 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   })}
                 </div>
               ) : (
-                // CHEAT SHEET: TỪ VỰNG & NGỮ PHÁP
-                <div className="space-y-4 text-xs">
-                  <div>
-                    <h3 className="font-bold text-[var(--ai)] uppercase text-[11px] tracking-wide mb-2 font-sans">
-                      Từ vựng trọng tâm ({(session.targetVocabularies ?? []).length})
-                    </h3>
-                    <div className="space-y-2">
-                      {(session.targetVocabularies ?? []).map((v) => (
-                        <div key={v.id} className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)] shadow-xs transition hover:border-[var(--line-strong)]">
-                          <div className="flex justify-between items-baseline">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[var(--sumi)] text-[13px]">{v.word}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCheatVocabBookmark(v)}
-                                className={`text-[11px] p-0.5 rounded transition ${
-                                  practiceBookmarkedVocabIds.has(v.id)
-                                    ? 'text-amber-600 font-bold'
-                                    : 'text-slate-400 hover:text-amber-600'
-                                }`}
-                                title={practiceBookmarkedVocabIds.has(v.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
-                              >
-                                {practiceBookmarkedVocabIds.has(v.id) ? '★' : '☆'}
-                              </button>
-                            </div>
-                            <span className="text-[11px] text-[var(--sumi-faint)]">{v.reading}</span>
-                          </div>
-                          <p className="mt-0.5 text-[11px] text-[var(--sumi-muted)]">{v.meaning}</p>
-                        </div>
-                      ))}
-                    </div>
+                // KIẾN THỨC TRỌNG TÂM: TINH GỌN CHUẨN SCENARIO DETAILS
+                <div className="space-y-3 text-xs">
+                  {/* Sub-tab Selector for Cheatsheet */}
+                  <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-200)]/70 p-1 border border-[var(--line)] text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setKnowledgeSubTab('vocab');
+                      }}
+                      className={`py-1.5 px-2 rounded-lg transition-all ${
+                        knowledgeSubTab === 'vocab'
+                          ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
+                          : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      }`}
+                    >
+                      Từ vựng ({(session?.targetVocabularies ?? []).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setKnowledgeSubTab('grammar');
+                      }}
+                      className={`py-1.5 px-2 rounded-lg transition-all ${
+                        knowledgeSubTab === 'grammar'
+                          ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
+                          : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      }`}
+                    >
+                      Ngữ pháp ({(session?.targetGrammars ?? []).length})
+                    </button>
                   </div>
 
+                  {/* Tab Content: Vocabularies */}
+                  {knowledgeSubTab === 'vocab' && (
+                    <div className="space-y-2.5">
+                      {(session?.targetVocabularies ?? []).length === 0 ? (
+                        <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
+                          Chưa có từ vựng cho cấp độ này.
+                        </p>
+                      ) : (
+                        (session?.targetVocabularies ?? []).map((v) => {
+                          const posMatch = v.meaning.match(/\[(.*?)\]/);
+                          const parts = v.meaning.split('•').map((p) => p.trim());
+                          const mainMeaning = cleanPedagogicMeaning(v.meaning);
+                          const example = parts.length > 2 ? parts.slice(2).join(' • ') : null;
 
-                  <div>
-                    <h3 className="font-bold text-[var(--ai)] uppercase text-[11px] tracking-wide mb-2 font-sans">
-                      Mẫu ngữ pháp ({(session.targetGrammars ?? []).length})
-                    </h3>
-                    <div className="space-y-2">
-                      {(session.targetGrammars ?? []).map((g) => (
-                        <div key={g.id} className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)] shadow-xs transition hover:border-[var(--line-strong)]">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="font-bold text-[var(--ai)] font-mono">{g.pattern}</p>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleCheatGrammarBookmark(g)}
-                              className={`text-[11px] p-0.5 rounded transition ${
-                                practiceBookmarkedGrammarIds.has(g.id)
-                                  ? 'text-amber-600 font-bold'
-                                  : 'text-slate-400 hover:text-amber-600'
-                              }`}
-                              title={practiceBookmarkedGrammarIds.has(g.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                          return (
+                            <div
+                              key={v.id}
+                              className="rounded-xl border border-[var(--line)]/60 bg-white p-3 hover:bg-[var(--paper-100)]/50 transition-colors shadow-2xs"
                             >
-                              {practiceBookmarkedGrammarIds.has(g.id) ? '★' : '☆'}
-                            </button>
-                          </div>
-                          <p className="mt-0.5 text-[11px] text-[var(--sumi-muted)]">{g.meaning}</p>
-                          {g.exampleSentence && (
-                            <p className="mt-1 text-[11px] italic text-[var(--sumi)] border-l-2 border-[var(--line)] pl-2">{g.exampleSentence}</p>
-                          )}
-                        </div>
-                      ))}
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <ruby className="text-sm font-bold text-[var(--sumi)] font-jp">
+                                    {v.word}
+                                    {v.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{v.reading}</rt>}
+                                  </ruby>
+                                  {posMatch && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[var(--paper-200)] text-[var(--sumi-muted)]">
+                                      {posMatch[1]}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => void scenarioVoiceService.playAiSpeech(v.word, 2)}
+                                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                                    title="Nghe phát âm chuẩn Tokyo"
+                                    aria-label={`Nghe phát âm ${v.word}`}
+                                  >
+                                    <VolumeIcon className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCheatVocabBookmark(v)}
+                                    className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs transition active:scale-90 cursor-pointer ${
+                                      practiceBookmarkedVocabIds.has(v.id)
+                                        ? 'text-amber-600 font-bold border-amber-300 bg-amber-50'
+                                        : 'text-slate-400 hover:text-amber-600'
+                                    }`}
+                                    title={practiceBookmarkedVocabIds.has(v.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                                  >
+                                    {practiceBookmarkedVocabIds.has(v.id) ? '★' : '☆'}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="mt-1 text-xs text-[var(--sumi)] font-medium leading-relaxed">
+                                {mainMeaning}
+                              </p>
+                              {example && (
+                                <p className="mt-1 text-[11px] text-[var(--sumi-muted)] italic font-jp">
+                                  {example}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Tab Content: Grammars */}
+                  {knowledgeSubTab === 'grammar' && (
+                    <div className="space-y-2.5">
+                      {(session?.targetGrammars ?? []).length === 0 ? (
+                        <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
+                          Chưa có cấu trúc ngữ pháp cho cấp độ này.
+                        </p>
+                      ) : (
+                        (session?.targetGrammars ?? []).map((g) => {
+                          const formulaMatch = g.meaning.match(/\[(.*?)\]/);
+                          const cleanMeaning = cleanPedagogicMeaning(g.meaning);
+
+                          return (
+                            <div
+                              key={g.id}
+                              className="rounded-xl border border-[var(--line)]/60 bg-white p-3 space-y-1 hover:bg-[var(--paper-100)]/50 transition-colors shadow-2xs"
+                            >
+                              <div className="flex items-center gap-2 flex-wrap justify-between">
+                                <p className="font-bold font-mono text-xs text-[var(--ai)]">
+                                  {g.pattern}
+                                </p>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {formulaMatch && (
+                                    <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                                      {formulaMatch[1]}
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCheatGrammarBookmark(g)}
+                                    className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs transition active:scale-90 cursor-pointer ${
+                                      practiceBookmarkedGrammarIds.has(g.id)
+                                        ? 'text-amber-600 font-bold border-amber-300 bg-amber-50'
+                                        : 'text-slate-400 hover:text-amber-600'
+                                    }`}
+                                    title={practiceBookmarkedGrammarIds.has(g.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                                  >
+                                    {practiceBookmarkedGrammarIds.has(g.id) ? '★' : '☆'}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-xs text-[var(--sumi)] font-medium leading-relaxed">
+                                {cleanMeaning}
+                              </p>
+                              {g.exampleSentence && (
+                                <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
+                                  <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
+                                    Ví dụ mẫu:
+                                  </span>
+                                  {g.exampleSentence}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -3202,14 +3319,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                             onComplete={() => setStreamingAiMessageId(null)}
                           />
                         </p>
-                      ) : isFuriActiveForMsg(msg.id) && msg.furiganaHtml ? (
+                      ) : isFuriActiveForMsg(msg.id) ? (
                         <div
                           className={`text-base font-medium leading-relaxed tracking-normal min-h-[1.75rem] ${!isAi ? 'bubble-user' : 'bubble-ai'}`}
-                          dangerouslySetInnerHTML={{ __html: cleanFuriganaHtml(msg.furiganaHtml) }}
+                          dangerouslySetInnerHTML={{ __html: getResolvedMessageFurigana(msg) }}
                         />
                       ) : (
                         <p className="text-base font-medium leading-relaxed tracking-normal min-h-[1.75rem]">
-                          {sanitizeDisplayJapanese(isFuriActiveForMsg(msg.id) && msg.furiganaText ? msg.furiganaText : msg.japaneseText)}
+                          {sanitizeDisplayJapanese(msg.japaneseText)}
                         </p>
                       )}
 
@@ -3270,7 +3387,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                                 e.stopPropagation();
                                 toggleFuriForMessage(msg.id);
                               }}
-                              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
+                              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition cursor-pointer ${
+                                isFuriActiveForMsg(msg.id)
+                                  ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-2xs'
+                                  : 'text-white/90 hover:bg-white/20'
+                              }`}
                               title={isFuriActiveForMsg(msg.id) ? "Ẩn phiên âm Furigana câu này" : "Hiện phiên âm Furigana câu này"}
                             >
                               <span>{isFuriActiveForMsg(msg.id) ? "Ẩn Furi" : "Furi"}</span>

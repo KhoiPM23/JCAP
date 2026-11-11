@@ -951,9 +951,13 @@ public class RoleplaySessionService : IRoleplaySessionService
             userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
         }
 
-        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml))
+        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml) && turnResult.UserFuriganaHtml.Contains("<ruby>"))
         {
             userMessage.FuriganaHtml = turnResult.UserFuriganaHtml;
+        }
+        else
+        {
+            userMessage.FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage.JapaneseText);
         }
 
         if (turnResult.LinguisticFeedback != null)
