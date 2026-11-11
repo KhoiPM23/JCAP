@@ -137,6 +137,7 @@ builder.Services.AddHostedService<ShadowingAssetBackfillService>();
 // ASR cho chiều Nội dung: dịch vụ Faster-Whisper riêng (tools/shadowing-asr), gọi qua HTTP nội bộ
 builder.Services.AddHttpClient<ISpeechRecognitionService, FasterWhisperSpeechRecognitionService>();
 builder.Services.AddScoped<IShadowingPracticeProgressService, ShadowingPracticeProgressService>();
+builder.Services.AddScoped<IShadowingSessionInsightsService, ShadowingSessionInsightsService>();
 // Cách đọc (G2P của VOICEVOX/OpenJTalk): ưu tiên dữ liệu câu mẫu tính sẵn, rồi mới gọi engine VOICEVOX
 // (tắt được bằng Shadowing:Reading:UseVoiceVox=false). Không có nguồn nào thì KHÔNG chấm, không đoán cách đọc.
 builder.Services.AddHttpClient<VoiceVoxKanaReader>();

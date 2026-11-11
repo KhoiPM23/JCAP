@@ -26,6 +26,7 @@ namespace JCAP.Controllers
         private readonly IAiShadowingAssessmentService _aiAssessmentService;
         private readonly IShadowingPracticeProgressService _progressService;
         private readonly IShadowingSentenceAssetService _assets;
+        private readonly IShadowingSessionInsightsService _insights;
         private readonly ILogger<ShadowingController> _logger;
 
         public ShadowingController(
@@ -33,12 +34,14 @@ namespace JCAP.Controllers
             IAiShadowingAssessmentService aiAssessmentService,
             IShadowingPracticeProgressService progressService,
             IShadowingSentenceAssetService assets,
+            IShadowingSessionInsightsService insights,
             ILogger<ShadowingController> logger)
         {
             _shadowingService = shadowingService;
             _aiAssessmentService = aiAssessmentService;
             _progressService = progressService;
             _assets = assets;
+            _insights = insights;
             _logger = logger;
         }
 
@@ -88,6 +91,9 @@ namespace JCAP.Controllers
             {
                 return BadRequest(result);
             }
+            // Tổng kết do backend tính từ các lần chấm đã lưu (số lần gửi, câu cần luyện lại, trạng thái từng chiều)
+            if (result.Data != null)
+                result.Data.Summary = await _insights.BuildSummaryAsync(result.Data.SessionId) ?? new ShadowingSessionSummaryDto();
             return Ok(result);
         }
 
@@ -103,7 +109,39 @@ namespace JCAP.Controllers
                 return Unauthorized(ApiResponse<List<ShadowingPracticeSessionDto>>.Fail("Không xác định được danh tính người dùng."));
             }
 
-            return Ok(await _shadowingService.GetHistoryAsync(userId));
+            var history = await _shadowingService.GetHistoryAsync(userId);
+            if (history.Success && history.Data is { Count: > 0 } items)
+            {
+                var counts = await _insights.CountSubmissionsAsync(items.Select(i => i.Id).ToList());
+                foreach (var item in items) item.TotalSubmissions = counts.TryGetValue(item.Id, out var n) ? n : null;
+            }
+            return Ok(history);
+        }
+
+        /// <summary>Chi tiết một buổi luyện: tổng kết và MỌI lần gửi chấm (kể cả chưa chấm được), đánh dấu lần được tính.</summary>
+        [HttpGet("history/{sessionId:guid}")]
+        public async Task<ActionResult<ApiResponse<ShadowingSessionDetailDto>>> GetSessionDetail(Guid sessionId, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingSessionDetailDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var history = await _shadowingService.GetHistoryAsync(userId);
+            var sessionDto = history.Data?.FirstOrDefault(s => s.Id == sessionId);
+            var detail = sessionDto == null ? null : await _insights.GetSessionDetailAsync(userId, sessionId, sessionDto, cancellationToken);
+            return detail == null
+                ? NotFound(ApiResponse<ShadowingSessionDetailDto>.Fail("Không tìm thấy buổi luyện."))
+                : Ok(ApiResponse<ShadowingSessionDetailDto>.Ok(detail));
+        }
+
+        /// <summary>Gợi ý luyện tập theo quy tắc từ các lỗi lặp lại trong 60 ngày gần đây (chỉ khi đủ bằng chứng).</summary>
+        [HttpGet("recommendations")]
+        public async Task<ActionResult<ApiResponse<ShadowingRecommendationDto>>> GetRecommendations([FromQuery] int? excludeDialogueId, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingRecommendationDto>.Fail("Không xác định được danh tính người dùng."));
+            return Ok(ApiResponse<ShadowingRecommendationDto>.Ok(await _insights.GetRecommendationsAsync(userId, excludeDialogueId, cancellationToken)));
         }
 
         /// <summary>
