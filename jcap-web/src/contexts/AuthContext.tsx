@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const googleRole = urlParams.get('role');
         const googleCreditBalance = urlParams.get('creditBalance');
 
-        let activeToken = token;
+        let activeToken = localStorage.getItem('jcap_token') || token;
 
         if (googleError) {
           setGoogleError(decodeURIComponent(googleError));
