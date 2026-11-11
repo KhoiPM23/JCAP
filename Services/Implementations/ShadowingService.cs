@@ -259,6 +259,7 @@ namespace JCAP.Services.Implementations
             var evaluations = await _context.ShadowingSentenceEvaluations
                 .Where(e => ids.Contains(e.Id)
                     && e.UserId == userId
+                    && e.ContentMatchScore != null && e.OverallScore != null // lần "chưa chấm được" không vào điểm buổi
                     && e.ShadowingPracticeSessionId == null
                     && e.ShadowingSentence!.ShadowingDialogueId == dto.DialogueId
                     && e.ShadowingSentence.SpeakerRole == role)
@@ -282,7 +283,7 @@ namespace JCAP.Services.Implementations
             var denominator = learnerSentenceCount > 0 ? learnerSentenceCount : chosen.Count;
 
             var contentMatch = Math.Clamp(
-                (int)Math.Round(chosen.Sum(e => (double)e.ContentMatchScore) / denominator, MidpointRounding.AwayFromZero), 0, 100);
+                (int)Math.Round(chosen.Sum(e => (double)e.ContentMatchScore!.Value) / denominator, MidpointRounding.AwayFromZero), 0, 100);
             int? fluency = null; // chưa đo ở phiên bản chấm hiện tại
             var overall = ShadowingScoring.ComputeOverall(contentMatch, fluency) ?? 0;
 
@@ -368,7 +369,9 @@ namespace JCAP.Services.Implementations
                 RankTitle = s.RankTitle,
                 LearnerSentenceCount = s.LearnerSentenceCount,
                 ScoredSentenceCount = s.ScoredSentenceCount,
+                // Buổi luyện chỉ gắn các lần chấm có điểm; lọc tường minh để không bao giờ hiện điểm null thành 0.
                 Sentences = s.SentenceEvaluations
+                    .Where(e => e.ContentMatchScore.HasValue && e.OverallScore.HasValue)
                     .OrderBy(e => e.ShadowingSentence?.OrderIndex ?? int.MaxValue)
                     .Select(e => new ShadowingSessionSentenceDto
                     {
@@ -377,8 +380,8 @@ namespace JCAP.Services.Implementations
                         OrderIndex = e.ShadowingSentence?.OrderIndex ?? 0,
                         TargetText = e.ShadowingSentence?.JapaneseText ?? string.Empty,
                         RecognizedText = e.RecognizedText,
-                        ContentMatchScore = e.ContentMatchScore,
-                        OverallScore = e.OverallScore,
+                        ContentMatchScore = e.ContentMatchScore!.Value,
+                        OverallScore = e.OverallScore!.Value,
                         Tier = e.Tier,
                         Feedback = e.Feedback,
                         ScoringVersion = e.ScoringVersion,

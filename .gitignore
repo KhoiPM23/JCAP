@@ -535,5 +535,6 @@ MapJP/
 wwwroot/uploads/
 jcap-web/public/uploads/
 
-# Mô hình nhận dạng âm vị (tải bằng scripts/download-speech-models.*)
-/models/
+# Mô hình nhận dạng âm vị (tải bằng scripts/download-speech-models.*).
+# Ghi rõ thư mục con: "/models/" sẽ khớp cả thư mục Models/ của C# trên Windows (không phân biệt hoa thường).
+/models/phoneme/

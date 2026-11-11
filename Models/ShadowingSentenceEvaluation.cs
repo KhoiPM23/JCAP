@@ -5,7 +5,8 @@ namespace JCAP.Models
     /// <summary>
     /// Kết quả chấm một câu Shadowing do CHÍNH backend tạo ra (qua evaluate-audio) và lưu lại.
     /// Đây là nguồn điểm duy nhất khi hoàn thành buổi luyện: client chỉ gửi Id, không gửi điểm.
-    /// Chỉ lưu các lượt chấm được (completed/partial); lượt "chưa chấm được" không có điểm nên không lưu.
+    /// MỖI lần gửi chấm (có SentenceId) là một dòng mới, kể cả lần "chưa chấm được" (điểm null + ErrorCode, KHÔNG phải 0).
+    /// Buổi luyện chỉ tính các dòng có điểm.
     /// </summary>
     public class ShadowingSentenceEvaluation
     {
@@ -16,18 +17,36 @@ namespace JCAP.Models
         /// <summary>Buổi luyện đã dùng kết quả này; null khi chưa được gắn vào buổi nào.</summary>
         public Guid? ShadowingPracticeSessionId { get; set; }
 
-        public string RecognizedText { get; set; } = string.Empty;
-        public int ContentMatchScore { get; set; }
-        public int OverallScore { get; set; }
+        /// <summary>Tiến độ (phiên đang luyện) mà lần chấm này thuộc về; null với client cũ không gửi progressId.</summary>
+        public Guid? ShadowingPracticeProgressId { get; set; }
 
-        /// <summary>green | yellow | red</summary>
+        /// <summary>
+        /// Id do client sinh cho MỘT lần bấm "Gửi chấm". Gửi lại cùng Id (mất mạng, quá hạn) không tạo dòng mới.
+        /// </summary>
+        public Guid? ClientSubmissionId { get; set; }
+
+        public string RecognizedText { get; set; } = string.Empty;
+
+        /// <summary>null = không chấm được (không phải 0).</summary>
+        public int? ContentMatchScore { get; set; }
+
+        /// <summary>null = không chấm được (không phải 0).</summary>
+        public int? OverallScore { get; set; }
+
+        /// <summary>green | yellow | red; rỗng nếu không có điểm.</summary>
         public string Tier { get; set; } = string.Empty;
 
-        /// <summary>completed | partial</summary>
+        /// <summary>completed | partial (dữ liệu cũ) | unavailable | failed</summary>
         public string EvaluationStatus { get; set; } = string.Empty;
 
-        /// <summary>gemini | web_speech</summary>
+        /// <summary>Lý do không chấm được (NO_SPEECH_DETECTED, AUDIO_TOO_QUIET, RECOGNIZER_UNAVAILABLE…); null nếu có điểm.</summary>
+        public string? ErrorCode { get; set; }
+
+        /// <summary>phoneme | web_speech (dữ liệu cũ) | gemini (dữ liệu cũ) | none</summary>
         public string RecognitionSource { get; set; } = string.Empty;
+
+        /// <summary>aligned | free (khi RecognitionSource = phoneme); rỗng với dữ liệu cũ.</summary>
+        public string RecognitionMode { get; set; } = string.Empty;
 
         public string ScoringVersion { get; set; } = string.Empty;
         public string ComparisonMethod { get; set; } = string.Empty;
@@ -42,5 +61,6 @@ namespace JCAP.Models
         public ApplicationUser? User { get; set; }
         public ShadowingSentence? ShadowingSentence { get; set; }
         public ShadowingPracticeSession? ShadowingPracticeSession { get; set; }
+        public ShadowingPracticeProgress? ShadowingPracticeProgress { get; set; }
     }
 }

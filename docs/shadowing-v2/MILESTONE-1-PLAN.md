@@ -145,6 +145,67 @@ Mã lỗi mới trong kết quả chấm: `RECOGNIZER_UNAVAILABLE` (thiếu mô 
 | Bước "nghe lại trước khi gửi" làm thêm một lần bấm | Thay đổi thói quen | Có thể thêm tùy chọn "Gửi ngay khi dừng" ở Cài đặt > Khi luyện tập (mặc định tắt) — chỉ làm nếu được yêu cầu. |
 | Migration trên DB dùng chung của nhóm | | Chỉ thêm/nới lỏng; báo người phụ trách DB trước khi `database update`; kiểm tra DB đích theo cấu hình local trước khi chạy. |
 
+## 6b. Thiết kế chi tiết bổ sung (theo yêu cầu duyệt M1)
+
+Đối chiếu ERD/DB và đề xuất CSDL đầy đủ: `M1-DATABASE-REVIEW.md` (thêm `ClientSubmissionId` để chống lưu trùng khi gửi lại).
+
+### Chống tạo phiên trùng
+- **DB:** index duy nhất có lọc `(UserId, ShadowingDialogueId, LearnerRole) WHERE Status = 'in_progress'`.
+- **Ứng dụng:** `StartAsync` tìm phiên `in_progress` → có thì trả về; không có thì chèn. Hai request đồng thời: một bên chèn được, bên kia gặp lỗi trùng khóa
+  (SqlException 2601/2627) → bắt lỗi, đọc lại và trả phiên vừa được tạo (không trả lỗi cho người dùng).
+- **Làm lại (restart):** client gửi `expectedProgressId` (phiên mà nó đang thấy). Phiên `in_progress` hiện tại khác `expectedProgressId` (vd. tab khác vừa làm lại) → trả phiên hiện tại, không tạo thêm. Đúng → trong một transaction: phiên cũ `abandoned`, chèn phiên mới.
+- **Kiểm chứng trên SQL Server thật:** test tích hợp chỉ chạy khi `JCAP_SQLSERVER_TEST=1`, tạo database tạm riêng trên `.\SQLEXPRESS`, áp migration, bắn song song N request bắt đầu, kiểm tra đúng 1 phiên, rồi xóa database tạm. Không dùng `JCAP_DB`.
+
+### Trạng thái từng câu: ở đâu, khôi phục thế nào
+| Trạng thái | Nơi tồn tại | Ý nghĩa |
+|---|---|---|
+| NOT_STARTED | server (suy ra) | Phiên chưa có lần chấm nào cho câu này |
+| RECORDING | chỉ client | Đang ghi |
+| RECORDED | chỉ client | Có bản ghi trong bộ nhớ, chưa gửi (nghe lại / thu lại / gửi) |
+| EVALUATING | chỉ client | Đang chờ kết quả |
+| EVALUATED | server (suy ra) | Có ít nhất một lần chấm có điểm trong phiên |
+| EVALUATION_FAILED | server (suy ra) / client | Chỉ có các lần "chưa chấm được"; hoặc request lỗi mạng/quá giờ ở client |
+
+Server không bao giờ lưu RECORDING/EVALUATING, nên **không thể kẹt vĩnh viễn**. Khôi phục:
+- **Tải lại trang / đóng tab / mở máy khác:** trạng thái từng câu lấy lại từ server (NOT_STARTED/EVALUATED/EVALUATION_FAILED), vị trí từ `CurrentSentenceIndex`.
+  Bản ghi chưa gửi (RECORDED) bị mất vì không lưu âm thanh; báo "Bản ghi chưa gửi đã bị bỏ, hãy thu lại".
+- **Gián đoạn khi đang chấm:** server vẫn chấm xong và lưu (nếu request đã tới server) → lần mở sau thấy EVALUATED/EVALUATION_FAILED. Client đặt giới hạn 60 s:
+  quá hạn → EVALUATION_FAILED kèm nút "Gửi lại" (dùng lại bản ghi trong bộ nhớ, cùng `clientSubmissionId`). Server thấy `clientSubmissionId` đã có
+  → không lưu dòng mới, trả lại kết quả đã lưu (chống trùng khi mạng chập chờn).
+- **Giới hạn ghi:** tự dừng sau 30 s (bằng giới hạn của mô hình) → RECORDED.
+- **Micro bị rút khi đang ghi:** dừng, giữ phần đã ghi ở RECORDED nếu đủ dài, nếu không về NOT_STARTED và báo lỗi thiết bị.
+
+### Đồng bộ localStorage (lớp tương thích tạm thời)
+- **Server là nguồn chính thức** cho: vai, trạng thái phiên, `CurrentSentenceIndex`, trạng thái từng câu, hoàn thành.
+- **Trang luyện ghi đè `localStorage` bằng dữ liệu server** (cùng định dạng `ShadowingProgress` cũ: status, currentSentenceIndex, completedSentenceCount,
+  totalSentenceCount, startedAt, lastPracticedAt, completedAt) mỗi khi tải phiên, đổi câu, chấm xong, hoàn thành. Không có chiều ngược lại.
+- **Không để dữ liệu cũ ghi đè server:** `localStorage` chỉ được dùng **một lần** để gợi ý vị trí bắt đầu khi server *chưa từng* có phiên nào (mọi trạng thái)
+  cho bài + vai đó. Có phiên trên server thì luôn bỏ qua `localStorage`.
+- **Hai nguồn lệch nhau:** server thắng; các màn hình chỉ đọc `localStorage` (Dashboard, danh sách — của KhoiPM23) có thể hiển thị cũ cho tới lần mở trang luyện kế tiếp trên máy đó. Chấp nhận trong M1; ghi vào báo cáo.
+- Thanh bên "Tiếp tục" (giakhoiquang) đọc `GET /progress/latest`; chỉ dùng `localStorage` khi request lỗi.
+
+### Kiểm tra âm thanh phía backend (không tin kết quả của client)
+Thứ tự, dừng ở lỗi đầu tiên; mọi lỗi → `unavailable` + `ErrorCode`, vẫn lưu lần chấm (điểm null):
+1. Kích thước: tổng request ≤ 8 MB (đã có), `analysisWav` ≤ giới hạn hiện có; rỗng → `EMPTY_AUDIO`.
+2. Định dạng thực tế (đọc byte đầu, không tin `Content-Type`): `analysisWav` phải là RIFF/WAVE PCM 16-bit mono 16 kHz → không đúng: `INVALID_AUDIO_FORMAT`.
+   Bản ghi gốc `audio` (nếu gửi) phải có chữ ký WebM/Ogg/MP4/WAV → không đúng: `INVALID_AUDIO_FORMAT`. Thiếu `analysisWav` → `ANALYSIS_AUDIO_MISSING` (trước đây chấm bằng Web Speech).
+3. Thời lượng 0.4–30 s → `AUDIO_TOO_SHORT` / `AUDIO_TOO_LONG`.
+4. Tín hiệu (dùng lại VAD của `FluencyAnalyzer`): không có tín hiệu / chỉ có nền ồn / quá nhỏ / vỡ tiếng nặng → `AUDIO_SILENT`, `AUDIO_NOISE_ONLY`, `AUDIO_TOO_QUIET`, `AUDIO_CLIPPED`.
+   Ngưỡng là heuristic hiện có (chưa hiệu chỉnh trên micro thật) — ghi rõ trong tài liệu.
+5. Giới hạn tài nguyên trước khi gọi mô hình: tối đa N lượt nhận dạng chạy đồng thời (cấu hình `Shadowing:Recognition:MaxConcurrent`, mặc định = số lõi / 2);
+   chờ quá 10 s → `SERVER_BUSY`. Rate limit 30 lượt/phút/người giữ nguyên.
+6. Mô hình không khả dụng → `RECOGNIZER_UNAVAILABLE`.
+
+`audioGateStatus` của client chỉ còn để hiển thị/ghi log, **không quyết định có chấm hay không**; `AudioQualityStatus` lưu theo kết quả kiểm tra của backend.
+
+### Test bổ sung (ngoài mục 5)
+- Hai request bắt đầu phiên song song → 1 phiên (dịch vụ: giả lập lỗi trùng khóa; SQL Server thật: test tích hợp có cờ).
+- Làm lại với `expectedProgressId` cũ → không tạo phiên thứ hai.
+- Gửi lại cùng `clientSubmissionId` → không tạo dòng mới.
+- Kiểm tra âm thanh: từng mã lỗi ở trên; `Content-Type` giả (khai là WAV nhưng nội dung không phải) → `INVALID_AUDIO_FORMAT`.
+- Client cũ: không gửi `progressId`, không gửi `analysisWav`, có `clientTranscript` → `unavailable / ANALYSIS_AUDIO_MISSING`, có lưu lần chấm, không lỗi 500.
+- Frontend: máy trạng thái (gồm quá hạn chấm, gửi lại, tự dừng 30 s); ánh xạ server → `localStorage`; quy tắc "chỉ gợi ý từ localStorage khi server chưa từng có phiên".
+
 ## 7. Thứ tự thực hiện và báo cáo
 
 1. Backend dữ liệu: model + migration + cấu hình (chưa áp dụng vào DB dùng chung trước khi được duyệt).
