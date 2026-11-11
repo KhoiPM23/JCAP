@@ -7,9 +7,16 @@ Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ d
 > tải bằng `scripts/download-speech-models.*`): dùng bản WAV phân tích (cùng micro người học chọn), ra thẳng cách đọc (kana), `recognitionSource = phoneme`;
 > so khớp bằng `KanaMoraComparer.CompareWithReadingAsync` (phía người học không đọc lại qua VOICEVOX). Không nghe thấy tiếng nói, hoặc chỉ một mora với độ tự tin < 0.6
 > (nền ồn bị nghe thành 「あ」) → `unavailable / NO_SPEECH_DETECTED`, không bao giờ là điểm 0.
-> **Dự phòng: Web Speech của trình duyệt** khi thiếu mô hình, thiếu/hỏng bản WAV, mô hình lỗi, hoặc `Shadowing:Recognition:Source = web_speech`:
-> chấm theo transcript đã chốt (`final`) do client gửi (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR` khi không có).
-> Web Speech luôn vẫn chạy trên trình duyệt để hiện chữ trực tiếp khi người học nói. Số liệu so sánh: `docs/shadowing-audio-status.md` mục 5.4.
+> **Không có nguồn chấm dự phòng (từ Shadowing V2 M1).** Web Speech của trình duyệt KHÔNG còn được dùng để chấm (kể cả dự phòng);
+> nó chỉ hiện chữ trực tiếp khi người học nói. `clientTranscript` vẫn được nhận (client cũ không lỗi) nhưng bị bỏ qua.
+> Thiếu mô hình/mô hình lỗi → `unavailable / RECOGNIZER_UNAVAILABLE`; quá nhiều lượt chạy cùng lúc → `SERVER_BUSY`. Không bao giờ là điểm 0.
+> **Kiểm tra âm thanh do backend làm** (`ShadowingAudioValidator`), không dựa vào `audioGateStatus` của client:
+> `EMPTY_AUDIO`, `ANALYSIS_AUDIO_MISSING` (client cũ không gửi WAV), `INVALID_AUDIO_FORMAT` (định dạng thật theo byte đầu, không theo Content-Type),
+> `AUDIO_TOO_LARGE`, `AUDIO_TOO_SHORT` (< 0.4 s hoặc đoạn nói < 0.3 s), `AUDIO_TOO_LONG` (> 30 s), `AUDIO_SILENT`, `AUDIO_TOO_QUIET`, `AUDIO_NOISE_ONLY`, `AUDIO_CLIPPED`.
+> `audioQualityStatus` là kết quả của backend (good/acceptable/needs_retry). Ngưỡng là heuristic, chưa hiệu chỉnh trên micro thật.
+> **Mỗi lần gửi chấm (có `sentenceId`) được lưu** thành một `ShadowingSentenceEvaluation`, kể cả lần chưa chấm được (điểm null + `ErrorCode`);
+> `clientSubmissionId` chống lưu trùng khi gửi lại; `progressId` gắn lần chấm với phiên luyện ở server (`ShadowingPracticeProgress`).
+> Luồng phiên và trạng thái từng câu: `docs/shadowing-v2/MILESTONE-1-PLAN.md` mục 6b. Số liệu so sánh nhận dạng: `docs/shadowing-audio-status.md` mục 5.4.
 > **Hiển thị "Bạn đã nói"** (`recognizedDisplayText`): từ đọc ĐÚNG dùng chữ của câu mẫu (có kanji), từ đọc sai và âm nói thừa giữ kana như đã nghe (`KanaMoraComparer.BuildRecognizedDisplay`); không đoán kanji cho phần câu mẫu không có. `recognizedText` vẫn là kana đúng như nghe được (thứ đã được chấm).
 > Nhánh nhận dạng bằng Gemini (`GeminiSpeechRecognizer`, cấu hình `Shadowing:Recognition:Provider`) **đã được gỡ** vì không dùng.
 >

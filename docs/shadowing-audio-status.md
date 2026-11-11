@@ -156,7 +156,7 @@ ReazonSpeech (`sherpa-onnx-zipformer-ja-reazonspeech-2024-08-01`, bản int8) đ
 
 **Kết luận:** mô hình âm vị tốt hơn ReazonSpeech ở độ chính xác, độ trung thực và việc bịa chữ, và chạy được ngay trong backend .NET. ReazonSpeech bịa chữ với **mọi** mẫu im lặng/ồn và "sửa" nhiều hơn (ra chữ có kanji nên lỗi phát âm bị che).
 Cả hai đều yếu ở `ん`, `sh/s`, `ts/ch`, `r/d` (có thể một phần vì giọng VOICEVOX đọc các cặp này gần nhau). Mô hình âm vị vẫn còn bịa một chữ 「あ」 với nền ồn, nên cần giữ cổng âm thanh và lọc kết quả một mora có độ tự tin thấp.
-Đã chọn mô hình âm vị làm nguồn chấm và nguồn "Bạn đã nói" (kana). Web Speech chỉ còn hiện chữ trực tiếp và làm dự phòng (`Shadowing:Recognition:Source = web_speech` để quay lại như cũ). Chưa kiểm chứng trên giọng người thật.
+Đã chọn mô hình âm vị làm nguồn chấm và nguồn "Bạn đã nói" (kana). Web Speech chỉ còn hiện chữ trực tiếp (từ M1 không còn làm nguồn chấm dự phòng). Chưa kiểm chứng trên giọng người thật.
 
 **Điểm nội dung đầu-cuối** (kana từ mô hình → `KanaMoraComparer.CompareWithReadingAsync` với cách đọc câu mẫu của VOICEVOX thật): câu thường đọc đúng trung bình 91, đạt 100 điểm 114/144; cặp tối thiểu đọc đúng trung bình 87 (60/78 đạt 100); cố ý đọc sai một âm trung bình 57 (25/78 vẫn đạt 100, tức lỗi đó không bị phát hiện).
 Khi nối vào đã phát hiện và sửa một lỗi so khớp: câu mẫu chuẩn hoá trường âm trong từng từ (`でんしゃが｜あります`) còn kana liền một chuỗi thì gộp `があ` thành trường âm, nên câu nghe đúng vẫn bị trừ (96/144 → 114/144 sau khi sửa). Nay `ー` và nguyên âm lặp cùng âm (a→あ, i→い, u→う, e→え/い, o→お/う) được coi là khớp; bỏ hẳn một mora vẫn là lỗi.
@@ -268,7 +268,8 @@ Không nên làm: dùng `っ`, `ん`, `r/d`, `sh/s` của mô hình âm vị đ�
 | `Shadowing:Duration:MaxAlignmentCost` / `MaxTempoSpread` | 5.5 / 0.4 | Lọc độ tin cậy của căn chỉnh |
 | `Shadowing:Fluency:ReferenceSpeaker` | = `Shadowing:Reading:Speaker` | Giọng mẫu dự phòng khi client không gửi |
 | `Shadowing:Reading:BaseUrl` | = `VoiceVox:BaseUrl` | Nên là engine riêng |
-| `Shadowing:Recognition:Source` | `phoneme` | `web_speech`: bỏ qua mô hình âm vị, chấm theo transcript của trình duyệt như trước |
+| `Shadowing:Recognition:Source` | — | **Đã bỏ (M1):** không còn chấm bằng transcript của trình duyệt; giá trị `web_speech` bị bỏ qua |
+| `Shadowing:Recognition:MaxConcurrent` / `QueueTimeoutMs` | số lõi / 2 · 10000 | Số lượt nhận dạng chạy đồng thời; chờ quá hạn → `SERVER_BUSY` |
 | `Shadowing:Recognition:Mode` | `aligned` | `free`: nhận dạng tự do như trước thay vì chấm theo câu mẫu |
 | `Shadowing:Alignment:Margin` / `VowelExtraMargin` | 4 / 2 | Độ chênh (nat) để một mora bị coi là đọc sai; lỗi đổi nguyên âm cần thêm |
 | `Shadowing:Alignment:MaxMismatchPerFrame` | 2.5 | Lệch câu mẫu lớn hơn mức này = đọc câu khác → chấm tự do |

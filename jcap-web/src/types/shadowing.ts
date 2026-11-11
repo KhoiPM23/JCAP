@@ -244,6 +244,54 @@ export interface ShadowingSessionCompletePayload {
   durationSeconds: number;
   startedAt?: string;
   evaluationIds: string[];
+  /** Phiên luyện ở server: có thì backend tự lấy các lần chấm của phiên; gọi lại trả đúng buổi đã tạo. */
+  progressId?: string;
+}
+
+/** Trạng thái một câu của vai người học do server suy ra từ các lần chấm đã lưu. */
+export type ShadowingServerSentenceState = 'NOT_STARTED' | 'EVALUATED' | 'EVALUATION_FAILED';
+
+export interface ShadowingProgressSentence {
+  sentenceId: number;
+  /** Chỉ số trong danh sách câu của bài (theo OrderIndex). */
+  sentenceIndex: number;
+  state: ShadowingServerSentenceState;
+  submissionCount: number;
+  bestScore?: number | null;
+  lastErrorCode?: string | null;
+  lastSubmittedAt?: string | null;
+}
+
+/** Phiên luyện ở server (ShadowingPracticeProgress) — nguồn chính thức của tiến độ. */
+export interface ShadowingServerProgress {
+  id: string;
+  dialogueId: number;
+  dialogueTitle: string;
+  jlptLevel: string;
+  learnerRole: 'A' | 'B';
+  status: 'in_progress' | 'completed' | 'abandoned';
+  currentSentenceIndex: number;
+  currentSentenceText: string;
+  totalSentenceCount: number;
+  learnerSentenceCount: number;
+  evaluatedSentenceCount: number;
+  startedAt: string;
+  lastActivityAt: string;
+  completedAt?: string | null;
+  sessionId?: string | null;
+  /** true nếu phiên vừa được tạo (false: tiếp tục phiên đã có). */
+  created: boolean;
+  sentences: ShadowingProgressSentence[];
+}
+
+export interface StartShadowingProgressPayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  restart?: boolean;
+  /** Khi làm lại: phiên mà trang đang thấy (tab cũ làm lại không tạo phiên thứ hai). */
+  expectedProgressId?: string;
+  /** Vị trí cũ trong trình duyệt; server chỉ dùng khi CHƯA TỪNG có phiên cho bài + vai này. */
+  suggestedSentenceIndex?: number;
 }
 
 /** Phản hồi của backend khi hoàn thành buổi luyện (điểm tổng do backend tính từ kết quả đã lưu). */
