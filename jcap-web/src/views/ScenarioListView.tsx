@@ -138,6 +138,15 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               <span>🏨</span>
               <span>Xem thử Placement Test Room</span>
             </button>
+            <button
+              type="button"
+              onClick={() => navigate('/placement-test/history')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+              title="Xem lịch sử các phiên kiểm tra xếp lớp (Placement Test History)"
+            >
+              <span>📜</span>
+              <span>Lịch sử xếp lớp</span>
+            </button>
           </div>
           <p className="m-0 text-[15px] leading-6 text-sumi-muted">Chọn một tình huống, nhập vai và nói chuyện với nhân vật AI. Mỗi lượt nói được nhận xét ngay.</p>
         </div>
