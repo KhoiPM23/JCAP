@@ -3,10 +3,25 @@
 Tài liệu mô tả **toàn bộ logic hiện tại** (scoring version `shadowing-score/p2-content-word`, so khớp `kana-word-v1`).
 Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ dẫn file để đối chiếu.
 
-> **Nhận dạng giọng nói chạy trên trình duyệt (Web Speech).** Backend chỉ chấm theo transcript đã chốt (`final`) do client gửi;
-> bản ghi gốc không được dùng để nhận dạng (cổng âm thanh `needs_retry` vẫn chặn). Không có transcript hợp lệ → `unavailable`
-> (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR`), không bao giờ là điểm 0.
+> **Nguồn transcript để chấm: nhận dạng âm vị trên chính bản ghi của JCAP** (`OnnxPhonemeRecognizer`, mô hình HuBERT phoneme-CTC chạy trong backend,
+> tải bằng `scripts/download-speech-models.*`): dùng bản WAV phân tích (cùng micro người học chọn), ra thẳng cách đọc (kana), `recognitionSource = phoneme`;
+> so khớp bằng `KanaMoraComparer.CompareWithReadingAsync` (phía người học không đọc lại qua VOICEVOX). Không nghe thấy tiếng nói, hoặc chỉ một mora với độ tự tin < 0.6
+> (nền ồn bị nghe thành 「あ」) → `unavailable / NO_SPEECH_DETECTED`, không bao giờ là điểm 0.
+> **Dự phòng: Web Speech của trình duyệt** khi thiếu mô hình, thiếu/hỏng bản WAV, mô hình lỗi, hoặc `Shadowing:Recognition:Source = web_speech`:
+> chấm theo transcript đã chốt (`final`) do client gửi (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR` khi không có).
+> Web Speech luôn vẫn chạy trên trình duyệt để hiện chữ trực tiếp khi người học nói. Số liệu so sánh: `docs/shadowing-audio-status.md` mục 5.4.
+> **Hiển thị "Bạn đã nói"** (`recognizedDisplayText`): từ đọc ĐÚNG dùng chữ của câu mẫu (có kanji), từ đọc sai và âm nói thừa giữ kana như đã nghe (`KanaMoraComparer.BuildRecognizedDisplay`); không đoán kanji cho phần câu mẫu không có. `recognizedText` vẫn là kana đúng như nghe được (thứ đã được chấm).
 > Nhánh nhận dạng bằng Gemini (`GeminiSpeechRecognizer`, cấu hình `Shadowing:Recognition:Provider`) **đã được gỡ** vì không dùng.
+>
+> **Chấm theo câu mẫu (mặc định, `recognitionMode = aligned`).** Mô hình âm vị không còn được dùng để "đoán xem người học nói gì" (nhận dạng tự do
+> ra chuỗi kana lộn xộn với giọng người học). `PronunciationAligner` lấy cách đọc câu mẫu (VOICEVOX), đổi sang âm vị, và với TỪNG mora so xác suất CTC
+> (`CtcScorer`) của "đọc đúng" với các kiểu đọc sai thường gặp: mất mora, mất phụ âm đầu, đổi phụ âm hay nhầm (k/g, t/d, p/b, s/z/sh/ts, ch/ts, z/j, h/f…),
+> đổi mora hay nhầm (ふ/ひ, し/す, つ/ちゅ, じゃ/ざ…), đổi nguyên âm, thiếu trường âm, thừa trường âm, thiếu っ. Biến thể nào giải thích bản ghi tốt hơn
+> câu mẫu quá ngưỡng (`Shadowing:Alignment:Margin` = 4 nat, đổi nguyên âm thêm `VowelExtraMargin` = 2) thì mora đó bị coi là đọc sai theo đúng kiểu đó.
+> `ん` và phụ âm `r` không bị nhận xét (mô hình không phân biệt được). Chuỗi "đã nghe" (câu mẫu + các lỗi phát hiện) đi qua đúng phần so khớp/điểm/hiển thị
+> bên dưới (`KanaMoraComparer.CompareHeard`), nên công thức điểm không đổi. Nếu bản ghi KHÔNG giống câu mẫu (lệch trung bình > `MaxMismatchPerFrame` = 2.5 nat
+> mỗi khung có tiếng, tức đọc câu khác) thì chấm bằng nhận dạng tự do như trước (`recognitionMode = free`) để kết quả trung thực.
+> `Shadowing:Recognition:Mode = free` tắt hẳn cách này. `freeRecognizedText` giữ kana nhận dạng tự do để chẩn đoán. Số liệu: `docs/shadowing-audio-status.md` mục 5.7.
 
 > **Nhịp nói (Fluency, số liệu thô, `fluency-metrics/v1`).** Sau khi chấm nội dung, client gửi thêm `analysisWav` (WAV PCM 16-bit mono 16 kHz,
 > được render lại qua `OfflineAudioContext` nên đúng tần số; `jcap-web/src/utils/wavEncoder.ts`). Backend (`FluencyAnalyzer`, C#, không cần Python/ffmpeg)
@@ -149,8 +164,8 @@ Dựa trên RMS theo khung ~60 khung/giây:
 | Điều kiện (kiểm tra theo thứ tự) | Kết quả |
 |---|---|
 | Không có khung nào, hoặc RMS lớn nhất < 0.003 (im lặng) | `needs_retry` |
-| Thời lượng < 400 ms (thông báo "Bản ghi quá ngắn (x.x giây)") | `needs_retry` |
-| RMS giọng < 0.008 ≈ −42 dB (thông báo "Âm lượng mic quá nhỏ (đo được N dB, cần từ −42 dB)") | `needs_retry` |
+| Thời lượng < 400 ms (thông báo "Hãy nói trọn câu rồi mới bấm dừng") | `needs_retry` |
+| RMS giọng < 0.008 ≈ −42 dB (thông báo "Âm lượng mic quá nhỏ. Hãy nói gần mic hơn, tăng mức vào của mic hoặc chọn đúng thiết bị"; mức đo nằm trong `volumeDb`) | `needs_retry` |
 | Số khung vỡ tiếng > 30% tổng khung | `needs_retry` |
 | SNR < 6 dB | `needs_retry` |
 | SNR < 12 dB, hoặc RMS giọng < 0.025, hoặc khung vỡ tiếng > 15 | `acceptable` |

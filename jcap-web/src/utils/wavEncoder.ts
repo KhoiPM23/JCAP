@@ -53,21 +53,48 @@ export async function blobToAnalysisWav(blob: Blob): Promise<Blob | null> {
   const ctx: AudioContext = new AudioCtx();
   try {
     const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
-    const length = Math.max(1, Math.ceil(decoded.duration * ANALYSIS_SAMPLE_RATE));
-    const offline: OfflineAudioContext = new OfflineCtx(1, length, ANALYSIS_SAMPLE_RATE);
-
-    const source = offline.createBufferSource();
-    source.buffer = decoded;
-    source.connect(offline.destination); // hạ về mono và 16 kHz do trình duyệt xử lý
-    source.start();
-
-    const rendered = await offline.startRendering();
-    if (rendered.sampleRate !== ANALYSIS_SAMPLE_RATE) return null; // không để lọt dữ liệu sai tần số
-    return new Blob([encodeWavPcm16(rendered.getChannelData(0), ANALYSIS_SAMPLE_RATE)], { type: 'audio/wav' });
+    return await renderAnalysisWav(OfflineCtx, decoded);
   } catch (err) {
     console.warn('[WavEncoder] Không xuất được WAV 16 kHz để đo nhịp nói:', err);
     return null;
   } finally {
     ctx.close().catch(() => {});
   }
+}
+
+/**
+ * Như `blobToAnalysisWav` nhưng từ mẫu PCM thu trực tiếp (có phần thu trước khi bấm ghi).
+ * Trả về null nếu không làm được; nơi gọi khi đó dùng lại `blobToAnalysisWav` trên bản ghi MediaRecorder.
+ */
+export async function pcmToAnalysisWav(samples: Float32Array, sampleRate: number): Promise<Blob | null> {
+  const w = globalThis as any;
+  const OfflineCtx = w.OfflineAudioContext || w.webkitOfflineAudioContext;
+  if (!OfflineCtx || samples.length === 0 || !(sampleRate > 0)) return null;
+  try {
+    if (sampleRate === ANALYSIS_SAMPLE_RATE) {
+      return new Blob([encodeWavPcm16(samples, ANALYSIS_SAMPLE_RATE)], { type: 'audio/wav' });
+    }
+    const holder: OfflineAudioContext = new OfflineCtx(1, 1, ANALYSIS_SAMPLE_RATE);
+    const buffer = holder.createBuffer(1, samples.length, sampleRate);
+    buffer.copyToChannel(samples as Float32Array<ArrayBuffer>, 0);
+    return await renderAnalysisWav(OfflineCtx, buffer);
+  } catch (err) {
+    console.warn('[WavEncoder] Không xuất được WAV 16 kHz từ PCM:', err);
+    return null;
+  }
+}
+
+/** Render lại ở 16 kHz mono (trình duyệt lọc chống răng cưa khi hạ tần số) rồi mã hoá WAV. */
+async function renderAnalysisWav(OfflineCtx: any, input: AudioBuffer): Promise<Blob | null> {
+  const length = Math.max(1, Math.ceil(input.duration * ANALYSIS_SAMPLE_RATE));
+  const offline: OfflineAudioContext = new OfflineCtx(1, length, ANALYSIS_SAMPLE_RATE);
+
+  const source = offline.createBufferSource();
+  source.buffer = input;
+  source.connect(offline.destination); // hạ về mono và 16 kHz do trình duyệt xử lý
+  source.start();
+
+  const rendered = await offline.startRendering();
+  if (rendered.sampleRate !== ANALYSIS_SAMPLE_RATE) return null; // không để lọt dữ liệu sai tần số
+  return new Blob([encodeWavPcm16(rendered.getChannelData(0), ANALYSIS_SAMPLE_RATE)], { type: 'audio/wav' });
 }

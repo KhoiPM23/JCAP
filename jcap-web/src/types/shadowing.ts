@@ -154,7 +154,14 @@ export interface ShadowingAudioEvaluationResult {
   evaluationStatus: ShadowingEvaluationStatus;
   /** recognized | no_speech | unavailable: tách biệt với chất lượng âm thanh. */
   recognitionStatus: 'recognized' | 'no_speech' | 'unavailable';
-  recognitionSource: 'gemini' | 'web_speech' | 'none';
+  recognitionSource: 'phoneme' | 'web_speech' | 'gemini' | 'none';
+  /**
+   * Khi recognitionSource = phoneme: aligned = chấm theo câu mẫu (từng mora so với các kiểu đọc sai thường gặp),
+   * free = nhận dạng tự do (khi người học đọc câu khác hoặc tắt chấm theo câu mẫu). Rỗng với nguồn khác.
+   */
+  recognitionMode?: 'aligned' | 'free' | '';
+  /** Kana nhận dạng tự do từ bản ghi, chỉ để chẩn đoán. */
+  freeRecognizedText?: string;
   /** Lý do phải dùng nguồn dự phòng (vd. AI_TIMEOUT). */
   fallbackReason?: string | null;
   audioQualityStatus: ShadowingAudioQualityStatus;
@@ -168,6 +175,8 @@ export interface ShadowingAudioEvaluationResult {
   recognizedReading?: string;
   targetText: string;
   recognizedText: string;
+  /** "Bạn đã nói" để hiển thị: từ đọc đúng dùng chữ của câu mẫu (có kanji), phần đọc sai/nói thừa giữ kana như đã nghe. */
+  recognizedDisplayText?: string;
   contentMatchScore?: number | null;
   pronunciationScore?: number | null;
   fluencyScore?: number | null;
@@ -201,7 +210,7 @@ export interface ShadowingSentencePracticeResult {
   /** Không còn được tạo ra: ngữ điệu chưa được đo. Chỉ còn trong bản ghi cũ. */
   intonationScore?: number;
   evaluationStatus?: ShadowingEvaluationStatus;
-  recognitionSource?: 'gemini' | 'web_speech';
+  recognitionSource?: 'phoneme' | 'web_speech' | 'gemini';
   fallbackReason?: string | null;
   scoringVersion?: string;
   comparisonMethod?: string;

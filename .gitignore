@@ -534,3 +534,6 @@ MapJP/
 # Local Uploads fallback
 wwwroot/uploads/
 jcap-web/public/uploads/
+
+# Mô hình nhận dạng âm vị (tải bằng scripts/download-speech-models.*)
+/models/

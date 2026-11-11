@@ -15,7 +15,7 @@ export interface ShadowingSentenceResultCardProps {
   isPlayingUserAudio: boolean;
   evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
   /** Nguồn nhận dạng backend đã dùng; web_speech nghĩa là nguồn chính gặp lỗi kỹ thuật. */
-  recognitionSource?: 'gemini' | 'web_speech' | null;
+  recognitionSource?: 'phoneme' | 'web_speech' | 'gemini' | null;
   onPlayUserAudio: () => void;
   onRetry: () => void;
   onNext: () => void;

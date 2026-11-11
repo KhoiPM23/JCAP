@@ -234,7 +234,7 @@ namespace JCAP.DTOs.Shadowing
         public int? SentenceId { get; set; }
 
         /// <summary>
-        /// completed: điểm Content Match tính từ transcript Web Speech đã chốt.
+        /// completed: điểm Content Match tính từ transcript (nhận dạng âm vị trên bản ghi, hoặc Web Speech đã chốt).
         /// partial: không còn được tạo ra (chỉ có ở kết quả cũ, khi còn dùng Gemini làm nguồn chính).
         /// unavailable: không đủ dữ liệu tin cậy để chấm (im lặng, quá ngắn, âm thanh không đạt, sai định dạng).
         /// failed: lỗi kỹ thuật và không có nguồn dự phòng hợp lệ.
@@ -244,8 +244,20 @@ namespace JCAP.DTOs.Shadowing
         /// <summary>recognized | no_speech | unavailable — tách biệt với chất lượng âm thanh.</summary>
         public string RecognitionStatus { get; set; } = "recognized";
 
-        /// <summary>web_speech | none (gemini chỉ có ở kết quả cũ)</summary>
+        /// <summary>
+        /// phoneme (nhận dạng âm vị trên chính bản ghi của JCAP; transcript là kana) | web_speech (dự phòng) | none
+        /// (gemini chỉ có ở kết quả cũ)
+        /// </summary>
         public string RecognitionSource { get; set; } = "none";
+
+        /// <summary>
+        /// Cách dùng mô hình âm vị (khi RecognitionSource = phoneme): aligned = chấm theo câu mẫu (từng mora so với các kiểu
+        /// đọc sai thường gặp), free = nhận dạng tự do (khi tắt chấm theo câu mẫu hoặc người học đọc câu khác). Rỗng với nguồn khác.
+        /// </summary>
+        public string RecognitionMode { get; set; } = string.Empty;
+
+        /// <summary>Kana nhận dạng tự do từ bản ghi (chỉ để chẩn đoán; điểm theo RecognitionMode).</summary>
+        public string FreeRecognizedText { get; set; } = string.Empty;
 
         /// <summary>Không còn được dùng (luôn null); giữ để tương thích với kết quả cũ.</summary>
         public string? FallbackReason { get; set; }
@@ -271,6 +283,12 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>Transcript cuối cùng được chấm. Rỗng nếu không có; KHÔNG bao giờ thay bằng câu mẫu.</summary>
         public string RecognizedText { get; set; } = string.Empty;
+
+        /// <summary>
+        /// "Bạn đã nói" để hiển thị: từ đọc đúng dùng chữ của câu mẫu (có kanji), phần đọc sai/nói thừa giữ kana như đã nghe.
+        /// Rỗng thì hiển thị RecognizedText.
+        /// </summary>
+        public string RecognizedDisplayText { get; set; } = string.Empty;
 
         /// <summary>Điểm khớp nội dung chữ viết/âm đọc (0 - 100). Null nếu không chấm được.</summary>
         public int? ContentMatchScore { get; set; }

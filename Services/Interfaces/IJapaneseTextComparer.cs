@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JCAP.DTOs.Shadowing;
+using JCAP.Services.Implementations;
 
 namespace JCAP.Services.Interfaces
 {
@@ -35,6 +36,11 @@ namespace JCAP.Services.Interfaces
         /// <summary>Cách đọc của câu mẫu / transcript dưới dạng hiragana (để hiển thị và chẩn đoán).</summary>
         public string TargetReading { get; init; } = string.Empty;
         public string RecognizedReading { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Câu người học đã nói để HIỂN THỊ: từ đọc đúng dùng chữ của câu mẫu (có kanji), phần đọc sai/nói thừa giữ kana như đã nghe.
+        /// </summary>
+        public string RecognizedDisplay { get; init; } = string.Empty;
     }
 
     /// <summary>
@@ -46,5 +52,20 @@ namespace JCAP.Services.Interfaces
         string MethodId { get; }
 
         Task<JapaneseTextComparison> CompareAsync(string target, string recognized, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// So với transcript ĐÃ LÀ cách đọc (kana từ bộ nhận dạng âm vị): chỉ câu mẫu cần nguồn cách đọc,
+        /// phía người học dùng thẳng chuỗi kana (không đọc lại, nên không có lỗi đọc chữ Hán ở phía này).
+        /// </summary>
+        Task<JapaneseTextComparison> CompareWithReadingAsync(string target, string recognizedKana, CancellationToken cancellationToken = default);
+
+        /// <summary>Cách đọc (mora, ranh giới từ) của câu mẫu; null nếu không có nguồn cách đọc đáng tin cậy.</summary>
+        Task<KanaReading?> ReadTargetAsync(string target, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// So câu mẫu với chuỗi mora "đã nghe" do chấm theo câu mẫu tạo ra (câu mẫu + các lỗi đã phát hiện).
+        /// Cùng cách tách từ, tính điểm, hiển thị và nhận xét như các phương thức trên.
+        /// </summary>
+        JapaneseTextComparison CompareHeard(string target, KanaReading targetReading, IReadOnlyList<Mora> heard);
     }
 }

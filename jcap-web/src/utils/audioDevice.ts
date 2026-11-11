@@ -5,17 +5,23 @@
 
 export const INPUT_DEVICE_STORAGE_KEY = 'jcap_audio_input_device';
 export const OUTPUT_DEVICE_STORAGE_KEY = 'jcap_audio_output_device';
+/** Tên thiết bị lúc chọn: để còn gọi được tên khi thiết bị đã bị rút (trình duyệt không trả tên thiết bị vắng mặt). */
+export const INPUT_LABEL_STORAGE_KEY = 'jcap_audio_input_device_label';
+export const OUTPUT_LABEL_STORAGE_KEY = 'jcap_audio_output_device_label';
+
+/**
+ * Giá trị lưu cho "Mặc định của hệ thống": KHÔNG ràng buộc thiết bị, hệ điều hành tự chọn.
+ * Trình duyệt không cho biết thiết bị nào là mic/loa gắn sẵn trong máy, nên "mặc định" luôn là thiết bị mà
+ * Windows/macOS đang chọn (laptop không cắm gì thì chính là mic/loa của máy).
+ */
+export const SYSTEM_DEFAULT_DEVICE = '';
+
+export type AudioDeviceKind = 'audioinput' | 'audiooutput';
 
 export interface DeviceLike {
   deviceId: string;
   label?: string;
-}
-
-export interface DeviceResolution {
-  /** id nên hiển thị và lưu ('' nếu chưa có thiết bị nào để chọn). */
-  id: string;
-  /** true nếu id đã lưu không còn trong danh sách nên đã chuyển sang thiết bị dự phòng. */
-  missing: boolean;
+  groupId?: string;
 }
 
 /** Chrome thêm mục "communications" trùng với một thiết bị thật, chọn nó chỉ gây nhầm. */
@@ -23,32 +29,174 @@ export function filterSelectableDevices<T extends DeviceLike>(devices: T[]): T[]
   return devices.filter((d) => d.deviceId !== 'communications');
 }
 
-/**
- * Đối chiếu id đã lưu với danh sách thiết bị hiện tại.
- * - Chưa lưu gì: dùng thiết bị mặc định (mục "default" nếu có, không thì mục đầu tiên).
- * - Đã lưu và còn trong danh sách: giữ nguyên.
- * - Đã lưu nhưng không còn (rút tai nghe, đổi máy): chuyển sang thiết bị mặc định và báo missing.
- * - Chưa cấp quyền nên danh sách không có id thật (deviceId rỗng): không kiểm chứng được, giữ nguyên id đã lưu.
- */
-export function resolveDeviceSelection(savedId: string, devices: DeviceLike[]): DeviceResolution {
-  const usable = devices.filter((d) => !!d.deviceId);
-  if (usable.length === 0) return { id: savedId, missing: false };
+/** Mục giả của trình duyệt ('default', 'communications') và mục rỗng (chưa cấp quyền) không phải thiết bị thật. */
+const isRealDevice = (d: DeviceLike) => !!d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications';
 
-  const fallback = (usable.find((d) => d.deviceId === 'default') ?? usable[0]).deviceId;
-  if (!savedId) return { id: fallback, missing: false };
-  if (usable.some((d) => d.deviceId === savedId)) return { id: savedId, missing: false };
-  return { id: fallback, missing: true };
+/** Id đã lưu → id dùng thật. 'default' (giá trị cũ) và rỗng đều là "Mặc định của hệ thống". */
+export function normalizeDeviceId(id: string | null | undefined): string {
+  if (!id || id === 'default' || id === 'communications') return SYSTEM_DEFAULT_DEVICE;
+  return id;
+}
+
+/** Danh sách có id thật (đã cấp quyền) thì mới kiểm chứng được thiết bị đã lưu còn hay không. */
+const canVerify = (devices: DeviceLike[]) => devices.some((d) => !!d.deviceId);
+
+/**
+ * Tên thiết bị thật mà "mặc định của hệ thống" đang trỏ tới. Chrome/Edge có mục deviceId 'default' cùng groupId với
+ * thiết bị thật; không khớp được thì bỏ tiền tố "Default - " của nhãn. Trình duyệt không có mục này thì trả null.
+ */
+export function systemDefaultLabel(devices: DeviceLike[]): string | null {
+  const def = devices.find((d) => d.deviceId === 'default');
+  if (!def) return null;
+  const twin = def.groupId ? devices.find((d) => isRealDevice(d) && d.groupId === def.groupId && !!d.label) : undefined;
+  if (twin?.label) return twin.label;
+  const stripped = (def.label ?? '').replace(/^\s*(default|mặc định)\s*[-–—:]\s*/i, '').trim();
+  return stripped || null;
+}
+
+export interface DeviceOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Lựa chọn cho hộp chọn thiết bị: luôn có "Mặc định của hệ thống" đứng đầu, sau đó các thiết bị thật (bỏ mục giả trùng lặp).
+ * Thiết bị người dùng đã chọn mà đang vắng mặt vẫn được giữ trong danh sách (kèm "đã ngắt kết nối"), không tự đổi lựa chọn.
+ */
+export function buildDeviceOptions(
+  kind: AudioDeviceKind,
+  devices: DeviceLike[],
+  selectedId: string,
+  selectedLabel?: string | null,
+): DeviceOption[] {
+  const noun = kind === 'audioinput' ? 'Micro' : 'Loa';
+  const systemName = systemDefaultLabel(devices);
+  const options: DeviceOption[] = [
+    {
+      value: SYSTEM_DEFAULT_DEVICE,
+      label: systemName ? `Mặc định của hệ thống (hiện là: ${systemName})` : 'Mặc định của hệ thống',
+    },
+  ];
+
+  const real = devices.filter(isRealDevice);
+  real.forEach((d, i) => options.push({ value: d.deviceId, label: d.label || `${noun} ${i + 1}` }));
+
+  const id = normalizeDeviceId(selectedId);
+  if (id && !real.some((d) => d.deviceId === id)) {
+    const name = selectedLabel || `${noun} đã chọn`;
+    options.push({ value: id, label: canVerify(devices) ? `${name} (đã ngắt kết nối)` : name });
+  }
+  return options;
+}
+
+export type DeviceStatus = 'DEFAULT' | 'SELECTED' | 'NOT_FOUND' | 'DISCONNECTED' | 'PERMISSION_DENIED' | 'UNAVAILABLE';
+
+/**
+ * Trạng thái thiết bị theo thứ tự ưu tiên: trình duyệt không hỗ trợ → chưa cấp quyền → không có thiết bị nào →
+ * thiết bị đã chọn vắng mặt → đang dùng mặc định / đang dùng thiết bị đã chọn.
+ */
+export function deviceStatus(params: {
+  devices: DeviceLike[];
+  selectedId: string;
+  permissionDenied?: boolean;
+  supported?: boolean;
+}): DeviceStatus {
+  const { devices, selectedId, permissionDenied = false, supported = true } = params;
+  if (!supported) return 'UNAVAILABLE';
+  if (permissionDenied) return 'PERMISSION_DENIED';
+  if (devices.length === 0) return 'NOT_FOUND';
+  const id = normalizeDeviceId(selectedId);
+  if (!id) return 'DEFAULT';
+  if (canVerify(devices) && !devices.some((d) => d.deviceId === id)) return 'DISCONNECTED';
+  return 'SELECTED';
+}
+
+/** Câu hiển thị cho từng trạng thái (đúng nguyên nhân, nói rõ chức năng nào vẫn dùng được). */
+export function describeDeviceStatus(
+  kind: AudioDeviceKind,
+  status: DeviceStatus,
+  names: { selected?: string | null; systemDefault?: string | null } = {},
+): string {
+  const mic = kind === 'audioinput';
+  switch (status) {
+    case 'DEFAULT':
+      return `Đang dùng ${mic ? 'micro' : 'loa'} mặc định của hệ thống${names.systemDefault ? `: ${names.systemDefault}` : ''}.`;
+    case 'SELECTED':
+      return `Đang dùng: ${names.selected || (mic ? 'micro đã chọn' : 'loa đã chọn')}.`;
+    case 'DISCONNECTED':
+      return `${names.selected || (mic ? 'Micro đã chọn' : 'Loa đã chọn')} đã ngắt kết nối. Đang tạm dùng ${
+        mic ? 'micro' : 'loa'
+      } mặc định của hệ thống; cắm lại thiết bị hoặc chọn thiết bị khác.`;
+    case 'NOT_FOUND':
+      return mic
+        ? 'Không tìm thấy micro. Bạn vẫn nghe được câu mẫu nhưng chưa thể ghi âm.'
+        : 'Không tìm thấy loa. Bạn vẫn luyện nói được nhưng có thể không nghe được câu mẫu.';
+    case 'PERMISSION_DENIED':
+      return 'Chưa cấp quyền micro cho trang này. Hãy cho phép micro để chọn thiết bị và ghi âm.';
+    case 'UNAVAILABLE':
+      return mic
+        ? 'Trình duyệt này không hỗ trợ thu âm. Hãy dùng Chrome hoặc Edge.'
+        : 'Trình duyệt này không cho chọn loa; âm thanh phát qua loa mặc định của hệ thống.';
+  }
+}
+
+/** Thiết bị thật mới xuất hiện so với lần liệt kê trước (để báo "Đã kết nối: …"). */
+export function newlyConnected<T extends DeviceLike>(previous: DeviceLike[], next: T[]): T[] {
+  if (!canVerify(previous)) return []; // lần đầu hoặc chưa cấp quyền: không có gì để so
+  const known = new Set(previous.map((d) => d.deviceId));
+  return next.filter((d) => isRealDevice(d) && !known.has(d.deviceId));
+}
+
+export type OutputRouting = 'default' | 'selected' | 'failed' | 'unsupported';
+
+/**
+ * Đặt thiết bị phát cho một phần tử âm thanh và CHỜ xong trước khi phát (gọi play() trước khi setSinkId xong thì
+ * đoạn đầu có thể phát ra loa mặc định). "Mặc định của hệ thống" thì không gọi setSinkId.
+ */
+export async function applyOutputDevice(
+  element: { setSinkId?: (id: string) => Promise<void> } | null | undefined,
+  deviceId: string,
+): Promise<OutputRouting> {
+  const id = normalizeDeviceId(deviceId);
+  if (!id) return 'default';
+  if (!element || typeof element.setSinkId !== 'function') return 'unsupported';
+  try {
+    await element.setSinkId(id);
+    return 'selected';
+  } catch {
+    return 'failed';
+  }
+}
+
+/**
+ * Khử nhiễu + tự chỉnh âm lượng của trình duyệt. Có thể làm méo phụ âm và nuốt âm đầu câu, nên để bật/tắt được
+ * khi so sánh độ chính xác nhận dạng (công cụ thử ở chế độ phát triển). Mặc định BẬT như trước.
+ * Khử tiếng vọng luôn bật để tiếng loa không lọt vào bản ghi.
+ */
+export const MIC_VOICE_PROCESSING_STORAGE_KEY = 'jcap_mic_voice_processing';
+
+export function isMicVoiceProcessingEnabled(
+  storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage,
+): boolean {
+  try {
+    return storage?.getItem(MIC_VOICE_PROCESSING_STORAGE_KEY) !== 'off';
+  } catch {
+    return true;
+  }
 }
 
 /** Ràng buộc mic dùng chung cho thu âm và thử mic, để mức âm lượng khi thử đúng với khi thu thật. */
-export function buildMicConstraints(deviceId?: string): MediaTrackConstraints {
+export function buildMicConstraints(
+  deviceId?: string,
+  voiceProcessing: boolean = isMicVoiceProcessingEnabled(),
+): MediaTrackConstraints {
   return {
     echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: true,
+    noiseSuppression: voiceProcessing,
+    autoGainControl: voiceProcessing,
     channelCount: 1,
     sampleRate: 48000,
-    ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+    ...(normalizeDeviceId(deviceId) ? { deviceId: { exact: normalizeDeviceId(deviceId) } } : {}),
   };
 }
 
@@ -100,7 +248,7 @@ export async function acquireMicStream(
   try {
     return { stream: await getUserMedia({ audio: buildMicConstraints(deviceId) }), usedFallback: false };
   } catch (err) {
-    if (!deviceId || !fallbackToDefault || !isDeviceUnavailableError(err)) throw err;
+    if (!normalizeDeviceId(deviceId) || !fallbackToDefault || !isDeviceUnavailableError(err)) throw err;
     return { stream: await getUserMedia({ audio: buildMicConstraints() }), usedFallback: true };
   }
 }

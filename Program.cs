@@ -127,6 +127,7 @@ builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
 builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
 builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
+builder.Services.AddSingleton<IPhonemeRecognizer, OnnxPhonemeRecognizer>();
 // Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
 // không dùng bảng tra tự viết để đoán cách đọc.
 builder.Services.AddHttpClient<VoiceVoxKanaReader>();

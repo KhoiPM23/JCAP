@@ -17,11 +17,31 @@ import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDevice
 import { voicevoxService, type VoiceOption } from '../../services/voicevoxService';
 import RecordingBar from '../../components/shadowing/RecordingBar';
 import { audioMetricsService, measureRecordedBlob, type AudioQualityMetrics, type AudioGateStatus } from '../../services/audioMetricsService';
-import { acquireMicStream, describeMicError } from '../../utils/audioDevice';
+import {
+  INPUT_DEVICE_STORAGE_KEY,
+  INPUT_LABEL_STORAGE_KEY,
+  MIC_VOICE_PROCESSING_STORAGE_KEY,
+  OUTPUT_DEVICE_STORAGE_KEY,
+  applyOutputDevice,
+  describeDeviceStatus,
+  describeMicError,
+  filterSelectableDevices,
+  isMicVoiceProcessingEnabled,
+  newlyConnected,
+  normalizeDeviceId,
+} from '../../utils/audioDevice';
+import { PREROLL_MS, WarmMic, isMicPermissionGranted } from '../../utils/warmMic';
+import { allowedPrerollMs } from '../../utils/pcmTakeBuffer';
+import { RecordingDevTools, type DevRecordingTake } from '../../components/shadowing/RecordingDevTools';
 import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
 import { pickRecordingMimeType, resolveRecordedMime } from '../../utils/recordingMime';
-import { blobToAnalysisWav } from '../../utils/wavEncoder';
+import {
+  isSpeechMicTrackEnabled,
+  startRecognitionOnTrack,
+  type RecognitionMicSource,
+} from '../../utils/speechRecognitionStart';
+import { blobToAnalysisWav, pcmToAnalysisWav } from '../../utils/wavEncoder';
 import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingSessionScores';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
@@ -94,7 +114,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [currentDiffTokens, setCurrentDiffTokens] = useState<ShadowingDiffToken[]>([]);
   const [currentEvaluationStatus, setCurrentEvaluationStatus] = useState<'completed' | 'partial' | 'unavailable' | 'failed'>('completed');
   // Nguồn nhận dạng đã dùng cho kết quả hiện tại (backend ghi nhận)
-  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'gemini' | 'web_speech' | null>(null);
+  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'phoneme' | 'web_speech' | 'gemini' | null>(null);
   const [sentenceAttemptsMap, setSentenceAttemptsMap] = useState<Map<number, number>>(new Map());
   const latestAttemptIsBestRef = useRef<boolean>(true);
   const [micError, setMicError] = useState<string | null>(null);
@@ -116,6 +136,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Web Speech Recognition & Auto-scroll
   const recognitionRef = useRef<any>(null);
+  // Track của micro đang thu âm: truyền cho Web Speech để nhận dạng nghe cùng micro với bản ghi chấm điểm.
+  const micTrackRef = useRef<MediaStreamTrack | null>(null);
+  // Micro mở sẵn trong buổi luyện (không mất âm đầu câu khi bấm ghi) + đang mở dở, để không mở hai lần
+  const warmMicRef = useRef<WarmMic | null>(null);
+  const warmMicOpeningRef = useRef<Promise<WarmMic> | null>(null);
+  const isUnmountedRef = useRef<boolean>(false);
+  // Thời điểm dừng phát âm thanh gần nhất: không lấy tiếng loa vào phần thu trước khi bấm ghi
+  const playbackActiveRef = useRef<boolean>(false);
+  const playbackEndedAtRef = useRef<number | null>(null);
+  // Chỉ chế độ phát triển: bản ghi gần nhất để tải về đo nhận dạng, và bật/tắt khử nhiễu của trình duyệt
+  const [devTake, setDevTake] = useState<DevRecordingTake | null>(null);
+  const [micVoiceProcessing, setMicVoiceProcessing] = useState<boolean>(() => isMicVoiceProcessingEnabled());
   const isRecordingRef = useRef<boolean>(false);
   // Gom transcript đã chốt qua các lần Web Speech tự khởi động lại
   const collectorRef = useRef<SpeechTranscriptCollector>(new SpeechTranscriptCollector());
@@ -136,12 +168,72 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [historySaveState, setHistorySaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [historySaveMessage, setHistorySaveMessage] = useState<string>('');
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
+  // Rỗng = mặc định của hệ thống (người mới chưa chọn gì luôn ở chế độ này; giá trị "default" cũ cũng là mặc định)
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
-    localStorage.getItem('jcap_audio_input_device') || ''
+    normalizeDeviceId(localStorage.getItem(INPUT_DEVICE_STORAGE_KEY))
   );
   const [selectedAudioOutputDeviceId, setSelectedAudioOutputDeviceId] = useState<string>(
-    localStorage.getItem('jcap_audio_output_device') || ''
+    normalizeDeviceId(localStorage.getItem(OUTPUT_DEVICE_STORAGE_KEY))
   );
+  // Không có micro nào: khoá nút ghi âm (vẫn cho nghe mẫu). null = chưa biết (chưa liệt kê được thiết bị)
+  const [hasMicrophone, setHasMicrophone] = useState<boolean | null>(null);
+  const selectedInputIdRef = useRef(selectedAudioInputDeviceId);
+  selectedInputIdRef.current = selectedAudioInputDeviceId;
+
+  // Theo dõi cắm/rút thiết bị: báo tên thiết bị mới, báo micro đã chọn bị rút, khoá ghi âm khi không còn micro.
+  // KHÔNG tự đổi lựa chọn của người dùng; khi ghi âm mà micro đã chọn vắng mặt thì tạm dùng micro mặc định.
+  useEffect(() => {
+    const media = navigator.mediaDevices;
+    if (!media?.enumerateDevices) {
+      setHasMicrophone(false);
+      return;
+    }
+    let previous: MediaDeviceInfo[] = [];
+    let disposed = false;
+    const refresh = async () => {
+      try {
+        const all = filterSelectableDevices(await media.enumerateDevices());
+        if (disposed) return;
+        const inputs = all.filter((d) => d.kind === 'audioinput');
+        setHasMicrophone(inputs.length > 0);
+
+        // Đang tạm dùng micro mặc định vì micro đã chọn vắng mặt: đóng để lượt sau thử lại đúng micro đã chọn
+        if (warmMicRef.current?.usedFallback && !isRecordingRef.current) closeWarmMic();
+
+        const added = newlyConnected(previous, all);
+        const names = [...new Set(added.map((d) => d.label).filter(Boolean))].join(', ');
+        if (names) setMicNotice(`Đã kết nối: ${names}. Mở "Cài đặt âm thanh" nếu muốn dùng thiết bị này.`);
+
+        const selected = selectedInputIdRef.current;
+        const canVerify = inputs.some((d) => !!d.deviceId);
+        if (selected && canVerify && !inputs.some((d) => d.deviceId === selected)) {
+          setMicNotice(
+            describeDeviceStatus('audioinput', 'DISCONNECTED', { selected: localStorage.getItem(INPUT_LABEL_STORAGE_KEY) }),
+          );
+        }
+        previous = all;
+      } catch {
+        // Không liệt kê được: giữ nguyên trạng thái, việc mở micro lúc ghi âm sẽ báo lỗi đúng nguyên nhân
+      }
+    };
+    refresh();
+    media.addEventListener?.('devicechange', refresh);
+    return () => {
+      disposed = true;
+      media.removeEventListener?.('devicechange', refresh);
+    };
+  }, []);
+
+  /** Phát qua loa đã chọn: chờ chuyển xong rồi mới phát; không chuyển được thì báo và phát qua loa mặc định. */
+  const routeToSelectedOutput = async (audio: HTMLAudioElement) => {
+    const routing = await applyOutputDevice(
+      audio as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> },
+      selectedAudioOutputDeviceId
+    );
+    if (routing === 'failed') {
+      setMicNotice('Không phát được qua loa đã chọn (có thể đã ngắt kết nối), đang dùng loa mặc định của hệ thống.');
+    }
+  };
 
   // VOICEVOX TTS Integration
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
@@ -194,6 +286,47 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   useEffect(() => {
     dialogueRef.current = dialogue;
   }, [dialogue]);
+
+  const closeWarmMic = () => {
+    warmMicRef.current?.close();
+    warmMicRef.current = null;
+  };
+
+  /**
+   * Micro cho lượt ghi: dùng lại micro đang mở nếu đúng thiết bị/cấu hình và còn sống, không thì mở mới.
+   * Ném lỗi getUserMedia để nơi bấm ghi báo đúng nguyên nhân.
+   */
+  const ensureWarmMic = async (deviceId: string): Promise<WarmMic> => {
+    const processing = isMicVoiceProcessingEnabled();
+    const usable = (m: WarmMic | null) => !!m && m.isLive && m.matches(deviceId, processing);
+    if (usable(warmMicRef.current)) return warmMicRef.current!;
+
+    if (warmMicOpeningRef.current) {
+      try {
+        const pending = await warmMicOpeningRef.current;
+        if (usable(pending)) return pending;
+      } catch {
+        // lần mở trước lỗi: thử mở lại bên dưới
+      }
+    }
+
+    if (warmMicRef.current && isRecordingRef.current && warmMicRef.current.isLive) return warmMicRef.current;
+    closeWarmMic();
+    const opening = WarmMic.open(deviceId, processing);
+    warmMicOpeningRef.current = opening;
+    try {
+      const mic = await opening;
+      if (isUnmountedRef.current) {
+        mic.close();
+        throw new Error('Đã rời trang luyện');
+      }
+      if (warmMicRef.current && warmMicRef.current !== mic) warmMicRef.current.close();
+      warmMicRef.current = mic;
+      return mic;
+    } finally {
+      if (warmMicOpeningRef.current === opening) warmMicOpeningRef.current = null;
+    }
+  };
 
   // Centralized audio & timer stopper
   const stopAllAudio = () => {
@@ -405,7 +538,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Stop audio on unmount
   useEffect(() => {
+    isUnmountedRef.current = false; // StrictMode gắn lại effect sau lần dọn thử
     return () => {
+      isUnmountedRef.current = true;
+      closeWarmMic();
       isRecordingRef.current = false;
       evaluationSeqRef.current += 1;
       collectorRef.current.lock();
@@ -420,6 +556,49 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       stopRecordingMedia();
     };
   }, []);
+
+  // Đang phát âm thanh (giọng mẫu, lượt người kia, nghe lại bản ghi): đóng micro mở sẵn để tai nghe Bluetooth
+  // không bị chuyển sang chế độ đàm thoại (tiếng giọng mẫu rè) và tiếng loa không lọt vào bản ghi; ghi nhận lúc phát xong.
+  const playbackActive = isPlayingAudio || playingUserAudioSentenceId !== null || practiceState === 'opponent-speaking';
+  useEffect(() => {
+    if (playbackActive) {
+      playbackActiveRef.current = true;
+      if (!isRecordingRef.current) closeWarmMic();
+    } else if (playbackActiveRef.current) {
+      playbackActiveRef.current = false;
+      playbackEndedAtRef.current = performance.now();
+    }
+  }, [playbackActive]);
+
+  // Tới lượt người học và không phát gì: mở sẵn micro (chỉ khi đã có quyền, không bật hộp xin quyền tự động).
+  // Hết buổi luyện thì đóng.
+  const isLearnerTurn = dialogue?.sentences?.[currentSentenceIndex]?.speakerRole === userRole;
+  useEffect(() => {
+    if (practiceState === 'completed') {
+      closeWarmMic();
+      return;
+    }
+    if (!isLearnerTurn || hasMicrophone !== true || playbackActive) return;
+    if (practiceState !== 'ready' && practiceState !== 'evaluated') return;
+    let cancelled = false;
+    isMicPermissionGranted().then((granted) => {
+      if (granted && !cancelled) ensureWarmMic(selectedAudioInputDeviceId).catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLearnerTurn, hasMicrophone, playbackActive, practiceState, selectedAudioInputDeviceId, micVoiceProcessing]);
+
+  const toggleMicVoiceProcessing = () => {
+    const next = !micVoiceProcessing;
+    try {
+      localStorage.setItem(MIC_VOICE_PROCESSING_STORAGE_KEY, next ? 'on' : 'off');
+    } catch {
+      // không lưu được: vẫn đổi trong phiên này
+    }
+    setMicVoiceProcessing(next);
+    if (!isRecordingRef.current) closeWarmMic(); // mở lại với cấu hình mới
+  };
 
   // Auto-scroll to latest sentence when dialogue progresses
   useEffect(() => {
@@ -519,9 +698,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
       const audio = new Audio(audioUrl);
-      if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-        (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-      }
+      await routeToSelectedOutput(audio);
+      if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -570,9 +748,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (url && url.startsWith('http')) {
       const audio = new Audio(url);
-      if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-        (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-      }
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -593,15 +768,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         }
       };
 
-      audio.play().catch(() => {
-        if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
-        if (text) {
-          playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
-        } else {
-          setIsPlayingAudio(false);
-          if (onEnd) onEnd();
-        }
-      });
+      // Chờ chuyển sang loa đã chọn rồi mới phát; đã bị dừng/thay bằng âm thanh khác trong lúc chờ thì không phát nữa
+      routeToSelectedOutput(audio)
+        .then(() => (audioPlayerRef.current === audio ? audio.play() : undefined))
+        .catch(() => {
+          if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
+          if (text) {
+            playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
+          } else {
+            setIsPlayingAudio(false);
+            if (onEnd) onEnd();
+          }
+        });
     } else if (text) {
       playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
     } else {
@@ -627,9 +805,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     stopAllAudio();
 
     const audio = new Audio(url);
-    if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-      (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-    }
     userAudioPlayerRef.current = audio;
     setPlayingUserAudioSentenceId(sentenceId);
 
@@ -639,9 +814,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     audio.onerror = () => {
       setPlayingUserAudioSentenceId(null);
     };
-    audio.play().catch(() => {
-      setPlayingUserAudioSentenceId(null);
-    });
+    // Chờ chuyển sang loa đã chọn rồi mới phát; đã bị dừng trong lúc chờ thì không phát
+    routeToSelectedOutput(audio)
+      .then(() => (userAudioPlayerRef.current === audio ? audio.play() : undefined))
+      .catch(() => {
+        setPlayingUserAudioSentenceId(null);
+      });
   };
 
   // Turn progression: Opponent speaks and auto-advances
@@ -753,6 +931,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     }
 
     let sessionId = -1;
+    let micSource: RecognitionMicSource = 'default';
     try {
       const recognition = new SpeechRec();
       recognition.lang = 'ja-JP';
@@ -770,6 +949,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       recognition.onerror = (event: any) => {
+        if (micSource === 'track') {
+          console.warn('[Shadowing] Web Speech lỗi khi nghe micro đã chọn:', event?.error, event?.message ?? '');
+        }
         collector.handleError(sessionId, String(event?.error ?? 'unknown'));
       };
 
@@ -788,7 +970,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         }
       };
 
-      recognition.start();
+      // Mặc định khởi động như cũ (micro mặc định của hệ thống): truyền track micro đã chọn làm Web Speech ngừng nhận dạng
+      // trên trình duyệt thật, nên chỉ bật khi thử nghiệm (localStorage `jcap_speech_mic_track` = '1').
+      if (isSpeechMicTrackEnabled()) {
+        micSource = startRecognitionOnTrack(recognition, micTrackRef.current);
+        console.info('[Shadowing] Web Speech khởi động với nguồn micro:', micSource);
+      } else {
+        recognition.start();
+      }
       return true;
     } catch (err) {
       console.warn('Recognition start error:', err);
@@ -803,6 +992,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Start Voice Recording (CHỈ ghi âm khi tới câu của người học: speakerRole === userRole)
   const startRecording = async () => {
     if (!currentSentence || currentSentence.speakerRole !== userRole) return;
+    if (hasMicrophone === false) {
+      // Không có micro: không cho bắt đầu ghi âm, vẫn nghe mẫu được
+      setMicError(describeDeviceStatus('audioinput', 'NOT_FOUND'));
+      return;
+    }
 
     cancelPendingEvaluation();
     const collector = collectorRef.current;
@@ -813,21 +1007,36 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setMicNotice(null);
     setCurrentRecognizedText('');
 
+    // Đang phát giọng mẫu/bản ghi lúc bấm: không lấy phần thu trước (tiếng loa sẽ thành chữ ở đầu câu)
+    const playbackWasActive =
+      playbackActiveRef.current ||
+      (!!audioPlayerRef.current && !audioPlayerRef.current.paused) ||
+      (!!userAudioPlayerRef.current && !userAudioPlayerRef.current.paused);
+    const prerollMs = allowedPrerollMs(playbackWasActive, playbackEndedAtRef.current, performance.now(), PREROLL_MS);
+
     if (audioPlayerRef.current) audioPlayerRef.current.pause();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
     setPlayingUserAudioSentenceId(null);
+    setIsPlayingAudio(false);
 
     // 1. MediaRecorder: dùng MIME thực sự được trình duyệt hỗ trợ (webm/ogg/mp4), không gắn nhãn cứng.
     recorderStoppedRef.current = Promise.resolve();
     recordedAudioChunksRef.current = [];
     recordedMimeRef.current = '';
+    micTrackRef.current = null;
     try {
-      // Micro đã chọn không còn (rút tai nghe, đổi máy): tự dùng micro mặc định và báo cho người học, không để thanh ghi âm chạy giả
-      const { stream, usedFallback } = await acquireMicStream(selectedAudioInputDeviceId);
-      if (usedFallback) {
+      // Micro mở sẵn thì bắt đầu ngay. Micro đã chọn không còn (rút tai nghe, đổi máy): tự dùng micro mặc định
+      // và báo cho người học, không để thanh ghi âm chạy giả
+      const mic = await ensureWarmMic(selectedAudioInputDeviceId);
+      if (!isRecordingRef.current) return; // đã huỷ trong lúc chờ mở micro
+      const stream = mic.stream;
+      // Bản ghi chấm điểm (PCM) bắt đầu ngay, kèm phần đã nói ngay trước khi bấm
+      mic.startTake(prerollMs);
+      if (mic.usedFallback) {
         setMicNotice('Micro đã chọn không còn kết nối, đang dùng micro mặc định. Bạn có thể đổi lại ở "Cài đặt âm thanh".');
       }
+      micTrackRef.current = mic.track;
       // Phân tích Web Audio API (cổng mic): heuristic, chỉ dùng để kiểm định đầu vào.
       audioMetricsService.startAnalysis(stream);
 
@@ -847,16 +1056,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       recorderStoppedRef.current = new Promise<void>((resolve) => {
-        mediaRecorder.onstop = () => {
-          stream.getTracks().forEach((t) => t.stop());
-          resolve();
-        };
+        // Không tắt micro khi dừng: micro được giữ mở cho lượt sau, chỉ đóng khi phát âm thanh/rời trang
+        mediaRecorder.onstop = () => resolve();
       });
 
       mediaRecorder.start(100);
     } catch (err: any) {
+      // Không mở được micro: không bắt đầu ghi âm (không có bản ghi thì không chấm được), báo đúng nguyên nhân
       console.warn('Cannot open microphone:', err);
+      warmMicRef.current?.cancelTake();
       setMicError(describeMicError(err));
+      isRecordingRef.current = false;
+      setPracticeState('ready');
+      return;
     }
 
     // 2. Web Speech (ja-JP): nguồn dự phòng + hiển thị trực tiếp
@@ -941,7 +1153,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const overallScore = data.overallScore as number;
     const tier: 'green' | 'yellow' | 'red' = data.tier === 'green' || data.tier === 'yellow' ? data.tier : 'red';
     const diffTokens = data.diffTokens ?? [];
-    const source = data.recognitionSource === 'web_speech' ? 'web_speech' : 'gemini';
+    const source = data.recognitionSource === 'phoneme' || data.recognitionSource === 'web_speech' ? data.recognitionSource : 'gemini';
 
     const prevAttempts = sentenceAttemptsMap.get(sentence.id) || 0;
     const nextAttempts = prevAttempts + 1;
@@ -949,7 +1161,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     setCurrentEvaluationStatus(data.evaluationStatus);
     setCurrentRecognitionSource(source);
-    setCurrentRecognizedText(data.recognizedText);
+    // Hiển thị: từ đọc đúng mang chữ của câu mẫu (có kanji), phần đọc khác giữ kana như đã nghe
+    setCurrentRecognizedText(data.recognizedDisplayText || data.recognizedText);
     setCurrentScore(overallScore);
     setCurrentFluencyMetrics(data.fluency ?? null);
     setCurrentGateDetail(data.audioQualityDetail ?? '');
@@ -1010,6 +1223,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       // ignore
     }
     stopRecordingMedia();
+    // Chốt bản ghi chấm điểm (PCM, có phần thu trước) ngay lúc bấm gửi
+    const pcmTake = warmMicRef.current?.stopTake() ?? null;
     setPracticeState('analyzing');
 
     isSubmittingRef.current = true;
@@ -1039,8 +1254,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         if (seq !== evaluationSeqRef.current) return;
         if (decoded) metrics = decoded;
       }
-      // WAV 16 kHz mono để backend đo nhịp nói; không làm được thì chỉ mất số liệu này, vẫn chấm nội dung như thường.
-      const analysisWav = await blobToAnalysisWav(audioBlob);
+      // WAV 16 kHz mono: backend nhận dạng âm vị trên chính bản ghi này (nguồn chấm chính) và đo nhịp nói.
+      // Ưu tiên bản PCM thu trực tiếp (không mất âm đầu câu); không có thì giải mã bản MediaRecorder như trước.
+      // Không tạo được cả hai thì backend dùng transcript Web Speech.
+      const pcmWav = pcmTake && pcmTake.samples.length > 0 ? await pcmToAnalysisWav(pcmTake.samples, pcmTake.sampleRate) : null;
+      const analysisWav = pcmWav ?? (await blobToAnalysisWav(audioBlob));
       if (seq !== evaluationSeqRef.current) return;
 
       const res = await shadowingService.evaluateAudio(audioBlob, sentence.japaneseText, {
@@ -1053,6 +1271,31 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         referenceSpeakerId: selectedVoiceVoxIdRef.current,
       });
       if (seq !== evaluationSeqRef.current) return;
+
+      if (import.meta.env.DEV && analysisWav) {
+        setDevTake({
+          sentenceId: sentence.id,
+          wav: analysisWav,
+          meta: {
+            sentenceId: sentence.id,
+            targetText: sentence.japaneseText,
+            recordedAt: new Date().toISOString(),
+            capture: pcmWav ? 'pcm' : 'media-recorder',
+            prerollMs: pcmWav ? pcmTake?.prerollMs ?? 0 : 0,
+            voiceProcessing: isMicVoiceProcessingEnabled(),
+            webSpeech: collector.snapshot(),
+            result: res.data
+              ? {
+                  score: res.data.overallScore ?? null,
+                  recognitionSource: res.data.recognitionSource ?? null,
+                  recognitionMode: res.data.recognitionMode ?? null,
+                  recognizedText: res.data.recognizedText ?? null,
+                  freeRecognizedText: res.data.freeRecognizedText ?? null,
+                }
+              : { error: res.message ?? 'failed' },
+          },
+        });
+      }
 
       if (!res.success || !res.data) {
         // Lỗi kỹ thuật phía kết nối: không có điểm, KHÔNG phải điểm 0.
@@ -1082,6 +1325,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       // ignore
     }
     stopRecordingMedia();
+    warmMicRef.current?.cancelTake();
     audioMetricsService.stopAnalysis();
     recordedAudioChunksRef.current = [];
     setCurrentRecognizedText('');
@@ -1815,11 +2059,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <>
                     {/* LƯỢT CỦA BẠN - State 1: Ready to record (Ảnh 1: Chỉ hiển thị nút ghi âm) */}
                     {practiceState === 'ready' && (
-                      <div className="flex items-center justify-center w-full py-1">
+                      <div className="flex flex-col items-center justify-center w-full py-1 gap-1.5">
+                        {hasMicrophone === false && (
+                          <p role="status" className="text-xs text-warning bg-warning-soft rounded-xl px-3 py-1.5 text-center">
+                            {describeDeviceStatus('audioinput', 'NOT_FOUND')}
+                          </p>
+                        )}
                         <button
                           onClick={startRecording}
-                          className="group bg-gradient-to-r from-ai to-ai-hover hover:from-ai-hover hover:to-sumi text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
-                          title="Bấm để ghi âm câu thoại của bạn"
+                          disabled={hasMicrophone === false}
+                          className="group bg-gradient-to-r from-ai to-ai-hover hover:from-ai-hover hover:to-sumi text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          title={
+                            hasMicrophone === false
+                              ? describeDeviceStatus('audioinput', 'NOT_FOUND')
+                              : 'Bấm để ghi âm câu thoại của bạn'
+                          }
                         >
                           {/* Refined minimalist mic icon */}
                           <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1863,6 +2117,15 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         onPlayUserAudio={() => playUserRecording(currentSentence.id)}
                         onRetry={handleRetryCurrentSentence}
                         onNext={handleNextSentence}
+                      />
+                    )}
+
+                    {/* Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật, bật/tắt khử nhiễu */}
+                    {import.meta.env.DEV && (practiceState === 'ready' || practiceState === 'evaluated') && (
+                      <RecordingDevTools
+                        take={devTake && devTake.sentenceId === currentSentence?.id ? devTake : null}
+                        voiceProcessing={micVoiceProcessing}
+                        onToggleVoiceProcessing={toggleMicVoiceProcessing}
                       />
                     )}
                   </>
