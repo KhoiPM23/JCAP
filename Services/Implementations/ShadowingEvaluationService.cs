@@ -11,15 +11,18 @@ using Microsoft.Extensions.Logging;
 namespace JCAP.Services.Implementations
 {
     /// <summary>
-    /// Điều phối đánh giá một câu Shadowing. Backend là nơi DUY NHẤT tính điểm cuối cùng.
+    /// Điều phối đánh giá một câu Shadowing theo CHIỀU (Shadowing V2). Backend là nơi DUY NHẤT tính điểm cuối cùng.
     ///
     /// Thứ tự:
-    ///  1. Backend tự kiểm tra âm thanh (ShadowingAudioValidator: định dạng thật, kích thước, thời lượng, có giọng nói, vỡ tiếng).
-    ///     Kết quả kiểm tra của trình duyệt (audioGateStatus) KHÔNG còn quyết định có chấm hay không.
-    ///  2. Nhận dạng âm vị trên CHÍNH bản ghi (WAV phân tích), giới hạn số lượt chạy đồng thời (ShadowingRecognitionThrottle).
-    ///  3. Chấm theo câu mẫu (aligned) hoặc nhận dạng tự do khi đọc câu khác (free).
-    /// KHÔNG có nguồn chấm dự phòng: thiếu mô hình / bản ghi không dùng được → "chưa chấm được" (unavailable) kèm mã lỗi,
-    /// không bao giờ là điểm 0 và không chấm bằng transcript Web Speech của trình duyệt (Web Speech chỉ hiện chữ trực tiếp).
+    ///  1. Backend tự kiểm tra âm thanh (ShadowingAudioValidator); kết quả kiểm tra của trình duyệt không quyết định.
+    ///  2. Chiều NỘI DUNG: nhận dạng lời nói bằng ASR (`Shadowing:Content:Provider`, mặc định faster-whisper — Decision 1) rồi so
+    ///     transcript với câu mẫu (KanaMoraComparer). ASR không dùng được → Content UNAVAILABLE, KHÔNG tự chuyển nguồn khác.
+    ///     `phoneme` (mô hình âm vị, chấm theo câu mẫu) chỉ còn là lựa chọn cấu hình tường minh cho giai đoạn chuyển tiếp.
+    ///  3. Chiều PHÁT ÂM: UNAVAILABLE (INSUFFICIENT_ACOUSTIC_EVIDENCE) cho tới khi phương pháp được kiểm chứng trên giọng người học.
+    ///     Không bao giờ suy ra từ điểm nội dung.
+    ///  4. Chiều LƯU LOÁT: số đo nhịp nói (FluencyAnalyzer), chưa có điểm đã kiểm chứng. NGỮ ĐIỆU: chưa triển khai.
+    ///  5. Điểm tổng = điểm nội dung (OverallScoreBasis = "content").
+    /// Không có nguồn chấm dự phòng và không bao giờ chấm bằng transcript Web Speech; thiếu dữ liệu → null + mã lỗi, không phải 0.
     /// </summary>
     public class ShadowingEvaluationService : IAiShadowingAssessmentService
     {
@@ -30,9 +33,19 @@ namespace JCAP.Services.Implementations
         private readonly IReferenceVoiceProvider? _referenceProvider;
         private readonly IPhonemeRecognizer? _phonemeRecognizer;
         private readonly ShadowingRecognitionThrottle? _throttle;
+        private readonly ISpeechRecognitionService? _asr;
 
         /// <summary>Kết quả chỉ một mora mà độ tự tin thấp hơn mức này coi là nhiễu (mô hình đôi khi nghe nền ồn thành 「あ」).</summary>
         private const double MinSingleMoraConfidence = 0.6;
+
+        /// <summary>
+        /// Whisper tự dùng ngưỡng nén 2.4 để nhận ra đoạn văn bản lặp vô nghĩa (ảo giác). Vượt ngưỡng thì transcript không đáng tin:
+        /// không kết luận người học nói sai.
+        /// </summary>
+        private const double MaxCompressionRatio = 2.4;
+
+        public const string ProviderAsr = "faster-whisper";
+        public const string ProviderPhoneme = "phoneme";
 
         public ShadowingEvaluationService(
             IJapaneseTextComparer comparer,
@@ -41,7 +54,8 @@ namespace JCAP.Services.Implementations
             IFluencyAnalyzer? fluencyAnalyzer = null,
             IReferenceVoiceProvider? referenceProvider = null,
             IPhonemeRecognizer? phonemeRecognizer = null,
-            ShadowingRecognitionThrottle? throttle = null)
+            ShadowingRecognitionThrottle? throttle = null,
+            ISpeechRecognitionService? asr = null)
         {
             _comparer = comparer;
             _configuration = configuration;
@@ -50,11 +64,27 @@ namespace JCAP.Services.Implementations
             _referenceProvider = referenceProvider;
             _phonemeRecognizer = phonemeRecognizer;
             _throttle = throttle;
+            _asr = asr;
         }
+
+        private string ContentProvider =>
+            string.Equals(_configuration["Shadowing:Content:Provider"], ProviderPhoneme, StringComparison.OrdinalIgnoreCase)
+                ? ProviderPhoneme : ProviderAsr;
 
         public async Task<ShadowingAudioEvaluationResponseDto> EvaluateAsync(
             ShadowingAudioEvaluationInput input,
             CancellationToken cancellationToken = default)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var response = await EvaluateCoreAsync(input, cancellationToken);
+            response.ProcessingMs = (int)watch.ElapsedMilliseconds;
+            FinalizeDimensions(response);
+            return response;
+        }
+
+        private async Task<ShadowingAudioEvaluationResponseDto> EvaluateCoreAsync(
+            ShadowingAudioEvaluationInput input,
+            CancellationToken cancellationToken)
         {
             var response = NewResponse(input);
 
@@ -72,7 +102,73 @@ namespace JCAP.Services.Implementations
                 return Unavailable(response, audio.ErrorCode!, audio.Message!);
             }
 
-            // 2. Nhận dạng âm vị trên chính bản ghi. Không có nguồn dự phòng.
+            // 2. Chiều Nội dung
+            return ContentProvider == ProviderPhoneme
+                ? await EvaluateWithPhonemeModelAsync(input, response, audio, cancellationToken)
+                : await EvaluateWithAsrAsync(input, response, cancellationToken);
+        }
+
+        /// <summary>Nội dung từ ASR (Faster-Whisper): transcript so với câu mẫu.</summary>
+        private async Task<ShadowingAudioEvaluationResponseDto> EvaluateWithAsrAsync(
+            ShadowingAudioEvaluationInput input, ShadowingAudioEvaluationResponseDto response, CancellationToken cancellationToken)
+        {
+            response.RecognitionSource = ProviderAsr;
+            if (_asr == null)
+            {
+                return Unavailable(response, "ASR_UNAVAILABLE", AsrMessage("ASR_UNAVAILABLE"));
+            }
+
+            var asr = await _asr.RecognizeAsync(new SpeechRecognitionRequest { Wav = input.AnalysisWav! }, cancellationToken);
+            response.AsrModel = string.IsNullOrEmpty(asr.Model) ? asr.Provider : $"{asr.Provider}:{asr.Model}";
+            if (!asr.IsCompleted)
+            {
+                var code = asr.ErrorCode ?? "ASR_UNAVAILABLE";
+                var result = Unavailable(response, code, AsrMessage(code));
+                if (asr.Status == "failed") result.EvaluationStatus = "failed";
+                return result;
+            }
+
+            if (asr.Segments.Any(s => s.CompressionRatio > MaxCompressionRatio))
+            {
+                // Văn bản lặp vô nghĩa: lỗi nhận dạng, KHÔNG phải người học nói sai.
+                return Unavailable(response, "ASR_UNRELIABLE",
+                    "Hệ thống chưa nhận dạng được bản ghi này một cách đáng tin cậy. Điểm chưa được ghi nhận, hãy thu lại.");
+            }
+
+            var text = asr.Text.Trim();
+            if (JapaneseMora.Normalize(text).Length == 0)
+            {
+                response.RecognitionStatus = "no_speech";
+                return Unavailable(response, "NO_SPEECH_DETECTED",
+                    "Không nghe rõ giọng nói trong bản ghi. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
+            }
+
+            response.EvaluationStatus = "completed";
+            response.RecognitionMode = "asr";
+            // Cách đọc của transcript: do dịch vụ ASR tính (OpenJTalk, cùng G2P với dữ liệu câu mẫu) nếu có — không cần VOICEVOX lúc chấm;
+            // không có thì đọc transcript qua các nguồn cách đọc của hệ thống.
+            var comparison = !string.IsNullOrWhiteSpace(asr.Reading)
+                ? await _comparer.CompareWithReadingAsync(input.TargetText, asr.Reading!, cancellationToken)
+                : await _comparer.CompareAsync(input.TargetText, text, cancellationToken);
+            return await ScoreTranscriptAsync(input, response, text, cancellationToken, precomputed: comparison);
+        }
+
+        private static string AsrMessage(string code) => code switch
+        {
+            "ASR_BUSY" => "Hệ thống nhận dạng đang bận. Hãy gửi lại sau vài giây.",
+            "ASR_TIMEOUT" => "Nhận dạng lời nói quá lâu chưa có kết quả. Điểm chưa được ghi nhận, hãy gửi lại.",
+            "ASR_REJECTED_AUDIO" => "Bản ghi không xử lý được. Hãy thu lại.",
+            _ => "Hệ thống nhận dạng lời nói đang tạm ngừng. Điểm chưa được ghi nhận, hãy thử lại sau.",
+        };
+
+        /// <summary>
+        /// Lựa chọn chuyển tiếp (`Shadowing:Content:Provider = phoneme`): nội dung từ mô hình âm vị trên chính bản ghi
+        /// (chấm theo câu mẫu, hoặc nhận dạng tự do khi đọc câu khác).
+        /// </summary>
+        private async Task<ShadowingAudioEvaluationResponseDto> EvaluateWithPhonemeModelAsync(
+            ShadowingAudioEvaluationInput input, ShadowingAudioEvaluationResponseDto response, ShadowingAudioValidation audio,
+            CancellationToken cancellationToken)
+        {
             if (_phonemeRecognizer == null || !_phonemeRecognizer.IsAvailable)
             {
                 _logger.LogWarning("Chưa có mô hình nhận dạng âm vị; lượt này không chấm được (chạy scripts/download-speech-models).");
@@ -93,7 +189,7 @@ namespace JCAP.Services.Implementations
                     "Không phân tích được bản ghi lúc này. Điểm chưa được ghi nhận, hãy thử lại.");
             }
 
-            response.RecognitionSource = "phoneme";
+            response.RecognitionSource = ProviderPhoneme;
             if (recognized.Value.NoSpeech)
             {
                 response.RecognitionStatus = "no_speech";
@@ -104,7 +200,6 @@ namespace JCAP.Services.Implementations
             response.EvaluationStatus = "completed";
             response.FreeRecognizedText = recognized.Value.Kana;
 
-            // 3. Chấm theo câu mẫu (mặc định); không dùng được hoặc người học đọc câu khác thì dùng nhận dạng tự do.
             var aligned = await TryAlignWithTargetAsync(input, recognized.Value.Result, cancellationToken);
             if (aligned != null)
             {
@@ -115,6 +210,36 @@ namespace JCAP.Services.Implementations
 
             response.RecognitionMode = "free";
             return await ScoreTranscriptAsync(input, response, recognized.Value.Kana, cancellationToken);
+        }
+
+        /// <summary>
+        /// Trạng thái từng chiều. Phát âm KHÔNG suy ra từ nội dung; lưu loát chưa có điểm; điểm tổng ghi rõ chỉ là điểm nội dung.
+        /// </summary>
+        private static void FinalizeDimensions(ShadowingAudioEvaluationResponseDto r)
+        {
+            var contentSource = r.RecognitionSource == ProviderAsr ? (string.IsNullOrEmpty(r.AsrModel) ? ProviderAsr : r.AsrModel)
+                : r.RecognitionSource == ProviderPhoneme ? $"phoneme-{r.RecognitionMode}" : null;
+            r.Dimensions = new EvaluationDimensionsDto
+            {
+                Content = r.ContentMatchScore.HasValue
+                    ? new EvaluationDimensionDto { Status = "COMPLETED", Score = r.ContentMatchScore, Source = contentSource }
+                    : new EvaluationDimensionDto
+                    {
+                        Status = r.EvaluationStatus == "failed" ? "FAILED" : "UNAVAILABLE",
+                        Reason = r.ErrorCode ?? "NOT_MEASURED",
+                        Source = contentSource,
+                    },
+                Pronunciation = new EvaluationDimensionDto { Status = "UNAVAILABLE", Reason = "INSUFFICIENT_ACOUSTIC_EVIDENCE" },
+                Fluency = r.Fluency?.Status == "available"
+                    ? new EvaluationDimensionDto { Status = "COMPLETED", Reason = "SCORE_NOT_VALIDATED", Source = "vad" }
+                    : new EvaluationDimensionDto { Status = "UNAVAILABLE", Reason = r.Fluency?.ReasonCode ?? "NOT_MEASURED", Source = "vad" },
+                Prosody = new EvaluationDimensionDto { Status = "UNAVAILABLE", Reason = "NOT_IMPLEMENTED" },
+            };
+            r.PronunciationScore = null;
+            r.FluencyScore = null;
+            r.OverallScoreBasis = r.OverallScore.HasValue ? "content" : null;
+            r.UnavailableDimensions = new List<string> { "pronunciation", "fluency", "prosody" };
+            r.ScoringVersion = ShadowingScoring.Version;
         }
 
         /// <summary>

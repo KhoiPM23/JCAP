@@ -219,6 +219,42 @@ namespace JCAP.DTOs.Shadowing
         public int DurationMs { get; set; }
     }
 
+    /// <summary>
+    /// Kết quả MỘT chiều đánh giá (Shadowing V2). Mỗi chiều có trạng thái riêng; một chiều không khả dụng không làm hỏng các chiều khác.
+    /// </summary>
+    public class EvaluationDimensionDto
+    {
+        /// <summary>COMPLETED | UNAVAILABLE | FAILED</summary>
+        public string Status { get; set; } = "UNAVAILABLE";
+
+        /// <summary>Điểm 0–100; null nếu chiều này chưa có điểm đã kiểm chứng (KHÔNG phải 0).</summary>
+        public int? Score { get; set; }
+
+        /// <summary>
+        /// Lý do khi không có điểm: INSUFFICIENT_ACOUSTIC_EVIDENCE, SCORE_NOT_VALIDATED, NOT_IMPLEMENTED, ASR_UNAVAILABLE,
+        /// NO_SPEECH_DETECTED, READING_UNAVAILABLE…
+        /// </summary>
+        public string? Reason { get; set; }
+
+        /// <summary>Nguồn bằng chứng (vd. faster-whisper:small, vad).</summary>
+        public string? Source { get; set; }
+    }
+
+    public class EvaluationDimensionsDto
+    {
+        /// <summary>Độ chính xác nội dung: transcript ASR so với câu mẫu.</summary>
+        public EvaluationDimensionDto Content { get; set; } = new();
+
+        /// <summary>Phát âm: chỉ có điểm khi phương pháp đã kiểm chứng trên giọng người học (hiện chưa).</summary>
+        public EvaluationDimensionDto Pronunciation { get; set; } = new();
+
+        /// <summary>Lưu loát: số đo nhịp nói (xem Fluency); chưa có điểm đã kiểm chứng.</summary>
+        public EvaluationDimensionDto Fluency { get; set; } = new();
+
+        /// <summary>Ngữ điệu: chưa triển khai.</summary>
+        public EvaluationDimensionDto Prosody { get; set; } = new();
+    }
+
     public class ShadowingDiffTokenDto
     {
         public string Text { get; set; } = string.Empty;
@@ -267,6 +303,21 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>Kana nhận dạng tự do từ bản ghi (chỉ để chẩn đoán; điểm theo RecognitionMode).</summary>
         public string FreeRecognizedText { get; set; } = string.Empty;
+
+        /// <summary>Trạng thái và điểm của từng chiều đánh giá (Content, Pronunciation, Fluency, Prosody).</summary>
+        public EvaluationDimensionsDto Dimensions { get; set; } = new();
+
+        /// <summary>
+        /// Điểm tổng (OverallScore) được tính từ những chiều nào: "content" = CHỈ độ chính xác nội dung (phải hiển thị là
+        /// "điểm nội dung", không phải điểm phát âm hay năng lực Shadowing tổng thể). null khi không có điểm.
+        /// </summary>
+        public string? OverallScoreBasis { get; set; }
+
+        /// <summary>Mô hình ASR đã dùng (vd. faster-whisper:small); rỗng nếu không dùng ASR.</summary>
+        public string AsrModel { get; set; } = string.Empty;
+
+        /// <summary>Thời gian backend xử lý lượt chấm (ms).</summary>
+        public int ProcessingMs { get; set; }
 
         /// <summary>Không còn được dùng (luôn null); giữ để tương thích với kết quả cũ.</summary>
         public string? FallbackReason { get; set; }

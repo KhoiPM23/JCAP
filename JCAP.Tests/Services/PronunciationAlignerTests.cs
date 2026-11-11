@@ -171,7 +171,7 @@ public class ShadowingAlignedScoringTests
 
     private static ShadowingEvaluationService Service(PhonemeRecognitionResult r, Dictionary<string, string?>? config = null) =>
         new(Comparer,
-            new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(TestConfig.PhonemeContent).AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             phonemeRecognizer: new Recognizer(r));
 

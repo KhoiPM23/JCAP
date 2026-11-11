@@ -232,6 +232,9 @@ namespace JCAP.Services.Implementations
                 AudioQualityStatus = Truncate(result.AudioQualityStatus, 20),
                 Feedback = Truncate(result.Feedback, MaxFeedbackLength),
                 DiffTokensJson = JsonSerializer.Serialize(result.DiffTokens ?? new List<ShadowingDiffTokenDto>(), JsonOptions),
+                DimensionsJson = JsonSerializer.Serialize(result.Dimensions ?? new EvaluationDimensionsDto(), JsonOptions),
+                AsrModel = TruncateOrNull(result.AsrModel, 100),
+                ProcessingMs = result.ProcessingMs > 0 ? result.ProcessingMs : null,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -278,6 +281,9 @@ namespace JCAP.Services.Implementations
             Tier = e.Tier,
             Feedback = e.Feedback,
             DiffTokens = ReadDiffTokens(e.DiffTokensJson),
+            Dimensions = ReadDimensions(e.DimensionsJson),
+            OverallScoreBasis = e.OverallScore.HasValue && e.DimensionsJson != null ? "content" : null,
+            AsrModel = e.AsrModel ?? string.Empty,
             ErrorCode = e.ErrorCode,
             ErrorMessage = e.OverallScore.HasValue ? null : "Lần gửi này chưa chấm được. Hãy thu lại.",
         };
@@ -511,6 +517,19 @@ namespace JCAP.Services.Implementations
             if (list.Count > 0 && list.All(s => s == "good")) return "good";
             if (list.Count > 0 && list.All(s => s == "good" || s == "acceptable")) return "acceptable";
             return "unmeasured";
+        }
+
+        internal static EvaluationDimensionsDto ReadDimensions(string? json)
+        {
+            if (string.IsNullOrEmpty(json)) return new EvaluationDimensionsDto();
+            try
+            {
+                return JsonSerializer.Deserialize<EvaluationDimensionsDto>(json, JsonOptions) ?? new EvaluationDimensionsDto();
+            }
+            catch (JsonException)
+            {
+                return new EvaluationDimensionsDto();
+            }
         }
 
         private static List<ShadowingDiffTokenDto> ReadDiffTokens(string json)

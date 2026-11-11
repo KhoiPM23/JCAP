@@ -98,3 +98,9 @@ public sealed class PhraseReader : IKanaReader
         });
     }
 }
+
+/// <summary>Cấu hình cho các test của đường chấm bằng mô hình âm vị (từ M4 mặc định là ASR Faster-Whisper).</summary>
+public static class TestConfig
+{
+    public static readonly Dictionary<string, string?> PhonemeContent = new() { ["Shadowing:Content:Provider"] = "phoneme" };
+}

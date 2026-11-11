@@ -41,7 +41,7 @@ public class ShadowingPhonemeSourceTests
 
     private static ShadowingEvaluationService Service(IPhonemeRecognizer? recognizer, Dictionary<string, string?>? config = null) =>
         new(Comparer,
-            new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(TestConfig.PhonemeContent).AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             fluencyAnalyzer: null,
             referenceProvider: null,

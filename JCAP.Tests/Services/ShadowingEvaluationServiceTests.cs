@@ -52,7 +52,7 @@ public class ShadowingEvaluationServiceTests
         IKanaReader? reader = null, IFluencyAnalyzer? fluencyAnalyzer = null, string? hears = Target, bool hearsRawKana = false,
         IReferenceVoiceProvider? provider = null, Dictionary<string, string?>? config = null) =>
         new(new KanaMoraComparer(new IKanaReader[] { reader ?? new TestKanaReader() }),
-            new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(TestConfig.PhonemeContent).AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             fluencyAnalyzer, provider,
             new HearsKana(hears == null ? null : hearsRawKana ? hears : KanaOf(hears)));

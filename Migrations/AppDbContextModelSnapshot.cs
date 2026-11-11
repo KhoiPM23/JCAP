@@ -2081,6 +2081,10 @@ namespace JCAP.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AsrModel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("AudioQualityStatus")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -2104,6 +2108,9 @@ namespace JCAP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DimensionsJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ErrorCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -2119,6 +2126,9 @@ namespace JCAP.Migrations
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<int?>("OverallScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProcessingMs")
                         .HasColumnType("int");
 
                     b.Property<string>("RecognitionMode")

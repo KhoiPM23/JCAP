@@ -45,8 +45,17 @@ namespace JCAP.Models
         /// <summary>phoneme | web_speech (dữ liệu cũ) | gemini (dữ liệu cũ) | none</summary>
         public string RecognitionSource { get; set; } = string.Empty;
 
-        /// <summary>aligned | free (khi RecognitionSource = phoneme); rỗng với dữ liệu cũ.</summary>
+        /// <summary>aligned | free (khi RecognitionSource = phoneme) | asr; rỗng với dữ liệu cũ.</summary>
         public string RecognitionMode { get; set; } = string.Empty;
+
+        /// <summary>JSON trạng thái/điểm từng chiều (EvaluationDimensionsDto); null với dữ liệu trước Shadowing V2 M4.</summary>
+        public string? DimensionsJson { get; set; }
+
+        /// <summary>Mô hình ASR đã dùng (vd. faster-whisper:small).</summary>
+        public string? AsrModel { get; set; }
+
+        /// <summary>Thời gian backend xử lý lượt chấm (ms).</summary>
+        public int? ProcessingMs { get; set; }
 
         public string ScoringVersion { get; set; } = string.Empty;
         public string ComparisonMethod { get; set; } = string.Empty;

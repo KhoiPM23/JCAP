@@ -598,6 +598,8 @@ namespace JCAP.Data
                 entity.Property(e => e.ErrorCode).HasMaxLength(50);
                 entity.Property(e => e.RecognitionSource).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.RecognitionMode).IsRequired().HasMaxLength(20).HasDefaultValue(string.Empty);
+                entity.Property(e => e.DimensionsJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AsrModel).HasMaxLength(100);
                 entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.ComparisonMethod).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
