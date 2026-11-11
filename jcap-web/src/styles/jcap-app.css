@@ -23,7 +23,16 @@
 .jx-app.is-page .jx-shell--float { transform: translate(-12px, -12px); opacity: 0; transition: transform .3s var(--e), opacity .06s linear .24s; }
 .jx-app.is-page .jx-shell--dock { opacity: 1; }
 .jx-side-body { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; transform: translateX(13px); transition: transform .3s var(--e); }
-.jx-side-top { display: flex; flex-direction: column; gap: 14px; transform: translateY(13px); transition: transform .3s var(--e); }
+.jx-side-top { display: flex; flex-direction: column; gap: 14px; flex: 1 1 auto; min-height: 0; transform: translateY(13px); transition: transform .3s var(--e); }
+/* Danh sách "Học" tự cuộn khi cửa sổ thấp (chỉ khối này cuộn, để viên của "Đang học" và tooltip không bị cắt).
+   Lề phải âm + đệm phải để thanh cuộn mảnh nằm sát mép, không đè lên chữ */
+.jx-nav-scroll { flex: 0 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; margin-right: -8px; padding-right: 8px;
+  scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+/* Các dòng giữ nguyên chiều cao (không bị flex ép bẹp), phần dư mới tràn ra để cuộn */
+.jx-nav-scroll > * { flex-shrink: 0; }
+.jx-nav-scroll::-webkit-scrollbar { width: 6px; }
+.jx-nav-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+.jx-nav-scroll::-webkit-scrollbar-track { background: transparent; }
 .jx-side-bot { margin-top: auto; transform: translateY(-13px); transition: transform .3s var(--e); }
 .jx-app.is-page .jx-side-body, .jx-app.is-page .jx-side-top, .jx-app.is-page .jx-side-bot { transform: none; }
 .jx-lbl { opacity: 1; transition: opacity .12s linear .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }

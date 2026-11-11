@@ -45,7 +45,6 @@ const NAV: NavDef[] = [
   { id: 'results', label: 'Kết quả', icon: 'insights', to: '/roleplay/results', match: (p) => p.startsWith('/roleplay/results') },
   { id: 'stamps', label: 'Sổ con dấu', icon: 'approval', to: '/stamps', match: (p) => p.startsWith('/stamps') },
   { id: 'community', label: 'Diễn đàn', icon: 'groups', to: '/community', match: (p) => p.startsWith('/community') || p.startsWith('/forum') },
-  { id: 'feedback', label: 'Hỗ trợ & Góp ý', icon: 'help', to: '/feedback', match: (p) => p.startsWith('/feedback') || p.startsWith('/help') },
 ];
 
 export interface AppSidebarProps {
@@ -145,7 +144,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggleColla
 
       <LearningGroup user={user} open={open} setOpen={setOpen} go={go} />
 
-      <nav aria-label="Điều hướng chính" className="jx-group">
+      {/* Màn hình thấp: chỉ danh sách này cuộn; logo, "Đang học" (viên trượt ra ngoài mép phải) và đáy thanh bên đứng yên */}
+      <nav aria-label="Điều hướng chính" className="jx-group jx-nav-scroll">
         <span className="jx-lbl jx-cap">Học</span>
         {NAV.map((n) => {
           const on = !!n.match?.(path);
