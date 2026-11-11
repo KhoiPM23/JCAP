@@ -24,6 +24,18 @@ dotnet run --no-launch-profile -- --import-learning-full=output/jlpt-full/learni
 - Ưu tiên tái sử dụng bản ghi theo nguồn + phiên bản + ID. Bản ghi cũ thiếu thông tin nguồn chỉ được ghép khi các trường nhận diện khớp, nên có thể thấy hai mục cùng mặt chữ nhưng khác level, nghĩa hoặc thông tin nhận diện. Chủ đề và liên kết hiện có được giữ nguyên.
 - Dry run kiểm tra bundle và migration. Import dữ liệu, ví dụ và liên kết nhóm nằm trong một transaction. Chạy lại cùng bundle trên DB chưa chỉnh sửa không thêm dòng. Lệnh nhập không chạy tự động khi mở web và không cần migration mới.
 
+### Bổ sung tiếng Việt theo nhóm N5
+
+Sau khi import toàn bộ, áp dụng đợt đầu trên database local:
+
+```powershell
+sqlcmd -S localhost -E -C -d JCAP_DB -b -f 65001 -i Data/Seeds/LearningContentSample/localize-n5-food-permission.sql
+```
+
+Đợt này bao phủ 23 từ trong **Ẩm thực và đồ uống** và 3 mẫu trong **Cho phép và cấm đoán**. Các mục đã Việt hóa trong bộ mẫu được giữ lại. Đợt cập nhật bổ sung nghĩa và giải thích cho 21 từ, Việt hóa giải thích và cấu trúc của 2 mẫu, dịch 44 câu ví dụ từ nguồn và thêm 2 câu ví dụ do JCAP biên soạn. Phần tiếng Việt được đối chiếu với nội dung Nhật trong nguồn với hỗ trợ AI, chưa có thẩm định độc lập.
+
+Script đối chiếu phiên bản, ID nguồn và nội dung gốc trước khi cập nhật. Các bản dịch đã có được giữ nguyên. Chạy lại trên cùng dữ liệu sẽ trả về 0 cập nhật.
+
 ## Bộ mẫu nhỏ
 
 15 từ vựng (5 từ/mức N5–N3), 6 mẫu ngữ pháp (2 mẫu/mức), mỗi mục 2 câu
@@ -90,10 +102,10 @@ IsActive, thứ tự và các liên kết admin đã xóa; không tự khôi ph�
 khởi động. Nếu dữ liệu nguồn chưa đủ, seeder bỏ qua Topic đó và trả về Code
 trong `SkippedTopicCodes`, không tạo chủ đề rỗng.
 
-`SeedManager` cũng gọi seeder khi mở backend, nhưng chỉ gắn bộ nội dung mẫu
-đã được nhập trước đó; không tự tải nguồn hoặc nhập thêm từ/ngữ pháp. Các
-module sử dụng `DefaultLearningTopicLookup` hiện đọc trực tiếp các bảng Topic
-và bảng nối này theo code develop đã merge, có lọc theo level của nội dung.
+Lệnh nhập bộ mẫu gọi seeder để tạo và gắn chủ đề. Khi mở backend, admin có
+thể quản lý danh sách chủ đề từ database. Các module sử dụng
+`DefaultLearningTopicLookup` đọc các bảng Topic và bảng nối, có lọc theo
+level của nội dung.
 
 ### Lưu ý khi tạo database từ đầu
 
