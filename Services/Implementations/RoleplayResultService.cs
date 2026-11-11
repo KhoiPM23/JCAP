@@ -687,13 +687,17 @@ namespace JCAP.Services.Implementations
 
                 : null;
 
-            var fluencyScore = evalResult?.FluencyScore ?? 85;
+            bool hasVoiceTurns = userFeedbacks.Any(f => f.SpeechDelivery != null && !f.SpeechDelivery.IsTextInput && f.SpeechDelivery.SpeechConfidence.HasValue && f.SpeechDelivery.SpeechConfidence.Value > 0);
 
-            var confidenceScore = evalResult?.SpeechConfidenceScore ?? 90;
+            var fluencyScore = hasVoiceTurns ? (evalResult?.FluencyScore ?? 85) : 0;
 
-            var avgLatency = evalResult?.AverageResponseLatencySeconds ?? 0;
+            var confidenceScore = hasVoiceTurns ? (evalResult?.SpeechConfidenceScore ?? 90) : 0;
 
-            var avgPace = evalResult?.AverageSpeechPace ?? 0;
+            var avgLatency = hasVoiceTurns ? (evalResult?.AverageResponseLatencySeconds ?? 0) : 0;
+
+            var avgPace = hasVoiceTurns ? (evalResult?.AverageSpeechPace ?? 0) : 0;
+
+            var pronScore = hasVoiceTurns ? (evalResult?.PronunciationScore ?? 85) : 0;
 
             // Tính toán so sánh tiến độ giữa các lần luyện tập (Attempt Progression Analytics)
 
@@ -978,7 +982,8 @@ namespace JCAP.Services.Implementations
             if (result.ImpressionScore >= 85) badges.Add("Văn phong Chuẩn mực");
             if (!usedAnyHint && (evalResult?.AutonomyScore ?? 100) >= 95) badges.Add("Tự chủ Không gợi ý");
             else if (usedAnyHint && (evalResult?.AutonomyScore ?? 100) >= 80) badges.Add("Chủ động Khám phá");
-            if (fluencyScore >= 80) badges.Add("Phản xạ Tức thì");
+            if (hasVoiceTurns && fluencyScore >= 80) badges.Add("Phản xạ Tức thì");
+            else if (!hasVoiceTurns && result.PassStatus) badges.Add("Đối đáp Chuẩn xác");
             if (result.GrammarScore >= 85) badges.Add("Ngữ pháp Chuẩn xác");
             if (result.VocabularyScore >= 85) badges.Add("Vốn từ Phong phú");
             if (badges.Count == 0) badges.Add("Tiến bộ Từng bước");
@@ -1025,6 +1030,8 @@ namespace JCAP.Services.Implementations
                 FluencyScore = fluencyScore,
 
                 SpeechConfidenceScore = confidenceScore,
+
+                PronunciationScore = pronScore,
 
                 AutonomyScore = evalResult?.AutonomyScore ?? 100,
 

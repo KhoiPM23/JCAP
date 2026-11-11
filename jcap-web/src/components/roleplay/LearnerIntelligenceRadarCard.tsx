@@ -2,8 +2,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { roleplayService } from '../../services/roleplayService';
 import { roleplayResultService } from '../../services/roleplayResultService';
+import { scenarioVoiceService } from '../../services/scenarioVoiceService';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
-import { TargetIcon, BarChartIcon, SparkIcon, BookmarkIcon, ArrowRightIcon } from '../common/Icons';
+import { TargetIcon, BarChartIcon, SparkIcon, BookmarkIcon, ArrowRightIcon, VolumeIcon } from '../common/Icons';
 import type { LearnerIntelligenceProfileDto } from '../../types/roleplay';
 
 export interface LearnerIntelligenceRadarCardProps {
@@ -11,6 +12,30 @@ export interface LearnerIntelligenceRadarCardProps {
   className?: string;
   onNavigateToScenario?: (scenarioId?: number, scenarioCode?: string) => void;
 }
+
+interface ParsedSkillItem {
+  type: 'vocab' | 'grammar';
+  japanese: string;
+  vietnamese: string;
+}
+
+const parseSkillItem = (raw: string): ParsedSkillItem => {
+  const isGrammar = raw.startsWith('Ngữ pháp:') || raw.includes('～') || raw.includes('〜');
+  const clean = raw.replace(/^(Từ vựng:|Ngữ pháp:)\s*/i, '').trim();
+  const match = clean.match(/^(.*?)\s*[\(（](.*?)[\)）]$/);
+  if (match) {
+    return {
+      type: isGrammar ? 'grammar' : 'vocab',
+      japanese: match[1].trim(),
+      vietnamese: match[2].trim(),
+    };
+  }
+  return {
+    type: isGrammar ? 'grammar' : 'vocab',
+    japanese: clean,
+    vietnamese: '',
+  };
+};
 
 export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCardProps> = ({
   className = '',
@@ -44,7 +69,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
       {
         axis: 'keigo',
         score: keigo,
-        title: 'Kính ngữ & Thể lịch sự (Desu/Masu)',
+        title: 'Văn phong & Thể giao tiếp (Desu/Masu)',
         topicCode: 'STUDY_WORK',
         topicName: 'Công sở / Giao tiếp',
         description: 'Tôi luyện phong cách ứng xử doanh nghiệp chuẩn mực, tránh lỗi dùng sai thể thân mật.',
@@ -222,13 +247,13 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   };
 
   return (
-    <div className={`rounded-2xl border border-[var(--line)] bg-[var(--paper-50)] shadow-sm overflow-hidden ${className}`}>
+    <div className={`rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] shadow-sm overflow-hidden ${className}`}>
       {/* Header section with Japanese subtle aesthetic */}
       <div className="p-6 sm:p-7 border-b border-[var(--line)] bg-gradient-to-r from-[var(--paper-100)] via-[var(--paper-50)] to-[var(--ai-soft)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center text-sm font-bold border border-[var(--line)]">
+              <span className="w-8 h-8 rounded-xl bg-[var(--ai-soft)] text-[var(--ai)] flex items-center justify-center text-sm font-bold border border-[var(--line)] shadow-2xs">
                 <TargetIcon className="w-4 h-4 text-[var(--ai)]" />
               </span>
               <h3 className="text-lg sm:text-xl font-bold text-[var(--sumi)] tracking-tight">
@@ -239,7 +264,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               </span>
             </div>
             <p className="text-xs text-[var(--sumi-muted)] max-w-2xl leading-relaxed">
-              Tự động phân tích tốc độ phản xạ, nhịp phách Mora và mức độ làm chủ kính ngữ qua từng câu nói của bạn để kiến tạo lộ trình học tập cá nhân hóa.
+              Tự động phân tích tốc độ phản xạ, nhịp phách Mora và mức độ làm chủ văn phong qua từng câu nói của bạn để kiến tạo lộ trình học tập cá nhân hóa.
             </p>
           </div>
 
@@ -247,7 +272,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           <div className="flex items-center gap-2.5">
             <div className="flex flex-col items-end">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-muted)]">Chỉ số thành thạo</span>
-              <span className="text-sm font-bold text-[var(--ai)] bg-white border border-[var(--line)] px-3 py-1 rounded-lg shadow-2xs font-sans">
+              <span className="text-sm font-bold text-[var(--ai)] bg-white border border-[var(--line)] px-3 py-1 rounded-xl shadow-2xs font-sans">
                 {profile.communicativeProficiencyIndex || 85}/100
               </span>
             </div>
@@ -264,7 +289,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Metric 1: Phản xạ giao tiếp */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
@@ -290,17 +315,19 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               </div>
             </div>
 
-            {/* Metric 2: Làm chủ Kính ngữ */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--warning)]/40 transition-colors flex flex-col justify-between">
+            {/* Metric 2: Văn phong & Thể giao tiếp (Linh hoạt theo bối cảnh) */}
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--warning)]/40 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
                     <BookmarkIcon className="w-3.5 h-3.5 text-[var(--warning)]" />
-                    <span>Kính ngữ & Thể lịch sự</span>
+                    <span>Văn phong & Thể giao tiếp</span>
                   </span>
                   <span className="text-base font-bold text-[var(--sumi)]">{Math.round(profile.keigoCommandScore)}/100</span>
                 </div>
-                <p className="text-[11px] font-semibold text-[var(--warning)] mb-2.5">Desu/Masu chuẩn phong cách Nhật</p>
+                <p className="text-[11px] font-semibold text-[var(--warning)] mb-2.5">
+                  {profile.keigoCommandScore >= 80 ? 'Thích ứng linh hoạt, đúng mực' : 'Cần rèn luyện đúng ngữ cảnh'}
+                </p>
                 <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-amber-400 to-[var(--warning)]"
@@ -309,16 +336,16 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                 </div>
               </div>
               <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[11px]">
-                <span className="text-[var(--sumi-muted)]">Môi trường: <strong>Hội thoại trang nhã</strong></span>
+                <span className="text-[var(--sumi-muted)]">Ngữ cảnh: <strong>Trang nhã / Thân mật</strong></span>
                 <Link to="/scenarios?topic=STUDY_WORK" className="text-[var(--warning)] font-semibold hover:underline flex items-center gap-0.5">
-                  <span>Luyện kính ngữ</span>
+                  <span>Luyện văn phong</span>
                   <span>➔</span>
                 </Link>
               </div>
             </div>
 
             {/* Metric 3: Chuẩn xác Trợ từ */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-purple-200 transition-colors flex flex-col justify-between">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-purple-200 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
@@ -345,7 +372,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             </div>
 
             {/* Metric 4: Tốc độ phát âm Mora */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--nami)]/40 transition-colors flex flex-col justify-between">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--nami)]/40 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
@@ -374,7 +401,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             </div>
 
             {/* Metric 5: Độ tự tin & Rõ ràng */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--ai)]/40 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
@@ -401,7 +428,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             </div>
 
             {/* Metric 6: Tính tự chủ hội thoại */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--score-good)]/40 transition-colors flex flex-col justify-between">
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-4 hover:border-[var(--score-good)]/40 transition-colors flex flex-col justify-between shadow-2xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-[var(--sumi-muted)] flex items-center gap-1.5">
@@ -427,14 +454,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               </div>
             </div>
           </div>
-
-
         </div>
 
         {/* Strengths & Focus Areas Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-5 border-t border-[var(--line)]">
           {/* Strengths */}
-          <div className="rounded-xl bg-[var(--success-soft)] border border-[var(--success)]/30 p-4">
+          <div className="rounded-2xl bg-[var(--success-soft)] border border-[var(--success)]/30 p-4 shadow-2xs">
             <h4 className="text-xs font-bold text-[var(--success)] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <SparkIcon className="w-3.5 h-3.5 text-[var(--success)]" />
               <span>Điểm mạnh đã được tôi luyện</span>
@@ -454,7 +479,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           </div>
 
           {/* Focus Areas */}
-          <div className="rounded-xl bg-[var(--warning-soft)] border border-[var(--warning)]/30 p-4">
+          <div className="rounded-2xl bg-[var(--warning-soft)] border border-[var(--warning)]/30 p-4 shadow-2xs">
             <h4 className="text-xs font-bold text-[var(--warning)] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <TargetIcon className="w-3.5 h-3.5 text-[var(--warning)]" />
               <span>Mục tiêu củng cố tiếp theo</span>
@@ -477,7 +502,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         {/* Kỹ năng & Mẫu câu trọng điểm đã thực hành (FSRS Spaced Repetition Integration) */}
         {profile.dueReviewItems && profile.dueReviewItems.length > 0 && (
           <div className="pt-5 border-t border-[var(--line)]">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--sumi-muted)] flex items-center gap-2">
                   <BookmarkIcon className="w-4 h-4 text-[var(--ai)]" />
@@ -492,47 +517,94 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                   {profile.dueReviewItems.length} mục đã luyện
                 </span>
                 <Link
-                  to="/flashcards"
-                  className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:brightness-105 active:scale-95 cursor-pointer"
+                  to="/flashcards/bookmarks"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:brightness-105 active:scale-95 cursor-pointer"
                 >
-                  <span>Mở Flashcard luyện ngay</span>
-                  <span>➔</span>
+                  <span>Mở Flashcard đã lưu</span>
+                  <ArrowRightIcon className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {profile.dueReviewItems.map((item, idx) => (
-                <Link
-                  to={`/flashcards?search=${encodeURIComponent(item.skillName.split(':')[1]?.trim() || item.skillName)}`}
-                  key={idx}
-                  className={`group p-3 rounded-xl border text-xs transition-all hover:border-[var(--ai)] hover:shadow-xs cursor-pointer block ${
-                    item.isDueForReview
-                      ? 'border-amber-200 bg-amber-50/60'
-                      : 'border-[var(--line)] bg-white'
-                  }`}
-                  title="Nhấp để ôn tập mục này trong bộ thẻ Flashcard cá nhân"
-                >
-                  <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="font-semibold text-[var(--sumi)] group-hover:text-[var(--ai)] transition truncate max-w-[180px]" title={item.skillName}>
-                      {item.skillName}
-                    </span>
-                    <span className={`font-bold text-[10px] px-2 py-0.5 rounded-full ${
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {profile.dueReviewItems.map((item, idx) => {
+                const parsed = parseSkillItem(item.skillName);
+                return (
+                  <div
+                    key={idx}
+                    className={`group p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between shadow-2xs ${
                       item.isDueForReview
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-emerald-50 text-emerald-700'
-                    }`}>
-                      {item.isDueForReview ? 'Cần củng cố' : 'Đã ghi nhớ tốt'}
-                    </span>
+                        ? 'border-amber-200 bg-amber-50/50 hover:border-amber-400 hover:shadow-xs'
+                        : 'border-[var(--line)] bg-white hover:border-[var(--ai)]/50 hover:shadow-xs'
+                    }`}
+                  >
+                    <div>
+                      {/* Top Row: Chip loại & Trạng thái FSRS */}
+                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-[var(--line)]/50">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide ${
+                            parsed.type === 'vocab'
+                              ? 'bg-sky-50 text-sky-800 border border-sky-200/80'
+                              : 'bg-purple-50 text-purple-800 border border-purple-200/80'
+                          }`}
+                        >
+                          {parsed.type === 'vocab' ? 'Từ vựng' : 'Ngữ pháp'}
+                        </span>
+                        <span
+                          className={`font-bold text-[10px] px-2 py-0.5 rounded-full ${
+                            item.isDueForReview
+                              ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          }`}
+                        >
+                          {item.isDueForReview ? 'Cần củng cố' : 'Đã nhớ tốt'}
+                        </span>
+                      </div>
+
+                      {/* Main Japanese Term & Speaker Button */}
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-jp text-base font-bold text-[var(--sumi)] leading-snug group-hover:text-[var(--ai)] transition">
+                          {parsed.japanese}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ukiyoSound.playSubtleTap();
+                            void scenarioVoiceService.playAiSpeech(parsed.japanese, 2);
+                          }}
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                          title={`Nghe phát âm chuẩn: ${parsed.japanese}`}
+                          aria-label={`Nghe phát âm ${parsed.japanese}`}
+                        >
+                          <VolumeIcon className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Vietnamese Meaning */}
+                      {parsed.vietnamese && (
+                        <p className="mt-1.5 text-xs text-[var(--sumi-muted)] font-medium leading-relaxed">
+                          {parsed.vietnamese}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Bottom Action Row: Repetitions & Link to Bookmarks */}
+                    <div className="text-[11px] text-[var(--sumi-muted)] pt-2.5 border-t border-[var(--line)]/70 mt-3 flex items-center justify-between">
+                      <span>Đã đối thoại: <strong>{item.repetitions} lần</strong></span>
+                      <Link
+                        to={`/flashcards/bookmarks?search=${encodeURIComponent(parsed.japanese)}`}
+                        className="text-[var(--ai)] font-bold hover:underline flex items-center gap-1 active:scale-95"
+                        title="Mở trong bộ thẻ Flashcard đã lưu"
+                      >
+                        <span>Ôn thẻ</span>
+                        <ArrowRightIcon className="w-3 h-3" />
+                      </Link>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-[var(--sumi-muted)] pt-1.5 border-t border-[var(--line)] mt-1 flex items-center justify-between">
-                    <span>Đã đối thoại: <strong>{item.repetitions} lần</strong></span>
-                    <span className="text-[var(--ai)] group-hover:underline flex items-center gap-0.5">
-                      <span>Ôn thẻ</span>
-                      <span>➔</span>
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -545,12 +617,11 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               <span>Định hướng Luyện tập Thích ứng theo Năng lực</span>
             </h4>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--ai-soft)] text-[var(--ai)] border border-[var(--line)]">
-              
               <span>
                 {profile.adaptiveLearningPathStatus === 'Mastery_Autonomous'
                   ? 'Thành thạo Độc lập'
                   : profile.adaptiveLearningPathStatus === 'Scaffold_Active'
-                  ? 'Kích hoạt Giàn giáo Hỗ trợ'
+                  ? 'Chế độ Hướng dẫn Đồng hành'
                   : 'Đang tiến tới Tự chủ Giao tiếp'}
               </span>
             </span>
@@ -558,7 +629,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 
           {/* 4 Thẻ chỉ số hành vi ngầm */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3.5 rounded-xl bg-[var(--paper-100)] border border-[var(--line)]">
+            <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)] shadow-2xs">
               <span className="block text-[11px] font-semibold text-[var(--sumi-muted)]">Văn phong nổi trội</span>
               <p className="text-xs font-bold text-[var(--sumi)] mt-1">
                 {profile.preferredTone === 'Business_Keigo'
@@ -569,7 +640,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[var(--paper-100)] border border-[var(--line)]">
+            <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)] shadow-2xs">
               <span className="block text-[11px] font-semibold text-[var(--sumi-muted)]">Khả năng Độc lập</span>
               <p className="text-xs font-bold text-[var(--sumi)] mt-1">
                 {profile.scaffoldTierPreference === 'Autonomous'
@@ -582,71 +653,95 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[var(--paper-100)] border border-[var(--line)]">
-              <span className="block text-[11px] font-semibold text-[var(--sumi-muted)]">Độ lưu loát liền mạch</span>
+            <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)] shadow-2xs">
+              <span className="block text-[11px] font-semibold text-[var(--score-good)]">Độ lưu loát liền mạch</span>
               <p className="text-xs font-bold text-[var(--score-good)] mt-1">
                 {profile.hesitationRate !== undefined ? `${100 - profile.hesitationRate}%` : '92%'}
                 <span className="text-[10px] font-normal text-[var(--sumi-faint)] ml-1">(nghỉ ~{profile.averageHesitationSeconds || 1.8}s)</span>
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[var(--paper-100)] border border-[var(--line)]">
-              <span className="block text-[11px] font-semibold text-[var(--sumi-muted)]">Nhất quán Kính ngữ</span>
+            <div className="p-3.5 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)] shadow-2xs">
+              <span className="block text-[11px] font-semibold text-[var(--sumi-muted)]">Nhất quán Thể văn</span>
               <p className="text-xs font-bold text-[var(--sumi)] mt-1">
                 {profile.toneConsistencyScore !== undefined ? `${profile.toneConsistencyScore}%` : '85%'}
               </p>
             </div>
           </div>
 
-          {/* Next Best Scenario Recommendation (Gợi ý định hướng thực tế & Deep-links) */}
+          {/* Next Best Scenario Recommendation (BENTO CARD CHUẨN ĐẲNG CẤP TRANG KẾT QUẢ) */}
           {profile.nextRecommendedScenarioTitle && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[var(--ai-soft)]/60 via-[var(--paper-50)] to-[var(--paper-100)] border border-[var(--line)] shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-md bg-[var(--ai)] text-white text-[10px] font-bold uppercase tracking-wider">
-                    Đề xuất thích ứng theo Năng lực
-                  </span>
-                  <span className="text-xs font-bold text-[var(--sumi)]">
-                    {profile.nextRecommendedScenarioTitle}
-                  </span>
-                  {profile.predictedSuccessRateNextScenario && (
-                    <span className="text-[10.5px] font-extrabold text-[var(--score-good)] font-mono bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                      Dự báo thành công: {profile.predictedSuccessRateNextScenario}%
+            <div className="mt-4 rounded-3xl border-2 border-amber-400 bg-gradient-to-b from-amber-50/70 via-white to-amber-50/20 shadow-lg shadow-amber-500/10 p-5 sm:p-6 ring-2 ring-amber-400/20 transition-all duration-300">
+              {/* Top Row: Phân loại bên trái & Match Score bên phải trên 1 dòng chuẩn xác */}
+              <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[var(--line)]/60">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold whitespace-nowrap select-none shrink-0 bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">
+                  <span>ĐỀ XUẤT HÀNG ĐẦU DỰA TRÊN 6 TRỤC NĂNG LỰC</span>
+                </span>
+
+                {profile.predictedSuccessRateNextScenario && (
+                  <div
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold font-mono whitespace-nowrap select-none shrink-0 bg-emerald-600 text-white shadow-2xs shadow-emerald-500/20"
+                    title={`Dự báo khả năng thành công: ${profile.predictedSuccessRateNextScenario}%`}
+                  >
+                    <span className="font-black text-sm tracking-tight leading-none">
+                      {profile.predictedSuccessRateNextScenario}%
                     </span>
-                  )}
-                </div>
-                <p className="text-xs text-[var(--sumi-muted)] leading-relaxed max-w-2xl">
-                  {profile.nextRecommendedReason || 'Luyện tập tình huống tiếp theo để tối ưu hóa sự tự tin và phản xạ giao tiếp tự nhiên.'}
-                </p>
+                    <span className="text-[10px] font-medium opacity-90">phù hợp</span>
+                  </div>
+                )}
               </div>
 
-              <div className="shrink-0 flex flex-wrap items-center gap-2">
+              {/* Header Kịch bản: Bố cục Đỉnh cao với Avatar/Icon & JLPT badge */}
+              <div className="flex items-start gap-4 mb-4">
+                <span className="inline-flex h-12 w-12 flex-none items-center justify-center overflow-hidden rounded-2xl bg-amber-100 border border-amber-200 text-amber-800 shadow-2xs shrink-0">
+                  <TargetIcon className="w-6 h-6 text-amber-700" />
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 shadow-2xs uppercase tracking-wide">
+                      JLPT N4
+                    </span>
+                    <h3 className="text-base sm:text-lg font-bold text-[var(--sumi)] font-sans truncate">
+                      {profile.nextRecommendedScenarioTitle}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-[var(--sumi-muted)] leading-relaxed">
+                    {profile.nextRecommendedReason || 'Luyện tập tình huống tiếp theo để tối ưu hóa sự tự tin và phản xạ giao tiếp tự nhiên.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Khớp chuẩn Bento của trang kết quả */}
+              <div className="pt-3 border-t border-[var(--line)]/60 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link
+                    to="/flashcards/bookmarks"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 px-3.5 py-2 text-xs font-bold text-amber-900 transition-all active:scale-95 shadow-2xs cursor-pointer"
+                    title="Mở bộ Flashcard đã lưu"
+                  >
+                    <BookmarkIcon className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Xem Flashcard Đã Lưu</span>
+                  </Link>
+
+                  <Link
+                    to={`/shadowing?query=${encodeURIComponent(profile.nextRecommendedScenarioTitle)}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 px-3.5 py-2 text-xs font-bold text-teal-800 transition-all active:scale-95 shadow-2xs cursor-pointer"
+                    title="Luyện nói Shadowing ngữ điệu câu thoại kịch bản"
+                  >
+                    <SparkIcon className="w-3.5 h-3.5 text-teal-700" />
+                    <span>Luyện Shadowing</span>
+                  </Link>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleLaunchRecommended}
-                  className="px-4 py-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   <span>Vào kịch bản này</span>
-                  <ArrowRightIcon className="w-3.5 h-3.5" />
+                  <ArrowRightIcon className="w-3.5 h-3.5 text-white" />
                 </button>
-
-                <Link
-                  to="/flashcards?tab=bookmarks"
-                  className="px-3 py-2 rounded-xl border border-amber-300 bg-amber-50/80 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
-                  title="Mở kho Flashcard ôn luyện từ vựng"
-                >
-                  
-                  <span>Flashcard</span>
-                </Link>
-
-                <Link
-                  to={`/shadowing?query=${encodeURIComponent(profile.nextRecommendedScenarioTitle)}`}
-                  className="px-3 py-2 rounded-xl border border-teal-200 bg-teal-50/80 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
-                  title="Luyện nói Shadowing ngữ điệu câu thoại kịch bản"
-                >
-                  
-                  <span>Shadowing</span>
-                </Link>
               </div>
             </div>
           )}

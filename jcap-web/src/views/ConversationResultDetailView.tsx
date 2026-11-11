@@ -299,8 +299,8 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
           {displayScore}
         </span>
 
-        <span className={`text-[10px] sm:text-[11px] font-serif font-black tracking-widest uppercase mt-0.5 ${rankInfo.color}`}>
-          Hạng {rankInfo.kanji} · {rankInfo.title}
+        <span className={`text-[11px] sm:text-xs font-serif font-bold tracking-wider mt-0.5 ${rankInfo.color}`}>
+          Hạng {rankInfo.kanji}
         </span>
       </div>
     </div>
@@ -592,16 +592,26 @@ export const ConversationResultDetailView: React.FC = () => {
     if (vocabs.length === 0 && grammars.length === 0) return;
 
     try {
-      // 1. Lưu vào Database thông qua API Backend Bookmark của Hoàng
+      // 1. Lưu vào Database thông qua API Backend Bookmark
       const promises: Promise<any>[] = [];
       for (const v of vocabs) {
-        if (v.id) {
-          promises.push(flashcardService.toggleBookmark('Vocabulary', v.id));
+        if (v.id || v.word) {
+          promises.push(flashcardService.toggleBookmark('Vocabulary', v.id, {
+            word: v.word,
+            reading: v.reading,
+            meaning: v.meaning,
+            jlptLevel: result?.jlptLevel || 'N4',
+          }));
         }
       }
       for (const g of grammars) {
-        if (g.id) {
-          promises.push(flashcardService.toggleBookmark('Grammar', g.id));
+        if (g.id || g.pattern) {
+          promises.push(flashcardService.toggleBookmark('Grammar', g.id, {
+            pattern: g.pattern,
+            meaning: g.meaning,
+            exampleSentence: g.exampleSentence,
+            jlptLevel: result?.jlptLevel || 'N4',
+          }));
         }
       }
       if (promises.length > 0) {
@@ -650,8 +660,13 @@ export const ConversationResultDetailView: React.FC = () => {
   const handleSaveSingleVocab = async (vocab: any) => {
     try {
       const isCurrentlySaved = savedVocabIds.has(vocab.id);
-      if (vocab.id) {
-        await flashcardService.toggleBookmark('Vocabulary', vocab.id);
+      if (vocab.id || vocab.word) {
+        await flashcardService.toggleBookmark('Vocabulary', vocab.id, {
+          word: vocab.word,
+          reading: vocab.reading,
+          meaning: vocab.meaning,
+          jlptLevel: result?.jlptLevel || 'N4',
+        });
       }
       setSavedVocabIds((prev) => {
         const next = new Set(prev);
@@ -701,8 +716,13 @@ export const ConversationResultDetailView: React.FC = () => {
   const handleToggleWeakVocabBookmark = async (vocab: WeakVocabulary) => {
     try {
       const isCurrentlySaved = savedWeakVocabIds.has(vocab.id);
-      if (vocab.id) {
-        await flashcardService.toggleBookmark('Vocabulary', vocab.id);
+      if (vocab.id || vocab.word) {
+        await flashcardService.toggleBookmark('Vocabulary', vocab.id, {
+          word: vocab.word,
+          reading: vocab.reading,
+          meaning: vocab.meaning,
+          jlptLevel: result?.jlptLevel || 'N4',
+        });
       }
       setSavedWeakVocabIds((prev) => {
         const next = new Set(prev);
@@ -748,8 +768,13 @@ export const ConversationResultDetailView: React.FC = () => {
   const handleToggleWeakGrammarBookmark = async (grammar: WeakGrammar) => {
     try {
       const isCurrentlySaved = savedWeakGrammarIds.has(grammar.id);
-      if (grammar.id) {
-        await flashcardService.toggleBookmark('Grammar', grammar.id);
+      if (grammar.id || grammar.pattern) {
+        await flashcardService.toggleBookmark('Grammar', grammar.id, {
+          pattern: grammar.pattern,
+          meaning: grammar.meaning,
+          exampleSentence: grammar.exampleSentence,
+          jlptLevel: result?.jlptLevel || 'N4',
+        });
       }
       setSavedWeakGrammarIds((prev) => {
         const next = new Set(prev);
@@ -806,10 +831,24 @@ export const ConversationResultDetailView: React.FC = () => {
     try {
       const promises: Promise<any>[] = [];
       for (const v of weakVocabs) {
-        if (v.id) promises.push(flashcardService.toggleBookmark('Vocabulary', v.id));
+        if (v.id || v.word) {
+          promises.push(flashcardService.toggleBookmark('Vocabulary', v.id, {
+            word: v.word,
+            reading: v.reading,
+            meaning: v.meaning,
+            jlptLevel: result?.jlptLevel || 'N4',
+          }));
+        }
       }
       for (const g of weakGrammars) {
-        if (g.id) promises.push(flashcardService.toggleBookmark('Grammar', g.id));
+        if (g.id || g.pattern) {
+          promises.push(flashcardService.toggleBookmark('Grammar', g.id, {
+            pattern: g.pattern,
+            meaning: g.meaning,
+            exampleSentence: g.exampleSentence,
+            jlptLevel: result?.jlptLevel || 'N4',
+          }));
+        }
       }
       if (promises.length > 0) {
         await Promise.allSettled(promises);
@@ -1233,9 +1272,18 @@ export const ConversationResultDetailView: React.FC = () => {
       {/* Toast Notification */}
 
       {typeof document !== 'undefined' && (copyToast || toastMessage) && createPortal(
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2.5 rounded-2xl border border-emerald-400/90 bg-[#071A44]/95 backdrop-blur-md px-5 py-3 text-xs font-bold text-white shadow-2xl animate-fade-in pointer-events-auto">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 rounded-2xl border border-emerald-400/90 bg-[#071A44]/95 backdrop-blur-md px-5 py-3 text-xs font-bold text-white shadow-2xl animate-fade-in pointer-events-auto">
           <span className="text-emerald-400 text-sm">{toastMessage ? "●" : "✓"}</span>
           <span>{toastMessage || "Đã sao chép báo cáo kết quả vào bộ nhớ tạm!"}</span>
+          {toastMessage && toastMessage.includes("Flashcard") && (
+            <Link
+              to="/flashcards/bookmarks"
+              className="ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] transition shadow-xs whitespace-nowrap active:scale-95"
+            >
+              <span>Xem trực tiếp</span>
+              <span>➔</span>
+            </Link>
+          )}
         </div>,
         document.body
       )}
@@ -2065,7 +2113,7 @@ export const ConversationResultDetailView: React.FC = () => {
                 <div className="mt-2 flex items-baseline justify-between">
                   <h2 className="text-2xl font-black text-[var(--sumi)] font-mono">
                     {result.allMissions && result.allMissions.length > 0
-                      ? `${result.completedMissions.length} / ${result.allMissions.length}`
+                      ? `${result.completedMissions.length}/${result.allMissions.length}`
                       : `${result.completedMissions.length}`}{" "}
                     mục tiêu
                   </h2>
@@ -2212,9 +2260,9 @@ export const ConversationResultDetailView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Batch Action: Lưu toàn bộ điểm yếu vào Flashcards */}
+                {/* Batch Action: Lưu toàn bộ điểm yếu vào Flashcards & Xem trực tiếp */}
                 {totalWeakCount > 0 && (
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={handleSaveAllWeakPointsToFlashcards}
@@ -2237,6 +2285,14 @@ export const ConversationResultDetailView: React.FC = () => {
                         </>
                       )}
                     </button>
+                    <Link
+                      to="/flashcards/bookmarks"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition shadow-2xs active:scale-95"
+                      title="Mở danh sách các thẻ Flashcard đã lưu"
+                    >
+                      <span>Xem thẻ đã lưu</span>
+                      <span>➔</span>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -3356,10 +3412,10 @@ export const ConversationResultDetailView: React.FC = () => {
               </Link>
             )}
             <Link
-              to="/flashcards"
+              to="/flashcards/bookmarks"
               className="rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 px-4 py-2.5 text-xs font-bold text-amber-900 shadow-2xs transition active:scale-95"
             >
-              Ôn tập kho Flashcards
+              Ôn tập kho Flashcards (Thẻ đã lưu)
             </Link>
             <Link
               to="/profile#radar-map"

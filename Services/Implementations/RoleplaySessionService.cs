@@ -1058,13 +1058,14 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }
 
                 // 2. Tính toán điểm rõ âm phát âm (Acoustic Pronunciation Score)
+                bool isTextTurn = request.FallbackToTextInput || (!request.SpeechConfidence.HasValue && string.IsNullOrEmpty(request.AudioUrl));
                 int? pronClarity = request.SpeechConfidence.HasValue
                     ? (int)Math.Clamp(Math.Round(request.SpeechConfidence.Value * 100), 40, 100)
-                    : (request.FallbackToTextInput ? (int?)null : 85);
+                    : null;
 
-                var turnFluency = 85;
+                var turnFluency = isTextTurn ? 0 : 85;
                 string? latencyAssessment = null;
-                if (request.ResponseLatencySeconds.HasValue)
+                if (!isTextTurn && request.ResponseLatencySeconds.HasValue)
                 {
                     var lat = request.ResponseLatencySeconds.Value;
                     if (lat <= idealLat)
@@ -1090,7 +1091,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }
 
                 string? paceAssessment = null;
-                if (pace.HasValue)
+                if (!isTextTurn && pace.HasValue)
                 {
                     var p = pace.Value;
                     if (p >= minPace && p <= maxPace)
@@ -1109,21 +1110,21 @@ public class RoleplaySessionService : IRoleplaySessionService
                     }
                 }
 
-                if (request.SpeechConfidence.HasValue)
+                if (!isTextTurn && request.SpeechConfidence.HasValue)
                 {
                     var conf = request.SpeechConfidence.Value;
                     if (conf >= 0.85) turnFluency += 5;
                     else if (conf < 0.60) turnFluency -= 15;
                 }
-                turnFluency = Math.Clamp(turnFluency, 30, 100);
+                int? finalFluency = isTextTurn ? null : Math.Clamp(turnFluency, 30, 100);
 
                 turnResult.LinguisticFeedback.SpeechDelivery = new SpeechDeliveryMetricsDto
                 {
-                    SpeakingDurationSeconds = request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
-                    ResponseLatencySeconds = request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
+                    SpeakingDurationSeconds = !isTextTurn && request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
+                    ResponseLatencySeconds = !isTextTurn && request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
                     SpeechConfidence = request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
-                    SpeechPace = pace,
-                    TurnFluencyScore = turnFluency,
+                    SpeechPace = !isTextTurn ? pace : null,
+                    TurnFluencyScore = finalFluency,
                     TurnAutonomyScore = turnAutonomy,
                     AutonomyAssessment = autonomyAssessment,
                     PronunciationClarityScore = pronClarity,

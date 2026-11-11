@@ -89,11 +89,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   }, []);
 
   const getResolvedMessageFurigana = useCallback((msg: RoleplayMessageDto): string => {
-    if (msg.furiganaHtml && msg.furiganaHtml.includes('<ruby>')) {
+    if (msg.furiganaHtml && msg.furiganaHtml.includes('<ruby>') && msg.furiganaHtml.includes('</ruby>')) {
       return cleanFuriganaHtml(msg.furiganaHtml);
     }
-    return generateClientFuriganaHtml(msg.japaneseText);
-  }, []);
+    const scenarioVocabs = session?.targetVocabularies?.map(v => ({ word: v.word, reading: v.reading })) || [];
+    return generateClientFuriganaHtml(msg.japaneseText, scenarioVocabs);
+  }, [session?.targetVocabularies]);
 
   const [autoPlayAudio, setAutoPlayAudio] = useState(() => getPracticePrefs().autoPlay);
   const autoPlayAudioRef = useRef(getPracticePrefs().autoPlay);
@@ -566,7 +567,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
   const handleToggleBookmark = async (
     type: 'Vocabulary' | 'Grammar',
-    item: { id: number; text: string }
+    item: { id: number; text: string; subtext?: string; meaning?: string; exampleSentence?: string }
   ) => {
     const isVocab = type === 'Vocabulary';
     const isBookmarked = isVocab ? practiceBookmarkedVocabIds.has(item.id) : practiceBookmarkedGrammarIds.has(item.id);
@@ -580,7 +581,13 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       return next;
     });
 
-    const res = await flashcardService.toggleBookmark(type, item.id);
+    const res = await flashcardService.toggleBookmark(
+      type,
+      item.id,
+      isVocab
+        ? { word: item.text, reading: item.subtext, meaning: item.meaning, jlptLevel: session?.jlptLevel || session?.level || 'N4' }
+        : { pattern: item.text, meaning: item.meaning, exampleSentence: item.exampleSentence, jlptLevel: session?.jlptLevel || session?.level || 'N4' }
+    );
     if (!res.success) {
       setIds((prev) => {
         const next = new Set(prev);

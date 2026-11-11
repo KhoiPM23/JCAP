@@ -254,13 +254,22 @@ export function cleanJapaneseForTts(text?: string | null): string {
  * Tự động tạo thẻ <ruby><rt> cho các từ tiếng Nhật thông dụng nếu backend chưa kịp gắn furigana.
  * Đảm bảo 100% người học N5/N4 luôn đọc được cách phát âm trên giàn giáo gợi ý và phòng luyện.
  */
-export function generateClientFuriganaHtml(text: string): string {
+/**
+ * Tự động tạo thẻ <ruby><rt> cho các từ tiếng Nhật thông dụng nếu backend chưa kịp gắn furigana.
+ * Đảm bảo 100% người học N5/N4 luôn đọc được cách phát âm trên giàn giáo gợi ý và phòng luyện.
+ * Tích hợp từ vựng mục tiêu từ kịch bản để tạo ruby tự động chính xác cho cả câu người học.
+ */
+export function generateClientFuriganaHtml(
+  text: string,
+  customVocabs?: Array<{ word?: string; reading?: string; subtext?: string }>
+): string {
   if (!text) return '';
-  if (text.includes('<ruby>') && text.includes('</ruby>')) return text;
+  if (text.includes('<ruby>') && text.includes('</ruby>')) return cleanFuriganaHtml(text);
 
   const dict: [string, string][] = [
     // Cụm từ dài
     ['はじめまして', 'はじめまして'],
+    ['よろしくお願いします', 'よろしくお<ruby>願<rt>ねが</rt></ruby>いします'],
     ['お願いします', 'お<ruby>願<rt>ねが</rt></ruby>いします'],
     ['お手伝い', 'お<ruby>手伝<rt>てつだ</rt></ruby>い'],
     ['少々お待ち', '<ruby>少々<rt>しょうしょう</rt></ruby>お<ruby>待<rt>ま</rt></ruby>ち'],
@@ -277,6 +286,9 @@ export function generateClientFuriganaHtml(text: string): string {
     ['向こう側', '<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>'],
 
     // Động từ thông dụng & cụm ngữ pháp N5/N4
+    ['分かりました', '<ruby>分<rt>わ</rt></ruby>かりました'],
+    ['分かります', '<ruby>分<rt>わ</rt></ruby>かります'],
+    ['分かりません', '<ruby>分<rt>わ</rt></ruby>かりません'],
     ['来ました', '<ruby>来<rt>き</rt></ruby>ました'],
     ['行きます', '<ruby>行<rt>い</rt></ruby>きます'],
     ['食べます', '<ruby>食<rt>た</rt></ruby>べます'],
@@ -287,9 +299,18 @@ export function generateClientFuriganaHtml(text: string): string {
     ['待ちます', '<ruby>待<rt>ま</rt></ruby>ちます'],
     ['渡ります', '<ruby>渡<rt>わた</rt></ruby>ります'],
     ['座ります', '<ruby>座<rt>すわ</rt></ruby>ります'],
+    ['曲がります', '<ruby>曲<rt>ま</rt></ruby>がります'],
+    ['降ります', '<ruby>降<rt>お</rt></ruby>ります'],
+    ['乗ります', '<ruby>乗<rt>の</rt></ruby>ります'],
+    ['使います', '<ruby>使<rt>つか</rt></ruby>います'],
+    ['買います', '<ruby>買<rt>か</rt></ruby>います'],
+    ['払います', '<ruby>払<rt>はら</rt></ruby>います'],
 
     // Danh từ / Tính từ 2 chữ Hán
     // Từ vựng bối cảnh Quán ăn / Ramen / Cà phê
+    ['豆乳', '<ruby>豆乳<rt>とうにゅう</rt></ruby>'],
+    ['甘さ控えめ', '<ruby>甘<rt>あま</rt></ruby>さ<ruby>控<rt>ひか</rt></ruby>えめ'],
+    ['抹茶', '<ruby>抹茶<rt>まっちゃ</rt></ruby>'],
     ['固さ', '<ruby>固<rt>かた</rt></ruby>さ'],
     ['固め', '<ruby>固<rt>かた</rt></ruby>め'],
     ['麺', '<ruby>麺<rt>めん</rt></ruby>'],
@@ -310,12 +331,31 @@ export function generateClientFuriganaHtml(text: string): string {
     ['氷', '<ruby>氷<rt>こおり</rt></ruby>'],
     ['水', '<ruby>水<rt>みず</rt></ruby>'],
     ['お茶', 'お<ruby>茶<rt>ちゃ</rt></ruby>'],
+    ['砂糖', '<ruby>砂糖<rt>さとう</rt></ruby>'],
+    ['牛乳', '<ruby>牛乳<rt>ぎゅうにゅう</rt></ruby>'],
     ['料理', '<ruby>料理<rt>りょうり</rt></ruby>'],
     ['定食', '<ruby>定食<rt>ていしょく</rt></ruby>'],
     ['現金', '<ruby>現金<rt>げんきん</rt></ruby>'],
     ['支払', '<ruby>支払<rt>しはら</rt></ruby>'],
+    ['持ち帰り', '<ruby>持<rt>も</rt></ruby>ち<ruby>帰<rt>かえ</rt></ruby>り'],
+    ['店内', '<ruby>店内<rt>てんない</rt></ruby>'],
+    ['袋', '<ruby>袋<rt>ふくろ</rt></ruby>'],
+    ['全部', '<ruby>全部<rt>ぜんぶ</rt></ruby>'],
+    ['一緒', '<ruby>一緒<rt>いっしょ</rt></ruby>'],
+    ['別々', '<ruby>別々<rt>べつべつ</rt></ruby>'],
+    ['結構', '<ruby>結構<rt>けっこう</rt></ruby>'],
+    ['変更', '<ruby>変更<rt>へんこう</rt></ruby>'],
+    ['確認', '<ruby>確認<rt>かくにん</rt></ruby>'],
+    ['報告', '<ruby>報告<rt>ほうこく</rt></ruby>'],
+    ['連絡', '<ruby>連絡<rt>れんらく</rt></ruby>'],
+    ['相談', '<ruby>相談<rt>そうだん</rt></ruby>'],
 
     // Ga tàu / Giao thông / Di chuyển
+    ['横断歩道', '<ruby>横断歩道<rt>おうだんほどう</rt></ruby>'],
+    ['信号', '<ruby>信号<rt>しんごう</rt></ruby>'],
+    ['角', '<ruby>角<rt>かど</rt></ruby>'],
+    ['右', '<ruby>右<rt>みぎ</rt></ruby>'],
+    ['左', '<ruby>左<rt>ひだり</rt></ruby>'],
     ['切符', '<ruby>切符<rt>きっぷ</rt></ruby>'],
     ['番線', '<ruby>番線<rt>ばんせん</rt></ruby>'],
     ['改札', '<ruby>改札<rt>かいさつ</rt></ruby>'],
@@ -370,14 +410,35 @@ export function generateClientFuriganaHtml(text: string): string {
     ['痛', '<ruby>痛<rt>いた</rt></ruby>'],
     ['何', '<ruby>何<rt>なに</rt></ruby>'],
     ['願', '<ruby>願<rt>ねが</rt></ruby>'],
+    ['分', '<ruby>分<rt>わ</rt></ruby>'],
     ['来', '<ruby>来<rt>き</rt></ruby>'],
     ['行', '<ruby>行<rt>い</rt></ruby>'],
     ['見', '<ruby>見<rt>み</rt></ruby>'],
     ['聞', '<ruby>聞<rt>き</rt></ruby>'],
     ['食', '<ruby>食<rt>た</rt></ruby>'],
     ['飲', '<ruby>飲<rt>の</rt></ruby>'],
-    ['話', '<ruby>話<rt>はな</rt></ruby>']
+    ['話', '<ruby>話<rt>はな</rt></ruby>'],
+    ['待', '<ruby>待<rt>ま</rt></ruby>'],
+    ['持', '<ruby>持<rt>も</rt></ruby>'],
+    ['買', '<ruby>買<rt>か</rt></ruby>'],
+    ['使', '<ruby>使<rt>つか</rt></ruby>'],
+    ['頼', '<ruby>頼<rt>たの</rt></ruby>'],
+    ['渡', '<ruby>渡<rt>わた</rt></ruby>'],
+    ['曲', '<ruby>曲<rt>ま</rt></ruby>'],
+    ['降', '<ruby>降<rt>お</rt></ruby>'],
+    ['乗', '<ruby>乗<rt>の</rt></ruby>']
   ];
+
+  // Nạp từ vựng mục tiêu động từ kịch bản
+  if (Array.isArray(customVocabs)) {
+    for (const v of customVocabs) {
+      const w = v.word?.trim();
+      const r = (v.reading || v.subtext)?.trim();
+      if (w && r && /[\u4E00-\u9FAF]/.test(w) && w !== r) {
+        dict.push([w, `<ruby>${w}<rt>${r}</rt></ruby>`]);
+      }
+    }
+  }
 
   dict.sort((a, b) => b[0].length - a[0].length);
 

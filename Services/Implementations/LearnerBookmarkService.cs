@@ -22,10 +22,10 @@ namespace JCAP.Services.Implementations
 
         public async Task<ApiResponse<ToggleBookmarkResponseDto>> ToggleBookmarkAsync(string userId, ToggleBookmarkRequestDto request)
         {
-            bool hasVocab = request.VocabularyId.HasValue && request.VocabularyId.Value > 0;
-            bool hasGrammar = request.GrammarId.HasValue && request.GrammarId.Value > 0;
+            bool hasVocab = (request.VocabularyId.HasValue && request.VocabularyId.Value > 0) || !string.IsNullOrWhiteSpace(request.Word);
+            bool hasGrammar = (request.GrammarId.HasValue && request.GrammarId.Value > 0) || !string.IsNullOrWhiteSpace(request.Pattern);
 
-            if (hasVocab == hasGrammar)
+            if (hasVocab == hasGrammar && (!hasVocab || (request.VocabularyId.HasValue && request.GrammarId.HasValue)))
             {
                 return ApiResponse<ToggleBookmarkResponseDto>.Fail(
                     "Vui lòng chỉ định đúng một trong hai: VocabularyId hoặc GrammarId.");
@@ -33,13 +33,20 @@ namespace JCAP.Services.Implementations
 
             if (hasVocab)
             {
-                int vocabId = request.VocabularyId!.Value;
-                var vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == vocabId && v.IsActive);
-                if (vocab == null)
+                Vocabulary? vocab = null;
+
+                // 1. Ưu tiên tìm theo từ vựng chính xác nếu được truyền lên
+                if (!string.IsNullOrWhiteSpace(request.Word))
+                {
+                    vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Word == request.Word.Trim() && v.IsActive);
+                }
+
+                // 2. Nếu chưa thấy, kiểm tra xem VocabularyId có thuộc bảng TargetVocabularies của Kịch bản hay không
+                if (vocab == null && request.VocabularyId.HasValue && request.VocabularyId.Value > 0)
                 {
                     var targetVocab = await _db.TargetVocabularies
                         .Include(tv => tv.ScenarioLevelConfiguration)
-                        .FirstOrDefaultAsync(tv => tv.Id == vocabId);
+                        .FirstOrDefaultAsync(tv => tv.Id == request.VocabularyId.Value);
 
                     if (targetVocab != null)
                     {
@@ -51,17 +58,43 @@ namespace JCAP.Services.Implementations
                                 Word = targetVocab.Word,
                                 Reading = targetVocab.Reading,
                                 Meaning = targetVocab.Meaning,
-                                JLPTLevel = targetVocab.ScenarioLevelConfiguration?.JLPTLevel ?? "N3",
+                                JLPTLevel = targetVocab.ScenarioLevelConfiguration?.JLPTLevel ?? request.JlptLevel ?? "N4",
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow
                             };
                             _db.Vocabularies.Add(vocab);
                             await _db.SaveChangesAsync();
                         }
-                        vocabId = vocab.Id;
+                    }
+                    else
+                    {
+                        // 3. Nếu không phải TargetVocabulary, tìm theo Id trong bảng Vocabularies
+                        vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == request.VocabularyId.Value && v.IsActive);
                     }
                 }
 
+                // 4. Nếu vẫn chưa có nhưng có thông tin text từ vựng, tự động tạo mới vào bảng Vocabularies
+                if (vocab == null && !string.IsNullOrWhiteSpace(request.Word))
+                {
+                    vocab = new Vocabulary
+                    {
+                        Word = request.Word.Trim(),
+                        Reading = request.Reading?.Trim(),
+                        Meaning = request.Meaning?.Trim() ?? string.Empty,
+                        JLPTLevel = request.JlptLevel ?? "N4",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _db.Vocabularies.Add(vocab);
+                    await _db.SaveChangesAsync();
+                }
+
+                if (vocab == null)
+                {
+                    return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy từ vựng khả dụng để lưu.");
+                }
+
+                int vocabId = vocab.Id;
                 var existing = await _db.LearnerBookmarks
                     .FirstOrDefaultAsync(b => b.UserId == userId && b.VocabularyId == vocabId);
 
@@ -75,11 +108,6 @@ namespace JCAP.Services.Implementations
                         IsBookmarked = false,
                         VocabularyId = vocabId
                     }, "Đã bỏ lưu từ vựng.");
-                }
-
-                if (vocab == null)
-                {
-                    return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy từ vựng khả dụng.");
                 }
 
                 _db.LearnerBookmarks.Add(new LearnerBookmark
@@ -98,13 +126,20 @@ namespace JCAP.Services.Implementations
             }
             else
             {
-                int grammarId = request.GrammarId!.Value;
-                var grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == grammarId && g.IsActive);
-                if (grammar == null)
+                Grammar? grammar = null;
+
+                // 1. Ưu tiên tìm theo mẫu ngữ pháp chính xác nếu được truyền lên
+                if (!string.IsNullOrWhiteSpace(request.Pattern))
+                {
+                    grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Pattern == request.Pattern.Trim() && g.IsActive);
+                }
+
+                // 2. Nếu chưa thấy, kiểm tra xem GrammarId có thuộc bảng TargetGrammars của Kịch bản hay không
+                if (grammar == null && request.GrammarId.HasValue && request.GrammarId.Value > 0)
                 {
                     var targetGrammar = await _db.TargetGrammars
                         .Include(tg => tg.ScenarioLevelConfiguration)
-                        .FirstOrDefaultAsync(tg => tg.Id == grammarId);
+                        .FirstOrDefaultAsync(tg => tg.Id == request.GrammarId.Value);
 
                     if (targetGrammar != null)
                     {
@@ -116,17 +151,43 @@ namespace JCAP.Services.Implementations
                                 Pattern = targetGrammar.Pattern,
                                 Meaning = targetGrammar.Meaning,
                                 ExampleSentence = targetGrammar.ExampleSentence,
-                                JLPTLevel = targetGrammar.ScenarioLevelConfiguration?.JLPTLevel ?? "N3",
+                                JLPTLevel = targetGrammar.ScenarioLevelConfiguration?.JLPTLevel ?? request.JlptLevel ?? "N4",
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow
                             };
                             _db.Grammars.Add(grammar);
                             await _db.SaveChangesAsync();
                         }
-                        grammarId = grammar.Id;
+                    }
+                    else
+                    {
+                        // 3. Nếu không phải TargetGrammar, tìm theo Id trong bảng Grammars
+                        grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == request.GrammarId.Value && g.IsActive);
                     }
                 }
 
+                // 4. Nếu vẫn chưa có nhưng có thông tin mẫu ngữ pháp, tự động tạo mới vào bảng Grammars
+                if (grammar == null && !string.IsNullOrWhiteSpace(request.Pattern))
+                {
+                    grammar = new Grammar
+                    {
+                        Pattern = request.Pattern.Trim(),
+                        Meaning = request.Meaning?.Trim() ?? string.Empty,
+                        ExampleSentence = request.ExampleSentence?.Trim(),
+                        JLPTLevel = request.JlptLevel ?? "N4",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _db.Grammars.Add(grammar);
+                    await _db.SaveChangesAsync();
+                }
+
+                if (grammar == null)
+                {
+                    return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy mẫu ngữ pháp khả dụng để lưu.");
+                }
+
+                int grammarId = grammar.Id;
                 var existing = await _db.LearnerBookmarks
                     .FirstOrDefaultAsync(b => b.UserId == userId && b.GrammarId == grammarId);
 
@@ -140,11 +201,6 @@ namespace JCAP.Services.Implementations
                         IsBookmarked = false,
                         GrammarId = grammarId
                     }, "Đã bỏ lưu mẫu ngữ pháp.");
-                }
-
-                if (grammar == null)
-                {
-                    return ApiResponse<ToggleBookmarkResponseDto>.Fail("Không tìm thấy mẫu ngữ pháp khả dụng.");
                 }
 
                 _db.LearnerBookmarks.Add(new LearnerBookmark
