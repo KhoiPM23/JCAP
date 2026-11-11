@@ -68,7 +68,8 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .e1 { animation-delay: 0.35s; } .lp .e2 { animation-delay: 0.75s; } .lp .e3 { animation-delay: 1.15s; } .lp .e4 { animation-delay: 1.55s; }
 
 /* ---- câu mở ---- */
-.lp .ask { padding: 120px 0; background: var(--paper-100); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+/* Nền giấy đậm chuyển dần ở hai mép (không dùng đường kẻ) để các phần nối mềm với nhau */
+.lp .ask { padding: 120px 0; background: linear-gradient(to bottom, var(--paper-50), var(--paper-100) 120px, var(--paper-100) calc(100% - 120px), var(--paper-50)); }
 .lp .ask .q { margin: 0; font-family: var(--font-mincho); font-weight: 600; font-size: 76px; line-height: 96px; letter-spacing: 0.04em; }
 .lp .ask .q ruby rt { font-size: 18px; letter-spacing: 0.1em; color: var(--sumi-muted); font-weight: 500; }
 .lp .ask .qvi { margin: 18px 0 0; font-size: 20px; line-height: 30px; color: var(--sumi-muted); }
@@ -160,7 +161,7 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .av.i { background: var(--ai); color: var(--on-ai); }
 
 /* ---- lộ trình ---- */
-.lp .route-sec { background: var(--paper-100); }
+.lp .route-sec { background: linear-gradient(to bottom, var(--paper-50), var(--paper-100) 120px, var(--paper-100) calc(100% - 120px), var(--paper-50)); }
 .lp .rt3 { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 72px; align-items: center; margin-top: 48px; }
 .lp .rtmap { position: relative; width: 420px; height: 463px; }
 .lp .rtmap .jmap path { fill: var(--paper-200); stroke: var(--paper-100); }
@@ -210,7 +211,7 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .qa .ans { padding: 0 48px 24px 0; font-size: 16px; line-height: 27px; color: var(--sumi-muted); }
 
 /* ---- cuối trang ---- */
-.lp .final { padding: 104px 0; background: var(--paper-100); border-top: 1px solid var(--line); }
+.lp .final { padding: 104px 0; background: linear-gradient(to bottom, var(--paper-50), var(--paper-100) 120px, var(--paper-100) calc(100% - 120px), var(--paper-50)); }
 .lp .final .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px; align-items: center; }
 .lp .seal3 { display: inline-flex; }
 .lp .foot { padding: 32px 0 40px; font-size: 14px; color: var(--sumi-muted); }
