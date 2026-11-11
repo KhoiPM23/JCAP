@@ -169,6 +169,9 @@ const REGION_LABEL_MAX_SCALE = 1.25;
  * hiện sau, khi phóng tới ngưỡng regionNarrow (cả hai ngưỡng tính sẵn để 8 nhãn không chồng nhau).
  */
 const NARROW_PX = 760;
+/** Bản đồ toàn quốc dời sang phải chừng này (px) để không nằm sau thanh bên nổi, chỉ khi khung rộng từ HOME_SHIFT_MIN_W */
+const HOME_SHIFT_PX = 96;
+const HOME_SHIFT_MIN_W = 1024;
 /** Di chuột quá ngưỡng này (px) thì coi là kéo bản đồ chứ không phải bấm */
 const DRAG_THRESHOLD_PX = 6;
 const BUTTON_ZOOM_STEP = 1.6;
@@ -562,7 +565,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const target = useMemo<ViewBox | null>(() => {
     if (!size.w || !size.h) return null;
     // Chưa chọn tỉnh: khung các đảo chính; Okinawa nằm đúng vị trí bên dưới, kéo xuống để tới
-    if (!selected) return fitViewBox(HOME_VIEWBOX, size.w, size.h, 0, 0);
+    if (!selected) {
+      // Thanh bên nổi che phần trái bản đồ: màn rộng thì dời khung toàn quốc sang phải một chút, giữ nguyên mức phóng
+      const home = fitViewBox(HOME_VIEWBOX, size.w, size.h, 0, 0);
+      const shift = size.w >= HOME_SHIFT_MIN_W ? HOME_SHIFT_PX : 0;
+      return [home[0] - shift / (size.w / home[2]), home[1], home[2], home[3]];
+    }
     const landmark = activeSpot != null ? prefectureLandmarks(selected.id)[activeSpot] : undefined;
     const prefVb = fitViewBox(selected.focus, size.w, size.h, reserveRight, fitBottom);
     if (!landmark) return prefVb;
