@@ -608,11 +608,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleToggleCheatVocabBookmark = (v: { id: number; word: string }) =>
-    handleToggleBookmark('Vocabulary', { id: v.id, text: v.word });
+  const handleToggleCheatVocabBookmark = (v: { id: number; word: string; reading?: string; meaning?: string }) =>
+    handleToggleBookmark('Vocabulary', { id: v.id, text: v.word, subtext: v.reading, meaning: v.meaning });
 
-  const handleToggleCheatGrammarBookmark = (g: { id: number; pattern: string }) =>
-    handleToggleBookmark('Grammar', { id: g.id, text: g.pattern });
+  const handleToggleCheatGrammarBookmark = (g: { id: number; pattern: string; meaning?: string; exampleSentence?: string }) =>
+    handleToggleBookmark('Grammar', { id: g.id, text: g.pattern, meaning: g.meaning, exampleSentence: g.exampleSentence });
 
 
 
@@ -1179,6 +1179,29 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
       if (res.success && res.data) {
+        if (!Array.isArray(res.data.messages) || res.data.messages.length === 0) {
+          const titleLower = (res.data.scenarioTitle || '').toLowerCase();
+          const openingJp = titleLower.includes('ramen') || titleLower.includes('quán') || titleLower.includes('cafe')
+            ? 'いらっしゃいませ！何名様ですか？カウンター席へどうぞ。ご注文はお決まりですか？'
+            : titleLower.includes('ga ') || titleLower.includes('tàu') || titleLower.includes('đường')
+            ? 'はい、駅員です。何かお困りですか？どちらまで行かれますか？'
+            : 'こんにちは！本日はどのようなご用件でしょうか？どうぞお話しください。';
+          const openingVi = titleLower.includes('ramen') || titleLower.includes('quán') || titleLower.includes('cafe')
+            ? 'Xin kính chào quý khách! Quý khách đi mấy người ạ? Xin mời vào ghế quầy bar. Quý khách đã chọn được món chưa ạ?'
+            : titleLower.includes('ga ') || titleLower.includes('tàu') || titleLower.includes('đường')
+            ? 'Vâng, tôi là nhân viên nhà ga đây ạ. Bạn đang gặp khó khăn gì sao? Bạn muốn đi đến đâu ạ?'
+            : 'Xin chào! Hôm nay bạn có yêu cầu gì cần hỗ trợ không ạ? Xin mời bạn cứ trao đổi nhé.';
+          res.data.messages = [
+            {
+              id: -1,
+              sender: 'Ai',
+              japaneseText: openingJp,
+              furiganaHtml: generateClientFuriganaHtml(openingJp),
+              vietnameseMeaning: openingVi,
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        }
         setSession(res.data);
 
 
@@ -2585,13 +2608,21 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed top-20 right-6 z-50 flex items-center gap-2.5 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
-            toastMessage.startsWith('')
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
+            toastMessage.includes('Đã lưu')
               ? 'border border-emerald-400/80 bg-[var(--sumi)] text-white shadow-[0_12px_36px_rgba(16,185,129,0.35)]'
               : 'border border-blue-400/40 bg-[var(--sumi)] text-white shadow-[0_12px_36px_rgba(7,26,68,0.3)]'
           }`}
         >
-                    <span className="leading-snug">{toastMessage}</span>
+          <span className="leading-snug">{toastMessage}</span>
+          {toastMessage.includes('Flashcard') && (
+            <Link
+              to="/flashcards/bookmarks"
+              className="shrink-0 rounded-lg bg-amber-400 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 hover:bg-amber-300 transition shadow-2xs"
+            >
+              Xem ngay ➔
+            </Link>
+          )}
         </div>
       )}
 
@@ -2903,7 +2934,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 </h2>
                 <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
                   <span className="text-[var(--ai)]">{completedMissionsCount}</span>
-                  <span className="text-[var(--sumi-faint)]"> / {totalMissionsCount} nhiệm vụ</span>
+                  <span className="text-[var(--sumi-faint)]">/{totalMissionsCount} nhiệm vụ</span>
                 </p>
               </div>
               <button
@@ -3058,6 +3089,19 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     </button>
                   </div>
 
+                  {/* Link nhanh sang Kho Flashcard Đã Lưu */}
+                  <Link
+                    to="/flashcards/bookmarks"
+                    onClick={() => ukiyoSound.playSubtleTap()}
+                    className="flex items-center justify-between rounded-xl border border-amber-300/80 bg-amber-50/90 hover:bg-amber-100/80 px-3 py-2 text-[11px] font-bold text-amber-950 shadow-2xs transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <BookmarkIcon className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Kho Flashcard Đã Lưu</span>
+                    </span>
+                    <span className="text-amber-800">Mở xem ➔</span>
+                  </Link>
+
                   {/* Tab Content: Vocabularies */}
                   {knowledgeSubTab === 'vocab' && (
                     <div className="space-y-2.5">
@@ -3209,38 +3253,104 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
         {/* ============================================================ */}
-        {/* 2. CENTER COLUMN: Chat Stage & Stream (Max Width 760px)      */}
+        {/* 2. CENTER COLUMN: Japanese Roleplay Stage & Dialogue Stream   */}
         {/* ============================================================ */}
-        <main className="flex flex-1 flex-col overflow-hidden bg-[var(--paper-100)]">
+        <main className="relative flex flex-1 flex-col overflow-hidden bg-[var(--bg-canvas)]">
+          {/* Lớp nền giấy Washi sạch và thoáng đãng (Quiet by Default) */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,58,138,0.03),transparent_70%)]" />
+
+          {/* ============================================================ */}
+          {/* STAGE DIRECTOR HUD: Bối cảnh, Vai vế & Mục tiêu Đang Diễn Ra */}
+          {/* ============================================================ */}
+          <div className="relative z-10 shrink-0 border-b border-[var(--line)] bg-white/90 backdrop-blur-md px-3 py-2.5 sm:px-5 shadow-2xs">
+            <div className="mx-auto flex max-w-[840px] flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {/* Cụm Trái: Ấn chương Sân khấu, Vai vế Giao tiếp & Nhịp độ */}
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-[var(--sumi)] px-2 py-0.5 text-[10px] font-serif font-bold tracking-wider text-amber-300 shadow-2xs">
+                    <span>舞台</span>
+                    <span className="font-sans text-[9px] uppercase text-sky-200">Sân khấu</span>
+                  </span>
+
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--paper-50)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--sumi)]">
+                    <span className="text-[var(--sumi-muted)]">Vai giao tiếp:</span>
+                    <strong className="text-[var(--ai)]">Bạn</strong>
+                    <span className="text-[var(--sumi-faint)]">↔</span>
+                    <strong className="truncate max-w-[160px]">{session.aiPersona}</strong>
+                  </span>
+
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${liveMomentum.badgeClass}`}>
+                    <span>{liveMomentum.label.trim()}</span>
+                  </span>
+                </div>
+
+                {/* Cụm Phải: Stepper Nhiệm vụ Trực quan (1 -> 2 -> 3) */}
+                {session.missions && session.missions.length > 0 && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-muted)] hidden sm:inline">
+                      Mục tiêu:
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {session.missions.map((m, idx) => {
+                        const isCurrent = idx === activeMissionIndex;
+                        return (
+                          <button
+                            key={m.missionId ?? m.id ?? idx}
+                            type="button"
+                            onClick={() => {
+                              ukiyoSound.playSubtleTap();
+                              setSidebarTab('missions');
+                              setIsLeftOpen(true);
+                            }}
+                            title={`Mục tiêu ${idx + 1}: ${m.content}`}
+                            className={`inline-flex h-6 items-center gap-1 rounded-full px-2 text-[10px] font-extrabold transition cursor-pointer ${
+                              m.isCompleted
+                                ? 'bg-emerald-600 text-white shadow-2xs'
+                                : isCurrent
+                                ? 'bg-[var(--ai)] text-white ring-2 ring-[var(--ai)]/25 shadow-2xs'
+                                : 'bg-[var(--paper-200)] text-[var(--sumi-muted)] hover:bg-[var(--line)]'
+                            }`}
+                          >
+                            <span>{m.isCompleted ? '✓' : idx + 1}</span>
+                            {isCurrent && (
+                              <span className="max-w-[150px] sm:max-w-[210px] truncate font-sans font-bold">
+                                {m.content}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Dòng Bối cảnh Tình huống thu gọn tinh tế */}
+              {session?.scenarioContext && (
+                <div className="flex items-start justify-between gap-3 border-t border-[var(--line)]/60 pt-1.5 text-[11px]">
+                  <p className={`text-[var(--sumi-muted)] leading-relaxed ${isContextBannerExpanded ? '' : 'line-clamp-1'}`}>
+                    <strong className="text-[var(--sumi)] font-semibold mr-1.5">Bối cảnh:</strong>
+                    {session.scenarioContext}
+                  </p>
+                  {session.scenarioContext.length > 90 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsContextBannerExpanded(!isContextBannerExpanded)}
+                      className="shrink-0 text-[10px] font-bold text-[var(--ai)] hover:underline cursor-pointer"
+                    >
+                      {isContextBannerExpanded ? 'Thu gọn ▲' : 'Chi tiết ▼'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* ============================================================ */}
           {/* HERO CONVERSATION CANVAS                                    */}
           {/* ============================================================ */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
-            <div className="mx-auto w-full max-w-[800px] space-y-4">
-              {/* Scenario Context Bar (Gọn gàng, thanh lịch, không trùng lặp Persona/Tiêu đề đã có ở Header) */}
-              {session?.scenarioContext && (
-                <div className="rounded-2xl border border-[var(--line)] bg-white/80 backdrop-blur-xs px-4 py-2.5 shadow-2xs text-xs font-sans">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-[var(--ai)] text-[10px] tracking-wide uppercase">
-                        <span>Bối cảnh tình huống</span>
-                      </div>
-                      <p className={`mt-0.5 text-[var(--sumi)] text-[11px] leading-relaxed ${isContextBannerExpanded ? '' : 'line-clamp-2'}`}>
-                        {session.scenarioContext}
-                      </p>
-                    </div>
-                    {session.scenarioContext.length > 100 && (
-                      <button
-                        type="button"
-                        onClick={() => setIsContextBannerExpanded(!isContextBannerExpanded)}
-                        className="shrink-0 text-[10px] font-bold text-[var(--ai)] hover:underline pt-0.5 cursor-pointer"
-                      >
-                        {isContextBannerExpanded ? 'Thu gọn ▲' : 'Xem thêm ▼'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+          <div className="relative z-10 flex-1 overflow-y-auto p-3 sm:p-5 md:p-6">
+            <div className="mx-auto w-full max-w-[840px] space-y-4">
 
               {/* M3: Micro-Celebration Banner for Newly Completed Mission */}
               {celebratingMission && (
@@ -3326,32 +3436,34 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     )}
 
 
-                    {/* Chat Bubble */}
+                    {/* Chat Bubble (Wabi-Sabi Stage Card & Calligraphic Spoken Line) */}
                     <div
                       onClick={() => {
                         if (!isAi) {
                           setSelectedMessageId(msg.id);
                         }
                       }}
-                      className={`group relative max-w-[80%] rounded-2xl p-4 transition shadow-xs ${
+                      className={`group relative max-w-[82%] rounded-2xl p-4 sm:p-4.5 transition duration-200 ${
                         isAi
-                          ? 'bubble-ai rounded-tl-sm border border-[var(--line)] bg-white text-[var(--sumi)] shadow-xs'
-                          : `bubble-user rounded-tr-sm bg-[var(--ai)] text-white cursor-pointer shadow-sm ${
-                              isSelected ? 'ring-2 ring-[var(--ai)]/40 shadow-md' : 'hover:bg-[var(--ai-hover)] hover:shadow-md'
+                          ? 'bubble-ai rounded-tl-xs border border-[var(--line)] border-l-4 border-l-[var(--ai)] bg-white/95 text-[var(--sumi)] shadow-xs hover:shadow-sm'
+                          : `bubble-user rounded-tr-xs bg-gradient-to-br from-[#0F2547] via-[var(--ai)] to-[#1E3A8A] text-white cursor-pointer border border-sky-300/20 shadow-sm ${
+                              isSelected ? 'ring-2 ring-sky-400/60 shadow-md' : 'hover:brightness-105 hover:shadow-md'
                             }`
                       }`}
                     >
                       {/* Header in bubble */}
-                      <div className="mb-1 flex items-center justify-between gap-2">
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={`text-[10px] font-bold ${
-                              isAi ? 'text-[var(--sumi-faint)]' : 'text-blue-100'
+                            className={`inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide ${
+                              isAi ? 'text-[var(--sumi-muted)]' : 'text-sky-200'
                             }`}
                           >
-                            {isAi ? session.aiPersona : 'Bạn'}
+                            {isAi && (
+                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--ai)]" />
+                            )}
+                            <span>{isAi ? session.aiPersona : 'Lượt lời của bạn'}</span>
                           </span>
-                          
                         </div>
 
 
@@ -3808,14 +3920,75 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   </button>
                 </div>
               ) : (
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              <div className="space-y-2">
+                {/* KHAY ĐẠO CỤ TỪ VỰNG TÌNH HUỐNG (TACTILE COUNTERTOP CUE PROPS — 0đ Phạt, Chống bí từ) */}
+                {!hint && !isBlindMode && dynamicStageProps.length > 0 && !session?.isNaturallyConcluded && (
+                  <div className="flex flex-wrap items-center gap-1.5 pb-0.5">
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-[var(--paper-200)]/90 px-2 py-1 text-[10px] font-extrabold text-[var(--sumi-muted)] uppercase tracking-wider select-none">
+                      <span>Đạo cụ từ vựng:</span>
+                    </span>
+                    {dynamicStageProps.map((prop) => (
+                      <div
+                        key={prop.id}
+                        className={`group inline-flex shrink-0 items-center rounded-xl border text-[11px] transition shadow-2xs ${
+                          prop.isHighlight
+                            ? 'border-amber-300 bg-amber-50/90 text-amber-950'
+                            : 'border-[var(--line)] bg-white text-[var(--sumi)] hover:border-[var(--ai)]/50'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            ukiyoSound.playSubtleTap();
+                            invalidateVoiceRecording();
+                            setInputText((prev) => {
+                              const trimmed = prev.trim();
+                              if (!trimmed) return prop.labelJp;
+                              if (trimmed.includes(prop.labelJp)) return prev;
+                              return `${trimmed} ${prop.labelJp}`;
+                            });
+                            inputRef.current?.focus();
+                          }}
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-left cursor-pointer"
+                          title={`Bấm để chèn từ khóa mục tiêu "${prop.labelJp}" (${prop.meaningVi}) vào ô trả lời — Không trừ điểm tự chủ`}
+                        >
+                          {prop.icon && (
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded bg-[var(--ai-soft)] font-serif text-[9px] font-black text-[var(--ai)]">
+                              {prop.icon}
+                            </span>
+                          )}
+                          <span className="font-jp font-bold text-[var(--sumi)] group-hover:text-[var(--ai)]">
+                            {prop.labelJp}
+                          </span>
+                          <span className="text-[10px] text-[var(--sumi-muted)] max-w-[115px] truncate">
+                            ({cleanPedagogicMeaning(prop.meaningVi).split('/')[0].trim()})
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            ukiyoSound.playSubtleTap();
+                            void scenarioVoiceService.playAiSpeech(prop.labelJp.replace(/[〜~]/g, ''), learnerVoiceId || 2);
+                          }}
+                          className="border-l border-[var(--line)]/70 px-1.5 py-1 text-[var(--sumi-muted)] hover:text-[var(--ai)] cursor-pointer"
+                          title={`Nghe phát âm: ${prop.labelJp}`}
+                        >
+                          <VolumeIcon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              <form onSubmit={handleSendMessage} className="flex items-center gap-2 rounded-2xl border border-[var(--line-strong)] bg-white p-1.5 shadow-xs">
                 {/* Button xin Hint (Tức thì < 5ms) */}
                 <button
                   type="button"
                   onClick={() => handleGetInstantHint()}
                   disabled={isSending || Boolean(session?.isNaturallyConcluded)}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border border-[var(--line)] bg-white px-3.5 py-2.5 text-xs font-bold text-[var(--ai)] transition hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] active:scale-95 shadow-2xs"
-                  title="Xin AI gợi ý cách đáp lời"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--paper-50)] px-3 py-2 text-xs font-bold text-[var(--ai)] transition hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] active:scale-95 cursor-pointer"
+                  title="Xin AI gợi ý 3 cấp độ (Từ khóa / Khung câu / Câu mẫu)"
                 >
                   {isLoadingHint ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ai)]/20 border-t-[var(--ai)]" />
@@ -3831,12 +4004,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     type="button"
                     onClick={handleToggleMic}
                     disabled={isSending || isProcessingStt}
-                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all shadow-xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shadow-2xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
                       isProcessingStt
                         ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] min-w-[105px]'
                         : isRecordingMic
                         ? 'border border-rose-500 bg-rose-600 text-white ring-4 ring-rose-400/25 shadow-md min-w-[96px] animate-pulse'
-                        : 'border border-[var(--line)] bg-white text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:shadow-sm active:scale-95 min-w-[80px]'
+                        : 'border border-[var(--ai)]/30 bg-[var(--ai-soft)]/70 text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white active:scale-95 min-w-[84px]'
                     }`}
                     title={
                       isProcessingStt
@@ -3863,7 +4036,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5">
-                        <svg className={`w-3.5 h-3.5 shrink-0 ${isRecordingMic ? 'text-white' : 'text-[var(--ai)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
                         <span className="whitespace-nowrap flex items-center gap-1.5">
@@ -3907,13 +4080,13 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   placeholder={
                     isRecordingMic
                       ? 'Đang lắng nghe giọng nói tiếng Nhật của bạn...'
-                      : 'Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)'
+                      : 'Nhập câu trả lời bằng tiếng Nhật hoặc bấm nút [Nói]...'
                   }
                   disabled={isSending}
-                  className={`flex-1 min-w-0 rounded-xl border px-3 sm:px-4 py-2.5 text-sm text-[var(--sumi)] outline-none transition ${
+                  className={`flex-1 min-w-0 rounded-xl px-3 py-2 text-sm font-jp text-[var(--sumi)] outline-none transition ${
                     isRecordingMic
-                      ? 'border-red-300 bg-red-50/40 ring-2 ring-red-200'
-                      : 'border-[var(--line)] bg-[var(--paper-50)] focus:border-[var(--ai)] focus:bg-white focus:ring-2 focus:ring-[var(--ai)]/20'
+                      ? 'bg-rose-50/60 text-rose-900 ring-1 ring-rose-300'
+                      : 'bg-transparent focus:bg-[var(--paper-50)]'
                   }`}
                 />
 
@@ -3923,7 +4096,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handlePlayLearnerSample(inputText)}
-                    className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] p-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition"
+                    className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] p-2 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition cursor-pointer"
                     title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
                   >
                     {isPlayingLearnerSample && playingLearnerText === inputText ? (
@@ -3942,7 +4115,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isSending}
-                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--ai-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--ai-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSending ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -3954,6 +4127,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   )}
                 </button>
               </form>
+              </div>
               )}
 
 

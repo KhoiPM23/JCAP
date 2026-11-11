@@ -409,22 +409,24 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         int autonomyScore;
         int pronScore;
 
-        if (speechDeliveries.Count > 0)
+        bool hasSpokenVoice = speechDeliveries.Count == 0 || speechDeliveries.Any(d => !d.IsTextInput && d.SpeechConfidence.HasValue && d.SpeechConfidence.Value > 0);
+
+        if (hasSpokenVoice)
         {
             var validLatencies = speechDeliveries
-                .Where(d => d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
+                .Where(d => !d.IsTextInput && d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
                 .Select(d => d.ResponseLatencySeconds!.Value)
                 .ToList();
             avgLatency = validLatencies.Count > 0 ? Math.Round(validLatencies.Average(), 1) : 0;
 
             var validPaces = speechDeliveries
-                .Where(d => (d.MoraRate.HasValue && d.MoraRate.Value > 0) || (d.SpeechPace.HasValue && d.SpeechPace.Value > 0))
+                .Where(d => !d.IsTextInput && ((d.MoraRate.HasValue && d.MoraRate.Value > 0) || (d.SpeechPace.HasValue && d.SpeechPace.Value > 0)))
                 .Select(d => d.MoraRate ?? d.SpeechPace!.Value)
                 .ToList();
             avgPace = validPaces.Count > 0 ? Math.Round(validPaces.Average(), 1) : 0;
 
             var turnFluencyScores = speechDeliveries
-                .Where(d => d.TurnFluencyScore.HasValue)
+                .Where(d => !d.IsTextInput && d.TurnFluencyScore.HasValue)
                 .Select(d => (double)d.TurnFluencyScore!.Value)
                 .ToList();
             if (turnFluencyScores.Count > 0)
@@ -445,7 +447,7 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             }
 
             var confidences = speechDeliveries
-                .Where(d => d.SpeechConfidence.HasValue)
+                .Where(d => !d.IsTextInput && d.SpeechConfidence.HasValue)
                 .Select(d => d.SpeechConfidence!.Value * 100)
                 .ToList();
             confidenceScore = confidences.Count > 0
@@ -472,23 +474,34 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                 : 100;
 
             var pronScores = speechDeliveries
-                .Where(d => d.PronunciationClarityScore.HasValue)
+                .Where(d => !d.IsTextInput && d.PronunciationClarityScore.HasValue)
                 .Select(d => (double)d.PronunciationClarityScore!.Value)
                 .ToList();
-            bool allTextInput = speechDeliveries.Count > 0 && speechDeliveries.All(d => d.IsTextInput || !d.PronunciationClarityScore.HasValue);
             pronScore = pronScores.Count > 0
                 ? (int)Math.Round(Math.Clamp(pronScores.Average(), 30, 100))
-                : (allTextInput ? 0 : confidenceScore);
+                : confidenceScore;
         }
         else
         {
-            var goodCount = feedbacks.Count(f => string.Equals(f.Status, "Good", StringComparison.OrdinalIgnoreCase));
-            var warningCount = feedbacks.Count(f => string.Equals(f.Status, "Warning", StringComparison.OrdinalIgnoreCase));
-            var errorCount = feedbacks.Count(f => string.Equals(f.Status, "Error", StringComparison.OrdinalIgnoreCase));
+            // Trường hợp học viên chỉ gõ phím / chèn gợi ý mà không nói qua micro:
+            // Không tự ý chấm điểm âm học (rõ âm, phản xạ thoại) để đảm bảo tính trung thực sư phạm
+            fluencyScore = 0;
+            confidenceScore = 0;
+            pronScore = 0;
+            avgLatency = 0;
+            avgPace = 0;
 
-            fluencyScore = ClampAndRound(85.0 + (goodCount * 3) - (warningCount * 5) - (errorCount * 12));
-            confidenceScore = ClampAndRound(88.0 + (goodCount * 2) - (warningCount * 4) - (errorCount * 10));
-            var autonomyScores = feedbacks.Select(f => { if (IsSurvivalPhraseFeedback(f)) return 100.0; if (f.SpeechDelivery?.TurnAutonomyScore.HasValue == true) return (double)f.SpeechDelivery.TurnAutonomyScore.Value; return 100.0; }).ToList(); autonomyScore = autonomyScores.Count > 0 ? (int)Math.Round(Math.Clamp(autonomyScores.Average(), 20, 100)) : 100; pronScore = 80;
+            var autonomyScores = feedbacks
+                .Select(f =>
+                {
+                    if (IsSurvivalPhraseFeedback(f)) return 100.0;
+                    if (f.SpeechDelivery?.TurnAutonomyScore.HasValue == true) return (double)f.SpeechDelivery.TurnAutonomyScore.Value;
+                    return 100.0;
+                })
+                .ToList();
+            autonomyScore = autonomyScores.Count > 0
+                ? (int)Math.Round(Math.Clamp(autonomyScores.Average(), 20, 100))
+                : 100;
         }
 
         return (fluencyScore, confidenceScore, autonomyScore, pronScore, avgLatency, avgPace);
