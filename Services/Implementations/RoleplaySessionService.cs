@@ -1122,12 +1122,12 @@ public class RoleplaySessionService : IRoleplaySessionService
                 {
                     SpeakingDurationSeconds = !isTextTurn && request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
                     ResponseLatencySeconds = !isTextTurn && request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
-                    SpeechConfidence = request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
+                    SpeechConfidence = !isTextTurn && request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
                     SpeechPace = !isTextTurn ? pace : null,
                     TurnFluencyScore = finalFluency,
                     TurnAutonomyScore = turnAutonomy,
                     AutonomyAssessment = autonomyAssessment,
-                    PronunciationClarityScore = pronClarity,
+                    PronunciationClarityScore = !isTextTurn ? pronClarity : null,
                     MoraRate = request.MoraRate,
                     JlptLevel = jlpt,
                     PaceAssessment = paceAssessment,
@@ -1578,7 +1578,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .AsNoTracking()
             .Where(m => m.UserId == userId)
             .OrderBy(m => m.NextRecommendedReviewUtc)
-            .Take(6)
+            .Take(36)
             .Select(m => new LearnerSkillMasteryItemDto
             {
                 SkillCode = m.SkillCode,

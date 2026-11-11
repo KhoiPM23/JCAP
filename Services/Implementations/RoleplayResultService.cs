@@ -687,7 +687,7 @@ namespace JCAP.Services.Implementations
 
                 : null;
 
-            bool hasVoiceTurns = userFeedbacks.Any(f => f.SpeechDelivery != null && !f.SpeechDelivery.IsTextInput && f.SpeechDelivery.SpeechConfidence.HasValue && f.SpeechDelivery.SpeechConfidence.Value > 0);
+            bool hasVoiceTurns = userFeedbacks.Any(f => f.SpeechDelivery != null && !f.SpeechDelivery.IsTextInput && (!string.IsNullOrEmpty(f.SpeechDelivery.AudioUrl) || (f.SpeechDelivery.SpeechConfidence.HasValue && f.SpeechDelivery.SpeechConfidence.Value > 0.4)));
 
             var fluencyScore = hasVoiceTurns ? (evalResult?.FluencyScore ?? 85) : 0;
 
@@ -982,7 +982,8 @@ namespace JCAP.Services.Implementations
             if (result.ImpressionScore >= 85) badges.Add("Văn phong Chuẩn mực");
             if (!usedAnyHint && (evalResult?.AutonomyScore ?? 100) >= 95) badges.Add("Tự chủ Không gợi ý");
             else if (usedAnyHint && (evalResult?.AutonomyScore ?? 100) >= 80) badges.Add("Chủ động Khám phá");
-            if (hasVoiceTurns && fluencyScore >= 80) badges.Add("Phản xạ Tức thì");
+            if (!usedAnyHint && hasVoiceTurns && fluencyScore >= 80) badges.Add("Phản xạ Tức thì");
+            else if (!usedAnyHint && (evalResult?.AutonomyScore ?? 100) >= 90) badges.Add("Phản xạ Độc lập");
             else if (!hasVoiceTurns && result.PassStatus) badges.Add("Đối đáp Chuẩn xác");
             if (result.GrammarScore >= 85) badges.Add("Ngữ pháp Chuẩn xác");
             if (result.VocabularyScore >= 85) badges.Add("Vốn từ Phong phú");
@@ -997,6 +998,62 @@ namespace JCAP.Services.Implementations
                 weakVocabularies,
                 weakGrammars);
 
+            // Đề xuất từ vựng & ngữ pháp mở rộng theo chủ đề (Adaptive Topic Reinforcement)
+            var topicCode = "DAILY_LIFE";
+            var scenarioEntity = await _dbContext.Scenarios.AsNoTracking().FirstOrDefaultAsync(s => s.Id == scenarioId);
+            if (scenarioEntity != null)
+            {
+                topicCode = ScenarioService.ResolveScenarioTopicCode(scenarioEntity);
+            }
+            var topicMeta = ScenarioService.GetTopicMetadata(topicCode);
+            var dbTopic = await _dbContext.LearningTopics
+                .AsNoTracking()
+                .Include(t => t.TopicVocabularies).ThenInclude(tv => tv.Vocabulary)
+                .Include(t => t.TopicGrammars).ThenInclude(tg => tg.Grammar)
+                .FirstOrDefaultAsync(t => (t.Code == topicCode || t.Code.StartsWith(topicCode + "_")) && t.JLPTLevel == result.JLPTLevel)
+                ?? await _dbContext.LearningTopics.AsNoTracking().Include(t => t.TopicVocabularies).ThenInclude(tv => tv.Vocabulary).Include(t => t.TopicGrammars).ThenInclude(tg => tg.Grammar).FirstOrDefaultAsync(t => t.Code == topicCode);
+
+            var topicRecommendedVocabs = new List<WeakVocabularyDto>();
+            var topicRecommendedGrammars = new List<WeakGrammarDto>();
+
+            if (dbTopic != null)
+            {
+                var usedWords = targetVocabularies.Select(v => v.Word.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var usedPatterns = targetGrammars.Select(g => g.Pattern.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                topicRecommendedVocabs = dbTopic.TopicVocabularies
+                    .Where(tv => tv.Vocabulary != null && tv.Vocabulary.IsActive && !usedWords.Contains(tv.Vocabulary.Word.Trim()))
+                    .OrderBy(tv => tv.OrderIndex)
+                    .Select(tv => new WeakVocabularyDto
+                    {
+                        Id = tv.VocabularyId,
+                        Word = tv.Vocabulary.Word,
+                        Reading = tv.Vocabulary.Reading,
+                        Meaning = tv.Vocabulary.Meaning,
+                        MasteryScore = 70,
+                        Status = "AdaptiveTopicExpansion",
+                        Reason = $"Từ vựng mở rộng thuộc chủ đề {dbTopic.Name}"
+                    })
+                    .Take(6)
+                    .ToList();
+
+                topicRecommendedGrammars = dbTopic.TopicGrammars
+                    .Where(tg => tg.Grammar != null && tg.Grammar.IsActive && !usedPatterns.Contains(tg.Grammar.Pattern.Trim()))
+                    .OrderBy(tg => tg.OrderIndex)
+                    .Select(tg => new WeakGrammarDto
+                    {
+                        Id = tg.GrammarId,
+                        Pattern = tg.Grammar.Pattern,
+                        Meaning = tg.Grammar.Meaning,
+                        ExampleSentence = tg.Grammar.ExampleSentence,
+                        MasteryScore = 70,
+                        Status = "AdaptiveTopicExpansion",
+                        Reason = $"Mẫu ngữ pháp mở rộng thuộc chủ đề {dbTopic.Name}"
+                    })
+                    .Take(4)
+                    .ToList();
+            }
+
             return ApiResponse<RoleplayResultDetailDto>.Ok(new RoleplayResultDetailDto
 
             {
@@ -1005,6 +1062,11 @@ namespace JCAP.Services.Implementations
                 KanjiRank = kanjiRank,
                 HankoStampText = hankoText,
                 CompetencyBadges = badges,
+                TopicCode = topicCode,
+                TopicName = dbTopic?.Name ?? topicMeta.Name,
+                TopicId = dbTopic?.Id,
+                TopicRecommendedVocabularies = topicRecommendedVocabs,
+                TopicRecommendedGrammars = topicRecommendedGrammars,
                 Id = result.Id,
                 NextRecommendedScenarioId = nextScenarioId,
                 NextRecommendedScenarioTitle = nextScenarioTitle,

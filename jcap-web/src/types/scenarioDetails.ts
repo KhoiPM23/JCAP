@@ -75,6 +75,8 @@ export interface ScenarioLevelConfiguration {
   missions: ScenarioMission[];
   targetVocabularies: ScenarioVocabulary[];
   targetGrammars: ScenarioGrammar[];
+  topicExpandedVocabularies?: ScenarioVocabulary[];
+  topicExpandedGrammars?: ScenarioGrammar[];
 }
 
 export interface ScenarioDetails {
@@ -84,6 +86,9 @@ export interface ScenarioDetails {
   thumbnail?: string;
   isActive: boolean;
   scenarioCode?: string;
+  topicCode?: string;
+  topicName?: string;
+  topicId?: number;
   levelConfigurations: ScenarioLevelConfiguration[];
 }
 

@@ -13,7 +13,7 @@ import { HanabiSparkleBurst } from '../components/roleplay/HanabiSparkleBurst';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
-import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml, cleanPedagogicMeaning, generateClientFuriganaHtml } from '../utils/japaneseSanitizer';
+import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml, cleanPedagogicMeaning, generateClientFuriganaHtml, alignFuriganaWithOriginal } from '../utils/japaneseSanitizer';
 import { getPracticePrefs, setPracticePref } from '../utils/practicePrefs';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
@@ -89,11 +89,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   }, []);
 
   const getResolvedMessageFurigana = useCallback((msg: RoleplayMessageDto): string => {
+    let html = '';
     if (msg.furiganaHtml && msg.furiganaHtml.includes('<ruby>') && msg.furiganaHtml.includes('</ruby>')) {
-      return cleanFuriganaHtml(msg.furiganaHtml);
+      html = cleanFuriganaHtml(msg.furiganaHtml);
+    } else {
+      const scenarioVocabs = session?.targetVocabularies?.map(v => ({ word: v.word, reading: v.reading })) || [];
+      html = generateClientFuriganaHtml(msg.japaneseText, scenarioVocabs);
     }
-    const scenarioVocabs = session?.targetVocabularies?.map(v => ({ word: v.word, reading: v.reading })) || [];
-    return generateClientFuriganaHtml(msg.japaneseText, scenarioVocabs);
+    return alignFuriganaWithOriginal(html, msg.japaneseText);
   }, [session?.targetVocabularies]);
 
   const [autoPlayAudio, setAutoPlayAudio] = useState(() => getPracticePrefs().autoPlay);
@@ -327,7 +330,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   useEffect(() => {
     if (session) {
       const currentSessionId = session.id || session.sessionId || sessionId;
-      const hasPriorUserMsgs = Boolean(session.messages && session.messages.some((m) => m.sender === 'User'));
+      const isUserMsg = (sender?: string) => {
+        const s = (sender || '').toLowerCase().trim();
+        return s === 'user' || s === 'learner' || s === 'me';
+      };
+      const hasPriorUserMsgs = Boolean(session.messages && session.messages.some((m) => isUserMsg(m.sender)));
       hasPriorUserMessagesRef.current = hasPriorUserMsgs;
 
       let storedOffers = 0;
@@ -342,7 +349,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       }
 
       const msgHints = session.messages?.filter(
-        (m) => m.sender === 'User' && m.linguisticFeedback?.speechDelivery?.hintLevelUsed != null && m.linguisticFeedback.speechDelivery.hintLevelUsed > 0
+        (m) => isUserMsg(m.sender) && m.linguisticFeedback?.speechDelivery?.hintLevelUsed != null && m.linguisticFeedback.speechDelivery.hintLevelUsed > 0
       ).length || 0;
       const priorHints = Math.max(session.totalHintTurnsUsed || 0, msgHints, storedHints);
       sessionHintUseCountRef.current = priorHints;
@@ -478,32 +485,32 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         // Chỉ trừ điểm nếu chưa từng mở câu này trong phiên
         if (!unlockedTranslationMsgIdsRef.current.has(messageId)) {
           unlockedTranslationMsgIdsRef.current.add(messageId);
-          const isFirstInSession = sessionTranslationPeeksUsedRef.current === 0;
           sessionTranslationPeeksUsedRef.current += 1;
           setSessionTranslationPeeksUsed((c) => c + 1);
           translationPeekCountRef.current += 1;
           hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
 
-          if (isFirstInSession) {
-            notifyDeduction(0, 'Bản dịch miễn phí (Lượt đầu tiên trong phiên)');
-          } else {
-            setTurnPeekPenalty((prevPenalty) => {
-              const newPenalty = prevPenalty + 5;
-              notifyDeduction(newPenalty, `Xem dịch nghĩa: -${newPenalty}đ Tự chủ cho lượt này`);
-              return newPenalty;
-            });
-          }
+          // Bấm dịch câu: Trừ ngay 5đ tự chủ cho lượt nói đó (UI cập nhật real-time)
+          setTurnPeekPenalty((prevPenalty) => {
+            const newPenalty = prevPenalty + 5;
+            notifyDeduction(newPenalty, `Xem dịch câu AI: -5đ Tự chủ cho lượt nói này`);
+            return newPenalty;
+          });
         }
       }
       return next;
     });
   };
 
-  const hasPriorUserMessages = Boolean(session?.messages && session.messages.some((m) => m.sender === 'User'));
+  const isUserSender = (sender?: string) => {
+    const s = (sender || '').toLowerCase();
+    return s === 'user' || s === 'learner' || s === 'me';
+  };
+  const hasPriorUserMessages = Boolean(session?.messages && session.messages.some((m) => isUserSender(m.sender)));
   // Ưu đãi lần đầu chỉ áp dụng khi: chưa từng dùng gợi ý trong phiên và phiên chưa có tương tác từ trước
   const isFirstHintInSession = sessionHintUseCount === 0 && !hasPriorUserMessages;
   // Banner chào mời chỉ ghi "Lần đầu" ở duy nhất lần xuất hiện đầu tiên của phiên mới
-  const isFirstHintOffer = sessionHintUseCount === 0 && sessionHintOffersCount <= 1 && !hasPriorUserMessages;
+  const isFirstHintOffer = sessionHintUseCount === 0 && sessionHintOffersCount === 0 && !hasPriorUserMessages;
 
   // Tính trần tự chủ tối đa thời gian thực cho lượt nói hiện tại
   const currentTurnMaxAutonomy = useMemo(() => {
@@ -580,6 +587,31 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       else next.add(item.id);
       return next;
     });
+
+    // Lưu đồng bộ vào localStorage để khi mở Kho Flashcard Đã Lưu luôn thấy ngay lập tức
+    try {
+      const rawLocal = localStorage.getItem('jcap_saved_flashcards');
+      let localList: any[] = [];
+      try { localList = rawLocal ? JSON.parse(rawLocal) : []; } catch {}
+      if (!Array.isArray(localList)) localList = [];
+      const existsIndex = localList.findIndex((it: any) => (it.word === item.text || it.pattern === item.text || it.frontText === item.text));
+      if (isBookmarked && existsIndex >= 0) {
+        localList.splice(existsIndex, 1);
+      } else if (!isBookmarked && existsIndex < 0) {
+        localList.push({
+          id: item.id || Date.now(),
+          type: isVocab ? 'vocab' : 'grammar',
+          word: isVocab ? item.text : undefined,
+          reading: item.subtext,
+          pattern: !isVocab ? item.text : undefined,
+          meaning: item.meaning,
+          exampleSentence: item.exampleSentence,
+          jlptLevel: session?.jlptLevel || session?.level || 'N4',
+          savedAt: new Date().toISOString(),
+        });
+      }
+      localStorage.setItem('jcap_saved_flashcards', JSON.stringify(localList));
+    } catch {}
 
     const res = await flashcardService.toggleBookmark(
       type,
@@ -802,6 +834,20 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+
+  const handleDialogueScroll = useCallback(() => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setIsScrolledUp(distanceToBottom > 140);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsScrolledUp(false);
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasPlayedOpeningRef = useRef(false);
 
@@ -2618,9 +2664,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           {toastMessage.includes('Flashcard') && (
             <Link
               to="/flashcards/bookmarks"
-              className="shrink-0 rounded-lg bg-amber-400 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 hover:bg-amber-300 transition shadow-2xs"
+              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-amber-400 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 hover:bg-amber-300 transition shadow-2xs"
             >
-              Xem ngay ➔
+              <span>Xem ngay</span>
+              <ArrowRightIcon className="w-3 h-3" />
             </Link>
           )}
         </div>
@@ -2916,41 +2963,53 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       {/* BODY WORKSPACE (3-COLUMN LAYOUT) */}
       <div className="relative flex flex-1 overflow-hidden">
         {/* ============================================================ */}
-        {/* 1. LEFT SIDEBAR: Missions & Cheat Sheet                     */}
+        {/* 1. LEFT SIDEBAR: Sổ tay Chiến thuật (Missions & Cheat Sheet) */}
         {/* ============================================================ */}
         <aside
-          className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] washi-parchment relative flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isLeftOpen
               ? 'w-72 lg:w-80 opacity-100 shadow-md'
               : 'w-0 border-r-0 opacity-0 pointer-events-none'
           }`}
         >
-          <div className="w-72 lg:w-80 flex flex-col h-full shrink-0">
+          {/* Lớp hoa văn sóng biển Seigaiha mờ truyền thống */}
+          <div className="pointer-events-none absolute inset-0 -z-0 opacity-25 seigaiha-subtle" />
+
+          {/* Watermark thư pháp chữ Hán đứng dọc chìm ở góc dưới */}
+          <div className="sb-wm text-4xl opacity-20 select-none pointer-events-none">秘策</div>
+
+          <div className="w-72 lg:w-80 flex flex-col h-full shrink-0 relative z-10">
             {/* Header sidebar */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-white">
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-white/90 backdrop-blur-xs">
               <div>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--sumi-faint)]">
-                  Tiến độ kịch bản
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ai)] font-mono">
+                  戦術手帳 · SỔ TAY CHIẾN THUẬT
                 </h2>
                 <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
-                  <span className="text-[var(--ai)]">{completedMissionsCount}</span>
-                  <span className="text-[var(--sumi-faint)]">/{totalMissionsCount} nhiệm vụ</span>
+                  <span>Mốc hoàn thành: </span>
+                  <span className="text-[var(--ai)] font-mono font-black">{completedMissionsCount}</span>
+                  <span className="text-[var(--sumi-faint)] font-mono">/{totalMissionsCount}</span>
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsLeftOpen(false)}
-                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95"
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setIsLeftOpen(false);
+                }}
+                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95 tactile-press cursor-pointer"
                 title="Thu gọn danh sách nhiệm vụ"
               >
-                <span>◀</span>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
                 <span>Thu gọn</span>
               </button>
             </div>
 
 
             {/* Progress bar */}
-            <div className="px-4 py-3 border-b border-[var(--line)] bg-white">
+            <div className="px-4 py-3 border-b border-[var(--line)] bg-white/80">
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--paper-200)]">
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out"
@@ -2963,11 +3022,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 />
               </div>
               <div className="mt-1.5 flex justify-between text-[10px] font-semibold text-[var(--sumi-faint)]">
-                <span>Bắt đầu</span>
+                <span>Khởi đầu</span>
                 <span className={progressPercent >= 100 ? 'text-[var(--score-good)] font-bold' : 'text-[var(--ai)]'}>
                   {progressPercent}%
                 </span>
-                <span>Hoàn thành</span>
+                <span>Đích mốc</span>
               </div>
             </div>
 
@@ -2980,7 +3039,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   ukiyoSound.playSubtleTap();
                   setSidebarTab('missions');
                 }}
-                className={`flex-1 py-2.5 font-semibold transition ${
+                className={`flex-1 py-2.5 font-semibold transition tactile-press ${
                   sidebarTab === 'missions'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
@@ -2994,7 +3053,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   ukiyoSound.playSubtleTap();
                   setSidebarTab('knowledge');
                 }}
-                className={`flex-1 py-2.5 font-semibold transition ${
+                className={`flex-1 py-2.5 font-semibold transition tactile-press ${
                   sidebarTab === 'knowledge'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
@@ -3006,30 +3065,34 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
             {/* Content list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
               {sidebarTab === 'missions' ? (
-                // DANH SÁCH NHIỆM VỤ TỰ ĐỘNG TICK
-                <div className="space-y-2.5">
-                  {(session?.missions || []).map((mission: RoleplayMissionDto) => {
+                // DANH SÁCH NHIỆM VỤ TỰ ĐỘNG TICK (STEPPER CHIẾN THUẬT)
+                <div className="quest-stepper-container space-y-2.5">
+                  {(session?.missions || []).map((mission: RoleplayMissionDto, idx, arr) => {
                     const isRecentlyDone = Array.isArray(recentlyCompletedMissionIds) &&
                       recentlyCompletedMissionIds.some((id) => id === mission.missionId || id === mission.id || id === mission.order);
+                    const hasNext = idx < arr.length - 1;
                     return (
                     <div
                       key={mission.missionId ?? mission.id ?? mission.order}
-                      className={`flex gap-3 rounded-2xl border p-3 transition-all duration-300 ${
+                      className={`group quest-stepper-item flex gap-3 rounded-2xl border p-3 transition-all duration-300 tactile-hover ${
                         isRecentlyDone
-                          ? 'border-emerald-500 bg-emerald-50/80 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
+                          ? 'border-emerald-500 bg-emerald-50/90 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
                           : mission.isCompleted
-                          ? 'border-emerald-200 bg-emerald-50/50 shadow-xs'
-                          : 'border-[var(--line)] bg-[var(--paper-50)] hover:bg-[var(--paper-100)] hover:border-[var(--line-strong)] shadow-xs'
+                          ? 'border-emerald-200 bg-emerald-50/60 shadow-xs'
+                          : 'border-[var(--line)] bg-white/90 hover:bg-white hover:border-[var(--ai)]/50 shadow-2xs'
                       }`}
                     >
-                      {/* Trạng thái icon: CHỈ CÓ Pending hoặc Completed */}
+                      {hasNext && (
+                        <div className={`quest-stepper-connector ${mission.isCompleted ? 'completed' : ''}`} />
+                      )}
+                      {/* Trạng thái icon: Con dấu slot RPG */}
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                        className={`quest-slot transition-transform ${
                           mission.isCompleted
-                            ? 'bg-emerald-500 text-white shadow-xs'
-                            : 'bg-[var(--paper-200)] text-[var(--sumi-muted)]'
+                            ? 'completed'
+                            : ''
                         }`}
                       >
                         {mission.isCompleted ? '✓' : mission.order}
@@ -3091,7 +3154,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
                   {/* Link nhanh sang Kho Flashcard Đã Lưu */}
                   <Link
-                    to="/flashcards/bookmarks"
+                    to="/flashcards/bookmarks?level=All&type=All"
                     onClick={() => ukiyoSound.playSubtleTap()}
                     className="flex items-center justify-between rounded-xl border border-amber-300/80 bg-amber-50/90 hover:bg-amber-100/80 px-3 py-2 text-[11px] font-bold text-amber-950 shadow-2xs transition"
                   >
@@ -3099,7 +3162,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       <BookmarkIcon className="w-3.5 h-3.5 text-amber-700" />
                       <span>Kho Flashcard Đã Lưu</span>
                     </span>
-                    <span className="text-amber-800">Mở xem ➔</span>
+                    <span className="inline-flex items-center gap-1 text-amber-800">
+                      <span>Mở xem</span>
+                      <ArrowRightIcon className="w-3 h-3" />
+                    </span>
                   </Link>
 
                   {/* Tab Content: Vocabularies */}
@@ -3160,11 +3226,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                               <p className="mt-1 text-xs text-[var(--sumi)] font-medium leading-relaxed">
                                 {mainMeaning}
                               </p>
-                              {example && (
-                                <p className="mt-1 text-[11px] text-[var(--sumi-muted)] italic font-jp">
-                                  {example}
-                                </p>
-                              )}
                             </div>
                           );
                         })
@@ -3260,97 +3321,60 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,58,138,0.03),transparent_70%)]" />
 
           {/* ============================================================ */}
-          {/* STAGE DIRECTOR HUD: Bối cảnh, Vai vế & Mục tiêu Đang Diễn Ra */}
+          {/* HERO CONVERSATION CANVAS (NO STATIC BANNER, PURE GAME FLOW)   */}
           {/* ============================================================ */}
-          <div className="relative z-10 shrink-0 border-b border-[var(--line)] bg-white/90 backdrop-blur-md px-3 py-2.5 sm:px-5 shadow-2xs">
-            <div className="mx-auto flex max-w-[840px] flex-col gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Cụm Trái: Ấn chương Sân khấu, Vai vế Giao tiếp & Nhịp độ */}
-                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-[var(--sumi)] px-2 py-0.5 text-[10px] font-serif font-bold tracking-wider text-amber-300 shadow-2xs">
-                    <span>舞台</span>
-                    <span className="font-sans text-[9px] uppercase text-sky-200">Sân khấu</span>
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--paper-50)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--sumi)]">
-                    <span className="text-[var(--sumi-muted)]">Vai giao tiếp:</span>
-                    <strong className="text-[var(--ai)]">Bạn</strong>
-                    <span className="text-[var(--sumi-faint)]">↔</span>
-                    <strong className="truncate max-w-[160px]">{session.aiPersona}</strong>
-                  </span>
-
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${liveMomentum.badgeClass}`}>
-                    <span>{liveMomentum.label.trim()}</span>
-                  </span>
-                </div>
-
-                {/* Cụm Phải: Stepper Nhiệm vụ Trực quan (1 -> 2 -> 3) */}
-                {session.missions && session.missions.length > 0 && (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-muted)] hidden sm:inline">
-                      Mục tiêu:
+          <div
+            ref={chatContainerRef}
+            onScroll={handleDialogueScroll}
+            className="relative z-10 flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 md:p-6"
+          >
+            <div className="mx-auto w-full max-w-[840px] space-y-4">
+              {/* Thẻ Khởi Thảo Bối Cảnh Nhật Bản (Makimono Scene Briefing - Tự Động Trôi Theo Dòng Cuộn) */}
+              {session && (
+                <div className="mx-auto max-w-xl mb-2 rounded-2xl border border-stone-200/90 bg-stone-50/90 p-4 shadow-2xs text-center font-sans">
+                  <div className="flex items-center justify-center gap-2 mb-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 font-mono">
+                      Bối cảnh hội thoại · 会話の場面
                     </span>
-                    <div className="flex items-center gap-1">
-                      {session.missions.map((m, idx) => {
-                        const isCurrent = idx === activeMissionIndex;
-                        return (
-                          <button
-                            key={m.missionId ?? m.id ?? idx}
-                            type="button"
-                            onClick={() => {
-                              ukiyoSound.playSubtleTap();
-                              setSidebarTab('missions');
-                              setIsLeftOpen(true);
-                            }}
-                            title={`Mục tiêu ${idx + 1}: ${m.content}`}
-                            className={`inline-flex h-6 items-center gap-1 rounded-full px-2 text-[10px] font-extrabold transition cursor-pointer ${
-                              m.isCompleted
-                                ? 'bg-emerald-600 text-white shadow-2xs'
-                                : isCurrent
-                                ? 'bg-[var(--ai)] text-white ring-2 ring-[var(--ai)]/25 shadow-2xs'
-                                : 'bg-[var(--paper-200)] text-[var(--sumi-muted)] hover:bg-[var(--line)]'
-                            }`}
-                          >
-                            <span>{m.isCompleted ? '✓' : idx + 1}</span>
-                            {isCurrent && (
-                              <span className="max-w-[150px] sm:max-w-[210px] truncate font-sans font-bold">
-                                {m.content}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Dòng Bối cảnh Tình huống thu gọn tinh tế */}
-              {session?.scenarioContext && (
-                <div className="flex items-start justify-between gap-3 border-t border-[var(--line)]/60 pt-1.5 text-[11px]">
-                  <p className={`text-[var(--sumi-muted)] leading-relaxed ${isContextBannerExpanded ? '' : 'line-clamp-1'}`}>
-                    <strong className="text-[var(--sumi)] font-semibold mr-1.5">Bối cảnh:</strong>
-                    {session.scenarioContext}
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    {session.scenarioContext || 'Đối thoại tự nhiên cùng AI theo vai diễn bối cảnh thực tế.'}
                   </p>
-                  {session.scenarioContext.length > 90 && (
-                    <button
-                      type="button"
-                      onClick={() => setIsContextBannerExpanded(!isContextBannerExpanded)}
-                      className="shrink-0 text-[10px] font-bold text-[var(--ai)] hover:underline cursor-pointer"
-                    >
-                      {isContextBannerExpanded ? 'Thu gọn ▲' : 'Chi tiết ▼'}
-                    </button>
-                  )}
+                  <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] text-slate-500">
+                    <span>Đối thoại cùng: <strong className="text-slate-800 font-semibold">{session.aiPersona}</strong></span>
+                    <span>•</span>
+                    <span>Trình độ: <strong className="text-slate-800 font-semibold">JLPT {session.level || session.jlptLevel || 'N4'}</strong></span>
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* ============================================================ */}
-          {/* HERO CONVERSATION CANVAS                                    */}
-          {/* ============================================================ */}
-          <div className="relative z-10 flex-1 overflow-y-auto p-3 sm:p-5 md:p-6">
-            <div className="mx-auto w-full max-w-[840px] space-y-4">
+              {/* HUD Tiến độ Nhiệm vụ Nhịp nhàng (Rhythmic Quest Progress HUD) - Sticky dính nhẹ trên đầu */}
+              {activeMission && (
+                <div className="sticky top-2 z-20 mx-auto max-w-xl mb-3 rounded-2xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-md p-3.5 shadow-sm font-sans transition-all hover:shadow-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="quest-slot text-xs font-bold font-mono text-[var(--ai)] border-[var(--ai)] bg-[var(--ai-soft)] shrink-0">
+                        {activeMission.order}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)] font-mono">
+                            Mốc thử thách {activeMissionIndex + 1}/{totalMissionsCount}
+                          </span>
+                          <span className="text-[10px] font-serif text-[var(--sumi-muted)]">現在の目標</span>
+                        </div>
+                        <p className="text-xs font-semibold text-[var(--sumi)] truncate m-0">
+                          {activeMission.content}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-[var(--paper-200)] text-[var(--sumi-muted)] shrink-0">
+                      {progressPercent}%
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* M3: Micro-Celebration Banner for Newly Completed Mission */}
               {celebratingMission && (
@@ -3446,54 +3470,41 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       className={`group relative max-w-[82%] rounded-2xl p-4 sm:p-4.5 transition duration-200 ${
                         isAi
                           ? 'bubble-ai rounded-tl-xs border border-[var(--line)] border-l-4 border-l-[var(--ai)] bg-white/95 text-[var(--sumi)] shadow-xs hover:shadow-sm'
-                          : `bubble-user rounded-tr-xs bg-gradient-to-br from-[#0F2547] via-[var(--ai)] to-[#1E3A8A] text-white cursor-pointer border border-sky-300/20 shadow-sm ${
-                              isSelected ? 'ring-2 ring-sky-400/60 shadow-md' : 'hover:brightness-105 hover:shadow-md'
+                          : `bubble-user rounded-tr-xs bg-[#1E293B] text-white cursor-pointer border border-slate-700/80 shadow-xs ${
+                              isSelected ? 'ring-2 ring-sky-400/70 shadow-md' : 'hover:bg-[#1A2333] hover:shadow-sm'
                             }`
                       }`}
                     >
                       {/* Header in bubble */}
-                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <div className="mb-1 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5">
                           <span
                             className={`inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide ${
-                              isAi ? 'text-[var(--sumi-muted)]' : 'text-sky-200'
+                              isAi ? 'text-[var(--sumi-muted)]' : 'text-slate-300'
                             }`}
                           >
                             {isAi && (
                               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--ai)]" />
                             )}
-                            <span>{isAi ? session.aiPersona : 'Lượt lời của bạn'}</span>
+                            <span>{isAi ? session.aiPersona : 'Bạn'}</span>
                           </span>
                         </div>
 
-
-                        {/* Quick Status Badge & Autonomy Chip for User message */}
-                        {!isAi && msg.linguisticFeedback && (
+                        {/* Status chip for User message if warning/error */}
+                        {!isAi && msg.linguisticFeedback && getFeedbackStatus(msg.linguisticFeedback) !== 'good' && (
                           <div className="flex items-center gap-1">
-                            {getFeedbackStatus(msg.linguisticFeedback) !== 'good' && (
-                              <div
-                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-xs ${
-                                  getFeedbackStatus(msg.linguisticFeedback) === 'warning'
-                                    ? 'bg-amber-400 text-slate-900'
-                                    : 'bg-rose-500 text-white'
-                                }`}
-                                title="Bấm để xem phân tích ngữ pháp chi tiết"
-                              >
-                                <span>
-                                  {getFeedbackStatus(msg.linguisticFeedback) === 'warning'
-                                    ? 'Lưu ý'
-                                    : 'Cần sửa'}
-                                </span>
-                              </div>
-                            )}
-                            {msg.linguisticFeedback.speechDelivery?.turnAutonomyScore != null && msg.linguisticFeedback.speechDelivery.turnAutonomyScore < 95 && (
-                              <span
-                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-300 text-amber-950 shadow-2xs"
-                                title={msg.linguisticFeedback.speechDelivery.autonomyAssessment || 'Độ tự chủ lượt nói'}
-                              >
-                                <span>{msg.linguisticFeedback.speechDelivery.turnAutonomyScore}đ Cấp {msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 85 ? '1' : msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 60 ? '2' : '3'}</span>
-                              </span>
-                            )}
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold shadow-2xs ${
+                                getFeedbackStatus(msg.linguisticFeedback) === 'warning'
+                                  ? 'bg-amber-400 text-slate-950'
+                                  : 'bg-rose-500 text-white'
+                              }`}
+                              title="Bấm để xem phân tích ngữ pháp chi tiết"
+                            >
+                              {getFeedbackStatus(msg.linguisticFeedback) === 'warning'
+                                ? 'Lưu ý'
+                                : 'Cần sửa'}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -3540,11 +3551,15 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         <div className="mt-2 flex items-center justify-between gap-1.5 pt-1.5 border-t border-white/20 text-[10px]">
                           {/* Trái: Độ rõ phát âm & Vết mực Sumi (nếu có) */}
                           <div className="flex items-center gap-2 min-w-0">
-                            {msg.linguisticFeedback?.speechDelivery?.pronunciationClarityScore != null && (
+                            {msg.linguisticFeedback?.speechDelivery?.isTextInput ? (
+                              <span className="text-white/60 text-[10px] shrink-0 font-medium">
+                                Gõ phím
+                              </span>
+                            ) : msg.linguisticFeedback?.speechDelivery?.pronunciationClarityScore != null ? (
                               <span className="font-mono text-blue-200/90 text-[10px] shrink-0">
                                 {msg.linguisticFeedback.speechDelivery.pronunciationClarityScore}% rõ
                               </span>
-                            )}
+                            ) : null}
                             {msg.linguisticFeedback?.sumiInk?.hasStain && (
                               <div className="shrink-0">
                                 <SumiInkIndicator feedback={msg.linguisticFeedback.sumiInk} />
@@ -3553,37 +3568,25 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                           </div>
 
                           {/* Phải: Các nút hành động trực diện */}
-                          <div className="flex items-center gap-1 shrink-0">
-                            {/* Nút dịch câu của người dùng */}
-                            {msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Nút bật/tắt furigana: Chỉ hiển thị khi câu có chữ Hán Kanji */}
+                            {/[\u4E00-\u9FAF]/.test(msg.japaneseText) && (
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toggleAiTranslationPeek(msg.id);
+                                  toggleFuriForMessage(msg.id);
                                 }}
-                                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
-                                title={revealedAiTranslationIds.has(msg.id) ? "Ẩn dịch" : "Xem dịch"}
+                                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition cursor-pointer ${
+                                  isFuriActiveForMsg(msg.id)
+                                    ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-2xs'
+                                    : 'text-white/90 hover:bg-white/20'
+                                }`}
+                                title={isFuriActiveForMsg(msg.id) ? "Ẩn phiên âm Furigana" : "Hiện phiên âm Furigana"}
                               >
-                                <span>{revealedAiTranslationIds.has(msg.id) ? "Ẩn dịch" : "Dịch"}</span>
+                                <span>{isFuriActiveForMsg(msg.id) ? "Ẩn Furi" : "Furi"}</span>
                               </button>
                             )}
-                            {/* Nút bật/tắt furigana câu của người dùng */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFuriForMessage(msg.id);
-                              }}
-                              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition cursor-pointer ${
-                                isFuriActiveForMsg(msg.id)
-                                  ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-2xs'
-                                  : 'text-white/90 hover:bg-white/20'
-                              }`}
-                              title={isFuriActiveForMsg(msg.id) ? "Ẩn phiên âm Furigana câu này" : "Hiện phiên âm Furigana câu này"}
-                            >
-                              <span>{isFuriActiveForMsg(msg.id) ? "Ẩn Furi" : "Furi"}</span>
-                            </button>
 
                             {/* Nút Xem phân tích đánh giá */}
                             <button
@@ -3746,6 +3749,22 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             </div>
           </div>
 
+          {/* Scroll-Adaptive Floating Game Action HUD (Hiển thị khi cuộn lên xem lịch sử) */}
+          {isScrolledUp && (
+            <button
+              type="button"
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                scrollToBottom();
+              }}
+              className="absolute bottom-24 right-6 sm:right-10 z-30 inline-flex items-center gap-1.5 rounded-full bg-slate-900/95 hover:bg-black backdrop-blur-md px-3.5 py-2 text-xs font-bold text-white shadow-xl border border-slate-700/80 transition-all hover:scale-105 active:scale-95 cursor-pointer animate-fade-in"
+              title="Cuộn xuống lượt đối thoại mới nhất"
+            >
+              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+              <span>↓ Lượt mới nhất</span>
+            </button>
+          )}
+
 
           {/* HINT BAR & INPUT BAR */}
           <footer className="shrink-0 border-t border-[var(--line)] bg-[var(--paper-50)] p-3 md:p-4 z-10 shadow-sm">
@@ -3845,7 +3864,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       className="px-3 py-1 rounded-full bg-[var(--ai)] text-white text-[11px] font-bold hover:bg-[var(--ai-hover)] transition shadow-2xs cursor-pointer active:scale-95 flex items-center gap-1"
                     >
                       <span>{isFirstHintOffer ? 'Xem gợi ý (Lần đầu: 0đ)' : 'Xem gợi ý (-10đ)'}</span>
-                      <span>➔</span>
+                      <ArrowRightIcon className="w-3 h-3" />
                     </button>
                     <button
                       type="button"
@@ -3914,9 +3933,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       const sid = session.sessionId || session.id || sessionId;
                       navigate(returnUrl ? `/roleplay/results/${sid}?justCompleted=true&return=${encodeURIComponent(returnUrl)}` : `/roleplay/results/${sid}?justCompleted=true`);
                     }}
-                    className="shrink-0 px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
                   >
-                    Xem kết quả đánh giá ➔
+                    <span>Xem kết quả đánh giá</span>
+                    <ArrowRightIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
@@ -4115,14 +4135,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isSending}
-                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--ai-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--ai-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 tactile-press"
                 >
                   {isSending ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   ) : (
                     <>
                       <span>Gửi</span>
-                      <span>➔</span>
+                      <ArrowRightIcon className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
@@ -4171,7 +4191,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
             {/* Content body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
               {selectedMessage && selectedMessage.linguisticFeedback ? (
                 <>
                   {/* Selected User Sentence */}

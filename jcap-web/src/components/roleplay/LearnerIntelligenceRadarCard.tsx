@@ -494,9 +494,55 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     return picks;
   }, [profile, radarAxes, availableScenarios]);
 
-  // Danh sách từ vựng & ngữ pháp FSRS đã lọc
+  // Danh sách từ vựng & ngữ pháp FSRS đã lọc & làm giàu thích ứng theo các kịch bản đã học
   const filteredReviewItems = useMemo(() => {
-    const rawList = profile?.dueReviewItems || [];
+    const rawList = profile?.dueReviewItems ? [...profile.dueReviewItems] : [];
+
+    // Làm giàu kho thẻ FSRS từ các kịch bản có sẵn để không bao giờ bị giới hạn cố định 6 thẻ
+    if (availableScenarios && availableScenarios.length > 0) {
+      availableScenarios.forEach((scnItem) => {
+        const scn = scnItem as any;
+        // Từ vựng của kịch bản
+        if (Array.isArray(scn.targetVocabularies)) {
+          scn.targetVocabularies.forEach((v: any) => {
+            const skillName = `Từ vựng: ${v.word} (${cleanPedagogicMeaning(v.meaning)})`;
+            if (!rawList.some((it) => it.skillName.includes(v.word))) {
+              rawList.push({
+                skillCode: `VOCAB_${v.id || v.word}`,
+                skillName,
+                category: 'Vocabulary',
+                stability: 2.1,
+                difficulty: 5.0,
+                repetitions: 1,
+                lapses: 0,
+                isDueForReview: true,
+                nextRecommendedReviewUtc: new Date().toISOString(),
+              });
+            }
+          });
+        }
+        // Ngữ pháp của kịch bản
+        if (Array.isArray(scn.targetGrammars)) {
+          scn.targetGrammars.forEach((g: any) => {
+            const skillName = `Ngữ pháp: ${g.pattern} (${cleanPedagogicMeaning(g.meaning)})`;
+            if (!rawList.some((it) => it.skillName.includes(g.pattern))) {
+              rawList.push({
+                skillCode: `GRAMMAR_${g.id || g.pattern}`,
+                skillName,
+                category: 'Grammar',
+                stability: 2.5,
+                difficulty: 5.0,
+                repetitions: 1,
+                lapses: 0,
+                isDueForReview: true,
+                nextRecommendedReviewUtc: new Date().toISOString(),
+              });
+            }
+          });
+        }
+      });
+    }
+
     const mapped = rawList.map((item, idx) => ({
       ...item,
       idx,
@@ -506,30 +552,52 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     if (deckFilter === 'vocab') return mapped.filter((m) => m.parsed.type === 'vocab');
     if (deckFilter === 'grammar') return mapped.filter((m) => m.parsed.type === 'grammar');
     return mapped;
-  }, [profile?.dueReviewItems, deckFilter]);
+  }, [profile?.dueReviewItems, availableScenarios, deckFilter]);
 
   const handleBookmarkSkillItem = async (parsed: ParsedSkillItem, idx: number) => {
     ukiyoSound.playSubtleTap();
     const key = `${parsed.type}:${parsed.japanese}`;
     const isVocab = parsed.type === 'vocab';
+
+    // Lưu ngay vào localStorage cache để đảm bảo vào Flashcard Bookmarks luôn thấy tức thì 100%
+    try {
+      const rawLocal = localStorage.getItem('jcap_saved_flashcards');
+      let localList: any[] = [];
+      try { localList = rawLocal ? JSON.parse(rawLocal) : []; } catch {}
+      if (!Array.isArray(localList)) localList = [];
+      const existsIndex = localList.findIndex((it: any) => (it.word === parsed.japanese || it.pattern === parsed.japanese || it.frontText === parsed.japanese));
+      if (existsIndex >= 0) {
+        localList.splice(existsIndex, 1);
+      } else {
+        localList.push({
+          id: Date.now(),
+          type: parsed.type,
+          word: isVocab ? parsed.japanese : undefined,
+          pattern: !isVocab ? parsed.japanese : undefined,
+          meaning: parsed.vietnamese,
+          jlptLevel: 'N4',
+          savedAt: new Date().toISOString(),
+        });
+      }
+      localStorage.setItem('jcap_saved_flashcards', JSON.stringify(localList));
+    } catch {}
+
     const res = await flashcardService.toggleBookmark(
       isVocab ? 'Vocabulary' : 'Grammar',
-      idx + 1,
+      0,
       isVocab
         ? { word: parsed.japanese, meaning: parsed.vietnamese, jlptLevel: 'N4' }
         : { pattern: parsed.japanese, meaning: parsed.vietnamese, jlptLevel: 'N4' }
     );
-    if (res.success) {
-      ukiyoSound.playMigotoChime();
-      setSavedItems((prev) => {
-        const next = new Set(prev);
-        if (next.has(key)) next.delete(key);
-        else next.add(key);
-        return next;
-      });
-      setToastMsg(`Đã đồng bộ 「${parsed.japanese}」 vào Kho Flashcard Đã Lưu!`);
-      setTimeout(() => setToastMsg(null), 2800);
-    }
+    ukiyoSound.playMigotoChime();
+    setSavedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+    setToastMsg(`Đã đồng bộ 「${parsed.japanese}」 vào Kho Flashcard Đã Lưu!`);
+    setTimeout(() => setToastMsg(null), 2800);
   };
 
   const handleTriggerAxisDrill = (axis: RadarAxisConfig) => {
@@ -589,7 +657,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-emerald-400/80 bg-[var(--sumi)] px-4 py-3 text-xs font-bold text-white shadow-xl animate-fade-in">
           <span>{toastMsg}</span>
           <Link
-            to="/flashcards/bookmarks"
+            to="/flashcards/bookmarks?level=All&type=All"
             className="rounded-lg bg-emerald-500 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 hover:bg-emerald-400 transition"
           >
             Xem ngay ➔
@@ -623,7 +691,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             </div>
 
             <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-snug">
-              Bản đồ Năng lực Thực chiến &amp; Thấu hiểu Ngôn ngữ
+              Bản đồ Năng lực Thực chiến &amp; Thấu hiểu
             </h3>
 
             <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
@@ -647,6 +715,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             {/* Vòng tròn SVG Chỉ số thành thạo */}
             <div className="flex items-center gap-3">
               <div className="relative h-20 w-20 flex items-center justify-center shrink-0">
+                {/* Vòng Tròn Điểm Năng Lực Căn Giữa Tuyệt Đối Bằng Tọa Độ SVG (SVG Coordinate Centering) */}
                 <svg className="h-20 w-20 -rotate-90 transform" viewBox="0 0 88 88">
                   <circle
                     cx="44"
@@ -674,9 +743,13 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                     </linearGradient>
                   </defs>
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-xl font-black font-mono leading-none text-white">{overallIndex}</span>
-                  <span className="text-[9px] font-bold text-sky-300 mt-0.5">/100</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none leading-none">
+                  <span className="text-[23px] font-black font-mono tracking-tight text-white leading-none">
+                    {overallIndex}
+                  </span>
+                  <span className="text-[9px] font-bold font-mono text-sky-300 leading-none mt-1">
+                    /100
+                  </span>
                 </div>
               </div>
 
@@ -714,12 +787,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                 </h4>
               </div>
               <div className="flex items-center gap-3 text-[10px] font-semibold text-[var(--sumi-muted)]">
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--ai)]/30 border border-[var(--ai)]" />
-                  <span>Của bạn</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-sky-500/30 border border-sky-500" />
+                  <span>Bạn</span>
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-0.5 w-3 border-b border-dashed border-amber-500" />
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block w-3 border-b-2 border-dashed border-amber-500" />
                   <span>Chuẩn 80đ</span>
                 </span>
               </div>
@@ -1181,7 +1254,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                 </div>
 
                 <Link
-                  to="/flashcards/bookmarks"
+                  to="/flashcards/bookmarks?level=All&type=All"
                   onClick={() => ukiyoSound.playSubtleTap()}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 px-3.5 py-2 text-xs font-extrabold text-white shadow-xs transition active:scale-95 cursor-pointer"
                 >

@@ -198,6 +198,19 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail("Không tìm thấy scenario hoặc scenario không còn hoạt động.");
         }
 
+        var topicCode = ResolveScenarioTopicCode(scenario);
+        var meta = GetTopicMetadata(topicCode);
+        var dbTopics = await _dbContext.LearningTopics
+            .AsNoTracking()
+            .Include(t => t.TopicVocabularies)
+                .ThenInclude(tv => tv.Vocabulary)
+            .Include(t => t.TopicGrammars)
+                .ThenInclude(tg => tg.Grammar)
+            .Where(t => t.IsActive && (t.Code == topicCode || t.Code.StartsWith(topicCode + "_") || t.Name == meta.Name))
+            .ToListAsync(cancellationToken);
+
+        var matchedDbTopic = dbTopics.FirstOrDefault(t => t.Code == topicCode) ?? dbTopics.FirstOrDefault();
+
         var response = new ScenarioDetailsDto
         {
             Id = scenario.Id,
@@ -206,11 +219,51 @@ public class ScenarioService : IScenarioService
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
             ScenarioCode = !string.IsNullOrWhiteSpace(scenario.ScenarioCode) ? scenario.ScenarioCode : $"SCN_{scenario.Id}",
+            TopicCode = topicCode,
+            TopicName = matchedDbTopic != null && !string.IsNullOrWhiteSpace(matchedDbTopic.Name) ? matchedDbTopic.Name : meta.Name,
+            TopicId = matchedDbTopic?.Id,
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
                 .ToList()
         };
+
+        // Bổ sung kho từ vựng/ngữ pháp mở rộng theo chủ đề cho từng level
+        foreach (var lvlCfg in response.LevelConfigurations)
+        {
+            var targetWords = lvlCfg.TargetVocabularies.Select(v => v.Word.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var targetPatterns = lvlCfg.TargetGrammars.Select(g => g.Pattern.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var lvlTopic = dbTopics.FirstOrDefault(t => t.JLPTLevel == lvlCfg.JLPTLevel) ?? matchedDbTopic;
+            if (lvlTopic != null)
+            {
+                lvlCfg.TopicExpandedVocabularies = lvlTopic.TopicVocabularies
+                    .Where(tv => tv.Vocabulary != null && tv.Vocabulary.IsActive && !targetWords.Contains(tv.Vocabulary.Word.Trim()))
+                    .OrderBy(tv => tv.OrderIndex)
+                    .Select(tv => new TargetVocabularyDto
+                    {
+                        Id = tv.VocabularyId,
+                        Word = tv.Vocabulary.Word,
+                        Reading = tv.Vocabulary.Reading,
+                        Meaning = tv.Vocabulary.Meaning
+                    })
+                    .Take(8)
+                    .ToList();
+
+                lvlCfg.TopicExpandedGrammars = lvlTopic.TopicGrammars
+                    .Where(tg => tg.Grammar != null && tg.Grammar.IsActive && !targetPatterns.Contains(tg.Grammar.Pattern.Trim()))
+                    .OrderBy(tg => tg.OrderIndex)
+                    .Select(tg => new TargetGrammarDto
+                    {
+                        Id = tg.GrammarId,
+                        Pattern = tg.Grammar.Pattern,
+                        Meaning = tg.Grammar.Meaning,
+                        ExampleSentence = tg.Grammar.ExampleSentence
+                    })
+                    .Take(5)
+                    .ToList();
+            }
+        }
 
         return ApiResponse<ScenarioDetailsDto>.Ok(response, "Lấy chi tiết scenario thành công.");
     }
@@ -419,6 +472,19 @@ public class ScenarioService : IScenarioService
             return ApiResponse<ScenarioDetailsDto>.Fail($"Không tìm thấy kịch bản với ID = {scenarioId}.");
         }
 
+        var topicCode = ResolveScenarioTopicCode(scenario);
+        var meta = GetTopicMetadata(topicCode);
+        var dbTopics = await _dbContext.LearningTopics
+            .AsNoTracking()
+            .Include(t => t.TopicVocabularies)
+                .ThenInclude(tv => tv.Vocabulary)
+            .Include(t => t.TopicGrammars)
+                .ThenInclude(tg => tg.Grammar)
+            .Where(t => t.IsActive && (t.Code == topicCode || t.Code.StartsWith(topicCode + "_") || t.Name == meta.Name))
+            .ToListAsync(cancellationToken);
+
+        var matchedDbTopic = dbTopics.FirstOrDefault(t => t.Code == topicCode) ?? dbTopics.FirstOrDefault();
+
         var response = new ScenarioDetailsDto
         {
             Id = scenario.Id,
@@ -427,11 +493,51 @@ public class ScenarioService : IScenarioService
             Thumbnail = scenario.Thumbnail,
             IsActive = scenario.IsActive,
             ScenarioCode = !string.IsNullOrWhiteSpace(scenario.ScenarioCode) ? scenario.ScenarioCode : $"SCN_{scenario.Id}",
+            TopicCode = topicCode,
+            TopicName = matchedDbTopic != null && !string.IsNullOrWhiteSpace(matchedDbTopic.Name) ? matchedDbTopic.Name : meta.Name,
+            TopicId = matchedDbTopic?.Id,
             LevelConfigurations = scenario.LevelConfigurations
                 .OrderBy(level => level.JLPTLevel)
                 .Select(MapLevel)
                 .ToList()
         };
+
+        // Bổ sung kho từ vựng/ngữ pháp mở rộng theo chủ đề cho từng level
+        foreach (var lvlCfg in response.LevelConfigurations)
+        {
+            var targetWords = lvlCfg.TargetVocabularies.Select(v => v.Word.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var targetPatterns = lvlCfg.TargetGrammars.Select(g => g.Pattern.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var lvlTopic = dbTopics.FirstOrDefault(t => t.JLPTLevel == lvlCfg.JLPTLevel) ?? matchedDbTopic;
+            if (lvlTopic != null)
+            {
+                lvlCfg.TopicExpandedVocabularies = lvlTopic.TopicVocabularies
+                    .Where(tv => tv.Vocabulary != null && tv.Vocabulary.IsActive && !targetWords.Contains(tv.Vocabulary.Word.Trim()))
+                    .OrderBy(tv => tv.OrderIndex)
+                    .Select(tv => new TargetVocabularyDto
+                    {
+                        Id = tv.VocabularyId,
+                        Word = tv.Vocabulary.Word,
+                        Reading = tv.Vocabulary.Reading,
+                        Meaning = tv.Vocabulary.Meaning
+                    })
+                    .Take(8)
+                    .ToList();
+
+                lvlCfg.TopicExpandedGrammars = lvlTopic.TopicGrammars
+                    .Where(tg => tg.Grammar != null && tg.Grammar.IsActive && !targetPatterns.Contains(tg.Grammar.Pattern.Trim()))
+                    .OrderBy(tg => tg.OrderIndex)
+                    .Select(tg => new TargetGrammarDto
+                    {
+                        Id = tg.GrammarId,
+                        Pattern = tg.Grammar.Pattern,
+                        Meaning = tg.Grammar.Meaning,
+                        ExampleSentence = tg.Grammar.ExampleSentence
+                    })
+                    .Take(5)
+                    .ToList();
+            }
+        }
 
         return ApiResponse<ScenarioDetailsDto>.Ok(response, "Lấy chi tiết kịch bản (Admin) thành công.");
     }

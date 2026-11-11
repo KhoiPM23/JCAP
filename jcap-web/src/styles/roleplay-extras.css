@@ -199,3 +199,174 @@ rt {
 :root .font-serif {
   font-family: "Noto Serif", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
+
+/* Ẩn hoàn toàn thanh cuộn mặc định xấu xí nhưng vẫn giữ tính năng cuộn mượt mà */
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ==========================================================================
+   JRPG / Visual Novel / Wabi-Sabi Game Aesthetics (FE-03)
+   ========================================================================== */
+
+/* Nền giấy Washi mộc với đường kẻ chỉ tinh tế */
+.washi-parchment {
+  background-color: var(--paper-50);
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, var(--paper-100) 27px 28px);
+}
+
+/* Nền sóng biển Seigaiha cho Quest Board & Victory Screen */
+.seigaiha-subtle {
+  --sb-wave: color-mix(in srgb, var(--paper-300) 45%, transparent);
+  background-color: var(--paper-100);
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 0 9px, var(--sb-wave) 9px 10px, transparent 10px 15px, var(--sb-wave) 15px 16px, transparent 16px 21px, var(--sb-wave) 21px 22px, transparent 22px),
+    radial-gradient(circle at 50% 100%, transparent 0 9px, var(--sb-wave) 9px 10px, transparent 10px 15px, var(--sb-wave) 15px 16px, transparent 16px 21px, var(--sb-wave) 21px 22px, transparent 22px);
+  background-size: 48px 24px;
+  background-position: 0 0, 24px 12px;
+}
+
+/* Thẻ Nhiệm vụ Quest Card với tương tác Magnetic Hover & Tactile Press */
+.quest-card {
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+.quest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(35, 33, 30, 0.08);
+  border-color: var(--ai);
+}
+.quest-card:active {
+  transform: scale(0.985);
+}
+
+/* Nút bấm vật lý Tactile Press (nén lò xo cơ học) */
+.tactile-press {
+  transition: transform 0.12s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.12s ease;
+}
+.tactile-press:active {
+  transform: scale(0.965);
+}
+
+/* Thẻ tương tác nổi nhẹ Wabi-Sabi */
+.tactile-hover {
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.tactile-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -2px rgba(35, 33, 30, 0.07);
+}
+
+/* Thẻ bài Đạo cụ Ngôn từ (Inventory Props) trong RPG */
+.inventory-prop {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-50);
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--sumi);
+  transition: all 0.15s cubic-bezier(0.2, 0.7, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+.inventory-prop:hover {
+  transform: translateY(-1.5px);
+  border-color: var(--ai);
+  background: var(--paper-100);
+  box-shadow: 0 4px 12px rgba(31, 78, 121, 0.1);
+}
+.inventory-prop:active {
+  transform: scale(0.97);
+}
+
+/* Con dấu Hanko Triện Đỏ xoay -6 độ */
+.hanko-seal-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid var(--shu);
+  border-radius: 12px;
+  color: var(--shu);
+  background: var(--shu-soft);
+  font-family: var(--font-mincho), serif;
+  font-weight: 700;
+  transform: rotate(-6deg);
+  box-shadow: 0 4px 14px rgba(203, 64, 43, 0.22);
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.hanko-seal-badge:hover {
+  transform: rotate(-3deg) scale(1.04);
+}
+
+/* Ô tròn nét đứt chờ đóng dấu mốc (Quest Slot) */
+.quest-slot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper-50);
+  color: var(--sumi-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.quest-slot.completed {
+  border-style: solid;
+  border-color: var(--shu);
+  background: var(--shu-soft);
+  color: var(--shu);
+  box-shadow: 0 2px 8px rgba(203, 64, 43, 0.18);
+}
+
+/* Stepper mốc nhiệm vụ RPG */
+.quest-stepper-container {
+  position: relative;
+}
+.quest-stepper-item {
+  position: relative;
+}
+.quest-stepper-connector {
+  position: absolute;
+  left: 21px;
+  top: 32px;
+  bottom: -10px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0, var(--line-strong) 4px, transparent 4px, transparent 8px);
+  z-index: 0;
+  pointer-events: none;
+}
+.quest-stepper-connector.completed {
+  background: var(--shu);
+}
+.quest-stepper-line {
+  position: absolute;
+  top: 15px;
+  left: 14px;
+  bottom: -6px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0, var(--line-strong) 4px, transparent 4px, transparent 8px);
+}
+.quest-stepper-line.completed {
+  background: var(--shu);
+}

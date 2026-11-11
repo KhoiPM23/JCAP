@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, JpText, SegmentedControl, TextField } from '../components/jcap';
+import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { useAuth } from '../contexts/AuthContext';
@@ -171,7 +171,10 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   });
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12">
+    <div className="relative mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12">
+      {/* Nền sóng biển Seigaiha thanh nhã tinh tế (Stamp Book & Roadmap Aesthetic) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl seigaiha-subtle opacity-35" />
+
       {user?.role === 'Admin' && (
         <div className="flex items-center justify-between gap-3 rounded-jc-md bg-info-soft px-4 py-2.5 text-[13px]">
           <span>Bạn đang xem thư viện kịch bản với giao diện của học viên.</span>
@@ -182,14 +185,24 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
       )}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hội thoại AI</h1>
-          <p className="m-0 text-[15px] leading-6 text-sumi-muted">Chọn một tình huống, nhập vai và nói chuyện với nhân vật AI. Mỗi lượt nói được nhận xét ngay.</p>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
+              任務板 · QUEST BOARD
+            </span>
+            <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
+              場面対話 · 実践演習
+            </span>
+          </div>
+          <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
+          <p className="m-0 text-[14px] leading-6 text-sumi-muted">
+            Chọn một tình huống nhiệm vụ, nhập vai đối thoại tự nhiên cùng AI. Thu thập đạo cụ ngôn từ và vượt qua các mốc thử thách.
+          </p>
         </div>
         <div className="w-[320px] max-w-full">
           <TextField
             icon="search"
-            placeholder="Tìm tình huống, VD: gọi món, sân bay"
+            placeholder="Tìm nhiệm vụ, VD: gọi món, sân bay"
             aria-label="Tìm tình huống"
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
@@ -197,8 +210,8 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
         </div>
       </div>
 
-      {/* CategoryChips & JLPT Level Filter Bar */}
-      <div className="flex flex-col gap-3">
+      {/* CategoryChips & JLPT Level Filter Bar - Dính trên đầu kèm hiệu ứng mờ kính nổi nhẹ */}
+      <div className="sticky top-0 z-20 -mx-2 px-3 py-2.5 backdrop-blur-md bg-paper-50/90 rounded-2xl border border-line/70 shadow-xs flex flex-col gap-3 transition-all">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* CategoryChips Filter */}
           <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Bộ lọc chủ đề tình huống">
@@ -206,8 +219,11 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               type="button"
               role="tab"
               aria-selected={filterTopic === 'ALL'}
-              onClick={() => handleTopicChange('ALL')}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                handleTopicChange('ALL');
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press ${
                 filterTopic === 'ALL'
                   ? 'bg-ai text-white shadow-xs'
                   : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
@@ -235,7 +251,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                     ukiyoSound.playSubtleTap();
                     handleTopicChange(t.code);
                   }}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press ${
                     active
                       ? 'bg-ai text-white shadow-xs'
                       : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
@@ -279,20 +295,24 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
         <div className="flex min-w-0 flex-[999_1_460px] flex-col gap-2.5">
           {loading ? (
             <p className="m-0 text-sm text-sumi-muted" role="status">
-              Đang tải danh sách tình huống…
+              Đang tải danh sách nhiệm vụ…
             </p>
           ) : error ? (
             <EmptyState icon="error" title="Không tải được danh sách tình huống">
               {error}
             </EmptyState>
           ) : filteredScenarios.length === 0 ? (
-            <EmptyState icon="search_off" title="Chưa có tình huống ở bộ lọc này">
+            <EmptyState icon="search_off" title="Chưa có nhiệm vụ ở bộ lọc này">
               Thử xoá từ khoá hoặc đổi trình độ.
             </EmptyState>
           ) : (
             <>
-              <h2 className="m-0 flex items-center gap-2 text-base font-semibold leading-6">
-                Tình huống <span className="text-[13px] font-medium text-sumi-muted">{filteredScenarios.length}</span>
+              <h2 className="m-0 flex items-center justify-between text-base font-semibold leading-6">
+                <span className="flex items-center gap-2">
+                  <span>Bản đồ Nhiệm vụ</span>
+                  <span className="text-[13px] font-medium text-sumi-muted">({filteredScenarios.length})</span>
+                </span>
+                <span className="text-xs font-serif text-sumi-muted">任務一覧</span>
               </h2>
               {filteredScenarios.map((s) => {
                 const selected = s.id === selectedId;
@@ -302,20 +322,34 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                     key={s.id}
                     type="button"
                     onClick={() => {
-                      ukiyoSound.playSubtleTap();
+                      ukiyoSound.playWoodblockSnap();
                       setSelectedId(s.id);
                     }}
                     aria-pressed={selected}
-                    className="flex w-full items-center gap-4 rounded-jc-lg px-4 py-3.5 text-left text-sumi transition-colors hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus"
-                    style={{ border: selected ? '2px solid var(--ai)' : '1px solid var(--line)', background: selected ? 'var(--ai-soft)' : 'var(--paper-50)' }}
+                    className={`quest-card tactile-press flex w-full items-center gap-4 rounded-jc-xl p-4 text-left transition-all ${
+                      selected
+                        ? 'border-2 border-[var(--ai)] bg-[var(--ai-soft)] shadow-md ring-1 ring-[var(--ai)]/30'
+                        : 'border border-[var(--line)] bg-[var(--paper-50)] hover:border-[var(--ai)]/60 hover:bg-[var(--paper-100)]'
+                    }`}
                   >
-                    <span className="inline-flex h-[52px] w-[52px] flex-none items-center justify-center overflow-hidden rounded-[14px] bg-nami-soft text-nami">
-                      {s.thumbnail ? <img src={s.thumbnail} alt="" className="h-full w-full object-cover" /> : <Icon name="forum" size={28} />}
+                    <span className="relative inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-xl bg-nami-soft text-nami shadow-2xs border border-line">
+                      {s.thumbnail ? (
+                        <img src={s.thumbnail} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <Icon name="forum" size={26} />
+                      )}
                     </span>
                     <span className="flex min-w-0 flex-grow flex-col gap-1">
-                      <span className="text-base font-semibold leading-6">{s.title}</span>
-                      <span className="line-clamp-2 text-sm leading-5 text-sumi-muted">{s.description}</span>
-                      <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-base font-bold text-sumi leading-tight line-clamp-1">{s.title}</span>
+                        {selected && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)] bg-white px-2 py-0.5 rounded-full border border-[var(--ai)]/30 shrink-0 font-mono">
+                            Đang chọn
+                          </span>
+                        )}
+                      </div>
+                      <span className="line-clamp-2 text-xs leading-5 text-sumi-muted">{s.description}</span>
+                      <span className="mt-1 flex flex-wrap items-center gap-1.5">
                         {levels.map((l) => (
                           <JlptBadge key={l} level={l as Level} size="sm" />
                         ))}
@@ -325,7 +359,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                             <span>{s.topicName}</span>
                           </span>
                         )}
-                        {s.scenarioCode && <span className="text-[13px] leading-5 text-sumi-muted">{s.scenarioCode}</span>}
+                        {s.scenarioCode && <span className="text-[12px] font-mono leading-5 text-sumi-faint">{s.scenarioCode}</span>}
                       </span>
                     </span>
                   </button>
@@ -347,6 +381,114 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
           />
         )}
       </div>
+    </div>
+  );
+};
+
+/** Thẻ bài đạo cụ ngôn từ (Inventory Props) với hover peek xem nghĩa nhanh */
+const InventoryPropBadge: React.FC<{
+  type: 'vocab' | 'grammar';
+  wordOrPattern: string;
+  reading?: string;
+  meaning: string;
+  example?: string;
+}> = ({ type, wordOrPattern, reading, meaning, example }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<'top' | 'bottom'>('top');
+  const badgeRef = useRef<HTMLDivElement>(null);
+
+  const cleanMeaning = cleanPedagogicMeaning(meaning);
+
+  const updatePopoverPos = () => {
+    if (badgeRef.current) {
+      const rect = badgeRef.current.getBoundingClientRect();
+      if (rect.top < 180) setPopoverPos('bottom');
+      else setPopoverPos('top');
+    }
+  };
+
+  return (
+    <div
+      ref={badgeRef}
+      className="relative inline-flex"
+      onMouseEnter={() => {
+        updatePopoverPos();
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => {
+        updatePopoverPos();
+        setIsHovered(true);
+      }}
+      onBlur={() => setIsHovered(false)}
+      onClick={() => {
+        ukiyoSound.playSubtleTap();
+        updatePopoverPos();
+        setIsHovered((prev) => !prev);
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${type === 'vocab' ? 'Từ vựng' : 'Ngữ pháp'}: ${wordOrPattern} - ${cleanMeaning}`}
+    >
+      <div
+        className={`inventory-prop tactile-press text-xs ${
+          type === 'vocab'
+            ? 'bg-nami-soft/70 border-nami/30 hover:border-nami text-nami'
+            : 'bg-ai-soft/70 border-ai/30 hover:border-ai text-ai'
+        }`}
+      >
+        <span
+          className={`text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded ${
+            type === 'vocab' ? 'bg-nami/15 text-nami' : 'bg-ai/15 text-ai'
+          }`}
+        >
+          {type === 'vocab' ? '語' : '文'}
+        </span>
+        <span className="font-japanese font-semibold tracking-wide">
+          {reading && reading !== wordOrPattern ? (
+            <ruby>
+              {wordOrPattern}
+              <rt className="text-[9px] text-sumi-muted">{reading}</rt>
+            </ruby>
+          ) : (
+            wordOrPattern
+          )}
+        </span>
+      </div>
+
+      {/* Hover Peek Popover */}
+      {isHovered && (
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
+            popoverPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          }`}
+          style={{ boxShadow: '0 8px 24px rgba(35, 33, 30, 0.16)' }}
+        >
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
+              {type === 'vocab' ? 'Đạo cụ từ vựng (単語)' : 'Đạo cụ ngữ pháp (文法)'}
+            </span>
+            <span
+              className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
+              }`}
+            >
+              {type === 'vocab' ? 'VOCAB' : 'GRAMMAR'}
+            </span>
+          </div>
+          <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
+            {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
+          </div>
+          <div className="text-xs text-slate-700 leading-snug font-sans">
+            {cleanMeaning}
+          </div>
+          {example && (
+            <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
+              {example}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -415,31 +557,41 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
   };
 
   return (
-    <aside aria-label="Xem trước tình huống" className="flex max-w-[420px] flex-[1_1_380px] flex-col overflow-hidden rounded-jc-xl border border-line bg-paper-50 shadow-jc-md lg:sticky lg:top-0">
+    <aside
+      aria-label="Xem trước tình huống"
+      className="relative flex max-w-[420px] flex-[1_1_380px] flex-col overflow-hidden rounded-jc-xl border border-line bg-paper-50 shadow-jc-md lg:sticky lg:top-0 washi-parchment"
+    >
+      {/* Watermark thư pháp chìm ở góc dưới */}
+      <div className="sb-wm text-5xl opacity-40 select-none pointer-events-none">臨戦</div>
+
       <div className="relative h-28 bg-ai-soft">
         <div className="jc-seigaiha" />
-        <span className="absolute -bottom-[26px] left-6 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] bg-paper-50 text-ai shadow-jc-md">
+        <span className="absolute -bottom-[26px] left-6 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] bg-paper-50 text-ai shadow-jc-md border border-line">
           {details?.thumbnail ? <img src={details.thumbnail} alt="" className="h-full w-full object-cover" /> : <Icon name="forum" size={32} />}
         </span>
       </div>
-      <div className="flex flex-col gap-5 px-6 pb-6 pt-10">
+
+      <div className="relative z-10 flex flex-col gap-5 px-6 pb-6 pt-10">
         {loading ? (
           <p className="m-0 text-sm text-sumi-muted" role="status">
-            Đang tải tình huống…
+            Đang tải dữ liệu nhiệm vụ…
           </p>
         ) : !details || !cfg ? (
           <p className="m-0 text-sm text-sumi-muted">Tình huống này chưa có cấp độ nào để luyện.</p>
         ) : (
           <>
             <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1.5 flex-1">
-                <h2 className="m-0 text-[22px] font-bold leading-[30px]">{cfg.title || details.title}</h2>
-                <p className="m-0 text-sm leading-[22px] text-sumi-muted">{cfg.description || details.description}</p>
+              <div className="flex flex-col gap-1 flex-1">
+                <h2 className="m-0 text-[20px] font-bold leading-[28px] text-sumi font-serif">{cfg.title || details.title}</h2>
+                <p className="m-0 text-xs leading-[20px] text-sumi-muted line-clamp-2">{cfg.description || details.description}</p>
               </div>
               <button
                 type="button"
-                onClick={onOpenDetails}
-                className="inline-flex items-center gap-1 shrink-0 rounded-jc-sm px-2 py-1 text-xs font-semibold text-ai hover:bg-ai-soft hover:underline transition-colors mt-0.5"
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  onOpenDetails();
+                }}
+                className="inline-flex items-center gap-1 shrink-0 rounded-jc-sm px-2 py-1 text-xs font-semibold text-ai hover:bg-ai-soft hover:underline transition-colors mt-0.5 tactile-press"
                 title="Xem toàn bộ cấu hình, từ vựng, ngữ pháp và cốt truyện"
               >
                 <span>Chi tiết</span>
@@ -448,23 +600,24 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
             </div>
 
             {cfg.aiPersona && (
-              <div className="flex items-center gap-3 rounded-jc-md bg-paper-100 px-3.5 py-3">
+              <div className="flex items-center gap-3 rounded-jc-md bg-paper-100/80 px-3.5 py-2.5 border border-line">
                 <LivingAvatar size="sm" avatarState="idle" personaName={cfg.aiPersona} scenarioTitle={details.title} hideLabel />
                 <span className="flex min-w-0 flex-col">
-                  <span className="text-sm font-semibold leading-5">{`Bạn nói chuyện với ${cfg.aiPersona}`}</span>
-                  {hasActive && progressText && <span className="text-[13px] leading-5 text-sumi-muted">{`Phiên đang dở ở cấp ${activeLevel}: ${progressText} nhiệm vụ`}</span>}
+                  <span className="text-xs font-bold leading-5 text-sumi">{`Đối thoại cùng: ${cfg.aiPersona}`}</span>
+                  {hasActive && progressText && <span className="text-[12px] leading-4 text-sumi-muted">{`Tiến độ cấp ${activeLevel}: ${progressText} mốc hoàn thành`}</span>}
                 </span>
               </div>
             )}
 
             {levels.length > 1 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold leading-5">Chọn cấp độ</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted">Cấp độ thử thách</span>
                 <SegmentedControl
                   ariaLabel="Cấp độ luyện"
                   block
                   value={cfg.jlptLevel}
                   onChange={(v) => {
+                    ukiyoSound.playSubtleTap();
                     setLevel(v as Level);
                     setConfirmRestart(false);
                   }}
@@ -473,68 +626,130 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               </div>
             )}
 
+            {/* Stepper Nhiệm vụ mốc 1 -> 2 -> 3 với icon slot chờ hoàn thành */}
             {cfg.missions?.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold leading-5">Nhiệm vụ trong phiên</span>
-                <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5 text-sm leading-[22px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted flex items-center gap-1.5">
+                    <Icon name="flag" size={14} />
+                    <span>Mốc nhiệm vụ ({cfg.missions.length})</span>
+                  </span>
+                  <span className="text-[11px] font-serif text-sumi-muted">任務目標</span>
+                </div>
+                <div className="quest-stepper-container flex flex-col gap-2">
                   {[...cfg.missions]
                     .sort((a, b) => a.order - b.order)
-                    .map((m) => (
-                      <li key={m.id}>{m.content}</li>
-                    ))}
-                </ol>
+                    .map((m, idx, arr) => {
+                      const isCompleted = Boolean(active && (active.completedMissionsCount ?? 0) > idx);
+                      const hasNext = idx < arr.length - 1;
+                      return (
+                        <div
+                          key={m.id}
+                          onClick={() => ukiyoSound.playWoodblockSnap()}
+                          className={`group quest-stepper-item flex items-start gap-3 rounded-xl p-2.5 transition-all cursor-pointer tactile-press ${
+                            isCompleted
+                              ? 'bg-emerald-50/70 border border-emerald-200'
+                              : 'bg-paper-100/70 border border-line hover:border-line-strong hover:bg-paper-100'
+                          }`}
+                        >
+                          {hasNext && (
+                            <div className={`quest-stepper-connector ${isCompleted ? 'completed' : ''}`} />
+                          )}
+                          <div
+                            className={`quest-slot transition-transform group-hover:scale-105 ${
+                              isCompleted ? 'completed' : ''
+                            }`}
+                          >
+                            {isCompleted ? '✓' : m.order}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`m-0 text-xs leading-relaxed font-sans ${
+                                isCompleted ? 'text-emerald-900 font-bold' : 'text-sumi'
+                              }`}
+                            >
+                              {m.content}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
             )}
 
-            {cfg.targetVocabularies?.length > 0 && (
+            {/* Thẻ bài đạo cụ (Inventory Props) Từ vựng & Ngữ pháp */}
+            {(cfg.targetVocabularies?.length > 0 || cfg.targetGrammars?.length > 0) && (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold leading-5">Từ sẽ gặp</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted flex items-center gap-1.5">
+                    <Icon name="inventory_2" size={14} />
+                    <span>Đạo cụ ngôn từ (Props)</span>
+                  </span>
+                  <span className="text-[10px] text-sumi-faint">Rê chuột xem nhanh</span>
+                </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {cfg.targetVocabularies.map((v) => (
-                    <span key={v.id} className="rounded-jc-sm bg-nami-soft px-2.5 py-0.5" title={v.meaning}>
-                      <JpText text={v.reading && v.reading !== v.word ? `{${v.word}|${v.reading}}` : v.word} size="sm" />
-                    </span>
+                  {cfg.targetVocabularies?.map((v) => (
+                    <InventoryPropBadge
+                      key={`v-${v.id}`}
+                      type="vocab"
+                      wordOrPattern={v.word}
+                      reading={v.reading}
+                      meaning={v.meaning}
+                    />
+                  ))}
+                  {cfg.targetGrammars?.map((g) => (
+                    <InventoryPropBadge
+                      key={`g-${g.id}`}
+                      type="grammar"
+                      wordOrPattern={g.pattern}
+                      meaning={g.meaning}
+                      example={g.exampleSentence}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
-            {cfg.targetGrammars?.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-semibold leading-5">Mẫu ngữ pháp trọng tâm</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {cfg.targetGrammars.map((g) => (
-                    <span
-                      key={g.id}
-                      className="rounded-jc-sm bg-paper-100 border border-line px-2.5 py-1 text-xs text-sumi flex items-center gap-1.5"
-                      title={g.meaning}
-                    >
-                      <span className="font-japanese font-semibold text-sumi-strong">{g.pattern}</span>
-                      <span className="text-sumi-muted text-[11px] truncate max-w-[220px]">
-                        ({cleanPedagogicMeaning(g.meaning)})
-                      </span>
-                    </span>
-                  ))}
-                </div>
+            {/* Nút mở kho học liệu chủ đề */}
+            {details.topicCode && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    navigate(`/learning/topics?topic=${details.topicCode}`);
+                  }}
+                  className="w-full inline-flex items-center justify-between gap-2 rounded-xl border border-dashed border-[var(--ai)]/40 bg-[var(--ai-soft)]/60 px-3.5 py-2 text-xs font-bold text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] transition active:scale-[0.98] cursor-pointer"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name="menu_book" size={16} />
+                    <span>Kho học liệu: {details.topicName || details.topicCode}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px]">
+                    <span>Xem bài học</span>
+                    <Icon name="arrow_forward" size={14} />
+                  </span>
+                </button>
               </div>
             )}
 
             {resumeHere ? (
-              <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
+              <div className="flex items-center justify-between gap-3 border-t border-line pt-3.5">
                 <span className="flex flex-col">
-                  <span className="text-sm font-semibold text-emerald-700 leading-5">Phiên đang diễn ra</span>
-                  <span className="text-[13px] leading-5 text-sumi-muted">Tiếp tục hội thoại không trừ thêm Credit</span>
+                  <span className="text-xs font-bold text-emerald-700 leading-4">Phiên đang diễn ra</span>
+                  <span className="text-[12px] leading-4 text-sumi-muted">Tiếp tục hội thoại không trừ thêm Credit</span>
                 </span>
                 <Badge tone="success" icon="check_circle">Miễn phí tiếp tục</Badge>
               </div>
             ) : (
-              <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+              <div className="flex flex-col gap-1 border-t border-line pt-3.5">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
+                  <span className="text-xs font-bold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
                   <CreditBadge amount={cost} variant="cost" low={credit < cost} />
                 </div>
-                <span className="text-[13px] leading-5 text-sumi-muted">
-                  {`Số dư hiện tại: ${credit.toLocaleString('vi-VN')} Credit (còn ${Math.max(0, credit - cost).toLocaleString('vi-VN')} Credit sau khi bắt đầu)`}
+                <span className="text-[12px] leading-4 text-sumi-muted">
+                  {`Số dư hiện tại: ${credit.toLocaleString('vi-VN')} Credit (còn ${Math.max(0, credit - cost).toLocaleString('vi-VN')} Credit)`}
                 </span>
               </div>
             )}

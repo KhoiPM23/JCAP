@@ -73,6 +73,11 @@ namespace JCAP.DTOs.Roleplay
         public string? KanjiRank { get; set; }
         public string? HankoStampText { get; set; }
         public List<string> CompetencyBadges { get; set; } = [];
+        public string? TopicCode { get; set; }
+        public string? TopicName { get; set; }
+        public int? TopicId { get; set; }
+        public List<WeakVocabularyDto> TopicRecommendedVocabularies { get; set; } = [];
+        public List<WeakGrammarDto> TopicRecommendedGrammars { get; set; } = [];
     }
 
     public class ScoreBreakdownDto

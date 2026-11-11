@@ -22,8 +22,8 @@ namespace JCAP.Services.Implementations
 
         public async Task<LearnerIntelligenceProfile> GetOrCreateProfileAsync(string userId)
         {
-            var profile = await _context.LearnerIntelligenceProfiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            var profile = _context.LearnerIntelligenceProfiles.Local.FirstOrDefault(p => p.UserId == userId)
+                ?? await _context.LearnerIntelligenceProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
             {
@@ -43,7 +43,17 @@ namespace JCAP.Services.Implementations
                     UpdatedAtUtc = DateTime.UtcNow
                 };
                 _context.LearnerIntelligenceProfiles.Add(profile);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    // Concurrency race: record already created by concurrent request
+                    profile = _context.LearnerIntelligenceProfiles.Local.FirstOrDefault(p => p.UserId == userId)
+                        ?? await _context.LearnerIntelligenceProfiles.FirstOrDefaultAsync(p => p.UserId == userId)
+                        ?? profile;
+                }
             }
 
             return profile;
@@ -302,6 +312,14 @@ namespace JCAP.Services.Implementations
             });
 
             // 6. Kích hoạt cập nhật FSRS LearnerSkillMastery (Spaced Repetition Mastery Tracking)
+            // Tải trước danh sách SkillMastery hiện có của user vào dictionary để tránh N+1 query và triệt tiêu lỗi duplicate key
+            var existingMasteries = await _context.LearnerSkillMasteries
+                .Where(m => m.UserId == userId)
+                .ToListAsync();
+            var masteryMap = existingMasteries
+                .GroupBy(m => m.SkillCode, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
             // (a) Duyệt qua các lỗi sai phát hiện E01-E10 trong phiên để ghi nhận Lapses
             var detectedErrorCodes = signals
                 .Where(s => !string.IsNullOrWhiteSpace(s.DetectedRuleErrorCodes))
@@ -315,10 +333,7 @@ namespace JCAP.Services.Implementations
                 if (code.Length > 100) code = code[..100];
                 if (name.Length > 200) name = name[..200];
 
-                var mastery = await _context.LearnerSkillMasteries
-                    .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == code);
-
-                if (mastery == null)
+                if (!masteryMap.TryGetValue(code, out var mastery))
                 {
                     mastery = new LearnerSkillMastery
                     {
@@ -334,6 +349,7 @@ namespace JCAP.Services.Implementations
                         NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(12)
                     };
                     _context.LearnerSkillMasteries.Add(mastery);
+                    masteryMap[code] = mastery;
                 }
                 else
                 {
@@ -346,47 +362,59 @@ namespace JCAP.Services.Implementations
                 }
             }
 
-            // (b) Duyệt qua các Từ vựng & Ngữ pháp mục tiêu đã sử dụng để củng cố Stability
+            // (b) Duyệt qua các Từ vựng & Ngữ pháp mục tiêu của kịch bản để cập nhật vòng đời FSRS
             var combinedUserText = string.Join(" ", userMsgs);
             if (session?.ScenarioLevelConfiguration?.TargetVocabularies != null)
             {
-                foreach (var vocab in session.ScenarioLevelConfiguration.TargetVocabularies)
+                var distinctVocabs = session.ScenarioLevelConfiguration.TargetVocabularies
+                    .Where(v => !string.IsNullOrWhiteSpace(v.Word))
+                    .GroupBy(v => v.Word.Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var vocab in distinctVocabs)
                 {
-                    if (string.IsNullOrWhiteSpace(vocab.Word)) continue;
-                    if (combinedUserText.Contains(vocab.Word))
+                    bool userSpoke = combinedUserText.Contains(vocab.Word) ||
+                                     (!string.IsNullOrWhiteSpace(vocab.Reading) && combinedUserText.Contains(vocab.Reading));
+
+                    var vCode = "VOCAB_" + vocab.Word.Trim();
+                    if (vCode.Length > 100) vCode = vCode[..100];
+                    var vName = $"Từ vựng: {vocab.Word} ({vocab.Meaning})";
+                    if (vName.Length > 200) vName = vName[..200];
+
+                    if (!masteryMap.TryGetValue(vCode, out var vMastery))
                     {
-                        var vCode = "VOCAB_" + vocab.Word;
-                        if (vCode.Length > 100) vCode = vCode[..100];
-                        var vName = $"Từ vựng: {vocab.Word} ({vocab.Meaning})";
-                        if (vName.Length > 200) vName = vName[..200];
-
-                        var vMastery = await _context.LearnerSkillMasteries
-                            .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == vCode);
-
-                        if (vMastery == null)
+                        vMastery = new LearnerSkillMastery
                         {
-                            vMastery = new LearnerSkillMastery
-                            {
-                                UserId = userId,
-                                SkillCode = vCode,
-                                SkillName = vName,
-                                Category = "Vocabulary",
-                                Stability = 2.0,
-                                Difficulty = 4.0,
-                                Repetitions = 1,
-                                Lapses = 0,
-                                LastPracticedUtc = DateTime.UtcNow,
-                                NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(2)
-                            };
-                            _context.LearnerSkillMasteries.Add(vMastery);
-                        }
-                        else
+                            UserId = userId,
+                            SkillCode = vCode,
+                            SkillName = vName,
+                            Category = "Vocabulary",
+                            Stability = userSpoke ? 2.5 : 1.0,
+                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Repetitions = 1,
+                            Lapses = userSpoke ? 0 : 1,
+                            LastPracticedUtc = DateTime.UtcNow,
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                        };
+                        _context.LearnerSkillMasteries.Add(vMastery);
+                        masteryMap[vCode] = vMastery;
+                    }
+                    else
+                    {
+                        vMastery.Repetitions += 1;
+                        if (userSpoke)
                         {
-                            vMastery.Repetitions += 1;
                             vMastery.Difficulty = Math.Max(1.0, Math.Round(vMastery.Difficulty - 0.2, 2));
                             vMastery.Stability = Math.Min(100.0, Math.Round(vMastery.Stability * 1.5, 2));
                             vMastery.LastPracticedUtc = DateTime.UtcNow;
                             vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(vMastery.Stability, 1)));
+                        }
+                        else
+                        {
+                            vMastery.Lapses += 1;
+                            vMastery.LastPracticedUtc = DateTime.UtcNow;
+                            vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
                         }
                     }
                 }
@@ -394,44 +422,57 @@ namespace JCAP.Services.Implementations
 
             if (session?.ScenarioLevelConfiguration?.TargetGrammars != null)
             {
-                foreach (var grammar in session.ScenarioLevelConfiguration.TargetGrammars)
+                var distinctGrammars = session.ScenarioLevelConfiguration.TargetGrammars
+                    .Where(g => !string.IsNullOrWhiteSpace(g.Pattern) &&
+                                !string.IsNullOrWhiteSpace(string.Concat(g.Pattern.Where(c => c != '～' && c != '~')).Trim()))
+                    .GroupBy(g => string.Concat(g.Pattern.Where(c => c != '～' && c != '~')).Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var grammar in distinctGrammars)
                 {
-                    if (string.IsNullOrWhiteSpace(grammar.Pattern)) continue;
                     var key = string.Concat(grammar.Pattern.Where(c => c != '～' && c != '~')).Trim();
-                    if (!string.IsNullOrWhiteSpace(key) && combinedUserText.Contains(key))
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    bool userSpoke = combinedUserText.Contains(key);
+
+                    var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";
+                    if (gCode.Length > 100) gCode = gCode[..100];
+                    var gName = $"Ngữ pháp: {grammar.Pattern} ({grammar.Meaning})";
+                    if (gName.Length > 200) gName = gName[..200];
+
+                    if (!masteryMap.TryGetValue(gCode, out var gMastery))
                     {
-                        var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";
-                        if (gCode.Length > 100) gCode = gCode[..100];
-                        var gName = $"Ngữ pháp: {grammar.Pattern} ({grammar.Meaning})";
-                        if (gName.Length > 200) gName = gName[..200];
-
-                        var gMastery = await _context.LearnerSkillMasteries
-                            .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == gCode);
-
-                        if (gMastery == null)
+                        gMastery = new LearnerSkillMastery
                         {
-                            gMastery = new LearnerSkillMastery
-                            {
-                                UserId = userId,
-                                SkillCode = gCode,
-                                SkillName = gName,
-                                Category = "Grammar",
-                                Stability = 2.0,
-                                Difficulty = 4.5,
-                                Repetitions = 1,
-                                Lapses = 0,
-                                LastPracticedUtc = DateTime.UtcNow,
-                                NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(2)
-                            };
-                            _context.LearnerSkillMasteries.Add(gMastery);
-                        }
-                        else
+                            UserId = userId,
+                            SkillCode = gCode,
+                            SkillName = gName,
+                            Category = "Grammar",
+                            Stability = userSpoke ? 2.5 : 1.0,
+                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Repetitions = 1,
+                            Lapses = userSpoke ? 0 : 1,
+                            LastPracticedUtc = DateTime.UtcNow,
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                        };
+                        _context.LearnerSkillMasteries.Add(gMastery);
+                        masteryMap[gCode] = gMastery;
+                    }
+                    else
+                    {
+                        gMastery.Repetitions += 1;
+                        if (userSpoke)
                         {
-                            gMastery.Repetitions += 1;
                             gMastery.Difficulty = Math.Max(1.0, Math.Round(gMastery.Difficulty - 0.2, 2));
                             gMastery.Stability = Math.Min(100.0, Math.Round(gMastery.Stability * 1.4, 2));
                             gMastery.LastPracticedUtc = DateTime.UtcNow;
                             gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(gMastery.Stability, 1)));
+                        }
+                        else
+                        {
+                            gMastery.Lapses += 1;
+                            gMastery.LastPracticedUtc = DateTime.UtcNow;
+                            gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
                         }
                     }
                 }

@@ -35,13 +35,28 @@ namespace JCAP.Services.Implementations
             {
                 Vocabulary? vocab = null;
 
-                // 1. Ưu tiên tìm theo từ vựng chính xác nếu được truyền lên
+                // 1. Ưu tiên tìm hoặc tạo theo từ vựng chính xác nếu được truyền lên
                 if (!string.IsNullOrWhiteSpace(request.Word))
                 {
-                    vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Word == request.Word.Trim() && v.IsActive);
+                    var cleanWord = request.Word.Trim();
+                    vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Word == cleanWord && v.IsActive);
+                    if (vocab == null)
+                    {
+                        vocab = new Vocabulary
+                        {
+                            Word = cleanWord,
+                            Reading = request.Reading?.Trim(),
+                            Meaning = request.Meaning?.Trim() ?? string.Empty,
+                            JLPTLevel = request.JlptLevel ?? "N4",
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Vocabularies.Add(vocab);
+                        await _db.SaveChangesAsync();
+                    }
                 }
 
-                // 2. Nếu chưa thấy, kiểm tra xem VocabularyId có thuộc bảng TargetVocabularies của Kịch bản hay không
+                // 2. Nếu chưa có request.Word, kiểm tra xem VocabularyId có thuộc bảng TargetVocabularies của Kịch bản hay không
                 if (vocab == null && request.VocabularyId.HasValue && request.VocabularyId.Value > 0)
                 {
                     var targetVocab = await _db.TargetVocabularies
@@ -71,22 +86,6 @@ namespace JCAP.Services.Implementations
                         // 3. Nếu không phải TargetVocabulary, tìm theo Id trong bảng Vocabularies
                         vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == request.VocabularyId.Value && v.IsActive);
                     }
-                }
-
-                // 4. Nếu vẫn chưa có nhưng có thông tin text từ vựng, tự động tạo mới vào bảng Vocabularies
-                if (vocab == null && !string.IsNullOrWhiteSpace(request.Word))
-                {
-                    vocab = new Vocabulary
-                    {
-                        Word = request.Word.Trim(),
-                        Reading = request.Reading?.Trim(),
-                        Meaning = request.Meaning?.Trim() ?? string.Empty,
-                        JLPTLevel = request.JlptLevel ?? "N4",
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _db.Vocabularies.Add(vocab);
-                    await _db.SaveChangesAsync();
                 }
 
                 if (vocab == null)
@@ -128,13 +127,28 @@ namespace JCAP.Services.Implementations
             {
                 Grammar? grammar = null;
 
-                // 1. Ưu tiên tìm theo mẫu ngữ pháp chính xác nếu được truyền lên
+                // 1. Ưu tiên tìm hoặc tạo theo mẫu ngữ pháp chính xác nếu được truyền lên
                 if (!string.IsNullOrWhiteSpace(request.Pattern))
                 {
-                    grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Pattern == request.Pattern.Trim() && g.IsActive);
+                    var cleanPattern = request.Pattern.Trim();
+                    grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Pattern == cleanPattern && g.IsActive);
+                    if (grammar == null)
+                    {
+                        grammar = new Grammar
+                        {
+                            Pattern = cleanPattern,
+                            Meaning = request.Meaning?.Trim() ?? string.Empty,
+                            ExampleSentence = request.ExampleSentence?.Trim(),
+                            JLPTLevel = request.JlptLevel ?? "N4",
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Grammars.Add(grammar);
+                        await _db.SaveChangesAsync();
+                    }
                 }
 
-                // 2. Nếu chưa thấy, kiểm tra xem GrammarId có thuộc bảng TargetGrammars của Kịch bản hay không
+                // 2. Nếu chưa có request.Pattern, kiểm tra xem GrammarId có thuộc bảng TargetGrammars của Kịch bản hay không
                 if (grammar == null && request.GrammarId.HasValue && request.GrammarId.Value > 0)
                 {
                     var targetGrammar = await _db.TargetGrammars
@@ -164,22 +178,6 @@ namespace JCAP.Services.Implementations
                         // 3. Nếu không phải TargetGrammar, tìm theo Id trong bảng Grammars
                         grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == request.GrammarId.Value && g.IsActive);
                     }
-                }
-
-                // 4. Nếu vẫn chưa có nhưng có thông tin mẫu ngữ pháp, tự động tạo mới vào bảng Grammars
-                if (grammar == null && !string.IsNullOrWhiteSpace(request.Pattern))
-                {
-                    grammar = new Grammar
-                    {
-                        Pattern = request.Pattern.Trim(),
-                        Meaning = request.Meaning?.Trim() ?? string.Empty,
-                        ExampleSentence = request.ExampleSentence?.Trim(),
-                        JLPTLevel = request.JlptLevel ?? "N4",
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _db.Grammars.Add(grammar);
-                    await _db.SaveChangesAsync();
                 }
 
                 if (grammar == null)

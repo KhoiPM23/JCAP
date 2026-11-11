@@ -409,9 +409,7 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         int autonomyScore;
         int pronScore;
 
-        bool hasSpokenVoice = speechDeliveries.Count == 0 || speechDeliveries.Any(d => !d.IsTextInput && d.SpeechConfidence.HasValue && d.SpeechConfidence.Value > 0);
-
-        if (hasSpokenVoice)
+        if (speechDeliveries.Count > 0 && speechDeliveries.Any(d => !d.IsTextInput && ((d.SpeechConfidence.HasValue && d.SpeechConfidence.Value > 0) || !string.IsNullOrEmpty(d.AudioUrl))))
         {
             var validLatencies = speechDeliveries
                 .Where(d => !d.IsTextInput && d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
@@ -481,7 +479,7 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                 ? (int)Math.Round(Math.Clamp(pronScores.Average(), 30, 100))
                 : confidenceScore;
         }
-        else
+        else if (speechDeliveries.Count > 0 && speechDeliveries.All(d => d.IsTextInput))
         {
             // Trường hợp học viên chỉ gõ phím / chèn gợi ý mà không nói qua micro:
             // Không tự ý chấm điểm âm học (rõ âm, phản xạ thoại) để đảm bảo tính trung thực sư phạm
@@ -502,6 +500,29 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             autonomyScore = autonomyScores.Count > 0
                 ? (int)Math.Round(Math.Clamp(autonomyScores.Average(), 20, 100))
                 : 100;
+        }
+        else
+        {
+            // Trường hợp không có dữ liệu âm học (test cases, simulator hoặc cấu hình văn bản cơ bản):
+            // Sử dụng thuật toán suy diễn sư phạm từ độ chuẩn xác ngữ nghĩa của các lượt thoại
+            var goodCount = feedbacks.Count(f => string.Equals(f.Status, "Good", StringComparison.OrdinalIgnoreCase));
+            var warningCount = feedbacks.Count(f => string.Equals(f.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+            var errorCount = feedbacks.Count(f => string.Equals(f.Status, "Error", StringComparison.OrdinalIgnoreCase));
+
+            fluencyScore = ClampAndRound(85.0 + (goodCount * 3) - (warningCount * 5) - (errorCount * 12));
+            confidenceScore = ClampAndRound(88.0 + (goodCount * 2) - (warningCount * 4) - (errorCount * 10));
+            var autonomyScores = feedbacks
+                .Select(f =>
+                {
+                    if (IsSurvivalPhraseFeedback(f)) return 100.0;
+                    if (f.SpeechDelivery?.TurnAutonomyScore.HasValue == true) return (double)f.SpeechDelivery.TurnAutonomyScore.Value;
+                    return 100.0;
+                })
+                .ToList();
+            autonomyScore = autonomyScores.Count > 0
+                ? (int)Math.Round(Math.Clamp(autonomyScores.Average(), 20, 100))
+                : 100;
+            pronScore = 80;
         }
 
         return (fluencyScore, confidenceScore, autonomyScore, pronScore, avgLatency, avgPace);

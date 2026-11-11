@@ -464,6 +464,46 @@ const RUBY_TAG_REGEX = /<ruby[^>]*>(?:<rp>.*?<\/rp>)?(.*?)(?:<rp>.*?<\/rp>)?<rt[
 const JAPANESE_SPACE_REGEX = /(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,>\uFF09\)])[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,<\uFF08\(])/g;
 
 /**
+ * Đảm bảo tính trung thực Furigana so với câu gốc (Furigana-Original Alignment Guard):
+ * - Nếu câu gốc hoàn toàn không có chữ Hán (chỉ toàn Hiragana/Katakana/Romaji), 
+ *   thì 100% KHÔNG bao giờ ép về Kanji để gắn ruby (giữ nguyên Hiragana gốc).
+ * - Nếu một thẻ <ruby>chữ_Hán<rt>cách_đọc</rt></ruby> chứa chữ Hán KHÔNG hề có trong câu gốc 
+ *   (do AI/LLM tự ý chuyển Hiragana của người học thành Kanji), 
+ *   thì lập tức gỡ bỏ chữ Hán đó và hoàn lại cách đọc Hiragana ban đầu.
+ */
+export function alignFuriganaWithOriginal(furiganaHtml?: string | null, originalText?: string | null): string {
+  if (!furiganaHtml) return '';
+  if (!originalText) return cleanFuriganaHtml(furiganaHtml);
+
+  const cleanOriginal = sanitizeDisplayJapanese(originalText).trim();
+
+  // 1. Nếu câu gốc hoàn toàn không chứa chữ Hán nào -> Trả về thẳng câu gốc (100% Hiragana/Katakana thuần)
+  if (!/[\u4E00-\u9FAF]/.test(cleanOriginal)) {
+    return cleanOriginal;
+  }
+
+  // 2. Làm sạch thẻ ruby cơ bản trước
+  const cleaned = cleanFuriganaHtml(furiganaHtml);
+
+  // 3. Quét từng thẻ ruby: kiểm tra xem chữ Hán trong thẻ ruby có thực sự tồn tại trong câu gốc hay không
+  return cleaned.replace(
+    /<ruby[^>]*>(?:<rp>.*?<\/rp>)?(.*?)(?:<rp>.*?<\/rp>)?<rt[^>]*>(.*?)<\/rt>(?:<rp>.*?<\/rp>)?<\/ruby>/gi,
+    (fullMatch, baseText, rtText) => {
+      const cleanBase = (baseText || '').trim();
+      const cleanRt = (rtText || '').trim();
+
+      // Nếu chữ Hán trong ruby không hề có trong câu gốc (AI/LLM tự ý ép Hiragana thành Kanji)
+      if (cleanBase && !cleanOriginal.includes(cleanBase)) {
+        // Hoàn lại cách đọc Hiragana nguyên bản của câu gốc
+        return cleanRt || cleanBase;
+      }
+
+      return fullMatch;
+    }
+  );
+}
+
+/**
  * Làm sạch thẻ <ruby> phát sinh từ AI:
  * - Đưa trợ từ, hiragana, dấu câu ra ngoài thẻ ruby (vd: <ruby>は海老<rt>えび</rt></ruby> -> は<ruby>海老<rt>えび</rt></ruby>)
  * - Đưa okurigana ra ngoài thẻ ruby (vd: <ruby>使われ<rt>つかわれ</rt></ruby> -> <ruby>使<rt>つか</rt></ruby>われ)

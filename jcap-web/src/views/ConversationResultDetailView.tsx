@@ -37,6 +37,7 @@ import { sanitizeDisplayJapanese, cleanFuriganaHtml, cleanPedagogicMeaning } fro
 
 import { PREFECTURES } from "../data/japanMap";
 import {
+  ArrowRightIcon,
   BarChartIcon,
   BookOpenIcon,
   BookmarkIcon,
@@ -159,7 +160,7 @@ const ScoreCard = ({
       )}
       <div className="relative">
         <div className="flex items-center justify-between gap-1">
-          <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider font-sans truncate">
+          <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wide font-sans whitespace-nowrap">
             {label}
           </span>
           <span className="text-[10px] font-mono font-semibold text-slate-400 shrink-0">
@@ -302,6 +303,240 @@ const AnimatedScoreGauge = ({ score }: { score: number }) => {
         <span className={`text-[11px] sm:text-xs font-serif font-bold tracking-wider mt-0.5 ${rankInfo.color}`}>
           Hạng {rankInfo.kanji}
         </span>
+      </div>
+    </div>
+  );
+};
+
+/** Lục giác Năng lực 6 Trục RPG (Hexagonal Combat Stat Radar) */
+const RpgVictoryRadar: React.FC<{
+  grammar: number;
+  vocabulary: number;
+  impression: number;
+  fluency: number | null;
+  clarity: number | null;
+  autonomy: number;
+  hasActualVoice: boolean;
+}> = ({ grammar, vocabulary, impression, fluency, clarity, autonomy, hasActualVoice }) => {
+  const [selectedAxis, setSelectedAxis] = useState<string | null>(null);
+
+  const axes = useMemo(() => [
+    { id: 'grammar', kanji: '文', label: 'Ngữ pháp', score: grammar, accent: 'var(--ai)', bg: 'bg-[var(--ai)]' },
+    { id: 'vocabulary', kanji: '語', label: 'Từ vựng', score: vocabulary, accent: 'var(--score-good)', bg: 'bg-[var(--score-good)]' },
+    { id: 'impression', kanji: '礼', label: 'Văn phong', score: impression, accent: '#f59e0b', bg: 'bg-amber-500' },
+    { id: 'fluency', kanji: '速', label: 'Phản xạ', score: hasActualVoice && fluency != null ? fluency : 85, accent: 'var(--nami)', bg: 'bg-[var(--nami)]', exempt: !hasActualVoice },
+    { id: 'clarity', kanji: '声', label: 'Độ rõ âm', score: hasActualVoice && clarity != null ? clarity : 85, accent: '#0d9488', bg: 'bg-teal-600', exempt: !hasActualVoice },
+    { id: 'autonomy', kanji: '自', label: 'Tự chủ', score: autonomy, accent: '#4f46e5', bg: 'bg-indigo-600' },
+  ], [grammar, vocabulary, impression, fluency, clarity, autonomy, hasActualVoice]);
+
+  const cx = 175;
+  const cy = 150;
+  const maxR = 96;
+
+  // 4 Vòng lục giác đồng tâm (25%, 50%, 75%, 100%)
+  const gridRings = [0.25, 0.5, 0.75, 1.0].map((scale) => {
+    return axes.map((_, i) => {
+      const angle = (i * 60 - 90) * (Math.PI / 180);
+      return `${cx + maxR * scale * Math.cos(angle)},${cy + maxR * scale * Math.sin(angle)}`;
+    }).join(' ');
+  });
+
+  // Đa giác chuẩn mục tiêu 80%
+  const benchmarkPoly = axes.map((_, i) => {
+    const angle = (i * 60 - 90) * (Math.PI / 180);
+    return `${cx + maxR * 0.8 * Math.cos(angle)},${cy + maxR * 0.8 * Math.sin(angle)}`;
+  }).join(' ');
+
+  // Đa giác năng lực thực tế của người học
+  const learnerPoly = axes.map((axis, i) => {
+    const angle = (i * 60 - 90) * (Math.PI / 180);
+    const score = Math.max(15, Math.min(100, axis.score));
+    const r = (score / 100) * maxR;
+    return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
+  }).join(' ');
+
+  const active = axes.find(a => a.id === selectedAxis) || axes[0];
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--line-strong)] bg-[var(--paper-50)] p-5 sm:p-6 shadow-xs washi-parchment">
+      <div className="sb-wm text-6xl opacity-15 select-none pointer-events-none">六角</div>
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* SVG Hexagonal Radar */}
+        <div className="relative w-full max-w-[320px] aspect-[350/300] shrink-0 select-none">
+          <svg viewBox="0 0 350 300" className="w-full h-full overflow-visible">
+            <defs>
+              <radialGradient id="rpgVictoryRadarGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="#1e3a8a" stopOpacity="0.18" />
+              </radialGradient>
+            </defs>
+
+            {/* 4 Vòng lưới lục giác */}
+            {gridRings.map((pts, idx) => (
+              <polygon
+                key={idx}
+                points={pts}
+                fill={idx % 2 === 0 ? 'rgba(241, 245, 249, 0.45)' : 'none'}
+                stroke="#cbd5e1"
+                strokeWidth={idx === 3 ? '1.5' : '0.8'}
+                strokeDasharray={idx < 3 ? '3 3' : undefined}
+              />
+            ))}
+
+            {/* 6 Trục xuyên tâm */}
+            {axes.map((axis, i) => {
+              const angle = (i * 60 - 90) * (Math.PI / 180);
+              const isSel = selectedAxis === axis.id;
+              return (
+                <line
+                  key={`spoke-${axis.id}`}
+                  x1={cx}
+                  y1={cy}
+                  x2={cx + maxR * Math.cos(angle)}
+                  y2={cy + maxR * Math.sin(angle)}
+                  stroke={isSel ? axis.accent : '#94a3b8'}
+                  strokeWidth={isSel ? '2' : '0.8'}
+                  strokeDasharray="2 2"
+                />
+              );
+            })}
+
+            {/* Đa giác chuẩn 80đ */}
+            <polygon
+              points={benchmarkPoly}
+              fill="none"
+              stroke="#f59e0b"
+              strokeWidth="1.2"
+              strokeDasharray="4 4"
+              opacity="0.8"
+            />
+
+            {/* Đa giác điểm của người học */}
+            <polygon
+              points={learnerPoly}
+              fill="url(#rpgVictoryRadarGrad)"
+              stroke="#0284c7"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+
+            {/* Tâm đa giác */}
+            <circle cx={cx} cy={cy} r="3" fill="#64748b" />
+
+            {/* 6 Đỉnh tương tác */}
+            {axes.map((axis, i) => {
+              const angle = (i * 60 - 90) * (Math.PI / 180);
+              const score = Math.max(15, Math.min(100, axis.score));
+              const r = (score / 100) * maxR;
+              const nodeX = cx + r * Math.cos(angle);
+              const nodeY = cy + r * Math.sin(angle);
+              const labelX = cx + (maxR + 24) * Math.cos(angle);
+              const labelY = cy + (maxR + 24) * Math.sin(angle);
+              const isSel = selectedAxis === axis.id;
+
+              return (
+                <g
+                  key={`vertex-${axis.id}`}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    ukiyoSound.playWoodblockSnap();
+                    setSelectedAxis(axis.id);
+                  }}
+                >
+                  {isSel && (
+                    <circle cx={nodeX} cy={nodeY} r="10" fill={axis.accent} opacity="0.25" />
+                  )}
+                  <circle
+                    cx={nodeX}
+                    cy={nodeY}
+                    r={isSel ? '5.5' : '4'}
+                    fill={isSel ? '#ffffff' : axis.accent}
+                    stroke={isSel ? axis.accent : '#ffffff'}
+                    strokeWidth="2"
+                  />
+                  {/* Nhãn Kanji + Điểm */}
+                  <text
+                    x={labelX}
+                    y={labelY - 5}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="font-serif font-black text-xs"
+                    fill={isSel ? 'var(--ai)' : 'var(--sumi)'}
+                  >
+                    {axis.kanji}
+                  </text>
+                  <text
+                    x={labelX}
+                    y={labelY + 8}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="font-mono font-bold text-[10px]"
+                    fill={isSel ? 'var(--ai)' : 'var(--sumi-muted)'}
+                  >
+                    {axis.exempt ? '--' : `${axis.score}`}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Chú giải & Chi tiết trục đang chọn */}
+        <div className="flex-1 min-w-0 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-bold text-[var(--ai)] uppercase tracking-wider bg-[var(--ai-soft)] px-2 py-0.5 rounded-full border border-[var(--ai)]/20">
+                LỤC GIÁC RPG · 6 STAT RADAR
+              </span>
+              <span className="text-xs font-serif text-[var(--sumi-muted)]">能力多角形</span>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] font-semibold text-[var(--sumi-muted)]">
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-sm bg-sky-500/30 border border-sky-500" />
+                <span>Bạn</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="w-3 border-b-2 border-dashed border-amber-500" />
+                <span>Chuẩn 80đ</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {axes.map((axis) => {
+              const isSel = active.id === axis.id;
+              return (
+                <button
+                  key={axis.id}
+                  type="button"
+                  onClick={() => {
+                    ukiyoSound.playWoodblockSnap();
+                    setSelectedAxis(axis.id);
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2 text-left transition-all tactile-press ${
+                    isSel
+                      ? 'border-2 border-[var(--ai)] bg-[var(--ai-soft)]/60 shadow-xs ring-1 ring-[var(--ai)]/20'
+                      : 'border border-[var(--line)] bg-white/80 hover:bg-white hover:border-line-strong'
+                  }`}
+                >
+                  <span className="w-6 h-6 rounded-lg flex items-center justify-center font-serif font-black text-xs bg-paper-100 text-sumi shrink-0 border border-line">
+                    {axis.kanji}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-semibold text-sumi truncate">{axis.label}</div>
+                    <div className="text-xs font-mono font-bold text-sumi">
+                      {axis.exempt ? 'Miễn trừ' : `${axis.score}/100`}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="m-0 text-[11px] leading-relaxed text-sumi-muted italic">
+            * Bấm vào từng đỉnh lục giác hoặc thẻ chỉ số để xem phân bổ năng lực thực chiến trong phiên. Đa giác đạt chuẩn 80 điểm thể hiện phong độ phản xạ tự nhiên.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -1275,13 +1510,13 @@ export const ConversationResultDetailView: React.FC = () => {
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 rounded-2xl border border-emerald-400/90 bg-[#071A44]/95 backdrop-blur-md px-5 py-3 text-xs font-bold text-white shadow-2xl animate-fade-in pointer-events-auto">
           <span className="text-emerald-400 text-sm">{toastMessage ? "●" : "✓"}</span>
           <span>{toastMessage || "Đã sao chép báo cáo kết quả vào bộ nhớ tạm!"}</span>
-          {toastMessage && toastMessage.includes("Flashcard") && (
+          {toastMessage && (toastMessage.includes("Flashcard") || toastMessage.includes("Kho Thẻ") || toastMessage.includes("lưu") || toastMessage.includes("Bookmark")) && (
             <Link
-              to="/flashcards/bookmarks"
-              className="ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] transition shadow-xs whitespace-nowrap active:scale-95"
+              to="/flashcards/bookmarks?level=All&type=All"
+              className="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] transition shadow-xs whitespace-nowrap active:scale-95"
             >
-              <span>Xem trực tiếp</span>
-              <span>➔</span>
+              <span>Xem trực tiếp trong Flashcard</span>
+              <ArrowRightIcon className="w-3.5 h-3.5" />
             </Link>
           )}
         </div>,
@@ -1376,6 +1611,9 @@ export const ConversationResultDetailView: React.FC = () => {
           {/* Lớp nền sóng Seigaiha Nhật Bản */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,#38BDF8_2px,transparent_3px)] bg-[size:24px_24px] pointer-events-none" />
 
+          {/* Watermark thư pháp chữ Hán đứng dọc chìm ở góc */}
+          <div className="sb-wm text-6xl text-white/10 select-none pointer-events-none font-serif right-8 bottom-6">凱旋</div>
+
           <div className="absolute right-0 top-0 h-full w-2/3 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.22),transparent_65%)] pointer-events-none" />
           <div className="absolute -left-10 -bottom-10 h-44 w-44 rounded-full bg-indigo-500/15 blur-2xl pointer-events-none" />
 
@@ -1403,7 +1641,7 @@ export const ConversationResultDetailView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300 font-mono">
-                  Bản Khắc Chiến Tích Hội Thoại · 戦績刻印
+                  Tổng Kết Phiên Luyện Nói · 会話の記録
                 </p>
               </div>
 
@@ -1411,20 +1649,47 @@ export const ConversationResultDetailView: React.FC = () => {
                 {result.scenarioTitle}
               </h1>
 
-              {/* Danh sách Huy hiệu Năng lực Thực chiến (Competency Badges) */}
-              {result.competencyBadges && result.competencyBadges.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {result.competencyBadges.map((badge, bIdx) => (
-                    <span
-                      key={bIdx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-amber-200 border border-amber-300/30 backdrop-blur-xs shadow-xs"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      <span>{badge}</span>
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Danh sách Huy hiệu Năng lực Thực chiến (Đã lọc bỏ gán cứng khi dùng phím/gợi ý) */}
+              {(() => {
+                const usedAnyHint = Boolean(
+                  (result.autonomyScore != null && result.autonomyScore < 90) ||
+                  ((result as any).hintsUsedCount && (result as any).hintsUsedCount > 0) ||
+                  (result.messages && result.messages.some((m) => {
+                    const d = m.linguisticFeedback?.speechDelivery;
+                    return (d?.hintLevelUsed != null && d.hintLevelUsed > 0) || (d?.turnAutonomyScore != null && d.turnAutonomyScore < 90);
+                  }))
+                );
+                const hasVoice = Boolean(
+                  result.messages && result.messages.some((m) => {
+                    const isUser = (sender?: string) => {
+                      const s = (sender || '').toLowerCase().trim();
+                      return s === 'user' || s === 'learner' || s === 'me';
+                    };
+                    const delivery = m.linguisticFeedback?.speechDelivery;
+                    const audio = delivery?.audioUrl || (m as any).audioUrl;
+                    const hasValidAudio = Boolean(audio && typeof audio === 'string' && !audio.startsWith('blob:'));
+                    return isUser(m.sender) && !delivery?.isTextInput && hasValidAudio;
+                  })
+                );
+                const validBadges = (result.competencyBadges || []).filter((b) => {
+                  if ((b === 'Phản xạ Tức thì' || b === 'Phản xạ Độc lập') && (usedAnyHint || !hasVoice)) return false;
+                  return true;
+                });
+
+                return validBadges.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {validBadges.map((badge, bIdx) => (
+                      <span
+                        key={bIdx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-amber-200 border border-amber-300/30 backdrop-blur-xs shadow-xs"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span>{badge}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
 
               <p className="mt-3.5 text-xs sm:text-sm text-slate-300 font-sans font-medium">
                 Hoàn thành {formatDate(result.completedAt).startsWith("lúc") ? formatDate(result.completedAt) : `lúc ${formatDate(result.completedAt)}`}
@@ -1432,27 +1697,27 @@ export const ConversationResultDetailView: React.FC = () => {
             </div>
 
             {/* Cụm Dấu Triện Hanko Slam & Vòng Điểm Số RPG */}
-            <div className="flex items-center justify-center md:justify-end gap-5">
+            <div className="flex items-center justify-center md:justify-end gap-3 sm:gap-5">
               {/* Dấu Triện Đỏ Slam (Hanko Ink Stamp Landing) */}
-              <div className="hidden sm:block shrink-0 select-none">
+              <div className="flex shrink-0 select-none">
                 {result.passStatus ? (
                   <div
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-dashed border-rose-500 bg-rose-950/70 p-1 flex flex-col items-center justify-center text-rose-300 shadow-xl rotate-[-6deg] animate-stamp-slam"
+                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border-[2.5px] border-[var(--shu)] bg-[var(--shu-soft)]/90 p-1 flex flex-col items-center justify-center text-[var(--shu)] shadow-xl rotate-[-6deg] animate-stamp-slam select-none hanko-seal-badge"
                     title="Dấu triện hội thoại: Đạt chuẩn (合格)"
                   >
-                    <div className="w-full h-full rounded-full border border-rose-400/80 flex flex-col items-center justify-center">
-                      <span className="text-xs sm:text-sm font-serif font-black tracking-widest text-rose-200">合格</span>
-                      <span className="text-[8px] sm:text-[9px] font-sans font-black tracking-wider text-rose-300 uppercase">PASSED</span>
+                    <div className="w-full h-full rounded-xl border border-[var(--shu)]/60 flex flex-col items-center justify-center">
+                      <span className="text-xs sm:text-base font-serif font-black tracking-widest text-[var(--shu)]">合格</span>
+                      <span className="text-[7px] sm:text-[9px] font-sans font-black tracking-wider text-[var(--shu)] uppercase">PASSED</span>
                     </div>
                   </div>
                 ) : (
                   <div
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-dashed border-stone-500 bg-stone-900/80 p-1 flex flex-col items-center justify-center text-stone-300 shadow-xl rotate-[4deg] animate-stamp-slam"
+                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border-[2.5px] border-stone-500 bg-stone-900/80 p-1 flex flex-col items-center justify-center text-stone-300 shadow-xl rotate-[-6deg] animate-stamp-slam select-none"
                     title="Dấu triện tu luyện: Cần rèn thêm (未達)"
                   >
-                    <div className="w-full h-full rounded-full border border-stone-400/80 flex flex-col items-center justify-center">
-                      <span className="text-xs sm:text-sm font-serif font-black tracking-widest text-stone-200">未達</span>
-                      <span className="text-[8px] sm:text-[9px] font-sans font-bold tracking-wider text-stone-400 uppercase">RETRY</span>
+                    <div className="w-full h-full rounded-xl border border-stone-400/80 flex flex-col items-center justify-center">
+                      <span className="text-xs sm:text-base font-serif font-black tracking-widest text-stone-200">未達</span>
+                      <span className="text-[7px] sm:text-[9px] font-sans font-bold tracking-wider text-stone-400 uppercase">RETRY</span>
                     </div>
                   </div>
                 )}
@@ -1505,88 +1770,119 @@ export const ConversationResultDetailView: React.FC = () => {
           </div>
         )}
 
-        {/* 6 BẢN KHẮC NĂNG LỰC ĐỐI THOẠI (6 COMPETENCY INSCRIBED PLAQUES) */}
-        <div className="mt-6 grid gap-3.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 items-stretch">
-          <ScoreCard
-            label="Ngữ pháp"
-            score={result.grammarScore}
-            accent="bg-[var(--ai)]"
-            kanjiWatermark="文"
-            subtext={
-              result.grammarScore >= 80
-                ? "Đúng trợ từ & thể"
-                : "Lưu ý trợ từ"
-            }
-          />
+        {/* 6 BẢN KHẮC NĂNG LỰC ĐỐI THOẠI & LỤC GIÁC RPG RADAR */}
+        {(() => {
+          const isUser = (sender?: string) => {
+            const s = (sender || '').toLowerCase().trim();
+            return s === 'user' || s === 'learner' || s === 'me';
+          };
+          const hasActualVoice = Boolean(
+            result.messages && result.messages.some((m) => {
+              const delivery = m.linguisticFeedback?.speechDelivery;
+              const audio = delivery?.audioUrl || (m as any).audioUrl;
+              const hasValidAudio = Boolean(audio && typeof audio === 'string' && !audio.startsWith('blob:'));
+              return isUser(m.sender) && !delivery?.isTextInput && hasValidAudio;
+            })
+          );
 
-          <ScoreCard
-            label="Từ vựng"
-            score={result.vocabularyScore}
-            accent="bg-[var(--score-good)]"
-            kanjiWatermark="語"
-            subtext={
-              result.vocabularyScore >= 80
-                ? "Từ phong phú"
-                : "Mở rộng vốn từ"
-            }
-          />
+          return (
+            <div className="mt-6 space-y-4">
+              {/* LỤC GIÁC NĂNG LỰC 6 TRỤC RPG (HEXAGONAL RADAR STAT) */}
+              <RpgVictoryRadar
+                grammar={result.grammarScore}
+                vocabulary={result.vocabularyScore}
+                impression={result.impressionScore}
+                fluency={result.fluencyScore ?? 85}
+                clarity={result.speechConfidenceScore}
+                autonomy={result.autonomyScore ?? 100}
+                hasActualVoice={hasActualVoice}
+              />
 
-          <ScoreCard
-            label="Văn phong & Kính ngữ"
-            score={result.impressionScore}
-            accent="bg-amber-500"
-            kanjiWatermark="礼"
-            subtext={
-              result.impressionScore >= 80
-                ? "Lịch sự, chuẩn mực"
-                : "Cần trau chuốt thể văn"
-            }
-          />
+              {/* 6 BẢN KHẮC NĂNG LỰC (6 INSCRIBED SCORE PLAQUES) */}
+              <div className="grid gap-3.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 items-stretch">
+                <ScoreCard
+                  label="Ngữ pháp"
+                  score={result.grammarScore}
+                  accent="bg-[var(--ai)]"
+                  kanjiWatermark="文"
+                  subtext={
+                    result.grammarScore >= 80
+                      ? "Đúng trợ từ & thể"
+                      : "Lưu ý trợ từ"
+                  }
+                />
 
-          <ScoreCard
-            label="Phản xạ"
-            score={!result.speechConfidenceScore ? null : (result.fluencyScore ?? 85)}
-            accent="bg-[var(--nami)]"
-            kanjiWatermark="速"
-            subtext={
-              !result.speechConfidenceScore
-                ? "Gõ phím (Miễn trừ)"
-                : (result.averageResponseLatencySeconds
-                    ? `~${result.averageResponseLatencySeconds.toFixed(1)}s · Nhanh`
-                    : "Nhịp đối đáp ổn định")
-            }
-          />
+                <ScoreCard
+                  label="Từ vựng"
+                  score={result.vocabularyScore}
+                  accent="bg-[var(--score-good)]"
+                  kanjiWatermark="語"
+                  subtext={
+                    result.vocabularyScore >= 80
+                      ? "Từ phong phú"
+                      : "Mở rộng vốn từ"
+                  }
+                />
 
-          <ScoreCard
-            label="Độ rõ âm"
-            score={!result.speechConfidenceScore ? null : result.speechConfidenceScore}
-            accent="bg-teal-600"
-            kanjiWatermark="声"
-            subtext={
-              !result.speechConfidenceScore
-                ? "Gõ phím (Không chấm phát âm)"
-                : (result.averageSpeechPace
-                    ? (result.averageSpeechPace < 2.5
-                        ? "Chậm rãi, rõ chữ"
-                        : result.averageSpeechPace <= 5.0
-                        ? "Tự nhiên, vừa vặn"
-                        : "Nhanh nhẹn, lưu loát")
-                    : "Phát âm rõ ràng")
-            }
-          />
+                <ScoreCard
+                  label="Văn phong"
+                  score={result.impressionScore}
+                  accent="bg-amber-500"
+                  kanjiWatermark="礼"
+                  subtext={
+                    result.impressionScore >= 80
+                      ? "Lịch sự, chuẩn mực"
+                      : "Cần trau chuốt thể văn"
+                  }
+                />
 
-          <ScoreCard
-            label="Tự chủ"
-            score={result.autonomyScore ?? 100}
-            accent="bg-indigo-600"
-            kanjiWatermark="自"
-            subtext={
-              (result.autonomyScore ?? 100) >= 95
-                ? "Độc lập hoàn toàn"
-                : "Dùng gợi ý ZPD"
-            }
-          />
-        </div>
+                <ScoreCard
+                  label="Phản xạ"
+                  score={!hasActualVoice ? null : (result.fluencyScore ?? 85)}
+                  accent="bg-[var(--nami)]"
+                  kanjiWatermark="速"
+                  subtext={
+                    !hasActualVoice
+                      ? "Gõ phím (Miễn trừ)"
+                      : (result.averageResponseLatencySeconds
+                          ? `~${result.averageResponseLatencySeconds.toFixed(1)}s · Nhanh`
+                          : "Nhịp đối đáp ổn định")
+                  }
+                />
+
+                <ScoreCard
+                  label="Độ rõ âm"
+                  score={!hasActualVoice ? null : result.speechConfidenceScore}
+                  accent="bg-teal-600"
+                  kanjiWatermark="声"
+                  subtext={
+                    !hasActualVoice
+                      ? "Gõ phím (Miễn trừ)"
+                      : (result.averageSpeechPace
+                          ? (result.averageSpeechPace < 2.5
+                              ? "Chậm rãi, rõ chữ"
+                              : result.averageSpeechPace <= 5.0
+                              ? "Tự nhiên, vừa vặn"
+                              : "Nhanh nhẹn, lưu loát")
+                          : "Phát âm rõ ràng")
+                  }
+                />
+
+                <ScoreCard
+                  label="Tự chủ"
+                  score={result.autonomyScore ?? 100}
+                  accent="bg-indigo-600"
+                  kanjiWatermark="自"
+                  subtext={
+                    (result.autonomyScore ?? 100) >= 95
+                      ? "Độc lập hoàn toàn"
+                      : "Dùng gợi ý ZPD"
+                  }
+                />
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Thanh chỉ số đồng bộ với Bản đồ Năng lực */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--paper-50)] px-4 py-2.5 text-xs text-[var(--sumi-muted)] shadow-2xs">
@@ -1596,10 +1892,10 @@ export const ConversationResultDetailView: React.FC = () => {
           </div>
           <Link
             to="/profile#radar-map"
-            className="inline-flex items-center gap-1 text-[var(--ai)] hover:text-[var(--ai-hover)] font-bold transition hover:underline"
+            className="inline-flex items-center gap-1.5 text-[var(--ai)] hover:text-[var(--ai-hover)] font-bold transition hover:underline"
           >
             <span>Xem Hồ sơ Năng lực</span>
-            <span>➔</span>
+            <ArrowRightIcon className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -2114,8 +2410,7 @@ export const ConversationResultDetailView: React.FC = () => {
                   <h2 className="text-2xl font-black text-[var(--sumi)] font-mono">
                     {result.allMissions && result.allMissions.length > 0
                       ? `${result.completedMissions.length}/${result.allMissions.length}`
-                      : `${result.completedMissions.length}`}{" "}
-                    mục tiêu
+                      : `${result.completedMissions.length}`} mục tiêu
                   </h2>
 
                   <span
@@ -2220,7 +2515,59 @@ export const ConversationResultDetailView: React.FC = () => {
         })()}
 
         {/* ============================================================ */}
+        {/* KHỐI ĐỀ XUẤT CỦNG CỐ THEO CHỦ ĐỀ LIÊN KẾT KHO HỌC LIỆU       */}
+        {/* ============================================================ */}
+        {result && (() => {
+          const currentScenario = availableScenarios.find((s) => s.id === result.scenarioId);
+          const topicCode = currentScenario?.topicCode || 'DINING';
+          const topicName = currentScenario?.topicName || (topicCode === 'DINING' ? 'Ẩm thực' : topicCode === 'TRANSPORT' ? 'Di chuyển' : 'Đời sống');
 
+          return (
+            <div className="mt-6 overflow-hidden rounded-3xl border border-[var(--line-strong)] bg-gradient-to-r from-[var(--paper-50)] via-white to-[var(--ai-soft)]/40 p-5 sm:p-6 shadow-xs washi-parchment relative">
+              <div className="sb-wm text-5xl opacity-15 select-none pointer-events-none">学修</div>
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--ai-soft)] border border-[var(--ai)]/30 text-[var(--ai)] flex items-center justify-center shrink-0 shadow-2xs">
+                    <BookOpenIcon className="w-6 h-6 text-[var(--ai)]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ai)] font-mono">
+                        Kho học liệu chủ đề · 学習トピック
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--ai)] text-white">
+                        {topicName}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-bold text-[var(--sumi)] font-sans mt-0.5">
+                      Củng cố kiến thức theo chủ đề: {topicName}
+                    </h3>
+                    <p className="mt-1 text-xs text-[var(--sumi-muted)] leading-relaxed max-w-xl font-sans">
+                      Luyện tập chuyên sâu bài học từ vựng, ngữ pháp tương ứng trong kho học liệu để chuẩn bị cho các phiên đối thoại cấp độ cao hơn.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      ukiyoSound.playSubtleTap();
+                      navigate(`/learning/topics?topic=${topicCode}`);
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] active:scale-95 text-white font-bold text-xs shadow-xs transition cursor-pointer tactile-press"
+                  >
+                    <BookOpenIcon className="w-4 h-4" />
+                    <span>Mở kho học liệu chủ đề</span>
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ============================================================ */}
         {/* LỘ TRÌNH CỦNG CỐ THÍCH ỨNG (ADAPTIVE REINFORCEMENT PATH)     */}
         {/* ============================================================ */}
         {result && (
@@ -2286,12 +2633,12 @@ export const ConversationResultDetailView: React.FC = () => {
                       )}
                     </button>
                     <Link
-                      to="/flashcards/bookmarks"
+                      to="/flashcards/bookmarks?level=All&type=All"
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition shadow-2xs active:scale-95"
                       title="Mở danh sách các thẻ Flashcard đã lưu"
                     >
                       <span>Xem thẻ đã lưu</span>
-                      <span>➔</span>
+                      <ArrowRightIcon className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 )}
@@ -3388,7 +3735,7 @@ export const ConversationResultDetailView: React.FC = () => {
                         }`}
                       >
                         <span>Vào kịch bản này</span>
-                        <span className="text-sm">➔</span>
+                        <ArrowRightIcon className="w-3.5 h-3.5" />
                       </Link>
 
 
