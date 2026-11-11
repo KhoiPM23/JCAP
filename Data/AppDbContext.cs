@@ -43,6 +43,7 @@ namespace JCAP.Data
         public DbSet<ShadowingPracticeSession> ShadowingPracticeSessions { get; set; } = null!;
         public DbSet<ShadowingSentenceEvaluation> ShadowingSentenceEvaluations { get; set; } = null!;
         public DbSet<ShadowingPracticeProgress> ShadowingPracticeProgresses { get; set; } = null!;
+        public DbSet<ShadowingSentenceAsset> ShadowingSentenceAssets { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
@@ -621,6 +622,31 @@ namespace JCAP.Data
                 entity.HasOne(e => e.ShadowingPracticeProgress)
                     .WithMany(p => p.SentenceEvaluations)
                     .HasForeignKey(e => e.ShadowingPracticeProgressId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingSentenceAsset: dữ liệu tham chiếu tính sẵn (cách đọc, giọng mẫu) để lúc chấm không cần VOICEVOX.
+            // Một dòng mỗi (câu, nhà cung cấp, giọng); VoiceId null = dòng cách đọc (SQL Server coi NULL là trùng trong index duy nhất).
+            modelBuilder.Entity<ShadowingSentenceAsset>(entity =>
+            {
+                entity.HasIndex(e => new { e.ShadowingSentenceId, e.VoiceProvider, e.VoiceId }).IsUnique();
+                entity.HasIndex(e => e.SourceText);
+
+                entity.Property(e => e.SourceText).IsRequired().HasMaxLength(400);
+                entity.Property(e => e.NormalizedText).IsRequired().HasMaxLength(400);
+                entity.Property(e => e.KanaReading).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.MoraSequence).IsRequired().HasColumnType("nvarchar(max)");
+                entity.Property(e => e.WordStartsJson).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.FuriganaJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.VoiceProvider).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.SampleAudioUrl).HasMaxLength(300);
+                entity.Property(e => e.MoraTimelineJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AudioVersion).IsRequired().HasMaxLength(100);
+
+                // Câu thuộc bảng của thành viên khác: chỉ tham chiếu (khóa ngoại nằm trên bảng này), không sửa bảng đó.
+                entity.HasOne(e => e.ShadowingSentence)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingSentenceId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

@@ -52,10 +52,22 @@ namespace JCAP.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<KanaReading?> TryReadAsync(string text, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Cách đọc lúc CHẤM BÀI. Tắt được bằng `Shadowing:Reading:UseVoiceVox = false` để lúc chấm không phụ thuộc VOICEVOX
+        /// (khi đó chỉ dùng dữ liệu tính sẵn của StoredKanaReader).
+        /// </summary>
+        public Task<KanaReading?> TryReadAsync(string text, CancellationToken cancellationToken = default)
         {
-            if (_configuration.GetValue<bool?>("Shadowing:Reading:UseVoiceVox") == false) return null;
+            if (_configuration.GetValue<bool?>("Shadowing:Reading:UseVoiceVox") == false) return Task.FromResult<KanaReading?>(null);
+            return ReadAsync(text, cancellationToken);
+        }
 
+        /// <summary>Cách đọc lúc TẠO dữ liệu câu mẫu (admin/tác vụ nền): luôn gọi engine, không theo công tắc lúc chấm.</summary>
+        public Task<KanaReading?> ReadForGenerationAsync(string text, CancellationToken cancellationToken = default) =>
+            ReadAsync(text, cancellationToken);
+
+        private async Task<KanaReading?> ReadAsync(string text, CancellationToken cancellationToken)
+        {
             if (JapaneseMora.Normalize(text).Length == 0) return new KanaReading { Source = Id };
 
             // GIỮ dấu câu khi gửi engine: bỏ dấu câu làm VOICEVOX dính nhiều từ thành một cụm trọng âm

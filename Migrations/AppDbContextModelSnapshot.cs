@@ -1997,6 +1997,84 @@ namespace JCAP.Migrations
                     b.ToTable("ShadowingSentences");
                 });
 
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceAsset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AudioDurationMs")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AudioVersion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FuriganaJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("KanaReading")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("MoraSequence")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MoraTimelineJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedText")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("SampleAudioUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("ShadowingSentenceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SourceText")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int?>("VoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VoiceProvider")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("WordStartsJson")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceText");
+
+                    b.HasIndex("ShadowingSentenceId", "VoiceProvider", "VoiceId")
+                        .IsUnique()
+                        .HasFilter("[VoiceId] IS NOT NULL");
+
+                    b.ToTable("ShadowingSentenceAssets");
+                });
+
             modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3076,6 +3154,17 @@ namespace JCAP.Migrations
                         .IsRequired();
 
                     b.Navigation("ShadowingDialogue");
+                });
+
+            modelBuilder.Entity("JCAP.Models.ShadowingSentenceAsset", b =>
+                {
+                    b.HasOne("JCAP.Models.ShadowingSentence", "ShadowingSentence")
+                        .WithMany()
+                        .HasForeignKey("ShadowingSentenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShadowingSentence");
                 });
 
             modelBuilder.Entity("JCAP.Models.ShadowingSentenceEvaluation", b =>
