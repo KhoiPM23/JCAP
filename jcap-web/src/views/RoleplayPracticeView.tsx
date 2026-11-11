@@ -288,8 +288,29 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   const [showProactiveHint, setShowProactiveHint] = useState(false);
   const [sessionHintUseCount, setSessionHintUseCount] = useState<number>(0);
   const sessionHintUseCountRef = useRef<number>(0);
+  const [sessionHintOffersCount, setSessionHintOffersCount] = useState<number>(0);
+  const sessionHintOffersCountRef = useRef<number>(0);
+  const hasPriorUserMessagesRef = useRef<boolean>(false);
   const idleTimerRef = useRef<any>(null);
   const proactiveDismissedTurnRef = useRef<number>(-1);
+
+  // Kích hoạt hiển thị Banner gợi ý chủ động và ghi nhận số lần chào mời trong phiên
+  const triggerProactiveHint = useCallback(() => {
+    setShowProactiveHint(true);
+    setSessionHintOffersCount((c) => {
+      const next = c + 1;
+      sessionHintOffersCountRef.current = next;
+      const currentSessionId = session?.id || session?.sessionId || sessionId;
+      if (currentSessionId) {
+        try {
+          sessionStorage.setItem(`jcap_hint_offers_${currentSessionId}`, String(next));
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  }, [session?.id, session?.sessionId, sessionId]);
 
 
   // Trạng thái sao chép và phát âm câu gợi ý bản xứ
@@ -304,18 +325,38 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   // Đồng bộ số lần đã dùng gợi ý và xem bản dịch trong phiên từ Backend DTO hoặc lịch sử tin nhắn
   useEffect(() => {
     if (session) {
+      const currentSessionId = session.id || session.sessionId || sessionId;
+      const hasPriorUserMsgs = Boolean(session.messages && session.messages.some((m) => m.sender === 'User'));
+      hasPriorUserMessagesRef.current = hasPriorUserMsgs;
+
+      let storedOffers = 0;
+      let storedHints = 0;
+      if (currentSessionId) {
+        try {
+          storedOffers = Number(sessionStorage.getItem(`jcap_hint_offers_${currentSessionId}`) || '0');
+          storedHints = Number(sessionStorage.getItem(`jcap_hint_used_${currentSessionId}`) || '0');
+        } catch {
+          // ignore
+        }
+      }
+
       const msgHints = session.messages?.filter(
         (m) => m.sender === 'User' && m.linguisticFeedback?.speechDelivery?.hintLevelUsed != null && m.linguisticFeedback.speechDelivery.hintLevelUsed > 0
       ).length || 0;
-      const priorHints = Math.max(session.totalHintTurnsUsed || 0, msgHints);
+      const priorHints = Math.max(session.totalHintTurnsUsed || 0, msgHints, storedHints);
       sessionHintUseCountRef.current = priorHints;
       setSessionHintUseCount(priorHints);
+
+      // Nếu tiếp tục phiên dở dang (đã có tin nhắn người học) thì không còn là lần đầu mở gợi ý nữa
+      const initialOffers = hasPriorUserMsgs ? Math.max(1, storedOffers) : storedOffers;
+      sessionHintOffersCountRef.current = initialOffers;
+      setSessionHintOffersCount(initialOffers);
 
       const priorPeeks = session.totalTranslationPeeksUsed || 0;
       sessionTranslationPeeksUsedRef.current = priorPeeks;
       setSessionTranslationPeeksUsed(priorPeeks);
     }
-  }, [session?.id, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
+  }, [session?.id, session?.sessionId, sessionId, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
 
   // Phím tắt bàn phím (Escape đóng menu/modal)
   useEffect(() => {
@@ -457,9 +498,15 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     });
   };
 
+  const hasPriorUserMessages = Boolean(session?.messages && session.messages.some((m) => m.sender === 'User'));
+  // Ưu đãi lần đầu chỉ áp dụng khi: chưa từng dùng gợi ý trong phiên và phiên chưa có tương tác từ trước
+  const isFirstHintInSession = sessionHintUseCount === 0 && !hasPriorUserMessages;
+  // Banner chào mời chỉ ghi "Lần đầu" ở duy nhất lần xuất hiện đầu tiên của phiên mới
+  const isFirstHintOffer = sessionHintUseCount === 0 && sessionHintOffersCount <= 1 && !hasPriorUserMessages;
+
   // Tính trần tự chủ tối đa thời gian thực cho lượt nói hiện tại
   const currentTurnMaxAutonomy = useMemo(() => {
-    const isFirstHint = sessionHintUseCount === 0;
+    const isFirstHint = isFirstHintInSession;
     let hintCeiling = 100;
     let hintPenalty = 0;
     if (appliedHintTier === 1) {
@@ -475,7 +522,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     const totalPenalty = hintPenalty + turnPeekPenalty;
     const rawAutonomy = Math.max(20, 100 - totalPenalty);
     return Math.min(rawAutonomy, hintCeiling);
-  }, [appliedHintTier, sessionHintUseCount, turnPeekPenalty]);
+  }, [appliedHintTier, isFirstHintInSession, turnPeekPenalty]);
 
   // Gợi ý Hint
   const [hint, setHint] = useState<RoleplayHintDto | null>(null);
@@ -611,7 +658,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     if (tier <= maxDeductedTierRef.current && maxDeductedTierRef.current > 0) return;
     maxDeductedTierRef.current = Math.max(maxDeductedTierRef.current, tier);
 
-    const isFirstTime = sessionHintUseCountRef.current === 0;
+    const isFirstTime = sessionHintUseCountRef.current === 0 && !hasPriorUserMessagesRef.current;
     const penalty = tier === 1
       ? (isFirstTime ? 0 : 10)
       : tier === 2
@@ -965,7 +1012,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           if (deadlockTimerRef.current) clearTimeout(deadlockTimerRef.current);
           deadlockTimerRef.current = setTimeout(() => {
             if (isHandsFreeModeRef.current && !isSendingRef.current && !sessionConcludedRef.current) {
-              setShowProactiveHint(true);
+              triggerProactiveHint();
               if (!hasSpokenVocalFillerRef.current && !isPlayingAiSpeechRef.current) {
                 hasSpokenVocalFillerRef.current = true;
                 // Tạm dừng micro và đánh dấu AI đang nói để tránh âm thanh đệm dội ngược vào micro
@@ -1196,7 +1243,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     if (proactiveDismissedTurnRef.current === session?.messages.length) return;
     if (!isHandsFreeMode && !isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded && !hint) {
       idleTimerRef.current = setTimeout(() => {
-        setShowProactiveHint(true);
+        triggerProactiveHint();
         if (!hasSpokenVocalFillerRef.current && !isPlayingAiSpeechRef.current) {
           hasSpokenVocalFillerRef.current = true;
           const filler = getSituationalVocalFiller();
@@ -2124,7 +2171,21 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
   const handleGetInstantHint = async () => {
     if (!session || isLoadingHint) return;
-    // Không phạt khi mở xem preview - chỉ phạt khi người học thực sự bấm "Dùng" hoặc chèn từ khóa
+    const currentSessionId = session.sessionId || session.id || sessionId;
+
+    // Đánh dấu ngay lập tức đã tiêu thụ lượt gợi ý ưu đãi lần đầu trong phiên
+    sessionHintUseCountRef.current = Math.max(sessionHintUseCountRef.current, 1);
+    setSessionHintUseCount((c) => Math.max(c, 1));
+    sessionHintOffersCountRef.current = Math.max(sessionHintOffersCountRef.current, 1);
+    setSessionHintOffersCount((c) => Math.max(c, 1));
+    if (currentSessionId) {
+      try {
+        sessionStorage.setItem(`jcap_hint_used_${currentSessionId}`, '1');
+        sessionStorage.setItem(`jcap_hint_offers_${currentSessionId}`, String(sessionHintOffersCountRef.current));
+      } catch {
+        // ignore
+      }
+    }
     
     // Xóa bỏ tất cả các timer chờ đợi ngầm (hesitation, deadlock, overload, idle)
     if (hesitationTimerRef.current) clearTimeout(hesitationTimerRef.current);
@@ -2141,7 +2202,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
     // Chỉ nạp và mở bảng gợi ý khi LLM backend đã trả về dữ liệu thực tế, tránh lộ mock giật lag
-    const currentSessionId = session.sessionId || session.id || sessionId;
     setIsLoadingHint(true);
     try {
       const res = await roleplayService.getHint(currentSessionId);
@@ -2241,6 +2301,15 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   // 6b. Luyện lại từ đầu (Khởi tạo phiên mới)
   const handleRestartSession = async () => {
     if (!session) return;
+    const oldSessionId = session.id || session.sessionId || sessionId;
+    if (oldSessionId) {
+      try {
+        sessionStorage.removeItem(`jcap_hint_offers_${oldSessionId}`);
+        sessionStorage.removeItem(`jcap_hint_used_${oldSessionId}`);
+      } catch {
+        // ignore
+      }
+    }
     setIsLoading(true);
     const res = await roleplayService.startSession(
       session.scenarioId,
@@ -3599,7 +3668,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   furiganaHtml={hint.furiganaHtml || (hint as any).suggestedFuriganaHtml}
                   vietnameseMeaning={hint.suggestedVietnameseMeaning || hint.vietnameseMeaning}
                   lockedTier={hintLevelUsedRef.current}
-                  isFirstUseInSession={sessionHintUseCount === 0}
+                  isFirstUseInSession={isFirstHintInSession}
                   onUseHint={(sentence, tier) => {
                     invalidateVoiceRecording();
                     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
@@ -3617,7 +3686,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     }
                     latestTranscriptRef.current = sentence;
                     markLearnerUttering();
-                    const isFirstTime = sessionHintUseCount === 0;
+                    const isFirstTime = isFirstHintInSession;
                     const expectedMax = isFirstTime
                       ? (tier === 1 ? 90 : tier === 2 ? 80 : 60)
                       : (tier === 1 ? 85 : tier === 2 ? 70 : 50);
@@ -3647,7 +3716,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       {session.aiPersona || 'AI'} đang chờ bạn — cần gợi ý đối đáp không?
                     </span>
                     <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 rounded-full px-2 py-0.5 shrink-0">
-                      {sessionHintUseCount === 0 ? 'Lần đầu: 0đ Tự chủ' : '-10đ Tự chủ'}
+                      {isFirstHintOffer ? 'Lần đầu: 0đ Tự chủ' : '-10đ Tự chủ'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -3656,7 +3725,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       onClick={() => void handleGetInstantHint()}
                       className="px-3 py-1 rounded-full bg-[var(--ai)] text-white text-[11px] font-bold hover:bg-[var(--ai-hover)] transition shadow-2xs cursor-pointer active:scale-95 flex items-center gap-1"
                     >
-                      <span>{sessionHintUseCount === 0 ? 'Xem gợi ý (Lần đầu: 0đ)' : 'Xem gợi ý (-10đ)'}</span>
+                      <span>{isFirstHintOffer ? 'Xem gợi ý (Lần đầu: 0đ)' : 'Xem gợi ý (-10đ)'}</span>
                       <span>➔</span>
                     </button>
                     <button
@@ -3690,7 +3759,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     <span>
                       Tự chủ tối đa: <strong>{currentTurnMaxAutonomy}/100đ</strong>
                       <span className="text-[10px] text-amber-800 ml-1">
-                        {sessionHintUseCount === 0 && appliedHintTier !== null ? '(Ưu đãi lần đầu)' : '(Cập nhật thời gian thực)'}
+                        {isFirstHintInSession && appliedHintTier !== null ? '(Ưu đãi lần đầu)' : '(Cập nhật thời gian thực)'}
                       </span>
                     </span>
                     <span className="text-[10px] text-amber-700/80">(Không hoàn lại khi đổi cấp)</span>
