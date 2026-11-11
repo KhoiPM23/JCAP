@@ -36,7 +36,7 @@ namespace JCAP.Data.Seeds
                 // 4b. Seed bản đồ Khám phá: 47 tỉnh, chương, mốc học thử (Chiba/Tokyo/Kyoto/Nara)
                 await ExploreSeeder.SeedAsync(services);
 
-                // 4d. Seed hòm thư góp ý ẩn danh mẫu (FeedbackTickets, FeedbackMessages, FeedbackAttachments)
+                // 4c. Seed hòm thư góp ý ẩn danh mẫu (FeedbackTickets, FeedbackMessages, FeedbackAttachments)
                 await FeedbackSeeder.SeedAsync(services);
 
                 // 5. Chuẩn hóa diễn giải các giao dịch đã tạo trước đây trong DB

@@ -1,0 +1,83 @@
+/*
+ * Đăng nhập, Đăng ký, Kiểm tra email, Quên mật khẩu (design-handoff mục 9e; khối .auth trong prototype/AppPrototype.dc.html).
+ * Mọi selector nằm dưới .auth. Màu, font chỉ lấy từ token (data-theme="kham-pha").
+ */
+.auth { display: grid; grid-template-columns: minmax(0, 1fr) 560px; height: 100vh; height: 100dvh; font-family: var(--font-sans); color: var(--sumi);
+  background: var(--paper-50); -webkit-font-smoothing: antialiased; animation: au-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes au-in { from { opacity: 0; } to { opacity: 1; } }
+.auth :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.auth button { font-family: inherit; }
+
+/* ---- nửa trái: bản đồ, ghim, con dấu ---- */
+.auth .au-art { position: relative; overflow: hidden; background: var(--paper-100); border-right: 1px solid var(--line); }
+.auth .amap { position: absolute; right: 40px; top: 56px; width: min(560px, 61vh); height: min(620px, 68vh); }
+.auth .amap path { fill: var(--paper-200); stroke: var(--paper-100); stroke-width: 5; stroke-linejoin: round; }
+.auth .amap text { font-family: var(--font-mincho); }
+.auth .au-top { position: absolute; left: 48px; top: 36px; display: flex; align-items: center; gap: 10px; z-index: 1; }
+.auth .home { display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; margin-left: -6px; border: 0; border-radius: 12px; background: transparent;
+  font: inherit; font-size: 19px; font-weight: 700; letter-spacing: 0.06em; color: var(--sumi); cursor: pointer; }
+.auth .home:hover { background: var(--paper-200); }
+.auth .home img { width: 34px; height: 34px; }
+.auth .stk { position: absolute; }
+.auth .copy { position: absolute; left: 48px; bottom: 48px; max-width: 420px; }
+.auth .copy h2 { margin: 0; font-family: 'Lora', var(--font-mincho), serif; font-size: 36px; line-height: 44px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.auth .copy p { margin: 12px 0 0; font-size: 16px; line-height: 26px; color: var(--sumi-muted); }
+
+/* ---- nửa phải: form ---- */
+.auth .au-form { display: flex; align-items: center; justify-content: center; padding: 24px 56px; overflow-y: auto; }
+.auth .au-box { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+.auth .au-box h1 { margin: 0; font-size: 26px; line-height: 34px; font-weight: 800; letter-spacing: -0.02em; }
+.auth .au-box .lead { margin: 4px 0 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted); }
+.auth .au-box form { display: flex; flex-direction: column; gap: 14px; }
+.auth .gbtn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; border-radius: 12px; border: 1px solid var(--line-strong);
+  background: var(--paper-50); font: inherit; font-size: 15px; font-weight: 600; color: var(--sumi); cursor: pointer; }
+.auth .gbtn:hover { background: var(--paper-100); }
+.auth .gbtn svg { width: 20px; height: 20px; }
+.auth .or { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--sumi-muted); }
+.auth .or::before, .auth .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.auth .af { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.auth .af2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.auth .af2 .af-h { grid-column: 1 / -1; margin-top: -6px; }
+.auth .af-l { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; line-height: 20px; font-weight: 600; }
+.auth .af-in { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid var(--line-strong);
+  background: var(--paper-50); transition: border-color 0.15s, box-shadow 0.15s; }
+.auth .af-in:focus-within { border-color: var(--ai); box-shadow: 0 0 0 3px var(--ai-soft); }
+.auth .af-in > .jc-icon { color: var(--sumi-muted); flex: none; }
+.auth .af-in input { flex: 1 1 0; min-width: 0; height: 100%; border: 0; background: transparent; font: inherit; font-size: 15px; color: var(--sumi); outline: none; padding: 0; }
+.auth .af-in input::placeholder { color: var(--sumi-faint); }
+/* Bỏ nền xanh của trình duyệt khi tự điền */
+.auth .af-in input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px var(--paper-50) inset; -webkit-text-fill-color: var(--sumi); }
+.auth .af-eye { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: 9px; background: transparent;
+  color: var(--sumi-muted); cursor: pointer; }
+.auth .af-eye:hover { background: var(--paper-200); color: var(--sumi); }
+.auth .af-h { font-size: 13px; line-height: 18px; color: var(--sumi-muted); }
+.auth .lnk { padding: 0; border: 0; background: transparent; font: inherit; font-weight: 600; color: var(--ai); cursor: pointer; }
+.auth .lnk:hover { text-decoration: underline; }
+.auth .lnk:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
+.auth .af-l .lnk { font-size: 13px; }
+.auth .af-sw { margin: 0; font-size: 14px; line-height: 22px; color: var(--sumi-muted); text-align: center; }
+.auth .msg { display: flex; gap: 10px; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 21px; }
+.auth .msg > .jc-icon { flex: none; }
+.auth .msg .msg-body { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+.auth .msg.ok { background: var(--success-soft); color: var(--success); }
+.auth .msg.err { background: var(--danger-soft); color: var(--danger); }
+.auth .mailic { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 18px; background: var(--ai-soft); color: var(--ai); }
+.auth .mail-to { color: var(--sumi); overflow-wrap: anywhere; }
+
+@media (max-height: 720px) {
+  .auth .au-box, .auth .au-box form { gap: 10px; }
+  .auth .au-box .lead { display: none; }
+}
+/* Cửa sổ thấp: câu ở góc dưới sẽ đè lên con dấu minh hoạ, nên ẩn con dấu */
+@media (max-height: 680px) {
+  .auth .stk { display: none; }
+}
+@media (max-width: 760px) {
+  .auth { grid-template-columns: 1fr; height: auto; min-height: 100vh; min-height: 100dvh; }
+  .auth .au-art { display: none; }
+  .auth .au-form { padding: 28px 20px; align-items: flex-start; overflow: visible; }
+  .auth .af2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth { animation: none; }
+}

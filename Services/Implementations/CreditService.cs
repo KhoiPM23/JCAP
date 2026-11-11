@@ -89,7 +89,7 @@ namespace JCAP.Services.Implementations
             }
 
             bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
-                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+                              string.Equals(_configuration["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
 
             if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {
@@ -218,7 +218,7 @@ namespace JCAP.Services.Implementations
             }
 
             bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
-                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+                              string.Equals(_configuration["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
 
             if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {
@@ -742,7 +742,7 @@ namespace JCAP.Services.Implementations
             }
 
             bool isMockMode = PayOsSettings.IsRuntimeMockEnabled ||
-                              string.Equals(_configuration?["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
+                              string.Equals(_configuration["PayOS:AllowMock"], "true", StringComparison.OrdinalIgnoreCase);
 
             if (isMockMode || _payOSClient == null || !_payOsSettings.IsConfigured)
             {

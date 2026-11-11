@@ -1,9 +1,53 @@
-# Bộ mẫu từ vựng / ngữ pháp cho phát triển
+# Dữ liệu từ vựng và ngữ pháp cho phát triển
+
+## Nhập toàn bộ dữ liệu N5–N3
+
+Từ thư mục gốc repository, dùng Python 3 và SQL Server local đã cấu hình cho JCAP.
+Script tải JSON từ đúng phiên bản nguồn bên dưới và tạo tệp nhập trong `output`.
+
+```powershell
+py -3 Data/Seeds/LearningContentSample/prepare-full.py output/jlpt-full/learning-n5-n3.json
+dotnet run --no-launch-profile -- --import-learning-full=output/jlpt-full/learning-n5-n3.json --dry-run
+dotnet run --no-launch-profile -- --import-learning-full=output/jlpt-full/learning-n5-n3.json
+```
+
+| Level | Từ vựng OpenJLPT | Mẫu ngữ pháp Nihongo Mono |
+|---|---:|---:|
+| N5 | 674 | 119 |
+| N4 | 630 | 189 |
+| N3 | 1.659 | 248 |
+| Tổng | 2.963 | 556 |
+
+- Nhập 5.776 ví dụ từ vựng và 1.112 ví dụ ngữ pháp. 51 mục từ vựng thiếu ví dụ ở nguồn.
+- Giữ câu Nhật, furigana khớp câu và ID nguồn. Mục mới dùng nghĩa/giải thích tiếng Anh nếu nguồn có. Cột dịch tiếng Việt chỉ chứa bản dịch tiếng Việt đã có trong bộ mẫu hoặc do admin bổ sung. Bản dịch ví dụ tiếng Anh và liên kết đối chiếu ngoài cấu trúc JCAP vẫn tra được từ JSON nguồn tải xuống.
+- JSON có danh sách nhóm đề xuất để đối chiếu khi duyệt. Cả hai lệnh import chỉ nạp nội dung và nguồn. Admin duyệt, tạo và gán chủ đề trong giao diện quản trị.
+- Ưu tiên tái sử dụng bản ghi theo nguồn + phiên bản + ID. Bản ghi cũ thiếu thông tin nguồn chỉ được ghép khi các trường nhận diện khớp, nên có thể thấy hai mục cùng mặt chữ nhưng khác level, nghĩa hoặc thông tin nhận diện.
+- Dry run kiểm tra bundle và migration. Import dữ liệu và ví dụ nằm trong một transaction. Chạy lại cùng bundle trên DB chưa chỉnh sửa không thêm dòng.
+
+### Cập nhật database khi lấy code mới
+
+Migration `20261111054905_ClearLearningTopics` chạy một lần khi mở backend
+hoặc chạy `dotnet ef database update`. Migration xóa toàn bộ bản ghi chủ đề
+và liên kết chủ đề trong database được cập nhật, bao gồm chủ đề do admin đã
+tạo. Các bảng, mục học, ví dụ và bản dịch vẫn dùng được để gán nhóm sau khi
+duyệt. Rollback schema không khôi phục các nhóm đã xóa.
+
+### Bổ sung tiếng Việt theo nhóm N5
+
+Sau khi import toàn bộ, áp dụng đợt đầu trên database local:
+
+```powershell
+sqlcmd -S localhost -E -C -d JCAP_DB -b -f 65001 -i Data/Seeds/LearningContentSample/localize-n5-food-permission.sql
+```
+
+Đợt này bao phủ 23 từ trong **Ẩm thực và đồ uống** và 3 mẫu trong **Cho phép và cấm đoán**. Các mục đã Việt hóa trong bộ mẫu được giữ lại. Đợt cập nhật bổ sung nghĩa và giải thích cho 21 từ, Việt hóa giải thích và cấu trúc của 2 mẫu, dịch 44 câu ví dụ từ nguồn và thêm 2 câu ví dụ do JCAP biên soạn. Phần tiếng Việt được đối chiếu với nội dung Nhật trong nguồn với hỗ trợ AI, chưa có thẩm định độc lập.
+
+Script đối chiếu phiên bản, ID nguồn và nội dung gốc trước khi cập nhật. Các bản dịch đã có được giữ nguyên. Chạy lại trên cùng dữ liệu sẽ trả về 0 cập nhật.
+
+## Bộ mẫu nhỏ
 
 15 từ vựng (5 từ/mức N5–N3), 6 mẫu ngữ pháp (2 mẫu/mức), mỗi mục 2 câu
-ví dụ Nhật–Việt. Từ 30/10/2026 có 15 Topic phẳng (5 tên × N5/N4/N3), mỗi
-Topic chỉ nhận nội dung cùng level; chưa có audio hoặc liên kết Topic sang
-Scenario/Shadowing/Explore.
+ví dụ Nhật–Việt.
 Không cần gọi AI hay tải nguồn khi chạy import.
 
 ## Chạy trên máy thành viên
@@ -33,9 +77,9 @@ dotnet run --no-launch-profile -- --import-learning-sample
 - Từ mới có `AudioUrl = null`; `Grammar.ExampleSentence` giữ câu đầu tiên
   cho các module vẫn đọc trường cũ. Ví dụ đầy đủ nằm ở hai bảng Examples.
 
-## Chủ đề mẫu
+## Danh sách chủ đề từng dùng cho bộ mẫu
 
-Sau khi nhập bộ nội dung, cùng lệnh trên chạy `LearningTopicSeeder`:
+Các nhóm mẫu từng được tạo từ `LearningTopicSeeder`:
 
 | Code | Chủ đề | Từ vựng | Ngữ pháp |
 |---|---|---:|---:|
@@ -46,7 +90,7 @@ Sau khi nhập bộ nội dung, cùng lệnh trên chạy `LearningTopicSeeder`:
 | STUDY_WORK | Học tập và công việc | 8 | 6 |
 
 Các số lượng trong bảng là tổng của 3 level trong mỗi tên chủ đề.
-Tổng cộng 15 Topic, 28 liên kết từ vựng và 20 liên kết ngữ pháp; vẫn chỉ có
+Ngoài 15 chủ đề tình huống ở trên, bộ mẫu có thêm 6 chủ đề ngữ pháp theo mục đích diễn đạt, mỗi chủ đề có 1 mẫu. Tổng cộng 21 Topic, 28 liên kết từ vựng và 26 liên kết ngữ pháp; vẫn chỉ có
 15 từ và 6 mẫu gốc. Một nội dung xuất hiện trong nhiều chủ đề cùng level
 qua bảng nối, không nhân bản nội dung. Code N5 giữ mã gốc trong bảng;
 code N4/N3 có hậu tố `_N4`/`_N3`.
@@ -64,10 +108,9 @@ IsActive, thứ tự và các liên kết admin đã xóa; không tự khôi ph�
 khởi động. Nếu dữ liệu nguồn chưa đủ, seeder bỏ qua Topic đó và trả về Code
 trong `SkippedTopicCodes`, không tạo chủ đề rỗng.
 
-`SeedManager` cũng gọi seeder khi mở backend, nhưng chỉ gắn bộ nội dung mẫu
-đã được nhập trước đó; không tự tải nguồn hoặc nhập thêm từ/ngữ pháp. Các
-module sử dụng `DefaultLearningTopicLookup` hiện đọc trực tiếp các bảng Topic
-và bảng nối này theo code develop đã merge, có lọc theo level của nội dung.
+Admin quản lý danh sách chủ đề từ database. Các module sử dụng
+`DefaultLearningTopicLookup` đọc các bảng Topic và bảng nối, có lọc theo
+level của nội dung.
 
 ### Lưu ý khi tạo database từ đầu
 
@@ -116,10 +159,9 @@ phần ngữ pháp phái sinh giữ MIT. Không áp giấy phép dữ liệu lê
 ## Bảng có dữ liệu được thêm
 
 `Vocabularies`, `Grammars`, `VocabularyExamples`, `GrammarExamples`,
-`LearningContentSources`, `VocabularySources`, `GrammarSources`,
-`LearningTopics`, `TopicVocabularies`, `TopicGrammars`.
+`LearningContentSources`, `VocabularySources`, `GrammarSources`.
 
-Database mới sẽ có 15 / 6 / 30 / 12 / 3 / 15 / 6 / 15 / 28 / 20 bản ghi tương ứng.
+Khi chỉ chạy bộ mẫu nhỏ trên database trống, số dòng lần lượt là 15 / 6 / 30 / 12 / 3 / 15 / 6.
 Các bảng khác chỉ được tạo cấu trúc bởi migration, không nạp dữ liệu vào đó.
 Tài khoản thành viên hoặc dữ liệu module khác vẫn theo setup chung của team.
 

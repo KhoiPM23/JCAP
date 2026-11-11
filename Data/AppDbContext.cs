@@ -79,6 +79,12 @@ namespace JCAP.Data
         public DbSet<FeedbackMessage> FeedbackMessages { get; set; } = null!;
         public DbSet<FeedbackAttachment> FeedbackAttachments { get; set; } = null!;
 
+        // Community Forum (Diễn đàn Thảo luận Cộng đồng) DbSets
+        public DbSet<CommunityPost> CommunityPosts { get; set; } = null!;
+        public DbSet<CommunityComment> CommunityComments { get; set; } = null!;
+        public DbSet<CommunityAttachment> CommunityAttachments { get; set; } = null!;
+        public DbSet<CommunityPostUpvote> CommunityPostUpvotes { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
