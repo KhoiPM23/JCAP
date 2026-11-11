@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Icon } from '../../components/jcap/Icon';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
