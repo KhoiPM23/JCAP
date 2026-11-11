@@ -42,8 +42,15 @@ import {
 } from '../../utils/sentencePracticeState';
 import { serverToLocalProgress, suggestedIndexFromLocal } from '../../utils/shadowingProgressSync';
 import RecordingReviewBar from '../../components/shadowing/RecordingReviewBar';
+import SessionSummaryPanel from '../../components/shadowing/SessionSummaryPanel';
 import { REFERENCE_RATES, REFERENCE_RATE_KEY, matchingFurigana, readReferenceRate } from '../../utils/furigana';
-import type { FuriganaSegment, ShadowingEvaluationDimensions, ShadowingServerProgress } from '../../types/shadowing';
+import type {
+  FuriganaSegment,
+  ShadowingEvaluationDimensions,
+  ShadowingRecommendation,
+  ShadowingServerProgress,
+  ShadowingSessionSummary,
+} from '../../types/shadowing';
 import { RecordingDevTools, type DevRecordingTake } from '../../components/shadowing/RecordingDevTools';
 import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
@@ -216,6 +223,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Lưu buổi luyện vào lịch sử ở backend: idle (chưa lưu / không có câu nào được chấm) | saving | saved | failed
   const [historySaveState, setHistorySaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [historySaveMessage, setHistorySaveMessage] = useState<string>('');
+  // Tổng kết do backend tính khi hoàn thành (đúng cả khi tiếp tục phiên từ máy khác) và gợi ý luyện tập
+  const [serverSummary, setServerSummary] = useState<ShadowingSessionSummary | null>(null);
+  const [serverOverall, setServerOverall] = useState<number | null>(null);
+  const [recommendation, setRecommendation] = useState<ShadowingRecommendation | null>(null);
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
   // Rỗng = mặc định của hệ thống (người mới chưa chọn gì luôn ở chế độ này; giá trị "default" cũ cũng là mặc định)
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
@@ -1668,6 +1679,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setIsCompletedModalOpen(true);
     setHistorySaveState('idle');
     setHistorySaveMessage('');
+    setServerSummary(null);
+    setServerOverall(null);
+    setRecommendation(null);
 
     const currentDialogue = dialogueRef.current || dialogue;
     if (!currentDialogue) return;
@@ -1703,6 +1717,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         setServerProgress(done);
         mirrorToLocal(done);
       }
+      setServerSummary(completeRes.data?.summary ?? null);
+      setServerOverall(completeRes.data?.weightedOverallScore ?? null);
+      shadowingService.getRecommendations(currentDialogue.id).then((rec) => {
+        if (rec.success && rec.data) setRecommendation(rec.data);
+      });
       setHistorySaveState('saved');
     } else {
       setHistorySaveState('failed');
@@ -1849,9 +1868,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const totalLearnerSentencesCount = learnerSentences.length;
 
   const sessionSummary = summarizeSessionScores(learnerSentences.map(s => s.id), sentenceResults);
-  const practicedSentencesCount = sessionSummary.practicedSentences;
-  const finalContentMatchScore = sessionSummary.contentMatch;
-  const finalWeightedScore = sessionSummary.overall;
+  // Có tổng kết của backend thì dùng số của backend (gồm cả các câu đã chấm trước khi tiếp tục phiên ở đây)
+  const practicedSentencesCount = serverSummary?.evaluatedSentenceCount ?? sessionSummary.practicedSentences;
+  const finalContentMatchScore = serverSummary?.contentAccuracy ?? sessionSummary.contentMatch;
+  const finalWeightedScore = serverOverall ?? sessionSummary.overall;
   const finalGateStatus = sessionSummary.gateStatus;
   const finalGreenCount = sessionSummary.greenCount;
   const finalYellowCount = sessionSummary.yellowCount;
@@ -2668,6 +2688,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     Bấm <strong>Luyện lại bài này</strong>, ghi âm từng câu của vai bạn rồi gửi để nhận điểm và lưu vào lịch sử.
                   </p>
                 </div>
+              )}
+
+              {serverSummary && (
+                <SessionSummaryPanel
+                  summary={serverSummary}
+                  recommendation={recommendation}
+                  onOpenDialogue={(dialogueId) => navigate(`/shadowing/${dialogueId}`)}
+                />
               )}
 
               {finalGateStatus === 'needs_retry' && (

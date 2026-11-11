@@ -336,6 +336,39 @@ export interface ShadowingSessionCompleteResult {
   summaryFeedback: string;
   learnerSentenceCount: number;
   scoredSentenceCount: number;
+  /** Tổng kết do backend tính từ các lần chấm đã lưu. */
+  summary?: ShadowingSessionSummary;
+}
+
+export interface ShadowingRetrySentence {
+  sentenceId: number;
+  orderIndex: number;
+  japaneseText: string;
+  bestScore?: number | null;
+  reason: 'NOT_EVALUATED' | 'LOW_SCORE';
+  mainErrorType?: string | null;
+}
+
+/** Tổng kết buổi luyện: lần gửi chấm ≠ buổi luyện; chiều chưa có điểm thì chỉ có trạng thái. */
+export interface ShadowingSessionSummary {
+  totalSentenceCount: number;
+  learnerSentenceCount: number;
+  evaluatedSentenceCount: number;
+  totalSubmissions: number;
+  unscoredSubmissions: number;
+  contentAccuracy: number;
+  pronunciationStatus: 'COMPLETED' | 'UNAVAILABLE';
+  fluencyStatus: 'COMPLETED' | 'UNAVAILABLE';
+  prosodyStatus: 'COMPLETED' | 'UNAVAILABLE';
+  sentencesToRetry: ShadowingRetrySentence[];
+  errorTypeCounts: Record<string, number>;
+}
+
+/** Gợi ý luyện tập theo quy tắc (chỉ khi lỗi lặp lại đủ nhiều). */
+export interface ShadowingRecommendation {
+  focus: { errorType: string; occurrences: number; sentenceCount: number; message: string }[];
+  dialogues: { dialogueId: number; title: string; jlptLevel: string; errorType: string; matchingSentenceCount: number }[];
+  evaluationsAnalyzed: number;
 }
 
 /** Một câu trong buổi luyện đã lưu ở backend. */

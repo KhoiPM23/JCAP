@@ -10,6 +10,7 @@ import type {
   ShadowingServerProgress,
   StartShadowingProgressPayload,
   FuriganaSegment,
+  ShadowingRecommendation,
 } from '../types/shadowing';
 
 import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
@@ -228,6 +229,12 @@ class ShadowingService {
   public startProgress(payload: StartShadowingProgressPayload): Promise<ApiResponse<ShadowingServerProgress>> {
     return this.progressRequest('/api/shadowing/progress', { method: 'POST', body: JSON.stringify(payload) },
       'Không bắt đầu được phiên luyện.');
+  }
+
+  /** Gợi ý luyện tập theo quy tắc từ các lỗi lặp lại gần đây (bỏ qua bài vừa luyện). */
+  public getRecommendations(excludeDialogueId?: number): Promise<ApiResponse<ShadowingRecommendation>> {
+    const query = excludeDialogueId != null ? `?excludeDialogueId=${excludeDialogueId}` : '';
+    return this.progressRequest(`/api/shadowing/recommendations${query}`, { method: 'GET' }, 'Không tải được gợi ý luyện tập.');
   }
 
   /** Furigana các câu của bài (theo Id câu); câu chưa có dữ liệu thì không có trong kết quả. */
