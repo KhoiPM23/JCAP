@@ -9,6 +9,7 @@ import type {
   ShadowingAudioEvaluationResult,
   ShadowingServerProgress,
   StartShadowingProgressPayload,
+  FuriganaSegment,
 } from '../types/shadowing';
 
 import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
@@ -227,6 +228,15 @@ class ShadowingService {
   public startProgress(payload: StartShadowingProgressPayload): Promise<ApiResponse<ShadowingServerProgress>> {
     return this.progressRequest('/api/shadowing/progress', { method: 'POST', body: JSON.stringify(payload) },
       'Không bắt đầu được phiên luyện.');
+  }
+
+  /** Furigana các câu của bài (theo Id câu); câu chưa có dữ liệu thì không có trong kết quả. */
+  public async getFurigana(dialogueId: number): Promise<Map<number, FuriganaSegment[]>> {
+    const res = await this.progressRequest<Record<string, FuriganaSegment[]>>(
+      `/api/shadowing/${dialogueId}/furigana`, { method: 'GET' }, 'Không tải được furigana.');
+    const map = new Map<number, FuriganaSegment[]>();
+    if (res.success && res.data) for (const [id, segments] of Object.entries(res.data)) map.set(Number(id), segments);
+    return map;
   }
 
   /** Phiên đang luyện gần nhất (cho "Tiếp tục"); data = null nếu không có. */

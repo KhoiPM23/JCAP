@@ -254,6 +254,12 @@ namespace JCAP.Services.Implementations
             return evaluation.Id;
         }
 
+        public Task<List<int>> GetActiveSentenceIdsAsync(int dialogueId) =>
+            _context.ShadowingSentences.AsNoTracking()
+                .Where(s => s.ShadowingDialogueId == dialogueId && s.ShadowingDialogue.IsActive)
+                .Select(s => s.Id)
+                .ToListAsync();
+
         public Task<ShadowingSentenceEvaluation?> FindEvaluationBySubmissionAsync(string userId, Guid clientSubmissionId) =>
             _context.ShadowingSentenceEvaluations.AsNoTracking()
                 .FirstOrDefaultAsync(e => e.UserId == userId && e.ClientSubmissionId == clientSubmissionId);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
-import type { ShadowingDiffToken, ShadowingFluencyMetrics } from '../../types/shadowing';
+import type { ShadowingDiffToken, ShadowingEvaluationDimensions, ShadowingFluencyMetrics } from '../../types/shadowing';
+import EvaluationDimensionsRow from './EvaluationDimensionsRow';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
@@ -15,7 +16,11 @@ export interface ShadowingSentenceResultCardProps {
   isPlayingUserAudio: boolean;
   evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
   /** Nguồn nhận dạng backend đã dùng; web_speech nghĩa là nguồn chính gặp lỗi kỹ thuật. */
-  recognitionSource?: 'phoneme' | 'web_speech' | 'gemini' | null;
+  recognitionSource?: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | null;
+  /** Trạng thái từng chiều đánh giá (Shadowing V2). */
+  dimensions?: ShadowingEvaluationDimensions | null;
+  /** "content": điểm hiển thị CHỈ là điểm nội dung. */
+  overallScoreBasis?: 'content' | null;
   onPlayUserAudio: () => void;
   onRetry: () => void;
   onNext: () => void;
@@ -34,6 +39,8 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   isPlayingUserAudio,
   evaluationStatus = 'completed',
   recognitionSource = null,
+  dimensions = null,
+  overallScoreBasis = null,
   onPlayUserAudio,
   onRetry,
   onNext,
@@ -151,7 +158,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           </div>
           <div className="flex items-baseline gap-1 bg-white px-3 py-1 rounded-xl border border-slate-200/80 shadow-2xs">
             <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mr-0.5">
-              Điểm
+              {overallScoreBasis === 'content' ? 'Điểm nội dung' : 'Điểm'}
             </span>
             <span
               className={`text-xl font-black tracking-tight leading-none ${
@@ -173,6 +180,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           spokenText={cleanSpoken}
           size="md"
         />
+        <EvaluationDimensionsRow dimensions={dimensions} />
         {evaluationStatus === 'partial' && recognitionSource === 'web_speech' && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
             Dịch vụ nhận dạng AI tạm thời không khả dụng nên lượt này được chấm theo nhận dạng của trình duyệt.

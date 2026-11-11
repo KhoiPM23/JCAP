@@ -42,7 +42,8 @@ import {
 } from '../../utils/sentencePracticeState';
 import { serverToLocalProgress, suggestedIndexFromLocal } from '../../utils/shadowingProgressSync';
 import RecordingReviewBar from '../../components/shadowing/RecordingReviewBar';
-import type { ShadowingServerProgress } from '../../types/shadowing';
+import { REFERENCE_RATES, REFERENCE_RATE_KEY, matchingFurigana, readReferenceRate } from '../../utils/furigana';
+import type { FuriganaSegment, ShadowingEvaluationDimensions, ShadowingServerProgress } from '../../types/shadowing';
 import { RecordingDevTools, type DevRecordingTake } from '../../components/shadowing/RecordingDevTools';
 import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
@@ -138,7 +139,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [currentDiffTokens, setCurrentDiffTokens] = useState<ShadowingDiffToken[]>([]);
   const [currentEvaluationStatus, setCurrentEvaluationStatus] = useState<'completed' | 'partial' | 'unavailable' | 'failed'>('completed');
   // Nguồn nhận dạng đã dùng cho kết quả hiện tại (backend ghi nhận)
-  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'phoneme' | 'web_speech' | 'gemini' | null>(null);
+  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | null>(null);
+  // Trạng thái từng chiều đánh giá của kết quả hiện tại (Shadowing V2) và điểm hiển thị là điểm gì
+  const [currentDimensions, setCurrentDimensions] = useState<ShadowingEvaluationDimensions | null>(null);
+  const [currentScoreBasis, setCurrentScoreBasis] = useState<'content' | null>(null);
   const [sentenceAttemptsMap, setSentenceAttemptsMap] = useState<Map<number, number>>(new Map());
   const latestAttemptIsBestRef = useRef<boolean>(true);
   const [micError, setMicError] = useState<string | null>(null);
@@ -314,6 +318,22 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
   // Mặc định ẩn nghĩa tiếng Việt: bấm "Dịch" ở từng câu mới hiện. Ai bật "Hiện nghĩa tiếng Việt" ở Cài đặt > Khi luyện tập thì hiện sẵn
   const translationDefault = getPracticePrefs().translation;
+  // Furigana (Cài đặt > Khi luyện tập > Hiện furigana) lấy từ dữ liệu câu mẫu tính sẵn ở backend; câu chưa có dữ liệu hiện chữ thường
+  const showFurigana = getPracticePrefs().furigana;
+  const [furiganaMap, setFuriganaMap] = useState<Map<number, FuriganaSegment[]>>(new Map());
+  // Tốc độ giọng mẫu (VOICEVOX / audio mẫu / giọng trình duyệt); bản ghi của người học luôn phát đúng tốc độ
+  const [referenceRate, setReferenceRate] = useState<number>(() => readReferenceRate());
+  const referenceRateRef = useRef<number>(referenceRate);
+  referenceRateRef.current = referenceRate;
+  const changeReferenceRate = (rate: number) => {
+    setReferenceRate(rate);
+    try {
+      localStorage.setItem(REFERENCE_RATE_KEY, String(rate));
+    } catch {
+      // không lưu được: vẫn dùng trong phiên
+    }
+    if (audioPlayerRef.current) audioPlayerRef.current.playbackRate = rate;
+  };
   const isTranslationShown = (sentenceId: number) => showTranslations[sentenceId] ?? translationDefault;
 
   // Synchronization refs to avoid stale closure races and unwanted auto-play
@@ -645,6 +665,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     };
   }, [id]);
 
+  // Furigana của bài (không chặn việc luyện; lỗi thì hiện chữ thường)
+  useEffect(() => {
+    const dialogueId = Number(id);
+    if (!Number.isInteger(dialogueId)) return;
+    let cancelled = false;
+    shadowingService.getFurigana(dialogueId).then((map) => {
+      if (!cancelled) setFuriganaMap(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
   // Sync role if changed via URL query params (e.g. browser back/forward)
   useEffect(() => {
     const roleInUrl = (searchParams.get('role')?.toUpperCase() as 'A' | 'B') || 'A';
@@ -790,7 +823,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = 1.0;
+      utterance.rate = referenceRateRef.current;
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
       if (jpVoice) utterance.voice = jpVoice;
@@ -838,6 +871,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
       const audio = new Audio(audioUrl);
+      audio.playbackRate = referenceRateRef.current;
       await routeToSelectedOutput(audio);
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
       audioPlayerRef.current = audio;
@@ -888,6 +922,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (url && url.startsWith('http')) {
       const audio = new Audio(url);
+      audio.playbackRate = referenceRateRef.current;
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -1307,7 +1342,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const overallScore = data.overallScore as number;
     const tier: 'green' | 'yellow' | 'red' = data.tier === 'green' || data.tier === 'yellow' ? data.tier : 'red';
     const diffTokens = data.diffTokens ?? [];
-    const source = data.recognitionSource === 'phoneme' || data.recognitionSource === 'web_speech' ? data.recognitionSource : 'gemini';
+    const source =
+      data.recognitionSource === 'faster-whisper' || data.recognitionSource === 'phoneme' || data.recognitionSource === 'web_speech'
+        ? data.recognitionSource
+        : 'gemini';
 
     const prevAttempts = sentenceAttemptsMap.get(sentence.id) || 0;
     const nextAttempts = prevAttempts + 1;
@@ -1315,6 +1353,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     setCurrentEvaluationStatus(data.evaluationStatus);
     setCurrentRecognitionSource(source);
+    setCurrentDimensions(data.dimensions ?? null);
+    setCurrentScoreBasis(data.overallScoreBasis ?? null);
     // Hiển thị: từ đọc đúng mang chữ của câu mẫu (có kanji), phần đọc khác giữ kana như đã nghe
     setCurrentRecognizedText(data.recognizedDisplayText || data.recognizedText);
     setCurrentScore(overallScore);
@@ -1819,8 +1859,20 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const hasScoredSentence = practicedSentencesCount > 0;
 
   // Render text directly without popup annotations (Bỏ qua popup từ vựng/ngữ pháp theo yêu cầu)
-  const renderAnnotatedSentenceText = (text: string) => {
-    return text;
+  // Câu tiếng Nhật kèm Furigana trên chữ Hán (khi bật và có dữ liệu khớp đúng chữ của câu)
+  const renderAnnotatedSentenceText = (text: string, sentenceId?: number) => {
+    const segments = showFurigana && sentenceId != null ? matchingFurigana(text, furiganaMap.get(sentenceId)) : null;
+    if (!segments) return text;
+    return segments.map((seg, i) =>
+      seg.reading ? (
+        <ruby key={i}>
+          {seg.text}
+          <rt className="text-[0.5em] font-medium opacity-80">{seg.reading}</rt>
+        </ruby>
+      ) : (
+        <span key={i}>{seg.text}</span>
+      ),
+    );
   };
 
   return (
@@ -1910,6 +1962,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           <JIcon name="expand_more" size={16} />
         </label>
         <div className="flex-auto" />
+        <label className="jx-rm-lv" title="Tốc độ phát giọng mẫu">
+          <select aria-label="Tốc độ giọng mẫu" value={referenceRate} onChange={(e) => changeReferenceRate(Number(e.target.value))}>
+            {REFERENCE_RATES.map((r) => (
+              <option key={r} value={r}>
+                {r === 1 ? 'Tốc độ 1×' : `Chậm ${r}×`}
+              </option>
+            ))}
+          </select>
+          <JIcon name="expand_more" size={16} />
+        </label>
         <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
 
@@ -2087,7 +2149,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                         <div className="bg-paper-50 rounded-[20px] p-4 shadow-xs border border-line max-w-full">
                           <p className="text-base text-sumi font-medium leading-relaxed">
-                            {renderAnnotatedSentenceText(s.japaneseText)}
+                            {renderAnnotatedSentenceText(s.japaneseText, s.id)}
                           </p>
 
                           {isTranslationShown(s.id) && (
@@ -2175,7 +2237,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         }`}>
                           {/* Japanese Text */}
                           <p className="text-lg sm:text-xl font-bold tracking-wide text-white leading-relaxed my-1 text-left">
-                            {renderAnnotatedSentenceText(s.japaneseText)}
+                            {renderAnnotatedSentenceText(s.japaneseText, s.id)}
                           </p>
 
                           {/* Vietnamese Translation (if toggled) */}
@@ -2421,6 +2483,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         isPlayingUserAudio={playingUserAudioSentenceId === currentSentence.id}
                         evaluationStatus={currentEvaluationStatus}
                         recognitionSource={currentRecognitionSource}
+                        dimensions={currentDimensions}
+                        overallScoreBasis={currentScoreBasis}
                         onPlayUserAudio={() => playUserRecording(currentSentence.id)}
                         onRetry={handleRetryCurrentSentence}
                         onNext={handleNextSentence}

@@ -24,6 +24,9 @@ namespace JCAP.Services.Interfaces
             string userId, int sentenceId, ShadowingAudioEvaluationResponseDto result,
             Guid? progressId = null, Guid? clientSubmissionId = null);
 
+        /// <summary>Id các câu của một bài đang hoạt động (rỗng nếu bài không tồn tại/không hoạt động).</summary>
+        Task<List<int>> GetActiveSentenceIdsAsync(int dialogueId);
+
         /// <summary>Lần chấm đã lưu theo ClientSubmissionId của người dùng; null nếu chưa có.</summary>
         Task<ShadowingSentenceEvaluation?> FindEvaluationBySubmissionAsync(string userId, Guid clientSubmissionId);
 

@@ -25,17 +25,20 @@ namespace JCAP.Controllers
         private readonly IShadowingService _shadowingService;
         private readonly IAiShadowingAssessmentService _aiAssessmentService;
         private readonly IShadowingPracticeProgressService _progressService;
+        private readonly IShadowingSentenceAssetService _assets;
         private readonly ILogger<ShadowingController> _logger;
 
         public ShadowingController(
             IShadowingService shadowingService,
             IAiShadowingAssessmentService aiAssessmentService,
             IShadowingPracticeProgressService progressService,
+            IShadowingSentenceAssetService assets,
             ILogger<ShadowingController> logger)
         {
             _shadowingService = shadowingService;
             _aiAssessmentService = aiAssessmentService;
             _progressService = progressService;
+            _assets = assets;
             _logger = logger;
         }
 
@@ -234,6 +237,20 @@ namespace JCAP.Controllers
             using var buffer = new MemoryStream();
             await file.CopyToAsync(buffer, cancellationToken);
             return buffer.ToArray();
+        }
+
+        /// <summary>
+        /// Furigana của các câu trong bài (từ dữ liệu câu mẫu tính sẵn: cách đọc G2P gióng với chữ viết, không đoán).
+        /// Câu chưa có dữ liệu thì không có trong kết quả (hiển thị chữ thường).
+        /// </summary>
+        [HttpGet("{id:int}/furigana")]
+        public async Task<ActionResult<ApiResponse<Dictionary<int, List<FuriganaSegmentDto>>>>> GetFurigana(int id, CancellationToken cancellationToken)
+        {
+            var sentenceIds = await _shadowingService.GetActiveSentenceIdsAsync(id);
+            var furigana = sentenceIds.Count == 0
+                ? new Dictionary<int, List<FuriganaSegmentDto>>()
+                : await _assets.FindFuriganaAsync(sentenceIds, cancellationToken);
+            return Ok(ApiResponse<Dictionary<int, List<FuriganaSegmentDto>>>.Ok(furigana));
         }
 
         // ---- Phiên luyện ở server (ShadowingPracticeProgress) ----

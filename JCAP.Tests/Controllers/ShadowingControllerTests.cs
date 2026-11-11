@@ -43,6 +43,7 @@ public class ShadowingControllerTests
 
         var controller = new ShadowingController(
             new ShadowingService(context), assessment.Object, new ShadowingPracticeProgressService(context),
+            new Mock<IShadowingSentenceAssetService>().Object,
             new Mock<ILogger<ShadowingController>>().Object)
         {
             ControllerContext = new ControllerContext

@@ -154,7 +154,14 @@ export interface ShadowingAudioEvaluationResult {
   evaluationStatus: ShadowingEvaluationStatus;
   /** recognized | no_speech | unavailable: tách biệt với chất lượng âm thanh. */
   recognitionStatus: 'recognized' | 'no_speech' | 'unavailable';
-  recognitionSource: 'phoneme' | 'web_speech' | 'gemini' | 'none';
+  recognitionSource: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | 'none';
+  /** Trạng thái/điểm từng chiều đánh giá (Shadowing V2). Có từ scoringVersion v3. */
+  dimensions?: ShadowingEvaluationDimensions;
+  /** "content": điểm tổng CHỈ là điểm nội dung — hiển thị là "Điểm nội dung". */
+  overallScoreBasis?: 'content' | null;
+  /** Mô hình ASR đã dùng (vd. faster-whisper:small). */
+  asrModel?: string;
+  processingMs?: number;
   /**
    * Khi recognitionSource = phoneme: aligned = chấm theo câu mẫu (từng mora so với các kiểu đọc sai thường gặp),
    * free = nhận dạng tự do (khi người học đọc câu khác hoặc tắt chấm theo câu mẫu). Rỗng với nguồn khác.
@@ -210,7 +217,7 @@ export interface ShadowingSentencePracticeResult {
   /** Không còn được tạo ra: ngữ điệu chưa được đo. Chỉ còn trong bản ghi cũ. */
   intonationScore?: number;
   evaluationStatus?: ShadowingEvaluationStatus;
-  recognitionSource?: 'phoneme' | 'web_speech' | 'gemini';
+  recognitionSource?: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini';
   fallbackReason?: string | null;
   scoringVersion?: string;
   comparisonMethod?: string;
@@ -246,6 +253,27 @@ export interface ShadowingSessionCompletePayload {
   evaluationIds: string[];
   /** Phiên luyện ở server: có thì backend tự lấy các lần chấm của phiên; gọi lại trả đúng buổi đã tạo. */
   progressId?: string;
+}
+
+/** Kết quả một chiều đánh giá. score null = chưa có điểm đã kiểm chứng (KHÔNG phải 0). */
+export interface ShadowingEvaluationDimension {
+  status: 'COMPLETED' | 'UNAVAILABLE' | 'FAILED';
+  score?: number | null;
+  reason?: string | null;
+  source?: string | null;
+}
+
+export interface ShadowingEvaluationDimensions {
+  content: ShadowingEvaluationDimension;
+  pronunciation: ShadowingEvaluationDimension;
+  fluency: ShadowingEvaluationDimension;
+  prosody: ShadowingEvaluationDimension;
+}
+
+/** Một đoạn chữ của câu; reading có giá trị trên chữ Hán (Furigana). */
+export interface FuriganaSegment {
+  text: string;
+  reading?: string | null;
 }
 
 /** Trạng thái một câu của vai người học do server suy ra từ các lần chấm đã lưu. */
