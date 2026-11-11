@@ -174,6 +174,13 @@ export const LandingView: React.FC = () => {
   const { rows, error } = usePriceRows();
 
   const goRegister = () => navigate('/register');
+  /** Logo: cuộn về đúng đầu trang (không neo vào tiêu đề, vì thanh đầu dính sẽ che mất tiêu đề) */
+  const goTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    if (window.location.hash) window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+  };
   const goLogin = () => navigate('/login');
 
   useEffect(() => {
@@ -184,6 +191,12 @@ export const LandingView: React.FC = () => {
     };
   }, []);
 
+  // Mở thẳng link có neo (vd /#bang-gia): trang tải lazy nên trình duyệt chưa thấy mục lúc vào, cuộn tới sau khi hiện
+  useEffect(() => {
+    const target = window.location.hash ? document.getElementById(decodeURIComponent(window.location.hash.slice(1))) : null;
+    if (target) requestAnimationFrame(() => target.scrollIntoView());
+  }, []);
+
   const heroPins = useMemo(() => HERO_SPOTS.map((s) => ({ ...s, at: pct(prefById(s.prefId)) })), []);
 
   return (
@@ -192,7 +205,7 @@ export const LandingView: React.FC = () => {
 
       <header className="nav">
         <div className="wrap">
-          <a className="lp-brand" href="#h-hero">
+          <a className="lp-brand" href="#top" onClick={goTop} aria-label="JCAP, về đầu trang">
             <img src={logoMark} alt="" />
             JCAP
           </a>
@@ -706,7 +719,7 @@ export const LandingView: React.FC = () => {
 
       <footer className="foot">
         <div className="wrap">
-          <a className="lp-brand" href="#h-hero">
+          <a className="lp-brand" href="#top" onClick={goTop} aria-label="JCAP, về đầu trang">
             <img src={logoMark} alt="" />
             JCAP
           </a>

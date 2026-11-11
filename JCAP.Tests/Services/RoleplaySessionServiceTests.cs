@@ -436,7 +436,7 @@ public class RoleplaySessionServiceTests
 
         // Verify transaction ghi vào DB
         var deductTx = dbContext.CreditTransactions
-            .FirstOrDefault(t => t.Type == "Deduct" && t.Description.Contains("Lượt hội thoại AI"));
+            .FirstOrDefault(t => t.Type == "Deduct" && t.Description != null && t.Description.Contains("Lượt hội thoại AI"));
         Assert.NotNull(deductTx);
         Assert.Equal(-1, deductTx!.Amount);
     }
