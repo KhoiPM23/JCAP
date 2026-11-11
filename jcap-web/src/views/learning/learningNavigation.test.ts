@@ -3,14 +3,16 @@ import test from 'node:test';
 import { catalogHref, contentKind, exampleText, pageNumbers, positivePage, sourceHref, topicHref } from './learningNavigation.ts';
 
 test('topic links retain catalog page, level and search separately from content search', () => {
-  const catalog = new URLSearchParams({ page: '2', level: 'N5', keyword: 'Ăn uống' });
+  const catalog = new URLSearchParams({ kind: 'grammars', page: '2', level: 'N5', keyword: 'Xin phép' });
   const topic = new URL(topicHref(5, catalog, 'grammars', true), 'https://local.test');
   assert.equal(topic.pathname, '/learning/topics/5'); assert.equal(topic.searchParams.get('tab'), 'grammars');
   topic.searchParams.set('keyword', 'ください'); topic.searchParams.set('page', '3');
   const back = new URL(catalogHref(topic.searchParams), 'https://local.test');
-  assert.equal(back.searchParams.get('page'), '2'); assert.equal(back.searchParams.get('keyword'), 'Ăn uống'); assert.equal(back.searchParams.get('level'), 'N5');
+  assert.equal(back.searchParams.get('page'), '2'); assert.equal(back.searchParams.get('keyword'), 'Xin phép'); assert.equal(back.searchParams.get('level'), 'N5');
+  assert.equal(back.searchParams.get('kind'), 'grammars');
   const anotherTopic = new URL(topicHref(7, topic.searchParams), 'https://local.test');
   assert.equal(anotherTopic.searchParams.get('tab'), 'grammars'); assert.equal(anotherTopic.searchParams.get('keyword'), null); assert.equal(anotherTopic.searchParams.get('page'), null);
+  assert.equal(catalogHref(anotherTopic.searchParams), catalogHref(topic.searchParams));
 });
 test('invalid URL state cannot create an external return URL or invalid API page', () => {
   for (const value of [null, '', '-1', '0', '2.5', 'Infinity', '1000001', 'https://evil.test']) assert.equal(positivePage(value), 1);
