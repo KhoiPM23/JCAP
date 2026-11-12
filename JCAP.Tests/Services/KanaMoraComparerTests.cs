@@ -449,6 +449,27 @@ public class KanaMoraComparerTests
     }
 
     [Fact]
+    public async Task Issues_ProblemAndHint_AreSeparate()
+    {
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえっくすぷれすですね");
+
+        var issue = Assert.Single(WrongToken(r, "エクスプレス").Issues!);
+        Assert.Equal("Thừa âm ngắt 「っ」 sau 「え」", issue.Message); // chỉ nêu lỗi
+        Assert.Equal("Nối liền hai âm, không dừng hơi.", issue.Hint); // cách sửa tách riêng
+    }
+
+    [Fact]
+    public async Task Issues_ManyExtraSoundsInsideAWord_AreNotListedOneByOne()
+    {
+        // Ảnh chụp thật: どちらまで nghe thành どっちがあんまり — 1 âm sai + 3 âm thừa trong từ 5 âm: coi là nói từ khác
+        var comparer = With(("どちらまで行きますか。", "どちらまで/いきますか"));
+        var r = await comparer.CompareWithReadingAsync("どちらまで行きますか。", "どっちがあんまりいきますか");
+
+        Assert.Null(WrongToken(r, "どちらまで").Issues);
+    }
+
+    [Fact]
     public async Task Issues_Voicing_SaysWhichWayItWentWrong()
     {
         var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
@@ -459,7 +480,7 @@ public class KanaMoraComparerTests
         Assert.Equal("voicing", issue.ErrorType);
         Assert.Equal("く", issue.Expected);
         Assert.Equal("ぐ", issue.Spoken);
-        Assert.Contains("âm trong", issue.Message);
+        Assert.Contains("âm trong", issue.Hint);
         Assert.Contains("く", r.Feedback); // nhận xét tổng dùng lỗi từng âm
     }
 

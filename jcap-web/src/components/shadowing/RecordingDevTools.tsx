@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../jcap';
+import { Badge, Button } from '../jcap';
 
 /** Bản ghi gần nhất để tải về làm dữ liệu đo độ chính xác nhận dạng (chỉ chế độ phát triển). */
 export interface DevRecordingTake {
@@ -42,11 +42,12 @@ export const RecordingDevTools: React.FC<RecordingDevToolsProps> = ({ take }) =>
     download(new Blob([JSON.stringify(take.meta, null, 2)], { type: 'application/json' }), `${base}.json`);
   };
 
+  // Chỉ hiện khi đã có bản ghi để tải: một nút nhỏ canh phải, không chiếm cả một khối
+  if (!take) return null;
   return (
-    <div className="w-full flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-line bg-paper-100 text-xs text-sumi-muted">
-      <span className="font-bold">Thử nghiệm (dev)</span>
-      <Button size="sm" variant="ghost" icon="download" disabled={!take} onClick={handleDownload}>
-        Tải bản ghi
+    <div className="flex w-full justify-end">
+      <Button size="sm" variant="ghost" icon="download" onClick={handleDownload} title="Chỉ có khi chạy npm run dev">
+        Tải bản ghi <Badge tone="neutral" className="ml-1">dev</Badge>
       </Button>
     </div>
   );

@@ -81,7 +81,10 @@ export interface ShadowingMoraIssue {
   spoken?: string | null;
   after?: string | null;
   errorType?: ShadowingDiffErrorType | null;
+  /** Nêu lỗi, ngắn (vd. "Thừa âm ngắt 「っ」 sau 「え」"). */
   message: string;
+  /** Cách sửa (vd. "Nối liền hai âm, không dừng hơi."); null nếu không có. */
+  hint?: string | null;
 }
 
 /** Loại lỗi do bộ so khớp theo từ (kana-word-v1/v2) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */

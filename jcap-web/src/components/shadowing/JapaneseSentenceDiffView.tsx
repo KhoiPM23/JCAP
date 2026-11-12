@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ShadowingDiffToken } from '../../types/shadowing';
+import WordFeedbackList from './WordFeedbackList';
 
 interface JapaneseSentenceDiffViewProps {
   diffTokens?: ShadowingDiffToken[];
@@ -20,22 +21,6 @@ const describeError = (type: ShadowingDiffToken['errorType']): string => {
     case 'mora': return 'Sai hoặc thiếu âm';
     default: return '';
   }
-};
-
-/** Danh sách lỗi từng âm theo từ: 「エクスプレス」 Thừa âm ngắt 「っ」 sau 「え」… */
-const MoraIssueList: React.FC<{ tokens: ShadowingDiffToken[] }> = ({ tokens }) => {
-  const withIssues = tokens.filter((t) => t.status === 'mismatched' && t.issues && t.issues.length > 0);
-  if (withIssues.length === 0) return null;
-  return (
-    <ul className="space-y-1 text-xs text-sumi" aria-label="Lỗi từng âm">
-      {withIssues.map((t, idx) => (
-        <li key={idx} className="flex flex-wrap items-baseline gap-x-1.5 rounded-lg bg-danger-soft px-2 py-1">
-          <span className="font-jp font-bold text-danger">「{t.text.replace(/[。、！？!?.,]/g, '')}」</span>
-          <span>{t.issues!.map((i) => i.message).join(' ')}</span>
-        </li>
-      ))}
-    </ul>
-  );
 };
 
 export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> = ({
@@ -131,9 +116,6 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
         )}
       </div>
 
-      {/* Lỗi từng âm: hiện thẳng (không chỉ trong tooltip) để xem được trên điện thoại */}
-      {hasDiffs && <MoraIssueList tokens={diffTokens} />}
-
       {/* Spoken Text Comparison if different */}
       {hasSpoken && spokenText.trim() !== targetText.trim() && (
         <div className="text-xs text-[#556987] flex items-center gap-1.5 flex-wrap pt-1">
@@ -144,7 +126,8 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
         </div>
       )}
 
-
+      {/* Cần chỉnh: mỗi từ chưa đúng một mục (hiện thẳng, xem được trên điện thoại) */}
+      {hasDiffs && <WordFeedbackList tokens={diffTokens} />}
     </div>
   );
 };

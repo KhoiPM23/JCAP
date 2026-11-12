@@ -181,7 +181,10 @@ namespace JCAP.Services.Implementations
         {
             var length = word.End - word.Start;
             if (length <= 0) return null;
-            var wrong = Enumerable.Range(word.Start, length).Count(k => opAt[k].Kind != OpKind.Match);
+            // Âm sai/thiếu cộng âm nói thừa chen giữa từ: quá nửa độ dài từ thì người học đã nói một từ khác (どちらまで → どっちがあんまり),
+            // liệt kê từng âm chỉ gây rối.
+            var wrong = Enumerable.Range(word.Start, length).Count(k => opAt[k].Kind != OpKind.Match)
+                + Enumerable.Range(word.Start + 1, Math.Max(0, length - 1)).Sum(g => extras[g]?.Count ?? 0);
             if (wrong * 2 > length) return null;
 
             var issues = new List<ShadowingMoraIssueDto>();
@@ -193,11 +196,11 @@ namespace JCAP.Services.Implementations
                 {
                     foreach (var (mora, _) in extras[k]!)
                     {
-                        var type = ClassifyOmission(mora, extra: true);
+                        var (message, hint) = ExtraMessage(mora, AfterOf(k));
                         issues.Add(new ShadowingMoraIssueDto
                         {
-                            Kind = "extra", Spoken = Show(mora), After = AfterOf(k), ErrorType = type,
-                            Message = ExtraMessage(mora, AfterOf(k)),
+                            Kind = "extra", Spoken = Show(mora), After = AfterOf(k), ErrorType = ClassifyOmission(mora, extra: true),
+                            Message = message, Hint = hint,
                         });
                     }
                 }
@@ -205,19 +208,20 @@ namespace JCAP.Services.Implementations
                 var op = opAt[k];
                 if (op.Kind == OpKind.Delete)
                 {
+                    var (message, hint) = MissingMessage(op.Target!.Value, AfterOf(k));
                     issues.Add(new ShadowingMoraIssueDto
                     {
                         Kind = "missing", Expected = Show(op.Target!.Value), After = AfterOf(k), ErrorType = op.ErrorType,
-                        Message = MissingMessage(op.Target!.Value, AfterOf(k)),
+                        Message = message, Hint = hint,
                     });
                 }
                 else if (op.Kind == OpKind.Substitute)
                 {
+                    var (message, hint) = SubstituteMessage(op.Target!.Value, op.Spoken!.Value, op.ErrorType, AfterOf(k));
                     issues.Add(new ShadowingMoraIssueDto
                     {
                         Kind = "substitute", Expected = Show(op.Target!.Value), Spoken = Show(op.Spoken!.Value), After = AfterOf(k),
-                        ErrorType = op.ErrorType,
-                        Message = SubstituteMessage(op.Target!.Value, op.Spoken!.Value, op.ErrorType, AfterOf(k)),
+                        ErrorType = op.ErrorType, Message = message, Hint = hint,
                     });
                 }
             }
@@ -231,41 +235,43 @@ namespace JCAP.Services.Implementations
 
         private static string Where(string? after) => after == null ? "ở đầu từ" : $"sau 「{after}」";
 
-        private static string ExtraMessage(Mora mora, string? after)
+        // Mỗi lỗi: Message = nêu lỗi (ngắn), Hint = cách sửa (null nếu không có gì thêm ngoài chính lỗi).
+
+        private static (string Message, string? Hint) ExtraMessage(Mora mora, string? after)
         {
-            if (mora.IsSokuon) return $"Thừa âm ngắt 「っ」 {Where(after)}: nối liền, không dừng hơi.";
-            if (mora.IsLong) return $"Thừa trường âm {Where(after)}: đọc ngắn, không kéo dài.";
-            if (mora.IsHatsuon) return $"Thừa âm 「ん」 {Where(after)}.";
-            return $"Thừa 「{mora.Display}」 {Where(after)}.";
+            if (mora.IsSokuon) return ($"Thừa âm ngắt 「っ」 {Where(after)}", "Nối liền hai âm, không dừng hơi.");
+            if (mora.IsLong) return ($"Thừa trường âm {Where(after)}", "Đọc ngắn, không kéo dài.");
+            if (mora.IsHatsuon) return ($"Thừa âm 「ん」 {Where(after)}", "Không thêm âm mũi.");
+            return ($"Thừa 「{mora.Display}」 {Where(after)}", null);
         }
 
-        private static string MissingMessage(Mora mora, string? after)
+        private static (string Message, string? Hint) MissingMessage(Mora mora, string? after)
         {
-            if (mora.IsLong) return $"Thiếu trường âm {Where(after)}: kéo dài âm đủ một nhịp.";
-            if (mora.IsSokuon) return $"Thiếu âm ngắt 「っ」 {Where(after)}: dừng một nhịp trước âm sau.";
-            if (mora.IsHatsuon) return $"Thiếu âm 「ん」 {Where(after)}.";
-            return $"Thiếu 「{mora.Display}」 {Where(after)}.";
+            if (mora.IsLong) return ($"Thiếu trường âm {Where(after)}", "Kéo dài âm đủ một nhịp.");
+            if (mora.IsSokuon) return ($"Thiếu âm ngắt 「っ」 {Where(after)}", "Dừng một nhịp ngắn trước âm sau.");
+            if (mora.IsHatsuon) return ($"Thiếu âm 「ん」 {Where(after)}", "Ngân âm ん đủ một nhịp.");
+            return ($"Thiếu 「{mora.Display}」 {Where(after)}", null);
         }
 
         private static readonly HashSet<string> VoicedConsonants = new() { "g", "z", "d", "b" };
 
-        private static string SubstituteMessage(Mora target, Mora spoken, string? errorType, string? after)
+        private static (string Message, string? Hint) SubstituteMessage(Mora target, Mora spoken, string? errorType, string? after)
         {
             if (target.IsLong && spoken.IsSokuon)
-                return $"Trường âm 「ー」 {Where(after)} bị đọc thành âm ngắt 「っ」: kéo dài âm, không ngắt.";
+                return ($"Trường âm 「ー」 {Where(after)} bị đọc thành âm ngắt 「っ」", "Kéo dài âm, không ngắt.");
             if (target.IsSokuon && spoken.IsLong)
-                return $"Âm ngắt 「っ」 {Where(after)} bị đọc thành trường âm: dừng một nhịp, không kéo dài.";
+                return ($"Âm ngắt 「っ」 {Where(after)} bị đọc thành trường âm", "Dừng một nhịp, không kéo dài.");
             var head = $"「{Show(target)}」 đọc thành 「{Show(spoken)}」";
             if (errorType == "voicing")
             {
                 return VoicedConsonants.Contains(JapaneseMora.ConsonantOf(spoken))
-                    ? $"{head}: âm này là âm trong, đọc nhẹ, không rung cổ họng."
-                    : $"{head}: âm này là âm đục, cần rung cổ họng.";
+                    ? (head, "Âm này là âm trong: đọc nhẹ, không rung cổ họng.")
+                    : (head, "Âm này là âm đục: cần rung cổ họng.");
             }
-            if (errorType == "chouon") return $"{head}: chú ý độ dài của âm (trường âm).";
-            if (errorType == "sokuon") return $"{head}: chú ý âm ngắt 「っ」.";
-            if (errorType == "hatsuon") return $"{head}: chú ý âm 「ん」.";
-            return head + ".";
+            if (errorType == "chouon") return (head, "Chú ý độ dài của âm (trường âm).");
+            if (errorType == "sokuon") return (head, "Chú ý âm ngắt 「っ」.");
+            if (errorType == "hatsuon") return (head, "Chú ý âm 「ん」.");
+            return (head, null);
         }
 
         /// <summary>
@@ -746,7 +752,7 @@ namespace JCAP.Services.Implementations
                 hints.Add(wr.Status == "missing"
                     ? $"chưa nói 「{text}」"
                     : wr.Issues is { Count: > 0 }
-                    ? $"「{text}」: {string.Join(" ", wr.Issues.Take(2).Select(i => i.Message.TrimEnd('.')).Select(m => m + "."))}".TrimEnd('.')
+                    ? $"「{text}」: {string.Join(", ", wr.Issues.Take(2).Select(i => i.Message))}"
                     : $"「{text}」 đọc chuẩn là {wr.Expected}" + (wr.Spoken != null ? $", bạn nói {wr.Spoken}" : "") + TypeHint(wr.ErrorType));
                 if (hints.Count == 3) break;
             }

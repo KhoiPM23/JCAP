@@ -311,8 +311,10 @@ namespace JCAP.DTOs.Shadowing
         public string? After { get; set; }
         /// <summary>chouon | sokuon | hatsuon | voicing | mora | extra</summary>
         public string? ErrorType { get; set; }
-        /// <summary>Nhận xét tiếng Việt hiển thị thẳng cho người học.</summary>
+        /// <summary>Nêu lỗi bằng tiếng Việt, ngắn (vd. "Thừa âm ngắt 「っ」 sau 「え」").</summary>
         public string Message { get; set; } = string.Empty;
+        /// <summary>Cách sửa (vd. "Nối liền hai âm, không dừng hơi."); null nếu không có gì thêm.</summary>
+        public string? Hint { get; set; }
     }
 
     public class ShadowingAudioEvaluationResponseDto

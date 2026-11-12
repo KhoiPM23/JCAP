@@ -1,14 +1,12 @@
 import React from 'react';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
 import type { ShadowingDiffToken, ShadowingEvaluationDimensions, ShadowingFluencyMetrics } from '../../types/shadowing';
-import EvaluationDimensionsRow from './EvaluationDimensionsRow';
-import FluencyPanel from './FluencyPanel';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
   spokenText?: string;
   overallScore: number;
-  /** Số liệu nhịp nói (Lưu loát, tham khảo, chưa tính vào điểm). */
+  /** Số liệu nhịp nói (Lưu loát). Không hiện ở thẻ từng câu; dành cho trang tổng kết buổi. */
   fluencyMetrics?: ShadowingFluencyMetrics | null;
   gateDetail?: string;
   diffTokens: ShadowingDiffToken[];
@@ -18,7 +16,7 @@ export interface ShadowingSentenceResultCardProps {
   evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
   /** Nguồn nhận dạng backend đã dùng; web_speech nghĩa là nguồn chính gặp lỗi kỹ thuật. */
   recognitionSource?: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | null;
-  /** Trạng thái từng chiều đánh giá (Shadowing V2). */
+  /** Trạng thái từng chiều đánh giá. Không hiện ở thẻ từng câu; dành cho trang tổng kết buổi. */
   dimensions?: ShadowingEvaluationDimensions | null;
   /** "content": điểm hiển thị CHỈ là điểm nội dung. */
   overallScoreBasis?: 'content' | null;
@@ -32,7 +30,6 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   targetText,
   spokenText = '',
   overallScore,
-  fluencyMetrics = null,
   gateDetail,
   diffTokens,
   attemptsCount,
@@ -40,7 +37,6 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   isPlayingUserAudio,
   evaluationStatus = 'completed',
   recognitionSource = null,
-  dimensions = null,
   overallScoreBasis = null,
   onPlayUserAudio,
   onRetry,
@@ -181,8 +177,6 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           spokenText={cleanSpoken}
           size="md"
         />
-        <EvaluationDimensionsRow dimensions={dimensions} />
-        <FluencyPanel fluency={fluencyMetrics} />
         {evaluationStatus === 'partial' && recognitionSource === 'web_speech' && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
             Dịch vụ nhận dạng AI tạm thời không khả dụng nên lượt này được chấm theo nhận dạng của trình duyệt.
