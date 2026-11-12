@@ -19,7 +19,7 @@ namespace JCAP.Services.Implementations
         private const int FrameLen = SampleRate * FrameMs / 1000;
 
         private const double MinPeakDb = -50.0;          // đỉnh thấp hơn mức này: bản thu quá nhỏ
-        private const double MinDynamicRangeDb = 12.0;   // chênh lệch tiếng nói/nền tối thiểu, thấp hơn nghĩa là chỉ có nền đều
+        private const double MinDynamicRangeDb = 9.0;    // chênh lệch tiếng nói/nền tối thiểu, thấp hơn nghĩa là chỉ có nền đều (FLEURS: giọng rõ trên nền ồn đo được 10,5–12 dB; tiếng ồn thuần thường 2–6 dB)
         private const double NoiseFloorMinDb = -70.0;
         private const double HysteresisDb = 4.0;         // ngưỡng thoát thấp hơn ngưỡng vào, tránh ngắt đoạn tiếng nói ở biên
         private const int MinSpeechMs = 60;

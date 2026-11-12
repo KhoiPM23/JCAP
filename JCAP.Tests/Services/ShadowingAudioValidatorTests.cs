@@ -96,6 +96,29 @@ public class ShadowingAudioValidatorTests
     }
 
     [Fact]
+    public void QuietButClean_IsAmplified_NotRejected()
+    {
+        // Như giọng nữ trong FLEURS: rất nhỏ (−53 dB) nhưng nền gần như im lặng
+        var quiet = TestAudio.Cat(TestAudio.Noise(300, amplitude: 0.00002), TestAudio.Sine(1000, amplitude: 0.003),
+            TestAudio.Noise(300, amplitude: 0.00002), TestAudio.Sine(1200, amplitude: 0.003), TestAudio.Noise(300, amplitude: 0.00002));
+        var r = ShadowingAudioValidator.Validate(TestAudio.Wav(quiet), null);
+
+        Assert.True(r.IsValid, r.ErrorCode);
+        Assert.InRange(r.GainDb, 20, 40);
+        Assert.NotNull(r.NormalizedWav);
+        Assert.InRange(r.Samples16k!.Max(Math.Abs), 0.05f, 0.98f); // đã khuếch đại, không vỡ tiếng
+        Assert.True(ShadowingAudioValidator.Validate(r.NormalizedWav, null).IsValid); // bản khuếch đại là WAV hợp lệ
+    }
+
+    [Fact]
+    public void NormalLevel_IsNotAmplified()
+    {
+        var r = ShadowingAudioValidator.Validate(Speech(), null);
+        Assert.Equal(0, r.GainDb);
+        Assert.Null(r.NormalizedWav);
+    }
+
+    [Fact]
     public void FarTooQuiet_IsRejected()
     {
         var r = ShadowingAudioValidator.Validate(Speech(amplitude: 0.001), null);

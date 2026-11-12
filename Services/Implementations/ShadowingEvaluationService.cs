@@ -101,6 +101,8 @@ namespace JCAP.Services.Implementations
             {
                 return Unavailable(response, audio.ErrorCode!, audio.Message!);
             }
+            // Bản ghi nhỏ đã được khuếch đại: nhận dạng và đo nhịp nói trên bản đã khuếch đại
+            if (audio.NormalizedWav != null) input = WithAnalysisWav(input, audio.NormalizedWav);
 
             // 2. Chiều Nội dung
             return ContentProvider == ProviderPhoneme
@@ -164,6 +166,20 @@ namespace JCAP.Services.Implementations
         /// <summary>Có ít nhất một kana hoặc chữ Hán (chữ số đứng riêng như "3,070" không tính là tiếng Nhật).</summary>
         private static bool ContainsJapanese(string text) =>
             text.Any(c => (c >= '぀' && c <= 'ヿ') || (c >= '一' && c <= '鿿') || (c >= '㐀' && c <= '䶿') || c == '々');
+
+        private static ShadowingAudioEvaluationInput WithAnalysisWav(ShadowingAudioEvaluationInput i, byte[] wav) => new()
+        {
+            Audio = i.Audio,
+            MimeType = i.MimeType,
+            TargetText = i.TargetText,
+            ClientTranscript = i.ClientTranscript,
+            ClientRecognitionStatus = i.ClientRecognitionStatus,
+            ClientRecognitionError = i.ClientRecognitionError,
+            AudioGateStatus = i.AudioGateStatus,
+            AudioGateDetail = i.AudioGateDetail,
+            AnalysisWav = wav,
+            ReferenceSpeakerId = i.ReferenceSpeakerId,
+        };
 
         private static string AsrMessage(string code) => code switch
         {

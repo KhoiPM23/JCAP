@@ -64,6 +64,32 @@ Phát lại giọng mẫu VOICEVOX qua loa vào micro thì được nhận dạn
   Sau đợt này nút đã bỏ và cấu hình luôn BẬT; dữ liệu các đợt sau sẽ đúng với cấu hình người học. So sánh BẬT/TẮT chưa đo.
 - Chưa thấy lượt nào bị từ chối nhầm vì âm lượng/tiếng ồn (ngưỡng `ShadowingAudioValidator` vẫn là heuristic).
 
+## 5b. Kiểm tra "nói đúng có bị chấm oan không" trên nhiều giọng: Google FLEURS
+
+Dữ liệu: [Google FLEURS](https://huggingface.co/datasets/google/fleurs) tiếng Nhật, phần test (CC-BY-4.0). 150 câu chọn ngẫu nhiên
+(75 nam, 75 nữ; 1–25 giây), người bản xứ đọc đúng câu cho sẵn. Chuyển float → WAV PCM 16-bit 16 kHz như trình duyệt gửi.
+Dữ liệu chỉ để đo, không đưa vào repo. Chạy bằng `RealScoringBench` (mỗi câu một cặp .wav + .json có `targetText`).
+
+| | Trước khi sửa | Sau khi sửa |
+|---|---|---|
+| Câu chấm được | 65/150 | **147/150** |
+| Bị từ chối "âm lượng quá nhỏ" | 75 (**toàn bộ giọng nữ**) | 0 |
+| Bị từ chối "chỉ có tiếng ồn" | 7 | 0 |
+| Không đọc được (chữ Latin: M16, pH) | 3 | 3 |
+| Điểm nội dung trung bình / trung vị | 86,6 / 87 | 88,3 / 90 |
+| Câu 100 điểm · ≥ 90 · ≥ 80 | 14 · 27 · 47 | 39 · 78 · 116 |
+| Giọng nữ (trung bình) | không chấm được | 90,1 |
+
+Nguyên nhân và cách sửa (`ShadowingAudioValidator`, `FluencyAnalyzer`):
+- Giọng nữ FLEURS ghi rất nhỏ (mức tiếng nói −58…−51 dB, ngưỡng cũ −50 dB) nhưng rất sạch. Nay bản ghi nhỏ mà sạch được **khuếch đại**
+  (mức < −40 dB → ~−25 dB, tối đa +40 dB, không vỡ tiếng) trước khi nhận dạng; chất lượng ghi là "acceptable" để nhắc nói to hơn.
+  Bản ghi vốn nhỏ mà sau khuếch đại chỉ còn nhiễu vẫn báo "âm lượng quá nhỏ".
+- 7 giọng nam trên nền ồn có chênh tiếng nói/nền 10,5–12 dB (ngưỡng cũ 12 dB). Ngưỡng hạ còn **9 dB** (tiếng ồn thuần thường 2–6 dB).
+- 46 bản ghi của người học (mục 1) giữ nguyên điểm sau bản sửa.
+
+Điểm chưa đạt 100 trên câu FLEURS chủ yếu do Whisper `small` nghe nhầm tên riêng nước ngoài và chữ Hán hiếm (ビシュケク → 美視県, 徘徊 → 拝開);
+câu FLEURS (Wikipedia) khó hơn nhiều so với câu N5–N3. Không phải lỗi bộ chấm; muốn cải thiện cần mô hình lớn hơn.
+
 ## 6. Giới hạn
 
 - 1 người nói, 46 lượt, không nhãn: không đủ để nêu độ chính xác hay mở chiều Phát âm (Decision 3 cần 3–5 người, 10–15 câu × 2–3 lượt, có nhãn).

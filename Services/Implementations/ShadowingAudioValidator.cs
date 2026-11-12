@@ -6,13 +6,17 @@ namespace JCAP.Services.Implementations
     /// <summary>Kết quả kiểm tra âm thanh phía backend.</summary>
     /// <param name="QualityStatus">good | acceptable khi hợp lệ; needs_retry khi không hợp lệ.</param>
     /// <param name="Samples16k">Mẫu 16 kHz mono đã đọc (chỉ khi hợp lệ).</param>
+    /// <param name="GainDb">Mức đã khuếch đại bản ghi nhỏ (0 nếu giữ nguyên).</param>
+    /// <param name="NormalizedWav">WAV đã khuếch đại để dùng thay bản gốc cho nhận dạng/đo nhịp; null nếu không khuếch đại.</param>
     public sealed record ShadowingAudioValidation(
         bool IsValid,
         string? ErrorCode,
         string? Message,
         string QualityStatus,
         float[]? Samples16k,
-        int DurationMs)
+        int DurationMs,
+        double GainDb = 0,
+        byte[]? NormalizedWav = null)
     {
         public static ShadowingAudioValidation Fail(string code, string message, int durationMs = 0) =>
             new(false, code, message, "needs_retry", null, durationMs);
@@ -22,7 +26,8 @@ namespace JCAP.Services.Implementations
     /// Kiểm tra âm thanh do BACKEND tự làm trước khi gọi mô hình; không dựa vào kết quả kiểm tra của trình duyệt.
     /// Thứ tự: định dạng thật (byte đầu file, không tin Content-Type) → kích thước → thời lượng → có tiếng nói đủ to → vỡ tiếng.
     ///
-    /// Ngưỡng tín hiệu dùng lại VAD của FluencyAnalyzer (đỉnh ≥ −50 dBFS, chênh tiếng nói/nền ≥ 12 dB). Đây là HEURISTIC,
+    /// Bản ghi nhỏ nhưng sạch được khuếch đại trước (mức tiếng nói < −40 dB → khoảng −25 dB, tối đa +40 dB).
+    /// Ngưỡng tín hiệu dùng lại VAD của FluencyAnalyzer (đỉnh ≥ −50 dBFS, chênh tiếng nói/nền ≥ 9 dB; đã chỉnh theo dữ liệu FLEURS). Vẫn là HEURISTIC,
     /// chưa hiệu chỉnh trên micro thật của người học (xem docs/shadowing-v2/MILESTONE-1-PLAN.md mục 6b).
     /// </summary>
     public static class ShadowingAudioValidator
@@ -76,9 +81,21 @@ namespace JCAP.Services.Implementations
             if (durationMs > MaxDurationMs)
                 return ShadowingAudioValidation.Fail("AUDIO_TOO_LONG", "Bản ghi quá dài. Hãy thu từng câu, tối đa 30 giây.", durationMs);
 
+            // Bản ghi nhỏ nhưng sạch (micro không tự chỉnh âm lượng, nói xa micro): khuếch đại như trình duyệt tự chỉnh âm lượng
+            // thay vì từ chối. Dữ liệu FLEURS: 75/75 giọng nữ đọc rõ ở mức −58…−51 dB từng bị báo "quá nhỏ".
+            var gainDb = QuietGainDb(samples);
+            byte[]? normalizedWav = null;
+            if (gainDb > 0)
+            {
+                samples = ApplyGain(samples, gainDb);
+                normalizedWav = EncodeWav(samples);
+            }
+
             var segments = FluencyAnalyzer.DetectSegments(samples, out var failure);
             if (segments == null || segments.Count == 0)
             {
+                // Bản ghi vốn rất nhỏ: sau khuếch đại chỉ còn nhiễu thì nguyên nhân là nói quá nhỏ, không phải chỗ ồn
+                if (gainDb > 0 && failure == "NOISE_ONLY") failure = "LOW_LEVEL";
                 return failure switch
                 {
                     "LOW_LEVEL" => ShadowingAudioValidation.Fail("AUDIO_TOO_QUIET",
@@ -103,8 +120,59 @@ namespace JCAP.Services.Implementations
                 return ShadowingAudioValidation.Fail("AUDIO_CLIPPED", "Âm thanh bị vỡ tiếng (nói quá sát micro). Hãy lùi xa micro một chút.", durationMs);
 
             var voiceDb = SpeechLevelDb(samples, segments);
-            var quality = voiceDb >= GoodVoiceDb && clipped <= ClipWarnFrames ? "good" : "acceptable";
-            return new ShadowingAudioValidation(true, null, null, quality, samples, durationMs);
+            // Phải khuếch đại mới nghe rõ: vẫn chấm nhưng chỉ "acceptable" để nhắc người học nói to/gần micro hơn
+            var quality = gainDb == 0 && voiceDb >= GoodVoiceDb && clipped <= ClipWarnFrames ? "good" : "acceptable";
+            return new ShadowingAudioValidation(true, null, null, quality, samples, durationMs, gainDb, normalizedWav);
+        }
+
+        /// <summary>Khuếch đại khi mức tiếng nói (phân vị 95 năng lượng khung 20 ms) thấp hơn mức này.</summary>
+        private const double QuietBelowDb = -40;
+        /// <summary>Đưa mức tiếng nói lên khoảng này.</summary>
+        private const double NormalizeTargetDb = -25;
+        private const double MaxGainDb = 40;
+        /// <summary>Thấp hơn mức này coi như im lặng: không khuếch đại (chỉ phóng to nhiễu lượng tử).</summary>
+        private const double SilenceBelowDb = -80;
+
+        /// <summary>Số dB cần khuếch đại (0 nếu đủ to hoặc gần như im lặng), giới hạn để mẫu lớn nhất không vượt 0,98.</summary>
+        internal static double QuietGainDb(float[] samples)
+        {
+            var frames = samples.Length / FrameLen;
+            if (frames == 0) return 0;
+            var db = new double[frames];
+            for (var f = 0; f < frames; f++)
+            {
+                double sum = 0;
+                for (var i = f * FrameLen; i < (f + 1) * FrameLen; i++) sum += samples[i] * (double)samples[i];
+                db[f] = 20 * Math.Log10(Math.Max(Math.Sqrt(sum / FrameLen), 1e-5));
+            }
+            Array.Sort(db);
+            var level = db[(int)Math.Round(0.95 * (frames - 1))];
+            if (level >= QuietBelowDb || level < SilenceBelowDb) return 0;
+
+            var maxAbs = samples.Max(Math.Abs);
+            var headroomDb = maxAbs > 0 ? 20 * Math.Log10(0.98 / maxAbs) : MaxGainDb;
+            return Math.Max(0, Math.Min(Math.Min(NormalizeTargetDb - level, MaxGainDb), headroomDb));
+        }
+
+        private static float[] ApplyGain(float[] samples, double gainDb)
+        {
+            var g = (float)Math.Pow(10, gainDb / 20);
+            return samples.Select(s => Math.Clamp(s * g, -1f, 1f)).ToArray();
+        }
+
+        /// <summary>WAV PCM 16-bit mono 16 kHz (cùng định dạng trình duyệt gửi lên).</summary>
+        private static byte[] EncodeWav(float[] samples)
+        {
+            var dataBytes = samples.Length * 2;
+            using var ms = new System.IO.MemoryStream(44 + dataBytes);
+            using var w = new System.IO.BinaryWriter(ms);
+            w.Write("RIFF"u8.ToArray()); w.Write(36 + dataBytes); w.Write("WAVE"u8.ToArray());
+            w.Write("fmt "u8.ToArray()); w.Write(16); w.Write((short)1); w.Write((short)1);
+            w.Write(SampleRate); w.Write(SampleRate * 2); w.Write((short)2); w.Write((short)16);
+            w.Write("data"u8.ToArray()); w.Write(dataBytes);
+            foreach (var s in samples) w.Write((short)Math.Round(Math.Clamp(s, -1f, 1f) * 32767));
+            w.Flush();
+            return ms.ToArray();
         }
 
         /// <summary>Loại tệp theo byte đầu (không tin Content-Type): wav | webm | ogg | mp4 | null.</summary>
