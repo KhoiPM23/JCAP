@@ -143,6 +143,14 @@ namespace JCAP.Services.Implementations
                     "Không nghe rõ giọng nói trong bản ghi. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
             }
 
+            if (!ContainsJapanese(text))
+            {
+                // Dịch vụ luôn chạy với language=ja; trả chữ Latin thuần (bản ghi thật: 一週間です → "It's your godness.")
+                // là ảo giác của mô hình, không phải bằng chứng người học nói sai: không chấm, mời thu lại.
+                return Unavailable(response, "ASR_UNRELIABLE",
+                    "Hệ thống chưa nhận ra tiếng Nhật trong bản ghi này. Điểm chưa được ghi nhận, hãy thu lại và đọc rõ hơn.");
+            }
+
             response.EvaluationStatus = "completed";
             response.RecognitionMode = "asr";
             // Cách đọc của transcript: do dịch vụ ASR tính (OpenJTalk, cùng G2P với dữ liệu câu mẫu) nếu có — không cần VOICEVOX lúc chấm;
@@ -152,6 +160,10 @@ namespace JCAP.Services.Implementations
                 : await _comparer.CompareAsync(input.TargetText, text, cancellationToken);
             return await ScoreTranscriptAsync(input, response, text, cancellationToken, precomputed: comparison);
         }
+
+        /// <summary>Có ít nhất một kana hoặc chữ Hán (chữ số đứng riêng như "3,070" không tính là tiếng Nhật).</summary>
+        private static bool ContainsJapanese(string text) =>
+            text.Any(c => (c >= '぀' && c <= 'ヿ') || (c >= '一' && c <= '鿿') || (c >= '㐀' && c <= '䶿') || c == '々');
 
         private static string AsrMessage(string code) => code switch
         {

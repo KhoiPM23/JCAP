@@ -151,6 +151,17 @@ public class ShadowingDimensionsTests
     }
 
     [Fact]
+    public async Task LatinOnlyTranscript_IsUnreliable_NotZero()
+    {
+        // Bản ghi thật: 一週間です → Whisper (language=ja) trả "It's your godness."
+        var r = await Service(new FakeAsr(() => Heard("It's your godness."))).EvaluateAsync(Input());
+
+        Assert.Equal("ASR_UNRELIABLE", r.ErrorCode);
+        Assert.Null(r.OverallScore);
+        Assert.Equal("UNAVAILABLE", r.Dimensions.Content.Status);
+    }
+
+    [Fact]
     public async Task KanaOnlyRecognition_HasNoSurfaceShortcut()
     {
         // Kana từ mô hình âm vị không có chữ Hán: không áp dụng quy tắc khớp chữ viết
