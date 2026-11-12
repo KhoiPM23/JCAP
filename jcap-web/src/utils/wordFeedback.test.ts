@@ -20,9 +20,15 @@ test('chỉ các từ chưa đúng thành mục nhận xét, đúng thứ tự t
   assert.deepEqual(items[1], { kind: 'missing', word: 'ですね', expected: null }); // cách đọc trùng chữ thì không nhắc lại
 });
 
-test('âm nói thừa đứng riêng thành một mục riêng', () => {
-  const items = buildWordFeedback([{ text: 'ね', status: 'mismatched', spokenPart: 'ね', errorType: 'extra' }]);
-  assert.deepEqual(items, [{ kind: 'extra', spoken: 'ね' }]);
+test('âm nói thừa thành một mục riêng, nêu vị trí theo từ của câu mẫu, viết hiragana', () => {
+  const items = buildWordFeedback([
+    { text: 'ダ', status: 'mismatched', spokenPart: 'ダ', errorType: 'extra' },
+    { text: '成田', status: 'mismatched', spokenPart: 'れかが', errorType: 'mora' },
+    { text: 'エクスプレスですね。何時', status: 'correct' },
+    { text: 'ン', status: 'mismatched', spokenPart: 'ン', errorType: 'extra' },
+  ]);
+  assert.deepEqual(items[0], { kind: 'extra', spoken: 'だ', before: '成田', after: null });
+  assert.deepEqual(items[2], { kind: 'extra', spoken: 'ん', before: null, after: '何時' });
 });
 
 test('từ nói khác hẳn: không có lỗi từng âm', () => {

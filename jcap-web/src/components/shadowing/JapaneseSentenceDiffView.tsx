@@ -56,21 +56,9 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
                 );
               }
 
-              // Âm người học nói thừa (không có trong câu mẫu): chỉ đánh dấu nhỏ, KHÔNG chèn nguyên văn vào dòng câu mẫu
-              // (chèn vào làm câu mẫu lẫn với lời người học). Nội dung thừa xem khi rê chuột và ở dòng "Bạn đã nói".
-              if (token.status === 'mismatched' && token.errorType === 'extra') {
-                const said = token.spokenPart || token.text;
-                return (
-                  <span
-                    key={idx}
-                    title={`Bạn nói thừa ở đây: "${said}"`}
-                    aria-label={`Nói thừa: ${said}`}
-                    className="inline-flex items-center justify-center w-4 h-4 text-[10px] leading-none bg-rose-50 text-rose-700 rounded-full cursor-help hover:bg-rose-100 transition-colors align-middle"
-                  >
-                    ＋
-                  </span>
-                );
-              }
+              // Âm người học nói thừa (không có trong câu mẫu): KHÔNG đánh dấu trong câu mẫu (dấu "+" không cho biết thừa gì,
+              // lại hay nằm sát từ đọc sai nên trông như đặt bừa). Thừa gì, ở đâu: xem mục "Nói thừa" trong danh sách Cần chỉnh.
+              if (token.status === 'mismatched' && token.errorType === 'extra') return null;
 
               if (token.status === 'mismatched') {
                 const kind = describeError(token.errorType);

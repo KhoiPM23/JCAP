@@ -32,7 +32,13 @@ function Item({ item }: { item: WordFeedback }) {
     return (
       <FeedbackItem tone="warning" title="Nói thừa">
         <p>
-          Bạn nói thêm <span lang="ja">「{item.spoken}」</span> không có trong câu mẫu.
+          Bạn nói thêm <span lang="ja">「{item.spoken}」</span>
+          {item.before ? (
+            <> trước <span lang="ja">「{item.before}」</span></>
+          ) : item.after ? (
+            <> sau <span lang="ja">「{item.after}」</span></>
+          ) : null}
+          , câu mẫu không có âm này.
         </p>
       </FeedbackItem>
     );

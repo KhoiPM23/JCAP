@@ -17,20 +17,34 @@ export type WordFeedback =
   | { kind: 'mismatched'; word: string; expected: string | null; spoken: string | null; issues: ShadowingMoraIssue[] }
   /** Từ chưa nói. */
   | { kind: 'missing'; word: string; expected: string | null }
-  /** Âm nói thừa đứng riêng giữa các từ. */
-  | { kind: 'extra'; spoken: string };
+  /** Âm nói thừa đứng riêng giữa các từ; `before`/`after`: từ của câu mẫu ngay sau/trước chỗ đó (để nói "trước 「成田」"). */
+  | { kind: 'extra'; spoken: string; before: string | null; after: string | null };
 
 const PUNCT = /[。、！？!?.,「」『』（）()・\s]/g;
 const clean = (s: string | null | undefined) => (s ?? '').replace(PUNCT, '');
+/** Âm nói thừa lấy từ cách đọc (katakana): đổi sang hiragana cho thống nhất với dòng "Bạn nói". */
+const toHiragana = (s: string) => s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 
 /** Gom các token sai của câu thành từng mục nhận xét, theo thứ tự trong câu. */
 export function buildWordFeedback(tokens: ShadowingDiffToken[] | null | undefined): WordFeedback[] {
   const items: WordFeedback[] = [];
-  for (const t of tokens ?? []) {
+  const list = tokens ?? [];
+  const isExtra = (t: ShadowingDiffToken) => t.status === 'mismatched' && t.errorType === 'extra';
+  /** Từ câu mẫu gần nhất theo hướng `step` (bỏ qua âm thừa khác); token đúng có thể gộp nhiều từ nên lấy phần sát chỗ thừa. */
+  const neighbour = (from: number, step: 1 | -1): string | null => {
+    for (let j = from + step; j >= 0 && j < list.length; j += step) {
+      if (isExtra(list[j])) continue;
+      const parts = list[j].text.split(/[。、！？!?\s]+/).map(clean).filter(Boolean);
+      return (step === 1 ? parts[0] : parts[parts.length - 1]) ?? null;
+    }
+    return null;
+  };
+  for (let i = 0; i < list.length; i++) {
+    const t = list[i];
     if (t.status === 'correct') continue;
-    if (t.status === 'mismatched' && t.errorType === 'extra') {
-      const spoken = clean(t.spokenPart || t.text);
-      if (spoken) items.push({ kind: 'extra', spoken });
+    if (isExtra(t)) {
+      const spoken = toHiragana(clean(t.spokenPart || t.text));
+      if (spoken) items.push({ kind: 'extra', spoken, before: neighbour(i, 1), after: neighbour(i, -1) });
       continue;
     }
     const word = clean(t.text);
