@@ -409,9 +409,31 @@ public class KanaMoraComparerTests
         var a = await Make().CompareAsync("一人です。カウンター席でお願いします。", "ひとりです。てーぶるせきでおねがいします。");
         var b = await Make().CompareAsync("一人です。カウンター席でお願いします。", "ひとりです。てーぶるせきでおねがいします。");
         Assert.Equal(a.ContentMatchScore, b.ContentMatchScore);
-        // ひとりです(5) + で(1, trợ từ tách riêng sau 席) + おねがい(4) + します(3) = 13 / 20; カウンター席(7) là từ sai
-        Assert.Equal(65, a.ContentMatchScore);
+        // ひとりです(5) + 席(2, từ katakana tách riêng) + で(1, trợ từ tách riêng sau 席) + おねがい(4) + します(3) = 15 / 20;
+        // chỉ カウンター(5) là từ sai
+        Assert.Equal(75, a.ContentMatchScore);
         Assert.Equal(a.TargetReading, b.TargetReading);
+    }
+
+    [Fact]
+    public async Task KatakanaLoanword_InsideLongPhrase_IsItsOwnWord()
+    {
+        // Bản ghi thật: sai một âm trong エクスプレス từng làm mất cả cụm 成田エクスプレスですね (50/100)
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえっくすぷれすですね");
+
+        Assert.Contains(r.TargetWords, w => w.Text == "成田");
+        Assert.Contains(r.TargetWords, w => w.Text == "エクスプレス");
+        Assert.Contains(r.Tokens, t => t.Text.StartsWith("エクスプレス") && t.Status == "mismatched");
+        Assert.InRange(r.ContentMatchScore, 40, 60); // 成田(3) + ですね(3) đúng / 12
+    }
+
+    [Fact]
+    public async Task KanjiWithOkurigana_StaysOneWord()
+    {
+        var comparer = With(("学校に行きます", "がっこうに/いきます"));
+        var r = await comparer.CompareWithReadingAsync("学校に行きます", "がっこうにいきます");
+        Assert.Contains(r.TargetWords, w => w.Text == "行きます");
     }
 
     [Fact]

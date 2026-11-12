@@ -495,7 +495,40 @@ namespace JCAP.Services.Implementations
                 return word;
             }
 
+            // Từ katakana (từ mượn) trong một cụm trọng âm dài được tách thành từ riêng: 成田エクスプレスですね → 成田 | エクスプレス | ですね.
+            // Nhờ đó sai một âm trong từ mượn chỉ mất điểm của từ đó, không mất cả cụm (bản ghi thật: mất 50/100 vì một từ).
+            // Ranh giới chỉ đặt giữa katakana và chữ khác; chữ Hán + okurigana (行きます) vẫn là một từ.
+            bool IsKatakanaItem(int i)
+            {
+                var text = items[i].Text;
+                if (items[i].IsWildcard || text.Length == 0) return false;
+                if (text[0] == 'ー') return i > 0 && !items[i - 1].IsZero && IsKatakanaItem(i - 1);
+                return IsKatakana(text[0]);
+            }
+
+            var splitGroups = new List<List<int>>();
             foreach (var (_, idx) in groups)
+            {
+                var current = new List<int>();
+                bool? currentIsKatakana = null;
+                foreach (var i in idx)
+                {
+                    if (!items[i].IsZero)
+                    {
+                        var k = IsKatakanaItem(i);
+                        if (currentIsKatakana != null && k != currentIsKatakana && current.Any(x => !items[x].IsZero))
+                        {
+                            splitGroups.Add(current);
+                            current = new List<int>();
+                        }
+                        currentIsKatakana = k;
+                    }
+                    current.Add(i);
+                }
+                if (current.Count > 0) splitGroups.Add(current);
+            }
+
+            foreach (var idx in splitGroups)
             {
                 var nonZero = idx.Where(i => !items[i].IsZero).ToList();
                 var splitAt = -1;
