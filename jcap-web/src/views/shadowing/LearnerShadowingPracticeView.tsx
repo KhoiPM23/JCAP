@@ -61,6 +61,7 @@ import {
   type RecognitionMicSource,
 } from '../../utils/speechRecognitionStart';
 import { blobToAnalysisWav, pcmToAnalysisWav } from '../../utils/wavEncoder';
+import { makePlaybackBlob } from '../../utils/playbackLevel';
 import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingSessionScores';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
@@ -190,6 +191,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   type PendingTake = {
     sentenceId: number;
     audioBlob: Blob;
+    /** Bản để nghe lại: âm lượng đã chuẩn hoá (chỉ phát lại; không gửi chấm). */
+    playbackBlob: Blob;
     analysisWav: Blob | null;
     metrics: AudioQualityMetrics;
     recognition: ReturnType<SpeechTranscriptCollector['snapshot']>;
@@ -1466,11 +1469,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       // Ưu tiên bản PCM thu trực tiếp (không mất âm đầu câu); không có thì giải mã bản MediaRecorder.
       const pcmWav = pcmTake && pcmTake.samples.length > 0 ? await pcmToAnalysisWav(pcmTake.samples, pcmTake.sampleRate) : null;
       const analysisWav = pcmWav ?? (await blobToAnalysisWav(audioBlob));
+      // Nghe lại ở mức dễ nghe (micro không tự chỉnh âm lượng thường rất nhỏ); bản gửi chấm giữ nguyên.
+      const playbackBlob = await makePlaybackBlob(audioBlob, pcmWav ? pcmTake : null);
       if (seq !== evaluationSeqRef.current) return;
 
       pendingTakeRef.current = {
         sentenceId: sentence.id,
         audioBlob,
+        playbackBlob,
         analysisWav,
         metrics,
         recognition: collector.snapshot(),
@@ -1480,7 +1486,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
       setPendingAudioUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
-        return URL.createObjectURL(audioBlob);
+        return URL.createObjectURL(playbackBlob);
       });
       setSubmitError(null);
       applySentenceEvent(sentence.id, { type: 'STOP_RECORDING', hasAudio: true });
@@ -1558,7 +1564,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       const scored = res.data.overallScore != null
         && (res.data.evaluationStatus === 'completed' || res.data.evaluationStatus === 'partial');
       applySentenceEvent(sentence.id, { type: 'RESULT', scored });
-      const audioBlob = take.audioBlob;
+      const audioBlob = take.playbackBlob; // chỉ để nghe lại câu đã chấm
       const metrics = take.metrics;
       discardPendingTake();
       applyBackendEvaluation(sentence, res.data, metrics, audioBlob);
