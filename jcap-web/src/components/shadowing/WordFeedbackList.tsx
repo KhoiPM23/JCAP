@@ -79,13 +79,22 @@ export default function WordFeedbackList({ tokens }: Props) {
   const items = buildWordFeedback(tokens);
   if (items.length === 0) return null;
   return (
-    <section aria-label="Cần chỉnh" className="rounded-xl border border-line bg-paper-50 px-3.5">
-      <h5 className="m-0 pt-3 text-xs font-bold text-sumi">
+    <section aria-labelledby="word-feedback-title" className="rounded-xl border border-line bg-paper-50">
+      <h5 id="word-feedback-title" className="m-0 border-b border-line px-3.5 py-2.5 text-xs font-bold text-sumi">
         Cần chỉnh {items.length > 1 ? `(${items.length} chỗ)` : ''}
       </h5>
-      {items.map((item, i) => (
-        <Item key={i} item={item} />
-      ))}
+      {/* Danh sách dài thì cuộn bên trong để các nút Nghe lại / Luyện lại / Tiếp tục luôn nằm trong màn hình.
+          tabIndex để cuộn được bằng bàn phím. */}
+      <div
+        role="region"
+        aria-labelledby="word-feedback-title"
+        tabIndex={0}
+        className="max-h-[min(20rem,45vh)] overflow-y-auto overscroll-contain px-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai rounded-b-xl"
+      >
+        {items.map((item, i) => (
+          <Item key={i} item={item} />
+        ))}
+      </div>
     </section>
   );
 }
