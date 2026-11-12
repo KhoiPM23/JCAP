@@ -18,7 +18,7 @@ export default function FluencyPanel({ fluency }: Props) {
     <section className="rounded-xl border border-line bg-paper-100 px-3.5 py-2.5 space-y-2" aria-label="Lưu loát">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-sumi">Lưu loát</span>
-        <span className="text-[11px] text-sumi-muted">Tham khảo, chưa tính vào điểm</span>
+        <span className="text-[11px] text-sumi-muted">So với nhịp giọng mẫu · tham khảo, chưa tính điểm</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {summary.chips.map((c) => (

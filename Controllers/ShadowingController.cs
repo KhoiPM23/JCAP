@@ -212,6 +212,7 @@ namespace JCAP.Controllers
                     {
                         AnalysisWav = analysisWav,
                         ReferenceSpeakerId = request.ReferenceSpeakerId,
+                        ReferencePlaybackRate = request.ReferencePlaybackRate,
                         Audio = audio ?? Array.Empty<byte>(),
                         MimeType = request.Audio?.ContentType ?? string.Empty,
                         TargetText = request.TargetText,

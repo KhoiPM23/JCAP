@@ -27,6 +27,8 @@ export interface ShadowingEvaluateAudioEvidence {
   analysisWav?: Blob | null;
   /** Giọng VOICEVOX người học đã nghe làm mẫu, để backend so nhịp nói với đúng giọng đó. */
   referenceSpeakerId?: number | null;
+  /** Tốc độ phát giọng mẫu người học đã chọn khi nghe (vd. 0.75), để backend so nhịp nói với đúng tốc độ đó. */
+  referencePlaybackRate?: number | null;
   /** Phiên luyện ở server mà lần chấm này thuộc về. */
   progressId?: string | null;
   /** Mã của MỘT lần bấm "Gửi chấm"; gửi lại cùng mã thì backend trả kết quả đã lưu, không chấm/lưu thêm. */
@@ -174,6 +176,7 @@ class ShadowingService {
       if (evidence.durationMs != null) formData.append('durationMs', String(Math.round(evidence.durationMs)));
       if (evidence.analysisWav) formData.append('analysisWav', evidence.analysisWav, 'analysis.wav');
       if (evidence.referenceSpeakerId != null) formData.append('referenceSpeakerId', String(evidence.referenceSpeakerId));
+      if (evidence.referencePlaybackRate != null) formData.append('referencePlaybackRate', String(evidence.referencePlaybackRate));
       if (evidence.progressId) formData.append('progressId', evidence.progressId);
       if (evidence.clientSubmissionId) formData.append('clientSubmissionId', evidence.clientSubmissionId);
 

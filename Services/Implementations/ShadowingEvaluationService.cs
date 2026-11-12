@@ -182,6 +182,7 @@ namespace JCAP.Services.Implementations
             AudioGateDetail = i.AudioGateDetail,
             AnalysisWav = wav,
             ReferenceSpeakerId = i.ReferenceSpeakerId,
+            ReferencePlaybackRate = i.ReferencePlaybackRate,
         };
 
         private static string AsrMessage(string code) => code switch
@@ -439,7 +440,13 @@ namespace JCAP.Services.Implementations
                         // Cùng bộ VAD và tiêu chí khoảng dừng cho cả hai phía.
                         referenceVoice = voice;
                         referenceMetrics = _fluencyAnalyzer.AnalyzeAnyRate(voice.Wav, targetMoras);
-                        learner.Reference = new FluencyReferenceDto { Source = voice.Source, SpeakerId = voice.SpeakerId, Metrics = referenceMetrics };
+                        // Người học nghe giọng mẫu ở tốc độ đã chỉnh (playbackRate kéo giãn đều, giữ cao độ): so với đúng nhịp đã nghe
+                        var playbackRate = FluencyComparer.ValidPlaybackRate(input.ReferencePlaybackRate);
+                        if (playbackRate != 1.0) referenceMetrics = FluencyComparer.ScaleForPlayback(referenceMetrics, playbackRate);
+                        learner.Reference = new FluencyReferenceDto
+                        {
+                            Source = voice.Source, SpeakerId = voice.SpeakerId, Metrics = referenceMetrics, PlaybackRate = playbackRate,
+                        };
                         durationObservations = AnalyzeMoraDuration(input, voice, learner, options);
                     }
                 }

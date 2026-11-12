@@ -93,7 +93,7 @@ public class FluencyBaselineBench
         sb.AppendLine();
         sb.AppendLine("So với giọng mẫu:");
         sb.AppendLine();
-        sb.AppendLine($"- Tỷ lệ tốc độ phát âm (mẫu / bản ghi; < 1 là chậm hơn mẫu): {P(rows.Select(r => r.C.ArticulationRateRatio ?? 0))}");
+        sb.AppendLine($"- Tỷ lệ tốc độ phát âm (tốc độ bản ghi / tốc độ mẫu; < 1 là chậm hơn mẫu): {P(rows.Select(r => r.C.ArticulationRateRatio ?? 0))}");
         sb.AppendLine($"- Số khoảng dừng thừa (mẫu không dừng ở đó, ≥ {options.ExtraPauseMinMs} ms, giữa câu): {P(rows.Select(r => (double)(r.C.ExtraPauseCount ?? 0)))}");
         sb.AppendLine($"- Bản ghi có ≥ 1 khoảng dừng thừa: {rows.Count(r => r.C.ExtraPauseCount > 0)}/{rows.Count}");
         sb.AppendLine($"- Độ dài khoảng dừng thừa (ms): {P(rows.SelectMany(r => r.ExtraMs.Select(x => (double)x)))}");

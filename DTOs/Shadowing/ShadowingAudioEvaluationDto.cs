@@ -54,6 +54,12 @@ namespace JCAP.DTOs.Shadowing
         /// thiếu hoặc không hợp lệ thì dùng giọng mặc định trong cấu hình.
         /// </summary>
         public int? ReferenceSpeakerId { get; set; }
+
+        /// <summary>
+        /// Tốc độ phát giọng mẫu người học đã dùng khi nghe (HTMLAudio playbackRate, vd. 0.75). Tùy chọn; thiếu thì 1.
+        /// Dùng để so nhịp nói với đúng tốc độ người học đã nghe.
+        /// </summary>
+        public double? ReferencePlaybackRate { get; set; }
     }
 
     /// <summary>
@@ -171,6 +177,9 @@ namespace JCAP.DTOs.Shadowing
         public string Source { get; set; } = "voicevox";
         public int? SpeakerId { get; set; }
         public FluencyMetricsDto Metrics { get; set; } = new();
+
+        /// <summary>Tốc độ phát giọng mẫu người học đã nghe; Metrics đã quy đổi theo tốc độ này (1 = tốc độ gốc).</summary>
+        public double PlaybackRate { get; set; } = 1.0;
     }
 
     public class FluencyComparisonDto

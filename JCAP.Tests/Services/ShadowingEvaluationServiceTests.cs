@@ -150,11 +150,31 @@ public class ShadowingEvaluationServiceTests
         CreateService(fluencyAnalyzer: new FluencyAnalyzer(), provider: provider, hears: hears);
 
     /// <param name="transcript">Chữ của trình duyệt: KHÔNG được chấm; thứ được chấm là cái mô hình âm vị nghe.</param>
-    private static ShadowingAudioEvaluationInput InputWith(byte[] wav, string transcript, int? speaker = null) => new()
+    private static ShadowingAudioEvaluationInput InputWith(byte[] wav, string transcript, int? speaker = null, double? playbackRate = null) => new()
     {
         Audio = WebmBytes(), MimeType = "audio/webm", TargetText = Target, AudioGateStatus = "good",
-        ClientTranscript = transcript, ClientRecognitionStatus = "final", AnalysisWav = wav, ReferenceSpeakerId = speaker
+        ClientTranscript = transcript, ClientRecognitionStatus = "final", AnalysisWav = wav, ReferenceSpeakerId = speaker,
+        ReferencePlaybackRate = playbackRate,
     };
+
+    [Fact]
+    public async Task FluencyComparison_UsesThePlaybackRateTheLearnerListenedAt()
+    {
+        // Người học nghe mẫu ở 0.5× rồi đọc theo đúng nhịp đó (chậm gấp đôi bản gốc)
+        var reference = TestAudio.Wav(TestAudio.Utterance(sr: 24000), 24000);
+        var service = ServiceWithReference(ProviderReturning(reference));
+
+        var vsOriginal = await service.EvaluateAsync(InputWith(LearnerWavFor(2.0), Target, speaker: 3));
+        var vsHeard = await service.EvaluateAsync(InputWith(LearnerWavFor(2.0), Target, speaker: 3, playbackRate: 0.5));
+
+        Assert.Contains(vsOriginal.Fluency!.Observations, o => o.Code == "slow_vs_reference");
+        Assert.InRange(vsOriginal.Fluency.Comparison!.ArticulationRateRatio!.Value, 0.4, 0.6);
+        Assert.Equal(1.0, vsOriginal.Fluency.Reference!.PlaybackRate);
+
+        Assert.DoesNotContain(vsHeard.Fluency!.Observations, o => o.Code == "slow_vs_reference");
+        Assert.InRange(vsHeard.Fluency.Comparison!.ArticulationRateRatio!.Value, 0.85, 1.15);
+        Assert.Equal(0.5, vsHeard.Fluency.Reference!.PlaybackRate);
+    }
 
     [Fact]
     public async Task FluencyComparison_SlowReading_YieldsEvidenceBasedObservation_AndLeavesScoresAlone()

@@ -21,6 +21,9 @@
 >   - **Lưu loát**: **tham khảo, chưa có điểm** (`COMPLETED` / `SCORE_NOT_VALIDATED`). Thẻ kết quả hiện khối "Lưu loát" (`FluencyPanel`): tốc độ so với mẫu,
 >     số lần dừng, **ngập ngừng giữa từ** (`comparison.hesitationCount`), **nói liền trung bình** (`meanRunMoras`, mean length of run) và nhận xét.
 >     Tắt được bằng `Shadowing:Fluency:Enabled=false` (khi đó `UNAVAILABLE / NOT_ENABLED`, không lấy giọng mẫu lúc chấm). Bench mức bình thường: `FluencyBaselineBench`.
+>     Tỷ lệ tốc độ = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn). Trang luyện gửi `referencePlaybackRate` (tốc độ nghe mẫu, vd. 0.75);
+>     số đo giọng mẫu được quy đổi theo tốc độ đó (`fluency.reference.playbackRate`; kiểm chứng: `FluencyPlaybackRateBench`).
+>     Ngưỡng là thử nghiệm; VOICEVOX là mốc phản hồi cho bài Shadowing, không phải chuẩn lưu loát.
 >     Code đo nhịp (mục "Nhịp nói" bên dưới) giữ lại; bật `true` thì chạy như mô tả (`COMPLETED` không có điểm, `SCORE_NOT_VALIDATED`). Phát hiện đoạn tiếng nói cho kiểm tra âm thanh không phụ thuộc cài đặt này.
 >   - **Ngữ điệu**: `UNAVAILABLE / NOT_IMPLEMENTED`.
 >   - `overallScore` = điểm nội dung, kèm `overallScoreBasis = "content"` → giao diện ghi "Điểm nội dung".

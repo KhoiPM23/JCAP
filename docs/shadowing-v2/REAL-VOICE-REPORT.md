@@ -97,7 +97,7 @@ Phân vị 5 · 50 · 95. Câu FLEURS dài (~60 mora), câu người học ngắ
 
 | Chỉ số | Người Nhật (FLEURS, 150) | Người học (46 bản ghi, 44 đo được) |
 |---|---|---|
-| Tốc độ phát âm so với mẫu (mẫu / người nói; < 1 là chậm hơn) | 0,73 · 0,94 · 2,14 | 0,47 · 0,99 · 1,23 |
+| Tỷ lệ tốc độ phát âm = tốc độ người nói / tốc độ mẫu (< 1 là chậm hơn) | 0,73 · 0,94 · 2,14 | 0,47 · 0,99 · 1,23 |
 | Bị coi là "chậm hơn mẫu" (≤ 0,70) | 2/150 | 7/44 |
 | Bị coi là "nhanh hơn mẫu" (≥ 1,40, ngưỡng cũ) | **26/150** | 1/44 |
 | Có ≥ 1 khoảng dừng thừa (≥ 400 ms, giữa câu) | 26/150 | 16/44 |
@@ -108,6 +108,17 @@ Quyết định theo số liệu:
 - Người Nhật thật thường nói **nhanh hơn VOICEVOX**: ngưỡng nhận xét "nhanh" nâng từ 1,40 lên 2,5 (chỉ khi bất thường); giao diện ghi "nhanh hơn mẫu" như thông tin, không đánh dấu là vấn đề.
 - Giữ ngưỡng khoảng dừng thừa 400 ms: người học có tỷ lệ bản ghi có dừng thừa cao gấp đôi dù câu ngắn hơn ~4 lần.
 - "Nói liền trung bình" (mean length of run) phân biệt rõ: người học ~½ mẫu, người bản xứ gần bằng mẫu.
+
+**Tốc độ phát giọng mẫu.** Người học có thể nghe mẫu ở tốc độ chậm (0.75×, HTMLAudio `playbackRate`, kéo giãn đều và giữ cao độ).
+Trang luyện gửi `referencePlaybackRate`; backend quy đổi số đo giọng mẫu (thời lượng ÷ tốc độ, mora/giây × tốc độ) trước khi so.
+Kiểm chứng bằng `FluencyPlaybackRateBench` (VOICEVOX đọc 13 câu ở tốc độ gốc và tốc độ chậm, đo thật bản chậm so với quy đổi từ bản gốc):
+ở 0.75× lệch trung bình −2,8%, lớn nhất 8,9%; ở 0.5× trung bình −5,5%, lớn nhất 13,5% (lệch lớn khi bản chậm sinh thêm một khoảng dừng ngắn).
+
+**Hai lưu ý về cách hiểu số liệu.**
+- Các ngưỡng 0,70 (chậm), 2,5 (nhanh bất thường), 400 ms (dừng thừa) là **ngưỡng thử nghiệm**: đã đối chiếu với 150 câu người Nhật và 46 bản ghi
+  một người học, chưa phải chuẩn đã được xác nhận; cần hiệu chỉnh khi có thêm dữ liệu.
+- Giọng VOICEVOX là **mốc phản hồi cho bài Shadowing** (đọc theo nhịp mẫu là mục tiêu của bài tập), **không phải chuẩn lưu loát**:
+  người Nhật thật nói nhanh hơn và ngắt nghỉ khác VOICEVOX (bảng trên). Vì vậy giao diện ghi "so với nhịp giọng mẫu" và không quy ra điểm.
 
 Hiển thị: khối "Lưu loát" trên thẻ kết quả (tham khảo, chưa tính điểm) gồm tốc độ so với mẫu, số lần dừng, số lần **ngập ngừng giữa từ**
 (khoảng dừng thừa nằm giữa một từ, xác định bằng mốc mora của giọng mẫu), nói liền trung bình và nhận xét. Quy ra điểm: để sau khi có thêm dữ liệu người học.

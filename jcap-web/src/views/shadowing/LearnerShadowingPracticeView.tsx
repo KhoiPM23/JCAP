@@ -1505,6 +1505,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         durationMs: take.metrics.durationMs,
         analysisWav: take.analysisWav,
         referenceSpeakerId: selectedVoiceVoxIdRef.current,
+        referencePlaybackRate: referenceRateRef.current,
         progressId: serverProgressRef.current?.status === 'in_progress' ? serverProgressRef.current.id : null,
         clientSubmissionId: take.submissionId,
         signal: controller.signal,

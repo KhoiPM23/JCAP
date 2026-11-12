@@ -12,7 +12,7 @@ export interface FluencySummary {
 }
 
 /**
- * Ngưỡng tốc độ phát âm so với giọng mẫu (mẫu / người học; < 1 là chậm hơn). SLOW_RATIO trùng ngưỡng nhận xét "chậm" của backend
+ * Ngưỡng tỷ lệ tốc độ phát âm = tốc độ người học / tốc độ giọng mẫu (< 1 là chậm hơn; 0,45 = chậm hơn 55%). SLOW_RATIO trùng ngưỡng nhận xét "chậm" của backend
  * (`Shadowing:Fluency:Comparison:SlowRatio`). Nói nhanh hơn mẫu KHÔNG bị đánh dấu: người Nhật thật thường nhanh hơn VOICEVOX
  * (FLEURS: 26/150 câu nhanh hơn mẫu ≥ 1,4 lần), chỉ ghi lại để tham khảo.
  */
