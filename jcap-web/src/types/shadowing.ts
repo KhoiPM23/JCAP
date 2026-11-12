@@ -72,7 +72,7 @@ export interface ShadowingDiffToken {
   errorType?: ShadowingDiffErrorType | null;
 }
 
-/** Loại lỗi do bộ so khớp theo từ (kana-word-v1) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */
+/** Loại lỗi do bộ so khớp theo từ (kana-word-v1/v2) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */
 export type ShadowingDiffErrorType =
   | 'chouon' | 'sokuon' | 'hatsuon' | 'voicing' | 'mora' | 'extra'
   | 'particle' | 'word';

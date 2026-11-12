@@ -108,12 +108,15 @@ namespace JCAP.Services.Implementations
             var rows = await _context.ShadowingSentenceAssets.AsNoTracking()
                 .Where(a => ids.Contains(a.ShadowingSentenceId) && a.VoiceId == null && a.IsActive && a.AudioVersion == Version
                     && a.FuriganaJson != null && a.SourceText == a.ShadowingSentence!.JapaneseText)
-                .Select(a => new { a.ShadowingSentenceId, a.FuriganaJson })
                 .ToListAsync(cancellationToken);
             var result = new Dictionary<int, List<FuriganaSegmentDto>>();
             foreach (var r in rows)
             {
-                var segments = JsonSerializer.Deserialize<List<FuriganaSegmentDto>>(r.FuriganaJson!, Json);
+                // Gióng lại từ cách đọc đã lưu (rẻ, không cần VOICEVOX): bản furigana tạo trước khi bộ gióng dùng ranh giới cụm
+                // có thể chia sai mora giữa hai cụm chữ Hán cách nhau bởi dấu câu. Không gióng được thì dùng bản đã lưu.
+                var reading = ToReading(r);
+                var segments = BuildFurigana(r.SourceText, reading.Moras, reading.WordStarts)
+                    ?? JsonSerializer.Deserialize<List<FuriganaSegmentDto>>(r.FuriganaJson!, Json);
                 if (segments != null) result[r.ShadowingSentenceId] = segments;
             }
             return result;
@@ -238,7 +241,7 @@ namespace JCAP.Services.Implementations
             var normalized = VoiceVoxKanaReader.ForEngine(text);
             var moraJson = JsonSerializer.Serialize(reading.Moras.Select(m => new MoraJson(m.Canon, m.Display)), Json);
             var startsJson = JsonSerializer.Serialize(reading.WordStarts ?? new List<int>(), Json);
-            var furigana = BuildFurigana(text, reading.Moras);
+            var furigana = BuildFurigana(text, reading.Moras, reading.WordStarts);
             var furiganaJson = furigana == null ? null : JsonSerializer.Serialize(furigana, Json);
 
             void Fill(ShadowingSentenceAsset a)
@@ -331,10 +334,10 @@ namespace JCAP.Services.Implementations
         /// Furigana: gióng chữ viết với chuỗi mora (JapaneseSurfaceAligner); mỗi cụm chữ Hán nhận cách đọc của khoảng mora nó chiếm.
         /// Không gióng được thì null (không đoán cách đọc).
         /// </summary>
-        internal static List<FuriganaSegmentDto>? BuildFurigana(string text, IReadOnlyList<Mora> moras)
+        internal static List<FuriganaSegmentDto>? BuildFurigana(string text, IReadOnlyList<Mora> moras, IReadOnlyList<int>? phraseStarts = null)
         {
             var items = JapaneseSurfaceAligner.Segment(text);
-            var ranges = JapaneseSurfaceAligner.Align(items, moras);
+            var ranges = JapaneseSurfaceAligner.Align(items, moras, phraseStarts);
             if (ranges == null) return null;
 
             var result = new List<FuriganaSegmentDto>();

@@ -419,7 +419,7 @@ public class KanaMoraComparerTests
         Assert.Throws<ArgumentException>(() => new KanaMoraComparer(Array.Empty<IKanaReader>()));
 
     [Fact]
-    public void MethodId_IdentifiesTheWordAlgorithm() => Assert.Equal("kana-word-v1", Offline().MethodId);
+    public void MethodId_IdentifiesTheWordAlgorithm() => Assert.Equal("kana-word-v2", Offline().MethodId);
 }
 
 public class VoiceVoxKanaReaderTests

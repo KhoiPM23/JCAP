@@ -443,7 +443,7 @@ public class ShadowingEvaluationServiceTests
         Assert.Equal("completed", result.EvaluationStatus);
         Assert.InRange(result.ContentMatchScore!.Value, 1, 99);
         Assert.Equal(result.ContentMatchScore, result.OverallScore); // Overall = Content khi chưa đo Fluency
-        Assert.Equal("kana-word-v1", result.ComparisonMethod);
+        Assert.Equal("kana-word-v2", result.ComparisonMethod);
         Assert.Equal("test", result.ReadingSource);
         Assert.Contains(result.DiffTokens, t => t.Status != "correct");
         Assert.NotEmpty(result.MismatchedWords);

@@ -148,7 +148,7 @@ namespace JCAP.Services.Implementations
             // Cách đọc của transcript: do dịch vụ ASR tính (OpenJTalk, cùng G2P với dữ liệu câu mẫu) nếu có — không cần VOICEVOX lúc chấm;
             // không có thì đọc transcript qua các nguồn cách đọc của hệ thống.
             var comparison = !string.IsNullOrWhiteSpace(asr.Reading)
-                ? await _comparer.CompareWithReadingAsync(input.TargetText, asr.Reading!, cancellationToken)
+                ? await _comparer.CompareTranscriptAsync(input.TargetText, text, asr.Reading!, cancellationToken)
                 : await _comparer.CompareAsync(input.TargetText, text, cancellationToken);
             return await ScoreTranscriptAsync(input, response, text, cancellationToken, precomputed: comparison);
         }

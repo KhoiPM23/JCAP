@@ -4,7 +4,12 @@
 >
 > - **Chấm theo chiều** (`dimensions` trong kết quả, mỗi chiều có `status` COMPLETED/UNAVAILABLE/FAILED, `score`, `reason`, `source`):
 >   - **Nội dung (Content)**: transcript của **Faster-Whisper** (`tools/shadowing-asr`, `ISpeechRecognitionService`) so với câu mẫu bằng `KanaMoraComparer`
->     (`CompareWithReadingAsync` với cách đọc OpenJTalk do dịch vụ trả nếu có, không thì `CompareAsync`). Đây là chiều DUY NHẤT có điểm.
+>     (`CompareTranscriptAsync` với cách đọc OpenJTalk do dịch vụ trả nếu có, không thì `CompareAsync`). Đây là chiều DUY NHẤT có điểm.
+>     `kana-word-v2` (sau khi chấm bản ghi giọng thật): (1) từ có chữ Hán được tính ĐÚNG khi transcript viết đúng chữ của từ đó theo thứ tự,
+>     vì hai bộ G2P có thể đọc cùng chữ khác nhau (日本: VOICEVOX にっぽん, OpenJTalk にほん — trước đây bị chấm 46/100 dù nghe đúng từng chữ);
+>     (2) `JapaneseSurfaceAligner` chọn cách gióng chữ↔mora cân đối nhất (~2 mora/ký tự) và đặt dấu câu vào ranh giới cụm trọng âm,
+>     nên hai cụm chữ Hán sát nhau (十時四十分発、七号車) không còn bị chia mora sai; furigana được gióng lại từ cách đọc đã lưu khi trả về.
+>     Bench: `RealScoringBench` (JCAP_REAL_DIR) chấm lại bản ghi thật bằng pipeline sản phẩm và so với điểm lúc thu.
 >     ASR tắt/bận/quá hạn → `UNAVAILABLE` (`ASR_UNAVAILABLE`, `ASR_BUSY`, `ASR_TIMEOUT`), **không tự chuyển nguồn khác**;
 >     transcript lặp vô nghĩa (compression ratio > 2.4) → `ASR_UNRELIABLE` (không coi là lỗi người học).
 >     `Shadowing:Content:Provider = phoneme` giữ đường mô hình âm vị cũ (mục "Chấm theo câu mẫu") làm lựa chọn chuyển tiếp tường minh.

@@ -164,6 +164,30 @@ public class ShadowingSentenceAssetServiceTests : IDisposable
     }
 
     [Fact]
+    public void Furigana_TwoKanjiRunsSplitByPunctuation_UsePhraseBoundaries()
+    {
+        // Bản ghi thật: trước đây 十時四十分発 chỉ nhận "じゅ", còn 七号車 nhận phần còn lại
+        const string text = "十時四十分発、七号車の十二番です。";
+        var moras = JapaneseMora.FromKanaPhrases(new[] { "じゅうじ", "よんじゅっぷんはつ", "ななごうしゃの", "じゅう", "にばんです" },
+            preserveLongVowelSpelling: true, out var starts);
+
+        var furigana = ShadowingSentenceAssetService.BuildFurigana(text, moras, starts)!;
+
+        Assert.Equal("じゅうじよんじゅっぷんはつ", furigana.Single(x => x.Text == "十時四十分発").Reading!.Replace("ー", "う"));
+        Assert.Equal("ななごうしゃ", furigana.Single(x => x.Text == "七号車").Reading!.Replace("ー", "う"));
+    }
+
+    [Fact]
+    public void Furigana_ReadingMergesAcrossPunctuation_StillAligns()
+    {
+        // Nguồn cách đọc gộp hai bên dấu câu vào một cụm: không có ranh giới ở dấu câu nhưng vẫn gióng được
+        var moras = JapaneseMora.FromKanaPhrases(new[] { "がっこうに", "いきます" }, preserveLongVowelSpelling: true, out _);
+        var furigana = ShadowingSentenceAssetService.BuildFurigana("学校、に行きます", moras, new[] { 0, 5 });
+        Assert.NotNull(furigana);
+        Assert.Contains(furigana!, x => x.Text == "学校" && x.Reading!.StartsWith("がっこ"));
+    }
+
+    [Fact]
     public async Task Furigana_GoesOnKanjiOnly_AndIsReturnedPerSentence()
     {
         using var c = await SeedAsync();

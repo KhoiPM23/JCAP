@@ -27,7 +27,7 @@ namespace JCAP.Services.Implementations
     /// </summary>
     public sealed class KanaMoraComparer : IJapaneseTextComparer
     {
-        public const string Method = "kana-word-v1";
+        public const string Method = "kana-word-v2";
         public string MethodId => Method;
 
         private enum OpKind { Match, Substitute, Delete, Insert }
@@ -65,7 +65,7 @@ namespace JCAP.Services.Implementations
             if (t == null || r == null || t.UnresolvedCount > 0 || r.UnresolvedCount > 0)
                 return JapaneseTextComparison.Unavailable();
 
-            return Align(target, recognized, t, r);
+            return Align(target, recognized, t, r, recognizedSurface: recognized);
         }
 
         public async Task<JapaneseTextComparison> CompareWithReadingAsync(
@@ -88,6 +88,20 @@ namespace JCAP.Services.Implementations
 
             var r = new KanaReading { Moras = moras, Source = "phoneme" };
             return Align(target, recognizedKana, t, r);
+        }
+
+        public async Task<JapaneseTextComparison> CompareTranscriptAsync(
+            string target, string transcript, string transcriptReading, CancellationToken cancellationToken = default)
+        {
+            target ??= string.Empty;
+            var t = await ReadTargetAsync(target, cancellationToken);
+            if (t == null) return JapaneseTextComparison.Unavailable();
+
+            var moras = JapaneseMora.FromKana(transcriptReading ?? string.Empty, preserveLongVowelSpelling: false);
+            if (moras.Any(m => m.IsUnresolved)) return JapaneseTextComparison.Unavailable();
+
+            var r = new KanaReading { Moras = moras, Source = "asr" };
+            return Align(target, transcriptReading ?? string.Empty, t, r, recognizedSurface: transcript);
         }
 
         public async Task<KanaReading?> ReadTargetAsync(string target, CancellationToken cancellationToken = default)
@@ -173,7 +187,10 @@ namespace JCAP.Services.Implementations
             };
         }
 
-        private static JapaneseTextComparison Align(string targetText, string recognizedText, KanaReading t, KanaReading r)
+        private static bool IsKanji(char c) => (c >= '一' && c <= '鿿') || (c >= '㐀' && c <= '䶿') || c == '々';
+
+        /// <param name="recognizedSurface">Chữ viết của transcript (chỉ có khi nguồn là ASR viết ra chữ Hán); null với kana từ mô hình âm vị.</param>
+        private static JapaneseTextComparison Align(string targetText, string recognizedText, KanaReading t, KanaReading r, string? recognizedSurface = null)
         {
             var tm = t.Moras;
             var sm = r.Moras;
@@ -249,6 +266,8 @@ namespace JCAP.Services.Implementations
 
             // 2. Đánh giá từng từ: một từ chỉ đúng khi TẤT CẢ mora của nó đúng và không có âm thừa chen vào giữa.
             var results = new List<WordResult>();
+            var surface = recognizedSurface == null ? null : JapaneseMora.Normalize(recognizedSurface);
+            var surfaceCursor = 0;
             foreach (var word in words)
             {
                 var slice = Enumerable.Range(word.Start, word.End - word.Start).Select(i => opAt[i]).ToList();
@@ -271,6 +290,26 @@ namespace JCAP.Services.Implementations
                         if (opAt[k].Spoken.HasValue) spokenCanon.Add(opAt[k].Spoken!.Value.Canon);
                     }
                     if (MatchesAlternative(word, tm, spokenCanon)) wr.Status = "correct";
+                }
+
+                // Transcript viết ĐÚNG chữ của từ có chữ Hán (theo thứ tự trong câu): từ đúng dù cách đọc hai bộ G2P khác nhau.
+                if (surface != null)
+                {
+                    var written = JapaneseMora.Normalize(word.Text);
+                    if (written.Any(IsKanji))
+                    {
+                        var at = surface.IndexOf(written, surfaceCursor, StringComparison.Ordinal);
+                        if (at >= 0)
+                        {
+                            surfaceCursor = at + written.Length;
+                            if (wr.Status != "correct")
+                            {
+                                wr.Status = "correct";
+                                // Chênh lệch số mora do cách đọc khác nhau không phải âm thừa của người học
+                                for (var g = word.Start + 1; g < word.End; g++) extras[g] = null;
+                            }
+                        }
+                    }
                 }
 
                 if (wr.Status != "correct")
@@ -397,7 +436,7 @@ namespace JCAP.Services.Implementations
             }
 
             var items = JapaneseSurfaceAligner.Segment(targetText);
-            var ranges = JapaneseSurfaceAligner.Align(items, tm);
+            var ranges = JapaneseSurfaceAligner.Align(items, tm, t.WordStarts);
             var words = new List<Word>();
 
             if (ranges == null)

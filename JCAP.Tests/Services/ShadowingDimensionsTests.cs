@@ -121,6 +121,44 @@ public class ShadowingDimensionsTests
         Assert.Equal("がっこうにいきます", r.RecognizedText);
     }
 
+    private static ShadowingAudioEvaluationInput InputFor(string target) => new()
+    {
+        Audio = Array.Empty<byte>(),
+        TargetText = target,
+        AudioGateStatus = "good",
+        AnalysisWav = TestAudio.Wav(TestAudio.Utterance()),
+    };
+
+    [Fact]
+    public async Task SameKanjiWritten_ButTheTwoG2pReadItDifferently_WordIsCorrect()
+    {
+        // Bản ghi thật: Whisper viết đúng từng chữ, nhưng câu mẫu (VOICEVOX) đọc 日本 = にっぽん còn OpenJTalk đọc にほん.
+        var r = await Service(new FakeAsr(() => Heard("何日、日本にいますか?", reading: "ナンニチ、ニホンニイマスカ？")))
+            .EvaluateAsync(InputFor("何日、日本にいますか。"));
+
+        Assert.Equal(100, r.ContentMatchScore);
+        Assert.DoesNotContain(r.DiffTokens, t => t.Status != "correct");
+    }
+
+    [Fact]
+    public async Task DifferentKanjiWritten_WordStillWrong()
+    {
+        var r = await Service(new FakeAsr(() => Heard("何日、中国にいますか?", reading: "ナンニチ、チューゴクニイマスカ？")))
+            .EvaluateAsync(InputFor("何日、日本にいますか。"));
+
+        Assert.InRange(r.ContentMatchScore!.Value, 1, 99);
+        Assert.Contains(r.DiffTokens, t => t.Status == "mismatched" && t.Text.Contains("日本"));
+    }
+
+    [Fact]
+    public async Task KanaOnlyRecognition_HasNoSurfaceShortcut()
+    {
+        // Kana từ mô hình âm vị không có chữ Hán: không áp dụng quy tắc khớp chữ viết
+        var comparer = new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() });
+        var c = await comparer.CompareWithReadingAsync("何日、日本にいますか。", "なんにちにほんにいますか");
+        Assert.True(c.ContentMatchScore < 100);
+    }
+
     [Theory]
     [InlineData("ASR_UNAVAILABLE", "unavailable")]
     [InlineData("ASR_TIMEOUT", "unavailable")]

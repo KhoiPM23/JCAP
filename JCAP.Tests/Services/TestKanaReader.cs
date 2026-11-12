@@ -28,6 +28,8 @@ public sealed class TestKanaReader : IKanaReader
     {
         [JapaneseMora.Normalize("一人です。カウンター席でお願いします。")] = "ひとりです/かうんたーせきで/おねがい/します",
         [JapaneseMora.Normalize("ひとりです。テーブル席でおねがいします。")] = "ひとりです/てーぶるせきで/おねがい/します",
+        // VOICEVOX đọc 日本 là にっぽん (OpenJTalk của dịch vụ ASR đọc にほん)
+        [JapaneseMora.Normalize("何日、日本にいますか。")] = "なんにち/にっぽんに/いますか",
     };
 
     public Task<KanaReading?> TryReadAsync(string text, CancellationToken cancellationToken = default)

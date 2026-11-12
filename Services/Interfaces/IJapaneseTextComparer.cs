@@ -59,6 +59,13 @@ namespace JCAP.Services.Interfaces
         /// </summary>
         Task<JapaneseTextComparison> CompareWithReadingAsync(string target, string recognizedKana, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// So transcript ASR (chữ viết + cách đọc do dịch vụ ASR tính) với câu mẫu. Ngoài so theo cách đọc, một từ có chữ Hán
+        /// được tính ĐÚNG khi transcript viết đúng chữ của từ đó (theo thứ tự): hai bộ G2P có thể đọc cùng chữ khác nhau
+        /// (日本: VOICEVOX にっぽん, OpenJTalk にほん), đó không phải lỗi của người học.
+        /// </summary>
+        Task<JapaneseTextComparison> CompareTranscriptAsync(string target, string transcript, string transcriptReading, CancellationToken cancellationToken = default);
+
         /// <summary>Cách đọc (mora, ranh giới từ) của câu mẫu; null nếu không có nguồn cách đọc đáng tin cậy.</summary>
         Task<KanaReading?> ReadTargetAsync(string target, CancellationToken cancellationToken = default);
 
