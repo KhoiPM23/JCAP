@@ -10,7 +10,6 @@ import type {
   ShadowingSentencePracticeResult,
   ShadowingAudioEvaluationResult,
   ShadowingDiffToken,
-  ShadowingFluencyMetrics,
 } from '../../types/shadowing';
 import { RoleSelectionModal } from '../../components/shadowing/RoleSelectionModal';
 import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDeviceSettingsModal';
@@ -140,7 +139,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [currentRecognizedText, setCurrentRecognizedText] = useState<string>('');
   const [currentScore, setCurrentScore] = useState<number>(0);
   // null = chưa đo được (không phải 0)
-  const [currentFluencyMetrics, setCurrentFluencyMetrics] = useState<ShadowingFluencyMetrics | null>(null);
   const [currentGateDetail, setCurrentGateDetail] = useState<string>('');
   const [currentDiffTokens, setCurrentDiffTokens] = useState<ShadowingDiffToken[]>([]);
   const [currentEvaluationStatus, setCurrentEvaluationStatus] = useState<'completed' | 'partial' | 'unavailable' | 'failed'>('completed');
@@ -1288,7 +1286,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setCurrentRecognitionSource(null);
     setCurrentRecognizedText('');
     setCurrentScore(0);
-    setCurrentFluencyMetrics(null);
     setCurrentGateDetail(reason);
     setCurrentDiffTokens([]);
     setPracticeState('evaluated');
@@ -1357,7 +1354,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     // Hiển thị: từ đọc đúng mang chữ của câu mẫu (có kanji), phần đọc khác giữ kana như đã nghe
     setCurrentRecognizedText(data.recognizedDisplayText || data.recognizedText);
     setCurrentScore(overallScore);
-    setCurrentFluencyMetrics(data.fluency ?? null);
     setCurrentGateDetail(data.audioQualityDetail ?? '');
     setCurrentDiffTokens(diffTokens);
     setPracticeState('evaluated');
@@ -2486,7 +2482,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         targetText={currentSentence.japaneseText}
                         spokenText={currentRecognizedText}
                         overallScore={currentScore}
-                        fluencyMetrics={currentFluencyMetrics}
                         gateDetail={currentGateDetail}
                         diffTokens={currentDiffTokens}
                         attemptsCount={sentenceAttemptsMap.get(currentSentence.id) || 1}

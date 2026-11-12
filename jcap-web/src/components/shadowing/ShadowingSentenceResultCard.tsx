@@ -1,14 +1,12 @@
 import React from 'react';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
-import type { ShadowingDiffToken, ShadowingEvaluationDimensions, ShadowingFluencyMetrics } from '../../types/shadowing';
+import type { ShadowingDiffToken, ShadowingEvaluationDimensions } from '../../types/shadowing';
 import EvaluationDimensionsRow from './EvaluationDimensionsRow';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
   spokenText?: string;
   overallScore: number;
-  /** Số liệu nhịp nói thô (tham khảo, chưa tính vào điểm). null/unavailable = không hiển thị. */
-  fluencyMetrics?: ShadowingFluencyMetrics | null;
   gateDetail?: string;
   diffTokens: ShadowingDiffToken[];
   attemptsCount: number;
@@ -31,7 +29,6 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   targetText,
   spokenText = '',
   overallScore,
-  fluencyMetrics = null,
   gateDetail,
   diffTokens,
   attemptsCount,
@@ -188,36 +185,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
         )}
       </div>
 
-      {/* 2. NHỊP NÓI SO VỚI GIỌNG MẪU: chỉ hiện khi đủ điều kiện so sánh (đọc đúng câu, có giọng mẫu, audio hợp lệ).
-          Là nhận xét về nhịp, không phải điểm và không nói lên phát âm đúng/sai. */}
-      {(fluencyMetrics?.comparison?.status === 'available' || (fluencyMetrics?.observations ?? []).length > 0) && (
-        <div className="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200/80">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Nhịp nói so với giọng mẫu
-            </span>
-            <span className="text-[10px] text-slate-400">Tham khảo, chưa tính vào điểm</span>
-          </div>
-          {(fluencyMetrics.observations ?? []).length > 0 ? (
-            <ul className="mt-1.5 space-y-1 text-xs text-[#071A44] list-disc pl-4">
-              {(fluencyMetrics.observations ?? []).map((o, i) => (
-                <li key={`${o.code}-${i}`}>
-                  {o.message}
-                  {o.data?.experimental === true && (
-                    <span className="ml-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5 align-middle">
-                      Thử nghiệm
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1.5 text-xs text-slate-500">Chưa thấy khác biệt rõ về nhịp nói so với giọng mẫu.</p>
-          )}
-        </div>
-      )}
-
-      {/* 3. BA NÚT THAO TÁC: [🎧 Nghe lại] [🔄 Luyện lại câu] [Tiếp tục →] */}
+      {/* 2. BA NÚT THAO TÁC: [🎧 Nghe lại] [🔄 Luyện lại câu] [Tiếp tục →] */}
       <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-1">
         {/* Nút 1: Nghe lại giọng bạn */}
         <div>
