@@ -167,6 +167,105 @@ namespace JCAP.Services.Implementations
             public string? ErrorType;
             public string? Expected;
             public string? Spoken;
+            public List<ShadowingMoraIssueDto>? Issues;
+        }
+
+        /// <summary>Tối đa số lỗi từng âm liệt kê cho một từ (nhiều hơn thì người học khó theo dõi).</summary>
+        private const int MaxIssuesPerWord = 4;
+
+        /// <summary>
+        /// Lỗi từng âm trong một từ chưa đúng. Trả null khi quá nửa số âm của từ bị sai/thiếu: khi đó người học (hoặc bộ nhận dạng)
+        /// đã nói một từ khác hẳn (電車 → 列車), liệt kê từng âm không giúp gì.
+        /// </summary>
+        private static List<ShadowingMoraIssueDto>? BuildIssues(Word word, Op[] opAt, List<(Mora Mora, int Index)>?[] extras, IReadOnlyList<Mora> tm)
+        {
+            var length = word.End - word.Start;
+            if (length <= 0) return null;
+            var wrong = Enumerable.Range(word.Start, length).Count(k => opAt[k].Kind != OpKind.Match);
+            if (wrong * 2 > length) return null;
+
+            var issues = new List<ShadowingMoraIssueDto>();
+            string? AfterOf(int k) => k > word.Start ? Show(tm[k - 1]) : null;
+
+            for (var k = word.Start; k < word.End; k++)
+            {
+                if (k > word.Start && extras[k] != null)
+                {
+                    foreach (var (mora, _) in extras[k]!)
+                    {
+                        var type = ClassifyOmission(mora, extra: true);
+                        issues.Add(new ShadowingMoraIssueDto
+                        {
+                            Kind = "extra", Spoken = Show(mora), After = AfterOf(k), ErrorType = type,
+                            Message = ExtraMessage(mora, AfterOf(k)),
+                        });
+                    }
+                }
+
+                var op = opAt[k];
+                if (op.Kind == OpKind.Delete)
+                {
+                    issues.Add(new ShadowingMoraIssueDto
+                    {
+                        Kind = "missing", Expected = Show(op.Target!.Value), After = AfterOf(k), ErrorType = op.ErrorType,
+                        Message = MissingMessage(op.Target!.Value, AfterOf(k)),
+                    });
+                }
+                else if (op.Kind == OpKind.Substitute)
+                {
+                    issues.Add(new ShadowingMoraIssueDto
+                    {
+                        Kind = "substitute", Expected = Show(op.Target!.Value), Spoken = Show(op.Spoken!.Value), After = AfterOf(k),
+                        ErrorType = op.ErrorType,
+                        Message = SubstituteMessage(op.Target!.Value, op.Spoken!.Value, op.ErrorType, AfterOf(k)),
+                    });
+                }
+            }
+            // Lỗi giống hệt nhau lặp lại (何番 番 番 線) chỉ nói một lần
+            var distinct = issues.GroupBy(i => i.Message).Select(g => g.First()).Take(MaxIssuesPerWord).ToList();
+            return distinct.Count == 0 ? null : distinct;
+        }
+
+        /// <summary>Cách viết âm cho người học: trường âm luôn là ー (cách đọc G2P ghi trường âm bằng nguyên âm lặp, vd. ぽう).</summary>
+        private static string Show(Mora mora) => mora.IsLong ? "ー" : mora.Display;
+
+        private static string Where(string? after) => after == null ? "ở đầu từ" : $"sau 「{after}」";
+
+        private static string ExtraMessage(Mora mora, string? after)
+        {
+            if (mora.IsSokuon) return $"Thừa âm ngắt 「っ」 {Where(after)}: nối liền, không dừng hơi.";
+            if (mora.IsLong) return $"Thừa trường âm {Where(after)}: đọc ngắn, không kéo dài.";
+            if (mora.IsHatsuon) return $"Thừa âm 「ん」 {Where(after)}.";
+            return $"Thừa 「{mora.Display}」 {Where(after)}.";
+        }
+
+        private static string MissingMessage(Mora mora, string? after)
+        {
+            if (mora.IsLong) return $"Thiếu trường âm {Where(after)}: kéo dài âm đủ một nhịp.";
+            if (mora.IsSokuon) return $"Thiếu âm ngắt 「っ」 {Where(after)}: dừng một nhịp trước âm sau.";
+            if (mora.IsHatsuon) return $"Thiếu âm 「ん」 {Where(after)}.";
+            return $"Thiếu 「{mora.Display}」 {Where(after)}.";
+        }
+
+        private static readonly HashSet<string> VoicedConsonants = new() { "g", "z", "d", "b" };
+
+        private static string SubstituteMessage(Mora target, Mora spoken, string? errorType, string? after)
+        {
+            if (target.IsLong && spoken.IsSokuon)
+                return $"Trường âm 「ー」 {Where(after)} bị đọc thành âm ngắt 「っ」: kéo dài âm, không ngắt.";
+            if (target.IsSokuon && spoken.IsLong)
+                return $"Âm ngắt 「っ」 {Where(after)} bị đọc thành trường âm: dừng một nhịp, không kéo dài.";
+            var head = $"「{Show(target)}」 đọc thành 「{Show(spoken)}」";
+            if (errorType == "voicing")
+            {
+                return VoicedConsonants.Contains(JapaneseMora.ConsonantOf(spoken))
+                    ? $"{head}: âm này là âm trong, đọc nhẹ, không rung cổ họng."
+                    : $"{head}: âm này là âm đục, cần rung cổ họng.";
+            }
+            if (errorType == "chouon") return $"{head}: chú ý độ dài của âm (trường âm).";
+            if (errorType == "sokuon") return $"{head}: chú ý âm ngắt 「っ」.";
+            if (errorType == "hatsuon") return $"{head}: chú ý âm 「ん」.";
+            return head + ".";
         }
 
         /// <summary>
@@ -316,6 +415,7 @@ namespace JCAP.Services.Implementations
                 {
                     wr.ErrorType = slice.FirstOrDefault(o => o.Kind != OpKind.Match).ErrorType ?? (hasInsideExtra ? "extra" : null);
                     wr.Expected = JapaneseMora.Join(slice.Select(o => o.Target!.Value));
+                    if (wr.Status == "mismatched") wr.Issues = BuildIssues(word, opAt, extras, tm);
 
                     var spoken = new StringBuilder();
                     for (var k = word.Start; k < word.End; k++)
@@ -604,6 +704,7 @@ namespace JCAP.Services.Implementations
                     token.ErrorType = wr.ErrorType;
                     token.ExpectedReading = wr.Expected;
                     token.SpokenPart = wr.Spoken;
+                    token.Issues = wr.Issues;
                 }
                 Add(token);
             }
@@ -644,6 +745,8 @@ namespace JCAP.Services.Implementations
 
                 hints.Add(wr.Status == "missing"
                     ? $"chưa nói 「{text}」"
+                    : wr.Issues is { Count: > 0 }
+                    ? $"「{text}」: {string.Join(" ", wr.Issues.Take(2).Select(i => i.Message.TrimEnd('.')).Select(m => m + "."))}".TrimEnd('.')
                     : $"「{text}」 đọc chuẩn là {wr.Expected}" + (wr.Spoken != null ? $", bạn nói {wr.Spoken}" : "") + TypeHint(wr.ErrorType));
                 if (hints.Count == 3) break;
             }

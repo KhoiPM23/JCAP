@@ -269,6 +269,29 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>chouon | sokuon | hatsuon | voicing | mora | extra</summary>
         public string? ErrorType { get; set; }
+
+        /// <summary>
+        /// Lỗi từng âm (mora) trong từ chưa đúng, theo thứ tự trong từ: thừa っ, thiếu trường âm, く đọc thành ぐ…
+        /// Null khi từ đúng, khi thiếu cả từ, hoặc khi người học nói một từ khác hẳn (quá nửa số âm khác: liệt kê từng âm vô nghĩa).
+        /// </summary>
+        public List<ShadowingMoraIssueDto>? Issues { get; set; }
+    }
+
+    /// <summary>Một lỗi ở mức âm (mora) bên trong một từ.</summary>
+    public class ShadowingMoraIssueDto
+    {
+        /// <summary>extra (nói thừa) | missing (thiếu) | substitute (đọc thành âm khác)</summary>
+        public string Kind { get; set; } = string.Empty;
+        /// <summary>Âm của câu mẫu (missing, substitute).</summary>
+        public string? Expected { get; set; }
+        /// <summary>Âm người học nói (extra, substitute).</summary>
+        public string? Spoken { get; set; }
+        /// <summary>Âm câu mẫu đứng ngay trước vị trí lỗi (để chỉ chỗ), null nếu lỗi ở đầu từ.</summary>
+        public string? After { get; set; }
+        /// <summary>chouon | sokuon | hatsuon | voicing | mora | extra</summary>
+        public string? ErrorType { get; set; }
+        /// <summary>Nhận xét tiếng Việt hiển thị thẳng cho người học.</summary>
+        public string Message { get; set; } = string.Empty;
     }
 
     public class ShadowingAudioEvaluationResponseDto

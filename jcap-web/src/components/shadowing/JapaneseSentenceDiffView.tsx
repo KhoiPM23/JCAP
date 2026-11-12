@@ -22,6 +22,22 @@ const describeError = (type: ShadowingDiffToken['errorType']): string => {
   }
 };
 
+/** Danh sách lỗi từng âm theo từ: 「エクスプレス」 Thừa âm ngắt 「っ」 sau 「え」… */
+const MoraIssueList: React.FC<{ tokens: ShadowingDiffToken[] }> = ({ tokens }) => {
+  const withIssues = tokens.filter((t) => t.status === 'mismatched' && t.issues && t.issues.length > 0);
+  if (withIssues.length === 0) return null;
+  return (
+    <ul className="space-y-1 text-xs text-sumi" aria-label="Lỗi từng âm">
+      {withIssues.map((t, idx) => (
+        <li key={idx} className="flex flex-wrap items-baseline gap-x-1.5 rounded-lg bg-danger-soft px-2 py-1">
+          <span className="font-jp font-bold text-danger">「{t.text.replace(/[。、！？!?.,]/g, '')}」</span>
+          <span>{t.issues!.map((i) => i.message).join(' ')}</span>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> = ({
   diffTokens,
   targetText,
@@ -76,7 +92,9 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
                 const expected = token.expectedReading && token.expectedReading !== token.text
                   ? `"${token.text}" (${token.expectedReading})`
                   : `"${token.text}"`;
-                const tooltipText = token.errorType === 'extra'
+                const tooltipText = token.issues && token.issues.length > 0
+                  ? token.issues.map((i) => i.message).join('\n')
+                  : token.errorType === 'extra'
                   ? `${kind}: "${token.text}"`
                   : token.spokenPart
                   ? `${kind ? kind + ' — ' : ''}Câu mẫu: ${expected} ➔ Bạn nói: "${token.spokenPart}"`
@@ -112,6 +130,9 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
           <span className="text-[#071A44]">{targetText}</span>
         )}
       </div>
+
+      {/* Lỗi từng âm: hiện thẳng (không chỉ trong tooltip) để xem được trên điện thoại */}
+      {hasDiffs && <MoraIssueList tokens={diffTokens} />}
 
       {/* Spoken Text Comparison if different */}
       {hasSpoken && spokenText.trim() !== targetText.trim() && (

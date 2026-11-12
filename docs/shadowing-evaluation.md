@@ -9,6 +9,9 @@
 >     vì hai bộ G2P có thể đọc cùng chữ khác nhau (日本: VOICEVOX にっぽん, OpenJTalk にほん — trước đây bị chấm 46/100 dù nghe đúng từng chữ);
 >     (2) `JapaneseSurfaceAligner` chọn cách gióng chữ↔mora cân đối nhất (~2 mora/ký tự) và đặt dấu câu vào ranh giới cụm trọng âm,
 >     nên hai cụm chữ Hán sát nhau (十時四十分発、七号車) không còn bị chia mora sai; furigana được gióng lại từ cách đọc đã lưu khi trả về.
+>     (3) từ katakana trong cụm trọng âm dài được tách thành từ riêng (成田 | エクスプレス | ですね): sai một âm chỉ mất điểm từ đó;
+>     (4) mỗi từ chưa đúng có `issues` (lỗi từng âm: thừa/thiếu/đọc thành âm khác, vị trí "sau 「え」", `message` tiếng Việt viết sẵn;
+>     trường âm luôn hiện là ー). Không liệt kê khi quá nửa số âm của từ khác (nói từ khác hẳn). Giao diện hiện danh sách này dưới câu.
 >     Bench: `RealScoringBench` (JCAP_REAL_DIR) chấm lại bản ghi thật bằng pipeline sản phẩm và so với điểm lúc thu.
 >     ASR tắt/bận/quá hạn → `UNAVAILABLE` (`ASR_UNAVAILABLE`, `ASR_BUSY`, `ASR_TIMEOUT`), **không tự chuyển nguồn khác**;
 >     transcript lặp vô nghĩa (compression ratio > 2.4) → `ASR_UNRELIABLE` (không coi là lỗi người học).

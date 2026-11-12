@@ -64,7 +64,8 @@ public class RealScoringBench
             model ??= r.AsrModel;
             total++;
             if (r.OverallScore != before) changed++;
-            var wrong = string.Join(", ", r.DiffTokens.Where(x => x.Status != "correct").Select(x => $"{x.Text}→{x.SpokenPart ?? "∅"}"));
+            var wrong = string.Join("; ", r.DiffTokens.Where(x => x.Status != "correct").Select(x =>
+                $"{x.Text}→{x.SpokenPart ?? "∅"}" + (x.Issues is { Count: > 0 } ? $" [{string.Join(" ", x.Issues.Select(i => i.Message))}]" : "")));
             var now = r.OverallScore?.ToString() ?? $"— ({r.ErrorCode})";
             sb.AppendLine($"| {Path.GetFileNameWithoutExtension(json)} | {label} | {target} | {before?.ToString() ?? "—"} | {now} | {r.RecognizedText} | {wrong} |");
         }

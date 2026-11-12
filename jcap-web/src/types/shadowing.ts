@@ -70,6 +70,18 @@ export interface ShadowingDiffToken {
   /** Cách đọc chuẩn (kana) của đoạn này; chỉ có với đoạn chưa đúng, dùng làm chú thích. */
   expectedReading?: string | null;
   errorType?: ShadowingDiffErrorType | null;
+  /** Lỗi từng âm trong từ chưa đúng (thừa っ, く đọc thành ぐ…); null khi từ đúng, thiếu cả từ, hoặc nói từ khác hẳn. */
+  issues?: ShadowingMoraIssue[] | null;
+}
+
+/** Một lỗi ở mức âm (mora) bên trong một từ; `message` là nhận xét tiếng Việt do backend viết sẵn. */
+export interface ShadowingMoraIssue {
+  kind: 'extra' | 'missing' | 'substitute';
+  expected?: string | null;
+  spoken?: string | null;
+  after?: string | null;
+  errorType?: ShadowingDiffErrorType | null;
+  message: string;
 }
 
 /** Loại lỗi do bộ so khớp theo từ (kana-word-v1/v2) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */
