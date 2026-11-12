@@ -169,31 +169,14 @@ export async function applyOutputDevice(
 }
 
 /**
- * Khử nhiễu + tự chỉnh âm lượng của trình duyệt. Có thể làm méo phụ âm và nuốt âm đầu câu, nên để bật/tắt được
- * khi so sánh độ chính xác nhận dạng (công cụ thử ở chế độ phát triển). Mặc định BẬT như trước.
- * Khử tiếng vọng luôn bật để tiếng loa không lọt vào bản ghi.
+ * Ràng buộc mic dùng chung cho thu âm và thử mic, để mức âm lượng khi thử đúng với khi thu thật.
+ * Khử vọng, khử nhiễu và tự chỉnh âm lượng của trình duyệt luôn BẬT (micro laptop thường rất nhỏ khi tắt tự chỉnh âm lượng).
  */
-export const MIC_VOICE_PROCESSING_STORAGE_KEY = 'jcap_mic_voice_processing';
-
-export function isMicVoiceProcessingEnabled(
-  storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage,
-): boolean {
-  try {
-    return storage?.getItem(MIC_VOICE_PROCESSING_STORAGE_KEY) !== 'off';
-  } catch {
-    return true;
-  }
-}
-
-/** Ràng buộc mic dùng chung cho thu âm và thử mic, để mức âm lượng khi thử đúng với khi thu thật. */
-export function buildMicConstraints(
-  deviceId?: string,
-  voiceProcessing: boolean = isMicVoiceProcessingEnabled(),
-): MediaTrackConstraints {
+export function buildMicConstraints(deviceId?: string): MediaTrackConstraints {
   return {
     echoCancellation: true,
-    noiseSuppression: voiceProcessing,
-    autoGainControl: voiceProcessing,
+    noiseSuppression: true,
+    autoGainControl: true,
     channelCount: 1,
     sampleRate: 48000,
     ...(normalizeDeviceId(deviceId) ? { deviceId: { exact: normalizeDeviceId(deviceId) } } : {}),

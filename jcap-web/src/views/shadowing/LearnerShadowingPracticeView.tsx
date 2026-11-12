@@ -20,13 +20,11 @@ import { audioMetricsService, measureRecordedBlob, type AudioQualityMetrics, typ
 import {
   INPUT_DEVICE_STORAGE_KEY,
   INPUT_LABEL_STORAGE_KEY,
-  MIC_VOICE_PROCESSING_STORAGE_KEY,
   OUTPUT_DEVICE_STORAGE_KEY,
   applyOutputDevice,
   describeDeviceStatus,
   describeMicError,
   filterSelectableDevices,
-  isMicVoiceProcessingEnabled,
   newlyConnected,
   normalizeDeviceId,
 } from '../../utils/audioDevice';
@@ -206,7 +204,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const recordingLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Chỉ chế độ phát triển: bản ghi gần nhất để tải về đo nhận dạng, và bật/tắt khử nhiễu của trình duyệt
   const [devTake, setDevTake] = useState<DevRecordingTake | null>(null);
-  const [micVoiceProcessing, setMicVoiceProcessing] = useState<boolean>(() => isMicVoiceProcessingEnabled());
   const isRecordingRef = useRef<boolean>(false);
   // Gom transcript đã chốt qua các lần Web Speech tự khởi động lại
   const collectorRef = useRef<SpeechTranscriptCollector>(new SpeechTranscriptCollector());
@@ -376,8 +373,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
    * Ném lỗi getUserMedia để nơi bấm ghi báo đúng nguyên nhân.
    */
   const ensureWarmMic = async (deviceId: string): Promise<WarmMic> => {
-    const processing = isMicVoiceProcessingEnabled();
-    const usable = (m: WarmMic | null) => !!m && m.isLive && m.matches(deviceId, processing);
+    const usable = (m: WarmMic | null) => !!m && m.isLive && m.matches(deviceId);
     if (usable(warmMicRef.current)) return warmMicRef.current!;
 
     if (warmMicOpeningRef.current) {
@@ -391,7 +387,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (warmMicRef.current && isRecordingRef.current && warmMicRef.current.isLive) return warmMicRef.current;
     closeWarmMic();
-    const opening = WarmMic.open(deviceId, processing);
+    const opening = WarmMic.open(deviceId);
     warmMicOpeningRef.current = opening;
     try {
       const mic = await opening;
@@ -774,18 +770,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [isLearnerTurn, hasMicrophone, playbackActive, practiceState, selectedAudioInputDeviceId, micVoiceProcessing]);
-
-  const toggleMicVoiceProcessing = () => {
-    const next = !micVoiceProcessing;
-    try {
-      localStorage.setItem(MIC_VOICE_PROCESSING_STORAGE_KEY, next ? 'on' : 'off');
-    } catch {
-      // không lưu được: vẫn đổi trong phiên này
-    }
-    setMicVoiceProcessing(next);
-    if (!isRecordingRef.current) closeWarmMic(); // mở lại với cấu hình mới
-  };
+  }, [isLearnerTurn, hasMicrophone, playbackActive, practiceState, selectedAudioInputDeviceId]);
 
   // Auto-scroll to latest sentence when dialogue progresses
   useEffect(() => {
@@ -1536,7 +1521,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             recordedAt: new Date().toISOString(),
             capture: take.capture,
             prerollMs: take.prerollMs,
-            voiceProcessing: isMicVoiceProcessingEnabled(),
+            voiceProcessing: true, // khử nhiễu + tự chỉnh âm lượng luôn bật
             webSpeech: take.recognition,
             result: res.data
               ? {
@@ -2517,13 +2502,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       />
                     )}
 
-                    {/* Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật, bật/tắt khử nhiễu */}
+                    {/* Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật */}
                     {import.meta.env.DEV && (practiceState === 'ready' || practiceState === 'evaluated') && (
-                      <RecordingDevTools
-                        take={devTake && devTake.sentenceId === currentSentence?.id ? devTake : null}
-                        voiceProcessing={micVoiceProcessing}
-                        onToggleVoiceProcessing={toggleMicVoiceProcessing}
-                      />
+                      <RecordingDevTools take={devTake && devTake.sentenceId === currentSentence?.id ? devTake : null} />
                     )}
                   </>
                 )}

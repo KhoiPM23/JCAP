@@ -26,13 +26,12 @@ export class WarmMic {
     /** Thiết bị đã yêu cầu ('' = mặc định hệ thống), để biết khi nào phải mở lại. */
     readonly requestedDeviceId: string,
     readonly usedFallback: boolean,
-    readonly voiceProcessing: boolean,
   ) {}
 
   /** Mở micro (ném lỗi getUserMedia như cũ để nơi gọi báo đúng nguyên nhân). PCM không dựng được thì vẫn trả về micro. */
-  static async open(deviceId: string, voiceProcessing: boolean): Promise<WarmMic> {
+  static async open(deviceId: string): Promise<WarmMic> {
     const { stream, usedFallback } = await acquireMicStream(deviceId);
-    const mic = new WarmMic(stream, normalizeDeviceId(deviceId), usedFallback, voiceProcessing);
+    const mic = new WarmMic(stream, normalizeDeviceId(deviceId), usedFallback);
     try {
       await mic.startPcmCapture();
     } catch (err) {
@@ -56,8 +55,8 @@ export class WarmMic {
     return this.buffer !== null && this.ctx !== null && this.ctx.state !== 'closed';
   }
 
-  matches(deviceId: string, voiceProcessing: boolean): boolean {
-    return this.requestedDeviceId === normalizeDeviceId(deviceId) && this.voiceProcessing === voiceProcessing;
+  matches(deviceId: string): boolean {
+    return this.requestedDeviceId === normalizeDeviceId(deviceId);
   }
 
   /** Bắt đầu lượt ghi PCM, kèm tối đa `prerollMs` âm thanh trước đó. Gọi trong sự kiện bấm (để AudioContext được chạy). */

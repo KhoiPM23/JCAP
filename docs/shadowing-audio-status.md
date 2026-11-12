@@ -193,13 +193,14 @@ Thử bằng giọng thật trên micro laptop: `パスポートを見せてく�
 2. **Thu trước 0.5 giây:** bản ghi chấm điểm lấy thẳng PCM từ micro (AudioWorklet) và đặt 0.5 giây âm thanh ngay trước lúc bấm vào đầu bản ghi.
    Không lấy phần thu trước khi đang phát âm thanh hoặc chưa quá 150 ms sau khi phát xong (tiếng loa sẽ bị nhận thành chữ). Nhịp nói tính khoảng lặng đầu câu riêng nên không bị lệch.
    Không có PCM (trình duyệt cũ) thì dùng bản MediaRecorder như trước. Bản MediaRecorder vẫn dùng để nghe lại và kiểm tra âm lượng.
-3. **Bật/tắt khử nhiễu + tự chỉnh âm lượng** của trình duyệt (`localStorage` `jcap_mic_voice_processing` = `off`; khử tiếng vọng luôn bật). Mặc định vẫn bật cho tới khi có số liệu.
+3. **Khử nhiễu + tự chỉnh âm lượng** của trình duyệt luôn bật (khử tiếng vọng cũng vậy). Nút bật/tắt thử nghiệm đã bỏ (2026-11-12) để mọi máy thu cùng một cấu hình;
+   khóa `localStorage` `jcap_mic_voice_processing` cũ không còn tác dụng.
 
 **Đo bằng giọng thật (chỉ chế độ phát triển):** trong `npm run dev`, dưới khối kết quả có thanh "Thử nghiệm (dev)": nút **Tải bản ghi** lưu về máy cặp
-`jcap-s{id}-{thời gian}.wav` (đúng WAV 16 kHz backend nhận dạng) + `.json` (câu mẫu, cấu hình micro, phần thu trước, transcript Web Speech, kết quả lúc chấm),
-và nút bật/tắt khử nhiễu. Không gửi hay lưu bản ghi ở đâu khác. Chạy `JCAP_BENCH=1 JCAP_REAL_DIR=<thư mục> dotnet test JCAP.Tests --filter "FullyQualifiedName~RealRecordingBench"`
+`jcap-s{id}-{thời gian}.wav` (đúng WAV 16 kHz backend nhận dạng) + `.json` (câu mẫu, cấu hình micro, phần thu trước, transcript Web Speech, kết quả lúc chấm).
+Không gửi hay lưu bản ghi ở đâu khác. Chạy `JCAP_BENCH=1 JCAP_REAL_DIR=<thư mục> dotnet test JCAP.Tests --filter "FullyQualifiedName~RealRecordingBench"`
 (cần VOICEVOX) để có `real-report.md`: lỗi mora từng lượt theo 4 cấu hình xử lý trước, kana mô hình nghe ra và transcript Web Speech để so.
-Đề xuất thu ~10 câu: đọc đúng và cố ý sai một âm, mỗi câu thử cả khử nhiễu bật và tắt.
+Đề xuất thu ~10 câu: đọc đúng và cố ý sai một âm.
 Kết quả thử lại sau khi sửa thu âm (người dùng): câu `パスポート` **vẫn sai nhiều** → nguyên nhân chính là cách nhận dạng tự do, dẫn tới 5.7.
 
 ### 5.7 Chấm theo câu mẫu thay cho nhận dạng tự do (`PronunciationAligner`, `CtcScorer`)

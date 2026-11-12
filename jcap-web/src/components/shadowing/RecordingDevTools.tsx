@@ -11,8 +11,6 @@ export interface DevRecordingTake {
 
 interface RecordingDevToolsProps {
   take: DevRecordingTake | null;
-  voiceProcessing: boolean;
-  onToggleVoiceProcessing: () => void;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -33,10 +31,10 @@ function download(blob: Blob, filename: string): void {
 }
 
 /**
- * Công cụ thu dữ liệu thật cho việc đo nhận dạng: tải bản ghi (WAV + JSON câu mẫu/kết quả) và bật/tắt khử nhiễu.
- * Chỉ hiện khi chạy `npm run dev`; bản ghi chỉ tải về máy người đang thử, không gửi hay lưu thêm ở đâu.
+ * Công cụ thu dữ liệu thật cho việc đo nhận dạng: tải bản ghi (WAV + JSON câu mẫu/kết quả).
+ * Chỉ hiện khi chạy `npm run dev` (không có trong bản build triển khai); bản ghi chỉ tải về máy người đang thử.
  */
-export const RecordingDevTools: React.FC<RecordingDevToolsProps> = ({ take, voiceProcessing, onToggleVoiceProcessing }) => {
+export const RecordingDevTools: React.FC<RecordingDevToolsProps> = ({ take }) => {
   const handleDownload = () => {
     if (!take) return;
     const base = `jcap-s${take.sentenceId}-${stamp(new Date())}`;
@@ -49,9 +47,6 @@ export const RecordingDevTools: React.FC<RecordingDevToolsProps> = ({ take, voic
       <span className="font-bold">Thử nghiệm (dev)</span>
       <Button size="sm" variant="ghost" icon="download" disabled={!take} onClick={handleDownload}>
         Tải bản ghi
-      </Button>
-      <Button size="sm" variant="ghost" icon={voiceProcessing ? 'noise_aware' : 'noise_control_off'} onClick={onToggleVoiceProcessing}>
-        Khử nhiễu + tự chỉnh âm lượng: {voiceProcessing ? 'Bật' : 'Tắt'}
       </Button>
     </div>
   );

@@ -10,7 +10,6 @@ import {
   deviceStatus,
   filterSelectableDevices,
   isDeviceUnavailableError,
-  isMicVoiceProcessingEnabled,
   newlyConnected,
   normalizeDeviceId,
   systemDefaultLabel,
@@ -116,18 +115,13 @@ test('Ràng buộc mic: có deviceId exact khi đã chọn, không có khi để
   assert.deepStrictEqual(buildMicConstraints('abc').deviceId, { exact: 'abc' });
   assert.strictEqual('deviceId' in buildMicConstraints(''), false);
   assert.strictEqual('deviceId' in buildMicConstraints('default'), false);
-  assert.strictEqual(buildMicConstraints('', true).autoGainControl, true);
 });
 
-test('Tắt khử nhiễu/tự chỉnh âm lượng khi thử nghiệm, khử vọng luôn bật; mặc định bật', () => {
-  const raw = buildMicConstraints('', false);
-  assert.strictEqual(raw.noiseSuppression, false);
-  assert.strictEqual(raw.autoGainControl, false);
-  assert.strictEqual(raw.echoCancellation, true);
-  assert.strictEqual(isMicVoiceProcessingEnabled({ getItem: () => null }), true);
-  assert.strictEqual(isMicVoiceProcessingEnabled({ getItem: () => 'off' }), false);
-  const blocked = { getItem: () => { throw new Error('SecurityError'); } };
-  assert.strictEqual(isMicVoiceProcessingEnabled(blocked), true);
+test('Khử vọng, khử nhiễu và tự chỉnh âm lượng luôn bật', () => {
+  const c = buildMicConstraints('');
+  assert.strictEqual(c.echoCancellation, true);
+  assert.strictEqual(c.noiseSuppression, true);
+  assert.strictEqual(c.autoGainControl, true);
 });
 
 test('Nhận diện lỗi thiết bị không còn, không nhầm với lỗi quyền', () => {

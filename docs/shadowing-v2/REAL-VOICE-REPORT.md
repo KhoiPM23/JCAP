@@ -60,6 +60,8 @@ Phát lại giọng mẫu VOICEVOX qua loa vào micro thì được nhận dạn
 ## 5. Quan sát về thu âm
 
 - Khử nhiễu TẮT: mức giọng khoảng −33 dBFS, đỉnh −21 dBFS, nền −44 dBFS (chênh ~11 dB). Nhỏ nhưng vẫn qua kiểm tra âm thanh của backend. Đã thêm chuẩn hoá âm lượng **chỉ khi nghe lại** (bản gửi chấm giữ nguyên).
+- **Lưu ý:** cả 46 lượt thu với khử nhiễu + tự chỉnh âm lượng TẮT (nút thử nghiệm trên máy người thu), trong khi người học dùng cấu hình mặc định BẬT.
+  Sau đợt này nút đã bỏ và cấu hình luôn BẬT; dữ liệu các đợt sau sẽ đúng với cấu hình người học. So sánh BẬT/TẮT chưa đo.
 - Chưa thấy lượt nào bị từ chối nhầm vì âm lượng/tiếng ồn (ngưỡng `ShadowingAudioValidator` vẫn là heuristic).
 
 ## 6. Giới hạn
