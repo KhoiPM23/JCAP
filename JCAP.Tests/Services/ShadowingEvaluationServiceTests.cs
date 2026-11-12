@@ -52,7 +52,10 @@ public class ShadowingEvaluationServiceTests
         IKanaReader? reader = null, IFluencyAnalyzer? fluencyAnalyzer = null, string? hears = Target, bool hearsRawKana = false,
         IReferenceVoiceProvider? provider = null, Dictionary<string, string?>? config = null) =>
         new(new KanaMoraComparer(new IKanaReader[] { reader ?? new TestKanaReader() }),
-            new ConfigurationBuilder().AddInMemoryCollection(TestConfig.PhonemeContent).AddInMemoryCollection(config ?? new()).Build(),
+            new ConfigurationBuilder().AddInMemoryCollection(TestConfig.PhonemeContent)
+                // Đo nhịp nói mặc định tắt trong sản phẩm; các test truyền bộ đo thì bật để kiểm tra phần này
+                .AddInMemoryCollection(fluencyAnalyzer != null ? new Dictionary<string, string?> { ["Shadowing:Fluency:Enabled"] = "true" } : new())
+                .AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             fluencyAnalyzer, provider,
             new HearsKana(hears == null ? null : hearsRawKana ? hears : KanaOf(hears)));

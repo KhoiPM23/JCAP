@@ -55,7 +55,9 @@ public class ShadowingDimensionsTests
     private static ShadowingEvaluationService Service(ISpeechRecognitionService? asr, IPhonemeRecognizer? phoneme = null,
         Dictionary<string, string?>? config = null, IFluencyAnalyzer? fluency = null) =>
         new(new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
-            new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(fluency != null ? new Dictionary<string, string?> { ["Shadowing:Fluency:Enabled"] = "true" } : new())
+                .AddInMemoryCollection(config ?? new()).Build(),
             new Mock<ILogger<ShadowingEvaluationService>>().Object,
             fluency, null, phoneme, null, asr);
 
@@ -236,6 +238,23 @@ public class ShadowingDimensionsTests
         Assert.Null(r.Dimensions.Fluency.Score);
         Assert.Equal("SCORE_NOT_VALIDATED", r.Dimensions.Fluency.Reason);
         Assert.Null(r.FluencyScore);
+    }
+
+    [Fact]
+    public async Task Fluency_OffByDefault_NoReferenceLookup_AndDimensionUnavailable()
+    {
+        var reference = new Mock<IReferenceVoiceProvider>();
+        var service = new ShadowingEvaluationService(new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
+            new ConfigurationBuilder().Build(), new Mock<ILogger<ShadowingEvaluationService>>().Object,
+            new FluencyAnalyzer(), reference.Object, null, null, new FakeAsr(() => Heard(Target)));
+
+        var r = await service.EvaluateAsync(Input());
+
+        Assert.Equal(100, r.ContentMatchScore); // chấm nội dung không đổi
+        Assert.Equal("unavailable", r.Fluency!.Status);
+        Assert.Equal("UNAVAILABLE", r.Dimensions.Fluency.Status);
+        Assert.Equal("NOT_ENABLED", r.Dimensions.Fluency.Reason);
+        reference.Verify(p => p.GetAsync(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

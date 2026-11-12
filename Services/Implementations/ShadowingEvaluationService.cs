@@ -67,6 +67,9 @@ namespace JCAP.Services.Implementations
             _asr = asr;
         }
 
+        /// <summary>Đo nhịp nói và so với giọng mẫu khi chấm (`Shadowing:Fluency:Enabled`, mặc định false).</summary>
+        private bool FluencyEnabled => _configuration.GetValue<bool?>("Shadowing:Fluency:Enabled") ?? false;
+
         private string ContentProvider =>
             string.Equals(_configuration["Shadowing:Content:Provider"], ProviderPhoneme, StringComparison.OrdinalIgnoreCase)
                 ? ProviderPhoneme : ProviderAsr;
@@ -395,6 +398,11 @@ namespace JCAP.Services.Implementations
             JapaneseTextComparison comparison,
             CancellationToken cancellationToken)
         {
+            // Đo nhịp nói và so với giọng mẫu (lấy audio mẫu, DTW trường âm) mặc định TẮT: không hiển thị, không tính điểm,
+            // chỉ làm chậm lượt chấm và có thể phải gọi VOICEVOX lúc chấm. Bật lại bằng `Shadowing:Fluency:Enabled = true`.
+            // Phát hiện đoạn tiếng nói (VAD) cho bộ kiểm tra âm thanh KHÔNG phụ thuộc cài đặt này.
+            if (!FluencyEnabled)
+                return new FluencyMetricsDto { Status = "unavailable", ReasonCode = "NOT_ENABLED", Version = FluencyAnalyzer.Version };
             if (_fluencyAnalyzer == null || input.AnalysisWav == null || input.AnalysisWav.Length == 0) return null;
 
             try

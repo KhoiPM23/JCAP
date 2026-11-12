@@ -6,6 +6,7 @@ const REASON_TEXT: Record<string, string> = {
   INSUFFICIENT_ACOUSTIC_EVIDENCE: 'Chưa chấm phát âm: phương pháp đánh giá âm chưa được kiểm chứng trên giọng người học.',
   SCORE_NOT_VALIDATED: 'Chỉ có số liệu nhịp nói để tham khảo, chưa thành điểm.',
   NOT_IMPLEMENTED: 'Chưa hỗ trợ đánh giá ngữ điệu.',
+  NOT_ENABLED: 'Chưa hỗ trợ đánh giá lưu loát.',
   NOT_MEASURED: 'Chưa đo được.',
   ASR_UNAVAILABLE: 'Hệ thống nhận dạng lời nói đang tạm ngừng.',
   ASR_TIMEOUT: 'Nhận dạng lời nói quá lâu.',
