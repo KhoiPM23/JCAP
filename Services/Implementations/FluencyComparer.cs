@@ -23,9 +23,13 @@ namespace JCAP.Services.Implementations
         public double MinMoraConsistency { get; init; } = 0.8;
         public double MaxMoraConsistency { get; init; } = 1.25;
 
-        /// <summary>Tốc độ (không tính khoảng dừng) của người học / giọng mẫu: ≤ SlowRatio là chậm rõ, ≥ FastRatio là nhanh rõ.</summary>
+        /// <summary>
+        /// Tốc độ (không tính khoảng dừng) của người học / giọng mẫu: ≤ SlowRatio là chậm rõ, ≥ FastRatio là nhanh bất thường.
+        /// Đo trên 150 câu người Nhật đọc (FLEURS): tỷ lệ phân vị 5/50/95 = 0,73/0,94/2,14 — chỉ 2/150 bị coi là chậm với 0,70,
+        /// nhưng 26/150 bị coi là "nhanh" với ngưỡng cũ 1,40 (người thật thường nói nhanh hơn VOICEVOX), nên ngưỡng nhanh nâng lên 2,5.
+        /// </summary>
         public double SlowRatio { get; init; } = 0.70;
-        public double FastRatio { get; init; } = 1.40;
+        public double FastRatio { get; init; } = 2.5;
 
         /// <summary>Khoảng dừng của người học ngắn hơn mức này thì không bị coi là "dừng thừa".</summary>
         public int ExtraPauseMinMs { get; init; } = 400;

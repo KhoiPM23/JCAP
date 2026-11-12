@@ -148,9 +148,10 @@ public class FluencyComparerTests
     }
 
     [Fact]
-    public void FastReading_ProducesFastObservation()
+    public void AbnormallyFastReading_ProducesFastObservation()
     {
-        var (_, o) = Run(Learner(Utterance(speed: 0.55)), Reference());
+        // Nhanh hơn mẫu ~2,9 lần (người bản xứ thường chỉ nhanh hơn VOICEVOX tới ~2 lần)
+        var (_, o) = Run(Learner(Utterance(speed: 0.35)), Reference());
         var fast = Assert.Single(o, x => x.Code == "fast_vs_reference");
         Assert.True(fast.MeasuredValue >= fast.Threshold);
         Assert.Contains("nhanh hơn", fast.Message);
@@ -321,7 +322,8 @@ public class FluencyComparerTests
             ("dừng đúng chỗ, lâu hơn",   Learner(Utterance(pauseMs: 700)),                         Good(), Array.Empty<string>(), true),
             ("đọc chậm",                  Learner(Utterance(speed: 1.8)),                           Good(), new[] { "slow_vs_reference" }, true),
             ("đọc rất chậm",              Learner(Utterance(speed: 2.5)),                           Good(), new[] { "slow_vs_reference" }, true),
-            ("đọc nhanh",                 Learner(Utterance(speed: 0.55)),                          Good(), new[] { "fast_vs_reference" }, true),
+            ("đọc nhanh như người bản xứ", Learner(Utterance(speed: 0.55)),                          Good(), Array.Empty<string>(), true),
+            ("đọc nhanh bất thường",      Learner(Utterance(speed: 0.35)),                          Good(), new[] { "fast_vs_reference" }, true),
             ("dừng dài đầu câu (chuẩn bị)", Learner(Cat(Noise(300), Sine(500), Noise(900), Sine(500), Noise(300), Sine(1200), Noise(300))), Good(), Array.Empty<string>(), true),
             ("dừng dài giữa câu",         Learner(Cat(Noise(300), Sine(1000), Noise(300), Sine(200), Noise(900), Sine(700), Noise(300))), Good(), new[] { "extra_pause" }, true),
             ("chậm + dừng thừa",          Learner(Cat(Noise(300), Sine(1100), Noise(800), Sine(1100), Noise(300), Sine(2400), Noise(300))), Good(), new[] { "extra_pause", "slow_vs_reference" }, true),

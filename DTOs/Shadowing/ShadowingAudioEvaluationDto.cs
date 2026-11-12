@@ -98,6 +98,12 @@ namespace JCAP.DTOs.Shadowing
         /// <summary>mora/giây không tính khoảng dừng.</summary>
         public double? ArticulationRateMoraPerSec { get; set; }
 
+        /// <summary>Thời gian nói liền trung bình giữa hai khoảng dừng (ms).</summary>
+        public int? MeanRunMs { get; set; }
+
+        /// <summary>Số mora trung bình mỗi đoạn nói liền (mean length of run). Null nếu không biết số mora.</summary>
+        public double? MeanRunMoras { get; set; }
+
         /// <summary>Số liệu nhịp nói của giọng mẫu (cùng bộ VAD, cùng tiêu chí khoảng dừng). Null nếu chưa thử so sánh.</summary>
         public FluencyReferenceDto? Reference { get; set; }
 
@@ -189,6 +195,12 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>Số khoảng dừng của người học dài ≥ ngưỡng và không có khoảng dừng tương ứng ở giọng mẫu.</summary>
         public int? ExtraPauseCount { get; set; }
+
+        /// <summary>
+        /// Trong các khoảng dừng thừa đã định vị được theo từ: số khoảng nằm GIỮA một từ (ngập ngừng, vd. えい……が).
+        /// Dừng ở ranh giới hai từ/cụm là bình thường hơn. Null nếu không định vị được (thiếu mốc mora của giọng mẫu…).
+        /// </summary>
+        public int? HesitationCount { get; set; }
 
         /// <summary>Số mora của transcript / số mora câu mẫu (dùng kiểm tra transcript có tương ứng với câu mẫu không).</summary>
         public double? MoraCountConsistency { get; set; }

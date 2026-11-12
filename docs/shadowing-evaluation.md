@@ -18,7 +18,9 @@
 >     `Shadowing:Content:Provider = phoneme` giữ đường mô hình âm vị cũ (mục "Chấm theo câu mẫu") làm lựa chọn chuyển tiếp tường minh.
 >   - **Phát âm**: `UNAVAILABLE / INSUFFICIENT_ACOUSTIC_EVIDENCE` cho tới khi phương pháp được kiểm chứng trên giọng người học. Không suy ra từ điểm nội dung.
 >     ASR "sửa" lỗi phát âm (benchmark giọng VOICEVOX: 28/78 câu đọc sai một âm bị nghe thành câu đúng) nên KHÔNG dùng transcript để chấm phát âm.
->   - **Lưu loát**: **mặc định TẮT** (`Shadowing:Fluency:Enabled=false`, từ 2026-11-12): không lấy giọng mẫu, không đo/so nhịp khi chấm, chiều này `UNAVAILABLE / NOT_ENABLED`.
+>   - **Lưu loát**: **tham khảo, chưa có điểm** (`COMPLETED` / `SCORE_NOT_VALIDATED`). Thẻ kết quả hiện khối "Lưu loát" (`FluencyPanel`): tốc độ so với mẫu,
+>     số lần dừng, **ngập ngừng giữa từ** (`comparison.hesitationCount`), **nói liền trung bình** (`meanRunMoras`, mean length of run) và nhận xét.
+>     Tắt được bằng `Shadowing:Fluency:Enabled=false` (khi đó `UNAVAILABLE / NOT_ENABLED`, không lấy giọng mẫu lúc chấm). Bench mức bình thường: `FluencyBaselineBench`.
 >     Code đo nhịp (mục "Nhịp nói" bên dưới) giữ lại; bật `true` thì chạy như mô tả (`COMPLETED` không có điểm, `SCORE_NOT_VALIDATED`). Phát hiện đoạn tiếng nói cho kiểm tra âm thanh không phụ thuộc cài đặt này.
 >   - **Ngữ điệu**: `UNAVAILABLE / NOT_IMPLEMENTED`.
 >   - `overallScore` = điểm nội dung, kèm `overallScoreBasis = "content"` → giao diện ghi "Điểm nội dung".

@@ -241,11 +241,12 @@ public class ShadowingDimensionsTests
     }
 
     [Fact]
-    public async Task Fluency_OffByDefault_NoReferenceLookup_AndDimensionUnavailable()
+    public async Task Fluency_TurnedOff_NoReferenceLookup_AndDimensionUnavailable()
     {
         var reference = new Mock<IReferenceVoiceProvider>();
         var service = new ShadowingEvaluationService(new KanaMoraComparer(new IKanaReader[] { new TestKanaReader() }),
-            new ConfigurationBuilder().Build(), new Mock<ILogger<ShadowingEvaluationService>>().Object,
+            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Shadowing:Fluency:Enabled"] = "false" }).Build(),
+            new Mock<ILogger<ShadowingEvaluationService>>().Object,
             new FluencyAnalyzer(), reference.Object, null, null, new FakeAsr(() => Heard(Target)));
 
         var r = await service.EvaluateAsync(Input());

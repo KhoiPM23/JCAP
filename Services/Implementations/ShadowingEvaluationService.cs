@@ -67,8 +67,8 @@ namespace JCAP.Services.Implementations
             _asr = asr;
         }
 
-        /// <summary>Đo nhịp nói và so với giọng mẫu khi chấm (`Shadowing:Fluency:Enabled`, mặc định false).</summary>
-        private bool FluencyEnabled => _configuration.GetValue<bool?>("Shadowing:Fluency:Enabled") ?? false;
+        /// <summary>Đo nhịp nói (Lưu loát, tham khảo) và so với giọng mẫu khi chấm (`Shadowing:Fluency:Enabled`, mặc định true).</summary>
+        private bool FluencyEnabled => _configuration.GetValue<bool?>("Shadowing:Fluency:Enabled") ?? true;
 
         private string ContentProvider =>
             string.Equals(_configuration["Shadowing:Content:Provider"], ProviderPhoneme, StringComparison.OrdinalIgnoreCase)
@@ -398,8 +398,8 @@ namespace JCAP.Services.Implementations
             JapaneseTextComparison comparison,
             CancellationToken cancellationToken)
         {
-            // Đo nhịp nói và so với giọng mẫu (lấy audio mẫu, DTW trường âm) mặc định TẮT: không hiển thị, không tính điểm,
-            // chỉ làm chậm lượt chấm và có thể phải gọi VOICEVOX lúc chấm. Bật lại bằng `Shadowing:Fluency:Enabled = true`.
+            // Đo nhịp nói và so với giọng mẫu (Lưu loát, hiển thị tham khảo, không tính điểm). Tắt bằng `Shadowing:Fluency:Enabled = false`
+            // (nhanh hơn, không cần giọng mẫu lúc chấm).
             // Phát hiện đoạn tiếng nói (VAD) cho bộ kiểm tra âm thanh KHÔNG phụ thuộc cài đặt này.
             if (!FluencyEnabled)
                 return new FluencyMetricsDto { Status = "unavailable", ReasonCode = "NOT_ENABLED", Version = FluencyAnalyzer.Version };
@@ -446,7 +446,9 @@ namespace JCAP.Services.Implementations
 
                 var (comparisonResult, observations) = FluencyComparer.Compare(learner, referenceMetrics, context, options);
                 learner.Comparison = comparisonResult;
-                PlaceExtraPauseOnWords(observations, input, referenceVoice, comparison, targetMoras);
+                var hesitations = PlaceExtraPauseOnWords(observations, input, referenceVoice, comparison, targetMoras);
+                if (comparisonResult.Status == "available")
+                    comparisonResult.HesitationCount = comparisonResult.ExtraPauseCount == 0 ? 0 : hesitations;
                 // Nhận xét cụ thể về trường âm (nếu có) đứng trước nhận xét nhịp chung; tổng không quá giới hạn.
                 learner.Observations = durationObservations.Concat(observations).Take(options.MaxObservations).ToList();
                 return learner;
@@ -465,20 +467,21 @@ namespace JCAP.Services.Implementations
         /// <summary>
         /// Nêu khoảng dừng thừa theo TỪ cụ thể (sau từ nào, trước từ nào) thay cho cách nói chung "giữa câu".
         /// Không xác định được thì giữ nguyên nhận xét chung; lỗi ở đây không bao giờ ảnh hưởng điểm hay các nhận xét khác.
+        /// Trả về số khoảng dừng định vị được nằm GIỮA một từ (ngập ngừng); null nếu không định vị được khoảng nào.
         /// </summary>
-        private void PlaceExtraPauseOnWords(
+        private int? PlaceExtraPauseOnWords(
             List<FluencyObservationDto> observations, ShadowingAudioEvaluationInput input, ReferenceVoice? voice,
             JapaneseTextComparison comparison, int targetMoras)
         {
             var observation = observations.FirstOrDefault(x => x.Code == "extra_pause");
-            if (observation == null) return;
+            if (observation == null) return null;
             if (voice?.Timeline == null || input.AnalysisWav == null || comparison.TargetWords.Count == 0)
             {
                 observation.Data["placementFailure"] = voice == null ? "NO_REFERENCE_VOICE" : voice.Timeline == null ? "NO_TIMELINE" : input.AnalysisWav == null ? "NO_ANALYSIS_WAV" : "NO_TARGET_WORDS";
                 _logger.LogInformation("Không nêu được từ cho khoảng dừng: {Failure}", observation.Data["placementFailure"]);
-                return;
+                return null;
             }
-            if (observation.Data.GetValueOrDefault("pauses") is not List<ExtraPauseInfo> pauses || pauses.Count == 0) return;
+            if (observation.Data.GetValueOrDefault("pauses") is not List<ExtraPauseInfo> pauses || pauses.Count == 0) return null;
 
             try
             {
@@ -534,11 +537,14 @@ namespace JCAP.Services.Implementations
                 }
 
                 observation.Data["placements"] = placements;
-                if (anyPlaced) observation.Message = FluencyComparer.DescribePauses(items);
+                if (!anyPlaced) return null;
+                observation.Message = FluencyComparer.DescribePauses(items);
+                return placements.Count(p => p.GetValueOrDefault("insideWord") is string);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Không xác định được từ ứng với khoảng dừng; giữ nhận xét chung.");
+                return null;
             }
         }
 

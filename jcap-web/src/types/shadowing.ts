@@ -111,6 +111,10 @@ export interface ShadowingFluencyMetrics {
   moraCount?: number | null;
   speakingRateMoraPerSec?: number | null;
   articulationRateMoraPerSec?: number | null;
+  /** Thời gian nói liền trung bình giữa hai khoảng dừng (ms). */
+  meanRunMs?: number | null;
+  /** Số mora trung bình mỗi đoạn nói liền (tính liên tục). */
+  meanRunMoras?: number | null;
   /** Số liệu nhịp nói của giọng mẫu (cùng bộ VAD). */
   reference?: { source: string; speakerId?: number | null; metrics: ShadowingFluencyMetrics } | null;
   /** Kết quả so với giọng mẫu. status = 'unavailable' nghĩa là KHÔNG đủ điều kiện so sánh, không phải nói tốt hay kém. */
@@ -147,6 +151,8 @@ export interface ShadowingFluencyComparison {
   learnerPauseCount?: number | null;
   referencePauseCount?: number | null;
   extraPauseCount?: number | null;
+  /** Khoảng dừng thừa nằm GIỮA một từ (ngập ngừng); null nếu không định vị được. */
+  hesitationCount?: number | null;
   moraCountConsistency?: number | null;
 }
 

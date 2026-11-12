@@ -102,6 +102,8 @@ namespace JCAP.Services.Implementations
                 LongestPauseMs = pauses.Count == 0 ? 0 : pauses.Max(p => p.DurationMs),
                 PauseRatio = Math.Round((double)totalPause / span, 3),
                 Pauses = pauses,
+                // Tính liên tục: một "đoạn nói liền" là phần giữa hai khoảng dừng
+                MeanRunMs = (span - totalPause) / (pauses.Count + 1),
             };
 
             if (moraCount is > 0)
@@ -110,6 +112,8 @@ namespace JCAP.Services.Implementations
                 result.SpeakingRateMoraPerSec = Math.Round(moraCount.Value / (span / 1000.0), 2);
                 var active = span - totalPause;
                 if (active > 0) result.ArticulationRateMoraPerSec = Math.Round(moraCount.Value / (active / 1000.0), 2);
+                // Số mora trung bình mỗi đoạn nói liền (mean length of run): càng lớn càng nói liền mạch
+                result.MeanRunMoras = Math.Round((double)moraCount.Value / (pauses.Count + 1), 1);
             }
 
             return result;

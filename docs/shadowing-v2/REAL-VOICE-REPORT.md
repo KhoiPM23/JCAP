@@ -90,6 +90,28 @@ Nguyên nhân và cách sửa (`ShadowingAudioValidator`, `FluencyAnalyzer`):
 Điểm chưa đạt 100 trên câu FLEURS chủ yếu do Whisper `small` nghe nhầm tên riêng nước ngoài và chữ Hán hiếm (ビシュケク → 美視県, 徘徊 → 拝開);
 câu FLEURS (Wikipedia) khó hơn nhiều so với câu N5–N3. Không phải lỗi bộ chấm; muốn cải thiện cần mô hình lớn hơn.
 
+## 5c. Lưu loát: mức nhịp nói bình thường (người Nhật FLEURS) và người học
+
+Đo bằng `FluencyBaselineBench` (cùng VAD và tiêu chí khoảng dừng với sản phẩm; giọng mẫu VOICEVOX speaker 3 đọc cùng câu).
+Phân vị 5 · 50 · 95. Câu FLEURS dài (~60 mora), câu người học ngắn (~15 mora).
+
+| Chỉ số | Người Nhật (FLEURS, 150) | Người học (46 bản ghi, 44 đo được) |
+|---|---|---|
+| Tốc độ phát âm so với mẫu (mẫu / người nói; < 1 là chậm hơn) | 0,73 · 0,94 · 2,14 | 0,47 · 0,99 · 1,23 |
+| Bị coi là "chậm hơn mẫu" (≤ 0,70) | 2/150 | 7/44 |
+| Bị coi là "nhanh hơn mẫu" (≥ 1,40, ngưỡng cũ) | **26/150** | 1/44 |
+| Có ≥ 1 khoảng dừng thừa (≥ 400 ms, giữa câu) | 26/150 | 16/44 |
+| Nói liền trung bình (mora/đoạn) — mẫu VOICEVOX | 15 — 20 | **6** — 12 |
+
+Quyết định theo số liệu:
+- Giữ ngưỡng "chậm" 0,70 (gần như không bắt nhầm người bản xứ).
+- Người Nhật thật thường nói **nhanh hơn VOICEVOX**: ngưỡng nhận xét "nhanh" nâng từ 1,40 lên 2,5 (chỉ khi bất thường); giao diện ghi "nhanh hơn mẫu" như thông tin, không đánh dấu là vấn đề.
+- Giữ ngưỡng khoảng dừng thừa 400 ms: người học có tỷ lệ bản ghi có dừng thừa cao gấp đôi dù câu ngắn hơn ~4 lần.
+- "Nói liền trung bình" (mean length of run) phân biệt rõ: người học ~½ mẫu, người bản xứ gần bằng mẫu.
+
+Hiển thị: khối "Lưu loát" trên thẻ kết quả (tham khảo, chưa tính điểm) gồm tốc độ so với mẫu, số lần dừng, số lần **ngập ngừng giữa từ**
+(khoảng dừng thừa nằm giữa một từ, xác định bằng mốc mora của giọng mẫu), nói liền trung bình và nhận xét. Quy ra điểm: để sau khi có thêm dữ liệu người học.
+
 ## 6. Giới hạn
 
 - 1 người nói, 46 lượt, không nhãn: không đủ để nêu độ chính xác hay mở chiều Phát âm (Decision 3 cần 3–5 người, 10–15 câu × 2–3 lượt, có nhãn).

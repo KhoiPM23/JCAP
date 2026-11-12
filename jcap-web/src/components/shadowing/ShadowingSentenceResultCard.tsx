@@ -1,12 +1,15 @@
 import React from 'react';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
-import type { ShadowingDiffToken, ShadowingEvaluationDimensions } from '../../types/shadowing';
+import type { ShadowingDiffToken, ShadowingEvaluationDimensions, ShadowingFluencyMetrics } from '../../types/shadowing';
 import EvaluationDimensionsRow from './EvaluationDimensionsRow';
+import FluencyPanel from './FluencyPanel';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
   spokenText?: string;
   overallScore: number;
+  /** Số liệu nhịp nói (Lưu loát, tham khảo, chưa tính vào điểm). */
+  fluencyMetrics?: ShadowingFluencyMetrics | null;
   gateDetail?: string;
   diffTokens: ShadowingDiffToken[];
   attemptsCount: number;
@@ -29,6 +32,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   targetText,
   spokenText = '',
   overallScore,
+  fluencyMetrics = null,
   gateDetail,
   diffTokens,
   attemptsCount,
@@ -178,6 +182,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           size="md"
         />
         <EvaluationDimensionsRow dimensions={dimensions} />
+        <FluencyPanel fluency={fluencyMetrics} />
         {evaluationStatus === 'partial' && recognitionSource === 'web_speech' && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
             Dịch vụ nhận dạng AI tạm thời không khả dụng nên lượt này được chấm theo nhận dạng của trình duyệt.
