@@ -98,6 +98,13 @@ class VoiceVoxService {
     this.lastCheckTime = 0;
   }
 
+  /**
+   * Kiểm tra trạng thái khả dụng của VOICEVOX Engine (true: online, false: offline, null: chưa check)
+   */
+  public isAvailable(): boolean | null {
+    return this.isVoiceVoxAvailable;
+  }
+
   // Danh mục câu chào & mẫu thoại cốt lõi hay gặp nhất trong tiếng Nhật giao tiếp
   public static readonly COMMON_PHRASES = [
     'こんにちは',
@@ -110,6 +117,8 @@ class VoiceVoxService {
     'かしこまりました',
     '少々お待ちください',
     '失礼します',
+    '大丈夫ですか？ごゆっくりでいいですよ。',
+    'いらっしゃいませ！何名様ですか？',
   ];
 
   /**

@@ -515,6 +515,7 @@ public class VoiceVoxKanaReaderTests
     [Fact]
     public async Task SlowEngine_TimesOutWithoutOpeningTheBreaker_SoTheNextTurnIsStillTried()
     {
+        VoiceVoxKanaReader.ResetStateForTests();
         // Engine bận TTS: chậm không đồng nghĩa với hỏng, lượt sau vẫn phải được thử.
         // Trễ bất đồng bộ và tôn trọng hủy (như HTTP thật); Thread.Sleep đồng bộ làm test phụ thuộc vào lịch luồng nên chập chờn.
         var slow = new SlowStubHandler(TimeSpan.FromSeconds(2));

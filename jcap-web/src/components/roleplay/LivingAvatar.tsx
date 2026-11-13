@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'cheering' | 'bowing';
+export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'cheering' | 'bowing' | 'puzzled' | 'delighted';
 export type MouthViseme = 'closed' | 'A' | 'I' | 'U' | 'E' | 'O' | 'N';
 export type ScenarioArchetype =
   | 'culinary'     // Tiệm mì Ramen, quán ăn, nhà hàng, izakaya, đầu bếp
@@ -129,9 +129,18 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
       case 'N':
       case 'closed':
       default:
+        if (avatarState === 'puzzled') {
+          return (
+            <ellipse cx="50" cy="62" rx="3.5" ry="3.5" stroke="#be123c" strokeWidth="1.6" fill="none" />
+          );
+        }
         return (
           <path
-            d={avatarState === 'cheering' || avatarState === 'bowing' ? 'M45 61 Q50 65 55 61' : 'M46 61.5 Q50 63 54 61.5'}
+            d={
+              avatarState === 'cheering' || avatarState === 'bowing' || avatarState === 'delighted'
+                ? 'M45 61 Q50 65 55 61'
+                : 'M46 61.5 Q50 63 54 61.5'
+            }
             stroke="#be123c"
             strokeWidth="1.8"
             strokeLinecap="round"
@@ -143,7 +152,7 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
 
   // Đôi mắt Anime/Manga có chiều sâu và cảm xúc
   const renderEyes = () => {
-    if (avatarState === 'cheering' || avatarState === 'bowing') {
+    if (avatarState === 'cheering' || avatarState === 'bowing' || avatarState === 'delighted') {
       // Mắt cười híp hình cung trăng đáng yêu (^ ^)
       return (
         <g>
@@ -152,6 +161,28 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
           {/* Lông mi nhẹ */}
           <path d="M44.5 43.5 L46.5 41.5" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
           <path d="M63.5 43.5 L65.5 41.5" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+      );
+    }
+
+    if (avatarState === 'puzzled') {
+      // Mắt bối rối/ngạc nhiên: một bên lông mày nhướng lên, một giọt mồ hôi anime nhỏ
+      return (
+        <g>
+          {/* Mắt trái (hơi tròn to ngạc nhiên) */}
+          <ellipse cx="40" cy="46" rx="5.2" ry="5.5" fill="#0f172a" />
+          <circle cx="41.5" cy="44.5" r="1.8" fill="#ffffff" />
+          {/* Lông mày trái nhướng cao */}
+          <path d="M34 38 Q39 36 45 39" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+
+          {/* Mắt phải (hơi nheo bối rối) */}
+          <ellipse cx="60" cy="46" rx="4.5" ry="4.8" fill="#0f172a" />
+          <circle cx="61.2" cy="44.8" r="1.5" fill="#ffffff" />
+          {/* Lông mày phải hạ thấp */}
+          <path d="M55 41 Q60 43 65 41" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+
+          {/* Giọt mồ hôi anime ở thái dương trái */}
+          <path d="M28 36 C28 36 26 39 26 41 C26 42.5 27 43.5 28.5 43.5 C30 43.5 31 42.5 31 41 C31 39 28 36 28 36 Z" fill="#38bdf8" opacity="0.85" />
         </g>
       );
     }
@@ -211,12 +242,22 @@ export const LivingAvatar: React.FC<LivingAvatarProps> = ({
         {avatarState === 'listening' && (
           <div className="absolute -inset-1 rounded-full border-2 border-emerald-400 animate-pulse pointer-events-none" />
         )}
+        {avatarState === 'delighted' && (
+          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-r from-amber-300 to-rose-400 animate-pulse opacity-50 pointer-events-none" />
+        )}
+        {avatarState === 'puzzled' && (
+          <div className="absolute -inset-1 rounded-full border-2 border-amber-400/70 border-dashed animate-pulse pointer-events-none" />
+        )}
 
         {/* Khung Portrait Tròn Ukiyo-e */}
         <div
           className={`w-full h-full rounded-full bg-gradient-to-b from-amber-50/80 via-white to-sky-50/60 border-2 shadow-sm overflow-hidden flex items-center justify-center transition-all duration-300 ${
             avatarState === 'speaking'
               ? 'border-[var(--ai)] shadow-md shadow-[var(--ai)]/20'
+              : avatarState === 'delighted'
+              ? 'border-amber-400 shadow-md shadow-amber-300/30'
+              : avatarState === 'puzzled'
+              ? 'border-amber-300 shadow-sm'
               : 'border-[var(--line)] hover:border-[var(--line-strong)]'
           } ${avatarState === 'idle' ? 'animate-breathing' : ''} ${
             avatarState === 'bowing' ? 'transform translate-y-1.5 rotate-[2.5deg] scale-95 transition-all duration-500' : ''

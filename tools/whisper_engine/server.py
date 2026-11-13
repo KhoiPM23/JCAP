@@ -1,4 +1,5 @@
 import os
+import re
 import math
 import uuid
 import shutil
@@ -92,7 +93,8 @@ async def transcribe(
             beam_size=5,
             temperature=0.0,
             initial_prompt=None,
-            vad_filter=False,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=500),
         )
 
         segment_list = []
@@ -125,6 +127,10 @@ async def transcribe(
             # Drop compression ratio anomalies (hallucinatory infinite looping text)
             compression = getattr(seg, "compression_ratio", 1.0)
             if compression > 2.4:
+                continue
+
+            # Drop repeating katakana loop hallucination e.g. "アアアアア", "ニャニャニャニャ", "トットットッ"
+            if re.match(r"^([ァ-ヴー]{1,4})\1{2,}$", text) or re.search(r"(?:[ァ-ヴー]{1,3})\1{3,}", text):
                 continue
 
             # Drop prompt echoes or YouTube outro hallucinations
