@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Button } from '../jcap';
+import { IconButton } from '../jcap';
 
 /** Bản ghi gần nhất để tải về làm dữ liệu đo độ chính xác nhận dạng (chỉ chế độ phát triển). */
 export interface DevRecordingTake {
@@ -42,13 +42,7 @@ export const RecordingDevTools: React.FC<RecordingDevToolsProps> = ({ take }) =>
     download(new Blob([JSON.stringify(take.meta, null, 2)], { type: 'application/json' }), `${base}.json`);
   };
 
-  // Chỉ hiện khi đã có bản ghi để tải: một nút nhỏ canh phải, không chiếm cả một khối
+  // Chỉ hiện khi đã có bản ghi để tải: một nút biểu tượng nhỏ đặt cạnh nút luyện lại
   if (!take) return null;
-  return (
-    <div className="flex w-full justify-end">
-      <Button size="sm" variant="ghost" icon="download" onClick={handleDownload} title="Chỉ có khi chạy npm run dev">
-        Tải bản ghi <Badge tone="neutral" className="ml-1">dev</Badge>
-      </Button>
-    </div>
-  );
+  return <IconButton icon="download" label="Tải bản ghi (dev)" size="sm" variant="secondary" onClick={handleDownload} />;
 };

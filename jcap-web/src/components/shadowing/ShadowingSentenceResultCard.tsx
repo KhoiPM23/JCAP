@@ -23,6 +23,8 @@ export interface ShadowingSentenceResultCardProps {
   onPlayUserAudio: () => void;
   onRetry: () => void;
   onNext: () => void;
+  /** Nút phụ nhỏ đặt ngay sau nút luyện lại / bỏ qua (vd. tải bản ghi khi chạy dev). */
+  extraAction?: React.ReactNode;
   className?: string;
 }
 
@@ -41,6 +43,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   onPlayUserAudio,
   onRetry,
   onNext,
+  extraAction,
   className = '',
 }) => {
   // State C: chưa chấm được (không có điểm). unavailable = thiếu dữ liệu tin cậy (im lặng, âm thanh không đạt);
@@ -125,6 +128,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
             >
               Bỏ qua câu
             </button>
+            {extraAction}
             <button
               type="button"
               onClick={onRetry}
@@ -216,6 +220,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           >
             <span>Luyện lại câu</span>
           </button>
+          {extraAction}
           <button
             type="button"
             onClick={onNext}

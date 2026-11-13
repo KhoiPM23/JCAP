@@ -2500,12 +2500,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         onPlayUserAudio={() => playUserRecording(currentSentence.id)}
                         onRetry={handleRetryCurrentSentence}
                         onNext={handleNextSentence}
+                        extraAction={
+                          // Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật
+                          import.meta.env.DEV ? (
+                            <RecordingDevTools take={devTake && devTake.sentenceId === currentSentence.id ? devTake : null} />
+                          ) : undefined
+                        }
                       />
-                    )}
-
-                    {/* Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật */}
-                    {import.meta.env.DEV && (practiceState === 'ready' || practiceState === 'evaluated') && (
-                      <RecordingDevTools take={devTake && devTake.sentenceId === currentSentence?.id ? devTake : null} />
                     )}
                   </>
                 )}
