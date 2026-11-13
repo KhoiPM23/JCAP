@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Button as JButton, Icon as JIcon, IconButton as JIconButton, Logo as JLogo } from '../../components/jcap';
+import { Badge as JBadge, Button as JButton, Icon as JIcon, IconButton as JIconButton, JlptBadge as JJlptBadge, Logo as JLogo } from '../../components/jcap';
 import { getPracticePrefs } from '../../utils/practicePrefs';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
@@ -17,16 +17,65 @@ import { AudioDeviceSettingsModal } from '../../components/shadowing/AudioDevice
 import { voicevoxService, type VoiceOption } from '../../services/voicevoxService';
 import RecordingBar from '../../components/shadowing/RecordingBar';
 import { audioMetricsService, measureRecordedBlob, type AudioQualityMetrics, type AudioGateStatus } from '../../services/audioMetricsService';
-import { acquireMicStream, describeMicError } from '../../utils/audioDevice';
+import {
+  INPUT_DEVICE_STORAGE_KEY,
+  INPUT_LABEL_STORAGE_KEY,
+  OUTPUT_DEVICE_STORAGE_KEY,
+  applyOutputDevice,
+  describeDeviceStatus,
+  describeMicError,
+  filterSelectableDevices,
+  newlyConnected,
+  normalizeDeviceId,
+} from '../../utils/audioDevice';
+import { PREROLL_MS, WarmMic, isMicPermissionGranted } from '../../utils/warmMic';
+import { allowedPrerollMs } from '../../utils/pcmTakeBuffer';
+import {
+  entriesFromServer,
+  initialEntry,
+  mergeServerStates,
+  nextSentenceState,
+  type SentenceEvent,
+  type SentenceStateEntry,
+} from '../../utils/sentencePracticeState';
+import { serverToLocalProgress, suggestedIndexFromLocal } from '../../utils/shadowingProgressSync';
+import RecordingReviewBar from '../../components/shadowing/RecordingReviewBar';
+import SessionSummaryPanel from '../../components/shadowing/SessionSummaryPanel';
+import { matchingFurigana } from '../../utils/furigana';
+import type {
+  FuriganaSegment,
+  ShadowingEvaluationDimensions,
+  ShadowingServerProgress,
+  ShadowingSessionSummary,
+} from '../../types/shadowing';
+import { RecordingDevTools, type DevRecordingTake } from '../../components/shadowing/RecordingDevTools';
 import { useAuth } from '../../contexts/AuthContext';
 import { SpeechTranscriptCollector } from '../../utils/speechTranscriptCollector';
 import { pickRecordingMimeType, resolveRecordedMime } from '../../utils/recordingMime';
-import { blobToAnalysisWav } from '../../utils/wavEncoder';
+import {
+  isSpeechMicTrackEnabled,
+  startRecognitionOnTrack,
+  type RecognitionMicSource,
+} from '../../utils/speechRecognitionStart';
+import { blobToAnalysisWav, pcmToAnalysisWav } from '../../utils/wavEncoder';
+import { makePlaybackBlob } from '../../utils/playbackLevel';
 import { sessionRankTitle, summarizeSessionScores } from '../../utils/shadowingSessionScores';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
 import { ShadowingSentenceResultCard } from '../../components/shadowing/ShadowingSentenceResultCard';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DefaultAvatarImage } from '../../components/shadowing/DefaultAvatarImage';
+
+// Giới hạn một bản ghi (bằng giới hạn phân tích của backend) và thời gian chờ chấm tối đa trước khi cho "Gửi lại".
+const MAX_RECORDING_MS = 30_000;
+const EVALUATE_TIMEOUT_MS = 60_000;
+
+const newSubmissionId = (): string =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+      });
 
 // Chặn trên (ms) khi chờ sự kiện kết thúc của MediaRecorder / Web Speech sau khi bấm dừng.
 const RECORDER_SETTLE_TIMEOUT_MS = 2000;
@@ -84,7 +133,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [sessionDurationSeconds, setSessionDurationSeconds] = useState<number>(0);
 
   // Recording & State
-  type PracticeState = 'ready' | 'listening' | 'analyzing' | 'evaluated' | 'opponent-speaking' | 'completed';
+  // recorded: đã thu xong, CHƯA gửi — người học nghe lại, thu lại hoặc gửi chấm
+  type PracticeState = 'ready' | 'listening' | 'recorded' | 'analyzing' | 'evaluated' | 'opponent-speaking' | 'completed';
   const [practiceState, setPracticeState] = useState<PracticeState>('ready');
   const [currentRecognizedText, setCurrentRecognizedText] = useState<string>('');
   const [currentScore, setCurrentScore] = useState<number>(0);
@@ -94,7 +144,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [currentDiffTokens, setCurrentDiffTokens] = useState<ShadowingDiffToken[]>([]);
   const [currentEvaluationStatus, setCurrentEvaluationStatus] = useState<'completed' | 'partial' | 'unavailable' | 'failed'>('completed');
   // Nguồn nhận dạng đã dùng cho kết quả hiện tại (backend ghi nhận)
-  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'gemini' | 'web_speech' | null>(null);
+  const [currentRecognitionSource, setCurrentRecognitionSource] = useState<'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | null>(null);
+  // Trạng thái từng chiều đánh giá của kết quả hiện tại (Shadowing V2) và điểm hiển thị là điểm gì
+  const [currentDimensions, setCurrentDimensions] = useState<ShadowingEvaluationDimensions | null>(null);
+  const [currentScoreBasis, setCurrentScoreBasis] = useState<'content' | null>(null);
   const [sentenceAttemptsMap, setSentenceAttemptsMap] = useState<Map<number, number>>(new Map());
   const latestAttemptIsBestRef = useRef<boolean>(true);
   const [micError, setMicError] = useState<string | null>(null);
@@ -116,6 +169,40 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Web Speech Recognition & Auto-scroll
   const recognitionRef = useRef<any>(null);
+  // Track của micro đang thu âm: truyền cho Web Speech để nhận dạng nghe cùng micro với bản ghi chấm điểm.
+  const micTrackRef = useRef<MediaStreamTrack | null>(null);
+  // Micro mở sẵn trong buổi luyện (không mất âm đầu câu khi bấm ghi) + đang mở dở, để không mở hai lần
+  const warmMicRef = useRef<WarmMic | null>(null);
+  const warmMicOpeningRef = useRef<Promise<WarmMic> | null>(null);
+  const isUnmountedRef = useRef<boolean>(false);
+  // Thời điểm dừng phát âm thanh gần nhất: không lấy tiếng loa vào phần thu trước khi bấm ghi
+  const playbackActiveRef = useRef<boolean>(false);
+  const playbackEndedAtRef = useRef<number | null>(null);
+  // Phiên luyện ở server (nguồn chính thức của tiến độ). null = không đồng bộ được, trang chạy như cũ với localStorage.
+  const [serverProgress, setServerProgress] = useState<ShadowingServerProgress | null>(null);
+  const serverProgressRef = useRef<ShadowingServerProgress | null>(null);
+  const [progressSyncError, setProgressSyncError] = useState<string | null>(null);
+  // Trạng thái từng câu của vai người học (server + trạng thái chỉ-client của câu đang thu)
+  const [sentenceStates, setSentenceStates] = useState<Map<number, SentenceStateEntry>>(new Map());
+  // Bản thu đã dừng nhưng CHƯA gửi chấm (nghe lại / thu lại / gửi). Giữ lại khi gửi lỗi để "Gửi lại" cùng mã lần gửi.
+  type PendingTake = {
+    sentenceId: number;
+    audioBlob: Blob;
+    /** Bản để nghe lại: âm lượng đã chuẩn hoá (chỉ phát lại; không gửi chấm). */
+    playbackBlob: Blob;
+    analysisWav: Blob | null;
+    metrics: AudioQualityMetrics;
+    recognition: ReturnType<SpeechTranscriptCollector['snapshot']>;
+    capture: 'pcm' | 'media-recorder';
+    prerollMs: number;
+    submissionId: string | null;
+  };
+  const pendingTakeRef = useRef<PendingTake | null>(null);
+  const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const recordingLimitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Chỉ chế độ phát triển: bản ghi gần nhất để tải về đo nhận dạng, và bật/tắt khử nhiễu của trình duyệt
+  const [devTake, setDevTake] = useState<DevRecordingTake | null>(null);
   const isRecordingRef = useRef<boolean>(false);
   // Gom transcript đã chốt qua các lần Web Speech tự khởi động lại
   const collectorRef = useRef<SpeechTranscriptCollector>(new SpeechTranscriptCollector());
@@ -125,23 +212,96 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Tăng mỗi khi hủy/thu lại để bỏ qua kết quả đến muộn
   const evaluationSeqRef = useRef<number>(0);
   const isSubmittingRef = useRef<boolean>(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  // Khung hội thoại (chỉ phần này cuộn khi có câu mới)
+  const dialogueScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Modals & Slideovers (Mặc định ẩn nội dung khi lần đầu vào trang, mũi tên hướng xuống)
   const [isSituationCollapsed, setIsSituationCollapsed] = useState<boolean>(true);
   const [isDialogueContentCollapsed, setIsDialogueContentCollapsed] = useState<boolean>(true);
   const [isFullScriptModalOpen, setIsFullScriptModalOpen] = useState<boolean>(false);
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState<boolean>(false);
+  // Chi tiết từng câu ở màn tổng kết: mặc định thu gọn, bấm từng câu để mở
+  const [openSentenceIds, setOpenSentenceIds] = useState<Set<number>>(new Set());
+  const toggleSentenceDetail = (id: number) =>
+    setOpenSentenceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   // Lưu buổi luyện vào lịch sử ở backend: idle (chưa lưu / không có câu nào được chấm) | saving | saved | failed
   const [historySaveState, setHistorySaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [historySaveMessage, setHistorySaveMessage] = useState<string>('');
+  // Tổng kết do backend tính khi hoàn thành (đúng cả khi tiếp tục phiên từ máy khác) và gợi ý luyện tập
+  const [serverSummary, setServerSummary] = useState<ShadowingSessionSummary | null>(null);
+  const [serverOverall, setServerOverall] = useState<number | null>(null);
+  const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
+  // Rỗng = mặc định của hệ thống (người mới chưa chọn gì luôn ở chế độ này; giá trị "default" cũ cũng là mặc định)
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
-    localStorage.getItem('jcap_audio_input_device') || ''
+    normalizeDeviceId(localStorage.getItem(INPUT_DEVICE_STORAGE_KEY))
   );
   const [selectedAudioOutputDeviceId, setSelectedAudioOutputDeviceId] = useState<string>(
-    localStorage.getItem('jcap_audio_output_device') || ''
+    normalizeDeviceId(localStorage.getItem(OUTPUT_DEVICE_STORAGE_KEY))
   );
+  // Không có micro nào: khoá nút ghi âm (vẫn cho nghe mẫu). null = chưa biết (chưa liệt kê được thiết bị)
+  const [hasMicrophone, setHasMicrophone] = useState<boolean | null>(null);
+  const selectedInputIdRef = useRef(selectedAudioInputDeviceId);
+  selectedInputIdRef.current = selectedAudioInputDeviceId;
+
+  // Theo dõi cắm/rút thiết bị: báo tên thiết bị mới, báo micro đã chọn bị rút, khoá ghi âm khi không còn micro.
+  // KHÔNG tự đổi lựa chọn của người dùng; khi ghi âm mà micro đã chọn vắng mặt thì tạm dùng micro mặc định.
+  useEffect(() => {
+    const media = navigator.mediaDevices;
+    if (!media?.enumerateDevices) {
+      setHasMicrophone(false);
+      return;
+    }
+    let previous: MediaDeviceInfo[] = [];
+    let disposed = false;
+    const refresh = async () => {
+      try {
+        const all = filterSelectableDevices(await media.enumerateDevices());
+        if (disposed) return;
+        const inputs = all.filter((d) => d.kind === 'audioinput');
+        setHasMicrophone(inputs.length > 0);
+
+        // Đang tạm dùng micro mặc định vì micro đã chọn vắng mặt: đóng để lượt sau thử lại đúng micro đã chọn
+        if (warmMicRef.current?.usedFallback && !isRecordingRef.current) closeWarmMic();
+
+        const added = newlyConnected(previous, all);
+        const names = [...new Set(added.map((d) => d.label).filter(Boolean))].join(', ');
+        if (names) setMicNotice(`Đã kết nối: ${names}. Mở "Cài đặt âm thanh" nếu muốn dùng thiết bị này.`);
+
+        const selected = selectedInputIdRef.current;
+        const canVerify = inputs.some((d) => !!d.deviceId);
+        if (selected && canVerify && !inputs.some((d) => d.deviceId === selected)) {
+          setMicNotice(
+            describeDeviceStatus('audioinput', 'DISCONNECTED', { selected: localStorage.getItem(INPUT_LABEL_STORAGE_KEY) }),
+          );
+        }
+        previous = all;
+      } catch {
+        // Không liệt kê được: giữ nguyên trạng thái, việc mở micro lúc ghi âm sẽ báo lỗi đúng nguyên nhân
+      }
+    };
+    refresh();
+    media.addEventListener?.('devicechange', refresh);
+    return () => {
+      disposed = true;
+      media.removeEventListener?.('devicechange', refresh);
+    };
+  }, []);
+
+  /** Phát qua loa đã chọn: chờ chuyển xong rồi mới phát; không chuyển được thì báo và phát qua loa mặc định. */
+  const routeToSelectedOutput = async (audio: HTMLAudioElement) => {
+    const routing = await applyOutputDevice(
+      audio as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> },
+      selectedAudioOutputDeviceId
+    );
+    if (routing === 'failed') {
+      setMicNotice('Không phát được qua loa đã chọn (có thể đã ngắt kết nối), đang dùng loa mặc định của hệ thống.');
+    }
+  };
 
   // VOICEVOX TTS Integration
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
@@ -177,6 +337,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [showTranslations, setShowTranslations] = useState<Record<number, boolean>>({});
   // Mặc định ẩn nghĩa tiếng Việt: bấm "Dịch" ở từng câu mới hiện. Ai bật "Hiện nghĩa tiếng Việt" ở Cài đặt > Khi luyện tập thì hiện sẵn
   const translationDefault = getPracticePrefs().translation;
+  // Furigana (Cài đặt > Khi luyện tập > Hiện furigana) lấy từ dữ liệu câu mẫu tính sẵn ở backend; câu chưa có dữ liệu hiện chữ thường
+  const showFurigana = getPracticePrefs().furigana;
+  const [furiganaMap, setFuriganaMap] = useState<Map<number, FuriganaSegment[]>>(new Map());
   const isTranslationShown = (sentenceId: number) => showTranslations[sentenceId] ?? translationDefault;
 
   // Synchronization refs to avoid stale closure races and unwanted auto-play
@@ -194,6 +357,99 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   useEffect(() => {
     dialogueRef.current = dialogue;
   }, [dialogue]);
+
+  const closeWarmMic = () => {
+    warmMicRef.current?.close();
+    warmMicRef.current = null;
+  };
+
+  /**
+   * Micro cho lượt ghi: dùng lại micro đang mở nếu đúng thiết bị/cấu hình và còn sống, không thì mở mới.
+   * Ném lỗi getUserMedia để nơi bấm ghi báo đúng nguyên nhân.
+   */
+  const ensureWarmMic = async (deviceId: string): Promise<WarmMic> => {
+    const usable = (m: WarmMic | null) => !!m && m.isLive && m.matches(deviceId);
+    if (usable(warmMicRef.current)) return warmMicRef.current!;
+
+    if (warmMicOpeningRef.current) {
+      try {
+        const pending = await warmMicOpeningRef.current;
+        if (usable(pending)) return pending;
+      } catch {
+        // lần mở trước lỗi: thử mở lại bên dưới
+      }
+    }
+
+    if (warmMicRef.current && isRecordingRef.current && warmMicRef.current.isLive) return warmMicRef.current;
+    closeWarmMic();
+    const opening = WarmMic.open(deviceId);
+    warmMicOpeningRef.current = opening;
+    try {
+      const mic = await opening;
+      if (isUnmountedRef.current) {
+        mic.close();
+        throw new Error('Đã rời trang luyện');
+      }
+      if (warmMicRef.current && warmMicRef.current !== mic) warmMicRef.current.close();
+      warmMicRef.current = mic;
+      return mic;
+    } finally {
+      if (warmMicOpeningRef.current === opening) warmMicOpeningRef.current = null;
+    }
+  };
+
+  // ---- Phiên luyện ở server + lớp tương thích localStorage ----
+
+  const learnerIdOf = () => user?.id || user?.email || 'guest_learner';
+
+  /** Server là nguồn chính thức: ghi đè bản localStorage (cho các màn hình còn đọc nó), không có chiều ngược lại. */
+  const mirrorToLocal = (progress: ShadowingServerProgress, meta?: ShadowingDialogueDetail | null) => {
+    const d = meta ?? dialogueRef.current;
+    const local = serverToLocalProgress(progress, learnerIdOf(), {
+      subtitle: d?.scenarioTitle,
+      scenarioTitle: d?.scenarioTitle,
+      textbookTitle: d?.textbookTitle,
+      chapterTitle: d?.chapterTitle,
+    });
+    if (local) shadowingStorageService.saveProgress(local);
+  };
+
+  /** replace: tải phiên (mở trang, làm lại, đổi vai). merge: phản hồi cập nhật — giữ trạng thái chỉ-client của câu đang thu. */
+  const applyServerProgress = (progress: ShadowingServerProgress, mode: 'replace' | 'merge', meta?: ShadowingDialogueDetail | null) => {
+    serverProgressRef.current = progress;
+    setServerProgress(progress);
+    setSentenceStates((prev) => (mode === 'replace' ? entriesFromServer(progress.sentences) : mergeServerStates(prev, progress.sentences)));
+    mirrorToLocal(progress, meta);
+  };
+
+  const applySentenceEvent = (sentenceId: number, event: SentenceEvent) =>
+    setSentenceStates((prev) => new Map(prev).set(sentenceId, nextSentenceState(prev.get(sentenceId) ?? initialEntry(), event)));
+
+  /** Lưu vị trí câu lên server (không chặn giao diện; lỗi mạng chỉ làm vị trí server cũ hơn, lần sau cập nhật lại). */
+  const persistPosition = (index: number) => {
+    const progress = serverProgressRef.current;
+    if (!progress || progress.status !== 'in_progress') return;
+    shadowingService.updateProgress(progress.id, index).then((res) => {
+      if (res.success && res.data && serverProgressRef.current?.id === res.data.id) applyServerProgress(res.data, 'merge');
+    });
+  };
+
+  /** Bỏ bản thu chưa gửi (thu lại, sang câu khác, đổi vai, rời trang). */
+  const discardPendingTake = () => {
+    pendingTakeRef.current = null;
+    setPendingAudioUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setSubmitError(null);
+  };
+
+  const clearRecordingLimit = () => {
+    if (recordingLimitTimerRef.current) {
+      clearTimeout(recordingLimitTimerRef.current);
+      recordingLimitTimerRef.current = null;
+    }
+  };
 
   // Centralized audio & timer stopper
   const stopAllAudio = () => {
@@ -264,15 +520,55 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
           stopAllAudio();
 
-          const isResume = searchParams.get('resume') === 'true';
+          let isResume = searchParams.get('resume') === 'true';
           const isRestart = searchParams.get('restart') === 'true';
           const learnerId = user?.id || user?.email || 'guest_learner';
           const savedProgress = shadowingStorageService.getProgress(learnerId, targetId);
 
           let initialIndex = 0;
           let effectiveRole = userRoleRef.current;
+          discardPendingTake();
 
-          if (isRestart) {
+          // 1. Phiên ở server (nguồn chính thức): đã có phiên đang luyện cho bài + vai thì tiếp tục đúng chỗ (kể cả từ máy khác),
+          //    chưa có thì tạo mới; ?restart=true thì làm lại. localStorage chỉ gợi ý vị trí khi server chưa từng có phiên.
+          const started = await shadowingService.startProgress({
+            dialogueId: targetId,
+            learnerRole: effectiveRole,
+            restart: isRestart,
+            suggestedSentenceIndex: isRestart ? undefined : suggestedIndexFromLocal(savedProgress, effectiveRole),
+          });
+          if (isCancelled) return;
+
+          if (started.success && started.data) {
+            const progress = started.data;
+            applyServerProgress(progress, 'replace', res.data);
+            setProgressSyncError(null);
+            initialIndex = Math.min(Math.max(0, progress.currentSentenceIndex), Math.max(0, res.data.sentences.length - 1));
+            // Tiếp tục giữa chừng: áp dụng quy tắc "không tự phát câu đối phương" như khi resume
+            isResume = !progress.created && initialIndex > 0;
+            // Đã làm lại/tiếp tục xong: bỏ tham số khỏi URL để tải lại trang không làm lại phiên lần nữa
+            if (isRestart || searchParams.get('resume')) {
+              setSearchParams(
+                (prev) => {
+                  const next = new URLSearchParams(prev);
+                  next.delete('restart');
+                  next.delete('resume');
+                  return next;
+                },
+                { replace: true },
+              );
+            }
+          } else {
+            // 2. Không đồng bộ được với server: chạy như trước bằng localStorage, báo cho người học biết.
+            serverProgressRef.current = null;
+            setServerProgress(null);
+            setSentenceStates(new Map());
+            setProgressSyncError(started.message || 'Chưa đồng bộ được tiến độ với máy chủ; tiến độ chỉ lưu trên trình duyệt này.');
+          }
+
+          if (serverProgressRef.current) {
+            // Đã có phiên server và đã ghi đè localStorage ở trên
+          } else if (isRestart) {
             const firstSentenceText = res.data.sentences[0]?.japaneseText;
             effectiveRole = userRoleRef.current;
             shadowingStorageService.restartProgress(
@@ -374,6 +670,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     };
   }, [id]);
 
+  // Furigana của bài (không chặn việc luyện; lỗi thì hiện chữ thường)
+  useEffect(() => {
+    const dialogueId = Number(id);
+    if (!Number.isInteger(dialogueId)) return;
+    let cancelled = false;
+    shadowingService.getFurigana(dialogueId).then((map) => {
+      if (!cancelled) setFuriganaMap(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
   // Sync role if changed via URL query params (e.g. browser back/forward)
   useEffect(() => {
     const roleInUrl = (searchParams.get('role')?.toUpperCase() as 'A' | 'B') || 'A';
@@ -381,12 +690,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       handleConfirmRoleChange(roleInUrl);
     }
   }, [searchParams]);
-
-  // Handle changing Level from dropdown in header
-  const handleLevelChange = (newLevel: 'N5' | 'N4' | 'N3') => {
-    setSelectedLevel(newLevel);
-    navigate(`/shadowing?level=${newLevel}`);
-  };
 
   // Back button: returns to dialogue catalog (mở từ Khám phá thì về lại đúng chỗ đó trên bản đồ)
   const handleBackToDialogueList = () => {
@@ -405,7 +708,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
   // Stop audio on unmount
   useEffect(() => {
+    isUnmountedRef.current = false; // StrictMode gắn lại effect sau lần dọn thử
     return () => {
+      isUnmountedRef.current = true;
+      closeWarmMic();
+      clearRecordingLimit();
+      discardPendingTake();
       isRecordingRef.current = false;
       evaluationSeqRef.current += 1;
       collectorRef.current.lock();
@@ -421,9 +729,43 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     };
   }, []);
 
-  // Auto-scroll to latest sentence when dialogue progresses
+  // Đang phát âm thanh (giọng mẫu, lượt người kia, nghe lại bản ghi): đóng micro mở sẵn để tai nghe Bluetooth
+  // không bị chuyển sang chế độ đàm thoại (tiếng giọng mẫu rè) và tiếng loa không lọt vào bản ghi; ghi nhận lúc phát xong.
+  const playbackActive = isPlayingAudio || playingUserAudioSentenceId !== null || practiceState === 'opponent-speaking';
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (playbackActive) {
+      playbackActiveRef.current = true;
+      if (!isRecordingRef.current) closeWarmMic();
+    } else if (playbackActiveRef.current) {
+      playbackActiveRef.current = false;
+      playbackEndedAtRef.current = performance.now();
+    }
+  }, [playbackActive]);
+
+  // Tới lượt người học và không phát gì: mở sẵn micro (chỉ khi đã có quyền, không bật hộp xin quyền tự động).
+  // Hết buổi luyện thì đóng.
+  const isLearnerTurn = dialogue?.sentences?.[currentSentenceIndex]?.speakerRole === userRole;
+  useEffect(() => {
+    if (practiceState === 'completed') {
+      closeWarmMic();
+      return;
+    }
+    if (!isLearnerTurn || hasMicrophone !== true || playbackActive) return;
+    if (practiceState !== 'ready' && practiceState !== 'evaluated' && practiceState !== 'recorded') return;
+    let cancelled = false;
+    isMicPermissionGranted().then((granted) => {
+      if (granted && !cancelled) ensureWarmMic(selectedAudioInputDeviceId).catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLearnerTurn, hasMicrophone, playbackActive, practiceState, selectedAudioInputDeviceId]);
+
+  // Cuộn khung hội thoại xuống câu mới nhất. KHÔNG dùng scrollIntoView: lệnh đó cuộn cả các khung cha (kể cả khung trang
+  // có overflow-hidden) khi nội dung cao hơn màn hình, làm cả trang bị đẩy lên và lộ khoảng trắng phía dưới.
+  useEffect(() => {
+    const el = dialogueScrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [currentSentenceIndex, practiceState]);
 
   // Tự động tải trước (Pre-fetch ngầm) âm thanh VOICEVOX theo thứ tự ưu tiên:
@@ -519,9 +861,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
       const audio = new Audio(audioUrl);
-      if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-        (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-      }
+      await routeToSelectedOutput(audio);
+      if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -570,9 +911,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (url && url.startsWith('http')) {
       const audio = new Audio(url);
-      if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-        (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-      }
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -593,15 +931,18 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         }
       };
 
-      audio.play().catch(() => {
-        if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
-        if (text) {
-          playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
-        } else {
-          setIsPlayingAudio(false);
-          if (onEnd) onEnd();
-        }
-      });
+      // Chờ chuyển sang loa đã chọn rồi mới phát; đã bị dừng/thay bằng âm thanh khác trong lúc chờ thì không phát nữa
+      routeToSelectedOutput(audio)
+        .then(() => (audioPlayerRef.current === audio ? audio.play() : undefined))
+        .catch(() => {
+          if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
+          if (text) {
+            playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
+          } else {
+            setIsPlayingAudio(false);
+            if (onEnd) onEnd();
+          }
+        });
     } else if (text) {
       playVoiceVoxWithFallback(text, onEnd, expectedTurnId, sentenceId);
     } else {
@@ -627,9 +968,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     stopAllAudio();
 
     const audio = new Audio(url);
-    if (selectedAudioOutputDeviceId && 'setSinkId' in HTMLMediaElement.prototype) {
-      (audio as any).setSinkId(selectedAudioOutputDeviceId).catch(console.warn);
-    }
     userAudioPlayerRef.current = audio;
     setPlayingUserAudioSentenceId(sentenceId);
 
@@ -639,9 +977,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     audio.onerror = () => {
       setPlayingUserAudioSentenceId(null);
     };
-    audio.play().catch(() => {
-      setPlayingUserAudioSentenceId(null);
-    });
+    // Chờ chuyển sang loa đã chọn rồi mới phát; đã bị dừng trong lúc chờ thì không phát
+    routeToSelectedOutput(audio)
+      .then(() => (userAudioPlayerRef.current === audio ? audio.play() : undefined))
+      .catch(() => {
+        setPlayingUserAudioSentenceId(null);
+      });
   };
 
   // Turn progression: Opponent speaks and auto-advances
@@ -682,6 +1023,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         currentDialogue.sentences.length,
         nextSentence?.japaneseText
       );
+      persistPosition(nextIdx); // server là nguồn chính thức; phản hồi sẽ ghi đè lại localStorage
       const currentUserRole = userRoleRef.current;
 
       if (nextSentence.speakerRole !== currentUserRole) {
@@ -753,6 +1095,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     }
 
     let sessionId = -1;
+    let micSource: RecognitionMicSource = 'default';
     try {
       const recognition = new SpeechRec();
       recognition.lang = 'ja-JP';
@@ -770,6 +1113,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       recognition.onerror = (event: any) => {
+        if (micSource === 'track') {
+          console.warn('[Shadowing] Web Speech lỗi khi nghe micro đã chọn:', event?.error, event?.message ?? '');
+        }
         collector.handleError(sessionId, String(event?.error ?? 'unknown'));
       };
 
@@ -788,7 +1134,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         }
       };
 
-      recognition.start();
+      // Mặc định khởi động như cũ (micro mặc định của hệ thống): truyền track micro đã chọn làm Web Speech ngừng nhận dạng
+      // trên trình duyệt thật, nên chỉ bật khi thử nghiệm (localStorage `jcap_speech_mic_track` = '1').
+      if (isSpeechMicTrackEnabled()) {
+        micSource = startRecognitionOnTrack(recognition, micTrackRef.current);
+        console.info('[Shadowing] Web Speech khởi động với nguồn micro:', micSource);
+      } else {
+        recognition.start();
+      }
       return true;
     } catch (err) {
       console.warn('Recognition start error:', err);
@@ -803,8 +1156,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Start Voice Recording (CHỈ ghi âm khi tới câu của người học: speakerRole === userRole)
   const startRecording = async () => {
     if (!currentSentence || currentSentence.speakerRole !== userRole) return;
+    if (hasMicrophone === false) {
+      // Không có micro: không cho bắt đầu ghi âm, vẫn nghe mẫu được
+      setMicError(describeDeviceStatus('audioinput', 'NOT_FOUND'));
+      return;
+    }
 
     cancelPendingEvaluation();
+    // Thu lại khi đang có bản ghi chưa gửi: bỏ bản cũ
+    discardPendingTake();
+    applySentenceEvent(currentSentence.id, { type: 'START_RECORDING' });
     const collector = collectorRef.current;
     collector.reset();
     isRecordingRef.current = true;
@@ -813,21 +1174,36 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setMicNotice(null);
     setCurrentRecognizedText('');
 
+    // Đang phát giọng mẫu/bản ghi lúc bấm: không lấy phần thu trước (tiếng loa sẽ thành chữ ở đầu câu)
+    const playbackWasActive =
+      playbackActiveRef.current ||
+      (!!audioPlayerRef.current && !audioPlayerRef.current.paused) ||
+      (!!userAudioPlayerRef.current && !userAudioPlayerRef.current.paused);
+    const prerollMs = allowedPrerollMs(playbackWasActive, playbackEndedAtRef.current, performance.now(), PREROLL_MS);
+
     if (audioPlayerRef.current) audioPlayerRef.current.pause();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
     setPlayingUserAudioSentenceId(null);
+    setIsPlayingAudio(false);
 
     // 1. MediaRecorder: dùng MIME thực sự được trình duyệt hỗ trợ (webm/ogg/mp4), không gắn nhãn cứng.
     recorderStoppedRef.current = Promise.resolve();
     recordedAudioChunksRef.current = [];
     recordedMimeRef.current = '';
+    micTrackRef.current = null;
     try {
-      // Micro đã chọn không còn (rút tai nghe, đổi máy): tự dùng micro mặc định và báo cho người học, không để thanh ghi âm chạy giả
-      const { stream, usedFallback } = await acquireMicStream(selectedAudioInputDeviceId);
-      if (usedFallback) {
+      // Micro mở sẵn thì bắt đầu ngay. Micro đã chọn không còn (rút tai nghe, đổi máy): tự dùng micro mặc định
+      // và báo cho người học, không để thanh ghi âm chạy giả
+      const mic = await ensureWarmMic(selectedAudioInputDeviceId);
+      if (!isRecordingRef.current) return; // đã huỷ trong lúc chờ mở micro
+      const stream = mic.stream;
+      // Bản ghi chấm điểm (PCM) bắt đầu ngay, kèm phần đã nói ngay trước khi bấm
+      mic.startTake(prerollMs);
+      if (mic.usedFallback) {
         setMicNotice('Micro đã chọn không còn kết nối, đang dùng micro mặc định. Bạn có thể đổi lại ở "Cài đặt âm thanh".');
       }
+      micTrackRef.current = mic.track;
       // Phân tích Web Audio API (cổng mic): heuristic, chỉ dùng để kiểm định đầu vào.
       audioMetricsService.startAnalysis(stream);
 
@@ -847,19 +1223,32 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       };
 
       recorderStoppedRef.current = new Promise<void>((resolve) => {
-        mediaRecorder.onstop = () => {
-          stream.getTracks().forEach((t) => t.stop());
-          resolve();
-        };
+        // Không tắt micro khi dừng: micro được giữ mở cho lượt sau, chỉ đóng khi phát âm thanh/rời trang
+        mediaRecorder.onstop = () => resolve();
       });
 
       mediaRecorder.start(100);
     } catch (err: any) {
+      // Không mở được micro: không bắt đầu ghi âm (không có bản ghi thì không chấm được), báo đúng nguyên nhân
       console.warn('Cannot open microphone:', err);
+      warmMicRef.current?.cancelTake();
       setMicError(describeMicError(err));
+      isRecordingRef.current = false;
+      applySentenceEvent(currentSentence.id, { type: 'CANCEL' });
+      setPracticeState('ready');
+      return;
     }
 
-    // 2. Web Speech (ja-JP): nguồn dự phòng + hiển thị trực tiếp
+    // Không để bản ghi dài vô hạn: tự dừng ở giới hạn của mô hình (30 s) rồi chuyển sang nghe lại.
+    clearRecordingLimit();
+    recordingLimitTimerRef.current = setTimeout(() => {
+      if (isRecordingRef.current) {
+        setMicNotice('Đã tự dừng sau 30 giây. Hãy nghe lại rồi gửi chấm hoặc thu lại.');
+        finishRecording();
+      }
+    }, MAX_RECORDING_MS);
+
+    // 2. Web Speech (ja-JP): chỉ hiện chữ trực tiếp khi đang nói (KHÔNG dùng để chấm điểm)
     if (!startRecognitionSession()) {
       setPracticeState('listening');
     }
@@ -941,7 +1330,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const overallScore = data.overallScore as number;
     const tier: 'green' | 'yellow' | 'red' = data.tier === 'green' || data.tier === 'yellow' ? data.tier : 'red';
     const diffTokens = data.diffTokens ?? [];
-    const source = data.recognitionSource === 'web_speech' ? 'web_speech' : 'gemini';
+    const source =
+      data.recognitionSource === 'faster-whisper' || data.recognitionSource === 'phoneme' || data.recognitionSource === 'web_speech'
+        ? data.recognitionSource
+        : 'gemini';
 
     const prevAttempts = sentenceAttemptsMap.get(sentence.id) || 0;
     const nextAttempts = prevAttempts + 1;
@@ -949,7 +1341,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     setCurrentEvaluationStatus(data.evaluationStatus);
     setCurrentRecognitionSource(source);
-    setCurrentRecognizedText(data.recognizedText);
+    setCurrentDimensions(data.dimensions ?? null);
+    setCurrentScoreBasis(data.overallScoreBasis ?? null);
+    // Hiển thị: từ đọc đúng mang chữ của câu mẫu (có kanji), phần đọc khác giữ kana như đã nghe
+    setCurrentRecognizedText(data.recognizedDisplayText || data.recognizedText);
     setCurrentScore(overallScore);
     setCurrentFluencyMetrics(data.fluency ?? null);
     setCurrentGateDetail(data.audioQualityDetail ?? '');
@@ -996,11 +1391,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setSentenceResults((prev) => new Map(prev).set(sentence.id, resultItem));
   };
 
-  // Stop recording manually: chờ kết thúc theo sự kiện (có chặn trên), chốt transcript rồi gửi backend chấm điểm
-  const stopRecordingManually = async () => {
-    if (!currentSentence || isSubmittingRef.current) return;
+  // Dừng ghi (nút dừng hoặc tự dừng sau 30 s): chuẩn bị bản ghi để NGHE LẠI, chưa gửi chấm.
+  const finishRecording = async () => {
+    if (!currentSentence || isSubmittingRef.current || !isRecordingRef.current) return;
     const sentence = currentSentence;
     const collector = collectorRef.current;
+    clearRecordingLimit();
 
     isRecordingRef.current = false;
     collector.requestStop();
@@ -1010,6 +1406,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       // ignore
     }
     stopRecordingMedia();
+    // Chốt bản ghi chấm điểm (PCM, có phần thu trước) ngay lúc bấm dừng
+    const pcmTake = warmMicRef.current?.stopTake() ?? null;
     setPracticeState('analyzing');
 
     isSubmittingRef.current = true;
@@ -1026,49 +1424,151 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       let metrics = audioMetricsService.stopAnalysis(sentence.audioDurationMs);
       const chunks = recordedAudioChunksRef.current;
       if (chunks.length === 0) {
-        showNotScored(sentence, 'unavailable', 'Chưa thu được âm thanh. Hãy kiểm tra micro rồi thu lại.', null);
+        applySentenceEvent(sentence.id, { type: 'STOP_RECORDING', hasAudio: false });
+        setMicError('Chưa thu được âm thanh. Hãy kiểm tra micro rồi thu lại.');
+        setPracticeState('ready');
         return;
       }
 
       const audioBlob = new Blob(chunks, { type: recordedMimeRef.current });
 
-      // Bộ đo trực tiếp không đo được (vd. im lặng tuyệt đối làm mọi mẫu bằng 0): đo trên chính bản ghi để biết
-      // có tiếng hay không, thay vì để bản thu rỗng đi tiếp tới nhận dạng (STT dễ bịa chữ cho đoạn im lặng).
+      // Bộ đo trực tiếp không đo được (vd. im lặng tuyệt đối làm mọi mẫu bằng 0): đo trên chính bản ghi để hiển thị đúng.
+      // Backend vẫn tự kiểm tra lại, không dựa vào kết quả này.
       if (metrics.gateStatus === 'unmeasured') {
         const decoded = await measureRecordedBlob(audioBlob, metrics.durationMs);
         if (seq !== evaluationSeqRef.current) return;
         if (decoded) metrics = decoded;
       }
-      // WAV 16 kHz mono để backend đo nhịp nói; không làm được thì chỉ mất số liệu này, vẫn chấm nội dung như thường.
-      const analysisWav = await blobToAnalysisWav(audioBlob);
+      // WAV 16 kHz mono: backend nhận dạng âm vị trên chính bản ghi này (nguồn chấm DUY NHẤT).
+      // Ưu tiên bản PCM thu trực tiếp (không mất âm đầu câu); không có thì giải mã bản MediaRecorder.
+      const pcmWav = pcmTake && pcmTake.samples.length > 0 ? await pcmToAnalysisWav(pcmTake.samples, pcmTake.sampleRate) : null;
+      const analysisWav = pcmWav ?? (await blobToAnalysisWav(audioBlob));
+      // Nghe lại ở mức dễ nghe (micro không tự chỉnh âm lượng thường rất nhỏ); bản gửi chấm giữ nguyên.
+      const playbackBlob = await makePlaybackBlob(audioBlob, pcmWav ? pcmTake : null);
       if (seq !== evaluationSeqRef.current) return;
 
-      const res = await shadowingService.evaluateAudio(audioBlob, sentence.japaneseText, {
+      pendingTakeRef.current = {
         sentenceId: sentence.id,
-        clientRecognition: collector.snapshot(),
-        audioGateStatus: metrics.gateStatus,
-        audioGateDetail: metrics.gateDetail,
-        durationMs: metrics.durationMs,
+        audioBlob,
+        playbackBlob,
         analysisWav,
-        referenceSpeakerId: selectedVoiceVoxIdRef.current,
+        metrics,
+        recognition: collector.snapshot(),
+        capture: pcmWav ? 'pcm' : 'media-recorder',
+        prerollMs: pcmWav ? pcmTake?.prerollMs ?? 0 : 0,
+        submissionId: null,
+      };
+      setPendingAudioUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(playbackBlob);
       });
-      if (seq !== evaluationSeqRef.current) return;
-
-      if (!res.success || !res.data) {
-        // Lỗi kỹ thuật phía kết nối: không có điểm, KHÔNG phải điểm 0.
-        showNotScored(
-          sentence,
-          'failed',
-          res.message || 'Không thể chấm điểm lúc này. Điểm chưa được ghi nhận.',
-          audioBlob
-        );
-        return;
-      }
-
-      applyBackendEvaluation(sentence, res.data, metrics, audioBlob);
+      setSubmitError(null);
+      applySentenceEvent(sentence.id, { type: 'STOP_RECORDING', hasAudio: true });
+      setPracticeState('recorded');
     } finally {
       isSubmittingRef.current = false;
     }
+  };
+
+  // Gửi bản thu đã nghe lại để backend chấm. Lỗi mạng/quá 60 s: giữ bản thu, cho "Gửi lại" với CÙNG mã lần gửi
+  // (backend thấy mã đã có thì trả kết quả đã lưu, không lưu trùng).
+  const submitPendingTake = async () => {
+    const take = pendingTakeRef.current;
+    const sentence = dialogue?.sentences.find((s) => s.id === take?.sentenceId);
+    if (!take || !sentence || isSubmittingRef.current) return;
+
+    if (!take.submissionId) take.submissionId = newSubmissionId();
+    applySentenceEvent(sentence.id, { type: 'SUBMIT' });
+    setSubmitError(null);
+    setPracticeState('analyzing');
+    isSubmittingRef.current = true;
+    const seq = (evaluationSeqRef.current += 1);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), EVALUATE_TIMEOUT_MS);
+    try {
+      const res = await shadowingService.evaluateAudio(take.audioBlob, sentence.japaneseText, {
+        sentenceId: sentence.id,
+        clientRecognition: take.recognition,
+        audioGateStatus: take.metrics.gateStatus,
+        audioGateDetail: take.metrics.gateDetail,
+        durationMs: take.metrics.durationMs,
+        analysisWav: take.analysisWav,
+        referenceSpeakerId: selectedVoiceVoxIdRef.current,
+        progressId: serverProgressRef.current?.status === 'in_progress' ? serverProgressRef.current.id : null,
+        clientSubmissionId: take.submissionId,
+        signal: controller.signal,
+      });
+      if (seq !== evaluationSeqRef.current) return;
+
+      if (import.meta.env.DEV && take.analysisWav) {
+        setDevTake({
+          sentenceId: sentence.id,
+          wav: take.analysisWav,
+          meta: {
+            sentenceId: sentence.id,
+            targetText: sentence.japaneseText,
+            recordedAt: new Date().toISOString(),
+            capture: take.capture,
+            prerollMs: take.prerollMs,
+            voiceProcessing: true, // khử nhiễu + tự chỉnh âm lượng luôn bật
+            webSpeech: take.recognition,
+            result: res.data
+              ? {
+                  score: res.data.overallScore ?? null,
+                  recognitionSource: res.data.recognitionSource ?? null,
+                  recognitionMode: res.data.recognitionMode ?? null,
+                  recognizedText: res.data.recognizedText ?? null,
+                  freeRecognizedText: res.data.freeRecognizedText ?? null,
+                  errorCode: res.data.errorCode ?? null,
+                }
+              : { error: res.message ?? 'failed' },
+          },
+        });
+      }
+
+      if (!res.success || !res.data) {
+        // Không biết server đã lưu chưa (lỗi mạng/quá hạn): giữ bản thu để gửi lại cùng mã. KHÔNG phải điểm 0.
+        applySentenceEvent(sentence.id, { type: 'REQUEST_FAILED' });
+        setSubmitError(res.message || 'Không thể chấm điểm lúc này. Điểm chưa được ghi nhận.');
+        setPracticeState('recorded');
+        return;
+      }
+
+      // Server đã chấm và đã lưu lần gửi này (có điểm hoặc "chưa chấm được" kèm lý do)
+      const scored = res.data.overallScore != null
+        && (res.data.evaluationStatus === 'completed' || res.data.evaluationStatus === 'partial');
+      applySentenceEvent(sentence.id, { type: 'RESULT', scored });
+      const audioBlob = take.playbackBlob; // chỉ để nghe lại câu đã chấm
+      const metrics = take.metrics;
+      discardPendingTake();
+      applyBackendEvaluation(sentence, res.data, metrics, audioBlob);
+    } finally {
+      clearTimeout(timeout);
+      isSubmittingRef.current = false;
+    }
+  };
+
+  // Bỏ bản thu chưa gửi (nút "Bỏ" ở bước nghe lại): câu trở về trạng thái đã lưu ở server.
+  const discardRecordedTake = () => {
+    const take = pendingTakeRef.current;
+    if (take) applySentenceEvent(take.sentenceId, { type: 'CANCEL' });
+    discardPendingTake();
+    if (userAudioPlayerRef.current) userAudioPlayerRef.current.pause();
+    setPracticeState('ready');
+  };
+
+  // Nghe lại bản thu chưa gửi (qua loa đã chọn)
+  const playPendingTake = () => {
+    if (!pendingAudioUrl) return;
+    stopAllAudio();
+    const audio = new Audio(pendingAudioUrl);
+    userAudioPlayerRef.current = audio;
+    setPlayingUserAudioSentenceId(-1);
+    audio.onended = () => setPlayingUserAudioSentenceId(null);
+    audio.onerror = () => setPlayingUserAudioSentenceId(null);
+    routeToSelectedOutput(audio)
+      .then(() => (userAudioPlayerRef.current === audio ? audio.play() : undefined))
+      .catch(() => setPlayingUserAudioSentenceId(null));
   };
 
   // Hủy bản thu đang chạy (nút vuông trên thanh ghi âm): bỏ âm thanh, KHÔNG gửi chấm điểm, quay về trạng thái sẵn sàng.
@@ -1082,8 +1582,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       // ignore
     }
     stopRecordingMedia();
+    clearRecordingLimit();
+    warmMicRef.current?.cancelTake();
     audioMetricsService.stopAnalysis();
     recordedAudioChunksRef.current = [];
+    if (currentSentence) applySentenceEvent(currentSentence.id, { type: 'CANCEL' });
     setCurrentRecognizedText('');
     setMicError(null);
     setPracticeState('ready');
@@ -1092,6 +1595,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Retry current sentence
   const handleRetryCurrentSentence = () => {
     cancelPendingEvaluation();
+    discardPendingTake();
     stopAllAudio();
     setPracticeState('ready');
     setCurrentRecognizedText('');
@@ -1102,6 +1606,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Finish current sentence and move to next
   const handleNextSentence = () => {
     cancelPendingEvaluation();
+    if (pendingTakeRef.current) {
+      // Bản thu chưa gửi bị bỏ khi sang câu khác: câu trở về trạng thái đã lưu ở server
+      applySentenceEvent(pendingTakeRef.current.sentenceId, { type: 'CANCEL' });
+      discardPendingTake();
+    }
     stopAllAudio();
     const currentDialogue = dialogueRef.current || dialogue;
     if (!currentDialogue) return;
@@ -1124,6 +1633,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         currentDialogue.sentences.length,
         nextSentence?.japaneseText
       );
+      persistPosition(nextIdx);
       const currentUserRole = userRoleRef.current;
       if (nextSentence.speakerRole !== currentUserRole) {
         // Đối phương nói: tự động phát giọng đối phương, KHÔNG thu âm
@@ -1146,9 +1656,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Complete dialogue
   const handleFinishDialogue = async () => {
     setPracticeState('completed');
+    setOpenSentenceIds(new Set());
     setIsCompletedModalOpen(true);
     setHistorySaveState('idle');
     setHistorySaveMessage('');
+    setServerSummary(null);
+    setServerOverall(null);
+    setCompletedSessionId(null);
 
     const currentDialogue = dialogueRef.current || dialogue;
     if (!currentDialogue) return;
@@ -1158,10 +1672,13 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     shadowingStorageService.completeProgress(learnerId, currentDialogue.id, currentDialogue.sentences.length);
 
     // 2. Chỉ các câu backend đã chấm VÀ đã lưu mới vào lịch sử. Không câu nào thì không tạo bản ghi "0 điểm" gây hiểu nhầm.
+    //    Có phiên server: backend tự lấy các lần chấm của phiên (kể cả lần chấm ở máy khác trước khi tiếp tục ở đây).
     const evaluationIds = Array.from(sentenceResults.values())
       .filter((r) => r.isValidForBestAttempt !== false && r.evaluationId)
       .map((r) => r.evaluationId as string);
-    if (evaluationIds.length === 0) return;
+    const progress = serverProgressRef.current?.status === 'in_progress' ? serverProgressRef.current : null;
+    const anyScoredOnServer = Array.from(sentenceStates.values()).some((e) => e.persisted === 'EVALUATED');
+    if (evaluationIds.length === 0 && !(progress && anyScoredOnServer)) return;
 
     // 3. Backend đọc điểm đã lưu, tính điểm tổng và lưu buổi luyện vào lịch sử (client không gửi điểm).
     setHistorySaveState('saving');
@@ -1171,9 +1688,19 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       durationSeconds: sessionDurationSeconds,
       startedAt: new Date(practiceStartTime).toISOString(),
       evaluationIds,
+      progressId: progress?.id,
     });
 
     if (completeRes.success) {
+      if (progress) {
+        const done = { ...progress, status: 'completed' as const, completedAt: new Date().toISOString(), sessionId: completeRes.data?.sessionId ?? null };
+        serverProgressRef.current = done;
+        setServerProgress(done);
+        mirrorToLocal(done);
+      }
+      setServerSummary(completeRes.data?.summary ?? null);
+      setServerOverall(completeRes.data?.weightedOverallScore ?? null);
+      setCompletedSessionId(completeRes.data?.sessionId ?? null);
       setHistorySaveState('saved');
     } else {
       setHistorySaveState('failed');
@@ -1186,6 +1713,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     // 1. Dừng ngay lập tức toàn bộ audio, speech synthesis và timers đang chạy dở
     cancelPendingEvaluation();
     isRecordingRef.current = false;
+    clearRecordingLimit();
+    discardPendingTake();
     stopAllAudio();
 
     // 2. Dừng micro và ghi âm nếu đang ghi âm dở
@@ -1230,6 +1759,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         },
         newRole
       );
+
+      // Phiên server cho vai mới, bắt đầu lại từ câu đầu (giống hành vi cũ). Phiên của vai kia không bị đụng tới.
+      setSentenceStates(new Map());
+      const seen = serverProgressRef.current;
+      shadowingService
+        .startProgress({
+          dialogueId: currentDialogue.id,
+          learnerRole: newRole,
+          restart: true,
+          // "Luyện lại" cùng vai: phiên tab này đang thấy (tab cũ làm lại không tạo phiên thứ hai)
+          expectedProgressId: seen && seen.learnerRole === newRole && seen.status === 'in_progress' ? seen.id : undefined,
+        })
+        .then((started) => {
+          if (userRoleRef.current !== newRole) return; // đã đổi vai lần nữa
+          if (started.success && started.data) {
+            applyServerProgress(started.data, 'replace');
+            setProgressSyncError(null);
+          } else {
+            serverProgressRef.current = null;
+            setServerProgress(null);
+            setProgressSyncError(started.message || 'Chưa đồng bộ được tiến độ với máy chủ; tiến độ chỉ lưu trên trình duyệt này.');
+          }
+        });
     }
 
     // 5. Kiểm tra câu 0 theo vai mới
@@ -1295,9 +1847,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const totalLearnerSentencesCount = learnerSentences.length;
 
   const sessionSummary = summarizeSessionScores(learnerSentences.map(s => s.id), sentenceResults);
-  const practicedSentencesCount = sessionSummary.practicedSentences;
-  const finalContentMatchScore = sessionSummary.contentMatch;
-  const finalWeightedScore = sessionSummary.overall;
+  // Có tổng kết của backend thì dùng số của backend (gồm cả các câu đã chấm trước khi tiếp tục phiên ở đây)
+  const practicedSentencesCount = serverSummary?.evaluatedSentenceCount ?? sessionSummary.practicedSentences;
+  const finalContentMatchScore = serverSummary?.contentAccuracy ?? sessionSummary.contentMatch;
+  const finalWeightedScore = serverOverall ?? sessionSummary.overall;
   const finalGateStatus = sessionSummary.gateStatus;
   const finalGreenCount = sessionSummary.greenCount;
   const finalYellowCount = sessionSummary.yellowCount;
@@ -1305,8 +1858,20 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const hasScoredSentence = practicedSentencesCount > 0;
 
   // Render text directly without popup annotations (Bỏ qua popup từ vựng/ngữ pháp theo yêu cầu)
-  const renderAnnotatedSentenceText = (text: string) => {
-    return text;
+  // Câu tiếng Nhật kèm Furigana trên chữ Hán (khi bật và có dữ liệu khớp đúng chữ của câu)
+  const renderAnnotatedSentenceText = (text: string, sentenceId?: number) => {
+    const segments = showFurigana && sentenceId != null ? matchingFurigana(text, furiganaMap.get(sentenceId)) : null;
+    if (!segments) return text;
+    return segments.map((seg, i) =>
+      seg.reading ? (
+        <ruby key={i}>
+          {seg.text}
+          <rt className="text-[0.5em] font-medium opacity-80">{seg.reading}</rt>
+        </ruby>
+      ) : (
+        <span key={i}>{seg.text}</span>
+      ),
+    );
   };
 
   return (
@@ -1387,21 +1952,16 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             {dialogue.title}
           </span>
         </nav>
-        <label className={`jx-rm-lv lv-${selectedLevel}`} title="Đổi cấp độ của bài">
-          <select aria-label="Cấp độ của bài" value={selectedLevel} onChange={(e) => handleLevelChange(e.target.value as 'N5' | 'N4' | 'N3')}>
-            <option value="N5">N5</option>
-            <option value="N4">N4</option>
-            <option value="N3">N3</option>
-          </select>
-          <JIcon name="expand_more" size={16} />
-        </label>
+        {/* Cấp độ của bài: chỉ hiển thị, không đổi được ở đây */}
+        <JJlptBadge level={(dialogue.jlptLevel || selectedLevel) as 'N5' | 'N4' | 'N3'} size="sm" />
         <div className="flex-auto" />
         <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
 
       {/* MAIN WORKSPACE CONTENT */}
       <main className="max-w-7xl w-full mx-auto py-3 px-4 sm:px-6 flex-1 flex flex-col min-h-0 lg:overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
+        {/* Hàng lưới cao đúng bằng khung (minmax(0,1fr)): các cột không được cao hơn màn hình */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
           {/* LEFT COLUMN: Context Panel (Hình 3) - Cố định vị trí, không cuộn theo đoạn chat */}
           <section className="lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
             <div className="rounded-[28px] p-5 border border-line bg-paper-50 relative overflow-hidden" style={{ boxShadow: '0 10px 30px rgba(15,37,56,.06)' }}>
@@ -1552,7 +2112,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           {/* RIGHT COLUMN: Dialogue Stream & Mic Console */}
           <section className="lg:col-span-8 flex flex-col justify-between lg:h-full min-h-0 lg:overflow-hidden gap-2">
             {/* Dialogue Stream - CHỈ PHẦN NÀY ĐƯỢC CUỘN */}
-            <div className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
+            <div ref={dialogueScrollRef} className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
               {sentences.slice(0, currentSentenceIndex + 1).map((s, idx) => {
                 const isOpponent = s.speakerRole !== userRole;
                 const isCurrentActive = idx === currentSentenceIndex;
@@ -1573,7 +2133,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
                         <div className="bg-paper-50 rounded-[20px] p-4 shadow-xs border border-line max-w-full">
                           <p className="text-base text-sumi font-medium leading-relaxed">
-                            {renderAnnotatedSentenceText(s.japaneseText)}
+                            {renderAnnotatedSentenceText(s.japaneseText, s.id)}
                           </p>
 
                           {isTranslationShown(s.id) && (
@@ -1621,10 +2181,22 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1.5 text-xs pr-10">
                         <span className="font-bold text-sumi">{learnerName}</span>
                         {(() => {
+                          // Trạng thái câu: chưa gửi / đang chấm / chưa chấm được (đã chấm thì hiện điểm bên dưới)
+                          const entry = sentenceStates.get(s.id);
+                          if (entry?.state === 'RECORDED') return <JBadge tone="warning" dot>Chưa gửi</JBadge>;
+                          if (entry?.state === 'EVALUATING') return <JBadge tone="info" dot>Đang chấm</JBadge>;
+                          if (entry?.state === 'RECORDING') return <JBadge tone="ai" dot>Đang ghi</JBadge>;
+                          if (entry?.state === 'EVALUATION_FAILED' && !(isCurrentActive && practiceState === 'evaluated'))
+                            return <JBadge tone="danger" dot>Chưa chấm được</JBadge>;
+                          return null;
+                        })()}
+                        {(() => {
                           const sentenceResult = sentenceResults.get(s.id);
+                          // Tiếp tục phiên (tải lại trang, máy khác): điểm cao nhất của câu đã lưu ở server
+                          const serverBest = serverProgress?.sentences.find((x) => x.sentenceId === s.id)?.bestScore ?? null;
                           const activeScore = (isCurrentActive && practiceState === 'evaluated')
                             ? currentScore
-                            : (sentenceResult ? (sentenceResult.overallScore ?? sentenceResult.accuracyScore) : null);
+                            : (sentenceResult ? (sentenceResult.overallScore ?? sentenceResult.accuracyScore) : serverBest);
 
                           if (activeScore === null || activeScore === undefined) return null;
 
@@ -1649,7 +2221,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         }`}>
                           {/* Japanese Text */}
                           <p className="text-lg sm:text-xl font-bold tracking-wide text-white leading-relaxed my-1 text-left">
-                            {renderAnnotatedSentenceText(s.japaneseText)}
+                            {renderAnnotatedSentenceText(s.japaneseText, s.id)}
                           </p>
 
                           {/* Vietnamese Translation (if toggled) */}
@@ -1724,12 +2296,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   );
                 }
               })}
-              {/* Anchor for auto-scrolling */}
-              <div ref={chatEndRef} />
             </div>
 
             {/* ACTION CONSOLE (Recording & Evaluation) (Hình 4) - Cố định vị trí ở đáy */}
-            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10">
+            {/* Cao tối đa 70% cột để khung hội thoại luôn còn chỗ; nhận xét dài thì cuộn bên trong */}
+            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10 lg:max-h-[70%] lg:overflow-y-auto">
               <div
                 className="w-full rounded-[24px] border-2 border-dashed bg-paper-50 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
@@ -1744,6 +2315,12 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <div role="status" className="w-full mb-3 p-2 bg-warning-soft rounded-xl text-warning text-xs flex items-center justify-between gap-2">
                     <span>{micNotice}</span>
                     <button onClick={() => setMicNotice(null)} aria-label="Đóng thông báo" className="font-bold text-warning">×</button>
+                  </div>
+                )}
+                {progressSyncError && (
+                  <div role="status" className="w-full mb-3 p-2 bg-warning-soft rounded-xl text-warning text-xs flex items-center justify-between gap-2">
+                    <span>{progressSyncError}</span>
+                    <button onClick={() => setProgressSyncError(null)} aria-label="Đóng thông báo" className="font-bold text-warning">×</button>
                   </div>
                 )}
 
@@ -1815,11 +2392,21 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   <>
                     {/* LƯỢT CỦA BẠN - State 1: Ready to record (Ảnh 1: Chỉ hiển thị nút ghi âm) */}
                     {practiceState === 'ready' && (
-                      <div className="flex items-center justify-center w-full py-1">
+                      <div className="flex flex-col items-center justify-center w-full py-1 gap-1.5">
+                        {hasMicrophone === false && (
+                          <p role="status" className="text-xs text-warning bg-warning-soft rounded-xl px-3 py-1.5 text-center">
+                            {describeDeviceStatus('audioinput', 'NOT_FOUND')}
+                          </p>
+                        )}
                         <button
                           onClick={startRecording}
-                          className="group bg-gradient-to-r from-ai to-ai-hover hover:from-ai-hover hover:to-sumi text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
-                          title="Bấm để ghi âm câu thoại của bạn"
+                          disabled={hasMicrophone === false}
+                          className="group bg-gradient-to-r from-ai to-ai-hover hover:from-ai-hover hover:to-sumi text-white w-14 h-14 rounded-full font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          title={
+                            hasMicrophone === false
+                              ? describeDeviceStatus('audioinput', 'NOT_FOUND')
+                              : 'Bấm để ghi âm câu thoại của bạn'
+                          }
                         >
                           {/* Refined minimalist mic icon */}
                           <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1834,8 +2421,27 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     {/* LƯỢT CỦA BẠN - State 2: Listening (Đang ghi âm câu thoại) */}
                     {practiceState === 'listening' && (
                       <div className="flex items-center justify-center w-full py-1">
-                        <RecordingBar onCancel={cancelRecording} onSend={stopRecordingManually} />
+                        <RecordingBar onCancel={cancelRecording} onStop={finishRecording} />
                       </div>
+                    )}
+
+                    {/* LƯỢT CỦA BẠN - Đã thu, chưa gửi: nghe lại / thu lại / bỏ / gửi chấm */}
+                    {practiceState === 'recorded' && (
+                      <RecordingReviewBar
+                        isPlaying={playingUserAudioSentenceId === -1}
+                        onPlay={() => {
+                          if (playingUserAudioSentenceId === -1) {
+                            userAudioPlayerRef.current?.pause();
+                            setPlayingUserAudioSentenceId(null);
+                          } else {
+                            playPendingTake();
+                          }
+                        }}
+                        onReRecord={startRecording}
+                        onSubmit={submitPendingTake}
+                        onDiscard={discardRecordedTake}
+                        error={submitError}
+                      />
                     )}
 
                     {/* LƯỢT CỦA BẠN - State B: Analyzing / Processing (Đang phân tích bản ghi) */}
@@ -1860,9 +2466,17 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                         isPlayingUserAudio={playingUserAudioSentenceId === currentSentence.id}
                         evaluationStatus={currentEvaluationStatus}
                         recognitionSource={currentRecognitionSource}
+                        dimensions={currentDimensions}
+                        overallScoreBasis={currentScoreBasis}
                         onPlayUserAudio={() => playUserRecording(currentSentence.id)}
                         onRetry={handleRetryCurrentSentence}
                         onNext={handleNextSentence}
+                        extraAction={
+                          // Chỉ chế độ phát triển: tải bản ghi để đo nhận dạng bằng giọng thật
+                          import.meta.env.DEV ? (
+                            <RecordingDevTools take={devTake && devTake.sentenceId === currentSentence.id ? devTake : null} />
+                          ) : undefined
+                        }
                       />
                     )}
                   </>
@@ -2036,6 +2650,10 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                 </div>
               )}
 
+              {serverSummary && (
+                <SessionSummaryPanel summary={serverSummary} sessionId={completedSessionId} />
+              )}
+
               {finalGateStatus === 'needs_retry' && (
                 <div className="flex items-start gap-2 rounded-xl border border-warning-soft bg-warning-soft p-3 text-xs text-warning">
                   <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -2058,12 +2676,22 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     const isPlayingUser = playingUserAudioSentenceId === s.id;
                     const isPlayingNative = isPlayingAudio && loadingAudioSentenceId === s.id;
                     const attempts = res?.attemptsCount ?? sentenceAttemptsMap.get(s.id) ?? 0;
+                    const isOpen = openSentenceIds.has(s.id);
+                    const detailId = `sentence-detail-${s.id}`;
 
                     return (
-                      <li key={s.id} className="p-4 rounded-xl bg-paper-50 border border-line space-y-2.5">
+                      <li key={s.id} className="p-4 rounded-xl bg-paper-50 border border-line">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-sumi-muted">Câu {index + 1}/{totalLearnerSentencesCount}</span>
+                          {/* Bấm cả dòng để mở/thu gọn chi tiết câu */}
+                          <button
+                            type="button"
+                            onClick={() => toggleSentenceDetail(s.id)}
+                            aria-expanded={isOpen}
+                            aria-controls={detailId}
+                            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai"
+                          >
+                            <JIcon name="expand_more" size={20} className={`jc-chev flex-shrink-0 text-sumi-muted ${isOpen ? 'is-open' : ''}`} />
+                            <span className="text-xs font-bold text-sumi-muted flex-shrink-0">Câu {index + 1}/{totalLearnerSentencesCount}</span>
                             <span
                               className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                                 !res
@@ -2077,8 +2705,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                             >
                               {res ? `${res.overallScore} điểm` : 'Chưa chấm'}
                             </span>
-                            {attempts > 1 && <span className="text-xs text-sumi-faint">thử {attempts} lần</span>}
-                          </div>
+                            {attempts > 1 && <span className="text-xs text-sumi-faint flex-shrink-0">thử {attempts} lần</span>}
+                            <span className="min-w-0 truncate font-jp text-sm text-sumi">{s.japaneseText}</span>
+                          </button>
 
                           <div className="flex items-center gap-2">
                             {hasUserRecording && (
@@ -2114,18 +2743,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="bg-paper-100 p-3 rounded-lg border border-line">
-                          <JapaneseSentenceDiffView
-                            diffTokens={res?.diffTokens}
-                            targetText={s.japaneseText}
-                            spokenText={res?.recognizedText}
-                            size="sm"
-                          />
-                        </div>
+                        <div
+                          id={detailId}
+                          className={`jc-collapse ${isOpen ? 'is-open' : ''}`}
+                          style={{ '--collapse-gap': '0px' } as React.CSSProperties}
+                          inert={!isOpen}
+                        >
+                          <div className="jc-collapse__in">
+                            <div className="space-y-2.5 pt-3">
+                              <div className="bg-paper-100 p-3 rounded-lg border border-line">
+                                <JapaneseSentenceDiffView
+                                  diffTokens={res?.diffTokens}
+                                  targetText={s.japaneseText}
+                                  spokenText={res?.recognizedText}
+                                  size="sm"
+                                />
+                              </div>
 
-                        <div className="space-y-0.5 text-xs">
-                          {s.romajiText && <p className="text-sumi-faint font-mono">{s.romajiText}</p>}
-                          {s.vietnameseTranslation && <p className="text-sumi-muted">{s.vietnameseTranslation}</p>}
+                              <div className="space-y-0.5 text-xs">
+                                {s.romajiText && <p className="text-sumi-faint font-mono">{s.romajiText}</p>}
+                                {s.vietnameseTranslation && <p className="text-sumi-muted">{s.vietnameseTranslation}</p>}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </li>
                     );

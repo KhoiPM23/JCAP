@@ -1,12 +1,67 @@
 # Shadowing: nhận diện giọng nói và chấm điểm
 
-Tài liệu mô tả **toàn bộ logic hiện tại** (scoring version `shadowing-score/p2-content-word`, so khớp `kana-word-v1`).
-Mọi chi tiết dưới đây khớp với mã nguồn; mỗi mục có chỉ dẫn file để đối chiếu.
+> **Shadowing V2 (scoring version `shadowing-score/v3-dimensions`) — đọc phần này trước; các mục bên dưới mô tả phần còn dùng lại.**
+>
+> - **Chấm theo chiều** (`dimensions` trong kết quả, mỗi chiều có `status` COMPLETED/UNAVAILABLE/FAILED, `score`, `reason`, `source`):
+>   - **Nội dung (Content)**: transcript của **Faster-Whisper** (`tools/shadowing-asr`, `ISpeechRecognitionService`) so với câu mẫu bằng `KanaMoraComparer`
+>     (`CompareTranscriptAsync` với cách đọc OpenJTalk do dịch vụ trả nếu có, không thì `CompareAsync`). Đây là chiều DUY NHẤT có điểm.
+>     `kana-word-v2` (sau khi chấm bản ghi giọng thật): (1) từ có chữ Hán được tính ĐÚNG khi transcript viết đúng chữ của từ đó theo thứ tự,
+>     vì hai bộ G2P có thể đọc cùng chữ khác nhau (日本: VOICEVOX にっぽん, OpenJTalk にほん — trước đây bị chấm 46/100 dù nghe đúng từng chữ);
+>     (2) `JapaneseSurfaceAligner` chọn cách gióng chữ↔mora cân đối nhất (~2 mora/ký tự) và đặt dấu câu vào ranh giới cụm trọng âm,
+>     nên hai cụm chữ Hán sát nhau (十時四十分発、七号車) không còn bị chia mora sai; furigana được gióng lại từ cách đọc đã lưu khi trả về.
+>     (3) từ katakana trong cụm trọng âm dài được tách thành từ riêng (成田 | エクスプレス | ですね): sai một âm chỉ mất điểm từ đó;
+>     (4) mỗi từ chưa đúng có `issues` (lỗi từng âm: thừa/thiếu/đọc thành âm khác, vị trí "sau 「え」", `message` tiếng Việt viết sẵn;
+>     trường âm luôn hiện là ー). Không liệt kê khi quá nửa số âm của từ khác (nói từ khác hẳn). Giao diện hiện danh sách này dưới câu.
+>     Bench: `RealScoringBench` (JCAP_REAL_DIR) chấm lại bản ghi thật bằng pipeline sản phẩm và so với điểm lúc thu.
+>     ASR tắt/bận/quá hạn → `UNAVAILABLE` (`ASR_UNAVAILABLE`, `ASR_BUSY`, `ASR_TIMEOUT`), **không tự chuyển nguồn khác**;
+>     transcript lặp vô nghĩa (compression ratio > 2.4) → `ASR_UNRELIABLE` (không coi là lỗi người học).
+>     `Shadowing:Content:Provider = phoneme` giữ đường mô hình âm vị cũ (mục "Chấm theo câu mẫu") làm lựa chọn chuyển tiếp tường minh.
+>   - **Phát âm**: `UNAVAILABLE / INSUFFICIENT_ACOUSTIC_EVIDENCE` cho tới khi phương pháp được kiểm chứng trên giọng người học. Không suy ra từ điểm nội dung.
+>     ASR "sửa" lỗi phát âm (benchmark giọng VOICEVOX: 28/78 câu đọc sai một âm bị nghe thành câu đúng) nên KHÔNG dùng transcript để chấm phát âm.
+>   - **Lưu loát**: **tham khảo, chưa có điểm** (`COMPLETED` / `SCORE_NOT_VALIDATED`). Thẻ kết quả hiện khối "Lưu loát" (`FluencyPanel`): tốc độ so với mẫu,
+>     số lần dừng, **ngập ngừng giữa từ** (`comparison.hesitationCount`), **nói liền trung bình** (`meanRunMoras`, mean length of run) và nhận xét.
+>     Tắt được bằng `Shadowing:Fluency:Enabled=false` (khi đó `UNAVAILABLE / NOT_ENABLED`, không lấy giọng mẫu lúc chấm). Bench mức bình thường: `FluencyBaselineBench`.
+>     Tỷ lệ tốc độ = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn). Backend nhận `referencePlaybackRate` (tốc độ nghe mẫu, vd. 0.75; trang luyện đã bỏ ô chỉnh tốc độ từ 2026-11-13 nên luôn là 1);
+>     số đo giọng mẫu được quy đổi theo tốc độ đó (`fluency.reference.playbackRate`; kiểm chứng: `FluencyPlaybackRateBench`).
+>     Ngưỡng là thử nghiệm; VOICEVOX là mốc phản hồi cho bài Shadowing, không phải chuẩn lưu loát.
+>     Code đo nhịp (mục "Nhịp nói" bên dưới) giữ lại; bật `true` thì chạy như mô tả (`COMPLETED` không có điểm, `SCORE_NOT_VALIDATED`). Phát hiện đoạn tiếng nói cho kiểm tra âm thanh không phụ thuộc cài đặt này.
+>   - **Ngữ điệu**: `UNAVAILABLE / NOT_IMPLEMENTED`.
+>   - `overallScore` = điểm nội dung, kèm `overallScoreBasis = "content"` → giao diện ghi "Điểm nội dung".
+> - **Kiểm tra âm thanh phía backend** trước khi gọi ASR (xem đoạn "Không có nguồn chấm dự phòng" bên dưới).
+> - **Lúc chấm không cần VOICEVOX**: cách đọc câu mẫu, Furigana và giọng mẫu (so nhịp nói) đọc từ `ShadowingSentenceAssets` tính sẵn
+>   (tác vụ nền khi khởi động + `POST /api/admin/shadowing-assets/dialogues/{id}/generate`). Tắt hẳn VOICEVOX lúc chấm:
+>   `Shadowing:Reading:UseVoiceVox=false`, `Shadowing:Fluency:UseVoiceVoxAtRuntime=false` (khi đó transcript cần cách đọc từ dịch vụ ASR — cài `pyopenjtalk-plus`).
+> - **Lưu trữ**: mỗi lần gửi chấm là một `ShadowingSentenceEvaluation` (kể cả chưa chấm được) kèm `DimensionsJson`, `AsrModel`, `ProcessingMs`.
+>   Tổng kết buổi, lịch sử từng lần gửi và gợi ý luyện tập: `docs/shadowing-v2/FINAL-REPORT.md`.
+>
+> Phần bên dưới mô tả logic so khớp, nhịp nói và (đường chuyển tiếp) mô hình âm vị — vẫn đúng với mã nguồn.
 
-> **Nhận dạng giọng nói chạy trên trình duyệt (Web Speech).** Backend chỉ chấm theo transcript đã chốt (`final`) do client gửi;
-> bản ghi gốc không được dùng để nhận dạng (cổng âm thanh `needs_retry` vẫn chặn). Không có transcript hợp lệ → `unavailable`
-> (`NO_SPEECH_DETECTED`, `BROWSER_STT_UNSUPPORTED`, `BROWSER_STT_ERROR`), không bao giờ là điểm 0.
+> **Nguồn transcript để chấm: nhận dạng âm vị trên chính bản ghi của JCAP** (`OnnxPhonemeRecognizer`, mô hình HuBERT phoneme-CTC chạy trong backend,
+> tải bằng `scripts/download-speech-models.*`): dùng bản WAV phân tích (cùng micro người học chọn), ra thẳng cách đọc (kana), `recognitionSource = phoneme`;
+> so khớp bằng `KanaMoraComparer.CompareWithReadingAsync` (phía người học không đọc lại qua VOICEVOX). Không nghe thấy tiếng nói, hoặc chỉ một mora với độ tự tin < 0.6
+> (nền ồn bị nghe thành 「あ」) → `unavailable / NO_SPEECH_DETECTED`, không bao giờ là điểm 0.
+> **Không có nguồn chấm dự phòng (từ Shadowing V2 M1).** Web Speech của trình duyệt KHÔNG còn được dùng để chấm (kể cả dự phòng);
+> nó chỉ hiện chữ trực tiếp khi người học nói. `clientTranscript` vẫn được nhận (client cũ không lỗi) nhưng bị bỏ qua.
+> Thiếu mô hình/mô hình lỗi → `unavailable / RECOGNIZER_UNAVAILABLE`; quá nhiều lượt chạy cùng lúc → `SERVER_BUSY`. Không bao giờ là điểm 0.
+> **Kiểm tra âm thanh do backend làm** (`ShadowingAudioValidator`), không dựa vào `audioGateStatus` của client:
+> `EMPTY_AUDIO`, `ANALYSIS_AUDIO_MISSING` (client cũ không gửi WAV), `INVALID_AUDIO_FORMAT` (định dạng thật theo byte đầu, không theo Content-Type),
+> `AUDIO_TOO_LARGE`, `AUDIO_TOO_SHORT` (< 0.4 s hoặc đoạn nói < 0.3 s), `AUDIO_TOO_LONG` (> 30 s), `AUDIO_SILENT`, `AUDIO_TOO_QUIET`, `AUDIO_NOISE_ONLY`, `AUDIO_CLIPPED`.
+> `audioQualityStatus` là kết quả của backend (good/acceptable/needs_retry). Ngưỡng là heuristic, chưa hiệu chỉnh trên micro thật.
+> **Mỗi lần gửi chấm (có `sentenceId`) được lưu** thành một `ShadowingSentenceEvaluation`, kể cả lần chưa chấm được (điểm null + `ErrorCode`);
+> `clientSubmissionId` chống lưu trùng khi gửi lại; `progressId` gắn lần chấm với phiên luyện ở server (`ShadowingPracticeProgress`).
+> Luồng phiên và trạng thái từng câu: `docs/shadowing-v2/MILESTONE-1-PLAN.md` mục 6b. Số liệu so sánh nhận dạng: `docs/shadowing-audio-status.md` mục 5.4.
+> **Hiển thị "Bạn đã nói"** (`recognizedDisplayText`): từ đọc ĐÚNG dùng chữ của câu mẫu (có kanji), từ đọc sai và âm nói thừa giữ kana như đã nghe (`KanaMoraComparer.BuildRecognizedDisplay`); không đoán kanji cho phần câu mẫu không có. `recognizedText` vẫn là kana đúng như nghe được (thứ đã được chấm).
 > Nhánh nhận dạng bằng Gemini (`GeminiSpeechRecognizer`, cấu hình `Shadowing:Recognition:Provider`) **đã được gỡ** vì không dùng.
+>
+> **Chấm theo câu mẫu (mặc định, `recognitionMode = aligned`).** Mô hình âm vị không còn được dùng để "đoán xem người học nói gì" (nhận dạng tự do
+> ra chuỗi kana lộn xộn với giọng người học). `PronunciationAligner` lấy cách đọc câu mẫu (VOICEVOX), đổi sang âm vị, và với TỪNG mora so xác suất CTC
+> (`CtcScorer`) của "đọc đúng" với các kiểu đọc sai thường gặp: mất mora, mất phụ âm đầu, đổi phụ âm hay nhầm (k/g, t/d, p/b, s/z/sh/ts, ch/ts, z/j, h/f…),
+> đổi mora hay nhầm (ふ/ひ, し/す, つ/ちゅ, じゃ/ざ…), đổi nguyên âm, thiếu trường âm, thừa trường âm, thiếu っ. Biến thể nào giải thích bản ghi tốt hơn
+> câu mẫu quá ngưỡng (`Shadowing:Alignment:Margin` = 4 nat, đổi nguyên âm thêm `VowelExtraMargin` = 2) thì mora đó bị coi là đọc sai theo đúng kiểu đó.
+> `ん` và phụ âm `r` không bị nhận xét (mô hình không phân biệt được). Chuỗi "đã nghe" (câu mẫu + các lỗi phát hiện) đi qua đúng phần so khớp/điểm/hiển thị
+> bên dưới (`KanaMoraComparer.CompareHeard`), nên công thức điểm không đổi. Nếu bản ghi KHÔNG giống câu mẫu (lệch trung bình > `MaxMismatchPerFrame` = 2.5 nat
+> mỗi khung có tiếng, tức đọc câu khác) thì chấm bằng nhận dạng tự do như trước (`recognitionMode = free`) để kết quả trung thực.
+> `Shadowing:Recognition:Mode = free` tắt hẳn cách này. `freeRecognizedText` giữ kana nhận dạng tự do để chẩn đoán. Số liệu: `docs/shadowing-audio-status.md` mục 5.7.
 
 > **Nhịp nói (Fluency, số liệu thô, `fluency-metrics/v1`).** Sau khi chấm nội dung, client gửi thêm `analysisWav` (WAV PCM 16-bit mono 16 kHz,
 > được render lại qua `OfflineAudioContext` nên đúng tần số; `jcap-web/src/utils/wavEncoder.ts`). Backend (`FluencyAnalyzer`, C#, không cần Python/ffmpeg)
@@ -149,8 +204,8 @@ Dựa trên RMS theo khung ~60 khung/giây:
 | Điều kiện (kiểm tra theo thứ tự) | Kết quả |
 |---|---|
 | Không có khung nào, hoặc RMS lớn nhất < 0.003 (im lặng) | `needs_retry` |
-| Thời lượng < 400 ms (thông báo "Bản ghi quá ngắn (x.x giây)") | `needs_retry` |
-| RMS giọng < 0.008 ≈ −42 dB (thông báo "Âm lượng mic quá nhỏ (đo được N dB, cần từ −42 dB)") | `needs_retry` |
+| Thời lượng < 400 ms (thông báo "Hãy nói trọn câu rồi mới bấm dừng") | `needs_retry` |
+| RMS giọng < 0.008 ≈ −42 dB (thông báo "Âm lượng mic quá nhỏ. Hãy nói gần mic hơn, tăng mức vào của mic hoặc chọn đúng thiết bị"; mức đo nằm trong `volumeDb`) | `needs_retry` |
 | Số khung vỡ tiếng > 30% tổng khung | `needs_retry` |
 | SNR < 6 dB | `needs_retry` |
 | SNR < 12 dB, hoặc RMS giọng < 0.025, hoặc khung vỡ tiếng > 15 | `acceptable` |

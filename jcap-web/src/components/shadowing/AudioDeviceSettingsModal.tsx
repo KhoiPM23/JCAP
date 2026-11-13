@@ -3,12 +3,21 @@ import { Modal } from '../ui/Modal';
 import { Button, Icon, ProgressBar, Select } from '../jcap';
 import {
   INPUT_DEVICE_STORAGE_KEY,
+  INPUT_LABEL_STORAGE_KEY,
   OUTPUT_DEVICE_STORAGE_KEY,
+  OUTPUT_LABEL_STORAGE_KEY,
   acquireMicStream,
+  applyOutputDevice,
+  buildDeviceOptions,
+  describeDeviceStatus,
   describeMicError,
+  deviceStatus,
   filterSelectableDevices,
   isPermissionDeniedError,
-  resolveDeviceSelection,
+  newlyConnected,
+  normalizeDeviceId,
+  systemDefaultLabel,
+  type DeviceStatus,
 } from '../../utils/audioDevice';
 import { GOOD_VOICE_RMS, MIN_VOICE_RMS, assessMicLevel, rmsToMeterPercent, type MicTestLevel } from '../../utils/audioGate';
 
@@ -60,13 +69,17 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
 }) => {
   const [inputDevices, setInputDevices] = useState<MediaDeviceInfo[]>([]);
   const [outputDevices, setOutputDevices] = useState<MediaDeviceInfo[]>([]);
-  const [currentInputId, setCurrentInputId] = useState<string>(selectedInputId || '');
-  const [currentOutputId, setCurrentOutputId] = useState<string>(selectedOutputId || '');
+  const [currentInputId, setCurrentInputId] = useState<string>(normalizeDeviceId(selectedInputId));
+  const [currentOutputId, setCurrentOutputId] = useState<string>(normalizeDeviceId(selectedOutputId));
   const [micAccess, setMicAccess] = useState<MicAccess>('unknown');
   const [isLoadingDevices, setIsLoadingDevices] = useState<boolean>(false);
-  // Thông báo khi thiết bị đã lưu không còn kết nối và đã chuyển sang thiết bị mặc định
-  const [inputNotice, setInputNotice] = useState<string>('');
-  const [outputNotice, setOutputNotice] = useState<string>('');
+  // Tên thiết bị đã lưu lúc chọn: để gọi được tên khi thiết bị đó đang bị rút
+  const [savedInputLabel, setSavedInputLabel] = useState<string>('');
+  const [savedOutputLabel, setSavedOutputLabel] = useState<string>('');
+  // "Đã kết nối: …" khi cắm thiết bị mới trong lúc mở cài đặt (không tự đổi lựa chọn của người dùng)
+  const [connectedNotice, setConnectedNotice] = useState<string>('');
+  const [speakerTestError, setSpeakerTestError] = useState<string>('');
+  const previousDevicesRef = useRef<MediaDeviceInfo[]>([]);
 
   // Giá trị mới nhất cho các callback bất đồng bộ (tránh đọc state cũ trong closure)
   const currentInputRef = useRef(currentInputId);
@@ -85,6 +98,9 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
   const [isTestingMic, setIsTestingMic] = useState<boolean>(false);
   const [micMeter, setMicMeter] = useState<{ percent: number; level: MicTestLevel | null }>({ percent: 0, level: null });
   const [micTestError, setMicTestError] = useState<string>('');
+  // Tên thiết bị mà trình duyệt THỰC SỰ đã mở (track.label): bằng chứng micro nào đang thu, vì mọi micro trong phòng
+  // đều nghe thấy giọng nói nên thanh đo nhảy không chứng minh được đúng micro.
+  const [activeMicLabel, setActiveMicLabel] = useState<string>('');
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -105,6 +121,7 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
       micStreamRef.current.getTracks().forEach((t) => t.stop());
       micStreamRef.current = null;
     }
+    setActiveMicLabel('');
     if (audioContextRef.current) {
       audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
@@ -114,11 +131,11 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
   }, []);
 
   /**
-   * Nạp danh sách thiết bị rồi đối chiếu lựa chọn với danh sách thật: id đã lưu không còn thì chuyển sang thiết bị mặc định
-   * và báo cho người học, để hộp chọn luôn hiển thị đúng thiết bị sẽ được lưu/sử dụng.
+   * Nạp danh sách thiết bị. KHÔNG tự đổi lựa chọn của người dùng: thiết bị đã chọn mà vắng mặt vẫn được giữ
+   * (trạng thái "đã ngắt kết nối"), khi dùng thật hệ thống tạm dùng mặc định của hệ thống. Thiết bị mới cắm vào thì báo tên.
    */
   const loadDevices = useCallback(
-    async (requestPermission: boolean, preferInput: string, preferOutput: string) => {
+    async (requestPermission: boolean) => {
       if (!navigator.mediaDevices?.enumerateDevices) return;
       const seq = ++loadSeqRef.current;
 
@@ -144,30 +161,22 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
 
         const inputs = filterSelectableDevices(devices.filter((d) => d.kind === 'audioinput'));
         const outputs = filterSelectableDevices(devices.filter((d) => d.kind === 'audiooutput'));
+
+        const added = newlyConnected(previousDevicesRef.current, [...inputs, ...outputs]);
+        if (added.length > 0) {
+          const names = [...new Set(added.map((d) => d.label).filter(Boolean))].join(', ');
+          if (names) setConnectedNotice(`Đã kết nối: ${names}. Chọn trong danh sách nếu muốn dùng thiết bị này.`);
+        }
+        previousDevicesRef.current = [...inputs, ...outputs];
+
         setInputDevices(inputs);
         setOutputDevices(outputs);
         // Chưa cấp quyền thì trình duyệt vẫn liệt kê thiết bị (không tên), nên danh sách trống nghĩa là thật sự không có micro
         if (inputs.length === 0) setMicAccess('no-device');
 
-        const labelOf = (list: MediaDeviceInfo[], id: string, fallback: string) =>
-          list.find((d) => d.deviceId === id)?.label || fallback;
-
-        const inRes = resolveDeviceSelection(preferInput, inputs);
-        if (inRes.id !== currentInputRef.current) setInputId(inRes.id);
-        setInputNotice(
-          inRes.missing
-            ? `Micro đã lưu không còn kết nối. Đang dùng "${labelOf(inputs, inRes.id, 'micro mặc định')}".`
-            : '',
-        );
-        if (inRes.missing) stopMicTest();
-
-        const outRes = resolveDeviceSelection(preferOutput, outputs);
-        if (outRes.id !== currentOutputRef.current) setOutputId(outRes.id);
-        setOutputNotice(
-          outRes.missing
-            ? `Thiết bị phát đã lưu không còn kết nối. Đang dùng "${labelOf(outputs, outRes.id, 'thiết bị mặc định')}".`
-            : '',
-        );
+        // Micro đang thử vừa bị rút: dừng thử để không đo một luồng đã chết
+        const inputId = currentInputRef.current;
+        if (inputId && inputs.some((d) => !!d.deviceId) && !inputs.some((d) => d.deviceId === inputId)) stopMicTest();
       } catch (err) {
         console.warn('Failed to load audio devices:', err);
       } finally {
@@ -177,25 +186,28 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
     [stopMicTest],
   );
 
-  // Mở modal: nạp lại từ giá trị đã lưu. Đóng modal: dừng thử mic.
+  // Mở modal: nạp lại từ giá trị đã lưu (rỗng = mặc định của hệ thống). Đóng modal: dừng thử mic.
   useEffect(() => {
     if (isOpen) {
-      const savedInput = selectedInputId || localStorage.getItem(INPUT_DEVICE_STORAGE_KEY) || '';
-      const savedOutput = selectedOutputId || localStorage.getItem(OUTPUT_DEVICE_STORAGE_KEY) || '';
-      setInputId(savedInput);
-      setOutputId(savedOutput);
+      setInputId(normalizeDeviceId(selectedInputId));
+      setOutputId(normalizeDeviceId(selectedOutputId));
+      setSavedInputLabel(localStorage.getItem(INPUT_LABEL_STORAGE_KEY) || '');
+      setSavedOutputLabel(localStorage.getItem(OUTPUT_LABEL_STORAGE_KEY) || '');
       setMicTestError('');
-      loadDevices(true, savedInput, savedOutput);
+      setSpeakerTestError('');
+      setConnectedNotice('');
+      previousDevicesRef.current = [];
+      loadDevices(true);
     } else {
       stopMicTest();
     }
   }, [isOpen, selectedInputId, selectedOutputId, loadDevices, stopMicTest]);
 
-  // Cắm/rút thiết bị khi modal đang mở: nạp lại, giữ lựa chọn hiện tại nếu còn, không thì chuyển về mặc định
+  // Cắm/rút thiết bị khi modal đang mở: nạp lại, báo thiết bị mới, giữ nguyên lựa chọn của người dùng
   useEffect(() => {
     if (!isOpen || !navigator.mediaDevices?.addEventListener) return;
     const onDeviceChange = () => {
-      loadDevices(false, currentInputRef.current, currentOutputRef.current);
+      loadDevices(false);
     };
     navigator.mediaDevices.addEventListener('devicechange', onDeviceChange);
     return () => navigator.mediaDevices.removeEventListener('devicechange', onDeviceChange);
@@ -218,6 +230,7 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
         return;
       }
       micStreamRef.current = stream;
+      setActiveMicLabel(stream.getAudioTracks()[0]?.label ?? '');
 
       const AudioContextClass: typeof AudioContext | undefined =
         window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -263,15 +276,20 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
   const testSpeaker = async () => {
     if (isTestingSpeaker) return;
     setIsTestingSpeaker(true);
+    setSpeakerTestError('');
 
     try {
       const AudioContextClass: typeof AudioContext | undefined =
         window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) {
         const audioCtx = new AudioContextClass();
-        const sinkable = audioCtx as AudioContext & { setSinkId?: (id: string) => Promise<void> };
-        if (currentOutputRef.current && sinkable.setSinkId) {
-          await sinkable.setSinkId(currentOutputRef.current);
+        // Chờ chuyển sang loa đã chọn xong rồi mới phát; không chuyển được thì nói rõ là đang phát qua loa mặc định
+        const routing = await applyOutputDevice(
+          audioCtx as AudioContext & { setSinkId?: (id: string) => Promise<void> },
+          currentOutputRef.current,
+        );
+        if (routing === 'failed' || routing === 'unsupported') {
+          setSpeakerTestError('Không phát được qua loa đã chọn (có thể đã ngắt kết nối), chuông thử đang phát qua loa mặc định của hệ thống.');
         }
 
         const now = audioCtx.currentTime;
@@ -311,28 +329,41 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
     onClose();
   };
 
+  /** Lưu lựa chọn; "Mặc định của hệ thống" (rỗng) xoá lựa chọn cũ để lần sau dùng đúng mặc định. Lưu kèm tên để gọi khi bị rút. */
+  const persistDevice = (key: string, labelKey: string, id: string, devices: MediaDeviceInfo[], savedLabel: string) => {
+    if (!id) {
+      localStorage.removeItem(key);
+      localStorage.removeItem(labelKey);
+      return;
+    }
+    localStorage.setItem(key, id);
+    const label = devices.find((d) => d.deviceId === id)?.label || savedLabel;
+    if (label) localStorage.setItem(labelKey, label);
+  };
+
   const handleSave = () => {
     stopMicTest();
-    if (currentInputId) {
-      localStorage.setItem(INPUT_DEVICE_STORAGE_KEY, currentInputId);
-    }
-    if (currentOutputId) {
-      localStorage.setItem(OUTPUT_DEVICE_STORAGE_KEY, currentOutputId);
-    }
+    persistDevice(INPUT_DEVICE_STORAGE_KEY, INPUT_LABEL_STORAGE_KEY, currentInputId, inputDevices, savedInputLabel);
+    persistDevice(OUTPUT_DEVICE_STORAGE_KEY, OUTPUT_LABEL_STORAGE_KEY, currentOutputId, outputDevices, savedOutputLabel);
     onSave(currentInputId, currentOutputId);
     onClose();
   };
 
   const accessNotice = micAccess === 'unknown' || micAccess === 'granted' ? null : ACCESS_NOTICE[micAccess];
   const levelView = micMeter.level ? LEVEL_VIEW[micMeter.level] : null;
-  const inputOptions =
-    inputDevices.length === 0
-      ? [{ value: '', label: 'Không tìm thấy microphone nào' }]
-      : inputDevices.map((dev, idx) => ({ value: dev.deviceId, label: dev.label || `Microphone ${idx + 1}` }));
-  const outputOptions =
-    outputDevices.length === 0
-      ? [{ value: '', label: 'Thiết bị phát âm thanh mặc định (System Default)' }]
-      : outputDevices.map((dev, idx) => ({ value: dev.deviceId, label: dev.label || `Thiết bị đầu ra ${idx + 1}` }));
+
+  const labelOf = (devices: MediaDeviceInfo[], id: string, saved: string) => devices.find((d) => d.deviceId === id)?.label || saved || null;
+  const inputOptions = buildDeviceOptions('audioinput', inputDevices, currentInputId, savedInputLabel);
+  const outputOptions = buildDeviceOptions('audiooutput', outputDevices, currentOutputId, savedOutputLabel);
+  const inputStatus = deviceStatus({
+    devices: inputDevices,
+    selectedId: currentInputId,
+    permissionDenied: micAccess === 'denied',
+    supported: typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia,
+  });
+  const outputStatus = deviceStatus({ devices: outputDevices, selectedId: currentOutputId, supported: outputSelectable });
+  const inputSystemName = systemDefaultLabel(inputDevices);
+  const outputSystemName = systemDefaultLabel(outputDevices);
 
   return (
     <Modal
@@ -369,12 +400,23 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
                 variant="secondary"
                 icon="refresh"
                 className="mt-2"
-                onClick={() => loadDevices(true, currentInputRef.current, currentOutputRef.current)}
+                onClick={() => loadDevices(true)}
               >
                 Cấp quyền &amp; Làm mới thiết bị
               </Button>
             </div>
           </div>
+        )}
+
+        {/* Thiết bị mới cắm vào: báo tên, không tự đổi lựa chọn */}
+        {connectedNotice && (
+          <p role="status" className="text-xs text-sumi bg-ai-soft rounded-jc-md px-3 py-2 flex items-start gap-1.5">
+            <Icon name="usb" size={16} className="flex-shrink-0 mt-px" />
+            <span className="flex-1">{connectedNotice}</span>
+            <button type="button" aria-label="Đóng thông báo" className="text-sumi-muted" onClick={() => setConnectedNotice('')}>
+              <Icon name="close" size={16} />
+            </button>
+          </p>
         )}
 
         {/* 1. Thiết bị đầu vào (Microphone) */}
@@ -383,7 +425,6 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
             <span className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wide">
               <Icon name="mic" size={18} /> Thiết bị đầu vào (Microphone)
             </span>
-            <span className="text-[11px] text-sumi-muted">{inputDevices.length} thiết bị tìm thấy</span>
           </div>
 
           <Select
@@ -392,23 +433,24 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
             options={inputOptions}
             onChange={(e) => {
               setInputId(e.target.value);
-              setInputNotice('');
               stopMicTest();
             }}
-            disabled={isLoadingDevices || inputDevices.length === 0}
+            disabled={isLoadingDevices || inputStatus === 'NOT_FOUND' || inputStatus === 'UNAVAILABLE'}
           />
-          {inputNotice && (
-            <p role="status" className="text-xs text-warning bg-warning-soft rounded-jc-md px-3 py-2 flex items-start gap-1.5">
-              <Icon name="usb_off" size={16} className="flex-shrink-0 mt-px" />
-              <span>{inputNotice}</span>
-            </p>
-          )}
+          <DeviceStatusLine
+            status={inputStatus}
+            text={describeDeviceStatus('audioinput', inputStatus, {
+              selected: labelOf(inputDevices, currentInputId, savedInputLabel),
+              systemDefault: inputSystemName,
+            })}
+            onUseDefault={() => {
+              setInputId('');
+              stopMicTest();
+            }}
+          />
           <p className="text-[11px] text-sumi-muted flex items-start gap-1.5">
             <Icon name="info" size={14} className="flex-shrink-0 mt-px" />
-            <span>
-              Micro này dùng để thu âm bài chấm điểm. Chữ hiện trực tiếp khi bạn nói (nhận dạng giọng nói của trình duyệt) luôn dùng micro
-              mặc định của hệ thống. Muốn hai phần đồng bộ, hãy đặt micro này làm mặc định trong cài đặt âm thanh của hệ điều hành.
-            </span>
+            <span>Nên để "Mặc định của hệ thống" để phần ghi âm và phần nhận dạng chữ cùng dùng một micro.</span>
           </p>
 
           {/* Mic Test Section */}
@@ -446,6 +488,14 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
                   style={{ left: `${rmsToMeterPercent(GOOD_VOICE_RMS)}%` }}
                 />
               </div>
+              {isTestingMic && activeMicLabel && (
+                <p className="text-[11px] text-sumi-muted flex items-start gap-1.5">
+                  <Icon name="settings_voice" size={14} className="flex-shrink-0 mt-px" />
+                  <span>
+                    Đang thu từ: <strong className="text-sumi">{activeMicLabel}</strong>
+                  </span>
+                </p>
+              )}
               {isTestingMic ? (
                 <p className="text-[11px] flex items-start gap-1.5" aria-live="polite">
                   {levelView ? (
@@ -479,9 +529,6 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
             <span className="text-xs font-bold flex items-center gap-1.5 uppercase tracking-wide">
               <Icon name="volume_up" size={18} /> Thiết bị đầu ra (Loa / Tai nghe)
             </span>
-            <span className="text-[11px] text-sumi-muted">
-              {outputDevices.length > 0 ? `${outputDevices.length} thiết bị tìm thấy` : 'Mặc định hệ thống'}
-            </span>
           </div>
 
           <Select
@@ -490,19 +537,21 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
             options={outputOptions}
             onChange={(e) => {
               setOutputId(e.target.value);
-              setOutputNotice('');
+              setSpeakerTestError('');
             }}
-            disabled={isLoadingDevices || outputDevices.length === 0 || !outputSelectable}
+            disabled={isLoadingDevices || outputStatus === 'UNAVAILABLE'}
           />
-          {!outputSelectable && (
-            <p className="text-[11px] text-sumi-muted">Trình duyệt này không hỗ trợ chọn loa riêng, âm thanh sẽ phát qua thiết bị mặc định.</p>
-          )}
-          {outputNotice && (
-            <p role="status" className="text-xs text-warning bg-warning-soft rounded-jc-md px-3 py-2 flex items-start gap-1.5">
-              <Icon name="usb_off" size={16} className="flex-shrink-0 mt-px" />
-              <span>{outputNotice}</span>
-            </p>
-          )}
+          <DeviceStatusLine
+            status={outputStatus}
+            text={describeDeviceStatus('audiooutput', outputStatus, {
+              selected: labelOf(outputDevices, currentOutputId, savedOutputLabel),
+              systemDefault: outputSystemName,
+            })}
+            onUseDefault={() => {
+              setOutputId('');
+              setSpeakerTestError('');
+            }}
+          />
 
           {/* Speaker Test Section */}
           <div className="bg-paper-100 p-3 rounded-jc-md border border-line flex items-center justify-between gap-3">
@@ -514,8 +563,40 @@ export const AudioDeviceSettingsModal: React.FC<AudioDeviceSettingsModalProps> =
               {isTestingSpeaker ? 'Đang phát...' : 'Nghe thử'}
             </Button>
           </div>
+          {speakerTestError && (
+            <p role="status" className="text-xs text-warning bg-warning-soft rounded-jc-md px-3 py-2 flex items-start gap-1.5">
+              <Icon name="warning" size={16} className="flex-shrink-0 mt-px" />
+              <span>{speakerTestError}</span>
+            </p>
+          )}
         </div>
       </div>
     </Modal>
+  );
+};
+
+/** Một dòng trạng thái thiết bị; trạng thái cần xử lý (đã ngắt kết nối, không tìm thấy, chưa cấp quyền) được tô cảnh báo. */
+const DeviceStatusLine: React.FC<{ status: DeviceStatus; text: string; onUseDefault: () => void }> = ({ status, text, onUseDefault }) => {
+  const warn = status === 'DISCONNECTED' || status === 'NOT_FOUND' || status === 'PERMISSION_DENIED' || status === 'UNAVAILABLE';
+  if (!warn) {
+    return (
+      <p className="text-[11px] text-sumi-muted flex items-start gap-1.5">
+        <Icon name="check_circle" size={14} className="flex-shrink-0 mt-px" />
+        <span>{text}</span>
+      </p>
+    );
+  }
+  return (
+    <div role="status" className="text-xs text-warning bg-warning-soft rounded-jc-md px-3 py-2 flex items-start gap-1.5">
+      <Icon name={status === 'DISCONNECTED' ? 'usb_off' : 'warning'} size={16} className="flex-shrink-0 mt-px" />
+      <div className="flex-1">
+        <span>{text}</span>
+        {status === 'DISCONNECTED' && (
+          <Button size="sm" variant="secondary" className="mt-2" onClick={onUseDefault}>
+            Dùng mặc định của hệ thống
+          </Button>
+        )}
+      </div>
+    </div>
   );
 };
