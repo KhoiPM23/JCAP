@@ -71,7 +71,6 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 * **UC-06:** Change Password
 * **UC-07:** View Learner Profile
 * **UC-08:** Update Learner Profile
-* **UC-09:** Feedback and Report an Issue
 
 ### **FE-02: Credit and Payment**
 
@@ -79,12 +78,12 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Admin credit package management: Create, Edit, Delete credit packages.
 
 **Use Cases:**
-* **UC-10:** View Credit Packages
-* **UC-11:** Purchase Credits
-* **UC-12:** View Credit History
-* **UC-13:** Add Credit Package
-* **UC-14:** Edit Credit Package
-* **UC-15:** Delete Credit Package
+* **UC-09:** View Credit Packages
+* **UC-10:** Purchase Credits
+* **UC-11:** View Credit History
+* **UC-12:** Add Credit Package
+* **UC-13:** Edit Credit Package
+* **UC-14:** Delete Credit Package
 
 ### **FE-03: Scenario-based Conversation Learning**
 
@@ -94,15 +93,15 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Adaptive learning support: Analyze learner performance and provide personalized recommendations for subsequent learning activities and practice.
 
 **Use Cases:**
-* **UC-16:** View Scenarios List (Learner/Admin)
-* **UC-17:** Search a Scenario
-* **UC-18:** View Scenario Details
-* **UC-19:** Practice AI Scenario Conversation
-* **UC-20:** View Conversation Result History
-* **UC-21:** View Conversation Result Detail
-* **UC-22:** Add Scenario
-* **UC-23:** Edit Scenario
-* **UC-24:** Delete Scenario
+* **UC-15:** View Scenarios List (Learner/Admin)
+* **UC-16:** Search a Scenario
+* **UC-17:** View Scenario Details
+* **UC-18:** Practice AI Scenario Conversation
+* **UC-19:** View Conversation Result History
+* **UC-20:** View Conversation Result Detail
+* **UC-21:** Add Scenario
+* **UC-22:** Edit Scenario
+* **UC-23:** Delete Scenario
 
 ### **FE-04: Shadowing Learning**
 
@@ -112,14 +111,14 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Admin shadowing content management: Create, Edit, Delete content associated with existing scenarios.
 
 **Use Cases:**
-* **UC-25:** View Shadowing Contents List
-* **UC-26:** Search a Shadowing Content
-* **UC-27:** View Shadowing Content Details
-* **UC-28:** Practice Shadowing
-* **UC-29:** View Shadowing Assessment History
-* **UC-30:** Add Shadowing Content
-* **UC-31:** Edit Shadowing Content
-* **UC-32:** Delete Shadowing Content
+* **UC-24:** View Shadowing Contents List
+* **UC-25:** Search a Shadowing Content
+* **UC-26:** View Shadowing Content Details
+* **UC-27:** Practice Shadowing
+* **UC-28:** View Shadowing Assessment History
+* **UC-29:** Add Shadowing Content
+* **UC-30:** Edit Shadowing Content
+* **UC-31:** Delete Shadowing Content
 
 ### **FE-05: Self-study Learning**
 
@@ -131,45 +130,92 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 > * Flashcard set study, set details browsing, and flashcard review history tracking.
 
 **Use Cases:**
-* **UC-33:** View Vocabulary List of a Topic
-* **UC-34:** Search a Vocabulary
-* **UC-35:** View Vocabulary Details
-* **UC-36:** View Grammar List of a Topic
-* **UC-37:** Search a Grammar
-* **UC-38:** View Grammar Details
-* **UC-39:** Add Vocabulary
-* **UC-40:** Edit Vocabulary
-* **UC-41:** Remove Vocabulary
-* **UC-42:** Add Grammar
-* **UC-43:** Edit Grammar
-* **UC-44:** Remove Grammar
-* **UC-45:** View Learning Topic List
-* **UC-46:** Add Learning Topic
-* **UC-47:** Edit Learning Topic
-* **UC-48:** Change Learning Topic Status
-* **UC-49:** Import Vocabulary from Excel
-* **UC-50:** Import Grammar from Excel
-* **UC-51:** Change Learning Content Status
-* **UC-52:** Bookmark Learning Content
-* **UC-53:** View Bookmarked Learning Contents
-* **UC-54:** Review Bookmarked Contents through Flashcard
-* **UC-55:** View Flashcard Sets
-* **UC-56:** View Flashcard Set Details
-* **UC-57:** Study a Flashcard Set
-* **UC-58:** View Flashcard Review History
+* **UC-32:** View Vocabulary List of a Topic
+* **UC-33:** Search a Vocabulary
+* **UC-34:** View Vocabulary Details
+* **UC-35:** View Grammar List of a Topic
+* **UC-36:** Search a Grammar
+* **UC-37:** View Grammar Details
+* **UC-38:** Add Vocabulary
+* **UC-39:** Edit Vocabulary
+* **UC-40:** Remove Vocabulary
+* **UC-41:** Add Grammar
+* **UC-42:** Edit Grammar
+* **UC-43:** Remove Grammar
+* **UC-44:** View Learning Topic List
+* **UC-45:** Add Learning Topic
+* **UC-46:** Edit Learning Topic
+* **UC-47:** Change Learning Topic Status
+* **UC-48:** Import Vocabulary from Excel
+* **UC-49:** Import Grammar from Excel
+* **UC-50:** Change Learning Content Status
+* **UC-51:** Add Learning Content to Bookmarks
+* **UC-52:** View Bookmarked Learning Contents
+* **UC-53:** Remove Learning Content from Bookmarks
+* **UC-54:** View Flashcard Sets
+* **UC-55:** View Flashcard Set Details
+* **UC-56:** Study a Flashcard Set
+* **UC-57:** View Flashcard Study History
+* **UC-58:** View Flashcard Study Summary
+* **UC-59:** Review Due Flashcards
+* **UC-60:** Unlock Additional Flashcard Capacity
+* **UC-61:** Do Flashcard Quiz
+* **UC-62:** View Flashcard Quiz Results
 
-### **FE-06: Platform Administration**
+### **FE-06: Explore Journey Map**
 
-> * Admin user administration: Search, Filter, Ban/Unban learner accounts.
-> * Learner feedback and issue report review and resolution reply.
-> * Admin revenue, system analytics, and platform monitoring.
+> * Interactive exploration of Japan's prefectures through a journey map and spot-based cultural lessons.
+> * Gamified progression with explore stamps, stamp book collection, and regional learning achievements.
+> * Admin journey management: Chapter and prefecture organisation, spot content management, and explore statistics.
 
 **Use Cases:**
-* **UC-59:** Search & Filter Users
-* **UC-60:** Change User Account Status (Ban/Unban)
-* **UC-61:** View Learner Feedback
-* **UC-62:** Reply Learner Feedback
-* **UC-63:** View Revenue Analytics
+* **UC-63:** View Explore Journey Map
+* **UC-64:** View Prefecture Spots
+* **UC-65:** Study a Spot Lesson
+* **UC-66:** Receive Explore Stamps
+* **UC-67:** View Stamp Book
+* **UC-68:** View Explore Map Overview
+* **UC-69:** Change Prefecture Status
+* **UC-70:** Assign Prefecture to Chapter
+* **UC-71:** Add Chapter
+* **UC-72:** Edit Chapter
+* **UC-73:** Reorder Chapters
+* **UC-74:** Deactivate Chapter
+* **UC-75:** View Prefecture Content
+* **UC-76:** Add Spot
+* **UC-77:** Edit Spot
+* **UC-78:** Change Spot Status
+* **UC-79:** Deactivate Spot
+* **UC-80:** Edit Province Word
+* **UC-81:** View Spot Content List
+* **UC-82:** View Explore Statistics
+
+### **FE-07: Placement Test and Adaptive Learning Recommendations**
+
+> * Initial Japanese proficiency evaluation via diagnostic placement tests.
+> * Placement test scoring, level classification, and detailed result analysis.
+> * Adaptive learning profile maintenance tracking learner performance, strengths, and areas for improvement.
+> * Personalized learning recommendations guiding learners to appropriate scenarios, shadowing lessons, and self-study materials.
+
+**Use Cases:**
+* **UC-83:** Start Placement Test
+* **UC-84:** View Placement Test Results
+* **UC-85:** View Adaptive Learning Profile
+* **UC-86:** View Learning Recommendations
+
+### **FE-08: Forum**
+
+> * Community discussion forum for Japanese learners to share experiences, ask questions, and collaborate.
+> * Post creation, viewing, editing, deletion, and response threads.
+> * Community interaction through responses and upvoting.
+
+**Use Cases:**
+* **UC-87:** View Forum Posts
+* **UC-88:** Post a Forum
+* **UC-89:** Response a Forum Post
+* **UC-90:** Upvote a Forum Post
+* **UC-91:** Delete a Forum Post
+* **UC-92:** Edit a Forum Post
 
 ## **5\. Global Database Schema (Unified ERD Overview)**
 
