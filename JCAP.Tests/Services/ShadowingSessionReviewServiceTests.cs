@@ -103,7 +103,9 @@ public class ShadowingSessionReviewServiceTests
         var prompt = ai.Last!.Messages.Last().Content;
         Assert.Contains("成田エクスプレスですね。", prompt);                // câu mẫu
         Assert.Contains("Thừa âm ngắt 「っ」 sau 「え」", prompt);           // lỗi từng âm do hệ thống đo
-        Assert.Contains("0.62", prompt);                                   // tỷ lệ tốc độ đã lưu
+        Assert.DoesNotContain("0.62", prompt);                             // KHÔNG gửi số liệu gốc
+        Assert.Contains("chậm hơn giọng mẫu khá nhiều", prompt);           // gửi bằng lời
+        Assert.DoesNotContain("leadingSilence", prompt);                   // thời gian chờ do thao tác: không gửi
         Assert.DoesNotContain(User, prompt);                               // không gửi định danh người học
         Assert.Contains("Không chấm điểm", ai.Last.SystemInstruction);
         Assert.Equal(AiResponseFormat.Json, ai.Last.ResponseFormat);
@@ -249,6 +251,11 @@ public class ShadowingSessionReviewServiceTests
             ShadowingSessionReviewService.StripTechnicalTerms("Tốc độ nói trung bình (medianRateRatio) chỉ đạt mức chậm."));
         Assert.Equal("Bạn có 2 chỗ dừng thừa.", ShadowingSessionReviewService.StripTechnicalTerms("Bạn có 2 extraPauses chỗ dừng thừa."));
         Assert.Equal("Đọc 「エクスプレス」 liền hơn.", ShadowingSessionReviewService.StripTechnicalTerms("Đọc 「エクスプレス」 liền hơn."));
+        // Ảnh chụp thật: "khoảng lặng trước khi bắt đầu câu (leading silence) lên tới 1060ms."
+        Assert.Equal("Dữ liệu cho thấy khoảng lặng trước khi bắt đầu câu.",
+            ShadowingSessionReviewService.StripTechnicalTerms("Dữ liệu cho thấy khoảng lặng trước khi bắt đầu câu (leading silence) lên tới 1060ms."));
+        Assert.Equal("Tốc độ nói chậm hơn mẫu.", ShadowingSessionReviewService.StripTechnicalTerms("Tốc độ nói (0.59) chậm hơn mẫu."));
+        Assert.Equal("Bạn dừng giữa từ 「成田」 2 lần.", ShadowingSessionReviewService.StripTechnicalTerms("Bạn dừng giữa từ 「成田」 2 lần."));
     }
 
     [Fact]

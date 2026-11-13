@@ -54,9 +54,10 @@ namespace JCAP.Services.Implementations
             Bạn KHÔNG nghe được audio; chỉ dùng dữ liệu JSON do hệ thống đo:
             - pronunciationPatterns: các kiểu lỗi âm hệ thống phát hiện, đã gom và đếm trên mọi lần chấm của buổi (vd. 「く」 đọc thành 「ぐ」 ×3), kèm từ ví dụ.
               Lỗi âm được suy ra từ chữ bộ nhận dạng viết ra nên có thể bỏ sót; KHÔNG kết luận "phát âm hoàn hảo".
-            - fluencySummary: nhịp nói cả buổi so với giọng mẫu, đã có sẵn câu mô tả bằng lời (speedInWords, continuityInWords, pausesInWords)
-              và số liệu gốc chỉ để bạn hiểu (không viết lại các số này): tốc độ người học / mẫu, chỗ ngừng thừa, ngập ngừng giữa từ, số âm nói liền.
-            - sentences[]: từng câu (lần tốt nhất): câu mẫu, điểm nội dung, số lần thử, câu nghe được, wordIssues, fluency chi tiết nếu có.
+            - fluencySummary: nhịp nói cả buổi so với giọng mẫu, đã viết sẵn bằng lời (speedInWords, continuityInWords, pausesInWords)
+              cùng vài số đếm (số câu đo được, số câu chậm hơn mẫu, số lần dừng thừa, số lần ngập ngừng giữa từ).
+              Mỗi câu có "rhythm" mô tả nhịp nói của câu đó bằng lời.
+            - sentences[]: từng câu (lần tốt nhất): câu mẫu, điểm nội dung, số lần thử, câu nghe được, wordIssues, rhythm nếu có.
             Nhiệm vụ: chỉ ra ĐÚNG những vấn đề quan trọng nhất về Phát âm và Lưu loát, đi vào thói quen gây ra lỗi.
             Quy tắc:
             1. Gom theo kiểu lỗi lặp lại, không liệt kê từng câu. Nhiều lỗi cùng gốc thì gộp và nêu gốc
@@ -65,6 +66,7 @@ namespace JCAP.Services.Implementations
             3. Cách sửa phải cụ thể, làm được ngay khi Shadowing (động tác miệng/hơi, cụm nào đọc chậm, câu nào nghe lại).
             4. Không chấm điểm, không nhận xét giọng, ngữ điệu hay cao độ. Không nhận xét điểm nội dung chung chung.
             5. Lưu loát là so với nhịp giọng máy VOICEVOX đọc đều, chỉ để tham khảo; nói nhanh hơn mẫu KHÔNG phải lỗi.
+               Không nhận xét thời gian chờ trước khi bắt đầu nói (do thao tác bấm ghi âm).
                fluencySummary vắng mặt thì "fluency": null.
             6. Ngắn gọn: summary và priority mỗi cái 1 câu; verdict 1 câu; title ≤ 10 từ; evidence và fix mỗi cái 1 câu ≤ 30 từ.
                Không chào hỏi, không khen chung chung, không lặp ý giữa các mục.
@@ -149,15 +151,18 @@ namespace JCAP.Services.Implementations
         /// <summary>Nhịp nói cả buổi (các câu so được với giọng mẫu).</summary>
         internal sealed class FluencySummary
         {
+            // Số đếm dễ hiểu (gửi AI)
             public int SentencesMeasured { get; set; }
-            public double? MedianRateRatio { get; set; }
             public int SlowerThanReferenceSentences { get; set; }
             public int ExtraPauses { get; set; }
             public int Hesitations { get; set; }
-            public double? AverageMeanRunMoras { get; set; }
-            public double? AverageReferenceMeanRunMoras { get; set; }
-            public int? LongestPauseMs { get; set; }
-            public int? MedianLeadingSilenceMs { get; set; }
+            // Số liệu gốc: chỉ để tính câu mô tả, KHÔNG gửi AI (AI từng trích nguyên số ra cho người học)
+            [System.Text.Json.Serialization.JsonIgnore] public double? MedianRateRatio { get; set; }
+            [System.Text.Json.Serialization.JsonIgnore] public double? AverageMeanRunMoras { get; set; }
+            [System.Text.Json.Serialization.JsonIgnore] public double? AverageReferenceMeanRunMoras { get; set; }
+            [System.Text.Json.Serialization.JsonIgnore] public int? LongestPauseMs { get; set; }
+            /// <summary>Thời gian chờ trước khi nói: do thao tác bấm ghi âm và phần thu trước, KHÔNG phải lưu loát; không gửi AI.</summary>
+            [System.Text.Json.Serialization.JsonIgnore] public int? MedianLeadingSilenceMs { get; set; }
             /// <summary>Mô tả bằng lời (backend tính từ số liệu) để AI dùng thay cho con số.</summary>
             public string SpeedInWords { get; set; } = string.Empty;
             public string? ContinuityInWords { get; set; }
@@ -171,7 +176,22 @@ namespace JCAP.Services.Implementations
             public int Attempts { get; set; }
             public string Heard { get; set; } = string.Empty;
             public List<WordIssuePayload> WordIssues { get; set; } = new();
-            public ShadowingFluencySnapshotDto? Fluency { get; set; }
+            /// <summary>Số liệu gốc của câu: chỉ dùng nội bộ để tổng hợp, KHÔNG gửi AI.</summary>
+            [System.Text.Json.Serialization.JsonIgnore] public ShadowingFluencySnapshotDto? Fluency { get; set; }
+            /// <summary>Nhịp nói của câu bằng lời (gửi AI thay cho số liệu).</summary>
+            public SentenceFluencyWords? Rhythm => Fluency == null ? null : new SentenceFluencyWords
+            {
+                Speed = SpeedInWords(Fluency.RateRatio),
+                Pauses = PausesInWords(Fluency.ExtraPauseCount ?? 0, Fluency.HesitationCount ?? 0),
+                Continuity = ContinuityInWords(Fluency.MeanRunMoras, Fluency.ReferenceMeanRunMoras),
+            };
+        }
+
+        internal sealed class SentenceFluencyWords
+        {
+            public string Speed { get; set; } = string.Empty;
+            public string Pauses { get; set; } = string.Empty;
+            public string? Continuity { get; set; }
         }
 
         internal sealed class WordIssuePayload
@@ -354,12 +374,24 @@ namespace JCAP.Services.Implementations
             new(@"\s*\(\s*[a-z]+[A-Z][A-Za-z]*\s*\)", System.Text.RegularExpressions.RegexOptions.Compiled);
         private static readonly System.Text.RegularExpressions.Regex TechnicalWord =
             new(@"\b[a-z]+[A-Z][A-Za-z]*\b", System.Text.RegularExpressions.RegexOptions.Compiled);
+        /// <summary>Thuật ngữ tiếng Anh trong ngoặc, vd. "(leading silence)".</summary>
+        private static readonly System.Text.RegularExpressions.Regex EnglishInParens =
+            new(@"\s*\(\s*[A-Za-z][A-Za-z ]*\)", System.Text.RegularExpressions.RegexOptions.Compiled);
+        /// <summary>Số đo kèm đơn vị hoặc số thập phân, vd. "lên tới 1060ms", "0,7 giây", "48%", "0.59" (kể cả nằm trong ngoặc).</summary>
+        private static readonly System.Text.RegularExpressions.Regex Measurement = new(
+            @"\s*\(?\s*(?:lên tới|chỉ đạt|khoảng|là)?\s*\d+(?:[.,]\d+)?\s*(?:ms|mili\s*giây|giây|%|mora|lần mẫu)(?![\p{L}])\)?|\s*\(?\b\d+[.,]\d+\b\)?",
+            System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-        /// <summary>Lưới an toàn: bỏ tên trường dữ liệu kiểu camelCase (vd. "(medianRateRatio)") nếu AI lỡ viết vào câu cho người học.</summary>
+        /// <summary>
+        /// Lưới an toàn: bỏ tên trường dữ liệu (vd. "(medianRateRatio)"), thuật ngữ tiếng Anh trong ngoặc và số đo kỹ thuật nếu AI lỡ viết
+        /// vào câu cho người học. Số đếm thường ("2 lần") được giữ.
+        /// </summary>
         internal static string StripTechnicalTerms(string text)
         {
             var t = TechnicalInParens.Replace(text, string.Empty);
             t = TechnicalWord.Replace(t, string.Empty);
+            t = EnglishInParens.Replace(t, string.Empty);
+            t = Measurement.Replace(t, string.Empty);
             return System.Text.RegularExpressions.Regex.Replace(t, @"\s{2,}", " ").Replace(" .", ".").Replace(" ,", ",").Trim();
         }
 
