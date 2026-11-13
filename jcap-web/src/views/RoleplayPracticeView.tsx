@@ -157,10 +157,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     } else if (msg.japaneseText && msg.japaneseText.includes('<ruby>') && msg.japaneseText.includes('</ruby>')) {
       html = cleanFuriganaHtml(msg.japaneseText);
     } else {
-      const scenarioVocabs = session?.targetVocabularies?.map(v => ({ word: v.word, reading: v.reading })) || [];
-      html = generateClientFuriganaHtml(stripRubyToPlainJapanese(msg.japaneseText), scenarioVocabs);
+      const scenarioVocabs = session?.targetVocabularies?.filter(Boolean).map(v => ({ word: v?.word || '', reading: v?.reading || '' })) || [];
+      html = generateClientFuriganaHtml(stripRubyToPlainJapanese(msg?.japaneseText || ''), scenarioVocabs);
     }
-    const plainOriginal = stripRubyToPlainJapanese(msg.japaneseText);
+    const plainOriginal = stripRubyToPlainJapanese(msg?.japaneseText || '');
     return alignFuriganaWithOriginal(html, plainOriginal);
   }, [session?.targetVocabularies]);
 
@@ -2232,7 +2232,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
     // Chặn gửi lặp: nếu câu nói chuẩn bị gửi trùng lặp hoàn toàn với câu học viên đã gửi trước đó
     const lastUserMsg = session?.messages?.filter((m) => m.sender === 'User').slice(-1)[0];
-    if (lastUserMsg && textToSend && textToSend === lastUserMsg.japaneseText.trim()) {
+    if (lastUserMsg && textToSend && textToSend === (lastUserMsg.japaneseText || '').trim()) {
       console.warn('[Scenario STT] Chặn gửi lặp câu cũ trong đàm thoại rảnh tay:', textToSend);
       latestTranscriptRef.current = '';
       setInputText('');
@@ -3247,10 +3247,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                           Chưa có từ vựng cho cấp độ này.
                         </p>
                       ) : (
-                        (session?.targetVocabularies ?? []).map((v) => {
-                          const posMatch = v.meaning.match(/\[(.*?)\]/);
-                          const parts = v.meaning.split('•').map((p) => p.trim());
-                          const mainMeaning = cleanPedagogicMeaning(v.meaning);
+                        (session?.targetVocabularies ?? []).filter(Boolean).map((v) => {
+                          const vMeaning = v?.meaning || '';
+                          const posMatch = vMeaning.match(/\[(.*?)\]/);
+                          const parts = vMeaning.split('•').map((p) => p.trim());
+                          const mainMeaning = cleanPedagogicMeaning(vMeaning);
                           const example = parts.length > 2 ? parts.slice(2).join(' • ') : null;
 
                           return (
@@ -3553,7 +3554,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         )}
 
                         {/* Vietnamese translation (Fade-in mượt mà sau khi câu tiếng Nhật chạy hoặc khi xem lại) */}
-                        {revealedAiTranslationIds.has(msg.id) && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
+                        {revealedAiTranslationIds.has(msg.id) && msg.vietnameseMeaning && (msg.vietnameseMeaning || '').trim() !== (msg.japaneseText || '').trim() && (
                           <div
                             className={`mt-2 border-t pt-1.5 text-[13px] leading-relaxed transition-all duration-500 ease-out ${
                               isAi ? 'border-[#E2D7C5]/70 text-[#5B6170]' : 'border-[#BED6EE]/60 text-[#5B6170]'
@@ -3597,7 +3598,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                             {/* Phải: Các nút hành động trực diện phong cách Zen */}
                             <div className="flex items-center gap-1.5 shrink-0">
                               {/* Nút bật/tắt furigana: Chỉ hiển thị khi câu có chữ Hán Kanji */}
-                              {/[\u4E00-\u9FAF]/.test(msg.japaneseText) && (
+                              {Boolean(msg.japaneseText && /[\u4E00-\u9FAF]/.test(msg.japaneseText)) && (
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -3703,7 +3704,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                             </button>
 
                             {/* Nút dịch câu thoại AI */}
-                            {msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
+                            {msg.vietnameseMeaning && (msg.vietnameseMeaning || '').trim() !== (msg.japaneseText || '').trim() && (
                               <button
                                 type="button"
                                 onClick={(e) => {
