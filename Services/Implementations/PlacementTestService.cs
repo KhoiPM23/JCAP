@@ -137,11 +137,7 @@ namespace JCAP.Services.Implementations
                 }
             }
 
-            // 3. Khởi tạo phiên mới (BR-PT-05: CreditDeducted = 0)
-            var levelConfigId = await _dbContext.ScenarioLevelConfigurations
-                .Select(c => c.Id)
-                .FirstOrDefaultAsync(cancellationToken);
-
+            // 3. Khởi tạo phiên mới (BR-PT-05: CreditDeducted = 0; tách biệt hoàn toàn khỏi kịch bản Roleplay thường)
             var initialState = new PlacementAssessmentState
             {
                 CurrentEvent = "EVT-01",
@@ -151,7 +147,7 @@ namespace JCAP.Services.Implementations
             var newSession = new RoleplaySession
             {
                 UserId = userId,
-                ScenarioLevelConfigurationId = levelConfigId > 0 ? levelConfigId : 1,
+                ScenarioLevelConfigurationId = null,
                 Status = "Active",
                 CreditDeducted = 0, // Miễn phí 100%
                 IsNaturallyConcluded = false,

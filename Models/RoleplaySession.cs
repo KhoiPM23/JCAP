@@ -6,7 +6,7 @@ namespace JCAP.Models
     {
         public int Id { get; set; }
         public string UserId { get; set; } = string.Empty;
-        public int ScenarioLevelConfigurationId { get; set; }
+        public int? ScenarioLevelConfigurationId { get; set; }
         public string Status { get; set; } = "Active"; // Active, Completed, Abandoned, TerminatedEarly, InsufficientEvidence
         public int CreditDeducted { get; set; } = 0;
         public bool IsNaturallyConcluded { get; set; } = false;

@@ -73,7 +73,7 @@ namespace JCAP.Services.Implementations
         var cfg = await _dbContext.RoleplaySessions
             .AsNoTracking()
             .Where(s => s.Id == sessionId)
-            .Select(s => new { s.ScenarioLevelConfiguration!.AiPersona, s.ScenarioLevelConfiguration.ScenarioId, s.ScenarioLevelConfigurationId, Code = s.ScenarioLevelConfiguration.Scenario!.ScenarioCode })
+            .Select(s => new { AiPersona = s.ScenarioLevelConfiguration != null ? s.ScenarioLevelConfiguration.AiPersona : null, ScenarioId = s.ScenarioLevelConfiguration != null ? (int?)s.ScenarioLevelConfiguration.ScenarioId : null, s.ScenarioLevelConfigurationId, Code = s.ScenarioLevelConfiguration != null && s.ScenarioLevelConfiguration.Scenario != null ? s.ScenarioLevelConfiguration.Scenario.ScenarioCode : null })
             .FirstOrDefaultAsync();
         var persona = string.IsNullOrWhiteSpace(cfg?.AiPersona) ? "Nhân vật AI" : cfg!.AiPersona;
         var npcCode = !string.IsNullOrWhiteSpace(cfg?.Code) ? cfg!.Code : $"NPC_{cfg?.ScenarioLevelConfigurationId}";
@@ -157,7 +157,7 @@ namespace JCAP.Services.Implementations
 
                 .Include(item => item.SessionMissions)
 
-                .FirstOrDefaultAsync(item => item.Id == sessionId && item.UserId == userId);
+                .FirstOrDefaultAsync(item => item.Id == sessionId && item.UserId == userId && item.SessionType != "PlacementTest");
 
             if (session == null)
 
@@ -494,7 +494,7 @@ namespace JCAP.Services.Implementations
 
                         Config = s.ScenarioLevelConfiguration,
 
-                        ConfigId = s.ScenarioLevelConfigurationId,
+                        ConfigId = s.ScenarioLevelConfigurationId ?? 0,
 
                         SessionMissions = s.SessionMissions
 
@@ -799,7 +799,7 @@ namespace JCAP.Services.Implementations
 
                         .Where(s => s.Id == result.RoleplaySessionId)
 
-                        .Select(s => s.ScenarioLevelConfigurationId)
+                        .Select(s => s.ScenarioLevelConfigurationId ?? 0)
 
                         .FirstOrDefaultAsync();
 
@@ -874,7 +874,7 @@ namespace JCAP.Services.Implementations
                 scenarioLevelConfigId = await _dbContext.RoleplaySessions
                     .AsNoTracking()
                     .Where(s => s.Id == result.RoleplaySessionId)
-                    .Select(s => s.ScenarioLevelConfigurationId)
+                    .Select(s => s.ScenarioLevelConfigurationId ?? 0)
                     .FirstOrDefaultAsync();
             }
 
