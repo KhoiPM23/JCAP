@@ -1,5 +1,5 @@
-import { Badge, Button } from '../jcap';
-import type { ShadowingRecommendation, ShadowingSessionSummary } from '../../types/shadowing';
+import { Badge } from '../jcap';
+import type { ShadowingSessionSummary } from '../../types/shadowing';
 
 const ERROR_LABEL: Record<string, string> = {
   chouon: 'trường âm',
@@ -16,15 +16,13 @@ const status = (s: 'COMPLETED' | 'UNAVAILABLE', completedText: string) =>
 
 interface Props {
   summary: ShadowingSessionSummary;
-  recommendation?: ShadowingRecommendation | null;
-  onOpenDialogue: (dialogueId: number) => void;
 }
 
 /**
  * Tổng kết buổi luyện do backend tính (Shadowing V2): số lần gửi chấm, câu cần luyện lại, trạng thái từng chiều,
- * và gợi ý luyện tập khi lỗi lặp lại đủ nhiều. Chiều chưa có điểm đã kiểm chứng chỉ hiện trạng thái, không hiện số.
+ * và các loại lỗi trong buổi. Chiều chưa có điểm đã kiểm chứng chỉ hiện trạng thái, không hiện số.
  */
-export default function SessionSummaryPanel({ summary, recommendation, onOpenDialogue }: Props) {
+export default function SessionSummaryPanel({ summary }: Props) {
   const errors = Object.entries(summary.errorTypeCounts).sort((a, b) => b[1] - a[1]);
   return (
     <section className="space-y-4" aria-label="Tổng kết buổi luyện">
@@ -65,24 +63,6 @@ export default function SessionSummaryPanel({ summary, recommendation, onOpenDia
         <p className="text-xs text-sumi-muted">
           Lỗi trong buổi: {errors.map(([type, n]) => `${ERROR_LABEL[type] ?? type} ×${n}`).join(' · ')}
         </p>
-      )}
-
-      {recommendation && recommendation.focus.length > 0 && (
-        <div className="rounded-2xl border border-line bg-paper-100 p-4 space-y-2">
-          <p className="text-xs font-bold text-sumi">Gợi ý luyện tập</p>
-          {recommendation.focus.map((f) => (
-            <p key={f.errorType} className="text-sm text-sumi">{f.message}</p>
-          ))}
-          {recommendation.dialogues.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {recommendation.dialogues.map((d) => (
-                <Button key={d.dialogueId} variant="secondary" size="sm" icon="school" onClick={() => onOpenDialogue(d.dialogueId)}>
-                  {d.title} · {d.jlptLevel}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
       )}
     </section>
   );

@@ -14,7 +14,8 @@ Cập nhật: 2026-11-12. Chi tiết thuật toán: `docs/shadowing-evaluation.m
 | **Ngữ điệu** | ❌ | Chưa làm |
 | Kiểm tra chất lượng âm thanh | ✅ | Có mã lỗi và lời nhắc |
 | Furigana câu mẫu | ✅ | |
-| Tổng kết buổi, lịch sử, gợi ý luyện tập | ✅ | Tính ở backend |
+| Tổng kết buổi, lịch sử | ✅ | Tính ở backend |
+| Gợi ý luyện tập | API còn, **không hiển thị** | Bỏ khỏi màn tổng kết từ 2026-11-13 |
 
 Nguyên tắc: không đo được thì trả **null + mã lý do**, không bao giờ trả 0; không dùng Web Speech để chấm; không suy ra chiều này từ chiều khác.
 
@@ -134,7 +135,9 @@ Mỗi câu: danh sách đoạn `{ text, reading }` (reading chỉ có ở chữ 
 Danh sách buổi đã luyện (có `totalSubmissions`); chi tiết một buổi gồm `summary` và **từng lần gửi chấm**
 (thời điểm, trạng thái, mã lỗi, điểm nội dung, tier, transcript, nguồn/mô hình, phiên bản chấm, có được tính vào buổi không).
 
-## 5. Gợi ý luyện tập — `GET /api/shadowing/recommendations`
+## 5. Gợi ý luyện tập — `GET /api/shadowing/recommendations` (không còn hiển thị)
+
+Màn tổng kết đã bỏ khối này (2026-11-13); API vẫn còn ở backend.
 
 Theo quy tắc (không dùng AI): trong 60 ngày gần nhất, loại lỗi xuất hiện **≥ 3 lần trên ≥ 2 câu khác nhau** (trường âm, っ, ん, âm đục/trong)
 → `focus[]` (loại lỗi, số lần, số câu, lời khuyên) và `dialogues[]` (bài hội thoại có nhiều câu chứa âm đó).

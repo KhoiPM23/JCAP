@@ -45,7 +45,6 @@ import { matchingFurigana } from '../../utils/furigana';
 import type {
   FuriganaSegment,
   ShadowingEvaluationDimensions,
-  ShadowingRecommendation,
   ShadowingServerProgress,
   ShadowingSessionSummary,
 } from '../../types/shadowing';
@@ -226,7 +225,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Tổng kết do backend tính khi hoàn thành (đúng cả khi tiếp tục phiên từ máy khác) và gợi ý luyện tập
   const [serverSummary, setServerSummary] = useState<ShadowingSessionSummary | null>(null);
   const [serverOverall, setServerOverall] = useState<number | null>(null);
-  const [recommendation, setRecommendation] = useState<ShadowingRecommendation | null>(null);
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
   // Rỗng = mặc định của hệ thống (người mới chưa chọn gì luôn ở chế độ này; giá trị "default" cũ cũng là mặc định)
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
@@ -1657,7 +1655,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setHistorySaveMessage('');
     setServerSummary(null);
     setServerOverall(null);
-    setRecommendation(null);
 
     const currentDialogue = dialogueRef.current || dialogue;
     if (!currentDialogue) return;
@@ -1695,9 +1692,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       }
       setServerSummary(completeRes.data?.summary ?? null);
       setServerOverall(completeRes.data?.weightedOverallScore ?? null);
-      shadowingService.getRecommendations(currentDialogue.id).then((rec) => {
-        if (rec.success && rec.data) setRecommendation(rec.data);
-      });
       setHistorySaveState('saved');
     } else {
       setHistorySaveState('failed');
@@ -2654,11 +2648,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               )}
 
               {serverSummary && (
-                <SessionSummaryPanel
-                  summary={serverSummary}
-                  recommendation={recommendation}
-                  onOpenDialogue={(dialogueId) => navigate(`/shadowing/${dialogueId}`)}
-                />
+                <SessionSummaryPanel summary={serverSummary} />
               )}
 
               {finalGateStatus === 'needs_retry' && (
