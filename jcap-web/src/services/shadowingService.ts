@@ -11,6 +11,7 @@ import type {
   StartShadowingProgressPayload,
   FuriganaSegment,
   ShadowingRecommendation,
+  ShadowingSessionAiReview,
 } from '../types/shadowing';
 
 import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
@@ -238,6 +239,12 @@ class ShadowingService {
   public getRecommendations(excludeDialogueId?: number): Promise<ApiResponse<ShadowingRecommendation>> {
     const query = excludeDialogueId != null ? `?excludeDialogueId=${excludeDialogueId}` : '';
     return this.progressRequest(`/api/shadowing/recommendations${query}`, { method: 'GET' }, 'Không tải được gợi ý luyện tập.');
+  }
+
+  /** Nhận xét tổng hợp buổi luyện do AI viết từ số liệu đã đo (chỉ tạo khi người học bấm; không lưu, miễn phí). */
+  public createSessionAiReview(sessionId: string): Promise<ApiResponse<ShadowingSessionAiReview>> {
+    return this.progressRequest(`/api/shadowing/history/${sessionId}/ai-review`, { method: 'POST' },
+      'Chưa tạo được nhận xét lúc này. Hãy thử lại sau ít phút.');
   }
 
   /** Furigana các câu của bài (theo Id câu); câu chưa có dữ liệu thì không có trong kết quả. */

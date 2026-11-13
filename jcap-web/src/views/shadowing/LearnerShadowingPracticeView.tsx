@@ -225,6 +225,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Tổng kết do backend tính khi hoàn thành (đúng cả khi tiếp tục phiên từ máy khác) và gợi ý luyện tập
   const [serverSummary, setServerSummary] = useState<ShadowingSessionSummary | null>(null);
   const [serverOverall, setServerOverall] = useState<number | null>(null);
+  const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
   // Rỗng = mặc định của hệ thống (người mới chưa chọn gì luôn ở chế độ này; giá trị "default" cũ cũng là mặc định)
   const [selectedAudioInputDeviceId, setSelectedAudioInputDeviceId] = useState<string>(
@@ -1649,6 +1650,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     setHistorySaveMessage('');
     setServerSummary(null);
     setServerOverall(null);
+    setCompletedSessionId(null);
 
     const currentDialogue = dialogueRef.current || dialogue;
     if (!currentDialogue) return;
@@ -1686,6 +1688,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       }
       setServerSummary(completeRes.data?.summary ?? null);
       setServerOverall(completeRes.data?.weightedOverallScore ?? null);
+      setCompletedSessionId(completeRes.data?.sessionId ?? null);
       setHistorySaveState('saved');
     } else {
       setHistorySaveState('failed');
@@ -2636,7 +2639,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
               )}
 
               {serverSummary && (
-                <SessionSummaryPanel summary={serverSummary} />
+                <SessionSummaryPanel summary={serverSummary} sessionId={completedSessionId} />
               )}
 
               {finalGateStatus === 'needs_retry' && (

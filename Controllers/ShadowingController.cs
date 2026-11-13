@@ -135,6 +135,26 @@ namespace JCAP.Controllers
         }
 
         /// <summary>Gợi ý luyện tập theo quy tắc từ các lỗi lặp lại trong 60 ngày gần đây (chỉ khi đủ bằng chứng).</summary>
+        /// <summary>
+        /// Nhận xét tổng hợp buổi luyện do AI viết từ số liệu đã đo (không chấm điểm, không lưu, miễn phí).
+        /// Chỉ tạo khi người học bấm nút ở màn tổng kết.
+        /// </summary>
+        [HttpPost("history/{sessionId:guid}/ai-review")]
+        public async Task<ActionResult<ApiResponse<ShadowingSessionAiReviewDto>>> CreateSessionAiReview(
+            Guid sessionId, [FromServices] IShadowingSessionReviewService reviews, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingSessionAiReviewDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var result = await reviews.GenerateAsync(userId, sessionId, cancellationToken);
+            if (result.NotFound) return NotFound(ApiResponse<ShadowingSessionAiReviewDto>.Fail("Không tìm thấy buổi luyện."));
+            if (result.Review == null)
+                return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                    ApiResponse<ShadowingSessionAiReviewDto>.Fail(result.ErrorMessage ?? "Chưa tạo được nhận xét lúc này."));
+            return Ok(ApiResponse<ShadowingSessionAiReviewDto>.Ok(result.Review));
+        }
+
         [HttpGet("recommendations")]
         public async Task<ActionResult<ApiResponse<ShadowingRecommendationDto>>> GetRecommendations([FromQuery] int? excludeDialogueId, CancellationToken cancellationToken)
         {

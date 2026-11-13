@@ -233,6 +233,7 @@ namespace JCAP.Services.Implementations
                 Feedback = Truncate(result.Feedback, MaxFeedbackLength),
                 DiffTokensJson = JsonSerializer.Serialize(result.DiffTokens ?? new List<ShadowingDiffTokenDto>(), JsonOptions),
                 DimensionsJson = JsonSerializer.Serialize(result.Dimensions ?? new EvaluationDimensionsDto(), JsonOptions),
+                FluencyJson = ShadowingFluencySnapshotDto.From(result.Fluency) is { } fluency ? JsonSerializer.Serialize(fluency, JsonOptions) : null,
                 AsrModel = TruncateOrNull(result.AsrModel, 100),
                 ProcessingMs = result.ProcessingMs > 0 ? result.ProcessingMs : null,
                 CreatedAt = DateTime.UtcNow,

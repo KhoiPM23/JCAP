@@ -130,6 +130,14 @@ Mỗi câu: danh sách đoạn `{ text, reading }` (reading chỉ có ở chữ 
 | `sentencesToRetry[]` | Câu nên luyện lại (điểm tốt nhất < 65 hoặc chưa chấm được): câu, điểm tốt nhất, lý do, loại lỗi chính |
 | `errorTypeCounts` | Đếm lỗi theo loại trong buổi (trường âm, っ, ん, âm đục/trong…) |
 
+### 3b. Nhận xét chi tiết từ AI — `POST /api/shadowing/history/{sessionId}/ai-review`
+
+Chỉ tạo khi người học bấm nút ở màn tổng kết; **miễn phí, không lưu**. AI (Gemini qua `IAiClient`) **không nghe audio, không chấm điểm**:
+chỉ diễn giải số liệu đã lưu của buổi (điểm nội dung tốt nhất từng câu, số lần thử, câu hệ thống nghe được, lỗi theo từ và từng âm,
+số liệu Lưu loát từng câu `FluencyJson`), mỗi nhận xét phải có bằng chứng; không nhận xét giọng/ngữ điệu.
+Đầu ra: `overview`, `strengths[]`, `content[]` và `fluency[]` (mỗi mục `point`, `evidence`, `advice`; tối đa 3), `nextSteps[]`, `hasFluencyData`.
+Không có số liệu Lưu loát thì `fluency` rỗng. AI lỗi/trả sai cấu trúc → thông báo "thử lại", không bịa nhận xét.
+
 ## 4. Lịch sử — `GET /api/shadowing/history`, `GET /api/shadowing/history/{sessionId}`
 
 Danh sách buổi đã luyện (có `totalSubmissions`); chi tiết một buổi gồm `summary` và **từng lần gửi chấm**

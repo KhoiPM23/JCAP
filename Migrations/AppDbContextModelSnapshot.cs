@@ -2125,6 +2125,9 @@ namespace JCAP.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("FluencyJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("OverallScore")
                         .HasColumnType("int");
 

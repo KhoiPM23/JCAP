@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JCAP.DTOs.Shadowing
 {
@@ -181,5 +182,44 @@ namespace JCAP.DTOs.Shadowing
         public string ScoringVersion { get; set; } = string.Empty;
         public List<ShadowingDiffTokenDto> DiffTokens { get; set; } = new();
         public DateTime EvaluatedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Số liệu Lưu loát rút gọn của một lần chấm, lưu cùng kết quả để tổng hợp theo buổi (không lưu danh sách khoảng dừng chi tiết).
+    /// Tỷ lệ tốc độ = tốc độ người học / tốc độ giọng mẫu (&lt; 1 là chậm hơn).
+    /// </summary>
+    public class ShadowingFluencySnapshotDto
+    {
+        public double? RateRatio { get; set; }
+        public double? SpeakingRateRatio { get; set; }
+        public int? PauseCount { get; set; }
+        public int? ReferencePauseCount { get; set; }
+        public int? ExtraPauseCount { get; set; }
+        public int? HesitationCount { get; set; }
+        public int? LongestPauseMs { get; set; }
+        public double? MeanRunMoras { get; set; }
+        public double? ReferenceMeanRunMoras { get; set; }
+        /// <summary>Câu nhận xét nhịp nói của lần chấm (tối đa 3).</summary>
+        public List<string> Notes { get; set; } = new();
+
+        /// <summary>Null khi không so được với giọng mẫu (đọc chưa đúng câu, thiếu giọng mẫu, câu quá ngắn, đã tắt Lưu loát).</summary>
+        public static ShadowingFluencySnapshotDto? From(FluencyMetricsDto? f)
+        {
+            var c = f?.Comparison;
+            if (f == null || f.Status != "available" || c == null || c.Status != "available") return null;
+            return new ShadowingFluencySnapshotDto
+            {
+                RateRatio = c.ArticulationRateRatio,
+                SpeakingRateRatio = c.SpeakingRateRatio,
+                PauseCount = c.LearnerPauseCount ?? f.PauseCount,
+                ReferencePauseCount = c.ReferencePauseCount,
+                ExtraPauseCount = c.ExtraPauseCount,
+                HesitationCount = c.HesitationCount,
+                LongestPauseMs = f.LongestPauseMs,
+                MeanRunMoras = f.MeanRunMoras,
+                ReferenceMeanRunMoras = f.Reference?.Metrics.MeanRunMoras,
+                Notes = f.Observations.Select(o => o.Message).Where(m => !string.IsNullOrWhiteSpace(m)).Take(3).ToList(),
+            };
+        }
     }
 }

@@ -503,3 +503,20 @@ export interface TranslateAssistResult {
   vietnameseTranslation: string;
 }
 
+/** Một nhận xét của AI: vấn đề, bằng chứng từ số liệu đã đo, cách luyện. */
+export interface ShadowingAiReviewPoint {
+  point: string;
+  evidence: string;
+  advice: string;
+}
+
+/** Nhận xét tổng hợp buổi Shadowing do AI viết từ số liệu đã đo (không phải điểm; không lưu). */
+export interface ShadowingSessionAiReview {
+  overview: string;
+  strengths: string[];
+  content: ShadowingAiReviewPoint[];
+  fluency: ShadowingAiReviewPoint[];
+  nextSteps: string[];
+  hasFluencyData: boolean;
+  generatedAt: string;
+}

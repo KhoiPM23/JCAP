@@ -51,6 +51,12 @@ namespace JCAP.Models
         /// <summary>JSON trạng thái/điểm từng chiều (EvaluationDimensionsDto); null với dữ liệu trước Shadowing V2 M4.</summary>
         public string? DimensionsJson { get; set; }
 
+        /// <summary>
+        /// Số liệu Lưu loát rút gọn của lần chấm (ShadowingFluencySnapshotDto, JSON): tốc độ so với mẫu, chỗ ngừng, ngập ngừng,
+        /// nói liền trung bình, nhận xét. Null nếu không so được với giọng mẫu hoặc lần chấm trước khi có cột này.
+        /// </summary>
+        public string? FluencyJson { get; set; }
+
         /// <summary>Mô hình ASR đã dùng (vd. faster-whisper:small).</summary>
         public string? AsrModel { get; set; }
 
