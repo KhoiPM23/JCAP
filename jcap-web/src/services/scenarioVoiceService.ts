@@ -213,7 +213,7 @@ class ScenarioVoiceService {
     }
 
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 25000);
       if (this.isSpeechCancelled) {
         return;
       }
@@ -225,7 +225,7 @@ class ScenarioVoiceService {
         if (!this.isSpeechCancelled) {
           onStart?.();
           if (onViseme) {
-            const visemes = voicevoxService.getVisemes(text, resolvedVoiceId);
+            const visemes = voicevoxService.getVisemes(cleanText, resolvedVoiceId);
             if (visemes && visemes.length > 0) {
               const step = () => {
                 if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || this.isSpeechCancelled) {
