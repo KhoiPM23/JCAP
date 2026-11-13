@@ -101,7 +101,7 @@ describe('FE-03 Milestone 3: SumiInkIndicator & Ambient Micro-Feedback', () => {
       })
     );
 
-    assert.ok(html.includes('Vết mực Sumi'), 'Should render Sumi ink label');
+    assert.ok(html.includes('Lưu ý về thể văn và độ lịch sự trong giao tiếp'), 'Should render style/register notice');
     assert.ok(html.includes('Lệch vai vế'), 'Should indicate register asymmetry slip');
     assert.ok(html.includes('言い直す ↻'), 'Should include 1-click self-repair button');
     assert.ok(!html.includes('NaN'), 'Zero NaN in rendered markup');

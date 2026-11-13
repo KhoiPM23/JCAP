@@ -149,9 +149,26 @@ export function deriveJapaneseCloze(sentence?: string | null, targetKeyword?: st
   return 'これは [ ______ ] ですか。';
 }
 
+export function stripRubyToPlainJapanese(text?: string | null): string {
+  if (!text) return '';
+  return text
+    .replace(/&lt;rt[^&]*&gt;[\s\S]*?(?:&lt;\/rt&gt;|(?=&lt;\/ruby&gt;)|$)/gi, '')
+    .replace(/&lt;\/?(?:ruby|rp)[^&]*&gt;/gi, '')
+    .replace(/<rt[^>]*>[\s\S]*?(?:<\/rt>|(?=<\/ruby>|<rt|$))/gi, '')
+    .replace(/<rp[^>]*>[\s\S]*?(?:<\/rp>|$)/gi, '')
+    .replace(/<\/?(?:ruby|rt|rp)[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\{([^|}]+)\|[^}]+\}/g, '$1')
+    .trim();
+}
+
 export function sanitizeDisplayJapanese(text: string): string {
   if (!text) return '';
-  const trimmed = text.trim();
+  // Khử sạch triệt để mọi thẻ HTML / Ruby nếu có trong câu tiếng Nhật
+  const plainText = (text.includes('<') || text.includes('&lt;') || text.includes('{'))
+    ? stripRubyToPlainJapanese(text)
+    : text;
+  const trimmed = plainText.trim();
 
   // 1. Loại bỏ chú thích tiếng Việt trong ngoặc đơn (cả ngoặc nửa góc và toàn góc)
   // Ví dụ: "本当にありがとうございます。(Cháu hãy đi cẩn thận nhé)" -> "本当にありがとうございます。"

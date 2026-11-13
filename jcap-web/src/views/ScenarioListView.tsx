@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
-import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { useAuth } from '../contexts/AuthContext';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
@@ -65,6 +64,27 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+
+  // Lắng nghe scroll để kích hoạt trạng thái ghim sát đỉnh khi thanh công cụ chạm mép trên viewport
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.jx-page') || window;
+    const handleScroll = () => {
+      const rect = toolbarRef.current?.getBoundingClientRect();
+      if (rect) {
+        setIsScrolled(rect.top <= 4);
+      } else {
+        const top = (scrollContainer as HTMLElement).scrollTop ?? window.scrollY;
+        setIsScrolled(top > 120);
+      }
+    };
+    handleScroll();
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -184,94 +204,57 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
         </div>
       )}
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
-              任務板 · QUEST BOARD
-            </span>
-            <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
-              場面対話 · 実践演習
-            </span>
-          </div>
-          <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
-          <p className="m-0 text-[14px] leading-6 text-sumi-muted">
-            Chọn một tình huống nhiệm vụ, nhập vai đối thoại tự nhiên cùng AI. Thu thập đạo cụ ngôn từ và vượt qua các mốc thử thách.
-          </p>
+      {/* Header Giới thiệu Thanh nhã */}
+      <div className="flex flex-col gap-1.5 pt-1">
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
+            Bảng nhiệm vụ hội thoại · 任務板
+          </span>
+          <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
+            場面対話 · 実践演習
+          </span>
         </div>
-        <div className="w-[320px] max-w-full">
-          <TextField
-            icon="search"
-            placeholder="Tìm nhiệm vụ, VD: gọi món, sân bay"
-            aria-label="Tìm tình huống"
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
+        <p className="m-0 text-[14px] leading-6 text-sumi-muted">
+          Chọn một tình huống nhiệm vụ, nhập vai đối thoại tự nhiên cùng AI. Rèn luyện từ vựng, ngữ pháp và hoàn thành mục tiêu giao tiếp thực tế.
+        </p>
       </div>
 
-      {/* CategoryChips & JLPT Level Filter Bar - Dính trên đầu kèm hiệu ứng mờ kính nổi nhẹ */}
-      <div className="sticky top-0 z-20 -mx-2 px-3 py-2.5 backdrop-blur-md bg-paper-50/90 rounded-2xl border border-line/70 shadow-xs flex flex-col gap-3 transition-all">
+      {/* Dynamic Sticky Command Toolbar - Nền đặc var(--paper-50) che kín hoàn toàn nội dung cuộn bên dưới */}
+      <div
+        ref={toolbarRef}
+        className={`sticky top-0 z-30 transition-all duration-200 flex flex-col gap-2.5 bg-paper-50 ${
+          isScrolled
+            ? '-mx-4 px-5 py-2.5 rounded-t-none rounded-b-2xl border-x border-b border-line shadow-md'
+            : '-mx-2 px-3.5 py-2.5 rounded-2xl border border-line shadow-2xs'
+        }`}
+      >
+        {/* Hàng 1: Ô tìm kiếm (Search Bar) linh hoạt & Bộ chọn trình độ JLPT */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* CategoryChips Filter */}
-          <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Bộ lọc chủ đề tình huống">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filterTopic === 'ALL'}
-              onClick={() => {
-                ukiyoSound.playSubtleTap();
-                handleTopicChange('ALL');
-              }}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press ${
-                filterTopic === 'ALL'
-                  ? 'bg-ai text-white shadow-xs'
-                  : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
-              }`}
-            >
-              <Icon name="apps" size={16} />
-              <span>Tất cả</span>
-              <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
-                filterTopic === 'ALL' ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
-              }`}>
-                {topicCounts['ALL'] || scenarios.length}
-              </span>
-            </button>
-
-            {topics.map((t) => {
-              const active = filterTopic === t.code;
-              const count = topicCounts[t.code] ?? t.scenarioCount ?? 0;
-              return (
-                <button
-                  key={t.code}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => {
-                    ukiyoSound.playSubtleTap();
-                    handleTopicChange(t.code);
-                  }}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press ${
-                    active
-                      ? 'bg-ai text-white shadow-xs'
-                      : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
-                  }`}
-                >
-                  <Icon name={t.icon || 'bookmark'} size={16} />
-                  <span>{t.name}</span>
-                  <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
-                    active ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="flex-1 min-w-[240px] max-w-[520px]">
+            <TextField
+              icon="search"
+              placeholder="Tìm nhiệm vụ, VD: gọi món, sân bay, ramen..."
+              aria-label="Tìm tình huống"
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              trailing={
+                searchTerm ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSearchChange('')}
+                    className="text-sumi-muted hover:text-sumi p-1 rounded-full hover:bg-paper-200 transition-colors cursor-pointer"
+                    aria-label="Xoá tìm kiếm"
+                  >
+                    <Icon name="close" size={16} />
+                  </button>
+                ) : undefined
+              }
+            />
           </div>
 
-          {/* Level Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] leading-5 text-sumi-muted">Trình độ</span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-medium text-sumi-muted hidden sm:inline">Trình độ</span>
             <SegmentedControl
               ariaLabel="Trình độ"
               size="sm"
@@ -288,6 +271,66 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
               ]}
             />
           </div>
+        </div>
+
+        {/* Hàng 2: CategoryChips Filter - Cuộn ngang mượt mà */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5" role="tablist" aria-label="Bộ lọc chủ đề tình huống">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filterTopic === 'ALL'}
+            onClick={() => {
+              ukiyoSound.playSubtleTap();
+              handleTopicChange('ALL');
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
+              filterTopic === 'ALL'
+                ? 'bg-ai text-white shadow-xs'
+                : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
+            }`}
+          >
+            <Icon name="apps" size={16} />
+            <span>Tất cả</span>
+            <span
+              className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
+                filterTopic === 'ALL' ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
+              }`}
+            >
+              {topicCounts['ALL'] || scenarios.length}
+            </span>
+          </button>
+
+          {topics.map((t) => {
+            const active = filterTopic === t.code;
+            const count = topicCounts[t.code] ?? t.scenarioCount ?? 0;
+            return (
+              <button
+                key={t.code}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  handleTopicChange(t.code);
+                }}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all tactile-press shrink-0 ${
+                  active
+                    ? 'bg-ai text-white shadow-xs'
+                    : 'border border-line bg-paper-50 text-sumi hover:bg-paper-100 hover:border-line-strong'
+                }`}
+              >
+                <Icon name={t.icon || 'bookmark'} size={16} />
+                <span>{t.name}</span>
+                <span
+                  className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
+                    active ? 'bg-white/20 text-white' : 'bg-paper-200 text-sumi-muted'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -385,7 +428,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   );
 };
 
-/** Thẻ bài đạo cụ ngôn từ (Inventory Props) với hover peek xem nghĩa nhanh */
+/** Thẻ từ vựng & gợi ý ngữ cảnh với hover peek xem nghĩa nhanh */
 const InventoryPropBadge: React.FC<{
   type: 'vocab' | 'grammar';
   wordOrPattern: string;
@@ -395,6 +438,7 @@ const InventoryPropBadge: React.FC<{
 }> = ({ type, wordOrPattern, reading, meaning, example }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [popoverPos, setPopoverPos] = useState<'top' | 'bottom'>('top');
+  const [popoverAlign, setPopoverAlign] = useState<'center' | 'left' | 'right'>('center');
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const cleanMeaning = cleanPedagogicMeaning(meaning);
@@ -402,8 +446,29 @@ const InventoryPropBadge: React.FC<{
   const updatePopoverPos = () => {
     if (badgeRef.current) {
       const rect = badgeRef.current.getBoundingClientRect();
-      if (rect.top < 180) setPopoverPos('bottom');
+      if (rect.top < 200) setPopoverPos('bottom');
       else setPopoverPos('top');
+
+      // Kiểm tra tràn mép ngang trong aside preview và cửa sổ
+      const asideEl = badgeRef.current.closest('aside');
+      if (asideEl) {
+        const asideRect = asideEl.getBoundingClientRect();
+        if (rect.right + 120 > asideRect.right) {
+          setPopoverAlign('right');
+        } else if (rect.left - 120 < asideRect.left) {
+          setPopoverAlign('left');
+        } else {
+          setPopoverAlign('center');
+        }
+      } else {
+        if (rect.right > window.innerWidth - 140) {
+          setPopoverAlign('right');
+        } else if (rect.left < 140) {
+          setPopoverAlign('left');
+        } else {
+          setPopoverAlign('center');
+        }
+      }
     }
   };
 
@@ -459,14 +524,20 @@ const InventoryPropBadge: React.FC<{
       {/* Hover Peek Popover */}
       {isHovered && (
         <div
-          className={`absolute left-1/2 -translate-x-1/2 z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
+          className={`absolute z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
             popoverPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          } ${
+            popoverAlign === 'right'
+              ? 'right-0 translate-x-0'
+              : popoverAlign === 'left'
+              ? 'left-0 translate-x-0'
+              : 'left-1/2 -translate-x-1/2'
           }`}
           style={{ boxShadow: '0 8px 24px rgba(35, 33, 30, 0.16)' }}
         >
           <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
-              {type === 'vocab' ? 'Đạo cụ từ vựng (単語)' : 'Đạo cụ ngữ pháp (文法)'}
+              {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
             </span>
             <span
               className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
@@ -504,6 +575,9 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
   const [startError, setStartError] = useState<string | null>(null);
   /** Đang hỏi xác nhận làm lại / đổi cấp (bấm lần hai để làm) */
   const [confirmRestart, setConfirmRestart] = useState(false);
+  /** Thu gọn mặc định Từ vựng & Ngữ pháp trọng tâm để tối ưu chiều dọc */
+  const [isVocabOpen, setIsVocabOpen] = useState(false);
+  const [isGrammarOpen, setIsGrammarOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -559,19 +633,50 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
   return (
     <aside
       aria-label="Xem trước tình huống"
-      className="relative flex max-w-[420px] flex-[1_1_380px] flex-col overflow-hidden rounded-jc-xl border border-line bg-paper-50 shadow-jc-md lg:sticky lg:top-0 washi-parchment"
+      className="relative flex max-w-[420px] flex-[1_1_380px] flex-col max-h-[calc(100vh-140px)] rounded-jc-xl border border-line bg-paper-50 shadow-jc-md lg:sticky lg:top-[124px] z-20 washi-parchment overflow-hidden transition-all duration-200"
     >
       {/* Watermark thư pháp chìm ở góc dưới */}
       <div className="sb-wm text-5xl opacity-40 select-none pointer-events-none">臨戦</div>
 
-      <div className="relative h-28 bg-ai-soft">
-        <div className="jc-seigaiha" />
-        <span className="absolute -bottom-[26px] left-6 inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] bg-paper-50 text-ai shadow-jc-md border border-line">
-          {details?.thumbnail ? <img src={details.thumbnail} alt="" className="h-full w-full object-cover" /> : <Icon name="forum" size={32} />}
-        </span>
+      {/* Header Cover Banner Nghệ thuật - Chân ảnh mờ dần hòa mượt vào nền giấy Washi tới tiêu đề */}
+      <div className="relative h-[136px] w-full shrink-0 overflow-hidden">
+        {details?.thumbnail ? (
+          <img
+            src={details.thumbnail}
+            alt=""
+            className="h-full w-full object-cover object-center"
+            style={{
+              maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 36%, rgba(0, 0, 0, 0.65) 66%, rgba(0, 0, 0, 0.18) 88%, rgba(0, 0, 0, 0) 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 36%, rgba(0, 0, 0, 0.65) 66%, rgba(0, 0, 0, 0.18) 88%, rgba(0, 0, 0, 0) 100%)',
+            }}
+          />
+        ) : (
+          <div
+            className="h-full w-full jc-seigaiha bg-ai-soft"
+            style={{
+              maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 36%, rgba(0, 0, 0, 0.65) 66%, rgba(0, 0, 0, 0.18) 88%, rgba(0, 0, 0, 0) 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 36%, rgba(0, 0, 0, 0.65) 66%, rgba(0, 0, 0, 0.18) 88%, rgba(0, 0, 0, 0) 100%)',
+            }}
+          />
+        )}
+
+        {/* Nút xem toàn bộ chi tiết kịch bản ghim góc trên bên phải */}
+        <button
+          type="button"
+          onClick={() => {
+            ukiyoSound.playSubtleTap();
+            onOpenDetails();
+          }}
+          className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-white/95 backdrop-blur-xs px-2.5 py-1 text-[11px] font-bold text-ai hover:bg-white hover:shadow-xs transition-all border border-line/80 tactile-press shadow-2xs cursor-pointer z-10"
+          title="Xem toàn bộ cấu hình, từ vựng, ngữ pháp và cốt truyện"
+        >
+          <span>Chi tiết</span>
+          <Icon name="arrow_forward" size={12} />
+        </button>
       </div>
 
-      <div className="relative z-10 flex flex-col gap-5 px-6 pb-6 pt-10">
+      {/* Thân nội dung Công thái học - Co giãn vừa khít với min-h-0, nối tiếp vùng mờ chân ảnh */}
+      <div className="relative z-10 flex flex-1 min-h-0 flex-col gap-2.5 px-3.5 pb-3.5 pt-0 overflow-y-auto overscroll-contain scrollbar-thin">
         {loading ? (
           <p className="m-0 text-sm text-sumi-muted" role="status">
             Đang tải dữ liệu nhiệm vụ…
@@ -580,41 +685,19 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
           <p className="m-0 text-sm text-sumi-muted">Tình huống này chưa có cấp độ nào để luyện.</p>
         ) : (
           <>
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col gap-1 flex-1">
-                <h2 className="m-0 text-[20px] font-bold leading-[28px] text-sumi font-serif">{cfg.title || details.title}</h2>
-                <p className="m-0 text-xs leading-[20px] text-sumi-muted line-clamp-2">{cfg.description || details.description}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  onOpenDetails();
-                }}
-                className="inline-flex items-center gap-1 shrink-0 rounded-jc-sm px-2 py-1 text-xs font-semibold text-ai hover:bg-ai-soft hover:underline transition-colors mt-0.5 tactile-press"
-                title="Xem toàn bộ cấu hình, từ vựng, ngữ pháp và cốt truyện"
-              >
-                <span>Chi tiết</span>
-                <Icon name="arrow_forward" size={14} />
-              </button>
+            {/* Tiêu đề & Mô tả */}
+            <div className="flex flex-col gap-0.5">
+              <h2 className="m-0 text-[15px] font-bold leading-snug text-sumi font-serif">{cfg.title || details.title}</h2>
+              <p className="m-0 text-[11px] leading-relaxed text-sumi-muted line-clamp-1">{cfg.description || details.description}</p>
             </div>
 
-            {cfg.aiPersona && (
-              <div className="flex items-center gap-3 rounded-jc-md bg-paper-100/80 px-3.5 py-2.5 border border-line">
-                <LivingAvatar size="sm" avatarState="idle" personaName={cfg.aiPersona} scenarioTitle={details.title} hideLabel />
-                <span className="flex min-w-0 flex-col">
-                  <span className="text-xs font-bold leading-5 text-sumi">{`Đối thoại cùng: ${cfg.aiPersona}`}</span>
-                  {hasActive && progressText && <span className="text-[12px] leading-4 text-sumi-muted">{`Tiến độ cấp ${activeLevel}: ${progressText} mốc hoàn thành`}</span>}
-                </span>
-              </div>
-            )}
-
+            {/* Cấp độ thử thách (SegmentedControl mỏng nhẹ) */}
             {levels.length > 1 && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted">Cấp độ thử thách</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">Cấp độ:</span>
                 <SegmentedControl
                   ariaLabel="Cấp độ luyện"
-                  block
+                  size="sm"
                   value={cfg.jlptLevel}
                   onChange={(v) => {
                     ukiyoSound.playSubtleTap();
@@ -626,17 +709,17 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               </div>
             )}
 
-            {/* Stepper Nhiệm vụ mốc 1 -> 2 -> 3 với icon slot chờ hoàn thành */}
+            {/* Stepper Mốc nhiệm vụ Micro-Compact */}
             {cfg.missions?.length > 0 && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted flex items-center gap-1.5">
-                    <Icon name="flag" size={14} />
-                    <span>Mốc nhiệm vụ ({cfg.missions.length})</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted flex items-center gap-1">
+                    <Icon name="flag" size={12} />
+                    <span>Mục tiêu nhiệm vụ ({cfg.missions.length})</span>
                   </span>
-                  <span className="text-[11px] font-serif text-sumi-muted">任務目標</span>
+                  <span className="text-[9px] font-serif text-sumi-muted">任務目標</span>
                 </div>
-                <div className="quest-stepper-container flex flex-col gap-2">
+                <div className="flex flex-col gap-1 relative">
                   {[...cfg.missions]
                     .sort((a, b) => a.order - b.order)
                     .map((m, idx, arr) => {
@@ -646,25 +729,31 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                         <div
                           key={m.id}
                           onClick={() => ukiyoSound.playWoodblockSnap()}
-                          className={`group quest-stepper-item flex items-start gap-3 rounded-xl p-2.5 transition-all cursor-pointer tactile-press ${
+                          className={`group relative flex items-start gap-2 rounded-md px-2 py-1 transition-all cursor-pointer tactile-press ${
                             isCompleted
-                              ? 'bg-emerald-50/70 border border-emerald-200'
-                              : 'bg-paper-100/70 border border-line hover:border-line-strong hover:bg-paper-100'
+                              ? 'bg-emerald-50/80 border border-emerald-200'
+                              : 'bg-paper-100 border border-line hover:border-line-strong'
                           }`}
                         >
                           {hasNext && (
-                            <div className={`quest-stepper-connector ${isCompleted ? 'completed' : ''}`} />
+                            <div
+                              className={`absolute left-[15px] top-[22px] bottom-[-6px] w-0 border-l border-dashed pointer-events-none z-0 ${
+                                isCompleted ? 'border-emerald-400' : 'border-line-strong'
+                              }`}
+                            />
                           )}
                           <div
-                            className={`quest-slot transition-transform group-hover:scale-105 ${
-                              isCompleted ? 'completed' : ''
+                            className={`relative z-10 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold transition-transform group-hover:scale-105 ${
+                              isCompleted
+                                ? 'bg-emerald-500 text-white'
+                                : 'border border-line-strong bg-paper-50 text-sumi-muted'
                             }`}
                           >
                             {isCompleted ? '✓' : m.order}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p
-                              className={`m-0 text-xs leading-relaxed font-sans ${
+                              className={`m-0 text-[11px] leading-tight font-sans ${
                                 isCompleted ? 'text-emerald-900 font-bold' : 'text-sumi'
                               }`}
                             >
@@ -678,116 +767,192 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
               </div>
             )}
 
-            {/* Thẻ bài đạo cụ (Inventory Props) Từ vựng & Ngữ pháp */}
+            {/* Hàng 2 Nút Toggle Thu Gọn Từ Vựng & Ngữ Pháp Siêu Tiết Kiệm Không Gian */}
             {(cfg.targetVocabularies?.length > 0 || cfg.targetGrammars?.length > 0) && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-sumi-muted flex items-center gap-1.5">
-                    <Icon name="inventory_2" size={14} />
-                    <span>Đạo cụ ngôn từ (Props)</span>
-                  </span>
-                  <span className="text-[10px] text-sumi-faint">Rê chuột xem nhanh</span>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  {cfg.targetVocabularies?.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setIsVocabOpen((prev) => !prev);
+                        if (!isVocabOpen) setIsGrammarOpen(false);
+                      }}
+                      className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
+                        isVocabOpen
+                          ? 'bg-nami-soft/80 border-nami/40 text-nami font-bold'
+                          : 'bg-paper-100 border-line text-sumi-muted hover:text-sumi'
+                      }`}
+                      aria-expanded={isVocabOpen}
+                    >
+                      <span className="flex items-center gap-1">
+                        <Icon name="translate" size={12} />
+                        <span>Từ vựng ({cfg.targetVocabularies.length})</span>
+                      </span>
+                      <span className={`material-symbols-outlined text-xs transition-transform duration-200 ${isVocabOpen ? 'rotate-180' : ''}`}>
+                        expand_more
+                      </span>
+                    </button>
+                  )}
+
+                  {cfg.targetGrammars?.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setIsGrammarOpen((prev) => !prev);
+                        if (!isGrammarOpen) setIsVocabOpen(false);
+                      }}
+                      className={`flex-1 flex items-center justify-between rounded-md border px-2 py-1 text-[11px] transition-colors tactile-press cursor-pointer ${
+                        isGrammarOpen
+                          ? 'bg-ai-soft/80 border-ai/40 text-ai font-bold'
+                          : 'bg-paper-100 border-line text-sumi-muted hover:text-sumi'
+                      }`}
+                      aria-expanded={isGrammarOpen}
+                    >
+                      <span className="flex items-center gap-1">
+                        <Icon name="menu_book" size={12} />
+                        <span>Ngữ pháp ({cfg.targetGrammars.length})</span>
+                      </span>
+                      <span className={`material-symbols-outlined text-xs transition-transform duration-200 ${isGrammarOpen ? 'rotate-180' : ''}`}>
+                        expand_more
+                      </span>
+                    </button>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {cfg.targetVocabularies?.map((v) => (
-                    <InventoryPropBadge
-                      key={`v-${v.id}`}
-                      type="vocab"
-                      wordOrPattern={v.word}
-                      reading={v.reading}
-                      meaning={v.meaning}
-                    />
-                  ))}
-                  {cfg.targetGrammars?.map((g) => (
-                    <InventoryPropBadge
-                      key={`g-${g.id}`}
-                      type="grammar"
-                      wordOrPattern={g.pattern}
-                      meaning={g.meaning}
-                      example={g.exampleSentence}
-                    />
-                  ))}
-                </div>
+
+                {/* Danh sách Từ vựng mở rộng */}
+                {isVocabOpen && cfg.targetVocabularies?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 p-2 rounded-lg border border-nami/20 bg-nami-soft/30 animate-fade-in">
+                    {cfg.targetVocabularies.map((v) => (
+                      <InventoryPropBadge
+                        key={`v-${v.id}`}
+                        type="vocab"
+                        wordOrPattern={v.word}
+                        reading={v.reading}
+                        meaning={v.meaning}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Danh sách Ngữ pháp mở rộng */}
+                {isGrammarOpen && cfg.targetGrammars?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 p-2 rounded-lg border border-ai/20 bg-ai-soft/30 animate-fade-in">
+                    {cfg.targetGrammars.map((g) => (
+                      <InventoryPropBadge
+                        key={`g-${g.id}`}
+                        type="grammar"
+                        wordOrPattern={g.pattern}
+                        meaning={g.meaning}
+                        example={g.exampleSentence}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Nút mở kho học liệu chủ đề */}
+            {/* Text link gọn gàng mở kho học liệu chủ đề */}
             {details.topicCode && (
-              <div className="pt-1">
+              <div className="flex justify-end pt-0.5">
                 <button
                   type="button"
                   onClick={() => {
                     ukiyoSound.playSubtleTap();
                     navigate(`/learning/topics?topic=${details.topicCode}`);
                   }}
-                  className="w-full inline-flex items-center justify-between gap-2 rounded-xl border border-dashed border-[var(--ai)]/40 bg-[var(--ai-soft)]/60 px-3.5 py-2 text-xs font-bold text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] transition active:scale-[0.98] cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-ai hover:underline transition-colors cursor-pointer"
                 >
-                  <span className="inline-flex items-center gap-1.5">
-                    <Icon name="menu_book" size={16} />
-                    <span>Kho học liệu: {details.topicName || details.topicCode}</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[11px]">
-                    <span>Xem bài học</span>
-                    <Icon name="arrow_forward" size={14} />
-                  </span>
+                  <Icon name="menu_book" size={12} />
+                  <span>Kho học liệu: {details.topicName || details.topicCode}</span>
+                  <Icon name="arrow_forward" size={11} />
                 </button>
               </div>
-            )}
-
-            {resumeHere ? (
-              <div className="flex items-center justify-between gap-3 border-t border-line pt-3.5">
-                <span className="flex flex-col">
-                  <span className="text-xs font-bold text-emerald-700 leading-4">Phiên đang diễn ra</span>
-                  <span className="text-[12px] leading-4 text-sumi-muted">Tiếp tục hội thoại không trừ thêm Credit</span>
-                </span>
-                <Badge tone="success" icon="check_circle">Miễn phí tiếp tục</Badge>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1 border-t border-line pt-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold leading-5">{`Chi phí cấp ${cfg.jlptLevel}`}</span>
-                  <CreditBadge amount={cost} variant="cost" low={credit < cost} />
-                </div>
-                <span className="text-[12px] leading-4 text-sumi-muted">
-                  {`Số dư hiện tại: ${credit.toLocaleString('vi-VN')} Credit (còn ${Math.max(0, credit - cost).toLocaleString('vi-VN')} Credit)`}
-                </span>
-              </div>
-            )}
-
-            {startError && (
-              <p role="alert" className="m-0 text-[13px] text-danger">
-                {startError}
-              </p>
-            )}
-
-            {resumeHere ? (
-              <div className="flex flex-col gap-2">
-                <Button variant="primary" size="lg" block icon="play_arrow" onClick={() => navigate(`/scenarios/practice/${activeId}`)}>
-                  {active?.completedMissionsCount && active.completedMissionsCount > 0
-                    ? `Tiếp tục (${active.completedMissionsCount}/${active.totalMissionsCount ?? cfg.missions.length})`
-                    : 'Tiếp tục hội thoại'}
-                </Button>
-                {hasMeaningfulProgress && (
-                  <Button variant="ghost" block icon="restart_alt" loading={starting} onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}>
-                    {confirmRestart ? 'Bấm lần nữa để xác nhận làm lại từ đầu' : 'Làm lại từ đầu'}
-                  </Button>
-                )}
-              </div>
-            ) : hasActive ? (
-              <div className="flex flex-col gap-2">
-                <Badge tone="warning" icon="pending">{`Bạn đang dở cấp ${activeLevel}${progressText ? ` (${progressText})` : ''}`}</Badge>
-                <Button variant="primary" size="lg" block icon="forum" loading={starting} onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}>
-                  {confirmRestart ? `Bấm lần nữa: kết thúc phiên cũ, bắt đầu ${cfg.jlptLevel}` : `Bắt đầu cấp ${cfg.jlptLevel}`}
-                </Button>
-              </div>
-            ) : (
-              <Button variant="primary" size="lg" block icon="forum" loading={starting} onClick={() => start(false)}>
-                Bắt đầu hội thoại
-              </Button>
             )}
           </>
         )}
       </div>
+
+      {/* Sticky Bottom Action Footer - Cố định ở đáy, Nút Bắt đầu LUÔN TRONG TẦM MẮT, không cần cuộn! */}
+      {details && cfg && (
+        <div className="shrink-0 border-t border-line bg-paper-50 p-3 flex flex-col gap-2 z-20">
+          {resumeHere ? (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+                <Icon name="check_circle" size={14} />
+                <span>Phiên đang dở · Miễn phí tiếp tục</span>
+              </span>
+              <Badge tone="success">Tiếp tục</Badge>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-sumi-muted">{`Chi phí cấp ${cfg.jlptLevel}:`}</span>
+              <div className="flex items-center gap-2">
+                <CreditBadge amount={cost} variant="cost" low={credit < cost} />
+                <span className="text-[11px] text-sumi-faint font-mono">
+                  (còn {Math.max(0, credit - cost).toLocaleString('vi-VN')})
+                </span>
+              </div>
+            </div>
+          )}
+
+          {startError && (
+            <p role="alert" className="m-0 text-xs text-danger">
+              {startError}
+            </p>
+          )}
+
+          {resumeHere ? (
+            <div className="flex flex-col gap-1.5">
+              <Button
+                variant="primary"
+                size="md"
+                block
+                icon="play_arrow"
+                onClick={() => navigate(`/scenarios/practice/${activeId}`)}
+              >
+                {active?.completedMissionsCount && active.completedMissionsCount > 0
+                  ? `Tiếp tục (${active.completedMissionsCount}/${active.totalMissionsCount ?? cfg.missions.length})`
+                  : 'Tiếp tục hội thoại'}
+              </Button>
+              {hasMeaningfulProgress && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  block
+                  icon="restart_alt"
+                  loading={starting}
+                  onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}
+                >
+                  {confirmRestart ? 'Bấm lần nữa để xác nhận làm lại' : 'Làm lại từ đầu'}
+                </Button>
+              )}
+            </div>
+          ) : hasActive ? (
+            <div className="flex flex-col gap-1.5">
+              <Badge tone="warning" icon="pending">
+                {`Bạn đang dở cấp ${activeLevel}${progressText ? ` (${progressText})` : ''}`}
+              </Badge>
+              <Button
+                variant="primary"
+                size="md"
+                block
+                icon="forum"
+                loading={starting}
+                onClick={() => (confirmRestart ? start(true) : setConfirmRestart(true))}
+              >
+                {confirmRestart ? `Bấm lần nữa: kết thúc phiên cũ, bắt đầu ${cfg.jlptLevel}` : `Bắt đầu cấp ${cfg.jlptLevel}`}
+              </Button>
+            </div>
+          ) : (
+            <Button variant="primary" size="md" block icon="forum" loading={starting} onClick={() => start(false)}>
+              Bắt đầu hội thoại
+            </Button>
+          )}
+        </div>
+      )}
     </aside>
   );
 };

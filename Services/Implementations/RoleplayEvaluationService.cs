@@ -122,10 +122,12 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             },
             new()
             {
-                Category = "Độ trôi chảy & Phản xạ Mora (20%)",
-                Description = avgPace > 0
-                    ? $"Tốc độ phát âm: {avgPace:F1} mora/s (chuẩn học viên 3.0-5.0), Phản xạ: ~{avgLatency:F1}s ({fluencyScore}/100)"
-                    : $"Lưu loát và nhịp điệu phát âm tự nhiên ({fluencyScore}/100)",
+                Category = "Độ trôi chảy & Phản xạ (20%)",
+                Description = (avgPace >= 1.0 && avgLatency >= 0.8)
+                    ? $"Tốc độ phát âm: {avgPace:F1} âm/giây · Phản xạ: ~{avgLatency:F1}s ({fluencyScore}/100)"
+                    : (avgPace >= 1.0)
+                        ? $"Tốc độ phát âm: {avgPace:F1} âm/giây ({fluencyScore}/100)"
+                        : $"Lưu loát và nhịp điệu phát âm tự nhiên ({fluencyScore}/100)",
                 DeltaPoints = fluencyReflexPoints
             },
             new()
@@ -133,7 +135,7 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                 Category = "Tự chủ & Khả năng Độc lập (10%)",
                 Description = autonomyScore >= 95
                     ? $"Tự chủ đối thoại xuất sắc ({autonomyScore}/100), không phụ thuộc gợi ý"
-                    : $"Sử dụng giàn giáo gợi ý ZPD ({autonomyScore}/100 - đã miễn trừ phạt cho câu sinh tồn)",
+                    : $"Có dùng trợ giúp gợi ý đối thoại ({autonomyScore}/100)",
                 DeltaPoints = autonomyPoints
             }
         };
@@ -412,13 +414,13 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
         if (speechDeliveries.Count > 0 && speechDeliveries.Any(d => !d.IsTextInput && ((d.SpeechConfidence.HasValue && d.SpeechConfidence.Value > 0) || !string.IsNullOrEmpty(d.AudioUrl))))
         {
             var validLatencies = speechDeliveries
-                .Where(d => !d.IsTextInput && d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value > 0)
+                .Where(d => !d.IsTextInput && d.ResponseLatencySeconds.HasValue && d.ResponseLatencySeconds.Value >= 0.8)
                 .Select(d => d.ResponseLatencySeconds!.Value)
                 .ToList();
             avgLatency = validLatencies.Count > 0 ? Math.Round(validLatencies.Average(), 1) : 0;
 
             var validPaces = speechDeliveries
-                .Where(d => !d.IsTextInput && ((d.MoraRate.HasValue && d.MoraRate.Value > 0) || (d.SpeechPace.HasValue && d.SpeechPace.Value > 0)))
+                .Where(d => !d.IsTextInput && ((d.MoraRate.HasValue && d.MoraRate.Value >= 1.0) || (d.SpeechPace.HasValue && d.SpeechPace.Value >= 1.0)))
                 .Select(d => d.MoraRate ?? d.SpeechPace!.Value)
                 .ToList();
             avgPace = validPaces.Count > 0 ? Math.Round(validPaces.Average(), 1) : 0;
@@ -626,14 +628,14 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
                         : "cần phản xạ nhanh hơn khi giao tiếp";
                 deliveryParts.Add($"phản xạ trung bình {avgLatency:0.0}s ({latencyComment})");
             }
-            if (avgPace > 0)
+            if (avgPace >= 1.0)
             {
                 var paceDesc = avgPace >= 3.0 && avgPace <= 5.5
-                    ? "chuẩn nhịp học viên 3.0-5.0 mora/s"
+                    ? "nhịp độ vừa vặn, tự nhiên"
                     : avgPace > 5.5
-                        ? "tiệm cận người bản xứ 6.0-7.5 mora/s"
-                        : "cần tăng tốc độ phát âm mora";
-                deliveryParts.Add($"nhịp nói ~{avgPace:0.0} mora/s ({paceDesc})");
+                        ? "tiệm cận người bản xứ"
+                        : "điềm đạm, nắn nót";
+                deliveryParts.Add($"nhịp nói ~{avgPace:0.0} âm/giây ({paceDesc})");
             }
             if (confidenceScore > 0)
             {
@@ -645,7 +647,7 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
 
         if (autonomyScore < 95)
         {
-            sections.Add($"Mức độ tự chủ giao tiếp: {autonomyScore}/100 (Có dùng giàn giáo gợi ý hoặc hỗ trợ bản dịch).");
+            sections.Add($"Mức độ tự chủ giao tiếp: {autonomyScore}/100 (Có dùng gợi ý đối thoại hoặc hỗ trợ bản dịch).");
         }
         else
         {

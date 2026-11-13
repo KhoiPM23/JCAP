@@ -14,6 +14,11 @@ describe('japaneseSanitizer', () => {
   it('should preserve clean Japanese utterances', () => {
     const input = '本当にありがとうございます。';
     assert.equal(sanitizeDisplayJapanese(input), '本当にありがとうございます。');
+
+    // Robust ruby stripping tests: HTML5 unclosed rt, html entities, and {base|reading}
+    assert.equal(sanitizeDisplayJapanese('<ruby>切符<rt>きっぷ</ruby>を買います'), '切符を買います');
+    assert.equal(sanitizeDisplayJapanese('&lt;ruby&gt;面接&lt;rt&gt;めんせつ&lt;/rt&gt;&lt;/ruby&gt;です。'), '面接です。');
+    assert.equal(sanitizeDisplayJapanese('{温|あたた}める'), '温める');
   });
 
   it('should remove trailing leaked Vietnamese speech', () => {

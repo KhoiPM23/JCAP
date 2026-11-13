@@ -1088,4 +1088,55 @@ public class AiRoleplayServiceTests
         Assert.Contains("医療機関でございますので", result.JapaneseReply);
         Assert.Contains("cơ sở y tế", result.LinguisticFeedback.Summary);
     }
+
+    [Fact]
+    public async Task ProcessTurnAsync_JapaneseWithTildePlaceholder_WhenLlmErroneouslyRefusesAsForeign_RecoversViaSimulator()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok("{\"isForeignLanguage\":true,\"userVietnameseMeaning\":\"Không hợp lệ\",\"replyJapanese\":\"恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。\",\"replyVietnamese\":\"Xin lỗi, tôi không hiểu tiếng nước ngoài.\",\"completedMissionIds\":[],\"isNaturallyConcluded\":false,\"linguisticFeedback\":{\"status\":\"NeedsImprovement\",\"summary\":\"Cần sửa\",\"details\":[]}}"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì" };
+        var history = new List<RoleplayMessage>
+        {
+            new() { Sender = "Ai", JapaneseText = "いらっしゃいませ！ラーメンはいかがですか？" }
+        };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Gọi 1 bát Tonkotsu Ramen", CompletionCriteriaJson = "{\"item\":\"tonkotsu\"}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "豚骨ラーメン ～をお願いしますでお願いします。", missions);
+
+        Assert.NotNull(result);
+        Assert.DoesNotContain("日本語が分かりませんので", result.JapaneseReply);
+        Assert.DoesNotContain("外国語は分かりませんので", result.JapaneseReply);
+        Assert.DoesNotContain("日本語でお話し", result.JapaneseReply);
+        Assert.Contains(1, result.CompletedMissionIds);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_PureVietnameseInput_UsesGrammaticallyCorrectForeignRefusal()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì" };
+        var history = new List<RoleplayMessage>
+        {
+            new() { Sender = "Ai", JapaneseText = "いらっしゃいませ！ラーメンはいかがですか？" }
+        };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Gọi 1 bát Tonkotsu Ramen", CompletionCriteriaJson = "{}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "Cho tôi một bát mì", missions);
+
+        Assert.NotNull(result);
+        Assert.Contains("外国語は分かりませんので", result.JapaneseReply);
+        Assert.DoesNotContain("日本語が分かりませんので", result.JapaneseReply);
+    }
 }

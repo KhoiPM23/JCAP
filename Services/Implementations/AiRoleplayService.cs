@@ -163,7 +163,7 @@ Return strictly pure JSON matching:
             // Chặn ngay các lượt nói tiếng Việt hoặc ngoại ngữ trước khi gọi LLM
             if (IsLikelyForeignOrVietnamese(userMessage))
             {
-                var confusedJa = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                var confusedJa = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
                 var confusedVi = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói bằng tiếng Nhật được không ạ?";
                 return new AiTurnResult
                 {
@@ -715,7 +715,7 @@ Return strictly pure JSON matching:
             }
 
             var sbHistory = new StringBuilder();
-            foreach (var msg in conversationHistory.TakeLast(10))
+            foreach (var msg in (conversationHistory ?? []).TakeLast(10))
             {
                 sbHistory.AppendLine($"[{msg.Sender}]: {msg.JapaneseText}");
             }
@@ -737,10 +737,11 @@ PENDING MISSIONS:
 
 TASK INSTRUCTIONS:
 1. FOREIGN / MIXED LANGUAGE CHECK (CRITICAL FIRST STEP):
-   - Check if the learner's message contains Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/foreign text.
+   - ONLY trigger if the learner uses Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/non-Japanese words.
+   - IMPORTANT: If LEARNER'S LATEST UTTERANCE is written in Japanese script (Kanji, Hiragana, or Katakana) with no foreign/Vietnamese words — even if it has grammar errors, repetition, or placeholder/template symbols like '～' or '〜' (e.g. '豚骨ラーメン ～をお願いしますでお願いします。') — IT IS JAPANESE. NEVER treat broken or templated Japanese as a foreign language! Stay in roleplay, respond warmly or ask a natural clarification in context, and correct the phrasing gently inside linguisticFeedback.
    - If ANY foreign words or non-Japanese sentences are detected:
      * Even if they mentioned a dish or keyword (e.g. 'tonkotsu ramen', 'ramen'), you CANNOT understand them and CANNOT guess their intent. Treat the entire message as completely unintelligible foreign sounds.
-     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite native Japanese incomprehension and ask for Japanese: '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。'
+     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite native Japanese incomprehension and ask for Japanese: '恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。'
      * replyVietnamese: 'Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?'
      * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
      * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
@@ -916,6 +917,13 @@ Return strictly pure JSON matching this schema:
                 }
 
                 var isForeignLanguage = IsLikelyForeignOrVietnamese(userMessage);
+                bool hasJapaneseChars = Regex.IsMatch(userMessage, @"[぀-ゟ゠-ヿ一-龯]");
+                if (!isForeignLanguage && hasJapaneseChars && !IsLikelyRomaji(userMessage) &&
+                    (ja.Contains("日本語が分かりません") || ja.Contains("外国語は分かりません") || ja.Contains("日本語でお話し")))
+                {
+                    // Guard against LLM falsely rejecting genuine Japanese input containing symbols like ～ or awkward phrasing
+                    return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
+                }
                 if (isForeignLanguage)
                 {
                     // Strict programmatic enforcement: clear completed missions
@@ -924,7 +932,7 @@ Return strictly pure JSON matching this schema:
                     // If AI leaked a confirmation or echoed the item, sanitize to polite confusion
                     if (ja.Contains("かしこまりました") || ja.Contains("承知") || ja.Contains("ですね") || ja.Contains("ですか") || !ja.Contains("日本語"))
                     {
-                        ja = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                        ja = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
                         vi = "Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?";
                     }
 
@@ -1267,7 +1275,8 @@ Return strictly pure JSON:
         sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
         sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");
         sb.AppendLine($"  * STRICTLY FORBIDDEN: NEVER say '...ですね', '...ですか', or 'かしこまりました' when foreign/mixed language is used.");
-        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"  * CRITICAL EXCEPTION: If the learner wrote in Japanese characters (Kanji/Hiragana/Katakana) with NO foreign/Vietnamese words — even with grammar errors or symbols like '～' — DO NOT treat it as foreign language; engage naturally in roleplay and gently fix their phrasing in linguisticFeedback.");
         sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
         var level = (levelConfig.JLPTLevel ?? "N5").ToUpperInvariant().Trim();
         sb.AppendLine($"[PEDAGOGICAL DIFFICULTY ADAPTATION FOR JLPT {level}]");

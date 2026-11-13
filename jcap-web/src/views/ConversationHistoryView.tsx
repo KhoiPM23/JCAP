@@ -5,6 +5,7 @@ import { roleplayService } from '../services/roleplayService';
 import type { LearnerIntelligenceProfileDto } from '../types/roleplay';
 import { formatDateMedium } from '../utils/dateUtils';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { ResultHankoStamp } from '../components/common/ResultHankoStamp';
 import type {
   RoleplayResultHistoryResponse,
   RoleplayResultSummary,
@@ -47,12 +48,12 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Cụm huy hiệu kịch bản & Thông tin - Căn giữa hoàn hảo */}
         <div className="flex items-center gap-4 min-w-0">
-          {/* Biểu trưng chữ Hán (Scenario Kanji Monogram Crest) - Căn giữa trục tâm hoàn hảo */}
+          {/* Biểu trưng chữ Hán (Scenario Kanji Monogram Crest) - Căn giữa quang học */}
           <div
-            className={`w-14 h-14 sm:w-16 sm:h-16 my-auto rounded-2xl border-2 flex flex-col items-center justify-center shrink-0 shadow-2xs font-serif font-black select-none ${crest.theme}`}
+            className={`w-14 h-14 sm:w-16 sm:h-16 my-auto rounded-2xl border-2 flex flex-col items-center justify-center shrink-0 shadow-2xs font-serif font-black select-none pt-1 pb-0.5 ${crest.theme}`}
             title="Biểu trưng bối cảnh hội thoại"
           >
-            <span className="text-2xl sm:text-3xl leading-none">{crest.kanji}</span>
+            <span className="text-2xl sm:text-3xl leading-none translate-y-0.5">{crest.kanji}</span>
             <span className="text-[9px] font-sans font-bold uppercase tracking-tight opacity-80 mt-1">
               JLPT {result.jlptLevel}
             </span>
@@ -60,10 +61,6 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
 
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-white font-mono shadow-2xs">
-                JLPT {result.jlptLevel}
-              </span>
-
               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border font-sans ${rank.badgeClass}`}>
                 Hạng {rank.kanji} · {rank.title}
               </span>
@@ -78,64 +75,39 @@ const ResultRow = React.memo(({ result }: { result: RoleplayResultSummary }) => 
             </h2>
 
             <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
-              <span className="inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Phiên đối thoại #{result.roleplaySessionId}</span>
-              </span>
+              <span>Phiên đối thoại #{result.roleplaySessionId}</span>
             </div>
           </div>
         </div>
 
-        {/* Cụm Dấu Triện Hanko & Điểm số - Đồng trục tuyệt đối */}
-        <div className="flex items-center justify-between md:justify-end gap-4 sm:gap-5 pt-3 md:pt-0 border-t md:border-t-0 border-stone-100 my-auto">
-          {/* Dấu Triện Hanko (Passed / Failed Red-Ink Seal) */}
-          <div className="shrink-0 select-none my-auto flex items-center justify-center">
-            {result.passStatus ? (
-              <div
-                className="w-13 h-13 sm:w-15 sm:h-15 rounded-full border-2 border-dashed border-rose-600 bg-rose-50/80 p-0.5 flex flex-col items-center justify-center text-rose-700 shadow-2xs rotate-[-5deg] transition-transform group-hover:scale-105 my-auto"
-                title="Dấu triện công nhận: Đạt chuẩn đối thoại"
-              >
-                <div className="w-full h-full rounded-full border border-rose-500 flex flex-col items-center justify-center leading-none">
-                  <span className="text-[9px] sm:text-[10px] font-serif font-black tracking-widest text-rose-800 leading-none">合格</span>
-                  <span className="text-[8px] sm:text-[9px] font-sans font-black tracking-tight text-rose-700 uppercase mt-0.5 leading-none">ĐẠT</span>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="w-13 h-13 sm:w-15 sm:h-15 rounded-full border-2 border-dashed border-stone-400 bg-stone-50 p-0.5 flex flex-col items-center justify-center text-stone-600 shadow-2xs rotate-[4deg] transition-transform group-hover:scale-105 my-auto"
-                title="Dấu triện tu luyện: Cần rèn thêm"
-              >
-                <div className="w-full h-full rounded-full border border-stone-300 flex flex-col items-center justify-center leading-none">
-                  <span className="text-[9px] sm:text-[10px] font-serif font-black tracking-widest text-stone-700 leading-none">未達</span>
-                  <span className="text-[7px] sm:text-[8px] font-sans font-bold tracking-tight text-stone-600 uppercase mt-0.5 leading-none">CẦN RÈN</span>
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Cụm Dấu Triện Hanko & Điểm số - Căn giữa trục tâm đồng nhất */}
+        <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-stone-100 self-center">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            {/* Dấu Triện Hanko (Passed / Failed Ink Seal) - Đồng bộ chuẩn Wabi-Sabi */}
+            <ResultHankoStamp passed={result.passStatus} size="sm" />
 
-          {/* Vòng điểm số & Nút xem */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="flex items-baseline justify-end gap-0.5">
-                <strong className="text-3xl sm:text-4xl font-black font-sans tracking-tight text-slate-900 font-mono">
+            {/* Điểm số đồng trục */}
+            <div className="flex flex-col justify-center text-right">
+              <div className="flex items-baseline justify-end gap-0.5 leading-none">
+                <strong className="text-3xl sm:text-4xl font-black font-sans tracking-tight text-slate-900 font-mono leading-none">
                   {result.overallScore}
                 </strong>
-                <span className="text-xs font-semibold text-slate-400">/100</span>
+                <span className="text-xs font-semibold text-slate-400 leading-none">/100</span>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mt-1">
                 Tổng kết
               </span>
             </div>
-
-            <Link
-              to={`/roleplay/results/${result.id}`}
-              onClick={() => ukiyoSound.playSubtleTap()}
-              className="inline-flex h-10 sm:h-11 items-center justify-center rounded-xl bg-slate-900 px-4 sm:px-5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--ai)] hover:shadow-sm active:scale-95 cursor-pointer shrink-0"
-            >
-              <span>Xem kết quả</span>
-              <span aria-hidden="true" className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
-            </Link>
           </div>
+
+          <Link
+            to={`/roleplay/results/${result.id}`}
+            onClick={() => ukiyoSound.playSubtleTap()}
+            className="inline-flex h-10 sm:h-11 items-center justify-center rounded-xl bg-slate-900 px-4 sm:px-5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-[var(--ai)] hover:shadow-sm active:scale-95 cursor-pointer shrink-0"
+          >
+            <span>Xem kết quả</span>
+            <span aria-hidden="true" className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
+          </Link>
         </div>
       </div>
     </article>
@@ -196,8 +168,8 @@ export const ConversationHistoryView: React.FC = () => {
   };
 
   return (
-    <div data-theme="phong-luyen" className="min-h-screen bg-[#F6F8FA] text-slate-800 px-4 py-8 md:px-8">
-      <section className="mx-auto w-full max-w-5xl pb-10">
+    <div className="relative bg-transparent text-slate-800 pb-6">
+      <section className="mx-auto w-full max-w-5xl pb-6">
         {/* BANNER CHIẾN TÍCH ĐỐI THOẠI (RPG CHRONICLE HEADER) */}
         <header className="relative mb-8 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] px-7 py-9 text-white shadow-xl md:px-10 border border-slate-700/50">
           {/* Lớp nền sóng Seigaiha Nhật Bản */}
@@ -209,7 +181,6 @@ export const ConversationHistoryView: React.FC = () => {
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="max-w-2xl">
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                 <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-300 font-mono">
                   Nhật ký luyện tập · 会話の記録
                 </span>
@@ -220,7 +191,7 @@ export const ConversationHistoryView: React.FC = () => {
               </h1>
 
               <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-                Lưu trữ toàn bộ các phiên hội thoại cùng AI. Xem lại đánh giá chi tiết, phân tích 6 trục năng lực và nhận xét để cải thiện phản xạ giao tiếp.
+                Lưu trữ toàn bộ các phiên hội thoại cùng AI. Xem lại đánh giá chi tiết, biểu đồ kỹ năng và nhận xét để cải thiện phản xạ giao tiếp.
               </p>
             </div>
 
@@ -251,7 +222,7 @@ export const ConversationHistoryView: React.FC = () => {
                 {profile.totalSessionsCompleted}
               </strong>
               <span className="text-[10px] text-slate-400 font-medium">
-                {profile.totalPracticeTurns} lượt đối đáp thực chiến
+                {profile.totalPracticeTurns} lượt đối thoại
               </span>
             </div>
 
@@ -268,7 +239,7 @@ export const ConversationHistoryView: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-400 ml-0.5">/100</span>
               </strong>
               <span className="text-[10px] text-slate-400 font-medium">
-                Tốc độ bật lời tự nhiên
+                Độ phản xạ tự nhiên
               </span>
             </div>
 
@@ -300,7 +271,7 @@ export const ConversationHistoryView: React.FC = () => {
                 {Math.round(profile.keigoCommandScore)}%
               </strong>
               <span className="text-[10px] text-slate-400 font-medium">
-                Chuẩn thể lịch sự Teinei
+                Thể lịch sự và kính ngữ
               </span>
             </div>
           </div>

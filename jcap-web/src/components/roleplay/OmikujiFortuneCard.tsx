@@ -1,21 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 
 const Sparkles: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
+  </svg>
 );
-const Scroll: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h11a2 2 0 0 0 2-2v-2H6"/><path d="M15 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/></svg>
+
+const ToriiIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6c5-1.5 13-1.5 18 0" />
+    <path d="M5 10h14" />
+    <path d="M7 6.5V20" />
+    <path d="M17 6.5V20" />
+    <path d="M12 6v4" />
+  </svg>
 );
-const Compass: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+
+const ScrollIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+    <path d="M8 21h11a2 2 0 0 0 2-2v-2H6" />
+    <path d="M15 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2" />
+  </svg>
 );
-const BookOpen: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+
+const CoinsIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="8" cy="8" r="6" />
+    <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
+    <path d="m7 6 2 4" />
+    <path d="m9 6-2 4" />
+  </svg>
 );
-const MessageSquare: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+
+/** Ống quẻ gỗ bát giác thủ công (SVG 3 mặt vát + đai đồng cổ) */
+const OctagonalShakerSvg: React.FC = () => (
+  <svg viewBox="0 0 120 180" className="w-28 h-40 drop-shadow-[0_14px_24px_rgba(69,10,10,0.28)]" aria-hidden="true">
+    <defs>
+      <linearGradient id="omikujiWoodCenter" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#6D3418" />
+        <stop offset="50%" stopColor="#8B4520" />
+        <stop offset="100%" stopColor="#582710" />
+      </linearGradient>
+      <linearGradient id="omikujiWoodSideL" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#461E0B" />
+        <stop offset="100%" stopColor="#6D3418" />
+      </linearGradient>
+      <linearGradient id="omikujiWoodSideR" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#582710" />
+        <stop offset="100%" stopColor="#351506" />
+      </linearGradient>
+      <linearGradient id="omikujiBrass" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#B47B2B" />
+        <stop offset="50%" stopColor="#F4D58D" />
+        <stop offset="100%" stopColor="#9A641E" />
+      </linearGradient>
+    </defs>
+
+    {/* Que tre khẽ nhô lên ở đỉnh miệng ống */}
+    <g className="origin-bottom" style={{ animation: 'jcap-stick-peek 0.55s ease-in-out infinite alternate' }}>
+      <rect x="57" y="6" width="6" height="24" rx="2" fill="#E8C988" stroke="#9A6B24" strokeWidth="1" />
+      <rect x="57" y="6" width="6" height="5" rx="1" fill="#B91C1C" />
+    </g>
+
+    {/* Thân ống bát giác 3 mặt */}
+    <polygon points="24,28 38,22 38,162 24,154" fill="url(#omikujiWoodSideL)" />
+    <rect x="38" y="22" width="44" height="140" fill="url(#omikujiWoodCenter)" />
+    <polygon points="82,22 96,28 96,154 82,162" fill="url(#omikujiWoodSideR)" />
+
+    {/* Nắp trên & khe xuất quẻ */}
+    <polygon points="24,28 38,22 82,22 96,28 82,34 38,34" fill="#4A210D" stroke="#2D1206" strokeWidth="1" />
+    <ellipse cx="60" cy="28" rx="7" ry="2.5" fill="#1C0B04" />
+
+    {/* Đai đồng cổ trên & dưới */}
+    <path d="M24,42 L38,38 L82,38 L96,42 L96,48 L82,44 L38,44 L24,48 Z" fill="url(#omikujiBrass)" opacity="0.92" />
+    <path d="M24,140 L38,144 L82,144 L96,140 L96,146 L82,150 L38,150 L24,146 Z" fill="url(#omikujiBrass)" opacity="0.92" />
+
+    {/* Chữ Hán khắc dọc chính tâm */}
+    <text
+      x="60"
+      y="72"
+      textAnchor="middle"
+      fill="#F3D999"
+      fontSize="14"
+      fontWeight="900"
+      fontFamily="serif"
+      opacity="0.9"
+    >
+      <tspan x="60" dy="0">御</tspan>
+      <tspan x="60" dy="18">神</tspan>
+      <tspan x="60" dy="18">籤</tspan>
+      <tspan x="60" dy="18">筒</tspan>
+    </text>
+  </svg>
 );
 
 export type OmikujiRank = '大吉' | '中吉' | '小吉' | '吉' | '末吉' | '凶';
@@ -28,159 +108,175 @@ export interface OmikujiFortune {
   wakaMeaningVi: string;
   teachingSummary: string;
   aspects: {
-    gakumon: string;      // Học vấn & Khả năng ngôn ngữ
-    taiwa: string;        // Giao tiếp & Kính ngữ
-    machibito: string;    // Cơ hội & Gặp gỡ
-    kokorogamae: string;  // Lời răn tâm thế
+    gakumon: string;
+    taiwa: string;
+    machibito: string;
+    kokorogamae: string;
   };
   shrineSealText: string;
   luckyNumber: number;
 }
 
+export const COIN_REWARDS: Record<OmikujiRank, { coins: number; labelVi: string; kanjiTitle: string }> = {
+  大吉: { coins: 15, labelVi: 'Đại Cát Phúc Lộc', kanjiTitle: '大吉福禄' },
+  中吉: { coins: 10, labelVi: 'Trung Cát Hưng Vượng', kanjiTitle: '中吉興旺' },
+  小吉: { coins: 5, labelVi: 'Tiểu Cát Tiến Bộ', kanjiTitle: '小吉進歩' },
+  吉: { coins: 5, labelVi: 'Cát Tường Bình An', kanjiTitle: '吉事円満' },
+  末吉: { coins: 3, labelVi: 'Mạt Cát Hậu Vận', kanjiTitle: '大器晩成' },
+  凶: { coins: 3, labelVi: 'Hóa Hung Thành Cát', kanjiTitle: '厄災消除' },
+};
+
 const OMIKUJI_DATABASE: Record<OmikujiRank, OmikujiFortune[]> = {
   大吉: [
     {
       rank: '大吉',
-      rankTitleVi: 'Đại Cát · Vận khí rực rỡ',
-      wakaJapanese: '言の葉を つむぐ心に 花咲きて 人の心を 和らぐるなり',
-      wakaRomaji: 'Koto no ha wo / tsumugu kokoro ni / hana sakite / hito no kokoro wo / yawaraguru nari',
-      wakaMeaningVi: 'Lời nói thêu dệt tự đáy lòng như hoa khoe sắc, làm dịu dàng và kết nối tâm tư muôn người.',
-      teachingSummary: 'Phản xạ và thần thái tự nhiên đạt độ chín muồi. Những câu nói chân thành mở ra sự tin tưởng tuyệt đối từ người bản xứ.',
+      rankTitleVi: 'Đại Cát · Vận khí rạng ngời',
+      wakaJapanese: '言の葉に花咲きて 心和らぐ',
+      wakaRomaji: 'Koto no ha ni hana sakite',
+      wakaMeaningVi: 'Lời chân thành nở hoa, lòng người ấm áp giao hòa.',
+      teachingSummary: 'Thần thái ung dung, ngôn từ tự nhiên mở lối hanh thông.',
       aspects: {
-        gakumon: 'Ngữ điệu tự nhiên, từ vựng chuẩn xác. Hãy tự tin nâng cấp lên các mẫu đàm thoại Keigo nâng cao.',
-        taiwa: 'Lắng nghe nhịp thở của người đối diện, đối đáp trôi chảy không do dự.',
-        machibito: 'Cơ hội kết giao bạn bè bản xứ và phỏng vấn việc làm tại Nhật đang mở rộng.',
-        kokorogamae: 'Giữ đức khiêm nhường; lấy sự lắng nghe làm gốc của mọi sự cảm thông.'
+        gakumon: 'Phản xạ nhạy bén, từ vựng chuẩn xác.',
+        taiwa: 'Lắng nghe nhã nhặn, đối đáp tròn trịa.',
+        machibito: 'Gặp quý nhân dẫn lối, vận hội rộng mở.',
+        kokorogamae: 'Giữ tâm khiêm nhường, tiến bước vững xa.',
       },
       shrineSealText: '大吉福寿',
-      luckyNumber: 7
+      luckyNumber: 7,
     },
-    {
-      rank: '大吉',
-      rankTitleVi: 'Đại Cát · Phong thái ung dung',
-      wakaJapanese: '雲晴れて 照る日の光 さしそえば 行く手千里も まどかなるべし',
-      wakaRomaji: 'Kumo harete / teru hi no hikari / sashisoeba / yukute senri mo / madoka narubeshi',
-      wakaMeaningVi: 'Mây tan nắng rạng soi lối bước, dẫu vạn dặm đường xa phía trước cũng thênh thang sáng tỏ.',
-      teachingSummary: 'Tâm lý ngại nói đã được xóa bỏ hoàn toàn. Tiếng Nhật giờ đây là cầu nối tự nhiên trong đời sống.',
-      aspects: {
-        gakumon: 'Nắm chắc ngữ pháp cốt lõi, phản xạ tức thì dưới 1 giây.',
-        taiwa: 'Nói năng khúc chiết, biết đệm lời Aizuchi đúng thời điểm.',
-        machibito: 'Sắp gặp gỡ người thầy hoặc bạn đồng hành truyền cảm hứng lớn.',
-        kokorogamae: 'Thừa thắng xông lên, tiếp tục thử thách các tình huống thực tế hóc búa hơn.'
-      },
-      shrineSealText: '神光照覧',
-      luckyNumber: 8
-    }
   ],
   中吉: [
     {
       rank: '中吉',
       rankTitleVi: 'Trung Cát · Tiến bước vững vàng',
-      wakaJapanese: '雨ふりて 地固まる如 試練越え ことばの枝も 茂りゆくらむ',
-      wakaRomaji: 'Ame furite / ji katamaru goto / shiren koe / kotoba no eda mo / shigeri yukuran',
-      wakaMeaningVi: 'Sau cơn mưa đất càng thêm vững, vượt qua bỡ ngỡ bước đầu thì cành lá ngôn từ sẽ xum xuê tốt tươi.',
-      teachingSummary: 'Kiến thức ngôn ngữ đang chuyển hóa thành phản xạ bản năng. Chỉ cần duy trì nhịp độ luyện tập đều đặn.',
+      wakaJapanese: '雨過ぎて地固まり 言葉茂る',
+      wakaRomaji: 'Ame sugite ji katamari',
+      wakaMeaningVi: 'Sau cơn mưa đất thêm vững, cành lá ngôn từ xanh tươi.',
+      teachingSummary: 'Nền tảng vững chãi, phản xạ đang dần thành bản năng.',
       aspects: {
-        gakumon: 'Các cấu trúc cơ bản đã thuần thục. Chú ý trau chuốt trợ từ を, に, で.',
-        taiwa: 'Phong thái hòa nhã. Hãy thử mở rộng câu thoại thêm một vế phụ.',
-        machibito: 'Người hỗ trợ luôn ở quanh bạn; đừng ngần ngại nhờ người đối thoại nói chậm lại khi cần.',
-        kokorogamae: 'Bền bỉ tích lũy mỗi ngày, trăm sông rồi cũng về biển lớn.'
+        gakumon: 'Chắc mẫu câu, trau chuốt thêm trợ từ.',
+        taiwa: 'Giữ nhịp hòa nhã, mạnh dạn mở rộng ý.',
+        machibito: 'Thầy bạn quanh mình, hỏi chậm sẽ thông.',
+        kokorogamae: 'Tích tiểu thành đại, trăm sông về biển.',
       },
       shrineSealText: '中吉安泰',
-      luckyNumber: 3
-    }
+      luckyNumber: 3,
+    },
   ],
   小吉: [
     {
       rank: '小吉',
       rankTitleVi: 'Tiểu Cát · Chồi non nảy nở',
-      wakaJapanese: '春風に 誘われ出づる 若草の やがて野山を 緑染むらむ',
-      wakaRomaji: 'Harukaze ni / sasoware izuru / wakakusa no / yagate noyama wo / midori somuran',
-      wakaMeaningVi: 'Gió xuân êm dịu lay cỏ non, chẳng mấy chốc đồng xanh bát ngát nhuộm thắm núi đồi.',
-      teachingSummary: 'Đã dũng cảm cất lời và biểu đạt trọn vẹn ý muốn cốt lõi. Sự tiến bộ thấy rõ qua từng lượt đàm thoại.',
+      wakaJapanese: '春風に誘われ 若草萌ゆる',
+      wakaRomaji: 'Harukaze ni sasoware wakakusa moyuru',
+      wakaMeaningVi: 'Gió xuân lay nhẹ, mầm xanh lặng lẽ đơm chồi.',
+      teachingSummary: 'Dũng cảm cất lời, mầm tiến bộ đang từng ngày nảy lộc.',
       aspects: {
-        gakumon: 'Nắm vững các câu mẫu giao tiếp tình huống. Cần rèn luyện thêm phát âm trường âm và âm ngắt.',
-        taiwa: 'Diễn đạt vừa đủ ý. Tránh trả lời cộc lốc bằng từ đơn lẻ.',
-        machibito: 'Hãy kiên nhẫn; việc hiểu sâu văn hóa cần thời gian thẩm thấu.',
-        kokorogamae: 'Không ngại mắc lỗi; mỗi lần sửa sai là một bước tiến gần hơn đến sự lưu loát.'
+        gakumon: 'Vững câu cơ bản, chú ý trường âm.',
+        taiwa: 'Nói trọn chủ vị, tránh cộc lốc.',
+        machibito: 'Kiên nhẫn thẩm thấu, duyên học sẽ đến.',
+        kokorogamae: 'Mỗi lần sửa sai là một bước gần đích.',
       },
       shrineSealText: '小吉進歩',
-      luckyNumber: 5
-    }
+      luckyNumber: 5,
+    },
   ],
   吉: [
     {
       rank: '吉',
       rankTitleVi: 'Cát · Bình an thuận hòa',
-      wakaJapanese: '小川にも 淀みはあれど 絶え間なく 清き流れは 海を目指さむ',
-      wakaRomaji: 'Ogawa ni mo / yodomi wa aredo / taemanaku / kiyoki nagare wa / umi wo mezasamu',
-      wakaMeaningVi: 'Dòng suối nhỏ dù có khúc quanh co, dòng nước trong veo vẫn không ngừng hướng về biển lớn.',
-      teachingSummary: 'Mọi sự khởi sắc bình yên. Luôn giữ tinh thần cầu tiến và bình tĩnh trong mọi ngữ cảnh.',
+      wakaJapanese: '清き小川 たゆまず海へ',
+      wakaRomaji: 'Kiyoki ogawa tayumazu umi e',
+      wakaMeaningVi: 'Suối trong dẫu nhỏ vẫn bền bỉ hướng ra biển lớn.',
+      teachingSummary: 'Khởi sắc bình yên, thong thả mà vững bước đường dài.',
       aspects: {
-        gakumon: 'Tập trung ôn tập từ vựng trọng tâm trước khi bước vào phòng hội thoại.',
-        taiwa: 'Chú ý đuôi câu lịch sự Desu / Masu để tạo sự tin cậy.',
-        machibito: 'Gặp gỡ bình hòa, môi trường học tập thuận lợi.',
-        kokorogamae: 'Thong thả mà chắc chắn; học tiếng Nhật là một hành trình thưởng lãm.'
+        gakumon: 'Ôn chắc từ khóa trước giờ đối thoại.',
+        taiwa: 'Giữ thể lịch sự, tạo cảm giác tin cậy.',
+        machibito: 'Môi trường thuận hòa, dễ gặp người chỉ dẫn.',
+        kokorogamae: 'Không vội vàng, bền chí ắt tinh thông.',
       },
       shrineSealText: '吉事円満',
-      luckyNumber: 1
-    }
+      luckyNumber: 1,
+    },
   ],
   末吉: [
     {
       rank: '末吉',
       rankTitleVi: 'Mạt Cát · Hậu vận rạng ngời',
-      wakaJapanese: '冬枯れの 木立ちも春を 待ちわびて やがて花咲く 時ぞ巡らむ',
-      wakaRomaji: 'Fuyukare no / kodachi mo haru wo / machiwabite / yagate hanasaku / toki zo meguran',
-      wakaMeaningVi: 'Hàng cây trơ trọi giữa mùa đông đợi nắng ấm, thời khắc muôn hoa bừng nở chắc chắn sẽ quay về.',
-      teachingSummary: 'Hiện tại có thể còn đôi chỗ ngập ngừng, nhưng nền tảng đang tích tụ. Đừng nản lòng trước những câu thoại khó.',
+      wakaJapanese: '冬木立ち 春待ちわびて花咲かむ',
+      wakaRomaji: 'Fuyukodachi haru machiwabite hana sakamu',
+      wakaMeaningVi: 'Cây qua mùa đông đợi nắng ấm, khắc hoa bừng nở ắt quay về.',
+      teachingSummary: 'Nội lực đang âm thầm tích tụ, kiên trì ắt gặt quả ngọt.',
       aspects: {
-        gakumon: 'Chia nhỏ câu dài thành các cụm ngắn để dễ nhớ. Dùng giàn giáo từ khóa để kích hoạt trí nhớ.',
-        taiwa: 'Nói chậm rãi, phát âm rõ ràng quan trọng hơn là cố nói nhanh.',
-        machibito: 'Cần chủ động tìm kiếm cơ hội luyện tập thêm ngoài bài học.',
-        kokorogamae: 'Khổ tận cam lai; sự kiên trì âm thầm hôm nay là thành quả rực rỡ ngày mai.'
+        gakumon: 'Chia cụm ngắn, bám sát từ khóa.',
+        taiwa: 'Nói chậm rõ chữ hơn là nói nhanh.',
+        machibito: 'Chủ động rèn thêm ngoài giờ luyện.',
+        kokorogamae: 'Khổ tận cam lai, ngày mai rực rỡ.',
       },
       shrineSealText: '大器晩成',
-      luckyNumber: 9
-    }
+      luckyNumber: 9,
+    },
   ],
   凶: [
     {
       rank: '凶',
       rankTitleVi: 'Hung · Chuyển hóa nghịch cảnh',
-      wakaJapanese: '荒波に 立ち向かふ舟 舵取れば やがて静けき 港に着かむ',
-      wakaRomaji: 'Aranami ni / tachimukau fune / kajitoreba / yagate shizukeki / minato ni tsukan',
-      wakaMeaningVi: 'Con thuyền vững tay chèo giữa sóng to gió lớn, ắt có ngày cập bến bờ bình yên sóng lặng.',
-      teachingSummary: 'Điềm thử thách nhắc nhở cần điều chỉnh phương pháp học tập. Hãy buộc quẻ này lên giàn đền thờ để hóa giải vận hạn!',
+      wakaJapanese: '荒波を乗り越え 静けき港へ',
+      wakaRomaji: 'Aranami wo norikoe shizukeki minato e',
+      wakaMeaningVi: 'Vững tay chèo vượt sóng dữ, ắt cập bến bờ bình yên.',
+      teachingSummary: 'Thử thách rèn bản lĩnh; buộc sớ giải hạn để mở vận mới.',
       aspects: {
-        gakumon: 'Cần xem lại ngay các góp ý lỗi ngữ pháp và phát âm ở trang kết quả.',
-        taiwa: 'Hạn chế nói cộc lốc hoặc dùng tiếng bồi. Luyện tập lại từ các câu chào hỏi căn bản.',
-        machibito: 'Cẩn trọng hiểu lầm văn hóa; luôn duy trì sự lễ phép trong môi trường Nhật Bản.',
-        kokorogamae: 'Biến thử thách thành bài học quý giá. Đền thờ Shinto tin rằng rút phải quẻ Hung là khởi đầu của sự hồi sinh vận khí.'
+        gakumon: 'Xem lại ngay các lỗi trợ từ vừa gặp.',
+        taiwa: 'Giữ đuôi câu lịch sự, tránh nói bồi.',
+        machibito: 'Lắng nghe kỹ ngữ cảnh trước khi đáp.',
+        kokorogamae: 'Chạm đáy là điểm tựa bật lên.',
       },
       shrineSealText: '厄災消除',
-      luckyNumber: 4
-    }
-  ]
+      luckyNumber: 4,
+    },
+  ],
 };
 
 export interface OmikujiFortuneCardProps {
   score: number;
   scenarioTitle?: string;
+  resultId?: string | number;
   className?: string;
 }
 
 export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
   score,
   scenarioTitle,
+  resultId,
   className = '',
 }) => {
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ceremonyStep, setCeremonyStep] = useState<'shaking' | 'revealedStick' | 'unfurled'>('shaking');
-  const [isTiedToShrine, setIsTiedToShrine] = useState(false);
-  const [isSavedToAmulet, setIsSavedToAmulet] = useState(false);
+  const timersRef = useRef<number[]>([]);
 
-  // Suy đoán quẻ theo điểm số tổng kết của học viên
+  const clearCeremonyTimers = () => {
+    timersRef.current.forEach((t) => window.clearTimeout(t));
+    timersRef.current = [];
+  };
+
+  useEffect(() => clearCeremonyTimers, []);
+
+  const storageKey = resultId ? `jcap_omikuji_claimed_${resultId}` : null;
+  const [hasClaimedCoins, setHasClaimedCoins] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && storageKey) {
+      return localStorage.getItem(storageKey) === 'true';
+    }
+    return false;
+  });
+  const [claimAction, setClaimAction] = useState<'tied' | 'saved' | null>(() => {
+    if (typeof window !== 'undefined' && storageKey) {
+      const savedType = localStorage.getItem(`${storageKey}_type`);
+      return (savedType as 'tied' | 'saved') || null;
+    }
+    return null;
+  });
+
   const deducedRank: OmikujiRank = (() => {
     if (score >= 90) return '大吉';
     if (score >= 78) return '中吉';
@@ -190,29 +286,36 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
     return '凶';
   })();
 
-  const fortunes = OMIKUJI_DATABASE[deducedRank];
-  const activeFortune = fortunes[0];
+  const activeFortune = OMIKUJI_DATABASE[deducedRank][0];
+  const reward = COIN_REWARDS[deducedRank];
 
   const handleOpenCeremony = () => {
+    clearCeremonyTimers();
     ukiyoSound.playWoodblockSnap();
     setIsModalOpen(true);
+
+    // Nếu đã nhận xu, mở thẳng lá sớ đã thỉnh, khóa tuyệt đối việc gieo lại
+    if (hasClaimedCoins) {
+      setCeremonyStep('unfurled');
+      return;
+    }
+
     setCeremonyStep('shaking');
-    setIsTiedToShrine(false);
-    setIsSavedToAmulet(false);
 
-    // Bắt đầu nhịp lắc hộp quẻ bát giác
-    setTimeout(() => {
-      ukiyoSound.playWoodblockSnap();
-    }, 450);
-    setTimeout(() => {
-      ukiyoSound.playWoodblockSnap();
-    }, 900);
-
-    // Sau 1.5s, que quẻ rơi ra
-    setTimeout(() => {
+    const t1 = window.setTimeout(() => ukiyoSound.playWoodblockSnap(), 360);
+    const t2 = window.setTimeout(() => ukiyoSound.playWoodblockSnap(), 720);
+    const t3 = window.setTimeout(() => {
       setCeremonyStep('revealedStick');
       ukiyoSound.playSubtleTap();
-    }, 1500);
+    }, 1150);
+
+    timersRef.current = [t1, t2, t3];
+  };
+
+  const handleCloseModal = () => {
+    clearCeremonyTimers();
+    ukiyoSound.playSubtleTap();
+    setIsModalOpen(false);
   };
 
   const handleUnfurlScroll = () => {
@@ -220,20 +323,35 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
     setCeremonyStep('unfurled');
   };
 
-  const handleTieToShrine = () => {
-    ukiyoSound.playTaikoThud();
-    setIsTiedToShrine(true);
-  };
+  const persistCoinClaim = (action: 'tied' | 'saved') => {
+    if (hasClaimedCoins) return;
+    ukiyoSound.playCoinJingle();
 
-  const handleSaveToAmulet = () => {
-    ukiyoSound.playMigotoChime();
-    setIsSavedToAmulet(true);
+    const currentBalance = typeof user?.creditBalance === 'number' ? user.creditBalance : 0;
+    const newBalance = currentBalance + reward.coins;
+    window.dispatchEvent(
+      new CustomEvent('jcap_profile_updated', {
+        detail: { creditBalance: newBalance },
+      })
+    );
+
+    setHasClaimedCoins(true);
+    setClaimAction(action);
+
+    if (storageKey) {
+      try {
+        localStorage.setItem(storageKey, 'true');
+        localStorage.setItem(`${storageKey}_type`, action);
+      } catch {
+        // ignore storage errors
+      }
+    }
   };
 
   const getRankBadgeClasses = (rank: OmikujiRank) => {
     switch (rank) {
       case '大吉':
-        return 'bg-gradient-to-r from-amber-600 via-rose-600 to-amber-700 text-white shadow-xs';
+        return 'bg-gradient-to-r from-amber-600 to-rose-700 text-white';
       case '中吉':
       case '小吉':
         return 'bg-rose-100 text-rose-800 border border-rose-300';
@@ -247,31 +365,52 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
 
   return (
     <>
-      {/* 1. COMPACT CARD IN RESULT OVERVIEW (TAILED WOODEN TALISMAN STYLE) */}
+      <style>{`
+        @keyframes jcap-omikuji-shake {
+          0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+          20% { transform: translate3d(-4px, -3px, 0) rotate(-7deg); }
+          40% { transform: translate3d(4px, 2px, 0) rotate(7deg); }
+          60% { transform: translate3d(-3px, -2px, 0) rotate(-5deg); }
+          80% { transform: translate3d(3px, 1px, 0) rotate(5deg); }
+        }
+        @keyframes jcap-stick-peek {
+          0% { transform: translate3d(0, 4px, 0); }
+          100% { transform: translate3d(0, -6px, 0); }
+        }
+      `}</style>
+
+      {/* 1. THẺ BENTO NGOÀI (SHINTO TALISMAN CARD - ALIGNED TOP, COMPACT, NO WRAP CHAOS) */}
       <div
-        className={`relative flex flex-col justify-between overflow-hidden rounded-3xl border border-amber-200/90 bg-gradient-to-br from-[#FFFDF9] via-white to-[#FDF8EE] p-5 shadow-xs transition-all duration-300 hover:border-amber-400/80 hover:shadow-sm ${className}`}
+        className={`relative flex flex-col justify-between overflow-hidden rounded-3xl border transition-all duration-300 p-5 shadow-xs hover:shadow-sm ${
+          hasClaimedCoins
+            ? 'border-emerald-200/90 bg-gradient-to-br from-[#F4FAF6] via-white to-[#EEF8F2] hover:border-emerald-300'
+            : 'border-amber-200/90 bg-gradient-to-br from-[#FFF9EF] via-[#FFFDF9] to-[#FEF4DF] hover:border-amber-300'
+        } ${className}`}
       >
-        {/* Nền thư pháp Nhật chìm */}
-        <div className="absolute -right-3 -bottom-4 text-5xl font-serif font-black text-amber-900/5 select-none pointer-events-none">
+        <div className="absolute -right-2 -bottom-4 text-5xl font-serif font-black text-amber-900/[0.04] select-none pointer-events-none">
           御神籤
         </div>
 
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-700 to-amber-600 text-white shadow-2xs">
-                <Scroll className="w-4 h-4 text-white" />
+          {/* Header 1 dòng gọn tắp giống Tile 1, không bao giờ cắt chữ Quẻ Vận Đ... */}
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-2xs ${
+                  hasClaimedCoins
+                    ? 'bg-gradient-to-tr from-emerald-600 to-teal-600'
+                    : 'bg-gradient-to-tr from-[#991B1B] to-amber-600'
+                }`}
+              >
+                <ToriiIcon className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <h3 className="text-xs font-bold text-stone-900 font-sans tracking-wide">
-                  Quẻ Vận Đền Thờ · おみくじ
-                </h3>
-                <p className="text-[10px] text-amber-800/80 font-medium">Chiêm nghiệm vận hội giao tiếp</p>
-              </div>
+              <h3 className="text-xs font-bold text-[var(--sumi)] font-sans whitespace-nowrap">
+                Quẻ Vận Đền Thờ
+              </h3>
             </div>
 
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-black font-serif tracking-wider ${getRankBadgeClasses(
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-black font-serif tracking-wider shrink-0 whitespace-nowrap ${getRankBadgeClasses(
                 activeFortune.rank
               )}`}
             >
@@ -279,287 +418,261 @@ export const OmikujiFortuneCard: React.FC<OmikujiFortuneCardProps> = ({
             </span>
           </div>
 
-          <p className="text-xs text-stone-700 font-medium leading-relaxed mb-3 italic">
-            "{activeFortune.teachingSummary}"
-          </p>
+          {/* Dòng trạng thái Phúc Lộc & Số quẻ */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-[10px] font-medium text-stone-500 font-serif whitespace-nowrap">
+              御神籤 · Thẻ #{activeFortune.luckyNumber}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono whitespace-nowrap ${
+                hasClaimedCoins
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  : 'bg-amber-100 text-amber-900 border border-amber-300'
+              }`}
+            >
+              {hasClaimedCoins ? `✓ Đã nhận +${reward.coins} Xu` : `+${reward.coins} Xu phúc lộc`}
+            </span>
+          </div>
+
+          {/* 1 câu thơ sấm cô đọng nghệ thuật */}
+          <div className="border-l-2 border-[#c23a2b]/50 pl-3 py-0.5">
+            <p className="text-[11px] font-serif text-stone-400 tracking-wide truncate">
+              {activeFortune.wakaJapanese}
+            </p>
+            <p className="text-xs text-stone-700 font-medium leading-relaxed mt-0.5 line-clamp-2 italic">
+              "{activeFortune.teachingSummary}"
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-amber-100">
-          <button
-            type="button"
-            onClick={handleOpenCeremony}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs hover:from-black hover:to-rose-900 transition active:scale-95 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Khai quẻ đền thờ</span>
-          </button>
-
-          <div
-            className="w-8 h-8 rounded-full border-2 border-dashed border-rose-600 bg-rose-50 flex items-center justify-center text-rose-700 font-serif font-black text-xs select-none shadow-2xs rotate-[-6deg] shrink-0"
-            title="Dấu triện thần điện Shinto"
-          >
-            吉
-          </div>
+        <div className="pt-3 mt-2 border-t border-amber-200/50">
+          {hasClaimedCoins ? (
+            <button
+              type="button"
+              onClick={handleOpenCeremony}
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3.5 py-2 text-xs font-bold text-emerald-900 shadow-2xs hover:bg-emerald-50/70 transition active:scale-[0.98] cursor-pointer"
+            >
+              <ScrollIcon className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Xem lại sớ đã thỉnh ({activeFortune.rank})</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenCeremony}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#991B1B] to-[#B91C1C] px-4 py-2 text-xs font-bold text-white shadow-sm hover:brightness-110 transition active:scale-[0.98] cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              <span>Gieo quẻ nhận +{reward.coins} Xu</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 2. AUTHENTIC JAPANESE SHINTO OMIKUJI CEREMONIAL MODAL (PORTAL) */}
-      {isModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="relative w-full max-w-lg bg-[#FAF7F2] rounded-[32px] border-2 border-stone-300 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-            {/* Header dải xà nhà đền thờ Torii */}
-            <div className="relative bg-gradient-to-r from-stone-950 via-[#450A0A] to-stone-950 text-stone-100 px-6 py-4 flex items-center justify-between border-b-2 border-rose-900/60 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-700 text-white shadow-2xs">
-                  <Scroll className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-stone-100 tracking-wider font-sans">
-                    NGHI THỨC KHAI QUẺ ĐỀN THỜ · 神社御神籤
-                  </h2>
-                  <p className="text-[10px] text-amber-200/80">
-                    {scenarioTitle ? `Bối cảnh: ${scenarioTitle}` : 'Chiêm nghiệm tiến trình ngôn ngữ'}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  ukiyoSound.playSubtleTap();
-                  setIsModalOpen(false);
-                }}
-                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 text-stone-400 hover:text-white transition cursor-pointer text-xs"
-                title="Đóng quẻ"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Thân nghi thức Shinto */}
-            <div className="overflow-y-auto p-5 sm:p-6 pb-8 space-y-5 bg-[#FAF7F2]">
-              {ceremonyStep === 'shaking' && (
-                /* GIAI ĐOẠN 1: LẮC ỐNG QUẺ BÁT GIÁC */
-                <div className="py-12 flex flex-col items-center justify-center gap-6 text-center">
-                  {/* Mô phỏng ống quẻ gỗ bát giác (おみくじ筒) */}
-                  <div className="relative w-24 h-44 rounded-2xl bg-gradient-to-b from-amber-800 via-amber-950 to-stone-900 border-4 border-amber-700/80 shadow-2xl flex flex-col items-center justify-between p-3 animate-heartbeat">
-                    {/* Vành đồng trên */}
-                    <div className="w-full h-2 bg-gradient-to-r from-amber-300 via-yellow-100 to-amber-400 rounded-sm shadow-xs" />
-                    
-                    {/* Chữ Hán khắc chìm trên thân ống gỗ */}
-                    <span className="text-amber-200/90 font-serif font-black text-sm tracking-widest writing-vertical select-none">
-                      御神籤筒
-                    </span>
-
-                    {/* Lỗ xuất que quẻ ở đáy/đầu */}
-                    <div className="w-5 h-2 bg-stone-950 rounded-full border border-amber-500/50" />
-
-                    {/* Vành đồng dưới */}
-                    <div className="w-full h-2 bg-gradient-to-r from-amber-300 via-yellow-100 to-amber-400 rounded-sm shadow-xs" />
+      {/* 2. MODAL NGHI THỨC KHAI QUẺ WASHI (CHUẨN PRO UI/UX - GỌN GÀNG KHÔNG CUỘN DÀI) */}
+      {isModalOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 backdrop-blur-xs p-4 animate-fade-in"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) handleCloseModal();
+            }}
+          >
+            <div className="relative w-full max-w-md bg-[#FAF6EE] rounded-[28px] border border-stone-300/90 shadow-2xl overflow-hidden flex flex-col">
+              {/* Header Sơn Mài Chu Sa Ấm Áp */}
+              <div className="bg-gradient-to-r from-[#2D1414] via-[#4A1818] to-[#2D1414] text-stone-100 px-5 py-3.5 flex items-center justify-between gap-3 border-b border-amber-400/25 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 border border-amber-300/30 text-amber-200">
+                    <ToriiIcon className="w-4 h-4" />
                   </div>
-
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
-                      <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping" />
-                      <span>Đang kính cẩn gieo quẻ gỗ bát giác...</span>
-                    </div>
-                    <p className="text-xs text-stone-500 mt-2 font-serif">
-                      Thành tâm đón nhận chỉ dẫn ngôn ngữ từ thần điện
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-serif font-bold text-amber-50 tracking-wide truncate">
+                      Nghi thức Khai quẻ · 神社御神籤
+                    </h2>
+                    <p className="text-[11px] text-amber-200/75 truncate font-sans">
+                      {scenarioTitle || 'Chiêm nghiệm tiến trình ngôn ngữ'}
                     </p>
                   </div>
                 </div>
-              )}
 
-              {ceremonyStep === 'revealedStick' && (
-                /* GIAI ĐOẠN 2: QUE TRE THẦN ĐIỆN RƠI RA */
-                <div className="py-8 flex flex-col items-center justify-center gap-6 text-center animate-modal-pop">
-                  <div className="relative flex flex-col items-center">
-                    {/* Cây que tre dát vàng (Bamboo Fortune Stick) */}
-                    <div className="w-12 h-48 rounded-lg bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400 border-2 border-amber-500 shadow-xl flex flex-col items-center justify-between py-3 px-1 select-none">
-                      <span className="text-[10px] font-mono font-bold text-amber-900">JCAP</span>
-                      <span className="text-base font-serif font-black text-amber-950 tracking-widest writing-vertical">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-stone-300 hover:text-white transition cursor-pointer text-xs"
+                  aria-label="Đóng quẻ"
+                  title="Đóng quẻ"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Thân Modal */}
+              <div className="p-5 sm:p-6 bg-[#FAF6EE] max-h-[82vh] overflow-y-auto">
+                {ceremonyStep === 'shaking' && (
+                  <div className="py-8 flex flex-col items-center justify-center gap-5 text-center">
+                    <div style={{ animation: 'jcap-omikuji-shake 0.45s ease-in-out infinite' }}>
+                      <OctagonalShakerSvg />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="inline-flex items-center px-3.5 py-1 rounded-full bg-amber-100/90 text-amber-950 text-xs font-bold border border-amber-300/80">
+                        Đang thành tâm lắc ống quẻ bát giác...
+                      </p>
+                      <p className="text-xs text-stone-500 font-serif">
+                        Lắng tâm đón nhận lời sấm ngôn ngữ từ thần điện
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {ceremonyStep === 'revealedStick' && (
+                  <div className="py-5 flex flex-col items-center justify-center gap-5 text-center animate-modal-pop">
+                    {/* Que xăm gỗ Hinoki tinh xảo */}
+                    <div className="w-12 h-44 rounded-lg bg-gradient-to-b from-[#DFBE7D] via-[#F2DFB4] to-[#CDA45E] border border-amber-700/60 shadow-lg flex flex-col items-center justify-between py-2.5 px-1 select-none">
+                      <span className="w-5 h-5 rounded-full border border-[#b91c1c] bg-white/80 text-[10px] font-serif font-black text-[#b91c1c] flex items-center justify-center">
+                        神
+                      </span>
+                      <span className="text-sm font-serif font-black text-amber-950 tracking-widest [writing-mode:vertical-rl]">
                         第{activeFortune.luckyNumber}番
                       </span>
-                      <span className="text-xs font-serif font-black text-rose-800">
+                      <span className="px-1.5 py-0.5 rounded border border-[#b91c1c]/80 bg-white/85 text-[11px] font-serif font-black text-[#b91c1c]">
                         {activeFortune.rank}
                       </span>
                     </div>
-                  </div>
 
-                  <div>
-                    <h3 className="text-base font-black font-sans text-stone-900">
-                      Đã rơi ra thẻ số: Thứ {activeFortune.luckyNumber} · 第{activeFortune.luckyNumber}番
-                    </h3>
-                    <p className="text-xs text-stone-600 mt-1">
-                      Thẻ tre tương ứng với một cuộn sớ Washi mang lời sấm truyền thống
-                    </p>
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-bold font-sans text-stone-900">
+                        Rút được thẻ thứ {activeFortune.luckyNumber} · {activeFortune.rankTitleVi}
+                      </h3>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold font-mono">
+                        <CoinsIcon className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Phúc lộc: +{reward.coins} Xu</span>
+                      </div>
+                    </div>
 
                     <button
                       type="button"
                       onClick={handleUnfurlScroll}
-                      className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-700 to-amber-700 px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:from-rose-800 hover:to-amber-800 transition active:scale-95 cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#991B1B] to-[#B91C1C] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:brightness-110 transition active:scale-[0.98] cursor-pointer"
                     >
-                      <Scroll className="w-4 h-4 text-amber-200" />
-                      <span>Mở sớ quẻ Washi tương ứng</span>
+                      <ScrollIcon className="w-4 h-4 text-amber-200" />
+                      <span>Mở sớ quẻ Washi</span>
                     </button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {ceremonyStep === 'unfurled' && (
-                /* GIAI ĐOẠN 3: TỜ SỚ QUẺ WASHI TRUYỀN THỐNG BUNG MỞ */
-                <div className="relative rounded-2xl border-2 border-stone-300/80 bg-white p-6 shadow-sm space-y-5 animate-modal-pop">
-                  {/* Dải đầu quẻ: Hạng quẻ & Dấu mộc son */}
-                  <div className="flex items-center justify-between border-b-2 border-stone-200 pb-4">
-                    <div>
-                      <span className="text-[11px] font-bold tracking-widest text-stone-500 uppercase font-sans">
-                        Thứ số {activeFortune.luckyNumber} · 第{activeFortune.luckyNumber}番
-                      </span>
-                      <h1 className="text-2xl sm:text-3xl font-black font-serif tracking-widest text-rose-900 mt-0.5">
-                        {activeFortune.rank}
-                      </h1>
-                      <p className="text-xs font-bold text-stone-700 mt-1">
-                        {activeFortune.rankTitleVi}
-                      </p>
-                    </div>
-
-                    <div className="shrink-0">
-                      <div
-                        className="w-16 h-20 rounded-lg border-2 border-rose-800 bg-rose-50/90 p-1 flex flex-col items-center justify-between text-rose-800 select-none shadow-xs rotate-[-3deg]"
-                        title={`Triện đền thờ: ${activeFortune.shrineSealText}`}
-                      >
-                        <span className="text-[8px] font-serif font-black tracking-widest uppercase">
-                          神社之印
+                {ceremonyStep === 'unfurled' && (
+                  <div className="relative rounded-2xl border border-stone-300/80 bg-[#FFFDF9] p-4 sm:p-5 shadow-xs space-y-3.5 animate-modal-pop">
+                    {/* Hàng đầu sớ: Số quẻ + Ấn triện nghệ thuật tách lớp */}
+                    <div className="flex items-center justify-between gap-3 pb-3 border-b border-stone-200/80">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 font-mono block">
+                          第 {activeFortune.luckyNumber} 番 · {reward.kanjiTitle}
                         </span>
-                        <span className="text-xs font-serif font-black tracking-widest text-center leading-tight">
-                          {activeFortune.shrineSealText || '神光照覧'}
-                        </span>
-                        <span className="text-[7px] font-mono font-bold tracking-tighter">
-                          OMIKUJI
+                        <h3 className="text-sm font-bold text-stone-900 font-sans mt-0.5 truncate">
+                          {activeFortune.rankTitleVi}
+                        </h3>
+                        <span className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300/80 text-[11px] font-bold font-mono">
+                          <CoinsIcon className="w-3 h-3 text-amber-700" />
+                          <span>
+                            {hasClaimedCoins ? `Đã nhận +${reward.coins} Xu` : `Phúc lộc: +${reward.coins} Xu`}
+                          </span>
                         </span>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Bài thơ Waka truyền thống */}
-                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-4 space-y-2">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 font-sans">
-                      <BookOpen className="w-3.5 h-3.5 text-amber-800" />
-                      <span>Thơ Waka cổ truyền (和歌):</span>
-                    </div>
-                    <p className="font-serif font-bold text-sm sm:text-base text-stone-900 tracking-wide leading-relaxed text-center py-1">
-                      {activeFortune.wakaJapanese}
-                    </p>
-                    <p className="text-[11px] text-stone-600 text-center font-mono">
-                      {activeFortune.wakaRomaji}
-                    </p>
-                    <p className="text-xs text-amber-950 font-medium italic border-t border-amber-200/60 pt-2 leading-relaxed">
-                      Ý thơ: {activeFortune.wakaMeaningVi}
-                    </p>
-                  </div>
-
-                  {/* Lời răn dạy tu thân & Giao tiếp */}
-                  <div className="space-y-1.5">
-                    <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider font-sans flex items-center gap-1.5">
-                      <Compass className="w-3.5 h-3.5 text-rose-700" />
-                      <span>Lời giải nghĩa đạo lý (神託の教え):</span>
-                    </h4>
-                    <p className="text-xs text-stone-700 leading-relaxed font-serif">
-                      {activeFortune.teachingSummary}
-                    </p>
-                  </div>
-
-                  {/* 4 Phương diện vận khí học tập */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 text-xs space-y-1">
-                      <span className="font-bold text-stone-900 flex items-center gap-1">
-                        <BookOpen className="w-3 h-3 text-stone-700" />
-                        <span>Học vấn & Ngôn ngữ (学問)</span>
-                      </span>
-                      <p className="text-stone-600 text-[11px] leading-relaxed">
-                        {activeFortune.aspects.gakumon}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 text-xs space-y-1">
-                      <span className="font-bold text-stone-900 flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3 text-stone-700" />
-                        <span>Giao tiếp & Ứng xử (対話)</span>
-                      </span>
-                      <p className="text-stone-600 text-[11px] leading-relaxed">
-                        {activeFortune.aspects.taiwa}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 text-xs space-y-1">
-                      <span className="font-bold text-stone-900 flex items-center gap-1">
-                        <Compass className="w-3 h-3 text-stone-700" />
-                        <span>Cơ hội & Gặp gỡ (好機)</span>
-                      </span>
-                      <p className="text-stone-600 text-[11px] leading-relaxed">
-                        {activeFortune.aspects.machibito}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 text-xs space-y-1">
-                      <span className="font-bold text-stone-900 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-amber-600" />
-                        <span>Tâm thế tu thân (心構え)</span>
-                      </span>
-                      <p className="text-stone-600 text-[11px] leading-relaxed">
-                        {activeFortune.aspects.kokorogamae}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Hành động nghi thức: Buộc quẻ / Cất giữ túi hộ mệnh */}
-                  <div className="pt-3 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
-                    {isTiedToShrine ? (
-                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-                        <span>Đã buộc sớ quẻ lên giàn đền thờ · Vận hạn tiêu trừ, tâm an trí sáng!</span>
+                      {/* Con dấu triện nghệ thuật Đỏ Chu Sa (tách lớp SVG filter chỉ lên dấu mực) */}
+                      <div className="shrink-0 bg-[#FFFDF7] rounded-xl p-1 border border-stone-200/80 shadow-2xs">
+                        <div
+                          className="w-16 h-16 rounded-lg border-2 border-[#b91c1c] p-1 flex flex-col items-center justify-center text-[#b91c1c] rotate-[-3deg] select-none"
+                          style={{ filter: 'url(#jc-inkfx)', mixBlendMode: 'multiply' }}
+                          title={`Triện Thần Điện: ${activeFortune.shrineSealText}`}
+                        >
+                          <div className="w-full h-full rounded border border-[#b91c1c]/70 flex flex-col items-center justify-center leading-none">
+                            <span className="text-[7px] font-serif font-bold tracking-widest">神社之印</span>
+                            <span className="text-xl font-serif font-black my-0.5 leading-none">{activeFortune.rank}</span>
+                          </div>
+                        </div>
                       </div>
-                    ) : isSavedToAmulet ? (
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
-                        <span>Đã cất quẻ cát tường vào Túi Hộ Mệnh Omamori!</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-2">
-                        {activeFortune.rank === '凶' || activeFortune.rank === '末吉' ? (
+                    </div>
+
+                    {/* Bài thơ Waka & Tinh hoa đạo lý (Cô đọng 1 khối duy nhất) */}
+                    <div className="rounded-xl border border-amber-200/70 bg-amber-50/45 px-3.5 py-2.5 text-center space-y-1">
+                      <p className="font-serif font-bold text-sm text-stone-900 tracking-wide">
+                        「 {activeFortune.wakaJapanese} 」
+                      </p>
+                      <p className="text-xs text-stone-700 font-serif italic leading-snug">
+                        {activeFortune.wakaMeaningVi}
+                      </p>
+                    </div>
+
+                    {/* 4 Trụ Khẩu Quyết Cô Đọng (Tối đa 5-7 chữ mỗi ô, không lệch hàng) */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { tag: '【学問】Học vấn', text: activeFortune.aspects.gakumon },
+                        { tag: '【対話】Đối đáp', text: activeFortune.aspects.taiwa },
+                        { tag: '【好機】Vận hội', text: activeFortune.aspects.machibito },
+                        { tag: '【心構】Tâm thế', text: activeFortune.aspects.kokorogamae },
+                      ].map((item) => (
+                        <div
+                          key={item.tag}
+                          className="rounded-xl border border-stone-200/80 bg-white px-3 py-2 flex flex-col justify-between"
+                        >
+                          <span className="text-[10px] font-bold text-stone-900 font-sans block mb-0.5 whitespace-nowrap">
+                            {item.tag}
+                          </span>
+                          <p className="text-[11px] text-stone-600 leading-snug">
+                            {item.text}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Hành động nghi thức — Khóa hoàn toàn re-roll sau khi nhận xu */}
+                    <div className="pt-2.5 border-t border-stone-200/80">
+                      {hasClaimedCoins ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900 bg-emerald-50 py-2 px-3 rounded-xl border border-emerald-200 text-center">
+                            <CoinsIcon className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span>
+                              {claimAction === 'tied'
+                                ? `Đã buộc sớ giải hạn · Nhận +${reward.coins} Xu bình an`
+                                : `Đã thỉnh bùa hộ mệnh · Nhận +${reward.coins} Xu may mắn`}
+                            </span>
+                          </div>
                           <button
                             type="button"
-                            onClick={handleTieToShrine}
-                            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-stone-700 bg-stone-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-black transition active:scale-95 cursor-pointer shadow-xs"
+                            onClick={handleCloseModal}
+                            className="w-full py-2.5 rounded-xl bg-stone-900 text-stone-100 font-bold text-xs hover:bg-black transition active:scale-[0.98] cursor-pointer"
                           >
-                            <span>Buộc quẻ lên giàn đền thờ hóa giải (結び所)</span>
+                            Đóng sớ quẻ
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={handleSaveToAmulet}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-rose-700 px-3.5 py-1.5 text-xs font-bold text-white hover:from-amber-700 hover:to-rose-800 transition active:scale-95 cursor-pointer shadow-xs"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-                            <span>Cất vào Túi Hộ Mệnh (御守り)</span>
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleOpenCeremony}
-                      className="text-xs text-stone-500 hover:text-stone-800 font-medium underline underline-offset-2 ml-auto cursor-pointer"
-                    >
-                      Gieo lại quẻ khác
-                    </button>
+                        </div>
+                      ) : activeFortune.rank === '凶' || activeFortune.rank === '末吉' ? (
+                        <button
+                          type="button"
+                          onClick={() => persistCoinClaim('tied')}
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-stone-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-black transition active:scale-[0.98] cursor-pointer shadow-xs"
+                        >
+                          <CoinsIcon className="w-4 h-4 text-amber-300" />
+                          <span>Buộc sớ giải hạn & Nhận +{reward.coins} Xu</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => persistCoinClaim('saved')}
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#991B1B] to-[#B91C1C] px-5 py-2.5 text-xs font-bold text-white hover:brightness-110 transition active:scale-[0.98] cursor-pointer shadow-xs"
+                        >
+                          <CoinsIcon className="w-4 h-4 text-amber-200" />
+                          <span>Thỉnh bùa bình an & Nhận +{reward.coins} Xu</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 };

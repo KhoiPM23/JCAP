@@ -22,10 +22,12 @@ namespace JCAP.Services.Implementations
 
         public async Task<ApiResponse<ToggleBookmarkResponseDto>> ToggleBookmarkAsync(string userId, ToggleBookmarkRequestDto request)
         {
-            bool hasVocab = (request.VocabularyId.HasValue && request.VocabularyId.Value > 0) || !string.IsNullOrWhiteSpace(request.Word);
-            bool hasGrammar = (request.GrammarId.HasValue && request.GrammarId.Value > 0) || !string.IsNullOrWhiteSpace(request.Pattern);
+            var validVocabId = request.VocabularyId.HasValue && request.VocabularyId.Value > 0 ? request.VocabularyId : null;
+            var validGrammarId = request.GrammarId.HasValue && request.GrammarId.Value > 0 ? request.GrammarId : null;
+            bool hasVocab = validVocabId.HasValue || !string.IsNullOrWhiteSpace(request.Word);
+            bool hasGrammar = validGrammarId.HasValue || !string.IsNullOrWhiteSpace(request.Pattern);
 
-            if (hasVocab == hasGrammar && (!hasVocab || (request.VocabularyId.HasValue && request.GrammarId.HasValue)))
+            if (hasVocab == hasGrammar && (!hasVocab || (validVocabId.HasValue && validGrammarId.HasValue)))
             {
                 return ApiResponse<ToggleBookmarkResponseDto>.Fail(
                     "Vui lòng chỉ định đúng một trong hai: VocabularyId hoặc GrammarId.");
@@ -47,7 +49,7 @@ namespace JCAP.Services.Implementations
                             Word = cleanWord,
                             Reading = request.Reading?.Trim(),
                             Meaning = request.Meaning?.Trim() ?? string.Empty,
-                            JLPTLevel = request.JlptLevel ?? "N4",
+                            JLPTLevel = !string.IsNullOrWhiteSpace(request.JlptLevel) ? request.JlptLevel.Trim() : "N5",
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow
                         };
@@ -57,11 +59,11 @@ namespace JCAP.Services.Implementations
                 }
 
                 // 2. Nếu chưa có request.Word, kiểm tra xem VocabularyId có thuộc bảng TargetVocabularies của Kịch bản hay không
-                if (vocab == null && request.VocabularyId.HasValue && request.VocabularyId.Value > 0)
+                if (vocab == null && validVocabId.HasValue)
                 {
                     var targetVocab = await _db.TargetVocabularies
                         .Include(tv => tv.ScenarioLevelConfiguration)
-                        .FirstOrDefaultAsync(tv => tv.Id == request.VocabularyId.Value);
+                        .FirstOrDefaultAsync(tv => tv.Id == validVocabId.Value);
 
                     if (targetVocab != null)
                     {
@@ -73,7 +75,7 @@ namespace JCAP.Services.Implementations
                                 Word = targetVocab.Word,
                                 Reading = targetVocab.Reading,
                                 Meaning = targetVocab.Meaning,
-                                JLPTLevel = targetVocab.ScenarioLevelConfiguration?.JLPTLevel ?? request.JlptLevel ?? "N4",
+                                JLPTLevel = targetVocab.ScenarioLevelConfiguration?.JLPTLevel ?? (!string.IsNullOrWhiteSpace(request.JlptLevel) ? request.JlptLevel.Trim() : "N5"),
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow
                             };
@@ -84,7 +86,7 @@ namespace JCAP.Services.Implementations
                     else
                     {
                         // 3. Nếu không phải TargetVocabulary, tìm theo Id trong bảng Vocabularies
-                        vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == request.VocabularyId.Value && v.IsActive);
+                        vocab = await _db.Vocabularies.FirstOrDefaultAsync(v => v.Id == validVocabId.Value && v.IsActive);
                     }
                 }
 
@@ -139,7 +141,7 @@ namespace JCAP.Services.Implementations
                             Pattern = cleanPattern,
                             Meaning = request.Meaning?.Trim() ?? string.Empty,
                             ExampleSentence = request.ExampleSentence?.Trim(),
-                            JLPTLevel = request.JlptLevel ?? "N4",
+                            JLPTLevel = !string.IsNullOrWhiteSpace(request.JlptLevel) ? request.JlptLevel.Trim() : "N5",
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow
                         };
@@ -149,11 +151,11 @@ namespace JCAP.Services.Implementations
                 }
 
                 // 2. Nếu chưa có request.Pattern, kiểm tra xem GrammarId có thuộc bảng TargetGrammars của Kịch bản hay không
-                if (grammar == null && request.GrammarId.HasValue && request.GrammarId.Value > 0)
+                if (grammar == null && validGrammarId.HasValue)
                 {
                     var targetGrammar = await _db.TargetGrammars
                         .Include(tg => tg.ScenarioLevelConfiguration)
-                        .FirstOrDefaultAsync(tg => tg.Id == request.GrammarId.Value);
+                        .FirstOrDefaultAsync(tg => tg.Id == validGrammarId.Value);
 
                     if (targetGrammar != null)
                     {
@@ -165,7 +167,7 @@ namespace JCAP.Services.Implementations
                                 Pattern = targetGrammar.Pattern,
                                 Meaning = targetGrammar.Meaning,
                                 ExampleSentence = targetGrammar.ExampleSentence,
-                                JLPTLevel = targetGrammar.ScenarioLevelConfiguration?.JLPTLevel ?? request.JlptLevel ?? "N4",
+                                JLPTLevel = targetGrammar.ScenarioLevelConfiguration?.JLPTLevel ?? (!string.IsNullOrWhiteSpace(request.JlptLevel) ? request.JlptLevel.Trim() : "N5"),
                                 IsActive = true,
                                 CreatedAt = DateTime.UtcNow
                             };
@@ -176,7 +178,7 @@ namespace JCAP.Services.Implementations
                     else
                     {
                         // 3. Nếu không phải TargetGrammar, tìm theo Id trong bảng Grammars
-                        grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == request.GrammarId.Value && g.IsActive);
+                        grammar = await _db.Grammars.FirstOrDefaultAsync(g => g.Id == validGrammarId.Value && g.IsActive);
                     }
                 }
 

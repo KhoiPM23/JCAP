@@ -240,8 +240,8 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(4.5, result.AverageSpeechPace);
         Assert.Equal(1.5, result.AverageResponseLatencySeconds);
         Assert.True(result.FluencyScore >= 90);
-        Assert.Contains("mora/s", result.GeneralFeedbackText);
-        Assert.Contains("chuẩn nhịp học viên 3.0-5.0 mora/s", result.GeneralFeedbackText);
+        Assert.Contains("4.5 âm/giây", result.GeneralFeedbackText);
+        Assert.Contains("nhịp độ vừa vặn, tự nhiên", result.GeneralFeedbackText);
     }
 
     private const string GoodFeedbackJson = """

@@ -5,23 +5,57 @@ ruby {
 }
 
 rt {
-  font-size: max(10px, 0.52em);
+  font-size: max(10.5px, 0.52em);
   line-height: 1;
   font-weight: 600;
-  letter-spacing: normal;
-  color: var(--ai);
+  letter-spacing: 0;
+  color: var(--sumi-muted);
   user-select: none;
   position: relative;
   top: -2px;
   white-space: nowrap;
 }
 
-/* User speech bubble contrast enhancement */
+/* Furigana trong bong bóng thoại của AI (Đối tác): Chàm xám thanh thoát chuẩn Washi, làm nổi bật Kanji chính */
+.bubble-ai rt,
+.bubble-ai ruby rt,
+.bubble-ai .jc-jp rt,
+.jc-bubble--ai rt {
+  color: #445B8A !important;
+  font-weight: 500 !important;
+  font-size: max(11px, 0.54em) !important;
+  opacity: 0.92 !important;
+}
+
+/* Furigana trong bong bóng thoại của Học viên (Người học): Xanh chàm đậm rõ nét trên nền trời dịu */
+.bubble-user rt,
+.bubble-user ruby rt,
+.bubble-user .jc-jp rt,
 .jc-bubble--me rt,
-.bubble-user rt {
-  color: #ffffff;
-  opacity: 0.95;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.jc-bubble--me .jc-jp rt {
+  color: #26437A !important;
+  font-weight: 500 !important;
+  font-size: max(11px, 0.54em) !important;
+  opacity: 0.95 !important;
+  text-shadow: none !important;
+}
+
+/* Bong bóng thoại AI (Landing Page standard: Warm Ivory Wabi-Sabi Paper - Nền ngà ấm áp thanh nhã) */
+.bubble-ai {
+  background-color: #FAF8F5 !important;
+  border: 1px solid #E5DFD5 !important;
+  color: #1E293B !important;
+  border-radius: 16px 16px 16px 4px !important;
+  box-shadow: 0 1px 3px rgba(30, 44, 72, 0.04) !important;
+}
+
+/* Bong bóng thoại Học viên (Landing Page standard: Soft Serene Sky - Xanh ngọc xám dịu, chữ nét căng, tuyệt đối không chìm màu) */
+.bubble-user {
+  background-color: #E8EFF6 !important;
+  border: 1px solid #CADBEA !important;
+  color: #0F172A !important;
+  border-radius: 16px 16px 4px 16px !important;
+  box-shadow: 0 1px 3px rgba(30, 44, 72, 0.04) !important;
 }
 
 /* When furigana is hidden, maintain layout spacing to avoid jarring layout shifts */
@@ -264,7 +298,7 @@ rt {
   box-shadow: 0 6px 18px -2px rgba(35, 33, 30, 0.07);
 }
 
-/* Thẻ bài Đạo cụ Ngôn từ (Inventory Props) trong RPG */
+/* Thẻ Gợi ý Ngôn từ Bối cảnh (Contextual Prompts) trong Roleplay */
 .inventory-prop {
   position: relative;
   display: inline-flex;
@@ -297,7 +331,7 @@ rt {
   align-items: center;
   justify-content: center;
   border: 2.5px solid var(--shu);
-  border-radius: 12px;
+  border-radius: 9999px;
   color: var(--shu);
   background: var(--shu-soft);
   font-family: var(--font-mincho), serif;
@@ -333,10 +367,10 @@ rt {
 }
 .quest-slot.completed {
   border-style: solid;
-  border-color: var(--shu);
-  background: var(--shu-soft);
-  color: var(--shu);
-  box-shadow: 0 2px 8px rgba(203, 64, 43, 0.18);
+  border-color: #10b981;
+  background: #ecfdf5;
+  color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.18);
 }
 
 /* Stepper mốc nhiệm vụ RPG */
@@ -348,25 +382,29 @@ rt {
 }
 .quest-stepper-connector {
   position: absolute;
-  left: 21px;
-  top: 32px;
-  bottom: -10px;
-  width: 2px;
-  background: repeating-linear-gradient(to bottom, var(--line-strong) 0, var(--line-strong) 4px, transparent 4px, transparent 8px);
+  left: 23px;
+  top: 36px;
+  bottom: -18px;
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  background: transparent !important;
   z-index: 0;
   pointer-events: none;
 }
 .quest-stepper-connector.completed {
-  background: var(--shu);
+  border-left: 2px dashed #10b981;
+  background: transparent !important;
 }
 .quest-stepper-line {
   position: absolute;
   top: 15px;
   left: 14px;
   bottom: -6px;
-  width: 2px;
-  background: repeating-linear-gradient(to bottom, var(--line-strong) 0, var(--line-strong) 4px, transparent 4px, transparent 8px);
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  background: transparent !important;
 }
 .quest-stepper-line.completed {
-  background: var(--shu);
+  border-left: 2px dashed #10b981;
+  background: transparent !important;
 }

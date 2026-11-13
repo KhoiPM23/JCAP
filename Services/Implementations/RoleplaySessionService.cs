@@ -786,6 +786,9 @@ public class RoleplaySessionService : IRoleplaySessionService
         var combinedDirective = directiveBuilder.Length > 0 ? directiveBuilder.ToString().Trim() : null;
 
         // 4. Gọi AI phân tích và phản hồi nếu chưa xử lý bởi Pre-flight Guard
+        if (levelConfig.Scenario == null)
+            throw new InvalidOperationException($"Scenario not found for ScenarioId={levelConfig.ScenarioId}. Data integrity error.");
+
         if (turnResult == null && !string.IsNullOrWhiteSpace(combinedDirective))
         {
             turnResult = await _aiRoleplayService.ProcessTurnAsync(
@@ -1121,17 +1124,17 @@ public class RoleplaySessionService : IRoleplaySessionService
                 turnResult.LinguisticFeedback.SpeechDelivery = new SpeechDeliveryMetricsDto
                 {
                     SpeakingDurationSeconds = !isTextTurn && request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
-                    ResponseLatencySeconds = !isTextTurn && request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
+                    ResponseLatencySeconds = !isTextTurn && request.ResponseLatencySeconds.HasValue && request.ResponseLatencySeconds.Value >= 0.8 ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
                     SpeechConfidence = !isTextTurn && request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
-                    SpeechPace = !isTextTurn ? pace : null,
+                    SpeechPace = !isTextTurn && pace.HasValue && pace.Value >= 1.0 ? pace : null,
                     TurnFluencyScore = finalFluency,
                     TurnAutonomyScore = turnAutonomy,
                     AutonomyAssessment = autonomyAssessment,
                     PronunciationClarityScore = !isTextTurn ? pronClarity : null,
-                    MoraRate = request.MoraRate,
+                    MoraRate = !isTextTurn && request.MoraRate.HasValue && request.MoraRate.Value >= 1.0 ? request.MoraRate : null,
                     JlptLevel = jlpt,
-                    PaceAssessment = paceAssessment,
-                    LatencyAssessment = latencyAssessment,
+                    PaceAssessment = !isTextTurn ? paceAssessment : null,
+                    LatencyAssessment = !isTextTurn ? latencyAssessment : null,
                     AudioUrl = request.AudioUrl,
                     IsTextInput = request.FallbackToTextInput || (!request.SpeechConfidence.HasValue && string.IsNullOrEmpty(request.AudioUrl)),
                     HintLevelUsed = request.HintLevelUsed

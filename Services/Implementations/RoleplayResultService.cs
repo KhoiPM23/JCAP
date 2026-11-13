@@ -987,7 +987,6 @@ namespace JCAP.Services.Implementations
             else if (!hasVoiceTurns && result.PassStatus) badges.Add("Đối đáp Chuẩn xác");
             if (result.GrammarScore >= 85) badges.Add("Ngữ pháp Chuẩn xác");
             if (result.VocabularyScore >= 85) badges.Add("Vốn từ Phong phú");
-            if (badges.Count == 0) badges.Add("Tiến bộ Từng bước");
 
             var weakVocabularies = DetectWeakVocabularies(targetVocabularies, messages, signals);
             var weakGrammars = DetectWeakGrammars(targetGrammars, messages, signals);

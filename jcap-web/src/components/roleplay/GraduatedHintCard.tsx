@@ -149,7 +149,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
     <div
       role="region"
       aria-label="Gợi ý hội thoại"
-      className="w-full bg-gradient-to-r from-amber-50 via-orange-50/90 to-amber-100/70 rounded-2xl border border-amber-300 shadow-sm p-3 sm:p-3.5 flex flex-col gap-2.5 animate-slide-up select-none transition-all duration-200"
+      className="w-full washi-parchment bg-[#FAF6EE]/95 rounded-2xl border border-[#DFD2B8] shadow-xs p-3 sm:p-3.5 flex flex-col gap-2.5 animate-slide-up select-none transition-all duration-200"
     >
       {/* Hidden helper preserving exact test strings for regression checks */}
       <div className="sr-only">
@@ -164,12 +164,17 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
       <div className="flex items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
         {/* Vế trái: Icon SVG bóng đèn thẳng hàng + Nhãn Ý CẦN NÓI + Nút Đổi ý */}
         <div className="flex items-center gap-2 min-w-0">
-          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-200/90 text-amber-900 shrink-0 shadow-2xs">
-            <LightbulbIcon className="w-3.5 h-3.5 text-amber-800" />
+          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#EFE6D4] border border-[#DCCCB0] text-[#7A5318] shrink-0">
+            <LightbulbIcon className="w-3.5 h-3.5 text-[#7A5318]" />
           </span>
-          <span className="text-[11px] font-bold text-amber-900/80 uppercase tracking-wide shrink-0">
+          <span className="text-[11px] font-bold text-[#6E4D1B] uppercase tracking-wide shrink-0">
             Ý cần nói
           </span>
+          {isFirstUseInSession && (
+            <span className="hidden sm:inline-flex items-center rounded-md bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 shrink-0">
+              Ưu đãi lần đầu
+            </span>
+          )}
 
           {allOptions.length > 1 && (
             <button
@@ -178,7 +183,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                 ukiyoSound.playSubtleTap();
                 setAltIndex((prev) => (prev + 1) % allOptions.length);
               }}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-200/80 hover:bg-amber-300 text-amber-950 text-[10px] font-bold border border-amber-300/80 shadow-2xs transition active:scale-95 cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/85 hover:bg-white text-[var(--sumi)] text-[10px] font-bold border border-[#DCCCB0] shadow-2xs transition active:scale-95 cursor-pointer shrink-0"
               title="Đổi sang hướng diễn đạt khác"
             >
               <span>Ý khác ({altIndex + 1}/{allOptions.length})</span>
@@ -188,26 +193,26 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 
         {/* Vế phải: 3 Cấp độ pill tinh gọn + Nút đóng */}
         <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-          <div className="inline-flex items-center p-0.5 rounded-lg bg-amber-200/60 border border-amber-300/80 text-[10px] font-bold">
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-[#EFE7D6]/90 border border-[#DCCCB0] text-[10px] font-bold">
             <button
               type="button"
               onClick={() => handleSwitchTier(1)}
               className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
                 hintTier === 1
-                  ? 'bg-white text-amber-950 shadow-2xs font-black'
-                  : 'text-amber-900/70 hover:text-amber-950'
+                  ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
+                  : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (-0đ, trần 90đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, trần 85đ)'}
+              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (0đ, trần 90đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, trần 85đ)'}
             >
-              Cấp 1: Ý nói {isFirstUseInSession ? '(-0đ)' : '(-10đ)'}
+              Cấp 1: Ý nói {isFirstUseInSession ? '(0đ)' : '(-10đ)'}
             </button>
             <button
               type="button"
               onClick={() => handleSwitchTier(2)}
               className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
                 hintTier === 2
-                  ? 'bg-white text-amber-950 shadow-2xs font-black'
-                  : 'text-amber-900/70 hover:text-amber-950'
+                  ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
+                  : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
               title={isFirstUseInSession ? 'Cấp 2: Gợi ý các từ then chốt, ưu đãi lần đầu (-15đ, trần 80đ)' : 'Cấp 2: Gợi ý các từ then chốt (-30đ tự chủ, trần 70đ)'}
             >
@@ -218,8 +223,8 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               onClick={() => handleSwitchTier(3)}
               className={`px-2.5 py-0.5 rounded-md transition cursor-pointer ${
                 hintTier === 3
-                  ? 'bg-white text-rose-950 shadow-2xs font-black'
-                  : 'text-amber-900/70 hover:text-amber-950'
+                  ? 'bg-white text-[var(--shu)] shadow-2xs font-black'
+                  : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
               title={isFirstUseInSession ? 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo, ưu đãi lần đầu (-40đ, trần 60đ)' : 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo (-60đ tự chủ, trần 50đ)'}
             >
@@ -233,7 +238,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               ukiyoSound.playSubtleTap();
               onClose();
             }}
-            className="text-amber-800 hover:text-amber-950 p-1 rounded-md hover:bg-amber-200/60 transition cursor-pointer"
+            className="text-[#6D5A3E] hover:text-[var(--sumi)] p-1 rounded-md hover:bg-[#EFE7D6] transition cursor-pointer"
             title="Đóng gợi ý (Học viên tự nói vào micro)"
             aria-label="Đóng gợi ý"
           >
@@ -242,33 +247,42 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
         </div>
       </div>
 
-      {/* DÒNG CÂU TIẾNG VIỆT HOÀN CHỈNH - KHÔNG BAO GIỜ BỊ CẮT CHỮ HAY CHE KHUẤT */}
+      {/* DÒNG CÂU TIẾNG VIỆT HOÀN CHỈNH */}
       <div className="pl-7 pr-2">
-        <p className="text-xs sm:text-sm font-extrabold text-amber-950 leading-relaxed break-words">
+        <p className="text-xs sm:text-sm font-extrabold text-[var(--sumi)] leading-relaxed break-words">
           "{activeMeaning || missionTitle || 'Diễn đạt ý theo bối cảnh'}"
         </p>
       </div>
 
-      {/* HÀNG 2: NỘI DUNG THEO TỪNG CẤP ĐỘ + NÚT TÁC VỤ */}
-      <div className="flex items-center justify-between gap-3 bg-white/95 p-2 sm:p-2.5 rounded-xl border border-amber-300 shadow-2xs flex-wrap sm:flex-nowrap min-h-[46px]">
-        {/* Vế trái: Nội dung Cấp 1, Cấp 2 hoặc Cấp 3 */}
-        <div className="min-w-0 flex-1">
-          {/* CẤP 1: CHỈ Ý NGHĨA TIẾNG VIỆT, KHÔNG LỘ TIẾNG NHẬT ĐỂ HỌC VIÊN TỰ TƯ DUY */}
-          {hintTier === 1 && (
-            <div className="flex items-center gap-2 flex-wrap text-xs text-amber-950">
-              <span className="font-semibold text-amber-900/90">
+      {/* HÀNG 2: NỘI DUNG THEO TỪNG CẤP ĐỘ + HÀNH ĐỘNG ĐỒNG BỘ */}
+      <div className="bg-white/90 p-2.5 sm:p-3 rounded-xl border border-[#E6DAC2] shadow-2xs flex flex-col gap-2.5">
+        {hintTier === 1 && (
+          <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--sumi)] min-w-0 flex-1">
+              <span className="font-semibold">
                 Hãy tự nhớ từ vựng và tự nói bằng tiếng Nhật vào micro.
               </span>
-              <span className="text-[11px] text-amber-700/80 italic">
+              <span className="text-[11px] text-[var(--sumi-muted)] italic">
                 (Nếu quên từ then chốt, hãy chuyển sang Cấp 2)
               </span>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => handleSwitchTier(2)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer shrink-0 ml-auto"
+              title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 2 (-15đ, trần 80đ)' : 'Nâng cấp gợi ý: Cấp 2 (-30đ, trần 70đ)'}
+            >
+              <span>Xem từ khóa</span>
+              <ArrowRightIcon className="w-3 h-3 text-white/80" />
+            </button>
+          </div>
+        )}
 
-          {/* CẤP 2: CUNG CẤP TỪ THEN CHỐT CỐT LÕI (CÓ FURIGANA) */}
-          {hintTier === 2 && (
+        {hintTier === 2 && (
+          <>
+            {/* Vùng từ khóa toàn chiều rộng — không bị nút bóp nghẹt hay lệch */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider shrink-0">
+              <span className="text-[11px] font-bold text-[#6E4D1B] uppercase tracking-wider shrink-0">
                 Từ then chốt:
               </span>
               <div className="flex flex-wrap gap-2 items-center">
@@ -277,7 +291,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   return (
                     <div
                       key={idx}
-                      className="inline-flex items-center rounded-lg bg-amber-50 hover:bg-amber-100/90 border border-amber-300 shadow-2xs transition"
+                      className="inline-flex items-center rounded-lg bg-[#FAF6EE] hover:bg-[#F3EBD9] border border-[#DFD2B8] shadow-2xs transition"
                     >
                       <button
                         type="button"
@@ -285,14 +299,14 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                           ukiyoSound.playSubtleTap();
                           onUseHint(kw, 2);
                         }}
-                        className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 text-xs sm:text-sm font-bold text-amber-950 font-jp transition active:scale-95 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 text-xs sm:text-sm font-bold text-[var(--sumi)] font-jp transition active:scale-95 cursor-pointer"
                         title="Bấm để chèn từ này vào ô nhập, hoặc nhìn vào để tự nói"
                       >
                         <span
                           className="leading-snug"
                           dangerouslySetInnerHTML={{ __html: effectiveFuri || kw }}
                         />
-                        <span className="text-[10px] text-amber-600 font-sans font-normal">+</span>
+                        <span className="text-[10px] text-[#8A6A3B] font-sans font-normal">+</span>
                       </button>
 
                       {onPlaySampleAudio && (
@@ -303,7 +317,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                             ukiyoSound.playSubtleTap();
                             onPlaySampleAudio(kw);
                           }}
-                          className="pr-2 pl-1 py-1 text-amber-700 hover:text-amber-950 transition cursor-pointer"
+                          className="pr-2 pl-1 py-1 text-[var(--ai)] hover:text-[var(--ai-hover)] transition cursor-pointer"
                           title={`Nghe phát âm chuẩn: ${kw}`}
                         >
                           <VolumeIcon className="w-3 h-3" />
@@ -314,93 +328,79 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                 })}
               </div>
             </div>
-          )}
 
-          {/* CẤP 3: TOÀN BỘ CÂU HOÀN CHỈNH (CÓ FURIGANA RUBY HOÀN HẢO) */}
-          {hintTier === 3 && (
-            <div className="min-w-0 truncate">
+            {/* Hàng cuối căn chỉnh phẳng phiu cho nút Nghe từ khóa & Xem trọn câu */}
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#EFE7D6]">
+              <span className="text-[11px] text-[var(--sumi-faint)]">
+                Bấm vào từng từ để chèn nhanh hoặc tự ghép câu nói vào micro
+              </span>
+              <div className="flex items-center gap-2 shrink-0 ml-auto">
+                {onPlaySampleAudio && primaryKeywords.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handlePlayAudio}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF6EE] hover:bg-[#F3EBD9] text-[var(--sumi)] border border-[#DFD2B8] text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
+                    title="Lắng nghe phát âm các từ then chốt"
+                  >
+                    <VolumeIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+                    <span>Nghe từ khóa</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleSwitchTier(3)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
+                  title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 3 trọn câu (-40đ, trần 60đ)' : 'Nâng cấp gợi ý: Cấp 3 trọn câu (-60đ, trần 50đ)'}
+                >
+                  <span>Xem trọn câu</span>
+                  <ArrowRightIcon className="w-3 h-3 text-white/80" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {hintTier === 3 && (
+          <div className="flex flex-col gap-2.5">
+            <div className="min-w-0">
               {(() => {
                 const effectiveFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
                 return effectiveFuri && (effectiveFuri.includes('<ruby>') || activeOption.furiganaHtml) ? (
                   <div
-                    className="text-xs sm:text-sm md:text-base font-bold text-amber-950 font-jp truncate leading-relaxed"
+                    className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words"
                     dangerouslySetInnerHTML={{ __html: effectiveFuri }}
                   />
                 ) : (
-                  <p className="text-xs sm:text-sm md:text-base font-bold text-amber-950 font-jp truncate leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words">
                     {cleanSample}
                   </p>
                 );
               })()}
             </div>
-          )}
-        </div>
-
-        {/* Vế phải: Nút Nghe phát âm & Nút hành động */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-          {/* Cấp 1: KHÔNG có nút nghe mẫu để học viên tự lực tư duy */}
-          {/* Cấp 2: Nghe phát âm các từ then chốt */}
-          {onPlaySampleAudio && hintTier === 2 && primaryKeywords.length > 0 && (
-            <button
-              type="button"
-              onClick={handlePlayAudio}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
-              title="Lắng nghe phát âm các từ then chốt"
-            >
-              <VolumeIcon className="w-3.5 h-3.5 text-amber-700" />
-              <span>Nghe từ khóa</span>
-            </button>
-          )}
-
-          {/* Cấp 3: Nghe phát âm toàn bộ câu mẫu Tokyo */}
-          {onPlaySampleAudio && hintTier === 3 && (
-            <button
-              type="button"
-              onClick={handlePlayAudio}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
-              title="Lắng nghe phát âm toàn bộ câu mẫu chuẩn bản xứ Tokyo"
-            >
-              <VolumeIcon className="w-3.5 h-3.5 text-amber-700" />
-              <span>Nghe trọn câu</span>
-            </button>
-          )}
-
-          {hintTier === 1 && (
-            <button
-              type="button"
-              onClick={() => handleSwitchTier(2)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
-              title="Nâng cấp gợi ý: Cấp 2 (-30đ)"
-            >
-              <span>Xem từ khóa</span>
-              <ArrowRightIcon className="w-3 h-3 text-amber-100" />
-            </button>
-          )}
-
-          {hintTier === 2 && (
-            <button
-              type="button"
-              onClick={() => handleSwitchTier(3)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
-              title="Nâng cấp gợi ý: Cấp 3 trọn câu (-60đ)"
-            >
-              <span>Xem trọn câu</span>
-              <ArrowRightIcon className="w-3 h-3 text-amber-100" />
-            </button>
-          )}
-
-          {hintTier === 3 && (
-            <button
-              type="button"
-              onClick={handleApplyCurrentTier}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
-              title="Điền toàn bộ câu này vào ô nhập thoại"
-            >
-              <span>Dùng trọn câu</span>
-              <ArrowRightIcon className="w-3 h-3 text-amber-100" />
-            </button>
-          )}
-        </div>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EFE7D6]">
+              {onPlaySampleAudio && (
+                <button
+                  type="button"
+                  onClick={handlePlayAudio}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF6EE] hover:bg-[#F3EBD9] text-[var(--sumi)] border border-[#DFD2B8] text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
+                  title="Lắng nghe phát âm toàn bộ câu mẫu chuẩn bản xứ Tokyo"
+                >
+                  <VolumeIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+                  <span>Nghe trọn câu</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleApplyCurrentTier}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
+                title="Điền toàn bộ câu này vào ô nhập thoại"
+              >
+                <span>Dùng trọn câu</span>
+                <ArrowRightIcon className="w-3 h-3 text-white/80" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

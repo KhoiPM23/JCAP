@@ -139,27 +139,27 @@ export const FlashcardSetsView: React.FC = () => {
             frontText: it.word || it.pattern || it.frontText || '',
             readingOrFormation: it.reading || it.formation || it.readingOrFormation || '',
             meaning: it.meaning || '',
-            partOfSpeech: it.partOfSpeech || 'Danh từ',
-            explanation: it.explanation || '',
+            partOfSpeech: it.partOfSpeech || (it.type === 'grammar' || it.pattern ? 'Cấu trúc' : 'Từ vựng'),
+            explanation: it.explanation || it.reason || '',
             exampleSentence: it.exampleSentence || '',
-            jlptLevel: it.jlptLevel || 'N4',
+            jlptLevel: (it.jlptLevel || 'N5').toUpperCase(),
             isAvailable: true,
             srsState: 'New',
             intervalDays: 0,
-            bookmarkedAt: it.savedAt || new Date().toISOString(),
+            bookmarkedAt: it.savedAt || it.addedAt || new Date().toISOString(),
           }));
         }
       }
     } catch {}
 
-    // Merge: không trùng lặp các từ đã có trong apiItems
+    // Merge: không trùng lặp các từ đã có trong apiItems (so sánh case-insensitive)
     const mergedMap = new Map<string, BookmarkItem>();
     apiItems.forEach((item) => {
-      const key = `${item.itemType}:${item.frontText}`.trim();
+      const key = `${item.itemType.toLowerCase()}:${item.frontText.trim().toLowerCase()}`;
       mergedMap.set(key, item);
     });
     localItems.forEach((item) => {
-      const key = `${item.itemType}:${item.frontText}`.trim();
+      const key = `${item.itemType.toLowerCase()}:${item.frontText.trim().toLowerCase()}`;
       if (!mergedMap.has(key)) {
         mergedMap.set(key, item);
       }
@@ -170,7 +170,7 @@ export const FlashcardSetsView: React.FC = () => {
       allMerged = allMerged.filter((it) => it.itemType.toLowerCase() === typeFilter.toLowerCase());
     }
     if (jlptFilter && jlptFilter !== 'All') {
-      allMerged = allMerged.filter((it) => (it.jlptLevel || 'N4').toUpperCase() === jlptFilter.toUpperCase());
+      allMerged = allMerged.filter((it) => (it.jlptLevel || 'N5').toUpperCase() === jlptFilter.toUpperCase());
     }
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
@@ -188,13 +188,22 @@ export const FlashcardSetsView: React.FC = () => {
 
   useEffect(() => {
     loadBookmarks();
-  }, []);
+
+    const handleBookmarksUpdated = () => {
+      loadBookmarks();
+    };
+    window.addEventListener('jcap_bookmarks_updated', handleBookmarksUpdated);
+
+    return () => {
+      window.removeEventListener('jcap_bookmarks_updated', handleBookmarksUpdated);
+    };
+  }, [typeFilter, jlptFilter, searchQuery]);
 
   useEffect(() => {
     if (activeTab === 'bookmarks') {
       loadBookmarks();
     }
-  }, [activeTab, typeFilter, jlptFilter, searchQuery]);
+  }, [activeTab]);
 
   // Mở thêm 10 thẻ mới bằng Credits thực sự qua API
   const handleUnlockExtra = async () => {
