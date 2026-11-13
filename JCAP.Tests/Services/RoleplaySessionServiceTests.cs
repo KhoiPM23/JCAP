@@ -753,6 +753,94 @@ public class RoleplaySessionServiceTests
         Assert.Equal(1, charMem!.EncounterCount);
         Assert.True(charMem.AffinityScore > 0);
     }
+
+    [Fact]
+    public async Task PlacementAndRoleplaySessions_AreCompletelyIsolated_EvenIfLegacyPlacementHasScenarioConfigId()
+    {
+        // Arrange: Giả lập dữ liệu cũ có phiên PlacementTest trỏ vào ScenarioLevelConfigurationId của Ramen (giống bug #83)
+        using var dbContext = CreateInMemoryDbContext();
+        var (scenario, levelConfig, _) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-isolated", CreditBalance = 10 };
+        dbContext.Users.Add(user);
+
+        var activePlacementSession = new RoleplaySession
+        {
+            Id = 83,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            SessionType = "PlacementTest",
+            Status = "Active",
+            CreditDeducted = 0,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-2)
+        };
+        dbContext.RoleplaySessions.Add(activePlacementSession);
+        await dbContext.SaveChangesAsync();
+
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.GenerateOpeningMessageAsync(It.IsAny<Scenario>(), It.IsAny<ScenarioLevelConfiguration>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiOpeningMessageResult
+            {
+                JapaneseText = "いらっしゃいませ！",
+                VietnameseMeaning = "Kính chào quý khách!"
+            });
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Act 1: Kiểm tra active session cho scenario Ramen -> không được nhầm sang phiên PlacementTest #83
+        var activeRes = await service.GetActiveSessionAsync(user.Id, scenario.Id);
+        Assert.True(activeRes.Success);
+        Assert.Null(activeRes.Data);
+
+        // Act 2: StartSessionAsync vào scenario Ramen -> phải tạo phiên Standard mới, KHÔNG resume #83
+        var startRes = await service.StartSessionAsync(user.Id, scenario.Id, "N5", new StartRoleplaySessionRequestDto());
+        Assert.True(startRes.Success);
+        Assert.NotNull(startRes.Data);
+        Assert.NotEqual(83, startRes.Data!.SessionId);
+
+        var createdRoleplay = await dbContext.RoleplaySessions.FindAsync(startRes.Data.SessionId);
+        Assert.NotNull(createdRoleplay);
+        Assert.Equal("Standard", createdRoleplay!.SessionType);
+        Assert.Equal(levelConfig.Id, createdRoleplay.ScenarioLevelConfigurationId);
+
+        // Act 3: Gửi tin nhắn Roleplay thường nhắm vào sessionId #83 -> phải bị từ chối
+        var sendRes = await service.SendMessageAsync(user.Id, 83, new SendRoleplayMessageRequestDto { Message = "あれ" });
+        Assert.False(sendRes.Success);
+    }
+
+    [Fact]
+    public async Task PlacementTestService_StartOrResumeSessionAsync_SetsNullScenarioLevelConfigurationId()
+    {
+        // Arrange: DB hoàn toàn không có ScenarioLevelConfiguration nào vẫn phải tạo được phiên PlacementTest
+        using var dbContext = CreateInMemoryDbContext();
+        var user = new ApplicationUser { Id = "user-pt-null-fk", PlacementTestStatus = "NotStarted" };
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync();
+
+        var engine = new PlacementAssessmentEngine(
+            new Mock<IAiClient>().Object,
+            new VietnameseLearnerErrorDetector(),
+            new Mock<ILogger<PlacementAssessmentEngine>>().Object);
+
+        var ptService = new PlacementTestService(
+            dbContext,
+            engine,
+            new Mock<ILogger<PlacementTestService>>().Object);
+
+        // Act
+        var result = await ptService.StartOrResumeSessionAsync(user.Id);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+
+        var session = await dbContext.RoleplaySessions.FindAsync(result.Data!.SessionId);
+        Assert.NotNull(session);
+        Assert.Equal("PlacementTest", session!.SessionType);
+        Assert.Null(session.ScenarioLevelConfigurationId);
+        Assert.Equal(0, session.CreditDeducted);
+    }
 }
 
 

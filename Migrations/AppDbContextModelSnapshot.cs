@@ -1921,7 +1921,7 @@ namespace JCAP.Migrations
                     b.Property<bool>("IsNaturallyConcluded")
                         .HasColumnType("bit");
 
-                    b.Property<int>("ScenarioLevelConfigurationId")
+                    b.Property<int?>("ScenarioLevelConfigurationId")
                         .HasColumnType("int");
 
                     b.Property<string>("SessionType")
@@ -3441,8 +3441,7 @@ namespace JCAP.Migrations
                     b.HasOne("JCAP.Models.ScenarioLevelConfiguration", "ScenarioLevelConfiguration")
                         .WithMany("RoleplaySessions")
                         .HasForeignKey("ScenarioLevelConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("JCAP.Models.ApplicationUser", "User")
                         .WithMany()

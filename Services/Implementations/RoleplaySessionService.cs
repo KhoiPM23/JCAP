@@ -86,7 +86,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 .ThenInclude(c => c!.Scenario)
             .Include(s => s.SessionMissions)
             .Include(s => s.Messages)
-            .Where(s => s.UserId == userId && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
+            .Where(s => s.UserId == userId && s.SessionType != "PlacementTest" && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -133,7 +133,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         // Kiểm tra xem đã có phiên dở dang nào của Scenario này (bất kể level nào)
         var existingActiveSession = await _dbContext.RoleplaySessions
             .Include(s => s.ScenarioLevelConfiguration)
-            .Where(s => s.UserId == userId && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
+            .Where(s => s.UserId == userId && s.SessionType != "PlacementTest" && s.Status == "Active" && s.ScenarioLevelConfiguration!.ScenarioId == scenarioId)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -394,7 +394,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Include(s => s.SessionMissions)
                 .ThenInclude(sm => sm.Mission)
             .Include(s => s.Messages)
-            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.SessionType != "PlacementTest", cancellationToken);
 
         if (session == null)
         {
@@ -544,7 +544,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Include(s => s.SessionMissions)
                 .ThenInclude(sm => sm.Mission)
             .Include(s => s.Messages)
-            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.SessionType != "PlacementTest", cancellationToken);
 
         if (session == null)
         {
@@ -1258,7 +1258,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .Include(s => s.SessionMissions)
                 .ThenInclude(sm => sm.Mission)
             .Include(s => s.Messages)
-            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.SessionType != "PlacementTest", cancellationToken);
 
         if (session == null || session.ScenarioLevelConfiguration?.Scenario == null)
         {
@@ -1291,7 +1291,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         CancellationToken cancellationToken = default)
     {
         var session = await _dbContext.RoleplaySessions
-            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == sessionId && s.SessionType != "PlacementTest", cancellationToken);
 
         if (session == null)
         {
@@ -1532,14 +1532,14 @@ public class RoleplaySessionService : IRoleplaySessionService
         var profile = await _telemetryEvaluator.GetOrCreateProfileAsync(userId);
 
         int totalSessions = await _dbContext.RoleplaySessions
-            .CountAsync(s => s.UserId == userId && s.Status == "Completed", cancellationToken);
+            .CountAsync(s => s.UserId == userId && s.SessionType != "PlacementTest" && s.Status == "Completed", cancellationToken);
 
         int totalTurns = await _dbContext.LearnerBehaviorSignals
             .Join(_dbContext.RoleplaySessions, sig => sig.SessionId, ses => ses.Id, (sig, ses) => new { sig, ses })
-            .CountAsync(x => x.ses.UserId == userId, cancellationToken);
+            .CountAsync(x => x.ses.UserId == userId && x.ses.SessionType != "PlacementTest", cancellationToken);
 
         DateTime? lastPracticed = await _dbContext.RoleplaySessions
-            .Where(s => s.UserId == userId && s.CompletedAt != null)
+            .Where(s => s.UserId == userId && s.SessionType != "PlacementTest" && s.CompletedAt != null)
             .OrderByDescending(s => s.CompletedAt)
             .Select(s => s.CompletedAt)
             .FirstOrDefaultAsync(cancellationToken);

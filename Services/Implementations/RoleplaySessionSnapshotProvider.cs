@@ -25,7 +25,7 @@ namespace JCAP.Services.Implementations
 
             return await _dbContext.RoleplaySessions
                 .AsNoTracking()
-                .Where(session => session.Id == sessionId && session.UserId == userId)
+                .Where(session => session.Id == sessionId && session.UserId == userId && session.SessionType != "PlacementTest")
                 .Select(session => new RoleplaySessionSnapshot
                 {
                     SessionId = session.Id,
