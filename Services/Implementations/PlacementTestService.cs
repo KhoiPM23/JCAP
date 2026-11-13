@@ -59,7 +59,8 @@ namespace JCAP.Services.Implementations
                 InitialProficiencySnapshotJson = user.InitialProficiencySnapshotJson,
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka (田中 様)"
+                    GuestName = "Tanaka",
+                    ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             };
 
@@ -128,7 +129,8 @@ namespace JCAP.Services.Implementations
                         MessageHistory = history,
                         ContextPackage = new HotelContextPackageDto
                         {
-                            GuestName = "Tanaka (田中 様)"
+                            GuestName = "Tanaka",
+                    ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                         },
                         EventSummaries = existingState.EventSummaries
                     }, "Tiếp tục bài kiểm tra xếp lớp đang dở.");
@@ -220,7 +222,8 @@ namespace JCAP.Services.Implementations
                 MessageHistory = [openingDto],
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka (田中 様)"
+                    GuestName = "Tanaka",
+                    ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             }, "Bắt đầu bài kiểm tra xếp lớp thành công.");
         }
@@ -395,6 +398,7 @@ namespace JCAP.Services.Implementations
                 GrammarAccuracyScore = outcome.GrammarAccuracyScore,
                 VocabularyRangeScore = outcome.VocabularyRangeScore,
                 PragmaticsScore = outcome.PragmaticsScore,
+                OverallTurnScore = outcome.OverallTurnScore,
                 EvidenceNote = outcome.EvidenceNote,
                 EstimatedLevelSoFar = updatedState.CurrentDifficultyBand,
                 EventSummaries = updatedState.EventSummaries
@@ -513,6 +517,15 @@ namespace JCAP.Services.Implementations
             var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
                 ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
                 : new PlacementAssessmentState();
+
+            foreach (var turn in state.TurnEvidences)
+            {
+                turn.OverallTurnScore ??= PlacementAssessmentEngine.ComputeTurnOverallScore(
+                    turn.TaskFulfillmentScore,
+                    turn.GrammarAccuracyScore,
+                    turn.VocabularyRangeScore,
+                    turn.PragmaticsScore);
+            }
 
             var finalResult = _engine.ComputeFinalResult(session.Id, state);
 

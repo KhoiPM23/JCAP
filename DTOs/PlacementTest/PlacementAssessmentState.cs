@@ -10,6 +10,7 @@ namespace JCAP.DTOs.PlacementTest
         public string CurrentDifficultyBand { get; set; } = "N4"; // Bậc độ khó câu thoại AI: "N5" | "N4" | "N3"
         public int CurrentEventScaffoldingStep { get; set; } = 0; // 0 = Bình thường, 1 = Diễn đạt lại đơn giản, 2 = Gợi mở ngắn
         public int CurrentEventStayCount { get; set; } = 0; // Số lượt đã ở tại Event hiện tại
+        public string? PreferredAiModel { get; set; } // Model Gemini đang hoạt động ổn định cho phiên hiện tại (sticky fallback)
 
         public bool ReservationConfirmed { get; set; } = false;
         public string AssignedRoom { get; set; } = "Standard_512_NearElevator";
@@ -46,8 +47,10 @@ namespace JCAP.DTOs.PlacementTest
         public int GrammarAccuracyScore { get; set; }
         public int VocabularyRangeScore { get; set; }
         public int PragmaticsScore { get; set; }
+        public int? OverallTurnScore { get; set; }
         public SpeechDeliveryReferenceDto? SpeechDeliveryReference { get; set; } // Nullable (BR-PT-23)
         public List<string> DetectedRuleErrorCodes { get; set; } = [];
+        public PlacementTurnObservableEvidence? ObservableEvidence { get; set; }
         public string EvidenceNote { get; set; } = string.Empty;
     }
 
@@ -81,13 +84,14 @@ namespace JCAP.DTOs.PlacementTest
     public sealed class HotelContextPackageDto
     {
         public string HotelName { get; set; } = "ホテルさくら (Hotel Sakura)";
-        public string GuestName { get; set; } = "Tanaka (田中)";
+        public string GuestName { get; set; } = "Tanaka";
         public string BookingDates { get; set; } = "11月10日 ～ 11月13日 (3泊)";
-        public string BookedRoomType { get; set; } = "Standard Room (18m², 1 giường đơn)";
-        public string SpecialRequest { get; set; } = "静かな部屋を希望 (Ưu tiên phòng yên tĩnh)";
+        public string BookedRoomType { get; set; } = "Standard Room";
+        public string SpecialRequest { get; set; } = "Ưu tiên phòng yên tĩnh";
         public string BreakfastPolicy { get; set; } = "Chưa bao gồm (1,500円/người/ngày, phục vụ 7:00 – 10:00)";
         public string CheckInTime { get; set; } = "15:00";
         public string CheckOutTime { get; set; } = "11:00";
+        public int ReceptionistSpeakerId { get; set; } = 14;
         public List<HotelRoomOptionDto> RoomOptions { get; set; } =
         [
             new()
@@ -95,7 +99,7 @@ namespace JCAP.DTOs.PlacementTest
                 Code = "Standard",
                 Name = "Standard Room (18m²)",
                 BedType = "1 Giường đơn",
-                Status = "Đã xếp Phòng 512 (Cạnh thang máy - Có thể ồn)",
+                Status = "Đã xếp Phòng 512",
                 SurchargePerNight = 0,
                 IsAvailable = true
             },
@@ -118,6 +122,20 @@ namespace JCAP.DTOs.PlacementTest
                 IsAvailable = false
             }
         ];
+    }
+
+    /// <summary>
+    /// Các thuộc tính bằng chứng ngôn ngữ quan sát được (theo chuẩn JF Standard &amp; Dekiru Nihongo)
+    /// do AI trích xuất để Backend C# tự tính điểm tất định (Approach C).
+    /// </summary>
+    public sealed class PlacementTurnObservableEvidence
+    {
+        public string TaskAchievement { get; set; } = "Fulfilled_Core"; // Exceeded_ProactiveDetail | Fulfilled_Core | Partial_IncompleteInfo | Unfulfilled_Unclear
+        public string SentenceStructure { get; set; } = "Simple_CompleteClause"; // Complex_MultiClause | Compound_LinkedClause | Simple_CompleteClause | Fragment_WordOnly
+        public string GrammarErrorSeverity { get; set; } = "NoError"; // NoError | MinorSlip_MeaningIntact | MajorError_MeaningAffected
+        public List<string> GrammarErrors { get; set; } = [];
+        public string LexicalUsage { get; set; } = "Adequate_StandardTopic"; // Rich_SituationalSpecific | Adequate_StandardTopic | Basic_Minimal | Inaccurate_WrongWord
+        public string PolitenessRegister { get; set; } = "Standard_Teineigo"; // Advanced_KeigoOrCushioned | Standard_Teineigo | Inconsistent_Mixed | Abrupt_Casual
     }
 
     public sealed class HotelRoomOptionDto

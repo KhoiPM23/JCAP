@@ -79,6 +79,7 @@ namespace JCAP.DTOs.PlacementTest
         public int? GrammarAccuracyScore { get; set; }
         public int? VocabularyRangeScore { get; set; }
         public int? PragmaticsScore { get; set; }
+        public int? OverallTurnScore { get; set; }
         public string? EvidenceNote { get; set; }
         public string? EstimatedLevelSoFar { get; set; }
         public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
