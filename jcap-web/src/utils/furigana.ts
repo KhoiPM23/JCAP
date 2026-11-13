@@ -9,16 +9,3 @@ export function matchingFurigana(text: string, segments: readonly FuriganaSegmen
   const norm = (s: string) => s.normalize('NFKC').replace(/[\s　]/g, '');
   return norm(segments.map((s) => s.text).join('')) === norm(text) ? [...segments] : null;
 }
-
-/** Tốc độ phát giọng mẫu cho phép (1 = bình thường). */
-export const REFERENCE_RATES = [0.75, 0.9, 1] as const;
-export const REFERENCE_RATE_KEY = 'jcap.shadowing.referenceRate';
-
-export function readReferenceRate(storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): number {
-  try {
-    const value = Number(storage?.getItem(REFERENCE_RATE_KEY));
-    return (REFERENCE_RATES as readonly number[]).includes(value) ? value : 1;
-  } catch {
-    return 1;
-  }
-}

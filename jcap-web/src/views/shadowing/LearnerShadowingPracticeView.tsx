@@ -41,7 +41,7 @@ import {
 import { serverToLocalProgress, suggestedIndexFromLocal } from '../../utils/shadowingProgressSync';
 import RecordingReviewBar from '../../components/shadowing/RecordingReviewBar';
 import SessionSummaryPanel from '../../components/shadowing/SessionSummaryPanel';
-import { REFERENCE_RATES, REFERENCE_RATE_KEY, matchingFurigana, readReferenceRate } from '../../utils/furigana';
+import { matchingFurigana } from '../../utils/furigana';
 import type {
   FuriganaSegment,
   ShadowingEvaluationDimensions,
@@ -332,19 +332,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Furigana (Cài đặt > Khi luyện tập > Hiện furigana) lấy từ dữ liệu câu mẫu tính sẵn ở backend; câu chưa có dữ liệu hiện chữ thường
   const showFurigana = getPracticePrefs().furigana;
   const [furiganaMap, setFuriganaMap] = useState<Map<number, FuriganaSegment[]>>(new Map());
-  // Tốc độ giọng mẫu (VOICEVOX / audio mẫu / giọng trình duyệt); bản ghi của người học luôn phát đúng tốc độ
-  const [referenceRate, setReferenceRate] = useState<number>(() => readReferenceRate());
-  const referenceRateRef = useRef<number>(referenceRate);
-  referenceRateRef.current = referenceRate;
-  const changeReferenceRate = (rate: number) => {
-    setReferenceRate(rate);
-    try {
-      localStorage.setItem(REFERENCE_RATE_KEY, String(rate));
-    } catch {
-      // không lưu được: vẫn dùng trong phiên
-    }
-    if (audioPlayerRef.current) audioPlayerRef.current.playbackRate = rate;
-  };
   const isTranslationShown = (sentenceId: number) => showTranslations[sentenceId] ?? translationDefault;
 
   // Synchronization refs to avoid stale closure races and unwanted auto-play
@@ -822,7 +809,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
-      utterance.rate = referenceRateRef.current;
+      utterance.rate = 1.0;
       const voices = window.speechSynthesis.getVoices();
       const jpVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
       if (jpVoice) utterance.voice = jpVoice;
@@ -870,7 +857,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
 
       const audio = new Audio(audioUrl);
-      audio.playbackRate = referenceRateRef.current;
       await routeToSelectedOutput(audio);
       if (expectedTurnId !== undefined && expectedTurnId !== turnIdRef.current) return;
       audioPlayerRef.current = audio;
@@ -921,7 +907,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
     if (url && url.startsWith('http')) {
       const audio = new Audio(url);
-      audio.playbackRate = referenceRateRef.current;
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 
@@ -1505,7 +1490,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
         durationMs: take.metrics.durationMs,
         analysisWav: take.analysisWav,
         referenceSpeakerId: selectedVoiceVoxIdRef.current,
-        referencePlaybackRate: referenceRateRef.current,
         progressId: serverProgressRef.current?.status === 'in_progress' ? serverProgressRef.current.id : null,
         clientSubmissionId: take.submissionId,
         signal: controller.signal,
@@ -1974,16 +1958,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           <JIcon name="expand_more" size={16} />
         </label>
         <div className="flex-auto" />
-        <label className="jx-rm-lv" title="Tốc độ phát giọng mẫu">
-          <select aria-label="Tốc độ giọng mẫu" value={referenceRate} onChange={(e) => changeReferenceRate(Number(e.target.value))}>
-            {REFERENCE_RATES.map((r) => (
-              <option key={r} value={r}>
-                {r === 1 ? 'Tốc độ 1×' : `Chậm ${r}×`}
-              </option>
-            ))}
-          </select>
-          <JIcon name="expand_more" size={16} />
-        </label>
         <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
 

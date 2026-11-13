@@ -92,7 +92,7 @@ Mỗi chiều: `status` (`COMPLETED` · `UNAVAILABLE` · `FAILED`), `score`, `re
 Bốn lớp:
 1. **Số đo người học**: thời lượng, im lặng đầu/cuối, khoảng nói, thời gian có tiếng, số chỗ ngừng (≥ 250 ms), tổng/dài nhất, tỷ lệ ngừng,
    danh sách chỗ ngừng, tốc độ nói và tốc độ phát âm (mora/giây), **nói liền trung bình** (`meanRunMs`, `meanRunMoras`).
-2. **Số đo giọng mẫu** (`reference`): cùng chỉ số, đã quy đổi theo **tốc độ người học nghe mẫu** (`playbackRate`, vd. 0.75).
+2. **Số đo giọng mẫu** (`reference`): cùng chỉ số, quy đổi theo tốc độ người học nghe mẫu nếu được gửi (`playbackRate`; trang luyện hiện không còn ô chỉnh tốc độ nên luôn là 1).
 3. **So sánh** (`comparison`, chỉ khi nội dung ≥ 70, số âm khớp 80–125%, đủ dài, có giọng mẫu):
    `articulationRateRatio` / `speakingRateRatio` = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn), số chỗ ngừng hai bên,
    `extraPauseCount` (ngừng ≥ 400 ms ở giữa câu mà mẫu không ngừng), `hesitationCount` (ngừng **giữa một từ**).
