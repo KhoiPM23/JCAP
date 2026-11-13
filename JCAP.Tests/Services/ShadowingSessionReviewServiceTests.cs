@@ -220,6 +220,41 @@ public class ShadowingSessionReviewServiceTests
         Assert.Null(ShadowingSessionReviewService.BuildFluencySummary(new()));
     }
 
+    [Theory]
+    [InlineData(0.4, "chậm hơn giọng mẫu rất nhiều")]
+    [InlineData(0.59, "chậm hơn giọng mẫu khá nhiều")]
+    [InlineData(0.85, "hơi chậm hơn giọng mẫu")]
+    [InlineData(1.0, "gần bằng giọng mẫu")]
+    [InlineData(1.6, "nhanh hơn giọng mẫu (không phải lỗi)")]
+    public void Speed_IsDescribedInPlainWords(double ratio, string words) =>
+        Assert.Equal(words, ShadowingSessionReviewService.SpeedInWords(ratio));
+
+    [Fact]
+    public void FluencySummary_CarriesPlainWordDescriptions()
+    {
+        var s = ShadowingSessionReviewService.BuildFluencySummary(new()
+        {
+            new() { RateRatio = 0.59, ExtraPauseCount = 2, HesitationCount = 1, MeanRunMoras = 5, ReferenceMeanRunMoras = 10 },
+        })!;
+        Assert.Equal("chậm hơn giọng mẫu khá nhiều", s.SpeedInWords);
+        Assert.Equal("hay ngắt câu thành các đoạn ngắn hơn giọng mẫu", s.ContinuityInWords);
+        Assert.Equal("dừng 2 lần ở chỗ giọng mẫu không dừng, trong đó 1 lần dừng ngay giữa một từ", s.PausesInWords);
+    }
+
+    [Fact]
+    public void TechnicalFieldNames_AreRemovedFromTheReview()
+    {
+        // Ảnh chụp thật: "Tốc độ nói trung bình (medianRateRatio) chỉ đạt ..."
+        Assert.Equal("Tốc độ nói trung bình chỉ đạt mức chậm.",
+            ShadowingSessionReviewService.StripTechnicalTerms("Tốc độ nói trung bình (medianRateRatio) chỉ đạt mức chậm."));
+        Assert.Equal("Bạn có 2 chỗ dừng thừa.", ShadowingSessionReviewService.StripTechnicalTerms("Bạn có 2 extraPauses chỗ dừng thừa."));
+        Assert.Equal("Đọc 「エクスプレス」 liền hơn.", ShadowingSessionReviewService.StripTechnicalTerms("Đọc 「エクスプレス」 liền hơn."));
+    }
+
+    [Fact]
+    public void Prompt_ForbidsNumbersAndFieldNamesInTheText() =>
+        Assert.Contains("TUYỆT ĐỐI không đưa vào câu chữ", ShadowingSessionReviewService.SystemInstruction);
+
     [Fact]
     public void FluencySnapshot_OnlyWhenComparedWithTheReference()
     {

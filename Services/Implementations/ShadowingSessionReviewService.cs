@@ -54,8 +54,8 @@ namespace JCAP.Services.Implementations
             Bạn KHÔNG nghe được audio; chỉ dùng dữ liệu JSON do hệ thống đo:
             - pronunciationPatterns: các kiểu lỗi âm hệ thống phát hiện, đã gom và đếm trên mọi lần chấm của buổi (vd. 「く」 đọc thành 「ぐ」 ×3), kèm từ ví dụ.
               Lỗi âm được suy ra từ chữ bộ nhận dạng viết ra nên có thể bỏ sót; KHÔNG kết luận "phát âm hoàn hảo".
-            - fluencySummary: nhịp nói cả buổi so với giọng mẫu: medianRateRatio = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn),
-              tổng chỗ ngừng thừa (ngừng ≥ 0,4 giây ở chỗ mẫu không ngừng), tổng lần ngập ngừng giữa một từ, số âm nói liền trung bình so với mẫu.
+            - fluencySummary: nhịp nói cả buổi so với giọng mẫu, đã có sẵn câu mô tả bằng lời (speedInWords, continuityInWords, pausesInWords)
+              và số liệu gốc chỉ để bạn hiểu (không viết lại các số này): tốc độ người học / mẫu, chỗ ngừng thừa, ngập ngừng giữa từ, số âm nói liền.
             - sentences[]: từng câu (lần tốt nhất): câu mẫu, điểm nội dung, số lần thử, câu nghe được, wordIssues, fluency chi tiết nếu có.
             Nhiệm vụ: chỉ ra ĐÚNG những vấn đề quan trọng nhất về Phát âm và Lưu loát, đi vào thói quen gây ra lỗi.
             Quy tắc:
@@ -69,6 +69,10 @@ namespace JCAP.Services.Implementations
             6. Ngắn gọn: summary và priority mỗi cái 1 câu; verdict 1 câu; title ≤ 10 từ; evidence và fix mỗi cái 1 câu ≤ 30 từ.
                Không chào hỏi, không khen chung chung, không lặp ý giữa các mục.
             7. Tiếng Việt, xưng "bạn". Chữ tiếng Nhật đặt trong 「」.
+            8. Viết bằng lời thường cho người học đọc. TUYỆT ĐỐI không đưa vào câu chữ: tên trường dữ liệu (vd. medianRateRatio, extraPauses),
+               tỷ lệ, số thập phân, phần trăm, mili giây, giây, "mora". Về nhịp nói dùng các câu mô tả có sẵn trong fluencySummary
+               (speedInWords, continuityInWords, pausesInWords). Bằng chứng là câu hoặc từ cụ thể, có thể kèm số lần đếm được
+               (vd. "dừng giữa từ 「成田」 2 lần", "「く」 bị đọc thành 「ぐ」 ở 「エクスプレス」 và 「くつ」").
             Trả về đúng một JSON object:
             {"summary": "kết luận chính",
              "priority": "một việc nên luyện ngay",
@@ -154,6 +158,10 @@ namespace JCAP.Services.Implementations
             public double? AverageReferenceMeanRunMoras { get; set; }
             public int? LongestPauseMs { get; set; }
             public int? MedianLeadingSilenceMs { get; set; }
+            /// <summary>Mô tả bằng lời (backend tính từ số liệu) để AI dùng thay cho con số.</summary>
+            public string SpeedInWords { get; set; } = string.Empty;
+            public string? ContinuityInWords { get; set; }
+            public string PausesInWords { get; set; } = string.Empty;
         }
 
         internal sealed class SentencePayload
@@ -262,7 +270,7 @@ namespace JCAP.Services.Implementations
                 var v = values.ToList();
                 return v.Count == 0 ? null : Math.Round(v.Average(), 1);
             }
-            return new FluencySummary
+            var summary = new FluencySummary
             {
                 SentencesMeasured = items.Count,
                 MedianRateRatio = Median(items.Where(i => i.RateRatio.HasValue).Select(i => i.RateRatio!.Value)),
@@ -275,7 +283,36 @@ namespace JCAP.Services.Implementations
                 MedianLeadingSilenceMs = Median(items.Where(i => i.LeadingSilenceMs.HasValue).Select(i => (double)i.LeadingSilenceMs!.Value)) is { } m
                     ? (int)Math.Round(m) : null,
             };
+            summary.SpeedInWords = SpeedInWords(summary.MedianRateRatio);
+            summary.ContinuityInWords = ContinuityInWords(summary.AverageMeanRunMoras, summary.AverageReferenceMeanRunMoras);
+            summary.PausesInWords = PausesInWords(summary.ExtraPauses, summary.Hesitations);
+            return summary;
         }
+
+        /// <summary>Tốc độ so với giọng mẫu bằng lời (người bản xứ thường nói nhanh hơn giọng mẫu nên nhanh hơn không phải lỗi).</summary>
+        internal static string SpeedInWords(double? ratio) => ratio switch
+        {
+            null => "chưa đo được tốc độ",
+            < 0.55 => "chậm hơn giọng mẫu rất nhiều",
+            < 0.75 => "chậm hơn giọng mẫu khá nhiều",
+            < 0.9 => "hơi chậm hơn giọng mẫu",
+            <= 1.15 => "gần bằng giọng mẫu",
+            _ => "nhanh hơn giọng mẫu (không phải lỗi)",
+        };
+
+        internal static string? ContinuityInWords(double? learner, double? reference)
+        {
+            if (learner is not { } l || reference is not { } r || r <= 0) return null;
+            var share = l / r;
+            return share >= 0.8 ? "nói liền mạch gần như giọng mẫu"
+                : share >= 0.5 ? "hay ngắt câu thành các đoạn ngắn hơn giọng mẫu"
+                : "thường ngắt quãng sau vài âm, trong khi giọng mẫu đọc liền cả cụm";
+        }
+
+        internal static string PausesInWords(int extraPauses, int hesitations) =>
+            extraPauses == 0 ? "không dừng ở chỗ giọng mẫu không dừng"
+            : hesitations > 0 ? $"dừng {extraPauses} lần ở chỗ giọng mẫu không dừng, trong đó {hesitations} lần dừng ngay giữa một từ"
+            : $"dừng {extraPauses} lần ở chỗ giọng mẫu không dừng (giữa các cụm từ)";
 
         private static List<ShadowingDiffTokenDto> ReadTokens(string? json)
         {
@@ -313,6 +350,19 @@ namespace JCAP.Services.Implementations
             public string? Fix { get; set; }
         }
 
+        private static readonly System.Text.RegularExpressions.Regex TechnicalInParens =
+            new(@"\s*\(\s*[a-z]+[A-Z][A-Za-z]*\s*\)", System.Text.RegularExpressions.RegexOptions.Compiled);
+        private static readonly System.Text.RegularExpressions.Regex TechnicalWord =
+            new(@"\b[a-z]+[A-Z][A-Za-z]*\b", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        /// <summary>Lưới an toàn: bỏ tên trường dữ liệu kiểu camelCase (vd. "(medianRateRatio)") nếu AI lỡ viết vào câu cho người học.</summary>
+        internal static string StripTechnicalTerms(string text)
+        {
+            var t = TechnicalInParens.Replace(text, string.Empty);
+            t = TechnicalWord.Replace(t, string.Empty);
+            return System.Text.RegularExpressions.Regex.Replace(t, @"\s{2,}", " ").Replace(" .", ".").Replace(" ,", ",").Trim();
+        }
+
         internal static ShadowingSessionAiReviewDto? Parse(string content)
         {
             var text = content.Trim();
@@ -332,7 +382,7 @@ namespace JCAP.Services.Implementations
 
             static string Clip(string? s)
             {
-                var t = (s ?? string.Empty).Trim();
+                var t = StripTechnicalTerms((s ?? string.Empty).Trim());
                 return t.Length > MaxTextLength ? t[..MaxTextLength] + "…" : t;
             }
             static ShadowingAiReviewSectionDto Section(RawSection s) => new()
