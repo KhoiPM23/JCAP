@@ -134,6 +134,8 @@ builder.Services.AddHttpClient<VoiceVoxKanaReader>();
 builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
+builder.Services.AddScoped<PlacementAssessmentEngine>();
+builder.Services.AddScoped<IPlacementTestService, PlacementTestService>();
 builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
 builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
 builder.Services.AddSingleton<IEventDirector, EventDirector>();

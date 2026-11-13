@@ -245,7 +245,7 @@ class ScenarioVoiceService {
     }
 
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 25000);
       // Kiểm tra request có bị hủy hoặc bị thay thế bởi request mới hơn trong lúc fetch mạng không
       if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {
         return;
@@ -258,7 +258,7 @@ class ScenarioVoiceService {
         if (!this.isSpeechCancelled && playSessionId === this.currentPlaySessionId) {
           onStart?.();
           if (onViseme) {
-            const visemes = voicevoxService.getVisemes(text, resolvedVoiceId);
+            const visemes = voicevoxService.getVisemes(cleanText, resolvedVoiceId);
             if (visemes && visemes.length > 0) {
               const step = () => {
                 if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {

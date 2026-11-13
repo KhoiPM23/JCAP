@@ -105,6 +105,20 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(10)
                     .HasDefaultValue("N5");
+
+                entity.Property(e => e.PlacementTestStatus)
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasDefaultValue("NotStarted");
+
+                entity.Property(e => e.HasSeenPlacementPrompt)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.InitialEstimatedLevel)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.InitialConfidenceTier)
+                    .HasMaxLength(20);
             });
 
             // CreditPackage configuration
@@ -504,6 +518,11 @@ namespace JCAP.Data
                     .IsRequired()
                     .HasMaxLength(20)
                     .HasDefaultValue("Active");
+
+                entity.Property(e => e.SessionType)
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .HasDefaultValue("Standard");
 
                 entity.HasIndex(e => new { e.UserId, e.ScenarioLevelConfigurationId, e.Status });
 
