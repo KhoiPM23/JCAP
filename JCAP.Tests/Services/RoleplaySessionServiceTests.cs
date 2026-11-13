@@ -565,5 +565,194 @@ public class RoleplaySessionServiceTests
         // Assert: Phiên tạo thành công, không bị chặn bởi phí khởi tạo
         Assert.True(result.Success);
     }
+
+    [Fact]
+    public async Task SendMessageAsync_TracksEventsAcrossTurns_AndEnforcesCooldown()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var (scenario, levelConfig, mission1) = SeedBasicScenario(dbContext);
+
+        // Add extra missions so scenario doesn't end early
+        var mission2 = new Mission
+        {
+            Id = 101,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Content = "Hỏi giá tiền",
+            Order = 2,
+            CompletionCriteriaJson = "{\"intent\":\"AskPrice\"}",
+            ScenarioLevelConfiguration = levelConfig
+        };
+        var mission3 = new Mission
+        {
+            Id = 102,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Content = "Thanh toán",
+            Order = 3,
+            CompletionCriteriaJson = "{\"intent\":\"Pay\"}",
+            ScenarioLevelConfiguration = levelConfig
+        };
+        dbContext.Missions.AddRange(mission2, mission3);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-cooldown-test",
+            CreditBalance = 100
+        };
+
+        var session = new RoleplaySession
+        {
+            Id = 500,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active",
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.RoleplaySessions.Add(session);
+        dbContext.RoleplaySessionMissions.AddRange(
+            new RoleplaySessionMission { RoleplaySessionId = 500, MissionId = mission1.Id, IsCompleted = false },
+            new RoleplaySessionMission { RoleplaySessionId = 500, MissionId = mission2.Id, IsCompleted = false },
+            new RoleplaySessionMission { RoleplaySessionId = 500, MissionId = mission3.Id, IsCompleted = false }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<string?>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Scenario s, ScenarioLevelConfiguration c, List<RoleplayMessage> h, string u, List<Mission> m, string? dir, CancellationToken ct) =>
+                new AiTurnResult
+                {
+                    JapaneseReply = "かしこまりました。",
+                    VietnameseMeaning = "Tôi hiểu rồi.",
+                    FuriganaHtml = "かしこまりました。",
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Good",
+                        Summary = "Rất tốt"
+                    }
+                });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // Turn 1: No event (Timing guard: first 2 turns blocked)
+        var t1 = await service.SendMessageAsync(user.Id, 500, new SendRoleplayMessageRequestDto { Message = "こんにちは" });
+        Assert.Null(t1.Data!.ActiveBranchingEventCode);
+
+        // Turn 2: No event (Timing guard)
+        var t2 = await service.SendMessageAsync(user.Id, 500, new SendRoleplayMessageRequestDto { Message = "メニューを見せてください" });
+        Assert.Null(t2.Data!.ActiveBranchingEventCode);
+
+        // Turn 3: Event triggers!
+        var t3 = await service.SendMessageAsync(user.Id, 500, new SendRoleplayMessageRequestDto { Message = "とんこつラーメンをください" });
+        Assert.NotNull(t3.Data!.ActiveBranchingEventCode);
+        var eventCode = t3.Data.ActiveBranchingEventCode;
+
+        // Turn 4: Cooldown guard prevents another event (turnsSinceLastEvent = 1 < 3)
+        var t4 = await service.SendMessageAsync(user.Id, 500, new SendRoleplayMessageRequestDto { Message = "じゃあ醤油ラーメンにします" });
+        Assert.Null(t4.Data!.ActiveBranchingEventCode);
+
+        // Turn 5: Cooldown guard still prevents (turnsSinceLastEvent = 2 < 3)
+        var t5 = await service.SendMessageAsync(user.Id, 500, new SendRoleplayMessageRequestDto { Message = "いくらですか？" });
+        Assert.Null(t5.Data!.ActiveBranchingEventCode);
+    }
+
+    [Fact]
+    public async Task EndSessionAsync_PersistsEpisodicFactsToLearnerMemory_AndUpdatesCharacterMemory()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        var (scenario, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-memory-test",
+            CreditBalance = 100
+        };
+
+        var session = new RoleplaySession
+        {
+            Id = 600,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active",
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.RoleplaySessions.Add(session);
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 600,
+            MissionId = mission.Id,
+            IsCompleted = true
+        });
+
+        // Add user messages containing memorable personal facts
+        dbContext.RoleplayMessages.AddRange(
+            new RoleplayMessage
+            {
+                RoleplaySessionId = 600,
+                Sender = "User",
+                JapaneseText = "私はダナン出身です。とんこつラーメンが好きです。"
+            },
+            new RoleplayMessage
+            {
+                RoleplaySessionId = 600,
+                Sender = "Ai",
+                JapaneseText = "ダナンは綺麗な街ですね！"
+            }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        var factExtractorMock = new Mock<IEpisodicFactExtractor>();
+        factExtractorMock.Setup(f => f.ExtractFact(It.Is<string>(s => s.Contains("ラーメン"))))
+            .Returns("favorite_ramen:tonkotsu");
+
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            loggerMock.Object,
+            new Mock<IVietnameseLearnerErrorDetector>().Object,
+            new Mock<ITelemetryEvaluatorService>().Object,
+            new Mock<IPersonaMemoryService>().Object,
+            factExtractor: factExtractorMock.Object);
+
+        // Act
+        var result = await service.EndSessionAsync(user.Id, 600);
+
+        // Assert
+        Assert.True(result.Success);
+
+        // Verify LearnerMemories table has persisted facts
+        var memories = await dbContext.LearnerMemories
+            .Where(lm => lm.UserId == user.Id)
+            .ToListAsync();
+        Assert.NotEmpty(memories);
+        var ramenMem = memories.FirstOrDefault(m => m.Key == "favorite_ramen");
+        Assert.NotNull(ramenMem);
+        Assert.Equal("tonkotsu", ramenMem!.Value);
+        Assert.Equal("FoodPreference", ramenMem.Category);
+
+        // Verify CharacterMemory has recorded the encounter
+        var charMem = await dbContext.CharacterMemories
+            .FirstOrDefaultAsync(cm => cm.UserId == user.Id && cm.CharacterPersonaKey == scenario.ScenarioCode);
+        Assert.NotNull(charMem);
+        Assert.Equal(1, charMem!.EncounterCount);
+        Assert.True(charMem.AffinityScore > 0);
+    }
 }
+
 

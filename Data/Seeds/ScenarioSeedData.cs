@@ -46,12 +46,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "ラーメン", Reading = "らーめん", Meaning = "Mì Ramen" },
-                                new TargetVocabulary { Word = "水", Reading = "みず", Meaning = "Nước lọc" }
+                                new TargetVocabulary { Word = "豚骨ラーメン", Reading = "とんこつらーめん", Meaning = "Mì Ramen xương heo (Tonkotsu ramen) • N5 [Danh từ] • Món mì nổi tiếng với nước hầm xương đậm đà" },
+                                new TargetVocabulary { Word = "お冷", Reading = "おひや", Meaning = "Nước lọc đá miễn phí (Ohiya) • N5 [Danh từ] • Phục vụ miễn phí tại quầy ăn Nhật Bản" },
+                                new TargetVocabulary { Word = "一人", Reading = "ひとり", Meaning = "Một người / Đi một mình (Hitori) • N5 [Danh từ/Phó từ] • Dùng báo số lượng khách: 一人です" },
+                                new TargetVocabulary { Word = "カウンター席", Reading = "かうんたーせき", Meaning = "Ghế quầy bar (Counter seki) • N5 [Danh từ] • Dãy ghế ngồi đối diện khu bếp nấu ramen" },
+                                new TargetVocabulary { Word = "ごちそうさま", Reading = "ごちそうさま", Meaning = "Cảm ơn bữa ăn ngon (Gochisousama) • N5 [Thành ngữ] • Lời chào cảm ơn lễ phép khi ăn xong ra về" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～をお願いします", Meaning = "Cho tôi xin / Cho tôi gọi...", ExampleSentence = "豚骨ラーメンをお願いします。" }
+                                new TargetGrammar { Pattern = "～をお願いします", Meaning = "Cho tôi xin... / Làm ơn cho tôi... [N + をお願いします] (Lịch sự - Teineigo, gọi món chuẩn mực)", ExampleSentence = "豚骨ラーメンをお願いします。（とんこつらーめんをおねがいします - Cho tôi một bát mì Tonkotsu Ramen ạ.）" },
+                                new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...giá bao nhiêu tiền? [N + はいくらですか] (Nghi vấn từ hỏi giá tiền cơ bản)", ExampleSentence = "このラーメンはいくらですか。（このらーめんはいくらですか - Bát mì ramen này giá bao nhiêu tiền vậy ạ?）" },
+                                new TargetGrammar { Pattern = "～を［số lượng］ください", Meaning = "Cho tôi xin [số lượng]... [N + を + số lượng + ください] (Mẫu gọi số lượng món ăn trực tiếp)", ExampleSentence = "お冷を一杯ください。（おひやをいっぱいください - Làm ơn cho tôi xin một cốc nước lạnh ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -98,14 +103,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "いくら", Reading = "いくら", Meaning = "Bao nhiêu tiền" },
-                                new TargetVocabulary { Word = "固さ", Reading = "かたさ", Meaning = "Độ cứng / dai của mì" },
-                                new TargetVocabulary { Word = "濃さ", Reading = "こさ", Meaning = "Độ đậm đà của nước dùng" }
+                                new TargetVocabulary { Word = "麺の固さ", Reading = "めんのかたさ", Meaning = "Độ cứng của sợi mì (Men no katasa) • N4 [Danh từ] • Gồm các mức: 硬め (dai cứng), 普通 (vừa), 柔らかめ (mềm)" },
+                                new TargetVocabulary { Word = "味の濃さ", Reading = "あじのこさ", Meaning = "Độ đậm đà của nước dùng (Aji no kosa) • N4 [Danh từ] • Gồm các mức: 濃いめ (đậm đà), 普通 (chuẩn), 薄め (thanh nhạt)" },
+                                new TargetVocabulary { Word = "味玉", Reading = "あじたま", Meaning = "Trứng ngâm tương lòng đào (Ajitama) • N4 [Danh từ] • Topping ramen phổ biến nhất nấu từ trứng lòng đào" },
+                                new TargetVocabulary { Word = "替玉", Reading = "かえだま", Meaning = "Gọi thêm vắt mì (Kaedama) • N4 [Danh từ] • Văn hóa ramen Hakata: giữ lại nước dùng và gọi thêm mì" },
+                                new TargetVocabulary { Word = "クレジットカード", Reading = "くれじっとかーど", Meaning = "Thẻ tín dụng (Credit card) • N4 [Danh từ] • Phương thức thanh toán thẻ quốc tế" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...bao nhiêu tiền?", ExampleSentence = "ラーメンはいくらですか。" },
-                                new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể làm/chỉnh thành... cho tôi được không?", ExampleSentence = "麺をかためてもらえますか。" }
+                                new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể chỉnh thành... giúp tôi được không? [N + に / A-く + してもらえますか] (Nhờ vả tùy biến món ăn thân thiện)", ExampleSentence = "麺を硬めにしてもらえますか。（めんをかためにしてもらえますか - Bạn có thể làm sợi mì dai cứng hơn một chút giúp tôi được không?）" },
+                                new TargetGrammar { Pattern = "～を追加できますか", Meaning = "Có thể thêm... được không ạ? [N + を追加できますか] (Yêu cầu bổ sung topping hoặc phần ăn)", ExampleSentence = "トッピングに味玉を追加できますか。（とっぴんぐにあじたまをついかできますか - Tôi có thể gọi thêm topping trứng lòng đào được không ạ?）" },
+                                new TargetGrammar { Pattern = "～で支払えますか", Meaning = "Có thể thanh toán bằng... không ạ? [Phương thức + で支払えますか] (Xác nhận phương thức thanh toán)", ExampleSentence = "クレジットカードで支払えますか。（くれじっとかーどでしはらえますか - Tôi có thể thanh toán bằng thẻ tín dụng được không ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -152,13 +160,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "会計", Reading = "かいけい", Meaning = "Tính tiền / Thanh toán" },
-                                new TargetVocabulary { Word = "アレルギー", Reading = "あれるぎー", Meaning = "Dị ứng" }
+                                new TargetVocabulary { Word = "アレルギー", Reading = "あれるぎー", Meaning = "Dị ứng thực phẩm (Allergy) • N3 [Danh từ] • Báo tình trạng dị ứng: 海鮮アレルギー (dị ứng hải sản)" },
+                                new TargetVocabulary { Word = "魚介類", Reading = "ぎょかいるい", Meaning = "Hải sản / Tôm cua cá (Gyokairui) • N3 [Danh từ] • Thành phần chính trong nước dùng dashi Nhật Bản" },
+                                new TargetVocabulary { Word = "出汁", Reading = "だし", Meaning = "Nước dùng cốt ninh (Dashi) • N3 [Danh từ] • Linh hồn ẩm thực Nhật nấu từ cá bào, tảo bẹ hoặc rau củ" },
+                                new TargetVocabulary { Word = "変更", Reading = "へんこう", Meaning = "Thay đổi / Chuyển đổi (Henkou) • N3 [Danh từ/Động từ nhóm 3] • Dùng khi xin đổi nguyên liệu nấu" },
+                                new TargetVocabulary { Word = "絶品", Reading = "ぜっぴん", Meaning = "Món ngon tuyệt phẩm (Zeppin) • N3 [Danh từ/Tính từ な] • Lời khen ngợi tinh tế dành cho nghệ thuật ẩm thực" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～はいくらですか", Meaning = "...bao nhiêu tiền?", ExampleSentence = "ラーメンはいくらですか。" },
-                                new TargetGrammar { Pattern = "～にしてもらえますか", Meaning = "Bạn có thể làm/chỉnh thành... cho tôi được không?", ExampleSentence = "麺をかためてもらえますか。" }
+                                new TargetGrammar { Pattern = "～アレルギーがあるのですが", Meaning = "Tôi bị dị ứng với... nên là... [N + アレルギーがあるのですが] (Trình bày lý do y tế tế nhị trước khi yêu cầu)", ExampleSentence = "実は魚介類アレルギーがあるのですが、スープにエビは使われていますか。（じつはぎょかいるいアレルギーがあるのですが、すーぷにえびはつかわれていますか - Thật ra tôi bị dị ứng hải sản, không biết trong nước dùng có tôm không ạ?）" },
+                                new TargetGrammar { Pattern = "～に変更していただけないでしょうか", Meaning = "Xin vui lòng đổi sang... giúp tôi được không ạ? [N + に変更していただけないでしょうか] (Khiêm nhường ngữ nhờ vả trang trọng)", ExampleSentence = "スープを野菜ベースのものに変更していただけないでしょうか。（すーぷをやさいべーすのものにへんこうしていただけないでしょうか - Liệu quán có thể đổi nước dùng sang loại nấu từ rau củ giúp tôi được không ạ?）" },
+                                new TargetGrammar { Pattern = "～は今まで食べた中で一番～です", Meaning = "...là món ngon nhất tôi từng ăn từ trước đến nay [N + は今まで食べた中で一番 + Tính từ + です] (Khen ngợi trải nghiệm ẩm thực sâu sắc)", ExampleSentence = "このラーメンは今まで食べた中で一番奥深い味わいでした。（このらーめんは今までにたべたなかでいちばんおくぶかいあじわいでした - Bát mì ramen này có hương vị đậm đà tinh tế nhất mà tôi từng được thưởng thức ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -226,12 +238,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "自己紹介", Reading = "じこしょうかい", Meaning = "Giới thiệu bản thân" },
-                                new TargetVocabulary { Word = "アルバイト", Reading = "あるばいと", Meaning = "Việc làm thêm" }
+                                new TargetVocabulary { Word = "自己紹介", Reading = "じこしょうかい", Meaning = "Giới thiệu bản thân (Jikoshoukai) • N5 [Danh từ] • Nghi thức mở đầu bắt buộc trong phỏng vấn Nhật" },
+                                new TargetVocabulary { Word = "アルバイト", Reading = "あるばいと", Meaning = "Việc làm thêm bán thời gian (Arubaito) • N5 [Danh từ] • Công việc part-time dành cho du học sinh" },
+                                new TargetVocabulary { Word = "出身", Reading = "しゅっしん", Meaning = "Quê quán / Xuất thân (Shusshin) • N5 [Danh từ] • Khai báo nguồn gốc quốc gia: ベトナム出身です" },
+                                new TargetVocabulary { Word = "勤務可能", Reading = "きんむかのう", Meaning = "Có thể đi làm (Kinmu kanou) • N5 [Danh từ/Tính từ な] • Trả lời số buổi có thể nhận ca trong tuần" },
+                                new TargetVocabulary { Word = "一生懸命", Reading = "いっしょうけんめい", Meaning = "Hết sức mình / Chăm chỉ nỗ lực (Isshoukenmei) • N5 [Phó từ] • Cam kết thái độ: 一生懸命頑張ります" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～と申します", Meaning = "Tôi tên là...", ExampleSentence = "グエンと申します。" }
+                                new TargetGrammar { Pattern = "～と申します", Meaning = "Tôi tên là... [Tên + と申します] (Khiêm nhường ngữ giới thiệu họ tên trang trọng)", ExampleSentence = "グエン・ヴァン・ナムと申します。（ぐえん・ゔぁん・なむともうします - Dạ tôi tên là Nguyen Van Nam ạ.）" },
+                                new TargetGrammar { Pattern = "週に～日働くことができます", Meaning = "Một tuần tôi có thể làm việc... ngày [Thời gian + に + Số ngày + 働くことができます] (Trình bày khả năng đáp ứng ca làm việc)", ExampleSentence = "週に3日、月曜日と水曜日と金曜日に働くことができます。（しゅうにみっか、げつようびとすいようびときんようびにはたらくことができます - Một tuần em có thể làm 3 ngày vào thứ Hai, Tư và Sáu ạ.）" },
+                                new TargetGrammar { Pattern = "精一杯頑張りますので、よろしくお願いします", Meaning = "Em sẽ cố gắng hết mình, rất mong nhận được sự giúp đỡ [Mệnh đề lý do + よろしくお願いします] (Câu kết phỏng vấn ghi điểm thái độ)", ExampleSentence = "一生懸命頑張りますので、どうぞよろしくお願いいたします。（いっしょうけんめいがんばりますので、どうぞよろしくおねがいいたします - Em sẽ nỗ lực làm việc hết sức mình, kính mong anh/chị nhận và giúp đỡ em ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -278,12 +295,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "志望動機", Reading = "しぼうどうき", Meaning = "Lý do ứng tuyển" },
-                                new TargetVocabulary { Word = "通勤", Reading = "つうきん", Meaning = "Đi làm (di chuyển)" }
+                                new TargetVocabulary { Word = "志望動機", Reading = "しぼうどうき", Meaning = "Lý do ứng tuyển (Shiboudouki) • N4 [Danh từ] • Câu hỏi then chốt về động lực xin việc" },
+                                new TargetVocabulary { Word = "通勤時間", Reading = "つうきんじかん", Meaning = "Thời gian đi lại từ nhà đến chỗ làm (Tsuukin jikan) • N4 [Danh từ] • Yếu tố đánh giá việc đi làm đúng giờ" },
+                                new TargetVocabulary { Word = "徒歩", Reading = "とほ", Meaning = "Đi bộ (Toho) • N4 [Danh từ] • Phương tiện di chuyển: 徒歩10分 (đi bộ 10 phút)" },
+                                new TargetVocabulary { Word = "接客経験", Reading = "せっきゃくけいけん", Meaning = "Kinh nghiệm phục vụ khách hàng (Sekkyaku keiken) • N4 [Danh từ] • Điểm cộng lớn khi làm quán ăn/tiện lợi" },
+                                new TargetVocabulary { Word = "合否結果", Reading = "ごうひけっか", Meaning = "Kết quả đỗ hay trượt (Gouhi kekka) • N4 [Danh từ] • Thông báo kết quả tuyển dụng" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～たことがあります", Meaning = "Đã từng làm...", ExampleSentence = "レジの経験があります。" }
+                                new TargetGrammar { Pattern = "～に興味があり、応募いたしました", Meaning = "Vì có hứng thú với... nên tôi đã nộp đơn ứng tuyển [N + に興味があり、応募いたしました] (Trình bày lý do ứng tuyển mạch lạc)", ExampleSentence = "日本の接客文化に興味があり、こちらの店舗に応募いたしました。（にほんのせっきゃくぶんかにきょうみがあり、こちらのてんぽにおうぼいたしました - Em rất hứng thú với văn hóa phục vụ của Nhật nên đã nộp đơn vào cửa hàng mình ạ.）" },
+                                new TargetGrammar { Pattern = "自宅から～で～分ほどかかります", Meaning = "Từ nhà em đi bằng... mất khoảng... phút [自宅から + Phương tiện + で + Thời gian + かかります] (Miêu tả phương thức và thời gian đi lại)", ExampleSentence = "自宅から自転車で15分ほどかかります。（じたくからじてんしゃでじゅうごふんほどかかります - Từ nhà đến quán em đi xe đạp mất khoảng 15 phút thôi ạ.）" },
+                                new TargetGrammar { Pattern = "面接の結果はいつ頃分かりますでしょうか", Meaning = "Khoảng khi nào thì có kết quả phỏng vấn ạ? [N + はいつ頃分かりますでしょうか] (Hỏi thời hạn kết quả lễ phép)", ExampleSentence = "面接の合否結果はいつ頃ご連絡いただけますでしょうか。（めんせつのごうひけっかはいつごろごれんらくいただけますでしょうか - Dạ khoảng khi nào thì em có thể nhận được thông báo kết quả phỏng vấn ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -330,11 +352,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "接客", Reading = "せっきゃく", Meaning = "Phục vụ khách hàng" }
+                                new TargetVocabulary { Word = "接客マナー", Reading = "せっきゃくまなー", Meaning = "Tác phong phục vụ khách hàng (Sekkyaku manaa) • N3 [Danh từ] • Chuẩn mực cúi chào, ánh mắt và nụ cười dịch vụ Nhật" },
+                                new TargetVocabulary { Word = "クレーム対応", Reading = "くれーむたいおう", Meaning = "Kỹ năng xử lý khiếu nại (Kureemu taiou) • N3 [Danh từ] • Quy trình xin lỗi, lắng nghe và báo cáo cấp trên" },
+                                new TargetVocabulary { Word = "深夜シフト", Reading = "しんやしふと", Meaning = "Ca làm việc ban đêm (Shinya shifuto) • N3 [Danh từ] • Ca làm sau 22h đêm với phụ cấp 25% lương" },
+                                new TargetVocabulary { Word = "年末年始", Reading = "ねんまつねんし", Meaning = "Dịp nghỉ lễ Tết cuối năm (Nenmatsu nenshi) • N3 [Danh từ] • Thời điểm cửa hàng thiếu nhân sự cần hỗ trợ" },
+                                new TargetVocabulary { Word = "柔軟に対応", Reading = "じゅうなんにたいおう", Meaning = "Ứng phó linh hoạt (Juunan ni taiou) • N3 [Phó từ + Động từ] • Sẵn sàng đổi ca và hỗ trợ tập thể" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～ように心がけております", Meaning = "Tôi luôn nỗ lực...", ExampleSentence = "丁寧な接客を心がけております。" }
+                                new TargetGrammar { Pattern = "まずお詫びを申し上げ、速やかに報告いたします", Meaning = "Trước tiên em sẽ xin lỗi khách và báo cáo ngay lập tức [まずお詫びを申し上げ、速やかに + N + へ報告いたします] (Nguyên tắc vàng xử lý phàn nàn dịch vụ)", ExampleSentence = "万が一お客様からご指摘を受けた際は、まず丁寧にお詫びを申し上げ、店長へ報告いたします。（まんがいちおきゃくさまからごしてきをうけたさいは、まずていねいにおわびをもうしあげ、てんちょうへほうこくいたします - Nếu chẳng may có phàn nàn, trước hết em sẽ cúi đầu xin lỗi chân thành rồi báo cáo ngay với cửa hàng trưởng ạ.）" },
+                                new TargetGrammar { Pattern = "～にも柔軟に対応させていただく所存です", Meaning = "Em sẵn sàng linh hoạt hỗ trợ làm ca... [N + にも柔軟に対応させていただく所存です] (Kính ngữ thương mại cao cấp thể hiện tinh thần trách nhiệm)", ExampleSentence = "土日祝日や深夜シフトにも柔軟に対応させていただく所存です。（どにちしゅくじつやしんやしふとにもじゅうなんにたいおうさせていただくしょぞんです - Dịp cuối tuần, ngày lễ hay ca đêm em đều sẵn sàng linh hoạt nhận ca theo phân công ạ.）" },
+                                new TargetGrammar { Pattern = "～ように常に心がけております", Meaning = "Em luôn tâm niệm và nỗ lực để... [V-る / V-ない + ように常に心がけております] (Thói quen tích cực tự giác trong công việc)", ExampleSentence = "お客様に気持ちよく過ごしていただけるよう、常に笑顔での挨拶を心がけております。（おきゃくさまにきもちよくすごしていただけるよう、つねにえがおでのあいさつをこころがけております - Em luôn tâm niệm chào hỏi với nụ cười niềm nở để khách hàng có trải nghiệm dễ chịu nhất ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -392,14 +420,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "駅", Reading = "えき", Meaning = "Nhà ga" },
-                                new TargetVocabulary { Word = "切符", Reading = "きっぷ", Meaning = "Vé tàu" },
-                                new TargetVocabulary { Word = "山手線", Reading = "やまのてせん", Meaning = "Tuyến tàu Yamanote" }
+                                new TargetVocabulary { Word = "改札口", Reading = "かいさつぐち", Meaning = "Cửa soát vé nhà ga (Kaisatsuguchi) • N5 [Danh từ] • Nơi quẹt thẻ IC hoặc đưa vé giấy vào cổng" },
+                                new TargetVocabulary { Word = "山手線", Reading = "やまのてせん", Meaning = "Tuyến tàu điện vòng tròn Yamanote (Yamanotesen) • N5 [Danh từ riêng] • Tuyến đường sắt huyết mạch trung tâm Tokyo" },
+                                new TargetVocabulary { Word = "切符売り場", Reading = "きっぷうりば", Meaning = "Khu vực bán vé tàu tự động (Kippu uriba) • N5 [Danh từ] • Nơi đặt máy bán vé tự động" },
+                                new TargetVocabulary { Word = "運賃", Reading = "うんちん", Meaning = "Giá vé tàu / Cước phí chuyến đi (Unchin) • N5 [Danh từ] • Số tiền cần trả cho chặng tàu" },
+                                new TargetVocabulary { Word = "～番線", Reading = "～ばんせん", Meaning = "Ke ga số... / Đường ray số... (Bansen) • N5 [Hậu tố đếm] • Ví dụ: 14番線 (Sân ga số 14)" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～はどこですか", Meaning = "...ở đâu vậy?", ExampleSentence = "山手線の乗り場はどこですか。" },
-                                new TargetGrammar { Pattern = "～までいくらですか", Meaning = "Đến... bao nhiêu tiền?", ExampleSentence = "渋谷までいくらですか。" }
+                                new TargetGrammar { Pattern = "～はどこですか", Meaning = "...ở đâu vậy ạ? [N + はどこですか] (Mẫu câu hỏi vị trí cơ bản)", ExampleSentence = "すみません、山手線の改札口はどちらですか。（すみません、やまのてせんのかいさつぐちはどちらですか - Xin lỗi, cửa soát vé tuyến Yamanote ở hướng nào vậy ạ?）" },
+                                new TargetGrammar { Pattern = "～までいくらですか", Meaning = "Đi đến... hết bao nhiêu tiền ạ? [Địa điểm + までいくらですか] (Hỏi giá cước di chuyển)", ExampleSentence = "ここから渋谷駅まではいくらですか。（ここからしぶやえきまではいくらですか - Từ đây đi đến ga Shibuya hết bao nhiêu tiền vé ạ?）" },
+                                new TargetGrammar { Pattern = "ありがとうございます、助かりました", Meaning = "Cảm ơn anh/chị, may quá đã được chỉ giúp [Lời cảm ơn + 助かりました] (Lời cảm ơn ấm áp tự nhiên khi nhận chỉ đường)", ExampleSentence = "詳しく教えていただき、ありがとうございました。（くわしくおしえていただき、ありがとうございました - Cảm ơn bác đã chỉ dẫn tận tình cho tôi ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -446,14 +477,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "乗り換え", Reading = "のりかえ", Meaning = "Đổi tàu / Chuyển tuyến" },
-                                new TargetVocabulary { Word = "快速", Reading = "かいそく", Meaning = "Tàu nhanh / Tốc hành" },
-                                new TargetVocabulary { Word = "チャージ", Reading = "ちゃーじ", Meaning = "Nạp tiền vào thẻ IC" }
+                                new TargetVocabulary { Word = "乗り換え", Reading = "のりかえ", Meaning = "Chuyển tuyến / Đổi tàu (Norikae) • N4 [Danh từ] • Chuyển đổi giữa các tuyến đường sắt trong ga" },
+                                new TargetVocabulary { Word = "中央線快速", Reading = "ちゅうおうせんかいそく", Meaning = "Tàu nhanh tuyến Chuo (Chuuousen kaisoku) • N4 [Danh từ riêng] • Tuyến tàu màu cam chạy nhanh cắt ngang Tokyo" },
+                                new TargetVocabulary { Word = "交通系ICカード", Reading = "こうつうけいあいしーかーど", Meaning = "Thẻ IC giao thông (Suica/Pasmo) • N4 [Danh từ] • Thẻ quẹt chạm thanh toán tàu xe tiện lợi" },
+                                new TargetVocabulary { Word = "チャージ", Reading = "ちゃーじ", Meaning = "Nạp tiền vào thẻ (Charge) • N4 [Danh từ/Động từ nhóm 3] • Nạp thêm số dư tại máy bán vé tự động" },
+                                new TargetVocabulary { Word = "発車ホーム", Reading = "はっしゃほーむ", Meaning = "Sân ke ga tàu xuất phát (Hassha hoomu) • N4 [Danh từ] • Sân ga đón tàu chờ khởi hành" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～はどうやって行けばいいですか", Meaning = "Đi đến... bằng cách nào thì tốt?", ExampleSentence = "東京駅へはどうやって行けばいいですか。" },
-                                new TargetGrammar { Pattern = "～方（かた）", Meaning = "Cách thức làm gì đó", ExampleSentence = "Suicaのチャージの仕方を教えてください。" }
+                                new TargetGrammar { Pattern = "～へはどうやって乗り換えればいいですか", Meaning = "Đi đến... thì đổi tàu bằng cách nào ạ? [Địa điểm + へはどうやって乗り換えればいいですか] (Hỏi lộ trình trung chuyển chuẩn xác)", ExampleSentence = "東京駅へ行くには、中央線快速にどうやって乗り換えればいいですか。（とうきょうえきへいくには、ちゅうおうせんかいそくにどうやってのりかえればいいですか - Để đi ga Tokyo thì tôi đổi sang tuyến Chuo nhanh bằng cách nào ạ?）" },
+                                new TargetGrammar { Pattern = "～のチャージの仕方を教えていただけますか", Meaning = "Xin hãy chỉ cho tôi cách [làm gì đó] được không ạ? [N + のV-bỏ masu + 方を教えていただけますか] (Hỏi cách sử dụng máy móc thiết bị)", ExampleSentence = "券売機でのSuicaのチャージの仕方を教えていただけますか。（けんばいきでのスイカのチャージのかたをおしえていただけますか - Bạn có thể chỉ giúp tôi cách nạp tiền thẻ Suica ở máy bán vé được không ạ?）" },
+                                new TargetGrammar { Pattern = "何番ホームから発車しますか", Meaning = "Tàu chạy từ sân ga số mấy vậy ạ? [何番ホーム + から発車しますか] (Xác nhận ke ga khởi hành tránh đi nhầm chiều)", ExampleSentence = "次の中央線快速は何番ホームから出ますか。（つぎのちゅうおうせんかいそくはなんばんほーむからでますか - Chuyến tàu Chuo nhanh tiếp theo sẽ chạy từ ke ga số mấy ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -500,14 +534,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "指定席", Reading = "していせき", Meaning = "Ghế đặt trước" },
-                                new TargetVocabulary { Word = "忘れ物", Reading = "わすれもの", Meaning = "Đồ bỏ quên / Thất lạc" },
-                                new TargetVocabulary { Word = "払い戻し", Reading = "はらいもどし", Meaning = "Hoàn tiền vé" }
+                                new TargetVocabulary { Word = "新幹線指定席", Reading = "しんかんせんしていせき", Meaning = "Ghế ngồi đặt trước Shinkansen (Shiteiseki) • N3 [Danh từ] • Phân biệt với 自由席 (ghế tự do)" },
+                                new TargetVocabulary { Word = "発車時刻の変更", Reading = "はっしゃじこくのへんこう", Meaning = "Đổi giờ tàu xuất phát (Hassha jikoku henkou) • N3 [Danh từ] • Thủ tục đổi vé tại quầy Midori no Madoguchi" },
+                                new TargetVocabulary { Word = "遺失物取扱所", Reading = "いしつぶつとりあつかいじょ", Meaning = "Phòng tìm kiếm đồ thất lạc (Ishitsubutsu) • N3 [Danh từ] • Trung tâm quản lý đồ hành khách để quên trên tàu" },
+                                new TargetVocabulary { Word = "網棚", Reading = "あみだな", Meaning = "Giá để hành lý trên cao trong toa (Amidana) • N3 [Danh từ] • Vị trí hành khách hay để quên túi xách/áo khoác nhất" },
+                                new TargetVocabulary { Word = "車両番号", Reading = "しゃりょうばんごう", Meaning = "Số hiệu toa tàu và số ghế (Sharyou bangou) • N3 [Danh từ] • Dữ liệu then chốt giúp nhân viên truy tìm đồ đạc" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～ていただけないでしょうか", Meaning = "Xin vui lòng... cho tôi được không?", ExampleSentence = "発車時刻を変更していただけないでしょうか。" },
-                                new TargetGrammar { Pattern = "～てしまったのですが", Meaning = "Tôi lỡ... mất rồi", ExampleSentence = "網棚の上に鞄を忘れてしまったのですが。" }
+                                new TargetGrammar { Pattern = "～の時間を変更していただくことは可能でしょうか", Meaning = "Liệu có thể đổi giờ... giúp tôi được không ạ? [N + の時間を変更していただくことは可能でしょうか] (Yêu cầu lịch sự trang trọng với nhân viên đường sắt)", ExampleSentence = "予約していた新幹線の指定席の発車時刻を変更していただくことは可能でしょうか。（よやくしていたしんかんせんのしていせきのはっしゃじこくをへんこうしていただくことはかのうでしょうか - Tôi có thể xin đổi giờ xuất phát của vé Shinkansen đã đặt trước được không ạ?）" },
+                                new TargetGrammar { Pattern = "～に～を忘れてしまったようなのですが", Meaning = "Dường như tôi đã lỡ bỏ quên... ở trên... rồi ạ [Địa điểm + に + Vật + を忘れてしまったようなのですが] (Khai báo sự cố bằng thể てしまう + ようだ tế nhị)", ExampleSentence = "さきほどの山手線の網棚の上に、黒いリュックを忘れてしまったようなのですが。（さきほどのやまのてせんのあみだなのうえに、くろいリュックをわすれてしまったようなのですが - Dường như tôi đã lỡ bỏ quên chiếc ba lô đen trên giá hành lý toa tàu vừa rồi ạ.）" },
+                                new TargetGrammar { Pattern = "お忙しいところ迅速にご対応いただき、心より感謝申し上げます", Meaning = "Tôi xin chân thành cảm ơn sự hỗ trợ nhanh chóng của quý ga [Lời cảm ơn Keigo cao cấp] (Lời cảm ơn chuẩn mực trong văn hóa Nhật)", ExampleSentence = "お忙しい中でお探しいただき、本当にありがとうございました。（おいそがしいなかでおさがしいただき、ほんとうにありがとうございました - Cảm ơn các anh đã nhanh chóng tìm lại giúp đồ trong lúc bận rộn ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -565,14 +602,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "お弁当", Reading = "おべんとう", Meaning = "Cơm hộp Bento" },
-                                new TargetVocabulary { Word = "温め", Reading = "あたため", Meaning = "Hâm nóng" },
-                                new TargetVocabulary { Word = "レジ袋", Reading = "れじぶくろ", Meaning = "Túi ni lông" }
+                                new TargetVocabulary { Word = "お弁当", Reading = "おべんとう", Meaning = "Cơm hộp bento chế biến sẵn (Obentou) • N5 [Danh từ] • Mặt hàng ẩm thực tiện lợi phổ biến nhất Konbini" },
+                                new TargetVocabulary { Word = "温める", Reading = "あたためる", Meaning = "Hâm nóng bằng lò vi sóng (Atatameru) • N5 [Động từ nhóm 2] • Câu hỏi cửa miệng của thu ngân: 温めますか" },
+                                new TargetVocabulary { Word = "レジ袋", Reading = "れじぶくろ", Meaning = "Túi ni lông mua sắm (Rejibukuro) • N5 [Danh từ] • Tính phí 3-5 yên tại các cửa hàng Nhật" },
+                                new TargetVocabulary { Word = "お会計", Reading = "おかいけい", Meaning = "Tính tiền / Thanh toán hóa đơn (Okaikei) • N5 [Danh từ] • お会計をお願いします" },
+                                new TargetVocabulary { Word = "お釣り", Reading = "おつり", Meaning = "Tiền thừa trả lại (Otsuri) • N5 [Danh từ] • Tiền thối lại khi trả bằng tiền mặt" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～を温めてください", Meaning = "Xin vui lòng hâm nóng...", ExampleSentence = "お弁当を温めてください。" },
-                                new TargetGrammar { Pattern = "～は結構です", Meaning = "...thì tôi không cần / xin thôi", ExampleSentence = "レジ袋は結構です。" }
+                                new TargetGrammar { Pattern = "～を温めてください", Meaning = "Xin vui lòng hâm nóng... giúp tôi [N + を温めてください] (Yêu cầu nhân viên hâm nóng đồ ăn)", ExampleSentence = "このお弁当を温めてください。（このおべんとうをあたためてください - Làm ơn hâm nóng giúp tôi hộp cơm này với ạ.）" },
+                                new TargetGrammar { Pattern = "～は結構です / 大丈夫です", Meaning = "...thì tôi không cần đâu ạ [N + は結構です / 大丈夫です] (Từ chối lịch sự, tránh dùng từ thô ráp)", ExampleSentence = "マイバッグを持っていますので、レジ袋は結構です。（まいばっぐをもっていますので、れじぶくろはけっこうです - Tôi có mang túi riêng rồi nên không cần túi ni lông đâu ạ.）" },
+                                new TargetGrammar { Pattern = "全部でいくらになりますか", Meaning = "Tổng cộng hết bao nhiêu tiền vậy ạ? [全部でいくらになりますか] (Hỏi tổng số tiền cần thanh toán)", ExampleSentence = "すみません、全部でおいくらですか。（すみません、ぜんぶでおいくらですか - Xin lỗi, tổng cộng của tôi hết bao nhiêu tiền ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -619,14 +659,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "電子マネー", Reading = "でんしまねー", Meaning = "Tiền điện tử / Thanh toán không tiền mặt" },
-                                new TargetVocabulary { Word = "ポイントカード", Reading = "ぽいんとかーど", Meaning = "Thẻ tích điểm" },
-                                new TargetVocabulary { Word = "スプーン", Reading = "すぷーん", Meaning = "Chiếc thìa / muỗng" }
+                                new TargetVocabulary { Word = "電子マネー", Reading = "でんしまねー", Meaning = "Tiền điện tử không tiền mặt (Denshi manee) • N4 [Danh từ] • Bao gồm PayPay, Suica, nanaco" },
+                                new TargetVocabulary { Word = "バーコード決済", Reading = "ばーこーどけっさい", Meaning = "Quét mã vạch / Mã QR thanh toán (Baakoodo kessai) • N4 [Danh từ] • Đưa màn hình điện thoại cho nhân viên quét" },
+                                new TargetVocabulary { Word = "ポイントカード", Reading = "ぽいんとかーど", Meaning = "Thẻ tích lũy điểm thưởng (Point card) • N4 [Danh từ] • Tích điểm Nanaco, Ponta, V-Point" },
+                                new TargetVocabulary { Word = "割り箸", Reading = "わりばし", Meaning = "Đũa gỗ dùng một lần (Waribashi) • N4 [Danh từ] • Thu ngân thường hỏi: お箸はお付けしますか" },
+                                new TargetVocabulary { Word = "レシート", Reading = "れしーと", Meaning = "Hóa đơn mua hàng in giấy (Reshiito) • N4 [Danh từ] • Biên nhận giao dịch" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～で支払えますか", Meaning = "Có thể thanh toán bằng... không?", ExampleSentence = "PayPayで支払えますか。" },
-                                new TargetGrammar { Pattern = "～をつけてもらえますか", Meaning = "Có thể cho tôi kèm thêm... được không?", ExampleSentence = "スプーンをひとつ付けてもらえますか。" }
+                                new TargetGrammar { Pattern = "～で支払うことはできますか", Meaning = "Tôi có thể thanh toán bằng... được không ạ? [N + で支払うことはできますか] (Xác nhận ví điện tử / QR code)", ExampleSentence = "PayPayのバーコード決済で支払うことはできますか。（ペイペイのばーこーどけっさいでしはらうことはできますか - Tôi thanh toán bằng quét mã PayPay được không ạ?）" },
+                                new TargetGrammar { Pattern = "ポイントカードは持っていません", Meaning = "Tôi không mang theo thẻ tích điểm [N + は持っていません] (Trả lời câu hỏi tích điểm của thu ngân)", ExampleSentence = "ポイントカードは持っていませんので大丈夫です。（ぽいんとかーどはもっていませんのでだいじょうぶです - Em không có thẻ tích điểm nên không cần tích đâu ạ.）" },
+                                new TargetGrammar { Pattern = "～をもう一つ付けていただけますか", Meaning = "Bạn có thể cho tôi kèm thêm một chiếc... được không ạ? [N + をもう一つ付けていただけますか] (Xin thêm dụng cụ ăn uống lịch sự)", ExampleSentence = "デザート用のスプーンをもう一つ付けていただけますか。（でざーとようのすぷーんをもうひとつづけていただけますか - Bạn có thể cho tôi xin thêm một chiếc muỗng ăn đồ tráng miệng được không ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -673,14 +716,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "宅配便", Reading = "たくはいびん", Meaning = "Chuyển phát bưu kiện tận nhà" },
-                                new TargetVocabulary { Word = "伝票", Reading = "でんぴょう", Meaning = "Phiếu gửi hàng / Hóa đơn" },
-                                new TargetVocabulary { Word = "発券", Reading = "はっけん", Meaning = "Xuất vé / In vé đặt trước" }
+                                new TargetVocabulary { Word = "宅配便", Reading = "たくはいびん", Meaning = "Chuyển phát bưu kiện tận nhà Yamato (Takuhaibin) • N3 [Danh từ] • Dịch vụ ký gửi hành lý tiện ích tại Konbini" },
+                                new TargetVocabulary { Word = "送り状", Reading = "おくりじょう", Meaning = "Phiếu gửi hàng / Vận đơn (Okurijou) • N3 [Danh từ] • Gồm 2 loại: 元払い (người gửi trả) và 着払い (người nhận trả)" },
+                                new TargetVocabulary { Word = "配達希望日時", Reading = "はいたつきぼうにちじ", Meaning = "Ngày giờ mong muốn nhận bưu kiện (Haitatsu kibou nichiji) • N3 [Danh từ] • Chọn khung giờ: 午前中, 14-16h, 18-20h" },
+                                new TargetVocabulary { Word = "マルチコピー機", Reading = "まるちこぴーき", Meaning = "Máy in photocopy đa năng tiện ích (Maruchi kopiiki) • N3 [Danh từ] • Thiết bị xuất vé xem hòa nhạc, in ấn tài liệu" },
+                                new TargetVocabulary { Word = "発券番号", Reading = "はっけんばんごう", Meaning = "Mã số xuất vé đặt trước (Hakken bangou) • N3 [Danh từ] • Mã số nhập vào màn hình để in vé giấy" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～の手続きをお願いしたいのですが", Meaning = "Tôi muốn làm thủ tục...", ExampleSentence = "荷物の発送手続きをお願いしたいのですが。" },
-                                new TargetGrammar { Pattern = "～に届けていただくことは可能でしょうか", Meaning = "Có thể chuyển đến... được không ạ?", ExampleSentence = "明日の午前に届けていただくことは可能でしょうか。" }
+                                new TargetGrammar { Pattern = "～の手続きをお願いしたいのですが", Meaning = "Tôi muốn nhờ làm thủ tục... có được không ạ? [N + の手続きをお願いしたいのですが] (Mở đầu giao dịch dịch vụ phức tạp lịch sự)", ExampleSentence = "スーツケースを空港へ送りたいのですが、宅配便の手続きをお願いできますか。（すーつけーすをくうこうへおくりたいのですが、たくはいびんのてつづきをおねがいできますか - Tôi muốn gửi vali ra sân bay, làm phiền anh làm thủ tục chuyển phát giúp tôi được không ạ?）" },
+                                new TargetGrammar { Pattern = "～に届けていただくことは可能でしょうか", Meaning = "Liệu có thể chuyển đến... vào lúc... được không ạ? [Thời gian + に届けていただくことは可能でしょうか] (Thỏa thuận thời gian giao hàng trang trọng)", ExampleSentence = "明日の午前中までにホテルのフロントへ届けていただくことは可能でしょうか。（あすのごぜんちゅうまでにほてるのふろんとへとどけていただくことはかのうでしょうか - Liệu có thể giao hàng đến quầy lễ tân khách sạn trước trưa mai được không ạ?）" },
+                                new TargetGrammar { Pattern = "～の使い方を教えていただけないでしょうか", Meaning = "Anh/chị có thể vui lòng chỉ giúp tôi cách dùng... được không ạ? [N + の使い方を教えていただけないでしょうか] (Nhờ hỗ trợ thao tác máy tự động)", ExampleSentence = "チケットを発券したいのですが、マルチコピー機の操作を教えていただけないでしょうか。（ちけっとをはっけんしたいのですが、まるちこぴーきのそうさをおしえていただけないでしょうか - Tôi muốn in vé, anh/chị có thể hướng dẫn tôi thao tác trên máy in đa năng được không ạ?）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -738,14 +784,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "新人", Reading = "しんじん", Meaning = "Nhân viên mới" },
-                                new TargetVocabulary { Word = "部署", Reading = "ぶしょ", Meaning = "Phòng ban công tác" },
-                                new TargetVocabulary { Word = "よろしくお願いします", Reading = "よろしくおねがいします", Meaning = "Rất mong được giúp đỡ" }
+                                new TargetVocabulary { Word = "新入社員", Reading = "しんにゅうしゃいん", Meaning = "Nhân viên mới vào công ty (Shinnyuu shain) • N5 [Danh từ] • Danh xưng trong giai đoạn thử việc đầu tiên" },
+                                new TargetVocabulary { Word = "配属", Reading = "はいぞく", Meaning = "Được phân công vào bộ phận (Haizoku) • N5 [Danh từ/Động từ nhóm 3] • 開発部に配属されました" },
+                                new TargetVocabulary { Word = "先輩社員", Reading = "せんぱいしゃいん", Meaning = "Tiền bối / Đồng nghiệp đi trước (Senpai shain) • N5 [Danh từ] • Đại từ tôn trọng trong văn hóa tổ chức Nhật" },
+                                new TargetVocabulary { Word = "本日より", Reading = "ほんじつより", Meaning = "Kể từ ngày hôm nay (Honjitsu yori) • N5 [Phó từ] • Cách nói trang trọng công sở của \"今日から\"" },
+                                new TargetVocabulary { Word = "ご指導", Reading = "ごしどう", Meaning = "Sự chỉ giáo / Hướng dẫn bảo ban (Goshidou) • N5 [Danh từ kính ngữ] • Luôn đi kèm: ご指導よろしくお願いします" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～から参りました", Meaning = "Tôi đến từ...", ExampleSentence = "ベトナムから参りました。" },
-                                new TargetGrammar { Pattern = "どうぞよろしくお願いします", Meaning = "Rất mong nhận được sự chỉ giáo", ExampleSentence = "本日よりどうぞよろしくお願いします。" }
+                                new TargetGrammar { Pattern = "～から参りました、～と申します", Meaning = "Tôi đến từ... và tên tôi là... [Địa điểm + から参りました、Tên + と申します] (Khiêm nhường ngữ tự giới thiệu ngày đầu nhận việc)", ExampleSentence = "ベトナムの開発チームから参りました、グエン・ヴァン・ナムと申します。（ベトナムのかいはつちーむからまいりました、グエン・ヴァン・ナムともうします - Tôi đến từ đội ngũ phát triển tại Việt Nam, tên tôi là Nguyen Van Nam ạ.）" },
+                                new TargetGrammar { Pattern = "～に配属となりました", Meaning = "Tôi được phân công công tác tại... [Phòng ban + に配属となりました] (Báo cáo bộ phận công tác chuẩn văn phong doanh nghiệp)", ExampleSentence = "本日よりシステム開発部に配属となりました。（ほんじつよりしすてむかいはつぶにはいぞくとなりました - Kể từ hôm nay tôi được phân công vào bộ phận phát triển hệ thống ạ.）" },
+                                new TargetGrammar { Pattern = "ご指導ご鞭撻のほど、よろしくお願いいたします", Meaning = "Rất mong nhận được sự chỉ bảo và dẫn dắt của các anh/chị [Thành ngữ Keigo công sở] (Câu kết bài giới thiệu gây ấn tượng văn hóa tuyệt đối)", ExampleSentence = "まだまだ不慣れな点が多いですが、どうぞよろしくお願いいたします。（まだまだふなれなてんがおおいですが、どうぞよろしくおねがいいたします - Em còn nhiều bỡ ngỡ, kính mong các tiền bối chỉ bảo và giúp đỡ em ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -792,14 +841,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "進捗", Reading = "しんちょく", Meaning = "Tiến độ công việc" },
-                                new TargetVocabulary { Word = "報告", Reading = "ほうこく", Meaning = "Báo cáo" },
-                                new TargetVocabulary { Word = "確認", Reading = "かくにん", Meaning = "Xác nhận / Kiểm tra" }
+                                new TargetVocabulary { Word = "業務進捗", Reading = "ぎょうむしんちょく", Meaning = "Tiến độ thực hiện công việc (Gyoumu shinchoku) • N4 [Danh từ] • Trọng tâm cốt lõi của quy tắc Horenso" },
+                                new TargetVocabulary { Word = "報連相", Reading = "ほうれんそう", Meaning = "Báo cáo - Liên lạc - Thảo luận (Horenso) • N4 [Danh từ] • Nguyên tắc giao tiếp nền tảng của doanh nghiệp Nhật" },
+                                new TargetVocabulary { Word = "完了", Reading = "かんりょう", Meaning = "Đã hoàn tất / Xong xuôi (Kanryou) • N4 [Danh từ/Động từ nhóm 3] • Báo cáo các hạng mục đã hoàn thành" },
+                                new TargetVocabulary { Word = "予定通り", Reading = "よていどおり", Meaning = "Đúng như kế hoạch đề ra (Yotei doori) • N4 [Phó từ] • 予定通り進行しております" },
+                                new TargetVocabulary { Word = "ご確認", Reading = "ごかくにん", Meaning = "Sự kiểm tra / Xem xét duyệt tài liệu (Gokakunin) • N4 [Danh từ kính ngữ] • Nhờ cấp trên duyệt tài liệu" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～についてご報告いたします", Meaning = "Tôi xin phép báo cáo về...", ExampleSentence = "本日の業務進捗についてご報告いたします。" },
-                                new TargetGrammar { Pattern = "～てよろしいでしょうか", Meaning = "Tôi làm... có được không ạ?", ExampleSentence = "資料をご確認いただいてもよろしいでしょうか。" }
+                                new TargetGrammar { Pattern = "今お時間よろしいでしょうか、～についてご報告いたします", Meaning = "Bây giờ anh có tiện vài phút không ạ, em xin phép báo cáo về... [今お時間よろしいでしょうか、N + についてご報告いたします] (Mở đầu Horenso chuẩn mực)", ExampleSentence = "リーダー、今お時間よろしいでしょうか。本日の開発進捗についてご報告いたします。（リーダー、いまおじかんよろしいでしょうか。ほんじつのかいはつしんちょくについてごほうこくいたします - Trưởng nhóm ơi, bây giờ anh có tiện vài phút không ạ? Em xin phép báo cáo tiến độ hôm nay ạ.）" },
+                                new TargetGrammar { Pattern = "～は完了しており、現在は～を進めております", Meaning = "Hạng mục... đã xong, hiện tại em đang tiến hành... [N1 + は完了しており、現在は + N2 + を進めております] (Cấu trúc liên kết báo cáo tiến độ mượt mà)", ExampleSentence = "設計書の作成は完了しており、現在は単体テストを進めております。（せっけいしょのさくせいはかんりょうしており、げんざいはたんたいてすとをすすめております - Phần soạn tài liệu thiết kế đã xong, hiện tại em đang tiến hành chạy unit test ạ.）" },
+                                new TargetGrammar { Pattern = "～をご確認いただけますでしょうか", Meaning = "Xin anh/chị xem qua và cho em xin góp ý được không ạ? [N + をご確認いただけますでしょうか] (Nhờ cấp trên review tài liệu lịch sự)", ExampleSentence = "作成した資料をご確認いただき、フィードバックをいただけますでしょうか。（さくせいしたしりょうをごかくにんいただき、ふぃーどばっくをいただけますでしょうか - Nhờ anh xem qua bản tài liệu em vừa soạn và cho em xin ý kiến góp ý với ạ.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -846,14 +898,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "名刺", Reading = "めいし", Meaning = "Danh thiếp thương mại" },
-                                new TargetVocabulary { Word = "応接室", Reading = "おうせつしつ", Meaning = "Phòng tiếp khách / Phòng họp" },
-                                new TargetVocabulary { Word = "お目にかかる", Reading = "おめにかかる", Meaning = "Được diện kiến (khiêm nhường ngữ)" }
+                                new TargetVocabulary { Word = "名刺交換", Reading = "めいしこうかん", Meaning = "Nghi thức trao đổi danh thiếp kinh doanh (Meishi koukan) • N3 [Danh từ] • Hai tay ngang ngực, đọc to rõ họ tên" },
+                                new TargetVocabulary { Word = "応接室", Reading = "おうせつしつ", Meaning = "Phòng tiếp khách đối tác trang trọng (Ousetsushitsu) • N3 [Danh từ] • Phòng họp đón tiếp đối tác" },
+                                new TargetVocabulary { Word = "平素", Reading = "へいそ", Meaning = "Thường ngày / Thời gian qua (Heiso) • N3 [Danh từ] • Bình thường trong giao thiệp: 平素よりお世話になっております" },
+                                new TargetVocabulary { Word = "頂戴いたします", Reading = "ちょうだいいたします", Meaning = "Tôi xin phép được nhận lấy (Choudai itashimasu) • N3 [Động từ khiêm nhường] • Nói khi hai tay đón nhận danh thiếp từ khách" },
+                                new TargetVocabulary { Word = "ご案内", Reading = "ごあんない", Meaning = "Sự dẫn đường / Hướng dẫn lối đi (Goannai) • N3 [Danh từ kính ngữ] • こちらへご案内いたします" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "お目にかかれて光栄に存じます", Meaning = "Thật vinh hạnh khi được diện kiến quý khách", ExampleSentence = "本日お目にかかれて光栄に存じます。" },
-                                new TargetGrammar { Pattern = "～へご案内いたします", Meaning = "Tôi xin phép hướng dẫn quý khách đến...", ExampleSentence = "こちら側の応接室へご案内いたします。" }
+                                new TargetGrammar { Pattern = "いつもお世話になっております、～社の～と申します", Meaning = "Xin chào quý đối tác, tôi là... đến từ công ty... [平素は大変お世話になっております、Công ty + の + Tên + と申します] (Lời chào danh thiếp thương mại trang trọng)", ExampleSentence = "平素は大変お世話になっております。JCAP株式会社のグエンと申します。（へいそはたいへんおせわになっております。JCAPかぶしきがいしゃのグエンともうします - Dạ em xin chào đối tác lâu năm của công ty, em là Nguyen đến từ công ty cổ phần JCAP ạ.）" },
+                                new TargetGrammar { Pattern = "頂戴いたします、お目にかかれて光栄に存じます", Meaning = "Tôi xin trân trọng nhận danh thiếp, thật vinh hạnh được diện kiến quý anh/chị [名刺を頂戴いたします、お目にかかれて光栄に存じます] (Kính ngữ Meishi-koukan đỉnh cao)", ExampleSentence = "恐れ入ります、名刺を頂戴いたします。本日お目にかかれて光栄に存じます。（おそれいります、めいしをちょうだいいたします。ほんじつおめにかかれてこうえいにぞんじます - Dạ em xin phép nhận danh thiếp của anh, hôm nay được gặp anh trực tiếp là niềm vinh hạnh lớn của em ạ.）" },
+                                new TargetGrammar { Pattern = "奥の応接室へご案内いたします、どうぞこちらへ", Meaning = "Tôi xin phép hướng dẫn anh/chị vào phòng tiếp khách phía trong, xin mời lối này [Địa điểm + へご案内いたします、どうぞこちらへ] (Dẫn khách và mời ngồi)", ExampleSentence = "準備が整っておりますので、3階の応接室へご案内いたします。どうぞこちらへお進みください。（じゅんびがととのっておりますので、さんかいのおうせつしつへごあんないいたします。どうぞこちらへおすすみください - Mọi khâu đã chuẩn bị sẵn sàng, em xin mời quý đoàn vào phòng tiếp khách tầng 3 ạ, xin mời đi lối này.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -911,14 +966,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "アイスコーヒー", Reading = "あいすこーひー", Meaning = "Cà phê đá" },
-                                new TargetVocabulary { Word = "サイズ", Reading = "さいず", Meaning = "Kích cỡ đồ uống" },
-                                new TargetVocabulary { Word = "店内", Reading = "てんない", Meaning = "Dùng tại quán" }
+                                new TargetVocabulary { Word = "アイスカフェラテ", Reading = "あいすかふぇらて", Meaning = "Cà phê Latte đá sữa tươi (Iced Cafe Latte) • N5 [Danh từ] • Thức uống phổ biến nhất tại quán cafe Nhật" },
+                                new TargetVocabulary { Word = "サイズ", Reading = "さいず", Meaning = "Kích cỡ ly đồ uống (Size) • N5 [Danh từ] • Gồm S (Short), M (Tall), L (Grande)" },
+                                new TargetVocabulary { Word = "店内利用", Reading = "てんないりよう", Meaning = "Dùng thức uống tại quán (Tennai riyou) • N5 [Danh từ] • Mức thuế 10% tại Nhật" },
+                                new TargetVocabulary { Word = "持ち帰り", Reading = "もちかえり", Meaning = "Mang về / Mua mang đi (Mochikaeri / Take-out) • N5 [Danh từ] • Mức thuế ưu đãi 8% tại Nhật" },
+                                new TargetVocabulary { Word = "呼び出しベル", Reading = "よびだしべる", Meaning = "Thẻ rung báo lấy đồ uống (Yobidashi bell) • N5 [Danh từ] • Thiết bị rung khi nước pha xong" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～をください", Meaning = "Cho tôi xin...", ExampleSentence = "アイスコーヒーのMサイズをください。" },
-                                new TargetGrammar { Pattern = "～でお願いします", Meaning = "Cho tôi chọn...", ExampleSentence = "店内でお願いします。" }
+                                new TargetGrammar { Pattern = "～の～サイズを一つください", Meaning = "Cho tôi một ly... size... [Tên món + の + Size + を + Số lượng + ください] (Mẫu gọi đồ uống kèm size cốc)", ExampleSentence = "アイスカフェラテのMサイズを一つください。（あいすかふぇらてのMさいずをひとつください - Cho tôi một ly Latte đá size M ạ.）" },
+                                new TargetGrammar { Pattern = "～でお願いします", Meaning = "Cho tôi xin dùng tại quán / mang về [店内 / 持ち帰り + でお願いします] (Chọn hình thức thưởng thức)", ExampleSentence = "店内利用でお願いします。（てんないりようでおねがいします - Cho tôi dùng tại quán ạ.）" },
+                                new TargetGrammar { Pattern = "ありがとうございます、楽しみに待っています", Meaning = "Cảm ơn bạn, tôi sẽ háo hức chờ đồ uống [Lời cảm ơn + 楽しみに待っています] (Đối đáp thân thiện lịch sự)", ExampleSentence = "ありがとうございます。ベルが鳴ったら取りに行きますね。（ありがとうございます。べるがなったらとりにいきますね - Cảm ơn bạn nhé, khi nào chuông rung tôi sẽ ra quầy nhận nước.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -965,14 +1023,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "豆乳", Reading = "とうにゅう", Meaning = "Sữa đậu nành / Sữa thực vật" },
-                                new TargetVocabulary { Word = "甘さ控えめ", Reading = "あまさひかえめ", Meaning = "Ít ngọt / Giảm đường" },
-                                new TargetVocabulary { Word = "クレープ", Reading = "くれーぷ", Meaning = "Bánh Crepe Harajuku" }
+                                new TargetVocabulary { Word = "豆乳", Reading = "とうにゅう", Meaning = "Sữa đậu nành thực vật (Tounyuu) • N4 [Danh từ] • Tùy chọn thay thế sữa bò cho người thuần chay hoặc kiêng lactose" },
+                                new TargetVocabulary { Word = "甘さ控えめ", Reading = "あまさひかえめ", Meaning = "Giảm đường / Ít ngọt thanh nhẹ (Amasa hikaeme) • N4 [Cụm từ/Tính từ な] • Nét văn hóa ẩm thực chú trọng sức khỏe tại Nhật" },
+                                new TargetVocabulary { Word = "抹茶クレープ", Reading = "まっちゃくれーぷ", Meaning = "Bánh Crepe trà xanh đặc sản Harajuku (Matcha crepe) • N4 [Danh từ] • Món bánh cuộn nổi tiếng đường Takeshita Harajuku" },
+                                new TargetVocabulary { Word = "おすすめスイーツ", Reading = "おすすめすいーつ", Meaning = "Món tráng miệng được quán gợi ý (Osusume sweets) • N4 [Danh từ] • Món bánh đặc trưng theo mùa" },
+                                new TargetVocabulary { Word = "セット割引", Reading = "せっとわりびき", Meaning = "Giảm giá theo combo đồ uống + bánh ngọt (Set waribiki) • N4 [Danh từ] • Thường giảm 50-100 yên khi gọi kèm" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～に変更できますか", Meaning = "Có thể đổi thành... được không?", ExampleSentence = "ミルクを豆乳に変更できますか。" },
-                                new TargetGrammar { Pattern = "～のおすすめはありますか", Meaning = "Có gợi ý món... nào ngon không?", ExampleSentence = "本日のおすすめスイーツはありますか。" }
+                                new TargetGrammar { Pattern = "牛乳を～に変更できますか", Meaning = "Có thể đổi sữa bò sang... được không ạ? [牛乳を + Sữa thực vật + に変更できますか] (Yêu cầu thay thế nguyên liệu pha chế)", ExampleSentence = "牛乳を豆乳に変更していただくことはできますか。（ぎゅうにゅうをとうにゅうにへんこうしていただくことはできますか - Có thể đổi sữa thường sang sữa đậu nành giúp em được không ạ?）" },
+                                new TargetGrammar { Pattern = "甘さを控えめにすることは可能ですか", Meaning = "Có thể làm ít ngọt / giảm độ ngọt đi được không ạ? [N + を控えめにすることは可能ですか] (Tùy chỉnh khẩu vị pha chế)", ExampleSentence = "シロップを少なめにして、甘さ控えめにすることは可能ですか。（しろっぷをすくなめにして、あまさひかえめにすることはかのうですか - Có thể bớt si-rô lại để giảm độ ngọt thanh hơn được không ạ?）" },
+                                new TargetGrammar { Pattern = "～に一番よく合うデザートはどれですか", Meaning = "Món bánh nào hợp nhất để thưởng thức cùng ly... này ạ? [Tên món + に一番よく合うデザートはどれですか] (Xin lời khuyên pairing đồ uống & bánh ngọt)", ExampleSentence = "このカフェラテに一番よく合うおすすめのクレープを教えてください。（このかふぇらてにいちばんよくあうおすすめのくれーぷをおしえてください - Bạn tư vấn giúp em món bánh crepe nào hợp vị nhất với ly cafe latte này nhé.）" }
                             },
                             Missions = new List<Mission>
                             {
@@ -1019,14 +1080,17 @@ namespace JCAP.Data.Seeds
                             Status = "Published",
                             TargetVocabularies = new List<TargetVocabulary>
                             {
-                                new TargetVocabulary { Word = "自家焙煎", Reading = "じかばいせん", Meaning = "Cà phê tự rang xay thủ công" },
-                                new TargetVocabulary { Word = "電源席", Reading = "でんげんせき", Meaning = "Bàn có ổ cắm sạc điện thoại/laptop" },
-                                new TargetVocabulary { Word = "酸味", Reading = "さんみ", Meaning = "Vị chua thanh tự nhiên" }
+                                new TargetVocabulary { Word = "自家焙煎豆", Reading = "じかばいせんまめ", Meaning = "Hạt cà phê mộc tự rang thủ công tại quán (Jikabaisen mame) • N3 [Danh từ] • Văn hóa Specialty Coffee độc đáo của Nhật Bản" },
+                                new TargetVocabulary { Word = "酸味と苦味のバランス", Reading = "さんみとにがみのばらんす", Meaning = "Sự cân bằng giữa vị chua thanh và vị đắng đậm đà (Sanmi to nigami) • N3 [Cụm danh từ] • Thuật ngữ nếm thử hương vị cà phê (cupping notes)" },
+                                new TargetVocabulary { Word = "電源席", Reading = "でんげんせき", Meaning = "Bàn có ổ cắm điện sạc laptop/điện thoại (Dengenseki) • N3 [Danh từ] • Tiện ích làm việc du mục (nomad working)" },
+                                new TargetVocabulary { Word = "Wi-Fiパスワード", Reading = "わいふぁいぱすわーど", Meaning = "Mật khẩu mạng Wi-Fi (Wi-Fi password) • N3 [Danh từ] • Mật khẩu kết nối internet" },
+                                new TargetVocabulary { Word = "落ち着いた雰囲気", Reading = "おちついたふんいき", Meaning = "Không gian yên tĩnh, ấm cúng và tao nhã (Ochitsuita fun'iki) • N3 [Cụm từ] • Phong cách Wabi-Sabi hoặc Vintage Retro Kissaten" }
                             },
                             TargetGrammars = new List<TargetGrammar>
                             {
-                                new TargetGrammar { Pattern = "～を使わせていただいてもよろしいでしょうか", Meaning = "Tôi xin phép sử dụng... có được không ạ?", ExampleSentence = "Wi-Fiを使わせていただいてもよろしいでしょうか。" },
-                                new TargetGrammar { Pattern = "～の特徴を教えていただけますか", Meaning = "Bạn có thể giải thích đặc trưng của... được không?", ExampleSentence = "このコーヒー豆の特徴を教えていただけますか。" }
+                                new TargetGrammar { Pattern = "～の産地や風味の特徴を教えていただけますか", Meaning = "Bác có thể giải thích giúp cháu về nguồn gốc và đặc trưng hương vị của... được không ạ? [N + の産地や風味の特徴を教えていただけますか] (Đàm đạo chuyên sâu về cà phê thủ công)", ExampleSentence = "こちらの自家焙煎コーヒー豆の産地と風味の特徴について教えていただけますか。（こちらのじかばいせんこーひーまめのさんちとふうみのとくちょうについておしえていただけますか - Bác chủ quán có thể chia sẻ thêm về xuất xứ và hương vị đặc trưng của loại hạt tự rang này được không ạ?）" },
+                                new TargetGrammar { Pattern = "パソコンを使いたいのですが、～をお借りしてもよろしいでしょうか", Meaning = "Cháu muốn dùng máy tính làm việc, cháu xin phép ngồi bàn có... được không ạ? [パソコンを使いたいのですが、N + をお借りしてもよろしいでしょうか] (Xin phép sử dụng không gian làm việc lịch sự)", ExampleSentence = "少し作業をしたいのですが、Wi-Fiのパスワードとコンセントのある席を使わせていただいてもよろしいでしょうか。（すこしさぎょうをしたいのですが、Wi-Fiのパスワードとコンセントのあるせきをつかわせていただいてもよろしいでしょうか - Cháu muốn ngồi làm việc một lát, cháu có thể xin mật khẩu Wi-Fi và ngồi bàn có ổ cắm sạc được không ạ?）" },
+                                new TargetGrammar { Pattern = "素晴らしい雰囲気で大変気に入りました、またぜひ伺わせていただきます", Meaning = "Quán có không gian tuyệt vời và cháu rất thích, chắc chắn cháu sẽ còn ghé lại ạ [Lời khen ngợi không gian và hẹn gặp lại] (Giao tiếp kết nối cảm xúc thân thiện với chủ quán)", ExampleSentence = "コーヒーも香り高く、落ち着いた素晴らしい空間ですね。またぜひ立ち寄らせていただきます。（こーひーもかおりたかく、おちついたすばらしいくうかんですね。またぜひたちよらせていただきます - Cà phê đượm hương mà không gian lại tĩnh lặng an yên tuyệt vời quá ạ. Chắc chắn cháu sẽ còn ghé quán nhiều lần nữa.）" }
                             },
                             Missions = new List<Mission>
                             {

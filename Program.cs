@@ -125,6 +125,7 @@ builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
+builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
 builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
 // Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
@@ -133,8 +134,9 @@ builder.Services.AddHttpClient<VoiceVoxKanaReader>();
 builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
-builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
+builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
+builder.Services.AddSingleton<IEventDirector, EventDirector>();
 builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
 builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
 builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
@@ -143,6 +145,7 @@ builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
 builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddHostedService<BackgroundAudioCleanupService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
 builder.Services.AddRateLimiter(options =>
@@ -233,6 +236,24 @@ app.MapControllers();
 
 // Tự động nạp dữ liệu mẫu (Seed Data)
 await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
+
+// Tự động kiểm tra và khởi chạy Faster-Whisper Engine ngầm nếu máy có python và script server.py
+_ = Task.Run(async () =>
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var whisperService = scope.ServiceProvider.GetRequiredService<JCAP.Services.Interfaces.IWhisperSttService>();
+        if (!await whisperService.IsAvailableAsync())
+        {
+            await whisperService.TryAutoStartEngineAsync();
+        }
+    }
+    catch
+    {
+        // Engine vắng mặt thì bỏ qua, hệ thống đã có Web Speech API native fallback
+    }
+});
 
 app.Run();
 

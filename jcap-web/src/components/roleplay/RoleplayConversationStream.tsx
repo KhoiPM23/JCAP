@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import type { RoleplayMessageDto } from '../../types/roleplay';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
+import { SumiInkIndicator } from './SumiInkIndicator';
+import { cleanFuriganaHtml, sanitizeDisplayJapanese } from '../../utils/japaneseSanitizer';
 
 export interface RoleplayConversationStreamProps {
   messages: RoleplayMessageDto[];
@@ -33,33 +35,17 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  const sanitizeDisplayJapanese = (raw?: string): string => {
-    if (!raw) return '';
-    const trimmed = raw.trim();
-    const withoutParen = trimmed.replace(/[\(（][^\)）]*[a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\)）]*[\)）]/g, '').trim();
-    const viMatch = withoutParen.match(/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(cháu|cụ|bác|ông|bà|anh|chi|chị|em|bạn|tôi|mình|thật|tốt|bụng|cẩn|thận|nhé|đi|về|nhiều|lắm|người|cảm|ơn|xin|chào|dịch|nghĩa|rất|hãy)\b/i);
-    if (viMatch && viMatch.index !== undefined && viMatch.index > 0) {
-      const cleanPrefix = withoutParen.slice(0, viMatch.index).trim();
-      if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(cleanPrefix)) {
-        const sanitized = cleanPrefix.replace(/[,、\s]+$/, '');
-        return (sanitized.endsWith('。') || sanitized.endsWith('！') || sanitized.endsWith('？') || sanitized.endsWith('!'))
-          ? sanitized
-          : sanitized + '。';
-      }
-    }
-    return withoutParen;
-  };
-
   const renderJapaneseText = (msg: RoleplayMessageDto, isUser: boolean) => {
     if (showFurigana && msg.furiganaHtml) {
       return (
         <span
           className={isUser ? 'bubble-user text-base font-sans' : 'bubble-ai text-base font-sans'}
-          dangerouslySetInnerHTML={{ __html: sanitizeDisplayJapanese(msg.furiganaHtml) }}
+          dangerouslySetInnerHTML={{ __html: cleanFuriganaHtml(msg.furiganaHtml) }}
         />
       );
     }
-    return <span className="text-base font-sans leading-relaxed tracking-wide">{sanitizeDisplayJapanese(msg.japaneseText)}</span>;
+    const rawText = msg.japaneseText || msg.furiganaHtml || '';
+    return <span className="text-base font-sans leading-relaxed tracking-wide">{sanitizeDisplayJapanese(rawText)}</span>;
   };
 
   return (
@@ -145,8 +131,8 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                   }}
                   className={`p-4 rounded-2xl rounded-tr-xs transition cursor-pointer relative shadow-xs border ${
                     isSelected
-                      ? 'bg-blue-900 text-white border-blue-950 ring-2 ring-blue-400'
-                      : 'bg-slate-900 text-white border-slate-950 hover:bg-slate-800'
+                      ? 'bg-[#EFF5FA] text-[var(--sumi)] border-[var(--ai)]/50 ring-2 ring-[var(--ai)]/40 shadow-sm'
+                      : 'bg-[#EFF5FA] text-[var(--sumi)] border-[#BFDBFE]/80 hover:bg-[#E6F0FA]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -154,7 +140,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
 
                     {/* Huy hiệu điểm lượt nói */}
                     {msg.linguisticFeedback?.speechDelivery?.turnFluencyScore && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/20 text-white">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/80 text-[var(--ai)] border border-[#BFDBFE]/80">
                         {msg.linguisticFeedback.speechDelivery.turnFluencyScore}đ
                       </span>
                     )}
@@ -162,7 +148,7 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
 
                   {/* Dịch nghĩa tiếng Việt */}
                   {showVietnamese && msg.vietnameseMeaning && (
-                    <p className="text-xs text-blue-200/90 mt-2 pt-2 border-t border-white/10 italic">
+                    <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-blue-200/50 italic">
                       {msg.vietnameseMeaning}
                     </p>
                   )}
@@ -170,9 +156,9 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                   {/* Nhãn Kintsugi nếu có lỗi chuyển dịch được phát hiện */}
                   {msg.linguisticFeedback?.grammarAccuracy?.errors &&
                     msg.linguisticFeedback.grammarAccuracy.errors.length > 0 && (
-                      <div className="mt-2.5 px-2 py-1 rounded-lg bg-amber-500/20 border border-amber-400/40 text-[11px] text-amber-200 flex items-center justify-between">
+                      <div className="mt-2.5 px-2 py-1 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center justify-between">
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-xs text-amber-400">auto_fix_high</span>
+                          <span className="material-symbols-outlined text-xs text-amber-600">auto_fix_high</span>
                           <span>Bấm để xem nhận xét sửa câu</span>
                         </span>
                         {onRedoTurn && (
@@ -183,13 +169,23 @@ export const RoleplayConversationStream: React.FC<RoleplayConversationStreamProp
                               ukiyoSound.playWoodblockSnap();
                               onRedoTurn(msg);
                             }}
-                            className="px-2 py-0.5 rounded bg-amber-400/30 hover:bg-amber-400/50 text-white font-bold text-[10px]"
+                            className="px-2 py-0.5 rounded bg-amber-200/60 hover:bg-amber-300 text-amber-950 font-bold text-[10px]"
                           >
                             Nói lại ↻
                           </button>
                         )}
                       </div>
                     )}
+
+                  {/* Chỉ số thể văn & Vòng tự sửa 1-Click */}
+                  {msg.linguisticFeedback?.sumiInk && (
+                    <div className="mt-2 flex justify-end">
+                      <SumiInkIndicator
+                        feedback={msg.linguisticFeedback.sumiInk}
+                        onRedo={onRedoTurn ? () => onRedoTurn(msg) : undefined}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -122,6 +122,49 @@ namespace JCAP.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("JCAP.Models.CharacterMemory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AffinityScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("CharacterPersonaKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EncounterCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("LastInteractionSummary")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("LastMetAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CharacterPersonaKey");
+
+                    b.ToTable("CharacterMemories");
+                });
+
             modelBuilder.Entity("JCAP.Models.CreditPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -1265,6 +1308,65 @@ namespace JCAP.Migrations
                     b.ToTable("LearnerIntelligenceProfiles");
                 });
 
+            modelBuilder.Entity("JCAP.Models.LearnerMemory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<double>("Confidence")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(1.0);
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("LastConfirmedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("SourceSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("WorldKnown");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Category", "Key");
+
+                    b.ToTable("LearnerMemories");
+                });
+
             modelBuilder.Entity("JCAP.Models.LearnerSkillMastery", b =>
                 {
                     b.Property<int>("Id")
@@ -1685,6 +1787,9 @@ namespace JCAP.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("CompatibleEventsJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1696,6 +1801,11 @@ namespace JCAP.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<int>("ExpectedLearnerRegister")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("JLPTLevel")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -1703,6 +1813,11 @@ namespace JCAP.Migrations
 
                     b.Property<int>("ScenarioId")
                         .HasColumnType("int");
+
+                    b.Property<int>("SpeakRegister")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2436,6 +2551,17 @@ namespace JCAP.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("JCAP.Models.CharacterMemory", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCAP.Models.CreditTransaction", b =>
                 {
                     b.HasOne("JCAP.Models.ApplicationUser", "User")
@@ -2786,6 +2912,17 @@ namespace JCAP.Migrations
                 });
 
             modelBuilder.Entity("JCAP.Models.LearnerIntelligenceProfile", b =>
+                {
+                    b.HasOne("JCAP.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JCAP.Models.LearnerMemory", b =>
                 {
                     b.HasOne("JCAP.Models.ApplicationUser", "User")
                         .WithMany()

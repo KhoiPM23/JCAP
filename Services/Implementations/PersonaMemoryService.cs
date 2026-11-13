@@ -51,8 +51,10 @@ namespace JCAP.Services.Implementations
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(npcCode))
                 return;
 
-            var rel = await _context.UserNpcRelationships
-                .FirstOrDefaultAsync(r => r.UserId == userId && r.NpcCode == npcCode);
+            var rel = _context.UserNpcRelationships.Local
+                .FirstOrDefault(r => r.UserId == userId && r.NpcCode == npcCode)
+                ?? await _context.UserNpcRelationships
+                    .FirstOrDefaultAsync(r => r.UserId == userId && r.NpcCode == npcCode);
 
             if (rel == null)
             {

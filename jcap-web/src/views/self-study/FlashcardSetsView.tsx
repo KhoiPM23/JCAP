@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Icon } from '../../components/jcap/Icon';
 import { flashcardService } from '../../services/flashcardService';
 import type { FlashcardQuota, FlashcardSetSummary, FlashcardContentType, BookmarkItem } from '../../types/flashcard';
 
@@ -46,6 +47,9 @@ export const FlashcardSetsView: React.FC = () => {
   useEffect(() => {
     const isBookmark = location.pathname.endsWith('/bookmarks') || searchParams.get('tab') === 'bookmarks';
     setActiveTab(isBookmark ? 'bookmarks' : 'sets');
+    if (isBookmark && !searchParams.get('level')) {
+      setJlptFilter('All');
+    }
   }, [location.pathname, searchParams]);
   const [typeFilter, setTypeFilter] = useState<'All' | FlashcardContentType>('All');
   const [jlptFilter, setJlptFilter] = useState<string>(initialJlpt);
@@ -116,23 +120,90 @@ export const FlashcardSetsView: React.FC = () => {
   const loadBookmarks = async () => {
     setBookmarksLoading(true);
     const res = await flashcardService.getBookmarks(typeFilter, jlptFilter, searchQuery);
+    let apiItems: BookmarkItem[] = [];
     if (res.success && res.data && Array.isArray(res.data.items)) {
-      setBookmarks(res.data.items);
-    } else {
-      setBookmarks([]);
+      apiItems = res.data.items;
     }
+
+    // Đọc thêm từ localStorage "jcap_saved_flashcards" để đồng bộ tức thì các từ vừa lưu từ kịch bản / radar
+    let localItems: BookmarkItem[] = [];
+    try {
+      const raw = localStorage.getItem('jcap_saved_flashcards');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          localItems = parsed.map((it: any, idx: number) => ({
+            bookmarkId: 90000 + idx,
+            itemType: (it.type === 'grammar' || it.itemType === 'grammar' || it.pattern) ? 'Grammar' : 'Vocabulary',
+            itemId: it.id || (idx + 1),
+            frontText: it.word || it.pattern || it.frontText || '',
+            readingOrFormation: it.reading || it.formation || it.readingOrFormation || '',
+            meaning: it.meaning || '',
+            partOfSpeech: it.partOfSpeech || (it.type === 'grammar' || it.pattern ? 'Cấu trúc' : 'Từ vựng'),
+            explanation: it.explanation || it.reason || '',
+            exampleSentence: it.exampleSentence || '',
+            jlptLevel: (it.jlptLevel || 'N5').toUpperCase(),
+            isAvailable: true,
+            srsState: 'New',
+            intervalDays: 0,
+            bookmarkedAt: it.savedAt || it.addedAt || new Date().toISOString(),
+          }));
+        }
+      }
+    } catch {}
+
+    // Merge: không trùng lặp các từ đã có trong apiItems (so sánh case-insensitive)
+    const mergedMap = new Map<string, BookmarkItem>();
+    apiItems.forEach((item) => {
+      const key = `${item.itemType.toLowerCase()}:${item.frontText.trim().toLowerCase()}`;
+      mergedMap.set(key, item);
+    });
+    localItems.forEach((item) => {
+      const key = `${item.itemType.toLowerCase()}:${item.frontText.trim().toLowerCase()}`;
+      if (!mergedMap.has(key)) {
+        mergedMap.set(key, item);
+      }
+    });
+
+    let allMerged = Array.from(mergedMap.values());
+    if (typeFilter && typeFilter !== 'All') {
+      allMerged = allMerged.filter((it) => it.itemType.toLowerCase() === typeFilter.toLowerCase());
+    }
+    if (jlptFilter && jlptFilter !== 'All') {
+      allMerged = allMerged.filter((it) => (it.jlptLevel || 'N5').toUpperCase() === jlptFilter.toUpperCase());
+    }
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      allMerged = allMerged.filter(
+        (it) =>
+          it.frontText.toLowerCase().includes(q) ||
+          it.meaning.toLowerCase().includes(q) ||
+          (it.readingOrFormation && it.readingOrFormation.toLowerCase().includes(q))
+      );
+    }
+
+    setBookmarks(allMerged);
     setBookmarksLoading(false);
   };
 
   useEffect(() => {
     loadBookmarks();
-  }, []);
+
+    const handleBookmarksUpdated = () => {
+      loadBookmarks();
+    };
+    window.addEventListener('jcap_bookmarks_updated', handleBookmarksUpdated);
+
+    return () => {
+      window.removeEventListener('jcap_bookmarks_updated', handleBookmarksUpdated);
+    };
+  }, [typeFilter, jlptFilter, searchQuery]);
 
   useEffect(() => {
     if (activeTab === 'bookmarks') {
       loadBookmarks();
     }
-  }, [activeTab, typeFilter, jlptFilter, searchQuery]);
+  }, [activeTab]);
 
   // Mở thêm 10 thẻ mới bằng Credits thực sự qua API
   const handleUnlockExtra = async () => {
@@ -480,8 +551,8 @@ export const FlashcardSetsView: React.FC = () => {
             {/* Header thanh điều khiển luyện tập Bookmark */}
             <div className="bg-warning-soft/30 border border-warning/30 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-paper-50 border border-warning/30 flex items-center justify-center text-2xl shadow-xs">
-                  🔖
+                <div className="w-12 h-12 rounded-2xl bg-paper-50 border border-warning/30 flex items-center justify-center text-amber-700 font-serif font-black text-xl shadow-xs">
+                  記
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -505,16 +576,16 @@ export const FlashcardSetsView: React.FC = () => {
                   onClick={() => navigate('/flashcards/test/bookmarks/mixed?source=bookmark')}
                   className="md:ml-auto px-4 py-3 rounded-xl bg-white hover:bg-amber-100/60 text-amber-900 border border-amber-300 font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
                 >
-                  <span>📝</span>
+                  <Icon name="quiz" size={16} />
                   <span>Kiểm tra ({bookmarks.length} thẻ)</span>
                 </button>
                 <button
                   onClick={() => navigate('/flashcards/study/0/Mixed?source=bookmark')}
-                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                  className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
                 >
-                  <span>🔥</span>
+                  <Icon name="play_arrow" size={16} />
                   <span>Luyện tập ngay ({bookmarks.length} thẻ)</span>
-                  <span>➔</span>
+                  <span>→</span>
                 </button>
               </div>
               )}
@@ -529,19 +600,21 @@ export const FlashcardSetsView: React.FC = () => {
               </div>
             ) : bookmarks.length === 0 ? (
               <div className="bg-paper-50 rounded-2xl border border-line p-12 text-center space-y-4">
-                <div className="text-5xl">🔖</div>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 text-2xl font-serif font-black">
+                  栞
+                </div>
                 <h3 className="text-base font-bold text-sumi">
                   Bạn chưa lưu thẻ flashcard nào
                 </h3>
                 <p className="text-xs text-sumi-muted max-w-md mx-auto leading-relaxed">
-                  Khi thực hành đàm thoại trong kịch bản (Scenario) hoặc xem kết quả phân tích ngôn ngữ, hãy nhấn vào biểu tượng 🔖 để lưu các từ vựng & ngữ pháp trọng tâm vào đây.
+                  Khi thực hành đàm thoại trong kịch bản (Scenario) hoặc xem kết quả phân tích ngôn ngữ, hãy nhấn vào biểu tượng lưu để lưu các từ vựng & ngữ pháp trọng tâm vào đây.
                 </p>
                 <div className="pt-2">
                   <Link
                     to="/flashcards"
                     className="inline-block px-4 py-2 bg-ai-soft text-ai hover:opacity-90 font-bold rounded-xl text-xs transition border border-ai/20 cursor-pointer"
                   >
-                    Khám phá bộ thẻ theo chủ đề ➔
+                    Khám phá bộ thẻ theo chủ đề →
                   </Link>
                 </div>
               </div>

@@ -28,7 +28,14 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
 const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards'];
-const isThemedPath = (p: string) => p === '/learning' || p.startsWith('/learning/') || THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/') || p.startsWith('/flashcards');
+const isThemedPath = (p: string) =>
+  p === '/learning' ||
+  p.startsWith('/learning/') ||
+  p.startsWith('/scenarios') ||
+  p.startsWith('/roleplay/results') ||
+  p.startsWith('/profile') ||
+  p.startsWith('/flashcards') ||
+  THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
 
 /**
  * Một trang trong khung. Khi bị gỡ vì đã sang trang khác, để lại một bản sao DOM (chỉ để nhìn) mờ dần trong 0,14s như prototype
@@ -108,8 +115,14 @@ export const LearnerShell: React.FC = () => {
   currentKey.current = pathname;
   const ghostRef = useRef<HTMLDivElement>(null);
   const lightIsland = isDark && !mapRoute && !isThemedPath(pathname);
-  // Sổ con dấu: cả trang (kể cả thanh bên) theo giấy Khám phá + sóng biển; chế độ tối giữ tông tối, chỉ cuốn sổ giữ giấy sáng
-  const stampsPage = pathname.replace(/\/+$/, '') === '/stamps';
+  // Sổ con dấu & Bản đồ Nhiệm vụ Hội thoại AI: cả trang theo giấy Khám phá + sóng biển Seigaiha thanh nhã
+  const cleanPath = pathname.replace(/\/+$/, '');
+  const stampsPage = cleanPath === '/stamps';
+  const isWavyPage =
+    stampsPage ||
+    cleanPath.startsWith('/scenarios') ||
+    cleanPath.startsWith('/roleplay/results') ||
+    cleanPath.startsWith('/profile');
 
   // Nền ngoài khung (vùng cuộn thừa, đầu trang) theo màu tối khi bật chế độ tối; chỉ đặt khi khung học viên đang hiện
   useEffect(() => {
@@ -171,7 +184,7 @@ export const LearnerShell: React.FC = () => {
       <div className="jx-pgbg" aria-hidden="true" />
 
       {!mapRoute && (
-        <main className={cx('jx-page', pending && 'is-pending', stampsPage && 'jx-waves')}>
+        <main className={cx('jx-page', pending && 'is-pending', isWavyPage && 'jx-waves')}>
           <PageFrame key={pathname} routeKey={pathname} currentKey={currentKey} ghostRef={ghostRef} className="jx-page-inner px-4 py-5 md:p-8">
             {lightIsland ? (
               <div data-theme="hoc-tap" className="jx-light-island">

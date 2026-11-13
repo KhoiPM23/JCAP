@@ -108,7 +108,7 @@ describe('FE-03 Adversarial: GraduatedHintCard Scaffolding & Autonomy Scenarios'
     );
 
     assert.ok(html.includes('Giàn giáo ZPD'), 'Should render ZPD card');
-    assert.ok(html.includes('Cấp 2: Điền khuyết'), 'Should offer Tier 2 button');
+    assert.ok(html.includes('Nâng cấp gợi ý: Cấp 2'), 'Should offer Tier 2 button');
   });
 
   it('Tier 3: Sanitizes Vietnamese leakage from Japanese model sentence', () => {

@@ -314,13 +314,34 @@ class FlashcardService {
   // 6. Bookmarks (UC-52, UC-53)
   // ============================================================
 
-  public async toggleBookmark(itemType: 'Vocabulary' | 'Grammar', itemId: number): Promise<{
+  public async toggleBookmark(
+    itemType: 'Vocabulary' | 'Grammar',
+    itemId: number,
+    meta?: {
+      word?: string;
+      reading?: string;
+      meaning?: string;
+      pattern?: string;
+      exampleSentence?: string;
+      jlptLevel?: string;
+    }
+  ): Promise<{
     success: boolean;
     data?: ToggleBookmarkResponse;
     message?: string;
   }> {
     try {
-      const payload: { vocabularyId?: number; grammarId?: number } = {};
+      const payload: {
+        vocabularyId?: number;
+        grammarId?: number;
+        word?: string;
+        reading?: string;
+        meaning?: string;
+        pattern?: string;
+        exampleSentence?: string;
+        jlptLevel?: string;
+      } = { ...meta };
+
       if (itemType.toLowerCase() === 'grammar') {
         payload.grammarId = itemId;
       } else {

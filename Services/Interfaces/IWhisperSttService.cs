@@ -11,4 +11,6 @@ public interface IWhisperSttService
         CancellationToken cancellationToken = default);
 
     Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
+
+    Task<bool> TryAutoStartEngineAsync(CancellationToken cancellationToken = default);
 }
