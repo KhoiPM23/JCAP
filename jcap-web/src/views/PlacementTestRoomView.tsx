@@ -79,6 +79,7 @@ export const PlacementTestRoomView: React.FC = () => {
     grammar: number;
     vocab: number;
     pragmatics: number;
+    overall: number;
     note: string;
     classification: string;
     detectedIntent: string;
@@ -104,6 +105,15 @@ export const PlacementTestRoomView: React.FC = () => {
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
 
   const recognitionRef = useRef<any>(null);
+  const isMicActiveRef = useRef(false);
+  const usedVoiceInputRef = useRef(false);
+  const micStartedAtRef = useRef<number>(0);
+  const lastSpeechActivityAtRef = useRef<number>(0);
+  const silenceCountdownIntervalRef = useRef<number | null>(null);
+  const committedTranscriptRef = useRef<string>('');
+  const currentSessionTranscriptRef = useRef<string>('');
+  const micRestartCountRef = useRef(0);
+  const [micSilenceProgress, setMicSilenceProgress] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const turnStartTimeRef = useRef<number>(Date.now());
 
@@ -113,7 +123,189 @@ export const PlacementTestRoomView: React.FC = () => {
   }, [messages, isSending]);
 
   // Khởi tạo hoặc tải phiên làm bài kiểm tra từ Backend
+  const [isFinalizingAudio, setIsFinalizingAudio] = useState(false);
+  const isMountedRef = useRef(true);
+  const sessionRunIdRef = useRef(0);
+  const speechTokenRef = useRef(0);
+  const cancelActiveSpeechRef = useRef<(() => void) | null>(null);
+
+  const MIC_SILENCE_TIMEOUT_MS = 5000;
+
+  const combineTranscriptParts = (committed: string, current: string) => {
+    const a = committed.trim();
+    const b = current.trim();
+    if (!a) return b;
+    if (!b) return a;
+    return `${a} ${b}`;
+  };
+
+  const stopMicRecording = () => {
+    isMicActiveRef.current = false;
+    micRestartCountRef.current = 0;
+
+    if (silenceCountdownIntervalRef.current !== null) {
+      window.clearInterval(silenceCountdownIntervalRef.current);
+      silenceCountdownIntervalRef.current = null;
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onstart = null;
+        recognitionRef.current.onspeechstart = null;
+        recognitionRef.current.onspeechend = null;
+        recognitionRef.current.onsoundstart = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.stop();
+      } catch {
+        try {
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+      recognitionRef.current = null;
+    }
+
+    if (isMountedRef.current) {
+      setMicSilenceProgress(0);
+      setIsRecordingMic(false);
+    }
+  };
+
+  const refreshMicSilenceActivity = () => {
+    if (!isMicActiveRef.current) return;
+    lastSpeechActivityAtRef.current = Date.now();
+    micRestartCountRef.current = 0;
+    if (isMountedRef.current) {
+      setMicSilenceProgress(0);
+    }
+  };
+
+  const startSilenceCountdownTimer = () => {
+    if (silenceCountdownIntervalRef.current !== null) {
+      window.clearInterval(silenceCountdownIntervalRef.current);
+    }
+    silenceCountdownIntervalRef.current = window.setInterval(() => {
+      if (!isMicActiveRef.current) {
+        if (silenceCountdownIntervalRef.current !== null) {
+          window.clearInterval(silenceCountdownIntervalRef.current);
+          silenceCountdownIntervalRef.current = null;
+        }
+        return;
+      }
+
+      const elapsed = Date.now() - lastSpeechActivityAtRef.current;
+      const progress = Math.min(1, Math.max(0, elapsed / MIC_SILENCE_TIMEOUT_MS));
+      if (isMountedRef.current) {
+        setMicSilenceProgress(progress);
+      }
+
+      if (elapsed >= MIC_SILENCE_TIMEOUT_MS) {
+        stopMicRecording();
+      }
+    }, 50);
+  };
+
+  const startRecognitionInstance = (SpeechRecognitionCtor: any) => {
+    if (!isMicActiveRef.current) return;
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'ja-JP';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+      if (!isMicActiveRef.current) {
+        try {
+          recognition.stop();
+        } catch {
+          // ignore
+        }
+        return;
+      }
+      if (isMountedRef.current) {
+        setIsRecordingMic(true);
+      }
+    };
+
+    recognition.onspeechstart = () => {
+      refreshMicSilenceActivity();
+    };
+
+    recognition.onspeechend = () => {
+      refreshMicSilenceActivity();
+    };
+
+    recognition.onresult = (event: any) => {
+      if (!isMicActiveRef.current) return;
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0]?.transcript || '')
+        .join('')
+        .trim();
+
+      currentSessionTranscriptRef.current = transcript;
+      if (transcript.length > 0) {
+        usedVoiceInputRef.current = true;
+        refreshMicSilenceActivity();
+        setInputText(combineTranscriptParts(committedTranscriptRef.current, transcript));
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      if (
+        event.error === 'not-allowed' ||
+        event.error === 'service-not-allowed' ||
+        event.error === 'audio-capture'
+      ) {
+        stopMicRecording();
+      }
+    };
+
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+      }
+
+      if (currentSessionTranscriptRef.current.trim()) {
+        committedTranscriptRef.current = combineTranscriptParts(
+          committedTranscriptRef.current,
+          currentSessionTranscriptRef.current
+        );
+        currentSessionTranscriptRef.current = '';
+      }
+
+      if (!isMicActiveRef.current) {
+        return;
+      }
+
+      const remainingMs = MIC_SILENCE_TIMEOUT_MS - (Date.now() - lastSpeechActivityAtRef.current);
+      if (remainingMs > 250 && micRestartCountRef.current < 8) {
+        micRestartCountRef.current += 1;
+        try {
+          startRecognitionInstance(SpeechRecognitionCtor);
+          return;
+        } catch (restartErr) {
+          console.warn('Cannot keep speech recognition open during hesitation:', restartErr);
+        }
+      }
+
+      stopMicRecording();
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
   const loadPlacementSession = async (reset: boolean = false) => {
+    sessionRunIdRef.current += 1;
+    stopMicRecording();
+    cancelActiveSpeechRef.current?.();
+    scenarioVoiceService.stopAllAudio();
+    setPlayingMessageId(null);
+    setIsFinalizingAudio(false);
     setIsLoading(true);
     setLoadError(null);
     setStrikeWarning(null);
@@ -149,14 +341,156 @@ export const PlacementTestRoomView: React.FC = () => {
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
     void loadPlacementSession(false);
+    return () => {
+      isMountedRef.current = false;
+      sessionRunIdRef.current += 1;
+      stopMicRecording();
+    cancelActiveSpeechRef.current?.();
+      scenarioVoiceService.stopAllAudio();
+    };
   }, []);
+
+  // Tổng hợp & phát giọng đọc AI; chỉ hiển thị tin nhắn khi bắt đầu phát (hoặc fallback),
+  // và resolve Promise khi âm thanh phát xong 100% (hoặc bị hủy/lỗi).
+  const playAiSpeechWithLifecycle = (
+    msgId: number,
+    text: string,
+    onReadyToDisplay?: () => void
+  ): Promise<void> => {
+    stopMicRecording();
+    cancelActiveSpeechRef.current?.();
+
+    const token = ++speechTokenRef.current;
+    const speakerId = contextPackage?.receptionistSpeakerId;
+
+    return new Promise<void>((resolve) => {
+      let hasRevealed = false;
+      let hasFinished = false;
+      let startSafetyTimer: number | null = null;
+      let postStartFallbackTimer: number | null = null;
+      let playbackEndSafetyTimer: number | null = null;
+
+      const clearAllTimers = () => {
+        if (startSafetyTimer !== null) {
+          window.clearTimeout(startSafetyTimer);
+          startSafetyTimer = null;
+        }
+        if (postStartFallbackTimer !== null) {
+          window.clearTimeout(postStartFallbackTimer);
+          postStartFallbackTimer = null;
+        }
+        if (playbackEndSafetyTimer !== null) {
+          window.clearTimeout(playbackEndSafetyTimer);
+          playbackEndSafetyTimer = null;
+        }
+      };
+
+      const ensurePlaybackEndSafetyTimer = () => {
+        if (playbackEndSafetyTimer !== null || hasFinished) return;
+        const estimatedMaxPlaybackMs = Math.min(40000, Math.max(15000, text.length * 450));
+        playbackEndSafetyTimer = window.setTimeout(() => {
+          finishNow();
+        }, estimatedMaxPlaybackMs);
+      };
+
+      const revealNow = (markAsSpeaking: boolean) => {
+        if (startSafetyTimer !== null) {
+          window.clearTimeout(startSafetyTimer);
+          startSafetyTimer = null;
+        }
+        if (postStartFallbackTimer !== null) {
+          window.clearTimeout(postStartFallbackTimer);
+          postStartFallbackTimer = null;
+        }
+        if (!hasRevealed) {
+          hasRevealed = true;
+          if (isMountedRef.current) {
+            onReadyToDisplay?.();
+          }
+        }
+        if (markAsSpeaking && isMountedRef.current && speechTokenRef.current === token) {
+          setPlayingMessageId(msgId);
+        }
+        ensurePlaybackEndSafetyTimer();
+      };
+
+      const finishNow = () => {
+        if (hasFinished) return;
+        hasFinished = true;
+        clearAllTimers();
+        if (cancelActiveSpeechRef.current === cancelCurrent) {
+          cancelActiveSpeechRef.current = null;
+        }
+        revealNow(false);
+        if (isMountedRef.current && speechTokenRef.current === token) {
+          setPlayingMessageId((prev) => (prev === msgId ? null : prev));
+        }
+        resolve();
+      };
+
+      const cancelCurrent = () => {
+        finishNow();
+      };
+      cancelActiveSpeechRef.current = cancelCurrent;
+
+      if (!text.trim()) {
+        finishNow();
+        return;
+      }
+
+      // Dự phòng tối đa cho pha tổng hợp + khởi phát audio (VOICEVOX timeout hiện tại cho AI roleplay là 25s)
+      startSafetyTimer = window.setTimeout(() => {
+        revealNow(false);
+      }, 28000);
+
+      scenarioVoiceService
+        .playAiSpeech(
+          text,
+          speakerId,
+          () => {
+            finishNow();
+          },
+          undefined,
+          () => {
+            revealNow(true);
+          }
+        )
+        .then(() => {
+          if (startSafetyTimer !== null) {
+            window.clearTimeout(startSafetyTimer);
+            startSafetyTimer = null;
+          }
+          // Khi playAiSpeech resolve: VOICEVOX đã play() hoặc đã kích hoạt fallback Web Speech.
+          // Nếu trình duyệt chặn autoplay khiến onStart chưa bắn kịp, hiển thị text sau tối đa 1.5s.
+          if (!hasRevealed && !hasFinished) {
+            postStartFallbackTimer = window.setTimeout(() => {
+              revealNow(false);
+            }, 1500);
+          }
+        })
+        .catch((err) => {
+          console.warn('Playback error:', err);
+          finishNow();
+        });
+    });
+  };
 
   // Xử lý gửi tin nhắn của học viên lên Backend
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || isSending || !sessionId) return;
+    if (!inputText.trim() || isSending || isFinalizingAudio || !sessionId) return;
 
+    const runId = sessionRunIdRef.current;
+    const usedMicForTurn = isRecordingMic || isMicActiveRef.current || usedVoiceInputRef.current;
+    const micDurationSec =
+      usedMicForTurn && micStartedAtRef.current > 0
+        ? Math.max(1.0, Number(((Date.now() - micStartedAtRef.current) / 1000).toFixed(1)))
+        : 0;
+    stopMicRecording();
+    usedVoiceInputRef.current = false;
+    micStartedAtRef.current = 0;
     const userText = inputText.trim();
     setInputText('');
     setIsSending(true);
@@ -178,85 +512,107 @@ export const PlacementTestRoomView: React.FC = () => {
     try {
       const res = await placementTestService.sendMessage(sessionId, {
         message: userText,
-        fallbackToTextInput: !isRecordingMic,
+        fallbackToTextInput: !usedMicForTurn,
         responseLatencySeconds: latencySeconds,
-        speakingDurationSeconds: isRecordingMic ? 3.0 : 0,
+        speakingDurationSeconds: usedMicForTurn ? (micDurationSec || 3.0) : 0,
       });
+
+      if (!isMountedRef.current || sessionRunIdRef.current !== runId) {
+        if (isMountedRef.current) setIsSending(false);
+        return;
+      }
 
       if (res.success && res.data) {
         const turnData = res.data;
 
-        // Cập nhật lại tin nhắn chuẩn từ backend (bao gồm cả phân tích furigana & dịch)
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          turnData.userMessage,
-          turnData.aiMessage,
-        ]);
+        // Cập nhật ngay tin nhắn của học viên (furigana & dịch);
+        // giữ trạng thái chờ để đồng bộ tin nhắn AI xuất hiện đúng lúc âm thanh bắt đầu phát.
+        setMessages((prev) => [...prev.slice(0, -1), turnData.userMessage]);
 
-        // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp
-        setCurrentEvent(turnData.currentEvent);
-        setCurrentDifficultyBand(turnData.currentDifficultyBand);
-        setDemonstratedBand(turnData.demonstratedBand);
-        setScaffoldingStep(turnData.scaffoldingStep);
+        let aiTurnRevealed = false;
+        const revealAiTurn = () => {
+          if (aiTurnRevealed || !isMountedRef.current || sessionRunIdRef.current !== runId) return;
+          aiTurnRevealed = true;
 
-        if (turnData.eventSummaries) {
-          setEventSummaries(turnData.eventSummaries);
-        }
+          setMessages((prev) => [...prev, turnData.aiMessage]);
 
-        if (turnData.taskFulfillmentScore != null) {
-          setLatestTurnScores({
-            task: turnData.taskFulfillmentScore,
-            grammar: turnData.grammarAccuracyScore ?? 0,
-            vocab: turnData.vocabularyRangeScore ?? 0,
-            pragmatics: turnData.pragmaticsScore ?? 0,
-            note: turnData.evidenceNote || '',
-            classification: turnData.inputClassification || 'Valid',
-            detectedIntent: turnData.detectedIntent || 'GeneralResponse',
-            demonstratedBand: turnData.demonstratedBand || 'N4',
-            estimatedLevelSoFar: turnData.estimatedLevelSoFar || undefined,
-          });
-        }
+          // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp
+          setCurrentEvent(turnData.currentEvent);
+          setCurrentDifficultyBand(turnData.currentDifficultyBand);
+          setDemonstratedBand(turnData.demonstratedBand);
+          setScaffoldingStep(turnData.scaffoldingStep);
 
-        // Cảnh báo nếu học viên nói lạc đề hoặc vi phạm nguyên tắc
-        if (turnData.isStrikeWarning && turnData.strikeWarningMessage) {
-          setStrikeWarning(turnData.strikeWarningMessage);
-        }
+          if (turnData.eventSummaries) {
+            setEventSummaries(turnData.eventSummaries);
+          }
 
-        // Tự động phát âm thanh câu trả lời của AI nếu bật
-        if (turnData.aiMessage?.japaneseText) {
-          void handlePlayAiSpeech(turnData.aiMessage.id, turnData.aiMessage.japaneseText);
-        }
+          if (turnData.taskFulfillmentScore != null) {
+            const taskVal = turnData.taskFulfillmentScore;
+            const grammarVal = turnData.grammarAccuracyScore ?? 0;
+            const vocabVal = turnData.vocabularyRangeScore ?? 0;
+            const pragmaticsVal = turnData.pragmaticsScore ?? 0;
+            const overallVal =
+              turnData.overallTurnScore ??
+              Math.round(0.35 * taskVal + 0.25 * grammarVal + 0.2 * vocabVal + 0.2 * pragmaticsVal);
+            setLatestTurnScores({
+              task: taskVal,
+              grammar: grammarVal,
+              vocab: vocabVal,
+              pragmatics: pragmaticsVal,
+              overall: overallVal,
+              note: turnData.evidenceNote || '',
+              classification: turnData.inputClassification || 'Valid',
+              detectedIntent: turnData.detectedIntent || 'GeneralResponse',
+              demonstratedBand: turnData.demonstratedBand || 'N4',
+              estimatedLevelSoFar: turnData.estimatedLevelSoFar || undefined,
+            });
+          }
 
-        // Kiểm tra kết thúc phiên
+          // Cảnh báo nếu học viên nói lạc đề hoặc vi phạm nguyên tắc
+          if (turnData.isStrikeWarning && turnData.strikeWarningMessage) {
+            setStrikeWarning(turnData.strikeWarningMessage);
+          }
+
+          setIsSending(false);
+          turnStartTimeRef.current = Date.now();
+        };
+
         if (turnData.isConcluded) {
+          setIsFinalizingAudio(true);
+        }
+
+        const aiText = turnData.aiMessage?.japaneseText || '';
+        const speechPromise = aiText
+          ? playAiSpeechWithLifecycle(turnData.aiMessage.id, aiText, revealAiTurn)
+          : Promise.resolve().then(() => revealAiTurn());
+
+        if (turnData.isConcluded) {
+          // Chờ lượt đọc cuối của AI phát hết 100% rồi mới bật banner & modal kết thúc
+          await speechPromise;
+          if (!isMountedRef.current || sessionRunIdRef.current !== runId) return;
+          setIsFinalizingAudio(false);
           setIsConcluded(true);
           await handleConcludeAndFetchResult();
         }
-
-        turnStartTimeRef.current = Date.now();
       } else {
         setStrikeWarning(res.message || 'Lỗi xử lý phản hồi từ AI.');
+        setIsSending(false);
       }
     } catch (err: any) {
-      setStrikeWarning(err.message || 'Lỗi gửi tin nhắn đến máy chủ.');
-    } finally {
-      setIsSending(false);
+      if (isMountedRef.current && sessionRunIdRef.current === runId) {
+        setStrikeWarning(err.message || 'Lỗi gửi tin nhắn đến máy chủ.');
+        setIsSending(false);
+        setIsFinalizingAudio(false);
+      }
     }
   };
 
   // Phát giọng đọc tiếng Nhật cho tin nhắn của AI
   const handlePlayAiSpeech = async (msgId: number, text: string) => {
-    try {
-      setPlayingMessageId(msgId);
-      await scenarioVoiceService.playAiSpeech(text);
-    } catch (err) {
-      console.warn('Playback error:', err);
-    } finally {
-      setPlayingMessageId(null);
-    }
+    await playAiSpeechWithLifecycle(msgId, text);
   };
 
-  // Toggle Micro thu âm (Web Speech API)
+  // Toggle Micro thu âm (Web Speech API - giữ mở 5s sau âm thanh cuối để người học ngập ngừng)
   const handleToggleMic = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -266,54 +622,37 @@ export const PlacementTestRoomView: React.FC = () => {
       return;
     }
 
-    if (isRecordingMic) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsRecordingMic(false);
+    if (isRecordingMic || isMicActiveRef.current) {
+      stopMicRecording();
       return;
     }
 
     try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ja-JP';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-
-      recognition.onstart = () => {
-        setIsRecordingMic(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0].transcript)
-          .join('');
-        setInputText(transcript);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsRecordingMic(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecordingMic(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
+      committedTranscriptRef.current = inputText.trim();
+      currentSessionTranscriptRef.current = '';
+      micRestartCountRef.current = 0;
+      micStartedAtRef.current = Date.now();
+      isMicActiveRef.current = true;
+      lastSpeechActivityAtRef.current = Date.now();
+      setMicSilenceProgress(0);
+      startSilenceCountdownTimer();
+      startRecognitionInstance(SpeechRecognition);
     } catch (err) {
       console.error('Cannot start speech recognition:', err);
-      setIsRecordingMic(false);
+      stopMicRecording();
     }
   };
 
   // Kết thúc bài kiểm tra và lấy kết quả tổng hợp
   const handleConcludeAndFetchResult = async () => {
     if (!sessionId) return;
+    if (finalResult) {
+      setShowResultModal(true);
+      return;
+    }
     try {
       const res = await placementTestService.complete(sessionId);
-      if (res.success && res.data) {
+      if (res.success && res.data && isMountedRef.current) {
         setFinalResult(res.data);
         setShowResultModal(true);
       }
@@ -428,11 +767,6 @@ export const PlacementTestRoomView: React.FC = () => {
                 {/* Badge trạng thái sự kiện cho Tester */}
                 <span className="shrink-0 rounded-full bg-[var(--ai-soft)] px-2 py-0.5 text-[10px] font-bold text-[var(--ai)] whitespace-nowrap">
                   {currentEvent}
-                </span>
-
-                {/* Badge chỉ định màn hình kiểm thử */}
-                <span className="shrink-0 rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[10px] font-extrabold text-amber-900 whitespace-nowrap">
-                  🧪 TESTING ONLY
                 </span>
               </div>
               <div className="text-[11px] text-[var(--sumi-faint)] flex items-center gap-1.5 mt-0.5 min-w-0">
@@ -637,7 +971,7 @@ export const PlacementTestRoomView: React.FC = () => {
                   Bối cảnh tình huống
                 </h2>
                 <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
-                  Phiếu Đặt Phòng &amp; Phòng Nghỉ
+                  Phiếu Đặt Phòng
                 </p>
               </div>
               <button
@@ -655,17 +989,16 @@ export const PlacementTestRoomView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
               {/* Card 1: Voucher Card */}
               <div className="rounded-xl border border-[var(--line)] bg-white p-3 shadow-xs space-y-2">
-                <div className="flex items-center justify-between border-b border-[var(--line)] pb-1.5">
-                  <span className="font-bold text-[10.5px] text-[var(--sumi-muted)]">MÃ ĐẶT: #SKR-9921</span>
-                  <span className="text-[10px] font-semibold text-[var(--ai)]">
-                    {contextPackage?.hotelName || 'Khách sạn Sakura'}
+                <div className="border-b border-[var(--line)] pb-1.5">
+                  <span className="text-[11px] font-bold text-[var(--ai)]">
+                    {contextPackage?.hotelName || 'ホテルさくら (Hotel Sakura)'}
                   </span>
                 </div>
                 <div className="space-y-1 text-[11.5px]">
                   <div className="flex justify-between">
                     <span className="text-[var(--sumi-faint)]">Tên khách:</span>
                     <span className="font-bold text-[var(--sumi)]">
-                      {contextPackage?.guestName || 'Tanaka (田中 様)'}
+                      {(contextPackage?.guestName || 'Tanaka').replace(/\s*\([^)]*\)/g, '').trim() || 'Tanaka'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -677,7 +1010,7 @@ export const PlacementTestRoomView: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-[var(--sumi-faint)]">Loại phòng:</span>
                     <span className="font-semibold text-[var(--sumi)]">
-                      {contextPackage?.bookedRoomType || 'Standard Room (18m²)'}
+                      {(contextPackage?.bookedRoomType || 'Standard Room').replace(/\s*\([^)]*\)/g, '').trim() || 'Standard Room'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -694,10 +1027,15 @@ export const PlacementTestRoomView: React.FC = () => {
                     ⚠️ YÊU CẦU ĐẶC BIỆT KHI ĐẶT:
                   </p>
                   <p className="font-bold text-xs mt-0.5 text-amber-900">
-                    {contextPackage?.specialRequest || '「静かな部屋を希望」 (Ưu tiên phòng yên tĩnh)'}
-                  </p>
-                  <p className="text-[10px] text-amber-700 mt-0.5">
-                    Hãy lưu ý điểm này khi lễ tân xếp phòng cho bạn.
+                    {(() => {
+                      const raw = contextPackage?.specialRequest?.trim();
+                      if (!raw) return 'Ưu tiên phòng yên tĩnh';
+                      const parenMatch = raw.match(/\(([^)]+)\)/);
+                      if (parenMatch && /[\u3040-\u30ff\u4e00-\u9faf]/.test(raw)) {
+                        return parenMatch[1].trim();
+                      }
+                      return raw.replace(/[\u3040-\u30ff\u4e00-\u9faf「」]+/g, '').trim() || 'Ưu tiên phòng yên tĩnh';
+                    })()}
                   </p>
                 </div>
               </div>
@@ -709,54 +1047,69 @@ export const PlacementTestRoomView: React.FC = () => {
                 </span>
 
                 {contextPackage?.roomOptions && contextPackage.roomOptions.length > 0 ? (
-                  contextPackage.roomOptions.map((room) => (
-                    <div
-                      key={room.code}
-                      className={`rounded-xl border p-2.5 space-y-1 ${
-                        room.code === 'Standard'
-                          ? 'border-amber-300 bg-amber-50/60'
-                          : room.code === 'Deluxe'
-                          ? 'border-emerald-300 bg-emerald-50/60'
-                          : 'border-[var(--line)] bg-[var(--paper-100)] opacity-75'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[var(--sumi)]">{room.name}</span>
-                        <span
-                          className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold ${
-                            room.code === 'Standard'
-                              ? 'bg-rose-100 text-rose-700'
-                              : room.code === 'Deluxe'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-[var(--paper-200)] text-[var(--sumi-faint)]'
-                          }`}
-                        >
-                          {room.status}
-                        </span>
-                      </div>
-                      <p className="text-[10.5px] text-[var(--sumi-muted)]">{room.bedType}</p>
-                      <p
-                        className={`text-[10.5px] font-bold ${
-                          room.surchargePerNight > 0 ? 'text-[var(--ai)]' : 'text-emerald-700'
+                  contextPackage.roomOptions.map((room) => {
+                    const isStandard = room.code === 'Standard';
+                    const standardNoteMatch = isStandard ? room.status.match(/\(([^)]+)\)/) : null;
+                    const displayStatus = isStandard
+                      ? room.status.replace(/\s*\([^)]*\)/g, '').trim() || 'Đã xếp Phòng 512'
+                      : room.status;
+                    const standardNote = standardNoteMatch
+                      ? `(${standardNoteMatch[1].trim()})`
+                      : '(Cạnh thang máy - Có thể ồn)';
+
+                    return (
+                      <div
+                        key={room.code}
+                        className={`rounded-xl border p-2.5 space-y-1 ${
+                          isStandard
+                            ? 'border-amber-300 bg-amber-50/60'
+                            : room.code === 'Deluxe'
+                            ? 'border-emerald-300 bg-emerald-50/60'
+                            : 'border-[var(--line)] bg-[var(--paper-100)] opacity-75'
                         }`}
                       >
-                        Phụ phí: +{room.surchargePerNight.toLocaleString()} 円 / đêm
-                      </p>
-                    </div>
-                  ))
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[var(--sumi)]">{room.name}</span>
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold ${
+                              isStandard
+                                ? 'bg-rose-100 text-rose-700'
+                                : room.code === 'Deluxe'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-[var(--paper-200)] text-[var(--sumi-faint)]'
+                            }`}
+                          >
+                            {displayStatus}
+                          </span>
+                        </div>
+                        <p className="text-[10.5px] text-[var(--sumi-muted)]">{room.bedType}</p>
+                        {isStandard ? (
+                          <p className="text-[10.5px] font-semibold text-amber-800">{standardNote}</p>
+                        ) : (
+                          <p
+                            className={`text-[10.5px] font-bold ${
+                              room.surchargePerNight > 0 ? 'text-[var(--ai)]' : 'text-emerald-700'
+                            }`}
+                          >
+                            Phụ phí: +{room.surchargePerNight.toLocaleString()} 円 / đêm
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
                 ) : (
                   <>
                     <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-2.5 space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-[var(--sumi)]">Standard Room (18m²)</span>
                         <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-700">
-                          Đang xếp: P.512
+                          Đã xếp Phòng 512
                         </span>
                       </div>
-                      <p className="text-[11px] font-semibold text-amber-800">
-                        📍 Cạnh thang máy (エレベーターの近く)
+                      <p className="text-[10.5px] text-[var(--sumi-muted)]">1 Giường đơn</p>
+                      <p className="text-[10.5px] font-semibold text-amber-800">
+                        (Cạnh thang máy - Có thể ồn)
                       </p>
-                      <p className="text-[10.5px] font-bold text-emerald-700">Phụ phí: +0 円</p>
                     </div>
 
                     <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-2.5 space-y-1">
@@ -782,9 +1135,6 @@ export const PlacementTestRoomView: React.FC = () => {
                 <p className="font-bold text-[var(--sumi)]">Quy định khách sạn:</p>
                 <p>• Nhận phòng từ 15:00 | Trả phòng trước 11:00</p>
                 <p>• Bữa sáng: 7:00 – 10:00 (1,500 円/người)</p>
-                <p className="text-[10.5px] font-semibold text-[var(--ai)] pt-0.5">
-                  Mẹo: Nói 「もう一度お願いします」 nếu cần nghe lại.
-                </p>
               </div>
             </div>
           </div>
@@ -838,7 +1188,7 @@ export const PlacementTestRoomView: React.FC = () => {
                       <span>Bối cảnh tình huống</span>
                     </div>
                     <p className="mt-0.5 text-[var(--sumi)] text-[11px] leading-relaxed">
-                      Bạn vừa đến sảnh khách sạn Sakura tại Tokyo sau chuyến bay dài và đến quầy lễ tân để làm thủ tục nhận phòng (Check-in).
+                      Bạn (Tanaka) vừa đến sảnh khách sạn Sakura tại Tokyo sau chuyến bay dài và đến quầy lễ tân để làm thủ tục nhận phòng. Yêu cầu khi bạn đặt là ưu tiên phòng yên tĩnh, loại phòng Standard. Tuy nhiên trong quá trình sắp xếp, lễ tân đã thông báo không còn trống phòng Standard yên tĩnh. Hãy trao đổi với lễ tân để giải quyết tình huống, sau đó hỏi thêm thông tin về việc đăng ký bữa sáng tại khách sạn.
                     </p>
                   </div>
                 </div>
@@ -1014,13 +1364,13 @@ export const PlacementTestRoomView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleToggleMic}
-                    disabled={isSending}
+                    disabled={isSending || isFinalizingAudio}
                     className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all shadow-xs cursor-pointer select-none overflow-hidden ${
                       isRecordingMic
                         ? 'border border-rose-500 bg-rose-600 text-white ring-4 ring-rose-400/25 shadow-md min-w-[96px] animate-pulse'
                         : 'border border-[var(--line)] bg-white text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:shadow-sm active:scale-95 min-w-[80px]'
                     }`}
-                    title="Bấm để nói tiếng Nhật bằng micro"
+                    title="Bấm để nói tiếng Nhật bằng micro (tự động tắt sau 5s im lặng kể từ âm thanh cuối)"
                   >
                     <span className="flex items-center gap-1.5">
                       <MicIcon
@@ -1030,6 +1380,18 @@ export const PlacementTestRoomView: React.FC = () => {
                       />
                       <span className="whitespace-nowrap flex items-center gap-1.5">
                         <span>{isRecordingMic ? 'Đang nghe...' : 'Nói'}</span>
+                        {isRecordingMic && micSilenceProgress > 0 && (
+                          <span
+                            className="absolute bottom-0 left-0 h-1 bg-white/80 transition-all duration-75 ease-linear rounded-full pointer-events-none"
+                            style={{ width: `${Math.max(0, Math.min(100, (1 - micSilenceProgress) * 100))}%` }}
+                          />
+                        )}
+                        {isRecordingMic && micSilenceProgress > 0 && (
+                          <span
+                            className="absolute bottom-0 left-0 h-1 bg-white/80 transition-all duration-75 ease-linear rounded-full pointer-events-none"
+                            style={{ width: `${Math.max(0, Math.min(100, (1 - micSilenceProgress) * 100))}%` }}
+                          />
+                        )}
                         {!isRecordingMic && (
                           <span
                             className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs"
@@ -1045,13 +1407,22 @@ export const PlacementTestRoomView: React.FC = () => {
                 <input
                   type="text"
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
+                  onChange={(e) => {
+                    const nextVal = e.target.value;
+                    setInputText(nextVal);
+                    if (!isMicActiveRef.current) {
+                      committedTranscriptRef.current = nextVal;
+                      if (!nextVal.trim()) {
+                        usedVoiceInputRef.current = false;
+                      }
+                    }
+                  }}
                   placeholder={
                     isRecordingMic
                       ? 'Đang lắng nghe giọng nói tiếng Nhật của bạn...'
                       : 'Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)'
                   }
-                  disabled={isSending}
+                  disabled={isSending || isFinalizingAudio}
                   className={`flex-1 min-w-0 rounded-xl border px-3 sm:px-4 py-2.5 text-sm text-[var(--sumi)] outline-none transition ${
                     isRecordingMic
                       ? 'border-red-300 bg-red-50/40 ring-2 ring-red-200'
@@ -1062,7 +1433,7 @@ export const PlacementTestRoomView: React.FC = () => {
                 {/* Send Button */}
                 <button
                   type="submit"
-                  disabled={!inputText.trim() || isSending}
+                  disabled={!inputText.trim() || isSending || isFinalizingAudio}
                   className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--ai-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                 >
                   {isSending ? (
@@ -1283,6 +1654,38 @@ export const PlacementTestRoomView: React.FC = () => {
                           {latestTurnScores.classification === 'Valid'
                             ? 'Hợp lệ (Valid)'
                             : latestTurnScores.classification}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Điểm tổng hợp trung bình của lượt nói */}
+                    <div className="rounded-xl border border-[var(--ai)]/30 bg-[var(--ai-soft)]/70 p-2.5 flex items-center justify-between gap-2 shadow-2xs">
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-bold text-[var(--ai)] block">
+                          Điểm tổng hợp lượt nói
+                        </span>
+                        <span className="text-[9.5px] text-[var(--sumi-muted)] block">
+                          TB trọng số: 35% NV • 25% NP • 20% TV • 20% VP
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                            latestTurnScores.overall >= 75
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : latestTurnScores.overall >= 70
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {latestTurnScores.overall >= 75
+                            ? 'Đạt cao'
+                            : latestTurnScores.overall >= 70
+                            ? 'Đạt'
+                            : 'Cần cải thiện'}
+                        </span>
+                        <span className="font-mono font-black text-base text-[var(--ai)]">
+                          {latestTurnScores.overall}/100
                         </span>
                       </div>
                     </div>

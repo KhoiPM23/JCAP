@@ -480,7 +480,21 @@ export const PlacementTestHistoryView: React.FC = () => {
                                   )}
                                 </div>
 
-                                <div className="flex items-center gap-2 text-xs font-mono font-bold">
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
+                                  <span
+                                    className="rounded-md border border-[var(--ai)]/30 bg-[var(--ai-soft)] px-2 py-0.5 text-[var(--ai)] font-black"
+                                    title="Điểm trung bình tổng hợp lượt nói (35% Task + 25% Gram + 20% Vocab + 20% Prag)"
+                                  >
+                                    TB lượt:{' '}
+                                    {evidence.overallTurnScore ??
+                                      Math.round(
+                                        0.35 * evidence.taskFulfillmentScore +
+                                          0.25 * evidence.grammarAccuracyScore +
+                                          0.2 * evidence.vocabularyRangeScore +
+                                          0.2 * evidence.pragmaticsScore
+                                      )}
+                                    /100
+                                  </span>
                                   <span title="Hoàn thành">Task: {evidence.taskFulfillmentScore}</span>
                                   <span>•</span>
                                   <span title="Ngữ pháp">Gram: {evidence.grammarAccuracyScore}</span>

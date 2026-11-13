@@ -16,6 +16,7 @@ export interface HotelContextPackageDto {
   breakfastPolicy: string;
   checkInTime: string;
   checkOutTime: string;
+  receptionistSpeakerId?: number;
   roomOptions: HotelRoomOptionDto[];
 }
 
@@ -78,6 +79,7 @@ export interface PlacementTestMessageResponseDto {
   grammarAccuracyScore?: number | null;
   vocabularyRangeScore?: number | null;
   pragmaticsScore?: number | null;
+  overallTurnScore?: number | null;
   evidenceNote?: string | null;
   estimatedLevelSoFar?: string | null;
   eventSummaries?: PlacementEventEvidenceSummary[];
@@ -128,6 +130,7 @@ export interface PlacementTurnEvidence {
   grammarAccuracyScore: number;
   vocabularyRangeScore: number;
   pragmaticsScore: number;
+  overallTurnScore?: number | null;
   speechDeliveryReference?: SpeechDeliveryReferenceDto | null;
   detectedRuleErrorCodes: string[];
   evidenceNote: string;
