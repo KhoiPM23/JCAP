@@ -1,3 +1,13 @@
+export interface ScenarioTopic {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  scenarioCount: number;
+  isPrimary: boolean;
+  icon: string;
+}
+
 export interface ScenarioListItem {
   id: number;
   title: string;
@@ -6,6 +16,26 @@ export interface ScenarioListItem {
   isActive: boolean;
   scenarioCode?: string;
   supportedJLPTLevels: string[];
+  topicId?: number;
+  topicCode?: string;
+  topicName?: string;
+}
+
+export interface AiGeneratedScenario {
+  title: string;
+  japaneseTitle?: string;
+  description: string;
+  scenarioCode: string;
+  jlptLevel: string;
+  aiPersona: string;
+  voiceVoxVoiceId: number;
+  voiceVoxVoiceName: string;
+  topicCode: string;
+  topicName: string;
+  missions: Array<{ order: number; content: string; target?: string; intent?: string; conditions?: string[] }>;
+  compatibleEvents: string[];
+  targetVocabularies: Array<{ word: string; reading?: string; meaning: string }>;
+  targetGrammars: Array<{ pattern: string; meaning: string; exampleSentence?: string }>;
 }
 
 export interface ScenarioMission {
@@ -45,6 +75,8 @@ export interface ScenarioLevelConfiguration {
   missions: ScenarioMission[];
   targetVocabularies: ScenarioVocabulary[];
   targetGrammars: ScenarioGrammar[];
+  topicExpandedVocabularies?: ScenarioVocabulary[];
+  topicExpandedGrammars?: ScenarioGrammar[];
 }
 
 export interface ScenarioDetails {
@@ -54,6 +86,9 @@ export interface ScenarioDetails {
   thumbnail?: string;
   isActive: boolean;
   scenarioCode?: string;
+  topicCode?: string;
+  topicName?: string;
+  topicId?: number;
   levelConfigurations: ScenarioLevelConfiguration[];
 }
 

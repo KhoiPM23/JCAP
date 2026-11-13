@@ -23,9 +23,13 @@ namespace JCAP.Services.Implementations
         public double MinMoraConsistency { get; init; } = 0.8;
         public double MaxMoraConsistency { get; init; } = 1.25;
 
-        /// <summary>Tốc độ (không tính khoảng dừng) của người học / giọng mẫu: ≤ SlowRatio là chậm rõ, ≥ FastRatio là nhanh rõ.</summary>
+        /// <summary>
+        /// Tốc độ (không tính khoảng dừng) của người học / giọng mẫu: ≤ SlowRatio là chậm rõ, ≥ FastRatio là nhanh bất thường.
+        /// Đo trên 150 câu người Nhật đọc (FLEURS): tỷ lệ phân vị 5/50/95 = 0,73/0,94/2,14 — chỉ 2/150 bị coi là chậm với 0,70,
+        /// nhưng 26/150 bị coi là "nhanh" với ngưỡng cũ 1,40 (người thật thường nói nhanh hơn VOICEVOX), nên ngưỡng nhanh nâng lên 2,5.
+        /// </summary>
         public double SlowRatio { get; init; } = 0.70;
-        public double FastRatio { get; init; } = 1.40;
+        public double FastRatio { get; init; } = 2.5;
 
         /// <summary>Khoảng dừng của người học ngắn hơn mức này thì không bị coi là "dừng thừa".</summary>
         public int ExtraPauseMinMs { get; init; } = 400;
@@ -98,6 +102,47 @@ namespace JCAP.Services.Implementations
 
         public static FluencyComparisonDto Unavailable(string reason) => new() { Status = "unavailable", ReasonCode = reason };
 
+        /// <summary>Tốc độ phát hợp lệ (0.5–2); thiếu hoặc ngoài khoảng thì 1 (không quy đổi).</summary>
+        public static double ValidPlaybackRate(double? rate) =>
+            rate is { } r && double.IsFinite(r) && r >= 0.5 && r <= 2.0 ? Math.Round(r, 3) : 1.0;
+
+        /// <summary>
+        /// Số đo giọng mẫu khi phát ở tốc độ <paramref name="rate"/> bằng HTMLAudio playbackRate: trình duyệt kéo giãn ĐỀU cả bản
+        /// (giữ cao độ), nên mọi thời lượng chia cho rate, mọi tốc độ (mora/giây) nhân với rate; các tỷ lệ và vị trí tương đối không đổi.
+        /// Đã kiểm chứng bằng VOICEVOX speedScale (FluencyPlaybackRateBench). Khoảng lặng gần 250 ms có thể đổi loại khi kéo giãn — chấp nhận.
+        /// </summary>
+        public static FluencyMetricsDto ScaleForPlayback(FluencyMetricsDto m, double rate)
+        {
+            if (m.Status != "available" || rate == 1.0) return m;
+            int? T(int? ms) => ms == null ? null : (int)Math.Round(ms.Value / rate);
+            double? R(double? v) => v == null ? null : Math.Round(v.Value * rate, 2);
+            return new FluencyMetricsDto
+            {
+                Status = m.Status,
+                ReasonCode = m.ReasonCode,
+                Version = m.Version,
+                DurationMs = T(m.DurationMs),
+                LeadingSilenceMs = T(m.LeadingSilenceMs),
+                TrailingSilenceMs = T(m.TrailingSilenceMs),
+                SpeechSpanMs = T(m.SpeechSpanMs),
+                SpeechMs = T(m.SpeechMs),
+                SpeechRatio = m.SpeechRatio,
+                PauseCount = m.PauseCount,
+                TotalPauseMs = T(m.TotalPauseMs),
+                LongestPauseMs = T(m.LongestPauseMs),
+                PauseRatio = m.PauseRatio,
+                Pauses = m.Pauses.Select(p => new FluencyPauseDto
+                {
+                    StartMs = T(p.StartMs)!.Value, EndMs = T(p.EndMs)!.Value, DurationMs = T(p.DurationMs)!.Value,
+                }).ToList(),
+                MoraCount = m.MoraCount,
+                SpeakingRateMoraPerSec = R(m.SpeakingRateMoraPerSec),
+                ArticulationRateMoraPerSec = R(m.ArticulationRateMoraPerSec),
+                MeanRunMs = T(m.MeanRunMs),
+                MeanRunMoras = m.MeanRunMoras,
+            };
+        }
+
         public static (FluencyComparisonDto comparison, List<FluencyObservationDto> observations) Compare(
             FluencyMetricsDto learner,
             FluencyMetricsDto? reference,
@@ -117,6 +162,8 @@ namespace JCAP.Services.Implementations
             var referenceActive = reference.SpeechSpanMs!.Value - reference.TotalPauseMs!.Value;
             if (learnerActive <= 0 || referenceActive <= 0) return (Unavailable("SPEECH_TOO_SHORT_FOR_COMPARISON"), none);
 
+            // Tỷ lệ tốc độ = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn mẫu). Hai bên cùng số mora nên bằng
+            // thời lượng mẫu / thời lượng người học: (mora/learnerActive) / (mora/referenceActive) = referenceActive / learnerActive.
             var articulationRatio = (double)referenceActive / learnerActive;
             var speakingRatio = (double)reference.SpeechSpanMs!.Value / learner.SpeechSpanMs!.Value;
 

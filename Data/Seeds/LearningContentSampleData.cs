@@ -21,7 +21,7 @@ public sealed record LearningContentSampleData(
         return data;
     }
 
-    public void Validate()
+    public void Validate(bool full = false)
     {
         static void Required(string? value, int max, string field)
         {
@@ -56,7 +56,7 @@ public sealed record LearningContentSampleData(
                 throw new InvalidOperationException("Unknown sample source or JLPT level.");
             Required(id, 200, "external ID");
             Required(meaning, 1000, "meaning");
-            if (examples.Length is < 1 or > 2)
+            if ((!full && examples.Length < 1) || examples.Length > 2)
                 throw new InvalidOperationException("Sample content must have one or two examples.");
             if (examples.Select(e => (e.SourceKey, e.ExternalId)).Distinct().Count() != examples.Length)
                 throw new InvalidOperationException("Duplicate example identity.");
@@ -66,7 +66,8 @@ public sealed record LearningContentSampleData(
                     throw new InvalidOperationException("Unknown example source.");
                 Required(example.ExternalId, 200, "example external ID");
                 Required(example.JapaneseText, 2000, "Japanese example");
-                Required(example.VietnameseTranslation, 2000, "Vietnamese example");
+                if (!full || example.VietnameseTranslation is not null)
+                    Required(example.VietnameseTranslation, 2000, "Vietnamese example");
                 if (example.Furigana?.Length > 4000)
                     throw new InvalidOperationException("Example furigana is too long.");
             }
@@ -82,7 +83,8 @@ public sealed record LearningContentSampleData(
             Required(vocabulary.Word, 100, "word");
             Required(vocabulary.Reading, 100, "vocabulary reading");
             Required(vocabulary.PartOfSpeech, 100, "part of speech");
-            Required(vocabulary.Explanation, int.MaxValue, "vocabulary explanation");
+            if (!full || vocabulary.Explanation is not null)
+                Required(vocabulary.Explanation, int.MaxValue, "vocabulary explanation");
         }
         foreach (var grammar in Grammars)
         {
@@ -92,6 +94,8 @@ public sealed record LearningContentSampleData(
             Required(grammar.Reading, 200, "grammar reading");
             Required(grammar.Formation, 1000, "grammar formation");
             Required(grammar.Explanation, int.MaxValue, "grammar explanation");
+            if (grammar.Examples.Length == 0)
+                throw new InvalidOperationException("Grammar needs a source example.");
             Required(grammar.Examples[0].JapaneseText, 500, "legacy grammar example");
         }
     }
@@ -99,10 +103,10 @@ public sealed record LearningContentSampleData(
 
 public sealed record SampleSource(string Key, string Name, string Version, string SourceUrl,
     string License, string LicenseUrl, string Attribution);
-public sealed record SampleExample(string JapaneseText, string VietnameseTranslation, string? Furigana,
+public sealed record SampleExample(string JapaneseText, string? VietnameseTranslation, string? Furigana,
     string SourceKey, string ExternalId);
 public sealed record SampleVocabulary(string SourceKey, string ExternalId, string Word, string Reading,
-    string Meaning, string PartOfSpeech, string JLPTLevel, string Explanation, string? UsageNotes,
+    string Meaning, string PartOfSpeech, string JLPTLevel, string? Explanation, string? UsageNotes,
     SampleExample[] Examples);
 public sealed record SampleGrammar(string SourceKey, string ExternalId, string Pattern, string Reading,
     string Meaning, string Formation, string JLPTLevel, string Explanation, string? UsageNotes,

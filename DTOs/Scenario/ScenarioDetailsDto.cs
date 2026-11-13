@@ -8,6 +8,9 @@ public class ScenarioDetailsDto
     public string? Thumbnail { get; set; }
     public bool IsActive { get; set; }
     public string? ScenarioCode { get; set; }
+    public string? TopicCode { get; set; }
+    public string? TopicName { get; set; }
+    public int? TopicId { get; set; }
     public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
     public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
     public List<ScenarioLevelConfigurationDto> LevelConfigurations { get; set; } = [];
@@ -26,6 +29,8 @@ public class ScenarioLevelConfigurationDto
     public List<MissionDto> Missions { get; set; } = [];
     public List<TargetVocabularyDto> TargetVocabularies { get; set; } = [];
     public List<TargetGrammarDto> TargetGrammars { get; set; } = [];
+    public List<TargetVocabularyDto> TopicExpandedVocabularies { get; set; } = [];
+    public List<TargetGrammarDto> TopicExpandedGrammars { get; set; } = [];
 }
 
 public class MissionDto

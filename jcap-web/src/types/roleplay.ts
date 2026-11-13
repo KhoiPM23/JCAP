@@ -39,6 +39,8 @@ export interface SpeechDeliveryMetricsDto {
   paceAssessment?: string;
   latencyAssessment?: string;
   audioUrl?: string;
+  isTextInput?: boolean;
+  hintLevelUsed?: number;
 }
 
 export interface GrammarErrorItemDto {
@@ -50,6 +52,15 @@ export interface GrammarErrorItemDto {
 export interface GrammarAccuracyDto {
   score?: number;
   errors?: GrammarErrorItemDto[];
+}
+
+export interface SumiInkFeedbackDto {
+  hasStain: boolean;
+  stainType: 'None' | 'TameguchiSlip' | 'OverKeigo' | 'UnnaturalWord' | 'Hesitation' | string;
+  message?: string;
+  suggestedAlternative?: string;
+  registerDelta: number;
+  isSurvivalPhrase: boolean;
 }
 
 export interface LinguisticFeedbackDto {
@@ -65,6 +76,8 @@ export interface LinguisticFeedbackDto {
   naturalAlternative?: string;
   culturalTip?: string;
   speechDelivery?: SpeechDeliveryMetricsDto;
+  sumiInk?: SumiInkFeedbackDto;
+  activeBranchingEventCode?: string;
 }
 
 export interface RoleplayMessageDto {
@@ -123,6 +136,8 @@ export interface RoleplaySessionDetailsDto {
   currentDayStreak?: number;
   npcRelationshipTitle?: string;
   npcMemories?: string[];
+  totalHintTurnsUsed?: number;
+  totalTranslationPeeksUsed?: number;
 }
 
 export interface DetectedGrammarIssue {
@@ -146,6 +161,8 @@ export interface RoleplayTurnResponseDto {
   detectedIssues?: DetectedGrammarIssue[];
   speedScale?: number;
   shouldOfferEncouragement?: boolean;
+  activeBranchingEventCode?: string;
+  sumiInkFeedback?: SumiInkFeedbackDto;
 }
 
 export interface RoleplayHintDto {

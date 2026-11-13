@@ -64,19 +64,31 @@ public class ShadowingServiceCompleteSessionTests
     // ---- lưu kết quả chấm từng câu ----
 
     [Fact]
-    public async Task UnscoredEvaluations_AreNotRecorded()
+    public async Task UnscoredEvaluations_AreRecordedWithNullScores_ButNeverCountInTheSession()
     {
         using var context = await SeedAsync();
         var service = new ShadowingService(context);
 
-        var id = await service.RecordSentenceEvaluationAsync(User, 1, new ShadowingAudioEvaluationResponseDto
+        var unscored = await service.RecordSentenceEvaluationAsync(User, 1, new ShadowingAudioEvaluationResponseDto
         {
             EvaluationStatus = "unavailable",
             ErrorCode = "NO_SPEECH_DETECTED",
         });
 
-        Assert.Null(id);
-        Assert.Empty(context.ShadowingSentenceEvaluations);
+        var saved = Assert.Single(context.ShadowingSentenceEvaluations);
+        Assert.Equal(unscored, saved.Id);
+        Assert.Null(saved.ContentMatchScore);
+        Assert.Null(saved.OverallScore);
+        Assert.Equal("NO_SPEECH_DETECTED", saved.ErrorCode);
+
+        // Chỉ có lần chưa chấm được: không tạo được buổi luyện (không biến thành 0 điểm)
+        var onlyUnscored = await service.CompleteSessionAsync(User, Complete(unscored!.Value));
+        Assert.False(onlyUnscored.Success);
+
+        var scored = await RecordAsync(service, 3, 80);
+        var session = await service.CompleteSessionAsync(User, Complete(unscored.Value, scored));
+        Assert.Equal(1, session.Data!.ScoredSentenceCount);
+        Assert.Null(context.ShadowingSentenceEvaluations.Single(e => e.Id == unscored).ShadowingPracticeSessionId);
     }
 
     [Fact]

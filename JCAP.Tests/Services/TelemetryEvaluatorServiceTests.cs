@@ -186,6 +186,70 @@ namespace JCAP.Tests.Services
         }
 
         [Fact]
+        public async Task FinalizeSessionTelemetryAsync_DoesNotThrowDuplicateKey_WhenDuplicateVocabOrGrammarConfigured()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+            var errorDetector = new VietnameseLearnerErrorDetector();
+            var service = new TelemetryEvaluatorService(dbContext, errorDetector);
+
+            var session = new RoleplaySession
+            {
+                Id = 500,
+                UserId = "user-fsrs-dup",
+                Status = "Completed",
+                ScenarioLevelConfiguration = new ScenarioLevelConfiguration
+                {
+                    JLPTLevel = "N4",
+                    TargetVocabularies = new List<TargetVocabulary>
+                    {
+                        new TargetVocabulary { Id = 1, Word = "ラーメン", Meaning = "Mì Ramen" },
+                        new TargetVocabulary { Id = 2, Word = "ラーメン", Meaning = "Mì Ramen bản trùng" },
+                        new TargetVocabulary { Id = 3, Word = " ラーメン ", Meaning = "Mì Ramen có khoảng trắng" }
+                    },
+                    TargetGrammars = new List<TargetGrammar>
+                    {
+                        new TargetGrammar { Id = 0, Pattern = "～てください", Meaning = "Hãy làm gì" },
+                        new TargetGrammar { Id = 0, Pattern = "～てください", Meaning = "Bản trùng pattern" }
+                    }
+                }
+            };
+            dbContext.RoleplaySessions.Add(session);
+
+            dbContext.RoleplayMessages.Add(new RoleplayMessage
+            {
+                RoleplaySessionId = 500,
+                Sender = "User",
+                JapaneseText = "ラーメンをください。"
+            });
+
+            dbContext.LearnerBehaviorSignals.Add(new LearnerBehaviorSignal
+            {
+                SessionId = 500,
+                TurnIndex = 1,
+                LatencyMs = 1500,
+                TurnScore = 95,
+                DetectedRuleErrorCodes = "E01,E01_INTRANSITIVE_WO,E01", // Duplicate mapped error codes
+                CreatedAtUtc = DateTime.UtcNow
+            });
+
+            await dbContext.SaveChangesAsync();
+
+            // Phải chạy trơn tru mà không văng Exception hay duplicate key
+            var exception = await Record.ExceptionAsync(() => service.FinalizeSessionTelemetryAsync(500, "user-fsrs-dup"));
+            Assert.Null(exception);
+
+            var masteries = await dbContext.LearnerSkillMasteries
+                .Where(m => m.UserId == "user-fsrs-dup")
+                .ToListAsync();
+
+            // Phải có đúng 3 bản ghi duy nhất: 1 VOCAB_ラーメン, 1 GRAMMAR_..., 1 E01_INTRANSITIVE_WO
+            Assert.True(masteries.Count == 3, $"Actual count: {masteries.Count}. Codes: {string.Join(", ", masteries.Select(m => m.SkillCode))}");
+            Assert.Single(masteries, m => m.SkillCode == "VOCAB_ラーメン");
+            Assert.Single(masteries, m => m.SkillCode.StartsWith("GRAMMAR_"));
+            Assert.Single(masteries, m => m.SkillCode == "E01_INTRANSITIVE_WO");
+        }
+
+        [Fact]
         public void ScenarioSeedData_ContainsAllRequiredScenariosWithLevels()
         {
             var scenarios = ScenarioSeedData.GetInitialScenarios();

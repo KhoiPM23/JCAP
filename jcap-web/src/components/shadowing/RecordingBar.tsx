@@ -32,15 +32,15 @@ export const mirrorDistance = (index: number, count: number): number =>
 interface RecordingBarProps {
   /** Hủy bản thu hiện tại (không chấm điểm), quay về trạng thái sẵn sàng. */
   onCancel: () => void;
-  /** Dừng thu và gửi chấm điểm. */
-  onSend: () => void;
+  /** Dừng thu để NGHE LẠI trước khi gửi chấm (không gửi ngay). */
+  onStop: () => void;
 }
 
 /**
- * Thanh ghi âm (nền hòa với khung bao quanh): sóng âm chạy theo mic, nút vuông (hủy) và nút mũi tên (gửi chấm điểm).
+ * Thanh ghi âm (nền hòa với khung bao quanh): sóng âm chạy theo mic, nút vuông (hủy) và nút dấu tích (dừng để nghe lại).
  * Sóng âm lấy từ cùng bộ phân tích đang đo chất lượng mic nên không mở thêm luồng âm thanh nào.
  */
-export default function RecordingBar({ onCancel, onSend }: RecordingBarProps) {
+export default function RecordingBar({ onCancel, onStop }: RecordingBarProps) {
   const waveRef = useRef<HTMLDivElement>(null);
   const [barCount, setBarCount] = useState(DEFAULT_BAR_COUNT);
   const [bars, setBars] = useState<number[]>(() => Array(DEFAULT_BAR_COUNT).fill(MIN_BAR));
@@ -109,14 +109,13 @@ export default function RecordingBar({ onCancel, onSend }: RecordingBarProps) {
 
       <button
         type="button"
-        onClick={onSend}
-        className="h-12 w-12 flex-shrink-0 rounded-full bg-[#0878EE] hover:bg-[#0662C6] flex items-center justify-center transition-colors cursor-pointer"
-        title="Gửi để chấm điểm"
-        aria-label="Gửi để chấm điểm"
+        onClick={onStop}
+        className="h-12 w-12 flex-shrink-0 rounded-full bg-ai hover:bg-ai-hover flex items-center justify-center transition-colors cursor-pointer"
+        title="Dừng để nghe lại trước khi gửi chấm"
+        aria-label="Dừng ghi âm"
       >
         <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 19V5" />
-          <path d="M5 12l7-7 7 7" />
+          <path d="M5 12.5l4.5 4.5L19 7.5" />
         </svg>
       </button>
     </div>

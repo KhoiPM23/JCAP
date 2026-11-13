@@ -19,7 +19,7 @@ namespace JCAP.Services.Implementations
         private const int FrameLen = SampleRate * FrameMs / 1000;
 
         private const double MinPeakDb = -50.0;          // đỉnh thấp hơn mức này: bản thu quá nhỏ
-        private const double MinDynamicRangeDb = 12.0;   // chênh lệch tiếng nói/nền tối thiểu, thấp hơn nghĩa là chỉ có nền đều
+        private const double MinDynamicRangeDb = 9.0;    // chênh lệch tiếng nói/nền tối thiểu, thấp hơn nghĩa là chỉ có nền đều (FLEURS: giọng rõ trên nền ồn đo được 10,5–12 dB; tiếng ồn thuần thường 2–6 dB)
         private const double NoiseFloorMinDb = -70.0;
         private const double HysteresisDb = 4.0;         // ngưỡng thoát thấp hơn ngưỡng vào, tránh ngắt đoạn tiếng nói ở biên
         private const int MinSpeechMs = 60;
@@ -102,6 +102,8 @@ namespace JCAP.Services.Implementations
                 LongestPauseMs = pauses.Count == 0 ? 0 : pauses.Max(p => p.DurationMs),
                 PauseRatio = Math.Round((double)totalPause / span, 3),
                 Pauses = pauses,
+                // Tính liên tục: một "đoạn nói liền" là phần giữa hai khoảng dừng
+                MeanRunMs = (span - totalPause) / (pauses.Count + 1),
             };
 
             if (moraCount is > 0)
@@ -110,6 +112,8 @@ namespace JCAP.Services.Implementations
                 result.SpeakingRateMoraPerSec = Math.Round(moraCount.Value / (span / 1000.0), 2);
                 var active = span - totalPause;
                 if (active > 0) result.ArticulationRateMoraPerSec = Math.Round(moraCount.Value / (active / 1000.0), 2);
+                // Số mora trung bình mỗi đoạn nói liền (mean length of run): càng lớn càng nói liền mạch
+                result.MeanRunMoras = Math.Round((double)moraCount.Value / (pauses.Count + 1), 1);
             }
 
             return result;

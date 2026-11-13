@@ -25,6 +25,18 @@ public class AiRoleplayService : IAiRoleplayService
         @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ]|\b(toi\s+muon|cho\s+toi|toi\s+la|em\s+la|xin\s+chao|cam\s+on|khong\s+co|co\s+the|lam\s+viec|thoi\s+gian|phuong\s+tien|di\s+lai|ca\s+dem|nghi\s+phep|muon\s+goi|mot\s+bat|1\s+bat|muon|goi|khong|duoc|tieng|viet|chao|ngay|tuan|phuong|phep|luong|hello|want|order|please|i\s+would\s+like)\b",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex RomajiJapaneseRegex = new(
+        @"\b(arigatou|arigato|konnichiwa|konbanwa|ohayou|ohayo|kore|sore|are|doko|ikura|desu|masu|kudasai|onegaishimasu|onegai|sumimasen|ramen|oishii|hai|iie|watashi|boku|ore|anata|mizu|ocha|gohan|sushi|tempura|chuumon|kaikei|ikaga|nanmei|hitori|futari)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static bool IsLikelyRomaji(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        bool hasJapaneseChar = Regex.IsMatch(text, @"[぀-ゟ゠-ヿ一-龯]");
+        if (hasJapaneseChar) return false;
+        return RomajiJapaneseRegex.IsMatch(text) || Regex.IsMatch(text, @"\b(kore\s+wa\s+ikura|ikura\s+desu\s+ka)\b", RegexOptions.IgnoreCase);
+    }
+
     private static bool IsLikelyForeignOrVietnamese(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return false;
@@ -43,12 +55,20 @@ public class AiRoleplayService : IAiRoleplayService
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         CancellationToken cancellationToken = default)
-        => GenerateOpeningMessageAsync(scenario, levelConfig, null, cancellationToken);
+        => GenerateOpeningMessageAsync(scenario, levelConfig, null, null, cancellationToken);
+
+    public Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        string? circadianGreeting,
+        CancellationToken cancellationToken = default)
+        => GenerateOpeningMessageAsync(scenario, levelConfig, circadianGreeting, null, cancellationToken);
 
     public async Task<AiOpeningMessageResult> GenerateOpeningMessageAsync(
         Scenario scenario,
         ScenarioLevelConfiguration levelConfig,
         string? circadianGreeting,
+        string? memoryContext,
         CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrWhiteSpace(circadianGreeting))
@@ -98,7 +118,7 @@ Return strictly pure JSON matching:
                     {
                         JapaneseText = ja.Trim(),
                         FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
-                            ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
+                            ? RoleplaySocialRegister.CleanFuriganaHtml(RoleplaySocialRegister.SanitizeJapaneseReply(fHtml))
                             : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim()),
                         VietnameseMeaning = vi.Trim()
                     };
@@ -143,7 +163,7 @@ Return strictly pure JSON matching:
             // Chặn ngay các lượt nói tiếng Việt hoặc ngoại ngữ trước khi gọi LLM
             if (IsLikelyForeignOrVietnamese(userMessage))
             {
-                var confusedJa = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                var confusedJa = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
                 var confusedVi = $"Xin lỗi, {reg.AiSelf} không hiểu tiếng nước ngoài. {reg.AiAddressLearner} có thể nói bằng tiếng Nhật được không ạ?";
                 return new AiTurnResult
                 {
@@ -174,6 +194,520 @@ Return strictly pure JSON matching:
                 };
             }
 
+            // PRE-FLIGHT GUARD 2: Chặn ký tự Romaji (chữ Latin) yêu cầu chuyển sang Kana/Kanji
+            if (!IsLikelyForeignOrVietnamese(userMessage) && IsLikelyRomaji(userMessage))
+            {
+                var jaNotice = "恐れ入ります、ローマ字ではなく、日本語のひらがな・カタカナ、または漢字でお話しいただけますでしょうか。";
+                var viNotice = $"Xin lỗi {reg.AiAddressLearner}, hệ thống yêu cầu sử dụng chữ viết tiếng Nhật (Hiragana/Katakana/Kanji) thay vì ký tự La-tinh (Romaji). {reg.AiAddressLearner} vui lòng bật bộ gõ tiếng Nhật (IME) nhé ạ.";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaNotice,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaNotice),
+                    VietnameseMeaning = viNotice,
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = userMessage,
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Phát hiện ký tự Romaji (La-tinh) • Vui lòng chuyển sang chữ Kana/Kanji",
+                        EvaluationSource = "PreFlightGuard",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Bảng chữ cái & Nhập liệu",
+                                Comment = "Bạn đang gõ tiếng Nhật bằng ký tự La-tinh (Romaji). Trong giao tiếp thực tế và luyện tập Kaiwa, hãy bật bộ gõ tiếng Nhật (IME) để gõ chữ Hiragana, Katakana hoặc Kanji chuẩn mực."
+                            }
+                        },
+                        NaturalAlternative = "これをお願いします。",
+                        CulturalTip = "Hầu hết các thiết bị máy tính và điện thoại đều có sẵn bộ gõ Japanese IME. Bạn chỉ cần gõ phát âm và ấn phím Cách (Space) để chuyển đổi thành Kanji tương ứng."
+                    }
+                };
+            }
+
+            // === DETERMINISTIC PRE-FLIGHT GUARDRAILS (0 tokens, <1ms) ===
+            var scenarioContext = $"{scenario.Title} {levelConfig.AiPersona} {levelConfig.Description}".ToLowerInvariant();
+            bool isRamenScenario = scenarioContext.Contains("ramen") || scenarioContext.Contains("mì") || scenarioContext.Contains("ラーメン");
+            bool isStationScenario = scenarioContext.Contains("ga") || scenarioContext.Contains("tàu") || scenarioContext.Contains("station") || scenarioContext.Contains("駅") || scenarioContext.Contains("切符");
+            bool isInterviewScenario = scenarioContext.Contains("phỏng vấn") || scenarioContext.Contains("xin việc") || scenarioContext.Contains("baito") || scenarioContext.Contains("面接");
+            bool isCafeScenario = scenarioContext.Contains("cafe") || scenarioContext.Contains("cà phê") || scenarioContext.Contains("đồ uống");
+            bool isMedicalScenario = scenarioContext.Contains("bệnh viện") || scenarioContext.Contains("khám") || scenarioContext.Contains("bác sĩ") || scenarioContext.Contains("病院") || scenarioContext.Contains("クリニック");
+            bool isKonbiniScenario = scenarioContext.Contains("tiện lợi") || scenarioContext.Contains("siêu thị") || scenarioContext.Contains("konbini") || scenarioContext.Contains("cửa hàng") || scenarioContext.Contains("コンビニ");
+
+            var lastAiMsg = conversationHistory?.LastOrDefault(m => m.Sender == "Ai")?.JapaneseText ?? "";
+            bool isAskingPartySize = Regex.IsMatch(lastAiMsg, @"(何名様|何名|何人|お一人|1人)");
+            bool hasPartySize = Regex.IsMatch(userMessage, @"(1人|2人|3人|4人|5人|一人|二人|三人|四人|ひとり|ふたり|名|カウンター|テーブル)");
+            bool isAskingLocation = Regex.IsMatch(lastAiMsg, @"(店内|持ち帰り|こちらでお召し上がり|テイクアウト)");
+
+            // 1. Trailing Particle Fragment Guard (Tổng quát hóa theo bối cảnh kịch bản)
+            if (Regex.IsMatch(userMessage.Trim(), @"(を|に|で|は|が|と|へ|から|まで)[…\.\s]*$") && !Regex.IsMatch(userMessage, @"(です|ます|ください|お願い|いたし)"))
+            {
+                string jaReply;
+                string viReply;
+                string naturalAlt;
+
+                if (isRamenScenario)
+                {
+                    jaReply = "はい、ラーメンをどうなさいますか？ご注文をお聞かせください。";
+                    viReply = $"Vâng, {reg.AiAddressLearner} muốn dùng mì ramen như thế nào ạ? Xin vui lòng cho {reg.AiSelf} biết yêu cầu gọi món.";
+                    naturalAlt = "すみません、ラーメンをお願いします。";
+                }
+                else if (isStationScenario)
+                {
+                    jaReply = "はい、どちらまで行かれますか？どうなさいますか、ご用件をお聞かせください。";
+                    viReply = $"Vâng, {reg.AiAddressLearner} muốn đi tới đâu ạ? Xin vui lòng cho {reg.AiSelf} biết ga đến hoặc yêu cầu vé tàu.";
+                    naturalAlt = "新宿駅までの切符を一枚お願いします。";
+                }
+                else if (isInterviewScenario)
+                {
+                    jaReply = "はい、その件についてどうなさいますか？詳しくお聞かせください。";
+                    viReply = $"Vâng, về việc đó thì {reg.AiAddressLearner} muốn trình bày thế nào ạ? Xin vui lòng nói rõ hơn câu trả lời.";
+                    naturalAlt = "志望動機についてお話しさせていただきます。";
+                }
+                else if (isCafeScenario)
+                {
+                    jaReply = "はい、お飲み物をどうなさいますか？ご注文をお聞かせください。";
+                    viReply = $"Vâng, {reg.AiAddressLearner} muốn dùng đồ uống như thế nào ạ? Xin vui lòng cho {reg.AiSelf} biết yêu cầu gọi món.";
+                    naturalAlt = "すみません、アイスコーヒーをお願いします。";
+                }
+                else
+                {
+                    jaReply = "はい、どうなさいますか？ご用件を最後までお聞かせください。";
+                    viReply = $"Vâng, {reg.AiAddressLearner} có yêu cầu như thế nào ạ? Xin vui lòng nói trọn vẹn câu để {reg.AiSelf} phục vụ tốt nhất.";
+                    naturalAlt = "すみません、これをお願いします。";
+                }
+
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = viReply,
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Câu nói chưa hoàn chỉnh • Bị ngắt ở trợ từ",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Cấu trúc câu",
+                                Comment = "Câu nói bị ngắt quãng ngay sau trợ từ. Hãy hoàn thiện vị ngữ như '〜をお願いします' hoặc '〜をください' để câu trọn vẹn và lịch sự."
+                            }
+                        },
+                        NaturalAlternative = naturalAlt,
+                        CulturalTip = "Trong tiếng Nhật giao tiếp, tránh ngắt câu lửng ở trợ từ vì có thể gây bối rối cho người đối thoại."
+                    }
+                };
+            }
+
+            // 2. Paradoxical / Conflicting Request Guard (熱いアイスコーヒー)
+            if (Regex.IsMatch(userMessage, @"(熱い.*アイス|アイス.*熱い|冷たい.*ホット|ホット.*冷たい)"))
+            {
+                var jaReply = "恐れ入ります、ホット（温かいもの）とアイス（冷たいもの）のどちらをご希望でしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn dùng đồ uống nóng (hot) hay lạnh (ice) ạ?",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Yêu cầu mâu thuẫn về nhiệt độ đồ uống",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ nghĩa & Từ vựng",
+                                Comment = "Bạn đang kết hợp từ trái ngược ('nóng' và 'đá'). Hãy chọn rõ ràng 'ホット' (nóng) hoặc 'アイス' (lạnh)."
+                            }
+                        },
+                        NaturalAlternative = "アイスコーヒーをお願いします。",
+                        CulturalTip = "Ở Nhật, cà phê hoặc trà luôn được phân loại rõ ràng là ホット (Hot) hoặc アイス (Iced)."
+                    }
+                };
+            }
+
+            // 3. Off-Context / Off-Menu Guard (Tổng quát hóa theo bối cảnh: Quán ăn, Nhà ga, Phỏng vấn)
+            if (isRamenScenario && Regex.IsMatch(userMessage, @"(ピザ|ハンバーガー|パスタ|スパゲッティ|ピッツァ|寿司|すし)"))
+            {
+                var jaReply = "大変申し訳ございません、当店はラーメン専門店ですので、ラーメンのメニューからお選びいただけますでしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, quán chúng tôi là tiệm chuyên mì ramen, {reg.AiAddressLearner} vui lòng chọn món trong thực đơn mì ramen nhé ạ?",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Món ăn không có trong thực đơn quán ramen",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ cảnh giao tiếp",
+                                Comment = "Bạn đang gọi món không thuộc thực đơn của quán mì ramen. Hãy gọi các món ramen hoặc món ăn kèm đặc trưng của quán."
+                            }
+                        },
+                        NaturalAlternative = "豚骨ラーメンをお願いします。",
+                        CulturalTip = "Các quán ăn Nhật Bản thường có tính chuyên môn hóa rất cao theo từng dòng ẩm thực (Ramen-ya, Soba-ya, Sushi-ya...)."
+                    }
+                };
+            }
+            if (isStationScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|定食|コーヒー)"))
+            {
+                var jaReply = "大変申し訳ございません、こちらは駅の窓口でございますので、切符のご購入や運行案内に関するご用件をお願いできますでしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, đây là quầy dịch vụ nhà ga, {reg.AiSelf} chỉ hỗ trợ mua vé và thông tin chuyến tàu thôi ạ.",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Yêu cầu không phù hợp với quầy vé nhà ga",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ cảnh giao tiếp",
+                                Comment = "Bạn đang gọi đồ ăn/uống tại quầy vé nhà ga. Hãy hỏi về tuyến tàu, điểm đến hoặc mua vé."
+                            }
+                        },
+                        NaturalAlternative = "新宿駅までの切符を一枚お願いします。",
+                        CulturalTip = "Tại các nhà ga Nhật Bản, nhân viên quầy Midori-no-Madoguchi chuyên phục vụ vé tàu và hướng dẫn lịch trình di chuyển."
+                    }
+                };
+            }
+            if (isInterviewScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|切符)"))
+            {
+                var jaReply = "恐れ入ります、こちらは採用面接の場でございますので、ご質問に対するお答えや自己PRをお願いできますでしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Xin lỗi {reg.AiAddressLearner}, đây là buổi phỏng vấn tuyển dụng, {reg.AiAddressLearner} vui lòng trả lời câu hỏi phỏng vấn nhé ạ?",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Nội dung không thuộc phạm vi phỏng vấn tuyển dụng",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ cảnh giao tiếp",
+                                Comment = "Vui lòng tập trung vào các câu hỏi phỏng vấn xin việc (lý do ứng tuyển, kinh nghiệm, điểm mạnh)."
+                            }
+                        },
+                        NaturalAlternative = "私の長所についてお話しいたします。",
+                        CulturalTip = "Trong buổi phỏng vấn ở Nhật, tính tập trung và thái độ nghiêm túc đối với các câu hỏi là yếu tố quyết định."
+                    }
+                };
+            }
+            if (isCafeScenario && Regex.IsMatch(userMessage, @"(ラーメン|寿司|すし|切符|定食|餃子|ギョーザ)"))
+            {
+                var jaReply = "大変申し訳ございません、当店はカフェでございますので、お飲み物や軽食のメニューからお選びいただけますでしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, quán chúng tôi là quán cà phê, {reg.AiAddressLearner} vui lòng chọn các món trong thực đơn đồ uống hoặc bánh ngọt nhé ạ?",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Món ăn không có trong thực đơn quán cà phê",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ cảnh giao tiếp",
+                                Comment = "Bạn đang gọi món ăn mặn/không thuộc thực đơn quán cà phê. Hãy gọi các loại cà phê, trà hoặc bánh ngọt phù hợp."
+                            }
+                        },
+                        NaturalAlternative = "アイスコーヒーをお願いします。",
+                        CulturalTip = "Tại các quán cà phê Nhật Bản, thực đơn chủ yếu là đồ uống, bánh ngọt hoặc sandwich nhẹ."
+                    }
+                };
+            }
+            if (isMedicalScenario && Regex.IsMatch(userMessage, @"(ラーメン|ピザ|ハンバーガー|パスタ|寿司|すし|切符|ビール|コーヒー)"))
+            {
+                var jaReply = "大変恐れ入ります、こちらは医療機関でございますので、症状や体調についてお聞かせいただけますでしょうか？";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"Thành thật xin lỗi {reg.AiAddressLearner}, đây là cơ sở y tế khám chữa bệnh, {reg.AiAddressLearner} vui lòng cho biết triệu chứng hoặc tình trạng sức khỏe nhé ạ?",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Nội dung không phù hợp với cơ sở y tế",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Ngữ cảnh giao tiếp",
+                                Comment = "Đây là tình huống tại phòng khám/bệnh viện. Hãy mô tả triệu chứng sức khỏe hoặc yêu cầu khám bệnh."
+                            }
+                        },
+                        NaturalAlternative = "頭が痛いので、診察をお願いします。",
+                        CulturalTip = "Khi đến bệnh viện hoặc phòng khám ở Nhật Bản, bước đầu tiên tại quầy tiếp tân là xuất trình thẻ bảo hiểm và nêu rõ lý do khám."
+                    }
+                };
+            }
+
+            // 4. Ambiguous Demonstrative or Counter Guard (ひとつお願いします - thích ứng theo tình huống)
+            if (Regex.IsMatch(userMessage.Trim(), @"^(すみません[、,\s]*|あの[、,\s]*)?(これ|それ|あれ|ひとつ|1つ)(を)?(おねがい|お願い|ください)?(します)?[\.!?。！？\s]*$"))
+            {
+                string jaReply;
+                string viReply;
+                string summary;
+                string naturalAlt;
+
+                if (isStationScenario)
+                {
+                    jaReply = "恐れ入ります、どの切符をひとつ（一枚）ご希望でしょうか？行き先の駅名をお聞かせください。";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn mua một vé đi đâu ạ? Xin cho {reg.AiSelf} biết ga đến nhé.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nói rõ ga đến";
+                    naturalAlt = "新宿駅までの切符を一枚お願いします。";
+                }
+                else if (isInterviewScenario)
+                {
+                    jaReply = "恐れ入ります、どの質問についてお答えでしょうか？具体的にお聞かせください。";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn trả lời về phần nào ạ? Xin cho {reg.AiSelf} biết cụ thể.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nói rõ nội dung";
+                    naturalAlt = "自己紹介についてお話しいたします。";
+                }
+                else if (isKonbiniScenario)
+                {
+                    jaReply = "恐れ入ります、どの商品をおひとつご希望でしょうか？商品をお教えいただけますか？";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy sản phẩm nào ạ? Xin cho {reg.AiSelf} biết tên sản phẩm nhé.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên sản phẩm";
+                    naturalAlt = "お弁当をひとつお願いします。";
+                }
+                else if (isCafeScenario)
+                {
+                    jaReply = "恐れ入ります、どのお飲み物をおひとつご希望でしょうか？メニュー名をお聞かせください。";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn dùng đồ uống nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên đồ uống";
+                    naturalAlt = "アイスコーヒーをひとつお願いします。";
+                }
+                else if (isRamenScenario || scenarioContext.Contains("quán") || scenarioContext.Contains("nhà hàng") || scenarioContext.Contains("ẩm thực") || scenarioContext.Contains("ăn"))
+                {
+                    jaReply = "恐れ入ります、どの料理をひとつご希望でしょうか？メニュー名をお聞かせください。";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy 1 phần món ăn nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên món";
+                    naturalAlt = "豚骨ラーメンをひとつお願いします。";
+                }
+                else
+                {
+                    jaReply = "恐れ入ります、具体的にどちらをおひとつご希望でしょうか？詳しくお聞かせください。";
+                    viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn yêu cầu đối tượng hoặc nội dung nào ạ? Xin nói rõ giúp {reg.AiSelf} nhé.";
+                    summary = "Yêu cầu chưa cụ thể • Cần nêu rõ đối tượng";
+                    naturalAlt = "これをお願いします。";
+                }
+
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = viReply,
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = summary,
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Độ rõ ràng của thông tin",
+                                Comment = "Chỉ nói 'cho tôi một phần' mà không nêu tên cụ thể sẽ khiến đối phương không rõ bạn muốn yêu cầu điều gì."
+                            }
+                        },
+                        NaturalAlternative = naturalAlt,
+                        CulturalTip = "Trong giao tiếp tiếng Nhật, luôn nêu rõ đối tượng cần mua hoặc yêu cầu trước từ chỉ số lượng."
+                    }
+                };
+            }
+
+            // 5. Flow Discipline: Khi AI đang hỏi số người trong bối cảnh dùng bữa / quán ăn (何名様ですか？)
+            bool isDiningScenario = isRamenScenario || isCafeScenario || scenarioContext.Contains("quán") || scenarioContext.Contains("nhà hàng") || scenarioContext.Contains("ẩm thực") || scenarioContext.Contains("ăn");
+            if (isDiningScenario && isAskingPartySize && !hasPartySize)
+            {
+                // 5a. Khách hỏi tư vấn món hoặc hỏi menu (おすすめは何ですか？)
+                if (Regex.IsMatch(userMessage, @"(おすすめ|何ですか|何がおすすめ|メニュー)"))
+                {
+                    string jaReply;
+                    string viReply;
+                    string naturalAlt;
+
+                    if (isRamenScenario)
+                    {
+                        jaReply = "当店のおすすめは特製豚骨ラーメンでございます！ご案内いたしますので、まず何名様か教えていただけますでしょうか？";
+                        viReply = $"Món đặc sắc của quán chúng tôi là mì Tonkotsu đặc biệt ạ! Để {reg.AiSelf} chuẩn bị xếp chỗ, xin quý khách cho biết quý khách đi mấy người ạ?";
+                        naturalAlt = "1人です。おすすめのラーメンは何ですか？";
+                    }
+                    else if (isCafeScenario)
+                    {
+                        jaReply = "当店のおすすめはブレンドコーヒーでございます！ご案内いたしますので、まず何名様か教えていただけますでしょうか？";
+                        viReply = $"Món đặc sắc của quán chúng tôi là cà phê Blend đặc biệt ạ! Để {reg.AiSelf} chuẩn bị xếp chỗ, xin quý khách cho biết quý khách đi mấy người ạ?";
+                        naturalAlt = "1人です。おすすめのコーヒーは何ですか？";
+                    }
+                    else
+                    {
+                        jaReply = "当店のおすすめメニューをご案内いたしますので、まず何名様でのご利用か教えていただけますでしょうか？";
+                        viReply = $"Quán chúng tôi rất hân hạnh tư vấn thực đơn cho {reg.AiAddressLearner}! Để {reg.AiSelf} chuẩn bị bàn, xin cho biết quý khách đi mấy người ạ?";
+                        naturalAlt = "1人です。おすすめは何ですか？";
+                    }
+
+                    return new AiTurnResult
+                    {
+                        JapaneseReply = jaReply,
+                        FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                        VietnameseMeaning = viReply,
+                        UserVietnameseMeaning = userMessage,
+                        UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                        CompletedMissionIds = new List<int>(),
+                        IsNaturallyConcluded = false,
+                        LinguisticFeedback = new LinguisticFeedbackDto
+                        {
+                            Status = "Warning",
+                            Summary = "Cần thông báo số lượng người trước khi hỏi món",
+                            EvaluationSource = "Guardrail",
+                            Details = new List<LinguisticDetailItemDto>
+                            {
+                                new()
+                                {
+                                    Type = "warning",
+                                    Aspect = "Quy trình giao tiếp",
+                                    Comment = "Nhân viên đang hỏi số người để sắp xếp bàn ghế. Hãy trả lời số người trước (ví dụ 1人です) rồi mới hỏi tư vấn món ăn."
+                                }
+                            },
+                            NaturalAlternative = naturalAlt,
+                            CulturalTip = "Tại các quán ăn Nhật Bản, thông báo số người đi cùng là bước tiên quyết trước khi nhân viên dẫn vào bàn."
+                        }
+                    };
+                }
+
+                // 5b. Khách trả lời thụ động (はい / そうです)
+                if (Regex.IsMatch(userMessage.Trim(), @"^(はい|ええ|そうです|うん)[\.!?。！？]*$"))
+                {
+                    var jaReply = "恐れ入ります、お席をご案内いたしますので、何名様でのご利用か教えていただけますでしょうか？";
+                    return new AiTurnResult
+                    {
+                        JapaneseReply = jaReply,
+                        FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                        VietnameseMeaning = $"Dạ xin lỗi {reg.AiAddressLearner}, để xếp chỗ thì {reg.AiAddressLearner} vui lòng cho biết đi mấy người ạ?",
+                        UserVietnameseMeaning = userMessage,
+                        UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                        CompletedMissionIds = new List<int>(),
+                        IsNaturallyConcluded = false,
+                        LinguisticFeedback = new LinguisticFeedbackDto
+                        {
+                            Status = "Warning",
+                            Summary = "Cần đưa ra lựa chọn cụ thể thay vì chỉ nói đồng ý",
+                            EvaluationSource = "Guardrail",
+                            Details = new List<LinguisticDetailItemDto>
+                            {
+                                new()
+                                {
+                                    Type = "warning",
+                                    Aspect = "Hội thoại tương tác",
+                                    Comment = "Khi đối phương hỏi câu hỏi số lượng hoặc lựa chọn, không thể trả lời bằng 'Có' (はい) mà cần nêu rõ con số cụ thể."
+                                }
+                            },
+                            NaturalAlternative = "1人です。",
+                            CulturalTip = "Hãy dùng các từ đếm người cơ bản: 1人 (ひとり), 2人 (ふたり), 3人 (さんにん)."
+                        }
+                    };
+                }
+            }
+
+            // 6. Vague Ramen Order Guard: Khi nhiệm vụ yêu cầu khẩu vị cụ thể (濃いめ/đậm đà) mà khách chỉ gọi chung chung
+            bool targetRequiresFlavor = pendingMissions.Any(m => (m.CompletionCriteriaJson + " " + m.Content).Contains("濃いめ") || (m.CompletionCriteriaJson + " " + m.Content).Contains("đậm đà") || (m.CompletionCriteriaJson + " " + m.Content).Contains("vị đậm"));
+            bool userSpecifiedFlavor = Regex.IsMatch(userMessage, @"(濃いめ|こいめ|薄め|うすめ|普通|ふつう|辛め|からめ)");
+            if (targetRequiresFlavor && !userSpecifiedFlavor && Regex.IsMatch(userMessage, @"(ラーメン|らーめん)"))
+            {
+                var jaReply = "かしこまりました。ラーメンのお味はいかがなさいますか？味の濃さや麺の硬さをお選びいただけます。";
+                return new AiTurnResult
+                {
+                    JapaneseReply = jaReply,
+                    FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(jaReply),
+                    VietnameseMeaning = $"{reg.AiSelf} đã rõ. Khẩu vị mì của {reg.AiAddressLearner} thế nào ạ? {reg.AiAddressLearner} có thể chọn độ đậm nhạt của nước dùng và độ cứng của sợi mì ạ.",
+                    UserVietnameseMeaning = userMessage,
+                    UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage),
+                    CompletedMissionIds = new List<int>(),
+                    IsNaturallyConcluded = false,
+                    LinguisticFeedback = new LinguisticFeedbackDto
+                    {
+                        Status = "Warning",
+                        Summary = "Yêu cầu chưa rõ khẩu vị đặc trưng của nhiệm vụ",
+                        EvaluationSource = "Guardrail",
+                        Details = new List<LinguisticDetailItemDto>
+                        {
+                            new()
+                            {
+                                Type = "warning",
+                                Aspect = "Yêu cầu kịch bản",
+                                Comment = "Nhiệm vụ yêu cầu bạn chỉ định rõ khẩu vị đậm đà (濃いめ). Bạn mới chỉ gọi mì ramen chung chung."
+                            }
+                        },
+                        NaturalAlternative = "豚骨ラーメン、味濃いめでお願いします。",
+                        CulturalTip = "Tại các quán mì Tonkotsu hoặc Iekei Ramen, khách hàng thường được tự do tùy biến: Độ đậm (味の濃さ), Lượng mỡ (油の量), Độ cứng mì (麺の硬さ)."
+                    }
+                };
+            }
+
+
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
             if (!string.IsNullOrWhiteSpace(personaDirective))
             {
@@ -181,7 +715,7 @@ Return strictly pure JSON matching:
             }
 
             var sbHistory = new StringBuilder();
-            foreach (var msg in conversationHistory.TakeLast(10))
+            foreach (var msg in (conversationHistory ?? []).TakeLast(10))
             {
                 sbHistory.AppendLine($"[{msg.Sender}]: {msg.JapaneseText}");
             }
@@ -203,10 +737,11 @@ PENDING MISSIONS:
 
 TASK INSTRUCTIONS:
 1. FOREIGN / MIXED LANGUAGE CHECK (CRITICAL FIRST STEP):
-   - Check if the learner's message contains Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/foreign text.
+   - ONLY trigger if the learner uses Vietnamese (accented or unaccented like 'toi', 'muon', 'cho', 'bat', 'minh', 'em', 'anh', 'la', 'xin', etc.) or English/non-Japanese words.
+   - IMPORTANT: If LEARNER'S LATEST UTTERANCE is written in Japanese script (Kanji, Hiragana, or Katakana) with no foreign/Vietnamese words — even if it has grammar errors, repetition, or placeholder/template symbols like '～' or '〜' (e.g. '豚骨ラーメン ～をお願いしますでお願いします。') — IT IS JAPANESE. NEVER treat broken or templated Japanese as a foreign language! Stay in roleplay, respond warmly or ask a natural clarification in context, and correct the phrasing gently inside linguisticFeedback.
    - If ANY foreign words or non-Japanese sentences are detected:
      * Even if they mentioned a dish or keyword (e.g. 'tonkotsu ramen', 'ramen'), you CANNOT understand them and CANNOT guess their intent. Treat the entire message as completely unintelligible foreign sounds.
-     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite native Japanese incomprehension and ask for Japanese: '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。'
+     * replyJapanese: You MUST NOT guess or echo the item. DO NOT say 'かしこまりました', DO NOT say '...ですね' or '...ですか' (e.g., NEVER say 'とんこつラーメンですね' or ask 'とんこつラーメンですか'). ONLY express polite native Japanese incomprehension and ask for Japanese: '恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。'
      * replyVietnamese: 'Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?'
      * completedMissionIds: MUST BE STRICTLY EMPTY [] (no missions completed).
      * linguisticFeedback: status MUST BE 'Error', summary: 'Vui lòng sử dụng tiếng Nhật', details: explain that the learner must speak in Japanese. In naturalAlternative, show how to say their intended request in natural Japanese.
@@ -382,6 +917,13 @@ Return strictly pure JSON matching this schema:
                 }
 
                 var isForeignLanguage = IsLikelyForeignOrVietnamese(userMessage);
+                bool hasJapaneseChars = Regex.IsMatch(userMessage, @"[぀-ゟ゠-ヿ一-龯]");
+                if (!isForeignLanguage && hasJapaneseChars && !IsLikelyRomaji(userMessage) &&
+                    (ja.Contains("日本語が分かりません") || ja.Contains("外国語は分かりません") || ja.Contains("日本語でお話し")))
+                {
+                    // Guard against LLM falsely rejecting genuine Japanese input containing symbols like ～ or awkward phrasing
+                    return ProcessSimulatorTurn(scenario, levelConfig, userMessage, pendingMissions);
+                }
                 if (isForeignLanguage)
                 {
                     // Strict programmatic enforcement: clear completed missions
@@ -390,7 +932,7 @@ Return strictly pure JSON matching this schema:
                     // If AI leaked a confirmation or echoed the item, sanitize to polite confusion
                     if (ja.Contains("かしこまりました") || ja.Contains("承知") || ja.Contains("ですね") || ja.Contains("ですか") || !ja.Contains("日本語"))
                     {
-                        ja = "恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。";
+                        ja = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
                         vi = "Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?";
                     }
 
@@ -452,14 +994,7 @@ Return strictly pure JSON matching this schema:
 
                         if (string.IsNullOrWhiteSpace(feedback.NaturalAlternative) || feedback.NaturalAlternative.Trim() == trimmedUserMsg)
                         {
-                            if (trimmedUserMsg.Contains("甘さ"))
-                            {
-                                feedback.NaturalAlternative = "甘さ控えめにできますか？";
-                            }
-                            else
-                            {
-                                feedback.NaturalAlternative = $"{trimmedUserMsg}をお願いします。";
-                            }
+                            feedback.NaturalAlternative = $"{trimmedUserMsg}をお願いします。";
                         }
                     }
                     else if (!hasPoliteEnding && feedback.Details != null)
@@ -476,6 +1011,121 @@ Return strictly pure JSON matching this schema:
                     }
                 }
 
+                // === POST-LLM DETERMINISTIC SANITIZER & OVER-ACCOMMODATION PREVENTER ===
+                // 1. Distorted word check: e.g. "つらめ"
+                if (userMessage.Contains("つらめ"))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入ります、「つらめ」でしょうか？辛め（からめ）または濃いめ（こいめ）のどちらをご希望でしょうか？";
+                    fHtml = "恐れ入ります、「つらめ」でしょうか？<ruby>辛<rt>から</rt></ruby>めまたは<ruby>濃<rt>こ</rt></ruby>いめのどちらをご<ruby>希望<rt>きぼう</rt></ruby>でしょうか？";
+                    vi = $"Xin lỗi {reg.AiAddressLearner}, ý {reg.AiAddressLearner} là vị cay (karame) hay vị đậm đà (koime) ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Từ vựng biến dạng • Cần làm rõ ý";
+                        feedback.NaturalAlternative = "濃いめでお願いします。";
+                    }
+                }
+                // 2. Premature ordering when asked party size
+                else if (isDiningScenario && isAskingPartySize && !hasPartySize && Regex.IsMatch(userMessage, @"(ラーメン|Tonkotsu|とんこつ|チャーシュー|餃子|ギョーザ|ビール|ライス|コーヒー|ケーキ)"))
+                {
+                    completedIds.Clear();
+                    ja = "ご注文ありがとうございます！先にお席へご案内いたしますので、まず何名様か教えていただけますでしょうか？";
+                    fHtml = "ご<ruby>注文<rt>ちゅうもん</rt></ruby>ありがとうございます！<ruby>先<rt>さき</rt></ruby>にお<ruby>席<rt>せき</rt></ruby>へご<ruby>案内<rt>あんない</rt></ruby>いたしますので、まず<ruby>何名様<rt>なんめいさま</rt></ruby>か<ruby>教<rt>おし</rt></ruby>えていただけますでしょうか？";
+                    vi = $"Cảm ơn {reg.AiAddressLearner}! Để {reg.AiSelf} chuẩn bị xếp bàn trước, xin cho biết quý khách đi mấy người ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Cần thông báo số lượng người trước khi gọi món";
+                        feedback.NaturalAlternative = "1人です。";
+                    }
+                }
+                // 3. Rude language
+                else if (Regex.IsMatch(userMessage, @"(お前|てめえ|持ってこい|しろよ|くれよ|出せよ|おい、)"))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入りますが、もう少し丁寧な言葉遣いでお話しいただけますでしょうか？";
+                    fHtml = "恐れ入りますが、もう少し<ruby>丁寧<rt>ていねい</rt></ruby>な<ruby>言葉遣<rt>ことばづか</rt></ruby>いでお<ruby>話<rt>はな</rt></ruby>しいただけますでしょうか？";
+                    vi = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} có thể dùng từ ngữ lịch sự hơn một chút được không ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Văn phong chưa phù hợp • Cần dùng thể lịch sự (Desu/Masu)";
+                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                    }
+                }
+                // 4. Off-topic evasion: "猫", "アニメ" trong bối cảnh quán ăn
+                else if (Regex.IsMatch(userMessage, @"(アニメと猫|猫が好き|アニメが好き)"))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入ります、まずご注文をお伺いしてもよろしいでしょうか？";
+                    fHtml = "恐れ入ります、まずご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
+                    vi = $"Dạ xin lỗi {reg.AiAddressLearner}, {reg.AiSelf} xin phép được lắng nghe yêu cầu gọi món trước nhé ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Lệch trọng tâm cuộc trò chuyện";
+                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                    }
+                }
+                // 5. Parroting AI prompt
+                else if (!string.IsNullOrWhiteSpace(lastAiMsg) && userMessage.Trim().Contains(lastAiMsg.Trim()))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入ります、私のご挨拶を繰り返していただいたようですが、ご注文をお伺いしてもよろしいでしょうか？";
+                    fHtml = "恐れ入ります、<ruby>私<rt>わたし</rt></ruby>のご<ruby>挨拶<rt>あいさつ</rt></ruby>を<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>していただいたようですが、ご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
+                    vi = $"Dạ xin lỗi {reg.AiAddressLearner}, hình như {reg.AiAddressLearner} vừa lặp lại lời chào của {reg.AiSelf}. Xin cho biết yêu cầu của {reg.AiAddressLearner} ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Lặp lại câu nói của nhân vật";
+                        feedback.NaturalAlternative = "1人です。";
+                    }
+                }
+                // 6. Gibberish / character noise (ví dụ: "あああああああああ")
+                else if (Regex.IsMatch(userMessage, @"(.)\1{4,}"))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入ります、少々聞き取りにくかったのですが、もう一度お話しいただけますでしょうか？";
+                    fHtml = "恐れ入ります、<ruby>少々<rt>しょうしょう</rt></ruby><ruby>聞<rt>き</rt></ruby>き<ruby>取<rt>と</rt></ruby>りにくかったのですが、もう<ruby>一度<rt>いちど</rt></ruby>お<ruby>話<rt>はな</rt></ruby>しいただけますでしょうか？";
+                    vi = $"Xin lỗi {reg.AiAddressLearner}, âm thanh hơi khó nghe một chút, {reg.AiAddressLearner} có thể nói lại được không ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Nội dung chưa rõ ràng • Âm thanh lạ";
+                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                    }
+                }
+                // 7. Anti-Ego Keigo: "召し上がります"
+                else if (Regex.IsMatch(userMessage, @"(私が召し上がり|私がご覧になり)"))
+                {
+                    completedIds.Clear();
+                    ja = "恐れ入りますが、ご自身の動作には尊敬語ではなく謙譲語をお使いになるとより自然ですよ。";
+                    fHtml = "恐れ入りますが、ご<ruby>自身<rt>じしん</rt></ruby>の<ruby>動作<rt>どうさ</rt></ruby>には<ruby>尊敬語<rt>そんけいご</rt></ruby>ではなく<ruby>謙譲語<rt>けんじょうご</rt></ruby>をお<ruby>使<rt>つか</rt></ruby>いになるとより<ruby>自然<rt>しぜん</rt></ruby>ですよ。";
+                    vi = $"Xin lỗi {reg.AiAddressLearner}, khi nói về hành động của chính mình, dùng khiêm nhường ngữ sẽ chuẩn mực hơn là tôn kính ngữ ạ.";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Nhầm lẫn Tôn kính ngữ (Sonkeigo) cho bản thân";
+                        feedback.NaturalAlternative = "私がいただきます。";
+                    }
+                }
+                // 8. Premature abrupt goodbye: "さようなら" khi pendingMissions còn
+                else if (pendingMissions.Count > 0 && Regex.IsMatch(userMessage, @"(さようなら|バイバイ|帰る)"))
+                {
+                    completedIds.Clear();
+                    isConcluded = false;
+                    ja = "あれっ、もうお帰りですか？まだご注文の途中ですが、いかがなさいますか？";
+                    fHtml = "あれっ、もうお<ruby>帰<rt>かえ</rt></ruby>りですか？まだご<ruby>注文<rt>ちゅうもん</rt></ruby>の<ruby>途中<rt>とちゅう</rt></ruby>ですが、いかがなさいますか？";
+                    vi = $"Ơ, {reg.AiAddressLearner} về luôn rồi sao ạ? Vẫn đang trong lúc gọi món mà, {reg.AiAddressLearner} có muốn tiếp tục không ạ?";
+                    if (feedback != null)
+                    {
+                        feedback.Status = "Warning";
+                        feedback.Summary = "Kết thúc cuộc trò chuyện quá sớm";
+                        feedback.NaturalAlternative = "まだ注文したいです。";
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
                     ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja,
@@ -484,11 +1134,11 @@ Return strictly pure JSON matching this schema:
                             : "丁寧にご対応いただき、誠にありがとうございました。");
 
                     var resolvedReplyFurigana = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
-                        ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml)
+                        ? RoleplaySocialRegister.CleanFuriganaHtml(RoleplaySocialRegister.SanitizeJapaneseReply(fHtml))
                         : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim());
 
-                    var resolvedUserFurigana = !string.IsNullOrWhiteSpace(userFHtml)
-                        ? userFHtml.Trim()
+                    var resolvedUserFurigana = (!string.IsNullOrWhiteSpace(userFHtml) && userFHtml.Contains("<ruby>"))
+                        ? RoleplaySocialRegister.CleanFuriganaHtml(userFHtml.Trim())
                         : RoleplaySocialRegister.GenerateFuriganaHtml(userMessage);
 
                     return new AiTurnResult
@@ -625,9 +1275,35 @@ Return strictly pure JSON:
         sb.AppendLine($"  * NEVER try to guess, deduce, infer, echo, or confirm ANY partial keywords or intent.");
         sb.AppendLine($"  * Even if the learner mentions a faint keyword like 'tonkotsu ramen' or 'ramen' inside non-Japanese text, act as if you did not recognize it at all.");
         sb.AppendLine($"  * STRICTLY FORBIDDEN: NEVER say '...ですね', '...ですか', or 'かしこまりました' when foreign/mixed language is used.");
-        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、日本語が分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。').");
+        sb.AppendLine($"  * CRITICAL EXCEPTION: If the learner wrote in Japanese characters (Kanji/Hiragana/Katakana) with NO foreign/Vietnamese words — even with grammar errors or symbols like '～' — DO NOT treat it as foreign language; engage naturally in roleplay and gently fix their phrasing in linguisticFeedback.");
         sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
-        sb.AppendLine($"- Level matching: Use vocabulary and grammar strictly appropriate for JLPT {levelConfig.JLPTLevel}.");
+        var level = (levelConfig.JLPTLevel ?? "N5").ToUpperInvariant().Trim();
+        sb.AppendLine($"[PEDAGOGICAL DIFFICULTY ADAPTATION FOR JLPT {level}]");
+        if (level == "N5")
+        {
+            sb.AppendLine("- TARGET AUDIENCE: Absolute beginner Japanese learner (JLPT N5, Minna no Nihongo Lesson 1-25).");
+            sb.AppendLine("- SENTENCE STRUCTURE & BREVITY: Short, simple sentences (maximum 8-12 words per sentence, 1-2 clauses only). Absolutely avoid convoluted relative clauses or complex subordinate conjunctions.");
+            sb.AppendLine("- GRAMMAR BOUNDARIES: Strictly limit grammar to basic polite form (~です / ~ます / ~ました / ~ません), basic questions (~ですか), and simple suggestions/requests (~をください, ~ましょうか). NEVER use Sonkeigo/Kenjougo (e.g. avoid '～ていただく', '～でお知りになりたい', '～いらっしゃる', '～申す'). Use basic polite forms only.");
+            sb.AppendLine("- VOCABULARY RESTRICTIONS: Use elementary daily vocabulary. Avoid technical, Sino-Japanese (Kango) compound words (e.g., say 'えび・かに' instead of '甲殻類'; say 'やさい' instead of '植物性原料').");
+            sb.AppendLine("- CONVERSATIONAL TONE: Warm, welcoming, patient, and highly encouraging. Ask straightforward questions with clear choices or simple yes/no cues (e.g., 'スープはどうしますか？', 'ラーメンはどれにしますか？') so an N5 learner can understand easily and answer immediately without hesitation.");
+        }
+        else if (level == "N4")
+        {
+            sb.AppendLine("- TARGET AUDIENCE: Elementary Japanese learner (JLPT N4, Minna no Nihongo Lesson 26-50).");
+            sb.AppendLine("- SENTENCE STRUCTURE: Natural spoken Japanese with moderate compounding (e.g., ~てください, ~てもいいですか, ~てから, ~たら, ~たり~たり, ~と思います).");
+            sb.AppendLine("- GRAMMAR BOUNDARIES: Use standard Teinei form with mild polite expressions. Do not overwhelm with heavy Sonkeigo/Kenjougo.");
+            sb.AppendLine("- VOCABULARY: Common conversational service and daily life vocabulary (approx 1,500 common words).");
+            sb.AppendLine("- CONVERSATIONAL TONE: Friendly, helpful guide. Provide natural prompts that encourage the learner to express conditions or simple reasons (~から, ~ので).");
+        }
+        else
+        {
+            sb.AppendLine("- TARGET AUDIENCE: Intermediate Japanese learner (JLPT N3+).");
+            sb.AppendLine("- SENTENCE STRUCTURE: Natural authentic native pace, idioms, and compound sentences.");
+            sb.AppendLine("- GRAMMAR BOUNDARIES: Standard business/service keigo (~でございます, ~ていただけますか), passive (~られる), causative (~させる), natural transitions.");
+            sb.AppendLine("- VOCABULARY: Rich authentic terminology and nuanced vocabulary.");
+            sb.AppendLine("- CONVERSATIONAL TONE: Authentic native Japanese dialogue reflecting realistic societal scenarios.");
+        }
         sb.AppendLine($"- Brevity: Keep responses concise (1-2 sentences) simulating real-world spoken Japanese.");
         sb.AppendLine($"- Non-preemption: NEVER mention, answer, or complete pending missions for the learner; wait for them to initiate.");
         sb.AppendLine($"- Conversational cueing: Respond only to the current turn with open-ended cues, leaving space for the learner to drive the next mission.");

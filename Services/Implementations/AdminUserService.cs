@@ -99,7 +99,7 @@ public class AdminUserService : IAdminUserService
         // Đếm số phiên luyện tập Roleplay của từng học viên trong trang hiện tại
         var sessionCounts = await _dbContext.RoleplaySessions
             .AsNoTracking()
-            .Where(s => userIds.Contains(s.UserId))
+            .Where(s => userIds.Contains(s.UserId) && s.SessionType != "PlacementTest")
             .GroupBy(s => s.UserId)
             .Select(g => new { UserId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.UserId, x => x.Count, cancellationToken);
@@ -156,7 +156,7 @@ public class AdminUserService : IAdminUserService
 
         var sessionsCount = await _dbContext.RoleplaySessions
             .AsNoTracking()
-            .CountAsync(s => s.UserId == user.Id, cancellationToken);
+            .CountAsync(s => s.UserId == user.Id && s.SessionType != "PlacementTest", cancellationToken);
 
         var dto = new AdminUserListItemDto
         {
@@ -227,7 +227,7 @@ public class AdminUserService : IAdminUserService
 
         var sessionsCount = await _dbContext.RoleplaySessions
             .AsNoTracking()
-            .CountAsync(s => s.UserId == user.Id, cancellationToken);
+            .CountAsync(s => s.UserId == user.Id && s.SessionType != "PlacementTest", cancellationToken);
 
         var updatedDto = new AdminUserListItemDto
         {

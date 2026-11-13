@@ -1,10 +1,10 @@
 import type { ApiResponse } from '../types/auth';
-import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent } from '../types/scenarioDetails';
+import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent, ScenarioTopic, AiGeneratedScenario } from '../types/scenarioDetails';
 
 const API_BASE_URL = '/api/scenarios';
 
 export const scenarioService = {
-  async getScenarios(query?: string): Promise<ApiResponse<ScenarioListItem[]>> {
+  async getScenarios(query?: string, topic?: string): Promise<ApiResponse<ScenarioListItem[]>> {
     const token = localStorage.getItem('jcap_token');
 
     if (!token) {
@@ -15,9 +15,11 @@ export const scenarioService = {
     }
 
     try {
-      const url = query && query.trim() !== ''
-        ? `${API_BASE_URL}?query=${encodeURIComponent(query.trim())}`
-        : API_BASE_URL;
+      const params = new URLSearchParams();
+      if (query && query.trim() !== '') params.set('query', query.trim());
+      if (topic && topic.trim() !== '' && topic !== 'ALL') params.set('topic', topic.trim());
+
+      const url = params.toString() ? `${API_BASE_URL}?${params.toString()}` : API_BASE_URL;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -42,6 +44,24 @@ export const scenarioService = {
         success: false,
         message: 'Không thể kết nối đến máy chủ backend để tải danh sách scenario.',
       };
+    }
+  },
+
+  async getTopics(): Promise<ApiResponse<ScenarioTopic[]>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/topics`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<ScenarioTopic[]> | null;
+      if (result) return result;
+      return { success: false, message: 'Không thể tải danh sách chủ đề kịch bản.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối khi tải chủ đề kịch bản.' };
     }
   },
 
@@ -226,6 +246,32 @@ export const scenarioService = {
       return result || { success: false, message: 'Không thể tải ảnh lên máy chủ.' };
     } catch {
       return { success: false, message: 'Lỗi kết nối khi tải ảnh.' };
+    }
+  },
+
+  async aiGenerateScenario(
+    prompt: string,
+    jlptLevel: string = 'N5',
+    topicCode?: string
+  ): Promise<ApiResponse<AiGeneratedScenario>> {
+    const token = localStorage.getItem('jcap_token');
+    try {
+      const response = await fetch('/api/admin/scenarios/ai-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          jlptLevel,
+          topicCode,
+        }),
+      });
+      const result = (await response.json().catch(() => null)) as ApiResponse<AiGeneratedScenario> | null;
+      return result || { success: false, message: 'Không thể sinh kịch bản từ AI.' };
+    } catch {
+      return { success: false, message: 'Lỗi kết nối khi gọi AI Co-pilot Studio.' };
     }
   },
 

@@ -41,7 +41,11 @@ public class ShadowingControllerTests
             .Callback<ShadowingAudioEvaluationInput, CancellationToken>((input, _) => inputs.Add(input))
             .ReturnsAsync(result);
 
-        var controller = new ShadowingController(new ShadowingService(context), assessment.Object, new Mock<ILogger<ShadowingController>>().Object)
+        var controller = new ShadowingController(
+            new ShadowingService(context), assessment.Object, new ShadowingPracticeProgressService(context),
+            new Mock<IShadowingSentenceAssetService>().Object,
+            new ShadowingSessionInsightsService(context),
+            new Mock<ILogger<ShadowingController>>().Object)
         {
             ControllerContext = new ControllerContext
             {
@@ -112,15 +116,97 @@ public class ShadowingControllerTests
     }
 
     [Fact]
-    public async Task NotScored_IsNotRecorded()
+    public async Task NotScored_IsRecordedWithNullScoresAndTheReason()
     {
         using var context = CreateContext();
         var (controller, _) = Create(context, new ShadowingAudioEvaluationResponseDto { EvaluationStatus = "unavailable", ErrorCode = "NO_SPEECH_DETECTED" });
 
         var data = Body(await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5 }, CancellationToken.None));
 
-        Assert.Null(data.EvaluationId);
+        var saved = Assert.Single(context.ShadowingSentenceEvaluations);
+        Assert.Equal(data.EvaluationId, saved.Id);
+        Assert.Null(saved.ContentMatchScore);
+        Assert.Null(saved.OverallScore); // KHÔNG phải 0
+        Assert.Equal("unavailable", saved.EvaluationStatus);
+        Assert.Equal("NO_SPEECH_DETECTED", saved.ErrorCode);
+    }
+
+    [Fact]
+    public async Task EverySubmission_IsANewRecord_RetakesDoNotOverwrite()
+    {
+        using var context = CreateContext();
+        var (controller, inputs) = Create(context, Scored());
+
+        await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ClientSubmissionId = Guid.NewGuid() }, CancellationToken.None);
+        await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ClientSubmissionId = Guid.NewGuid() }, CancellationToken.None);
+
+        Assert.Equal(2, inputs.Count);
+        Assert.Equal(2, context.ShadowingSentenceEvaluations.Count());
+    }
+
+    [Fact]
+    public async Task ResendingTheSameSubmission_ReturnsTheStoredResult_WithoutScoringOrSavingAgain()
+    {
+        using var context = CreateContext();
+        var (controller, inputs) = Create(context, Scored());
+        var submission = Guid.NewGuid();
+
+        var first = Body(await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ClientSubmissionId = submission }, CancellationToken.None));
+        var again = Body(await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ClientSubmissionId = submission }, CancellationToken.None));
+
+        Assert.Single(inputs);
+        Assert.Single(context.ShadowingSentenceEvaluations);
+        Assert.Equal(first.EvaluationId, again.EvaluationId);
+        Assert.Equal(100, again.OverallScore);
+    }
+
+    [Fact]
+    public async Task WithProgress_TheEvaluationIsLinkedToIt()
+    {
+        using var context = CreateContext();
+        var (controller, _) = Create(context, Scored());
+        var progress = (await new ShadowingPracticeProgressService(context).StartAsync(UserId, new StartShadowingProgressDto { DialogueId = 1, LearnerRole = "A" })).Data!;
+
+        var data = Body(await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ProgressId = progress.Id }, CancellationToken.None));
+
+        Assert.Equal(progress.Id, context.ShadowingSentenceEvaluations.Single(e => e.Id == data.EvaluationId).ShadowingPracticeProgressId);
+    }
+
+    [Fact]
+    public async Task ProgressOfAnotherUser_OrWrongRole_IsRejected_WithoutScoring()
+    {
+        using var context = CreateContext();
+        context.ShadowingSentences.Add(new ShadowingSentence { Id = 6, ShadowingDialogueId = 1, OrderIndex = 1, SpeakerRole = "B", JapaneseText = "はい" });
+        context.SaveChanges();
+        var (controller, inputs) = Create(context, Scored());
+        var service = new ShadowingPracticeProgressService(context);
+        var others = (await service.StartAsync("someone-else", new StartShadowingProgressDto { DialogueId = 1, LearnerRole = "A" })).Data!;
+        var mine = (await service.StartAsync(UserId, new StartShadowingProgressDto { DialogueId = 1, LearnerRole = "A" })).Data!;
+
+        var r1 = await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 5, ProgressId = others.Id }, CancellationToken.None);
+        var r2 = await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto { Audio = Audio(), SentenceId = 6, ProgressId = mine.Id }, CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(r1.Result);
+        Assert.IsType<BadRequestObjectResult>(r2.Result); // câu 6 là vai B, phiên là vai A
+        Assert.Empty(inputs);
         Assert.Empty(context.ShadowingSentenceEvaluations);
+    }
+
+    [Fact]
+    public async Task OldClient_WithoutProgressOrSubmissionId_StillWorks()
+    {
+        using var context = CreateContext();
+        var (controller, _) = Create(context, Scored());
+
+        var data = Body(await controller.EvaluateAudio(new ShadowingAudioEvaluationRequestDto
+        {
+            Audio = Audio(), SentenceId = 5, ClientTranscript = "すみません", ClientRecognitionStatus = "final",
+        }, CancellationToken.None));
+
+        Assert.NotNull(data.EvaluationId);
+        var saved = Assert.Single(context.ShadowingSentenceEvaluations);
+        Assert.Null(saved.ShadowingPracticeProgressId);
+        Assert.Null(saved.ClientSubmissionId);
     }
 
     [Fact]

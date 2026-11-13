@@ -5,15 +5,27 @@ export interface ApiResponse<T> {
   errors?: string[];
 }
 
+export type PlacementTestStatusType =
+  | 'NotStarted'
+  | 'Skipped'
+  | 'InProgress'
+  | 'InsufficientEvidence'
+  | 'Completed';
+
 export interface AuthResponseDto {
   token: string;
   userId: string;
   email: string;
   fullName: string;
   role: string;
+  jlptLevel?: string;
   creditBalance?: number;
   expiresAt: string;
   hasPassword: boolean;
+  placementTestStatus?: PlacementTestStatusType;
+  hasSeenPlacementPrompt?: boolean;
+  initialEstimatedLevel?: string | null;
+  initialConfidenceTier?: string | null;
 }
 
 export interface RegisterResponseDto {
@@ -28,6 +40,10 @@ export interface User {
   level?: string;
   avatarUrl?: string;
   creditBalance?: number;
+  placementTestStatus?: PlacementTestStatusType;
+  hasSeenPlacementPrompt?: boolean;
+  initialEstimatedLevel?: string | null;
+  initialConfidenceTier?: string | null;
   [key: string]: any;
 }
 
@@ -56,4 +72,3 @@ export interface ChangePasswordPayload {
   newPassword: string;
   confirmPassword: string;
 }
-

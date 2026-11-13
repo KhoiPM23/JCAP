@@ -26,6 +26,8 @@ public class AiRequest
     public List<AiMessage> Messages { get; set; } = [];
     public AiResponseFormat ResponseFormat { get; set; } = AiResponseFormat.Json;
     public double Temperature { get; set; } = 0.7;
+    public string? PreferredModel { get; set; }
+    public bool FallbackOnAnyError { get; set; } = false;
 
     public static AiRequest CreateJson(string? systemInstruction, string userPrompt, double temperature = 0.7)
     {
@@ -57,11 +59,13 @@ public class AiResponse
     public string Content { get; set; } = string.Empty;
     public string? ErrorMessage { get; set; }
     public int? StatusCode { get; set; }
+    public string? ModelUsed { get; set; }
 
-    public static AiResponse Ok(string content) => new()
+    public static AiResponse Ok(string content, string? modelUsed = null) => new()
     {
         IsSuccess = true,
-        Content = content
+        Content = content,
+        ModelUsed = modelUsed
     };
 
     public static AiResponse Fail(string errorMessage, int? statusCode = null) => new()
