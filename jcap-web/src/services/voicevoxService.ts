@@ -98,6 +98,13 @@ class VoiceVoxService {
     this.lastCheckTime = 0;
   }
 
+  /**
+   * Kiểm tra trạng thái khả dụng của VOICEVOX Engine (true: online, false: offline, null: chưa check)
+   */
+  public isAvailable(): boolean | null {
+    return this.isVoiceVoxAvailable;
+  }
+
   // Danh mục câu chào & mẫu thoại cốt lõi hay gặp nhất trong tiếng Nhật giao tiếp
   public static readonly COMMON_PHRASES = [
     'こんにちは',
@@ -110,6 +117,8 @@ class VoiceVoxService {
     'かしこまりました',
     '少々お待ちください',
     '失礼します',
+    '大丈夫ですか？ごゆっくりでいいですよ。',
+    'いらっしゃいませ！何名様ですか？',
   ];
 
   /**
@@ -149,7 +158,7 @@ class VoiceVoxService {
    * 2. Check L2 Cache (IndexedDB) -> ~2ms (không tốn mạng)
    * 3. Network Fetch từ VOICEVOX Backend -> Lưu đồng thời vào cả L1 và L2
    */
-  public async getAudioUrl(text: string, speakerId: number): Promise<string> {
+  public async getAudioUrl(text: string, speakerId: number, timeoutMs: number = 12000): Promise<string> {
     const trimmedText = text.trim();
     if (!trimmedText) {
       throw new Error('Văn bản không được để trống.');
@@ -186,9 +195,10 @@ class VoiceVoxService {
       }
 
       // 3. Network Fetch
-      // Đặt timeout 12000ms (12 giây) để CPU tổng hợp đủ thời gian (trên CPU Voicevox thường tốn 1.2s - 2.5s)
+      // Mặc định 12000ms (Shadowing), Roleplay/Placement có thể truyền timeout dài hơn (25000ms) cho câu dài trên CPU
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const resolvedTimeoutMs = Math.max(3000, timeoutMs);
+      const timeoutId = setTimeout(() => controller.abort(), resolvedTimeoutMs);
 
       try {
         const res = await fetch('/api/tts/synthesize', {
@@ -248,7 +258,7 @@ class VoiceVoxService {
         clearTimeout(timeoutId);
         // Nếu do timeout fetch, không vội đánh dấu cả hệ thống offline vĩnh viễn
         if (err?.name === 'AbortError') {
-          console.warn('[VOICEVOX] Fetch synthesis timed out (>12s), falling back gracefully.');
+          console.warn(`[VOICEVOX] Fetch synthesis timed out (>${Math.round(resolvedTimeoutMs / 1000)}s), falling back gracefully.`);
         } else {
           this.isVoiceVoxAvailable = false;
           this.lastCheckTime = Date.now();

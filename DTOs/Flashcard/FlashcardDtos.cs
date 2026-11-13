@@ -25,6 +25,12 @@ namespace JCAP.DTOs.Flashcard
     {
         public int? VocabularyId { get; set; }
         public int? GrammarId { get; set; }
+        public string? Word { get; set; }
+        public string? Pattern { get; set; }
+        public string? Reading { get; set; }
+        public string? Meaning { get; set; }
+        public string? ExampleSentence { get; set; }
+        public string? JlptLevel { get; set; }
     }
 
     public class ToggleBookmarkResponseDto

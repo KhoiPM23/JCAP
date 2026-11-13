@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using JCAP.DTOs.Stt;
@@ -10,6 +11,11 @@ public class WhisperSttService : IWhisperSttService
     private readonly HttpClient _httpClient;
     private readonly ILogger<WhisperSttService> _logger;
     private readonly string _baseUrl;
+
+    private static readonly object _processLock = new();
+    private static Process? _engineProcess;
+    private static bool _isStarting;
+    private static DateTime _lastAutoStartAttempt = DateTime.MinValue;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -25,20 +31,132 @@ public class WhisperSttService : IWhisperSttService
         _baseUrl = configuration["Whisper:BaseUrl"] ?? "http://127.0.0.1:50022";
         _httpClient = httpClientFactory.CreateClient();
         _httpClient.BaseAddress = new Uri(_baseUrl);
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
+        _httpClient.Timeout = TimeSpan.FromSeconds(20);
     }
 
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync("/health", cancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMilliseconds(1800));
+            var response = await _httpClient.GetAsync("/health", cts.Token);
             return response.IsSuccessStatusCode;
         }
         catch
         {
+            // Nếu engine chưa chạy, tự kích hoạt khởi động ngầm (giới hạn 30s giữa các lần gọi)
+            _ = TryAutoStartEngineAsync(CancellationToken.None);
             return false;
         }
+    }
+
+    public Task<bool> TryAutoStartEngineAsync(CancellationToken cancellationToken = default)
+    {
+        lock (_processLock)
+        {
+            if (_isStarting || (DateTime.UtcNow - _lastAutoStartAttempt).TotalSeconds < 25)
+            {
+                return Task.FromResult(false);
+            }
+
+            _isStarting = true;
+            _lastAutoStartAttempt = DateTime.UtcNow;
+        }
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                // Tìm vị trí script server.py
+                var baseDirs = new[]
+                {
+                    Directory.GetCurrentDirectory(),
+                    AppContext.BaseDirectory,
+                    Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..")),
+                    Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), ".."))
+                };
+
+                string? scriptPath = null;
+                foreach (var dir in baseDirs)
+                {
+                    var candidate = Path.Combine(dir, "tools", "whisper_engine", "server.py");
+                    if (File.Exists(candidate))
+                    {
+                        scriptPath = Path.GetFullPath(candidate);
+                        break;
+                    }
+                }
+
+                if (scriptPath == null)
+                {
+                    _logger.LogWarning("[Whisper Engine] Không tìm thấy file script server.py trong thư mục tools/whisper_engine");
+                    return;
+                }
+
+                var scriptDir = Path.GetDirectoryName(scriptPath)!;
+                var venvCandidates = new[]
+                {
+                    Path.Combine(scriptDir, "venv", "Scripts", "python.exe"),
+                    Path.Combine(scriptDir, ".venv", "Scripts", "python.exe"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "venv", "Scripts", "python.exe"),
+                    Path.Combine(Directory.GetCurrentDirectory(), ".venv", "Scripts", "python.exe"),
+                    Path.Combine(scriptDir, "venv", "bin", "python"),
+                    Path.Combine(scriptDir, ".venv", "bin", "python")
+                };
+
+                var pythonCandidates = venvCandidates
+                    .Where(File.Exists)
+                    .Concat(new[] { "python", "py", "python3" })
+                    .Distinct();
+
+                Process? startedProcess = null;
+                foreach (var pyCmd in pythonCandidates)
+                {
+                    try
+                    {
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = pyCmd,
+                            Arguments = $"\"{scriptPath}\"",
+                            WorkingDirectory = scriptDir,
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = false,
+                            RedirectStandardError = false
+                        };
+
+                        var proc = Process.Start(psi);
+                        if (proc != null && !proc.HasExited)
+                        {
+                            startedProcess = proc;
+                            _logger.LogInformation("[Whisper Engine] Đã tự động kích hoạt tiến trình Faster-Whisper ngầm bằng '{PyCmd}' (PID: {Pid}) tại {Script}",
+                                pyCmd, proc.Id, scriptPath);
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                        // Thử candidate tiếp theo
+                    }
+                }
+
+                _engineProcess = startedProcess;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[Whisper Engine] Không thể tự động khởi động server.py. Học viên có thể dùng Web Speech API tự nhiên.");
+            }
+            finally
+            {
+                lock (_processLock)
+                {
+                    _isStarting = false;
+                }
+            }
+        });
+
+        return Task.FromResult(true);
     }
 
     public async Task<WhisperTranscribeResponseDto?> TranscribeAsync(
@@ -77,7 +195,8 @@ public class WhisperSttService : IWhisperSttService
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning("Không thể kết nối đến Whisper Engine tại {BaseUrl}: {Message}", _baseUrl, ex.Message);
+            _logger.LogWarning("Không thể kết nối đến Whisper Engine tại {BaseUrl}: {Message}. Kích hoạt tự khởi động.", _baseUrl, ex.Message);
+            _ = TryAutoStartEngineAsync(CancellationToken.None);
             return null;
         }
         catch (Exception ex)

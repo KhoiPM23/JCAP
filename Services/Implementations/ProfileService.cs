@@ -53,7 +53,7 @@ namespace JCAP.Services.Implementations
             }
 
             // Chỉ cập nhật các trường được phép của UC08
-            // Tuyệt đối bảo vệ: Id, Email, Role, CreatedAt, IsActive, CreditBalance
+            // Tuyệt đối bảo vệ: Id, Email, Role, CreatedAt, IsActive, CreditBalance và Initial Placement Snapshot (BR-PT-20)
             user.FullName = dto.FullName.Trim();
             user.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? null : dto.PhoneNumber.Trim();
             user.ProfilePictureUrl = string.IsNullOrWhiteSpace(dto.ProfilePictureUrl) ? null : dto.ProfilePictureUrl.Trim();
@@ -83,6 +83,12 @@ namespace JCAP.Services.Implementations
                 Role = user.Role ?? "Learner",
                 CreditBalance = user.CreditBalance,
                 CreatedAt = user.CreatedAt,
+                PlacementTestStatus = string.IsNullOrWhiteSpace(user.PlacementTestStatus) ? "NotStarted" : user.PlacementTestStatus,
+                HasSeenPlacementPrompt = user.HasSeenPlacementPrompt,
+                InitialEstimatedLevel = user.InitialEstimatedLevel,
+                InitialConfidenceTier = user.InitialConfidenceTier,
+                InitialProficiencySnapshotJson = user.InitialProficiencySnapshotJson,
+                PlacementTestCompletedAtUtc = user.PlacementTestCompletedAtUtc,
             };
         }
     }

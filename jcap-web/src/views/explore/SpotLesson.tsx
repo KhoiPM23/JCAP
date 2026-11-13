@@ -205,7 +205,17 @@ export const SpotLesson: React.FC<SpotLessonProps> = ({ spot, spotIndex, pref, f
           </Step>
 
           {/* ④ Hội thoại AI: tuỳ chọn, tốn Credit, cho dấu son */}
-          {roleplay && <RoleplayStep roleplay={roleplay} stamped={stamped} red={red} onOpen={(id) => navigate(`/scenarios/${id}`)} />}
+          {roleplay && (
+            <RoleplayStep
+              roleplay={roleplay}
+              stamped={stamped}
+              red={red}
+              onOpen={(id) => {
+                const returnUrl = `/explore?tinh=${pref.slug}&spot=${spotIndex}`;
+                navigate(`/scenarios/${id}?return=${encodeURIComponent(returnUrl)}`);
+              }}
+            />
+          )}
         </ol>
       </section>
       <style>{`

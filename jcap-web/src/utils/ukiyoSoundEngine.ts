@@ -208,6 +208,42 @@ class UkiyoSoundEngine {
   }
 
   /**
+   * Tiếng đồng xu vàng rơi lẻng kẻng (Coin Jingle / Shopee Lucky Coins):
+   * Va chạm kim loại trong trẻo, vui tươi khi nhận xu may mắn hoặc phúc lộc đền thờ.
+   */
+  public playCoinJingle() {
+    if (this.isMuted) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    // 2 nhịp lẻng kẻng liên tiếp: nốt 1 (B5 ~ 987Hz), nốt 2 (E6 ~ 1318Hz) kèm overtone kim loại
+    const coinTones = [
+      { freq: 987.77, time: now, vol: 0.16 },
+      { freq: 1318.51, time: now + 0.075, vol: 0.22 },
+      { freq: 2637.02, time: now + 0.075, vol: 0.08 },
+    ];
+
+    coinTones.forEach(({ freq, time, vol }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, time);
+
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(vol, time + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(time);
+      osc.stop(time + 0.5);
+    });
+  }
+
+  /**
    * Tiếng giấy Washi sột soạt nhẹ: Dùng khi mở bảng gợi ý hoặc lật trang.
    */
   public playPaperRustle() {

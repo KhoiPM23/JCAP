@@ -162,6 +162,15 @@ function getAuthHeaders(includeJsonContentType = true): Record<string, string> {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
+  try {
+    const rawUser = localStorage.getItem('jcap_user');
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      if (parsed?.id) headers['X-User-Id'] = String(parsed.id);
+    }
+  } catch {
+    // Ignore
+  }
   return headers;
 }
 

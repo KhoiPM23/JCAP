@@ -38,6 +38,26 @@ public class LinguisticFeedbackDto
     /// Các chỉ số phân tích phát âm và nhịp nói (Speech Delivery)
     /// </summary>
     public SpeechDeliveryMetricsDto? SpeechDelivery { get; set; }
+
+    /// <summary>
+    /// Vết mực Sumi vi mô (Ambient Sumi Ink Stain) phản hồi vai vế nhẹ nhàng
+    /// </summary>
+    public SumiInkFeedbackDto? SumiInk { get; set; }
+
+    /// <summary>
+    /// Mã biến cố rẽ nhánh kích hoạt trong lượt này (EV_SOLD_OUT, EV_DELAY, ...)
+    /// </summary>
+    public string? ActiveBranchingEventCode { get; set; }
+}
+
+public class SumiInkFeedbackDto
+{
+    public bool HasStain { get; set; }
+    public string StainType { get; set; } = "none"; // "warning", "error", "praise", "survival"
+    public string Message { get; set; } = string.Empty;
+    public string? SuggestedAlternative { get; set; }
+    public int RegisterDelta { get; set; }
+    public bool IsSurvivalPhrase { get; set; }
 }
 
 public class SpeechDeliveryMetricsDto
@@ -55,6 +75,8 @@ public class SpeechDeliveryMetricsDto
     public string? PaceAssessment { get; set; }
     public string? LatencyAssessment { get; set; }
     public string? AudioUrl { get; set; }
+    public bool IsTextInput { get; set; }
+    public int HintLevelUsed { get; set; }
 }
 
 public class LinguisticDetailItemDto

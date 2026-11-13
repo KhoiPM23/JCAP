@@ -23,6 +23,8 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly IPersonaMemoryService _personaMemory;
     private readonly IEpisodicFactExtractor _factExtractor;
     private readonly IVoiceVoxService? _voiceVoxService;
+    private readonly IRegisterAnalyzer _registerAnalyzer;
+    private readonly IEventDirector _eventDirector;
 
     /// <summary>
     /// Số ký tự tiếng Nhật ước lượng tương đương 1 credit (30 ký tự ≈ 30 tokens ≈ 1 credit).
@@ -55,7 +57,9 @@ public class RoleplaySessionService : IRoleplaySessionService
         ITelemetryEvaluatorService telemetryEvaluator,
         IPersonaMemoryService personaMemory,
         IEpisodicFactExtractor? factExtractor = null,
-        IVoiceVoxService? voiceVoxService = null)
+        IVoiceVoxService? voiceVoxService = null,
+        IRegisterAnalyzer? registerAnalyzer = null,
+        IEventDirector? eventDirector = null)
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -66,6 +70,8 @@ public class RoleplaySessionService : IRoleplaySessionService
         _personaMemory = personaMemory;
         _factExtractor = factExtractor ?? new EpisodicFactExtractor();
         _voiceVoxService = voiceVoxService;
+        _registerAnalyzer = registerAnalyzer ?? new RegisterAnalyzer();
+        _eventDirector = eventDirector ?? new EventDirector();
     }
 
     public async Task<ApiResponse<ActiveRoleplaySessionDto?>> GetActiveSessionAsync(
@@ -272,11 +278,55 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         AiOpeningMessageResult? opening = null;
-        if (!string.IsNullOrWhiteSpace(circadianGreeting))
+
+        // Nạp tối đa 2 ký ức liên phiên gần nhất của học viên (~30 tokens)
+        string? memoryContext = null;
+        try
         {
-            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, circadianGreeting, cancellationToken);
+            var recentMemories = await _dbContext.LearnerMemories
+                .AsNoTracking()
+                .Where(lm => lm.UserId == userId)
+                .OrderByDescending(lm => lm.LastConfirmedAtUtc)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
+            if (recentMemories.Count > 0)
+            {
+                var fragments = recentMemories.Select(m => $"{m.Key}={m.Value}");
+                memoryContext = string.Join(", ", fragments);
+            }
+
+            // Cập nhật số lần gặp gỡ trong CharacterMemory
+            var charMem = await _dbContext.CharacterMemories
+                .FirstOrDefaultAsync(cm => cm.UserId == userId && cm.CharacterPersonaKey == npcCode, cancellationToken);
+            if (charMem == null)
+            {
+                _dbContext.CharacterMemories.Add(new CharacterMemory
+                {
+                    UserId = userId,
+                    CharacterPersonaKey = npcCode,
+                    EncounterCount = 1,
+                    AffinityScore = 0,
+                    LastMetAtUtc = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                charMem.EncounterCount++;
+                charMem.LastMetAtUtc = DateTime.UtcNow;
+            }
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
-        if (opening == null)
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể nạp hoặc cập nhật ký ức liên phiên cho người dùng {UserId}", userId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(circadianGreeting) || !string.IsNullOrWhiteSpace(memoryContext))
+        {
+            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, circadianGreeting, memoryContext, cancellationToken);
+        }
+        else
         {
             opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, cancellationToken);
         }
@@ -436,6 +486,14 @@ public class RoleplaySessionService : IRoleplaySessionService
 
         dto.CurrentDayStreak = await ComputeDayStreakAsync(session.UserId, cancellationToken);
 
+        dto.TotalHintTurnsUsed = await _dbContext.LearnerBehaviorSignals
+            .AsNoTracking()
+            .CountAsync(s => s.SessionId == session.Id && s.HintLevelUsed > 0, cancellationToken);
+
+        dto.TotalTranslationPeeksUsed = await _dbContext.LearnerBehaviorSignals
+            .AsNoTracking()
+            .CountAsync(s => s.SessionId == session.Id && s.TranslationPeekCount > 0, cancellationToken);
+
         try
         {
             var rel = await _dbContext.UserNpcRelationships
@@ -445,14 +503,11 @@ public class RoleplaySessionService : IRoleplaySessionService
             if (rel != null)
             {
                 dto.NpcAffinityScore = rel.AffinityScore;
-                dto.NpcRelationshipTitle = rel.AffinityScore switch
-                {
-                    >= 80 => "Tri kỷ tâm giao",
-                    >= 50 => "Thân thiết sâu sắc",
-                    >= 30 => "Người quen thân thuộc",
-                    >= 20 => "Đã từng trò chuyện",
-                    _ => "Lần đầu gặp gỡ"
-                };
+                var reg = RoleplaySocialRegister.Deduce(
+                    session.ScenarioLevelConfiguration?.Scenario?.Title,
+                    session.ScenarioLevelConfiguration?.AiPersona,
+                    session.ScenarioLevelConfiguration?.Description);
+                dto.NpcRelationshipTitle = RoleplaySocialRegister.GetContextualRelationshipTitle(reg.RegisterType, rel.AffinityScore);
                 if (!string.IsNullOrWhiteSpace(rel.MemoryCapsuleJson))
                 {
                     dto.NpcMemories = JsonSerializer.Deserialize<List<string>>(rel.MemoryCapsuleJson) ?? [];
@@ -584,6 +639,40 @@ public class RoleplaySessionService : IRoleplaySessionService
             turnResult = RoleplaySocialRegister.ProcessForeignLanguageTurn(levelConfig.Scenario, levelConfig, userMessage.JapaneseText);
         }
 
+        // 2c-bis. Whisper Low Confidence Guard (< 0.60):
+        // Hỏi lại nhẹ nhàng bằng tiếng Nhật tự nhiên, tuyệt đối không trừ oan điểm ngữ pháp của người học
+        if (turnResult == null && request.SpeechConfidence.HasValue && request.SpeechConfidence.Value < 0.60 && !string.IsNullOrWhiteSpace(userMessage.JapaneseText))
+        {
+            var askBackJa = "恐れ入りますが、少し聞き取れませんでした。もう一度よろしいでしょうか？";
+            var reg = RoleplaySocialRegister.Deduce(levelConfig.Scenario?.Title, levelConfig.AiPersona, levelConfig.Description);
+            var askBackVi = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiSelf} nghe chưa rõ. {reg.AiAddressLearner} có thể nói lại một lần nữa được không ạ?";
+            turnResult = new AiTurnResult
+            {
+                JapaneseReply = askBackJa,
+                FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(askBackJa),
+                VietnameseMeaning = askBackVi,
+                UserVietnameseMeaning = userMessage.JapaneseText,
+                UserFuriganaHtml = userMessage.JapaneseText,
+                CompletedMissionIds = new List<int>(),
+                IsNaturallyConcluded = false,
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Warning",
+                    Summary = "Âm thanh chưa rõ • Vui lòng nói lại",
+                    EvaluationSource = "AcousticConfidenceGuard",
+                    Details = new List<LinguisticDetailItemDto>
+                    {
+                        new()
+                        {
+                            Type = "warning",
+                            Aspect = "Độ rõ âm học (STT Confidence)",
+                            Comment = "Hệ thống ghi nhận âm thanh có độ rõ thấp (< 0.6). Bạn có thể bấm '言い直す' (Nói lại) hoặc phát âm to, rõ hơn."
+                        }
+                    }
+                }
+            };
+        }
+
         // 2d. Trích xuất ký ức cá nhân học viên (Episodic Facts Extraction)
         try
         {
@@ -635,9 +724,71 @@ public class RoleplaySessionService : IRoleplaySessionService
             directiveBuilder.AppendLine($"[RECAST: Học viên vừa dùng sai {topErr.Code} ({topErr.Title}). Trong câu đối đáp, hãy khéo léo dùng lại cấu trúc chuẩn tự nhiên để tái hiện (implicit recast) mà không chỉ trích.]");
         }
 
+        // 3b. Phân tích Kính ngữ / Thể văn tất định bằng RegisterAnalyzer
+        var regAnalysis = _registerAnalyzer.Analyze(userMessage.JapaneseText, levelConfig.ExpectedLearnerRegister);
+        if (!regAnalysis.IsMatch && regAnalysis.SumiInkIndicatorType != null)
+        {
+            directiveBuilder.AppendLine($"[REGISTER DIRECTIVE: Học viên dùng thể {regAnalysis.DetectedRegister} trong khi bối cảnh yêu cầu {regAnalysis.ExpectedRegister}. Phản xạ xã hội chân thực theo văn hóa Nhật.]");
+        }
+        if (regAnalysis.IsSurvivalPhrase)
+        {
+            directiveBuilder.AppendLine("[SURVIVAL PHRASE DIRECTIVE: Học viên chủ động dùng cụm từ sinh tồn (nhờ nhắc lại/nói chậm). Hãy nói chậm rãi, khích lệ và nhắc lại nội dung quan trọng.]");
+        }
+
+        // 3c. EventDirector: Đánh giá kích hoạt biến cố rẽ nhánh sư phạm (EV_SOLD_OUT, EV_DELAY, EV_SPEAK_FAST, EV_MISHEARD, EV_INDIRECT_REFUSAL)
+        var userTurnCount = session.Messages.Count(m => m.Sender == "User");
+        var previousUserMessages = session.Messages
+            .Where(m => m.Sender == "User" && m != userMessage)
+            .OrderBy(m => m.CreatedAt)
+            .ToList();
+
+        int totalEventsTriggeredSoFar = 0;
+        int turnsSinceLastEvent = 99;
+
+        for (int i = 0; i < previousUserMessages.Count; i++)
+        {
+            var prevMsg = previousUserMessages[i];
+            if (!string.IsNullOrEmpty(prevMsg.LinguisticFeedbackJson))
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(prevMsg.LinguisticFeedbackJson);
+                    if (doc.RootElement.TryGetProperty("activeBranchingEventCode", out var codeProp) &&
+                        !string.IsNullOrWhiteSpace(codeProp.GetString()))
+                    {
+                        totalEventsTriggeredSoFar++;
+                        turnsSinceLastEvent = userTurnCount - (i + 1);
+                    }
+                }
+                catch {}
+            }
+        }
+
+        var eventDecision = _eventDirector.EvaluateEventTrigger(
+            levelConfig.JLPTLevel,
+            userTurnCount,
+            turnsSinceLastEvent,
+            totalEventsTriggeredSoFar,
+            remainingMissionsCount: pendingMissions.Count,
+            compatibleEventsJson: levelConfig.CompatibleEventsJson,
+            lastUserUtterance: userMessage.JapaneseText);
+
+        string? activeEventCode = null;
+        if (eventDecision.ShouldTriggerEvent && eventDecision.TriggeredEvent != null)
+        {
+            activeEventCode = eventDecision.EventCode;
+            if (!string.IsNullOrWhiteSpace(eventDecision.DirectiveForAiPrompt))
+            {
+                directiveBuilder.AppendLine(eventDecision.DirectiveForAiPrompt);
+            }
+        }
+
         var combinedDirective = directiveBuilder.Length > 0 ? directiveBuilder.ToString().Trim() : null;
 
         // 4. Gọi AI phân tích và phản hồi nếu chưa xử lý bởi Pre-flight Guard
+        if (levelConfig.Scenario == null)
+            throw new InvalidOperationException($"Scenario not found for ScenarioId={levelConfig.ScenarioId}. Data integrity error.");
+
         if (turnResult == null && !string.IsNullOrWhiteSpace(combinedDirective))
         {
             turnResult = await _aiRoleplayService.ProcessTurnAsync(
@@ -731,7 +882,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                     Status = "Paid",
                     CoveredBySubscription = true,
                     SubscriptionPlanId = plan.Id,
-                    Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                    Description = $"[Gói tháng] Lượt hội thoại AI: {levelConfig.Scenario?.Title ?? "Kịch bản"} ({levelConfig.JLPTLevel})",
                     CreatedAt = DateTime.UtcNow
                 });
                 // Không gọi UpdateAsync vì CreditBalance không thay đổi
@@ -764,7 +915,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                         Type = "Deduct",
                         Status = "Paid",
                         CoveredBySubscription = false,
-                        Description = $"Lượt hội thoại AI: {levelConfig.Scenario.Title} ({levelConfig.JLPTLevel})",
+                        Description = $"Lượt hội thoại AI: {levelConfig.Scenario?.Title ?? "Kịch bản"} ({levelConfig.JLPTLevel})",
                         CreatedAt = DateTime.UtcNow
                     });
                     await _userManager.UpdateAsync(userForDeduct);
@@ -803,9 +954,13 @@ public class RoleplaySessionService : IRoleplaySessionService
             userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
         }
 
-        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml))
+        if (!string.IsNullOrWhiteSpace(turnResult.UserFuriganaHtml) && turnResult.UserFuriganaHtml.Contains("<ruby>"))
         {
             userMessage.FuriganaHtml = turnResult.UserFuriganaHtml;
+        }
+        else
+        {
+            userMessage.FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessage.JapaneseText);
         }
 
         if (turnResult.LinguisticFeedback != null)
@@ -830,40 +985,90 @@ public class RoleplaySessionService : IRoleplaySessionService
                     _ => (4.0, 8.5, 2.5, 5.5, "Chuẩn N4: 2.5 - 5.5 ký tự/s")
                 };
 
-                // 1. Tính toán điểm tự chủ đàm thoại (Scaffolding Autonomy Score)
+                // 1. Tính toán điểm tự chủ đàm thoại (Scaffolding Autonomy Score theo AssistancePolicy)
                 int turnAutonomy = 100;
                 string autonomyAssessment = "Tự chủ 100% (Không dùng trợ giúp)";
-                if (request.HintLevelUsed == 1)
+                if (request.HintLevelUsed > 0)
                 {
-                    turnAutonomy = 90;
-                    autonomyAssessment = "Dùng gợi ý Từ khóa (-10đ)";
-                }
-                else if (request.HintLevelUsed == 2)
-                {
-                    turnAutonomy = 70;
-                    autonomyAssessment = "Dùng gợi ý Khung câu điền từ (-30đ)";
-                }
-                else if (request.HintLevelUsed >= 3)
-                {
-                    turnAutonomy = 40;
-                    autonomyAssessment = "Dùng gợi ý Mẫu câu hoàn chỉnh (-60đ)";
+                    int priorHintTurnsCount = await _dbContext.LearnerBehaviorSignals
+                        .AsNoTracking()
+                        .CountAsync(s => s.SessionId == session.Id && s.HintLevelUsed > 0, cancellationToken);
+
+                    // Signal của lượt hiện tại đã được ghi ở RecordAndEvaluateTurnAsync (nếu có HintLevelUsed > 0)
+                    // Do đó priorHintTurnsCount đã bao gồm lượt này.
+                    int timesUsed = Math.Max(1, priorHintTurnsCount);
+                    bool isFirstHintInSession = timesUsed <= 1;
+
+                    var (penalty, ceiling) = AssistancePolicy.GetHintTierCost(request.HintLevelUsed, timesUsed);
+                    turnAutonomy = Math.Min(Math.Max(20, 100 - penalty), ceiling);
+
+                    if (request.HintLevelUsed == 1)
+                    {
+                        autonomyAssessment = isFirstHintInSession
+                            ? "Dùng gợi ý Ý tưởng lần đầu (Miễn trừ phạt 0đ, trần 90đ)"
+                            : "Dùng gợi ý Ý tưởng chuẩn (-10đ, trần 85đ)";
+                    }
+                    else if (request.HintLevelUsed == 2)
+                    {
+                        autonomyAssessment = isFirstHintInSession
+                            ? "Dùng gợi ý Từ khóa lần đầu (-15đ, trần 80đ)"
+                            : "Dùng gợi ý Từ khóa chuẩn (-30đ, trần 70đ)";
+                    }
+                    else if (request.HintLevelUsed >= 3)
+                    {
+                        autonomyAssessment = isFirstHintInSession
+                            ? "Dùng gợi ý Mẫu trọn câu lần đầu (-40đ, trần 60đ)"
+                            : "Dùng gợi ý Mẫu trọn câu chuẩn (-60đ, trần 50đ)";
+                    }
                 }
 
-                if (request.TranslationPeekCount > 1)
+                if (request.TranslationPeekCount > 0)
                 {
-                    int peekPenalty = Math.Min(20, (request.TranslationPeekCount - 1) * 5);
-                    turnAutonomy = Math.Max(20, turnAutonomy - peekPenalty);
-                    autonomyAssessment += $", xem bản dịch {request.TranslationPeekCount} lần (-{peekPenalty}đ)";
+                    int totalPeeksInSession = await _dbContext.LearnerBehaviorSignals
+                        .AsNoTracking()
+                        .Where(s => s.SessionId == session.Id && s.TranslationPeekCount > 0)
+                        .SumAsync(s => s.TranslationPeekCount, cancellationToken);
+
+                    int priorPeeksInSession = Math.Max(0, totalPeeksInSession - request.TranslationPeekCount);
+                    bool hasUsedFreeQuota = priorPeeksInSession > 0;
+
+                    int peekPenalty = 0;
+                    if (!hasUsedFreeQuota)
+                    {
+                        // Lượt xem dịch đầu tiên trong phiên được miễn phí 1 lần
+                        int chargeablePeeks = Math.Max(0, request.TranslationPeekCount - 1);
+                        peekPenalty = chargeablePeeks * 5;
+                    }
+                    else
+                    {
+                        // Đã dùng lượt miễn phí trước đó trong phiên: trừ 5đ/lần
+                        peekPenalty = request.TranslationPeekCount * 5;
+                    }
+
+                    peekPenalty = Math.Min(peekPenalty, 20); // Trần phạt bản dịch tối đa 20đ
+                    if (peekPenalty > 0)
+                    {
+                        turnAutonomy = Math.Max(20, turnAutonomy - peekPenalty);
+                        autonomyAssessment += $", xem bản dịch {request.TranslationPeekCount} lần (-{peekPenalty}đ)";
+                    }
+                }
+
+                // Cụm từ sinh tồn (Survival Phrases) được miễn trừ hoàn toàn điểm phạt tự chủ
+                if (regAnalysis.IsSurvivalPhrase)
+                {
+                    turnAutonomy = 100;
+                    autonomyAssessment = "Cụm từ sinh tồn xuất sắc (Miễn trừ hoàn toàn điểm phạt tự chủ)";
                 }
 
                 // 2. Tính toán điểm rõ âm phát âm (Acoustic Pronunciation Score)
-                int pronClarity = request.SpeechConfidence.HasValue
+                bool isTextTurn = request.FallbackToTextInput || (!request.SpeechConfidence.HasValue && string.IsNullOrEmpty(request.AudioUrl));
+                int? pronClarity = request.SpeechConfidence.HasValue
                     ? (int)Math.Clamp(Math.Round(request.SpeechConfidence.Value * 100), 40, 100)
-                    : (request.FallbackToTextInput ? 75 : 85);
+                    : null;
 
-                var turnFluency = 85;
+                var turnFluency = isTextTurn ? 0 : 85;
                 string? latencyAssessment = null;
-                if (request.ResponseLatencySeconds.HasValue)
+                if (!isTextTurn && request.ResponseLatencySeconds.HasValue)
                 {
                     var lat = request.ResponseLatencySeconds.Value;
                     if (lat <= idealLat)
@@ -889,7 +1094,7 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }
 
                 string? paceAssessment = null;
-                if (pace.HasValue)
+                if (!isTextTurn && pace.HasValue)
                 {
                     var p = pace.Value;
                     if (p >= minPace && p <= maxPace)
@@ -908,34 +1113,74 @@ public class RoleplaySessionService : IRoleplaySessionService
                     }
                 }
 
-                if (request.SpeechConfidence.HasValue)
+                if (!isTextTurn && request.SpeechConfidence.HasValue)
                 {
                     var conf = request.SpeechConfidence.Value;
                     if (conf >= 0.85) turnFluency += 5;
                     else if (conf < 0.60) turnFluency -= 15;
                 }
-                turnFluency = Math.Clamp(turnFluency, 30, 100);
+                int? finalFluency = isTextTurn ? null : Math.Clamp(turnFluency, 30, 100);
 
                 turnResult.LinguisticFeedback.SpeechDelivery = new SpeechDeliveryMetricsDto
                 {
-                    SpeakingDurationSeconds = request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
-                    ResponseLatencySeconds = request.ResponseLatencySeconds.HasValue ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
-                    SpeechConfidence = request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
-                    SpeechPace = pace,
-                    TurnFluencyScore = turnFluency,
+                    SpeakingDurationSeconds = !isTextTurn && request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
+                    ResponseLatencySeconds = !isTextTurn && request.ResponseLatencySeconds.HasValue && request.ResponseLatencySeconds.Value >= 0.8 ? Math.Round(request.ResponseLatencySeconds.Value, 1) : null,
+                    SpeechConfidence = !isTextTurn && request.SpeechConfidence.HasValue ? Math.Round(request.SpeechConfidence.Value, 2) : null,
+                    SpeechPace = !isTextTurn && pace.HasValue && pace.Value >= 1.0 ? pace : null,
+                    TurnFluencyScore = finalFluency,
                     TurnAutonomyScore = turnAutonomy,
                     AutonomyAssessment = autonomyAssessment,
-                    PronunciationClarityScore = pronClarity,
-                    MoraRate = request.MoraRate,
+                    PronunciationClarityScore = !isTextTurn ? pronClarity : null,
+                    MoraRate = !isTextTurn && request.MoraRate.HasValue && request.MoraRate.Value >= 1.0 ? request.MoraRate : null,
                     JlptLevel = jlpt,
-                    PaceAssessment = paceAssessment,
-                    LatencyAssessment = latencyAssessment,
-                    AudioUrl = request.AudioUrl
+                    PaceAssessment = !isTextTurn ? paceAssessment : null,
+                    LatencyAssessment = !isTextTurn ? latencyAssessment : null,
+                    AudioUrl = request.AudioUrl,
+                    IsTextInput = request.FallbackToTextInput || (!request.SpeechConfidence.HasValue && string.IsNullOrEmpty(request.AudioUrl)),
+                    HintLevelUsed = request.HintLevelUsed
                 };
             }
+        }
+
+        SumiInkFeedbackDto? sumiFeedback = null;
+        if (!regAnalysis.IsMatch && !string.IsNullOrWhiteSpace(regAnalysis.SumiInkIndicatorType))
+        {
+            sumiFeedback = new SumiInkFeedbackDto
+            {
+                HasStain = true,
+                StainType = regAnalysis.SumiInkIndicatorType == "RegisterError" ? "error" : "warning",
+                Message = regAnalysis.FeedbackTip ?? "Gợi ý: Điều chỉnh thể văn phù hợp vai vế",
+                SuggestedAlternative = regAnalysis.SuggestedAlternative,
+                RegisterDelta = regAnalysis.RegisterDelta,
+                IsSurvivalPhrase = regAnalysis.IsSurvivalPhrase
+            };
+        }
+        else if (regAnalysis.IsSurvivalPhrase)
+        {
+            sumiFeedback = new SumiInkFeedbackDto
+            {
+                HasStain = true,
+                StainType = "survival",
+                Message = "Kỹ năng sinh tồn xuất sắc: Chủ động nhờ nhắc lại hoặc nói chậm",
+                SuggestedAlternative = null,
+                RegisterDelta = 0,
+                IsSurvivalPhrase = true
+            };
+        }
+
+        if (turnResult.LinguisticFeedback != null)
+        {
+            if (sumiFeedback != null)
+            {
+                turnResult.LinguisticFeedback.SumiInk = sumiFeedback;
+            }
+            turnResult.LinguisticFeedback.ActiveBranchingEventCode = activeEventCode;
 
             userMessage.LinguisticFeedbackJson = System.Text.Json.JsonSerializer.Serialize(turnResult.LinguisticFeedback, JsonOptions);
         }
+
+        turnResult.SumiInkFeedback = sumiFeedback;
+        turnResult.ActiveBranchingEventCode = activeEventCode;
 
         bool allMissionsDone = session.SessionMissions.Count > 0 && session.SessionMissions.All(sm => sm.IsCompleted);
         if (turnResult.IsNaturallyConcluded && allMissionsDone)
@@ -992,7 +1237,9 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditsSpentThisTurn = creditsSpentThisTurn,
             DetectedIssues = detectedIssues.ToList(),
             SpeedScale = ddaDecision.SpeedScale,
-            ShouldOfferEncouragement = ddaDecision.ShouldOfferEncouragement
+            ShouldOfferEncouragement = ddaDecision.ShouldOfferEncouragement,
+            ActiveBranchingEventCode = activeEventCode,
+            SumiInkFeedback = sumiFeedback
         };
 
         return ApiResponse<RoleplayTurnResponseDto>.Ok(responseDto);
@@ -1078,6 +1325,86 @@ public class RoleplaySessionService : IRoleplaySessionService
             string npcCode = sessionWithConfig.ScenarioLevelConfiguration.Scenario.ScenarioCode ?? $"SCN_{sessionWithConfig.ScenarioLevelConfiguration.Scenario.Id}";
             await _personaMemory.RecordSessionAffinityAsync(userId, npcCode, allDone);
 
+        }
+
+        // Cập nhật và lưu ký ức liên phiên vào LearnerMemory & CharacterMemory
+        try
+        {
+            var userTexts = await _dbContext.RoleplayMessages
+                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
+                .Select(m => m.JapaneseText)
+                .ToListAsync(cancellationToken);
+
+            foreach (var ut in userTexts)
+            {
+                var fact = _factExtractor.ExtractFact(ut);
+                if (!string.IsNullOrWhiteSpace(fact))
+                {
+                    var cat = fact.Contains("ramen") || fact.Contains("sushi") || fact.Contains("ăn") || fact.Contains("uống")
+                        ? "FoodPreference"
+                        : fact.Contains("quê") || fact.Contains("sống") || fact.Contains("ở")
+                            ? "Origin"
+                            : "Hobby";
+                    var parts = fact.Split(':');
+                    var k = (parts.Length > 0 ? parts[0] : "general").Trim().ToLowerInvariant();
+                    var v = (parts.Length > 1 ? parts[1] : fact).Trim();
+
+                    var existing = await _dbContext.LearnerMemories
+                        .FirstOrDefaultAsync(lm => lm.UserId == userId && lm.Key == k, cancellationToken);
+                    if (existing == null)
+                    {
+                        _dbContext.LearnerMemories.Add(new LearnerMemory
+                        {
+                            UserId = userId,
+                            Category = cat,
+                            Key = k,
+                            Value = v,
+                            Confidence = 0.95,
+                            Visibility = "WorldKnown",
+                            SourceSessionId = sessionId,
+                            CreatedAtUtc = DateTime.UtcNow,
+                            LastConfirmedAtUtc = DateTime.UtcNow
+                        });
+                    }
+                    else
+                    {
+                        existing.Value = v;
+                        existing.LastConfirmedAtUtc = DateTime.UtcNow;
+                    }
+                }
+            }
+
+            if (sessionWithConfig?.ScenarioLevelConfiguration?.Scenario != null)
+            {
+                string npcKey = sessionWithConfig.ScenarioLevelConfiguration.Scenario.ScenarioCode ?? $"SCN_{sessionWithConfig.ScenarioLevelConfiguration.Scenario.Id}";
+                bool allDone = sessionWithConfig.SessionMissions.Count > 0 && sessionWithConfig.SessionMissions.All(m => m.IsCompleted);
+
+                var cm = await _dbContext.CharacterMemories
+                    .FirstOrDefaultAsync(c => c.UserId == userId && c.CharacterPersonaKey == npcKey, cancellationToken);
+                if (cm == null)
+                {
+                    _dbContext.CharacterMemories.Add(new CharacterMemory
+                    {
+                        UserId = userId,
+                        CharacterPersonaKey = npcKey,
+                        EncounterCount = 1,
+                        AffinityScore = allDone ? 20 : 10,
+                        LastInteractionSummary = $"Hoàn thành phiên {sessionWithConfig.ScenarioLevelConfiguration.Scenario.Title}",
+                        LastMetAtUtc = DateTime.UtcNow
+                    });
+                }
+                else
+                {
+                    cm.AffinityScore += allDone ? 15 : 5;
+                    cm.LastInteractionSummary = $"Luyện tập {sessionWithConfig.ScenarioLevelConfiguration.Scenario.Title} ({DateTime.UtcNow:dd/MM})";
+                    cm.LastMetAtUtc = DateTime.UtcNow;
+                }
+            }
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Lỗi khi lưu LearnerMemory/CharacterMemory khi kết thúc phiên {SessionId}", sessionId);
         }
 
         return ApiResponse<bool>.Ok(true, "Phiên luyện tập đã kết thúc thành công.");
@@ -1222,29 +1549,29 @@ public class RoleplaySessionService : IRoleplaySessionService
         var focusAreas = new List<string>();
 
         if (profile.SpeakingReflexIndex >= 65)
-            strengths.Add("⚡ Phản xạ hội thoại nhạy bén (< 2.0s)");
+            strengths.Add("Phản xạ hội thoại nhạy bén (< 2.0s)");
         else
-            focusAreas.Add("⏱️ Cải thiện tốc độ phản xạ khởi đầu câu");
+            focusAreas.Add("Cải thiện tốc độ phản xạ khởi đầu câu");
 
         if (profile.KeigoCommandScore >= 65)
-            strengths.Add("🌸 Sử dụng Kính ngữ (Desu/Masu) tự nhiên chuẩn mực");
+            strengths.Add("Sử dụng Kính ngữ (Desu/Masu) tự nhiên chuẩn mực");
         else
-            focusAreas.Add("⛩️ Củng cố văn phong thể lịch sự Desu/Masu");
+            focusAreas.Add("Củng cố văn phong thể lịch sự Desu/Masu");
 
         if (profile.ParticleAccuracyRate >= 70)
-            strengths.Add("🎯 Làm chủ chính xác trợ từ は, が, に, で");
+            strengths.Add("Làm chủ chính xác trợ từ は, が, に, で");
         else
-            focusAreas.Add("🔍 Chú ý phân biệt cặp trợ từ に vs で, は vs が");
+            focusAreas.Add("Chú ý phân biệt cặp trợ từ に vs で, は vs が");
 
         if (profile.AverageMoraRate >= 4.0)
-            strengths.Add("🎙️ Nhịp điệu phát âm lưu loát (≥ 4.0 mora/s)");
+            strengths.Add("Nhịp điệu phát âm lưu loát (≥ 4.0 mora/s)");
         else
-            focusAreas.Add("🗣️ Luyện tập nối âm và ngắt nghỉ tự nhiên hơn");
+            focusAreas.Add("Luyện tập nối âm và ngắt nghỉ tự nhiên hơn");
 
         if (profile.HintDependencyRate <= 25)
-            strengths.Add("💪 Tự chủ giao tiếp cao (ít dựa gợi ý)");
+            strengths.Add("Tự chủ giao tiếp cao (ít dựa gợi ý)");
         else
-            focusAreas.Add("💡 Thử thách tự diễn đạt trước khi mở thẻ gợi ý");
+            focusAreas.Add("Thử thách tự diễn đạt trước khi mở thẻ gợi ý");
 
         string omikujiRank = profile.CommunicativeProficiencyIndex >= 85 ? "大吉 (Đại Cát)"
             : profile.CommunicativeProficiencyIndex >= 70 ? "中吉 (Trung Cát)" : "吉 (Cát)";
@@ -1254,7 +1581,7 @@ public class RoleplaySessionService : IRoleplaySessionService
             .AsNoTracking()
             .Where(m => m.UserId == userId)
             .OrderBy(m => m.NextRecommendedReviewUtc)
-            .Take(6)
+            .Take(36)
             .Select(m => new LearnerSkillMasteryItemDto
             {
                 SkillCode = m.SkillCode,
