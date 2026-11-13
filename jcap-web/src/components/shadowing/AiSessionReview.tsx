@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, FeedbackItem, Icon } from '../jcap';
+import { Button } from '../jcap';
 import { shadowingService } from '../../services/shadowingService';
 import type { ShadowingAiReviewSection, ShadowingSessionAiReview } from '../../types/shadowing';
 
@@ -7,29 +7,30 @@ interface Props {
   sessionId: string;
 }
 
-/** Một phần nhận xét: tên phần + đánh giá 1 câu, rồi từng vấn đề (bằng chứng ở dòng nhạt, cách sửa ở dòng đậm). */
-function Section({ icon, title, note, section }: { icon: string; title: string; note?: string; section: ShadowingAiReviewSection }) {
+/**
+ * Một phần nhận xét: tên phần + đánh giá 1 câu, rồi từng vấn đề. Không dùng icon: mỗi vấn đề tách bằng một vạch dọc mảnh
+ * (cùng ngôn ngữ với khối "Ưu tiên luyện ngay"); bằng chứng ở dòng nhạt, cách sửa ở dòng đậm.
+ */
+function Section({ title, note, section }: { title: string; note?: string; section: ShadowingAiReviewSection }) {
   return (
-    <div>
-      <div className="flex items-start gap-2">
-        <Icon name={icon} size={20} className="mt-0.5 text-ai" />
-        <div className="min-w-0">
-          <h6 className="m-0 text-sm font-bold text-sumi">
-            {title}
-            {note && <span className="ml-1.5 text-xs font-normal text-sumi-muted">{note}</span>}
-          </h6>
-          {section.verdict && <p className="m-0 text-sm text-sumi-muted">{section.verdict}</p>}
-        </div>
+    <div className="space-y-2">
+      <div>
+        <h6 className="m-0 text-sm font-bold text-sumi">
+          {title}
+          {note && <span className="ml-1.5 text-xs font-normal text-sumi-muted">{note}</span>}
+        </h6>
+        {section.verdict && <p className="m-0 text-sm text-sumi-muted">{section.verdict}</p>}
       </div>
       {section.issues.length > 0 && (
-        <div className="mt-1 pl-7">
+        <ul className="m-0 list-none space-y-3 p-0">
           {section.issues.map((p, i) => (
-            <FeedbackItem key={i} tone="warning" title={p.title}>
-              {p.evidence && <p>{p.evidence}</p>}
-              {p.fix && <p className="font-medium text-sumi">{p.fix}</p>}
-            </FeedbackItem>
+            <li key={i} className="border-l-2 border-line-strong pl-3">
+              <p className="m-0 text-sm font-semibold text-sumi">{p.title}</p>
+              {p.evidence && <p className="m-0 text-sm text-sumi-muted">{p.evidence}</p>}
+              {p.fix && <p className="m-0 text-sm text-sumi">{p.fix}</p>}
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
@@ -37,7 +38,7 @@ function Section({ icon, title, note, section }: { icon: string; title: string; 
 
 /**
  * Nhận xét buổi luyện do AI viết từ số liệu hệ thống đã đo, tập trung Phát âm và Lưu loát.
- * Điểm nhấn duy nhất là việc nên luyện ngay; các phần còn lại để giản dị. Chỉ tạo khi người học bấm; không lưu, không phải điểm.
+ * Điểm nhấn duy nhất là việc nên luyện ngay; các phần còn lại để giản dị, không icon. Chỉ tạo khi người học bấm; không lưu, không phải điểm.
  */
 export default function AiSessionReview({ sessionId }: Props) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
@@ -60,7 +61,7 @@ export default function AiSessionReview({ sessionId }: Props) {
   if (state !== 'done' || !review) {
     return (
       <div className="space-y-2">
-        <Button variant="secondary" size="sm" icon="auto_awesome" loading={state === 'loading'} onClick={generate} disabled={state === 'loading'}>
+        <Button variant="secondary" size="sm" loading={state === 'loading'} onClick={generate} disabled={state === 'loading'}>
           {state === 'loading' ? 'Đang phân tích phát âm và nhịp nói…' : state === 'error' ? 'Thử lại' : 'Nhận xét phát âm và lưu loát từ AI'}
         </Button>
         {state === 'error' && (
@@ -71,23 +72,20 @@ export default function AiSessionReview({ sessionId }: Props) {
   }
 
   return (
-    <section aria-label="Nhận xét từ AI" className="space-y-4 rounded-2xl border border-line bg-paper-50 p-4 sm:p-5">
+    <section aria-label="Nhận xét từ AI" className="space-y-5 rounded-2xl border border-line bg-paper-50 p-4 sm:p-5">
       <p className="m-0 text-[15px] leading-6 text-sumi">{review.summary}</p>
 
       {review.priority && (
-        <div className="flex items-start gap-3 rounded-xl border-l-4 border-ai bg-ai-soft px-4 py-3">
-          <Icon name="my_location" size={20} className="mt-0.5 text-ai" />
-          <div className="min-w-0">
-            <p className="m-0 text-xs font-bold text-ai">Ưu tiên luyện ngay</p>
-            <p className="m-0 text-sm font-medium text-sumi">{review.priority}</p>
-          </div>
+        <div className="rounded-xl border-l-4 border-ai bg-ai-soft px-4 py-3">
+          <p className="m-0 text-xs font-bold text-ai">Ưu tiên luyện ngay</p>
+          <p className="m-0 text-sm font-medium text-sumi">{review.priority}</p>
         </div>
       )}
 
-      <Section icon="record_voice_over" title="Phát âm" section={review.pronunciation} />
+      <Section title="Phát âm" section={review.pronunciation} />
 
       {review.fluency ? (
-        <Section icon="speed" title="Lưu loát" note="so với nhịp giọng mẫu" section={review.fluency} />
+        <Section title="Lưu loát" note="so với nhịp giọng mẫu" section={review.fluency} />
       ) : (
         <p className="m-0 text-xs text-sumi-muted">
           Chưa có số liệu nhịp nói: câu cần đạt nội dung từ 70 điểm thì hệ thống mới so được với giọng mẫu.
