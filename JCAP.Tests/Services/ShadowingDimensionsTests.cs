@@ -42,14 +42,14 @@ public class ShadowingDimensionsTests
         }
     }
 
-    private static SpeechRecognitionResult Heard(string text, string? reading = null, double compression = 1.0) => new()
+    private static SpeechRecognitionResult Heard(string text, string? reading = null, double compression = 1.0, double? noSpeech = null) => new()
     {
         Status = "completed",
         Provider = "faster-whisper",
         Model = "small",
         Text = text,
         Reading = reading,
-        Segments = new List<SpeechRecognitionSegment> { new() { Start = 0, End = 1.5, Text = text, CompressionRatio = compression } },
+        Segments = new List<SpeechRecognitionSegment> { new() { Start = 0, End = 1.5, Text = text, CompressionRatio = compression, NoSpeechProb = noSpeech } },
     };
 
     private static ShadowingEvaluationService Service(ISpeechRecognitionService? asr, IPhonemeRecognizer? phoneme = null,
@@ -150,6 +150,41 @@ public class ShadowingDimensionsTests
 
         Assert.InRange(r.ContentMatchScore!.Value, 1, 99);
         Assert.Contains(r.DiffTokens, t => t.Status == "mismatched" && t.Text.Contains("日本"));
+    }
+
+    [Fact]
+    public async Task SilenceHallucination_IsNoSpeech_NotZero()
+    {
+        // Ảnh chụp thật: chưa nói gì mà Whisper trả 「ご視聴ありがとうございました」 (no_speech_prob đo được 0,83–0,91)
+        var r = await Service(new FakeAsr(() => Heard("ご視聴ありがとうございました", noSpeech: 0.9))).EvaluateAsync(Input());
+
+        Assert.Equal("NO_SPEECH_DETECTED", r.ErrorCode);
+        Assert.Equal("no_speech", r.RecognitionStatus);
+        Assert.Null(r.OverallScore);
+        Assert.Equal("UNAVAILABLE", r.Dimensions.Content.Status);
+    }
+
+    [Fact]
+    public async Task KnownHallucinationPhrase_IsNoSpeech_EvenWithoutTheProbability()
+    {
+        var r = await Service(new FakeAsr(() => Heard("ご視聴ありがとうございました"))).EvaluateAsync(Input());
+        Assert.Equal("NO_SPEECH_DETECTED", r.ErrorCode);
+    }
+
+    [Fact]
+    public async Task RealSpeech_WithTheHighestMeasuredNoSpeechProbability_IsStillScored()
+    {
+        // Cao nhất đo được trên giọng thật: 0,49
+        var r = await Service(new FakeAsr(() => Heard(Target, noSpeech: 0.49))).EvaluateAsync(Input());
+        Assert.Equal(100, r.ContentMatchScore);
+    }
+
+    [Fact]
+    public void HallucinationPhrase_IsAcceptedWhenItIsTheTargetSentence()
+    {
+        Assert.False(ShadowingEvaluationService.IsKnownHallucination("ご視聴ありがとうございました。", "ご視聴ありがとうございました。"));
+        Assert.True(ShadowingEvaluationService.IsKnownHallucination("ご視聴ありがとうございました", "地下一階の一番線です。"));
+        Assert.False(ShadowingEvaluationService.IsKnownHallucination("地下一階の一番線です", "地下一階の一番線です。"));
     }
 
     [Fact]

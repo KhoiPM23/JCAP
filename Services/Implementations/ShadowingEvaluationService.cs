@@ -141,6 +141,18 @@ namespace JCAP.Services.Implementations
             }
 
             var text = asr.Text.Trim();
+            // Whisper "ảo giác" khi gần như im lặng (tiếng thở, ù điện, ồn phòng): hay bịa 「ご視聴ありがとうございました」.
+            // Chính Whisper đánh giá no_speech_prob cao (đo được 0,83–0,91), còn giọng thật tối đa 0,49 (46 bản ghi người học + FLEURS)
+            // → mọi đoạn ≥ ngưỡng (chuẩn của Whisper 0,6) hoặc transcript là câu ảo giác quen thuộc: coi như không nghe thấy giọng.
+            var noSpeechThreshold = _configuration.GetValue<double?>("Shadowing:Asr:NoSpeechThreshold") ?? DefaultNoSpeechThreshold;
+            if ((asr.Segments.Count > 0 && asr.Segments.All(s => s.NoSpeechProb >= noSpeechThreshold))
+                || IsKnownHallucination(text, input.TargetText))
+            {
+                response.RecognitionStatus = "no_speech";
+                return Unavailable(response, "NO_SPEECH_DETECTED",
+                    "Không nghe rõ giọng nói trong bản ghi. Hãy đọc to và rõ hơn rồi thử lại.", keepRecognitionStatus: true);
+            }
+
             if (JapaneseMora.Normalize(text).Length == 0)
             {
                 response.RecognitionStatus = "no_speech";
@@ -164,6 +176,23 @@ namespace JCAP.Services.Implementations
                 ? await _comparer.CompareTranscriptAsync(input.TargetText, text, asr.Reading!, cancellationToken)
                 : await _comparer.CompareAsync(input.TargetText, text, cancellationToken);
             return await ScoreTranscriptAsync(input, response, text, cancellationToken, precomputed: comparison);
+        }
+
+        private const double DefaultNoSpeechThreshold = 0.6;
+
+        /// <summary>Câu Whisper hay tự bịa khi không có lời nói (học từ phụ đề cuối video).</summary>
+        private static readonly string[] KnownHallucinations =
+        {
+            "ご視聴ありがとうございました", "ご清聴ありがとうございました", "最後までご視聴", "チャンネル登録", "ご覧いただきありがとうございます",
+        };
+
+        /// <summary>Transcript chỉ là một câu ảo giác quen thuộc và câu mẫu không chứa câu đó.</summary>
+        internal static bool IsKnownHallucination(string transcript, string target)
+        {
+            var t = JapaneseMora.Normalize(transcript);
+            if (t.Length == 0) return false;
+            var target0 = JapaneseMora.Normalize(target);
+            return KnownHallucinations.Any(h => t.Contains(h) && t.Length <= h.Length + 6 && !target0.Contains(h));
         }
 
         /// <summary>Có ít nhất một kana hoặc chữ Hán (chữ số đứng riêng như "3,070" không tính là tiếng Nhật).</summary>

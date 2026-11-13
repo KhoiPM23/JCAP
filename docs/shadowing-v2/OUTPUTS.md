@@ -107,7 +107,7 @@ Tắt toàn bộ: `Shadowing:Fluency:Enabled=false`.
 | Nhóm | Mã |
 |---|---|
 | Âm thanh | `EMPTY_AUDIO` · `ANALYSIS_AUDIO_MISSING` · `INVALID_AUDIO_FORMAT` · `AUDIO_TOO_LARGE` · `AUDIO_TOO_SHORT` · `AUDIO_TOO_LONG` (> 30 s) · `AUDIO_SILENT` · `AUDIO_TOO_QUIET` · `AUDIO_NOISE_ONLY` · `AUDIO_CLIPPED` |
-| Nhận dạng (Whisper) | `ASR_UNAVAILABLE` (dịch vụ tắt) · `ASR_BUSY` · `ASR_TIMEOUT` · `ASR_REJECTED_AUDIO` · `ASR_ERROR` · `ASR_UNRELIABLE` (văn bản lặp vô nghĩa, hoặc không có tiếng Nhật) · `NO_SPEECH_DETECTED` |
+| Nhận dạng (Whisper) | `ASR_UNAVAILABLE` (dịch vụ tắt) · `ASR_BUSY` · `ASR_TIMEOUT` · `ASR_REJECTED_AUDIO` · `ASR_ERROR` · `ASR_UNRELIABLE` (văn bản lặp vô nghĩa, hoặc không có tiếng Nhật) · `NO_SPEECH_DETECTED` (kể cả khi Whisper "ảo giác" lúc im lặng: mọi đoạn no_speech_prob ≥ 0,6, hoặc câu bịa quen thuộc như 「ご視聴ありがとうございました」) |
 | Khác | `READING_UNAVAILABLE` (không đọc được câu mẫu/transcript, vd. chữ Latin) · `MISSING_TARGET_TEXT` · `SERVER_BUSY` |
 
 `errorMessage` là lời tiếng Việt cho người học; lỗi hệ thống không bao giờ bị coi là người học nói sai.
