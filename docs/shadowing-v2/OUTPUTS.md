@@ -130,13 +130,20 @@ Mỗi câu: danh sách đoạn `{ text, reading }` (reading chỉ có ở chữ 
 | `sentencesToRetry[]` | Câu nên luyện lại (điểm tốt nhất < 65 hoặc chưa chấm được): câu, điểm tốt nhất, lý do, loại lỗi chính |
 | `errorTypeCounts` | Đếm lỗi theo loại trong buổi (trường âm, っ, ん, âm đục/trong…) |
 
-### 3b. Nhận xét chi tiết từ AI — `POST /api/shadowing/history/{sessionId}/ai-review`
+### 3b. Nhận xét phát âm và lưu loát từ AI — `POST /api/shadowing/history/{sessionId}/ai-review`
 
-Chỉ tạo khi người học bấm nút ở màn tổng kết; **miễn phí, không lưu**. AI (Gemini qua `IAiClient`) **không nghe audio, không chấm điểm**:
-chỉ diễn giải số liệu đã lưu của buổi (điểm nội dung tốt nhất từng câu, số lần thử, câu hệ thống nghe được, lỗi theo từ và từng âm,
-số liệu Lưu loát từng câu `FluencyJson`), mỗi nhận xét phải có bằng chứng; không nhận xét giọng/ngữ điệu.
-Đầu ra: `overview`, `strengths[]`, `content[]` và `fluency[]` (mỗi mục `point`, `evidence`, `advice`; tối đa 3), `nextSteps[]`, `hasFluencyData`.
-Không có số liệu Lưu loát thì `fluency` rỗng. AI lỗi/trả sai cấu trúc → thông báo "thử lại", không bịa nhận xét.
+Chỉ tạo khi người học bấm nút ở màn tổng kết; **miễn phí, không lưu**. AI (Gemini qua `IAiClient`) **không nghe audio, không chấm điểm**.
+Dữ liệu gửi (chỉ số liệu đã lưu, không có thông tin cá nhân):
+- `pronunciationPatterns`: kiểu lỗi âm **gom trên mọi lần chấm** của buổi, bỏ vị trí để cùng kiểu gộp lại (vd. 「く」 đọc thành 「ぐ」 ×3, thừa 「っ」 ×4), kèm từ ví dụ;
+- `fluencySummary`: nhịp nói cả buổi do backend tính sẵn (trung vị tỷ lệ tốc độ người học/mẫu, số câu chậm hơn mẫu, tổng ngừng thừa,
+  tổng ngập ngừng giữa từ, nói liền trung bình so với mẫu, ngừng dài nhất, thời gian chờ trước khi nói);
+- `sentences[]` (lần tốt nhất mỗi câu): câu mẫu, điểm nội dung, số lần thử, câu nghe được, lỗi theo từ/từng âm, số liệu Lưu loát
+  (`FluencyJson`: tốc độ người học và mẫu, chỗ ngừng, tỷ lệ ngừng, ngập ngừng, nói liền, thời gian chờ, độ dài đoạn nói).
+
+Prompt bắt AI gom theo **thói quen gây lỗi** (vd. く→ぐ, ぱ→ば, ち→じ cùng do thiếu bật hơi), mỗi vấn đề có bằng chứng và cách sửa làm được ngay,
+giới hạn độ dài; không nhận xét giọng/ngữ điệu; nói nhanh hơn mẫu không phải lỗi.
+Đầu ra: `summary` (1 câu), `priority` (1 việc luyện ngay), `pronunciation` và `fluency` (`verdict` + tối đa 3 `issues` gồm `title`, `evidence`, `fix`),
+`hasFluencyData`. Không có số liệu Lưu loát thì `fluency = null`. AI lỗi/trả sai cấu trúc → thông báo "thử lại", không bịa nhận xét.
 
 ## 4. Lịch sử — `GET /api/shadowing/history`, `GET /api/shadowing/history/{sessionId}`
 

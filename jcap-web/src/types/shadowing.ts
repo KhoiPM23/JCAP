@@ -503,20 +503,26 @@ export interface TranslateAssistResult {
   vietnameseTranslation: string;
 }
 
-/** Một nhận xét của AI: vấn đề, bằng chứng từ số liệu đã đo, cách luyện. */
+/** Một vấn đề AI nêu ra: tên vấn đề, bằng chứng từ số liệu đã đo, cách sửa. */
 export interface ShadowingAiReviewPoint {
-  point: string;
+  title: string;
   evidence: string;
-  advice: string;
+  fix: string;
 }
 
-/** Nhận xét tổng hợp buổi Shadowing do AI viết từ số liệu đã đo (không phải điểm; không lưu). */
+/** Một phần nhận xét (Phát âm hoặc Lưu loát): đánh giá 1 câu và tối đa 3 vấn đề. */
+export interface ShadowingAiReviewSection {
+  verdict: string;
+  issues: ShadowingAiReviewPoint[];
+}
+
+/** Nhận xét buổi Shadowing do AI viết từ số liệu đã đo, tập trung Phát âm và Lưu loát (không phải điểm; không lưu). */
 export interface ShadowingSessionAiReview {
-  overview: string;
-  strengths: string[];
-  content: ShadowingAiReviewPoint[];
-  fluency: ShadowingAiReviewPoint[];
-  nextSteps: string[];
+  summary: string;
+  priority: string;
+  pronunciation: ShadowingAiReviewSection;
+  /** null khi buổi không có số liệu Lưu loát. */
+  fluency: ShadowingAiReviewSection | null;
   hasFluencyData: boolean;
   generatedAt: string;
 }

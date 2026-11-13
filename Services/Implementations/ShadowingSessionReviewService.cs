@@ -15,15 +15,16 @@ using Microsoft.Extensions.Logging;
 namespace JCAP.Services.Implementations
 {
     /// <summary>
-    /// Nhận xét tổng hợp buổi Shadowing bằng AI. AI KHÔNG nghe audio và KHÔNG chấm điểm: chỉ diễn giải số liệu hệ thống đã đo và lưu
-    /// (điểm nội dung từng câu, lỗi theo từ và từng âm, số liệu Lưu loát so với giọng mẫu), mỗi nhận xét phải kèm bằng chứng.
-    /// Không lưu kết quả; miễn phí (không trừ Credit).
+    /// Nhận xét buổi Shadowing bằng AI, tập trung vào Phát âm và Lưu loát. AI KHÔNG nghe audio và KHÔNG chấm điểm: chỉ diễn giải số liệu
+    /// hệ thống đã đo và lưu. Backend tính sẵn các tổng hợp (kiểu lỗi âm lặp lại, nhịp nói cả buổi) để AI không phải tự cộng trừ và
+    /// nhận xét đi vào thói quen thay vì liệt kê từng câu. Không lưu kết quả; miễn phí (không trừ Credit).
     /// </summary>
     public sealed class ShadowingSessionReviewService : IShadowingSessionReviewService
     {
         private const int MaxSentences = 20;
-        private const int MaxPoints = 3;
-        private const int MaxTextLength = 400;
+        private const int MaxIssues = 3;
+        private const int MaxPatterns = 8;
+        private const int MaxTextLength = 220;
 
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -49,28 +50,31 @@ namespace JCAP.Services.Implementations
         }
 
         internal const string SystemInstruction = """
-            Bạn là giáo viên tiếng Nhật, nhận xét một buổi luyện Shadowing (nghe giọng mẫu rồi nói lại từng câu) của người học Việt Nam trình độ JLPT N5–N3.
-            Bạn KHÔNG nghe được audio. Bạn chỉ được dùng dữ liệu JSON do hệ thống đo, gồm:
-            - sentences[]: câu mẫu, điểm nội dung tốt nhất (0–100, tỷ lệ âm thuộc các từ đọc đúng), số lần thử, câu hệ thống nghe được,
-              wordIssues (từ đọc sai/thiếu, cách đọc mẫu, người học nói gì, lỗi từng âm do hệ thống phát hiện),
-              fluency (nếu có): rateRatio = tốc độ người học / tốc độ giọng mẫu (< 1 là chậm hơn), số chỗ ngừng của người học và của mẫu,
-              extraPauses (ngừng ở chỗ mẫu không ngừng), hesitations (ngừng giữa một từ), meanRunMoras (số âm nói liền trung bình) và của mẫu.
-            - errorTypeCounts: đếm lỗi theo loại trong buổi.
-            Quy tắc bắt buộc:
-            1. Mỗi nhận xét phải có bằng chứng lấy từ dữ liệu (trích câu, từ hoặc con số). Không bịa số, không suy ra điều dữ liệu không có.
-            2. Không tự chấm điểm mới, không đưa ra điểm phát âm, điểm lưu loát hay điểm tổng.
-            3. Không nhận xét giọng, chất giọng, ngữ điệu hay cao độ (hệ thống chưa đo). Về âm chỉ nói đến các lỗi trong wordIssues.
-            4. Lưu loát chỉ là so với nhịp của giọng mẫu (giọng máy VOICEVOX đọc đều), mang tính tham khảo; người bản xứ thật thường nói nhanh hơn giọng mẫu,
-               nên không coi nói nhanh hơn mẫu là lỗi. Không có dữ liệu fluency thì để mảng "fluency" rỗng.
-            5. Viết tiếng Việt, xưng "bạn", giọng khích lệ nhưng thẳng thắn, câu ngắn. Từ/câu tiếng Nhật đặt trong 「」.
-            6. Lời khuyên phải làm được ngay khi luyện Shadowing (nghe lại câu nào, chú ý âm nào, đọc chậm cụm nào).
+            Bạn là giáo viên phát âm tiếng Nhật, nhận xét một buổi luyện Shadowing (nghe giọng mẫu rồi nói lại từng câu) của người Việt trình độ N5–N3.
+            Bạn KHÔNG nghe được audio; chỉ dùng dữ liệu JSON do hệ thống đo:
+            - pronunciationPatterns: các kiểu lỗi âm hệ thống phát hiện, đã gom và đếm trên mọi lần chấm của buổi (vd. 「く」 đọc thành 「ぐ」 ×3), kèm từ ví dụ.
+              Lỗi âm được suy ra từ chữ bộ nhận dạng viết ra nên có thể bỏ sót; KHÔNG kết luận "phát âm hoàn hảo".
+            - fluencySummary: nhịp nói cả buổi so với giọng mẫu: medianRateRatio = tốc độ người học / tốc độ mẫu (< 1 là chậm hơn),
+              tổng chỗ ngừng thừa (ngừng ≥ 0,4 giây ở chỗ mẫu không ngừng), tổng lần ngập ngừng giữa một từ, số âm nói liền trung bình so với mẫu.
+            - sentences[]: từng câu (lần tốt nhất): câu mẫu, điểm nội dung, số lần thử, câu nghe được, wordIssues, fluency chi tiết nếu có.
+            Nhiệm vụ: chỉ ra ĐÚNG những vấn đề quan trọng nhất về Phát âm và Lưu loát, đi vào thói quen gây ra lỗi.
+            Quy tắc:
+            1. Gom theo kiểu lỗi lặp lại, không liệt kê từng câu. Nhiều lỗi cùng gốc thì gộp và nêu gốc
+               (vd. く→ぐ, ぱ→ば, ち→じ ở đầu từ cùng do thiếu bật hơi khi đọc âm trong).
+            2. Mỗi vấn đề có bằng chứng lấy từ dữ liệu (số lần, từ, câu, con số). Không bịa số, không suy ra điều dữ liệu không có.
+            3. Cách sửa phải cụ thể, làm được ngay khi Shadowing (động tác miệng/hơi, cụm nào đọc chậm, câu nào nghe lại).
+            4. Không chấm điểm, không nhận xét giọng, ngữ điệu hay cao độ. Không nhận xét điểm nội dung chung chung.
+            5. Lưu loát là so với nhịp giọng máy VOICEVOX đọc đều, chỉ để tham khảo; nói nhanh hơn mẫu KHÔNG phải lỗi.
+               fluencySummary vắng mặt thì "fluency": null.
+            6. Ngắn gọn: summary và priority mỗi cái 1 câu; verdict 1 câu; title ≤ 10 từ; evidence và fix mỗi cái 1 câu ≤ 30 từ.
+               Không chào hỏi, không khen chung chung, không lặp ý giữa các mục.
+            7. Tiếng Việt, xưng "bạn". Chữ tiếng Nhật đặt trong 「」.
             Trả về đúng một JSON object:
-            {"overview": "2–3 câu tổng quan",
-             "strengths": ["tối đa 3 điểm làm tốt, có bằng chứng"],
-             "content": [{"point": "vấn đề về từ/âm", "evidence": "bằng chứng", "advice": "cách luyện"}],
-             "fluency": [{"point": "...", "evidence": "...", "advice": "..."}],
-             "nextSteps": ["tối đa 3 việc nên làm tiếp"]}
-            Mỗi mảng content/fluency tối đa 3 mục, ưu tiên vấn đề lặp lại nhiều nhất.
+            {"summary": "kết luận chính",
+             "priority": "một việc nên luyện ngay",
+             "pronunciation": {"verdict": "...", "issues": [{"title": "...", "evidence": "...", "fix": "..."}]},
+             "fluency": {"verdict": "...", "issues": [{"title": "...", "evidence": "...", "fix": "..."}]}}
+            Mỗi "issues" tối đa 3 mục, vấn đề ảnh hưởng nhiều nhất trước; không có vấn đề rõ thì để mảng rỗng.
             """;
 
         public async Task<ShadowingSessionReviewResult> GenerateAsync(string userId, Guid sessionId, CancellationToken cancellationToken = default)
@@ -107,8 +111,8 @@ namespace JCAP.Services.Implementations
 
             var review = Parse(response.Content);
             if (review == null) return Failed();
-            review.HasFluencyData = payload.Sentences.Any(s => s.Fluency != null);
-            if (!review.HasFluencyData) review.Fluency.Clear();
+            review.HasFluencyData = payload.FluencySummary != null;
+            if (!review.HasFluencyData) review.Fluency = null;
             return new ShadowingSessionReviewResult(review, false, null);
         }
 
@@ -124,8 +128,32 @@ namespace JCAP.Services.Implementations
             public int LearnerSentenceCount { get; set; }
             public int EvaluatedSentenceCount { get; set; }
             public int ContentAccuracy { get; set; }
-            public Dictionary<string, int> ErrorTypeCounts { get; set; } = new();
+            public List<PronunciationPattern> PronunciationPatterns { get; set; } = new();
+            public FluencySummary? FluencySummary { get; set; }
             public List<SentencePayload> Sentences { get; set; } = new();
+        }
+
+        /// <summary>Một kiểu lỗi âm lặp lại trong buổi (gom trên mọi lần chấm có điểm).</summary>
+        internal sealed class PronunciationPattern
+        {
+            public string Pattern { get; set; } = string.Empty;
+            public string? Type { get; set; }
+            public int Count { get; set; }
+            public List<string> Examples { get; set; } = new();
+        }
+
+        /// <summary>Nhịp nói cả buổi (các câu so được với giọng mẫu).</summary>
+        internal sealed class FluencySummary
+        {
+            public int SentencesMeasured { get; set; }
+            public double? MedianRateRatio { get; set; }
+            public int SlowerThanReferenceSentences { get; set; }
+            public int ExtraPauses { get; set; }
+            public int Hesitations { get; set; }
+            public double? AverageMeanRunMoras { get; set; }
+            public double? AverageReferenceMeanRunMoras { get; set; }
+            public int? LongestPauseMs { get; set; }
+            public int? MedianLeadingSilenceMs { get; set; }
         }
 
         internal sealed class SentencePayload
@@ -155,25 +183,33 @@ namespace JCAP.Services.Implementations
                 .ToListAsync(cancellationToken);
             var summary = await _insights.BuildSummaryAsync(session.Id, cancellationToken);
 
-            var sentences = evaluations
+            var best = evaluations
                 .GroupBy(e => e.ShadowingSentenceId)
-                .Select(g =>
-                {
-                    var best = g.OrderByDescending(e => e.OverallScore).ThenByDescending(e => e.CreatedAt).First();
-                    return (Order: best.ShadowingSentence?.OrderIndex ?? 0, Best: best, Attempts: g.Count());
-                })
-                .OrderBy(x => x.Order)
+                .Select(g => (Best: g.OrderByDescending(e => e.OverallScore).ThenByDescending(e => e.CreatedAt).First(), Attempts: g.Count()))
+                .OrderBy(x => x.Best.ShadowingSentence?.OrderIndex ?? 0)
                 .Take(MaxSentences)
-                .Select(x => new SentencePayload
-                {
-                    Text = x.Best.ShadowingSentence?.JapaneseText ?? string.Empty,
-                    BestScore = x.Best.OverallScore ?? 0,
-                    Attempts = x.Attempts,
-                    Heard = x.Best.RecognizedText,
-                    WordIssues = ReadWordIssues(x.Best.DiffTokensJson),
-                    Fluency = ReadFluency(x.Best.FluencyJson),
-                })
                 .ToList();
+
+            var sentences = best.Select(x => new SentencePayload
+            {
+                Text = x.Best.ShadowingSentence?.JapaneseText ?? string.Empty,
+                BestScore = x.Best.OverallScore ?? 0,
+                Attempts = x.Attempts,
+                Heard = x.Best.RecognizedText,
+                WordIssues = ReadTokens(x.Best.DiffTokensJson)
+                    .Where(t => t.Status != "correct")
+                    .Select(t => new WordIssuePayload
+                    {
+                        Word = t.Text,
+                        Status = t.ErrorType == "extra" ? "extra" : t.Status,
+                        Expected = t.ExpectedReading,
+                        Spoken = t.SpokenPart,
+                        Issues = (t.Issues ?? new()).Select(i => i.Message).ToList(),
+                    })
+                    .Take(8)
+                    .ToList(),
+                Fluency = ReadFluency(x.Best.FluencyJson),
+            }).ToList();
 
             return new Payload
             {
@@ -182,28 +218,69 @@ namespace JCAP.Services.Implementations
                 LearnerSentenceCount = summary?.LearnerSentenceCount ?? session.LearnerSentenceCount,
                 EvaluatedSentenceCount = summary?.EvaluatedSentenceCount ?? sentences.Count,
                 ContentAccuracy = summary?.ContentAccuracy ?? session.ContentMatchScore,
-                ErrorTypeCounts = summary?.ErrorTypeCounts ?? new(),
+                PronunciationPatterns = BuildPatterns(evaluations),
+                FluencySummary = BuildFluencySummary(sentences.Select(s => s.Fluency).OfType<ShadowingFluencySnapshotDto>().ToList()),
                 Sentences = sentences,
             };
         }
 
-        private static List<WordIssuePayload> ReadWordIssues(string? json)
+        /// <summary>
+        /// Gom lỗi từng âm trên mọi lần chấm có điểm thành kiểu lỗi (bỏ vị trí "sau 「X」" để các lần cùng kiểu gộp lại), đếm và lấy từ ví dụ.
+        /// </summary>
+        internal static List<PronunciationPattern> BuildPatterns(IEnumerable<ShadowingSentenceEvaluation> evaluations)
         {
-            List<ShadowingDiffTokenDto>? tokens;
-            try { tokens = JsonSerializer.Deserialize<List<ShadowingDiffTokenDto>>(json ?? "[]", Json); }
+            var map = new Dictionary<string, PronunciationPattern>();
+            foreach (var e in evaluations)
+                foreach (var token in ReadTokens(e.DiffTokensJson).Where(t => t.Issues is { Count: > 0 }))
+                    foreach (var issue in token.Issues!)
+                    {
+                        var key = issue.Kind switch
+                        {
+                            "substitute" => $"「{issue.Expected}」 đọc thành 「{issue.Spoken}」",
+                            "missing" => $"thiếu 「{issue.Expected}」",
+                            _ => $"thừa 「{issue.Spoken}」",
+                        };
+                        if (!map.TryGetValue(key, out var p))
+                            map[key] = p = new PronunciationPattern { Pattern = key, Type = issue.ErrorType };
+                        p.Count++;
+                        var word = token.Text.Trim("。、！？!?「」 ".ToCharArray());
+                        if (word.Length > 0 && !p.Examples.Contains(word) && p.Examples.Count < 3) p.Examples.Add(word);
+                    }
+            return map.Values.OrderByDescending(p => p.Count).ThenBy(p => p.Pattern).Take(MaxPatterns).ToList();
+        }
+
+        internal static FluencySummary? BuildFluencySummary(List<ShadowingFluencySnapshotDto> items)
+        {
+            if (items.Count == 0) return null;
+            static double? Median(IEnumerable<double> values)
+            {
+                var v = values.OrderBy(x => x).ToList();
+                return v.Count == 0 ? null : Math.Round(v.Count % 2 == 1 ? v[v.Count / 2] : (v[v.Count / 2 - 1] + v[v.Count / 2]) / 2, 2);
+            }
+            static double? Average(IEnumerable<double> values)
+            {
+                var v = values.ToList();
+                return v.Count == 0 ? null : Math.Round(v.Average(), 1);
+            }
+            return new FluencySummary
+            {
+                SentencesMeasured = items.Count,
+                MedianRateRatio = Median(items.Where(i => i.RateRatio.HasValue).Select(i => i.RateRatio!.Value)),
+                SlowerThanReferenceSentences = items.Count(i => i.RateRatio is <= 0.7),
+                ExtraPauses = items.Sum(i => i.ExtraPauseCount ?? 0),
+                Hesitations = items.Sum(i => i.HesitationCount ?? 0),
+                AverageMeanRunMoras = Average(items.Where(i => i.MeanRunMoras.HasValue).Select(i => i.MeanRunMoras!.Value)),
+                AverageReferenceMeanRunMoras = Average(items.Where(i => i.ReferenceMeanRunMoras.HasValue).Select(i => i.ReferenceMeanRunMoras!.Value)),
+                LongestPauseMs = items.Max(i => i.LongestPauseMs),
+                MedianLeadingSilenceMs = Median(items.Where(i => i.LeadingSilenceMs.HasValue).Select(i => (double)i.LeadingSilenceMs!.Value)) is { } m
+                    ? (int)Math.Round(m) : null,
+            };
+        }
+
+        private static List<ShadowingDiffTokenDto> ReadTokens(string? json)
+        {
+            try { return JsonSerializer.Deserialize<List<ShadowingDiffTokenDto>>(json ?? "[]", Json) ?? new(); }
             catch (JsonException) { return new(); }
-            return (tokens ?? new())
-                .Where(t => t.Status != "correct")
-                .Select(t => new WordIssuePayload
-                {
-                    Word = t.Text,
-                    Status = t.ErrorType == "extra" ? "extra" : t.Status,
-                    Expected = t.ExpectedReading,
-                    Spoken = t.SpokenPart,
-                    Issues = (t.Issues ?? new()).Select(i => string.IsNullOrEmpty(i.Hint) ? i.Message : $"{i.Message} ({i.Hint})").ToList(),
-                })
-                .Take(8)
-                .ToList();
         }
 
         private static ShadowingFluencySnapshotDto? ReadFluency(string? json)
@@ -217,18 +294,23 @@ namespace JCAP.Services.Implementations
 
         private sealed class RawReview
         {
-            public string? Overview { get; set; }
-            public List<string>? Strengths { get; set; }
-            public List<RawPoint>? Content { get; set; }
-            public List<RawPoint>? Fluency { get; set; }
-            public List<string>? NextSteps { get; set; }
+            public string? Summary { get; set; }
+            public string? Priority { get; set; }
+            public RawSection? Pronunciation { get; set; }
+            public RawSection? Fluency { get; set; }
+        }
+
+        private sealed class RawSection
+        {
+            public string? Verdict { get; set; }
+            public List<RawPoint>? Issues { get; set; }
         }
 
         private sealed class RawPoint
         {
-            public string? Point { get; set; }
+            public string? Title { get; set; }
             public string? Evidence { get; set; }
-            public string? Advice { get; set; }
+            public string? Fix { get; set; }
         }
 
         internal static ShadowingSessionAiReviewDto? Parse(string content)
@@ -246,29 +328,29 @@ namespace JCAP.Services.Implementations
             RawReview? raw;
             try { raw = JsonSerializer.Deserialize<RawReview>(text, Json); }
             catch (JsonException) { return null; }
-            if (raw == null || string.IsNullOrWhiteSpace(raw.Overview)) return null;
+            if (raw == null || string.IsNullOrWhiteSpace(raw.Summary) || raw.Pronunciation == null) return null;
 
             static string Clip(string? s)
             {
                 var t = (s ?? string.Empty).Trim();
                 return t.Length > MaxTextLength ? t[..MaxTextLength] + "…" : t;
             }
-            static List<string> Items(List<string>? items) =>
-                (items ?? new()).Select(Clip).Where(s => s.Length > 0).Take(MaxPoints).ToList();
-            static List<ShadowingAiReviewPointDto> Points(List<RawPoint>? points) =>
-                (points ?? new())
-                    .Select(p => new ShadowingAiReviewPointDto { Point = Clip(p.Point), Evidence = Clip(p.Evidence), Advice = Clip(p.Advice) })
-                    .Where(p => p.Point.Length > 0)
-                    .Take(MaxPoints)
-                    .ToList();
+            static ShadowingAiReviewSectionDto Section(RawSection s) => new()
+            {
+                Verdict = Clip(s.Verdict),
+                Issues = (s.Issues ?? new())
+                    .Select(p => new ShadowingAiReviewPointDto { Title = Clip(p.Title), Evidence = Clip(p.Evidence), Fix = Clip(p.Fix) })
+                    .Where(p => p.Title.Length > 0)
+                    .Take(MaxIssues)
+                    .ToList(),
+            };
 
             return new ShadowingSessionAiReviewDto
             {
-                Overview = Clip(raw.Overview),
-                Strengths = Items(raw.Strengths),
-                Content = Points(raw.Content),
-                Fluency = Points(raw.Fluency),
-                NextSteps = Items(raw.NextSteps),
+                Summary = Clip(raw.Summary),
+                Priority = Clip(raw.Priority),
+                Pronunciation = Section(raw.Pronunciation),
+                Fluency = raw.Fluency == null ? null : Section(raw.Fluency),
                 GeneratedAt = DateTime.UtcNow,
             };
         }

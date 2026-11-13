@@ -199,6 +199,17 @@ namespace JCAP.DTOs.Shadowing
         public int? LongestPauseMs { get; set; }
         public double? MeanRunMoras { get; set; }
         public double? ReferenceMeanRunMoras { get; set; }
+        /// <summary>Tốc độ phát âm (mora/giây, không tính khoảng dừng) của người học và của giọng mẫu.</summary>
+        public double? ArticulationRate { get; set; }
+        public double? ReferenceArticulationRate { get; set; }
+        /// <summary>Tỷ lệ thời gian ngừng trong khoảng nói (0–1) và tổng thời gian ngừng (ms).</summary>
+        public double? PauseRatio { get; set; }
+        public int? TotalPauseMs { get; set; }
+        /// <summary>Im lặng trước khi bắt đầu nói (ms) — thời gian chuẩn bị.</summary>
+        public int? LeadingSilenceMs { get; set; }
+        /// <summary>Độ dài đoạn nói (ms) của người học và của giọng mẫu.</summary>
+        public int? SpeechSpanMs { get; set; }
+        public int? ReferenceSpeechSpanMs { get; set; }
         /// <summary>Câu nhận xét nhịp nói của lần chấm (tối đa 3).</summary>
         public List<string> Notes { get; set; } = new();
 
@@ -218,6 +229,13 @@ namespace JCAP.DTOs.Shadowing
                 LongestPauseMs = f.LongestPauseMs,
                 MeanRunMoras = f.MeanRunMoras,
                 ReferenceMeanRunMoras = f.Reference?.Metrics.MeanRunMoras,
+                ArticulationRate = f.ArticulationRateMoraPerSec,
+                ReferenceArticulationRate = f.Reference?.Metrics.ArticulationRateMoraPerSec,
+                PauseRatio = f.PauseRatio,
+                TotalPauseMs = f.TotalPauseMs,
+                LeadingSilenceMs = f.LeadingSilenceMs,
+                SpeechSpanMs = f.SpeechSpanMs,
+                ReferenceSpeechSpanMs = f.Reference?.Metrics.SpeechSpanMs,
                 Notes = f.Observations.Select(o => o.Message).Where(m => !string.IsNullOrWhiteSpace(m)).Take(3).ToList(),
             };
         }

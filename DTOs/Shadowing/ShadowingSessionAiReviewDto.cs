@@ -4,31 +4,37 @@ using System.Collections.Generic;
 namespace JCAP.DTOs.Shadowing
 {
     /// <summary>
-    /// Nhận xét tổng hợp buổi Shadowing do AI viết TỪ SỐ LIỆU hệ thống đã đo (điểm nội dung, lỗi từng âm, số liệu Lưu loát).
-    /// Không phải điểm mới; không lưu vào CSDL (tạo khi người học bấm nút).
+    /// Nhận xét buổi Shadowing do AI viết TỪ SỐ LIỆU hệ thống đã đo, tập trung vào Phát âm (các lỗi âm hệ thống phát hiện, gom theo kiểu lỗi)
+    /// và Lưu loát (nhịp nói so với giọng mẫu). Không phải điểm; không lưu vào CSDL (tạo khi người học bấm nút).
     /// </summary>
     public class ShadowingSessionAiReviewDto
     {
-        /// <summary>Tổng quan 2–3 câu.</summary>
-        public string Overview { get; set; } = string.Empty;
-        public List<string> Strengths { get; set; } = new();
-        /// <summary>Nhận xét về nội dung/âm (dựa trên lỗi theo từ và từng âm).</summary>
-        public List<ShadowingAiReviewPointDto> Content { get; set; } = new();
-        /// <summary>Nhận xét về nhịp nói (so với giọng mẫu, tham khảo). Rỗng khi không có số liệu Lưu loát.</summary>
-        public List<ShadowingAiReviewPointDto> Fluency { get; set; } = new();
-        public List<string> NextSteps { get; set; } = new();
-        /// <summary>Buổi có số liệu Lưu loát để nhận xét không.</summary>
+        /// <summary>Kết luận chính, 1 câu.</summary>
+        public string Summary { get; set; } = string.Empty;
+        /// <summary>Một việc quan trọng nhất nên luyện ngay.</summary>
+        public string Priority { get; set; } = string.Empty;
+        public ShadowingAiReviewSectionDto Pronunciation { get; set; } = new();
+        /// <summary>Null khi buổi không có số liệu Lưu loát.</summary>
+        public ShadowingAiReviewSectionDto? Fluency { get; set; }
         public bool HasFluencyData { get; set; }
         public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
     }
 
+    public class ShadowingAiReviewSectionDto
+    {
+        /// <summary>Đánh giá ngắn của phần này, 1 câu.</summary>
+        public string Verdict { get; set; } = string.Empty;
+        /// <summary>Tối đa 3 vấn đề, vấn đề lặp lại nhiều nhất trước.</summary>
+        public List<ShadowingAiReviewPointDto> Issues { get; set; } = new();
+    }
+
     public class ShadowingAiReviewPointDto
     {
-        /// <summary>Vấn đề hoặc nhận định.</summary>
-        public string Point { get; set; } = string.Empty;
-        /// <summary>Bằng chứng trích từ số liệu (câu, từ, con số).</summary>
+        /// <summary>Vấn đề (ngắn).</summary>
+        public string Title { get; set; } = string.Empty;
+        /// <summary>Bằng chứng từ số liệu (câu, từ, con số).</summary>
         public string Evidence { get; set; } = string.Empty;
-        /// <summary>Cách luyện cụ thể.</summary>
-        public string Advice { get; set; } = string.Empty;
+        /// <summary>Cách sửa cụ thể.</summary>
+        public string Fix { get; set; } = string.Empty;
     }
 }

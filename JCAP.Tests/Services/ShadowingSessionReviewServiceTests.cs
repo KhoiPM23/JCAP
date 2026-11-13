@@ -32,12 +32,15 @@ public class ShadowingSessionReviewServiceTests
     }
 
     private const string GoodReply = """
-        {"overview":"Bạn đọc đúng phần lớn câu.","strengths":["「学校に行きます」 đạt 100."],
-         "content":[{"point":"Thừa âm ngắt っ","evidence":"「エクスプレス」 nói thành えっくすぷれす","advice":"Nối liền え và く."},
-                    {"point":"b","evidence":"e","advice":"a"},{"point":"c","evidence":"e","advice":"a"},{"point":"d","evidence":"e","advice":"a"}],
-         "fluency":[{"point":"Ngừng giữa từ","evidence":"1 lần ngập ngừng ở 「成田エクスプレス」","advice":"Đọc liền cụm."}],
-         "nextSteps":["Luyện lại 「成田エクスプレス」."]}
+        {"summary":"Lỗi chính là thiếu bật hơi ở âm trong và dừng giữa từ.",
+         "priority":"Đọc 「エクスプレス」 chậm, nối liền え-く.",
+         "pronunciation":{"verdict":"Âm trong ở đầu từ hay bị đọc đục.",
+           "issues":[{"title":"Thừa âm ngắt っ","evidence":"「エクスプレス」 nói thành えっくすぷれす","fix":"Nối liền え và く."},
+                     {"title":"b","evidence":"e","fix":"f"},{"title":"c","evidence":"e","fix":"f"},{"title":"d","evidence":"e","fix":"f"}]},
+         "fluency":{"verdict":"Chậm hơn mẫu và có ngập ngừng.",
+           "issues":[{"title":"Ngừng giữa từ","evidence":"1 lần ngập ngừng ở 「成田エクスプレス」","fix":"Đọc liền cụm."}]}}
         """;
+
 
     private static async Task<(AppDbContext Db, Guid SessionId)> SeedAsync(bool withFluency = true, bool scored = true)
     {
@@ -102,12 +105,16 @@ public class ShadowingSessionReviewServiceTests
         Assert.Contains("Thừa âm ngắt 「っ」 sau 「え」", prompt);           // lỗi từng âm do hệ thống đo
         Assert.Contains("0.62", prompt);                                   // tỷ lệ tốc độ đã lưu
         Assert.DoesNotContain(User, prompt);                               // không gửi định danh người học
-        Assert.Contains("Không tự chấm điểm mới", ai.Last.SystemInstruction);
+        Assert.Contains("Không chấm điểm", ai.Last.SystemInstruction);
         Assert.Equal(AiResponseFormat.Json, ai.Last.ResponseFormat);
 
-        Assert.Equal("Bạn đọc đúng phần lớn câu.", r.Review!.Overview);
-        Assert.Equal(3, r.Review.Content.Count);                           // cắt còn tối đa 3 mục
-        Assert.Single(r.Review.Fluency);
+        Assert.Contains("pronunciationPatterns", prompt);                // kiểu lỗi đã gom sẵn
+        Assert.Contains("fluencySummary", prompt);                       // nhịp nói cả buổi tính sẵn
+
+        Assert.StartsWith("Lỗi chính", r.Review!.Summary);
+        Assert.NotEmpty(r.Review.Priority);
+        Assert.Equal(3, r.Review.Pronunciation.Issues.Count);             // cắt còn tối đa 3 mục
+        Assert.Single(r.Review.Fluency!.Issues);
         Assert.True(r.Review.HasFluencyData);
     }
 
@@ -118,7 +125,7 @@ public class ShadowingSessionReviewServiceTests
         var r = await Service(db, new FakeAi(() => AiResponse.Ok(GoodReply))).GenerateAsync(User, sessionId);
 
         Assert.False(r.Review!.HasFluencyData);
-        Assert.Empty(r.Review.Fluency); // AI không được nhận xét lưu loát khi không có số liệu
+        Assert.Null(r.Review.Fluency); // không có số liệu thì bỏ phần lưu loát dù AI có viết
     }
 
     [Fact]
@@ -147,7 +154,7 @@ public class ShadowingSessionReviewServiceTests
     [Theory]
     [InlineData(false, "")]
     [InlineData(true, "không phải JSON")]
-    [InlineData(true, "{\"strengths\":[]}")] // thiếu tổng quan
+    [InlineData(true, "{\"summary\":\"x\"}")] // thiếu phần phát âm
     public async Task AiFailureOrBadOutput_GivesAnErrorMessage_NotAReview(bool ok, string content)
     {
         var (db, sessionId) = await SeedAsync();
@@ -163,7 +170,54 @@ public class ShadowingSessionReviewServiceTests
     {
         var review = ShadowingSessionReviewService.Parse("```json\n" + GoodReply + "\n```");
         Assert.NotNull(review);
-        Assert.Single(review!.Strengths);
+        Assert.NotEmpty(review!.Pronunciation.Verdict);
+    }
+
+    [Fact]
+    public void Patterns_AreGroupedAcrossAttempts_IgnoringPosition_MostFrequentFirst()
+    {
+        ShadowingSentenceEvaluation Eval(string word, params ShadowingMoraIssueDto[] issues) => new()
+        {
+            DiffTokensJson = JsonSerializer.Serialize(new List<ShadowingDiffTokenDto>
+            {
+                new() { Text = word, Status = "mismatched", Issues = issues.ToList() },
+            }, Json),
+        };
+        var voicing = new ShadowingMoraIssueDto { Kind = "substitute", Expected = "く", Spoken = "ぐ", ErrorType = "voicing", After = "え", Message = "x" };
+        var sokuon = new ShadowingMoraIssueDto { Kind = "extra", Spoken = "っ", ErrorType = "sokuon", After = "え", Message = "y" };
+
+        var patterns = ShadowingSessionReviewService.BuildPatterns(new[]
+        {
+            Eval("エクスプレス。", voicing, sokuon),
+            Eval("エクスプレス", voicing),
+            Eval("くつ", new ShadowingMoraIssueDto { Kind = "substitute", Expected = "く", Spoken = "ぐ", ErrorType = "voicing", After = null, Message = "z" }),
+        });
+
+        Assert.Equal("「く」 đọc thành 「ぐ」", patterns[0].Pattern);
+        Assert.Equal(3, patterns[0].Count);                                   // gộp dù vị trí khác nhau
+        Assert.Equal(new[] { "エクスプレス", "くつ" }, patterns[0].Examples); // bỏ dấu câu, không lặp ví dụ
+        Assert.Equal("thừa 「っ」", patterns[1].Pattern);
+    }
+
+    [Fact]
+    public void FluencySummary_AggregatesTheSession()
+    {
+        var s = ShadowingSessionReviewService.BuildFluencySummary(new()
+        {
+            new() { RateRatio = 0.6, ExtraPauseCount = 1, HesitationCount = 1, MeanRunMoras = 5, ReferenceMeanRunMoras = 10, LongestPauseMs = 700, LeadingSilenceMs = 400 },
+            new() { RateRatio = 0.9, ExtraPauseCount = 0, HesitationCount = 0, MeanRunMoras = 7, ReferenceMeanRunMoras = 12, LongestPauseMs = 300, LeadingSilenceMs = 600 },
+            new() { RateRatio = 1.2, ExtraPauseCount = 2, MeanRunMoras = 9, ReferenceMeanRunMoras = 11 },
+        })!;
+        Assert.Equal(3, s.SentencesMeasured);
+        Assert.Equal(0.9, s.MedianRateRatio);
+        Assert.Equal(1, s.SlowerThanReferenceSentences);
+        Assert.Equal(3, s.ExtraPauses);
+        Assert.Equal(1, s.Hesitations);
+        Assert.Equal(7, s.AverageMeanRunMoras);
+        Assert.Equal(11, s.AverageReferenceMeanRunMoras);
+        Assert.Equal(700, s.LongestPauseMs);
+        Assert.Equal(500, s.MedianLeadingSilenceMs);
+        Assert.Null(ShadowingSessionReviewService.BuildFluencySummary(new()));
     }
 
     [Fact]
