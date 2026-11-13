@@ -206,13 +206,35 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
 
       {/* Header Giới thiệu Thanh nhã */}
       <div className="flex flex-col gap-1.5 pt-1">
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
-            Bảng nhiệm vụ hội thoại · 任務板
-          </span>
-          <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
-            場面対話 · 実践演習
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
+              Bảng nhiệm vụ hội thoại · 任務板
+            </span>
+            <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
+              場面対話 · 実践演習
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/placement-test')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs cursor-pointer"
+              title="Xem thử giao diện phòng hội thoại Placement Test (Mock Room)"
+            >
+              <span>🏨</span>
+              <span>Xem thử Placement Test Room</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/placement-test/history')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+              title="Xem lịch sử các phiên kiểm tra xếp lớp (Placement Test History)"
+            >
+              <span>📜</span>
+              <span>Lịch sử xếp lớp</span>
+            </button>
+          </div>
         </div>
         <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
         <p className="m-0 text-[14px] leading-6 text-sumi-muted">

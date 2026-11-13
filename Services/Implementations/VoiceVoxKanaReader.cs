@@ -52,12 +52,28 @@ namespace JCAP.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<KanaReading?> TryReadAsync(string text, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Cách đọc lúc CHẤM BÀI. Tắt được bằng `Shadowing:Reading:UseVoiceVox = false` để lúc chấm không phụ thuộc VOICEVOX
+        /// (khi đó chỉ dùng dữ liệu tính sẵn của StoredKanaReader).
+        /// </summary>
+        public Task<KanaReading?> TryReadAsync(string text, CancellationToken cancellationToken = default)
         {
-            if (_configuration.GetValue<bool?>("Shadowing:Reading:UseVoiceVox") == false) return null;
+            if (_configuration.GetValue<bool?>("Shadowing:Reading:UseVoiceVox") == false) return Task.FromResult<KanaReading?>(null);
+            return ReadAsync(text, cancellationToken);
+        }
 
-            var normalized = JapaneseMora.Normalize(text);
-            if (normalized.Length == 0) return new KanaReading { Source = Id };
+        /// <summary>Cách đọc lúc TẠO dữ liệu câu mẫu (admin/tác vụ nền): luôn gọi engine, không theo công tắc lúc chấm.</summary>
+        public Task<KanaReading?> ReadForGenerationAsync(string text, CancellationToken cancellationToken = default) =>
+            ReadAsync(text, cancellationToken);
+
+        private async Task<KanaReading?> ReadAsync(string text, CancellationToken cancellationToken)
+        {
+            if (JapaneseMora.Normalize(text).Length == 0) return new KanaReading { Source = Id };
+
+            // GIỮ dấu câu khi gửi engine: bỏ dấu câu làm VOICEVOX dính nhiều từ thành một cụm trọng âm
+            // (みなさん、こんにちは。入国 → ミナサンコンニチワニュウコクノ), khiến chỉ một lỗi nhỏ cũng làm sai cả cụm dài.
+            // Dấu câu không sinh mora nên chuỗi mora không đổi, chỉ ranh giới từ đúng hơn.
+            var normalized = ForEngine(text);
             if (Cache.TryGetValue(normalized, out var cached)) return cached;
             if (DateTime.UtcNow.Ticks < Interlocked.Read(ref _breakerOpenUntilTicks)) return null;
 
@@ -73,6 +89,10 @@ namespace JCAP.Services.Implementations
                 if (lazy.Value.IsCompleted) InFlight.TryRemove(new KeyValuePair<string, Lazy<Task<KanaReading?>>>(normalized, lazy));
             }
         }
+
+        /// <summary>Văn bản gửi engine: NFKC, bỏ khoảng trắng, giữ nguyên dấu câu (để engine tách cụm trọng âm đúng).</summary>
+        internal static string ForEngine(string text) =>
+            System.Text.RegularExpressions.Regex.Replace(text.Normalize(System.Text.NormalizationForm.FormKC), @"\s+", string.Empty);
 
         /// <summary>Gọi engine một lần cho một văn bản. Chỉ chịu giới hạn thời gian, không phụ thuộc người gọi (kết quả được chia sẻ).</summary>
         private async Task<KanaReading?> FetchAsync(string normalized)

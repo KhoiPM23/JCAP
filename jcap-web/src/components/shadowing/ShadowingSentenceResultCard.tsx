@@ -1,12 +1,12 @@
 import React from 'react';
 import { JapaneseSentenceDiffView } from './JapaneseSentenceDiffView';
-import type { ShadowingDiffToken, ShadowingFluencyMetrics } from '../../types/shadowing';
+import type { ShadowingDiffToken, ShadowingEvaluationDimensions, ShadowingFluencyMetrics } from '../../types/shadowing';
 
 export interface ShadowingSentenceResultCardProps {
   targetText: string;
   spokenText?: string;
   overallScore: number;
-  /** Số liệu nhịp nói thô (tham khảo, chưa tính vào điểm). null/unavailable = không hiển thị. */
+  /** Số liệu nhịp nói (Lưu loát). Không hiện ở thẻ từng câu; dành cho trang tổng kết buổi. */
   fluencyMetrics?: ShadowingFluencyMetrics | null;
   gateDetail?: string;
   diffTokens: ShadowingDiffToken[];
@@ -15,10 +15,16 @@ export interface ShadowingSentenceResultCardProps {
   isPlayingUserAudio: boolean;
   evaluationStatus?: 'completed' | 'partial' | 'unavailable' | 'failed';
   /** Nguồn nhận dạng backend đã dùng; web_speech nghĩa là nguồn chính gặp lỗi kỹ thuật. */
-  recognitionSource?: 'gemini' | 'web_speech' | null;
+  recognitionSource?: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | null;
+  /** Trạng thái từng chiều đánh giá. Không hiện ở thẻ từng câu; dành cho trang tổng kết buổi. */
+  dimensions?: ShadowingEvaluationDimensions | null;
+  /** "content": điểm hiển thị CHỈ là điểm nội dung. */
+  overallScoreBasis?: 'content' | null;
   onPlayUserAudio: () => void;
   onRetry: () => void;
   onNext: () => void;
+  /** Nút phụ nhỏ đặt ngay sau nút luyện lại / bỏ qua (vd. tải bản ghi khi chạy dev). */
+  extraAction?: React.ReactNode;
   className?: string;
 }
 
@@ -26,7 +32,6 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   targetText,
   spokenText = '',
   overallScore,
-  fluencyMetrics = null,
   gateDetail,
   diffTokens,
   attemptsCount,
@@ -34,9 +39,11 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
   isPlayingUserAudio,
   evaluationStatus = 'completed',
   recognitionSource = null,
+  overallScoreBasis = null,
   onPlayUserAudio,
   onRetry,
   onNext,
+  extraAction,
   className = '',
 }) => {
   // State C: chưa chấm được (không có điểm). unavailable = thiếu dữ liệu tin cậy (im lặng, âm thanh không đạt);
@@ -121,6 +128,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
             >
               Bỏ qua câu
             </button>
+            {extraAction}
             <button
               type="button"
               onClick={onRetry}
@@ -151,7 +159,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           </div>
           <div className="flex items-baseline gap-1 bg-white px-3 py-1 rounded-xl border border-slate-200/80 shadow-2xs">
             <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mr-0.5">
-              Điểm
+              {overallScoreBasis === 'content' ? 'Điểm nội dung' : 'Điểm'}
             </span>
             <span
               className={`text-xl font-black tracking-tight leading-none ${
@@ -180,36 +188,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
         )}
       </div>
 
-      {/* 2. NHỊP NÓI SO VỚI GIỌNG MẪU: chỉ hiện khi đủ điều kiện so sánh (đọc đúng câu, có giọng mẫu, audio hợp lệ).
-          Là nhận xét về nhịp, không phải điểm và không nói lên phát âm đúng/sai. */}
-      {(fluencyMetrics?.comparison?.status === 'available' || (fluencyMetrics?.observations ?? []).length > 0) && (
-        <div className="bg-white px-3.5 py-2.5 rounded-xl border border-slate-200/80">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Nhịp nói so với giọng mẫu
-            </span>
-            <span className="text-[10px] text-slate-400">Tham khảo, chưa tính vào điểm</span>
-          </div>
-          {(fluencyMetrics.observations ?? []).length > 0 ? (
-            <ul className="mt-1.5 space-y-1 text-xs text-[#071A44] list-disc pl-4">
-              {(fluencyMetrics.observations ?? []).map((o, i) => (
-                <li key={`${o.code}-${i}`}>
-                  {o.message}
-                  {o.data?.experimental === true && (
-                    <span className="ml-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5 align-middle">
-                      Thử nghiệm
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1.5 text-xs text-slate-500">Chưa thấy khác biệt rõ về nhịp nói so với giọng mẫu.</p>
-          )}
-        </div>
-      )}
-
-      {/* 3. BA NÚT THAO TÁC: [🎧 Nghe lại] [🔄 Luyện lại câu] [Tiếp tục →] */}
+      {/* 2. BA NÚT THAO TÁC: [🎧 Nghe lại] [🔄 Luyện lại câu] [Tiếp tục →] */}
       <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-1">
         {/* Nút 1: Nghe lại giọng bạn */}
         <div>
@@ -241,6 +220,7 @@ export const ShadowingSentenceResultCard: React.FC<ShadowingSentenceResultCardPr
           >
             <span>Luyện lại câu</span>
           </button>
+          {extraAction}
           <button
             type="button"
             onClick={onNext}

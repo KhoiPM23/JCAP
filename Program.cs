@@ -127,13 +127,30 @@ builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
 builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
-builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
-// Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
-// không dùng bảng tra tự viết để đoán cách đọc.
+builder.Services.AddScoped<IReferenceVoiceProvider, StoredReferenceVoiceProvider>(); // giọng mẫu đã lưu trước, VOICEVOX sau
+builder.Services.AddSingleton<IPhonemeRecognizer, OnnxPhonemeRecognizer>();
+builder.Services.AddSingleton<ShadowingRecognitionThrottle>();
+// Dữ liệu câu mẫu tính sẵn: lúc chấm đọc cách đọc/giọng mẫu từ CSDL thay vì gọi VOICEVOX
+builder.Services.AddScoped<IShadowingAssetSource, VoiceVoxAssetSource>();
+builder.Services.AddScoped<IShadowingSentenceAssetService, ShadowingSentenceAssetService>();
+builder.Services.AddScoped<VoiceVoxReferenceProvider>();
+builder.Services.AddHostedService<ShadowingAssetBackfillService>();
+// ASR cho chiều Nội dung: dịch vụ Faster-Whisper riêng (tools/shadowing-asr), gọi qua HTTP nội bộ
+builder.Services.AddHttpClient<ISpeechRecognitionService, FasterWhisperSpeechRecognitionService>();
+// Khi phát triển: dotnet run tự bật dịch vụ đó nếu chưa chạy (tắt: Shadowing:Asr:AutoStart=false)
+if (builder.Environment.IsDevelopment()) builder.Services.AddHostedService<ShadowingAsrDevLauncher>();
+builder.Services.AddScoped<IShadowingPracticeProgressService, ShadowingPracticeProgressService>();
+builder.Services.AddScoped<IShadowingSessionInsightsService, ShadowingSessionInsightsService>();
+builder.Services.AddScoped<IShadowingSessionReviewService, ShadowingSessionReviewService>();
+// Cách đọc (G2P của VOICEVOX/OpenJTalk): ưu tiên dữ liệu câu mẫu tính sẵn, rồi mới gọi engine VOICEVOX
+// (tắt được bằng Shadowing:Reading:UseVoiceVox=false). Không có nguồn nào thì KHÔNG chấm, không đoán cách đọc.
 builder.Services.AddHttpClient<VoiceVoxKanaReader>();
+builder.Services.AddScoped<IKanaReader, StoredKanaReader>();
 builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
+builder.Services.AddScoped<PlacementAssessmentEngine>();
+builder.Services.AddScoped<IPlacementTestService, PlacementTestService>();
 builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
 builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
 builder.Services.AddSingleton<IEventDirector, EventDirector>();

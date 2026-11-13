@@ -9,8 +9,13 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp a { color: inherit; }
 .lp button { font-family: inherit; }
 .lp :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
-.lp .wrap { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
-.lp section[id] { scroll-margin-top: 72px; }
+.lp .wrap { max-width: 1120px; margin: 0 auto; padding: 0 40px; zoom: var(--lpz); }
+/* Màn rộng: phóng to cả khối nội dung theo bậc (chữ, ảnh, khoảng cách cùng tỉ lệ) để không lọt thỏm giữa khoảng trống */
+.lp { --lpz: 1; }
+@media (min-width: 1680px) { .lp { --lpz: 1.12; } }
+@media (min-width: 1920px) { .lp { --lpz: 1.25; } }
+@media (min-width: 2400px) { .lp { --lpz: 1.5; } }
+.lp section[id] { scroll-margin-top: calc(72px * var(--lpz)); }
 .lp .nb { display: inline-block; }
 
 
@@ -45,6 +50,12 @@ html:has(.lp) { scroll-behavior: smooth; }
 
 /* ---- phần đầu ---- */
 .lp .hero3 { padding: 56px 0 88px; }
+/* Máy tính: phần đầu cao đúng một màn hình (trừ thanh đầu 68px × hệ số phóng + viền 1px), nội dung căn giữa theo chiều dọc,
+   để ở độ phân giải nào màn hình đầu tiên cũng không lộ phần tiếp theo. Màn quá thấp thì phần đầu tự cao theo nội dung. */
+@media (min-width: 761px) {
+  .lp .hero3 { box-sizing: border-box; min-height: calc(100vh - 68px * var(--lpz) - 1px); min-height: calc(100svh - 68px * var(--lpz) - 1px);
+    display: flex; flex-direction: column; justify-content: center; padding: 40px 0 56px; }
+}
 .lp .hero3 .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 480px; gap: 40px; align-items: center; }
 .lp .hero3 .h1 { font-family: 'Lora', var(--font-mincho), serif; font-weight: 600; font-size: 62px; line-height: 70px; letter-spacing: -0.015em; }
 .lp .hero3 .jpline { display: block; margin-top: 30px; font-size: 22px; line-height: 32px; color: var(--sumi-muted); }
@@ -90,8 +101,14 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .steps3 .on .n { color: var(--ai); }
 .lp .steps3 b { font-size: 17px; line-height: 24px; color: inherit; }
 .lp .steps3 small { font-size: 14px; line-height: 21px; }
-.lp .panel { position: relative; padding: 28px; border-radius: 24px; background: var(--paper-50); border: 1px solid var(--line);
-  box-shadow: 0 30px 60px -40px color-mix(in srgb, var(--sumi) 45%, transparent); min-height: 400px; }
+.lp .panels { display: grid; }
+.lp .panel { grid-area: 1 / 1; display: flex; flex-direction: column; position: relative; padding: 28px; border-radius: 24px; background: var(--paper-50);
+  border: 1px solid var(--line); box-shadow: 0 30px 60px -40px color-mix(in srgb, var(--sumi) 45%, transparent); }
+/* Ô không được chọn vẫn chiếm chỗ (để ba ô cùng chiều cao) nhưng ẩn hẳn */
+.lp .panel[data-off] { visibility: hidden; }
+/* Phần giữa giãn ra lấp chỗ trống và căn giữa theo chiều dọc; dòng chú thích luôn nằm ở đáy ô */
+.lp .panel .pbody { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+.lp .panel .cap { padding-top: 20px; }
 .lp .panel .ptop { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
 .lp .panel .ptop b { font-size: 16px; }
 .lp .panel .ptop > span:first-child { font-size: 14px; color: var(--sumi-muted); }
@@ -99,7 +116,7 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .lp-tag { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .lp .lp-tag.free { background: var(--success-soft); color: var(--success); }
 .lp .lp-tag.cr { background: var(--sora-soft); color: var(--sumi); }
-.lp .cap { margin: 20px 0 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted); }
+.lp .cap { margin: 0; font-size: 15px; line-height: 24px; color: var(--sumi-muted); }
 .lp .shd { display: flex; align-items: center; gap: 28px; }
 .lp .shd-l { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 .lp .lbl { font-size: 13px; font-weight: 700; color: var(--sumi-muted); }
@@ -113,14 +130,14 @@ html:has(.lp) { scroll-behavior: smooth; }
 .lp .task { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; line-height: 20px; margin-right: 16px; }
 .lp .task .msr { font-size: 18px; }
 .lp .task.done { color: var(--success); }
-.lp .stamps-demo { display: grid; grid-template-columns: 190px 1fr; gap: 28px; align-items: center; }
+.lp .stamps-demo { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: center; }
 .lp .mini-box { background: var(--paper-100); border-radius: 18px; padding: 10px; display: flex; justify-content: center; }
 .lp .mini path { fill: var(--paper-200); stroke: var(--paper-50); stroke-width: 5; stroke-linejoin: round; }
 .lp .mini .mr.on path { fill: color-mix(in srgb, var(--ai) 32%, var(--paper-50)); }
-.lp .stamp-row { display: flex; flex-wrap: wrap; gap: 14px 10px; }
-.lp .stamp-row figure { margin: 0; width: 84px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.lp .stamp-row { display: flex; flex-wrap: wrap; gap: 14px 6px; }
+.lp .stamp-row figure { margin: 0; width: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .lp .stamp-row figcaption { font-size: 12px; line-height: 16px; text-align: center; }
-.lp .stamp-row .slot-cell { width: 84px; display: flex; justify-content: center; }
+.lp .stamp-row .slot-cell { width: 76px; display: flex; justify-content: center; }
 
 /* ---- học tập thích ứng ---- */
 .lp .sec-ink { background: var(--sumi); color: var(--paper-50); }
@@ -252,7 +269,7 @@ html:has(.lp) { scroll-behavior: smooth; }
   .lp .steps3 button { grid-template-columns: auto; margin: 0 0 -2px; border-left: 0; border-bottom: 2px solid transparent; padding: 12px 14px; white-space: nowrap; }
   .lp .steps3 button.on { border-bottom-color: var(--ai); }
   .lp .steps3 .n, .lp .steps3 small { display: none; }
-  .lp .panel { padding: 18px; min-height: 0; }
+  .lp .panel { padding: 18px; }
   .lp .shd { flex-direction: column-reverse; align-items: flex-start; }
   .lp .stamps-demo { grid-template-columns: 1fr; }
   .lp .reg { grid-template-columns: 1fr; }

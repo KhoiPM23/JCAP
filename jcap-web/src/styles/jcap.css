@@ -473,8 +473,10 @@ button.jc-bubble__box { cursor: pointer; }
 /* Xổ xuống / thu lại: đổi chiều cao bằng grid 0fr -> 1fr (không đo px), kèm mờ dần và trượt nhẹ */
 .jc-collapse { display: grid; grid-template-rows: 0fr; margin-top: calc(var(--collapse-gap, 0px) * -1); opacity: 0; transform: translateY(-8px); transition: grid-template-rows .46s cubic-bezier(.4,0,.2,1), margin-top .46s cubic-bezier(.4,0,.2,1), opacity .32s ease, transform .46s cubic-bezier(.4,0,.2,1); }
 .jc-collapse.is-open { grid-template-rows: 1fr; margin-top: 0; opacity: 1; transform: none; }
-/* Lề trong 3px để viền focus của phần tử sát mép không bị cắt; lề âm bù lại để bố cục không lệch */
-.jc-collapse__in { min-height: 0; overflow: hidden; padding: 3px; margin: -3px; }
+/* Lề trong 3px để viền focus của phần tử sát mép không bị cắt; lề âm bù lại để bố cục không lệch.
+   position: relative để cả phần tử định vị tuyệt đối bên trong (vd. chữ ẩn .jc-sr cho trình đọc màn hình) cũng bị cắt khi thu gọn;
+   thiếu dòng này chúng thoát khỏi vùng cắt (vì .jc-collapse có transform) và kéo dài vùng cuộn thành khoảng trắng. */
+.jc-collapse__in { position: relative; min-height: 0; overflow: hidden; padding: 3px; margin: -3px; }
 .jc-chev { transition: transform .3s var(--ease); }
 .jc-chev.is-open { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .jc-collapse, .jc-chev { transition: none; } }
