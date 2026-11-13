@@ -7,6 +7,11 @@ import type {
   ShadowingSessionCompleteResult,
   ShadowingPracticeSessionRecord,
   ShadowingAudioEvaluationResult,
+  ShadowingServerProgress,
+  StartShadowingProgressPayload,
+  FuriganaSegment,
+  ShadowingRecommendation,
+  ShadowingSessionAiReview,
 } from '../types/shadowing';
 
 import type { ClientRecognitionSnapshot } from '../utils/speechTranscriptCollector';
@@ -23,6 +28,14 @@ export interface ShadowingEvaluateAudioEvidence {
   analysisWav?: Blob | null;
   /** Giọng VOICEVOX người học đã nghe làm mẫu, để backend so nhịp nói với đúng giọng đó. */
   referenceSpeakerId?: number | null;
+  /** Tốc độ phát giọng mẫu người học đã chọn khi nghe (vd. 0.75), để backend so nhịp nói với đúng tốc độ đó. */
+  referencePlaybackRate?: number | null;
+  /** Phiên luyện ở server mà lần chấm này thuộc về. */
+  progressId?: string | null;
+  /** Mã của MỘT lần bấm "Gửi chấm"; gửi lại cùng mã thì backend trả kết quả đã lưu, không chấm/lưu thêm. */
+  clientSubmissionId?: string | null;
+  /** Hủy request (giới hạn thời gian chờ chấm). */
+  signal?: AbortSignal;
 }
 
 class ShadowingService {
@@ -164,6 +177,9 @@ class ShadowingService {
       if (evidence.durationMs != null) formData.append('durationMs', String(Math.round(evidence.durationMs)));
       if (evidence.analysisWav) formData.append('analysisWav', evidence.analysisWav, 'analysis.wav');
       if (evidence.referenceSpeakerId != null) formData.append('referenceSpeakerId', String(evidence.referenceSpeakerId));
+      if (evidence.referencePlaybackRate != null) formData.append('referencePlaybackRate', String(evidence.referencePlaybackRate));
+      if (evidence.progressId) formData.append('progressId', evidence.progressId);
+      if (evidence.clientSubmissionId) formData.append('clientSubmissionId', evidence.clientSubmissionId);
 
       const token = localStorage.getItem('jcap_token');
       const headers: HeadersInit = {};
@@ -175,6 +191,7 @@ class ShadowingService {
         method: 'POST',
         headers,
         body: formData,
+        signal: evidence.signal,
       });
 
       if (response.status === 401) {
@@ -188,14 +205,67 @@ class ShadowingService {
       }
 
       return await response.json();
-    } catch {
+    } catch (err) {
+      const aborted = (err as { name?: string } | null)?.name === 'AbortError';
       return {
         success: false,
-        message: 'Không thể kết nối tới máy chủ. Điểm chưa được ghi nhận.',
+        message: aborted
+          ? 'Chấm điểm quá lâu chưa có kết quả. Hãy bấm "Gửi lại" (bản ghi vẫn được giữ).'
+          : 'Không thể kết nối tới máy chủ. Điểm chưa được ghi nhận.',
       };
     }
   }
 
+  // ---- Phiên luyện ở server (nguồn chính thức của tiến độ) ----
+
+  private async progressRequest<T>(url: string, init: RequestInit, failMessage: string): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, { ...init, headers: this.getHeaders() });
+      const body = await response.json().catch(() => null);
+      if (response.ok && body) return body as ApiResponse<T>;
+      return { success: false, message: body?.message || failMessage };
+    } catch {
+      return { success: false, message: 'Không thể kết nối máy chủ để đồng bộ tiến độ luyện tập.' };
+    }
+  }
+
+  /** Bắt đầu hoặc tiếp tục phiên luyện (server trả phiên đang luyện nếu đã có; restart = làm lại từ đầu). */
+  public startProgress(payload: StartShadowingProgressPayload): Promise<ApiResponse<ShadowingServerProgress>> {
+    return this.progressRequest('/api/shadowing/progress', { method: 'POST', body: JSON.stringify(payload) },
+      'Không bắt đầu được phiên luyện.');
+  }
+
+  /** Gợi ý luyện tập theo quy tắc từ các lỗi lặp lại gần đây (bỏ qua bài vừa luyện). */
+  public getRecommendations(excludeDialogueId?: number): Promise<ApiResponse<ShadowingRecommendation>> {
+    const query = excludeDialogueId != null ? `?excludeDialogueId=${excludeDialogueId}` : '';
+    return this.progressRequest(`/api/shadowing/recommendations${query}`, { method: 'GET' }, 'Không tải được gợi ý luyện tập.');
+  }
+
+  /** Nhận xét tổng hợp buổi luyện do AI viết từ số liệu đã đo (chỉ tạo khi người học bấm; không lưu, miễn phí). */
+  public createSessionAiReview(sessionId: string): Promise<ApiResponse<ShadowingSessionAiReview>> {
+    return this.progressRequest(`/api/shadowing/history/${sessionId}/ai-review`, { method: 'POST' },
+      'Chưa tạo được nhận xét lúc này. Hãy thử lại sau ít phút.');
+  }
+
+  /** Furigana các câu của bài (theo Id câu); câu chưa có dữ liệu thì không có trong kết quả. */
+  public async getFurigana(dialogueId: number): Promise<Map<number, FuriganaSegment[]>> {
+    const res = await this.progressRequest<Record<string, FuriganaSegment[]>>(
+      `/api/shadowing/${dialogueId}/furigana`, { method: 'GET' }, 'Không tải được furigana.');
+    const map = new Map<number, FuriganaSegment[]>();
+    if (res.success && res.data) for (const [id, segments] of Object.entries(res.data)) map.set(Number(id), segments);
+    return map;
+  }
+
+  /** Phiên đang luyện gần nhất (cho "Tiếp tục"); data = null nếu không có. */
+  public getLatestProgress(): Promise<ApiResponse<ShadowingServerProgress | null>> {
+    return this.progressRequest('/api/shadowing/progress/latest', { method: 'GET' }, 'Không tải được phiên đang luyện.');
+  }
+
+  /** Cập nhật vị trí câu đang luyện. */
+  public updateProgress(progressId: string, currentSentenceIndex: number): Promise<ApiResponse<ShadowingServerProgress>> {
+    return this.progressRequest(`/api/shadowing/progress/${encodeURIComponent(progressId)}`,
+      { method: 'PUT', body: JSON.stringify({ currentSentenceIndex }) }, 'Không lưu được vị trí luyện.');
+  }
 }
 
 export const shadowingService = new ShadowingService();

@@ -5,6 +5,8 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { PREFECTURES } from '../../../data/japanMap';
 import { roleplayService } from '../../../services/roleplayService';
 import { shadowingStorageService } from '../../../services/shadowingStorageService';
+import { shadowingService } from '../../../services/shadowingService';
+import { serverToLocalProgress } from '../../../utils/shadowingProgressSync';
 import type { RoleplaySessionDetailsDto } from '../../../types/roleplay';
 import type { ShadowingProgress } from '../../../types/shadowingProgress';
 import { useExploreJourney } from '../../../views/explore/exploreStore';
@@ -272,14 +274,27 @@ const LearningGroup: React.FC<{
   const [shadow, setShadow] = useState<ShadowingProgress | null>(null);
   const [conv, setConv] = useState<RoleplaySessionDetailsDto | null>(null);
 
-  // Bài Shadowing đang dở (lưu ở trình duyệt) và phiên hội thoại gần nhất còn đang mở: đọc lại mỗi lần đổi trang
+  // Bài Shadowing đang dở (phiên ở server; localStorage chỉ khi không gọi được server) và phiên hội thoại gần nhất
+  // còn đang mở: đọc lại mỗi lần đổi trang
   useEffect(() => {
     const learnerId = user?.id || user?.email || 'guest_learner';
-    setShadow(shadowingStorageService.getLatestInProgress(learnerId));
+    let shadowCancelled = false;
+    shadowingService.getLatestProgress().then((res) => {
+      if (shadowCancelled) return;
+      if (!res.success) {
+        setShadow(shadowingStorageService.getLatestInProgress(learnerId));
+        return;
+      }
+      const local = res.data ? serverToLocalProgress(res.data, learnerId) : null;
+      // Như trước: chỉ bài đã qua ít nhất một câu mới hiện "Tiếp tục"
+      setShadow(local && local.completedSentenceCount > 0 ? local : null);
+    });
     const sid = recentRoleplaySessionId();
     if (!sid) {
       setConv(null);
-      return;
+      return () => {
+        shadowCancelled = true;
+      };
     }
     let cancelled = false;
     roleplayService
@@ -292,6 +307,7 @@ const LearningGroup: React.FC<{
       .catch(() => !cancelled && setConv(null));
     return () => {
       cancelled = true;
+      shadowCancelled = true;
     };
   }, [user?.id, user?.email, location.pathname]);
 

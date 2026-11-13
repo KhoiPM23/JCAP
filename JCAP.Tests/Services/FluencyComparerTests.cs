@@ -148,9 +148,40 @@ public class FluencyComparerTests
     }
 
     [Fact]
-    public void FastReading_ProducesFastObservation()
+    public void ScaleForPlayback_StretchesDurations_AndSlowsRates()
     {
-        var (_, o) = Run(Learner(Utterance(speed: 0.55)), Reference());
+        var m = new FluencyMetricsDto
+        {
+            Status = "available", SpeechSpanMs = 3000, SpeechMs = 2400, TotalPauseMs = 600, LongestPauseMs = 600, PauseCount = 1,
+            PauseRatio = 0.2, SpeakingRateMoraPerSec = 6, ArticulationRateMoraPerSec = 7.5, MeanRunMs = 1200, MeanRunMoras = 9,
+            Pauses = { new FluencyPauseDto { StartMs = 1500, EndMs = 2100, DurationMs = 600 } },
+        };
+        var s = FluencyComparer.ScaleForPlayback(m, 0.75);
+
+        Assert.Equal(4000, s.SpeechSpanMs);
+        Assert.Equal(800, s.TotalPauseMs);
+        Assert.InRange(s.ArticulationRateMoraPerSec!.Value, 5.62, 5.63); // 7,5 × 0,75
+        Assert.Equal(4.5, s.SpeakingRateMoraPerSec);
+        Assert.Equal(0.2, s.PauseRatio);          // tỷ lệ không đổi
+        Assert.Equal(9, s.MeanRunMoras);           // số mora mỗi đoạn không đổi
+        Assert.Equal(2000, s.Pauses[0].StartMs);
+        Assert.Same(m, FluencyComparer.ScaleForPlayback(m, 1.0));
+    }
+
+    [Theory]
+    [InlineData(null, 1.0)]
+    [InlineData(0.75, 0.75)]
+    [InlineData(0.1, 1.0)]
+    [InlineData(5.0, 1.0)]
+    [InlineData(double.NaN, 1.0)]
+    public void PlaybackRate_OutsideTheSupportedRange_IsIgnored(double? rate, double expected) =>
+        Assert.Equal(expected, FluencyComparer.ValidPlaybackRate(rate));
+
+    [Fact]
+    public void AbnormallyFastReading_ProducesFastObservation()
+    {
+        // Nhanh hơn mẫu ~2,9 lần (người bản xứ thường chỉ nhanh hơn VOICEVOX tới ~2 lần)
+        var (_, o) = Run(Learner(Utterance(speed: 0.35)), Reference());
         var fast = Assert.Single(o, x => x.Code == "fast_vs_reference");
         Assert.True(fast.MeasuredValue >= fast.Threshold);
         Assert.Contains("nhanh hơn", fast.Message);
@@ -321,7 +352,8 @@ public class FluencyComparerTests
             ("dừng đúng chỗ, lâu hơn",   Learner(Utterance(pauseMs: 700)),                         Good(), Array.Empty<string>(), true),
             ("đọc chậm",                  Learner(Utterance(speed: 1.8)),                           Good(), new[] { "slow_vs_reference" }, true),
             ("đọc rất chậm",              Learner(Utterance(speed: 2.5)),                           Good(), new[] { "slow_vs_reference" }, true),
-            ("đọc nhanh",                 Learner(Utterance(speed: 0.55)),                          Good(), new[] { "fast_vs_reference" }, true),
+            ("đọc nhanh như người bản xứ", Learner(Utterance(speed: 0.55)),                          Good(), Array.Empty<string>(), true),
+            ("đọc nhanh bất thường",      Learner(Utterance(speed: 0.35)),                          Good(), new[] { "fast_vs_reference" }, true),
             ("dừng dài đầu câu (chuẩn bị)", Learner(Cat(Noise(300), Sine(500), Noise(900), Sine(500), Noise(300), Sine(1200), Noise(300))), Good(), Array.Empty<string>(), true),
             ("dừng dài giữa câu",         Learner(Cat(Noise(300), Sine(1000), Noise(300), Sine(200), Noise(900), Sine(700), Noise(300))), Good(), new[] { "extra_pause" }, true),
             ("chậm + dừng thừa",          Learner(Cat(Noise(300), Sine(1100), Noise(800), Sine(1100), Noise(300), Sine(2400), Noise(300))), Good(), new[] { "extra_pause", "slow_vs_reference" }, true),

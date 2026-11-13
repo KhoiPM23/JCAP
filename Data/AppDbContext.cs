@@ -42,6 +42,8 @@ namespace JCAP.Data
         public DbSet<ShadowingDialogueGrammar> ShadowingDialogueGrammars { get; set; } = null!;
         public DbSet<ShadowingPracticeSession> ShadowingPracticeSessions { get; set; } = null!;
         public DbSet<ShadowingSentenceEvaluation> ShadowingSentenceEvaluations { get; set; } = null!;
+        public DbSet<ShadowingPracticeProgress> ShadowingPracticeProgresses { get; set; } = null!;
+        public DbSet<ShadowingSentenceAsset> ShadowingSentenceAssets { get; set; } = null!;
 
         // Roleplay Session related DbSets
         public DbSet<RoleplaySession> RoleplaySessions { get; set; } = null!;
@@ -655,11 +657,20 @@ namespace JCAP.Data
             {
                 entity.HasIndex(e => new { e.UserId, e.ShadowingSentenceId, e.CreatedAt });
                 entity.HasIndex(e => e.ShadowingPracticeSessionId);
+                entity.HasIndex(e => e.ShadowingPracticeProgressId);
+                // Gửi lại cùng một lần chấm (mất mạng, quá hạn) không tạo dòng thứ hai
+                entity.HasIndex(e => new { e.UserId, e.ClientSubmissionId })
+                    .IsUnique()
+                    .HasFilter("[ClientSubmissionId] IS NOT NULL");
 
                 entity.Property(e => e.RecognizedText).IsRequired().HasMaxLength(1000);
                 entity.Property(e => e.Tier).IsRequired().HasMaxLength(10);
                 entity.Property(e => e.EvaluationStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.ErrorCode).HasMaxLength(50);
                 entity.Property(e => e.RecognitionSource).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.RecognitionMode).IsRequired().HasMaxLength(20).HasDefaultValue(string.Empty);
+                entity.Property(e => e.DimensionsJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AsrModel).HasMaxLength(100);
                 entity.Property(e => e.ScoringVersion).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.ComparisonMethod).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.AudioQualityStatus).IsRequired().HasMaxLength(20);
@@ -678,6 +689,64 @@ namespace JCAP.Data
 
                 entity.HasOne(e => e.ShadowingPracticeSession)
                     .WithMany(s => s.SentenceEvaluations)
+                    .HasForeignKey(e => e.ShadowingPracticeSessionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingPracticeProgress)
+                    .WithMany(p => p.SentenceEvaluations)
+                    .HasForeignKey(e => e.ShadowingPracticeProgressId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingSentenceAsset: dữ liệu tham chiếu tính sẵn (cách đọc, giọng mẫu) để lúc chấm không cần VOICEVOX.
+            // Một dòng mỗi (câu, nhà cung cấp, giọng); VoiceId null = dòng cách đọc (SQL Server coi NULL là trùng trong index duy nhất).
+            modelBuilder.Entity<ShadowingSentenceAsset>(entity =>
+            {
+                entity.HasIndex(e => new { e.ShadowingSentenceId, e.VoiceProvider, e.VoiceId }).IsUnique();
+                entity.HasIndex(e => e.SourceText);
+
+                entity.Property(e => e.SourceText).IsRequired().HasMaxLength(400);
+                entity.Property(e => e.NormalizedText).IsRequired().HasMaxLength(400);
+                entity.Property(e => e.KanaReading).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.MoraSequence).IsRequired().HasColumnType("nvarchar(max)");
+                entity.Property(e => e.WordStartsJson).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.FuriganaJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.VoiceProvider).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.SampleAudioUrl).HasMaxLength(300);
+                entity.Property(e => e.MoraTimelineJson).HasColumnType("nvarchar(max)");
+                entity.Property(e => e.AudioVersion).IsRequired().HasMaxLength(100);
+
+                // Câu thuộc bảng của thành viên khác: chỉ tham chiếu (khóa ngoại nằm trên bảng này), không sửa bảng đó.
+                entity.HasOne(e => e.ShadowingSentence)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingSentenceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ShadowingPracticeProgress: phiên đang luyện ở server; tối đa MỘT phiên in_progress cho mỗi người học + bài + vai
+            modelBuilder.Entity<ShadowingPracticeProgress>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.ShadowingDialogueId, e.LearnerRole })
+                    .IsUnique()
+                    .HasFilter("[Status] = N'in_progress'")
+                    .HasDatabaseName("UX_ShadowingPracticeProgresses_ActivePerRole");
+                entity.HasIndex(e => new { e.UserId, e.LastActivityAt });
+
+                entity.Property(e => e.LearnerRole).IsRequired().HasMaxLength(5);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingDialogue)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShadowingDialogueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.ShadowingPracticeSession)
+                    .WithMany()
                     .HasForeignKey(e => e.ShadowingPracticeSessionId)
                     .OnDelete(DeleteBehavior.Restrict);
             });

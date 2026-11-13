@@ -1,0 +1,9 @@
+# JCAP Shadowing ASR service. Phần mềm miễn phí, mã nguồn mở.
+faster-whisper>=1.0,<2      # MIT (CTranslate2: MIT; model Whisper: MIT)
+fastapi>=0.110              # MIT
+uvicorn>=0.29               # BSD-3
+python-multipart>=0.0.9     # Apache-2.0 (nhận multipart/form-data)
+numpy>=1.24                 # BSD-3
+# Tùy chọn nhưng NÊN cài: cách đọc (katakana) của transcript bằng OpenJTalk — cùng bộ G2P với VOICEVOX,
+# để backend chấm nội dung mà không cần gọi VOICEVOX lúc chấm.
+pyopenjtalk-plus>=0.4       # MIT (từ điển OpenJTalk: BSD)
