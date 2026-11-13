@@ -220,6 +220,14 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   const [isDialogueContentCollapsed, setIsDialogueContentCollapsed] = useState<boolean>(true);
   const [isFullScriptModalOpen, setIsFullScriptModalOpen] = useState<boolean>(false);
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState<boolean>(false);
+  // Chi tiết từng câu ở màn tổng kết: mặc định thu gọn, bấm từng câu để mở
+  const [openSentenceIds, setOpenSentenceIds] = useState<Set<number>>(new Set());
+  const toggleSentenceDetail = (id: number) =>
+    setOpenSentenceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   // Lưu buổi luyện vào lịch sử ở backend: idle (chưa lưu / không có câu nào được chấm) | saving | saved | failed
   const [historySaveState, setHistorySaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [historySaveMessage, setHistorySaveMessage] = useState<string>('');
@@ -1648,6 +1656,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Complete dialogue
   const handleFinishDialogue = async () => {
     setPracticeState('completed');
+    setOpenSentenceIds(new Set());
     setIsCompletedModalOpen(true);
     setHistorySaveState('idle');
     setHistorySaveMessage('');
@@ -2667,12 +2676,22 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                     const isPlayingUser = playingUserAudioSentenceId === s.id;
                     const isPlayingNative = isPlayingAudio && loadingAudioSentenceId === s.id;
                     const attempts = res?.attemptsCount ?? sentenceAttemptsMap.get(s.id) ?? 0;
+                    const isOpen = openSentenceIds.has(s.id);
+                    const detailId = `sentence-detail-${s.id}`;
 
                     return (
-                      <li key={s.id} className="p-4 rounded-xl bg-paper-50 border border-line space-y-2.5">
+                      <li key={s.id} className="p-4 rounded-xl bg-paper-50 border border-line">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-sumi-muted">Câu {index + 1}/{totalLearnerSentencesCount}</span>
+                          {/* Bấm cả dòng để mở/thu gọn chi tiết câu */}
+                          <button
+                            type="button"
+                            onClick={() => toggleSentenceDetail(s.id)}
+                            aria-expanded={isOpen}
+                            aria-controls={detailId}
+                            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai"
+                          >
+                            <JIcon name="expand_more" size={20} className={`jc-chev flex-shrink-0 text-sumi-muted ${isOpen ? 'is-open' : ''}`} />
+                            <span className="text-xs font-bold text-sumi-muted flex-shrink-0">Câu {index + 1}/{totalLearnerSentencesCount}</span>
                             <span
                               className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                                 !res
@@ -2686,8 +2705,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                             >
                               {res ? `${res.overallScore} điểm` : 'Chưa chấm'}
                             </span>
-                            {attempts > 1 && <span className="text-xs text-sumi-faint">thử {attempts} lần</span>}
-                          </div>
+                            {attempts > 1 && <span className="text-xs text-sumi-faint flex-shrink-0">thử {attempts} lần</span>}
+                            <span className="min-w-0 truncate font-jp text-sm text-sumi">{s.japaneseText}</span>
+                          </button>
 
                           <div className="flex items-center gap-2">
                             {hasUserRecording && (
@@ -2723,18 +2743,29 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="bg-paper-100 p-3 rounded-lg border border-line">
-                          <JapaneseSentenceDiffView
-                            diffTokens={res?.diffTokens}
-                            targetText={s.japaneseText}
-                            spokenText={res?.recognizedText}
-                            size="sm"
-                          />
-                        </div>
+                        <div
+                          id={detailId}
+                          className={`jc-collapse ${isOpen ? 'is-open' : ''}`}
+                          style={{ '--collapse-gap': '0px' } as React.CSSProperties}
+                          inert={!isOpen}
+                        >
+                          <div className="jc-collapse__in">
+                            <div className="space-y-2.5 pt-3">
+                              <div className="bg-paper-100 p-3 rounded-lg border border-line">
+                                <JapaneseSentenceDiffView
+                                  diffTokens={res?.diffTokens}
+                                  targetText={s.japaneseText}
+                                  spokenText={res?.recognizedText}
+                                  size="sm"
+                                />
+                              </div>
 
-                        <div className="space-y-0.5 text-xs">
-                          {s.romajiText && <p className="text-sumi-faint font-mono">{s.romajiText}</p>}
-                          {s.vietnameseTranslation && <p className="text-sumi-muted">{s.vietnameseTranslation}</p>}
+                              <div className="space-y-0.5 text-xs">
+                                {s.romajiText && <p className="text-sumi-faint font-mono">{s.romajiText}</p>}
+                                {s.vietnameseTranslation && <p className="text-sumi-muted">{s.vietnameseTranslation}</p>}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </li>
                     );
