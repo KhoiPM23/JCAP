@@ -212,7 +212,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
   // Tăng mỗi khi hủy/thu lại để bỏ qua kết quả đến muộn
   const evaluationSeqRef = useRef<number>(0);
   const isSubmittingRef = useRef<boolean>(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  // Khung hội thoại (chỉ phần này cuộn khi có câu mới)
+  const dialogueScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Modals & Slideovers (Mặc định ẩn nội dung khi lần đầu vào trang, mũi tên hướng xuống)
   const [isSituationCollapsed, setIsSituationCollapsed] = useState<boolean>(true);
@@ -752,9 +753,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     };
   }, [isLearnerTurn, hasMicrophone, playbackActive, practiceState, selectedAudioInputDeviceId]);
 
-  // Auto-scroll to latest sentence when dialogue progresses
+  // Cuộn khung hội thoại xuống câu mới nhất. KHÔNG dùng scrollIntoView: lệnh đó cuộn cả các khung cha (kể cả khung trang
+  // có overflow-hidden) khi nội dung cao hơn màn hình, làm cả trang bị đẩy lên và lộ khoảng trắng phía dưới.
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = dialogueScrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [currentSentenceIndex, practiceState]);
 
   // Tự động tải trước (Pre-fetch ngầm) âm thanh VOICEVOX theo thứ tự ưu tiên:
@@ -1948,7 +1951,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
 
       {/* MAIN WORKSPACE CONTENT */}
       <main className="max-w-7xl w-full mx-auto py-3 px-4 sm:px-6 flex-1 flex flex-col min-h-0 lg:overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
+        {/* Hàng lưới cao đúng bằng khung (minmax(0,1fr)): các cột không được cao hơn màn hình */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] gap-6 lg:gap-8 items-start lg:h-full min-h-0 lg:overflow-hidden">
           {/* LEFT COLUMN: Context Panel (Hình 3) - Cố định vị trí, không cuộn theo đoạn chat */}
           <section className="lg:col-span-4 flex flex-col gap-4 lg:h-full lg:overflow-y-auto pr-1">
             <div className="rounded-[28px] p-5 border border-line bg-paper-50 relative overflow-hidden" style={{ boxShadow: '0 10px 30px rgba(15,37,56,.06)' }}>
@@ -2099,7 +2103,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
           {/* RIGHT COLUMN: Dialogue Stream & Mic Console */}
           <section className="lg:col-span-8 flex flex-col justify-between lg:h-full min-h-0 lg:overflow-hidden gap-2">
             {/* Dialogue Stream - CHỈ PHẦN NÀY ĐƯỢC CUỘN */}
-            <div className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
+            <div ref={dialogueScrollRef} className="dialogue-scroll-container flex-1 overflow-y-auto min-h-0 pr-2 space-y-4 pb-2">
               {sentences.slice(0, currentSentenceIndex + 1).map((s, idx) => {
                 const isOpponent = s.speakerRole !== userRole;
                 const isCurrentActive = idx === currentSentenceIndex;
@@ -2283,12 +2287,11 @@ export const LearnerShadowingPracticeView: React.FC = () => {
                   );
                 }
               })}
-              {/* Anchor for auto-scrolling */}
-              <div ref={chatEndRef} />
             </div>
 
             {/* ACTION CONSOLE (Recording & Evaluation) (Hình 4) - Cố định vị trí ở đáy */}
-            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10">
+            {/* Cao tối đa 70% cột để khung hội thoại luôn còn chỗ; nhận xét dài thì cuộn bên trong */}
+            <div className="w-full flex-shrink-0 pt-2 pb-1 z-10 lg:max-h-[70%] lg:overflow-y-auto">
               <div
                 className="w-full rounded-[24px] border-2 border-dashed bg-paper-50 backdrop-blur-xs py-3.5 px-6 flex flex-col items-center justify-center shadow-xs transition-all"
                 style={{ borderColor: 'rgb(147, 197, 253)' }}
