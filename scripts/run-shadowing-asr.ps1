@@ -1,4 +1,5 @@
 ﻿# Chạy dịch vụ ASR (Faster-Whisper) cho chấm Shadowing tại http://127.0.0.1:50023.
+# Khi phát triển thường không cần: `dotnet run` tự bật dịch vụ này. Chạy tay khi muốn xem log riêng hoặc chạy ngoài Development.
 # Cài đặt một lần trước: .\scripts\setup-shadowing.ps1 (tạo môi trường ảo tools/shadowing-asr/.venv)
 param(
     [string]$Model = $(if ($env:ASR_MODEL) { $env:ASR_MODEL } else { "small" }),

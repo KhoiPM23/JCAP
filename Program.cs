@@ -137,6 +137,8 @@ builder.Services.AddScoped<VoiceVoxReferenceProvider>();
 builder.Services.AddHostedService<ShadowingAssetBackfillService>();
 // ASR cho chiều Nội dung: dịch vụ Faster-Whisper riêng (tools/shadowing-asr), gọi qua HTTP nội bộ
 builder.Services.AddHttpClient<ISpeechRecognitionService, FasterWhisperSpeechRecognitionService>();
+// Khi phát triển: dotnet run tự bật dịch vụ đó nếu chưa chạy (tắt: Shadowing:Asr:AutoStart=false)
+if (builder.Environment.IsDevelopment()) builder.Services.AddHostedService<ShadowingAsrDevLauncher>();
 builder.Services.AddScoped<IShadowingPracticeProgressService, ShadowingPracticeProgressService>();
 builder.Services.AddScoped<IShadowingSessionInsightsService, ShadowingSessionInsightsService>();
 builder.Services.AddScoped<IShadowingSessionReviewService, ShadowingSessionReviewService>();
