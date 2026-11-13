@@ -12,9 +12,6 @@ const ERROR_LABEL: Record<string, string> = {
   missing: 'thiếu từ',
 };
 
-const status = (s: 'COMPLETED' | 'UNAVAILABLE', completedText: string) =>
-  s === 'COMPLETED' ? completedText : 'chưa khả dụng';
-
 interface Props {
   summary: ShadowingSessionSummary;
   /** Id buổi đã lưu: có thì hiện nút nhận xét chi tiết từ AI. */
@@ -22,27 +19,13 @@ interface Props {
 }
 
 /**
- * Tổng kết buổi luyện do backend tính (Shadowing V2): số lần gửi chấm, câu cần luyện lại, trạng thái từng chiều,
- * và các loại lỗi trong buổi. Chiều chưa có điểm đã kiểm chứng chỉ hiện trạng thái, không hiện số.
+ * Tổng kết buổi luyện do backend tính (Shadowing V2): câu nên luyện lại, các loại lỗi trong buổi
+ * và nhận xét chi tiết từ AI (khi người học bấm).
  */
 export default function SessionSummaryPanel({ summary, sessionId }: Props) {
   const errors = Object.entries(summary.errorTypeCounts).sort((a, b) => b[1] - a[1]);
   return (
     <section className="space-y-4" aria-label="Tổng kết buổi luyện">
-      <div className="flex flex-wrap gap-1.5">
-        <Badge tone="info">Lần gửi chấm: {summary.totalSubmissions}{summary.unscoredSubmissions > 0 ? ` (${summary.unscoredSubmissions} chưa chấm được)` : ''}</Badge>
-        <Badge tone="neutral">Câu đã chấm: {summary.evaluatedSentenceCount}/{summary.learnerSentenceCount}</Badge>
-        <Badge tone="success">Nội dung: {summary.contentAccuracy}/100</Badge>
-        <Badge tone="neutral">Phát âm: {status(summary.pronunciationStatus, 'đã chấm')}</Badge>
-        <Badge tone="neutral">Lưu loát: {status(summary.fluencyStatus, 'có số liệu tham khảo')}</Badge>
-        <Badge tone="neutral">Ngữ điệu: {status(summary.prosodyStatus, 'đã chấm')}</Badge>
-      </div>
-      {summary.pronunciationStatus !== 'COMPLETED' && (
-        <p className="text-[11px] text-sumi-muted">
-          Điểm của buổi là điểm nội dung (bạn nói đúng các từ đến đâu). Phát âm chưa được chấm vì phương pháp đánh giá âm chưa được kiểm chứng trên giọng người học.
-        </p>
-      )}
-
       {summary.sentencesToRetry.length > 0 && (
         <div className="rounded-2xl border border-line bg-paper-100 p-4">
           <p className="text-xs font-bold text-sumi mb-2">Câu nên luyện lại</p>
