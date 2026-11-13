@@ -541,4 +541,5 @@ jcap-web/public/uploads/
 
 # Dịch vụ ASR (Python): môi trường ảo và bytecode
 /tools/shadowing-asr/.venv/
+/tools/whisper_engine/venv/
 __pycache__/
