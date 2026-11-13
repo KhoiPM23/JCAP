@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Badge as JBadge, Button as JButton, Icon as JIcon, IconButton as JIconButton, Logo as JLogo } from '../../components/jcap';
+import { Badge as JBadge, Button as JButton, Icon as JIcon, IconButton as JIconButton, JlptBadge as JJlptBadge, Logo as JLogo } from '../../components/jcap';
 import { getPracticePrefs } from '../../utils/practicePrefs';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
@@ -680,12 +680,6 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       handleConfirmRoleChange(roleInUrl);
     }
   }, [searchParams]);
-
-  // Handle changing Level from dropdown in header
-  const handleLevelChange = (newLevel: 'N5' | 'N4' | 'N3') => {
-    setSelectedLevel(newLevel);
-    navigate(`/shadowing?level=${newLevel}`);
-  };
 
   // Back button: returns to dialogue catalog (mở từ Khám phá thì về lại đúng chỗ đó trên bản đồ)
   const handleBackToDialogueList = () => {
@@ -1943,14 +1937,8 @@ export const LearnerShadowingPracticeView: React.FC = () => {
             {dialogue.title}
           </span>
         </nav>
-        <label className={`jx-rm-lv lv-${selectedLevel}`} title="Đổi cấp độ của bài">
-          <select aria-label="Cấp độ của bài" value={selectedLevel} onChange={(e) => handleLevelChange(e.target.value as 'N5' | 'N4' | 'N3')}>
-            <option value="N5">N5</option>
-            <option value="N4">N4</option>
-            <option value="N3">N3</option>
-          </select>
-          <JIcon name="expand_more" size={16} />
-        </label>
+        {/* Cấp độ của bài: chỉ hiển thị, không đổi được ở đây */}
+        <JJlptBadge level={(dialogue.jlptLevel || selectedLevel) as 'N5' | 'N4' | 'N3'} size="sm" />
         <div className="flex-auto" />
         <JIconButton icon="tune" label="Cài đặt âm thanh" onClick={() => setIsAudioDeviceModalOpen(true)} />
       </header>
