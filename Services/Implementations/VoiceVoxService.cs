@@ -16,6 +16,9 @@ namespace JCAP.Services.Implementations
 
         // In-Memory Audio Cache: Lưu trữ wav bytes đã tổng hợp để tái sử dụng ngay lập tức (0ms)
         private static readonly ConcurrentDictionary<string, byte[]> _audioCache = new(StringComparer.Ordinal);
+        // Hàng đợi gộp request đang tổng hợp theo cacheKey để tránh gửi trùng request tới VOICEVOX Engine
+        private static readonly ConcurrentDictionary<string, Lazy<Task<byte[]>>> _inFlightSyntheses = new(StringComparer.Ordinal);
+        private static readonly TimeSpan SynthesisInternalTimeout = TimeSpan.FromSeconds(35);
 
         private static readonly Dictionary<string, (string Romaji, string Gender, string Region, string Description)> CharacterMetadata = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -74,7 +77,7 @@ namespace JCAP.Services.Implementations
             _baseUrl = configuration["VoiceVox:BaseUrl"] ?? "http://127.0.0.1:50021";
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
-            _httpClient.Timeout = TimeSpan.FromSeconds(20);
+            _httpClient.Timeout = TimeSpan.FromSeconds(40);
 
             var webRoot = !string.IsNullOrEmpty(environment.WebRootPath)
                 ? environment.WebRootPath
@@ -156,6 +159,8 @@ namespace JCAP.Services.Implementations
                 throw new ArgumentException("Nội dung text không được để trống.", nameof(text));
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var trimmedText = text.Trim();
             var cacheKey = $"{speakerId}:{trimmedText}";
 
@@ -194,25 +199,106 @@ namespace JCAP.Services.Implementations
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested) throw;
                     _logger.LogWarning(ex, "Lỗi đọc file disk cache {FilePath}, sẽ chuyển sang tổng hợp lại từ VOICEVOX", diskFilePath);
                 }
             }
 
-            // 3. Nếu chưa có trên RAM và Ổ đĩa -> Gọi VOICEVOX Engine tổng hợp 1 lần duy nhất
+            // 3. Nếu chưa có trên RAM và Ổ đĩa -> Gộp chung 1 luồng tổng hợp cho mỗi cacheKey,
+            // cô lập CancellationToken theo từng caller để caller timeout ngắn (ví dụ 3s của Shadowing) không hủy ngang request khác.
+            var lazyTask = _inFlightSyntheses.GetOrAdd(
+                cacheKey,
+                _ => CreateInFlightSynthesisLazy(cacheKey, trimmedText, speakerId, speakerDir, diskFilePath, visemeDiskPath));
+
+            var sharedTask = lazyTask.Value;
+            return await sharedTask.WaitAsync(cancellationToken);
+        }
+
+        private Lazy<Task<byte[]>> CreateInFlightSynthesisLazy(
+            string cacheKey,
+            string trimmedText,
+            int speakerId,
+            string speakerDir,
+            string diskFilePath,
+            string visemeDiskPath)
+        {
+            Lazy<Task<byte[]>>? entry = null;
+            entry = new Lazy<Task<byte[]>>(() =>
+            {
+                var task = RunDeduplicatedSynthesisAsync(
+                    cacheKey, trimmedText, speakerId, speakerDir, diskFilePath, visemeDiskPath, entry!);
+
+                // Tránh UnobservedTaskException nếu mọi caller đã tự hủy trước khi VOICEVOX trả lỗi
+                _ = task.ContinueWith(
+                    static t => _ = t.Exception,
+                    CancellationToken.None,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default);
+
+                return task;
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            return entry;
+        }
+
+        private async Task<byte[]> RunDeduplicatedSynthesisAsync(
+            string cacheKey,
+            string trimmedText,
+            int speakerId,
+            string speakerDir,
+            string diskFilePath,
+            string visemeDiskPath,
+            Lazy<Task<byte[]>> entry)
+        {
+            using var internalCts = new CancellationTokenSource(SynthesisInternalTimeout);
+            try
+            {
+                if (_audioCache.TryGetValue(cacheKey, out var cachedBytes))
+                {
+                    return cachedBytes;
+                }
+
+                return await SynthesizeFromEngineAsync(
+                    cacheKey, trimmedText, speakerId, speakerDir, diskFilePath, visemeDiskPath, internalCts.Token);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "VOICEVOX tổng hợp vượt quá thời gian chờ ({TimeoutSec}s) cho speaker={SpeakerId}, text={Text}",
+                    SynthesisInternalTimeout.TotalSeconds,
+                    speakerId,
+                    trimmedText);
+                throw new TimeoutException($"VOICEVOX synthesis timed out after {SynthesisInternalTimeout.TotalSeconds:0}s.", ex);
+            }
+            finally
+            {
+                _inFlightSyntheses.TryRemove(new KeyValuePair<string, Lazy<Task<byte[]>>>(cacheKey, entry));
+            }
+        }
+
+        private async Task<byte[]> SynthesizeFromEngineAsync(
+            string cacheKey,
+            string trimmedText,
+            int speakerId,
+            string speakerDir,
+            string diskFilePath,
+            string visemeDiskPath,
+            CancellationToken ct)
+        {
             try
             {
                 // Bước 1: Gọi audio_query
                 var escapedText = Uri.EscapeDataString(trimmedText);
                 var queryUrl = $"/audio_query?text={escapedText}&speaker={speakerId}";
-                var queryResponse = await _httpClient.PostAsync(queryUrl, null, cancellationToken);
+                var queryResponse = await _httpClient.PostAsync(queryUrl, null, ct);
                 if (!queryResponse.IsSuccessStatusCode)
                 {
-                    var errorDetail = await queryResponse.Content.ReadAsStringAsync(cancellationToken);
+                    var errorDetail = await queryResponse.Content.ReadAsStringAsync(ct);
                     _logger.LogError("VOICEVOX audio_query failed ({StatusCode}): {Detail}", queryResponse.StatusCode, errorDetail);
                     throw new InvalidOperationException($"VOICEVOX audio_query thất bại ({queryResponse.StatusCode}): {errorDetail}");
                 }
 
-                var queryJson = await queryResponse.Content.ReadAsStringAsync(cancellationToken);
+                var queryJson = await queryResponse.Content.ReadAsStringAsync(ct);
 
                 // Tính toán và lưu trước timeline visemes khẩu hình miệng
                 var timeline = ParseTimeline(queryJson);
@@ -225,7 +311,7 @@ namespace JCAP.Services.Implementations
                     try
                     {
                         if (!Directory.Exists(speakerDir)) Directory.CreateDirectory(speakerDir);
-                        await File.WriteAllTextAsync(visemeDiskPath, visemesJson, cancellationToken);
+                        await File.WriteAllTextAsync(visemeDiskPath, visemesJson, ct);
                     }
                     catch {}
                 }
@@ -233,15 +319,15 @@ namespace JCAP.Services.Implementations
                 // Bước 2: Gọi synthesis tạo âm thanh WAV
                 var synthesisUrl = $"/synthesis?speaker={speakerId}";
                 using var content = new StringContent(queryJson, Encoding.UTF8, "application/json");
-                var synthesisResponse = await _httpClient.PostAsync(synthesisUrl, content, cancellationToken);
+                var synthesisResponse = await _httpClient.PostAsync(synthesisUrl, content, ct);
                 if (!synthesisResponse.IsSuccessStatusCode)
                 {
-                    var errorDetail = await synthesisResponse.Content.ReadAsStringAsync(cancellationToken);
+                    var errorDetail = await synthesisResponse.Content.ReadAsStringAsync(ct);
                     _logger.LogError("VOICEVOX synthesis failed ({StatusCode}): {Detail}", synthesisResponse.StatusCode, errorDetail);
                     throw new InvalidOperationException($"VOICEVOX synthesis thất bại ({synthesisResponse.StatusCode}): {errorDetail}");
                 }
 
-                var wavBytes = await synthesisResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+                var wavBytes = await synthesisResponse.Content.ReadAsByteArrayAsync(ct);
 
                 // 4. Lưu đồng thời vào RAM Cache và Persistent Disk Cache
                 _audioCache[cacheKey] = wavBytes;
@@ -252,7 +338,7 @@ namespace JCAP.Services.Implementations
                     {
                         Directory.CreateDirectory(speakerDir);
                     }
-                    await File.WriteAllBytesAsync(diskFilePath, wavBytes, cancellationToken);
+                    await File.WriteAllBytesAsync(diskFilePath, wavBytes, ct);
                     _logger.LogInformation("Đã lưu audio VOICEVOX vào Persistent Disk Cache: {FilePath}", diskFilePath);
                 }
                 catch (Exception ex)

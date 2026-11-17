@@ -36,6 +36,36 @@ export interface TargetGrammar {
   exampleSentence?: string;
 }
 
+export interface WeakVocabulary {
+  id: number;
+  word: string;
+  reading?: string | null;
+  meaning: string;
+  masteryScore: number;
+  status: 'NeedsPractice' | 'NotAttempted' | string;
+  reason: string;
+}
+
+export interface WeakGrammar {
+  id: number;
+  pattern: string;
+  meaning: string;
+  exampleSentence?: string | null;
+  masteryScore: number;
+  status: 'NeedsPractice' | 'NotAttempted' | string;
+  reason: string;
+}
+
+export interface RecommendedShadowingDialogue {
+  id: number;
+  title: string;
+  jlptLevel: string;
+  scenarioId?: number | null;
+  matchReason: string;
+  score: number;
+  sentencesCount: number;
+}
+
 export interface RoleplayMissionProgress {
   missionId: number;
   content: string;
@@ -115,6 +145,13 @@ export interface RoleplayResultDetail extends RoleplayResultSummary {
   nextRecommendedScenarioTitle?: string;
   nextRecommendedReason?: string;
   predictedSuccessRateNextScenario?: number;
+  hankoStampType?: 'Master' | 'Pass' | 'Improve' | string;
+  kanjiRank?: '極' | '優' | '良' | '可' | '研' | string;
+  hankoStampText?: string;
+  competencyBadges?: string[];
+  weakVocabularies?: WeakVocabulary[];
+  weakGrammars?: WeakGrammar[];
+  recommendedShadowingDialogues?: RecommendedShadowingDialogue[];
 }
 
 export interface RoleplayResultHistoryResponse {

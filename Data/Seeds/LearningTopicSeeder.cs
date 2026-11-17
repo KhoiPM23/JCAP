@@ -69,7 +69,11 @@ public static class LearningTopicSeeder
                 continue;
             }
             if (existingTopics.Any(t => t.Name == seed.Name && t.JLPTLevel == seed.JLPTLevel))
-                throw new InvalidOperationException($"Topic name is already used by another code: {seed.Name}");
+            {
+                // An admin may already have created a functional topic with this name.
+                skippedTopics.Add(seed.Code);
+                continue;
+            }
             if (seed.VocabularyWords.Any(w => !vocabulariesByWord.GetValueOrDefault(w).HasValue)
                 || seed.GrammarExternalIds.Any(id => !grammarsByExternalId.GetValueOrDefault(id).HasValue))
             {

@@ -33,4 +33,14 @@ public class RoleplayTurnResponseDto
     /// Trạng thái khích lệ nếu người học đang gặp khó khăn
     /// </summary>
     public bool ShouldOfferEncouragement { get; set; }
+
+    /// <summary>
+    /// Mã biến cố rẽ nhánh bất ngờ đang kích hoạt (EV_SOLD_OUT, EV_DELAY, EV_SPEAK_FAST, EV_MISHEARD, EV_INDIRECT_REFUSAL)
+    /// </summary>
+    public string? ActiveBranchingEventCode { get; set; }
+
+    /// <summary>
+    /// Phản hồi vi mô vết mực loang Sumi (Ambient Sumi Ink Stain)
+    /// </summary>
+    public SumiInkFeedbackDto? SumiInkFeedback { get; set; }
 }

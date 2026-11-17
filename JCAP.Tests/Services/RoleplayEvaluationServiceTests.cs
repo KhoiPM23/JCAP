@@ -40,7 +40,7 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(90, result.VocabularyScore);
         Assert.Equal(92, result.ImpressionScore);
         Assert.Equal(67, result.MissionProgressScore);
-        Assert.Equal(59, result.OverallScore);
+        Assert.Equal(82, result.OverallScore);
         Assert.False(result.AllMissionsCompleted);
         Assert.Contains("2/3", result.GeneralFeedbackText);
         Assert.Contains("Chưa đạt", result.GeneralFeedbackText);
@@ -57,7 +57,7 @@ public class RoleplayEvaluationServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(0, result.MissionProgressScore);
-        Assert.Equal(45, result.OverallScore);
+        Assert.Equal(55, result.OverallScore);
         Assert.False(result.AllMissionsCompleted);
     }
 
@@ -75,7 +75,7 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(48, result.VocabularyScore);
         Assert.Equal(62, result.ImpressionScore);
         Assert.Equal(50, result.MissionProgressScore);
-        Assert.Equal(56, result.OverallScore);
+        Assert.Equal(66, result.OverallScore);
         Assert.Contains("Điểm cần cải thiện", result.GeneralFeedbackText);
         Assert.Contains("Cách diễn đạt tự nhiên hơn", result.GeneralFeedbackText);
     }
@@ -93,11 +93,11 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(65, result.GrammarScore);
         Assert.Equal(90, result.VocabularyScore);
         Assert.Equal(72, result.ImpressionScore);
-        Assert.Equal(88, result.OverallScore);
+        Assert.Equal(89, result.OverallScore);
     }
 
     [Fact]
-    public void Evaluate_DoesNotAwardGoodScoreWhenCategoryEvidenceIsMissing()
+    public void Evaluate_AwardsGoodScoreWhenCategoryEvidenceHasNoViolationsAndTurnStatusIsGood()
     {
         var result = _service.Evaluate(
             [GoodButMissingCategoryFeedbackJson],
@@ -106,10 +106,10 @@ public class RoleplayEvaluationServiceTests
             isNaturallyConcluded: true);
 
         Assert.NotNull(result);
-        Assert.Equal(65, result.GrammarScore);
+        Assert.Equal(90, result.GrammarScore);
         Assert.Equal(90, result.VocabularyScore);
-        Assert.Equal(72, result.ImpressionScore);
-        Assert.Equal(88, result.OverallScore);
+        Assert.Equal(92, result.ImpressionScore);
+        Assert.Equal(95, result.OverallScore);
     }
 
     [Fact]
@@ -160,6 +160,88 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(4.2, result.AverageSpeechPace);
         Assert.Contains("Độ trôi chảy & Phát âm", result.GeneralFeedbackText);
         Assert.Contains("2.1s", result.GeneralFeedbackText);
+    }
+
+    [Fact]
+    public void Evaluate_AdheresToAcademicWeighting40_30_20_10()
+    {
+        var result = _service.Evaluate(
+            [GoodFeedbackJson],
+            completedMissionCount: 3,
+            totalMissionCount: 3,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.ScoreBreakdown);
+        // 40% mission completion
+        Assert.Equal(40, result.ScoreBreakdown.MissionCompletionPoints);
+        // 30% linguistic appropriateness
+        Assert.Equal(27, result.ScoreBreakdown.LinguisticPoints);
+        // 20% fluency & reflex
+        Assert.Equal(18, result.ScoreBreakdown.FluencyReflexPoints);
+        // 10% autonomy
+        Assert.Equal(10, result.ScoreBreakdown.AutonomyPoints);
+        // Overall: 40 + 27 + 18 + 10 = 95
+        Assert.Equal(95, result.OverallScore);
+    }
+
+    [Fact]
+    public void Evaluate_SurvivalPhraseWaivesAutonomyPenalty()
+    {
+        var survivalFeedbackJson = """
+        {
+          "evaluationSource": "AI",
+          "status": "Good",
+          "summary": "Phản xạ câu sinh tồn giao tiếp tự nhiên",
+          "details": [
+            { "type": "success", "aspect": "Câu sinh tồn", "comment": "Học viên sử dụng câu sinh tồn 'もう一度お願いします' chuẩn xác." },
+            { "type": "info", "aspect": "Gợi ý", "comment": "Đã sử dụng gợi ý sinh tồn để duy trì cuộc thoại." }
+          ]
+        }
+        """;
+
+        var result = _service.Evaluate(
+            [survivalFeedbackJson],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(100, result.AutonomyScore);
+        Assert.Equal(10, result.ScoreBreakdown.AutonomyPoints);
+    }
+
+    [Fact]
+    public void Evaluate_CalibratesMoraPaceToAcademicStandard()
+    {
+        // Learner pace around 4.5 mora/s is within the ideal 3.0 - 5.0 range
+        var calibratedFeedback = """
+        {
+          "evaluationSource": "AI",
+          "status": "Good",
+          "summary": "Tốc độ phát âm chuẩn",
+          "speechDelivery": {
+            "speakingDurationSeconds": 2.0,
+            "responseLatencySeconds": 1.5,
+            "speechConfidence": 0.95,
+            "speechPace": 4.5,
+            "turnFluencyScore": 96
+          }
+        }
+        """;
+
+        var result = _service.Evaluate(
+            [calibratedFeedback],
+            completedMissionCount: 1,
+            totalMissionCount: 1,
+            isNaturallyConcluded: true);
+
+        Assert.NotNull(result);
+        Assert.Equal(4.5, result.AverageSpeechPace);
+        Assert.Equal(1.5, result.AverageResponseLatencySeconds);
+        Assert.True(result.FluencyScore >= 90);
+        Assert.Contains("4.5 âm/giây", result.GeneralFeedbackText);
+        Assert.Contains("nhịp độ vừa vặn, tự nhiên", result.GeneralFeedbackText);
     }
 
     private const string GoodFeedbackJson = """

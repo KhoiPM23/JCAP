@@ -28,16 +28,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             sqlServerOptions.CommandTimeout(60);
         }));
 
-// Explicit local sample import; exits before web startup and all unrelated automatic seeders.
-if (args.Contains("--import-learning-sample"))
+// Explicit local imports exit before web startup and all unrelated automatic seeders.
+const string fullImportOption = "--import-learning-full=";
+var fullImport = args.FirstOrDefault(arg => arg.StartsWith(fullImportOption, StringComparison.Ordinal));
+if (args.Contains("--import-learning-sample") || fullImport is not null)
 {
     using var loggerFactory = LoggerFactory.Create(logging =>
         logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning));
     await using var importDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
         .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
         .UseLoggerFactory(loggerFactory).Options);
-    Environment.ExitCode = await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(
-        importDb, args.Contains("--dry-run"));
+    var dryRun = args.Contains("--dry-run");
+    Environment.ExitCode = fullImport is null
+        ? await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(importDb, dryRun)
+        : await JCAP.Data.Seeds.LearningContentFullCommand.RunAsync(importDb, fullImport[fullImportOption.Length..], dryRun);
     return;
 }
 
@@ -121,16 +125,35 @@ builder.Services.AddScoped<GeminiAiClient>();
 builder.Services.AddScoped<OpenAiCompatibleAiClient>();
 builder.Services.AddScoped<IAiClient, AiClientResolver>();
 builder.Services.AddScoped<IAiRoleplayService, AiRoleplayService>();
+builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
 builder.Services.AddSingleton<IFluencyAnalyzer, FluencyAnalyzer>();
-builder.Services.AddScoped<IReferenceVoiceProvider, VoiceVoxReferenceProvider>();
-// Cách đọc (G2P) chỉ lấy từ engine VOICEVOX. Engine không dùng được thì KHÔNG chấm (trả "chưa chấm được"),
-// không dùng bảng tra tự viết để đoán cách đọc.
+builder.Services.AddScoped<IReferenceVoiceProvider, StoredReferenceVoiceProvider>(); // giọng mẫu đã lưu trước, VOICEVOX sau
+builder.Services.AddSingleton<IPhonemeRecognizer, OnnxPhonemeRecognizer>();
+builder.Services.AddSingleton<ShadowingRecognitionThrottle>();
+// Dữ liệu câu mẫu tính sẵn: lúc chấm đọc cách đọc/giọng mẫu từ CSDL thay vì gọi VOICEVOX
+builder.Services.AddScoped<IShadowingAssetSource, VoiceVoxAssetSource>();
+builder.Services.AddScoped<IShadowingSentenceAssetService, ShadowingSentenceAssetService>();
+builder.Services.AddScoped<VoiceVoxReferenceProvider>();
+builder.Services.AddHostedService<ShadowingAssetBackfillService>();
+// ASR cho chiều Nội dung: dịch vụ Faster-Whisper riêng (tools/shadowing-asr), gọi qua HTTP nội bộ
+builder.Services.AddHttpClient<ISpeechRecognitionService, FasterWhisperSpeechRecognitionService>();
+// Khi phát triển: dotnet run tự bật dịch vụ đó nếu chưa chạy (tắt: Shadowing:Asr:AutoStart=false)
+if (builder.Environment.IsDevelopment()) builder.Services.AddHostedService<ShadowingAsrDevLauncher>();
+builder.Services.AddScoped<IShadowingPracticeProgressService, ShadowingPracticeProgressService>();
+builder.Services.AddScoped<IShadowingSessionInsightsService, ShadowingSessionInsightsService>();
+builder.Services.AddScoped<IShadowingSessionReviewService, ShadowingSessionReviewService>();
+// Cách đọc (G2P của VOICEVOX/OpenJTalk): ưu tiên dữ liệu câu mẫu tính sẵn, rồi mới gọi engine VOICEVOX
+// (tắt được bằng Shadowing:Reading:UseVoiceVox=false). Không có nguồn nào thì KHÔNG chấm, không đoán cách đọc.
 builder.Services.AddHttpClient<VoiceVoxKanaReader>();
+builder.Services.AddScoped<IKanaReader, StoredKanaReader>();
 builder.Services.AddTransient<IKanaReader>(sp => sp.GetRequiredService<VoiceVoxKanaReader>());
 builder.Services.AddScoped<IJapaneseTextComparer, KanaMoraComparer>();
 builder.Services.AddScoped<IAiShadowingAssessmentService, ShadowingEvaluationService>();
-builder.Services.AddScoped<IRoleplaySessionService, RoleplaySessionService>();
+builder.Services.AddScoped<PlacementAssessmentEngine>();
+builder.Services.AddScoped<IPlacementTestService, PlacementTestService>();
 builder.Services.AddSingleton<IVietnameseLearnerErrorDetector, VietnameseLearnerErrorDetector>();
+builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
+builder.Services.AddSingleton<IEventDirector, EventDirector>();
 builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
 builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
 builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
@@ -139,6 +162,7 @@ builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();
 builder.Services.AddScoped<IWhisperSttService, WhisperSttService>();
 builder.Services.AddScoped<ICloudStorageService, CloudinaryStorageService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddHostedService<BackgroundAudioCleanupService>();
 
 // Giới hạn tần suất gọi đánh giá audio theo người dùng (API STT trả phí).
 builder.Services.AddRateLimiter(options =>
@@ -229,6 +253,24 @@ app.MapControllers();
 
 // Tự động nạp dữ liệu mẫu (Seed Data)
 await JCAP.Data.Seeds.SeedManager.SeedAllAsync(app);
+
+// Tự động kiểm tra và khởi chạy Faster-Whisper Engine ngầm nếu máy có python và script server.py
+_ = Task.Run(async () =>
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var whisperService = scope.ServiceProvider.GetRequiredService<JCAP.Services.Interfaces.IWhisperSttService>();
+        if (!await whisperService.IsAvailableAsync())
+        {
+            await whisperService.TryAutoStartEngineAsync();
+        }
+    }
+    catch
+    {
+        // Engine vắng mặt thì bỏ qua, hệ thống đã có Web Speech API native fallback
+    }
+});
 
 app.Run();
 

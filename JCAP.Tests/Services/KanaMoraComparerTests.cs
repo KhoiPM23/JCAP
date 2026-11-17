@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using JCAP.DTOs.Shadowing;
 using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -409,9 +410,108 @@ public class KanaMoraComparerTests
         var a = await Make().CompareAsync("一人です。カウンター席でお願いします。", "ひとりです。てーぶるせきでおねがいします。");
         var b = await Make().CompareAsync("一人です。カウンター席でお願いします。", "ひとりです。てーぶるせきでおねがいします。");
         Assert.Equal(a.ContentMatchScore, b.ContentMatchScore);
-        // ひとりです(5) + で(1, trợ từ tách riêng sau 席) + おねがい(4) + します(3) = 13 / 20; カウンター席(7) là từ sai
-        Assert.Equal(65, a.ContentMatchScore);
+        // ひとりです(5) + 席(2, từ katakana tách riêng) + で(1, trợ từ tách riêng sau 席) + おねがい(4) + します(3) = 15 / 20;
+        // chỉ カウンター(5) là từ sai
+        Assert.Equal(75, a.ContentMatchScore);
         Assert.Equal(a.TargetReading, b.TargetReading);
+    }
+
+    [Fact]
+    public async Task KatakanaLoanword_InsideLongPhrase_IsItsOwnWord()
+    {
+        // Bản ghi thật: sai một âm trong エクスプレス từng làm mất cả cụm 成田エクスプレスですね (50/100)
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえっくすぷれすですね");
+
+        Assert.Contains(r.TargetWords, w => w.Text == "成田");
+        Assert.Contains(r.TargetWords, w => w.Text == "エクスプレス");
+        Assert.Contains(r.Tokens, t => t.Text.StartsWith("エクスプレス") && t.Status == "mismatched");
+        Assert.InRange(r.ContentMatchScore, 40, 60); // 成田(3) + ですね(3) đúng / 12
+    }
+
+    // ---- Lỗi từng âm trong từ (bản ghi giọng thật) ----
+
+    private static ShadowingDiffTokenDto WrongToken(JapaneseTextComparison r, string text) =>
+        r.Tokens.Single(t => t.Status == "mismatched" && t.Text.StartsWith(text));
+
+    [Fact]
+    public async Task Issues_ExtraSokuon_IsPointedOutWithPosition()
+    {
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえっくすぷれすですね");
+
+        var issue = Assert.Single(WrongToken(r, "エクスプレス").Issues!);
+        Assert.Equal("extra", issue.Kind);
+        Assert.Equal("sokuon", issue.ErrorType);
+        Assert.Equal("え", issue.After);
+        Assert.Contains("っ", issue.Message);
+        Assert.Contains("sau 「え」", issue.Message);
+    }
+
+    [Fact]
+    public async Task Issues_ProblemAndHint_AreSeparate()
+    {
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえっくすぷれすですね");
+
+        var issue = Assert.Single(WrongToken(r, "エクスプレス").Issues!);
+        Assert.Equal("Thừa âm ngắt 「っ」 sau 「え」", issue.Message); // chỉ nêu lỗi
+        Assert.Equal("Nối liền hai âm, không dừng hơi.", issue.Hint); // cách sửa tách riêng
+    }
+
+    [Fact]
+    public async Task Issues_ManyExtraSoundsInsideAWord_AreNotListedOneByOne()
+    {
+        // Ảnh chụp thật: どちらまで nghe thành どっちがあんまり — 1 âm sai + 3 âm thừa trong từ 5 âm: coi là nói từ khác
+        var comparer = With(("どちらまで行きますか。", "どちらまで/いきますか"));
+        var r = await comparer.CompareWithReadingAsync("どちらまで行きますか。", "どっちがあんまりいきますか");
+
+        Assert.Null(WrongToken(r, "どちらまで").Issues);
+    }
+
+    [Fact]
+    public async Task Issues_Voicing_SaysWhichWayItWentWrong()
+    {
+        var comparer = With(("成田エクスプレスですね。", "なりたえくすぷれすですね"));
+        var r = await comparer.CompareWithReadingAsync("成田エクスプレスですね。", "なりたえぐすぷれすですね");
+
+        var issue = Assert.Single(WrongToken(r, "エクスプレス").Issues!);
+        Assert.Equal("substitute", issue.Kind);
+        Assert.Equal("voicing", issue.ErrorType);
+        Assert.Equal("く", issue.Expected);
+        Assert.Equal("ぐ", issue.Spoken);
+        Assert.Contains("âm trong", issue.Hint);
+        Assert.Contains("く", r.Feedback); // nhận xét tổng dùng lỗi từng âm
+    }
+
+    [Fact]
+    public async Task Issues_LongVowelSaidAsSokuon()
+    {
+        var comparer = With(("パスポートを見せてください。", "ぱすぽーとを/みせて/ください"));
+        var r = await comparer.CompareWithReadingAsync("パスポートを見せてください。", "ぱすぽっとをみせてください");
+
+        var issue = Assert.Single(WrongToken(r, "パスポート").Issues!);
+        Assert.Equal("substitute", issue.Kind);
+        Assert.Equal("ぽ", issue.After);
+        Assert.Equal("ー", issue.Expected); // trường âm hiện là ー, không phải う
+        Assert.Contains("Trường âm 「ー」 sau 「ぽ」 bị đọc thành âm ngắt 「っ」", issue.Message);
+    }
+
+    [Fact]
+    public async Task Issues_DifferentWordAltogether_NotListedPerSound()
+    {
+        var comparer = With(("次の電車でお願いします。", "つぎの/でんしゃで/おねがいします"));
+        var r = await comparer.CompareWithReadingAsync("次の電車でお願いします。", "つぎのれっしゃでおねがいします");
+
+        Assert.Null(WrongToken(r, "電車").Issues);
+    }
+
+    [Fact]
+    public async Task KanjiWithOkurigana_StaysOneWord()
+    {
+        var comparer = With(("学校に行きます", "がっこうに/いきます"));
+        var r = await comparer.CompareWithReadingAsync("学校に行きます", "がっこうにいきます");
+        Assert.Contains(r.TargetWords, w => w.Text == "行きます");
     }
 
     [Fact]
@@ -419,7 +519,7 @@ public class KanaMoraComparerTests
         Assert.Throws<ArgumentException>(() => new KanaMoraComparer(Array.Empty<IKanaReader>()));
 
     [Fact]
-    public void MethodId_IdentifiesTheWordAlgorithm() => Assert.Equal("kana-word-v1", Offline().MethodId);
+    public void MethodId_IdentifiesTheWordAlgorithm() => Assert.Equal("kana-word-v2", Offline().MethodId);
 }
 
 public class VoiceVoxKanaReaderTests
@@ -515,6 +615,7 @@ public class VoiceVoxKanaReaderTests
     [Fact]
     public async Task SlowEngine_TimesOutWithoutOpeningTheBreaker_SoTheNextTurnIsStillTried()
     {
+        VoiceVoxKanaReader.ResetStateForTests();
         // Engine bận TTS: chậm không đồng nghĩa với hỏng, lượt sau vẫn phải được thử.
         // Trễ bất đồng bộ và tôn trọng hủy (như HTTP thật); Thread.Sleep đồng bộ làm test phụ thuộc vào lịch luồng nên chập chờn.
         var slow = new SlowStubHandler(TimeSpan.FromSeconds(2));

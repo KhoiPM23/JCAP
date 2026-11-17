@@ -12,4 +12,6 @@ public class AiTurnResult
     public List<int> CompletedMissionIds { get; set; } = [];
     public bool IsNaturallyConcluded { get; set; }
     public LinguisticFeedbackDto? LinguisticFeedback { get; set; }
+    public string? ActiveBranchingEventCode { get; set; }
+    public SumiInkFeedbackDto? SumiInkFeedback { get; set; }
 }

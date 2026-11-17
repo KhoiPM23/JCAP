@@ -173,6 +173,61 @@ public sealed record RoleplaySocialRegister
         };
     }
 
+    public static string GetContextualRelationshipTitle(SocialRegisterType registerType, int affinityScore)
+    {
+        return registerType switch
+        {
+            SocialRegisterType.Interviewer => affinityScore switch
+            {
+                >= 80 => "Ứng viên sáng giá (Đánh giá xuất sắc)",
+                >= 50 => "Tạo được ấn tượng tốt",
+                >= 30 => "Có thiện cảm ban đầu",
+                >= 20 => "Đã tiếp xúc sơ bộ",
+                _ => "Mới tiếp xúc phỏng vấn"
+            },
+            SocialRegisterType.ServiceStaff => affinityScore switch
+            {
+                >= 80 => "Khách quen thân thiết (常連さん)",
+                >= 50 => "Khách hàng quen mặt",
+                >= 30 => "Khách hàng quen thuộc",
+                >= 20 => "Khách từng ghé thăm",
+                _ => "Khách mới lần đầu"
+            },
+            SocialRegisterType.Elderly => affinityScore switch
+            {
+                >= 80 => "Cháu ngoan hiếu lễ (Thân tình sâu sắc)",
+                >= 50 => "Người tương trợ tin cậy",
+                >= 30 => "Người quen qua đường tốt bụng",
+                >= 20 => "Đã từng trò chuyện",
+                _ => "Lần đầu tương trợ"
+            },
+            SocialRegisterType.TeacherMentor => affinityScore switch
+            {
+                >= 80 => "Học trò xuất sắc / Thân tín",
+                >= 50 => "Tiến bộ rõ rệt",
+                >= 30 => "Người học chăm chỉ",
+                >= 20 => "Đã tiếp nhận hướng dẫn",
+                _ => "Mới tiếp nhận"
+            },
+            SocialRegisterType.PeerFriend => affinityScore switch
+            {
+                >= 80 => "Bạn thân chí cốt (親友)",
+                >= 50 => "Bạn bè tâm đầu ý hợp",
+                >= 30 => "Bạn bè thân thiết",
+                >= 20 => "Bạn quen biết",
+                _ => "Mới làm quen"
+            },
+            _ => affinityScore switch
+            {
+                >= 80 => "Mối quan hệ tin cậy bền chặt",
+                >= 50 => "Giao tiếp hòa hợp sâu sắc",
+                >= 30 => "Người quen thân thuộc",
+                >= 20 => "Đã từng trò chuyện",
+                _ => "Lần đầu gặp gỡ"
+            }
+        };
+    }
+
     public static string TranslateUserUtterance(string userMessage, RoleplaySocialRegister reg)
     {
         if (string.IsNullOrWhiteSpace(userMessage)) return string.Empty;
@@ -456,41 +511,125 @@ public sealed record RoleplaySocialRegister
     /// <summary>
     /// Bổ sung tự động danh sách từ khóa (Tier 1) và mẫu câu điền khuyết (Tier 2) cho giàn giáo thích ứng
     /// </summary>
+    public static string StripJapaneseEndings(string? word)
+    {
+        if (string.IsNullOrWhiteSpace(word)) return string.Empty;
+        var clean = word.Trim();
+        clean = Regex.Replace(clean, @"(ですか|でしょうか|でした|ました|ません|ます|です|だ|か|ね|よ|を|に|は|が|で|と|の)$", "").Trim();
+        return clean;
+    }
+
     public static RoleplayHintDto EnrichScaffolding(RoleplayHintDto dto)
     {
         if (dto == null) return new RoleplayHintDto();
+        var text = dto.JapaneseSuggestion ?? string.Empty;
 
         if (dto.Keywords == null || dto.Keywords.Count == 0)
         {
-            var matches = Regex.Matches(dto.JapaneseSuggestion ?? string.Empty, @"[゠-ヿ]{2,}|[一-龯]+[぀-ゟ]*");
-            dto.Keywords = matches.Select(m => m.Value).Distinct().Take(4).ToList();
-            if (dto.Keywords.Count == 0 && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+            var detectedKeywords = new List<string>();
+
+            // 1. Khớp từ vựng cụm cố định chuẩn (Standard lexical match - longest first)
+            var standardLexicon = new[]
             {
-                dto.Keywords.Add(dto.JapaneseSuggestion.Length > 5 ? dto.JapaneseSuggestion.Substring(0, 5) : dto.JapaneseSuggestion);
+                "豚骨ラーメン", "とんこつラーメン", "ラーメン", "カウンター席", "テーブル席",
+                "味濃いめ", "濃いめ", "辛め", "かため",
+                "おすすめ", "いくら", "お水", "水", "メニュー",
+                "一つ", "二つ", "三つ", "1つ", "2つ", "一人", "二人", "1人", "2人", "何名", "何人",
+                "お願いします", "おねがいします", "ください", "すみません"
+            };
+
+            var maskedText = text;
+            foreach (var lex in standardLexicon)
+            {
+                if (maskedText.Contains(lex))
+                {
+                    detectedKeywords.Add(lex);
+                    maskedText = maskedText.Replace(lex, " ");
+                }
+            }
+
+            // 2. Với phần văn bản còn lại, khớp từ Katakana (>= 2 ký tự) hoặc Kanji
+            var kanjiMatches = Regex.Matches(maskedText, @"[゠-ヿ]{2,}|[一-龯]{1,4}(?:[぀-ゟ]{1,2})?")
+                .Cast<Match>().Select(m => m.Value);
+
+            var list = detectedKeywords.Concat(kanjiMatches)
+                .Select(w => StripJapaneseEndings(w))
+                .Where(w => w.Length >= 1 && w != "お" && w != "し")
+                .Distinct()
+                .Take(4)
+                .ToList();
+
+            dto.Keywords = list;
+            if (dto.Keywords.Count == 0 && !string.IsNullOrWhiteSpace(text))
+            {
+                var clean = StripJapaneseEndings(text);
+                dto.Keywords.Add(clean.Length > 5 ? clean.Substring(0, 5) : clean);
+            }
+        }
+        else
+        {
+            dto.Keywords = dto.Keywords
+                .Select(w => StripJapaneseEndings(w))
+                .Where(w => !string.IsNullOrWhiteSpace(w) && w != "お" && w != "し")
+                .Distinct()
+                .ToList();
+        }
+
+        for (int i = 0; i < dto.Keywords.Count; i++)
+        {
+            if (dto.Keywords[i].EndsWith("です") && dto.Keywords[i].Length > 2)
+            {
+                dto.Keywords[i] = dto.Keywords[i].Substring(0, dto.Keywords[i].Length - 2);
             }
         }
 
-        if (string.IsNullOrWhiteSpace(dto.ClozeSentence) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        if (string.IsNullOrWhiteSpace(dto.ClozeSentence) && !string.IsNullOrWhiteSpace(text))
         {
-            var mainWord = dto.Keywords.FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(mainWord) && dto.JapaneseSuggestion.Contains(mainWord))
+            if (text.Contains("いくら") || text.Contains("値段"))
             {
-                dto.ClozeSentence = dto.JapaneseSuggestion.Replace(mainWord, " [ ______ ] ");
+                dto.ClozeSentence = "これは [ ______ ] ですか。";
             }
-            else if (dto.JapaneseSuggestion.Length > 6)
+            else if (text.Contains("おすすめ"))
             {
-                int mid = dto.JapaneseSuggestion.Length / 2;
-                dto.ClozeSentence = dto.JapaneseSuggestion.Substring(0, Math.Max(2, mid - 2)) + " [ ______ ] " + dto.JapaneseSuggestion.Substring(Math.Min(dto.JapaneseSuggestion.Length, mid + 2));
+                dto.ClozeSentence = "[ ______ ] は何ですか。";
+            }
+            else if (text.Contains("何名") || text.Contains("1人") || text.Contains("一人") || text.Contains("2人") || text.Contains("二人"))
+            {
+                dto.ClozeSentence = "[ ______ ] 人です。";
+            }
+            else if (text.Contains("お願いします") || text.Contains("おねがいします") || text.Contains("ください"))
+            {
+                if (text.Contains("ラーメン"))
+                {
+                    dto.ClozeSentence = "[ ______ ] を一つお願いします。";
+                }
+                else
+                {
+                    dto.ClozeSentence = "[ ______ ] をお願いします。";
+                }
             }
             else
             {
-                dto.ClozeSentence = dto.JapaneseSuggestion + " [ ______ ]";
+                var mainWord = dto.Keywords.FirstOrDefault(w => w != "すみません" && w != "はい" && w != "ありがとう" && w != "お願いします") ?? dto.Keywords.FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(mainWord) && text.Contains(mainWord))
+                {
+                    dto.ClozeSentence = text.Replace(mainWord, " [ ______ ] ");
+                }
+                else if (text.Length > 6)
+                {
+                    int mid = text.Length / 2;
+                    dto.ClozeSentence = text.Substring(0, Math.Max(2, mid - 2)) + " [ ______ ] " + text.Substring(Math.Min(text.Length, mid + 2));
+                }
+                else
+                {
+                    dto.ClozeSentence = "これは [ ______ ] ですか。";
+                }
             }
         }
 
-        if (string.IsNullOrWhiteSpace(dto.FuriganaHtml) && !string.IsNullOrWhiteSpace(dto.JapaneseSuggestion))
+        if (string.IsNullOrWhiteSpace(dto.FuriganaHtml) && !string.IsNullOrWhiteSpace(text))
         {
-            dto.FuriganaHtml = GenerateFuriganaHtml(dto.JapaneseSuggestion);
+            dto.FuriganaHtml = GenerateFuriganaHtml(text);
         }
 
         return dto;
@@ -572,6 +711,80 @@ public sealed record RoleplaySocialRegister
         List<Mission> pendingMissions)
     {
         var reg = Deduce(scenario?.Title, levelConfig?.AiPersona, levelConfig?.Description);
+        // Guard: Ambiguous counter/demonstrative in simulator (Universal Context-Aware)
+        if (Regex.IsMatch(userMessage.Trim(), @"^(すみません[、,\s]*|あの[、,\s]*)?(これ|それ|あれ|ひとつ|1つ)(を)?(おねがい|お願い|ください)?(します)?[\.!?。！？\s]*$"))
+        {
+            var combinedContext = $"{scenario?.Title} {levelConfig?.AiPersona} {levelConfig?.Description}".ToLowerInvariant();
+            string jaNotice;
+            string viNotice;
+            string summary;
+            string ambigNaturalAlt;
+
+            if (combinedContext.Contains("ga") || combinedContext.Contains("tàu") || combinedContext.Contains("station") || combinedContext.Contains("駅") || combinedContext.Contains("切符"))
+            {
+                jaNotice = "恐れ入ります、どの切符をひとつ（一枚）ご希望でしょうか？行き先の駅名をお聞かせください。";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn mua một vé đi đâu ạ? Xin cho {reg.AiSelf} biết ga đến nhé.";
+                summary = "Yêu cầu chưa cụ thể • Cần nói rõ ga đến";
+                ambigNaturalAlt = "新宿駅までの切符を一枚お願いします。";
+            }
+            else if (combinedContext.Contains("phỏng vấn") || combinedContext.Contains("xin việc") || combinedContext.Contains("baito") || combinedContext.Contains("面接"))
+            {
+                jaNotice = "恐れ入ります、どの質問についてお答えでしょうか？具体的にお聞かせください。";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn trả lời về phần nào ạ? Xin cho {reg.AiSelf} biết cụ thể.";
+                summary = "Yêu cầu chưa cụ thể • Cần nói rõ nội dung";
+                ambigNaturalAlt = "自己紹介についてお話しいたします。";
+            }
+            else if (combinedContext.Contains("tiện lợi") || combinedContext.Contains("siêu thị") || combinedContext.Contains("cửa hàng") || combinedContext.Contains("mua sắm") || combinedContext.Contains("コンビニ"))
+            {
+                jaNotice = "恐れ入ります、どの商品をおひとつご希望でしょうか？商品をお教えいただけますか？";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy sản phẩm nào ạ? Xin cho {reg.AiSelf} biết tên sản phẩm nhé.";
+                summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên sản phẩm";
+                ambigNaturalAlt = "お弁当をひとつお願いします。";
+            }
+            else if (combinedContext.Contains("cafe") || combinedContext.Contains("cà phê") || combinedContext.Contains("đồ uống"))
+            {
+                jaNotice = "恐れ入ります、どのお飲み物をおひとつご希望でしょうか？メニュー名をお聞かせください。";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn dùng đồ uống nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
+                summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên đồ uống";
+                ambigNaturalAlt = "アイスコーヒーをひとつお願いします。";
+            }
+            else if (combinedContext.Contains("ramen") || combinedContext.Contains("mì") || combinedContext.Contains("ラーメン") || combinedContext.Contains("quán") || combinedContext.Contains("nhà hàng") || combinedContext.Contains("ẩm thực") || combinedContext.Contains("ăn"))
+            {
+                jaNotice = "恐れ入ります、どの料理をひとつご希望でしょうか？メニュー名をお聞かせください。";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy 1 phần món ăn nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
+                summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên món";
+                ambigNaturalAlt = "豚骨ラーメンをひとつお願いします。";
+            }
+            else
+            {
+                jaNotice = "恐れ入ります、具体的にどちらをおひとつご希望でしょうか？詳しくお聞かせください。";
+                viNotice = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn yêu cầu đối tượng hoặc nội dung nào ạ? Xin nói rõ giúp {reg.AiSelf} nhé.";
+                summary = "Yêu cầu chưa cụ thể • Cần nêu rõ đối tượng";
+                ambigNaturalAlt = "これをお願いします。";
+            }
+
+            return new AiTurnResult
+            {
+                JapaneseReply = jaNotice,
+                FuriganaHtml = GenerateFuriganaHtml(jaNotice),
+                VietnameseMeaning = viNotice,
+                UserVietnameseMeaning = userMessage,
+                UserFuriganaHtml = GenerateFuriganaHtml(userMessage),
+                CompletedMissionIds = new List<int>(),
+                IsNaturallyConcluded = false,
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Warning",
+                    Summary = summary,
+                    EvaluationSource = "Guardrail",
+                    Details = new List<LinguisticDetailItemDto>
+                    {
+                        new() { Type = "warning", Aspect = "Độ rõ ràng", Comment = "Cần nói kèm tên đối tượng hoặc nội dung trước từ chỉ số lượng." }
+                    },
+                    NaturalAlternative = ambigNaturalAlt
+                }
+            };
+        }
         var lowerMsg = userMessage.Trim().ToLowerInvariant();
         var completedIds = new List<int>();
 
@@ -871,6 +1084,13 @@ public sealed record RoleplaySocialRegister
             ("元気", "<ruby>元気<rt>げんき</rt></ruby>"),
             
             // Chữ đơn lẻ / động từ căn bản
+            ("甲殻類", "<ruby>甲殻類<rt>こうかくるい</rt></ruby>"),
+            ("海鮮", "<ruby>海鮮<rt>かいせん</rt></ruby>"),
+            ("出汁", "<ruby>出汁<rt>だし</rt></ruby>"),
+            ("海老", "<ruby>海老<rt>えび</rt></ruby>"),
+            ("蟹", "<ruby>蟹<rt>かに</rt></ruby>"),
+            ("使われ", "<ruby>使<rt>つか</rt></ruby>われ"),
+            ("実", "<ruby>実<rt>じつ</rt></ruby>"),
             ("私", "<ruby>私<rt>わたし</rt></ruby>"),
             ("僕", "<ruby>僕<rt>ぼく</rt></ruby>"),
             ("駅", "<ruby>駅<rt>えき</rt></ruby>"),
@@ -929,7 +1149,80 @@ public sealed record RoleplaySocialRegister
             result = result.Replace(kvp.Key, kvp.Value);
         }
 
-        return result;
+        return CleanFuriganaHtml(result);
+    }
+
+    private static readonly Regex RubyTagRegex = new(
+        @"<ruby[^>]*>(?:<rp>.*?</rp>)?(.*?)(?:<rp>.*?</rp>)?<rt[^>]*>(.*?)</rt>(?:<rp>.*?</rp>)?</ruby>",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+    private static readonly Regex JapaneseSpaceRegex = new(
+        @"(?<=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,>\uFF09\)])[\s\u3000]+(?=[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3001\u3002\uFF01\uFF1F!?,<\uFF08\(])",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Làm sạch thẻ ruby phát sinh từ AI:
+    /// - Đưa trợ từ, hiragana, dấu câu ra ngoài thẻ ruby (vd: ruby は海老 rt えび /ruby -> は ruby 海老 rt えび /ruby)
+    /// - Đưa okurigana ra ngoài thẻ ruby (vd: ruby 使われ rt つかわれ /ruby -> ruby 使 rt つか /ruby われ)
+    /// - Gỡ thẻ ruby nếu chữ gốc hoàn toàn là kana
+    /// - Loại bỏ khoảng trắng thừa giữa các ký tự tiếng Nhật và thẻ ruby
+    /// </summary>
+    public static string CleanFuriganaHtml(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return string.Empty;
+
+        // 1. Loại bỏ khoảng trắng thừa giữa chữ Nhật và thẻ ruby
+        var cleaned = JapaneseSpaceRegex.Replace(html, "");
+
+        // 2. Chuẩn hóa từng thẻ ruby
+        cleaned = RubyTagRegex.Replace(cleaned, match =>
+        {
+            var baseText = match.Groups[1].Value.Trim();
+            var rtText = match.Groups[2].Value.Trim();
+
+            if (string.IsNullOrEmpty(baseText)) return string.Empty;
+            if (string.IsNullOrEmpty(rtText)) return baseText;
+
+            // Nếu baseText hoàn toàn không chứa chữ Hán
+            if (!Regex.IsMatch(baseText, @"[\u4E00-\u9FAF]"))
+            {
+                return baseText;
+            }
+
+            // Tách các ký tự non-kanji ở đầu
+            var leadingNonKanjiMatch = Regex.Match(baseText, @"^([^\u4E00-\u9FAF]+)([\u4E00-\u9FAF].*)$");
+            string prefix = string.Empty;
+            if (leadingNonKanjiMatch.Success)
+            {
+                prefix = leadingNonKanjiMatch.Groups[1].Value;
+                baseText = leadingNonKanjiMatch.Groups[2].Value;
+            }
+
+            // Tách các ký tự kana trùng lặp ở đuôi giữa baseText và rtText
+            string suffix = string.Empty;
+            while (baseText.Length > 0 && rtText.Length > 0 &&
+                   !Regex.IsMatch(baseText[^1].ToString(), @"[\u4E00-\u9FAF]") &&
+                   baseText[^1] == rtText[^1])
+            {
+                suffix = baseText[^1] + suffix;
+                baseText = baseText[..^1];
+                rtText = rtText[..^1];
+            }
+
+            // Tách các ký tự non-kanji còn sót ở cuối baseText nếu rtText không kết thúc bằng nó
+            var trailingNonKanjiMatch = Regex.Match(baseText, @"^(.*?[\u4E00-\u9FAF])([^\u4E00-\u9FAF]+)$");
+            if (trailingNonKanjiMatch.Success)
+            {
+                baseText = trailingNonKanjiMatch.Groups[1].Value;
+                suffix = trailingNonKanjiMatch.Groups[2].Value + suffix;
+            }
+
+            return $"{prefix}<ruby>{baseText}<rt>{rtText}</rt></ruby>{suffix}";
+        });
+
+        // 3. Quét lại loại bỏ khoảng trắng phát sinh xung quanh thẻ ruby
+        cleaned = JapaneseSpaceRegex.Replace(cleaned, "");
+        return cleaned;
     }
 
     private static readonly Regex VietnameseCharOrWordRegex = new(
@@ -982,13 +1275,13 @@ public sealed record RoleplaySocialRegister
                 {
                     cleanPrefix += "。";
                 }
-                return cleanPrefix;
+                return JapaneseSpaceRegex.Replace(cleanPrefix, "");
             }
 
             // Nếu toàn bộ chuỗi đều là tiếng Việt, trả về câu tiếng Nhật chuẩn dự phòng
             return fallbackJa ?? "本当にありがとうございました。気をつけてお帰りください。";
         }
 
-        return text;
+        return JapaneseSpaceRegex.Replace(text, "");
     }
 }

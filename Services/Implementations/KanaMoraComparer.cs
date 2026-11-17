@@ -27,7 +27,7 @@ namespace JCAP.Services.Implementations
     /// </summary>
     public sealed class KanaMoraComparer : IJapaneseTextComparer
     {
-        public const string Method = "kana-word-v1";
+        public const string Method = "kana-word-v2";
         public string MethodId => Method;
 
         private enum OpKind { Match, Substitute, Delete, Insert }
@@ -65,7 +65,60 @@ namespace JCAP.Services.Implementations
             if (t == null || r == null || t.UnresolvedCount > 0 || r.UnresolvedCount > 0)
                 return JapaneseTextComparison.Unavailable();
 
-            return Align(target, recognized, t, r);
+            return Align(target, recognized, t, r, recognizedSurface: recognized);
+        }
+
+        public async Task<JapaneseTextComparison> CompareWithReadingAsync(
+            string target, string recognizedKana, CancellationToken cancellationToken = default)
+        {
+            target ??= string.Empty;
+            recognizedKana ??= string.Empty;
+
+            KanaReading? t = null;
+            foreach (var reader in _readers)
+            {
+                t = await reader.TryReadAsync(target, cancellationToken);
+                if (t != null) break;
+            }
+            if (t == null || t.UnresolvedCount > 0) return JapaneseTextComparison.Unavailable();
+
+            // Kana từ bộ nhận dạng âm vị ghi trường âm bằng nguyên âm lặp (がっこお) giống VOICEVOX: chuẩn hoá cùng cách.
+            var moras = JapaneseMora.FromKana(recognizedKana, preserveLongVowelSpelling: false);
+            if (moras.Any(m => m.IsUnresolved)) return JapaneseTextComparison.Unavailable();
+
+            var r = new KanaReading { Moras = moras, Source = "phoneme" };
+            return Align(target, recognizedKana, t, r);
+        }
+
+        public async Task<JapaneseTextComparison> CompareTranscriptAsync(
+            string target, string transcript, string transcriptReading, CancellationToken cancellationToken = default)
+        {
+            target ??= string.Empty;
+            var t = await ReadTargetAsync(target, cancellationToken);
+            if (t == null) return JapaneseTextComparison.Unavailable();
+
+            var moras = JapaneseMora.FromKana(transcriptReading ?? string.Empty, preserveLongVowelSpelling: false);
+            if (moras.Any(m => m.IsUnresolved)) return JapaneseTextComparison.Unavailable();
+
+            var r = new KanaReading { Moras = moras, Source = "asr" };
+            return Align(target, transcriptReading ?? string.Empty, t, r, recognizedSurface: transcript);
+        }
+
+        public async Task<KanaReading?> ReadTargetAsync(string target, CancellationToken cancellationToken = default)
+        {
+            foreach (var reader in _readers)
+            {
+                var t = await reader.TryReadAsync(target ?? string.Empty, cancellationToken);
+                if (t != null) return t.UnresolvedCount > 0 ? null : t;
+            }
+            return null;
+        }
+
+        public JapaneseTextComparison CompareHeard(string target, KanaReading targetReading, IReadOnlyList<Mora> heard)
+        {
+            // Chuỗi đã nghe là câu mẫu kèm các lỗi đã phát hiện, theo đúng dạng mora của câu mẫu: so trực tiếp, không đọc lại.
+            var r = new KanaReading { Moras = heard.ToList(), Source = "phoneme-aligned" };
+            return Align(target ?? string.Empty, JapaneseMora.Join(heard), targetReading, r);
         }
 
         private sealed class Word
@@ -73,6 +126,38 @@ namespace JCAP.Services.Implementations
             public string Text = string.Empty;
             public int Start;
             public int End;
+
+            /// <summary>Đoạn mora [Start, End) của một chữ Hán và các cách đọc hợp lệ khác của nó.</summary>
+            public List<(int Start, int End, List<List<Mora>> Readings)> Alternatives = new();
+        }
+
+        /// <summary>
+        /// Chữ Hán mà G2P chỉ chọn MỘT cách đọc trong khi cách khác cũng đúng và rất hay gặp ở N5–N3.
+        /// Đây không phải đoán cách đọc: chỉ chấp nhận khi người học nói ĐÚNG một trong các cách đọc liệt kê.
+        /// VOICEVOX đọc 何ですか thành なにですか, trong khi người Nhật nói なんですか.
+        /// </summary>
+        private static readonly Dictionary<string, string[]> AlternativeReadings = new()
+        {
+            ["何"] = new[] { "なに", "なん" },
+        };
+
+        /// <summary>
+        /// Từ bị đánh sai nhưng phần người học nói khớp đúng với từ đó khi thay chữ Hán bằng một cách đọc hợp lệ khác.
+        /// </summary>
+        private static bool MatchesAlternative(Word word, IReadOnlyList<Mora> targetMoras, List<string> spoken)
+        {
+            foreach (var (s, e, readings) in word.Alternatives)
+            {
+                foreach (var reading in readings)
+                {
+                    var candidate = targetMoras.Skip(word.Start).Take(s - word.Start)
+                        .Concat(reading)
+                        .Concat(targetMoras.Skip(e).Take(word.End - e))
+                        .Select(m => m.Canon);
+                    if (candidate.SequenceEqual(spoken)) return true;
+                }
+            }
+            return false;
         }
 
         private sealed class WordResult
@@ -82,9 +167,135 @@ namespace JCAP.Services.Implementations
             public string? ErrorType;
             public string? Expected;
             public string? Spoken;
+            public List<ShadowingMoraIssueDto>? Issues;
         }
 
-        private static JapaneseTextComparison Align(string targetText, string recognizedText, KanaReading t, KanaReading r)
+        /// <summary>Tối đa số lỗi từng âm liệt kê cho một từ (nhiều hơn thì người học khó theo dõi).</summary>
+        private const int MaxIssuesPerWord = 4;
+
+        /// <summary>
+        /// Lỗi từng âm trong một từ chưa đúng. Trả null khi quá nửa số âm của từ bị sai/thiếu: khi đó người học (hoặc bộ nhận dạng)
+        /// đã nói một từ khác hẳn (電車 → 列車), liệt kê từng âm không giúp gì.
+        /// </summary>
+        private static List<ShadowingMoraIssueDto>? BuildIssues(Word word, Op[] opAt, List<(Mora Mora, int Index)>?[] extras, IReadOnlyList<Mora> tm)
+        {
+            var length = word.End - word.Start;
+            if (length <= 0) return null;
+            // Âm sai/thiếu cộng âm nói thừa chen giữa từ: quá nửa độ dài từ thì người học đã nói một từ khác (どちらまで → どっちがあんまり),
+            // liệt kê từng âm chỉ gây rối.
+            var wrong = Enumerable.Range(word.Start, length).Count(k => opAt[k].Kind != OpKind.Match)
+                + Enumerable.Range(word.Start + 1, Math.Max(0, length - 1)).Sum(g => extras[g]?.Count ?? 0);
+            if (wrong * 2 > length) return null;
+
+            var issues = new List<ShadowingMoraIssueDto>();
+            string? AfterOf(int k) => k > word.Start ? Show(tm[k - 1]) : null;
+
+            for (var k = word.Start; k < word.End; k++)
+            {
+                if (k > word.Start && extras[k] != null)
+                {
+                    foreach (var (mora, _) in extras[k]!)
+                    {
+                        var (message, hint) = ExtraMessage(mora, AfterOf(k));
+                        issues.Add(new ShadowingMoraIssueDto
+                        {
+                            Kind = "extra", Spoken = Show(mora), After = AfterOf(k), ErrorType = ClassifyOmission(mora, extra: true),
+                            Message = message, Hint = hint,
+                        });
+                    }
+                }
+
+                var op = opAt[k];
+                if (op.Kind == OpKind.Delete)
+                {
+                    var (message, hint) = MissingMessage(op.Target!.Value, AfterOf(k));
+                    issues.Add(new ShadowingMoraIssueDto
+                    {
+                        Kind = "missing", Expected = Show(op.Target!.Value), After = AfterOf(k), ErrorType = op.ErrorType,
+                        Message = message, Hint = hint,
+                    });
+                }
+                else if (op.Kind == OpKind.Substitute)
+                {
+                    var (message, hint) = SubstituteMessage(op.Target!.Value, op.Spoken!.Value, op.ErrorType, AfterOf(k));
+                    issues.Add(new ShadowingMoraIssueDto
+                    {
+                        Kind = "substitute", Expected = Show(op.Target!.Value), Spoken = Show(op.Spoken!.Value), After = AfterOf(k),
+                        ErrorType = op.ErrorType, Message = message, Hint = hint,
+                    });
+                }
+            }
+            // Lỗi giống hệt nhau lặp lại (何番 番 番 線) chỉ nói một lần
+            var distinct = issues.GroupBy(i => i.Message).Select(g => g.First()).Take(MaxIssuesPerWord).ToList();
+            return distinct.Count == 0 ? null : distinct;
+        }
+
+        /// <summary>Cách viết âm cho người học: trường âm luôn là ー (cách đọc G2P ghi trường âm bằng nguyên âm lặp, vd. ぽう).</summary>
+        private static string Show(Mora mora) => mora.IsLong ? "ー" : mora.Display;
+
+        private static string Where(string? after) => after == null ? "ở đầu từ" : $"sau 「{after}」";
+
+        // Mỗi lỗi: Message = nêu lỗi (ngắn), Hint = cách sửa (null nếu không có gì thêm ngoài chính lỗi).
+
+        private static (string Message, string? Hint) ExtraMessage(Mora mora, string? after)
+        {
+            if (mora.IsSokuon) return ($"Thừa âm ngắt 「っ」 {Where(after)}", "Nối liền hai âm, không dừng hơi.");
+            if (mora.IsLong) return ($"Thừa trường âm {Where(after)}", "Đọc ngắn, không kéo dài.");
+            if (mora.IsHatsuon) return ($"Thừa âm 「ん」 {Where(after)}", "Không thêm âm mũi.");
+            return ($"Thừa 「{mora.Display}」 {Where(after)}", null);
+        }
+
+        private static (string Message, string? Hint) MissingMessage(Mora mora, string? after)
+        {
+            if (mora.IsLong) return ($"Thiếu trường âm {Where(after)}", "Kéo dài âm đủ một nhịp.");
+            if (mora.IsSokuon) return ($"Thiếu âm ngắt 「っ」 {Where(after)}", "Dừng một nhịp ngắn trước âm sau.");
+            if (mora.IsHatsuon) return ($"Thiếu âm 「ん」 {Where(after)}", "Ngân âm ん đủ một nhịp.");
+            return ($"Thiếu 「{mora.Display}」 {Where(after)}", null);
+        }
+
+        private static readonly HashSet<string> VoicedConsonants = new() { "g", "z", "d", "b" };
+
+        private static (string Message, string? Hint) SubstituteMessage(Mora target, Mora spoken, string? errorType, string? after)
+        {
+            if (target.IsLong && spoken.IsSokuon)
+                return ($"Trường âm 「ー」 {Where(after)} bị đọc thành âm ngắt 「っ」", "Kéo dài âm, không ngắt.");
+            if (target.IsSokuon && spoken.IsLong)
+                return ($"Âm ngắt 「っ」 {Where(after)} bị đọc thành trường âm", "Dừng một nhịp, không kéo dài.");
+            var head = $"「{Show(target)}」 đọc thành 「{Show(spoken)}」";
+            if (errorType == "voicing")
+            {
+                return VoicedConsonants.Contains(JapaneseMora.ConsonantOf(spoken))
+                    ? (head, "Âm này là âm trong: đọc nhẹ, không rung cổ họng.")
+                    : (head, "Âm này là âm đục: cần rung cổ họng.");
+            }
+            if (errorType == "chouon") return (head, "Chú ý độ dài của âm (trường âm).");
+            if (errorType == "sokuon") return (head, "Chú ý âm ngắt 「っ」.");
+            if (errorType == "hatsuon") return (head, "Chú ý âm 「ん」.");
+            return (head, null);
+        }
+
+        /// <summary>
+        /// Trường âm (ー) sau mora <paramref name="previous"/> có phát âm giống mora nguyên âm <paramref name="vowelMora"/> không:
+        /// a→あ, i→い, u→う, e→え/い, o→お/う (cách VOICEVOX và người viết ghi trường âm).
+        /// </summary>
+        private static bool LongSoundsLike(Mora? previous, Mora vowelMora)
+        {
+            if (previous == null || vowelMora.Canon.Length != 1 || "あいうえお".IndexOf(vowelMora.Canon[0]) < 0) return false;
+            return JapaneseMora.VowelOf(previous.Value) switch
+            {
+                'a' => vowelMora.Canon == "あ",
+                'i' => vowelMora.Canon == "い",
+                'u' => vowelMora.Canon == "う",
+                'e' => vowelMora.Canon is "え" or "い",
+                'o' => vowelMora.Canon is "お" or "う",
+                _ => false,
+            };
+        }
+
+        private static bool IsKanji(char c) => (c >= '一' && c <= '鿿') || (c >= '㐀' && c <= '䶿') || c == '々';
+
+        /// <param name="recognizedSurface">Chữ viết của transcript (chỉ có khi nguồn là ASR viết ra chữ Hán); null với kana từ mô hình âm vị.</param>
+        private static JapaneseTextComparison Align(string targetText, string recognizedText, KanaReading t, KanaReading r, string? recognizedSurface = null)
         {
             var tm = t.Moras;
             var sm = r.Moras;
@@ -100,6 +311,14 @@ namespace JCAP.Services.Implementations
             const int Unit = 1000;
             int InsertCost(int gap) => Unit + (gap == m || boundaries.Contains(gap) ? 0 : 1);
 
+            // Hai mora cùng một ÂM. Trường âm được chuẩn hoá trong từng từ, nên cùng một âm có thể bị ghi khác nhau ở hai phía
+            // khi hai phía tách từ khác nhau: でんしゃが｜あります (が + あ) và でんしゃがあります liền một chuỗi (が + ー).
+            // Phát âm giống hệt nên coi là khớp; trường âm thật sự bị bỏ (おばあさん → おばさん) vẫn là thiếu một mora.
+            bool Same(int i, int j) =>
+                tm[i].Canon == sm[j].Canon
+                || (tm[i].IsLong && LongSoundsLike(i > 0 ? tm[i - 1] : null, sm[j]))
+                || (sm[j].IsLong && LongSoundsLike(j > 0 ? sm[j - 1] : null, tm[i]));
+
             var dp = new int[m + 1, n + 1];
             for (var i = 1; i <= m; i++) dp[i, 0] = i * Unit;
             for (var j = 1; j <= n; j++) dp[0, j] = dp[0, j - 1] + InsertCost(0);
@@ -107,7 +326,7 @@ namespace JCAP.Services.Implementations
             {
                 for (var j = 1; j <= n; j++)
                 {
-                    var cost = tm[i - 1].Canon == sm[j - 1].Canon ? 0 : Unit;
+                    var cost = Same(i - 1, j - 1) ? 0 : Unit;
                     dp[i, j] = Math.Min(dp[i - 1, j - 1] + cost, Math.Min(dp[i - 1, j] + Unit, dp[i, j - 1] + InsertCost(i)));
                 }
             }
@@ -119,7 +338,7 @@ namespace JCAP.Services.Implementations
             {
                 if (a > 0 && b > 0)
                 {
-                    var same = tm[a - 1].Canon == sm[b - 1].Canon;
+                    var same = Same(a - 1, b - 1);
                     if (dp[a, b] == dp[a - 1, b - 1] + (same ? 0 : Unit))
                     {
                         ops.Add(same
@@ -152,6 +371,8 @@ namespace JCAP.Services.Implementations
 
             // 2. Đánh giá từng từ: một từ chỉ đúng khi TẤT CẢ mora của nó đúng và không có âm thừa chen vào giữa.
             var results = new List<WordResult>();
+            var surface = recognizedSurface == null ? null : JapaneseMora.Normalize(recognizedSurface);
+            var surfaceCursor = 0;
             foreach (var word in words)
             {
                 var slice = Enumerable.Range(word.Start, word.End - word.Start).Select(i => opAt[i]).ToList();
@@ -164,10 +385,43 @@ namespace JCAP.Services.Implementations
                     : allDelete && !hasInsideExtra ? "missing"
                     : "mismatched";
 
+                // Người học dùng một cách đọc hợp lệ khác của chữ Hán trong từ (何ですか nói なんですか): coi là đúng.
+                if (wr.Status == "mismatched" && word.Alternatives.Count > 0)
+                {
+                    var spokenCanon = new List<string>();
+                    for (var k = word.Start; k < word.End; k++)
+                    {
+                        if (k > word.Start && extras[k] != null) spokenCanon.AddRange(extras[k]!.Select(x => x.Mora.Canon));
+                        if (opAt[k].Spoken.HasValue) spokenCanon.Add(opAt[k].Spoken!.Value.Canon);
+                    }
+                    if (MatchesAlternative(word, tm, spokenCanon)) wr.Status = "correct";
+                }
+
+                // Transcript viết ĐÚNG chữ của từ có chữ Hán (theo thứ tự trong câu): từ đúng dù cách đọc hai bộ G2P khác nhau.
+                if (surface != null)
+                {
+                    var written = JapaneseMora.Normalize(word.Text);
+                    if (written.Any(IsKanji))
+                    {
+                        var at = surface.IndexOf(written, surfaceCursor, StringComparison.Ordinal);
+                        if (at >= 0)
+                        {
+                            surfaceCursor = at + written.Length;
+                            if (wr.Status != "correct")
+                            {
+                                wr.Status = "correct";
+                                // Chênh lệch số mora do cách đọc khác nhau không phải âm thừa của người học
+                                for (var g = word.Start + 1; g < word.End; g++) extras[g] = null;
+                            }
+                        }
+                    }
+                }
+
                 if (wr.Status != "correct")
                 {
                     wr.ErrorType = slice.FirstOrDefault(o => o.Kind != OpKind.Match).ErrorType ?? (hasInsideExtra ? "extra" : null);
                     wr.Expected = JapaneseMora.Join(slice.Select(o => o.Target!.Value));
+                    if (wr.Status == "mismatched") wr.Issues = BuildIssues(word, opAt, extras, tm);
 
                     var spoken = new StringBuilder();
                     for (var k = word.Start; k < word.End; k++)
@@ -204,8 +458,30 @@ namespace JCAP.Services.Implementations
                 Feedback = BuildFeedback(score, results, extras, boundaries, m),
                 ReadingSource = t.Source,
                 TargetReading = JapaneseMora.Join(tm),
-                RecognizedReading = JapaneseMora.Join(sm)
+                RecognizedReading = JapaneseMora.Join(sm),
+                RecognizedDisplay = BuildRecognizedDisplay(words, results, extras, m),
             };
+        }
+
+        /// <summary>
+        /// "Bạn đã nói" để hiển thị: từ đọc ĐÚNG hiện bằng chữ của câu mẫu (có kanji, vì người học phát ra đúng các âm đó);
+        /// từ đọc sai và âm nói thừa giữ nguyên kana như đã nghe, để người học thấy đúng chỗ mình đọc khác.
+        /// Không đoán kanji cho phần nghe được mà câu mẫu không có.
+        /// </summary>
+        private static string BuildRecognizedDisplay(List<Word> words, List<WordResult> results, List<(Mora Mora, int Index)>?[] extras, int m)
+        {
+            var sb = new StringBuilder();
+            string Extras(int gap) => extras[gap] == null ? string.Empty : JapaneseMora.Join(extras[gap]!.Select(x => x.Mora));
+
+            for (var w = 0; w < words.Count; w++)
+            {
+                sb.Append(Extras(words[w].Start)); // âm thừa đứng riêng ngay trước từ này
+                var result = results[w];
+                if (result.Status == "correct") sb.Append(words[w].Text);
+                else if (result.Spoken != null) sb.Append(result.Spoken); // đã gồm âm thừa chen giữa từ
+            }
+            if (words.Count == 0 || words[^1].End == m) sb.Append(Extras(m));
+            return sb.ToString();
         }
 
         // ---- Phân loại lỗi mora (để nói rõ sai kiểu gì trong một từ) ----
@@ -266,7 +542,7 @@ namespace JCAP.Services.Implementations
             }
 
             var items = JapaneseSurfaceAligner.Segment(targetText);
-            var ranges = JapaneseSurfaceAligner.Align(items, tm);
+            var ranges = JapaneseSurfaceAligner.Align(items, tm, t.WordStarts);
             var words = new List<Word>();
 
             if (ranges == null)
@@ -282,33 +558,83 @@ namespace JCAP.Services.Implementations
             }
 
             // Nhóm các đơn vị chữ viết theo cụm trọng âm; dấu câu bám vào từ đứng trước.
+            // Sau dấu câu LUÔN bắt đầu từ mới, kể cả khi nguồn cách đọc gộp hai bên vào một cụm (để một lỗi nhỏ
+            // không làm sai cả một đoạn dài như みなさん、こんにちは。入国).
             var groups = new List<(int Phrase, List<int> Idx)>();
             var prefix = string.Empty;
+            var breakAfterPunctuation = false;
             for (var i = 0; i < items.Count; i++)
             {
                 if (items[i].IsZero)
                 {
                     if (groups.Count == 0) prefix += items[i].Text; else groups[^1].Idx.Add(i);
+                    if (groups.Count > 0) breakAfterPunctuation = true;
                     continue;
                 }
                 var phrase = PhraseOf(ranges[i].Start);
-                if (groups.Count > 0 && groups[^1].Phrase == phrase) groups[^1].Idx.Add(i);
+                if (groups.Count > 0 && groups[^1].Phrase == phrase && !breakAfterPunctuation) groups[^1].Idx.Add(i);
                 else groups.Add((phrase, new List<int> { i }));
+                breakAfterPunctuation = false;
             }
 
             Word MakeWord(IEnumerable<int> idx)
             {
                 var list = idx.ToList();
                 var nonZero = list.Where(i => !items[i].IsZero).ToList();
-                return new Word
+                var word = new Word
                 {
                     Text = string.Concat(list.Select(i => items[i].Text)),
                     Start = ranges[nonZero[0]].Start,
                     End = ranges[nonZero[^1]].End,
                 };
+
+                // Chữ Hán có cách đọc hợp lệ khác với cách nguồn cách đọc đã chọn (何: なに/なん).
+                foreach (var i in nonZero)
+                {
+                    if (!AlternativeReadings.TryGetValue(items[i].Text, out var readings)) continue;
+                    var (s, e) = ranges[i];
+                    var current = string.Concat(tm.Skip(s).Take(e - s).Select(x => x.Canon));
+                    var options = readings.Select(r => JapaneseMora.FromKana(r, preserveLongVowelSpelling: false)).ToList();
+                    if (!options.Any(o => string.Concat(o.Select(x => x.Canon)) == current)) continue; // cách đọc lạ: không mở rộng
+                    word.Alternatives.Add((s, e, options.Where(o => string.Concat(o.Select(x => x.Canon)) != current).ToList()));
+                }
+                return word;
             }
 
+            // Từ katakana (từ mượn) trong một cụm trọng âm dài được tách thành từ riêng: 成田エクスプレスですね → 成田 | エクスプレス | ですね.
+            // Nhờ đó sai một âm trong từ mượn chỉ mất điểm của từ đó, không mất cả cụm (bản ghi thật: mất 50/100 vì một từ).
+            // Ranh giới chỉ đặt giữa katakana và chữ khác; chữ Hán + okurigana (行きます) vẫn là một từ.
+            bool IsKatakanaItem(int i)
+            {
+                var text = items[i].Text;
+                if (items[i].IsWildcard || text.Length == 0) return false;
+                if (text[0] == 'ー') return i > 0 && !items[i - 1].IsZero && IsKatakanaItem(i - 1);
+                return IsKatakana(text[0]);
+            }
+
+            var splitGroups = new List<List<int>>();
             foreach (var (_, idx) in groups)
+            {
+                var current = new List<int>();
+                bool? currentIsKatakana = null;
+                foreach (var i in idx)
+                {
+                    if (!items[i].IsZero)
+                    {
+                        var k = IsKatakanaItem(i);
+                        if (currentIsKatakana != null && k != currentIsKatakana && current.Any(x => !items[x].IsZero))
+                        {
+                            splitGroups.Add(current);
+                            current = new List<int>();
+                        }
+                        currentIsKatakana = k;
+                    }
+                    current.Add(i);
+                }
+                if (current.Count > 0) splitGroups.Add(current);
+            }
+
+            foreach (var idx in splitGroups)
             {
                 var nonZero = idx.Where(i => !items[i].IsZero).ToList();
                 var splitAt = -1;
@@ -384,6 +710,7 @@ namespace JCAP.Services.Implementations
                     token.ErrorType = wr.ErrorType;
                     token.ExpectedReading = wr.Expected;
                     token.SpokenPart = wr.Spoken;
+                    token.Issues = wr.Issues;
                 }
                 Add(token);
             }
@@ -424,6 +751,8 @@ namespace JCAP.Services.Implementations
 
                 hints.Add(wr.Status == "missing"
                     ? $"chưa nói 「{text}」"
+                    : wr.Issues is { Count: > 0 }
+                    ? $"「{text}」: {string.Join(", ", wr.Issues.Take(2).Select(i => i.Message))}"
                     : $"「{text}」 đọc chuẩn là {wr.Expected}" + (wr.Spoken != null ? $", bạn nói {wr.Spoken}" : "") + TypeHint(wr.ErrorType));
                 if (hints.Count == 3) break;
             }

@@ -9,7 +9,11 @@ namespace JCAP.Services.Implementations
     /// </summary>
     public static class ShadowingScoring
     {
-        public const string Version = "shadowing-score/p2-content-word";
+        /// <summary>
+        /// v3 (Shadowing V2 M4): chấm theo chiều. Overall = Content Accuracy (transcript ASR so với câu mẫu) — chiều duy nhất có điểm
+        /// đã kiểm chứng; Pronunciation/Fluency/Prosody có trạng thái riêng và chưa có điểm. Kết quả p2 cũ giữ nguyên trong lịch sử.
+        /// </summary>
+        public const string Version = "shadowing-score/v3-dimensions";
 
         public const double ContentWeight = 0.60;
         public const double FluencyWeight = 0.40;

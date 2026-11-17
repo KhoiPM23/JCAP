@@ -341,4 +341,130 @@ public class ScenarioServiceTests
         Assert.NotNull(dbItem);
         Assert.False(dbItem!.IsActive);
     }
+
+    [Fact]
+    public async Task GetTopicsAsync_ReturnsPrimaryTopicsWithScenarioCounts()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        dbContext.LearningTopics.AddRange(
+            new LearningTopic { Id = 1, Name = "Ẩm thực", Code = "DINING", Description = "Nhà hàng" },
+            new LearningTopic { Id = 2, Name = "Di chuyển", Code = "TRANSPORT", Description = "Giao thông" },
+            new LearningTopic { Id = 3, Name = "Đời sống", Code = "DAILY_LIFE", Description = "Sinh hoạt" }
+        );
+        dbContext.Scenarios.AddRange(
+            new Scenario
+            {
+                Id = 1,
+                Title = "Gọi món Ramen",
+                Description = "Quán ăn",
+                IsActive = true,
+                ScenarioCode = "SCN_RAMEN",
+                LevelConfigurations = new List<ScenarioLevelConfiguration>
+                {
+                    new() { Id = 10, JLPTLevel = "N5", Status = "Published" }
+                }
+            },
+            new Scenario
+            {
+                Id = 2,
+                Title = "Hỏi đường tại ga Shinjuku",
+                Description = "Ga tàu",
+                IsActive = true,
+                ScenarioCode = "SCN_TRAIN",
+                LevelConfigurations = new List<ScenarioLevelConfiguration>
+                {
+                    new() { Id = 20, JLPTLevel = "N5", Status = "Published" }
+                }
+            }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var service = new ScenarioService(dbContext);
+
+        // Act
+        var result = await service.GetTopicsAsync();
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.True(result.Data.Count >= 3);
+        var diningTopic = result.Data.FirstOrDefault(t => t.Code == "DINING");
+        Assert.NotNull(diningTopic);
+        Assert.True(diningTopic!.IsPrimary);
+        Assert.Equal(1, diningTopic.ScenarioCount);
+    }
+
+    [Fact]
+    public async Task GetScenariosAsync_WithTopicFilter_FiltersScenariosCorrectly()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        dbContext.Scenarios.AddRange(
+            new Scenario
+            {
+                Id = 1,
+                Title = "Gọi món Ramen",
+                Description = "Quán ăn",
+                IsActive = true,
+                ScenarioCode = "SCN_RAMEN",
+                LevelConfigurations = new List<ScenarioLevelConfiguration>
+                {
+                    new() { Id = 10, JLPTLevel = "N5", Status = "Published" }
+                }
+            },
+            new Scenario
+            {
+                Id = 2,
+                Title = "Hỏi đường tại ga Shinjuku",
+                Description = "Ga tàu",
+                IsActive = true,
+                ScenarioCode = "SCN_TRAIN",
+                LevelConfigurations = new List<ScenarioLevelConfiguration>
+                {
+                    new() { Id = 20, JLPTLevel = "N5", Status = "Published" }
+                }
+            }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var service = new ScenarioService(dbContext);
+
+        // Act
+        var result = await service.GetScenariosAsync(topic: "DINING");
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Equal("Gọi món Ramen", result.Data[0].Title);
+        Assert.Equal("DINING", result.Data[0].TopicCode);
+    }
+
+
+    [Fact]
+    public async Task GetTopicsAsync_IncludesDynamicCustomLearningTopics_WhenAddedInDatabase()
+    {
+        // Arrange
+        using var dbContext = CreateInMemoryDbContext();
+        dbContext.LearningTopics.AddRange(
+            new LearningTopic { Id = 10, Code = "HOSPITAL", Name = "Y tế & Bệnh viện", IsActive = true },
+            new LearningTopic { Id = 11, Code = "INACTIVE_TOPIC", Name = "Chủ đề ẩn", IsActive = false }
+        );
+        await dbContext.SaveChangesAsync();
+
+        var service = new ScenarioService(dbContext);
+
+        // Act
+        var result = await service.GetTopicsAsync();
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Contains(result.Data, t => t.Code == "HOSPITAL" && t.Name == "Y tế & Bệnh viện");
+        Assert.DoesNotContain(result.Data, t => t.Code == "INACTIVE_TOPIC");
+        Assert.Contains(result.Data, t => t.Code == "DINING" && t.IsPrimary);
+        Assert.Contains(result.Data, t => t.Code == "TRANSPORT" && t.IsPrimary);
+        Assert.Contains(result.Data, t => t.Code == "DAILY_LIFE" && t.IsPrimary);
+    }
 }

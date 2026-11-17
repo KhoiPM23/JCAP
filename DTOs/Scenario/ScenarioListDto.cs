@@ -9,4 +9,7 @@ public class ScenarioListDto
     public bool IsActive { get; set; }
     public string? ScenarioCode { get; set; }
     public List<string> SupportedJLPTLevels { get; set; } = [];
+    public int? TopicId { get; set; }
+    public string? TopicCode { get; set; }
+    public string? TopicName { get; set; }
 }

@@ -132,7 +132,9 @@ export const LearnerProfileView: React.FC = () => {
   ];
 
   return (
-    <div className="bg-transparent">
+    <div className="relative bg-transparent">
+      {/* Nền sóng biển nan quạt Seigaiha thanh nhã */}
+      <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl seigaiha-subtle opacity-35" />
       <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
         <h1 className="m-0 text-[28px] font-bold leading-[38px]">Hồ sơ</h1>
 

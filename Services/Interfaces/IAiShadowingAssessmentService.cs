@@ -32,5 +32,8 @@ namespace JCAP.Services.Interfaces
 
         /// <summary>Giọng VOICEVOX người học đã nghe làm mẫu (tùy chọn; dùng để tạo audio mẫu so nhịp nói).</summary>
         public int? ReferenceSpeakerId { get; init; }
+
+        /// <summary>Tốc độ phát giọng mẫu khi người học nghe (vd. 0.75); null = 1.</summary>
+        public double? ReferencePlaybackRate { get; init; }
     }
 }

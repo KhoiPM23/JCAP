@@ -4,6 +4,7 @@ import type {
   ShadowingBookmark,
 } from '../types/shadowingProgress';
 import { normalizeHistoryList } from '../utils/shadowingHistory';
+import { isResumableShadowing } from '../utils/shadowingContinue';
 
 const KEYS = {
   PROGRESS: 'shadowing_progress',
@@ -258,11 +259,12 @@ class ShadowingStorageService {
   }
 
   /**
-   * Lấy bài Shadowing đang học dở gần đây nhất của Learner (cho phần Continue Shadowing trên Home)
+   * Lấy bài Shadowing đang học dở gần đây nhất của Learner (cho phần Continue Shadowing trên Home và thanh bên).
+   * Chỉ bài đã xong ít nhất một câu và chưa xong hết; mới mở trang hay đã học xong thì không tính.
    */
   public getLatestInProgress(learnerId: string): ShadowingProgress | null {
     const progressList = this.getAllProgress(learnerId);
-    const inProgressItems = progressList.filter((item) => item.status === 'IN_PROGRESS');
+    const inProgressItems = progressList.filter(isResumableShadowing);
 
     if (inProgressItems.length === 0) return null;
 

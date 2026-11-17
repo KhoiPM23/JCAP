@@ -261,7 +261,7 @@ namespace JCAP.Tests.Services
             var result = await service.ReorderChaptersAsync(reversed);
             Assert.True(result.Success);
             Assert.Equal(reversed, result.Data!.Select(c => c.Id));
-            Assert.Equal(new[] { 0, 1, 2 }, result.Data.Select(c => c.OrderIndex));
+            Assert.Equal(new[] { 0, 1, 2 }, result.Data!.Select(c => c.OrderIndex));
         }
 
         [Fact]

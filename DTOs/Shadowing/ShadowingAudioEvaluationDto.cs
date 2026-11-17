@@ -14,6 +14,15 @@ namespace JCAP.DTOs.Shadowing
         /// </summary>
         public int? SentenceId { get; set; }
 
+        /// <summary>Phiên luyện ở server mà lần chấm này thuộc về (tùy chọn; client cũ không gửi).</summary>
+        public Guid? ProgressId { get; set; }
+
+        /// <summary>
+        /// Id do client sinh cho MỘT lần bấm "Gửi chấm" (tùy chọn). Gửi lại cùng Id (mất mạng, quá hạn) thì backend trả kết quả đã lưu,
+        /// không chấm và không lưu thêm lần nữa.
+        /// </summary>
+        public Guid? ClientSubmissionId { get; set; }
+
         /// <summary>Câu mẫu tiếng Nhật. Chỉ dùng để đối chiếu, KHÔNG gửi cho nhà cung cấp STT. Bị bỏ qua khi có SentenceId.</summary>
         public string TargetText { get; set; } = string.Empty;
 
@@ -45,6 +54,12 @@ namespace JCAP.DTOs.Shadowing
         /// thiếu hoặc không hợp lệ thì dùng giọng mặc định trong cấu hình.
         /// </summary>
         public int? ReferenceSpeakerId { get; set; }
+
+        /// <summary>
+        /// Tốc độ phát giọng mẫu người học đã dùng khi nghe (HTMLAudio playbackRate, vd. 0.75). Tùy chọn; thiếu thì 1.
+        /// Dùng để so nhịp nói với đúng tốc độ người học đã nghe.
+        /// </summary>
+        public double? ReferencePlaybackRate { get; set; }
     }
 
     /// <summary>
@@ -88,6 +103,12 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>mora/giây không tính khoảng dừng.</summary>
         public double? ArticulationRateMoraPerSec { get; set; }
+
+        /// <summary>Thời gian nói liền trung bình giữa hai khoảng dừng (ms).</summary>
+        public int? MeanRunMs { get; set; }
+
+        /// <summary>Số mora trung bình mỗi đoạn nói liền (mean length of run). Null nếu không biết số mora.</summary>
+        public double? MeanRunMoras { get; set; }
 
         /// <summary>Số liệu nhịp nói của giọng mẫu (cùng bộ VAD, cùng tiêu chí khoảng dừng). Null nếu chưa thử so sánh.</summary>
         public FluencyReferenceDto? Reference { get; set; }
@@ -156,6 +177,9 @@ namespace JCAP.DTOs.Shadowing
         public string Source { get; set; } = "voicevox";
         public int? SpeakerId { get; set; }
         public FluencyMetricsDto Metrics { get; set; } = new();
+
+        /// <summary>Tốc độ phát giọng mẫu người học đã nghe; Metrics đã quy đổi theo tốc độ này (1 = tốc độ gốc).</summary>
+        public double PlaybackRate { get; set; } = 1.0;
     }
 
     public class FluencyComparisonDto
@@ -180,6 +204,12 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>Số khoảng dừng của người học dài ≥ ngưỡng và không có khoảng dừng tương ứng ở giọng mẫu.</summary>
         public int? ExtraPauseCount { get; set; }
+
+        /// <summary>
+        /// Trong các khoảng dừng thừa đã định vị được theo từ: số khoảng nằm GIỮA một từ (ngập ngừng, vd. えい……が).
+        /// Dừng ở ranh giới hai từ/cụm là bình thường hơn. Null nếu không định vị được (thiếu mốc mora của giọng mẫu…).
+        /// </summary>
+        public int? HesitationCount { get; set; }
 
         /// <summary>Số mora của transcript / số mora câu mẫu (dùng kiểm tra transcript có tương ứng với câu mẫu không).</summary>
         public double? MoraCountConsistency { get; set; }
@@ -210,6 +240,42 @@ namespace JCAP.DTOs.Shadowing
         public int DurationMs { get; set; }
     }
 
+    /// <summary>
+    /// Kết quả MỘT chiều đánh giá (Shadowing V2). Mỗi chiều có trạng thái riêng; một chiều không khả dụng không làm hỏng các chiều khác.
+    /// </summary>
+    public class EvaluationDimensionDto
+    {
+        /// <summary>COMPLETED | UNAVAILABLE | FAILED</summary>
+        public string Status { get; set; } = "UNAVAILABLE";
+
+        /// <summary>Điểm 0–100; null nếu chiều này chưa có điểm đã kiểm chứng (KHÔNG phải 0).</summary>
+        public int? Score { get; set; }
+
+        /// <summary>
+        /// Lý do khi không có điểm: INSUFFICIENT_ACOUSTIC_EVIDENCE, SCORE_NOT_VALIDATED, NOT_IMPLEMENTED, ASR_UNAVAILABLE,
+        /// NO_SPEECH_DETECTED, READING_UNAVAILABLE…
+        /// </summary>
+        public string? Reason { get; set; }
+
+        /// <summary>Nguồn bằng chứng (vd. faster-whisper:small, vad).</summary>
+        public string? Source { get; set; }
+    }
+
+    public class EvaluationDimensionsDto
+    {
+        /// <summary>Độ chính xác nội dung: transcript ASR so với câu mẫu.</summary>
+        public EvaluationDimensionDto Content { get; set; } = new();
+
+        /// <summary>Phát âm: chỉ có điểm khi phương pháp đã kiểm chứng trên giọng người học (hiện chưa).</summary>
+        public EvaluationDimensionDto Pronunciation { get; set; } = new();
+
+        /// <summary>Lưu loát: số đo nhịp nói (xem Fluency); chưa có điểm đã kiểm chứng.</summary>
+        public EvaluationDimensionDto Fluency { get; set; } = new();
+
+        /// <summary>Ngữ điệu: chưa triển khai.</summary>
+        public EvaluationDimensionDto Prosody { get; set; } = new();
+    }
+
     public class ShadowingDiffTokenDto
     {
         public string Text { get; set; } = string.Empty;
@@ -224,6 +290,31 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>chouon | sokuon | hatsuon | voicing | mora | extra</summary>
         public string? ErrorType { get; set; }
+
+        /// <summary>
+        /// Lỗi từng âm (mora) trong từ chưa đúng, theo thứ tự trong từ: thừa っ, thiếu trường âm, く đọc thành ぐ…
+        /// Null khi từ đúng, khi thiếu cả từ, hoặc khi người học nói một từ khác hẳn (quá nửa số âm khác: liệt kê từng âm vô nghĩa).
+        /// </summary>
+        public List<ShadowingMoraIssueDto>? Issues { get; set; }
+    }
+
+    /// <summary>Một lỗi ở mức âm (mora) bên trong một từ.</summary>
+    public class ShadowingMoraIssueDto
+    {
+        /// <summary>extra (nói thừa) | missing (thiếu) | substitute (đọc thành âm khác)</summary>
+        public string Kind { get; set; } = string.Empty;
+        /// <summary>Âm của câu mẫu (missing, substitute).</summary>
+        public string? Expected { get; set; }
+        /// <summary>Âm người học nói (extra, substitute).</summary>
+        public string? Spoken { get; set; }
+        /// <summary>Âm câu mẫu đứng ngay trước vị trí lỗi (để chỉ chỗ), null nếu lỗi ở đầu từ.</summary>
+        public string? After { get; set; }
+        /// <summary>chouon | sokuon | hatsuon | voicing | mora | extra</summary>
+        public string? ErrorType { get; set; }
+        /// <summary>Nêu lỗi bằng tiếng Việt, ngắn (vd. "Thừa âm ngắt 「っ」 sau 「え」").</summary>
+        public string Message { get; set; } = string.Empty;
+        /// <summary>Cách sửa (vd. "Nối liền hai âm, không dừng hơi."); null nếu không có gì thêm.</summary>
+        public string? Hint { get; set; }
     }
 
     public class ShadowingAudioEvaluationResponseDto
@@ -234,7 +325,7 @@ namespace JCAP.DTOs.Shadowing
         public int? SentenceId { get; set; }
 
         /// <summary>
-        /// completed: điểm Content Match tính từ transcript Web Speech đã chốt.
+        /// completed: điểm Content Match tính từ transcript (nhận dạng âm vị trên bản ghi, hoặc Web Speech đã chốt).
         /// partial: không còn được tạo ra (chỉ có ở kết quả cũ, khi còn dùng Gemini làm nguồn chính).
         /// unavailable: không đủ dữ liệu tin cậy để chấm (im lặng, quá ngắn, âm thanh không đạt, sai định dạng).
         /// failed: lỗi kỹ thuật và không có nguồn dự phòng hợp lệ.
@@ -244,8 +335,35 @@ namespace JCAP.DTOs.Shadowing
         /// <summary>recognized | no_speech | unavailable — tách biệt với chất lượng âm thanh.</summary>
         public string RecognitionStatus { get; set; } = "recognized";
 
-        /// <summary>web_speech | none (gemini chỉ có ở kết quả cũ)</summary>
+        /// <summary>
+        /// phoneme (nhận dạng âm vị trên chính bản ghi của JCAP; transcript là kana) | web_speech (dự phòng) | none
+        /// (gemini chỉ có ở kết quả cũ)
+        /// </summary>
         public string RecognitionSource { get; set; } = "none";
+
+        /// <summary>
+        /// Cách dùng mô hình âm vị (khi RecognitionSource = phoneme): aligned = chấm theo câu mẫu (từng mora so với các kiểu
+        /// đọc sai thường gặp), free = nhận dạng tự do (khi tắt chấm theo câu mẫu hoặc người học đọc câu khác). Rỗng với nguồn khác.
+        /// </summary>
+        public string RecognitionMode { get; set; } = string.Empty;
+
+        /// <summary>Kana nhận dạng tự do từ bản ghi (chỉ để chẩn đoán; điểm theo RecognitionMode).</summary>
+        public string FreeRecognizedText { get; set; } = string.Empty;
+
+        /// <summary>Trạng thái và điểm của từng chiều đánh giá (Content, Pronunciation, Fluency, Prosody).</summary>
+        public EvaluationDimensionsDto Dimensions { get; set; } = new();
+
+        /// <summary>
+        /// Điểm tổng (OverallScore) được tính từ những chiều nào: "content" = CHỈ độ chính xác nội dung (phải hiển thị là
+        /// "điểm nội dung", không phải điểm phát âm hay năng lực Shadowing tổng thể). null khi không có điểm.
+        /// </summary>
+        public string? OverallScoreBasis { get; set; }
+
+        /// <summary>Mô hình ASR đã dùng (vd. faster-whisper:small); rỗng nếu không dùng ASR.</summary>
+        public string AsrModel { get; set; } = string.Empty;
+
+        /// <summary>Thời gian backend xử lý lượt chấm (ms).</summary>
+        public int ProcessingMs { get; set; }
 
         /// <summary>Không còn được dùng (luôn null); giữ để tương thích với kết quả cũ.</summary>
         public string? FallbackReason { get; set; }
@@ -271,6 +389,12 @@ namespace JCAP.DTOs.Shadowing
 
         /// <summary>Transcript cuối cùng được chấm. Rỗng nếu không có; KHÔNG bao giờ thay bằng câu mẫu.</summary>
         public string RecognizedText { get; set; } = string.Empty;
+
+        /// <summary>
+        /// "Bạn đã nói" để hiển thị: từ đọc đúng dùng chữ của câu mẫu (có kanji), phần đọc sai/nói thừa giữ kana như đã nghe.
+        /// Rỗng thì hiển thị RecognizedText.
+        /// </summary>
+        public string RecognizedDisplayText { get; set; } = string.Empty;
 
         /// <summary>Điểm khớp nội dung chữ viết/âm đọc (0 - 100). Null nếu không chấm được.</summary>
         public int? ContentMatchScore { get; set; }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 interface TypewriterTextProps {
   text: string;
@@ -10,6 +10,7 @@ interface TypewriterTextProps {
 
 /**
  * TypewriterText: Mô phỏng nhịp thở tự nhiên (Punctuation-Aware Fluid Typing) phong cách Claude / GPT.
+ * - Triệt tiêu 100% rò rỉ thẻ HTML <ruby> <rt> trong quá trình streaming lát cắt chuỗi.
  * - Ký tự thông thường: ~18-22ms
  * - Dấu phẩy / ngắt nhịp (、, ,): nghỉ tự nhiên ~130ms
  * - Dấu chấm câu / dứt ý (。, ., !, ?, ！, ？): nghỉ tự nhiên ~210ms
@@ -21,7 +22,12 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   className = '',
   isStreaming = true,
 }) => {
-  const [displayedLength, setDisplayedLength] = useState<number>(() => (isStreaming ? 0 : text.length));
+  // Lọc sạch thẻ HTML/Ruby thô để khi cắt lát chuỗi không bao giờ bị lộ text "ruby ruby" ra giao diện
+  const cleanText = useMemo(() => {
+    return (text || '').replace(/<rt>[^<]*<\/rt>/gi, '').replace(/<[^>]+>/g, '').trim();
+  }, [text]);
+
+  const [displayedLength, setDisplayedLength] = useState<number>(() => (isStreaming ? 0 : cleanText.length));
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -30,12 +36,12 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
 
   useEffect(() => {
     if (!isStreaming) {
-      setDisplayedLength(text.length);
+      setDisplayedLength(cleanText.length);
       return;
     }
 
     setDisplayedLength(0);
-    const totalLength = text.length;
+    const totalLength = cleanText.length;
 
     if (totalLength === 0) {
       onCompleteRef.current?.();
@@ -58,7 +64,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       }
 
       // Tính toán nhịp nghỉ hữu cơ theo ngữ âm tiếng Nhật
-      const lastChar = text[currentIdx - 1];
+      const lastChar = cleanText[currentIdx - 1];
       let delay = baseSpeedMs;
 
       if (/[、,]/.test(lastChar)) {
@@ -78,10 +84,10 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
       isCancelled = true;
       if (timerId) clearTimeout(timerId);
     };
-  }, [text, baseSpeedMs, isStreaming]);
+  }, [cleanText, baseSpeedMs, isStreaming]);
 
-  const visibleText = isStreaming ? text.slice(0, displayedLength) : text;
-  const isDone = displayedLength >= text.length;
+  const visibleText = isStreaming ? cleanText.slice(0, displayedLength) : cleanText;
+  const isDone = displayedLength >= cleanText.length;
 
   return (
     <span className={className}>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Feedback;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace JCAP.Controllers
 {
     [ApiController]
     [Route("api/feedback")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FeedbackController : ControllerBase
     {
         private static readonly string[] AllowedExtensions =
@@ -38,7 +39,9 @@ namespace JCAP.Controllers
         private string? GetCurrentUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User.FindFirstValue("sub");
+                ?? User.FindFirstValue("nameid")
+                ?? User.FindFirstValue("sub")
+                ?? Request.Headers["X-User-Id"].FirstOrDefault();
         }
 
         [HttpGet("my")]
@@ -104,6 +107,7 @@ namespace JCAP.Controllers
         /// Dùng chung cho cả Learner và Admin.
         /// </summary>
         [HttpPost("upload-attachment")]
+        [AllowAnonymous]
         public async Task<IActionResult> UploadAttachment(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -129,7 +133,6 @@ namespace JCAP.Controllers
                 var isImage = file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
                     || new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" }.Contains(ext);
 
-                // Trích xuất publicId hiển thị từ URL hoặc tạo mã chuẩn
                 var publicId = ExtractPublicIdFromUrl(cloudUrl, file.FileName);
 
                 var dto = new FeedbackAttachmentDto
@@ -171,4 +174,3 @@ namespace JCAP.Controllers
         }
     }
 }
-

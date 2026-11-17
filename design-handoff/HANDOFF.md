@@ -187,6 +187,62 @@ Trạng thái và yêu cầu khác:
 - **Chuyển động:** đổi chương thì làm mờ trang và trượt 8px theo hướng lật, 200ms. Khi `prefers-reduced-motion` thì chỉ đổi ngay.
 - **Đóng dấu mới:** nếu muốn mừng dấu mới thì dùng thuộc tính `pressing` sẵn có của `SpotStampMark`, đúng một lần.
 
+## 9d. Landing page cho khách chưa đăng nhập (`/`)
+
+Prototype: `prototype/Landing.dc.html` (một file, tự đổi bố cục ở chiều rộng ≤ 760px; trên canvas có thêm bảng xem ở 390px).
+
+- **Route:** khách chưa đăng nhập vào `/` thì thấy landing page; người đã đăng nhập vào thẳng bản đồ Hành trình. Hiện `/` nằm trong `PrivateRoute`, nên cần tách: một component kiểm tra `isAuthenticated` (AuthContext) rồi render `LandingView` hoặc bản đồ. Kiểm tra `router/index.tsx` có code của người khác trước khi sửa.
+- **Nút:** "Bắt đầu miễn phí" dẫn tới `/register`, "Đăng nhập" và "Tôi đã có tài khoản" dẫn tới `/login`, các link trên thanh đầu cuộn tới mục (`#thu`, `#thich-ung`, `#lich-su`, `#lo-trinh`, `#bang-gia`, `#cau-hoi`).
+- **Theme và màu:** cả trang `data-theme="kham-pha"`. Nút hành động dùng màu chàm `--ai` (chữ `--on-ai`), bo 14px, cao 52px (40px trên thanh đầu). Màu đỏ son `--shu` chỉ dành cho con dấu và dấu 旅, không dùng cho nút.
+- **Thứ tự mục (bản 3, bản chốt):** bản 3 thay bản 2. Trang nói về cả hệ thống, không xoay quanh một chuyến đi tới Narita.
+  1. Thanh đầu dính trên cùng. Chỉ 3 link: Tính năng (`#thu`), Bảng giá (`#bang-gia`), Câu hỏi (`#cau-hoi`). Chân trang dùng cùng tên "Tính năng".
+  2. Phần đầu: dòng cấp độ mảnh phía trên tiêu đề (chữ "JLPT" cỡ 12px màu `--sumi-muted`, vạch dọc, rồi N5 ─ N4 ─ N3 chữ Mincho 16px màu `--sumi` nối bằng vạch ngang 28px màu `--line-strong`; một màu, không dùng JlptBadge, không có dòng "Cho người Việt…"), tiêu đề "Đường ngàn dặm cũng bắt đầu từ một câu nói" (3 dòng cố định: "Đường ngàn dặm" / "cũng bắt đầu" / "từ một câu nói") dùng font **Lora** đậm 600, cỡ 62/70px (điện thoại 40/48px), letter-spacing -0.015em; nạp thêm `Lora:wght@500;600;700` từ Google Fonts (có bộ chữ tiếng Việt). Câu lớn bên trái màn hình Đăng nhập/Đăng ký cũng dùng Lora 600, 36/44px. Bỏ dòng "Shadowing và Hành trình miễn phí. Hội thoại AI dùng Credit." dưới hai nút, dòng 「千里の道も一歩から。」 có furigana, rồi tới hai nút (không có đoạn giới thiệu) (không có hàng chip tính năng). Bên phải là bản đồ cả nước vẽ từ `PREFECTURES` (bỏ Okinawa), có 4 ghim tròn màu `--ai` mang chữ 宿 食 駅 医 đặt tại `labelPos` của Hokkaido, Osaka, Tokyo, Fukuoka. Mỗi ghim nối bằng nét đứt mảnh tới một thẻ: loại nơi, câu mẫu có furigana, nghĩa tiếng Việt. Thẻ nằm ở vùng biển để không che đất liền.
+  3. Câu mở: 「すみません、もう一度お願いします。」 cỡ 76px Mincho, ngắt thành 2 dòng ("すみません、" / "もう一度お願いします。"), nghĩa tiếng Việt, câu gợi vấn đề, 4 khó khăn xếp 2 cột.
+  4. "Mỗi tình huống, ba bước luyện." (`#thu`, không có đoạn mô tả dưới tiêu đề): ví dụ ở cửa hàng tiện lợi. 3 bước 一 二 三 bên trái (Nói theo câu mẫu, Hội thoại với nhân vật, Nhận con dấu), khung minh hoạ bên phải. Trên điện thoại 3 bước thành thanh tab ngang.
+  5. Học tập thích ứng (`#thich-ung`, nền `--sumi`): cùng nội dung bản 2 nhưng ví dụ là cửa hàng tiện lợi (お弁当、温めますか。 → nhánh chậm 大丈夫ですよ。袋、いりますか。 kèm gợi ý; nhánh nhanh かしこまりました。袋はご利用ですか。お箸もおつけしましょうか。).
+  6. Mục mới "Cùng một ý, nói khác nhau với từng người" (`#lich-su`): 3 hàng (Bạn bè もう一回言って。 / Nhân viên cửa hàng すみません、もう一度お願いします。 / Người phỏng vấn 恐れ入りますが、もう一度おっしゃっていただけますか。), bên trái có thanh dọc từ "Thân mật" (`--sora`) đến "Trang trọng" (`--ai`). Không có đoạn ghi chú dưới 3 hàng. Nguồn: các vai trong `RoleplaySocialRegister` và điểm kính ngữ trong hồ sơ phản xạ. Không viết rằng hệ thống sửa cách dùng kính ngữ của người học.
+  7. Lộ trình (`#lo-trinh`), tiêu đề "Lộ trình là một tấm bản đồ, mỗi nơi đi qua để lại một con dấu.": bản đồ cả nước tô 3 trạng thái (đã đi qua: `--ai` 42% trộn `--paper-50`; đang học: `--ai`; chưa đi: `--paper-200`) kèm chú thích, bên phải là 3 bước 一 二 三 (Chọn chương, Luyện ở từng địa điểm, Nhận con dấu: "Học xong ở đâu, sổ của bạn có thêm con dấu của nơi đó."). Chú thích ở tab Nhận con dấu: "Mỗi nơi học xong là một con dấu. Lật sổ ra là thấy mình đã đi được bao xa.". **Không nhắc quy tắc "đủ 70% con dấu mới mở chương"**, hệ thống không có quy tắc này. Landing cũng không nhắc dấu son: chỉ nói hoàn thành bài học thì nhận con dấu.
+  8. Bảng giá: giữ như bản 2 nhưng bỏ dòng ghi chú "Credit dùng cho Hội thoại AI… (5 Credit một bộ)" dưới bảng. 9. Câu hỏi thường gặp: giữ như bản 2.
+  10. Lời mời cuối trang "Câu tiếng Nhật đầu tiên bạn nói ra, hôm nay." kèm con dấu son vuông 話す, rồi chân trang.
+- **Hiệu ứng phần đầu:** ghim và thẻ hiện lần lượt (trễ 0.35s, 0.75s, 1.15s, 1.55s; mỗi lần 420ms, mờ dần và trượt lên 6px). Khi `prefers-reduced-motion` thì hiện sẵn. Trên điện thoại (≤ 760px) chỉ giữ 2 thẻ Hokkaido và Tokyo, ẩn dòng tiếng Việt trong thẻ.
+- **Bỏ khỏi bản 1:** các nhãn nhỏ có icon phía trên tiêu đề, hàng tính năng so le trái phải, mục "Cách học" riêng (đã gộp vào Lộ trình), ba thẻ giá giống nhau.
+- **Mục "Học tập thích ứng"** (`#thich-ung`, có link trên thanh đầu): nội dung bám đúng code đang chạy, không quảng cáo gì chưa có.
+  - Minh hoạ hai nhánh cho cùng một câu hỏi của nhân viên cửa hàng tiện lợi. Nhánh "Trả lời sau 5 giây · Xem bản dịch 2 lần": nhân vật nói chậm và dễ hơn, kèm gợi ý điền chỗ trống. Nhánh "Trả lời sau 1,4 giây · Không dùng gợi ý": nhân vật nói tự nhiên hơn. Nguồn: `TelemetryEvaluatorService` (ngưỡng > 4,5 giây, xem dịch > 1 lần hoặc gợi ý ≥ 2; < 1,8 giây, không gợi ý, điểm ≥ 85).
+  - Không có hàng bốn ý bên dưới (đã bỏ ở bản 3); mục chỉ gồm tiêu đề, mô tả và minh hoạ hai nhánh.
+  - Không viết rằng người học "xem được" hồ sơ phản xạ, vì giao diện xem chỉ số này chưa có.
+- **Khung minh hoạ** ở mục ba bước luyện dựng bằng component (JpText, WordDiff, ScoreRing), không phải ảnh chụp. Khi giao diện thật xong có thể thay bằng ảnh chụp, nhưng giữ nguyên nội dung.
+- **Bảng giá** phải đọc từ dữ liệu thật (`creditService`, `subscriptionPlanService`) chứ không chép số cứng như prototype. Prototype đang dùng giá khởi tạo trong code (50/150/350/1.000 Credit; Pro 199.000đ, Pro Max 349.000đ).
+- **Không có mục học viên hay số liệu.** Khi có học viên thật mới thêm.
+
+Cần nhóm kiểm tra trước khi đưa lên:
+
+- Giá các gói trong DB có khớp không.
+- Bốn tình huống trên bản đồ (khách sạn, quán ăn, nhà ga, phòng khám) và ví dụ cửa hàng tiện lợi là minh hoạ mình viết. Kiểm tra các kịch bản này có trong nội dung thật chưa, nếu chưa thì đổi sang tình huống đã có.
+- Ba câu ở mục kính ngữ cần người dạy tiếng Nhật duyệt lại.
+- Bản đồ ở mục Lộ trình tô theo vùng chỉ để minh hoạ; `ExploreChapter` hiện chưa có trường vùng.
+- Câu trả lời "Học trên điện thoại được không?" đang khuyên dùng Chrome trên máy tính hoặc Android. Thử Shadowing trên iPhone thật rồi sửa câu này cho đúng.
+- Tên chương "Lần đầu đến Nhật Bản" và các địa điểm phải khớp dữ liệu chương thật.
+- Thêm `<title>`, mô tả và ảnh chia sẻ (Open Graph) cho `/`.
+
+## 9e. Đăng nhập, Đăng ký, Xác minh email, Quên mật khẩu (`AuthLayout` và các view auth)
+
+Prototype: trong `prototype/AppPrototype.dc.html`, các trang `login`, `register`, `verify`, `forgot` (khối `.auth`). Bản tương tác mở từ landing: "Bắt đầu miễn phí" sang Đăng ký, "Đăng nhập" sang Đăng nhập. "Đăng xuất" trong menu tài khoản và trong Hồ sơ quay về landing.
+
+Chỉ đổi giao diện. Giữ nguyên logic trong `LoginView`, `RegisterView`, `EmailVerificationPendingView`, `ForgotPasswordView` và `AuthContext`: Google, kiểm tra mật khẩu tối thiểu 6 ký tự và khớp nhau, gửi lại email xác thực có đếm ngược, thông báo lỗi.
+
+- **Bố cục chung:** chia hai phần, `data-theme="kham-pha"`.
+  - Trái: nền `--paper-100`, bản đồ Nhật vẽ từ `PREFECTURES` (Kanto tô `--sora`), 4 ghim 宿 食 駅 医 như phần đầu landing (không còn tô Kanto hay đường đỏ son), ba con dấu minh hoạ コンビニ, 駅, 食堂, logo JCAP (bấm về landing). Câu ở góc dưới đổi theo trang: Đăng ký "Đường ngàn dặm cũng bắt đầu từ một câu nói", Đăng nhập "Hành trình của bạn vẫn đang chờ.", Quên mật khẩu "Lấy lại tài khoản, đi tiếp hành trình."
+  - Phải: cột 560px, khung form rộng tối đa 400px, căn giữa.
+- **Vừa một màn hình, không phải cuộn:** khung form tối đa 420px, khoảng cách 14px, ô nhập cao 44px. Ở trang Đăng ký, hai ô mật khẩu nằm cạnh nhau, gợi ý ghi chung bên dưới. Khi chiều cao cửa sổ ≤ 720px thì ẩn dòng mô tả dưới tiêu đề và giảm khoảng cách còn 10px. Nghiệm thu ở 1366×650 và 1280×600: không có thanh cuộn.
+- **Ô nhập:** cao 44px, bo 12px, có icon ở đầu, nhãn ở trên, viền `--ai` và vòng `--ai-soft` khi focus. Ô mật khẩu có nút mắt hiện/ẩn, nhãn đổi giữa "Hiện mật khẩu" và "Ẩn mật khẩu". Dùng `TextField` của design system, truyền nút mắt vào `trailing`.
+- **Nút Google:** viền mảnh, cao 48px, dùng logo Google sẵn có trong `LoginView` (prototype để icon tạm).
+- **Đăng nhập:** tiêu đề "Chào mừng quay lại", nút Google, "hoặc", Email, Mật khẩu (link "Quên mật khẩu?" nằm cùng hàng nhãn), nút "Đăng nhập", dòng "Chưa có tài khoản? Đăng ký miễn phí". Sau khi xác minh email thì hiện khung xanh "Email đã được xác minh. Bạn có thể đăng nhập." Các thông báo lỗi và nút gửi lại email xác thực hiện có thì đặt ngay dưới tiêu đề, cùng kiểu khung.
+- **Đăng ký:** tiêu đề "Tạo tài khoản", dòng "Miễn phí. Bắt đầu từ chương đầu tiên trên bản đồ.", nút Google, "hoặc đăng ký bằng email", Họ và tên, Email, Mật khẩu (gợi ý "Tối thiểu 6 ký tự."), Nhập lại mật khẩu, nút "Tạo tài khoản", dòng "Đã có tài khoản? Đăng nhập".
+- **Kiểm tra email:** icon thư trong ô vuông `--ai-soft`, tiêu đề "Kiểm tra email của bạn", email in đậm, gợi ý xem thư mục Spam, nút "Gửi lại email xác thực" (khi đang đếm ngược thì vô hiệu và ghi số giây), nút "Quay lại đăng nhập". Khung đứt nét "Bản tương tác: giả lập…" chỉ có trong prototype, không làm.
+- **Quên mật khẩu:** tiêu đề "Quên mật khẩu?", ô Email, nút "Gửi hướng dẫn đặt lại", khung xanh xác nhận đã gửi, nút "Quay lại đăng nhập".
+- **Chuyển trang:** landing và auth mờ vào 280ms. Khi `prefers-reduced-motion` thì hiện ngay.
+- **Điện thoại (≤ 760px):** ẩn phần hình bên trái, form chiếm toàn màn (lề 20px).
+
 ## 10. Thứ tự làm và cách nghiệm thu
 
 | Bước | Nội dung | Xong khi |
@@ -200,6 +256,8 @@ Trạng thái và yêu cầu khác:
 | 7 | Bản đồ Hành trình (3) | Chuyển động vào/ra tỉnh, chú giải, điều khiển |
 | 8 | Chế độ tối (9b) | Chuyển Sáng/Tối/Theo máy ở Cài đặt, mọi màn đọc rõ, không còn màu cứng |
 | 9 | Sổ con dấu (9c) | Tab vùng, lật trang, Mục lục tìm/lọc, Tổng quan, đúng dữ liệu thật, không lộ tên mốc chưa đóng |
+| 10 | Landing page (9d) | Khách vào `/` thấy landing, đã đăng nhập vào bản đồ; giá đọc từ dữ liệu thật; ổn ở 390px |
+| 11 | Đăng nhập / Đăng ký (9e) | Đủ 4 màn, giữ logic auth cũ, ô mật khẩu hiện/ẩn, ổn ở 390px |
 
 Mỗi bước: chạy `npm run build` (typecheck) và `npm test`, chụp màn hình so với prototype, commit riêng.
 

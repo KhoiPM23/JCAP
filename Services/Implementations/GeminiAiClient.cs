@@ -50,7 +50,7 @@ public class GeminiAiClient : IAiClient
         return null;
     }
 
-    private List<string> BuildCandidateModels()
+    public List<string> BuildCandidateModels(string? preferredModel = null)
     {
         var models = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -86,6 +86,25 @@ public class GeminiAiClient : IAiClient
             AddModel(defaultModel);
         }
 
+        if (!string.IsNullOrWhiteSpace(preferredModel))
+        {
+            var target = preferredModel.Trim();
+            var idx = models.FindIndex(m => string.Equals(m, target, StringComparison.OrdinalIgnoreCase));
+            if (idx > 0)
+            {
+                // Phương án B: Ưu tiên bắt đầu từ model đang ghim đến hết danh sách,
+                // chỉ vòng lại các model phía trước nếu toàn bộ phần đuôi thất bại.
+                var rotated = new List<string>(models.Count);
+                for (int j = idx; j < models.Count; j++) rotated.Add(models[j]);
+                for (int j = 0; j < idx; j++) rotated.Add(models[j]);
+                return rotated;
+            }
+            if (idx < 0)
+            {
+                models.Insert(0, target);
+            }
+        }
+
         return models;
     }
 
@@ -101,7 +120,7 @@ public class GeminiAiClient : IAiClient
     public async Task<AiResponse> GenerateAsync(AiRequest request, CancellationToken cancellationToken = default)
     {
         var apiKey = ResolveConfig("AI:ApiKey", "Gemini:ApiKey");
-        var candidateModels = BuildCandidateModels();
+        var candidateModels = BuildCandidateModels(request.PreferredModel);
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -196,7 +215,7 @@ public class GeminiAiClient : IAiClient
                                 parts.GetArrayLength() > 0)
                             {
                                 var text = parts[0].GetProperty("text").GetString() ?? string.Empty;
-                                return AiResponse.Ok(text);
+                                return AiResponse.Ok(text, model);
                             }
                         }
 
@@ -215,7 +234,8 @@ public class GeminiAiClient : IAiClient
                 lastStatusCode = (int)response.StatusCode;
                 lastError = $"Gemini API error ({model} - {response.StatusCode}): {responseString}";
 
-                if (ShouldFallbackToNextModel(response.StatusCode) && i < candidateModels.Count - 1)
+                var shouldFallback = request.FallbackOnAnyError || ShouldFallbackToNextModel(response.StatusCode);
+                if (shouldFallback && i < candidateModels.Count - 1)
                 {
                     var nextModel = candidateModels[i + 1];
                     _logger.LogWarning(

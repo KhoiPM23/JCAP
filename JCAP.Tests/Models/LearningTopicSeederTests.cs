@@ -18,9 +18,9 @@ public class LearningTopicSeederTests
         await LearningContentSampleImporter.ImportAsync(db, LearningContentSampleData.Load());
         var result = await LearningTopicSeeder.SeedAsync(db);
 
-        Assert.Equal(15, result.AddedTopics);
+        Assert.Equal(21, result.AddedTopics);
         Assert.Equal(28, result.AddedVocabularyLinks);
-        Assert.Equal(20, result.AddedGrammarLinks);
+        Assert.Equal(26, result.AddedGrammarLinks);
         Assert.Empty(result.SkippedTopicCodes);
         Assert.Equal(15, await db.Vocabularies.CountAsync());
         Assert.Equal(6, await db.Grammars.CountAsync());
@@ -87,9 +87,11 @@ public class LearningTopicSeederTests
         db.ChangeTracker.Clear();
 
         var result = await LearningTopicSeeder.SeedAsync(db);
-        Assert.Equal(15, result.AddedTopics);
+        Assert.Equal(21, result.AddedTopics);
         Assert.Equal(2, await db.TopicVocabularies.CountAsync(t => t.VocabularyId == word.Id));
-        Assert.Equal(5, await db.TopicGrammars.CountAsync(t => t.GrammarId == grammar.Id));
+        var grammarTopics = await db.TopicGrammars.Where(t => t.GrammarId == grammar.Id).Select(t => t.Topic.Code).ToListAsync();
+        Assert.Equal(6, grammarTopics.Count);
+        Assert.Contains("GRAMMAR_REQUEST_N5", grammarTopics);
         Assert.Equal(15, await db.Vocabularies.CountAsync());
         Assert.Equal(6, await db.Grammars.CountAsync());
     }
@@ -102,7 +104,7 @@ public class LearningTopicSeederTests
         await db.SaveChangesAsync();
         var result = await LearningTopicSeeder.SeedAsync(db);
         Assert.Equal(0, result.AddedTopics);
-        Assert.Equal(15, result.SkippedTopicCodes.Length);
+        Assert.Equal(21, result.SkippedTopicCodes.Length);
         Assert.Empty(await db.LearningTopics.ToListAsync());
         Assert.Equal(1, await db.Vocabularies.CountAsync());
         Assert.Empty(await db.Grammars.ToListAsync());
@@ -118,8 +120,8 @@ public class LearningTopicSeederTests
         db.LearningTopics.Add(adminTopic);
         await db.SaveChangesAsync();
         var result = await LearningTopicSeeder.SeedAsync(db);
-        Assert.Equal(14, result.AddedTopics);
-        Assert.Equal(15, await db.LearningTopics.CountAsync());
+        Assert.Equal(20, result.AddedTopics);
+        Assert.Equal(21, await db.LearningTopics.CountAsync());
         Assert.Empty(await db.TopicVocabularies.Where(t => t.TopicId == adminTopic.Id).ToListAsync());
         Assert.Empty(await db.TopicGrammars.Where(t => t.TopicId == adminTopic.Id).ToListAsync());
         Assert.False(adminTopic.IsActive);
@@ -134,7 +136,7 @@ public class LearningTopicSeederTests
         await LearningTopicSeeder.SeedAsync(db);
         var lookup = new DefaultLearningTopicLookup(db);
         var all = await lookup.GetActiveTopicsAsync();
-        Assert.Equal(15, all.Count);
+        Assert.Equal(21, all.Count);
         foreach (var level in new[] { "N5", "N4", "N3" })
         {
             var filtered = await lookup.GetActiveTopicsAsync(level);

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { Button, Icon } from '../components/jcap';
+import { AuthMessage } from './auth/AuthUi';
 
 interface EmailVerificationPendingViewProps {
   email: string;
@@ -40,64 +42,28 @@ export const EmailVerificationPendingView: React.FC<EmailVerificationPendingView
   };
 
   return (
-    <div className="p-8 text-center">
-      <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl border border-blue-100">
-        ✉
-      </div>
-
-      <h1 className="text-2xl font-bold text-slate-800">Kiểm tra email của bạn</h1>
-      <p className="text-slate-500 text-sm mt-3 leading-6">
-        Liên kết xác minh đã được gửi tới địa chỉ:
-      </p>
-      <p className="text-slate-800 font-semibold mt-1 break-all">{email}</p>
-
-      <div className="mt-6 p-4 bg-slate-50 rounded-xl text-left text-sm text-slate-600 leading-6">
-        <p>Hãy mở email và nhấn vào liên kết xác minh để kích hoạt tài khoản JCAP.</p>
-        <p className="mt-2 text-xs text-slate-500">
-          💡 Nếu không tìm thấy thư trong Hộp thư đến (Inbox), vui lòng kiểm tra thêm mục <strong>Spam</strong> hoặc <strong>Thư rác</strong>.
+    <div className="au-box">
+      <span className="mailic">
+        <Icon name="mark_email_unread" size={32} />
+      </span>
+      <div>
+        <h1>Kiểm tra email của bạn</h1>
+        <p className="lead">
+          Chúng tôi đã gửi liên kết xác minh tới <b className="mail-to">{email}</b>. Mở email và bấm liên kết để kích hoạt tài khoản.
         </p>
       </div>
+      <p className="af-h" style={{ margin: 0, fontSize: 14, lineHeight: '22px' }}>
+        Không thấy email? Xem thư mục Spam hoặc Quảng cáo, rồi gửi lại nếu cần.
+      </p>
 
-      {statusMessage && (
-        <div
-          className={`mt-4 p-3 rounded-lg text-xs flex items-start gap-2 ${
-            statusMessage.isError
-              ? 'bg-red-50 text-red-600 border border-red-200'
-              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-          }`}
-          role="status"
-        >
-          <span>{statusMessage.isError ? '⚠️' : '✅'}</span>
-          <span className="text-left leading-5">{statusMessage.text}</span>
-        </div>
-      )}
+      {statusMessage && <AuthMessage tone={statusMessage.isError ? 'err' : 'ok'}>{statusMessage.text}</AuthMessage>}
 
-      <div className="mt-6 space-y-3">
-        <button
-          type="button"
-          onClick={handleResend}
-          disabled={countdown > 0 || isResending}
-          className={`w-full py-2.5 px-4 font-semibold rounded-xl border transition cursor-pointer ${
-            countdown > 0 || isResending
-              ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 active:bg-slate-100'
-          }`}
-        >
-          {isResending
-            ? 'Đang gửi...'
-            : countdown > 0
-            ? `Gửi lại email sau (${countdown}s)`
-            : 'Gửi lại email xác thực'}
-        </button>
-
-        <button
-          type="button"
-          onClick={onBackToLogin}
-          className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition cursor-pointer"
-        >
-          Đi tới đăng nhập
-        </button>
-      </div>
+      <Button type="button" variant="secondary" block icon="forward_to_inbox" onClick={handleResend} disabled={countdown > 0} loading={isResending}>
+        {isResending ? 'Đang gửi...' : countdown > 0 ? `Gửi lại email sau ${countdown} giây` : 'Gửi lại email xác thực'}
+      </Button>
+      <Button type="button" variant="ghost" block onClick={onBackToLogin}>
+        Quay lại đăng nhập
+      </Button>
     </div>
   );
 };

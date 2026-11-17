@@ -20,12 +20,22 @@ public class ScenarioController : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/scenarios - Lấy danh sách các scenario đang hoạt động (hỗ trợ tìm kiếm theo query).
+    /// GET /api/scenarios - Lấy danh sách các scenario đang hoạt động (hỗ trợ tìm kiếm theo query và lọc theo chủ đề topic).
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetScenarios([FromQuery] string? query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetScenarios([FromQuery] string? query, [FromQuery] string? topic, CancellationToken cancellationToken)
     {
-        var result = await _scenarioService.GetScenariosAsync(query, cancellationToken);
+        var result = await _scenarioService.GetScenariosAsync(query, topic, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// GET /api/scenarios/topics - Lấy danh sách các chủ đề tình huống (đồng bộ LearningTopics từ database).
+    /// </summary>
+    [HttpGet("topics")]
+    public async Task<IActionResult> GetTopics(CancellationToken cancellationToken)
+    {
+        var result = await _scenarioService.GetTopicsAsync(cancellationToken);
         return Ok(result);
     }
 

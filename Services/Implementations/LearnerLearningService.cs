@@ -1,4 +1,5 @@
 using JCAP.Data;
+using JCAP.Data.Seeds;
 using JCAP.DTOs.Learning;
 using JCAP.Models;
 using Microsoft.EntityFrameworkCore;
@@ -26,10 +27,24 @@ public class LearnerLearningService(AppDbContext db)
         var topics = Topics();
         if (Keyword(q.Keyword) is { } keyword) topics = topics.Where(t => t.Name.Contains(keyword) || (t.Description != null && t.Description.Contains(keyword)));
         if (q.JLPTLevel is { } level) topics = topics.Where(t => t.JLPTLevel == level);
+        topics = q.Kind switch
+        {
+            null => topics,
+            "vocabularies" => topics.Where(t => t.TopicVocabularies.Any(l => l.Vocabulary.IsActive && (l.Vocabulary.JLPTLevel ?? "N5") == t.JLPTLevel)),
+            "grammars" => GrammarCatalogTopics(topics).Where(t => t.TopicGrammars.Any(l => l.Grammar.IsActive && (l.Grammar.JLPTLevel ?? "N5") == t.JLPTLevel)),
+            _ => throw new LearningRequestException("Loại học liệu không hợp lệ.")
+        };
         var total = await topics.CountAsync(ct);
         var page = Math.Min(q.Page, Math.Max(1, (int)Math.Ceiling(total / (double)q.PageSize)));
-        var ordered = topics.OrderByDescending(t => t.JLPTLevel).ThenBy(t => t.Name).ThenBy(t => t.Id).Skip((page - 1) * q.PageSize).Take(q.PageSize);
+        var ordered = topics.OrderByDescending(t => t.JLPTLevel).ThenBy(t => t.Name).ThenBy(t => t.Id)
+            .Skip((page - 1) * q.PageSize).Take(q.PageSize);
         return new(await TopicRows(ordered).ToListAsync(ct), total, page, q.PageSize);
+    }
+
+    private static IQueryable<LearningTopic> GrammarCatalogTopics(IQueryable<LearningTopic> topics, int? currentTopicId = null)
+    {
+        var situationCodes = LearningTopicSeedData.SituationCodes;
+        return topics.Where(t => t.Id == currentTopicId || !situationCodes.Contains(t.Code));
     }
     public async Task<LearnerTopic> TopicAsync(int id, CancellationToken ct = default)
         => await TopicRows(Topics().Where(t => t.Id == id)).SingleOrDefaultAsync(ct)
@@ -115,7 +130,8 @@ public class LearnerLearningService(AppDbContext db)
                 e.VietnameseTranslation, e.Furigana, e.ExternalId, e.Source is null ? null : Source(e.Source, e.ExternalId))).ToList();
             if (examples.Count == 0 && !string.IsNullOrWhiteSpace(content.ExampleSentence)) examples.Add(new(0, content.ExampleSentence, null, null, null, null));
             sources = content.Sources.OrderBy(s => s.Source.Name).ThenBy(s => s.Source.Version).ThenBy(s => s.ExternalId).Select(s => Source(s.Source, s.ExternalId)).ToList();
-            otherTopics = Topics().Where(t => t.JLPTLevel == item.JLPTLevel && t.TopicGrammars.Any(l => l.GrammarId == id));
+            otherTopics = GrammarCatalogTopics(Topics(), topicId)
+                .Where(t => t.JLPTLevel == item.JLPTLevel && t.TopicGrammars.Any(l => l.GrammarId == id));
         }
         var filtered = Entries(topicId, kind, q.Keyword);
         var previous = await filtered.Where(e => e.Order < item.Order || (e.Order == item.Order && e.Id < id))

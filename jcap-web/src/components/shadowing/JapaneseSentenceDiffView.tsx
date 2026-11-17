@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ShadowingDiffToken } from '../../types/shadowing';
+import WordFeedbackList from './WordFeedbackList';
 
 interface JapaneseSentenceDiffViewProps {
   diffTokens?: ShadowingDiffToken[];
@@ -55,12 +56,18 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
                 );
               }
 
+              // Âm người học nói thừa (không có trong câu mẫu): KHÔNG đánh dấu trong câu mẫu (dấu "+" không cho biết thừa gì,
+              // lại hay nằm sát từ đọc sai nên trông như đặt bừa). Thừa gì, ở đâu: xem mục "Nói thừa" trong danh sách Cần chỉnh.
+              if (token.status === 'mismatched' && token.errorType === 'extra') return null;
+
               if (token.status === 'mismatched') {
                 const kind = describeError(token.errorType);
                 const expected = token.expectedReading && token.expectedReading !== token.text
                   ? `"${token.text}" (${token.expectedReading})`
                   : `"${token.text}"`;
-                const tooltipText = token.errorType === 'extra'
+                const tooltipText = token.issues && token.issues.length > 0
+                  ? token.issues.map((i) => i.message).join('\n')
+                  : token.errorType === 'extra'
                   ? `${kind}: "${token.text}"`
                   : token.spokenPart
                   ? `${kind ? kind + ' — ' : ''}Câu mẫu: ${expected} ➔ Bạn nói: "${token.spokenPart}"`
@@ -107,7 +114,8 @@ export const JapaneseSentenceDiffView: React.FC<JapaneseSentenceDiffViewProps> =
         </div>
       )}
 
-
+      {/* Cần chỉnh: mỗi từ chưa đúng một mục (hiện thẳng, xem được trên điện thoại) */}
+      {hasDiffs && <WordFeedbackList tokens={diffTokens} />}
     </div>
   );
 };
