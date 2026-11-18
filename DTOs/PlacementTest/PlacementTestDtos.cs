@@ -8,9 +8,12 @@ namespace JCAP.DTOs.PlacementTest
         public string PlacementTestStatus { get; set; } = "NotStarted"; // NotStarted | Skipped | InProgress | InsufficientEvidence | Completed
         public bool HasSeenPlacementPrompt { get; set; } = false;
         public int? ActiveSessionId { get; set; }
+        public bool AllowRetakeForTesting { get; set; } = false;
+        public bool CanStartOrRetake { get; set; } = true;
         public string? InitialEstimatedLevel { get; set; }
         public string? InitialConfidenceTier { get; set; }
         public string? InitialProficiencySnapshotJson { get; set; }
+        public DateTime? PlacementTestCompletedAtUtc { get; set; }
         public HotelContextPackageDto ContextPackage { get; set; } = new();
         public List<PlacementEventEvidenceSummary> EventSummaries { get; set; } = [];
     }
