@@ -536,6 +536,7 @@ namespace JCAP.Data
                 entity.HasOne(e => e.ScenarioLevelConfiguration)
                     .WithMany(c => c.RoleplaySessions)
                     .HasForeignKey(e => e.ScenarioLevelConfigurationId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(e => e.Messages)

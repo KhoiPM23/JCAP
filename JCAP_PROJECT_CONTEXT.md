@@ -71,16 +71,16 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 * **UC-06:** Change Password
 * **UC-07:** View Learner Profile
 * **UC-08:** Update Learner Profile
-* **UC-09:** Feedback and Report an Issue
 
 ### **FE-02: Credit and Payment**
 
-> * Credit package browsing, credit purchase, and credit transaction/usage history.
+> * Credit package browsing, credit balance indicator, credit purchase, and credit transaction/usage history.
 > * Admin credit package management: Create, Edit, Delete credit packages.
 
 **Use Cases:**
-* **UC-10:** View Credit Packages
-* **UC-11:** Purchase Credits
+* **UC-09:** View Credit Packages
+* **UC-10:** Purchase Credits
+* **UC-11:** View Credit Balance Indicator
 * **UC-12:** View Credit History
 * **UC-13:** Add Credit Package
 * **UC-14:** Edit Credit Package
@@ -150,26 +150,72 @@ JCAP is an AI-powered web platform designed to provide scenario-based Japanese c
 * **UC-49:** Import Vocabulary from Excel
 * **UC-50:** Import Grammar from Excel
 * **UC-51:** Change Learning Content Status
-* **UC-52:** Bookmark Learning Content
+* **UC-52:** Add Learning Content to Bookmarks
 * **UC-53:** View Bookmarked Learning Contents
-* **UC-54:** Review Bookmarked Contents through Flashcard
+* **UC-54:** Remove Learning Content from Bookmarks
 * **UC-55:** View Flashcard Sets
 * **UC-56:** View Flashcard Set Details
 * **UC-57:** Study a Flashcard Set
-* **UC-58:** View Flashcard Review History
+* **UC-58:** View Flashcard Study History
+* **UC-59:** View Flashcard Study Summary
+* **UC-60:** Review Due Flashcards
+* **UC-61:** Unlock Additional Flashcard Capacity
+* **UC-62:** Do Flashcard Quiz
+* **UC-63:** View Flashcard Quiz Results
 
-### **FE-06: Platform Administration**
+### **FE-06: Explore Journey Map**
 
-> * Admin user administration: Search, Filter, Ban/Unban learner accounts.
-> * Learner feedback and issue report review and resolution reply.
-> * Admin revenue, system analytics, and platform monitoring.
+> * Interactive exploration of Japan's prefectures through a journey map and spot-based cultural lessons.
+> * Gamified progression with stamp book collection and regional learning achievements.
+> * Admin journey management: Chapter and prefecture organisation, spot content management, and explore statistics.
 
 **Use Cases:**
-* **UC-59:** Search & Filter Users
-* **UC-60:** Change User Account Status (Ban/Unban)
-* **UC-61:** View Learner Feedback
-* **UC-62:** Reply Learner Feedback
-* **UC-63:** View Revenue Analytics
+* **UC-64:** View Explore Journey Map
+* **UC-65:** View Prefecture Spots
+* **UC-66:** Study a Spot Lesson
+* **UC-67:** View Stamp Book
+* **UC-68:** View Explore Map Overview
+* **UC-69:** Change Prefecture Status
+* **UC-70:** Assign Prefecture to Chapter
+* **UC-71:** Add Chapter
+* **UC-72:** Edit Chapter
+* **UC-73:** Reorder Chapters
+* **UC-74:** Deactivate Chapter
+* **UC-75:** View Prefecture Content
+* **UC-76:** Add Spot
+* **UC-77:** Edit Spot
+* **UC-78:** Change Spot Status
+* **UC-79:** Deactivate Spot
+* **UC-80:** Edit Province Word
+* **UC-81:** View Spot Content List
+* **UC-82:** View Explore Statistics
+
+### **FE-07: Placement Test and Adaptive Learning Recommendations**
+
+> * Initial Japanese proficiency evaluation via diagnostic placement tests.
+> * Placement test scoring, level classification, and detailed result analysis.
+> * Adaptive learning profile maintenance tracking learner performance, strengths, and areas for improvement.
+> * Personalized learning recommendations guiding learners to appropriate scenarios, shadowing lessons, and self-study materials.
+
+**Use Cases:**
+* **UC-83:** Start Placement Test
+* **UC-84:** View Placement Test Results
+* **UC-85:** View Adaptive Learning Profile
+* **UC-86:** View Learning Recommendations
+
+### **FE-08: Forum**
+
+> * Community discussion forum for Japanese learners to share experiences, ask questions, and collaborate.
+> * Post creation, viewing, editing, deletion, and response threads.
+> * Community interaction through responses and upvoting.
+
+**Use Cases:**
+* **UC-87:** View Forum Posts
+* **UC-88:** Post a Forum
+* **UC-89:** Response a Forum Post
+* **UC-90:** Upvote a Forum Post
+* **UC-91:** Delete a Forum Post
+* **UC-92:** Edit a Forum Post
 
 ## **5\. Global Database Schema (Unified ERD Overview)**
 
@@ -276,8 +322,8 @@ Example: feature/authentication-login
    - Dialogues are strictly fixed content extracted from textbooks (e.g., Minna no Nihongo) or native Japanese speaker videos.
    - The AI **does NOT generate or hallucinate** shadowing dialogue; its role is strictly assessment.
    - **Scenario Association:** Every shadowing content/dialogue is thematic and directly references the topic of an existing Scenario (1 Scenario topic $\rightarrow$ multiple Shadowing contents from diverse sources), tagged with a specific JLPT level.
-2. **Detailed Content Preview (UC-26b):**
-   - Dedicated **View Shadowing Content Details (UC-26b)** displaying full transcript, native audio preview, associated target vocabulary, and target grammar.
+2. **Detailed Content Preview (UC-27):**
+   - Dedicated **View Shadowing Content Details (UC-27)** displaying full transcript, native audio preview, associated target vocabulary, and target grammar.
 3. **Role Selection & Locking Rule:**
    - For multi-speaker dialogues (e.g., Speaker A & Speaker B), the learner selects their practicing role **prior to starting**.
    - **Constraint:** Once the shadowing session starts, role switching is locked (to switch roles, the learner must restart/retry the session).
