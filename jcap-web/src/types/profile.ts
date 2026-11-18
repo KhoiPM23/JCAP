@@ -16,6 +16,12 @@ export interface LearnerProfile {
   role: string;
   creditBalance?: number;
   createdAt: string;
+  placementTestStatus?: string;
+  hasSeenPlacementPrompt?: boolean;
+  initialEstimatedLevel?: string | null;
+  initialConfidenceTier?: string | null;
+  initialProficiencySnapshotJson?: string | null;
+  placementTestCompletedAtUtc?: string | null;
 }
 
 export interface UpdateLearnerProfileRequest {

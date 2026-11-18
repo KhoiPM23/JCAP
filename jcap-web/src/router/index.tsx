@@ -390,16 +390,7 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
-      {/* Placement Test History & Evidence Inspector */}
-      <Route
-        path="/placement-test/history"
-        element={
-          <PrivateRoute>
-            <PlacementTestHistoryView />
-          </PrivateRoute>
-        }
-      />
-      {/* Placement Test Interactive Practice Room */}
+      {/* Placement Test Interactive Practice Room (Fullscreen) */}
       <Route
         path="/placement-test"
         element={
@@ -482,6 +473,8 @@ export const AppRouter: React.FC = () => {
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
         <Route path="/roleplay/results" element={<ConversationHistoryView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
+        {/* Lịch sử hoàn thành Placement Test (tách riêng, giữ thanh bên điều hướng) */}
+        <Route path="/placement-test/history" element={<PlacementTestHistoryView />} />
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />
