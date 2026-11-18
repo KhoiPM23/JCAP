@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakute-wa-naranai",
+      "Fields": {
+        "Meaning": "Phải làm, cần phải làm",
+        "Formation": "Động từ thể ない: đổi ない thành なくて ＋ はならない／はなりません",
+        "Explanation": "Dùng mẫu này để nêu nghĩa vụ, quy tắc hoặc điều cần thực hiện. Dạng 〜なくてはなりません lịch sự hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakute-wa-naranai:example:1": "Phải giữ yên lặng trong thư viện.",
+        "nakute-wa-naranai:example:2": "Phải giữ lời hứa."
+      },
+      "SourceHash": "1b370068f8ee27743cf30792e83d83787879da339593a80d3305d1d4732b8fe5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakute-mo-ii",
+      "Fields": {
+        "Meaning": "Không cần làm, không làm cũng được",
+        "Formation": "Động từ thể ない: đổi ない thành なくて ＋ もいい",
+        "Explanation": "Mẫu này cho biết một việc không bắt buộc. 〜なくてもいいです là cách nói lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakute-mo-ii:example:1": "Ngày mai bạn không cần đến.",
+        "nakute-mo-ii:example:2": "Bạn không cần ăn hết."
+      },
+      "SourceHash": "e0e708fe781e82169bf773ef9b5550504a021ad6d1d91b1f63849412c5f82a8c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "na-adjective-da",
+      "Fields": {
+        "Meaning": "Tính từ đuôi な làm vị ngữ",
+        "Formation": "Gốc tính từ đuôi な ＋ だ／です",
+        "Explanation": "Khi tính từ đuôi な làm vị ngữ khẳng định, dùng だ ở thể thông thường hoặc です ở thể lịch sự. 静かだ nghĩa là yên tĩnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "na-adjective-da:example:1": "Thị trấn này rất yên tĩnh.",
+        "na-adjective-da:example:2": "Cô ấy hát hay."
+      },
+      "SourceHash": "23d90f011155ac498d812cfee9e8c6468d04d907b2da336b8904520668b1d782"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "na-adjective-noun",
+      "Fields": {
+        "Meaning": "Tính từ đuôi な bổ nghĩa cho danh từ",
+        "Formation": "Gốc tính từ đuôi な ＋ な ＋ danh từ",
+        "Explanation": "Thêm な giữa gốc tính từ và danh từ mà nó mô tả. 静かな町 là thị trấn yên tĩnh, còn 有名なレストラン là nhà hàng nổi tiếng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "na-adjective-noun:example:1": "Đây là một thị trấn yên tĩnh.",
+        "na-adjective-noun:example:2": "Tôi đã đến một nhà hàng nổi tiếng."
+      },
+      "SourceHash": "eeee4ace494b3e627171ee01113d7d09837691ac10a142aa7b1bcb24829d0a09"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naze",
+      "Fields": {
+        "Meaning": "Tại sao, vì sao",
+        "Formation": "なぜ ＋ câu hỏi ＋ か",
+        "Explanation": "なぜ hỏi nguyên nhân hoặc lý do. 〜のですか có thể dùng để hỏi người nghe giải thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naze:example:1": "Tại sao anh/chị đã không đến?",
+        "naze:example:2": "Tại sao bạn thích cuốn sách này?"
+      },
+      "SourceHash": "7b1ff722b09dc62ad95e92c573cc1017219ffd695a9e96f98df91460c1a89161"
+    }
+  ]
+}

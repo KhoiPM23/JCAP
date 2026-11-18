@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "demo-even",
+      "Fields": {
+        "Meaning": "Ngay cả, hay gì đó, bất cứ",
+        "Formation": "Danh từ ＋ でも／từ để hỏi ＋ でも",
+        "Explanation": "Có thể nêu trường hợp bất ngờ, gợi ý một lựa chọn, hoặc chỉ phạm vi mở như 何でも là bất cứ thứ gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "demo-even:example:1": "Bài như thế này ngay cả trẻ con cũng làm được.",
+        "demo-even:example:2": "Cuối tuần mình xem phim hay làm gì đó nhé?"
+      },
+      "SourceHash": "3db2c60e931372841c0a5741770e06c18b06fbfa9a4ee3c7dcc72be2ca73a4c9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-morau",
+      "Fields": {
+        "Meaning": "Được ai làm giúp",
+        "Formation": "Người giúp ＋ に ＋ động từ thể て ＋ もらう",
+        "Explanation": "Chủ thể là người nhận lợi ích. Người thực hiện hành động thường được đánh dấu bằng に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-morau:example:1": "Tôi được bạn giúp chuyển nhà.",
+        "te-morau:example:2": "Ở ga, có người chỉ đường cho tôi."
+      },
+      "SourceHash": "72325fbf0cbf8474b4a423fa96855087a3e5a42987861f8e9b8a53884de700c7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-yaru",
+      "Fields": {
+        "Meaning": "Làm cho ai, nhất định sẽ làm",
+        "Formation": "Động từ thể て ＋ やる",
+        "Explanation": "Có thể nói về việc làm cho người nhỏ tuổi hoặc thân thiết. Trong ngữ cảnh khác, mẫu này bộc lộ quyết tâm mạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-yaru:example:1": "Thấy em trai gặp khó, tôi đã giúp em.",
+        "te-yaru:example:2": "Tôi đọc sách tranh cho đứa trẻ."
+      },
+      "SourceHash": "c334d797b6da7bc2ebbf7fdfe562d5d3117b3e9622c7354b24451821c3eb6957"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-yokatta",
+      "Fields": {
+        "Meaning": "May mà đã làm, mừng vì đã làm",
+        "Formation": "Động từ thể て ＋ よかった",
+        "Explanation": "Bày tỏ sự nhẹ nhõm hoặc hài lòng với một việc đã xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-yokatta:example:1": "May mà tôi ra khỏi nhà sớm nên đã kịp tàu.",
+        "te-yokatta:example:2": "May mà tôi hỏi ý kiến bạn. Tôi thấy nhẹ lòng hơn."
+      },
+      "SourceHash": "0d8da3bd0bbe27ef9e497c66aacc2203142c32d4d6c7d414198a441258788733"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-quotation",
+      "Fields": {
+        "Meaning": "Đánh dấu lời nói hoặc ý nghĩ",
+        "Formation": "Nội dung trích dẫn ＋ と ＋ 言う／思う…",
+        "Explanation": "と đánh dấu lời được thuật lại hoặc nội dung suy nghĩ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-quotation:example:1": "Anh ấy nói ngày mai sẽ đến.",
+        "to-quotation:example:2": "Tôi nghĩ thế này là được."
+      },
+      "SourceHash": "394ba49b975e6c6a42c98d4c3cbf2522b8cb4d70c63a3bf824f307c57c6cef1a"
+    }
+  ]
+}

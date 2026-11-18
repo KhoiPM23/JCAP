@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f91ef8a089",
+      "Fields": {
+        "Meaning": "Chiều xuống, chiều tàu đi xa trung tâm",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "Chỉ đoạn hoặc chiều đi xuống. Với tàu, từ này thường chỉ hướng đi xa trung tâm hoặc ga đầu tuyến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74130": "Đoạn xuống ở đây cũng nguy hiểm vì không có chỗ bám."
+      },
+      "SourceHash": "12e1d3d8f0164253c6d0ca18ec65a963c15cc3ca95bf044063942b9502f04bab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39169c37b8",
+      "Fields": {
+        "Meaning": "Đau đớn, khổ sở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "苦痛（くつう）có nghĩa là đau đớn, khổ sở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108115": "Anh ấy đau đến mức gần như mất trí.",
+        "179525": "Mặt anh ấy méo đi vì đau."
+      },
+      "SourceHash": "22c32c7959e90d005110701e95f9dde221168a2dd8b33e0b80b5ab0c3056d0f1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e67cf76c90",
+      "Fields": {
+        "Meaning": "Ngủ say, ngủ ngon",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "ぐっすり（ぐっすり）có nghĩa là ngủ say, ngủ ngon.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85913": "Cậu bé mệt đang ngủ say.",
+        "169667": "Đêm qua tôi không ngủ ngon."
+      },
+      "SourceHash": "87fbdeef314c11cb088e914198d562633dc7ed37e45b968ffb9226b4ec2bc7dc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "208282da05",
+      "Fields": {
+        "Meaning": "Phân biệt, phân loại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "区別（くべつ）có nghĩa là phân biệt, phân loại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153421": "Tôi không phân biệt được cô ấy với em gái cô ấy.",
+        "175258": "Chó không phân biệt được màu sắc."
+      },
+      "SourceHash": "ce737f9baa47e1fc435bef120471a974072a63f0f311af32b79d259a86f6bbf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fa8d2f8ed",
+      "Fields": {
+        "Meaning": "Nhóm, lớp, cặp, bộ",
+        "PartOfSpeech": "Danh từ, hậu tố, trợ số từ",
+        "Explanation": "組（くみ）có nghĩa là nhóm, lớp, cặp, bộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112568": "Anh ấy đứng đầu lớp đó.",
+        "194368": "Một nhóm khách du lịch nữa đã đến."
+      },
+      "SourceHash": "8c33edcb2a728a368fcc55bb16fcffe11eec3ee36e23f9db776292ae55af8c92"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c6607d94a5",
+      "Fields": {
+        "Meaning": "Công đoàn, hiệp hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "組合（くみあい）có nghĩa là công đoàn, hiệp hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97036": "Họ đề nghị tôi gia nhập công đoàn công ty.",
+        "140613": "Công đoàn có tham gia biểu tình không?"
+      },
+      "SourceHash": "600fe16a410a354fb59efc4e01ba2010bd88d3f9d49bc139468fe9b589481a6f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a25321a53",
+      "Fields": {
+        "Meaning": "Ghép, bắt chéo, khoác, lập nhóm",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "組む（くむ）có nghĩa là ghép, bắt chéo, khoác, lập nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111002": "Anh ấy ngồi trên ghế dài và bắt chéo chân.",
+        "153716": "Tôi thấy họ khoác tay nhau đi bộ."
+      },
+      "SourceHash": "40a775503cb13483c3cd2f2b25df9d79f9146d73f2419f495083724746abb286"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39eebded13",
+      "Fields": {
+        "Meaning": "Hàng, bậc, khoảng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "位（くらい）có nghĩa là hàng, bậc, khoảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76953": "Nếu làm tròn 5.814 đến hàng nghìn thì được bao nhiêu?",
+        "232777": "Bạn viết thư cho mẹ khoảng mấy lần mỗi tháng?"
+      },
+      "SourceHash": "f328bea7bb873b1b5ccfcbf4f72dda3200a5de21fed348a9e4c298f0db2ce6b0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94d9c6d53a",
+      "Fields": {
+        "Meaning": "Cuộc sống, sinh kế",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "暮らし（くらし）có nghĩa là cuộc sống, sinh kế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96229": "Họ sống trong cảnh nghèo khó.",
+        "193195": "Mong rằng chúng ta có thể sống khá hơn."
+      },
+      "SourceHash": "0640cf26890416b8d0177d789cdb0471b0f41536c24826500c106065f96c55ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42d188d98e",
+      "Fields": {
+        "Meaning": "Nhạc cổ điển, tác phẩm kinh điển",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "クラシック（クラシック）có nghĩa là nhạc cổ điển, tác phẩm kinh điển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161119": "Tôi không thích nhạc cổ điển.",
+        "225611": "Không có nhạc cổ điển."
+      },
+      "SourceHash": "5493de7abc17e2768c4b3d50b059b3638cee7927484a0886c92d7313766f9677"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d220e4cd9",
+      "Fields": {
+        "Meaning": "Sống, sinh sống",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "暮らす（くらす）có nghĩa là sống, sinh sống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95526": "Cô ấy sống một mình thì không tốt.",
+        "103534": "Ông ấy sống phần lớn cuộc đời ở nước ngoài."
+      },
+      "SourceHash": "ca592022f50951886b3a2ce4deccd735d2d6e13fdd53b6450ea851d397c02108"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23556d634a",
+      "Fields": {
+        "Meaning": "Ly, cốc thủy tinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "グラス（グラス）có nghĩa là ly, cốc thủy tinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "225570": "Chiếc ly vỡ tan tành."
+      },
+      "SourceHash": "b1b95026d9f1e019f009d6e11b34337987a9d261ffc086a3a473e2facecc9d14"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53f7d1e6a9",
+      "Fields": {
+        "Meaning": "Hoành tráng, lớn (từ mượn)",
+        "PartOfSpeech": "Từ bổ nghĩa đứng trước danh từ",
+        "Explanation": "グランドオープン là dịp chính thức khai trương. Câu đầu chứa tên riêng イングランド (Anh).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228397": "Đội tuyển Anh có lẽ sẽ thắng trận đó.",
+        "12072710": "Khi nào chính thức khai trương?"
+      },
+      "SourceHash": "3d9c87b078ee0b317064ed4f0f9a49a1b63a45479573eaad568432a34fdec0e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad08892426",
+      "Fields": {
+        "Meaning": "Kem, kem sữa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "クリーム（クリーム）có nghĩa là kem, kem sữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92076": "Cô ấy đánh bông kem để làm món tráng miệng.",
+        "224930": "Bạn có muốn thêm kem vào cà phê không?"
+      },
+      "SourceHash": "08033b9fd78585afff27d2d84c5b661c1be6be5153c939b0a15d38de2eb98f29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c2750be66b",
+      "Fields": {
+        "Meaning": "Lặp lại, làm đi làm lại",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "繰り返す（くりかえす）có nghĩa là lặp lại, làm đi làm lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141601": "Giáo viên bảo tôi lặp lại câu đó.",
+        "237180": "“Không”, người Anh ấy nhắc lại."
+      },
+      "SourceHash": "e98d096801766e2cba9a5bdb7411c45b0699649c027debce4a1993a283f5d586"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd86540645",
+      "Fields": {
+        "Meaning": "Giáng sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "クリスマス（クリスマス）có nghĩa là giáng sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92936": "Cô ấy khởi hành vào ngày Giáng sinh.",
+        "229408": "Bạn có một mùa Giáng sinh vui vẻ không?"
+      },
+      "SourceHash": "e16658a9e559cb71df12999d235fb54c714c964e50600fc197e8ae45a8d1e789"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "711e829034",
+      "Fields": {
+        "Meaning": "Phát điên, sai lệch, mê mẩn",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "狂う（くるう）có nghĩa là phát điên, sai lệch, mê mẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111815": "Anh ấy mê quần vợt đến phát cuồng.",
+        "233250": "Đồng hồ của bạn có chạy sai giờ không?"
+      },
+      "SourceHash": "6d5236725e3e126649287aea9fa2e07e5c114b54e73369dc136bfb01f92d782b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d4ec7c2db",
+      "Fields": {
+        "Meaning": "Nhóm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "グループ（グループ）có nghĩa là nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141607": "Giáo viên chia chúng tôi thành hai nhóm.",
+        "160406": "Tôi không liên quan gì đến nhóm đó."
+      },
+      "SourceHash": "140f8d2adfac22d0dc99a98c5a93e69cf40788fa620aeaa6ea766df11641d627"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "823d4cdf65",
+      "Fields": {
+        "Meaning": "Đau đớn, khó chịu, khó khăn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "苦しい（くるしい）có nghĩa là đau đớn, khó chịu, khó khăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117939": "Gia đình anh ấy sống khá chật vật.",
+        "179537": "Đau quá, dừng lại đi."
+      },
+      "SourceHash": "61165cf67c369a8d050a9fb860836c7634ea97c67432b77bfd369c0ef7dc486b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db6bc1eecf",
+      "Fields": {
+        "Meaning": "Đau khổ, khổ sở, chịu đựng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "苦しむ（くるしむ）có nghĩa là đau khổ, khổ sở, chịu đựng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111460": "Anh ấy hẳn đã đau khổ biết bao.",
+        "114753": "Anh ấy khổ sở vì nghi ngờ đủ chuyện."
+      },
+      "SourceHash": "0b829c7f64cb7d210969f4ccc70f0945a94e425b6bf94424a4d9b746e66b0f21"
+    }
+  ]
+}

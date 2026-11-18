@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: f0070e59ed."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0070e59ed",
+      "Fields": {
+        "Meaning": "Vì vậy, do đó; ngay lúc ấy trong lời kể",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "そこで nối tình huống vừa nêu với bước tiếp theo. Trong lời kể, nó cũng có thể đánh dấu thời điểm hoặc chỗ sự việc xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213552": "Và đúng lúc đó, người đàn ông bước vào.",
+        "213715": "Vì vậy, sự tương tác với người khác trở nên quan trọng."
+      },
+      "SourceHash": "765b6b77f113f8773bd018ada57d4386c60b1ce99a1f27f0605ad5468483869a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98a2034477",
+      "Fields": {
+        "Meaning": "Tổ chức, cơ cấu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "組織（そしき）có nghĩa là tổ chức, cơ cấu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96015": "Họ sẽ thành lập công đoàn.",
+        "220724": "Tổ chức này thiếu sự gắn kết."
+      },
+      "SourceHash": "3884b9c4665ed62f9004c1dcd85d256303324bf9ff0a3a0a226c0130cfa3ca67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1655402893",
+      "Fields": {
+        "Meaning": "Và, rồi",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "そして（そして）có nghĩa là và, rồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143466": "Và thế gian được tạo dựng qua Ngài."
+      },
+      "SourceHash": "ff76607d42e86d54b18a94b11542c41acc300bab588ffa2094cf83fa6f537343"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fb77f8ffbb",
+      "Fields": {
+        "Meaning": "Rót, dồn, chiếu",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "注ぐ（そそぐ）có nghĩa là rót, dồn, chiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99299": "Anh ấy dốc hết sức giúp bạn.",
+        "206987": "Ánh nắng chiếu rực rỡ vào phòng."
+      },
+      "SourceHash": "0f42aefcf4d0d836a44eba16ae261d20f65483406d6ab1f22f67ae221335d736"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e62a18d68e",
+      "Fields": {
+        "Meaning": "Lớn lên, được nuôi dạy",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "育つ（そだつ）có nghĩa là lớn lên, được nuôi dạy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110470": "Hẳn anh ấy lớn lên trong một gia đình tốt.",
+        "168502": "Trẻ con cứ lớn lên dù không có ai kèm cặp."
+      },
+      "SourceHash": "5dec838f3bc0c4b2bc551fae33cd9f0a2c8c45ddeb2a52b3f959718ab1705b37"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1bc27bd981",
+      "Fields": {
+        "Meaning": "Giống hệt, toàn bộ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "そっくり（そっくり）có nghĩa là giống hệt, toàn bộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176435": "Kế hoạch được thông qua toàn bộ.",
+        "232776": "Bạn giống hệt mẹ bạn nhỉ."
+      },
+      "SourceHash": "439dfcf567cfbd445680569e4793f1ac9d56d02ac941d244415275041d682ef8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5cf06f835b",
+      "Fields": {
+        "Meaning": "Nhẹ nhàng, lặng lẽ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "そっと（そっと）có nghĩa là nhẹ nhàng, lặng lẽ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89720": "Cô ấy nhẹ nhàng đặt con xuống ngủ.",
+        "92628": "Cô ấy lặng lẽ lẻn ra khỏi phòng."
+      },
+      "SourceHash": "2e1c86cb98d2c8ee0be0d4ef305da01219397a4144991d167d6510ce4bf60fb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02ebf395f2",
+      "Fields": {
+        "Meaning": "Tay áo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "袖（そで）có nghĩa là tay áo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84424": "Bố làm rách tay áo một đường dài.",
+        "214071": "Tay áo len bắt đầu bung chỉ."
+      },
+      "SourceHash": "0576a760017987023b3b20642250ac6f5e6b2d4744cf3580c7e17e1724f0f007"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0d7bfd0602",
+      "Fields": {
+        "Meaning": "Trang bị, chuẩn bị sẵn",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "備える（そなえる）có nghĩa là trang bị, chuẩn bị sẵn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86878": "Cô ấy trang bị cho căn phòng đồ nội thất đẹp.",
+        "223268": "Tòa nhà này có cầu thang thoát hiểm."
+      },
+      "SourceHash": "1f846a8422e1b603aed5825f06113454ab4c343b445771f021686a1f4eb201e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5315a22cf3",
+      "Fields": {
+        "Meaning": "Chẳng bao lâu nữa, một lúc nào đó",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "そのうち（そのうち）có nghĩa là chẳng bao lâu nữa, một lúc nào đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113217": "Có lẽ lát nữa anh ấy sẽ đến.",
+        "213376": "Tôi mong một ngày nào đó chúng ta có thể làm việc cùng nhau."
+      },
+      "SourceHash": "b5d003e4e8da8d86c89c6a7a32966f174f1639397b1b3fce56052b473558697e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f496dbfd2",
+      "Fields": {
+        "Meaning": "Cứ thế, giữ nguyên",
+        "PartOfSpeech": "Phó từ, bổ nghĩa với の, Danh từ",
+        "Explanation": "そのまま（そのまま）có nghĩa là cứ thế, giữ nguyên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84128": "Hãy để nguyên căn phòng như vậy.",
+        "201819": "Đừng để cửa nguyên như vậy."
+      },
+      "SourceHash": "7e4dadb2dedf890d787f9bce29ac0b10dd446206671baf5123931d3de7f1c39b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20f327da61",
+      "Fields": {
+        "Meaning": "Ghế sofa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ソファー（ソファー）có nghĩa là ghế sofa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146580": "Cậu bé đang nằm trên sofa.",
+        "223590": "Chiếc sofa này chiếm quá nhiều chỗ."
+      },
+      "SourceHash": "a8e402df0a514b918ef14006ce1eabb735b3a81d955e9807bc9c76e11fe059df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8aabac557b",
+      "Fields": {
+        "Meaning": "Sơ sài, tồi tàn, thiếu trân trọng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "粗末（そまつ）có nghĩa là sơ sài, tồi tàn, thiếu trân trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123550": "Đừng dùng dụng cụ một cách cẩu thả.",
+        "163431": "Xe tôi rất tồi tàn."
+      },
+      "SourceHash": "26bcb6593b28e39a287490a5b73f40caf7a6f48bd1439372ea7b21fa09249102"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d8fb966498",
+      "Fields": {
+        "Meaning": "Mỗi, riêng từng người hoặc từng thứ",
+        "PartOfSpeech": "Phó từ, Danh từ, bổ nghĩa với の",
+        "Explanation": "それぞれ（それぞれ）có nghĩa là mỗi, riêng từng người hoặc từng thứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144663": "Mỗi người có việc hợp và không hợp với mình.",
+        "144665": "Mỗi người có thói quen khác nhau."
+      },
+      "SourceHash": "6b18c96aa51997490c11bac5459975c3c49c12acea8cf4471c93beebba066252"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd28831d22",
+      "Fields": {
+        "Meaning": "Dù vậy, thế mà",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "それでも（それでも）có nghĩa là dù vậy, thế mà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205747": "Dù vậy, điều đó vẫn đúng.",
+        "425538": "Dù vậy, cậu vẫn là con người."
+      },
+      "SourceHash": "ab1ae0477fcb0f903be0339b3db3ada644a63cbb48cf0f85152df39d160c3527"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d90edf318b",
+      "Fields": {
+        "Meaning": "Và còn, thêm nữa",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "それと（それと）có nghĩa là và còn, thêm nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "531277": "Với lại, nếu tôi là người đồng tính thì có gì sai?"
+      },
+      "SourceHash": "2f9395f01b2c7ec5684a8f85529fccaaa7f50f00bd432e799609d13ebfa7898a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b13a18ea0f",
+      "Fields": {
+        "Meaning": "Hay là, hoặc là",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "それとも（それとも）có nghĩa là hay là, hoặc là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229730": "Kia là xe buýt hay ô tô?",
+        "11459441": "Tom có làm hay không?"
+      },
+      "SourceHash": "adcb59f8d8ed79f2a074c247b987396e78a61d052ffdcaa53e5fe5d8cd476369"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "84e820e672",
+      "Fields": {
+        "Meaning": "Thiệt, lỗ, bất lợi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "損（そん）có nghĩa là thiệt, lỗ, bất lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172686": "Thời nay, thật thà đôi khi lại chịu thiệt.",
+        "173181": "Kỳ vọng quá cao có khi lại chịu thiệt."
+      },
+      "SourceHash": "f88923f8c6b97e712c9900153c1f59236acb8b40e2e19b7e9f549a6bb71c33a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d234fd8e97",
+      "Fields": {
+        "Meaning": "Thiệt hại, tổn thất",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "損害（そんがい）có nghĩa là thiệt hại, tổn thất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92392": "Cô ấy trách John về thiệt hại đó.",
+        "206725": "Cơn bão gây thiệt hại lớn."
+      },
+      "SourceHash": "ba983cf7344b106151924773aeeb8a3a2c444602d3232c3be19e1018ddfe5e6c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "953ee41aed",
+      "Fields": {
+        "Meaning": "Tôn kính, kính trọng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "尊敬（そんけい）có nghĩa là tôn kính, kính trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88239": "Cô ấy rất kính trọng giáo viên.",
+        "232523": "Ai cũng kính trọng bạn."
+      },
+      "SourceHash": "3918b52540630cd34a06b6f42fed754430648d85a7d48ed077e08bbcb230f0fd"
+    }
+  ]
+}

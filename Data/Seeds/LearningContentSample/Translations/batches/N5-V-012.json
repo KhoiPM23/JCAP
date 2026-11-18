@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 từ và 35 câu theo bản Nhật.",
+    "ここ và コップ không có câu nguồn. コート có một câu, dùng nghĩa áo khoác."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8699b8bec2",
+      "Fields": {
+        "Meaning": "Giao lộ, ngã giao đường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "交差点（こうさてん）chỉ nơi các đường giao nhau, như ngã ba hoặc ngã tư. 交差点で chỉ địa điểm xảy ra một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222010": "Giao lộ này tên là gì?",
+        "231036": "Chuyện gì đã xảy ra ở giao lộ kia?"
+      },
+      "SourceHash": "15d18b6a1a71ad4a052ec8704c5f98ce5fa3d9866a1cf8f412cce44ed157c2da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "402eb0d21f",
+      "Fields": {
+        "Meaning": "Bốt cảnh sát, trạm cảnh sát khu phố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "交番（こうばん）là trạm cảnh sát nhỏ phục vụ khu vực lân cận. Có thể đến đó hỏi đường hoặc báo mất đồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173841": "Hãy hỏi ở bốt cảnh sát phía bên kia.",
+        "174098": "Bạn có biết bốt cảnh sát ở đâu không?"
+      },
+      "SourceHash": "f2a7a9dac99554fadc70bb420520b3d2804d74e13e3f2a4a3c66c17d3046e3c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d890e45616",
+      "Fields": {
+        "Meaning": "Giọng, tiếng nói",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "声（こえ）chỉ giọng hoặc âm thanh do người hay động vật phát ra. 大きな声で話す là nói to.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193232": "Xin hãy nói to hơn.",
+        "1142225": "Tôi rất vui khi được nghe giọng bạn."
+      },
+      "SourceHash": "95765db6d491fa563085c9bc4440422ba96c42cbce21a180f842f375350cabca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c552e79d34",
+      "Fields": {
+        "Meaning": "Áo khoác ngoài, sân thể thao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コート có thể chỉ áo khoác ngoài hoặc sân thi đấu. コートを着る là mặc áo khoác, còn テニスコート là sân quần vợt.",
+        "UsageNotes": "Câu nguồn dùng nghĩa áo khoác. 試着する là mặc thử."
+      },
+      "Examples": {
+        "1171687": "Chiếc áo khoác này đẹp nhỉ. Tôi mặc thử được không ạ?"
+      },
+      "SourceHash": "f3536e9a30d1d79409f8a779fd621c84f7cd2169b434e8a4d14b7c68df4686a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05123676c2",
+      "Fields": {
+        "Meaning": "Ở đây, chỗ này",
+        "PartOfSpeech": "Đại từ chỉ nơi chốn",
+        "Explanation": "ここ chỉ nơi gần người nói. ここに là ở đây hoặc đến đây tùy động từ, còn ここで thường chỉ nơi diễn ra hành động.",
+        "UsageNotes": "So sánh với そこ (chỗ đó) và あそこ (chỗ kia)."
+      },
+      "Examples": {},
+      "SourceHash": "252c6a8a26449b5f2be270e854fccae74a54cfa3317122c71a5af7090df50c41"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a7c962266",
+      "Fields": {
+        "Meaning": "Buổi chiều, sau trưa, p.m.",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "午後（ごご）chỉ thời gian sau giữa trưa. Trước giờ cụ thể, 午後 tương đương p.m., như 午後３時 (ba giờ chiều).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174382": "Chiều nay tôi nên ghé thăm vào khoảng mấy giờ ạ?",
+        "174404": "Tôi định chơi quần vợt vào buổi chiều."
+      },
+      "SourceHash": "143ff2f6a3f3d5db7be8e6d2bee8772b5782972b528e04018b69633925287bc9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f114f6f499",
+      "Fields": {
+        "Meaning": "Chín ngày, ngày mùng chín",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "九日（ここのか）có thể chỉ ngày mùng chín trong tháng hoặc khoảng thời gian chín ngày. 九日目 là ngày thứ chín tính theo thứ tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137653": "Đến ngày thứ chín của giải, đã xác định đủ tám người vào vòng trong.",
+        "214544": "Cuộc thi hùng biện diễn ra vào ngày 9 tháng 11."
+      },
+      "SourceHash": "42ded7776150e51307b2bca5c995c49bc4fa583617448eb58e36e4d6ae32b9bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cff3c57405",
+      "Fields": {
+        "Meaning": "Chín cái, chín đơn vị",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "九つ（ここのつ）là cách đếm chung cho chín vật hoặc đơn vị. Cũng có thể viết ９つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118095": "Bài viết tiếng Anh của anh ấy có chín lỗi trong chín dòng.",
+        "167043": "Trường chúng tôi có chín lớp."
+      },
+      "SourceHash": "2f8dabb71549d5360cf77f2f3a0f163e5cf345a82a786f7ab6321ee132428bd6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c92dbe626a",
+      "Fields": {
+        "Meaning": "Buổi sáng, trước trưa, a.m.",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "午前（ごぜん）chỉ thời gian trước giữa trưa. Đứng trước giờ cụ thể, 午前 tương đương a.m., như 午前９時 (chín giờ sáng).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174378": "Chúng ta gặp nhau ở ga lúc mười giờ sáng nhé.",
+        "207576": "Chuyến tàu đó rời đây lúc chín giờ sáng."
+      },
+      "SourceHash": "8f603a4f14cf7e7b9592757b1a1c8e3cae5f17c410bc58d092122fa0b34b08eb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5d8c608aa",
+      "Fields": {
+        "Meaning": "Trả lời, đáp",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "答える（こたえる）dùng khi trả lời câu hỏi. 質問に答える là trả lời câu hỏi. Có thể dẫn lời đáp bằng と.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187740": "Tôi không biết nên trả lời thế nào.",
+        "236468": "Ông Jordan đáp: “Vâng, tôi không có.”"
+      },
+      "SourceHash": "5a832770013ee30efc8d55ffc26fe4fca1af1f1329b8381296f4c77a16ca9e9a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9191729e3",
+      "Fields": {
+        "Meaning": "Cảm ơn vì bữa ăn hoặc đồ uống",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "ごちそうさま là lời cảm ơn sau khi ăn hoặc uống. Dạng lịch sự thường dùng là ごちそうさまでした.",
+        "UsageNotes": "ごちそう đứng riêng có thể chỉ món ngon hoặc bữa ăn thịnh soạn."
+      },
+      "Examples": {
+        "10156656": "Cảm ơn vì cà phê ạ.",
+        "11264757": "Nào, nói lời cảm ơn sau bữa ăn đi."
+      },
+      "SourceHash": "53ea7ad58cdbdb311aae3bec5f1f39e282cd5543a4cbfaf6211564a980bd3272"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9e492c68a",
+      "Fields": {
+        "Meaning": "Phía này, chỗ này, vị này",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "こちら là cách nói lịch sự khi chỉ hướng, nơi chốn, vật hoặc người gần mình. Trong giao tiếp dịch vụ, từ này thường dùng khi chỉ vào chỗ cần ký hoặc món đang giới thiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172739": "Hiện giờ chỉ có cái này thôi ạ.",
+        "3281203": "Anh/chị có thể ký vào đây được không ạ?"
+      },
+      "SourceHash": "f1a524c61d1cd90df1e69dba1dad98b0e25b718a6adb7efe86c198c765113ca6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be9b8bcb5e",
+      "Fields": {
+        "Meaning": "Bên này, phía này, chỗ này",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "こっち là cách nói thân mật tương ứng với こちら. こっちへ来る nghĩa là đến đây hoặc sang bên này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224124": "Lại đây xem cái này nào.",
+        "224125": "Qua đây, đừng có chần chừ!"
+      },
+      "SourceHash": "b3edc3aaf2050f621dd3621bf1f4af955a77895794a9aba3cb7caa5d2f2f9821"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2da7034c1e",
+      "Fields": {
+        "Meaning": "Cốc uống nước, ly",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コップ thường chỉ cốc uống nước, như 水を入れるコップ (cốc để đựng nước).",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "d7d6d2251511c5120c11d21d299e901d3512bfb75669e063e4825c9e7c97f03e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0020b9ee4e",
+      "Fields": {
+        "Meaning": "Năm nay",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今年（ことし）chỉ năm hiện tại. 今年の六月 là tháng Sáu năm nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171289": "Mong năm nay cũng là một năm tốt đẹp.",
+        "171353": "Tháng Sáu năm nay không có nhiều ngày mưa."
+      },
+      "SourceHash": "e3a613dbbd8c08ec5b03a3c487a0dc1947fdb5e7f968571ea5f47d0fb7b72f0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "491cfa69be",
+      "Fields": {
+        "Meaning": "Từ, lời nói, ngôn ngữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "言葉（ことば）có thể chỉ một từ, lời nói hoặc ngôn ngữ tùy ngữ cảnh. 言葉が出てこない là không thốt được lời hoặc không tìm được từ để nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174713": "Tôi không thốt nên lời.",
+        "210904": "Từ đó có nguồn gốc từ tiếng Latinh."
+      },
+      "SourceHash": "f007697bac7160903180f3af98674d32469be53475b663b9295a2aaa76e4e1c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1f4bb6e503",
+      "Fields": {
+        "Meaning": "Trẻ em, đứa trẻ, con",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "子供（こども）chỉ trẻ em hoặc con của một người. Cũng thường viết 子ども. Dùng 人 để đếm số người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168864": "Trẻ con thường chẳng chịu ngồi yên.",
+        "233758": "Bạn có mấy người con?"
+      },
+      "SourceHash": "f7b7a2141c75a0832e0f5f5930f4b04e28338aa9837c189fe924ccb3612c6277"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd3a2ad2ad",
+      "Fields": {
+        "Meaning": "Này (đứng trước danh từ)",
+        "PartOfSpeech": "Từ chỉ định",
+        "Explanation": "この đứng trước danh từ để chỉ người hoặc vật gần người nói, như この木 (cây này). Khi chỉ vật mà không nêu danh từ, dùng これ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219456": "Hãy bám thật chắc vào cây này.",
+        "223794": "Tôi đã rót đầy sữa vào chiếc cốc này."
+      },
+      "SourceHash": "3b5dbc790e9248a8ba40e26394c3d786e6583afa65d532df901fb8773a7c07ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f586d7d023",
+      "Fields": {
+        "Meaning": "Sao chép, photocopy",
+        "PartOfSpeech": "Động từ với する, tha động từ",
+        "Explanation": "コピーする chỉ việc tạo bản sao, chẳng hạn photocopy tài liệu hoặc sao chép dữ liệu. Nội dung được sao chép đi với を.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126291": "Sao chép sách khi chưa được tác giả cho phép là trái pháp luật.",
+        "219109": "Vui lòng dán giấy ghi chú vào những trang cần photocopy."
+      },
+      "SourceHash": "090c546ebb056db107d7b15589754d343a5985b347f20720fa28d76b33fac1a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61994485cb",
+      "Fields": {
+        "Meaning": "Gặp khó khăn, lúng túng, khổ sở",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "困る（こまる）diễn tả tình cảnh khó xử hoặc gặp vấn đề. 〜ことで困っている nghĩa là đang gặp khó khăn về chuyện đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149067": "Tôi đang gặp rắc rối với chiếc xe.",
+        "150625": "Tôi đang rất khổ sở vì không có thời gian."
+      },
+      "SourceHash": "a88acca2fdfa7182c9008d23f8a13b2da15357aa91bf79aaed330470e3b66f3a"
+    }
+  ]
+}

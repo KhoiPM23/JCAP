@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a777a7ce62",
+      "Fields": {
+        "Meaning": "Khóc",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "泣く（なく）có nghĩa là khóc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197338": "Bill khóc suốt nhiều giờ.",
+        "203832": "Nào, đừng khóc nữa."
+      },
+      "SourceHash": "ee3ea809c57957c30d99c7b087572667bf5e66ae20467313368e7ca486d0aaa8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2adec6b9b4",
+      "Fields": {
+        "Meaning": "Qua đời",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "亡くなる（なくなる）có nghĩa là qua đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84774": "Bố tôi qua đời hai năm trước.",
+        "84844": "Đã ba năm kể từ khi bố tôi qua đời."
+      },
+      "SourceHash": "e900942946207c7aefd2caae253ccc2ec834d2a4708e169d0cc45a9200b526be"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d28dbb450",
+      "Fields": {
+        "Meaning": "Biến mất, hết",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "無くなる（なくなる）có nghĩa là biến mất, hết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169281": "Thời gian còn lại chẳng còn bao nhiêu.",
+        "233128": "Cây bút xanh của bạn biến mất rồi."
+      },
+      "SourceHash": "24e57ff670dc6b4972f840a459aa407c46854ae1a7eccf583e7f7f82fd380dab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b35adeae4",
+      "Fields": {
+        "Meaning": "Ném",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "投げる（なげる）có nghĩa là ném.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196452": "Ném bóng sang đây cho tôi.",
+        "210222": "Đứa bé ném đá vào con chó."
+      },
+      "SourceHash": "f15e12709e82916b7767e070dbc5150d2c9e4b47f0e3aa6185931771516c23f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "74c23dc218",
+      "Fields": {
+        "Meaning": "Làm (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "なさる（なさる）có nghĩa là làm (kính ngữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201333": "Xin cứ tự nhiên ạ.",
+        "214623": "Anh/chị muốn bít tết chín tới mức nào?"
+      },
+      "SourceHash": "4cb37ab713537e52396f475cd7f06176b8874e04e74b98aaf1ca7d21bf68514e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a915c9be5",
+      "Fields": {
+        "Meaning": "Reo, vang",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "鳴る（なる）có nghĩa là reo, vang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124735": "Điện thoại reo thì bắt máy ngay.",
+        "158967": "Tôi nghe tiếng chuông đang reo."
+      },
+      "SourceHash": "449bc8d3712fe90953db7f61fe461c365d857a5a9168a1d4d42d8cc1b0fe1d2e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "626ae1ff39",
+      "Fields": {
+        "Meaning": "Cố gắng hết mức có thể",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "なるべく（なるべく）có nghĩa là cố gắng hết mức có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199061": "Càng rẻ càng tốt ạ.",
+        "199062": "Anh/chị có thể cố nói chậm một chút được không?"
+      },
+      "SourceHash": "a78cd14798cb446d6b713271c5c768724acdb7c8a1439a668f34c092466b7095"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76a4fc9d6d",
+      "Fields": {
+        "Meaning": "Ra vậy, hiểu rồi",
+        "PartOfSpeech": "Thán từ, phó từ",
+        "Explanation": "なるほど（なるほど）có nghĩa là ra vậy, hiểu rồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "9611877": "À, ra vậy!"
+      },
+      "SourceHash": "59799fc54e8201e7c59f15f4c2ac46b160328ba62371f16c88fba6e31d4343e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce2f134cda",
+      "Fields": {
+        "Meaning": "Quen, thích nghi",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "慣れる（なれる）có nghĩa là quen, thích nghi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126161": "Tôi quen với việc dậy sớm rồi.",
+        "143940": "Tôi cũng đã quen nói trước đám đông."
+      },
+      "SourceHash": "cadd1cfdd378e6a88dd5e8df571d2450753d402a4a7d81c667d45fd5a070cde9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40f67571a6",
+      "Fields": {
+        "Meaning": "Mùi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "におい（におい）có nghĩa là mùi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212852": "Mùi đó lan khắp trường.",
+        "231152": "Hoa kia có mùi nồng thật."
+      },
+      "SourceHash": "384e3817b1a2f882b7229af07ebc8e2697083af98ed36867f58da0e859b75a73"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e1cfd51839",
+      "Fields": {
+        "Meaning": "Đắng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "苦い（にがい）có nghĩa là đắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223286": "Bia này đắng.",
+        "223800": "Cà phê này có vị đắng."
+      },
+      "SourceHash": "ec428ee6a6d9e78dd5ccf2b7a580527110511ba9c6f92980d884def610568aa9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eef262a7dd",
+      "Fields": {
+        "Meaning": "Có hai tầng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "二階建て（にかいだて）có nghĩa là có hai tầng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161991": "Tôi sống trong một ngôi nhà hai tầng."
+      },
+      "SourceHash": "f1eeaa03820e5b929b178253c6140470bbe2725ef9486a320dc7c5f41c6e3c88"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7a51f2c1c",
+      "Fields": {
+        "Meaning": "Chạy trốn, thoát",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "逃げる（にげる）có nghĩa là chạy trốn, thoát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174871": "Không thể trốn tránh thực tế.",
+        "211020": "Hãy trông để con chó đó không chạy mất."
+      },
+      "SourceHash": "01d0110a7fd9f8ea630bcbc0c63ba7c4dcf0d11dc9f48d5161229d19d9fd934f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ddf8d04c2",
+      "Fields": {
+        "Meaning": "Nhật ký",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日記（にっき）có nghĩa là nhật ký.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89688": "Cô ấy viết nhật ký cho đến khi qua đời.",
+        "92605": "Cô ấy viết chuyện đó vào nhật ký."
+      },
+      "SourceHash": "ba6f088ef0a4822a545a276f275f5a00578f33014aa382a69b311d83441d0247"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "178daf8296",
+      "Fields": {
+        "Meaning": "Nhập viện, nằm viện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "入院（にゅういん）có nghĩa là nhập viện, nằm viện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122085": "Tôi có phải nhập viện không ạ?",
+        "190557": "Tôi đã nằm viện một tuần."
+      },
+      "SourceHash": "7e4b3c80e72833c55842dc544686a03e9088d03d55d12013e03a3ca85ee50c2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "433da13afb",
+      "Fields": {
+        "Meaning": "Nhập học",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "入学（にゅうがく）có nghĩa là nhập học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160948": "Tôi vào trường này hai năm trước.",
+        "163138": "Con trai tôi đã vào trung học phổ thông."
+      },
+      "SourceHash": "d52f8acba747677d2f1cab2cb937dd21f00062978281e6245318f0e6ad58dc37"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea2fe2f5de",
+      "Fields": {
+        "Meaning": "Giống",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "似る（にる）có nghĩa là giống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "233011": "Em gái bạn giống ai?",
+        "236771": "Tôi cũng từng nghe một chuyện tương tự."
+      },
+      "SourceHash": "11a98d3e86a73d091f175ec2b637f7122a6738f1738b260baaa2de1d9c0cfc3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5cda324083",
+      "Fields": {
+        "Meaning": "Búp bê, hình nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人形（にんぎょう）có nghĩa là búp bê, hình nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194756": "Mary tặng tôi một con búp bê Mỹ.",
+        "209178": "Cô bé nhìn chằm chằm vào con búp bê."
+      },
+      "SourceHash": "2ef9baabb6563864d73abd5ac661dea64ba4b425a91c67a7082d3c5c46cb6197"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88710a5d10",
+      "Fields": {
+        "Meaning": "Ăn trộm, đánh cắp",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "盗む（ぬすむ）có nghĩa là ăn trộm, đánh cắp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124148": "Tôi không thể chấp nhận mất số tiền đã bị lấy trộm.",
+        "215074": "Hình như chiếc va li đã bị lấy trộm."
+      },
+      "SourceHash": "d631ab9b6c2d41000ab13f7595d2b6b422fcbd53c912ad4a57ae406d322c85ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6631558c00",
+      "Fields": {
+        "Meaning": "Sơn, bôi, phết",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "塗る（ぬる）có nghĩa là sơn, bôi, phết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158042": "Tôi đã nhờ người sơn nhà.",
+        "215528": "John đang sơn cửa."
+      },
+      "SourceHash": "a8a380921cfb148fd4a42a365a429ce59cf6795182f7d1b05e9d547a8f6471dc"
+    }
+  ]
+}

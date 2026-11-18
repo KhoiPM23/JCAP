@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-no-conversion",
+      "Fields": {
+        "Meaning": "Dùng が hoặc の để đánh dấu chủ ngữ trong mệnh đề bổ nghĩa",
+        "Formation": "Danh từ ＋ が／の ＋ động từ hoặc tính từ đuôi い ＋ danh từ được bổ nghĩa",
+        "Explanation": "Trong nhiều mệnh đề bổ nghĩa cho danh từ, có thể thay が đánh dấu chủ ngữ bằng の. 母が作った料理 và 母の作った料理 đều có nghĩa là món ăn mẹ làm.",
+        "UsageNotes": "Trong câu độc lập như 母が来た, dùng が để đánh dấu chủ ngữ. Nếu mệnh đề đã có nhiều の, dùng が có thể giúp câu dễ hiểu hơn."
+      },
+      "Examples": {
+        "ga-no-conversion:example:1": "Chiếc bánh chị tôi làm rất ngon.",
+        "ga-no-conversion:example:2": "Thị trấn nơi tôi sống rất yên tĩnh."
+      },
+      "SourceHash": "f7c7035b4f635ec937d99646b17d90ab9f71b47dfe72832ad03f9148c9166369"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-hoshii",
+      "Fields": {
+        "Meaning": "Muốn có một thứ",
+        "Formation": "Danh từ ＋ が ＋ ほしい",
+        "Explanation": "Dùng 〜がほしい để nói muốn có thứ gì. Ví dụ, 新しい靴がほしい nghĩa là muốn có giày mới.",
+        "UsageNotes": "Khi nói về mong muốn của người khác qua biểu hiện quan sát được, thường dùng ほしがっている. Khi muốn thực hiện một hành động, dùng gốc động từ trước ます ＋ たい, như 水が飲みたい (muốn uống nước)."
+      },
+      "Examples": {
+        "ga-hoshii:example:1": "Tôi muốn có một chiếc túi mới.",
+        "ga-hoshii:example:2": "Bây giờ tôi muốn có thời gian."
+      },
+      "SourceHash": "5fa55d6114be0f8dacd53fa54bfdd8e76cbe9ae194fde359d8077920d098e4fe"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kara",
+      "Fields": {
+        "Meaning": "Vì, bởi vì. Từ, kể từ",
+        "Formation": "Chỉ lý do: mệnh đề thể thông thường hoặc lịch sự ＋ から\nChỉ điểm bắt đầu: danh từ chỉ nơi chốn hoặc thời gian ＋ から",
+        "Explanation": "Đặt から sau mệnh đề nêu lý do, rồi nói kết quả hoặc quyết định. Sau từ chỉ nơi chốn hoặc thời gian, から có thể chỉ điểm bắt đầu, như 三時から (từ ba giờ).",
+        "UsageNotes": "Khi nêu lý do bằng danh từ hoặc tính từ đuôi な, có thể dùng だから ở thể thông thường hoặc ですから ở thể lịch sự."
+      },
+      "Examples": {
+        "kara:example:1": "Vì không có thời gian nên tôi sẽ đi taxi.",
+        "kara:example:2": "Cuộc họp bắt đầu lúc ba giờ."
+      },
+      "SourceHash": "eda9e7a149fc3ae3d21a7f62f6d7c0b6680f34f7838bdd2a8cb1a50f8b18fddf"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kute-de",
+      "Fields": {
+        "Meaning": "Nối các đặc điểm hoặc nhận định",
+        "Formation": "Tính từ đuôi い: bỏ い cuối rồi thêm くて\nDanh từ hoặc tính từ đuôi な ＋ で",
+        "Explanation": "Dùng くて sau gốc tính từ đuôi い hoặc で sau danh từ và gốc tính từ đuôi な để nối sang đặc điểm hoặc nhận định tiếp theo. 広くて明るい nghĩa là rộng và sáng.",
+        "UsageNotes": "いい đổi thành よくて. Trong mẫu này, で là dạng nối của だ dùng sau danh từ hoặc tính từ đuôi な."
+      },
+      "Examples": {
+        "kute-de:example:1": "Căn phòng này rộng và sáng.",
+        "kute-de:example:2": "Anh trai tôi là giáo viên, còn chị gái tôi là bác sĩ."
+      },
+      "SourceHash": "6cdb42e541f7b15b7495c10f3299f659b4bdf67fb2a52ab2e3d63674a0f22388"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kunai",
+      "Fields": {
+        "Meaning": "Dạng phủ định của tính từ đuôi い",
+        "Formation": "Tính từ đuôi い: bỏ い cuối rồi thêm くない",
+        "Explanation": "Đổi い cuối thành くない để nói một đặc điểm không đúng hoặc không có. 高い → 高くない nghĩa là không đắt hoặc không cao tùy ngữ cảnh. Có thể thêm です để nói lịch sự.",
+        "UsageNotes": "いい đổi thành よくない. Danh từ và tính từ đuôi な thường dùng じゃない ở thể thông thường."
+      },
+      "Examples": {
+        "kunai:example:1": "Cửa hàng này không đắt lắm.",
+        "kunai:example:2": "Hôm nay chẳng lạnh chút nào."
+      },
+      "SourceHash": "694d40de80fb90bb7639c0b1da55b6f0c1c6f73b8ede207d5a5b0537a8b8853a"
+    }
+  ]
+}

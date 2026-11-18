@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-ittemo-ii",
+      "Fields": {
+        "Meaning": "Có thể nói rằng",
+        "Formation": "Thể thông thường ＋ と言ってもいい",
+        "Explanation": "Đưa ra một nhận định mà người nói xem là hợp lý, với sắc thái dè dặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-ittemo-ii:example:1": "Có thể nói tiếng Nhật của tôi đã khá lên nhiều.",
+        "to-ittemo-ii:example:2": "Có thể nói ông ấy là bác sĩ giỏi nhất thị trấn này."
+      },
+      "SourceHash": "fa2431874a7bdfdb78bf050f6773843bd72c6b08b7e97bd2cf4dfe059e9fccc7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iwarete-iru",
+      "Fields": {
+        "Meaning": "Người ta nói rằng, được cho là",
+        "Formation": "Thể thông thường ＋ と言われている",
+        "Explanation": "Thuật lại nhận định hoặc lời truyền được biết đến rộng rãi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iwarete-iru:example:1": "Người ta nói trà tốt cho cơ thể.",
+        "to-iwarete-iru:example:2": "Cây cầu này được cho là đã xây hơn một trăm năm trước."
+      },
+      "SourceHash": "9763e9cd2c72f2dd9df66543697ff7ab4fbf35190de9c8a82c534c2dd6b3981f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-omou",
+      "Fields": {
+        "Meaning": "Tôi nghĩ rằng",
+        "Formation": "Thể thông thường ＋ と思う (danh từ và tính từ な dùng だ)",
+        "Explanation": "Nêu ý kiến hoặc suy đoán của người nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-omou:example:1": "Tôi nghĩ bộ phim này thú vị.",
+        "to-omou:example:2": "Tôi nghĩ cô ấy đã về rồi."
+      },
+      "SourceHash": "e01fa52eb06b13955914a55fc227864ccad8c2083e938ccb0f05b0f946af6acd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "toka-toka",
+      "Fields": {
+        "Meaning": "Chẳng hạn như A, B",
+        "Formation": "A ＋ とか ＋ B ＋ とか",
+        "Explanation": "Liệt kê vài ví dụ đại diện. Danh sách có thể còn những mục khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "toka-toka:example:1": "Cuối tuần tôi làm những việc như dọn dẹp và đi mua sắm.",
+        "toka-toka:example:2": "Về trái cây, tôi thích những loại như táo và quýt."
+      },
+      "SourceHash": "8f22ebfa2ebca2bbc4b8fb45c0e00aeb2be92bc86b7d748b547122e2e21eca1b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-kangaerarete-iru",
+      "Fields": {
+        "Meaning": "Được cho là, được nhận định là",
+        "Formation": "Thể thông thường ＋ と考えられている",
+        "Explanation": "Trình bày nhận định phổ biến, thường gặp trong văn giải thích hoặc nghiên cứu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-kangaerarete-iru:example:1": "Tập tục này được cho là bắt đầu từ thời Edo.",
+        "to-kangaerarete-iru:example:2": "Tập thể dục được cho là tốt cho sức khỏe."
+      },
+      "SourceHash": "4192f709a506b0e608a7926dd8a88b166d4c963e8e860b4e2a4299440c3167de"
+    }
+  ]
+}

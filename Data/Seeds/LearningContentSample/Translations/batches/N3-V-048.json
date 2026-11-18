@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59a9224bb4",
+      "Fields": {
+        "Meaning": "Cuộc chiến lớn, thế chiến",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大戦（たいせん）có nghĩa là cuộc chiến lớn, thế chiến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "231180": "Gia đình đó bắt đầu thịnh vượng từ thời chiến tranh."
+      },
+      "SourceHash": "10ad26228921195ef06f2b71f1d509cead9a7eb6eba54123392f8f14641c681c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88273999d5",
+      "Fields": {
+        "Meaning": "Thái độ, cách cư xử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "態度（たいど）có nghĩa là thái độ, cách cư xử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112188": "Anh ấy nói điều đó với vẻ kiểu cách.",
+        "230637": "Phải nhắc nhở nghiêm khắc về thái độ đó."
+      },
+      "SourceHash": "5df326a45229df92f3c260b11c9e381c97925cbcb4413dd879901a0f601374da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4713a549bc",
+      "Fields": {
+        "Meaning": "Tổng thống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大統領（だいとうりょう）có nghĩa là tổng thống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137320": "Tổng thống mong muốn hòa bình nhỉ.",
+        "137341": "Tổng thống theo đường lối cứng rắn."
+      },
+      "SourceHash": "ccb225e30626fd52c1695e301dbd72a47ea281c8507a7f2afee38b3a0648abc3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "52049336a2",
+      "Fields": {
+        "Meaning": "Phần lớn, đa số",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "大半（たいはん）có nghĩa là phần lớn, đa số.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103534": "Ông ấy sống phần lớn cuộc đời ở nước ngoài.",
+        "224369": "Phần lớn sinh viên ở đây đều nghiêm túc."
+      },
+      "SourceHash": "f5ad8f20c427d00fa31d1e34bfedfdee8a5317297b48b9abe355abcb87b56aec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20d012baaf",
+      "Fields": {
+        "Meaning": "Đại diện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "代表（だいひょう）có nghĩa là đại diện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113910": "Anh ấy đến hội trường với tư cách đại diện lớp.",
+        "114768": "Theo một nghĩa nào đó, anh ấy là đại diện của công ty."
+      },
+      "SourceHash": "b7395785b673800ac5fadef8b42d128473619f632ff575e629f7ee53b98c034c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "637071aa35",
+      "Fields": {
+        "Meaning": "Phần lớn, phần chủ yếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大部分（だいぶぶん）có nghĩa là phần lớn, phần chủ yếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86684": "Cô ấy dành phần lớn thu nhập để mua sách.",
+        "88799": "Cô ấy dùng phần lớn thu nhập cho tiền ăn."
+      },
+      "SourceHash": "a5bd43cc105e1c39adf3cdcb4f46a9485f176db03024a1845af0c5665f158934"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e13f41237b",
+      "Fields": {
+        "Meaning": "Máy đánh chữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "タイプライター（タイプライター）có nghĩa là máy đánh chữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124831": "Anh chị có máy đánh chữ điện tử không?",
+        "164165": "Đừng chạm vào máy đánh chữ của tôi."
+      },
+      "SourceHash": "2db7d14e3bf364aabb61d2a77131d5f9a40b73dd40b192fabb6726f81e008c34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "421097f58e",
+      "Fields": {
+        "Meaning": "Bắt giữ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "逮捕（たいほ）có nghĩa là bắt giữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96580": "Họ đuổi theo để bắt người đàn ông đó.",
+        "207999": "Người đàn ông đó bị bắt vì bị cho là gián điệp."
+      },
+      "SourceHash": "9584e1ce34a31c8826268791b058c47af0315fe6200e1d06c1cddaca076baf2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "771ae04338",
+      "Fields": {
+        "Meaning": "Lịch chạy tàu, kim cương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Có thể là dạng rút gọn của ダイヤグラム (biểu đồ hoặc lịch chạy tàu) hay ダイヤモンド (kim cương).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77519": "Tàu chạy đúng lịch.",
+        "218085": "Đây có thể là kim cương thật."
+      },
+      "SourceHash": "3db9efccd9a4366ce87c8d1d2b643f23a2a44c3e4b81f4f0090e97f6bb3bc9f3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7bc912ad3",
+      "Fields": {
+        "Meaning": "Mặt trời",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "太陽（たいよう）có nghĩa là mặt trời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138137": "Chẳng có gì mới dưới ánh mặt trời.",
+        "195178": "Hoa cúc vạn thọ thức dậy cùng mặt trời."
+      },
+      "SourceHash": "908ce56690b106ca22e9d2fb0ad749e131e2265d032bbe84b9076573e8ea9617"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "010f5bf635",
+      "Fields": {
+        "Meaning": "Phẳng, bằng phẳng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "平ら（たいら）có nghĩa là phẳng, bằng phẳng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96574": "Họ tin rằng Trái Đất phẳng.",
+        "230999": "Đỉnh ngọn núi kia bằng phẳng."
+      },
+      "SourceHash": "3d616f0cbb8c3e3790bec57cbb8b5beec9082778b3db17346f781efc3dc4e031"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5cb9d932e",
+      "Fields": {
+        "Meaning": "Đại diện, thay mặt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "代理（だいり）có nghĩa là đại diện, thay mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108000": "Anh ấy dự buổi họp thay anh trai.",
+        "167442": "Khi tôi vắng mặt, anh ấy thay mặt tôi."
+      },
+      "SourceHash": "ba332bae7c35c362b73e0b794f4bbadb2c4c37e01095060bdb91d629337ba4e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de0215662e",
+      "Fields": {
+        "Meaning": "Lục địa",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "大陸（たいりく）có nghĩa là lục địa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126933": "Trên Trái Đất có bảy châu lục.",
+        "230381": "Châu Phi là một lục địa, còn Greenland thì không."
+      },
+      "SourceHash": "a1e460aba1e75d2ef20ae42c01982eda8c42b381d9197afb8965e54b8c03bab9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20119e5c9b",
+      "Fields": {
+        "Meaning": "Làm đổ, hạ, ngả",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "倒す（たおす）có nghĩa là làm đổ, hạ, ngả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170837": "Tôi ngả lưng ghế được không?",
+        "216590": "Gạt núm bên cạnh ghế về phía trước rồi ngả ghế ra."
+      },
+      "SourceHash": "d8db0f9090f786516e9c91c5affb9375550f5c48d1f0a66b09a2fe0312f6edcb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fbf3d9b7a",
+      "Fields": {
+        "Meaning": "Khăn, khăn tắm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "タオル（タオル）có nghĩa là khăn, khăn tắm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203850": "Chiếc khăn chẳng giúp ích gì.",
+        "203851": "Hãy giũ bụi trên khăn."
+      },
+      "SourceHash": "b2a7d66adee5c956a57e652067d3ebb4324d53ae1bfdd9bf99bcb579af39c8cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3c0999c5c",
+      "Fields": {
+        "Meaning": "Nhưng, tuy nhiên",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "だが（だが）có nghĩa là nhưng, tuy nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118932": "Anh ấy hay vậy, thường mắc lỗi do bất cẩn.",
+        "233678": "Tôi đã định viết thư cho bạn, nhưng…"
+      },
+      "SourceHash": "45bfe307cac3929df06092bb81d74492269e87ca376fd018973c21c122a7136f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1ec09619d",
+      "Fields": {
+        "Meaning": "Nhau, lẫn nhau",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "互い（たがい）có nghĩa là nhau, lẫn nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220241": "Hai anh em này giống nhau.",
+        "3229894": "Truyền hình và báo chí bổ sung chức năng cho nhau."
+      },
+      "SourceHash": "2e640087bb2831a9b658045a78dd7aa5b3630f2b892c8cf79219b281adb57414"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3cffc75454",
+      "Fields": {
+        "Meaning": "Kho báu, vật quý",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宝（たから）có nghĩa là kho báu, vật quý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84955": "Của cải là báu vật một đời, tri thức là báu vật muôn đời.",
+        "168850": "Không có báu vật nào quý hơn con cái."
+      },
+      "SourceHash": "e1a052c516e2281ee0c8d7f5b75769f356a776d5b30f178542b1c22db770c00b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf35e6a2e6",
+      "Fields": {
+        "Meaning": "Nhà, nơi ở",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "宅（たく）có nghĩa là nhà, nơi ở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183017": "Nước máy nhà anh quá cứng. Hãy dùng nước mềm.",
+        "191974": "Tôi sẽ ở nhà bạn tại Washington."
+      },
+      "SourceHash": "e9016cdb69fe309a0815ecbe1ae7b548354a1d6b539a26084cd9d924246e56a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "585f7c3b7f",
+      "Fields": {
+        "Meaning": "Nhưng, tuy vậy (thân mật)",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "だけど（だけど）có nghĩa là nhưng, tuy vậy (thân mật).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169269": "Tiếc quá, hết cà phê rồi.",
+        "198643": "Này, trông bạn có vẻ không vui nhỉ."
+      },
+      "SourceHash": "ea593c4bbc70f29a8279e9691dea3cbe6893621fc101b955ea63c24c1f13d5d9"
+    }
+  ]
+}

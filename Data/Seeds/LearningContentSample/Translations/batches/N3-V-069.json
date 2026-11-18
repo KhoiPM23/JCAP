@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0dbafbe052",
+      "Fields": {
+        "Meaning": "Sáo, còi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "笛（ふえ）có nghĩa là sáo, còi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125293": "Cuộc đua bắt đầu khi còi vang lên.",
+        "225283": "Còi được thổi để bắt đầu trò chơi."
+      },
+      "SourceHash": "b54827f78014157b0f6172c21848074ce7b9cc861e6b0e1c7b0148b92a8ce468"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "089623da2c",
+      "Fields": {
+        "Meaning": "Không được phép, không đạt",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ, hậu tố",
+        "Explanation": "不可（ふか）có nghĩa là không được phép, không đạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205312": "Cái đó ở mức không tốt cũng không tệ."
+      },
+      "SourceHash": "c9a90ae2d51a887dd62874fe5faa616c6ada26ee65044a0bad2328c136c69d75"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4b01b085c",
+      "Fields": {
+        "Meaning": "Vũ khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "武器（ぶき）có nghĩa là vũ khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98190": "Họ luôn mang theo vũ khí.",
+        "208409": "Con tàu đó chở đầy vũ khí."
+      },
+      "SourceHash": "c2969573e445c8b4fe3b389e433cea62146e74d2909c990b7d8b52336c3e0ed2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "620d3a74b1",
+      "Fields": {
+        "Meaning": "Trang phục, cách ăn mặc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "服装（ふくそう）có nghĩa là trang phục, cách ăn mặc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90074": "Cô ấy mặc toàn đồ đen.",
+        "231590": "Bạn có gu ăn mặc tốt."
+      },
+      "SourceHash": "023ca4137608c59bd4f65afeda7ca2471bcc134138e1c9d45d3cad3ae94b551a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3dd04815d8",
+      "Fields": {
+        "Meaning": "Bao gồm, chứa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "含む（ふくむ）có nghĩa là bao gồm, chứa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85808": "Chi phí đã bao gồm bữa sáng.",
+        "205652": "Có bao gồm bữa sáng không?"
+      },
+      "SourceHash": "3fb6cc78e7b93952b0c80c66c43c9f76ac7ff7cfae5aea675a197779ddee353d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b0b2986a8e",
+      "Fields": {
+        "Meaning": "Túi, bao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "袋（ふくろ）có nghĩa là túi, bao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175392": "Tòa nhà chứa đầy các bao lúa mì.",
+        "204574": "Tôi muốn có cái túi để đựng và mang thứ đó đi."
+      },
+      "SourceHash": "bb23056a8f30693771ac241bd4d0ca1d4e1c4b0aeeda0850ac9656443bc71584"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85e259586a",
+      "Fields": {
+        "Meaning": "Bất hạnh, tai họa",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "不幸（ふこう）có nghĩa là bất hạnh, tai họa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141265": "Chiến tranh gây ra những tai họa khủng khiếp.",
+        "205719": "Việc đó khiến anh ấy càng bất hạnh."
+      },
+      "SourceHash": "2c236fa3467bd6526b9a811d3561b84b995c0ec1e21b595602c6bbde239ed1de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f898b4b8d2",
+      "Fields": {
+        "Meaning": "Đốt, đoạn, dấu hiệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "節（ふし）có nghĩa là đốt, đoạn, dấu hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118907": "Có dấu hiệu cho thấy anh ấy coi thường người Kakogawa."
+      },
+      "SourceHash": "d99f1f4b2f25f7fc1d93a24ef0bc43e30ff75d68f1f0647284a473d7acc2a5df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7bd2b9ad8",
+      "Fields": {
+        "Meaning": "Bình an, vô sự",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "無事（ぶじ）có nghĩa là bình an, vô sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "119462": "Họ vui khi nghe anh ấy bình an.",
+        "119463": "Tôi yên tâm khi nghe anh ấy vẫn bình an."
+      },
+      "SourceHash": "4fe2cfe0c2f86dffaccaca2c3d2442f433cedf71c08e7e7d24afe3d568c5cf65"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "692f5c5fae",
+      "Fields": {
+        "Meaning": "Kỳ lạ, khó hiểu",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "不思議（ふしぎ）có nghĩa là kỳ lạ, khó hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120234": "Thật lạ khi anh ấy thua trận.",
+        "120512": "Thật lạ khi anh ấy nghỉ học."
+      },
+      "SourceHash": "86d8085131b6454df6779814e4483c60c45baa87beb981b8dee860ee5ecfa9c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6ee6c57219",
+      "Fields": {
+        "Meaning": "Bất tiện, hạn chế khả năng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "不自由（ふじゆう）có nghĩa là bất tiện, hạn chế khả năng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97472": "Họ chẳng thiếu thốn gì.",
+        "150159": "Người khiếm thính có thể giao tiếp bằng ngôn ngữ ký hiệu."
+      },
+      "SourceHash": "6344e478a598287a2aa5145b65c8c7eab2eb71ee6c5396439be97b29b72d67b0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05eba33435",
+      "Fields": {
+        "Meaning": "Bà, phu nhân, vợ",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "夫人（ふじん）có nghĩa là bà, phu nhân, vợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100438": "Ông ấy đưa vợ đi cùng.",
+        "193002": "Bà Young chắc không phiền nếu tôi ghé thăm đột xuất."
+      },
+      "SourceHash": "794118061edc0a281a099415c4167a8e53be106c1bcff9e5b1f52482aa9f5b90"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d60c9a1ed3",
+      "Fields": {
+        "Meaning": "Phụ nữ, quý bà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "婦人（ふじん）có nghĩa là phụ nữ, quý bà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84970": "Nhiều nghề hiện mở cửa cho phụ nữ.",
+        "233653": "Có một phụ nữ muốn gặp anh chị."
+      },
+      "SourceHash": "1c432e342feb0548cae96eb75c747e95c7aee1cfb2e83c99a7d3c02e27fff513"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a221781150",
+      "Fields": {
+        "Meaning": "Sai trái, gian lận",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "不正（ふせい）có nghĩa là sai trái, gian lận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85070": "Hãy lên tiếng phản đối những việc sai trái.",
+        "85071": "Tôi buộc phải phản đối việc sai trái."
+      },
+      "SourceHash": "f9851731220a2510f3062923af395e2b7ecc958e7733673318c6c7ff755ca29c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2dd9b9c3f",
+      "Fields": {
+        "Meaning": "Ngăn chặn, phòng ngừa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "防ぐ（ふせぐ）có nghĩa là ngăn chặn, phòng ngừa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166380": "Chúng tôi ngăn cậu bé đập vỡ cửa sổ.",
+        "187768": "Phải ngăn chiến tranh bằng mọi giá."
+      },
+      "SourceHash": "2eedbe7460e4e1734a99de3851ed8eeac0821892d95ccb466e64a8471f7fb3f5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "070cf68b21",
+      "Fields": {
+        "Meaning": "Thiếu hụt, không đủ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "不足（ふそく）có nghĩa là thiếu hụt, không đủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211286": "Kế hoạch đó thiếu kinh phí.",
+        "228370": "Ấn Độ hiện đang thiếu thực phẩm."
+      },
+      "SourceHash": "667e2493a4b7e590173aa552c6b435fa7a6b070c35a3e13baf21dce617b6be18"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e83a59cd5",
+      "Fields": {
+        "Meaning": "Sân khấu, bối cảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "舞台（ぶたい）có nghĩa là sân khấu, bối cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170536": "Đó là một buổi diễn tuyệt vời.",
+        "206904": "Câu chuyện lấy bối cảnh Nhật Bản cuối thời Minh Trị."
+      },
+      "SourceHash": "71ae3cb2ad013b59323249d96541df4e60e8c4ce7d70cbdcb40ea6ba6f786fd4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3303a98af1",
+      "Fields": {
+        "Meaning": "Sinh đôi, cặp song sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "双子（ふたご）có nghĩa là sinh đôi, cặp song sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105819": "Anh ấy nhầm tôi với anh trai sinh đôi của tôi.",
+        "208361": "Cặp song sinh đó giống hệt nhau."
+      },
+      "SourceHash": "612af2f25b8a925215f95b53f2db9620ff84be4803bc9aec043b6456251644eb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02a74abcd0",
+      "Fields": {
+        "Meaning": "Lại, một lần nữa",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "再び（ふたたび）có nghĩa là lại, một lần nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106981": "Số phận đã định anh ấy sẽ không bao giờ gặp lại mẹ.",
+        "212546": "Chuyện như vậy có thể xảy ra lần nữa không?"
+      },
+      "SourceHash": "216eae28e69924059a791cb08e07e9dcba0e7ac41e8d947dd2014c06095bd6a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38272461d1",
+      "Fields": {
+        "Meaning": "Thường ngày, thường",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "普段（ふだん）có nghĩa là thường ngày, thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84904": "Bình thường tôi không uống cà phê.",
+        "153047": "Tôi thường đi học bằng xe buýt."
+      },
+      "SourceHash": "400b0ce57f690f034d8610fb35cf0e962e4e601fe26d1987b6b6798ea4f22e91"
+    }
+  ]
+}

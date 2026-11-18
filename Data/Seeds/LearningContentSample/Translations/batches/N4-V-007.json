@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "376ccb94c4",
+      "Fields": {
+        "Meaning": "Khí, gas",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Chỉ khí, thường là khí đốt trong sinh hoạt. Xăng là ガソリン.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "cd158a2d08ec501978ed5bf186ab0e323a03ae6725315cfc924402b2035950f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3c360789e",
+      "Fields": {
+        "Meaning": "Xăng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ガソリン（ガソリン）có nghĩa là xăng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221414": "Xe này không tốn nhiều xăng.",
+        "234772": "Ôi, không ổn rồi! Sắp hết xăng."
+      },
+      "SourceHash": "b3bfd34e9c5220329ba9846f869bd27397c236afc4241d3c90efbe9c96f2b3ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "57c68573b7",
+      "Fields": {
+        "Meaning": "Trạm xăng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ガソリンスタンド（ガソリンスタンド）có nghĩa là trạm xăng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170935": "Rẽ trái là có trạm xăng.",
+        "219882": "Quanh đây có trạm xăng không?"
+      },
+      "SourceHash": "c29cc9eb2ca60690769880936116338ff6b0eb8b60233fcacc6fc0e4d7b5d666"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d0e700807a",
+      "Fields": {
+        "Meaning": "Cứng, chắc",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "堅い（かたい）có nghĩa là cứng, chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203870": "Kim cương vốn rất cứng.",
+        "223630": "Miếng bít tết này dai quá."
+      },
+      "SourceHash": "1eee5ea819fdc780563e066ddba2646582c77b128a82defa8fa8f3f200c82443"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26f2ddd0a2",
+      "Fields": {
+        "Meaning": "Hình dạng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "形（かたち）có nghĩa là hình dạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83744": "Vật chất thay đổi hình dạng tùy nhiệt độ.",
+        "126974": "Trái Đất có hình dạng như một quả cam."
+      },
+      "SourceHash": "d3c4182f69037003a1624a6739b1238c316f47454f3b2d5698c7e973c319a285"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "119fdf575e",
+      "Fields": {
+        "Meaning": "Dọn dẹp, thu xếp",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "片付ける（かたづける）có nghĩa là dọn dẹp, thu xếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227490": "Hãy dọn đồ chơi đi.",
+        "234456": "Việc đầu tiên sáng mai là tôi sẽ dọn cái đó."
+      },
+      "SourceHash": "8e900360c1e64427caf5931cd994625b1eabb84e559c9b6dad4f5c5c6ab9c179"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26a19196b7",
+      "Fields": {
+        "Meaning": "Trưởng bộ phận",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "課長（かちょう）có nghĩa là trưởng bộ phận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90797": "Cô ấy bắt chuyện với trưởng bộ phận.",
+        "157978": "Tôi được bổ nhiệm làm trưởng bộ phận."
+      },
+      "SourceHash": "31d89dc49e1e2c1ba3b1903d17681579e5ffa5cb991f0488f48922cfe6c900d9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "021c00423f",
+      "Fields": {
+        "Meaning": "Thắng, chiến thắng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "勝つ（かつ）có nghĩa là thắng, chiến thắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197441": "Có khi sẽ thắng đấy.",
+        "220108": "Ít người có thể chiến thắng căn bệnh này."
+      },
+      "SourceHash": "f1a5cf8f31777fa961e4d893185faa2a5e812bac8173662ac41428c3d30ccd46"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "876713fb67",
+      "Fields": {
+        "Meaning": "Dáng vẻ, vẻ ngoài, tư thế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "かっこう（かっこう）có nghĩa là dáng vẻ, vẻ ngoài, tư thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200600": "Trông tôi nhếch nhác đến mức chẳng muốn ai nhìn thấy.",
+        "230839": "Cậu bé kia trông bảnh lắm."
+      },
+      "SourceHash": "96a0770be96fece9efa8f0e00e61652c1b51314899ef1e2c2d5e76b61e0aa86d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "89927b8fa1",
+      "Fields": {
+        "Meaning": "Vợ tôi, nhà tôi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Cách gọi vợ mình, mang sắc thái truyền thống. Không dịch là nội trợ trong hai ví dụ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186896": "Vợ tôi đang chuẩn bị bữa tối.",
+        "186897": "Vợ tôi đang đi du lịch nước ngoài và thường gọi về."
+      },
+      "SourceHash": "906dcd2e09e211da32ca85c23e20cccc08b8f74893ca4ce3b92a81873e0d6ac7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3153705f1f",
+      "Fields": {
+        "Meaning": "Buồn, đau lòng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "悲しい（かなしい）có nghĩa là buồn, đau lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183293": "Tôi buồn đến mức tưởng mình phát điên.",
+        "1502040": "Đừng nhìn tôi bằng ánh mắt buồn như thế."
+      },
+      "SourceHash": "fd998d7befb88d589cb4181ce7eff30a2ec3e9a5b92f114b4dcb8e2c8284d3bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5a76ee84b9",
+      "Fields": {
+        "Meaning": "Chắc chắn, nhất định",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "必ず（かならず）có nghĩa là chắc chắn, nhất định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161757": "Cứ gặp bạn là tôi lại nhớ đến bố.",
+        "231158": "Bài hát đó nhất định sẽ nổi tiếng."
+      },
+      "SourceHash": "37a228d41a8b23434037dd5c691494d9341c6740b6ef1739380818a384fb6216"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be3dacfc93",
+      "Fields": {
+        "Meaning": "Cô ấy, bạn gái",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "彼女（かのじょ）có nghĩa là cô ấy, bạn gái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79807": "Vấn đề là cô ấy có đến hay không.",
+        "86091": "Cho cô ấy vào, tôi sẽ gặp ngay."
+      },
+      "SourceHash": "329d78cee37c303181392c3b2d292ee5321de94fea350ed20a4d79f976cabd24"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0752484ec5",
+      "Fields": {
+        "Meaning": "Tường, vách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "壁（かべ）có nghĩa là tường, vách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83448": "Có phải sơn lại tường không?",
+        "206838": "Bức tường đó dài 30 yard."
+      },
+      "SourceHash": "e4d9aa3c377fedc3c7497ec73c21df1d8b045a8b7b941ef1f887b649de81f308"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7dca3ae5a",
+      "Fields": {
+        "Meaning": "Để ý, bận tâm, phiền",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "かまわない có thể nói không bận tâm hoặc không thấy phiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201640": "Xin đừng bận tâm đến tôi.",
+        "235055": "Tôi không ngại dậy lúc sáu giờ."
+      },
+      "SourceHash": "38f144846a35b508106b46239c02709ef5e0af66499b86b6df5213c6fb2b9260"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec0fe6786a",
+      "Fields": {
+        "Meaning": "Tóc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "髪（かみ）có nghĩa là tóc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125930": "Tôi gặp một cô gái có mái tóc dài.",
+        "196161": "Gần như tất cả người Nhật đều có tóc đen."
+      },
+      "SourceHash": "1d875e4bea52708e1897bea5d2c8c4378347fe8aa7e84ca3ca49468496ce90b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b240c6105",
+      "Fields": {
+        "Meaning": "Cắn, nhai",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "噛む（かむ）có nghĩa là cắn, nhai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125561": "Đừng cắn móng tay nữa.",
+        "226227": "Khi cắn có đau không?"
+      },
+      "SourceHash": "3f8865749d8370cb561e9d818a3c8d45ee86447526ff81bf6c51cc324960905d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d1cd028481",
+      "Fields": {
+        "Meaning": "Đi lại thường xuyên, theo học",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "通う（かよう）có nghĩa là đi lại thường xuyên, theo học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125431": "Em trai tôi học cùng trường với tôi.",
+        "195758": "Mike đi học bằng xe buýt."
+      },
+      "SourceHash": "63ea1e486490312e3130affa9953daee4247e2754c31d864218bcc70d002ce6c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4c9297421b",
+      "Fields": {
+        "Meaning": "Kính, thủy tinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ガラス（ガラス）có nghĩa là kính, thủy tinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197661": "Chai bia làm bằng thủy tinh.",
+        "11588434": "Kính chắn gió cứng đờ vì đóng băng."
+      },
+      "SourceHash": "48686279a0c54d6eedd0cf15aff9acfa6daa415fdc3399231d3efbcd88b5f77f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0963c50b58",
+      "Fields": {
+        "Meaning": "Anh ấy, bạn trai",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "彼（かれ）có nghĩa là anh ấy, bạn trai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75797": "Cú vung gậy của anh ấy thật xuất sắc.",
+        "163186": "Bạn trai cũ của tôi lớn lên ở Bồ Đào Nha."
+      },
+      "SourceHash": "a7e1f384aed78852aaa54c6d37b889a26af37e613ea7860a84abeae7bd26b179"
+    }
+  ]
+}

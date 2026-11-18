@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "86e70a4d27",
+      "Fields": {
+        "Meaning": "Một chút, đôi chút",
+        "PartOfSpeech": "Phó từ, Danh từ",
+        "Explanation": "少々（しょうしょう）có nghĩa là một chút, đôi chút.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155853": "Tôi không bỏ cuộc chỉ vì vài chuyện nhỏ.",
+        "196309": "Tôi hơi bực bạn đấy."
+      },
+      "SourceHash": "bfd2ffe02f42139449103a750e6eb5784d38ec5cbca710b7e6c611b790cdbbf0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0336d92dcd",
+      "Fields": {
+        "Meaning": "Triệu chứng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "症状（しょうじょう）có nghĩa là triệu chứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192821": "Bạn có hay gặp triệu chứng như thế này không?",
+        "221124": "Triệu chứng này sẽ kéo dài đến bao giờ?"
+      },
+      "SourceHash": "954429d31517f73591a130c18c2a65cfe6b7fd11ea780303072e89dc54c5dde3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "00598d28f9",
+      "Fields": {
+        "Meaning": "Phát sinh, nảy sinh",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "生じる（しょうじる）có nghĩa là phát sinh, nảy sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85255": "Bệnh tật thường phát sinh do uống quá nhiều rượu.",
+        "150815": "Tai nạn phát sinh do bất cẩn."
+      },
+      "SourceHash": "8f4cb9b8beeee2125d417f5031e6e961dc388d6d3810651484453ff518ac929f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab8c8581e1",
+      "Fields": {
+        "Meaning": "Trạng thái, tình trạng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "状態（じょうたい）có nghĩa là trạng thái, tình trạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210883": "Căn nhà cũ đó ở trong tình trạng tồi tệ.",
+        "212109": "Căn nhà đó không còn tốt lắm."
+      },
+      "SourceHash": "d10932ad9d62e83f3bc00fe194eacfeaf6b65d39a7b02db76ddc211cf7173db1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b76d20f62",
+      "Fields": {
+        "Meaning": "Tiến bộ, khá lên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "上達（じょうたつ）có nghĩa là tiến bộ, khá lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98798": "Rồi tiếng Anh của anh ấy cũng sẽ khá lên.",
+        "178457": "Tiếng Anh của bạn đang tiến bộ."
+      },
+      "SourceHash": "f9b694c5dcec005e3a8a74223d099840e5b6bda446a685e6312d00922a6b45a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "140a214a45",
+      "Fields": {
+        "Meaning": "Lời nói đùa, chuyện đùa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "冗談（じょうだん）có nghĩa là lời nói đùa, chuyện đùa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92406": "Cô ấy thấy câu đùa đó buồn cười.",
+        "146106": "Đùa thế đủ rồi."
+      },
+      "SourceHash": "b50148ae43d83bccaab782e366aa76039de21a59b3cbf2da83a6dade92e0a986"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc8296f44e",
+      "Fields": {
+        "Meaning": "Hảo hạng, chất lượng cao",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "上等（じょうとう）có nghĩa là hảo hạng, chất lượng cao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74034": "Sao anh lại để dành chai vang hảo hạng này đến tận bây giờ?",
+        "193264": "Cho tôi xem loại tốt hơn."
+      },
+      "SourceHash": "ed42380ab6b57107bbc8616c5cfea31de42c7c4199278ca33d6c4a0e81cd5c6b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "77d12d0c77",
+      "Fields": {
+        "Meaning": "Va chạm, xung đột",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "衝突（しょうとつ）có nghĩa là va chạm, xung đột.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122845": "Lợi ích của Nhật Bản và Hoa Kỳ xung đột ở điểm này.",
+        "149140": "Ô tô đâm vào xe tải."
+      },
+      "SourceHash": "025dd6414cc50412a54cc58a6c65fb85cabbbd05154546667999b4b30231ab74"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1baf28297",
+      "Fields": {
+        "Meaning": "Thương nhân, người buôn bán",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "商人（しょうにん）có nghĩa là thương nhân, người buôn bán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103333": "Ông ấy giống một thương nhân hơn là một chính trị gia.",
+        "147145": "Thương nhân là người mua bán hàng hóa."
+      },
+      "SourceHash": "d2a46c5f2328b8b8fcf40d7eb127254c2d91f5232ce073911dc11e186bb490b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30e8d35fdf",
+      "Fields": {
+        "Meaning": "Phê duyệt, công nhận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "承認（しょうにん）có nghĩa là phê duyệt, công nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161689": "Tôi không thể phê duyệt kế hoạch của bạn.",
+        "206244": "Lý thuyết đó được công nhận rộng rãi."
+      },
+      "SourceHash": "f0120265d7884d4abeaba8ba926365c396a6621924e8fabf9ffcb9a4e8b84953"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c8ba548f8f",
+      "Fields": {
+        "Meaning": "Cậu bé, thiếu niên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "少年（しょうねん）có nghĩa là cậu bé, thiếu niên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85913": "Cậu bé mệt đang ngủ say.",
+        "146513": "Cậu bé khắc tên mình lên cây."
+      },
+      "SourceHash": "165b57f4d5e14680930ef543d83a855c07b1fa34756ea3fc0ec3ebab59f6a7e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a34d83a67",
+      "Fields": {
+        "Meaning": "Buôn bán, việc kinh doanh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "商売（しょうばい）có nghĩa là buôn bán, việc kinh doanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104196": "Anh ấy vui vì việc kinh doanh thuận lợi.",
+        "112664": "Anh ấy tập trung hoạt động kinh doanh đó ở trung tâm thành phố."
+      },
+      "SourceHash": "234707271adb87c165ba493afd60bafb183f1369d59c277739a1ae90997082e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65319da4bb",
+      "Fields": {
+        "Meaning": "Tiêu thụ, tiêu dùng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "消費（しょうひ）có nghĩa là tiêu thụ, tiêu dùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146413": "Mức tiêu dùng có lẽ chỉ tăng nhẹ.",
+        "209556": "Xe đó tiêu thụ nhiều nhiên liệu."
+      },
+      "SourceHash": "2aa2666fca85f312dd950729047b0648db71495a11f636fff99600139ebd9033"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76ca545a40",
+      "Fields": {
+        "Meaning": "Hàng hóa, sản phẩm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "商品（しょうひん）có nghĩa là hàng hóa, sản phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147145": "Thương nhân là người mua bán hàng hóa.",
+        "160037": "Tôi đã hủy đặt trước sản phẩm đó."
+      },
+      "SourceHash": "a89ebe46a60d5a530502fa36fde9faeab49bebb01c9ac959c38639b011838532"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d02c51185",
+      "Fields": {
+        "Meaning": "Chữa cháy, cứu hỏa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "消防（しょうぼう）có nghĩa là chữa cháy, cứu hỏa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120412": "Theo anh ấy, lính cứu hỏa hoặc bận tối mắt, hoặc chẳng có việc gì."
+      },
+      "SourceHash": "b1f07332e1cf5eefcdb779b347a57eeb09cbc402bb4aa5f8ccd4facf2c12052d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59d3bcdf1e",
+      "Fields": {
+        "Meaning": "Thông tin",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "情報（じょうほう）có nghĩa là thông tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172389": "Cho tôi biết lịch phim tuần này với.",
+        "221079": "Thông tin này có đúng không?"
+      },
+      "SourceHash": "323ba419b70da9f75101cd99ab9c100658bf8d42af717d99c64298e97d44def3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b7a976736",
+      "Fields": {
+        "Meaning": "Chứng minh, chứng nhận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "証明（しょうめい）có nghĩa là chứng minh, chứng nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159775": "Tôi đã chứng minh điều đó là thật.",
+        "167829": "Tôi sẽ chứng minh mình không sai."
+      },
+      "SourceHash": "228a1dcef5acf05e77a86dcbefa88a0c30ab09288855f29795001020b532ad1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e2dc364bee",
+      "Fields": {
+        "Meaning": "Nữ hoàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "女王（じょおう）có nghĩa là nữ hoàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147293": "Nữ hoàng phát biểu trước dân chúng.",
+        "155929": "Tôi nhớ mình từng gặp nữ hoàng."
+      },
+      "SourceHash": "a9d74bd253a5d51c7058285c88b15f75bffd99c824ed42d44cbd40845c029c4a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47dd731c9f",
+      "Fields": {
+        "Meaning": "Việc làm, chức vụ",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "職（しょく）có nghĩa là việc làm, chức vụ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103945": "Anh ấy lo sẽ mất việc.",
+        "145963": "Tìm việc đến đâu rồi?"
+      },
+      "SourceHash": "35a51f3935e88cb8a52c369e70c3a67be5d0cdcf7c9f4820034d4b4d4f36110a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d570a517c",
+      "Fields": {
+        "Meaning": "Nghề nghiệp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "職業（しょくぎょう）có nghĩa là nghề nghiệp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84970": "Nhiều nghề hiện mở cửa cho phụ nữ.",
+        "204939": "Đó là nghề do chính anh ấy chọn."
+      },
+      "SourceHash": "bfaaf9871321bb16935d2bf3eaa4d013d194a16c93679bccf7825bcdc4c4d75f"
+    }
+  ]
+}

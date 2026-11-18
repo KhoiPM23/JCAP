@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: b974c316fc."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "811101e739",
+      "Fields": {
+        "Meaning": "Ý chí, quyết tâm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "意志（いし）có nghĩa là ý chí, quyết tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156183": "Tôi hoàn toàn không có ý định từ chức.",
+        "191056": "Thiếu ý chí là bất lợi lớn nhất."
+      },
+      "SourceHash": "d60569473d5465920b1f71700a4a24837c880e3928a2b9445070461e768182c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db4d84d6b0",
+      "Fields": {
+        "Meaning": "Ý định, ý muốn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "意思（いし）có nghĩa là ý định, ý muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144288": "Con người truyền đạt ý nghĩ cho nhau bằng lời nói.",
+        "198771": "Người đó mỉm cười để tỏ ý tán thành."
+      },
+      "SourceHash": "53b476ec8e3928bd4cae4b9aeee97b1765f0d2de2767db217b54aec0084a9a87"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a23863840",
+      "Fields": {
+        "Meaning": "Bác sĩ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "医師（いし）có nghĩa là bác sĩ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110078": "Anh ấy đang học để trở thành bác sĩ.",
+        "190942": "Bác sĩ quyết định phẫu thuật ngay."
+      },
+      "SourceHash": "b52495251b56136a3a2ae43f5215c6b91e037b62433e39ca5229553b814d03cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b83e5a1d0",
+      "Fields": {
+        "Meaning": "Duy trì, bảo dưỡng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "維持（いじ）có nghĩa là duy trì, bảo dưỡng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148981": "Duy trì một chiếc ô tô rất tốn kém.",
+        "221429": "Chi phí bảo dưỡng chiếc xe này khá cao."
+      },
+      "SourceHash": "9c6c612fd47b47c35b071139339760ba5bd91c54c47d9c18010177b554987c3e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "adfd2f59c3",
+      "Fields": {
+        "Meaning": "Ý thức, sự để tâm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "意識（いしき）có nghĩa là ý thức, sự để tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87050": "Cô ấy đã tỉnh lại ở bệnh viện.",
+        "223927": "Tôi thử nêm món này sao cho gợi được phong vị Paris."
+      },
+      "SourceHash": "32fe1d72fee9e9cbed296de06db0336312317c8e897f2af6e3fa9ad18713305a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8822903a55",
+      "Fields": {
+        "Meaning": "Bất thường, trục trặc",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "異常（いじょう）có nghĩa là bất thường, trục trặc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148367": "Tôi nghĩ đã có trục trặc khi nhận tín hiệu.",
+        "204297": "Ăn nhiều đến vậy là bất thường."
+      },
+      "SourceHash": "e4c999252ab1e36729828211a5f5f795cd3d0ff5d3ccce479493fe41e5a4a675"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5fcd0d05f",
+      "Fields": {
+        "Meaning": "Suối, nguồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泉（いずみ）có nghĩa là suối, nguồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141228": "Suối phun nước nóng lên cao khoảng 170 feet.",
+        "208023": "Có thể ví ông ấy như một nguồn tri thức."
+      },
+      "SourceHash": "f0af324821046887caea447ffdc4a75bda3b204c8fb3de039eaa75426e673d77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b974c316fc",
+      "Fields": {
+        "Meaning": "Rồi sẽ, sớm muộn; cái nào, người nào hoặc nơi nào",
+        "PartOfSpeech": "Đại từ, phó từ",
+        "Explanation": "いずれ có thể thay cho một người, vật hoặc nơi chưa xác định. Khi làm phó từ, nó chỉ một thời điểm trong tương lai, như trong hai ví dụ của mục này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144322": "Con người rồi ai cũng phải chết.",
+        "178109": "Nỗ lực của bạn rồi sẽ được đền đáp."
+      },
+      "SourceHash": "2e1f20b79d8260e67af23b8ca4884fcba1e8e66feb583cdc9ccdda73e717363a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c42fa0cf5f",
+      "Fields": {
+        "Meaning": "Trước đây, trước mốc",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "以前（いぜん）có nghĩa là trước đây, trước mốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91347": "Cô ấy không còn như trước nữa.",
+        "157068": "Giờ tôi không chơi quần vợt nhiều như trước."
+      },
+      "SourceHash": "fe2fee09bb6716dee4345423d8cf303ac27ac40ed7db2245c14fc5b7f8d047e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4601135013",
+      "Fields": {
+        "Meaning": "Tấm, ván",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "板（いた）có nghĩa là tấm, ván.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207172": "Tấm ván dài khoảng hai mét.",
+        "220451": "Tấm sắt này được mạ thiếc."
+      },
+      "SourceHash": "d2413bef4494740129682cbef82c6637634ce65ae4374005c31f751e7cb9dfd9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9620d69897",
+      "Fields": {
+        "Meaning": "Vĩ đại, lớn lao",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "偉大（いだい）có nghĩa là vĩ đại, lớn lao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83126": "Tình yêu của mẹ lớn lao hơn mọi tình yêu khác.",
+        "192484": "Lincoln là một chính trị gia vĩ đại."
+      },
+      "SourceHash": "9f52e32331e62643e644c6d13f86b3b6a7344fba446246f98e0abc4f4255c40f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97600f5aa8",
+      "Fields": {
+        "Meaning": "Ôm, bế, ấp ủ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Đọc だく khi nói ôm hoặc bế. Cách đọc いだく thường gặp khi nói ấp ủ hy vọng, hoài bão hoặc cảm xúc.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "9502ce0a0cd680803775ea4f1e395cfc3754ae5be45bf443e28f9133436e9745"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d347b309a",
+      "Fields": {
+        "Meaning": "Trò nghịch, tinh nghịch",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "いたずら（いたずら）có nghĩa là trò nghịch, tinh nghịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127249": "Con trai nghịch ngợm thì cũng đành chịu thôi.",
+        "161437": "Tôi không thể làm ngơ trước những đứa trẻ nghịch ngợm."
+      },
+      "SourceHash": "e4a761e389992207db501fdfc649282a6538ff92ecc0570956c5131108fff2c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a12c4f4e9",
+      "Fields": {
+        "Meaning": "Cơn đau, nỗi đau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "痛み（いたみ）có nghĩa là cơn đau, nỗi đau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157673": "Tôi chợt thấy đau bên hông.",
+        "224484": "Tôi bị đau dai dẳng ở chỗ này."
+      },
+      "SourceHash": "f7c711a50847ed58c71d28739fc3b5c2b17dce65c738e77d0b0bbd6eae965eb4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c435f396e3",
+      "Fields": {
+        "Meaning": "Đến, đi tới, dẫn đến",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "至る（いたる）có nghĩa là đến, đi tới, dẫn đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210813": "Từ đó dần có nghĩa rộng.",
+        "220303": "Con đường này dẫn đến công viên."
+      },
+      "SourceHash": "b46d665f028d27130b1a6703f0eb50e3e5d4a990dda3fa24a2233e5486e9bb51"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0cbc5fcb97",
+      "Fields": {
+        "Meaning": "Chợ, phiên chợ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "いち（いち）có nghĩa là chợ, phiên chợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147363": "Ba người phụ nữ và một con ngỗng cũng đủ thành một phiên chợ.",
+        "168369": "Chợ họp vào mỗi thứ Hai."
+      },
+      "SourceHash": "91d40b415e7b09dcf558c5442f2e7cb433b2e26caea5fe14b2de51d32f6b0022"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04d6c4bd44",
+      "Fields": {
+        "Meaning": "Vị trí, tọa lạc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "位置（いち）có nghĩa là vị trí, tọa lạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117134": "Văn phòng của anh ấy nằm ở trung tâm thị trấn.",
+        "159088": "Tôi đứng ở vị trí thuận lợi để xem đoàn diễu hành."
+      },
+      "SourceHash": "a9a6ec2db026b1c0ba1380d4cf5d0d6471cad9dc143ac29b42f9ef9fb2b0b14f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec2ddaa910",
+      "Fields": {
+        "Meaning": "Một thời gian, chốc lát",
+        "PartOfSpeech": "Phó từ, Danh từ, bổ nghĩa với の",
+        "Explanation": "一時（いちじ）có nghĩa là một thời gian, chốc lát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83629": "Hỏi thì ngượng một lúc, không hỏi thì ngượng cả đời.",
+        "110005": "Có một thời anh ấy sống ở đây."
+      },
+      "SourceHash": "81ae5a967d259054640dece910259501565ab7526737acb8be799bd36893781c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cfaaf0ad82",
+      "Fields": {
+        "Meaning": "Cùng một lúc",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "一度に（いちどに）có nghĩa là cùng một lúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190313": "Bạn không thể làm hai việc cùng một lúc đâu.",
+        "190320": "Hãy cố làm từng việc một."
+      },
+      "SourceHash": "4db882511b0d990c21328c4a57eea133e448878309691cbdfe6663ef3a6f1414"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "56d7bebebd",
+      "Fields": {
+        "Meaning": "Thị trường, chợ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "市場（いちば）có nghĩa là thị trường, chợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106520": "Anh ấy nuôi bò để đem bán ở chợ.",
+        "207820": "Thị trấn đó có một khu chợ."
+      },
+      "SourceHash": "a8f62499e7e2c37629c6dcdf73acd3a08867fc3636d1c2dea587631e55624c59"
+    }
+  ]
+}

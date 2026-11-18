@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-suru",
+      "Fields": {
+        "Meaning": "Làm gì cho người khác (khiêm nhường)",
+        "Formation": "お ＋ gốc ます ＋ する／ご ＋ danh từ Hán Nhật chỉ hành động ＋ する",
+        "Explanation": "Nói khiêm nhường về hành động của mình hoặc phía mình có liên quan đến người được tôn trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-suru:example:1": "Để tôi xách hành lý giúp quý khách ạ.",
+        "o-suru:example:2": "Tôi sẽ lái xe đưa anh chị đến ga ạ."
+      },
+      "SourceHash": "4617e67d733bb45cbd4e0a9c723e2a9fec1393aec6897be058d8419aa2dd46d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-ni-naru",
+      "Fields": {
+        "Meaning": "Làm gì (kính ngữ)",
+        "Formation": "お ＋ gốc ます ＋ になる／ご ＋ danh từ Hán Nhật chỉ hành động ＋ になる",
+        "Explanation": "Nâng mức tôn trọng khi nói về hành động của người khác. Một số động từ thường dùng dạng kính ngữ riêng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-ni-naru:example:1": "Giám đốc đã về rồi ạ.",
+        "o-ni-naru:example:2": "Thầy đã đọc cuốn sách này chưa ạ?"
+      },
+      "SourceHash": "a62c663f09434ab8a77d2d2969255b052db0d3902da2f9b2f4b9e134a62853c8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "oki-ni",
+      "Fields": {
+        "Meaning": "Cách một khoảng, cứ cách…",
+        "Formation": "Khoảng thời gian hoặc khoảng cách ＋ おきに",
+        "Explanation": "Đặt các lần xảy ra cách nhau theo đơn vị nêu ra. 10分おきに là cứ 10 phút một lần, còn 1日おきに thường hiểu là cách một ngày, tức hai ngày một lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "oki-ni:example:1": "Chuyến tàu này cứ 10 phút lại đến một chuyến.",
+        "oki-ni:example:2": "Tôi tưới hoa hai ngày một lần."
+      },
+      "SourceHash": "4ba9eaa92ac475d39a9da6ce246c5007916db6483daba02905ce5b8f9bb2c61e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kai",
+      "Fields": {
+        "Meaning": "Có… không? (thân mật)",
+        "Formation": "Câu hỏi có hoặc không ＋ かい／mệnh đề ＋ のかい",
+        "Explanation": "Trợ từ cuối câu dùng trong giao tiếp thân mật, thường gặp khi hỏi người ngang hàng hoặc nhỏ tuổi hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kai:example:1": "Cậu khỏe không?",
+        "kai:example:2": "Cậu ăn trưa rồi à?"
+      },
+      "SourceHash": "6bcdd0812f977429f9a13624d59aa2fc69f61877397a7e770bdab314c176d704"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kakaru",
+      "Fields": {
+        "Meaning": "Mất thời gian, tốn tiền",
+        "Formation": "Khoảng thời gian hoặc chi phí ＋ かかる",
+        "Explanation": "Cho biết thời gian hay tiền bạc cần cho một việc. Có thể dùng が sau danh từ chỉ nguồn lực, như お金がかかる.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kakaru:example:1": "Đi bộ đến ga mất 20 phút.",
+        "kakaru:example:2": "Việc chuyển nhà tốn rất nhiều tiền."
+      },
+      "SourceHash": "669526ac9676e7a31d02e699bb0cfe541846df7a21d9f6650631b943309e6fde"
+    }
+  ]
+}

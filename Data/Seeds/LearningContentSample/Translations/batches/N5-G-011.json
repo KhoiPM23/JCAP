@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kara",
+      "Fields": {
+        "Meaning": "Sau khi làm xong A thì làm B",
+        "Formation": "Động từ A thể て ＋ から ＋ mệnh đề B",
+        "Explanation": "〜てから cho biết việc B xảy ra sau khi việc A đã diễn ra hoặc hoàn tất. Mẫu này nhấn mạnh thứ tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kara:example:1": "Tôi rửa tay rồi mới ăn trưa.",
+        "te-kara:example:2": "Sau khi xong việc, tôi đi xem phim."
+      },
+      "SourceHash": "f40db8d62ad31aeda2fed33abbee37f4aaeef0421b2bcae4958acbbf70d79d19"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "deshou",
+      "Fields": {
+        "Meaning": "Có lẽ, chắc là, phải không ạ",
+        "Formation": "Danh từ, gốc tính từ đuôi な hoặc mệnh đề thể thông thường ＋ でしょう",
+        "Explanation": "でしょう là cách nói lịch sự để phỏng đoán. Với ngữ điệu hỏi, nó có thể tìm sự đồng tình hoặc xác nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "deshou:example:1": "Ngày mai có lẽ trời sẽ quang.",
+        "deshou:example:2": "Cửa hàng này nổi tiếng, phải không ạ?"
+      },
+      "SourceHash": "12de2d4de2bff034e23c898e4b48ade06e63a708df0ff4eb1468f01de2405546"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "demo",
+      "Fields": {
+        "Meaning": "Nhưng, tuy vậy",
+        "Formation": "Câu trước。 ＋ でも、 ＋ câu sau",
+        "Explanation": "でも nối một câu với ý tương phản hoặc hạn chế ý ở câu trước. Cách này thường gặp trong hội thoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "demo:example:1": "Đắt nhỉ. Nhưng đẹp lắm.",
+        "demo:example:2": "Tôi mệt rồi. Nhưng vẫn còn việc phải làm."
+      },
+      "SourceHash": "c08b7e12092bb31ef5b5d12a96d3977510839c8fb24f4b6b5f1d4dd0d8be7757"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-and",
+      "Fields": {
+        "Meaning": "Và (nối danh từ)",
+        "Formation": "Danh từ A ＋ と ＋ danh từ B",
+        "Explanation": "と nối các danh từ thành một danh sách gồm những mục được nêu. Có thể dùng tiếp と để thêm mục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-and:example:1": "Tôi đã mua bánh mì và sữa.",
+        "to-and:example:2": "Tôi và em gái đều là sinh viên."
+      },
+      "SourceHash": "ab1de6ccf1ffb0c304ab74310e8a966a9518cc256a0dfa6e380dc27a8aad948e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-with",
+      "Fields": {
+        "Meaning": "Với, cùng với",
+        "Formation": "Người ＋ と ＋ động từ\nNgười ＋ と一緒に ＋ động từ",
+        "Explanation": "と đánh dấu người cùng tham gia hành động. Có thể thêm 一緒に để nhấn mạnh việc làm cùng nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-with:example:1": "Tôi đã xem phim cùng bạn.",
+        "to-with:example:2": "Tôi sẽ đi du lịch cùng gia đình."
+      },
+      "SourceHash": "3baf092d4cf2c851db642943a3363cc6d0a3eea75c01d0a2f7786c8ad07e32d8"
+    }
+  ]
+}

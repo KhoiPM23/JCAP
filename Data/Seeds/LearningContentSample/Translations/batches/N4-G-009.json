@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-hitsuyou",
+      "Fields": {
+        "Meaning": "Cần, cần thiết",
+        "Formation": "Thứ cần ＋ が ＋ 必要だ／必要です",
+        "Explanation": "Nêu thứ cần cho một mục đích. Mục đích có thể đứng trước には, như この仕事には.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ga-hitsuyou:example:1": "Công việc này cần tiếng Anh.",
+        "ga-hitsuyou:example:2": "Trước chuyến đi, tôi sẽ kiểm tra xem có cần thị thực không."
+      },
+      "SourceHash": "9df6d01461e95adaad1558dd1351c60295c903d9fe25bc808d6d50b446aa7d6d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-mirareru",
+      "Fields": {
+        "Meaning": "Có thể nhìn thấy, có thể xem",
+        "Formation": "Thứ có thể xem ＋ が ＋ 見られる",
+        "Explanation": "Trong mẫu này, 見られる là thể khả năng của 見る, diễn tả có cơ hội hoặc điều kiện xem một thứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ga-mirareru:example:1": "Ở Kyoto, bạn có thể tham quan những ngôi chùa cổ.",
+        "ga-mirareru:example:2": "Đến mùa xuân, bạn có thể ngắm hoa anh đào đẹp ở công viên này."
+      },
+      "SourceHash": "e2cd3c117e3522ff6a5de19f8c48ebe7edb52901ce6364e3f28d38419c90d753"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kamo-shirenai",
+      "Fields": {
+        "Meaning": "Có lẽ, có thể",
+        "Formation": "Thể thông thường ＋ かもしれない (danh từ và tính từ な bỏ だ)",
+        "Explanation": "Nêu một khả năng mà người nói chưa chắc. Dạng lịch sự là かもしれません.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kamo-shirenai:example:1": "Có thể từ chiều trời sẽ mưa.",
+        "kamo-shirenai:example:2": "Có lẽ anh ấy đã về nhà rồi."
+      },
+      "SourceHash": "d7330fe5c70d00d9740d04cdac98b4e004eb922fa0e6c3d8754edc1d75bd1008"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kara-tsukuru",
+      "Fields": {
+        "Meaning": "Làm từ nguyên liệu",
+        "Formation": "Nguyên liệu ＋ から ＋ 作る／作られる",
+        "Explanation": "から chỉ nguyên liệu ban đầu, nhất là khi nguyên liệu đã biến đổi thành sản phẩm. 作られる là dạng bị động thường dùng để mô tả thành phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kara-tsukuru:example:1": "Rượu vang được làm từ nho.",
+        "kara-tsukuru:example:2": "Phô mai được làm từ sữa."
+      },
+      "SourceHash": "2ae7d226cda00127a222b6313938544cb3c94416c9f56275f686982636623134"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "garu-gatteiru",
+      "Fields": {
+        "Meaning": "Tỏ ra, biểu lộ cảm xúc hay mong muốn",
+        "Formation": "Bỏ い của tính từ い hoặc たい ＋ がる／gốc tính từ な ＋ がる",
+        "Explanation": "Dùng khi nói về cảm xúc hoặc mong muốn của người khác dựa trên biểu hiện. がっている thường chỉ biểu hiện đang quan sát được, còn がる có thể chỉ khuynh hướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "garu-gatteiru:example:1": "Đứa trẻ đang tỏ ra muốn có đồ chơi mới.",
+        "garu-gatteiru:example:2": "Em trai tôi rất sợ chó."
+      },
+      "SourceHash": "5f4323ed7de90c8a26e14d02a62fbac7eb4e9a1d898a0103244a78ac704cef11"
+    }
+  ]
+}

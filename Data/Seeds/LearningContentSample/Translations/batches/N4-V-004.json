@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "11222e25b5",
+      "Fields": {
+        "Meaning": "Quầy bán hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "売り場（うりば）có nghĩa là quầy bán hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197587": "Quầy bán vitamin ở đâu?",
+        "214581": "Quầy bán đồ ăn nhẹ ở đâu?"
+      },
+      "SourceHash": "ed4cf56b16bcfea5cd7a20a56d395d72086fcd2caaf3bb196de15c40d0c54e97"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c67a9658b1",
+      "Fields": {
+        "Meaning": "Vui, mừng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "うれしい（うれしい）có nghĩa là vui, mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159965": "Tôi rất vui khi nghe tin đó.",
+        "233690": "Tôi rất vui được gặp lại bạn."
+      },
+      "SourceHash": "f034c1fd579817da25064817d05eef8bf63379a1ef95de15f79cb1af01629aca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "533b248802",
+      "Fields": {
+        "Meaning": "Ừ, ừm",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "うん（うん）có nghĩa là ừ, ừm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228059": "Ừ, chắc tôi sẽ ở nhà.",
+        "228063": "Ừ, chỉ cần đến hết kỳ nghỉ thôi."
+      },
+      "SourceHash": "5d2db396d312d043fd03c8f62b1710ce4580fd7d3851d7e7f8272d4b4eab8173"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44f33984fb",
+      "Fields": {
+        "Meaning": "Lái xe, vận hành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "運転（うんてん）có nghĩa là lái xe, vận hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84468": "Bố tôi lái ô tô rất giỏi.",
+        "225825": "Carol đang lái xe thuê."
+      },
+      "SourceHash": "d95278591f1b7c04fdec9c2d92bdc9730cacf2d203a261008bbfba32518ded96"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f6e25d5e2",
+      "Fields": {
+        "Meaning": "Tài xế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "運転手（うんてんしゅ）có nghĩa là tài xế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189436": "Tài xế tăng tốc xe.",
+        "189442": "Tài xế đánh lái sang phải."
+      },
+      "SourceHash": "82e9169f1ad91759b938026c76fba22478b411fa3d1acc1404d1af676cdabdc8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47487b1e85",
+      "Fields": {
+        "Meaning": "Vận động, tập thể dục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "運動（うんどう）có nghĩa là vận động, tập thể dục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148148": "Hãy tập thể dục, dù chỉ một lần mỗi tuần.",
+        "212292": "Nhờ tập bài đó mà tôi thấy mình trẻ lại."
+      },
+      "SourceHash": "4828d261ff98f2d7c1d6b64415ff1fb0c93c691ade09bf18f485e1e239543aba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3139c14254",
+      "Fields": {
+        "Meaning": "Thang cuốn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "エスカレーター（エスカレーター）có nghĩa là thang cuốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146274": "Thang cuốn đi lên ở đâu?",
+        "182599": "Ai không vội thì đứng bên phải thang cuốn."
+      },
+      "SourceHash": "7ac9401526d4d1ef7aa4275611c99cd7d81f58f3c69810421a5855a338ffae3b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bb01cb559f",
+      "Fields": {
+        "Meaning": "Cành cây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "枝（えだ）có nghĩa là cành cây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168187": "Cành cây trĩu xuống vì cam.",
+        "203761": "Nhiều con chim đang đậu trên cành."
+      },
+      "SourceHash": "489e7f5505b484e0afcfcbfb97e16b4043ea97bfbb580815349da3ed3d4c0fc4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60c9784974",
+      "Fields": {
+        "Meaning": "Chọn, lựa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "選ぶ（えらぶ）có nghĩa là chọn, lựa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "218748": "Hãy chọn giữa cái này và cái kia.",
+        "220244": "Hãy chọn một trong hai cái này."
+      },
+      "SourceHash": "c4d9503a7e34f3c9176b0b62fd862fbd74775ac3f5881a619849ed16a425769e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ceed9165d",
+      "Fields": {
+        "Meaning": "Giữ ý, ngại, xin kiêng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ご遠慮ください hoặc ご遠慮願います là cách lịch sự để yêu cầu không làm một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203408": "Anh/chị vui lòng không hút thuốc được không ạ?",
+        "224633": "Xin vui lòng không hút thuốc ở đây."
+      },
+      "SourceHash": "01cbf5b04b38a0a9172fd95dcb213de91468be3a81a4d251a072690d1b21d614"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53c76e5c6e",
+      "Fields": {
+        "Meaning": "Ở, đến, đi (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "Kính ngữ dùng khi nói ai đó ở, đến hoặc đi. Cả hai ví dụ dùng nghĩa di chuyển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222939": "Xin anh/chị đừng đến trong mưa thế này.",
+        "228596": "Khi nào anh/chị đi du lịch ạ?"
+      },
+      "SourceHash": "809053c63b0abca3deab1a7ced29c03454b181d9ad195cb0eb53939e263b5cb8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12e7bd036b",
+      "Fields": {
+        "Meaning": "Lời chúc mừng, dịp mừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お祝い（おいわい）có nghĩa là lời chúc mừng, dịp mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145611": "Xin gửi lời chúc mừng chân thành.",
+        "225361": "Kate hầu như chẳng bao giờ tổ chức sinh nhật."
+      },
+      "SourceHash": "a9c355cec3e9612b4c3eeccf9c7f86d2dc1787151062435d313bdc31cd641d51"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c63f36f44",
+      "Fields": {
+        "Meaning": "Xe máy, mô tô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "オートバイ（オートバイ）có nghĩa là xe máy, mô tô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227779": "Đi xe máy rất vui.",
+        "227781": "Ước gì tôi mua được xe máy."
+      },
+      "SourceHash": "c3d67ed90963e6e256853df2969d719543cf2059922ea07bde7ee5998a3ca04c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e5e5899ce2",
+      "Fields": {
+        "Meaning": "Nhờ, nhờ vào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "おかげ（おかげ）có nghĩa là nhờ, nhờ vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167729": "Tôi có được ngày hôm nay là nhờ bố mẹ.",
+        "168056": "Tôi có mặt trên đời là nhờ bố."
+      },
+      "SourceHash": "d9b1b2876a588ac91cb9a7b52f35cd065a72e034f37a0f590027578872cca1c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d2128cddd",
+      "Fields": {
+        "Meaning": "Lạ, buồn cười, có vấn đề",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "おかしい（おかしい）có nghĩa là lạ, buồn cười, có vấn đề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178530": "Nghe chuyện cười của bạn bao nhiêu lần vẫn thấy buồn cười.",
+        "221431": "Động cơ xe này có vấn đề."
+      },
+      "SourceHash": "6d56ffe11d7e4194c8230e5100bc7d9cc9f5713be2be46298b4dee2f225814bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a58874b751",
+      "Fields": {
+        "Meaning": "Người giàu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お金持ち（おかねもち）có nghĩa là người giàu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201588": "Làm sao để trở nên giàu có nhỉ?",
+        "227567": "Dì tôi rất giàu, nhưng điều đó đâu có nghĩa là dì hạnh phúc hơn."
+      },
+      "SourceHash": "31c5c65fb39ab12a976408cb2441e2b82b6654bff7f653146e1233652e94fb7b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4cfa8f43e2",
+      "Fields": {
+        "Meaning": "Một trăm triệu",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "億（おく）có nghĩa là một trăm triệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126975": "Trái Đất hình thành khoảng năm tỷ năm trước.",
+        "236071": "Có một tỷ người nói tiếng Anh."
+      },
+      "SourceHash": "1bc0dc023b391f5363af3eef1b500cfa92765a13478ae8fc5d797f358a635039"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1065d7145c",
+      "Fields": {
+        "Meaning": "Sân thượng, mái nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "屋上（おくじょう）có nghĩa là sân thượng, mái nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142578": "Khi muốn ngắm trời xanh, tôi lên sân thượng.",
+        "202146": "Có một quả bóng quảng cáo bay trên nóc cửa hàng bách hóa."
+      },
+      "SourceHash": "62abb959d4740fb5030b4005152ef622a6ca2f78f127e6a1da32849e0b9fbfb2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba001e2f36",
+      "Fields": {
+        "Meaning": "Quà tặng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "贈り物（おくりもの）có nghĩa là quà tặng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161289": "Tôi nhận được một món quà hay từ chú.",
+        "216390": "Jenny nói cảm ơn vì món quà."
+      },
+      "SourceHash": "c82ac753d45297abd4dcde8693b208dbdf95b0402fe04a8118ace45f187efcdc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af1dae5588",
+      "Fields": {
+        "Meaning": "Gửi, đưa tiễn, chở đến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "送る（おくる）có nghĩa là gửi, đưa tiễn, chở đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149101": "Bạn chở tôi về nhà được không?",
+        "221309": "Bạn gửi giúp tôi lá thư này sang Nhật được không?"
+      },
+      "SourceHash": "9260bb87d8e68cc4b2f6cf1712ea50f2f0f1f4e4e2d0f035ed798f720e7b8bb4"
+    }
+  ]
+}

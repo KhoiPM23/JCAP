@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 38 câu theo bản Nhật. Mục どれ không có câu nguồn.",
+    "Câu 201917 dùng lại bản dịch ở mục 外."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d1aa046d6",
+      "Fields": {
+        "Meaning": "Dừng, dừng lại",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "止まる dùng khi xe hoặc vật đang chuyển động dừng lại.",
+        "UsageNotes": "止める là tha động từ, nghĩa là làm cho dừng."
+      },
+      "Examples": {
+        "202936": "Đúng lúc đó xe buýt dừng lại.",
+        "224650": "Chúng ta dừng ở đây bao lâu?"
+      },
+      "SourceHash": "694b895ea82c4c51dcc509a580663443a7934e7fd3e260ac9a276fc5586dab46"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72c525f37a",
+      "Fields": {
+        "Meaning": "Bạn, bạn bè",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "友達（ともだち）chỉ người bạn. Từ này có thể chỉ một hoặc nhiều người tùy câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79333": "Tôi thất vọng vì bạn tôi không có mặt ở đây.",
+        "192885": "Tôi vui vì có nhiều người bạn tốt."
+      },
+      "SourceHash": "22c22871446c515cfbaecf38343e62150bf3e19e707266bc8d946c7547303411"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "86e7fb81c6",
+      "Fields": {
+        "Meaning": "Thứ Bảy",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "土曜日（どようび）là thứ Bảy. 土曜日から nghĩa là từ thứ Bảy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154894": "Tôi đã ở đây từ thứ Bảy.",
+        "207297": "Giáng sinh năm đó rơi vào thứ Bảy."
+      },
+      "SourceHash": "a3e8aa1fdde5bc280f95afff42a559e05f78b03789326d27d42130d930397a58"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e4fccba7f",
+      "Fields": {
+        "Meaning": "Chim",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鳥（とり）chỉ chim. 鳥がさえずる nghĩa là chim hót líu lo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80121": "Nhìn con chim đang hót trên cây kìa.",
+        "198937": "Con chim đẹp quá!"
+      },
+      "SourceHash": "b7ab3321c9b236faac154710937dccf5032fffa7355b04dbcc67a97c671d6ee9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4cc27797ba",
+      "Fields": {
+        "Meaning": "Chụp ảnh, quay phim",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "撮る（とる）dùng khi chụp ảnh hoặc quay phim. 写真を撮る nghĩa là chụp ảnh.",
+        "UsageNotes": "Cùng cách đọc とる, 取る thường dùng khi lấy một vật."
+      },
+      "Examples": {
+        "156161": "Tôi không chụp nhiều ảnh lắm.",
+        "184902": "Chụp từ bên ngoài thì được."
+      },
+      "SourceHash": "42b66456bb254e2d73c0be402e75daf7af3738106b24ee151251b08ffe41108a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1313ed47fb",
+      "Fields": {
+        "Meaning": "Lấy, giữ, tiếp nhận",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "取る（とる）có nghĩa cơ bản là lấy. 取っておく là giữ lại để dùng sau, còn 水分を取る là bổ sung nước hoặc chất lỏng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143632": "Xin hãy uống nhiều nước.",
+        "213310": "Tôi sẽ để dành số tiền đó phòng khi cần kíp."
+      },
+      "SourceHash": "f3738df3f2ca30a7fc23f03a4e9a610a5ad792c54de19e1f02fc7460d1988240"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b21477c7db",
+      "Fields": {
+        "Meaning": "Cái nào",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "どれ dùng để hỏi chọn mục nào trong một nhóm, thường là từ ba lựa chọn trở lên. Nó đứng độc lập. Trước danh từ, dùng どの.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "c988ed2292a3dc32ae986d6f3b34191dbac1d7d9062684ca5f04ac9c6e1dce33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3ae88c29c4",
+      "Fields": {
+        "Meaning": "Dao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ナイフ chỉ dao. Trong ngữ cảnh ăn uống, từ này thường chỉ dao dùng trên bàn ăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205569": "Đó không phải là dao của bạn.",
+        "214129": "Xin lỗi, tôi lỡ làm rơi dao."
+      },
+      "SourceHash": "94ba4a9123c5bfc5b3b92400aca82d5a076b3fbdf6fc219f7dbe1a56c63ceb2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d32281da9",
+      "Fields": {
+        "Meaning": "Trong, bên trong, ở giữa",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "中（なか）chỉ phần bên trong hoặc ở giữa. Dùng danh từ ＋ の中 để nêu vật hoặc nơi làm mốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201917": "Mình ăn bên ngoài lều nhé.",
+        "226423": "Trong giỏ hầu như không có táo."
+      },
+      "SourceHash": "ddad91cd4c81123896422eca988a73464e04b35a866e349c3dfcf9b4fd252ad7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcea29f192",
+      "Fields": {
+        "Meaning": "Dài, lâu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "長い（ながい）chỉ chiều dài hoặc thời lượng. 長く đứng trước động từ để diễn tả làm việc gì trong thời gian dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125914": "Anh/chị định ở lại lâu không ạ?",
+        "203060": "Ban ngày đang dần dài hơn."
+      },
+      "SourceHash": "53bd4643883126e966212355104c242e637fb95b0e40ca726f4779ef383fc5a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "07a4101167",
+      "Fields": {
+        "Meaning": "Kêu, hót, gáy (động vật)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "鳴く（なく）dùng cho tiếng kêu của động vật. Có thể dịch là hót với chim hoặc kêu với ếch.",
+        "UsageNotes": "泣く cũng đọc なく nhưng thường chỉ khóc."
+      },
+      "Examples": {
+        "226439": "Khi ếch kêu thì mình về nhé.",
+        "231343": "Con chim xinh xắn kia cứ hót hết ngày này sang ngày khác."
+      },
+      "SourceHash": "15940c6d2faf06c8f4d3e6e85c8b878dcba0ad000cdc65c94260cddeff6aeaac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04015c3825",
+      "Fields": {
+        "Meaning": "Làm mất, đánh mất",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "無くす（なくす）chỉ việc làm mất một vật hoặc làm cho thứ gì không còn. Vật bị mất đi với を.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155413": "Tôi đã tìm thấy cuốn sách làm mất hôm trước.",
+        "158950": "Tôi lỡ làm mất bút rồi."
+      },
+      "SourceHash": "a68f945fb61c65428dcbecc7f1858790c4c0851d1ee5904ec1cd7ef21b0029e6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef9536b1ee",
+      "Fields": {
+        "Meaning": "Tại sao, vì sao",
+        "PartOfSpeech": "Phó từ nghi vấn",
+        "Explanation": "なぜ dùng để hỏi nguyên nhân. Có thể đặt trước vế cần hỏi lý do.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199245": "Sao người đó lại tỏ ra vui đến thế?",
+        "232436": "Tại sao bạn lại làm việc?"
+      },
+      "SourceHash": "b4032a8b78e2b525bd2c425ef22d59015209d25644cdff8faf3b5f407a54812e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "641ddbf693",
+      "Fields": {
+        "Meaning": "Mùa hè",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "夏（なつ）chỉ mùa hè. 夏じゅう nghĩa là suốt mùa hè.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201234": "Cuối cùng thì mùa hè hình như đã đến rồi.",
+        "229963": "Kiến làm việc chăm chỉ suốt mùa hè."
+      },
+      "SourceHash": "4d8f3efcb23031a754b2623a5e129dbf1fd7204faefaf44769210a7f1ec0b625"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e09167a3d4",
+      "Fields": {
+        "Meaning": "Kỳ nghỉ hè",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夏休み（なつやすみ）chỉ thời gian nghỉ vào mùa hè. この夏休み là kỳ nghỉ hè này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184362": "Tôi thích nghỉ hè hơn đi học.",
+        "222855": "Kỳ nghỉ hè này bạn có đi đâu không?"
+      },
+      "SourceHash": "42c7cfb6e8219c58dc4c6582a116acb157d2b35c90624e150e7839539a4e30ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf58476318",
+      "Fields": {
+        "Meaning": "Vân vân, như, những thứ như",
+        "PartOfSpeech": "Trợ từ",
+        "Explanation": "など có thể nêu một vài ví dụ trong một nhóm. Trong câu phủ định, nó cũng có thể nhấn mạnh thứ được nêu là khó có hoặc khó xảy ra.",
+        "UsageNotes": "Hai câu nguồn dùng など để nhấn mạnh trong ngữ cảnh phủ định."
+      },
+      "Examples": {
+        "198659": "Chẳng tìm thấy chút hơi ấm nào ở đâu cả.",
+        "222937": "Mưa thế này thì chuyện ra ngoài là không thể."
+      },
+      "SourceHash": "ff2e4c8530ff9a10b5853af9ba8316b5ae4a1128c3219aad21a7f9ee45485805"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e65bf7ad23",
+      "Fields": {
+        "Meaning": "Bảy cái, bảy đơn vị",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "七つ（ななつ）là cách đếm chung cho bảy vật hoặc đơn vị. Có thể viết ７つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126933": "Trên Trái Đất có bảy châu lục.",
+        "235014": "Bảy biển là những biển nào?"
+      },
+      "SourceHash": "3e7a4e2c324c55c41188f10efdeb3501f40705c4d13d108a00974727f19e1801"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "75ed3c3b2b",
+      "Fields": {
+        "Meaning": "Bảy ngày, ngày mùng bảy",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "七日（なのか）chỉ ngày mùng bảy hoặc khoảng thời gian bảy ngày. 七日間 nói rõ thời lượng bảy ngày.",
+        "UsageNotes": "Hai câu nguồn đều dùng nghĩa thời lượng."
+      },
+      "Examples": {
+        "172942": "Hiện giờ đang là kỳ nghỉ Tuần lễ Vàng kéo dài bảy ngày.",
+        "190567": "Một tuần có bảy ngày."
+      },
+      "SourceHash": "cb58f635c847532d6b7e144fb2e0d580107aa0840e236466215c1a575536c3fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a812b1ac7f",
+      "Fields": {
+        "Meaning": "Tên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "名前（なまえ）chỉ tên của người hoặc vật. 名前を書く là viết tên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224507": "Hãy viết tên bạn vào đây.",
+        "232988": "Tên bạn đã bị gạch khỏi danh sách."
+      },
+      "SourceHash": "3530d274c888676ff3255e9c5216853a8edeb09c4279456a3dd5ef9708db6cad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a95b0a87ad",
+      "Fields": {
+        "Meaning": "Học, học với người hướng dẫn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "習う（ならう）diễn tả việc học kiến thức hoặc kỹ năng qua hướng dẫn. Có thể dùng khi học lái xe hoặc học chơi nhạc cụ.",
+        "UsageNotes": "習っています diễn tả việc đang theo học."
+      },
+      "Examples": {
+        "149053": "Tôi đang học lái xe.",
+        "172864": "Hiện giờ tôi đang học chơi đàn ghi-ta."
+      },
+      "SourceHash": "6fb7ea616fe3dd333c84dd385126dcf6878a65f4378e28774fc3b50dc6ba86d9"
+    }
+  ]
+}

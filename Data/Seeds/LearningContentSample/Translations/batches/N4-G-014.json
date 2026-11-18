@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "suuryou-wa",
+      "Fields": {
+        "Meaning": "Ít nhất khoảng, phải đến",
+        "Formation": "Số lượng ＋ は ＋ vị ngữ",
+        "Explanation": "Đưa ra một mốc tối thiểu theo ước tính của người nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "suuryou-wa:example:1": "Đi bộ đến ga mất ít nhất hai mươi phút.",
+        "suuryou-wa:example:2": "Tôi nghĩ sẽ có ít nhất năm mươi người đến dự tiệc."
+      },
+      "SourceHash": "3af968e29f60f38413d8463f4773d9cc044d6ba06f73a676513eddfddcbde8fd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sukunakunai",
+      "Fields": {
+        "Meaning": "Không ít, khá nhiều",
+        "Formation": "少ない → 少なくない",
+        "Explanation": "Dùng phủ định để nói số lượng đáng kể mà không nêu con số cụ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sukunakunai:example:1": "Thị trấn này có không ít nhà cũ.",
+        "sukunakunai:example:2": "Có không ít học sinh, sinh viên bỏ bữa sáng."
+      },
+      "SourceHash": "098767e3b32cce219599932ee5fe6f6f27be427278a330ec55abfd5653a0d4d9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sukoshi-mo-nai",
+      "Fields": {
+        "Meaning": "Không… chút nào",
+        "Formation": "少しも ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh rằng đặc điểm hay phản ứng hoàn toàn vắng mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sukoshi-mo-nai:example:1": "Nghe tin đó tôi chẳng ngạc nhiên chút nào.",
+        "sukoshi-mo-nai:example:2": "Hôm nay chẳng lạnh chút nào."
+      },
+      "SourceHash": "72cbf7fd09e12ec11880752d21e282c3b50b490c40041d8c0978da2379c5cf8e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "saseru",
+      "Fields": {
+        "Meaning": "Bắt hoặc cho phép làm gì",
+        "Formation": "Nhóm 1: hàng あ ＋ せる (う → わせる)／nhóm 2: bỏ る ＋ させる／する → させる／来る → 来させる",
+        "Explanation": "Thể sai khiến có thể chỉ sự bắt buộc hoặc cho phép, tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "saseru:example:1": "Mẹ bảo em gái tôi dọn phòng.",
+        "saseru:example:2": "Giáo viên cho học sinh về sớm một chút."
+      },
+      "SourceHash": "5d0b6cc798a6017182e827addc6a6b810857f5e6e1b79b0234f138f30ef4a428"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zenzen-nai",
+      "Fields": {
+        "Meaning": "Hoàn toàn không",
+        "Formation": "全然 ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh mức độ phủ định, như hoàn toàn không có khả năng hoặc không có đặc điểm được nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zenzen-nai:example:1": "Tôi hoàn toàn không đọc được kanji.",
+        "zenzen-nai:example:2": "Món súp này chẳng nóng chút nào."
+      },
+      "SourceHash": "0bdfb5e8c5fafdf88a8b9545d798b5f5cd013719964929fda452be3a5cd0997f"
+    }
+  ]
+}

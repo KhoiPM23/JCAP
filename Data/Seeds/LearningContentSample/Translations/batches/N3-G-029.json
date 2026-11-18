@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "doushi",
+      "Fields": {
+        "Meaning": "Giữa những người hoặc bên cùng loại",
+        "Formation": "Danh từ ＋ 同士（どうし）",
+        "Explanation": "Chỉ quan hệ hoặc hoạt động giữa các bên có cùng vai trò, đặc điểm hay vị trí tương ứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "doushi:example:1": "Trẻ con cãi nhau rồi cũng nhanh làm hòa.",
+        "doushi:example:2": "Chúng tôi là hàng xóm nên thường nói chuyện với nhau."
+      },
+      "SourceHash": "7fe2a2f4d285855d5001b6316038be4e0060d197845564baa6c23650bdab8a60"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "doushitemo",
+      "Fields": {
+        "Meaning": "Bằng mọi giá, dù cố thế nào",
+        "Formation": "どうしても ＋ mong muốn hoặc vị ngữ phủ định",
+        "Explanation": "Với mong muốn, nhấn mạnh quyết tâm. Với phủ định, nhấn mạnh đã cố mà vẫn không làm được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "doushitemo:example:1": "Tôi nhất định muốn vào trường đại học này.",
+        "doushitemo:example:2": "Tôi đã nghe tên rồi, nhưng cố thế nào cũng không nhớ ra."
+      },
+      "SourceHash": "e2cc1ac6fd6357f3bb3ec1279f6b2b3741e7cb4d7beefef36c5de08063319b25"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "toosu",
+      "Fields": {
+        "Meaning": "Làm xuyên suốt, giữ đến cùng",
+        "Formation": "Gốc ます ＋ 通す",
+        "Explanation": "Nhấn mạnh duy trì một hành động hoặc lập trường cho đến cuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "toosu:example:1": "Dù vất vả, tôi vẫn chạy đến hết chặng.",
+        "toosu:example:2": "Anh ấy một mực khẳng định mình không làm."
+      },
+      "SourceHash": "402c254ee4d895cbfb055af03b467601277f165f2e72b6baed64885f80fb12aa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-onaji-kurai",
+      "Fields": {
+        "Meaning": "Xấp xỉ bằng, ngang với",
+        "Formation": "Mốc so sánh ＋ と同じくらい ＋ đặc điểm／の ＋ danh từ",
+        "Explanation": "So sánh hai bên có mức độ gần tương đương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-onaji-kurai:example:1": "Bánh ở tiệm này ngon ngang bánh của tiệm nổi tiếng kia.",
+        "to-onaji-kurai:example:2": "Em gái tôi đã cao gần bằng tôi."
+      },
+      "SourceHash": "26708ff14d2a7e4ae6d3a0c65daf86e7f845148b36ad07a38e9f70620c0efedb"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-onaji-de-to-chigatte",
+      "Fields": {
+        "Meaning": "Giống với, khác với",
+        "Formation": "Mốc so sánh ＋ と同じで／と違って",
+        "Explanation": "Nêu điểm tương đồng bằng と同じで hoặc đối chiếu sự khác biệt bằng と違って.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-onaji-de-to-chigatte:example:1": "Giống anh trai, tôi cũng không giỏi dậy sớm.",
+        "to-onaji-de-to-chigatte:example:2": "Khác năm ngoái, mùa hè năm nay rất mát."
+      },
+      "SourceHash": "bf86c397db7153b4f693a774a68d2151249b3476e8e238c3d2777c02520a946a"
+    }
+  ]
+}

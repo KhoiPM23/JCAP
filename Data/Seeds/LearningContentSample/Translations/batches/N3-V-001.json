@@ -1,0 +1,310 @@
+{
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3b1f16454",
+      "Fields": {
+        "Meaning": "Tình yêu",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "愛（あい）có nghĩa là tình yêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98814": "Tình yêu dành cho anh ấy đã nguội lạnh.",
+        "191561": "Yêu là thấy cô ấy cả trong giấc mơ."
+      },
+      "SourceHash": "6360bc1e083a5d0b0ef57eed16f29fe711ef1ae5fbd9f18e70547e8447335ef7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2ac37bee3",
+      "Fields": {
+        "Meaning": "Lời chào, lời phát biểu chào mừng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "挨拶（あいさつ）có nghĩa là lời chào, lời phát biểu chào mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91815": "Cô ấy mỉm cười chào.",
+        "221092": "Cho phép tôi nói đôi lời chào nhân dịp này."
+      },
+      "SourceHash": "74cfcb77604070c1025bbe25bd2e1a47c20d3ed81937a2c1cdb93fe4247bb6d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0cb7e80d4c",
+      "Fields": {
+        "Meaning": "Tình cảm, tình thương",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "愛情（あいじょう）có nghĩa là tình cảm, tình thương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191530": "Chỉ có tình yêu thôi thì không sống được.",
+        "199691": "Trẻ em đặc biệt cần tình thương."
+      },
+      "SourceHash": "290d14b9dbcd3d6adb04d34a69a8d11732cea265ba4295732f3b6f432c882dc7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d26b9a262",
+      "Fields": {
+        "Meaning": "Tín hiệu, hiệu lệnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "合図（あいず）có nghĩa là tín hiệu, hiệu lệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105995": "Anh ấy ra hiệu cho tôi chạy trốn.",
+        "214957": "Hãy ra hiệu bắt đầu ngay."
+      },
+      "SourceHash": "b7e7d49fb73fef807176f8a3016c6ec87dc64ce11b5131bf96bed2d49f88042b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9452242b03",
+      "Fields": {
+        "Meaning": "Kem",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アイスクリーム（アイスクリーム）có nghĩa là kem.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93475": "Cô ấy thích kem.",
+        "234691": "Cho tôi ba phần kem."
+      },
+      "SourceHash": "7ff35e89b17b4ba99df9751419b2c7e48ec0233e37a8d40e1cd23aed2302e1c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "41df1c11e3",
+      "Fields": {
+        "Meaning": "Yêu, yêu mến",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "愛する（あいする）có nghĩa là yêu, yêu mến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90684": "Cô ấy có lòng yêu thích học thuật.",
+        "192159": "Romeo là người Juliet yêu."
+      },
+      "SourceHash": "5efc14ee283e33a8bce4d7eb47a47067a627522ad4c09936678bceb1492719db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cab1bc201f",
+      "Fields": {
+        "Meaning": "Đối tác, bạn cùng, người đối diện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "相手（あいて）có nghĩa là đối tác, bạn cùng, người đối diện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87366": "Cô ấy sẽ là một người bạn đồng hành tốt cho anh ấy.",
+        "233505": "Ai là bạn nhảy của bạn?"
+      },
+      "SourceHash": "8bc78b6baeef1ae65edc69ce877869b692019e3571d65b18bceed32c34ad1072"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c8f324542",
+      "Fields": {
+        "Meaning": "Tiếc là, thật không may",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ, Danh từ, bổ nghĩa với の",
+        "Explanation": "あいにく（あいにく）có nghĩa là tiếc là, thật không may.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "234565": "Tiếc là tôi không có tiền mang theo.",
+        "234573": "Tiếc là ông ấy đang ra ngoài."
+      },
+      "SourceHash": "3f183c8978d268d75a90360b0100c414249db30207045fd462a861ce355b5070"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15ffb31b53",
+      "Fields": {
+        "Meaning": "Bàn là, bàn ủi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アイロンをかける nghĩa là là hoặc ủi quần áo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161866": "Tôi đã ủi khăn tay.",
+        "234546": "Tôi bị bỏng tay vì bàn là."
+      },
+      "SourceHash": "e990d52a7fdd1f7d7f859eea62d74364ba3ae0afb64880e392af443d226ca697"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf63ac57d2",
+      "Fields": {
+        "Meaning": "Bị loại, ngoài vạch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アウト（アウト）có nghĩa là bị loại, ngoài vạch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138024": "Thường rất khó xác định bóng rơi trong hay ngoài vạch.",
+        "170450": "Người đánh bóng đầu tiên bị loại."
+      },
+      "SourceHash": "5343902c558c76a18a844dc8cd409cd232b0e082e16d790eb6c435f82caeda50"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b36b0a71b9",
+      "Fields": {
+        "Meaning": "Ánh sáng, đèn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "明かり（あかり）có nghĩa là ánh sáng, đèn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201607": "Làm ơn bật đèn lên.",
+        "219463": "Đọc chữ dưới ánh sáng này sẽ hại mắt đấy."
+      },
+      "SourceHash": "8031697a6444f41f64fe613ad92f51bdf5a09a33fdd7f65ea7bf63c3b63f7b3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "03e5958da6",
+      "Fields": {
+        "Meaning": "Chỗ trống, suất trống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "空き（あき）có nghĩa là chỗ trống, suất trống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150736": "Hãy viết các chữ cách nhau rộng hơn.",
+        "228222": "Công ty chúng tôi không có vị trí trống."
+      },
+      "SourceHash": "5e23d3ae120b3b9a59cda521b89ffc9b4c0205494f8eab80912b687a91f6134f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b32e523015",
+      "Fields": {
+        "Meaning": "Rõ ràng, hiển nhiên",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "明らか（あきらか）có nghĩa là rõ ràng, hiển nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120860": "Rõ ràng là anh ấy đã làm việc đó.",
+        "208457": "Rõ ràng là con tàu đã chìm."
+      },
+      "SourceHash": "f3194f3f28a95ad69a0dca88f400468581aab936c13d6cf51af4a8d51bbb62df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ff67241d3",
+      "Fields": {
+        "Meaning": "Từ bỏ, thôi hy vọng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "諦める（あきらめる）có nghĩa là từ bỏ, thôi hy vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170315": "Dù không có năng khiếu cũng đừng bỏ cuộc.",
+        "209091": "Người ta cho rằng cậu bé đã chết nên đành bỏ cuộc."
+      },
+      "SourceHash": "4537b85f07ffc5e310e62f59732167d06cbcd1538ffabcb198b920771c6954a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d5b06d1fa",
+      "Fields": {
+        "Meaning": "Chán, hết hứng",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "飽きる（あきる）có nghĩa là chán, hết hứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111787": "Anh ấy chán xem ti vi rồi.",
+        "140058": "Con trai tôi đã chán hamburger rồi."
+      },
+      "SourceHash": "909fff114ecdbc014699182dbe352ca395748734efd8282aa78101a652f4711e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6312892cc5",
+      "Fields": {
+        "Meaning": "Bắt tay",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "握手（あくしゅ）có nghĩa là bắt tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99319": "Anh ấy bắt tay với bạn.",
+        "110202": "Anh ấy chìa tay ra muốn bắt tay tôi."
+      },
+      "SourceHash": "731b3c6fcf4bbe0c5cd6deb80f62621f0ee92f4eb56cd470018212392c06269a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6bec104564",
+      "Fields": {
+        "Meaning": "Ác quỷ, quỷ dữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "悪魔（あくま）có nghĩa là ác quỷ, quỷ dữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91233": "Cô ấy bị quỷ ám.",
+        "191374": "Có khi quỷ dữ sẽ đến đấy."
+      },
+      "SourceHash": "5d99c1732a3928b7997717676a0717f55decfb8d4c9fa2fc9c1a150c09e8116f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b9f9fdc86",
+      "Fields": {
+        "Meaning": "Rạng sáng, kết thúc một giai đoạn",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "明ける（あける）có nghĩa là rạng sáng, kết thúc một giai đoạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79759": "Trời sáng.",
+        "79771": "Trời vừa sắp hửng sáng."
+      },
+      "SourceHash": "972623b61111dd2944d416ee2355d61f0884a9d0d6101905f7d82d7287a09008"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9092a33de5",
+      "Fields": {
+        "Meaning": "Gửi, giao cho giữ",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "預ける（あずける）có nghĩa là gửi, giao cho giữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179589": "Hãy gửi số tiền đó vào ngân hàng.",
+        "233610": "Hãy gửi tiền của bạn vào ngân hàng."
+      },
+      "SourceHash": "a353282115633b89ab1854f0e17ff30408b06360bd38f3de2afa3cd0b03ca751"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d653ddf51",
+      "Fields": {
+        "Meaning": "Mồ hôi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "汗（あせ）có nghĩa là mồ hôi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184120": "Hãy lau mồ hôi trên trán đi.",
+        "223371": "Bộ đồ ngủ này thấm mồ hôi tốt."
+      },
+      "SourceHash": "2b8f99b45abd5f553a3994d5e1abf0ce3c79fd62ab8d38afb1b1a21933c3f1e3"
+    }
+  ]
+}

@@ -1,6 +1,44 @@
 # Dữ liệu từ vựng và ngữ pháp cho phát triển
 
-## Nhập toàn bộ dữ liệu N5–N3
+## Seed dữ liệu N5–N3 khi khởi động backend
+
+Chạy `dotnet run` với SQL Server đã cấu hình. Sau khi cập nhật schema,
+backend kiểm tra phiên bản trong `LearningContentSeedStates`. Chỉ khi chưa
+nạp thành công phiên bản hiện tại, backend mới nạp bộ N5–N3 đóng gói trong
+`learning-n5-n3.json` và áp dụng các bản dịch đã biên soạn. Máy thành viên có thể chạy seed offline với bộ dữ liệu
+này. Seed đối chiếu nguồn, phiên bản và ID gốc để tái sử dụng nội dung đã
+import. Backend cũng nạp danh mục 124 chủ đề phẳng theo trình độ và các
+liên kết đã chuẩn bị trong `tango-n5-topics.json` và
+`learning-topic-catalog-n5-n3.json`. Chủ đề đã có và chỉnh sửa riêng của
+admin được giữ lại; chạy seed lại không ghi đè danh sách đã gán.
+
+Hướng dẫn lấy bản này và chạy trên máy thành viên:
+[learning-content-handoff.md](../../../docs/learning-content-handoff.md).
+
+Các lô Việt hóa tiếp theo được quản lý tại [Translations/README.md](Translations/README.md).
+Xem [tiến độ từng level](../../../docs/learning-translation-progress.md) để tiếp tục đúng lô qua các lượt làm việc.
+Backend áp dụng SQL đã kiểm tra của các lô này trong lần seed của phiên bản tương ứng.
+
+Để nạp đầy đủ trước rồi thoát (dataset + Việt hóa + cả hai bộ chủ đề):
+
+```powershell
+dotnet run --no-launch-profile -- --seed-learning-content
+```
+
+Mặc định lần nạp dùng timeout riêng 600 giây. Sau commit thành công, các lần
+startup sau chỉ kiểm tra dấu phiên bản rồi bỏ qua; không gửi lại SQL Việt hóa
+lớn. Khi tài nguyên seed thay đổi, fingerprint tự đổi và pipeline chạy một
+lần cho phiên bản mới. Có thể dùng `--seed-learning-content --force` để chủ
+động chạy lại mà vẫn giữ các quy tắc bảo toàn chỉnh sửa admin.
+
+`Seed:LearningContent:Enabled=false` tắt riêng seed học liệu lúc startup;
+`Seed:LearningContent:CommandTimeoutSeconds` đổi timeout (1–3.600 giây).
+CLI nạp riêng vẫn chạy khi automatic seed bị tắt. Migration
+`20261118052838_TrackLearningContentSeedVersion` chỉ thêm bảng theo dõi seed.
+Bước migration Scenario cũ cũng được bổ sung phần tạo các bảng nền còn thiếu
+để dựng được DB trắng; DB đã áp dụng bước cũ không phải chạy lại.
+
+## Nhập thủ công
 
 Từ thư mục gốc repository, dùng Python 3 và SQL Server local đã cấu hình cho JCAP.
 Script tải JSON từ đúng phiên bản nguồn bên dưới và tạo tệp nhập trong `output`.
@@ -29,12 +67,14 @@ dotnet run --no-launch-profile -- --import-learning-full=output/jlpt-full/learni
 Migration `20261111054905_ClearLearningTopics` chạy một lần khi mở backend
 hoặc chạy `dotnet ef database update`. Migration xóa toàn bộ bản ghi chủ đề
 và liên kết chủ đề trong database được cập nhật, bao gồm chủ đề do admin đã
-tạo. Các bảng, mục học, ví dụ và bản dịch vẫn dùng được để gán nhóm sau khi
-duyệt. Rollback schema không khôi phục các nhóm đã xóa.
+tạo. Sau migration, backend nạp lại danh mục chủ đề đóng gói của bản hiện
+tại qua seed. Các bảng, mục học, ví dụ và bản dịch vẫn được giữ.
+Rollback schema không khôi phục các nhóm đã xóa.
 
 ### Bổ sung tiếng Việt theo nhóm N5
 
-Sau khi import toàn bộ, áp dụng đợt đầu trên database local:
+Backend tự áp dụng đợt Việt hóa này khi chạy seed. Nếu đã nhập thủ công và
+muốn áp dụng ngay trên database local, chạy:
 
 ```powershell
 sqlcmd -S localhost -E -C -d JCAP_DB -b -f 65001 -i Data/Seeds/LearningContentSample/localize-n5-food-permission.sql

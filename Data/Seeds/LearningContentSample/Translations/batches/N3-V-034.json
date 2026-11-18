@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5782695fa6",
+      "Fields": {
+        "Meaning": "Thực tế, trên thực tế",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "実際（じっさい）có nghĩa là thực tế, trên thực tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78359": "Lý thuyết và thực tế chưa chắc trùng khớp.",
+        "144274": "Trên thực tế, con người chịu sự chi phối của thiên nhiên."
+      },
+      "SourceHash": "3e32b5899d7b8d9d4b55bb0968c79ec98f16c4ba3c90daefdc802b08fd87ce5d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34dbafcd1c",
+      "Fields": {
+        "Meaning": "Thực thi, triển khai",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "実施（じっし）có nghĩa là thực thi, triển khai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160930": "Tôi định triển khai kế hoạch này.",
+        "211243": "Kế hoạch đó đã được triển khai."
+      },
+      "SourceHash": "86f99e2fe69bb99addc4c6611a56038ee999fbff45422913bb001b055bf5d867"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "622adb5718",
+      "Fields": {
+        "Meaning": "Yên, chăm chú, kiên nhẫn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "じっと（じっと）có nghĩa là yên, chăm chú, kiên nhẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147049": "Vì không bán được lấy tiền, ngôi nhà nhỏ cứ ở yên đó và tiếp tục nhìn ngắm."
+      },
+      "SourceHash": "f7fd341b1bb532b2440e0dcfa19951bad1b3c3c3cbfcea0fb84bce6b0c8be16a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "96bd500096",
+      "Fields": {
+        "Meaning": "Thật sự, quả thật",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "実に（じつに）có nghĩa là thật sự, quả thật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143445": "Trên thế giới quả thật có rất nhiều dân tộc.",
+        "171608": "Hôm nay trời thật đẹp."
+      },
+      "SourceHash": "5f36f1368c8fe86ecf3a78c1db08c94ed375965aaf842c2481d21aca5caa8aac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fffb310ed7",
+      "Fields": {
+        "Meaning": "Thật ra, thực ra",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "実は（じつは）có nghĩa là thật ra, thực ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149433": "Thật ra cô ấy đã nói dối.",
+        "149465": "Thật ra đó chỉ là tin đồn thôi."
+      },
+      "SourceHash": "be1671eaa0053911ff1bf043e4fceae5c8096505a118ddbaa76deea7f07b135e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "64d280f093",
+      "Fields": {
+        "Meaning": "Thất vọng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "失望（しつぼう）có nghĩa là thất vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86035": "Họ thất vọng về nhau.",
+        "160208": "Tôi thất vọng về kết quả đó."
+      },
+      "SourceHash": "2c7462c45549368de811c1811d3073b75bf2d70f352270c2cc7de8cc15ebe90f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1eb7a41a47",
+      "Fields": {
+        "Meaning": "Chi nhánh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "支店（してん）có nghĩa là chi nhánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145396": "Chi nhánh mới sẽ mở cửa ở Chicago vào tháng sau.",
+        "211772": "Công ty đó có chi nhánh tại tất cả các thành phố lớn."
+      },
+      "SourceHash": "0e0774bd1a3ffd6545a3c4e27392abdab923024dd493f4f4064de0822808a849"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7adcba85aa",
+      "Fields": {
+        "Meaning": "Hướng dẫn, chỉ đạo, huấn luyện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "指導（しどう）có nghĩa là hướng dẫn, chỉ đạo, huấn luyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106487": "Anh ấy có thể tự học mà không cần ai hướng dẫn.",
+        "192923": "Một huấn luyện viên giỏi đang dẫn dắt đội này."
+      },
+      "SourceHash": "ed60311e0a2916c9fa7ec8d5cb6a08806f89a66846d6ba677fe0937d0b1f5634"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6765fe103a",
+      "Fields": {
+        "Meaning": "Tự động",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "自動（じどう）có nghĩa là tự động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89124": "Cô ấy có máy giặt tự động.",
+        "150050": "Cửa tự động mở ra và Tom bước lên."
+      },
+      "SourceHash": "3a4c2852fd9404f7d00c1f18631fc39fec8df62de8ceee02d42f23ac110d2837"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63d9f749c6",
+      "Fields": {
+        "Meaning": "Món đồ, mặt hàng, phẩm chất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "品（しな）có nghĩa là món đồ, mặt hàng, phẩm chất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217799": "Đây là những món hàng được chọn sẵn để khách xem thử.",
+        "224668": "Hàng mua ở đây được giao miễn phí."
+      },
+      "SourceHash": "c0e528ebbe276785f4cb95ab0c74cdff425aa6c9ca4be934db2f0cd24ff2d0c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "368d767ec1",
+      "Fields": {
+        "Meaning": "Cai trị, chi phối, bao trùm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "支配（しはい）có nghĩa là cai trị, chi phối, bao trùm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142502": "Sự yên lặng bao trùm khu rừng.",
+        "212175": "Nhà vua đó cai trị đất nước nhiều năm."
+      },
+      "SourceHash": "eb4852c05c45505603f40ffa01394de85fe2211ec8e89d9b3f65c24bffb57bce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2bd8c47394",
+      "Fields": {
+        "Meaning": "Kịch, vở diễn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "芝居（しばい）có nghĩa là kịch, vở diễn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104710": "Anh ấy rất thích đi xem kịch.",
+        "200308": "Bạn muốn xem vở kịch nào?"
+      },
+      "SourceHash": "223d5c8d639c8ef3f524fb8543749e77e03baef319c9e463f4110533dd894d67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f687c4a424",
+      "Fields": {
+        "Meaning": "Thường, nhiều lần",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "しばしば（しばしば）có nghĩa là thường, nhiều lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85173": "Nghèo đói thường là nguyên nhân dẫn đến tội phạm.",
+        "113566": "Anh ấy thường đọc sách đến khuya."
+      },
+      "SourceHash": "602e5f0870117fdfb12d0da874b54ff99e5b925231d84932b45cdc23395512b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a8a4d8fa3",
+      "Fields": {
+        "Meaning": "Bãi cỏ, thảm cỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "芝生（しばふ）có nghĩa là bãi cỏ, thảm cỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92808": "Cô ấy vội băng qua bãi cỏ.",
+        "96896": "Họ nằm trên bãi cỏ."
+      },
+      "SourceHash": "88ca3502027c7ae9f1d09843437d09485784b1c9a76b84cadc8b58f49e7fef29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc69ac8fc3",
+      "Fields": {
+        "Meaning": "Thanh toán, khoản chi trả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "支払（しはらい）có nghĩa là thanh toán, khoản chi trả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77962": "Xin thanh toán phí tại đây.",
+        "200374": "Có những phương thức thanh toán nào?"
+      },
+      "SourceHash": "0ca261d6d1df5371e07de8ca7e39c3e0043da12fedc5b4d426d18a7513813e26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c91a6e26c5",
+      "Fields": {
+        "Meaning": "Trả, thanh toán",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "支払う（しはらう）có nghĩa là trả, thanh toán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91507": "Cô ấy đúng là đã bị buộc phải trả tiền.",
+        "159872": "Tôi trả ba đô la cho cuốn sách đó."
+      },
+      "SourceHash": "39aad0ffd98db6560f9b36cb17148be1a88565ac9612f247560f36fc16edd1f3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f91414aac2",
+      "Fields": {
+        "Meaning": "Tử vong, qua đời",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "死亡（しぼう）có nghĩa là tử vong, qua đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100071": "Anh ấy nhận được điện báo rằng mẹ mình đã qua đời.",
+        "168118": "Dân số đang giảm dần do số người tử vong."
+      },
+      "SourceHash": "ba8ed627f5b67563897962c63b9767a3af834714e23e084fc6be9263ad054ebf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "519deff273",
+      "Fields": {
+        "Meaning": "Vốn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "資本（しほん）có nghĩa là vốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98627": "Họ có đủ vốn để xây nhà máy tiếp theo.",
+        "103802": "Anh ấy cần vốn để bắt đầu kinh doanh."
+      },
+      "SourceHash": "072c6135db0829d2d28c3ebaed13b87f199762b29a508b0f83a630bff456d835"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5e5a5dfee9",
+      "Fields": {
+        "Meaning": "Chị em gái",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "しまい（しまい）có nghĩa là chị em gái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117217": "Hai chị em gái của anh ấy đều đẹp.",
+        "168884": "Hai chị em cãi nhau hăng lắm."
+      },
+      "SourceHash": "2f62e0e12bee1608d5838f261816643fa76d16b3c6dfd75402ae93fe467b9302"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0d7c68759",
+      "Fields": {
+        "Meaning": "Cất đi, thu dọn",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "しまう（しまう）có nghĩa là cất đi, thu dọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81664": "Hãy cất sách và vở đi.",
+        "193096": "Việc đã làm rồi thì không thể đảo ngược."
+      },
+      "SourceHash": "7e17580c0d747b7ec404f0e4713da50cdfc1b11c4e053987e3587371c6f957e2"
+    }
+  ]
+}

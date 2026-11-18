@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ichido-ni",
+      "Fields": {
+        "Meaning": "Cùng lúc, trong một lần",
+        "Formation": "一度に ＋ động từ",
+        "Explanation": "Gộp nhiều việc hoặc nhiều đối tượng vào một lần thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ichido-ni:example:1": "Xin đừng giao nhiều việc đến thế cùng một lúc.",
+        "ichido-ni:example:2": "Tôi định bê tất cả đĩa cùng một lượt nên làm rơi mất."
+      },
+      "SourceHash": "a30b671d4082fbf16efc1001db103161300069311e10f8a781ca49e4ddd63c1d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ittai",
+      "Fields": {
+        "Meaning": "Rốt cuộc, thế nào mà",
+        "Formation": "一体 ＋ câu hỏi có từ để hỏi",
+        "Explanation": "Nhấn mạnh sự băn khoăn, ngạc nhiên hoặc sốt ruột trong câu hỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ittai:example:1": "Rốt cuộc vì sao lại thành ra thế này?",
+        "ittai:example:2": "Đợi nãy giờ rồi, rốt cuộc anh ấy đang ở đâu nhỉ?"
+      },
+      "SourceHash": "ae77c0cb534caea90ca00b00c6b17c31184e5468a7a1d5fe1a4dbd8461795f99"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ippou-da",
+      "Fields": {
+        "Meaning": "Cứ ngày càng, tiếp tục theo một chiều",
+        "Formation": "Động từ thể từ điển ＋ 一方だ",
+        "Explanation": "Diễn tả một sự thay đổi tiếp tục theo cùng một hướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ippou-da:example:1": "Gần đây giá cả cứ tăng mãi.",
+        "ippou-da:example:2": "Không luyện tập mỗi ngày thì năng lực sẽ ngày càng giảm."
+      },
+      "SourceHash": "a9a0553b5f0faad4ac4ed60af07b2ff38259eada6ff870942dd4c2db3f7caf03"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ippou-de",
+      "Fields": {
+        "Meaning": "Trong khi, mặt khác",
+        "Formation": "Mệnh đề bổ nghĩa ＋ 一方で",
+        "Explanation": "Đặt cạnh hai mặt khác nhau của một việc hoặc đối chiếu hai chủ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ippou-de:example:1": "Anh trai vui vẻ, trong khi em trai rất trầm.",
+        "ippou-de:example:2": "Công việc này vất vả nhưng cũng đáng làm."
+      },
+      "SourceHash": "8d070fb9a7d2e9d629140a1f04dda1cbd56870e4239a3ab2636e0dc2528ce0e0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ue-de",
+      "Fields": {
+        "Meaning": "Sau khi đã, trong quá trình",
+        "Formation": "Động từ thể た ＋ 上で／động từ thể từ điển ＋ 上で",
+        "Explanation": "Dạng た nêu bước cần làm trước. Dạng từ điển có thể nêu phạm vi hay điều quan trọng khi thực hiện một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ue-de:example:1": "Tôi sẽ trả lời sau khi bàn kỹ với gia đình.",
+        "ue-de:example:2": "Xin ký sau khi đã kiểm tra kỹ nội dung hợp đồng."
+      },
+      "SourceHash": "6778f1d9d1c412d73cd24791e843a5248596c324cc2c58308c3e1dd83cfdf968"
+    }
+  ]
+}

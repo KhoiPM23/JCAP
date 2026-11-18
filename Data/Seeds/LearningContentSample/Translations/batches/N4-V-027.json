@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f6b676e45f",
+      "Fields": {
+        "Meaning": "Béo lên, tăng cân",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "太る（ふとる）có nghĩa là béo lên, tăng cân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138219": "Bạn đang chú ý để không tăng cân à?",
+        "230305": "Tôi tăng cân đến mức không cài vừa cổ áo."
+      },
+      "SourceHash": "3ae71dba79e97b99b0d2db68df2ecd47da1c18b86a2c73fc0039ed7837829d91"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1ef6228cb",
+      "Fields": {
+        "Meaning": "Chăn đệm futon",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "布団（ふとん）có nghĩa là chăn đệm futon.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84915": "Hãy gấp chăn đệm futon lại.",
+        "126242": "Đến sáng tôi cất chăn đệm futon."
+      },
+      "SourceHash": "48ca2e291106e52f45b22b0665a6a7067a7d5b4260fbbfb1e29c57c9b7a20b36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "45d920815a",
+      "Fields": {
+        "Meaning": "Thuyền, tàu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "舟（ふね）có nghĩa là thuyền, tàu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141160": "Tàu dự kiến khởi hành lúc ba giờ.",
+        "203764": "Nhiều tàu thuyền đang chạy trên biển."
+      },
+      "SourceHash": "9b02cced395ecf07624c831704b4fd38a0108c0ff2661d9108d258cd6061a3d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25d649bd20",
+      "Fields": {
+        "Meaning": "Bất tiện",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "不便（ふべん）có nghĩa là bất tiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79702": "Mặc đồ dạ hội để làm việc thì bất tiện.",
+        "193543": "Không có điện thoại thì bất tiện lắm."
+      },
+      "SourceHash": "d61767e0f14fdd01a4f55b30fa3cfaaec67b5980ceb9f4dd13e2cec81aa91a0f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "375c7ef77f",
+      "Fields": {
+        "Meaning": "Giẫm, đạp",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "踏む（ふむ）có nghĩa là giẫm, đạp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "139851": "Tôi không cố ý giẫm lên chân bạn.",
+        "208049": "Người đàn ông đó giẫm chân tôi mà chẳng thèm xin lỗi."
+      },
+      "SourceHash": "20058f05732130bec8effe3d9a03cc5de60d6744108717ac2ff3abc6967d841e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "927b45c2eb",
+      "Fields": {
+        "Meaning": "Bắt đầu mưa",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "降り出す（ふりだす）có nghĩa là bắt đầu mưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195152": "Trông như sắp đổ mưa.",
+        "208980": "Hơn nữa, trời còn bắt đầu mưa."
+      },
+      "SourceHash": "678f6e02e6ffc98b937b4b877a1a855fb010e88524312fb3b6635b8df2278476"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb716261e6",
+      "Fields": {
+        "Meaning": "Quà, quà tặng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "プレゼント（プレゼント）có nghĩa là quà, quà tặng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198403": "Kèn harmonica là quà bố tặng à?",
+        "227709": "Chú tôi tặng tôi một món quà."
+      },
+      "SourceHash": "8364c5f618db3afe3424012291dc655a466e6862254a591bbd4ca84218dfbcc0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f79469321",
+      "Fields": {
+        "Meaning": "Văn hóa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文化（ぶんか）có nghĩa là văn hóa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184809": "Tìm hiểu văn hóa nước ngoài rất vui.",
+        "225764": "Tôi đã tìm hiểu văn hóa Hy Lạp."
+      },
+      "SourceHash": "d5869d93f0504f6d8b45872efad022dc8ea06ea404610c9548911269ce71c8e9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "452083ca3c",
+      "Fields": {
+        "Meaning": "Văn học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文学（ぶんがく）có nghĩa là văn học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "505465": "Cô ấy am hiểu văn học Tây Ban Nha.",
+        "519707": "Bạn có thích văn học Pháp không?"
+      },
+      "SourceHash": "74e62ff72480533a82996a426ffa946d474242a206a3bc5294f81fdfd0144538"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9eaa627a73",
+      "Fields": {
+        "Meaning": "Ngữ pháp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文法（ぶんぽう）có nghĩa là ngữ pháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83659": "Ngữ pháp gì chứ, vứt đi!",
+        "232352": "Bạn phải học ngữ pháp thêm."
+      },
+      "SourceHash": "cbd4ee85eecfe8d99dde5e88fdf8ae60ca71882a5780f1568ac560ffff644be0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f271b97de9",
+      "Fields": {
+        "Meaning": "Khác, riêng",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "別（べつ）có nghĩa là khác, riêng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195395": "Để lúc khác mình chơi cờ vua nhé.",
+        "229318": "Nói và làm là hai chuyện hoàn toàn khác nhau."
+      },
+      "SourceHash": "dad1152bcf53ed6782a25c6d6fd966b9a7fdf0c922a9d0bcff7dacf501e5ce18"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e5cfcfab45",
+      "Fields": {
+        "Meaning": "Chuông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Trong câu đầu, ベル là họ Bell. Trong câu thứ hai, từ này chỉ chuông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124692": "Điện thoại do Bell phát minh.",
+        "167832": "Tôi vừa tới trường thì chuông reo."
+      },
+      "SourceHash": "6dffc798cd8dc5c79fba1e7b435f798c7ab0283404dccbb3de27e12765377caf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f80788417",
+      "Fields": {
+        "Meaning": "Lạ, kỳ quặc",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "変（へん）có nghĩa là lạ, kỳ quặc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208166": "Hành động của người đàn ông đó rất kỳ quặc.",
+        "213316": "Quả cam đó có dư vị lạ."
+      },
+      "SourceHash": "97cd37afef0069a5ed0301ec64a3d8fefc30a5c5dbd618735db38bc171b4bee3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff9e385277",
+      "Fields": {
+        "Meaning": "Trả lời, hồi âm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "返事（へんじ）có nghĩa là trả lời, hồi âm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195432": "Tôi vẫn chưa nhận được thư hồi âm.",
+        "214756": "Tôi muốn được trả lời ngay."
+      },
+      "SourceHash": "c6cf4fd5d0d3a2137c14ea8b9a6e08be9bd5a452513f07cf558dcd9df2e8e0d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3597362058",
+      "Fields": {
+        "Meaning": "Thương mại, buôn bán quốc tế",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "貿易（ぼうえき）có nghĩa là thương mại, buôn bán quốc tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122396": "Nhật Bản dựa vào thương mại.",
+        "229219": "Người Anh bắt đầu buôn bán trà vào khoảng thời gian đó."
+      },
+      "SourceHash": "1682fb29c7680f118627d169d4077ad347b15d4d9e801e3c4d1d00ec9b3e82c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "96799b1b11",
+      "Fields": {
+        "Meaning": "Phát sóng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "放送（ほうそう）có nghĩa là phát sóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198755": "Bản tin được phát mỗi giờ.",
+        "213041": "Chương trình đó sẽ phát lúc bảy giờ tối."
+      },
+      "SourceHash": "329a01a8dd0e366495807f20062a050b7f517e9a397bd590425e01aae5825264"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "845a23790b",
+      "Fields": {
+        "Meaning": "Luật, pháp luật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "法律（ほうりつ）có nghĩa là luật, pháp luật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152833": "Tôi định làm việc trong ngành luật.",
+        "219821": "Luật này áp dụng cho mọi người."
+      },
+      "SourceHash": "5df9eececac20030cda0bc14a905666c9c74287c21d4acba08f9d3e0131bebf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1587d6fbcf",
+      "Fields": {
+        "Meaning": "Tôi, mình (thân mật)",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "僕（ぼく）có nghĩa là tôi, mình (thân mật).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81699": "Chắc bạn tưởng tôi dễ bị lừa chứ gì.",
+        "81987": "Tôi làm gì cũng hay gặp may thoát nạn."
+      },
+      "SourceHash": "0967db1e69caddb9df62fa7a0dcd71cab6eded65766d843468ed2993cc7ca21f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72df46ea9c",
+      "Fields": {
+        "Meaning": "Ngôi sao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "星（ほし）có nghĩa là ngôi sao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143038": "Ánh đèn thành phố làm sao trông mờ đi.",
+        "201871": "Trên cửa có gắn một ngôi sao lớn màu vàng kim."
+      },
+      "SourceHash": "c210a3074948b925815b86727d7ebb81a63af5cd94e28e1621531cb972ccfee3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3f18d07d4",
+      "Fields": {
+        "Meaning": "Mức, đến mức, khoảng",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "ほど（ほど）có nghĩa là mức, đến mức, khoảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215078": "Ước gì tôi chơi piano giỏi như Susie.",
+        "224804": "Có một ngôi làng cách đây khoảng ba cây số về phía thượng nguồn."
+      },
+      "SourceHash": "f842f9001f5c95b560be3f003fe695d90377202114dbfd1ffa7feb217f80e357"
+    }
+  ]
+}

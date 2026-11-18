@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "221e63cb1e",
+      "Fields": {
+        "Meaning": "Cảng, bến cảng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "港（みなと）có nghĩa là cảng, bến cảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203803": "Nhiều du thuyền đang vào cảng.",
+        "208448": "Con tàu đó hiện đang ở cảng."
+      },
+      "SourceHash": "e97bb474400bcdbc070520bcce6eea8c9d88dca5d5edaa0802fa8810a96c7e67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6978e278b2",
+      "Fields": {
+        "Meaning": "Hướng về, đi về phía",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "向かう（むかう）có nghĩa là hướng về, đi về phía.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148212": "Vào mùa thu, nhiều loài chim bay về phương nam.",
+        "232198": "Bạn đang đi đâu thế?"
+      },
+      "SourceHash": "97020220846c5ed8e34bc4bf246f73ce3dc4721f738f4af858b9a1c5eb07fec4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1687840ea3",
+      "Fields": {
+        "Meaning": "Đón, chào đón",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "迎える（むかえる）có nghĩa là đón, chào đón.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "235056": "Hãy lái xe đến đón tôi ở khách sạn lúc sáu giờ.",
+        "4801264": "Chúc anh chị đón một năm mới tốt lành."
+      },
+      "SourceHash": "644c2016ba368bf541e9cb4e04467726b3f6f41941ec8696fff5702cef27418d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "58cd37c48b",
+      "Fields": {
+        "Meaning": "Ngày xưa, trước đây",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "昔（むかし）có nghĩa là ngày xưa, trước đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219503": "Cứ đọc cuốn sách này là tôi lại nhớ chuyện ngày xưa.",
+        "222052": "Tòa nhà cũ này trước đây rất đẹp."
+      },
+      "SourceHash": "323b392d28d5fcffb8532c1d97964dd435dae3c4d55a693fb0863ceacdf3962e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "505c1fd62e",
+      "Fields": {
+        "Meaning": "Côn trùng, sâu bọ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "虫（むし）có nghĩa là côn trùng, sâu bọ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125784": "Con chim đang tìm sâu bọ.",
+        "207838": "Con côn trùng đó vẫn còn sống đấy."
+      },
+      "SourceHash": "08bb9ad0189bf77ab77695ce11bc8342d0b91d209831043d5f5574b6dfe401cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88be7d523a",
+      "Fields": {
+        "Meaning": "Con trai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "息子（むすこ）có nghĩa là con trai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82781": "Người mẹ dặn dò con trai rất nghiêm.",
+        "140059": "Con trai tôi cứ đòi thứ không có."
+      },
+      "SourceHash": "0ae979caa355315852d919872a94350f9dd63429ad61d5005ca467cf57607e9e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c27cba3be",
+      "Fields": {
+        "Meaning": "Con gái, cô gái",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "娘（むすめ）có nghĩa là con gái, cô gái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158961": "Tôi là con gái của Helen Cartwright.",
+        "206581": "Trong số những cô gái đó, không ai là học sinh hay sinh viên."
+      },
+      "SourceHash": "94e9da58ac6d79622c79776466987ceeabd8e21f67d01470b541d5c507867f1a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3d1727a56f",
+      "Fields": {
+        "Meaning": "Không thể, quá sức, vô lý",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "無理（むり）có nghĩa là không thể, quá sức, vô lý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191503": "Xin lỗi, nhưng có làm cách nào cũng không được.",
+        "204826": "Yêu cầu đó không thể đáp ứng được."
+      },
+      "SourceHash": "ef968e3d1ff0c81601504e1152815f88092cbed49a50e4189198982bb7cda895"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9c64cdfa1",
+      "Fields": {
+        "Meaning": "Dùng, ăn, uống (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "召し上がる（めしあがる）có nghĩa là dùng, ăn, uống (kính ngữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214013": "Xin mời anh chị dùng thử bánh.",
+        "224548": "Quý khách dùng tại đây hay mang đi ạ?"
+      },
+      "SourceHash": "d5e459a933ccffd200992b0a179a367c12c78c88e38d478dd35b6fa5a732a3b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6307098126",
+      "Fields": {
+        "Meaning": "Hiếm, lạ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "珍しい（めずらしい）có nghĩa là hiếm, lạ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75867": "Tôi tìm thấy một thứ lạ ở trong phố.",
+        "218188": "Đây là một loài cá hiếm."
+      },
+      "SourceHash": "f0314ab70694b53600c426b5a9f21845addcc3e321db1351829fc67ac05908f3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5434f0c376",
+      "Fields": {
+        "Meaning": "Thưa, trình bày (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "申し上げる（もうしあげる）có nghĩa là thưa, trình bày (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226522": "Tôi không biết nói sao cho hết lòng biết ơn.",
+        "228549": "Hiện giờ tôi chưa thể nói gì."
+      },
+      "SourceHash": "b7c9a7ccbe59accb6c5fc12b42fb1fe53916bdb32dd7007e20b4872bc476a9e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e7b945555",
+      "Fields": {
+        "Meaning": "Thưa, tên là (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "申す（もうす）có nghĩa là thưa, tên là (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224154": "Tôi là Smith. Xin hỏi ông Johnson có ở đó không ạ?",
+        "342132": "Tôi tên là Andrea."
+      },
+      "SourceHash": "eaf5fea47e5cab83a5a62fa71e1a5cfd472ec345a3516687c21aeec2a18a61c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f494574f0",
+      "Fields": {
+        "Meaning": "Sắp, chẳng bao lâu nữa",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "もうすぐ（もうすぐ）có nghĩa là sắp, chẳng bao lâu nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76735": "Chiếc xe này sắp thành phế liệu rồi.",
+        "80708": "Trời sáng dần rồi. Sắp đến sáng."
+      },
+      "SourceHash": "738d67de6315d10904de3eb587fb759c6cee6d6325ec3f377a9a7811fa674f49"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bbaeab9c94",
+      "Fields": {
+        "Meaning": "Nếu, giả sử",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "もし（もし）có nghĩa là nếu, giả sử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193542": "Nếu điện thoại reo, bạn nghe máy giúp tôi được không?",
+        "193730": "Giá mà có tiền thì tôi mua được cái đó."
+      },
+      "SourceHash": "7e16b8373e5388cfd7832c748171769491d578aaf67567e29d7fd33dc8ae6d9f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a695a20c52",
+      "Fields": {
+        "Meaning": "Tất nhiên, dĩ nhiên",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "もちろん（もちろん）có nghĩa là tất nhiên, dĩ nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193363": "Tất nhiên là trong thị trấn có tổ chức buổi hòa nhạc.",
+        "217215": "“Tôi tham gia cùng được không ạ?” “Tất nhiên rồi.”"
+      },
+      "SourceHash": "6dad2bed8b467aabe4c5d82758f8f400f5509dbaae2f515a87d00278053fb642"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e13cee4dc",
+      "Fields": {
+        "Meaning": "Nhất",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "Ở đây là 最も, chỉ mức cao nhất trong nhóm được so sánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193334": "Nên bắt đầu từ câu dễ nhất.",
+        "225135": "Trong ba người, Ken chạy nhanh nhất."
+      },
+      "SourceHash": "f50efcfb378bc5e35236a2ab918ce62e1494d5e340e7017f8891353b3bfd4765"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c858640672",
+      "Fields": {
+        "Meaning": "Quay lại, trở lại",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "戻る（もどる）có nghĩa là quay lại, trở lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146772": "Hay là mình quay lại một đoạn xem sao?",
+        "193096": "Việc đã làm rồi thì không thể đảo ngược."
+      },
+      "SourceHash": "ff89d57bb1b697702349e8cc582d5e0ad5a4eafc35c5234e80251ce8ecbd597c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "96e10e7209",
+      "Fields": {
+        "Meaning": "Vải bông, cotton",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "木綿（もめん）có nghĩa là vải bông, cotton.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152577": "Tôi đã mua hai chiếc áo sơ mi vải bông.",
+        "223239": "Chiếc áo kiểu này làm bằng vải bông."
+      },
+      "SourceHash": "f267cd6702264f89ae7f0e696587a79080e673ff39630ccc0cfb7b75d8c545b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad62110b55",
+      "Fields": {
+        "Meaning": "Nhận, được cho",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "もらう（もらう）có nghĩa là nhận, được cho.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145487": "Tôi đã đặt may một bộ com-lê mới.",
+        "234491": "Tôi định nhờ anh ấy đến đây vào ngày kia."
+      },
+      "SourceHash": "a9a7da6e3fc759a13d0c10b1a3f8f6e54adc765a1521ebea59de116caa80b814"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0e069d89e",
+      "Fields": {
+        "Meaning": "Rừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "森（もり）có nghĩa là rừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155701": "Tôi tìm thấy một con thỏ rừng trong rừng.",
+        "221022": "Có thể thấy nhiều loài động vật trong khu rừng này."
+      },
+      "SourceHash": "1935b858915ceeaf1feafa4ac604cd30b1db903e06bb9a432b687f2f9f334beb"
+    }
+  ]
+}

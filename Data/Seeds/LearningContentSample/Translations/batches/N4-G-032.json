@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hazu-ga-nai",
+      "Fields": {
+        "Meaning": "Không thể nào, chẳng có lý nào",
+        "Formation": "Mệnh đề bổ nghĩa ＋ はずがない",
+        "Explanation": "Bác bỏ một khả năng dựa trên điều người nói biết hoặc tin chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hazu-ga-nai:example:1": "Không thể nào anh ấy lại nói dối như thế.",
+        "hazu-ga-nai:example:2": "Không có lý nào cửa hàng đó hôm nay lại nghỉ."
+      },
+      "SourceHash": "98c3a2a7df4d6e41937a4dffec6b69c72bba9810ee0bc4097c5aa2216f0e4795"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hazu-da",
+      "Fields": {
+        "Meaning": "Chắc hẳn, theo lẽ thì",
+        "Formation": "Mệnh đề bổ nghĩa ＋ はずだ",
+        "Explanation": "Suy ra kết quả từ lịch trình, quy luật hoặc thông tin đã biết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hazu-da:example:1": "Giờ này chắc cửa hàng đã đóng cửa rồi.",
+        "hazu-da:example:2": "Ngày nào anh ấy cũng học nên chắc sẽ thi đỗ."
+      },
+      "SourceHash": "584a6732b49baa771360cf3172fbdb22345a5cd0b9509333ea9213874c0945be"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ba-yokatta",
+      "Fields": {
+        "Meaning": "Lẽ ra nên, giá mà",
+        "Formation": "Động từ thể ば ＋ よかった／phủ định dạng なければ ＋ よかった",
+        "Explanation": "Bày tỏ tiếc nuối về điều đã làm hoặc đã bỏ lỡ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ba-yokatta:example:1": "Lẽ ra tôi nên ra khỏi nhà sớm hơn.",
+        "ba-yokatta:example:2": "Giá mà tôi đừng nói điều đó."
+      },
+      "SourceHash": "b05083426269fe53c65c8a6c4a3d3692b107889e45ecba4c6c56d23cea83a6d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hitsuyou-ga-aru",
+      "Fields": {
+        "Meaning": "Cần phải làm",
+        "Formation": "Động từ thể từ điển ＋ 必要がある",
+        "Explanation": "Nêu một hành động cần thiết. 必要がありますか dùng để hỏi có cần làm hay không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hitsuyou-ga-aru:example:1": "Cần nộp giấy tờ này chậm nhất vào ngày mai.",
+        "hitsuyou-ga-aru:example:2": "Có cần mang hộ chiếu không ạ?"
+      },
+      "SourceHash": "b21e29248326fc669d6485f7a44e29dc915de6f22d3872014d6a26a8bf9d01b6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hoka-ni",
+      "Fields": {
+        "Meaning": "Ngoài ra, ngoài… còn",
+        "Formation": "ほかに／danh từ ＋ のほかに",
+        "Explanation": "Hỏi hoặc bổ sung điều khác ngoài những gì đã nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hoka-ni:example:1": "Còn câu hỏi nào khác không ạ?",
+        "hoka-ni:example:2": "Ngoài trà ra còn có cà phê."
+      },
+      "SourceHash": "0d91b9a8634b594c1cf593a1a678f68a0e838a19a8573a061d85247cfbb60c23"
+    }
+  ]
+}

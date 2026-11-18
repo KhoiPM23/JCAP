@@ -31,15 +31,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Explicit local imports exit before web startup and all unrelated automatic seeders.
 const string fullImportOption = "--import-learning-full=";
 var fullImport = args.FirstOrDefault(arg => arg.StartsWith(fullImportOption, StringComparison.Ordinal));
-if (args.Contains("--import-learning-sample") || fullImport is not null)
+var bundledLearningSeed = args.Contains("--seed-learning-content");
+if (bundledLearningSeed || args.Contains("--import-learning-sample") || fullImport is not null)
 {
     using var loggerFactory = LoggerFactory.Create(logging =>
         logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning));
+    var learningOptions = builder.Configuration.GetSection(JCAP.Data.Seeds.LearningContentSeedOptions.SectionName)
+        .Get<JCAP.Data.Seeds.LearningContentSeedOptions>() ?? new();
     await using var importDb = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
-        .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql =>
+            sql.CommandTimeout(bundledLearningSeed ? learningOptions.CommandTimeoutSeconds : 60))
         .UseLoggerFactory(loggerFactory).Options);
     var dryRun = args.Contains("--dry-run");
-    Environment.ExitCode = fullImport is null
+    Environment.ExitCode = bundledLearningSeed
+        ? await JCAP.Data.Seeds.LearningContentSeedCommand.RunAsync(importDb, learningOptions, args.Contains("--force"), dryRun)
+        : fullImport is null
         ? await JCAP.Data.Seeds.LearningContentSampleCommand.RunAsync(importDb, dryRun)
         : await JCAP.Data.Seeds.LearningContentFullCommand.RunAsync(importDb, fullImport[fullImportOption.Length..], dryRun);
     return;

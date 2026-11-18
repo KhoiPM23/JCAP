@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bfe1d2c25",
+      "Fields": {
+        "Meaning": "So sánh",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "比べる（くらべる）có nghĩa là so sánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124263": "So với Tokyo, London nhỏ hơn.",
+        "192111": "So với Paris, London lớn hơn."
+      },
+      "SourceHash": "fdbc607db1b301a97461a27a1f260009c2f41c60504c23aa8fd2b24b95aa6887"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d2f81c2a3",
+      "Fields": {
+        "Meaning": "Cho, làm giúp mình",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "くれる（くれる）có nghĩa là cho, làm giúp mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79331": "Bạn tôi nhờ tôi cho bạn ấy một tấm bưu thiếp.",
+        "83146": "Mẹ đã chuẩn bị bữa trưa cho tôi."
+      },
+      "SourceHash": "0257cc314482542acf1d0bf9bc8bffa4a4d35a34f243e5b6d51bd8aaadfd5740"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17279b1beb",
+      "Fields": {
+        "Meaning": "Tối dần, kết thúc",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "暮れる（くれる）có nghĩa là tối dần, kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122941": "Không được ra ngoài sau khi trời tối.",
+        "127075": "Chẳng để ý mà trời đã tối hẳn."
+      },
+      "SourceHash": "d8b8da22ee861c713e2f1682a88da81c7701eef6891deae1bd1229a428980912"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9bab5c151",
+      "Fields": {
+        "Meaning": "Lông, sợi lông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "毛（け）có nghĩa là lông, sợi lông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138003": "Cơ thể nó phủ lông màu nâu.",
+        "175314": "Có thể nói bộ lông của chó giống như áo len."
+      },
+      "SourceHash": "4d7121cfd7335c7a8b42a970b238762f69551c184886ed761ba8807d277457ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "836311c7d4",
+      "Fields": {
+        "Meaning": "Kế hoạch, lên kế hoạch",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "計画（けいかく）có nghĩa là kế hoạch, lên kế hoạch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160227": "Tôi không can dự vào kế hoạch đó.",
+        "211291": "Về kế hoạch đó, tôi đã có thể đồng ý với anh ấy."
+      },
+      "SourceHash": "ca5a260de82b702258ea10d54db9f62c6afd0a9e7047ca6e96d0b81fe9ac87a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9746b57413",
+      "Fields": {
+        "Meaning": "Kinh nghiệm, trải nghiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "経験（けいけん）có nghĩa là kinh nghiệm, trải nghiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221838": "Trong công việc này, kinh nghiệm rất quan trọng.",
+        "229934": "Làm thêm sẽ là một trải nghiệm tốt đấy."
+      },
+      "SourceHash": "23c0878fbe297da4fcb4443eec13ff1b76e90c59c70567ec22e1ab7e637e7f77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5079fc5daf",
+      "Fields": {
+        "Meaning": "Kinh tế, nền kinh tế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "経済（けいざい）có nghĩa là kinh tế, nền kinh tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210605": "Nước đó nổi tiếng vì kinh tế tăng trưởng nhanh.",
+        "230179": "Mỹ là nước có nền kinh tế dịch vụ."
+      },
+      "SourceHash": "3a66963bc61131252e84f0fb8220f56546b6493cdd2325d2230c772c6dbc8b3e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25550955b0",
+      "Fields": {
+        "Meaning": "Cảnh sát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "警察（けいさつ）có nghĩa là cảnh sát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176272": "Người gọi cho cảnh sát là Mike.",
+        "208946": "Trong trường hợp đó, hãy gọi cảnh sát."
+      },
+      "SourceHash": "67cf7e2aa1e5f419de72e44fd8501db5622e5031efce9ad36e28e9df0b69494e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8426193f36",
+      "Fields": {
+        "Meaning": "Bánh ngọt, bánh kem",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ケーキ（ケーキ）có nghĩa là bánh ngọt, bánh kem.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199350": "Hãy dùng dao cắt chiếc bánh đó.",
+        "225377": "Kate biết cách làm bánh."
+      },
+      "SourceHash": "a4305d8c93f475f4fa0eacb49617aeba875d0a7f73c9397fae336428ec6dec11"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fb005254a",
+      "Fields": {
+        "Meaning": "Bị thương",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "Câu nguồn chứa 胸やけがする (bị ợ nóng), gồm 胸やけ ＋ が ＋ する. Đây không phải ví dụ của けがする (bị thương).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "9858909": "Sau khi ăn một số loại thực phẩm nhất định, bạn có bị ợ nóng không?"
+      },
+      "SourceHash": "5af321141d38d554f79480393f2c02b1bfc48adca0f128ce95299ea1f51b7653"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a200494cec",
+      "Fields": {
+        "Meaning": "Phong cảnh, cảnh vật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "景色（けしき）có nghĩa là phong cảnh, cảnh vật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205173": "Đó là cảnh tôi chưa từng thấy.",
+        "217756": "Những cây này che mất phong cảnh."
+      },
+      "SourceHash": "d7b38aba66adeae2f0bcf5cb03b9e0301273fcfa7b93229fa2cf302ecd0314a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba1b3c0d13",
+      "Fields": {
+        "Meaning": "Cục tẩy, gôm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "消しゴム（けしゴム）có nghĩa là cục tẩy, gôm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146418": "Tôi mượn cục tẩy được không?",
+        "202748": "Bạn cho tôi mượn cục tẩy một lát được không?"
+      },
+      "SourceHash": "19c139b8b61d9984cec18c753b5bbd3c65905a3d34499ff5e647f879c510e51d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3da539389",
+      "Fields": {
+        "Meaning": "Ở trọ, chỗ trọ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "下宿（げしゅく）có nghĩa là ở trọ, chỗ trọ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90689": "Cô ấy cho sinh viên ở trọ.",
+        "158181": "Tôi đang tìm chỗ trọ."
+      },
+      "SourceHash": "31fcea1f60e9b8806a790bd93ac8ff4c7fc47022f76ebf16409cce08f9849e09"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "511cbf9eee",
+      "Fields": {
+        "Meaning": "Tuyệt đối không, không bao giờ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "決して（けっして）có nghĩa là tuyệt đối không, không bao giờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84415": "Bố tôi không bao giờ nghỉ dài ngày.",
+        "218430": "Đây tuyệt đối không phải chuyện nhỏ."
+      },
+      "SourceHash": "1d135c29cd5408a64ff08d071c11b11bb82325058a94486d96bddf9db891ee89"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0435dab637",
+      "Fields": {
+        "Meaning": "Nhưng, tuy, có điều",
+        "PartOfSpeech": "Liên từ, trợ từ",
+        "Explanation": "けれど（けれど）có nghĩa là nhưng, tuy, có điều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125167": "Dù thời tiết xấu, tôi vẫn quyết định ra ngoài.",
+        "202798": "Tôi muốn gặp bạn một chút…"
+      },
+      "SourceHash": "1952520fb5364a5138ae27d2d73acf9ee658e5cd11bf4f12244e406c46a360b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43f91bcf9d",
+      "Fields": {
+        "Meaning": "Nguyên nhân",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "原因（げんいん）có nghĩa là nguyên nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186690": "Người ta đã biết sơ bộ nguyên nhân vụ cháy.",
+        "186691": "Nguyên nhân vụ cháy đã được làm rõ."
+      },
+      "SourceHash": "9c8eb10144c1f992e7cfbc84c12e06210dac28191474331fa719228b56a8eae8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "063c94089d",
+      "Fields": {
+        "Meaning": "Cãi nhau, gây gổ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "けんかする（けんかする）có nghĩa là cãi nhau, gây gổ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123092": "Hai người đàn ông đang cãi nhau trên phố.",
+        "225193": "Cậu cãi nhau với Ken à?"
+      },
+      "SourceHash": "e8de2414165f3f9f3c3324f0723b89795a047d41e9e6a3be1b5fb66b5fc81600"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "607f3c4430",
+      "Fields": {
+        "Meaning": "Nghiên cứu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "研究（けんきゅう）có nghĩa là nghiên cứu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161310": "Tôi đang tham gia nghiên cứu về AIDS.",
+        "233545": "Việc nghiên cứu của anh/chị thế nào rồi ạ?"
+      },
+      "SourceHash": "b4a482985722932f5285bbc9314089c7bda22fd79a015705f886f8df2d586422"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "912c269668",
+      "Fields": {
+        "Meaning": "Phòng nghiên cứu, phòng thí nghiệm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "研究室（けんきゅうしつ）có nghĩa là phòng nghiên cứu, phòng thí nghiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104990": "Anh ấy đang làm thí nghiệm trong phòng nghiên cứu của mình.",
+        "166408": "Chúng tôi đã sử dụng phòng nghiên cứu đó."
+      },
+      "SourceHash": "d70997d2847f601455f41bbc951c06dceb9ed7a813a60cfb102f00586af92d71"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9a71878f0",
+      "Fields": {
+        "Meaning": "Tham quan, đi xem",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "見物（けんぶつ）có nghĩa là tham quan, đi xem.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157268": "Tôi đến để tham quan.",
+        "200833": "Tôi nên đi tham quan chỗ nào?"
+      },
+      "SourceHash": "cdc06aa244f76c7fce88fc589f4899ed566ca933e4a9df11f03d338d7e5ca561"
+    }
+  ]
+}

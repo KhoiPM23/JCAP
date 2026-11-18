@@ -1,0 +1,89 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Dịch và tự rà soát theo câu Nhật, cấu trúc và giải thích nguồn Nihongo Mono; chưa có thẩm định độc lập.",
+    "あげる: bổ sung trường hợp người thứ ba cho người thứ ba, tránh quy tắc sai rằng người cho luôn phải là người nói.",
+    "一番: không lặp lại khẳng định quá tuyệt đối trong nguồn rằng chỉ được dùng khi có ít nhất ba đối tượng. Phần giải thích tập trung vào mức cao nhất trong phạm vi so sánh.",
+    "いつも: không dịch câu ghi chú nguồn thành 今日 tương đương 'lần này'; 今日 là hôm nay, không phải từ thay thế chung cho 今度.",
+    "Đối chiếu hướng cho/nhận của あげる với NINJAL: https://www2.ninjal.ac.jp/verbhandbook/headwords/あげる.html ."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ageru-giving",
+      "Fields": {
+        "Meaning": "Cho; tặng một vật cho người khác",
+        "Formation": "Người cho は／が ＋ người nhận に ＋ vật を ＋ あげる",
+        "Explanation": "あげる diễn tả hành động cho hoặc tặng, nhìn từ phía người cho. Chủ ngữ là người cho, người nhận đi với に và vật được cho đi với を. Thường dùng khi người nói cho người khác; cũng dùng khi nói người thứ ba cho một người khác.",
+        "UsageNotes": "Khi người khác cho mình hoặc người thuộc phía mình, thường dùng くれる. Không dùng あげる để diễn tả người khác cho chính người nói. Mẫu này nói về việc cho một vật; mẫu V-てあげる nói về làm giúp một việc."
+      },
+      "Examples": {
+        "ageru-giving:example:1": "Tôi đã tặng hoa cho bạn.",
+        "ageru-giving:example:2": "Tôi sẽ tặng quà cho em trai."
+      },
+      "SourceHash": "df86172b1f2bd8975404690ec1fc4b9367c183adbbebe24cd03fd5de8d3ade94"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "i-adjective-noun",
+      "Fields": {
+        "Meaning": "Tính từ đuôi い bổ nghĩa trực tiếp cho danh từ",
+        "Formation": "Tính từ đuôi い ＋ danh từ. Ví dụ: 高い山, 大きい箱.",
+        "Explanation": "Đặt tính từ đuôi い ngay trước danh từ để nêu đặc điểm của người hoặc vật. Ở dạng khẳng định hiện tại, giữ đuôi い và không thêm trợ từ ở giữa. 高い山 là ngọn núi cao; 面白い本 là cuốn sách thú vị.",
+        "UsageNotes": "Không thêm な sau tính từ đuôi い trong mẫu này: 高い山, không phải 高いな山. Cần xác định đúng loại tính từ; きれい là tính từ な dù kết thúc bằng âm い."
+      },
+      "Examples": {
+        "i-adjective-noun:example:1": "Có thể nhìn thấy một ngọn núi cao.",
+        "i-adjective-noun:example:2": "Tôi đã đọc một cuốn sách thú vị."
+      },
+      "SourceHash": "81eb950de1a725c6a09f6fa1a316ca1132aa029d838efa7778fdcbb7796b8a3b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ichiban",
+      "Fields": {
+        "Meaning": "Nhất; có mức độ cao nhất trong một phạm vi",
+        "Formation": "一番 ＋ tính từ. Nêu phạm vi: danh từ chỉ nhóm ＋ の中で／で ＋ 一番 ＋ tính từ.",
+        "Explanation": "一番 đứng trước tính từ để chỉ mức độ cao nhất trong nhóm đang được nói đến, như 一番大きい (lớn nhất) và 一番安い (rẻ nhất). Phạm vi so sánh có thể được nêu bằng で hoặc の中で, hoặc được hiểu từ ngữ cảnh.",
+        "UsageNotes": "Khi tính từ な bổ nghĩa cho danh từ phía sau, vẫn cần な, như 一番静かな部屋 (căn phòng yên tĩnh nhất). Khi so sánh trực tiếp hai lựa chọn, có thể dùng AよりBのほうが… hoặc AとBと、どちらが… ."
+      },
+      "Examples": {
+        "ichiban:example:1": "Ở cửa hàng này, chiếc bánh này ngon nhất.",
+        "ichiban:example:2": "Núi Phú Sĩ là ngọn núi cao nhất Nhật Bản."
+      },
+      "SourceHash": "a83ffdcc2e89b2c90667bd3bca0d99173af81451e1def05e92127e37440d8538"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "issho-ni",
+      "Fields": {
+        "Meaning": "Cùng nhau; cùng với",
+        "Formation": "Người cùng tham gia ＋ と ＋ 一緒に ＋ động từ. Có thể dùng 一緒に ＋ động từ khi đã rõ người cùng tham gia.",
+        "Explanation": "一緒に diễn tả việc thực hiện một hành động cùng người khác. Dùng と để nêu người cùng tham gia, như 友だちと一緒に映画を見る (xem phim cùng bạn). Có thể bỏ phần người đi cùng khi ngữ cảnh đã rõ.",
+        "UsageNotes": "Người cùng tham gia đi với と, không phải に. Khi rủ rê, 一緒に…ませんか có nghĩa là bạn có muốn cùng làm… không."
+      },
+      "Examples": {
+        "issho-ni:example:1": "Tôi đã xem phim cùng bạn.",
+        "issho-ni:example:2": "Bạn có muốn ăn trưa cùng tôi không?"
+      },
+      "SourceHash": "844618ecc4a5e20c53e713a48c0369eba064fe8e2bd3f5af0fee5b6f6a43aa68"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "itsumo",
+      "Fields": {
+        "Meaning": "Luôn; lúc nào cũng; thường xuyên",
+        "Formation": "いつも ＋ hành động hoặc trạng thái. Ví dụ: いつも早く起きます; いつも元気です.",
+        "Explanation": "いつも diễn tả một hành động lặp lại thành thói quen hoặc một trạng thái thường xuyên tồn tại. Tùy ngữ cảnh, có thể dịch là luôn, lúc nào cũng hoặc thường. Từ này dùng được với động từ và với câu miêu tả trạng thái.",
+        "UsageNotes": "いつも không chỉ một lần cụ thể. 今度 có thể chỉ lần này hoặc lần tới tùy ngữ cảnh; 今日 có nghĩa là hôm nay. Không dùng các từ đó thay cho いつも khi muốn nói về thói quen."
+      },
+      "Examples": {
+        "itsumo:example:1": "Chị gái tôi lúc nào cũng tràn đầy sức sống.",
+        "itsumo:example:2": "Tôi luôn đi học bằng xe buýt."
+      },
+      "SourceHash": "964a8396c9f8691e84199e0f353bfab1c1959219e12e2d01f6fa499b70bfba52"
+    }
+  ]
+}

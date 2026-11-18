@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sude-ni",
+      "Fields": {
+        "Meaning": "Đã, từ trước rồi",
+        "Formation": "すでに ＋ vị ngữ",
+        "Explanation": "Nêu việc đã hoàn thành hoặc trạng thái đã có ở mốc đang nói đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sude-ni:example:1": "Khi tôi đến thì họ đã về rồi.",
+        "sude-ni:example:2": "Tôi đã biết tin đó từ trước."
+      },
+      "SourceHash": "2bb82a39c333c51bb257737993e44cb4c34b9cff2e3c27fbc62f321697d41c4a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sunawachi",
+      "Fields": {
+        "Meaning": "Tức là, cụ thể là",
+        "Formation": "A、すなわち B",
+        "Explanation": "Giải thích lại hoặc xác định cụ thể điều vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sunawachi:example:1": "Ông ấy là anh trai của bố tôi, tức là bác tôi.",
+        "sunawachi:example:2": "Hạn chót là ngày kia, tức thứ Tư."
+      },
+      "SourceHash": "10b80a3d81badc3f50d5a804b6ba62a33764ae7c242f86b07a0588767422cf6f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zuni",
+      "Fields": {
+        "Meaning": "Không làm mà, không cần làm rồi",
+        "Formation": "Gốc phủ định ＋ ずに (する → せずに)",
+        "Explanation": "Cho biết một hành động diễn ra mà thiếu hành động đi kèm. Gần nghĩa với ないで.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zuni:example:1": "Tôi ra khỏi nhà không mang ô nên bị mắc mưa.",
+        "zuni:example:2": "Tôi trả lời mà không suy nghĩ kỹ, sau đó gặp rắc rối."
+      },
+      "SourceHash": "f4b700291da3f598e276754871fd874603418512745a38a59f107edea6db6cfe"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zuni-wa-irarenai",
+      "Fields": {
+        "Meaning": "Không thể không, không kìm được",
+        "Formation": "Gốc phủ định ＋ ずにはいられない (する → せずにはいられない)",
+        "Explanation": "Diễn tả cảm xúc hoặc thôi thúc mạnh đến mức không thể kiềm chế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zuni-wa-irarenai:example:1": "Đến cuối phim đó, tôi không cầm được nước mắt.",
+        "zuni-wa-irarenai:example:2": "Thấy ai gặp khó khăn, tôi không thể không giúp."
+      },
+      "SourceHash": "15ebbb899f5015582c76f780e0d95eb7a8b56f00bfc3cd0d626e17fb95a49985"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "suru-to",
+      "Fields": {
+        "Meaning": "Thế rồi, ngay sau đó",
+        "Formation": "Câu nêu sự việc ＋ すると ＋ sự việc tiếp theo",
+        "Explanation": "Dẫn vào kết quả hoặc điều vừa xuất hiện ngay sau hành động ở câu trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "suru-to:example:1": "Tôi bấm nút. Ngay sau đó đèn tắt.",
+        "suru-to:example:2": "Tôi mở cửa sổ. Thế rồi một luồng gió lạnh ùa vào."
+      },
+      "SourceHash": "2e02e12fc21119df2e0d9d35d79fa6fb93af227ac73adad7196ebb5519c56b15"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-yoru-to",
+      "Fields": {
+        "Meaning": "Theo, theo nguồn tin",
+        "Formation": "Nguồn tin ＋ によると／によれば",
+        "Explanation": "Dẫn nguồn trước khi thuật lại thông tin. Thường đi với そうだ hoặc らしい.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-yoru-to:example:1": "Theo bản tin, ngày mai có tuyết lớn.",
+        "ni-yoru-to:example:2": "Theo lời bạn tôi, bánh ở tiệm đó ngon lắm."
+      },
+      "SourceHash": "cc230732219e0b8cb71e5c55c6d30ee8f46b9aa15c214c48253ae1a757efa91d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-aida-ni",
+      "Fields": {
+        "Meaning": "Trong lúc, trong khoảng",
+        "Formation": "Danh từ ＋ の間に／mệnh đề bổ nghĩa ＋ 間に",
+        "Explanation": "Nêu khoảng thời gian mà việc khác diễn ra hoặc được hoàn thành bên trong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-aida-ni:example:1": "Trong lúc mẹ ra ngoài, tôi đã dọn phòng sạch sẽ.",
+        "no-aida-ni:example:2": "Tôi muốn đọc nhiều sách trong kỳ nghỉ hè."
+      },
+      "SourceHash": "f0bcd134dbd67defbffdea0f2190888e7b783ddc78c8bee83f00b4c36824cdd1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-deshou-ka",
+      "Fields": {
+        "Meaning": "Không biết…, xin hỏi…?",
+        "Formation": "Thể thông thường ＋ のでしょうか (danh từ và tính từ な thêm な)",
+        "Explanation": "Đặt câu hỏi hoặc bày tỏ sự băn khoăn với giọng mềm và lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-deshou-ka:example:1": "Xin hỏi chữ kanji này đọc thế nào ạ?",
+        "no-deshou-ka:example:2": "Xin hỏi cuộc họp bắt đầu lúc mấy giờ ạ?"
+      },
+      "SourceHash": "35e24d1015ae083fbe5b02fc7ee1dc1921b9a31b2af2ddd6ab3b15e25c835b8b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-wa-no-hou-da",
+      "Fields": {
+        "Meaning": "Người hoặc bên… là X",
+        "Formation": "Mệnh đề bổ nghĩa ＋ のは ＋ X ＋ の方だ",
+        "Explanation": "Đưa X vào vị trí được nhấn mạnh, thường khi đối chiếu với một bên khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-wa-no-hou-da:example:1": "Người có lỗi là tôi nên tôi sẽ xin lỗi.",
+        "no-wa-no-hou-da:example:2": "Người bận là mẹ tôi, còn bố trông có vẻ rảnh mỗi ngày."
+      },
+      "SourceHash": "c59aea79e22a2c5c321eeac5514c09bb3a81dc138298612187c6cff654f1e5e1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-kurai-desu",
+      "Fields": {
+        "Meaning": "Cũng chỉ khoảng, cùng lắm chỉ",
+        "Formation": "Chủ đề ＋ は ＋ danh từ hoặc mệnh đề ＋ くらいです",
+        "Explanation": "Nêu giới hạn hoặc việc duy nhất đáng kể trong phạm vi đang nói tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-kurai-desu:example:1": "Món tôi nấu được thì cũng chỉ có trứng cuộn.",
+        "wa-kurai-desu:example:2": "Chủ nhật tôi chỉ nghỉ ngơi thong thả ở nhà thôi."
+      },
+      "SourceHash": "c09d0dffe212cf7efcf8b0a949c6ab8de7beb01c6dcdf88595515790e3a502f0"
+    }
+  ]
+}

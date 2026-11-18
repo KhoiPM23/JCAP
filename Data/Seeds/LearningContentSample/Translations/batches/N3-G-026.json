@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "demo-aru",
+      "Fields": {
+        "Meaning": "Đồng thời cũng là",
+        "Formation": "Danh từ ＋ でもある",
+        "Explanation": "Bổ sung một vai trò hoặc đặc điểm cùng tồn tại của chủ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "demo-aru:example:1": "Anh ấy là ca sĩ, đồng thời cũng là diễn viên.",
+        "demo-aru:example:2": "Cuốn sách này còn dùng như từ điển nên rất tiện."
+      },
+      "SourceHash": "c7b580386573fcc6e4bdb0a2b84468ce58915081d1963f4e37f42f997df22102"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo-kamawanai",
+      "Fields": {
+        "Meaning": "Dù… cũng được, có phiền không?",
+        "Formation": "Động từ thể て ＋ も構わない／tính từ dạng くても／danh từ ＋ でも構わない",
+        "Explanation": "Cho biết điều kiện đó vẫn chấp nhận được. Dạng câu hỏi dùng để xin phép.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "temo-kamawanai:example:1": "Đắt hơn một chút cũng được, tôi muốn mua đồ chất lượng tốt.",
+        "temo-kamawanai:example:2": "Tôi chụp ảnh ở đây có được không ạ?"
+      },
+      "SourceHash": "0eb7496811bc2b20907088feb59b6f31a61caa29f200eadeb68a5b456e4bf7e5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo-shou-ga-nai",
+      "Fields": {
+        "Meaning": "Có làm cũng vô ích",
+        "Formation": "Động từ thể て ＋ もしょうがない／もしかたがない",
+        "Explanation": "Đánh giá rằng làm việc đó không thể thay đổi tình hình hoặc không đem lại ích lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "temo-shou-ga-nai:example:1": "Tiếc nuối chuyện đã qua cũng chẳng ích gì.",
+        "temo-shou-ga-nai:example:2": "Bây giờ có vội cũng vô ích. Tàu đi rồi."
+      },
+      "SourceHash": "7296d363c41cbf75834a044b857106b5f2d138b4fdd9765615a995b50c645443"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo-hajimaranai",
+      "Fields": {
+        "Meaning": "Có làm cũng chẳng giải quyết được gì",
+        "Formation": "Động từ thể て ＋ も始まらない",
+        "Explanation": "Nêu hành động không giúp tình hình tiến triển, thường dẫn đến việc tìm cách xử lý khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "temo-hajimaranai:example:1": "Lo một mình cũng chẳng giải quyết được gì, nên mình hỏi ý kiến thầy cô nhé.",
+        "temo-hajimaranai:example:2": "Bận lòng về chuyện đã qua cũng chẳng ích gì."
+      },
+      "SourceHash": "3015be5756eb35425316b0405158c29dfd580b8625f906a1c8857698c3bd355b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de-yokereba",
+      "Fields": {
+        "Meaning": "Nếu X cũng được, nếu không chê X",
+        "Formation": "Danh từ ＋ でよければ",
+        "Explanation": "Đưa ra một đề nghị với điều kiện người nghe thấy lựa chọn đó phù hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "de-yokereba:example:1": "Nếu bạn thấy nói chuyện với tôi cũng được, tôi sẵn lòng nghe.",
+        "de-yokereba:example:2": "Nếu món đơn giản cũng được thì tôi sẽ nấu."
+      },
+      "SourceHash": "8002eac87ce339e98d0a32f98809f45ca21a14dc2b8c2a2bdd6c3ca705e66d21"
+    }
+  ]
+}

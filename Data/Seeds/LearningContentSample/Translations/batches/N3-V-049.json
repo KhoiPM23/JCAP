@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb944daeac",
+      "Fields": {
+        "Meaning": "Kiểm tra, xác nhận",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "確かめる（たしかめる）có nghĩa là kiểm tra, xác nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121076": "Xin xác nhận khi nào anh ấy về.",
+        "140400": "Nhớ kiểm tra xem cửa sổ đã đóng chưa."
+      },
+      "SourceHash": "79e78596f3d8aa65f877a94d7a3886d365c21ae9e836144efe055c5ee43bafa5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63e2832ca0",
+      "Fields": {
+        "Meaning": "Một ít, đôi chút, ít nhiều",
+        "PartOfSpeech": "Phó từ, bổ nghĩa với の",
+        "Explanation": "多少（たしょう）có nghĩa là một ít, đôi chút, ít nhiều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172268": "Sáng nay không khí hơi lạnh.",
+        "215038": "Tôi nghĩ súp cần thêm một ít muối."
+      },
+      "SourceHash": "7880ecb7ac4effbc12f4cfee1c6296e9d444b5a6b083318198c4207de3ebd7b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76cae35411",
+      "Fields": {
+        "Meaning": "Giúp, cứu, hỗ trợ",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "助ける（たすける）có nghĩa là giúp, cứu, hỗ trợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152259": "Tôi giúp bà cụ qua đường.",
+        "180340": "Giáo dục giúp hình thành nhân cách."
+      },
+      "SourceHash": "0ed3262f089891ad4e16f887416b616d43d22d617463ae735119ce2d01b2592e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3e80832e23",
+      "Fields": {
+        "Meaning": "Chỉ, miễn phí",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "ただ（ただ）có nghĩa là chỉ, miễn phí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159998": "Tôi có được chiếc vé đó miễn phí.",
+        "177669": "Bạn chỉ cần rửa bát thôi."
+      },
+      "SourceHash": "d62bb0aa4c408a7bb0c8f48958645f1c7f0b4f625c18acbad00bce8923c43a13"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "900eaa8fd0",
+      "Fields": {
+        "Meaning": "Cuộc chiến, cuộc đấu tranh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "戦い（たたかい）có nghĩa là cuộc chiến, cuộc đấu tranh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125939": "Cuộc chiến kéo dài kết thúc năm 1920.",
+        "141337": "Chiến tranh khơi dậy thú tính của con người."
+      },
+      "SourceHash": "27544e3e711f27314192fa9ce960a3278a4905e3e736564b52a4cd28c54ad4de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff035a2a04",
+      "Fields": {
+        "Meaning": "Chiến đấu, đấu tranh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "戦う（たたかう）có nghĩa là chiến đấu, đấu tranh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96659": "Họ chiến đấu để bảo vệ quê hương.",
+        "227516": "Cậu cũng đừng bao giờ quên tinh thần chiến đấu."
+      },
+      "SourceHash": "add7e03036b4439bfeba1d48291e6a389e2c22ee0c7780bbfe880672de0779a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44d064efd7",
+      "Fields": {
+        "Meaning": "Đánh, đập, gõ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "叩く（たたく）có nghĩa là đánh, đập, gõ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115677": "Anh ấy đập nắm tay xuống bàn một tiếng rầm.",
+        "173891": "Tôi cãi lại nên bị bố đánh."
+      },
+      "SourceHash": "2dbfb3a79656847a4b53e2ffd5cec95273627a11c8c74dfa2310c12b78b1e1a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60eed96a97",
+      "Fields": {
+        "Meaning": "Ngay lập tức",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "直ちに（ただちに）có nghĩa là ngay lập tức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87831": "Cô ấy lập tức đi về phía chiếc xe.",
+        "102033": "Anh ấy lập tức viết thư trả lời."
+      },
+      "SourceHash": "35e013fa01fa14736865b39e26a9c99d61b6715f72e578a191f6796cfe96c996"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "700d08f6e3",
+      "Fields": {
+        "Meaning": "Đứng dậy, khởi động",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "立ち上がる（たちあがる）có nghĩa là đứng dậy, khởi động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123292": "Một cô gái trẻ đột nhiên đứng dậy.",
+        "201403": "Làm sao đây, máy tính không khởi động được."
+      },
+      "SourceHash": "6cb7cdc5d9ef4c8a27bb34ac52265e2336143e6f39a82a70e30d936e3af7d4e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a10dbb12a8",
+      "Fields": {
+        "Meaning": "Lập trường, vị trí, hoàn cảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "立場（たちば）có nghĩa là lập trường, vị trí, hoàn cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93854": "Hãy nhìn vấn đề từ góc độ của cô ấy.",
+        "226792": "Tôi không ở vị trí có thể trả lời."
+      },
+      "SourceHash": "8e193562204dd91c946e8ee4ccc2bbe192132210d7a79268f69341887cada5ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2b046f0f90",
+      "Fields": {
+        "Meaning": "Trôi qua (thời gian)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "経つ（たつ）có nghĩa là trôi qua (thời gian).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150691": "Thời gian trôi qua, các vấn đề dần nảy sinh.",
+        "150693": "Thời gian trôi qua, anh ấy đổi ý."
+      },
+      "SourceHash": "e08522961c62ede93f50739dbd0f4d7504ac69c36909088d086f82c165a143e6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "356b9404ce",
+      "Fields": {
+        "Meaning": "Đạt tới, lên tới",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "達する（たっする）có nghĩa là đạt tới, lên tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97823": "Như vậy họ có lẽ sẽ đạt được thỏa thuận.",
+        "143733": "Nước lên đến ngang thắt lưng anh ấy."
+      },
+      "SourceHash": "040a3a4dd41dcebf08a757b2cf3edd31a26cc2cf3c9f9cb2730030e32faf7aa1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01558111d1",
+      "Fields": {
+        "Meaning": "Ngay cả, cũng, vì (thân mật)",
+        "PartOfSpeech": "Trợ từ",
+        "Explanation": "Sau danh từ, だって có thể nghĩa là cũng hoặc ngay cả. Đứng đầu câu, từ này có thể mở lời giải thích trong giao tiếp thân mật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168676": "Ngay cả trẻ con cũng hiểu chuyện đó.",
+        "205256": "Cả cậu cũng không thể nhầm chuyện đó được."
+      },
+      "SourceHash": "e2c01e1ed657945d808b2279a9092abee699611970848957ba378a7216a66cbd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05f3c84284",
+      "Fields": {
+        "Meaning": "Dồi dào, nhiều, đầy",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "たっぷり（たっぷり）có nghĩa là dồi dào, nhiều, đầy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180161": "Bài nói chuyện của giáo sư đầy chất hài hước.",
+        "195433": "Vẫn còn rất nhiều thời gian."
+      },
+      "SourceHash": "9e8cfc53cf52ba5f88a0ae820f3c88fcf8dfbfc55698e109f426efe5b3394894"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1ff353185",
+      "Fields": {
+        "Meaning": "Cho dù, dẫu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "たとえ thường đi cùng ても để nêu giả định nhượng bộ. Câu thứ hai dùng たとえは theo nghĩa 例えば (chẳng hạn).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77717": "Dù có chuyện gì xảy ra tôi cũng không bỏ cuộc.",
+        "189199": "Trong tiếng Anh có một số từ có hai cách viết, chẳng hạn như “gray” và “grey”."
+      },
+      "SourceHash": "48325ed4229167f5b5e9696539b99e2f4bb02a30592d9e61be8a8d8c2ef4ca6f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c8170be9cc",
+      "Fields": {
+        "Meaning": "Thung lũng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "谷（たに）có nghĩa là thung lũng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137142": "Tiếng gọi của anh ấy vang vọng trong thung lũng.",
+        "213330": "Một con sông chảy qua thung lũng lớn đó."
+      },
+      "SourceHash": "ee431c702e206a392a453ae3c31c0a3bbbeb729fa9738729988cb49415e01476"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3c2007820",
+      "Fields": {
+        "Meaning": "Người khác",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "他人（たにん）có nghĩa là người khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91361": "Cô ấy nên lắng nghe người khác nhiều hơn.",
+        "138479": "Biết quan tâm đến người khác là điều quan trọng."
+      },
+      "SourceHash": "dade9ae4dc86ddbe5cbf07e4d0b574cffac6136bde3389fcfe3e60163115c6ac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0167b18f74",
+      "Fields": {
+        "Meaning": "Hạt giống, nguồn cơn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "種（たね）có nghĩa là hạt giống, nguồn cơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118758": "Anh ấy chẳng có gì để phàn nàn.",
+        "204359": "Làm vậy thì sẽ thành trò cười đấy."
+      },
+      "SourceHash": "da310c195c63bc62be824dc4bc38a9abf54748e7cfec5242d176b6e14c227b2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7ca4ae607",
+      "Fields": {
+        "Meaning": "Bó, xấp",
+        "PartOfSpeech": "Danh từ, hậu tố, trợ số từ",
+        "Explanation": "束（たば）có nghĩa là bó, xấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "119487": "Tôi ôm xấp giấy tờ anh ấy để quên rồi chạy theo.",
+        "237445": "Anh ấy bó những lá thư cũ lại."
+      },
+      "SourceHash": "ed10dfd5cf98b05f4f5197b956695120856527d2503daafced3b957d72a5878f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4087e49c73",
+      "Fields": {
+        "Meaning": "Mỗi lần, dịp",
+        "PartOfSpeech": "Danh từ, hậu tố, trợ số từ",
+        "Explanation": "度（たび）có nghĩa là mỗi lần, dịp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101770": "Lần nào đến Tokyo anh ấy cũng ghé thăm tôi.",
+        "167414": "Lần nào tôi đến thăm, bạn cũng đi vắng."
+      },
+      "SourceHash": "2bbd4d61b2db9f00bad8ca1cbfbdd7ec30fdd59df5596b15314acef0ce80eb2f"
+    }
+  ]
+}

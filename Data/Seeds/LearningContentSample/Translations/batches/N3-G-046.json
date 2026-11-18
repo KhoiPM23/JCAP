@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mono-da",
+      "Fields": {
+        "Meaning": "Vốn thường, lẽ thường là",
+        "Formation": "Động từ thể từ điển ＋ ものだ",
+        "Explanation": "Khái quát điều thường xảy ra hoặc được xem là tự nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mono-da:example:1": "Có tuổi rồi, người ta thường thấy nhớ chuyện xưa.",
+        "mono-da:example:2": "Trẻ con vốn hay chơi đùa đầy sức sống."
+      },
+      "SourceHash": "c502e2fe3136fb1ae34f8a3dc5659c7cafb7ecb7f9b4a4931b559d836a5d59a7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ga-nai",
+      "Fields": {
+        "Meaning": "Không có cách nào làm",
+        "Formation": "Gốc ます ＋ ようがない",
+        "Explanation": "Nêu rằng thiếu phương tiện, điều kiện hoặc cách thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ga-nai:example:1": "Không biết địa chỉ nên tôi chẳng có cách nào gửi thư.",
+        "you-ga-nai:example:2": "Hỏng đến mức này thì không còn cách nào sửa được."
+      },
+      "SourceHash": "041f9e22d8c0f1abc144337266de8122e36931ccc06b5a45b777d0707bc749a8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-to-shita-ga",
+      "Fields": {
+        "Meaning": "Định… nhưng, đã cố… nhưng",
+        "Formation": "Động từ thể ý hướng ＋ としたが",
+        "Explanation": "Nêu ý định hoặc nỗ lực thực hiện ngay trước trở ngại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-to-shita-ga:example:1": "Tôi định lên tàu thì cửa đóng ngay trước mắt.",
+        "you-to-shita-ga:example:2": "Tôi định nói thật với anh ấy nhưng không đủ can đảm."
+      },
+      "SourceHash": "19f53dcd069cbcd012c5b5ae0a28b191edd8caab06a61f26a41881791d49519b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-to-shinai",
+      "Fields": {
+        "Meaning": "Không chịu, không định làm",
+        "Formation": "Động từ thể ý hướng ＋ としない",
+        "Explanation": "Cho thấy một người không có ý thực hiện hoặc không chịu thử làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-to-shinai:example:1": "Đứa trẻ không chịu ăn rau.",
+        "you-to-shinai:example:2": "Anh ấy không chịu nghe tôi nói."
+      },
+      "SourceHash": "4bc1047ecf405553a9c8814743bd0359b878d4bb672f7e152f6ca29e9b0c4596"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-to-suru",
+      "Fields": {
+        "Meaning": "Định làm, đang cố, sắp làm",
+        "Formation": "Động từ thể ý hướng ＋ とする",
+        "Explanation": "Chỉ nỗ lực bắt đầu hoặc thời điểm ngay trước khi hành động xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-to-suru:example:1": "Em bé đang cố đứng dậy.",
+        "you-to-suru:example:2": "Tôi vừa định ra khỏi nhà thì điện thoại reo."
+      },
+      "SourceHash": "dcad9ce2f29efc2b39ee12060b6b75ab4c881a938b37702ae486be1e91d3c58a"
+    }
+  ]
+}

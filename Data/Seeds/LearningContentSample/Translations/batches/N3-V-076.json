@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98c8318e58",
+      "Fields": {
+        "Meaning": "Hướng về, phù hợp",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "向く（むく）có nghĩa là hướng về, phù hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202689": "Chân tôi cứ tự nhiên bước về phía đó.",
+        "220907": "Vải này không hợp để may quần áo."
+      },
+      "SourceHash": "6853bda71d7e698c9f2014cf444757e4616e3988f68ed29e51021e1f71f3a2a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8dac563a6",
+      "Fields": {
+        "Meaning": "Hướng, chĩa về",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "向ける（むける）có nghĩa là hướng, chĩa về.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172145": "Sáng thứ Bảy tới, chúng tôi lên đường đi Chicago.",
+        "180473": "Tên cướp chĩa súng về phía nhân viên cửa hàng."
+      },
+      "SourceHash": "cff631cb8c7668b5f835f0c5a68a1acfdefccb08cee762ea71b824167c46702f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e866d19dae",
+      "Fields": {
+        "Meaning": "Phớt lờ, bỏ qua",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "無視（むし）có nghĩa là phớt lờ, bỏ qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113332": "Anh ấy phớt lờ tất cả đơn đăng ký.",
+        "176196": "Tôi nghĩ cảnh sát sẽ phớt lờ bạn."
+      },
+      "SourceHash": "657b5a2090a5c2f6b6b0e22ae260b3a1765fef897f054cf5a6ffc9aed8936434"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be007a1109",
+      "Fields": {
+        "Meaning": "Răng sâu, sâu răng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "虫歯（むしば）có nghĩa là răng sâu, sâu răng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126312": "Chiếc răng sâu tự rụng.",
+        "201176": "Có vẻ tôi bị sâu răng."
+      },
+      "SourceHash": "c0a251d6a33f548a9030c50bf9e07ff8bf4cfea4a163343865b5fc0ec066ca01"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "060e802c68",
+      "Fields": {
+        "Meaning": "Thà, đúng hơn là",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "寧ろ（むしろ）có nghĩa là thà, đúng hơn là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162309": "Tôi thích uống cà phê hơn.",
+        "171717": "Hôm nay tôi thà không ra ngoài."
+      },
+      "SourceHash": "6cd124a477d155477b4da0348d95e87b696114d9e2d9b273836f9007ed5e1794"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53d0381de5",
+      "Fields": {
+        "Meaning": "Buộc, nối, kết",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "結ぶ（むすぶ）có nghĩa là buộc, nối, kết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220253": "Con đường này nối hai thành phố.",
+        "223400": "Tôi không thắt được chiếc cà vạt này cho ngay ngắn."
+      },
+      "SourceHash": "93a20be7bb5be2ac4ae96568d2b6d3798882f6e4ec436db75b678a8f69c343df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a07884c182",
+      "Fields": {
+        "Meaning": "Vô ích, lãng phí",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "無駄（むだ）có nghĩa là vô ích, lãng phí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152176": "Cố lừa tôi cũng vô ích.",
+        "214592": "Cuộc đình công hầu như chẳng có tác dụng gì."
+      },
+      "SourceHash": "491ce0bb635e0b3998728f3914b4c32370d421b30e0ba2538da474e4c39e9139"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6c8fd99d7",
+      "Fields": {
+        "Meaning": "Say mê, mải mê",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "夢中（むちゅう）có nghĩa là say mê, mải mê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91119": "Cô ấy say mê quần vợt suốt ngày.",
+        "162377": "Tôi vui đến mê mẩn."
+      },
+      "SourceHash": "36ee6286e31cfb0bf6625843ed305e86d6a8bb25161e8fadc57dc91d163ae646"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb85283cf4",
+      "Fields": {
+        "Meaning": "Ngực, lòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "胸（むね）có nghĩa là ngực, lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80767": "Nghe gọi tên, tim tôi đập thình thịch.",
+        "180087": "Tôi hồi hộp chờ buổi diễn bắt đầu."
+      },
+      "SourceHash": "c6a86ffd34ab23ecfd0242b01dae676f5a3896589321dc3f88a5c4cb448075c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd59d43a89",
+      "Fields": {
+        "Meaning": "Miễn phí",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "無料（むりょう）có nghĩa là miễn phí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80054": "Tối thứ Năm có bia miễn phí.",
+        "223295": "Tờ giới thiệu này miễn phí."
+      },
+      "SourceHash": "e00d5ce7c2c1ecad367e3c891f1493b9cacef31e8bcd2e5d64d2d34b7874f3ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1357988d61",
+      "Fields": {
+        "Meaning": "Mầm, chồi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "芽（め）có nghĩa là mầm, chồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80056": "Cây cối bắt đầu đâm chồi.",
+        "193081": "Cuối cùng hoa tulip cũng nhú mầm."
+      },
+      "SourceHash": "cb79b5b48b56e05fd2628a2e494d5ccf9d36e5e42e4d955a41cb092af7468553"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1be11a9bbe",
+      "Fields": {
+        "Meaning": "Rõ ràng, rành mạch",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "明確（めいかく）có nghĩa là rõ ràng, rành mạch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150806": "Hãy trình bày rõ ràng chỉ những gì đúng sự thật.",
+        "222012": "Bạn định nghĩa từ này rõ ràng được không?"
+      },
+      "SourceHash": "e02dd8314d79e33d538777aeed4ad3c4bde121306f64b874c66aea2ca003dfd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7bd7d687fa",
+      "Fields": {
+        "Meaning": "Ra lệnh, chỉ thị",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "命じる（めいじる）có nghĩa là ra lệnh, chỉ thị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176315": "Cảnh sát ra lệnh cho họ dừng lại.",
+        "225839": "Đội trưởng ra lệnh giữ im lặng."
+      },
+      "SourceHash": "39c4444d26423d91be35c9286f0c1c4a1eb6356f1a42787b1c77545bb019391d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "37126e35d7",
+      "Fields": {
+        "Meaning": "Bậc thầy, người rất giỏi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "名人（めいじん）có nghĩa là bậc thầy, người rất giỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77937": "Nói đến nấu ăn thì cô ấy là bậc thầy.",
+        "94005": "Chồng cô ấy nấu ăn rất giỏi."
+      },
+      "SourceHash": "cfb095985e357d36913dfb2da347cb1dac16bcf7c869773147e51ca6c5063284"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f523e4118d",
+      "Fields": {
+        "Meaning": "Mệnh lệnh, ra lệnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "命令（めいれい）có nghĩa là mệnh lệnh, ra lệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106093": "Anh ấy ra lệnh cho tôi đứng lên.",
+        "161232": "Tôi được lệnh phải khử cậu."
+      },
+      "SourceHash": "9d33ed4d005b65a51e2f8c71b3d6a5489db598fd1388cbb904ebb23ecb5843a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c6c155ada8",
+      "Fields": {
+        "Meaning": "Sự phiền hà, làm phiền",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "迷惑（めいわく）có nghĩa là sự phiền hà, làm phiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80226": "Hãy cố đừng làm phiền người khác.",
+        "144578": "Anh ấy nói to dù biết làm phiền người khác."
+      },
+      "SourceHash": "0cd59e5e780ad9134dc56d7fbc57f583f14b51871c304b02aece357cb8978582"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba21b41503",
+      "Fields": {
+        "Meaning": "Cơm, bữa ăn (suồng sã)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "飯（めし）có nghĩa là cơm, bữa ăn (suồng sã).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76513": "Tôi muốn ăn ngay, nhưng quyết định đi vệ sinh trước.",
+        "190566": "Tôi đã nhịn ăn suốt một tuần."
+      },
+      "SourceHash": "50c58df907cdb5b070cd2cd6480d85f58e80ff615ffaaf75834a92d50ef466d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "24e21e954d",
+      "Fields": {
+        "Meaning": "Hiếm khi",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "滅多に（めったに）có nghĩa là hiếm khi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123999": "Ở đây hiếm khi có tuyết.",
+        "172911": "Giờ tôi hiếm khi đi xem phim."
+      },
+      "SourceHash": "3cf2ab894006787238c372dcd760c8814a99676455dec77872ca20dcd995fc36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c13f4ea321",
+      "Fields": {
+        "Meaning": "Ghi chú, ghi chép",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "メモ（メモ）có nghĩa là ghi chú, ghi chép.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114596": "Anh ấy luôn nhìn ghi chú khi nói.",
+        "162971": "Bạn đã ghi lại số điện thoại của tôi chưa?"
+      },
+      "SourceHash": "fea722195b9c649ea17a3bb375f72fd22a9f6bd413e910105dc9ab7014746edf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9fbf209387",
+      "Fields": {
+        "Meaning": "Bông, vải cotton",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "綿（めん）có nghĩa là bông, vải cotton.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146221": "Nó được làm từ vải cotton chất lượng cao.",
+        "219459": "Áo cotton này giặt rất dễ sạch."
+      },
+      "SourceHash": "7c4b3a2dd27f4a3f046f7385024ec6724cfe54637b6fedb26ab1675068799718"
+    }
+  ]
+}
