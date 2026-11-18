@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-de-yuumei",
+      "Fields": {
+        "Meaning": "Nổi tiếng về, nổi tiếng vì",
+        "Formation": "Chủ thể ＋ は ＋ danh từ ＋ で有名だ／chủ thể ＋ は ＋ mệnh đề ＋ ことで有名だ",
+        "Explanation": "Nêu đặc sản, đặc điểm hoặc lý do khiến chủ thể được biết đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-de-yuumei:example:1": "Vùng này nổi tiếng về trà ngon.",
+        "wa-de-yuumei:example:2": "Anh ấy nổi tiếng vì vẽ đẹp."
+      },
+      "SourceHash": "388905ea3c5c7cbe250f4506b22b6c639654404f1091b484c3b672e492098d5b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-to-natteiru",
+      "Fields": {
+        "Meaning": "Được quy định là, theo lịch là",
+        "Formation": "Chủ thể ＋ は ＋ nội dung quy định hoặc lịch trình ＋ となっている",
+        "Explanation": "Thông báo một quy định hoặc lịch trình đã được ấn định. となっております là dạng lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-to-natteiru:example:1": "Theo quy định, không được ăn uống trong tòa nhà.",
+        "wa-to-natteiru:example:2": "Theo lịch, cuộc họp sẽ bắt đầu từ thứ Hai tuần sau."
+      },
+      "SourceHash": "16aecc4d3c73bcbf9b5c0fa976605237faecaa70ab837ecc74d5700eac6dfab7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ba-noni",
+      "Fields": {
+        "Meaning": "Giá mà… thì đã, nếu… thì hay",
+        "Formation": "Điều kiện thể ば ＋ hệ quả ＋ のに",
+        "Explanation": "Nêu kết quả mong muốn trong điều kiện chưa đạt, thường kèm tiếc nuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ba-noni:example:1": "Giá mà rẻ hơn một chút thì tôi mua rồi.",
+        "ba-noni:example:2": "Giá mà trời đẹp thì có thể đi biển rồi."
+      },
+      "SourceHash": "f65ed5320957f02e28c373195d0ec13962b5e61a814b745515ada8281a2a4129"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ba-hodo",
+      "Fields": {
+        "Meaning": "Càng… càng",
+        "Formation": "Dạng điều kiện ば ＋ lặp lại động từ hoặc tính từ ＋ ほど",
+        "Explanation": "Hai mức độ thay đổi tương ứng. Mệnh đề sau nêu kết quả tăng hoặc giảm theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ba-hodo:example:1": "Cuốn sách này càng đọc càng thấy hay.",
+        "ba-hodo:example:2": "Phòng càng rộng càng tốt."
+      },
+      "SourceHash": "2d6504ec0ba413bf5756a35381526deec0574f840b2b3456a08fd4d904a6c9ee"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ba-ii",
+      "Fields": {
+        "Meaning": "Chỉ cần… là được, nên",
+        "Formation": "Động từ thể ば ＋ いい",
+        "Explanation": "Đưa ra cách làm đủ để giải quyết tình huống hoặc lời khuyên nhẹ nhàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ba-ii:example:1": "Nếu không biết đường, cứ hỏi nhân viên nhà ga là được.",
+        "ba-ii:example:2": "Nếu lạc đường thì xem bản đồ là được."
+      },
+      "SourceHash": "411f4de19f0fade6744d5f93d32dd46c701227d95d402ac0881f592360066acf"
+    }
+  ]
+}

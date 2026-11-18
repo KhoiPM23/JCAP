@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "363e985c77",
+      "Fields": {
+        "Meaning": "Thành thạo, làm chủ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "マスター（マスター）có nghĩa là thành thạo, làm chủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189091": "Thành thạo tiếng Anh rất khó.",
+        "236128": "Khó mà thành thạo trong một, hai năm."
+      },
+      "SourceHash": "4eaec4a2c1fa0aefff3632a96058bdc9e1eda4f1e621f6aea9a40f188c02f76f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1bbdd1149",
+      "Fields": {
+        "Meaning": "Càng ngày càng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ますます（ますます）có nghĩa là càng ngày càng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91501": "Cô ấy có vẻ ngày càng tăng cân.",
+        "191595": "Chúng tôi ngày càng kính trọng ông ấy."
+      },
+      "SourceHash": "54e9287b2639b5687c542a5526049442493aa0c8e32680f16cc42ba93c66cdcb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f91eb72b15",
+      "Fields": {
+        "Meaning": "Phố, thành phố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "街 gợi đến phố xá hoặc khu đô thị. Câu đầu viết 町, chỉ thị trấn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75868": "Cả thị trấn phủ đầy tuyết.",
+        "222615": "Bạn đến thành phố này có việc gì?"
+      },
+      "SourceHash": "e04d17c6f692655558cb534037e40980823d86c1f122e4a2c9bb6a81f42afcb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcc0ebf62f",
+      "Fields": {
+        "Meaning": "Lỗi, sai sót, sự nhầm lẫn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "間違い（まちがい）có nghĩa là lỗi, sai sót, sự nhầm lẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138341": "Nhiều người từng mắc cùng lỗi đó.",
+        "219654": "Cuốn sách này đầy lỗi."
+      },
+      "SourceHash": "39d4e6c7ba8a37bc03664b16edba4b0969dd771fcc4198272e2cf8cfdcc9a126"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f423a01da",
+      "Fields": {
+        "Meaning": "Cây thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "松（まつ）có nghĩa là cây thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118000": "Trước nhà anh ấy có cây thông.",
+        "218467": "Cây thông này có dáng đẹp."
+      },
+      "SourceHash": "d99d45ae21a0fe4d6092c7b20c9b216a6234e22cf196484cb1087b3a0474cede"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec9831dc0c",
+      "Fields": {
+        "Meaning": "Đỏ rực, hoàn toàn (khi nói dối)",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "真っ赤（まっか）có nghĩa là đỏ rực, hoàn toàn (khi nói dối).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145006": "Ráng chiều đỏ rực báo hiệu ngày mai trời quang.",
+        "213974": "Đó là lời nói dối trắng trợn."
+      },
+      "SourceHash": "5187564047831a2b143c26b93dc68f53942b559ff20ec1087d07dd77bf72a9ba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2eb5b8f659",
+      "Fields": {
+        "Meaning": "Hoàn toàn, chẳng… chút nào",
+        "PartOfSpeech": "Phó từ, bổ nghĩa với の",
+        "Explanation": "全く（まったく）có nghĩa là hoàn toàn, chẳng… chút nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86260": "Cô ấy hoàn toàn không biết nấu ăn.",
+        "102950": "Anh ấy có vẻ hoàn toàn thiếu tình cảm."
+      },
+      "SourceHash": "e2942cc9732ed724e31fac6a5b04b6deaf9cae01cf7d5d95c45a1dafea00759c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c53570cabd",
+      "Fields": {
+        "Meaning": "Lễ hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "祭（まつり）có nghĩa là lễ hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160417": "Tôi muốn xem lễ hội đó.",
+        "208243": "Trường đại học nhộn nhịp vì lễ hội của trường."
+      },
+      "SourceHash": "f217cce5158b55dcf03feefda5de0ea2fc5f0007f9efc5794cd94800976ba33a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8208cbb873",
+      "Fields": {
+        "Meaning": "Học, học hỏi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "学ぶ（まなぶ）có nghĩa là học, học hỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96775": "Họ sẵn lòng học tiếng Anh.",
+        "229183": "Ở tuổi nào cũng có điều để học."
+      },
+      "SourceHash": "46fb63b932688ccd4f1376e3adce5b3ccea67b819af30f8b5fdce339fadeae5a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59b359ba79",
+      "Fields": {
+        "Meaning": "Bắt chước, hành vi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "真似（まね）có nghĩa là bắt chước, hành vi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194191": "Đừng cư xử như trẻ con.",
+        "220496": "Con chim này bắt chước được giọng người."
+      },
+      "SourceHash": "72419c973f65e2f3bb964ed354012f0d7aabbd3d824415b651e05cfe7d818764"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19edd800f0",
+      "Fields": {
+        "Meaning": "Mời, dẫn đến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "招く（まねく）có nghĩa là mời, dẫn đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "163667": "Sai sót của tôi khiến anh ấy nổi giận.",
+        "166507": "Chúng tôi định mời Jane và Ellen."
+      },
+      "SourceHash": "68b64a648baf0a5c26b4cfea7d1632f6f1e552dce20fe94f2d97d089bdeee789"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3efa32e22e",
+      "Fields": {
+        "Meaning": "Mẹ, má",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ママ（ママ）có nghĩa là mẹ, má.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137835": "Con đã giúp mẹ trong bếp.",
+        "195320": "Mẹ và tôi chạy ra sảnh."
+      },
+      "SourceHash": "c9d224678a6498565a9b82e3d8428c19195ed31af297247b6894d4454937cee1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f949d1f9d",
+      "Fields": {
+        "Meaning": "Hạt đậu, hạt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "豆（まめ）có nghĩa là hạt đậu, hạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189917": "Một hạt đậu mắc vào lỗ mũi bên phải của tôi.",
+        "202874": "Sô-cô-la được làm từ hạt ca cao."
+      },
+      "SourceHash": "867f6240138a16feeb27df77414aa23e781d248d65b63175cb7a5c8cf2e22fb3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b517bb8180",
+      "Fields": {
+        "Meaning": "Bảo vệ, tuân thủ, giữ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "守る（まもる）có nghĩa là bảo vệ, tuân thủ, giữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209446": "Phải tuân theo tập quán đó.",
+        "228865": "Đã hứa thì phải giữ lời."
+      },
+      "SourceHash": "f1733d10e935392878fe7bbb02aa70598def88b2ba111bfbe372654908f01f36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "070c3ea238",
+      "Fields": {
+        "Meaning": "Hình tròn, trọn",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "丸（まる）có nghĩa là hình tròn, trọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126860": "Vòng tròn đỏ trên bản đồ chỉ trường học.",
+        "172033": "Xin nhờ anh chị trọn một ngày kể từ hôm nay."
+      },
+      "SourceHash": "4454e87d8c65acbc8f38b3e50d66b26c9851b5267f986b7b06e034b020443a4f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b556900c26",
+      "Fields": {
+        "Meaning": "Cứ như, hoàn toàn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "まるで（まるで）có nghĩa là cứ như, hoàn toàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158843": "Cứ như đang mơ vậy.",
+        "196390": "Tôi hoàn toàn không hiểu lý do."
+      },
+      "SourceHash": "5e9ebf0ed3e3e0fd3f23bc2c2c025b4b02e9582407f72cc23bcf8f00afc28d5a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3d0f24680",
+      "Fields": {
+        "Meaning": "Xoay, chuyển",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "回す（まわす）có nghĩa là xoay, chuyển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149189": "Tôi sẽ chuyển máy cho giám đốc.",
+        "7957077": "Anh Tom, hãy cho động cơ chạy."
+      },
+      "SourceHash": "712bf934e824b47b99cf4a57e90877df9458c0a6cde0b3da7cb8d9b272235c2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59d7b934c6",
+      "Fields": {
+        "Meaning": "Xung quanh, vòng quanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "回り（まわり）có nghĩa là xung quanh, vòng quanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165536": "Chúng tôi tụ tập quanh giáo viên.",
+        "165828": "Chúng tôi chạy quanh công viên."
+      },
+      "SourceHash": "2d0acca91716b8907752cdddc902e450fc10018ded4789c4feddec54fc0dfe3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "abbd37156d",
+      "Fields": {
+        "Meaning": "Nếu chẳng may",
+        "PartOfSpeech": "Phó từ, bổ nghĩa với の",
+        "Explanation": "万一（まんいち）có nghĩa là nếu chẳng may.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81134": "Nếu chẳng may anh ấy đến đây, tôi sẽ báo ngay.",
+        "81180": "Tiết kiệm để phòng bất trắc là điều khôn ngoan."
+      },
+      "SourceHash": "24acfb79039c301633d2d4a11c4ae835fa0054cff44d66b7d24605c7229c069d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a4f0b205a3",
+      "Fields": {
+        "Meaning": "Hài lòng, thỏa mãn, đầy đủ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "満足（まんぞく）có nghĩa là hài lòng, thỏa mãn, đầy đủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76864": "Người ấy lúc nào cũng cáu bẩn, có vẻ còn không được cho ăn đầy đủ.",
+        "101854": "Anh ấy cố làm chủ lao động hài lòng."
+      },
+      "SourceHash": "e2aaf7185e11d131da2d379ad3af3160d43681114b5db44c16c9ac2c2d8885b3"
+    }
+  ]
+}

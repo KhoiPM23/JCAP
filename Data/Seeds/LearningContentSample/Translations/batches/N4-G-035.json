@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "moshi",
+      "Fields": {
+        "Meaning": "Nếu, giả sử",
+        "Formation": "もし ＋ mệnh đề điều kiện dạng たら／なら／ば",
+        "Explanation": "Đặt giả thiết trước khi nêu kết quả, dự định hoặc lời đề nghị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "moshi:example:1": "Nếu có thời gian, tôi muốn đi bảo tàng mỹ thuật.",
+        "moshi:example:2": "Nếu gặp khó khăn, cứ gọi cho tôi bất cứ lúc nào."
+      },
+      "SourceHash": "383aeeb9ddf1b7d9d5bf2027349a03f243838c52fdf8f7ca945105bc481e0c92"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-da",
+      "Fields": {
+        "Meaning": "Có vẻ, dường như",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ようだ (danh từ ＋ の／tính từ な ＋ な)",
+        "Explanation": "Trình bày suy đoán dựa trên dấu hiệu hoặc tình huống quan sát được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-da:example:1": "Đèn tắt nên có vẻ không có ai ở đó.",
+        "you-da:example:2": "Có vẻ anh ấy biết rõ thị trấn này."
+      },
+      "SourceHash": "ac616e05e55bfead3de786f36c63e4c96b018461dc0dd4cf457229acc6e58555"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-to-omou",
+      "Fields": {
+        "Meaning": "Định làm gì",
+        "Formation": "Động từ thể ý hướng ＋ と思う／と思っている",
+        "Explanation": "Nêu dự định. と思っている có thể nói về ý định đã có từ trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-to-omou:example:1": "Cuối tuần tôi định nghỉ ngơi ở nhà.",
+        "you-to-omou:example:2": "Tôi đang định thi tiếng Nhật vào năm sau."
+      },
+      "SourceHash": "4071d1c61b7b7b9da22d85b8a42b716a0f8b07d695809f9ee824e2ea80856b6f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-so-that",
+      "Fields": {
+        "Meaning": "Để, sao cho",
+        "Formation": "Động từ thể từ điển hoặc thể ない ＋ ように",
+        "Explanation": "Nêu kết quả hoặc trạng thái muốn đạt hay tránh. Thường dùng với thể khả năng hoặc hành động khó kiểm soát trực tiếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-so-that:example:1": "Tôi nói to để người ngồi phía sau cũng nghe thấy.",
+        "you-ni-so-that:example:2": "Tôi ghi chú lên tay để khỏi quên."
+      },
+      "SourceHash": "b9bbce21231666385d831b2a7860031f60cd6e67c0da2e60426081ca328b3f81"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-you-na",
+      "Fields": {
+        "Meaning": "Như, giống như",
+        "Formation": "Danh từ ＋ のように ＋ vị ngữ／のような ＋ danh từ",
+        "Explanation": "Dùng một hình ảnh để so sánh. ように bổ nghĩa vị ngữ, ような bổ nghĩa danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-you-na:example:1": "Cô ấy hát với giọng đẹp như ca sĩ.",
+        "you-ni-you-na:example:2": "Nước lạnh như băng."
+      },
+      "SourceHash": "c470c463034c42bb50f3bb1e5020b6453135865caed747c795a0710e48fb7f28"
+    }
+  ]
+}

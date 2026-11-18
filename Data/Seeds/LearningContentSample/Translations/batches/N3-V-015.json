@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "70a5d45f7c",
+      "Fields": {
+        "Meaning": "Vận dụng, tận dụng, chia từ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "活用（かつよう）có nghĩa là vận dụng, tận dụng, chia từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113013": "Anh ấy tận dụng tối đa cơ hội đó.",
+        "183365": "Lúc nào cũng nên tận dụng tối đa cơ hội."
+      },
+      "SourceHash": "27603d8667985be9ea0bdb6cba71077f1177c2d229a4340a02bd0d8117a1c792"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bef84d4151",
+      "Fields": {
+        "Meaning": "Buồn, đau buồn, thương tiếc",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "悲しむ（かなしむ）có nghĩa là buồn, đau buồn, thương tiếc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85943": "Hãy để cô ấy yên khi đang buồn.",
+        "85944": "Có gì đâu mà phải buồn."
+      },
+      "SourceHash": "f3d112ccb6cf11dda34fc846c54d8dbbbdfcc05f763cd52e0bd1d5c85bf1b09b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7eb9ecbff",
+      "Fields": {
+        "Meaning": "Không nhất thiết, chưa chắc",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "必ずしも（かならずしも）có nghĩa là không nhất thiết, chưa chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144443": "Con người chưa chắc đã giống vẻ bề ngoài.",
+        "179680": "Người giàu chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "dff77751c47d4122f67ea688bc392e8057c29f3122f2e146a484d8f413f11498"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7634c5903a",
+      "Fields": {
+        "Meaning": "Khá, đáng kể",
+        "PartOfSpeech": "Phó từ, bổ nghĩa với の, tính từ đuôi な",
+        "Explanation": "かなり（かなり）có nghĩa là khá, đáng kể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93031": "Cô ấy có khá nhiều quần áo.",
+        "220661": "Trường đại học này có khá ít sinh viên."
+      },
+      "SourceHash": "13b29f6ee49087ccd8de3afe3a8da9fc879557d0af20a66735b366176b7c5f14"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f10aed466",
+      "Fields": {
+        "Meaning": "Tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金（かね）có nghĩa là tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82995": "Mẹ chia tiền cho các con.",
+        "95037": "Tôi bị cô ấy lừa giao số tiền đó."
+      },
+      "SourceHash": "29023f58b880541cab6ef328d8634ef4c8f8ea53f7ff9dbfde7a2e814daf7070"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "06381dbe4c",
+      "Fields": {
+        "Meaning": "Người giàu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金持ち（かねもち）có nghĩa là người giàu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90396": "Cô ấy giàu nhưng không hạnh phúc.",
+        "179680": "Người giàu chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "56af62fb9fdfe8dbd719c4aa9a24c3df0c3a0b9dbf7ff436516f45e4bd459272"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6bf6a2e393",
+      "Fields": {
+        "Meaning": "Có thể, khả thi",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "可能（かのう）có nghĩa là có thể, khả thi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127251": "Có thể dạy các bé trai biết giữ kỷ luật.",
+        "207443": "Có thể nuôi con vật đó không?"
+      },
+      "SourceHash": "4cfc1b6415cb8379dd17dc13e16fcbb811291d9820ae061a99aa923be632b717"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "562f63004e",
+      "Fields": {
+        "Meaning": "Cổ phiếu, gốc cây, uy tín",
+        "PartOfSpeech": "Danh từ, trợ số từ",
+        "Explanation": "株（かぶ）có nghĩa là cổ phiếu, gốc cây, uy tín.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102421": "Anh ấy đầu tư một khoản lớn vào cổ phiếu.",
+        "184225": "Uy tín của anh ấy trong giới sinh viên đột ngột tăng lên."
+      },
+      "SourceHash": "e062df6c22f51f1f63c0e0a49fd41f4571e4843a0858707f33e1ce9929fa5eb6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "11ae7695a1",
+      "Fields": {
+        "Meaning": "Đội, trùm, bị phủ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "被る（かぶる）có nghĩa là đội, trùm, bị phủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180184": "Không nên đội mũ trong lớp.",
+        "211546": "Cái máy đó phủ đầy bụi."
+      },
+      "SourceHash": "0d5594881424d96ca189cf261c96dc3c8c215cbb560fb292411de653d10cba5e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f55f2622af",
+      "Fields": {
+        "Meaning": "Chịu đựng, kiềm chế",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "我慢（がまん）có nghĩa là chịu đựng, kiềm chế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101391": "Anh ấy không chịu được nóng.",
+        "222583": "Tôi chịu không nổi cái lạnh này."
+      },
+      "SourceHash": "37c9d329a61427ee973e4ec2d1d2889f2282b22bd241f3f95d10bf0e495f6537"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed26fceabd",
+      "Fields": {
+        "Meaning": "Thần, Chúa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "神（かみ）có nghĩa là thần, Chúa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96778": "Họ nằm trong tay Chúa.",
+        "144266": "Con người không toàn năng như Chúa."
+      },
+      "SourceHash": "4a72b73890c0f1bd39107037b45c3c8acb80e58bfa0bd7f557c75106ba0d2243"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e21784548",
+      "Fields": {
+        "Meaning": "Sấm, sét",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雷（かみなり）có nghĩa là sấm, sét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160274": "Tôi thấy sét đánh vào ngôi nhà đó.",
+        "168404": "Lũ trẻ sợ tiếng sấm."
+      },
+      "SourceHash": "7c7fd1604a0c1dc8edb9d1eddbc5111600cb7f7a8a456d9263427de724063c00"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1156b71b99",
+      "Fields": {
+        "Meaning": "Tóc",
+        "PartOfSpeech": "Cụm từ, Danh từ",
+        "Explanation": "髪の毛（かみのけ）có nghĩa là tóc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121293": "Bạn nên đi cắt tóc.",
+        "200948": "Bạn cắt tóc ở đâu vậy?"
+      },
+      "SourceHash": "cd02e2721e761ce7f1cfd825012f210855482a08bbf570c48c9df2ec3109162f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1dfbcdd475",
+      "Fields": {
+        "Meaning": "Môn học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "科目（かもく）có nghĩa là môn học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184483": "Bạn học những môn nào ở trường?",
+        "200339": "Bạn thích môn nào nhất?"
+      },
+      "SourceHash": "9685bbaa6e539882dd374dc495f367cc349f6a5a0bc3e05f02b7cb7b07442540"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91e25df095",
+      "Fields": {
+        "Meaning": "Có lẽ, có thể",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "かもしれない（かもしれない）có nghĩa là có lẽ, có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77555": "Có lẽ đã lỡ tàu rồi.",
+        "233344": "Có lẽ bạn nói đúng."
+      },
+      "SourceHash": "51ad91b1a4af4e43d3d8cb613c85d7dbe836fee61eacf60709a5eea675a081f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5929a15e3a",
+      "Fields": {
+        "Meaning": "Thứ Ba",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "火曜（かよう）có nghĩa là thứ Ba.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75673": "Thứ Hai và thứ Ba tuần tới được nghỉ liền nhau.",
+        "186649": "Phải làm xong mọi thứ chậm nhất vào sáng thứ Ba."
+      },
+      "SourceHash": "59b22095556735ddccf8ae491fea68ba54a1772bdf78690151babf0e532879d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ce4616a78",
+      "Fields": {
+        "Meaning": "Trống, rỗng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "Đọc から khi chỉ tình trạng trống hoặc rỗng. Đọc そら khi chỉ bầu trời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196121": "Bình gần cạn nên phải đổ thêm xăng.",
+        "207209": "Hóa ra chiếc hộp trống rỗng."
+      },
+      "SourceHash": "4d05133d0483b34bd4ea342f847fce7b802c3ed36576e44867e38d07ebc80f19"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2bbdd79021",
+      "Fields": {
+        "Meaning": "Cắt, xén, gặt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "刈る（かる）có nghĩa là cắt, xén, gặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98045": "Họ trêu Jack về kiểu cắt tóc của cậu ấy.",
+        "156648": "Tôi đã cắt tóc ở tiệm."
+      },
+      "SourceHash": "d6ba090d1ca752fe264c001f1cf3ee248f081cb588b26926722590060ccae593"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c1b91aae6",
+      "Fields": {
+        "Meaning": "Sông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "河（かわ）có nghĩa là sông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222752": "Con sông này kéo dài tới New Orleans.",
+        "222754": "Bơi ở con sông này rất nguy hiểm."
+      },
+      "SourceHash": "ed3e7952cd0b56c9abfc1cda16458a440f34bff070a2b5b6ae3ecf24e4f6c835"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fcbb04d16",
+      "Fields": {
+        "Meaning": "Da thuộc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "革（かわ）có nghĩa là da thuộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223322": "Chiếc túi này làm bằng da thuộc.",
+        "225653": "Giày được làm bằng da thuộc."
+      },
+      "SourceHash": "8f1c640b65905d665bfcb80ef93f82ce7fdbca91fe3911ce2915f473c0114650"
+    }
+  ]
+}

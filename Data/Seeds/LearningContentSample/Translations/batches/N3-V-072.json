@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6ee5e0b7d",
+      "Fields": {
+        "Meaning": "Phiêu lưu, mạo hiểm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "冒険（ぼうけん）có nghĩa là phiêu lưu, mạo hiểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157654": "Tôi nhớ chuyến phiêu lưu mùa hè năm ngoái.",
+        "187703": "Không mạo hiểm thì chẳng thu được gì."
+      },
+      "SourceHash": "c2976bb00082fe9e7bf6bde2258a2c1ec3ac019afdeb398909797fd2610f973c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcbac4861d",
+      "Fields": {
+        "Meaning": "Hướng, phương hướng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "方向（ほうこう）có nghĩa là hướng, phương hướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102130": "Anh ấy hướng sự chú ý về phía đó.",
+        "203042": "Kệ phô mai ở phía nào?"
+      },
+      "SourceHash": "cfcdb57fe3f819c62c50ff4ed80556df7386673f9f8563716d2424a979eefdf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88fc5e477e",
+      "Fields": {
+        "Meaning": "Báo cáo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "報告（ほうこく）có nghĩa là báo cáo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "116144": "Báo cáo của anh ấy có vẻ không đúng sự thật.",
+        "206794": "Tiếc là báo cáo đó đúng."
+      },
+      "SourceHash": "c8c48fce039e752226da975c2235c90d1232d7e8b4cd2aa455cced4573944e04"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd34099f98",
+      "Fields": {
+        "Meaning": "Đá quý, trang sức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宝石（ほうせき）có nghĩa là đá quý, trang sức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100052": "Người ta nói anh ấy đã lấy trộm đá quý.",
+        "202643": "Cuối cùng anh ấy cũng có được viên đá quý đó."
+      },
+      "SourceHash": "c4027ad3d4ebfe5ef1adc7efc08a99ab87ef6812ba7ac70c62ca33dc20c7d7a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5a2f8eace",
+      "Fields": {
+        "Meaning": "Phong phú, dồi dào",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "豊富（ほうふ）có nghĩa là phong phú, dồi dào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189152": "Tiếng Anh có rất nhiều thành ngữ.",
+        "210589": "Nước đó có nguồn dầu mỏ dồi dào."
+      },
+      "SourceHash": "0e1b38f8eab39d71ee5d0193b6b4a668f57373de4c53b8905cc9891b2dd02bc1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "edba4848b0",
+      "Fields": {
+        "Meaning": "Cách, phương pháp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "方法（ほうほう）có nghĩa là cách, phương pháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121920": "Có nhiều cách khác nhau để giết một con mèo.",
+        "219027": "Đây là cách tôi học tiếng Anh."
+      },
+      "SourceHash": "e67e9a671b5c4cd0745054cb000be7427fa185a9bd33aaf90dbddab1f6806396"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ae027f872",
+      "Fields": {
+        "Meaning": "Thăm, viếng thăm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "訪問（ほうもん）có nghĩa là thăm, viếng thăm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79552": "Nên hẹn trước rồi mới đến thăm ông ấy.",
+        "161597": "Tôi định đến thăm bạn nhưng không đi được."
+      },
+      "SourceHash": "25ee6bb24dd971f1ce77867b0740796e2fce98a2f043cee2f3462977d1680fcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98d2fa2ac3",
+      "Fields": {
+        "Meaning": "Sủa, tru",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "吠える（ほえる）có nghĩa là sủa, tru.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175337": "Con chó sủa người đưa thư.",
+        "175338": "Đừng thức giấc mỗi khi chó sủa."
+      },
+      "SourceHash": "0ae94e63c457f30cc95f9846052f6c7cdaff2dc243e68a547efd4177c130ae68"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "00b4506e25",
+      "Fields": {
+        "Meaning": "Cậu bé, nhân viên phục vụ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ボーイ（ボーイ）có nghĩa là cậu bé, nhân viên phục vụ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158948": "Tôi thấy nhân viên phục vụ đi tới.",
+        "196583": "Anh phục vụ ơi, cho tôi ba ly cà phê."
+      },
+      "SourceHash": "8f108866d6ff76196fa31f6d9b4120afad2e10ef0ed64fc69bcbe175fd640696"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b86c6df29f",
+      "Fields": {
+        "Meaning": "Thuyền nhỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ボート（ボート）có nghĩa là thuyền nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110986": "Anh ấy giải thích quy trình đóng thuyền.",
+        "180127": "Tôi thấy một chiếc thuyền ở phía thượng lưu của cây cầu."
+      },
+      "SourceHash": "03fa37fcba47612ee2e019935db6eafe81d6d3710b2cea9776e6f8b4adf4bc56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e11ef6d7e3",
+      "Fields": {
+        "Meaning": "Sân ga, nhà, sân nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ホーム（ホーム）có nghĩa là sân ga, nhà, sân nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "403916343ac891bc93e95bd91be0078d829f3e426bbb83f85f1c74f816e4f12b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38dd5eb4a0",
+      "Fields": {
+        "Meaning": "Quả bóng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ボール（ボール）có nghĩa là quả bóng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "614ed43a6163411333f391e162a757bffcb3f8c97b53a3362668a33c3b6624c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02dfedfddc",
+      "Fields": {
+        "Meaning": "Niềm tự hào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "誇り（ほこり）có nghĩa là niềm tự hào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "119513": "Anh ấy tự hào về bố mình cũng là điều dễ hiểu.",
+        "140834": "Mọi người đều tự hào về công việc của mình."
+      },
+      "SourceHash": "6c2be6ee7bb8a574a42a76fc6dd11cc1cc30c6b4dd3df2f2f5a255968016f5da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8c040a956",
+      "Fields": {
+        "Meaning": "Bụi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "埃（ほこり）có nghĩa là bụi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84058": "Gió thổi bay bụi trên ban công.",
+        "91541": "Cô ấy phủi bụi."
+      },
+      "SourceHash": "0388c6e126f146e751b49488d147e4e4210b641d21f8888df2a10414073db633"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33602d086e",
+      "Fields": {
+        "Meaning": "Bảo đảm, bảo hành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "保証（ほしょう）có nghĩa là bảo đảm, bảo hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85543": "Người buôn tranh bảo đảm đó là tranh thật.",
+        "119338": "Không có gì bảo đảm anh ấy sẽ về vào tuần sau."
+      },
+      "SourceHash": "f20425920e94776a6095e2c26ce062d5f85bd1780e1fdc80200527c7a8156da2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc2460d6aa",
+      "Fields": {
+        "Meaning": "Lưu, bảo quản",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "保存（ほぞん）có nghĩa là lưu, bảo quản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157230": "Tôi cẩn thận bảo quản những cuốn sách cũ.",
+        "184718": "Hãy lưu vào ổ cứng ngoài nhé."
+      },
+      "SourceHash": "2ce83f0898ee322087bd2af762e42826ceb66f1230147e436648c63919418972"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d670c3944",
+      "Fields": {
+        "Meaning": "Vỉa hè, lối đi bộ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歩道（ほどう）có nghĩa là vỉa hè, lối đi bộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83194": "Có tiền rơi trên vỉa hè.",
+        "121493": "Người mua sắm đi vội trên vỉa hè."
+      },
+      "SourceHash": "2f2a31fd459681f979f90cca45a87968f4975e5415c84fff63ccd9dce0ed897a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1358dbe27",
+      "Fields": {
+        "Meaning": "Phật, người hiền từ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Ở đây đọc ほとけ. Câu tục ngữ 仏の顔も三度 nói ngay cả người rất nhẫn nại cũng có giới hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83841": "Ngay cả Phật cũng có giới hạn chịu đựng.",
+        "230707": "Người đó hiền như Phật."
+      },
+      "SourceHash": "4d4f4ccc590d0dbeb56182807c0bba38f2105333137a8fdae19b1e64bdbbd1e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd7dce62ae",
+      "Fields": {
+        "Meaning": "Xương, công sức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "骨（ほね）có nghĩa là xương, công sức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172955": "Tôi kiệt sức vì làm việc vất vả.",
+        "182110": "Xương cá mắc trong họng tôi."
+      },
+      "SourceHash": "ed9e55ba832975adfe907f0b5edbe40a6a691f3adb52b36346be5bcb5a15c1f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2afa66abdb",
+      "Fields": {
+        "Meaning": "Ngọn lửa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "炎（ほのお）có nghĩa là ngọn lửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209207": "Cô bé hét lên khi thấy ngọn lửa.",
+        "389691": "Một tia lửa nhỏ thường có thể gây ra đám cháy lớn."
+      },
+      "SourceHash": "5029fc00d526642639e0354a2ec83092fbf6f815543b08df18e5ca4b58f551e6"
+    }
+  ]
+}

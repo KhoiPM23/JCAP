@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-komete",
+      "Fields": {
+        "Meaning": "Gửi gắm, dồn vào",
+        "Formation": "Cảm xúc hoặc tâm ý ＋ を込めて ＋ hành động",
+        "Explanation": "Cho biết cảm xúc được gửi vào lời nói, việc làm hoặc tác phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-komete:example:1": "Tôi viết thư cho mẹ để gửi gắm lòng biết ơn.",
+        "o-komete:example:2": "Cô ấy hát bằng cả tấm lòng."
+      },
+      "SourceHash": "370c6741470fa2e8569d93c5d75124dcc681fd394ed70590c6d8f65785a04768"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-chuushin-ni",
+      "Fields": {
+        "Meaning": "Lấy… làm trung tâm, chủ yếu ở",
+        "Formation": "Danh từ ＋ を中心に",
+        "Explanation": "Nêu tâm điểm trong không gian hoặc nhóm chiếm phần chính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-chuushin-ni:example:1": "Ở thị trấn này, cửa hàng tập trung quanh ga.",
+        "o-chuushin-ni:example:2": "Ca sĩ đó được yêu thích chủ yếu trong giới trẻ."
+      },
+      "SourceHash": "cf739fcc964977afbe7640affe579be715ef2fe58724c18373de239a0dbf1cfd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-tsuujite",
+      "Fields": {
+        "Meaning": "Qua, thông qua, suốt",
+        "Formation": "Danh từ ＋ を通じて／を通して",
+        "Explanation": "Nêu phương tiện, người trung gian hoặc cả khoảng thời gian mà điều gì diễn ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-tsuujite:example:1": "Chúng tôi quen nhau qua một người bạn chung.",
+        "o-tsuujite:example:2": "Vùng này có nhiều mưa suốt năm."
+      },
+      "SourceHash": "48c678e3d708341a70c756bfb0dda2389bbe69b3334ea30af1c4f50e433f2768"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-hajime",
+      "Fields": {
+        "Meaning": "Đứng đầu là, tiêu biểu là",
+        "Formation": "Danh từ tiêu biểu ＋ をはじめ、nhóm rộng hơn",
+        "Explanation": "Nêu một thành phần tiêu biểu trước khi mở rộng sang những thành phần cùng nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-hajime:example:1": "Cửa hàng này bán táo và nhiều loại trái cây khác.",
+        "o-hajime:example:2": "Hiệu trưởng cùng nhiều giáo viên đã dự lễ tốt nghiệp."
+      },
+      "SourceHash": "4df26ee216b6423100e473f9b0ba0d22d15b237c4950a931cf6475d6a8c1c945"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "n-janai",
+      "Fields": {
+        "Meaning": "Đừng làm, không được làm",
+        "Formation": "Động từ thể từ điển ＋ んじゃない（よ）",
+        "Explanation": "Dùng cuối câu với giọng dứt khoát để cấm hoặc nhắc đừng làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "n-janai:example:1": "Nguy hiểm lắm, đừng leo lên chỗ cao như vậy.",
+        "n-janai:example:2": "Đừng tự tiện dùng đồ của người khác."
+      },
+      "SourceHash": "748e0fd0dfdb01f26322b67bf2a7581c7be2f4a79f95b4deeb42af8aa73a4d8a"
+    }
+  ]
+}

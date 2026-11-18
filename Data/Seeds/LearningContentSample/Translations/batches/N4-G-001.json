@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "owaru",
+      "Fields": {
+        "Meaning": "Làm xong, làm hết",
+        "Formation": "Gốc ます ＋ 終わる",
+        "Explanation": "Đánh dấu một hành động đã hoặc sẽ được làm đến hết, như 読み終わる là đọc xong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "owaru:example:1": "Khi đọc xong cuốn sách này, tôi sẽ cho bạn mượn.",
+        "owaru:example:2": "Tôi viết xong thư rồi bỏ vào hòm thư."
+      },
+      "SourceHash": "dc602adf6a5a4b0b31e735c1084e3359ddd8a0827ad3ef0f860d0926ea8bfbc6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gari",
+      "Fields": {
+        "Meaning": "Người hay cảm thấy, người nhạy với điều gì",
+        "Formation": "Bỏ い của tính từ đuôi い ＋ がり",
+        "Explanation": "寒がり chỉ người dễ thấy lạnh, còn 寂しがり chỉ người dễ thấy cô đơn. Dạng này tạo danh từ chỉ đặc điểm thường thấy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gari:example:1": "Em gái tôi dễ bị lạnh nên mùa đông lúc nào cũng mặc áo khoác dày.",
+        "gari:example:2": "Anh ấy dễ thấy cô đơn nên không quen ở một mình."
+      },
+      "SourceHash": "a744507fc18796bc4056c2a6a3f99c0271b64bf237b9c496bd9af15e047c73e9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dasu",
+      "Fields": {
+        "Meaning": "Bỗng bắt đầu làm gì",
+        "Formation": "Gốc ます ＋ 出す",
+        "Explanation": "Nhấn mạnh thời điểm một hành động hay hiện tượng bất ngờ bắt đầu, như 泣き出す là bật khóc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dasu:example:1": "Em bé bỗng bật khóc.",
+        "dasu:example:2": "Nghe tôi kể, mọi người bật cười."
+      },
+      "SourceHash": "6c600d08487983aed0590b31ddc8c93fbf1bba226806f0791746c52e19929209"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsuzukeru",
+      "Fields": {
+        "Meaning": "Tiếp tục làm gì",
+        "Formation": "Gốc ます ＋ 続ける",
+        "Explanation": "Diễn tả hành động hoặc trạng thái được duy trì qua một khoảng thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsuzukeru:example:1": "Cô ấy hát liền suốt ba tiếng.",
+        "tsuzukeru:example:2": "Tôi vẫn nuôi ước mơ trở thành bác sĩ."
+      },
+      "SourceHash": "ab71759b57b229c5c346c373e5e46ccba88a6375a751fc2fd0047f8cc6c2be95"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zurai",
+      "Fields": {
+        "Meaning": "Khó làm vì vướng hoặc ngại",
+        "Formation": "Gốc ます ＋ づらい",
+        "Explanation": "Nhấn mạnh cái khó mà người làm cảm nhận, có thể do bất tiện về thể chất hoặc ngại về tâm lý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zurai:example:1": "Chữ này nhỏ nên khó đọc.",
+        "zurai:example:2": "Sự thật này hơi khó nói."
+      },
+      "SourceHash": "e0a258eb74dc79545e6dddc0e88cdbaecaeb1d6cbccbbaa7c47a073700e353cc"
+    }
+  ]
+}

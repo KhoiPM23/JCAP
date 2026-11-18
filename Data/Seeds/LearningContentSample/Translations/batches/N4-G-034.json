@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mama",
+      "Fields": {
+        "Meaning": "Giữ nguyên, cứ để vậy",
+        "Formation": "Động từ thể た hoặc ない／danh từ ＋ の ＋ まま",
+        "Explanation": "Trạng thái ban đầu vẫn tiếp tục khi việc khác diễn ra. Có thể thêm で sau まま.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mama:example:1": "Tôi lỡ ra ngoài mà vẫn để cửa sổ mở.",
+        "mama:example:2": "Đừng cứ đứng mà ăn."
+      },
+      "SourceHash": "fa28da50dedc1cef132156e09c3b453c4800d03943c4cf4efda778e35402fe3e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mieru",
+      "Fields": {
+        "Meaning": "Nhìn thấy, hiện ra trong tầm mắt",
+        "Formation": "Nơi quan sát ＋ から ＋ vật nhìn thấy ＋ が見える",
+        "Explanation": "Nêu thứ nằm trong tầm nhìn ở một vị trí hoặc điều kiện nhất định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mieru:example:1": "Từ đây có thể nhìn thấy biển.",
+        "mieru:example:2": "Ngày đẹp trời có thể nhìn rõ những ngọn núi phía xa."
+      },
+      "SourceHash": "4da8923256a185733f024beb0c00db7a793b0f13f714de1557e2a04c9da47d8b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mitai-da",
+      "Fields": {
+        "Meaning": "Có vẻ, hình như",
+        "Formation": "Thể thông thường ＋ みたいだ (danh từ và tính từ な bỏ だ)",
+        "Explanation": "Nêu suy đoán trong lời nói thân mật, thường dựa trên dấu hiệu người nói nhận thấy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mitai-da:example:1": "Hình như bên ngoài lạnh. Ai cũng mặc áo khoác.",
+        "mitai-da:example:2": "Có vẻ anh ấy biết rõ thị trấn này."
+      },
+      "SourceHash": "f9428a97eab2d59824eea69c59f38b05d59963869e58189fe90f0c6015cb9cf0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mitai-na",
+      "Fields": {
+        "Meaning": "Như, giống như (thân mật)",
+        "Formation": "Danh từ ＋ みたいに ＋ vị ngữ／みたいな ＋ danh từ",
+        "Explanation": "みたいに bổ nghĩa vị ngữ, còn みたいな bổ nghĩa danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mitai-na:example:1": "Cô ấy hát hay như ca sĩ.",
+        "mitai-na:example:2": "Chuyện cứ như một giấc mơ nhỉ."
+      },
+      "SourceHash": "6d33ec16352320ed35cbdcd8bafbfb7d267845b6f7db0163b9a0ab05d6ad96fe"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "meirei-kei",
+      "Fields": {
+        "Meaning": "Thể mệnh lệnh",
+        "Formation": "Nhóm 1: đổi âm cuối sang hàng え／nhóm 2: bỏ る ＋ ろ／する → しろ／来る → 来い",
+        "Explanation": "Ra lệnh trực tiếp. Dạng này cũng dùng khi cổ vũ hoặc cảnh báo khẩn cấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "meirei-kei:example:1": "Cố lên! Chỉ còn một chút nữa thôi.",
+        "meirei-kei:example:2": "Nguy hiểm đấy, mau chạy đi!"
+      },
+      "SourceHash": "9d7558c94a9e047e41e7b7a2985fdeab7a47b3d9f482c45a68b912cc4dbd6c1a"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 40 câu ví dụ theo nguyên bản Nhật.",
+    "Câu về đầu bếp dùng nghĩa rưới lên. Đối chiếu câu tiếng Anh của bộ nguồn và mục かける của NINJAL. Câu gốc lược nguyên liệu được rưới."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bdb125e5c6",
+      "Fields": {
+        "Meaning": "Mua",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "買う chỉ việc mua một thứ. Vật được mua đi với を, nguồn mua có thể đi với から.",
+        "UsageNotes": "Thể て là 買って, thể quá khứ là 買った."
+      },
+      "Examples": {
+        "121489": "Mua hay không là tùy bạn.",
+        "184826": "Chúng ta phải mua từ nước ngoài."
+      },
+      "SourceHash": "3db76677e72b63b8b45fb7022b5c401e4715d33376b42bf4a3ce1da279bd2271"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ea4b03d7f",
+      "Fields": {
+        "Meaning": "Trả lại, hoàn trả",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "返す dùng khi trả lại đồ đã mượn hoặc thứ thuộc về người khác. Vật được trả đi với を.",
+        "UsageNotes": "Phân biệt 返す (trả lại vật) với 帰る (trở về)."
+      },
+      "Examples": {
+        "149018": "Tôi nên trả xe khi nào ạ?",
+        "228971": "Khi nào anh/chị có thể trả lại cái này cho tôi ạ?"
+      },
+      "SourceHash": "8163117d15744e692f8c2cb81595de4cdd2079709fcf9653c1abcf645727c73a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d22f1d023",
+      "Fields": {
+        "Meaning": "Về, trở về",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "帰る chỉ việc trở về nhà hoặc nơi mình xuất phát. 帰ってくる nói về việc trở về phía người nói.",
+        "UsageNotes": "帰ろ là dạng rút gọn thân mật của 帰ろう. よってかない là cách nói rút gọn của 寄っていかない."
+      },
+      "Examples": {
+        "75070": "“Về thôi.” “Ghé McDonald’s rồi về nhé?”",
+        "84696": "Bố tôi vừa mới về."
+      },
+      "SourceHash": "8b139574593ad61d09cd0b32ac7f2b56d5baf1f6e288330f050ccd14531ff89b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "687082e55c",
+      "Fields": {
+        "Meaning": "Mất, tốn (thời gian hoặc tiền bạc)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "時間がかかる nghĩa là mất thời gian, còn お金がかかる là tốn tiền. エンジンがかかる có nghĩa khác là động cơ nổ máy.",
+        "UsageNotes": "Sau gốc thể ます, như 終わりかかる, かかる chỉ việc đã bắt đầu hoặc sắp xảy ra. Hai câu nguồn minh họa các cách dùng khác của từ."
+      },
+      "Examples": {
+        "201593": "Làm thế nào để động cơ nổ máy?",
+        "205401": "Việc đó gần xong rồi."
+      },
+      "SourceHash": "40dd6eea3044cac0b40ee7033ecff89b50b4de5b51a3a0e7d1cbbead0afdf3c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e2d6576c76",
+      "Fields": {
+        "Meaning": "Chìa khóa, khóa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "かぎ thường viết là 鍵 khi chỉ chìa khóa hoặc ổ khóa. 車の鍵 là chìa khóa xe, 鍵をかける là khóa lại.",
+        "UsageNotes": "Trong hai câu nguồn, カギ chỉ chìa khóa."
+      },
+      "Examples": {
+        "149069": "Tôi làm mất chìa khóa xe mất rồi.",
+        "201870": "Tôi làm mất chìa khóa cửa nên không vào nhà được."
+      },
+      "SourceHash": "a98e6ae31179fdc7a95b3a2d1ff0d118d18f930286253de7f10735b7b95d565b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7c7f35d9e",
+      "Fields": {
+        "Meaning": "Viết, ghi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "書く chỉ việc viết chữ hoặc ghi nội dung. Có thể dùng nội dung ＋ を ＋ nơi ghi ＋ に書く.",
+        "UsageNotes": "Thể て là 書いて."
+      },
+      "Examples": {
+        "214855": "Tôi có phải viết ngay không?",
+        "217911": "Hãy ghi những từ này vào vở."
+      },
+      "SourceHash": "a3084bee9ca1334ad12444230ac74a58d7ef1347b48be65433f3f1475e661208"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "452102ad0a",
+      "Fields": {
+        "Meaning": "Học sinh, sinh viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "学生 chỉ người đang theo học. Trong giao tiếp, từ này thường gợi đến sinh viên hoặc người học ở bậc sau phổ thông. Ngữ cảnh có thể xác định rõ hơn.",
+        "UsageNotes": "大学生 là sinh viên đại học, 高校生 là học sinh cấp ba."
+      },
+      "Examples": {
+        "184267": "Một nửa số sinh viên đã vắng mặt.",
+        "192389": "Lucy là sinh viên đến từ Mỹ."
+      },
+      "SourceHash": "280e4c872f5cc4909dfc73c4e5200e5ded9c6f4e1566bfca94a02d34f4d648a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ce2b98d3b",
+      "Fields": {
+        "Meaning": "Gọi (điện thoại), rưới, đổ lên",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "電話をかける là gọi điện. Trong ngữ cảnh nấu ăn, かける có thể chỉ việc rưới hoặc rắc thứ gì lên món ăn.",
+        "UsageNotes": "Câu về đầu bếp lược thứ được rưới hoặc rắc. Bản dịch giữ cách diễn đạt chung."
+      },
+      "Examples": {
+        "224138": "Đầu bếp chưa rưới chút nào lên món ăn cả.",
+        "236074": "Có thể gọi điện với 10 yên không?"
+      },
+      "SourceHash": "dfaf9c19c6b698560ace20b8b16b031e36bfce917dac7cf024056dab2ab795f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f54881e59",
+      "Fields": {
+        "Meaning": "Ô, dù",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "傘 chỉ ô dùng để che mưa hoặc nắng. 傘をさす nghĩa là giương ô, còn 傘を持っていく nghĩa là mang ô theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169468": "Tôi phải mang ô theo.",
+        "203724": "Tôi để quên ô trên taxi mất rồi."
+      },
+      "SourceHash": "c609e3dee0f71e120618a1a15dafcc6f181da6beff0c3babf01a2bba30dbdedd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1122cac409",
+      "Fields": {
+        "Meaning": "Cho mượn, cho vay",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "貸す chỉ việc cho người khác mượn vật hoặc vay tiền. Người nhận đi với に, vật được cho mượn đi với を.",
+        "UsageNotes": "借りる chỉ hành động mượn từ phía người nhận."
+      },
+      "Examples": {
+        "196239": "Bạn cho tôi mượn cái dập ghim được không?",
+        "196870": "Cho tôi mượn máy sấy tóc với ạ."
+      },
+      "SourceHash": "547d69e3ae1bf42b2263b91e341199e69b0a19fb2e9243da5c3abbbfe5642ffd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1a28465a2",
+      "Fields": {
+        "Meaning": "Gió",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "風（かぜ）chỉ gió. 風が吹く nghĩa là gió thổi. Trong 風のいたずら, gió được nói như thể nó gây ra một trò nghịch.",
+        "UsageNotes": "Phân biệt với 風邪（かぜ）, nghĩa là cảm lạnh."
+      },
+      "Examples": {
+        "203636": "Chỉ là do gió thôi.",
+        "226491": "Rèm cửa bay phấp phới trong gió."
+      },
+      "SourceHash": "180fd4dce2394abd9cbd47dbb6c69d2e41c594e63b97d908102cd870d7f39ad2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c9b5da4d10",
+      "Fields": {
+        "Meaning": "Cảm lạnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "風邪 chỉ cảm lạnh. 風邪をひく nghĩa là bị cảm, còn 風邪が治る nghĩa là khỏi cảm.",
+        "UsageNotes": "Khi viết かぜ bằng hiragana, dựa vào ngữ cảnh để phân biệt cảm lạnh với gió."
+      },
+      "Examples": {
+        "203635": "Chắc chỉ là cảm lạnh thôi.",
+        "226396": "Tôi mất ba tuần mới khỏi cảm."
+      },
+      "SourceHash": "86fb73fc79e3d4f955fb8274e4142af35e20ad32221ff8a012586d0adb0ad3ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1c9db63bdc",
+      "Fields": {
+        "Meaning": "Gia đình, người nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家族 chỉ gia đình hoặc các thành viên trong gia đình. 家族について nghĩa là về gia đình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186951": "Tôi hỏi về gia đình bạn được không?",
+        "233420": "Gia đình bạn hẳn rất tốt bụng."
+      },
+      "SourceHash": "5b300d6d2b5d756be5412aca98f6d1facbc1533a7c6e7eff6f121543d4a1a283"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e34295f3e1",
+      "Fields": {
+        "Meaning": "Vị, người (cách nói lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "方（かた）là cách nói lịch sự khi chỉ một người. お方 nhấn thêm sắc thái kính trọng.",
+        "UsageNotes": "Hai câu nguồn dùng nghĩa chỉ người. Cùng cách đọc かた, 方 gắn sau gốc thể ます có thể chỉ cách làm, như 読み方 (cách đọc)."
+      },
+      "Examples": {
+        "224157": "Đây là vị mà anh/chị sẽ nói chuyện cùng.",
+        "226508": "Vị mà anh/chị sẽ nói chuyện cùng tên gì ạ?"
+      },
+      "SourceHash": "13ef6e4bd03cdb593aecdccde5e07bbd19fc579c993ab42d881cf38c934d3f44"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "613c41bd1d",
+      "Fields": {
+        "Meaning": "Cốc, tách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カップ chỉ cốc hoặc tách. コーヒーカップ là tách cà phê. Kim loại, sứ hoặc chất liệu khác có thể được nêu với 〜でできている.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202407": "Có một cái cốc trên bàn.",
+        "223900": "Chiếc cốc này được làm bằng vàng."
+      },
+      "SourceHash": "09914b7f68bf445b8816d4a0656b2fcbbdf004d6755b3d09d426640eb3d5699b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "66eeeb818b",
+      "Fields": {
+        "Meaning": "Gia đình, hộ gia đình, mái ấm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家庭 chỉ gia đình với tư cách một hộ hoặc môi trường sinh hoạt ở nhà. 家庭で食べる là ăn ở nhà.",
+        "UsageNotes": "家族 thường nhấn vào các thành viên, còn 家庭 thường nhấn vào sinh hoạt hoặc hoàn cảnh gia đình."
+      },
+      "Examples": {
+        "145834": "Bạn ăn ở nhà hay ăn ngoài?",
+        "233419": "Hãy viết về gia đình bạn."
+      },
+      "SourceHash": "375786ebcff5e52834331db7d2eaf665fbd153dace63477119b6be5f20146734"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4092bfd9bb",
+      "Fields": {
+        "Meaning": "Góc, góc đường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "角（かど）chỉ góc của vật, căn phòng hoặc góc đường. 角のテーブル có thể chỉ chiếc bàn ở góc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184544": "Tôi muốn ngồi ở bàn trong góc ạ.",
+        "231123": "Trước đây ở góc đường kia có một hiệu sách."
+      },
+      "SourceHash": "bcb5ab93add5ebad05510ce26e95225df4dc28666dd2734c438a9ac854e02316"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e6a06687d",
+      "Fields": {
+        "Meaning": "Túi, cặp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "かばん có thể viết là 鞄. Từ này chỉ túi hoặc cặp dùng để mang đồ, chẳng hạn cặp đi học hoặc túi xách.",
+        "UsageNotes": "Trong câu nói về giá, ６ポンドしました nghĩa là có giá sáu bảng Anh."
+      },
+      "Examples": {
+        "218609": "Đây là túi của Jane.",
+        "223898": "Chiếc túi này giá sáu bảng Anh."
+      },
+      "SourceHash": "af0afc4a1407b0aeb860ff30d2855da35f052e86d97b461b89473ed8aa3b1caa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "749f78c9d1",
+      "Fields": {
+        "Meaning": "Lọ hoa, bình hoa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "花瓶（かびん）là bình dùng để cắm hoa. Có thể viết 花びん. 花瓶に水を入れる nghĩa là đổ nước vào lọ hoa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186606": "Hãy đổ nước vào lọ hoa.",
+        "202394": "Có một lọ hoa trên bàn."
+      },
+      "SourceHash": "41a1a4962a09f3c855afb8db2ae74229754dae4647c7f43f068ee65c00d31a9a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd08f9cdc2",
+      "Fields": {
+        "Meaning": "Giấy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "紙（かみ）chỉ giấy dùng để viết, in hoặc gói đồ. 紙に書く là viết lên giấy. 木から作られる nghĩa là được làm từ gỗ.",
+        "UsageNotes": "Phân biệt 紙 (giấy) với 髪 (tóc) và 神 (thần), đều có cách đọc かみ."
+      },
+      "Examples": {
+        "151205": "Giấy được làm từ gỗ.",
+        "151214": "Trên tờ giấy có vết mực."
+      },
+      "SourceHash": "ea3315ee6e1e568fb880a1a18ea4dae2e58189e0f0d017f6567b725258064b24"
+    }
+  ]
+}

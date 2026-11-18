@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d02b870af1",
+      "Fields": {
+        "Meaning": "Chắc là, lẽ ra",
+        "PartOfSpeech": "Trợ từ phụ trợ",
+        "Explanation": "はず（はず）có nghĩa là chắc là, lẽ ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199940": "Tom chắc sắp đến đây rồi.",
+        "215315": "John chắc sắp đến đây rồi."
+      },
+      "SourceHash": "adf05dcccdf3effb2ce79fcd95b408b242b6dd3423fde91a071411c473d15c77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "847b1b7535",
+      "Fields": {
+        "Meaning": "Xấu hổ, ngượng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "恥ずかしい（はずかしい）có nghĩa là xấu hổ, ngượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155121": "Tôi xấu hổ đến mức không làm được chuyện đó.",
+        "202694": "Tôi thấy xấu hổ vì đã nổi nóng."
+      },
+      "SourceHash": "44556ecaf1fe2b89d717197d350021ba73d797bc37e864d41e10ad943459a224"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "54a6f375d8",
+      "Fields": {
+        "Meaning": "Máy tính cá nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パソコン（パソコン）có nghĩa là máy tính cá nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198030": "Bạn biết cách dùng máy tính không?",
+        "2869687": "Máy tính không khởi động được nữa."
+      },
+      "SourceHash": "7a26c8f5ccc6edea6cef3e255bed21e35abdcdc64cb79c9457605e782d34a731"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3ce079af0b",
+      "Fields": {
+        "Meaning": "Phát âm, cách phát âm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発音（はつおん）có nghĩa là phát âm, cách phát âm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158311": "Tôi muốn phát âm tiếng Anh tốt hơn.",
+        "233569": "Tên anh/chị phát âm thế nào ạ?"
+      },
+      "SourceHash": "1532a8f636732d2dd88db2661b4fc9597f3ef8e98dc3b0e8c2364ca914a38f8e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2078b08350",
+      "Fields": {
+        "Meaning": "Rõ ràng, rõ",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "はっきり（はっきり）có nghĩa là rõ ràng, rõ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158888": "Tôi vẫn chưa biết rõ.",
+        "172671": "Bây giờ tôi chưa rõ."
+      },
+      "SourceHash": "dcfbd4096a329b1d3a2ea6bcd2a014e2f09cdf8f301539f49c171e771d1a03fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8825d6d645",
+      "Fields": {
+        "Meaning": "Ngắm hoa anh đào",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "花見（はなみ）có nghĩa là ngắm hoa anh đào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186587": "Tôi mong đến mùa xuân để đi ngắm hoa anh đào.",
+        "227390": "Mình đi ngắm hoa anh đào nhé?"
+      },
+      "SourceHash": "f55fcb1cb9f1ea473ad707c1ba5192bc1f09cb942403c60a074b45d2665167af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2962b07bc",
+      "Fields": {
+        "Meaning": "Rừng nhỏ, lùm cây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "林（はやし）có nghĩa là rừng nhỏ, lùm cây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75660": "Tre nổi bật trong khu rừng nhỏ.",
+        "77793": "Tôi bị côn trùng đốt nhiều trong rừng."
+      },
+      "SourceHash": "52905269321d8ecc6ba5e9c66f82d41a1f9953ffd6ffaf253069f92d3c00f18b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6b7fa4afc",
+      "Fields": {
+        "Meaning": "Trả tiền, phủi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "払う（はらう）có nghĩa là trả tiền, phủi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83844": "Tôi không biết mình có trả nổi không ạ.",
+        "215834": "Jack dùng bàn chải phủi bụi trên áo khoác."
+      },
+      "SourceHash": "91872e4457c77a40e851f6c5244dd772b1d87c5ae1a86feaadcbe6ce149c1118"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76e19fba1a",
+      "Fields": {
+        "Meaning": "Chương trình phát thanh hoặc truyền hình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "番組（ばんぐみ）có nghĩa là chương trình phát thanh hoặc truyền hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171263": "Tối nay có chương trình gì?",
+        "220150": "Chương trình này đã trở nên nhàm chán."
+      },
+      "SourceHash": "4b7965b041cdf260db36159090377e9dd3ad440d1da2fedc0bac56a1f6a2b478"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d48ed47f5e",
+      "Fields": {
+        "Meaning": "Phản đối, ngược lại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "反対（はんたい）có nghĩa là phản đối, ngược lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159762": "Tôi không biết gì trái với điều đó.",
+        "221976": "Tôi buộc phải phản đối ý kiến này."
+      },
+      "SourceHash": "1f1163fd0dcf909c23fe5c2c94c77b04dfcf58f8f71f956a60c3c5848d265c12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "70eb9aa3ff",
+      "Fields": {
+        "Meaning": "Túi xách tay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ハンドバッグ（ハンドバッグ）có nghĩa là túi xách tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159083": "Tôi bị giật túi xách.",
+        "164128": "Bạn làm gì với túi xách của tôi rồi?"
+      },
+      "SourceHash": "b1d09e602fc987d58b1b820ac0e159feee84571e3b833a84a24171c30ed2de77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f9f80b1a36",
+      "Fields": {
+        "Meaning": "Lửa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "火（ひ）có nghĩa là lửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124855": "Máy cạo râu điện bốc cháy.",
+        "229095": "Kéo ghế lại gần lửa hơn đi."
+      },
+      "SourceHash": "28a8c9557bb935e543f7bab270bac3dfe32bc93258dc6f9aff8fdc715c54ac5f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55a030e65f",
+      "Fields": {
+        "Meaning": "Ngày, mặt trời, ban ngày",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日（ひ）có nghĩa là ngày, mặt trời, ban ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124386": "Càng gần mùa đông, ban ngày càng ngắn.",
+        "219955": "Bộ đồ này không hợp với những ngày đông lạnh."
+      },
+      "SourceHash": "70d97f9347a411c9c8c2850fcc890fc17fbae42e4c39e2dfe86234e44789c974"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "897bcab845",
+      "Fields": {
+        "Meaning": "Đàn piano",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ピアノ（ピアノ）có nghĩa là đàn piano.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198992": "Nancy có một cây đàn piano.",
+        "232414": "Nghe nói bạn chơi piano nhỉ."
+      },
+      "SourceHash": "4e4fb2810d244d2a7a0164b8af258cfd27ff4da17cc357abf9343433d1f2be2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28c2a94407",
+      "Fields": {
+        "Meaning": "Lạnh đi, nguội, được ướp lạnh",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "冷える（ひえる）có nghĩa là lạnh đi, nguội, được ướp lạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77675": "Có bia lạnh thì tuyệt biết mấy.",
+        "148526": "Tay chân tôi lạnh cóng cả rồi."
+      },
+      "SourceHash": "41d1dad4eac85feb2420417bbb0c520c76442b0575e9994bfed49b8f5c00f3bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c8a0e96a6a",
+      "Fields": {
+        "Meaning": "Ánh sáng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "光（ひかり）có nghĩa là ánh sáng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174070": "Để quá nhiều ánh sáng chiếu vào thì không tốt cho mắt.",
+        "174089": "Ánh sáng đã đến thế gian."
+      },
+      "SourceHash": "0dc3623c34c8c3ded5b49aba088d4bc59c8fbfe42b5208475bea6b0d9bd17a5e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b7dab271d",
+      "Fields": {
+        "Meaning": "Sáng, lấp lánh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "光る（ひかる）có nghĩa là sáng, lấp lánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146199": "Có thứ gì đang sáng ở phía trên đằng trước.",
+        "174071": "Không phải thứ gì lấp lánh cũng là vàng."
+      },
+      "SourceHash": "910a8d143ce7048ef58437cff216c84a13313f1f5159103a84c843c918e5e316"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "916e92f3da",
+      "Fields": {
+        "Meaning": "Ngăn kéo, việc rút ra",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "引き出し（ひきだし）có nghĩa là ngăn kéo, việc rút ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205330": "Tôi đã cất nó vào ngăn kéo rồi.",
+        "225748": "Khăn sạch ở trong ngăn kéo đấy."
+      },
+      "SourceHash": "02aeae7fa0a7d7879c666c458abe634171ba66fa92fac7b105acd528a47b41a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d8e0ae01f",
+      "Fields": {
+        "Meaning": "Kéo ra, rút ra, khơi gợi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "引き出す（ひきだす）có nghĩa là kéo ra, rút ra, khơi gợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90382": "Cô ấy rút tiền từ ngân hàng.",
+        "118424": "Hãy cố phát huy những điểm tốt của anh ấy."
+      },
+      "SourceHash": "0c627f74809edbee028d78477a74ae3ac4b703329f7c3967834592e59b2da6aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "36d0fd2044",
+      "Fields": {
+        "Meaning": "Râu, ria",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ひげ（ひげ）có nghĩa là râu, ria.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220430": "Quản lý cửa hàng này để râu.",
+        "226759": "Bố đang cạo râu trong phòng tắm."
+      },
+      "SourceHash": "58147b4b08bb19cf691900ed7b5d09c3b925bc6174cc314fb1e4e7482940a2e3"
+    }
+  ]
+}

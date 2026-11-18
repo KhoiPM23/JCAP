@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "731e27d6bb",
+      "Fields": {
+        "Meaning": "Tham khảo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "参考（さんこう）có nghĩa là tham khảo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169440": "Xin gửi danh mục để tôi tham khảo.",
+        "217156": "Gửi anh chị để tham khảo."
+      },
+      "SourceHash": "683506e242e08b6970ff7eff49ebe9c0d711a35154cf0d0e6b026b88f814b63c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "575f9c66e6",
+      "Fields": {
+        "Meaning": "Đồng ý, tán thành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "賛成（さんせい）có nghĩa là đồng ý, tán thành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95407": "Vấn đề là cô ấy có đồng ý không.",
+        "167000": "Bạn có tán thành kế hoạch của chúng tôi không?"
+      },
+      "SourceHash": "7162d8dc9fea11b8a978712064eaa050854c5c43e0389fcb1b731eadce0dd20d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f4b9298167",
+      "Fields": {
+        "Meaning": "Oxy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "酸素（さんそ）có nghĩa là oxy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142697": "Sinh vật không thể sống thiếu oxy.",
+        "169301": "Không có oxy thì không sống được."
+      },
+      "SourceHash": "65a9f4e0bed87c2d449c05c91b8665be80dbc668311a8b3dac243ec13b42f627"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ba2a9c365",
+      "Fields": {
+        "Meaning": "Ông, bà, anh, chị (hậu tố trang trọng)",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "氏（し）có nghĩa là ông, bà, anh, chị (hậu tố trang trọng).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82610": "Ông Smith quá cố từng là bác sĩ.",
+        "124869": "Ông Tanaka trông rất giàu có."
+      },
+      "SourceHash": "9b0dad9a6124e7ae405d7453e962c63aae5d2a811f04d82b7a06bc6cba2808c3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f263ebe6ea",
+      "Fields": {
+        "Meaning": "Thơ, bài thơ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "詩（し）có nghĩa là thơ, bài thơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78633": "Hãy học thuộc bài thơ đó chậm nhất vào tuần sau.",
+        "221719": "Ai viết bài thơ này vậy?"
+      },
+      "SourceHash": "7bc64eae010e27cbff9e200dfdbac3144a47efa72bdecd2ce4f7f62cd79bd236"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e7306e3ec",
+      "Fields": {
+        "Meaning": "Hạnh phúc, may mắn",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "幸せ（しあわせ）có nghĩa là hạnh phúc, may mắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90134": "Có vẻ cô ấy đang hạnh phúc tột độ.",
+        "179683": "Người giàu chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "ef8e11626c7fd7e7b6b55931f308b3e9f4c187dbde2f65a1a13141d0bcf29e53"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7108cb5a35",
+      "Fields": {
+        "Meaning": "Quần jeans",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ジーンズ（ジーンズ）có nghĩa là quần jeans.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154676": "Chủ nhật tôi thường mặc quần jeans.",
+        "216584": "Quần jeans phối với gì cũng hợp."
+      },
+      "SourceHash": "036147a4ad51eefd652353e617c4616bf4731059ccfe8f8f4821090488bd049b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7da22b4d75",
+      "Fields": {
+        "Meaning": "Máy bay phản lực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ジェット機（ジェットき）có nghĩa là máy bay phản lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216393": "Máy bay phản lực đã hạ cánh ở Tokyo.",
+        "2660390": "Khi máy bay phản lực bay qua trên tòa nhà, kính cửa sổ rung lên."
+      },
+      "SourceHash": "b034c25850700ef21a2f7ad5b62ffb737690e90a1ececf91967d63cc854751b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b180f444a",
+      "Fields": {
+        "Meaning": "Trực tiếp, ngay",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "Hai câu ví dụ dùng cách đọc じかに, nghĩa là trực tiếp. じきに có thể mang nghĩa sớm, ngay sau đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188981": "Đại sứ Anh yêu cầu gặp trực tiếp tổng thống.",
+        "233865": "Tôi có chuyện muốn gặp trực tiếp và nói kỹ với bạn."
+      },
+      "SourceHash": "7526c2da80d3650e326f555ffce615f2c1600b62c28cb2e8878f4c0401527a71"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55b369ffb6",
+      "Fields": {
+        "Meaning": "Hơn nữa, lại còn",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "しかも（しかも）có nghĩa là hơn nữa, lại còn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109508": "Anh ấy di chuyển vừa nhanh vừa không gây tiếng động.",
+        "204886": "Cái đó chất lượng tốt mà còn rẻ."
+      },
+      "SourceHash": "65ef20ab7f52a73b9b7313ef4318e58eb553725564abceaf2e8b9980717c2297"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b941bc52f",
+      "Fields": {
+        "Meaning": "Mắng, trách",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "叱る（しかる）có nghĩa là mắng, trách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195319": "Bạn sẽ bị mẹ mắng đấy.",
+        "231788": "Bạn bị giáo viên mắng à?"
+      },
+      "SourceHash": "408664b1dfc9eb7878deb7b19d8c658f0435e286a9540d00cc3120946461eaf1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69417b0273",
+      "Fields": {
+        "Meaning": "Công thức, phương trình, buổi lễ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "式（しき）có nghĩa là công thức, phương trình, buổi lễ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105373": "Vì tai nạn, ông ấy không thể dự buổi lễ.",
+        "137993": "Nhà thi đấu sẽ được dùng để tổ chức buổi lễ."
+      },
+      "SourceHash": "99c789929bcfd758b75871a3158c96b563e9786591681822fa9991d5d3f5ac12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "29899828b1",
+      "Fields": {
+        "Meaning": "Thời điểm, thời kỳ",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "時期（じき）có nghĩa là thời điểm, thời kỳ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177127": "Đã đến lúc bạn bắt đầu công việc mới.",
+        "235677": "Vào thời điểm này trong năm, thời tiết thường thay đổi."
+      },
+      "SourceHash": "8db479ff2936c95ec0af7ab8a72280168eab98ee6e0cf37c36f9b6bb106ebe24"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0894c700f3",
+      "Fields": {
+        "Meaning": "Sắp, chẳng mấy chốc",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ, Danh từ",
+        "Explanation": "Đọc じき trong câu ví dụ, nghĩa là chẳng mấy chốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92820": "Cô ấy chắc sẽ sớm khỏe lại."
+      },
+      "SourceHash": "b3c29cdb21f36c137baf924a24afaa3cdc3d454ad68f43f407e8a9994ea3a203"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2453d64002",
+      "Fields": {
+        "Meaning": "Cấp phát, trợ cấp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "支給（しきゅう）có nghĩa là cấp phát, trợ cấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101155": "Ông ấy cấp thức ăn và tiền cho họ.",
+        "165569": "Chúng tôi được cấp đồng phục."
+      },
+      "SourceHash": "f493e28638ab0e493e3d768ce528970a449e1088929d095c38452021d3a13eed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a39cf53f66",
+      "Fields": {
+        "Meaning": "Liên tục, tha thiết",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "しきりに（しきりに）có nghĩa là liên tục, tha thiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92817": "Cô ấy cứ muốn về.",
+        "200084": "Tom rất muốn mua xe mới."
+      },
+      "SourceHash": "69c26f05a92f88c57124b3ed5faa9d55912fd5a826ce810baaaed76a64cc1b96"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98d66e7abc",
+      "Fields": {
+        "Meaning": "Kích thích, tác nhân kích thích",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "刺激（しげき）có nghĩa là kích thích, tác nhân kích thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174090": "Ánh sáng là tác nhân kích thích hoa nở.",
+        "179606": "Lãi suất giảm đã kích thích thị trường ô tô."
+      },
+      "SourceHash": "9111213ae68e1334d7e00cf19c69d3f7db2cd46a660bf1f7f3e830f6a6e4e918"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6711714ac5",
+      "Fields": {
+        "Meaning": "Tài nguyên, nguồn lực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "資源（しげん）có nghĩa là tài nguyên, nguồn lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141301": "Chiến tranh đã làm cạn kiệt tài nguyên và nhân lực của đất nước.",
+        "185095": "Biển cung cấp nhiều loại tài nguyên."
+      },
+      "SourceHash": "7f06f18ee2d1b5de54f4e870c1f81bcf9757d36465af0a103cea5646eb91165b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f8acb92221",
+      "Fields": {
+        "Meaning": "Vụ việc, vụ án",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事件（じけん）có nghĩa là vụ việc, vụ án.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112776": "Anh ấy kể cho vợ nghe về vụ việc đó.",
+        "221665": "Xin giúp tôi một tay trong vụ này."
+      },
+      "SourceHash": "2d12c6d578582d609d9f86a14e9c99e5692da73a04538a8526149d7b0a65e7ba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d15a9f3445",
+      "Fields": {
+        "Meaning": "Thời điểm, giờ giấc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "時刻（じこく）có nghĩa là thời điểm, giờ giấc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159490": "Tôi đến đúng giờ ăn tối.",
+        "204449": "Sắp đến giờ ngủ rồi."
+      },
+      "SourceHash": "d70716f43fb4faf63e663a6b031dd0ebf3f971c077db6911647d51a1e863c0ee"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "050f3bbfac",
+      "Fields": {
+        "Meaning": "Túp lều, nhà kho nhỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小屋（こや）có nghĩa là túp lều, nhà kho nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188685": "Tôi thấy một túp lều ở đằng xa.",
+        "191184": "Trước đây quanh đây có một túp lều."
+      },
+      "SourceHash": "27fcf043adf5bc9a947ec96bcb16c0a69791b97163dbf298c52f6643b4098a3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e731b88993",
+      "Fields": {
+        "Meaning": "Những cái này, những điều này",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "これら（これら）có nghĩa là những cái này, những điều này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217717": "Đây là những bệnh trẻ em thường mắc.",
+        "217990": "Những chiếc bánh quy này có hình ngôi sao."
+      },
+      "SourceHash": "ca66d2dff0dfc424631fa5f2a2e77140b69a21b436d933fc40e212269c9c0fde"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7fa019fe1b",
+      "Fields": {
+        "Meaning": "Khoảng, hồi, vào lúc",
+        "PartOfSpeech": "Danh từ, phó từ, hậu tố",
+        "Explanation": "頃（ころ）có nghĩa là khoảng, hồi, vào lúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179773": "Đến lúc hết tiền thì vẫn còn một tháng nữa.",
+        "227560": "Mãi đến khoảng trưa mặt trời mới ló ra."
+      },
+      "SourceHash": "36fbaac87db2f9daebecfd8de8b830ee692bc6b2f628210bf12e5e9a5c8e0b62"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "659d86e5e4",
+      "Fields": {
+        "Meaning": "Giết, làm chết",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "殺す（ころす）có nghĩa là giết, làm chết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114226": "Anh ta dại dột giết con ngỗng.",
+        "227533": "Mày đang định giết tao."
+      },
+      "SourceHash": "ae2170cbc5c2248941a80db11516e0d67be860bb39c4a1461437af03531cb462"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c146d3363",
+      "Fields": {
+        "Meaning": "Ngã, té",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "転ぶ（ころぶ）có nghĩa là ngã, té.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124958": "Tôi ngã và bị đau cổ tay.",
+        "124965": "Cẩn thận kẻo ngã nhé."
+      },
+      "SourceHash": "516138fff5053e41f65e2faa2f25a9e0353b496b4192ce7a2ee78c77f553f609"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "37bb355b59",
+      "Fields": {
+        "Meaning": "Lần này, đợt này",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "今回（こんかい）có nghĩa là lần này, đợt này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172500": "Lần này không được làm hỏng việc đâu.",
+        "172502": "Lần này bỏ đi. Hết cách rồi."
+      },
+      "SourceHash": "ea7f588043ff007aee6177566415e276ecde978d39adb29f2d1687757bd4b0b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "690e64a697",
+      "Fields": {
+        "Meaning": "Từ nay về sau",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "今後（こんご）có nghĩa là từ nay về sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172420": "Từ nay phải cẩn thận hơn.",
+        "172427": "Từ nay hãy chú ý hơn đến chuyện tiền bạc."
+      },
+      "SourceHash": "0b9ca1e53064e4c1dfef1b6ce8461bad76e4d12c4601c5d92bd263808ff4b735"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9f933bfc3",
+      "Fields": {
+        "Meaning": "Đông đúc, ùn tắc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "混雑（こんざつ）có nghĩa là đông đúc, ùn tắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206184": "Chuyến tàu chật kín học sinh cấp ba.",
+        "207425": "Con đường đó tắc vì xe cộ."
+      },
+      "SourceHash": "6dd3880b475669c65533964b32c0494df53e5a04b3c40f09762dc7d5b10c5808"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ced987ab59",
+      "Fields": {
+        "Meaning": "Đến thế này, đến mức này",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "こんなに（こんなに）có nghĩa là đến thế này, đến mức này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95681": "Không thể nào cô ấy lại đến sớm thế này.",
+        "201483": "Sao bạn về muộn thế?"
+      },
+      "SourceHash": "5485549ad8665f53333e7ae07e05ba13f975c9eaa2d9169a537770abee35f86b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a873a6e522",
+      "Fields": {
+        "Meaning": "Khó khăn, gian nan",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "困難（こんなん）có nghĩa là khó khăn, gian nan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117542": "Khó mà hiểu được anh ấy đang nói gì.",
+        "169196": "Công việc ngày càng khó khăn."
+      },
+      "SourceHash": "8f1f5f0539af6a1f541d854a95bcfe7802fbd0ed0c58aefa594b51a473179cd8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "380bf1226c",
+      "Fields": {
+        "Meaning": "Hôm nay, ngày nay",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "今日（こんにち）có nghĩa là hôm nay, ngày nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104312": "Anh ấy phải làm xong bài tập hôm nay.",
+        "120918": "Chính ông ấy đã xây dựng công ty được như ngày nay."
+      },
+      "SourceHash": "8384aaf24ce874d75358c4ee68121f344f8d152dbd844e72d4e04af22d2d96af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5044be2999",
+      "Fields": {
+        "Meaning": "Máy tính",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コンピューター（コンピューター）có nghĩa là máy tính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213069": "Chiếc máy tính đó còn mới.",
+        "217227": "Ngành máy tính đang làm ăn phát đạt."
+      },
+      "SourceHash": "b0b46843692a8c9c84170e0b826d533492dddbb267a3dcfc24e6aff9603c0d29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0896967865",
+      "Fields": {
+        "Meaning": "Đính hôn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "婚約（こんやく）có nghĩa là đính hôn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89962": "Có lẽ cô ấy sẽ hạnh phúc khi đính hôn.",
+        "201227": "Cuối cùng chị tôi đã đính hôn."
+      },
+      "SourceHash": "25aabe3976f50948161bcb2dd8259cb6ba632fc04902018ef30d14d0966757ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7facf3a10",
+      "Fields": {
+        "Meaning": "Hỗn loạn, rối loạn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "混乱（こんらん）có nghĩa là hỗn loạn, rối loạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173078": "Phiên họp quốc hội kết thúc trong hỗn loạn.",
+        "207980": "Tin đó gây ra nhiều xáo trộn."
+      },
+      "SourceHash": "88a55057bef277924d9fc0b19ea3ae3d2f05356998e7cd952b948c6e4df390d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5d6202e3f",
+      "Fields": {
+        "Meaning": "Sự khác biệt, chênh lệch",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "差（さ）có nghĩa là sự khác biệt, chênh lệch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193051": "Tôi đã cho bọn họ thấy sự chênh lệch về thực lực.",
+        "235545": "Hai ý kiến không khác nhau mấy."
+      },
+      "SourceHash": "9301ecea05f78f3ba472aa7a9c61e65e5e06b974731b1cb4d99c35a045e1399a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a8da0f21f",
+      "Fields": {
+        "Meaning": "Dịch vụ, phục vụ, ưu đãi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "サービス（サービス）có nghĩa là dịch vụ, phục vụ, ưu đãi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230537": "Cửa hàng đó phục vụ tốt.",
+        "231226": "Nhà hàng đó phục vụ tốt."
+      },
+      "SourceHash": "e35c58143122f81f5315fe63823ef61f87e81e5ed4bc04cffe4faffd4ead7a3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ff6bba172",
+      "Fields": {
+        "Meaning": "Khi, trong trường hợp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "際（さい）có nghĩa là khi, trong trường hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146261": "Khi lên Tokyo, xin báo trước cho tôi.",
+        "186687": "Khi có hỏa hoạn, hãy gọi 119."
+      },
+      "SourceHash": "283efc31b9f2e3d6e2f1b8861ffbffc789bf1cdf0849d8b63cd6764d81c6c30e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67399eea20",
+      "Fields": {
+        "Meaning": "Cao nhất, tốt nhất, tuyệt nhất",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "最高（さいこう）có nghĩa là cao nhất, tốt nhất, tuyệt nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107610": "Ông ấy là nghệ sĩ xuất sắc nhất còn sống.",
+        "218227": "Cái này vượt xa mọi cái còn lại."
+      },
+      "SourceHash": "d52592695e4ffc2a4b3dbfdf65cab6f0cd4841b2c92e07b058bdaba06cfec585"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e06471a78e",
+      "Fields": {
+        "Meaning": "Tài sản, của cải",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "財産（ざいさん）có nghĩa là tài sản, của cải.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106843": "Dù có tài sản, anh ấy vẫn không hạnh phúc.",
+        "195103": "Tôi mất tài sản vì một sai lầm."
+      },
+      "SourceHash": "b441e0cc6ddc97e4a76ccb1e5f55327954fc8e2a0e146d0f64c21dca8c70d8d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87d50bbaf1",
+      "Fields": {
+        "Meaning": "Cuối cùng, chót",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "最終（さいしゅう）có nghĩa là cuối cùng, chót.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170512": "Chuyến tàu cuối khởi hành khi nào?",
+        "170529": "Tôi vừa kịp chuyến tàu cuối."
+      },
+      "SourceHash": "bedb4f33fced825e072fc2c22bb4ba616e62c1adeb6a4149baccb22b508d2edf"
+    }
+  ]
+}

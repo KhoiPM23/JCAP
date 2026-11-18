@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-nareru",
+      "Fields": {
+        "Meaning": "Quen với, dần thích nghi",
+        "Formation": "Danh từ ＋ に慣れる／động từ thể từ điển ＋ のに慣れる",
+        "Explanation": "Đánh dấu đối tượng hoặc hoạt động mà chủ thể đang tập làm quen.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-nareru:example:1": "Tôi dần quen với cuộc sống ở thị trấn này.",
+        "ni-nareru:example:2": "Tôi vẫn chưa quen dùng máy tính mới."
+      },
+      "SourceHash": "5ce537df60c5e498baba868f096e8564a7817022f2352d5356af16faaadeb037"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-wa",
+      "Fields": {
+        "Meaning": "Để làm được thì",
+        "Formation": "Động từ thể từ điển ＋ には ＋ điều kiện hoặc cách làm",
+        "Explanation": "Nêu điều kiện hoặc cách thực hiện để đạt mục tiêu nêu trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-wa:example:1": "Muốn kịp tàu thì phải đi ngay bây giờ.",
+        "ni-wa:example:2": "Để nhớ kanji, nên viết đi viết lại nhiều lần."
+      },
+      "SourceHash": "c3a14d0d077f0f88eae8da973754ae34fbf08899b6101775b494256858928881"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-hanshite",
+      "Fields": {
+        "Meaning": "Trái với, ngược với",
+        "Formation": "Danh từ ＋ に反して",
+        "Explanation": "Chỉ kết quả trái với dự đoán, nguyện vọng hoặc chuẩn mực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-hanshite:example:1": "Trái với dự đoán, trận đấu kết thúc dễ dàng.",
+        "ni-hanshite:example:2": "Trái với mong muốn của bố mẹ, anh ấy bỏ học đại học."
+      },
+      "SourceHash": "e2df5c6fb0fa6cd95535a86aac521c034b730d3d745f45299f1a6e74c77c3181"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-motozuite",
+      "Fields": {
+        "Meaning": "Dựa trên, căn cứ vào",
+        "Formation": "Danh từ ＋ に基づいて",
+        "Explanation": "Nêu dữ liệu, sự kiện hoặc nguyên tắc được dùng làm căn cứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-motozuite:example:1": "Chúng tôi tạo sản phẩm mới dựa trên kết quả khảo sát.",
+        "ni-motozuite:example:2": "Bộ phim này dựa trên một vụ việc có thật."
+      },
+      "SourceHash": "17b001d74602850d3207098dc4ac87a91bbcab949a4afff0472e96846ab53045"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-yotte",
+      "Fields": {
+        "Meaning": "Tùy theo, do, bằng, bởi",
+        "Formation": "Danh từ ＋ によって／による ＋ danh từ",
+        "Explanation": "Tùy ngữ cảnh, nêu tiêu chí làm thay đổi kết quả, nguyên nhân, phương tiện hoặc tác nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-yotte:example:1": "Tập quán khác nhau tùy quốc gia.",
+        "ni-yotte:example:2": "Ngôi chùa này do người xưa xây dựng."
+      },
+      "SourceHash": "c7fcb5acbdd24bdce74bb93d55c455ff2170ea528f64c87a9fcb93b31c52522b"
+    }
+  ]
+}

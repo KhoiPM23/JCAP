@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de-dekiru-kara-dekiru",
+      "Fields": {
+        "Meaning": "Được làm bằng, được làm từ",
+        "Formation": "Vật liệu ＋ でできる／nguyên liệu ＋ からできる",
+        "Explanation": "で thường chỉ vật liệu còn nhận ra được. から thường chỉ nguyên liệu ban đầu đã biến đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "de-dekiru-kara-dekiru:example:1": "Cái bàn này được làm bằng gỗ.",
+        "de-dekiru-kara-dekiru:example:2": "Rượu vang được làm từ nho."
+      },
+      "SourceHash": "b0d9f094820e4b6caef930e8c48a085c8e062e335721957e6519ae3e9465543b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dewa-nai-ka",
+      "Fields": {
+        "Meaning": "Chẳng phải… sao, đấy chứ",
+        "Formation": "Thể thông thường ＋ ではないか (danh từ và tính từ な bỏ だ)",
+        "Explanation": "Dùng để nêu nhận định dưới dạng câu hỏi tu từ hoặc nhấn mạnh điều người nghe có thể công nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dewa-nai-ka:example:1": "Đây chẳng phải là một vấn đề lớn sao?",
+        "dewa-nai-ka:example:2": "Cậu cũng làm được đấy chứ!"
+      },
+      "SourceHash": "73b6c35b10d08116ad6f89f75567d8981a1d27d6b40298f47eb1944c11357777"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-hoshii",
+      "Fields": {
+        "Meaning": "Muốn ai làm hoặc đừng làm gì",
+        "Formation": "Người thực hiện ＋ に ＋ động từ thể て／ないで ＋ ほしい",
+        "Explanation": "Bày tỏ mong muốn của người nói về hành động của người khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-hoshii:example:1": "Tôi muốn bạn đến sớm vào ngày mai.",
+        "te-hoshii:example:2": "Tôi mong bạn đừng quên tôi."
+      },
+      "SourceHash": "a203544bc7c17ffb08cfe82839cbfefbbbfe55851154b97159b9eeee309355c8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-miru",
+      "Fields": {
+        "Meaning": "Thử làm xem",
+        "Formation": "Động từ thể て ＋ みる",
+        "Explanation": "Thử thực hiện một việc để biết kết quả hoặc cảm nhận ra sao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-miru:example:1": "Tôi sẽ ăn thử ramen ở quán này.",
+        "te-miru:example:2": "Tôi đã thử mang đôi giày mới."
+      },
+      "SourceHash": "2712489b86e8061c92c368c4f328db9c83c5f4a0af624dd58fb5f880f775baf5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo",
+      "Fields": {
+        "Meaning": "Dù, cho dù",
+        "Formation": "Động từ thể て ＋ も／tính từ い dạng くても／danh từ hoặc tính từ な ＋ でも",
+        "Explanation": "Cho biết kết quả vẫn giữ nguyên dù điều kiện ở vế trước xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "temo:example:1": "Dù trời mưa, trận đấu vẫn diễn ra.",
+        "temo:example:2": "Dù ăn nhiều, tôi cũng không tăng cân."
+      },
+      "SourceHash": "04dc6d041da726193f90aeb80bd24784354d424dbb89bce5c1d0431d4dfd1dac"
+    }
+  ]
+}

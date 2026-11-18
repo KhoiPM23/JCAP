@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40b4a7cb92",
+      "Fields": {
+        "Meaning": "Đang giữa lúc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "最中（さいちゅう）có nghĩa là đang giữa lúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92972": "Cô ấy đang cắt dưa leo.",
+        "113354": "Ông ấy ngất giữa lúc đang phát biểu."
+      },
+      "SourceHash": "bf74407d53589c229e504404fa39bee0575028ec2c89422e09e3d37af07e92a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fe278816d4",
+      "Fields": {
+        "Meaning": "Thấp nhất, ít nhất, tệ nhất",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "最低（さいてい）có nghĩa là thấp nhất, ít nhất, tệ nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162261": "Tôi đi bộ được ít nhất hai dặm.",
+        "231211": "Phim đó dở tệ!"
+      },
+      "SourceHash": "2a41ee6de5c176183f1d41e8c78ed135c1647ff6da7d6dda684ca34c58cd9de2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc6aa5133f",
+      "Fields": {
+        "Meaning": "Tài năng, năng khiếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "才能（さいのう）có nghĩa là tài năng, năng khiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102589": "Anh ấy được trời phú cho nhiều tài năng.",
+        "178667": "Bạn có năng khiếu âm nhạc."
+      },
+      "SourceHash": "88782fbfb44f6befcc755d66c8be26e246b2e66ae6dbc0247373346a1d4d9d07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "79e1b168ba",
+      "Fields": {
+        "Meaning": "Xét xử, phiên tòa",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "裁判（さいばん）có nghĩa là xét xử, phiên tòa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170270": "Việc xét xử phải công minh.",
+        "170271": "Có vẻ bên chúng ta sẽ thua kiện."
+      },
+      "SourceHash": "53066f7130089fcd7d4ce6413e6d2f5d6d5988462de9f4c271cd275d991a7e79"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1994007f1d",
+      "Fields": {
+        "Meaning": "Vật liệu, nguyên liệu, tư liệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "材料（ざいりょう）có nghĩa là vật liệu, nguyên liệu, tư liệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167155": "Ngoài vật liệu, chúng ta còn cần mẫu.",
+        "214811": "Đồ nội thất làm từ vật liệu tốt thường bán chạy."
+      },
+      "SourceHash": "43a6c29fef9208984005986049564c8bbe5db1b170278b935f31571f0c994168"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83aba83042",
+      "Fields": {
+        "Meaning": "May mắn, điều may",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "幸い（さいわい）có nghĩa là may mắn, điều may.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148378": "Cho đi hạnh phúc hơn nhận lại.",
+        "234238": "May mà lúc đó có bạn ở đây."
+      },
+      "SourceHash": "3cf126bf7e0b311b4a29454de5c6994b84d030f3264ba6a9cf20d2672943207b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a04aa688d",
+      "Fields": {
+        "Meaning": "Chữ ký, dấu hiệu, tín hiệu, sin",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "サイン（サイン）có nghĩa là chữ ký, dấu hiệu, tín hiệu, sin.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "cef972246409f501d5119716e0b396f7aa82bb4b4221cb5bb7ab1c696110b89f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e065923d1c",
+      "Fields": {
+        "Meaning": "Ranh giới, biên giới",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "境（さかい）có nghĩa là ranh giới, biên giới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103205": "Anh ấy lơ lửng giữa sự sống và cái chết.",
+        "201751": "Đức có chung biên giới với Pháp."
+      },
+      "SourceHash": "7bc7f282bd259b0451d23d409c05ab77c8c7e6a386a40c122456e2bb843cc5ac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2fe9fb3327",
+      "Fields": {
+        "Meaning": "Đi ngược, chống lại, trái lời",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "逆らう（さからう）có nghĩa là đi ngược, chống lại, trái lời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103432": "Anh ấy đi ngược xu hướng xã hội.",
+        "119331": "Không thể nào anh ấy lại trái lời bố mẹ."
+      },
+      "SourceHash": "ab23f98bebffd2dd43f991fc11631a918a1b2a784e3ee5ba1126b5d60b9c102d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b2fa7ff523",
+      "Fields": {
+        "Meaning": "Thời kỳ sung sức, lúc cao điểm",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "盛り（さかり）có nghĩa là thời kỳ sung sức, lúc cao điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107122": "Anh ấy đang ở độ sung sức nhất.",
+        "199391": "Ai cũng có thời kỳ đỉnh cao."
+      },
+      "SourceHash": "23b95051c5e2f9dc4a05d6fd7ed23bec9ee3ada683f930820f998c2c8f840d4d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bca3bdc725",
+      "Fields": {
+        "Meaning": "Công việc, thao tác",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "作業（さぎょう）có nghĩa là công việc, thao tác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97932": "Họ giao công việc đó cho chúng tôi.",
+        "236861": "Hãy tiếp tục làm việc trong lúc tôi vắng mặt."
+      },
+      "SourceHash": "f0b00c26ab725cd4ad759d8315e26acbba083587996ab78aaa8e3848795d2a7f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f6255aa5c5",
+      "Fields": {
+        "Meaning": "Trước, vừa qua",
+        "PartOfSpeech": "Tiền tố",
+        "Explanation": "昨（さく）có nghĩa là trước, vừa qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106820": "Anh ấy nghỉ chơi bóng chày sau mùa giải trước.",
+        "156830": "Tôi nghỉ chơi bóng chày sau mùa giải trước."
+      },
+      "SourceHash": "d11a79e5525987c7e859a18cd65c9f340c51b88acb263d80c3288ea5525bd75c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26a429509f",
+      "Fields": {
+        "Meaning": "Tác phẩm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "作品（さくひん）có nghĩa là tác phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100450": "Ông ấy thức trắng và làm không ngơi nghỉ để hoàn thành tác phẩm đó.",
+        "218095": "Đây là một trong những tác phẩm của mẹ tôi."
+      },
+      "SourceHash": "fa39bbf98c3ecac7d90063ad8e83c05871057e608eb97dd5cf9a5278321de82a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9eb3e2a34e",
+      "Fields": {
+        "Meaning": "Cây trồng, nông sản",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "作物（さくもつ）có nghĩa là cây trồng, nông sản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114397": "Ông ấy trồng nhiều loại cây.",
+        "122595": "Lúa là cây trồng chính ở Nhật Bản."
+      },
+      "SourceHash": "18a66bc59ae7d509be21d4aae71e540d8f3bda78654e6b72e0dd5393d6f98e5b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b66409ed87",
+      "Fields": {
+        "Meaning": "Hoa anh đào, cây anh đào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "桜（さくら）có nghĩa là hoa anh đào, cây anh đào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169566": "Chắc hoa anh đào sắp nở rồi nhỉ?",
+        "226326": "Trong vườn từng có một cây anh đào lớn."
+      },
+      "SourceHash": "03e3bac81b13cfc2a7c72d2be09053ff36061b19fa8d7755c236544bb210deff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7650278af2",
+      "Fields": {
+        "Meaning": "Rượu, đồ uống có cồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "酒（さけ）có nghĩa là rượu, đồ uống có cồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84824": "Bỏ rượu là việc khó với bố tôi.",
+        "196311": "Tôi không uống rượu, cũng không hút thuốc."
+      },
+      "SourceHash": "88d74e19ed96c6d581e0d55930d309d566d13f615a5f97aadbe90b6cdf9c2294"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af53cba50b",
+      "Fields": {
+        "Meaning": "Hét, la, hô",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "叫ぶ（さけぶ）có nghĩa là hét, la, hô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89764": "Cô ấy hét bảo bọn trẻ im lặng.",
+        "99356": "Anh ấy hô to tên người chiến thắng."
+      },
+      "SourceHash": "e5c62eab158a9334a9ba283783d6b3f32e80ecdc642317861cc9f54bd47f812c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5f052e8594",
+      "Fields": {
+        "Meaning": "Tránh, né",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "避ける（さける）có nghĩa là tránh, né.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101862": "Anh ấy tránh gặp cô ấy trên đường.",
+        "232798": "Bạn có thể tránh được một trải nghiệm khó chịu."
+      },
+      "SourceHash": "68c87f709d83dbd5bbdd482d6c050000513b4483a408fd8cdd9de4c92acdd64c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9923ca40cb",
+      "Fields": {
+        "Meaning": "Chống đỡ, hỗ trợ, cầm cự",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "Đọc ささえる khi nghĩa là chống đỡ hoặc hỗ trợ. Câu đầu dùng nghĩa cầm cự, giữ vững vị trí. Cách đọc つかえる chỉ tình trạng bị nghẽn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74105": "Cố cầm cự ở đó. Đừng để họ vào thành.",
+        "210593": "Nước đó sống dựa vào công nghiệp."
+      },
+      "SourceHash": "f567ab309aa2939b7a1aabbaa65dda1776e3c2535d63241214bb7d4e6b0e504c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30cf0aaae2",
+      "Fields": {
+        "Meaning": "Chỉ, chỉ đến, biểu thị",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "指す（さす）có nghĩa là chỉ, chỉ đến, biểu thị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91979": "Tôi không biết cô ấy chỉ bác sĩ nào.",
+        "237582": "Ký hiệu & chỉ từ “and”."
+      },
+      "SourceHash": "bc642060003fcaae99803b3460bf2d35eb69701cf083d5a1d77b83522b79d498"
+    }
+  ]
+}

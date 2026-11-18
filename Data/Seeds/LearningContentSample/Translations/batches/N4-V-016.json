@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40c673da45",
+      "Fields": {
+        "Meaning": "Đền Thần đạo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "神社（じんじゃ）có nghĩa là đền Thần đạo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "181873": "Kyoto có nhiều đền Thần đạo.",
+        "208795": "Ngôi đền đó được xây cách đây hai trăm năm."
+      },
+      "SourceHash": "453e2ad1bcbd943bba92a1b41f878bd997ba7e65b33ca7a02994a643cf730fa9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c904982ded",
+      "Fields": {
+        "Meaning": "Tử tế, tốt bụng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "親切（しんせつ）có nghĩa là tử tế, tốt bụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200584": "Anh/chị đã đối xử với tôi rất tử tế.",
+        "233420": "Gia đình bạn hẳn rất tốt bụng."
+      },
+      "SourceHash": "7d51606ac14ff806ba088b18ca4d4d59ea24a1d36c4ed15130def17a71f13836"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff60f2830f",
+      "Fields": {
+        "Meaning": "Lo, lo lắng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "心配（しんぱい）có nghĩa là lo, lo lắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145549": "Thật hạnh phúc khi có người lo lắng cho mình.",
+        "208142": "Cậu bé lo đến phát ốm."
+      },
+      "SourceHash": "74c9da20270b7088a24369aee4e1595968452ca45c8a5b3f559740d5b122b53e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7e69f5427",
+      "Fields": {
+        "Meaning": "Tòa soạn, công ty báo chí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "新聞社（しんぶんしゃ）có nghĩa là tòa soạn, công ty báo chí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160845": "Tôi làm cho tòa soạn này được bốn năm rồi.",
+        "200754": "Anh/chị làm việc cho tòa soạn nào?"
+      },
+      "SourceHash": "d9bca453ac136f0e7b09abcf733deac4d74047489b412a640b7b754b7fff3976"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78de196fe8",
+      "Fields": {
+        "Meaning": "Bơi lội",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "水泳（すいえい）có nghĩa là bơi lội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143698": "Bơi lội là một trong những thú vui của tôi.",
+        "158056": "Trong kỳ nghỉ hè, buổi chiều tôi đi bơi."
+      },
+      "SourceHash": "f36c274cc64bc7ebde53048607b96b26bd42f3354cd27c1372b1f5184ed8a822"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2070f21eae",
+      "Fields": {
+        "Meaning": "Nước máy, hệ thống cấp nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "水道（すいどう）có nghĩa là nước máy, hệ thống cấp nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169863": "Hôm qua nước nhà tôi bị cắt.",
+        "203927": "Phần lớn người Nhật uống nước máy."
+      },
+      "SourceHash": "1eed08e8736a7c41fda3291b46c07e9ba0fea0fccb70e5e970080bf2c3d8bcde"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdddb30c94",
+      "Fields": {
+        "Meaning": "Khá, rất, đáng kể",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "ずいぶん（ずいぶん）có nghĩa là khá, rất, đáng kể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166144": "Chúng tôi đã ở đây khá lâu rồi.",
+        "205500": "Chuyện đó đòi hỏi kiên nhẫn thật đấy."
+      },
+      "SourceHash": "d1234990a3a23f97f6a0c97ccbb19bd5e158337a1babb5b9d4cab3016eea9530"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "48341cc3a0",
+      "Fields": {
+        "Meaning": "Toán học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "数学（すうがく）có nghĩa là toán học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143568": "Bài kiểm tra toán thế nào?",
+        "164719": "Tôi không hiểu bài toán này."
+      },
+      "SourceHash": "2d1d7e2c1fecbac641c3ff463a336c0f3a6ca6c55b2b516e2278f580ad2cc817"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb0f717433",
+      "Fields": {
+        "Meaning": "Bộ com-lê, bộ vest",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スーツ（スーツ）có nghĩa là bộ com-lê, bộ vest.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145487": "Tôi đã đặt may một bộ com-lê mới.",
+        "215065": "Anh ấy nổi bật khi mặc com-lê."
+      },
+      "SourceHash": "bc7da41e87b4cfe1f7fa40d8c3bc20f7554d3e8e4ddbbe1c0d33cc08f9b70e5c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8a13543a80",
+      "Fields": {
+        "Meaning": "Va-li",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スーツケース（スーツケース）có nghĩa là va-li.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154258": "Tôi bảo anh ấy mang va-li.",
+        "213032": "Một trong những chiếc va-li trống không."
+      },
+      "SourceHash": "caeb0a9982fd7a69e38eca682c56ee1d1618fbe10649c5de568dcd76a7c119c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6701f8cbba",
+      "Fields": {
+        "Meaning": "Quá mức, trôi qua",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "過ぎる（すぎる）có nghĩa là quá mức, trôi qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223657": "Súp này mặn quá, không uống được.",
+        "228806": "Thoắt cái mùa hè cũng đã qua."
+      },
+      "SourceHash": "3e5ee5540b5eb7809541f97ad9f95d1ed2944228cba8ea92b298bc2d1076e908"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8065461ace",
+      "Fields": {
+        "Meaning": "Vắng, thưa, bớt đông",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "すく（すく）có nghĩa là vắng, thưa, bớt đông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198161": "Phía trước xe buýt khá vắng.",
+        "200305": "Toa nào vắng khách?"
+      },
+      "SourceHash": "77c77beecfeaf9f03d79b0c3f25598756d26decee80e9655ee72398677a605f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "270801de39",
+      "Fields": {
+        "Meaning": "Màn hình, màn chiếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スクリーン（スクリーン）có nghĩa là màn hình, màn chiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204737": "Những từ đó hiện lên trên màn hình máy tính của anh ấy."
+      },
+      "SourceHash": "f6ca6fef45d0df9cea03c4e4dbe6bb9162d968d0aafe9b3cba9637ab09f3ff69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ded62a84d0",
+      "Fields": {
+        "Meaning": "Dữ dội, rất lớn, tuyệt vời",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "凄い（すごい）có nghĩa là dữ dội, rất lớn, tuyệt vời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143317": "Ánh đèn rất mạnh chiếu xuống sân bóng chày.",
+        "195335": "Buổi hòa nhạc của Madonna thu hút lượng khán giả khổng lồ."
+      },
+      "SourceHash": "687d9184ce8483a11b0219ba0b2a215351767caec715024522818caf5a20f0d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c8702fe01",
+      "Fields": {
+        "Meaning": "Tiến lên, tiến triển",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "進む（すすむ）có nghĩa là tiến lên, tiến triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189159": "Việc học tiếng Anh có tiến triển không?",
+        "210611": "Nước đó đang tiếp tục công nghiệp hóa."
+      },
+      "SourceHash": "19512d5c84c86244406c36f47ec0136fc5a65b2f45bdb5eec4eda2c7d10464f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44f773f94f",
+      "Fields": {
+        "Meaning": "Hoàn toàn, hẳn",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "すっかり（すっかり）có nghĩa là hoàn toàn, hẳn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141667": "Thầy cô đã khỏe hẳn trở lại.",
+        "160525": "Tôi thở không ra hơi."
+      },
+      "SourceHash": "445c88ff23f647cc4a69ad147f4425c9e543ee1d698e6d59c1151c300abadb17"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "424826c446",
+      "Fields": {
+        "Meaning": "Một cách nhẹ và nhanh, thoắt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "すっと（すっと）có nghĩa là một cách nhẹ và nhanh, thoắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75794": "Máu lặng lẽ chảy dọc gáy anh ấy.",
+        "76795": "Con ốc sên nhanh chóng thò râu ra."
+      },
+      "SourceHash": "321b515015c11973de1b27d733644b2999314a89d5062037b744a807ca875d64"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2937b2999",
+      "Fields": {
+        "Meaning": "Bít tết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ステーキ（ステーキ）có nghĩa là bít tết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214623": "Anh/chị muốn bít tết chín tới mức nào?",
+        "214626": "Xin cho khoai tây ăn kèm bít tết."
+      },
+      "SourceHash": "346adb96da5289dc75fbdf4a0dad14bb3e81d8cccb49195d667737e8a81416cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "49ac3c55c7",
+      "Fields": {
+        "Meaning": "Vứt bỏ, từ bỏ",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "捨てる（すてる）có nghĩa là vứt bỏ, từ bỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204154": "Hãy bỏ kế hoạch đó đi.",
+        "204213": "Hãy bỏ ý nghĩ ngớ ngẩn đó đi."
+      },
+      "SourceHash": "bc8fdd914b8a6420745d3d3a00a0ef294c40904926406f1c4561076bd5c0dffe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9071f08832",
+      "Fields": {
+        "Meaning": "Dàn âm thanh stereo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ステレオ（ステレオ）có nghĩa là dàn âm thanh stereo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161560": "Tôi mua dàn âm thanh mới ở cửa hàng đó.",
+        "214601": "Xin hãy mở một đĩa hát trên dàn âm thanh."
+      },
+      "SourceHash": "2dfdaf9705bb97276396aef950f72adb6e585440ce57dc425fd41ff610e8f7f4"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-kara",
+      "Fields": {
+        "Meaning": "Dựa vào việc…, do…",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ことから",
+        "Explanation": "Nêu sự thật làm căn cứ suy luận hoặc lý do dẫn đến kết luận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-kara:example:1": "Thấy cửa sổ bị vỡ, tôi biết có trộm đột nhập.",
+        "koto-kara:example:2": "Thấy trời chợt tối, tôi nghĩ sắp mưa."
+      },
+      "SourceHash": "6cd923a1391e69af4e2fcd942e3262bdb784c71ef851de4b10177047cce3ea02"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-da",
+      "Fields": {
+        "Meaning": "Nên làm, điều cần làm là",
+        "Formation": "Động từ thể từ điển hoặc thể ない ＋ ことだ",
+        "Explanation": "Khuyên trực tiếp nên làm hoặc tránh một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-da:example:1": "Muốn giỏi lên thì nên luyện tập mỗi ngày.",
+        "koto-da:example:2": "Khi bị cảm, nên nghỉ ngơi và đừng gắng sức."
+      },
+      "SourceHash": "b414274b1bb1ac92d25f13ab5c0d9914ac23bf8f926f3cc956dca21269b3c7b7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-nano",
+      "Fields": {
+        "Meaning": "Điều đó có nghĩa là",
+        "Formation": "Mệnh đề ＋ ことなのだ／ことなのです",
+        "Explanation": "こと danh từ hóa hành động, còn なのだ trình bày nó như lời giải thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-nano:example:1": "Làm việc ở Tokyo có nghĩa là dùng tiếng Nhật mỗi ngày.",
+        "koto-nano:example:2": "Trưởng thành có nghĩa là tự chịu trách nhiệm."
+      },
+      "SourceHash": "2c8b6a0b8dc9c4dc736d7bab788c5861e7c5282668183bb4f3c7e68e05adefbd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ni",
+      "Fields": {
+        "Meaning": "Điều đáng… là",
+        "Formation": "Động từ thể た hoặc tính từ bổ nghĩa ＋ ことに",
+        "Explanation": "Đưa cảm xúc hay nhận xét của người nói lên trước sự việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ni:example:1": "Điều khiến tôi ngạc nhiên là cô ấy vẫn nhớ tên tôi.",
+        "koto-ni:example:2": "Tiếc là trận đấu bị hủy vì mưa."
+      },
+      "SourceHash": "d56bd3c54148e169f4897b1e4e38c7d262e613c9161461264b3ef09f0f6c41e3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ni-natteiru",
+      "Fields": {
+        "Meaning": "Theo quy định, theo lịch sẽ",
+        "Formation": "Động từ thể từ điển hoặc thể ない ＋ ことになっている",
+        "Explanation": "Nêu quy định hoặc sự sắp xếp đang có hiệu lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ni-natteiru:example:1": "Trường này quy định không được ăn trong lớp.",
+        "koto-ni-natteiru:example:2": "Theo lịch, tuần sau tôi sẽ gặp giám đốc."
+      },
+      "SourceHash": "33b39346e2f8286dbe84e08e90689b8bd59f828377c34eda9fc4cebd5b1eb0da"
+    }
+  ]
+}

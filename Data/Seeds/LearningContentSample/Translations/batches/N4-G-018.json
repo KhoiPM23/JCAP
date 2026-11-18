@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ta-bakari",
+      "Fields": {
+        "Meaning": "Mới làm, mới xảy ra",
+        "Formation": "Động từ thể た ＋ ばかりだ",
+        "Explanation": "Người nói cảm thấy việc xảy ra gần đây. Khoảng thời gian có thể khác nhau tùy sự kiện và ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ta-bakari:example:1": "Tôi mới vào công ty này nên còn nhiều điều chưa biết.",
+        "ta-bakari:example:2": "Em bé vừa mới chào đời."
+      },
+      "SourceHash": "4085cd51569311bd9cca863ca4e49819f15b0309f00932c9cee8d89c5278865e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tara",
+      "Fields": {
+        "Meaning": "Nếu, khi… thì",
+        "Formation": "Dạng quá khứ thể thường ＋ ら (như 着いたら hoặc 安かったら)",
+        "Explanation": "Nêu điều kiện giả định hoặc một mốc phải đến trước hành động tiếp theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tara:example:1": "Khi về đến nhà, tôi sẽ gọi điện.",
+        "tara:example:2": "Nếu rẻ thì tôi mua."
+      },
+      "SourceHash": "2706ff6f1bc85cac0a91c708fe84619a81512aad3e6593e712c37f735bc2660c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tara-ii-desu-ka",
+      "Fields": {
+        "Meaning": "Nên làm thế nào, nên làm gì?",
+        "Formation": "Từ để hỏi ＋ động từ thể た ＋ らいいですか",
+        "Explanation": "Hỏi chỉ dẫn hoặc xin lời khuyên về cách làm phù hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tara-ii-desu-ka:example:1": "Tôi nên nộp giấy tờ này ở đâu ạ?",
+        "tara-ii-desu-ka:example:2": "Tôi nên chuẩn bị gì trước chuyến đi?"
+      },
+      "SourceHash": "5d06d4b1f680218901a6da5c98bab3ed9e46c28af932ca7989ac0e179cfd2b83"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tara-dou",
+      "Fields": {
+        "Meaning": "Thử làm… thì sao?",
+        "Formation": "Động từ thể た ＋ らどう／らどうですか",
+        "Explanation": "Đề xuất một hành động để người nghe cân nhắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tara-dou:example:1": "Nếu mệt thì bạn nghỉ một chút xem sao?",
+        "tara-dou:example:2": "Bạn thử hỏi ý kiến bác sĩ một lần xem sao?"
+      },
+      "SourceHash": "930f54add72e18f171e0ffed2734622f3c5e461091d7a1dabaa44210036a209a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dandan",
+      "Fields": {
+        "Meaning": "Dần dần",
+        "Formation": "だんだん ＋ vị ngữ chỉ sự thay đổi",
+        "Explanation": "Diễn tả mức độ thay đổi từng chút một theo thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dandan:example:1": "Sang xuân, trời dần ấm lên.",
+        "dandan:example:2": "Tập mỗi ngày nên tôi dần tiến bộ."
+      },
+      "SourceHash": "09bdcb2d4da3bb859c1f08dc9f33db788953607eb3f26f888a593995653e24b9"
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e5b1397b9",
+      "Fields": {
+        "Meaning": "Hầu hết, gần như",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ほとんど（ほとんど）có nghĩa là hầu hết, gần như.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78867": "Công việc chuẩn bị gần như chưa đâu vào đâu.",
+        "225344": "Kate hầu như không nói được tiếng Trung."
+      },
+      "SourceHash": "da711e75e557e45fe4bde5f12a3377d4dc572196475c446513643d3d7491031c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9097d5cc39",
+      "Fields": {
+        "Meaning": "Khen",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "ほめる（ほめる）có nghĩa là khen.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196667": "Helen đỏ mặt khi được mọi người khen.",
+        "231786": "Bạn có được thầy cô khen không?"
+      },
+      "SourceHash": "70be24fbb232b9891e7c4d706a281f13ad1d3ab6bbaf23b9904e1ba63fc78cf2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "36dc0ccd26",
+      "Fields": {
+        "Meaning": "Bản dịch, dịch thuật",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "翻訳（ほんやく）có nghĩa là bản dịch, dịch thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92239": "Cô ấy dịch từng từ một.",
+        "217676": "Bạn dịch cái này sang tiếng Pháp giúp tôi được không?"
+      },
+      "SourceHash": "2bdfb23e5cee3eb0da29a488c10905dd47423f0e27ecb4a38a202f95c8ac7519"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7c74c440e5",
+      "Fields": {
+        "Meaning": "Đi, đến (khiêm nhường), chịu thua, mê mẩn",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "Khiêm nhường ngữ của 行く và 来る. Hai câu ví dụ lần lượt dùng nghĩa mê mẩn và chịu thua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215613": "Joe mê cô gái đó lắm.",
+        "230429": "Tôi chịu thua trước vấn đề đó."
+      },
+      "SourceHash": "359bf0ed36d50825e9a267160720263a35b063b9caed090acaa841df9bb0c4d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb6d7546fb",
+      "Fields": {
+        "Meaning": "Thua",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "負ける（まける）có nghĩa là thua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152501": "Tôi không muốn thua trước mặt bạn mình.",
+        "235276": "Tôi đang thua anh ấy 0–3."
+      },
+      "SourceHash": "833a04135d0d0a716def0d0dffb12cb16fc23cd30e3184909f7b73dca6562369"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d3422596a8",
+      "Fields": {
+        "Meaning": "Nghiêm túc, chăm chỉ",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "まじめ（まじめ）có nghĩa là nghiêm túc, chăm chỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199811": "Tom không nghiêm túc trong việc học.",
+        "216718": "Sam rất nghiêm túc trong công việc."
+      },
+      "SourceHash": "f5f915ff3a63da0a906077bdd21029274e93d8a0224329845c03cf7e9a4a31f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c0ee7cfcc",
+      "Fields": {
+        "Meaning": "Trước tiên",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "まず（まず）có nghĩa là trước tiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195599": "Hãy để tôi nói trước đã.",
+        "197862": "Trước tiên, hãy uống một ngụm bari."
+      },
+      "SourceHash": "88f8be8d4cb6a629c364595f7edf1f0c3638fb16aed29fe12cba4901436b450b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0fa3edce9b",
+      "Fields": {
+        "Meaning": "Hoặc",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "または（または）có nghĩa là hoặc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173494": "Bạn dùng trà hay cà phê?",
+        "197448": "Quầy buffet, hay căng tin, nằm ở toa số 9."
+      },
+      "SourceHash": "d3cc33b62b5ae73ddb157a7709603240a89cc446ead49584cbe42f6cb7cef794"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91094911c0",
+      "Fields": {
+        "Meaning": "Mắc lỗi, nhầm",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "間違える（まちがえる）có nghĩa là mắc lỗi, nhầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182560": "Làm gì vội quá thì dễ mắc lỗi đấy.",
+        "2975855": "Bạn nhầm bơ thực vật với bơ à?"
+      },
+      "SourceHash": "46465ac3c1dce715598b269f9c4bbd21a2f5f4f4b68f22e45c95d99e9f6ed7ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "675232ef05",
+      "Fields": {
+        "Meaning": "Kịp giờ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "間に合う（まにあう）có nghĩa là kịp giờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182483": "Tôi nghĩ nếu nhanh lên thì vẫn kịp.",
+        "182552": "Không nhanh lên thì sẽ lỡ tàu đấy."
+      },
+      "SourceHash": "6caad177904d58b7c7556b2dfa45f08b3552d41b999e9a328f6d45bc7925a92a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f71b64fa1e",
+      "Fields": {
+        "Meaning": "Xung quanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "周り（まわり）có nghĩa là xung quanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148261": "Hãy nhìn quanh đi.",
+        "175367": "Con chó đang đi vòng quanh bàn."
+      },
+      "SourceHash": "e5f6aff160d79be5fedeb8d90d80efbe6c5801842f2db6dff52169b2485d84ef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7644eb3fc",
+      "Fields": {
+        "Meaning": "Đi vòng, quay, qua mốc giờ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "回る（まわる）có nghĩa là đi vòng, quay, qua mốc giờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165667": "Chúng tôi vòng ra sau xe để đẩy.",
+        "226819": "Anh ấy đến lúc vừa quá trưa."
+      },
+      "SourceHash": "a5582fad2ac4343f59b54a07a7bd916723d0c838b844c067de1072dbf3425554"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8077c744a0",
+      "Fields": {
+        "Meaning": "Truyện tranh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "漫画（まんが）có nghĩa là truyện tranh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152676": "Tôi đọc truyện tranh.",
+        "169021": "Đừng đọc truyện tranh trong giờ làm."
+      },
+      "SourceHash": "6814b1e0d0a20a2726c89b7ed0e5432283641b09ddf3ef660adb5630af19b7d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59944588a8",
+      "Fields": {
+        "Meaning": "Chính giữa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "真ん中（まんなか）có nghĩa là chính giữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155676": "Tôi trông thấy một người quen cũ giữa đám đông.",
+        "199745": "Một chiếc xe tải dừng giữa đường."
+      },
+      "SourceHash": "ea3a5d3891c617e115a1b8f7725565cba084c3fd0f7dee32115250b4c9c06628"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c27b9183f",
+      "Fields": {
+        "Meaning": "Nhìn thấy, trông có vẻ",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "見える（みえる）có nghĩa là nhìn thấy, trông có vẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214484": "Mọi thứ trông thật tuyệt vời.",
+        "234410": "Bạn thấy căn nhà màu đỏ đằng kia chứ?"
+      },
+      "SourceHash": "c51dd642b64938f961896a61d9bb3c69f20a80eea0cfff222a89acb0d62b7267"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "07a76f9be7",
+      "Fields": {
+        "Meaning": "Hồ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "湖（みずうみ）có nghĩa là hồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174492": "Hồ sâu bao nhiêu?",
+        "212600": "Khách sạn đó nằm ngay gần hồ."
+      },
+      "SourceHash": "52b7d266c6fda91399471d73b058178a8ffefbc30e59f49b0c43e7cf68bc7ef6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcf790e186",
+      "Fields": {
+        "Meaning": "Tương miso, điểm hay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "味噌 thường chỉ tương đậu lên men. Trong câu ví dụ, từ này chỉ điểm hay hoặc nét đáng chú ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76728": "Điểm hay của từ điển điện tử này là dễ mang theo."
+      },
+      "SourceHash": "1c1256f4ccaf8d83a7e173d916a5c9800ad42a95f58cdb199b0c1c05b582a227"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a4e2dc046c",
+      "Fields": {
+        "Meaning": "Được tìm thấy, tìm ra",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "見つかる（みつかる）có nghĩa là được tìm thấy, tìm ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123691": "Thứ giống vậy có thể tìm thấy ở bất cứ đâu.",
+        "228050": "Không may là tôi không tìm được việc."
+      },
+      "SourceHash": "c28a5b021f0bcae8b17448f9c5a59eb59c8e47897a57f9df6bce25c30b081f7c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "64f85b7fdf",
+      "Fields": {
+        "Meaning": "Tìm thấy, phát hiện",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "見つける（みつける）có nghĩa là tìm thấy, phát hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75128": "Tôi vừa tìm được một thứ hay lắm!",
+        "196352": "Tôi tìm thấy cuốn sách này ở tiệm sách cũ."
+      },
+      "SourceHash": "26b7f673d98aec631ba09e19d123fb23e0efece77cd79d58c4081361a088d133"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb7247f404",
+      "Fields": {
+        "Meaning": "Mọi người, tất cả",
+        "PartOfSpeech": "Danh từ, Đại từ, phó từ",
+        "Explanation": "皆（みな）có nghĩa là mọi người, tất cả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84618": "Bố bảo cả nhà cùng đợi tàu.",
+        "163250": "Tất cả họ hàng của tôi đều sống ở thị trấn này."
+      },
+      "SourceHash": "43c23728e9ab400dfcd5f98aee557cad64ade5a209c6d6deebd17630e55017c8"
+    }
+  ]
+}

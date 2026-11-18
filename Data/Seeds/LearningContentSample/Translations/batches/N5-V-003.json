@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu từng mục và 36 câu ví dụ theo nguyên bản tiếng Nhật. Bản dịch do AI biên soạn và tự rà soát.",
+    "Nguồn không có ví dụ cho あれ và いいえ. Giữ danh sách ví dụ trống cho hai mục này.",
+    "Mục 一日 giữ cách đọc いちにち cho nghĩa chỉ thời lượng. Ghi rõ ついたち là cách đọc khi chỉ ngày mùng một. Đối chiếu tài liệu Cơ quan Văn hóa Nhật Bản tại https://www.bunka.go.jp/seisaku/kokugo_nihongo/kyoiku/seikatsusha/h25_nihongo_program_a/pdf/a_25.pdf",
+    "Hai ví dụ của 忙しい đều chỉ sự bận rộn. Câu 235804 lược đối tượng được yêu cầu nên bản dịch giữ cách diễn đạt chung."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55f3080ce4",
+      "Fields": {
+        "Meaning": "Đi bộ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "歩く diễn tả việc di chuyển bằng chân. Dùng 歩いて行く để nói đi bộ đến một nơi. Trong 道を歩く, を đánh dấu con đường mình đi qua.",
+        "UsageNotes": "Thể て là 歩いて."
+      },
+      "Examples": {
+        "83212": "Không được vừa đi bộ vừa đọc sách.",
+        "231584": "Bạn sẽ đi bộ hay đi xe buýt?"
+      },
+      "SourceHash": "0829c7a2f37a58a883367df42988996b2180bed079fddc0f535fcee742fbb45e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d727a76b22",
+      "Fields": {
+        "Meaning": "Cái kia, vật kia",
+        "PartOfSpeech": "Đại từ chỉ định",
+        "Explanation": "あれ chỉ vật ở xa cả người nói và người nghe. Có thể dùng từ này một mình để thay cho tên vật.",
+        "UsageNotes": "Khi có danh từ theo sau, dùng あの, như あの本 (cuốn sách kia). あれ？ cũng có thể là tiếng thốt lên khi ngạc nhiên."
+      },
+      "Examples": {},
+      "SourceHash": "09e63fe2557bf46e1a07a1665779b50ae6792b193a56379861586639ed207f26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e37a087c0f",
+      "Fields": {
+        "Meaning": "Tốt, hay, phù hợp, được",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "いい dùng để khen hoặc đánh giá một thứ là tốt, phù hợp. 〜すればいい có thể nêu việc cần làm là đủ. よくする nghĩa là làm cho tốt hơn.",
+        "UsageNotes": "Khi chia phủ định hoặc quá khứ, dùng よくない và よかった. Dạng よい cùng nghĩa với いい."
+      },
+      "Examples": {
+        "194533": "Chỉ cần đọc thêm hai, ba trang nữa là được.",
+        "203075": "Nhảy múa giúp cải thiện vóc dáng."
+      },
+      "SourceHash": "7b5c727ca4d7c41d4309468d6b9c6d18fa4d95de95033af889d095a1406ad288"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d4596ae46",
+      "Fields": {
+        "Meaning": "Không, không phải",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "いいえ là lời đáp phủ định, thường dùng khi trả lời câu hỏi có hoặc không. Chẳng hạn, いいえ、違います có nghĩa là Không, không phải vậy.",
+        "UsageNotes": "Trong hội thoại thân mật có thể dùng ううん."
+      },
+      "Examples": {},
+      "SourceHash": "3555023a54fc7c402912ccafaf68910ded95668e500fb28f29c9a47e14820a59"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae0cc00f94",
+      "Fields": {
+        "Meaning": "Nói, bảo, gọi là",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "言う dùng khi nói ra lời hoặc dẫn lời ai đó. Nội dung được dẫn thường đi với と, như 「ありがとう」と言う. 〜という cũng có thể giới thiệu tên gọi.",
+        "UsageNotes": "Thể て là 言って, thể quá khứ thông thường là 言った."
+      },
+      "Examples": {
+        "216629": "Tôi sẽ mắng cho một trận.",
+        "236431": "John nói: “Mọi người nghỉ một lát nào.”"
+      },
+      "SourceHash": "93d8e3e52c2855bd0a5f83c957e1cae1b0803c1fefda231e02fc420ac8159d6a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f074820b1",
+      "Fields": {
+        "Meaning": "Nhà, nhà ở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家（いえ）chỉ căn nhà hoặc nơi mình ở. 家にいる nghĩa là ở nhà, còn 家に帰る nghĩa là về nhà.",
+        "UsageNotes": "家 cũng có thể đọc là うち trong một số ngữ cảnh. Mục này dùng cách đọc いえ."
+      },
+      "Examples": {
+        "80048": "Có thể nhìn thấy một căn nhà giữa những hàng cây.",
+        "83093": "Mẹ tôi đâu phải lúc nào cũng ở nhà."
+      },
+      "SourceHash": "0f2fd92aecb65aa33d4c76ec890be223f629b81965813ff459212fd3cb65c3ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3f296ad9a",
+      "Fields": {
+        "Meaning": "Thế nào, ra sao (lịch sự)",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "いかが là cách nói lịch sự tương ứng với どう. Dùng 〜はいかがですか để mời ai dùng thứ gì, hoặc 〜というのはいかがでしょうか để hỏi ý kiến về một đề xuất.",
+        "UsageNotes": "Khi mời đồ ăn hoặc thức uống, có thể dịch tự nhiên thành “Anh/chị có muốn dùng… không ạ?”."
+      },
+      "Examples": {
+        "74894": "Anh/chị thấy sao nếu đeo kính áp tròng?",
+        "196854": "Bạn có muốn dùng thịt xông khói hoặc xúc xích không?"
+      },
+      "SourceHash": "59d227326ce77a836a9e383de36548c9afa5ccab9382b1d2d1cb8de62f31f30d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "66e4692df7",
+      "Fields": {
+        "Meaning": "Đi, đi đến",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "行く chỉ việc đi đến một nơi. Đích đến thường đi với に hoặc へ, phương tiện đi với で. Dùng gốc thể ます ＋ に行く để nói đi làm việc gì, như 泳ぎに行く (đi bơi).",
+        "UsageNotes": "Thể て và thể quá khứ là 行って và 行った."
+      },
+      "Examples": {
+        "84793": "Bố tôi đã đi sang Mỹ mất rồi.",
+        "226648": "Mẹ ơi, con đi bơi được không?"
+      },
+      "SourceHash": "1be97b828d91e67784552b19afe11125393bb8aa655573e25e622864f9189ffe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "026ae57b50",
+      "Fields": {
+        "Meaning": "Mấy cái, bao nhiêu, mấy tuổi",
+        "PartOfSpeech": "Từ nghi vấn",
+        "Explanation": "いくつ dùng để hỏi số lượng chung, tuổi hoặc một con số như kích cỡ. Ví dụ りんごはいくつありますか hỏi có bao nhiêu quả táo.",
+        "UsageNotes": "おいくつですか là cách hỏi tuổi lịch sự. Khi cần hỏi một đơn vị đếm cụ thể, có thể dùng 何 kèm đơn vị tương ứng."
+      },
+      "Examples": {
+        "228303": "Vòng eo của bạn là bao nhiêu?",
+        "233594": "Bố anh/chị bao nhiêu tuổi rồi ạ?"
+      },
+      "SourceHash": "92a35273ee1e542f705f054b535342fb1514707fd3c69e373cee0d27a058232d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fc98c6938",
+      "Fields": {
+        "Meaning": "Bao nhiêu tiền, giá bao nhiêu",
+        "PartOfSpeech": "Từ nghi vấn, phó từ",
+        "Explanation": "いくら dùng để hỏi giá hoặc số tiền. これはいくらですか hỏi món này giá bao nhiêu. Dùng địa điểm ＋ までいくらですか để hỏi chi phí đi đến đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197388": "Đi đến khách sạn Hilton hết bao nhiêu tiền?",
+        "223306": "Chiếc khăn tay này giá bao nhiêu?"
+      },
+      "SourceHash": "08d231c32b6a1944fd8ebb917ff985d173d66464614efda8137b68c924f7febb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43c874a6c8",
+      "Fields": {
+        "Meaning": "Ao, hồ nhỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "池 chỉ một vùng nước đọng như ao trong công viên hoặc ao trong vườn. 池に水がある nghĩa là trong ao có nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207858": "Cái ao đó hầu như không có nước.",
+        "220757": "Mùa hè vừa rồi, cái ao này đã cạn nước."
+      },
+      "SourceHash": "fa3408a2e965f51c03f1d434b55ee0ca52a5d0e8f515c1b72fb9e794130f6f39"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca76162587",
+      "Fields": {
+        "Meaning": "Bác sĩ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "医者 chỉ người làm nghề khám và chữa bệnh. 医者になる nghĩa là trở thành bác sĩ.",
+        "UsageNotes": "Khi gọi trực tiếp một bác sĩ, thường dùng 先生（せんせい）."
+      },
+      "Examples": {
+        "122341": "Có bác sĩ nào nói được tiếng Nhật không?",
+        "190904": "Tôi đã định trở thành bác sĩ, nhưng…"
+      },
+      "SourceHash": "ae18e5599c08348e1f32e5bb32d8b8ab0b16f6cca1ea5eea4659f4ef3011018f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d305fa14a8",
+      "Fields": {
+        "Meaning": "Ghế, ghế ngồi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "いす chỉ ghế dùng để ngồi. Có thể gặp các cách viết 椅子, いす và イス. いすに座る nghĩa là ngồi xuống ghế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202860": "Bạn dịch cái ghế ra một chút được không?",
+        "229123": "Cứ để nguyên cái ghế ở đó."
+      },
+      "SourceHash": "0fb666f6356b8859637f119fc1ce87e1d2c5d0ddb895e743c37e60b46c23e65a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd1bcc2b1b",
+      "Fields": {
+        "Meaning": "Bận, bận rộn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "忙しい（いそがしい）tả tình trạng có nhiều việc phải làm. 最近忙しい nghĩa là gần đây bận. Khi nói 忙しくてそれどころじゃない, người nói bận đến mức không có thời gian hoặc tâm trí cho việc đang được nhắc đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82529": "Tôi bận quá, đâu có hơi sức lo chuyện đó.",
+        "223466": "Dạo này tôi bận lắm."
+      },
+      "SourceHash": "83dcbc86367d49c365c1ee4239ef049cfc8804fa860954ce5db1d6ec81b59be1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4dae367794",
+      "Fields": {
+        "Meaning": "Đau, nhức",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "痛い diễn tả cảm giác đau. Dùng bộ phận cơ thể ＋ が痛い, như 頭が痛い (đau đầu). 痛いところ là chỗ bị đau.",
+        "UsageNotes": "Dạng phủ định là 痛くない. Khi thốt lên 痛い！, có thể dịch là “Đau quá!”."
+      },
+      "Examples": {
+        "125689": "Xin làm sao cho tôi không bị đau.",
+        "196436": "Anh/chị còn đau ở chỗ nào khác không?"
+      },
+      "SourceHash": "508388f8bf46cff951b8bf83f84d9ed52b779d82df1196e9a4307da28e7172db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d8f862791",
+      "Fields": {
+        "Meaning": "Một, số một",
+        "PartOfSpeech": "Số từ, tiền tố",
+        "Explanation": "一（いち）là số một. Có thể ghép với đơn vị, như 一マイル (một dặm). Trong 東京一, 一 đứng sau tên địa điểm để chỉ đứng đầu ở Tokyo.",
+        "UsageNotes": "Cách đọc thay đổi theo từ ghép và đơn vị đếm, như 一本（いっぽん）và 一人（ひとり）."
+      },
+      "Examples": {
+        "218179": "Đây là nhà hàng Ấn Độ ngon nhất Tokyo.",
+        "223472": "Hãy đi dọc con đường này một dặm."
+      },
+      "SourceHash": "32f1b4763b9651360769af1927b477f6f61bfe887a45c7eedafa36f0b36f6fb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1cfccd0cdd",
+      "Fields": {
+        "Meaning": "Một ngày, cả ngày",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "一日（いちにち）chỉ khoảng thời gian một ngày, hoặc suốt cả ngày tùy câu. 一日で nhấn mạnh việc gì đó xảy ra trong vòng một ngày.",
+        "UsageNotes": "Khi 一日 chỉ ngày mùng một của tháng, cách đọc là ついたち."
+      },
+      "Examples": {
+        "190280": "Tôi lỡ tiêu mất 500 đô la chỉ trong một ngày.",
+        "190284": "Có vẻ hôm nay trời sẽ đẹp cả ngày đấy."
+      },
+      "SourceHash": "463f20b97ceefcfff1484740b33cf326e00022bcff2e37d954e603472a5241e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb96f363df",
+      "Fields": {
+        "Meaning": "Nhất, đứng đầu, đầu tiên",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "いちばん thường viết là 一番. Đặt trước tính từ để chỉ mức độ cao nhất, như いちばんおいしい (ngon nhất). Dạng いちばんの ＋ danh từ có thể nêu người hoặc vật đứng đầu theo tiêu chí đang nói.",
+        "UsageNotes": "Trong số thứ tự, 一番 cũng có thể chỉ số một hoặc vị trí đầu tiên."
+      },
+      "Examples": {
+        "223023": "Quả táo này ngon nhất.",
+        "234637": "Tên đó ngốc nhất lớp."
+      },
+      "SourceHash": "dea478a6f668c50768c44dded6e2c2331de8c8cb7b1722a58a2f934b629eb30c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fac6fc0838",
+      "Fields": {
+        "Meaning": "Khi nào, bao giờ",
+        "PartOfSpeech": "Từ nghi vấn chỉ thời gian",
+        "Explanation": "いつ dùng để hỏi thời điểm. いつにしましょうか dùng khi cùng chọn một ngày hoặc giờ cho một việc.",
+        "UsageNotes": "いつか có thể mang nghĩa một lúc nào đó. Từ đó khác với 五日（いつか）, vốn chỉ ngày mùng năm hoặc khoảng năm ngày."
+      },
+      "Examples": {
+        "198453": "Mình tổ chức tiệc khi nào nhỉ?",
+        "228596": "Khi nào anh/chị đi du lịch ạ?"
+      },
+      "SourceHash": "1cf564fc26f72df3e6aaf46991ed5a1690001dd767b9a3158a096302d250bf2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a7c4baf86",
+      "Fields": {
+        "Meaning": "Năm ngày, ngày mùng năm",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "五日（いつか）chỉ ngày mùng năm trong tháng hoặc khoảng thời gian năm ngày. 1月5日 là ngày mùng năm tháng Một, còn 五日待つ là chờ năm ngày.",
+        "UsageNotes": "五日間（いつかかん）chỉ rõ khoảng thời gian năm ngày."
+      },
+      "Examples": {
+        "235115": "Chờ tôi năm ngày nhé.",
+        "235804": "Xin cho tôi từ ngày 5 đến ngày 15 tháng Một."
+      },
+      "SourceHash": "f33f6cb2eaf424a4a4530a919fd3d4428c381cf585a5889f56db66c54bba8bf7"
+    }
+  ]
+}

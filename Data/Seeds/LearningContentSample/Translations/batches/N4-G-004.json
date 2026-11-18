@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-darou-ka",
+      "Fields": {
+        "Meaning": "Không biết liệu…",
+        "Formation": "Thể thông thường ＋ のだろうか (danh từ và tính từ な dùng な trước の)",
+        "Explanation": "Diễn tả sự tự hỏi hoặc suy ngẫm về một điều chưa chắc chắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-darou-ka:example:1": "Không biết anh ấy có đang nói thật không.",
+        "no-darou-ka:example:2": "Học đến mức này rồi, liệu mình có đỗ kỳ thi không?"
+      },
+      "SourceHash": "cd6b7321b242f3c3812ddb4386b5780236cc659282d73330e3e1dc1b11511dc6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-no-hitotsu-da",
+      "Fields": {
+        "Meaning": "Là một trong số…",
+        "Formation": "A ＋ は ＋ nhóm ＋ の一つだ／の一人だ",
+        "Explanation": "Xếp A vào một tập hợp. Dùng 一つ với sự vật hoặc địa điểm, dùng 一人 với người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-no-hitotsu-da:example:1": "Công viên này là một trong những nơi đẹp nhất thị trấn.",
+        "wa-no-hitotsu-da:example:2": "Cậu ấy là một trong những học sinh cao nhất lớp."
+      },
+      "SourceHash": "ea1bf70d4dc59dc278b559e148728810fc499f1bd22ec2bdab7db5a53d9e898e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "fuu",
+      "Fields": {
+        "Meaning": "Theo kiểu, mang phong cách",
+        "Formation": "Danh từ ＋ 風（ふう）",
+        "Explanation": "Hậu tố 風 chỉ kiểu hoặc phong cách. Sau đó có thể thêm の để bổ nghĩa danh từ, hoặc に để bổ nghĩa động từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "fuu:example:1": "Quán cà phê này được thiết kế theo kiểu xưa nên rất dễ chịu.",
+        "fuu:example:2": "Hôm nay mẹ nấu cho tôi món súp kiểu Trung Hoa."
+      },
+      "SourceHash": "3bf116b87b42bcf511251f3d7e9b6234282e5bddbd0d7155ca068945a2d72a2f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ra",
+      "Fields": {
+        "Meaning": "Hậu tố chỉ số nhiều hoặc nhóm người",
+        "Formation": "Đại từ hay từ chỉ người ＋ ら",
+        "Explanation": "Tạo từ chỉ nhóm, như 僕ら là chúng tôi hoặc chúng ta, 彼ら là họ. Sắc thái tùy từ đứng trước và hoàn cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ra:example:1": "Hồi nhỏ, chúng tôi thường chơi ở con sông này.",
+        "ra:example:2": "Nghe nói họ sẽ kết hôn vào năm tới."
+      },
+      "SourceHash": "5e555765a8947d39c16ba692c085b2ff355354c48a10a446e01452a37df643d1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "aida",
+      "Fields": {
+        "Meaning": "Trong suốt khoảng thời gian",
+        "Formation": "Danh từ ＋ の ＋ 間／mệnh đề bổ nghĩa ＋ 間",
+        "Explanation": "Dùng khi hành động kéo dài hoặc lặp lại trong khoảng thời gian nêu ra. Hai câu minh họa việc lặp lại mỗi ngày và việc kéo dài liên tục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "aida:example:1": "Trong kỳ nghỉ hè, ngày nào tôi cũng bơi ở biển.",
+        "aida:example:2": "Suốt lúc em bé ngủ, tôi đọc sách."
+      },
+      "SourceHash": "b9cc043d9dc3ef561f8e570a0f47240abf5af805b9b2f9235f4ea738b2cc8aaf"
+    }
+  ]
+}

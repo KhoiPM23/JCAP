@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c2b71ef11",
+      "Fields": {
+        "Meaning": "Đạo đức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "道徳（どうとく）có nghĩa là đạo đức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101627": "Anh ấy thiếu ý chí đạo đức.",
+        "204964": "Điều đó trái đạo đức."
+      },
+      "SourceHash": "c7500e8d35a5cb19f78c0915b84ea99d05f23a974fbbee6a49f2aada86e01b42"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17dc7366d9",
+      "Fields": {
+        "Meaning": "Bỏ phiếu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "投票（とうひょう）có nghĩa là bỏ phiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110581": "Anh ấy đã trưởng thành nên có thể bỏ phiếu.",
+        "235583": "Nếu đã đủ 20 tuổi thì tôi có thể bỏ phiếu."
+      },
+      "SourceHash": "821dbe82e9dff73b8467cce7d8417bf8019b1bb0660c53c5bc2efd72870e0d3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b9d02a8165",
+      "Fields": {
+        "Meaning": "Tương tự, như",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ, hậu tố",
+        "Explanation": "同様（どうよう）có nghĩa là tương tự, như.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221386": "Chiếc xe này còn như mới.",
+        "229747": "Có một công việc cũng không khó như việc kia."
+      },
+      "SourceHash": "5ea668acc20fb852568ad047c1c4feadf1e1c617034596ea1d30a8301a3794d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2fd46f58a",
+      "Fields": {
+        "Meaning": "Đồng nghiệp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "同僚（どうりょう）có nghĩa là đồng nghiệp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101641": "Anh ấy khó hòa đồng với đồng nghiệp.",
+        "162960": "Đồng nghiệp của tôi đã sửa báo cáo để làm sai lệch nội dung."
+      },
+      "SourceHash": "eea6711d96d934e88169c5d57b925422874b4a79e61f90c468cf031f6c6239bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f6da4441b7",
+      "Fields": {
+        "Meaning": "Đường, đường sá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "道路（どうろ）có nghĩa là đường, đường sá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198717": "Đường phố New York rất rộng.",
+        "211693": "Vách đá nhô ra phía trên con đường."
+      },
+      "SourceHash": "7b1b580e7acafe245d2d8b63ff35458afc8e24aec25aaaf9c4b7552f9483d9ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d8001f8cf",
+      "Fields": {
+        "Meaning": "Cho qua, dẫn vào, giữ vững",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "通す（とおす）có nghĩa là cho qua, dẫn vào, giữ vững.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97850": "Anh ấy mời khách vào phòng khách.",
+        "110500": "Anh ấy là người luôn làm theo ý mình."
+      },
+      "SourceHash": "ab4ff0fc7004f01994b1577e3c7af55603bff00e59122609b3ecc154c886cd2e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6763e0f981",
+      "Fields": {
+        "Meaning": "Đường, lối đi, sự lưu thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "通り（とおり）có nghĩa là đường, lối đi, sự lưu thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222889": "Con ngõ này có nhiều người qua lại.",
+        "222897": "Ống khói này thoát khói kém hơn trước."
+      },
+      "SourceHash": "69e20ff41fe4c6abf3093227548c55fbe5da617f2c13617ab227b8c541028848"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1ddd6b914",
+      "Fields": {
+        "Meaning": "Đi qua, đi ngang qua",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "通り過ぎる（とおりすぎる）có nghĩa là đi qua, đi ngang qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77573": "Đoàn tàu chạy ngang qua chỗ chúng tôi.",
+        "160303": "Tôi đi qua con đường tối đó."
+      },
+      "SourceHash": "feb8b36b410f197f06175f6ff499d051e87e131cd68c9c10704b4b36d7f211f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bba3ad9899",
+      "Fields": {
+        "Meaning": "Thành phố lớn, đô thị",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "都会（とかい）có nghĩa là thành phố lớn, đô thị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101861": "Anh ấy thích nông thôn hơn thành phố.",
+        "230690": "Họ mơ ước được sống ở đô thị."
+      },
+      "SourceHash": "1e5f93e485cb84f02a590199b9a719d641f076824c25339dfaab0164c51c874e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff30b33097",
+      "Fields": {
+        "Meaning": "Lúc, khi, thời gian",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "時（とき）có nghĩa là lúc, khi, thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79711": "Ban đêm là lúc hầu hết mọi người ngủ.",
+        "235958": "Anh ấy vỡ giọng năm 12 tuổi."
+      },
+      "SourceHash": "9961aed919103596abd6feca498995db958ca7330d917df50b3b76897c65bfce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a14ba106bc",
+      "Fields": {
+        "Meaning": "Giải, tháo, miễn khỏi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "解く（とく）có nghĩa là giải, tháo, miễn khỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97844": "Anh ấy cố giải bài đó.",
+        "104339": "Anh ấy được miễn trách nhiệm nặng nề đó."
+      },
+      "SourceHash": "aff62b92b59f5a94bb89e7b717724fc8d55c18196b3222ec70221207d259a43e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ed2e741fa",
+      "Fields": {
+        "Meaning": "Độc, chất độc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "毒（どく）có nghĩa là độc, chất độc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196728": "Một số loài rắn có nọc độc.",
+        "222361": "Loài cá này không có độc."
+      },
+      "SourceHash": "b7d00895c11ff265ceacb54419ab9311e262e9948ec48a8137ed2f021edb01e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f57860a6ca",
+      "Fields": {
+        "Meaning": "Giỏi, sở trường",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "得意（とくい）có nghĩa là giỏi, sở trường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91014": "Cô ấy nói tiếng Anh giỏi.",
+        "231810": "Bạn có giỏi toán không?"
+      },
+      "SourceHash": "8844252a89ff24e13818d40c3d22cb52c10544b51c43ca1e252be6750b32c5be"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d45a4669a3",
+      "Fields": {
+        "Meaning": "Đọc sách",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "読書（どくしょ）có nghĩa là đọc sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83033": "Mẹ tôi không thể đọc sách nếu không đeo kính.",
+        "91118": "Cô ấy đọc sách suốt ngày."
+      },
+      "SourceHash": "7e561f4b5200334b9eacc411042a14100ad1ad4e735f5b40b13c9e15579853cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "41766d271a",
+      "Fields": {
+        "Meaning": "Độc thân",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "独身（どくしん）có nghĩa là độc thân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91130": "Cô ấy độc thân suốt đời.",
+        "109918": "Ông ấy sống độc thân cả đời."
+      },
+      "SourceHash": "ce799caa68385cb00f951ff44f776ed694be58fabe2031f4dacfb9d080410733"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9424213f90",
+      "Fields": {
+        "Meaning": "Đặc điểm, nét đặc trưng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "特徴（とくちょう）có nghĩa là đặc điểm, nét đặc trưng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213618": "Thị trấn đó không có đặc điểm gì nổi bật.",
+        "214813": "Đội hình scrum là một đặc điểm của bóng bầu dục."
+      },
+      "SourceHash": "cef7e571bc1518588e026b104fdd8a2f23ca985b4e06ddc39dee10f2386a9e2a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bd987a58a",
+      "Fields": {
+        "Meaning": "Độc đáo, riêng có",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, tính từ đuôi な",
+        "Explanation": "独特（どくとく）có nghĩa là độc đáo, riêng có.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199122": "Chủ nghĩa Quốc xã có phải chỉ riêng nước Đức mới có không?",
+        "213920": "Tập quán như vậy không chỉ có ở người Mỹ."
+      },
+      "SourceHash": "81a40cf8daf4e7d0a4415835c44274b0b412efa182736b00c0c3dcc933a0e278"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0d9e1cfdac",
+      "Fields": {
+        "Meaning": "Độc lập, tự lập",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "独立（どくりつ）có nghĩa là độc lập, tự lập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86286": "Cô ấy sống tự lập, không phụ thuộc bố mẹ.",
+        "228371": "Ấn Độ giành độc lập từ Anh năm 1947."
+      },
+      "SourceHash": "9c46ca34cb53c70b54ec187a49f752f201c7be3f1fb3665027a798eed7db2547"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13aa7b864c",
+      "Fields": {
+        "Meaning": "Giải được, được tháo ra",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "解ける（とける）có nghĩa là giải được, được tháo ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98792": "Cả anh ấy và tôi đều giải được bài toán đó.",
+        "112339": "Tôi nghĩ anh ấy giải được bài đó."
+      },
+      "SourceHash": "9bbc386e8c38446772cb43f5464914e2df53c1c8d36db6796af6f644b1c9338c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dce7ebe444",
+      "Fields": {
+        "Meaning": "Đâu đó, chỗ nào đó",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "どこか（どこか）có nghĩa là đâu đó, chỗ nào đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187188": "Kỳ nghỉ hè bạn có đi đâu không?",
+        "201044": "Nhìn qua tôi đã biết có gì đó không ổn."
+      },
+      "SourceHash": "04758c151adcdfd32bb42a19a12dcf7ba57d1e06724bd5804187974c9b4962ff"
+    }
+  ]
+}

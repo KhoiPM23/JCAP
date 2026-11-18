@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mo-ba-mo",
+      "Fields": {
+        "Meaning": "Vừa… vừa…, cũng… cũng…",
+        "Formation": "A ＋ も ＋ vị ngữ thể ば、B ＋ も ＋ vị ngữ",
+        "Explanation": "Liệt kê hai đặc điểm cùng có hoặc cùng thiếu. ば ở đây nối hai ý song song.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mo-ba-mo:example:1": "Cửa hàng này vừa có nhiều mặt hàng vừa bán giá rẻ.",
+        "mo-ba-mo:example:2": "Giờ tôi vừa không có tiền, vừa không có thời gian."
+      },
+      "SourceHash": "2c5b25a21c64e7e582fd3c3e68017266bd60b769a9e8a852d49c439f17d5fb7f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "moshika-shitara",
+      "Fields": {
+        "Meaning": "Có lẽ, biết đâu",
+        "Formation": "もしかしたら ＋ mệnh đề ＋ かもしれない",
+        "Explanation": "Nêu một khả năng mà người nói chưa chắc chắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "moshika-shitara:example:1": "Có lẽ anh ấy đã về đến nhà rồi.",
+        "moshika-shitara:example:2": "Biết đâu ngày mai có tuyết."
+      },
+      "SourceHash": "303ef6ef93a4a19b6d0ce3cccbab12e5806edd8c8386a404d5a7f7831547bf00"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "moshimo-tara",
+      "Fields": {
+        "Meaning": "Nếu, giả sử",
+        "Formation": "もしも ＋ mệnh đề điều kiện dạng たら",
+        "Explanation": "Nhấn mạnh tình huống giả định trước khi nêu kết quả, mong muốn hoặc lời nhờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "moshimo-tara:example:1": "Nếu trúng xổ số, tôi muốn đi du lịch vòng quanh thế giới.",
+        "moshimo-tara:example:2": "Nếu có chuyện gì khó khăn thì cứ liên lạc với tôi bất cứ lúc nào."
+      },
+      "SourceHash": "bf51c8bc8c73da99c2b72eaf76cb565a5bf81a0cd1423ff8d6511104a337ba75"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "motto-mo",
+      "Fields": {
+        "Meaning": "Tuy nhiên, có điều",
+        "Formation": "Nhận định。もっとも、ý bổ sung",
+        "Explanation": "Bổ sung một ngoại lệ hoặc giới hạn cho nhận định vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "motto-mo:example:1": "Anh ấy đến phòng tập mỗi ngày. Có điều nghe nói cân nặng vẫn chưa thay đổi.",
+        "motto-mo:example:2": "Cửa hàng này vừa rẻ vừa ngon. Có điều lúc nào cũng đông."
+      },
+      "SourceHash": "73e495e05cd9e1ff398435c08a5f1acf516b678ca6bcbde0ae0d58bc4f14753d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mono-mon",
+      "Fields": {
+        "Meaning": "Vì… mà, tại… mà",
+        "Formation": "Mệnh đề ＋ もの／もん (danh từ và tính từ な thường dùng だ)",
+        "Explanation": "Nêu lý do mang tính cá nhân, đôi khi có sắc thái phân trần. もん thân mật hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mono-mon:example:1": "“Sao không ăn?” “Tại con no rồi mà.”",
+        "mono-mon:example:2": "Con đâu còn nhỏ nữa, con tự đi được mà."
+      },
+      "SourceHash": "b2110ce73721fc02355e383f5f74c05d379d24fd84ceb54ce11d510c076ce06d"
+    }
+  ]
+}

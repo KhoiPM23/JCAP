@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 từ và 40 câu theo bản Nhật. Dùng lại bản dịch các câu 208510, 76494 và 77204.",
+    "Câu về Jim dùng きらいがある để chỉ xu hướng không tốt. Đối chiếu NINJAL tại https://www2.ninjal.ac.jp/dictionaries/IPALBN/pdf_dir/%E3%81%8D%E3%82%89%E3%81%84.pdf"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fee5be397",
+      "Fields": {
+        "Meaning": "Vé",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "切符（きっぷ）chỉ vé đi phương tiện hoặc vé vào cửa. Có thể gặp cách viết キップ.",
+        "UsageNotes": "この切符で nghĩa là dùng vé này."
+      },
+      "Examples": {
+        "220860": "Vé này cho hai người vào được đấy.",
+        "223868": "Vé này dùng được trên xe buýt này không?"
+      },
+      "SourceHash": "2a364ab85de46f7033047a9c7925f36bf37e5e83503b3383fb7a581b02522d12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a94a4be08f",
+      "Fields": {
+        "Meaning": "Hôm qua",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "昨日（きのう）chỉ ngày trước hôm nay. Từ này có thể đứng đầu câu để nêu thời điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169994": "Thời tiết hôm qua thật tệ.",
+        "225950": "Hôm qua thầy cô nói hôm nay sẽ có bài kiểm tra."
+      },
+      "SourceHash": "4a55eff7b532d74012620a4420eca141d0a021e394ca2edd6d010b0e1edc05a5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f81565ad7",
+      "Fields": {
+        "Meaning": "Chín",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "九 là số chín. 九ページ（きゅうページ）nghĩa là trang chín.",
+        "UsageNotes": "Cách đọc thay đổi theo đơn vị. 九時 đọc là くじ."
+      },
+      "Examples": {
+        "108121": "Anh ấy nói: “Chín giờ rồi.”",
+        "179548": "Hãy mở sách đến trang chín."
+      },
+      "SourceHash": "b546a574ce55aefefbcd1c4348663a12fe99332d3a0522c94e6e1268d208bc94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b4faf372f3",
+      "Fields": {
+        "Meaning": "Thịt bò",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "牛肉（ぎゅうにく）là thịt bò. Trong giá bán, 〜につき nghĩa là tính trên mỗi đơn vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122271": "Người Nhật ăn nhiều thịt bò hơn người Anh.",
+        "222379": "Thịt bò này giá bốn đô la mỗi pao."
+      },
+      "SourceHash": "bac6c0d4f5768d556152cd2ec224dd31611ee4d6f0ff56887b65dd6fef5c7750"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0400a204bd",
+      "Fields": {
+        "Meaning": "Hôm nay",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今日（きょう）chỉ ngày hiện tại. 今日は thường dùng để đưa hôm nay làm chủ đề của câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171508": "Hôm nay bố cứ bồn chồn.",
+        "232046": "Hôm nay bạn muốn làm gì?"
+      },
+      "SourceHash": "acb2b4a6f27a4f94f8fa41cfc9a322d113023172905bbde84764d3be8961e2bb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85eb994887",
+      "Fields": {
+        "Meaning": "Phòng học, lớp học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "教室 chỉ phòng dùng để dạy học hoặc lớp học một môn hay kỹ năng. エアロビクス教室 là lớp thể dục nhịp điệu.",
+        "UsageNotes": "LL教室 chỉ phòng thực hành ngoại ngữ."
+      },
+      "Examples": {
+        "228037": "Tôi muốn học thử lớp thể dục nhịp điệu một ngày.",
+        "234825": "Chúng tôi có thể dùng phòng thực hành ngoại ngữ không?"
+      },
+      "SourceHash": "d29a417d852a77a4cd23a28555f5016706aca296f3a9cc08bcab08ea97d6a17f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "976c4f7174",
+      "Fields": {
+        "Meaning": "Anh chị em, anh em trai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "兄弟（きょうだい）có thể chỉ anh chị em nói chung, nhất là khi hỏi số người, hoặc chỉ anh em trai tùy ngữ cảnh.",
+        "UsageNotes": "兄 là anh trai, 弟 là em trai."
+      },
+      "Examples": {
+        "230736": "Người kia chắc hẳn là anh hoặc em trai của Tom.",
+        "232196": "Bạn có bao nhiêu anh chị em?"
+      },
+      "SourceHash": "6017fc2313df4f7464ccb9378f75c8f3318b31664a4781d399662e1113c2387e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec4e1dfc87",
+      "Fields": {
+        "Meaning": "Năm ngoái",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "去年（きょねん）chỉ năm trước năm hiện tại. 去年の秋 nghĩa là mùa thu năm ngoái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191813": "Năm ngoái tôi học năm nhất.",
+        "197333": "Bill đến thăm tôi vào mùa thu năm ngoái."
+      },
+      "SourceHash": "ebed8ad39d453d77dbcb13d176c932a2b0ffbe85e53cc4437b7d7e80ed9f6283"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d106dac023",
+      "Fields": {
+        "Meaning": "Không thích, ghét",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "嫌い（きらい）thường dùng trong mẫu 〜が嫌い để nói không thích hoặc ghét thứ gì.",
+        "UsageNotes": "Trong cụm 〜きらいがある, きらい chỉ một xu hướng không tốt. Câu về Jim dùng nghĩa này."
+      },
+      "Examples": {
+        "76676": "Jim có xu hướng đi quá đà.",
+        "229384": "Không. Cậu ta không thích nước đâu."
+      },
+      "SourceHash": "2070919ff0bcf46334c874766fd9f5a39b69525f90620d0c1c1ba3af30177b3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf23f5fba1",
+      "Fields": {
+        "Meaning": "Cắt, ngắt, tắt, xáo (bài)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "切る（きる）có nghĩa cơ bản là cắt. トランプを切る là xáo bài, còn エアコンを切る là tắt máy điều hòa.",
+        "UsageNotes": "切る có thể て là 切って. 着る, nghĩa là mặc, có thể て là 着て."
+      },
+      "Examples": {
+        "199708": "Xin hãy xáo kỹ bộ bài.",
+        "228042": "Tôi tắt máy điều hòa được không?"
+      },
+      "SourceHash": "a88ef01f4c777f515a5ed70c29168beab7453e46a00ba0be34683a2f53f0db63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "45fbcb8670",
+      "Fields": {
+        "Meaning": "Mặc (áo hoặc trang phục phủ phần thân trên)",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "着る（きる）dùng với áo, váy liền hoặc trang phục phủ phần thân trên. 着ていく nghĩa là mặc trang phục đó khi đi đến đâu.",
+        "UsageNotes": "Với quần hoặc giày, thường dùng 履く（はく）."
+      },
+      "Examples": {
+        "198497": "Bạn định mặc gì đi dự tiệc?",
+        "223601": "Hãy mặc thử chiếc áo len này."
+      },
+      "SourceHash": "1be73009a3958b8f78f33380439ba9e5443fba4392ae35bf463dbcf5eb533202"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43cd9825f0",
+      "Fields": {
+        "Meaning": "Đẹp, sạch, gọn gàng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "きれい có thể tả vẻ đẹp hoặc sự sạch sẽ. Trước danh từ dùng きれいな. きれいにする nghĩa là làm cho sạch, đẹp hoặc gọn tùy ngữ cảnh.",
+        "UsageNotes": "きれい thuộc nhóm tính từ đuôi な dù cách viết kết thúc bằng い."
+      },
+      "Examples": {
+        "205929": "Sau đó hãy lau dọn cho thật sạch nhé.",
+        "208510": "Con sông đó không được sạch lắm."
+      },
+      "SourceHash": "04a3b8b35658549b31e41c16c00f544d8d0bbc98a5286c3a134792ecc0220ecd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "36016e0c51",
+      "Fields": {
+        "Meaning": "Ki-lô-mét, ki-lô-gam",
+        "PartOfSpeech": "Danh từ chỉ đơn vị",
+        "Explanation": "キロ là cách nói rút gọn của キロメートル hoặc キログラム. Dựa vào ngữ cảnh để biết đang nói về quãng đường hay khối lượng.",
+        "UsageNotes": "時速６０キロ nghĩa là 60 km/h."
+      },
+      "Examples": {
+        "196669": "Helen nặng nhiều nhất là 40 kg.",
+        "221393": "Chiếc xe này đang chạy với tốc độ 60 km/h."
+      },
+      "SourceHash": "464e6db727df4f8bae8bc568257755059b48b709dea35cd2bc3bc4d0494f7b99"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a59efa3057",
+      "Fields": {
+        "Meaning": "Ngân hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "銀行（ぎんこう）chỉ ngân hàng. 銀行でお金をおろす nghĩa là rút tiền ở ngân hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179588": "Bạn có bao nhiêu tiền trong ngân hàng?",
+        "179595": "Tôi phải rút tiền ở ngân hàng."
+      },
+      "SourceHash": "4ed5832312c68f8329b88c338019c21415fbde12da3b96af6813fcc055a8266d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b00c4af0a2",
+      "Fields": {
+        "Meaning": "Thứ Sáu",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "金曜日（きんようび）là thứ Sáu. Có thể dùng 金曜日に để nêu thời điểm vào thứ Sáu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179621": "Ngân hàng đóng cửa muộn vào thứ Sáu.",
+        "232112": "Bạn định làm gì vào thứ Sáu?"
+      },
+      "SourceHash": "304e379e8533b3133cb3aa436b6a792e8605113df53d4398fb9bd10bbe026c1f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95ccaa32f5",
+      "Fields": {
+        "Meaning": "Thuốc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "薬（くすり）chỉ thuốc. 薬を飲む là uống thuốc. 薬がなくなる nghĩa là hết thuốc.",
+        "UsageNotes": "４時間おきに nghĩa là cứ mỗi bốn giờ."
+      },
+      "Examples": {
+        "79501": "Khi hết thuốc, hãy quay lại nhé.",
+        "235200": "Hãy uống thuốc này cứ mỗi bốn giờ."
+      },
+      "SourceHash": "c35365464c0932e447e29087c4a39b82bdcf7e9d818ad07b046d4fdd2313924a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a36841ba49",
+      "Fields": {
+        "Meaning": "Xin, vui lòng, làm ơn",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "Dùng động từ thể て ＋ ください để yêu cầu ai đó làm một việc. Danh từ ＋ をください dùng khi xin hoặc gọi một món đồ.",
+        "UsageNotes": "Trong hai câu nguồn, 下さい là cách viết có chữ Hán."
+      },
+      "Examples": {
+        "76494": "Hãy hỏi ở quầy bán báo.",
+        "77204": "Nếu có chuyện muốn nói thì hãy gọi điện cho tôi."
+      },
+      "SourceHash": "6174a0b517fb9b011a3462722bdaaff6476295f8075d5fca9d65e7c8daf45fd6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a123a147d7",
+      "Fields": {
+        "Meaning": "Miệng, chỗ mở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "口（くち）chỉ miệng hoặc chỗ mở để đi qua hay đưa vật vào. Trong hai câu ví dụ, từ này chỉ miệng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173943": "Đừng nói khi miệng còn đầy thức ăn.",
+        "199296": "Sao miệng bạn to thế?"
+      },
+      "SourceHash": "215cd9142a2163951194dda7acd217c9b1357458e10be7b779e7c12d2776f6a5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9dd0572f05",
+      "Fields": {
+        "Meaning": "Giày",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "靴（くつ）chỉ giày. 靴を履く nghĩa là mang giày, 靴を脱ぐ nghĩa là cởi giày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179254": "Hãy dùng bàn chải phủi bụi trên giày.",
+        "179255": "Bạn mang giày cỡ bao nhiêu?"
+      },
+      "SourceHash": "d850542917d5a8165965438a24e9158bd23817114cda3ef7b72330cec79a14da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20a1278928",
+      "Fields": {
+        "Meaning": "Tất, vớ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "靴下（くつした）chỉ tất. 片方 nói về một chiếc trong một đôi. ちぐはぐ diễn tả hai chiếc không cùng đôi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222242": "Chiếc tất còn lại ở đâu rồi?",
+        "237401": "Hai chiếc tất này không cùng đôi."
+      },
+      "SourceHash": "f8d54a14ff25f796be9b175335c2b4bf76e42d94de94e4e9452db6d8d4bb7850"
+    }
+  ]
+}

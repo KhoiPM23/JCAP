@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật. Dùng lại ba câu đã dịch.",
+    "Bản nguồn ghi half minute cho 半分. Sửa theo hai câu Nhật đều chỉ một nửa. Đối chiếu nghĩa khẩu ngữ của 引く với Digital Daijisen tại https://kotobank.jp/word/%E5%BC%95%E3%81%8F-609321"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6485c3c2a7",
+      "Fields": {
+        "Meaning": "Hoa, bông hoa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "花（はな）chỉ hoa. 花が咲く nghĩa là hoa nở. 一本 có thể dùng để đếm một cành hoa.",
+        "UsageNotes": "鼻 (mũi) cũng đọc là はな."
+      },
+      "Examples": {
+        "202395": "Trên bàn có một cành hoa.",
+        "222739": "Bông hoa này đẹp quá!"
+      },
+      "SourceHash": "35146c06334a5e17a56d9ad1d7d08cfd32c1c300ee08aebbe502a970a568b4d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b5843f7fb",
+      "Fields": {
+        "Meaning": "Mũi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鼻（はな）chỉ mũi. 鼻が出る là chảy nước mũi, còn 鼻をかむ là xì mũi.",
+        "UsageNotes": "花 (hoa) cũng đọc là はな."
+      },
+      "Examples": {
+        "85515": "Hình như tôi có polyp trong mũi.",
+        "85518": "Con chảy nước mũi kìa. Xì mũi đi."
+      },
+      "SourceHash": "1a4262d5241030554ce225f73a1ddbc34d962b2a9a9f8bf54efa7a78d840727f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ed0362cc3",
+      "Fields": {
+        "Meaning": "Câu chuyện, lời nói, việc muốn nói",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "話（はなし）chỉ câu chuyện hoặc điều cần trao đổi. 話を聞く là nghe chuyện, còn 話がある là có chuyện muốn nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77142": "Kể tôi nghe chuyện đó đi.",
+        "77204": "Nếu có chuyện muốn nói thì hãy gọi điện cho tôi."
+      },
+      "SourceHash": "4177891f51463178d2f55d532bb15b9d2e63fdec10401cbd518e85d7484e3f64"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d5bde24ec",
+      "Fields": {
+        "Meaning": "Nói, trò chuyện",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "話す（はなす）dùng khi nói một ngôn ngữ hoặc trò chuyện với ai. Người trò chuyện cùng đi với と, còn phương tiện đi với で.",
+        "UsageNotes": "話される là dạng bị động. Thể て là 話して."
+      },
+      "Examples": {
+        "189149": "Tiếng Anh được sử dụng ở Canada.",
+        "215417": "John nói chuyện với khách hàng qua điện thoại."
+      },
+      "SourceHash": "cee47c4738fc59fd1d9395db2e248258e1b3c0ba1a946420ed87ce227cabbbdf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4db42e0181",
+      "Fields": {
+        "Meaning": "Sớm, nhanh",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "早い（はやい）thường chỉ thời điểm sớm. Khi nói 時がたつのは早い, từ này diễn tả cảm giác thời gian trôi nhanh.",
+        "UsageNotes": "速い cũng đọc はやい và thường dùng khi nói về tốc độ."
+      },
+      "Examples": {
+        "150671": "Thời gian trôi nhanh thật.",
+        "171315": "Năm nay mùa xuân đến sớm."
+      },
+      "SourceHash": "a777c6961fe025fbff5ae349001028359a13fccc8e30f6b6529f4bccdd35ac77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "406d15f6e9",
+      "Fields": {
+        "Meaning": "Nhanh, có tốc độ cao",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "速い（はやい）chỉ tốc độ cao, chẳng hạn tốc độ của cú đánh bóng.",
+        "UsageNotes": "Câu 150673 viết はやい bằng hiragana và nói về cảm giác thời gian trôi nhanh."
+      },
+      "Examples": {
+        "150673": "Thời gian trôi nhanh thật nhỉ.",
+        "215557": "Có những cú đánh rất nhanh."
+      },
+      "SourceHash": "cb959a9f32d756b1c52fbd2a5ee61c169c3758f47103f5833740ef6c408cb422"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f16244c585",
+      "Fields": {
+        "Meaning": "Mùa xuân",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "春（はる）chỉ mùa xuân. 春になると thường mở đầu câu nói về việc xảy ra mỗi khi mùa xuân đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147635": "Cứ đến mùa xuân là sông lại tràn bờ ở đây.",
+        "226353": "Chim cu cu đến đây vào mùa xuân."
+      },
+      "SourceHash": "cfa9631023f8bd646ef9c05c939d85d26aa0f5f33e5c3745b54ee0f9a9d6d5d2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f47c4aee42",
+      "Fields": {
+        "Meaning": "Dán",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "貼る（はる）chỉ việc dán một vật lên bề mặt. Bề mặt thường đi với に. 貼ってある nói vật đã được dán và vẫn ở đó.",
+        "UsageNotes": "Thể て là 貼って."
+      },
+      "Examples": {
+        "209617": "Bạn nên dán bức ảnh đó vào album.",
+        "233000": "Tên của bạn được dán lên hộp bằng băng dính."
+      },
+      "SourceHash": "654e325c2c0837d04b769d4b8df40f90ad5994826ed4c8a71a1208e667a70f42"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9edf8548bb",
+      "Fields": {
+        "Meaning": "Trời quang, thời tiết đẹp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "晴れ（はれ）chỉ trạng thái trời quang. 天気は晴れです là cách nói trời quang trong dự báo hoặc khi mô tả thời tiết.",
+        "UsageNotes": "晴れる là động từ chỉ trời quang lên."
+      },
+      "Examples": {
+        "143007": "Tôi nghĩ trời sẽ không quang lên đâu.",
+        "192149": "Trời ở London đang quang đãng."
+      },
+      "SourceHash": "0d8872f30f304b2efa3e17ec9c230cb301571b3f78c156f584743482babdd42b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3be88666ba",
+      "Fields": {
+        "Meaning": "Trời quang lên, hửng lên",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "晴れる（はれる）dùng khi trời trở nên quang đãng. 晴れてきた diễn tả trời bắt đầu hửng lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183770": "Có vẻ trời sẽ sớm hửng lên.",
+        "234462": "Mong ngày mai trời quang lên."
+      },
+      "SourceHash": "0ee83ace9c59cade24ebbbad7d6c9b9969216f8b71f9e297310c38a7e38d6b1c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9cd7c780c3",
+      "Fields": {
+        "Meaning": "Nửa, một nửa",
+        "PartOfSpeech": "Danh từ, từ chỉ lượng",
+        "Explanation": "半（はん）chỉ một nửa khi ghép với đơn vị. 半マイル là nửa dặm. Sau giờ, như 三時半, từ này chỉ thêm 30 phút.",
+        "UsageNotes": "半時間 trong câu nguồn là nửa giờ. Trong giao tiếp cũng thường dùng 三十分."
+      },
+      "Examples": {
+        "121264": "Có lẽ nửa giờ nữa anh ấy sẽ đến đây.",
+        "185085": "Từ đây đến biển chỉ nửa dặm."
+      },
+      "SourceHash": "4e071fb0b8c4ac078306a2b231f95649bcdab9f472dfa358a10f88799afabf0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "532c73de5d",
+      "Fields": {
+        "Meaning": "Buổi tối, đêm",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "晩（ばん）chỉ buổi tối hoặc đêm tùy câu. その晩 nghĩa là tối hôm đó, còn 晩までに là trước hoặc chậm nhất vào buổi tối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121181": "Có lẽ trời sẽ mưa trước tối.",
+        "207157": "Đêm đó có trăng."
+      },
+      "SourceHash": "acc5fdac77d9148ae09381077561190c62df16ba4f763c25706df0b15c85f0da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ee3206bb3f",
+      "Fields": {
+        "Meaning": "Khăn tay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ハンカチ chỉ khăn tay. ハンカチにアイロンをかける nghĩa là ủi khăn tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161866": "Tôi đã ủi khăn tay.",
+        "223306": "Chiếc khăn tay này giá bao nhiêu?"
+      },
+      "SourceHash": "10ee6d4124371b1355a2db375a9dfad5e9c0bfd6371d1bc6108518bc227e67cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67775e3b25",
+      "Fields": {
+        "Meaning": "Số, số hiệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "番号（ばんごう）là số dùng để nhận diện, như số điện thoại hoặc số hiệu chuyến bay.",
+        "UsageNotes": "Câu 121170 có cách diễn đạt không chuẩn. 番号を間違えたのではありませんか là cách nói đầy đủ hơn."
+      },
+      "Examples": {
+        "121170": "Có phải anh/chị gọi nhầm số không ạ?",
+        "226580": "Xin cho biết tên và số hiệu chuyến bay."
+      },
+      "SourceHash": "2af70aac78f96aed73a3d504be347ae2443188f7ae5b7f7518d2e918ed362bd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1cda8cb11",
+      "Fields": {
+        "Meaning": "Một nửa, phân nửa",
+        "PartOfSpeech": "Danh từ chỉ lượng",
+        "Explanation": "半分（はんぶん）chỉ một trong hai phần bằng nhau. 半分に切る nghĩa là cắt làm đôi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204534": "Hãy cắt cái đó làm đôi.",
+        "225320": "Bạn lấy nửa nào của chiếc bánh cũng được."
+      },
+      "SourceHash": "75543d3cd4581f555354ec9d8be8eda84e80a920dc8cd02a647272f409d879a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a38c65004",
+      "Fields": {
+        "Meaning": "Đông, phía đông",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "東（ひがし）chỉ hướng đông. Địa điểm ＋ の東に chỉ vị trí phía đông của địa điểm đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124292": "Bầu trời phía đông bắt đầu hửng sáng.",
+        "210091": "Thành phố đó nằm về phía đông London."
+      },
+      "SourceHash": "00562f58594fe5cbf4fbae4112f4fb91a3ed034da4f402eda2f2e72ebbe634d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b84039234",
+      "Fields": {
+        "Meaning": "Kéo, lùi lại, thấy mất hứng",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "引く（ひく）có nghĩa cơ bản là kéo, như カーテンを引く (kéo rèm). Trong hội thoại, 引く cũng có thể diễn tả phản ứng muốn tránh xa hoặc mất hứng trước điều gây khó chịu.",
+        "UsageNotes": "Câu 76875 dùng nghĩa khẩu ngữ và thể hiện nhận xét chủ quan của người nói."
+      },
+      "Examples": {
+        "76875": "Thấy cuốn sách kiểu đó thì phụ nữ bình thường sẽ mất hứng thôi!",
+        "226492": "Tấm rèm được kéo từ từ."
+      },
+      "SourceHash": "3b6e5187fdfdc852ac1c2f6d2503c839e0a569cfe72186fd76e5863e0b93734c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23911a0718",
+      "Fields": {
+        "Meaning": "Chơi, đánh, gảy (nhạc cụ)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "弾く（ひく）dùng khi chơi nhạc cụ như ghi-ta hoặc piano. Nhạc cụ đi với を.",
+        "UsageNotes": "Cùng cách đọc ひく, 引く có thể mang nghĩa kéo."
+      },
+      "Examples": {
+        "226059": "Chơi đàn ghi-ta rất thú vị.",
+        "229616": "Không thể nào Ann đang chơi piano được."
+      },
+      "SourceHash": "70eb9cbf0845a55b83923a7ad9c8b5f0c5627b6c1a9419329ce562ae2e3c99c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e25cf6ed2f",
+      "Fields": {
+        "Meaning": "Thấp, nhỏ (mức độ)",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "低い（ひくい）chỉ độ cao hoặc mức thấp. 音を低くする trong câu nguồn được hiểu là vặn nhỏ âm thanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192612": "Xin vặn nhỏ tiếng radio.",
+        "223992": "Chiếc ghế này thấp quá đối với tôi."
+      },
+      "SourceHash": "b8e96b1c39467677254032d914f5f3d0e1cd7b5f59e544f3aa4b457575653496"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a81612169c",
+      "Fields": {
+        "Meaning": "Máy bay",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "飛行機（ひこうき）chỉ máy bay. 飛行機で旅行する là đi du lịch bằng máy bay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85661": "Chẳng bao lâu chiếc máy bay đã khuất tầm mắt.",
+        "231608": "Bạn đã từng đi du lịch bằng máy bay chưa?"
+      },
+      "SourceHash": "285d28e5fc05a277c175da868e8776ec8996bd53d98ff9d469c5c6ccb3593432"
+    }
+  ]
+}

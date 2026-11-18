@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ten",
+      "Fields": {
+        "Meaning": "Xét ở điểm, về mặt",
+        "Formation": "Mệnh đề bổ nghĩa ＋ 点で／点では (cũng dùng という点)",
+        "Explanation": "Giới hạn nhận định vào một khía cạnh cụ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ten:example:1": "Xét về giá rẻ thì điện thoại này khá hấp dẫn.",
+        "ten:example:2": "Xét về kinh nghiệm dày dặn, tôi nghĩ anh ấy phù hợp với vị trí đó."
+      },
+      "SourceHash": "e7b2ae5655b2edfdc437f175dbca570a877b6b4fe26dfaa47a8e438fa62e1fdd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-koto-da",
+      "Fields": {
+        "Meaning": "Nghe nói, có nghĩa là",
+        "Formation": "Thể thông thường ＋ ということだ",
+        "Explanation": "Có thể thuật lại thông tin nghe được hoặc nêu điều suy ra từ một dấu hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-koto-da:example:1": "Nghe nói trưởng phòng ngày mai không đến được.",
+        "to-iu-koto-da:example:2": "Không trả lời có nghĩa là người ấy không quan tâm."
+      },
+      "SourceHash": "e2b27e4847eb7158038ba3cd5e437d8636b35758bf08512105506d1392c431cc"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-to",
+      "Fields": {
+        "Meaning": "Nói đến, ý anh chị là",
+        "Formation": "Tên gọi hoặc chủ đề ＋ というと",
+        "Explanation": "Gợi điều liên tưởng hoặc hỏi lại xem người nói đang nhắc đến ai hay điều gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-to:example:1": "Nói đến Kyoto, tôi nhớ đến những ngôi chùa cổ.",
+        "to-iu-to:example:2": "Anh chị nói “người ấy” là anh Tanaka phải không?"
+      },
+      "SourceHash": "16f9b18053dd36cf75481af04c909129149fc89c47054bb6709a9664e6b2cc3c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-nowa",
+      "Fields": {
+        "Meaning": "Gọi là… nghĩa là, chuyện… là vì",
+        "Formation": "Từ hoặc mệnh đề ＋ というのは ＋ lời giải thích",
+        "Explanation": "Đưa một thuật ngữ hoặc sự việc ra làm chủ đề rồi giải thích nghĩa hay nguyên nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-nowa:example:1": "Shikikin là khoản tiền đặt cọc khi thuê phòng.",
+        "to-iu-nowa:example:2": "Gần đây tôi mệt là vì công việc bận."
+      },
+      "SourceHash": "ca8999fa81e368d359624afbe0291153f17f579f58bd6ba561568f096e159eec"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-nowa-jijitsu-da",
+      "Fields": {
+        "Meaning": "Đúng là, có một sự thật là",
+        "Formation": "Mệnh đề ＋ というのは事実だ",
+        "Explanation": "Khẳng định sự việc đã nêu là có thật. Câu tiếp theo có thể bổ sung giới hạn hoặc kết quả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-nowa-jijitsu-da:example:1": "Đúng là anh ấy đã cố gắng. Chỉ có điều vẫn chưa đạt kết quả.",
+        "to-iu-nowa-jijitsu-da:example:2": "Giá cả đang tăng là sự thật."
+      },
+      "SourceHash": "39d4dc7cc5e58fbdaf7521799c30dad0fad05600619901459ad22df6efbbf326"
+    }
+  ]
+}

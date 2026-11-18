@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yori-hou-ga",
+      "Fields": {
+        "Meaning": "B hơn A về một đặc điểm",
+        "Formation": "A ＋ より ＋ B ＋ のほうが ＋ tính từ\nB ＋ のほうが ＋ A ＋ より ＋ tính từ",
+        "Explanation": "より đánh dấu mốc so sánh A. のほうが nêu phía B là phía nổi trội về đặc điểm được nói đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yori-hou-ga:example:1": "Tàu điện nhanh hơn xe buýt.",
+        "yori-hou-ga:example:2": "Tôi thích mùa đông hơn mùa hè."
+      },
+      "SourceHash": "8b3f5ecbf4a8af55d8c890f64ab466849a97b8a3ab68a7e757f57c8c0397b3ca"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ru-verbs",
+      "Fields": {
+        "Meaning": "Cách chia động từ nhóm 2",
+        "Formation": "Gốc động từ ＋ る／ない／た／ます",
+        "Explanation": "Với động từ nhóm 2, bỏ る cuối để lấy gốc rồi thêm đuôi cần dùng. 見る thành 見ます, còn 食べる thành 食べませんでした ở phủ định quá khứ lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ru-verbs:example:1": "Tôi xem ti vi mỗi tối.",
+        "ru-verbs:example:2": "Tôi đã không ăn sáng."
+      },
+      "SourceHash": "eb07cffe977405798298f532af7a93788ca553c87a6478acc1e25b881f5b853e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wo",
+      "Fields": {
+        "Meaning": "Đánh dấu tân ngữ hoặc nơi đi qua",
+        "Formation": "Danh từ ＋ を ＋ tha động từ\nNơi chốn ＋ を ＋ động từ di chuyển",
+        "Explanation": "を có thể đánh dấu vật chịu tác động hoặc nơi đi qua khi di chuyển. Trợ từ を thường đọc là お.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wo:example:1": "Sáng nào tôi cũng đọc báo.",
+        "wo:example:2": "Tôi đi dạo trong công viên."
+      },
+      "SourceHash": "a09440cb207310817227af9f6a13700ae1810a53090ccb2c2af76e958eed489d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wo-kudasai",
+      "Fields": {
+        "Meaning": "Xin cho tôi một thứ",
+        "Formation": "Danh từ ＋ をください",
+        "Explanation": "Dùng をください khi xin, gọi món hoặc mua thứ gì. Danh từ trước を nêu thứ muốn nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wo-kudasai:example:1": "Xin lỗi, cho tôi xin nước với ạ.",
+        "wo-kudasai:example:2": "Cho tôi quả táo đỏ này với ạ."
+      },
+      "SourceHash": "ac0905b7763848becc580dc472ba59d11ad9d350ea8d3e456d2bba3eab0cefb5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ndesu",
+      "Fields": {
+        "Meaning": "Giải thích, nêu bối cảnh hoặc hỏi lý do",
+        "Formation": "Động từ hoặc tính từ đuôi い thể thông thường ＋ んです／のです\nDanh từ hoặc gốc tính từ đuôi な ＋ なんです／なのです",
+        "Explanation": "Mẫu này đưa thêm lời giải thích hoặc bối cảnh. Trong câu hỏi, nó có thể đề nghị người nghe giải thích tình huống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ndesu:example:1": "Tại sao anh/chị đến muộn ạ?",
+        "ndesu:example:2": "Xin lỗi, tôi hơi đau đầu."
+      },
+      "SourceHash": "6c88bae629f196b5f01c2e1f567ff9e25b689ee69d6b9fb93646e00794b88100"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "toshite",
+      "Fields": {
+        "Meaning": "Với tư cách, dùng làm",
+        "Formation": "Danh từ ＋ として",
+        "Explanation": "Nêu vai trò, tư cách hoặc công dụng của một người hay vật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "toshite:example:1": "Cô ấy dự cuộc họp với tư cách phiên dịch viên.",
+        "toshite:example:2": "Hiện chúng tôi dùng phòng này làm kho."
+      },
+      "SourceHash": "9a0ecf14d30a7f41e6af6236f1298fc0ed5ba53e946c48549e5eb792f6f83ca7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-sureba-to-shitara",
+      "Fields": {
+        "Meaning": "Giả sử, nếu đúng là",
+        "Formation": "Thể thông thường ＋ とすれば／としたら／とすると",
+        "Explanation": "Đặt một giả định rồi nêu hệ quả hoặc nhận định dựa trên giả định đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-sureba-to-shitara:example:1": "Nếu xuất phát bây giờ thì có lẽ đến nơi đã là buổi tối.",
+        "to-sureba-to-shitara:example:2": "Nếu chuyện này là thật thì đó là vấn đề lớn."
+      },
+      "SourceHash": "b9314b4bf837264311fc948cd8692e6de8bcb398631ce55fb462ef17d51bcd5d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tochuu-de",
+      "Fields": {
+        "Meaning": "Trên đường, giữa chừng",
+        "Formation": "Động từ thể từ điển ＋ 途中で／途中に hoặc danh từ ＋ の途中で／の途中に",
+        "Explanation": "Nêu việc xảy ra trên đường đi hoặc khi một quá trình chưa kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tochuu-de:example:1": "Tôi đánh rơi ví trên đường đến ga.",
+        "tochuu-de:example:2": "Anh ấy ngủ thiếp đi giữa chừng khi xem phim."
+      },
+      "SourceHash": "6262c697423912c82af63fab90349ef13234b5b4a891319f5a35e0a818d22aa1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "totemo-nai",
+      "Fields": {
+        "Meaning": "Hoàn toàn không thể, không tài nào",
+        "Formation": "とても ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh việc vượt quá khả năng hoặc khó có thể thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "totemo-nai:example:1": "Tôi không tài nào mua nổi chiếc xe đắt như vậy.",
+        "totemo-nai:example:2": "Nhiều bài tập thế này thì tôi không thể làm xong được."
+      },
+      "SourceHash": "709debb85a9e3da150b636c6d0ffbac5b909ba29dd21fb70b7735c696b8058f8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-douji-ni",
+      "Fields": {
+        "Meaning": "Đồng thời, ngay khi",
+        "Formation": "Mệnh đề thể thường hoặc danh từ ＋ と同時に",
+        "Explanation": "Chỉ hai sự việc xảy ra cùng lúc hoặc hai đặc điểm cùng tồn tại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-douji-ni:example:1": "Ngay khi chuông reo, học sinh ra khỏi lớp.",
+        "to-douji-ni:example:2": "Công việc này vất vả nhưng đồng thời cũng rất đáng làm."
+      },
+      "SourceHash": "8311e60b6581d4e4e3fa11097e48a74e66f458af87e96a2b979910108632f08d"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tabi-ni",
+      "Fields": {
+        "Meaning": "Mỗi khi, mỗi lần",
+        "Formation": "Động từ thể từ điển ＋ たびに／danh từ ＋ のたびに",
+        "Explanation": "Việc ở vế sau xảy ra mỗi lần có dịp hoặc hành động nêu trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tabi-ni:example:1": "Mỗi lần gặp nhau, cô ấy lại kể tôi nghe một chuyện mới.",
+        "tabi-ni:example:2": "Mỗi lần đi du lịch, tôi đều mua đặc sản địa phương mang về."
+      },
+      "SourceHash": "f740b3b9f2d4980b4c24471bafb53bd942fe544186563b570d02fcec4943bf9a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tame-ni",
+      "Fields": {
+        "Meaning": "Vì, do",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ために／danh từ ＋ のために",
+        "Explanation": "Nêu nguyên nhân của một kết quả đã xảy ra, thường trong văn viết hoặc thông báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tame-ni:example:1": "Do mưa lớn, nước sông dâng lên.",
+        "tame-ni:example:2": "Đường đang ùn tắc vì có tai nạn."
+      },
+      "SourceHash": "ab8787fa9608f7dc8e416d510bcbe40bc03e17ee39b2091edf52c2d6d7b563d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tame-ni-purpose",
+      "Fields": {
+        "Meaning": "Để, vì lợi ích của",
+        "Formation": "Động từ thể từ điển ＋ ために／danh từ ＋ のために",
+        "Explanation": "Nêu mục đích của hành động hoặc người được hưởng lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tame-ni-purpose:example:1": "Tôi luyện tập mỗi ngày để nói tiếng Nhật giỏi hơn.",
+        "tame-ni-purpose:example:2": "Tôi làm việc hết mình vì gia đình."
+      },
+      "SourceHash": "d8d61d0c29fbf162609dbe5f51217357b7627d1c7cde33e1a4fa5d11ea855b11"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ta-mono-da",
+      "Fields": {
+        "Meaning": "Hồi đó thường, từng hay",
+        "Formation": "Động từ thể た ＋ ものだ",
+        "Explanation": "Hồi tưởng về hành động thường lặp lại trong quá khứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ta-mono-da:example:1": "Hồi nhỏ tôi thường bơi ở con sông này.",
+        "ta-mono-da:example:2": "Thời sinh viên, tôi thường trò chuyện với bạn bè đến sáng."
+      },
+      "SourceHash": "568677c99a4d15a938eac8eb68ae53b4bb84f08213a03ce5c2da3c063ce24c31"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "darake",
+      "Fields": {
+        "Meaning": "Đầy, dính đầy",
+        "Formation": "Danh từ ＋ だらけ",
+        "Explanation": "Chỉ thứ xuất hiện rất nhiều hoặc phủ khắp, thường là thứ không mong muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "darake:example:1": "Bọn trẻ chơi đến mức người dính đầy bùn.",
+        "darake:example:2": "Bài báo cáo của anh ấy đầy lỗi."
+      },
+      "SourceHash": "6922db93cd1a171b00c78a1b9e19989823aa238b264d28ac64c2b3bae100f18f"
+    }
+  ]
+}

@@ -116,15 +116,15 @@ DECLARE @OpenJLPT int = (SELECT Id FROM LearningContentSources WHERE Name = N'Op
 DECLARE @Tatoeba int = (SELECT Id FROM LearningContentSources WHERE Name = N'Tatoeba via OpenJLPT' AND Version = N'0d1d3410bec90bd4098a7c72de820543cb4f707c');
 DECLARE @NihongoMono int = (SELECT Id FROM LearningContentSources WHERE Name = N'Nihongo Mono Grammar' AND Version = N'ec0ba4a0ce1611c568b0e4f8a223eb8029249a25');
 
-SELECT v.Id, s.ExternalId INTO #MatchedVocab
+SELECT v.Id, s.ExternalId, v.JLPTLevel INTO #MatchedVocab
 FROM VocabularySources s JOIN Vocabularies v ON v.Id = s.VocabularyId
 JOIN #Vocab patch ON patch.ExternalId = s.ExternalId
-WHERE s.SourceId = @OpenJLPT AND v.JLPTLevel = N'N5';
+WHERE s.SourceId = @OpenJLPT;
 
-SELECT g.Id, s.ExternalId INTO #MatchedGrammar
+SELECT g.Id, s.ExternalId, g.JLPTLevel INTO #MatchedGrammar
 FROM GrammarSources s JOIN Grammars g ON g.Id = s.GrammarId
 JOIN #Grammar patch ON patch.ExternalId = s.ExternalId
-WHERE s.SourceId = @NihongoMono AND g.JLPTLevel = N'N5';
+WHERE s.SourceId = @NihongoMono;
 
 IF @Tatoeba IS NULL OR EXISTS (
     SELECT ExternalId FROM #Vocab
@@ -134,6 +134,9 @@ IF @Tatoeba IS NULL OR EXISTS (
     EXCEPT SELECT ExternalId FROM #MatchedGrammar GROUP BY ExternalId HAVING COUNT(*) = 1
 )
     THROW 51000, 'The reviewed N5 records are missing or ambiguous. Check the full import first.', 1;
+
+DELETE FROM #MatchedVocab WHERE JLPTLevel IS NULL OR JLPTLevel <> N'N5';
+DELETE FROM #MatchedGrammar WHERE JLPTLevel IS NULL OR JLPTLevel <> N'N5';
 
 UPDATE v SET v.Meaning = p.Meaning, v.PartOfSpeech = p.PartOfSpeech,
     v.Explanation = p.Explanation, v.UpdatedAt = SYSUTCDATETIME()
@@ -177,6 +180,8 @@ WHERE NOT EXISTS (
     WHERE e.VocabularyId = m.Id AND e.JapaneseText COLLATE Latin1_General_100_BIN2 = p.Japanese
 );
 DECLARE @VocabularyExamplesAdded int = @@ROWCOUNT;
+
+DROP TABLE #MatchedVocab, #MatchedGrammar, #Vocab, #Grammar, #VocabExample, #GrammarExample, #OriginalExample;
 
 COMMIT;
 SELECT @VocabularyUpdated AS VocabularyUpdated, @GrammarUpdated AS GrammarUpdated,

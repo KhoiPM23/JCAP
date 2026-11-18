@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kurenai-te-moraenai",
+      "Fields": {
+        "Meaning": "Bạn có thể làm giúp không?",
+        "Formation": "Động từ thể て ＋ くれない？／もらえない？",
+        "Explanation": "Hai cách nhờ thân mật. くれない hỏi người kia có làm giúp, còn もらえない hỏi mình có thể nhận sự giúp đỡ hay không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kurenai-te-moraenai:example:1": "Bạn giúp mình một chút được không?",
+        "te-kurenai-te-moraenai:example:2": "Bạn lấy giúp mình lọ muối đó được không?"
+      },
+      "SourceHash": "02725d90e2a46bfbb188dbc78112be37fc82186d0d4f3c5202fe2bdda9a5155f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kureru",
+      "Fields": {
+        "Meaning": "Làm gì giúp tôi hoặc phía tôi",
+        "Formation": "Động từ thể て ＋ くれる",
+        "Explanation": "Người thực hiện là chủ thể, còn người nói hoặc người thuộc phía người nói nhận lợi ích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kureru:example:1": "Bạn tôi đã giúp tôi làm bài tập.",
+        "te-kureru:example:2": "Mẹ làm cơm hộp cho tôi."
+      },
+      "SourceHash": "b8517b02052ad5593691a2dbe4d8cbcb44b31842cd7b2db84de8ec85ef1cc7e8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de-gozaimasu",
+      "Fields": {
+        "Meaning": "Là, ở (rất trang trọng)",
+        "Formation": "Danh từ ＋ でございます",
+        "Explanation": "Dạng trang trọng của です, thường gặp khi giới thiệu hoặc chỉ dẫn cho khách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "de-gozaimasu:example:1": "Đây là phòng họp ạ.",
+        "de-gozaimasu:example:2": "Nhà vệ sinh ở tầng hai ạ."
+      },
+      "SourceHash": "d30c5ea7d5dacdfbe116d9f4a2ce446e485328a318e4add2ac9386227b2b7d78"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-shimau-chau",
+      "Fields": {
+        "Meaning": "Làm xong hẳn, lỡ làm",
+        "Formation": "Động từ thể て ＋ しまう／て → ちゃう／で → じゃう",
+        "Explanation": "Tùy ngữ cảnh, nhấn mạnh việc đã làm hết hoặc kết quả ngoài ý muốn. ちゃう và じゃう là dạng rút gọn trong lời nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-shimau-chau:example:1": "Tôi lỡ làm mất giấy tờ quan trọng.",
+        "te-shimau-chau:example:2": "Tôi đã làm xong hết bài tập rồi."
+      },
+      "SourceHash": "d40657cce5de8325034254505d73f7125870bc9095253299ba9aa31b2a41c04b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-sumimasen",
+      "Fields": {
+        "Meaning": "Xin lỗi vì đã làm gì",
+        "Formation": "Động từ thể て ＋ すみません／すみませんでした",
+        "Explanation": "Nêu sự việc trước lời xin lỗi. Dạng でした thường dùng khi xin lỗi về việc đã qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-sumimasen:example:1": "Xin lỗi vì tôi đến muộn.",
+        "te-sumimasen:example:2": "Xin lỗi vì tôi đã gọi nhiều lần."
+      },
+      "SourceHash": "81cddf35fd3e60312783a84ec1a66729ad186c92abc724804dc76f5215aa918d"
+    }
+  ]
+}

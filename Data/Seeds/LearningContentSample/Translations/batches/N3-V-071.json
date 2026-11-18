@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39b0ac16ca",
+      "Fields": {
+        "Meaning": "Câu văn, văn chương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文 có thể chỉ câu văn hoặc văn chương. 文は武に勝る đối chiếu văn với võ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83688": "Văn chương thắng võ lực.",
+        "83692": "Đầu câu dùng chữ viết hoa."
+      },
+      "SourceHash": "b4392099c5a5e5f5697d13af49eddacc36b7bb5ecbf49cbb56b650437896cac6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a12218e8ea",
+      "Fields": {
+        "Meaning": "Bầu không khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雰囲気（ふんいき）có nghĩa là bầu không khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160973": "Tôi thích không khí của nhà hàng này.",
+        "168549": "Trẻ con phản ánh bầu không khí trong gia đình."
+      },
+      "SourceHash": "dbb80dbd9858ae42cbaf6537dc6689faf26e44a80f1550ef68d36eed121a3482"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b393ad2814",
+      "Fields": {
+        "Meaning": "Phân tích",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "分析（ぶんせき）có nghĩa là phân tích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161645": "Tôi hoàn toàn đồng ý với phân tích của bạn.",
+        "219923": "Phân tích này sử dụng cách tiếp cận sau."
+      },
+      "SourceHash": "76de3d84b9f0fdf9942421d36b39f79d24caa2a1ff4f079ed2daeb1e5dcbfeda"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "56e2434245",
+      "Fields": {
+        "Meaning": "Nền văn minh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文明（ぶんめい）có nghĩa là nền văn minh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210615": "Nền văn minh của đất nước đó đã phát triển.",
+        "235867": "Thế kỷ 19 là thời đại của nền văn minh người da trắng."
+      },
+      "SourceHash": "1a841eccf613dac6016210cfbbf5113a2b7850ef14127cb6a34cbe05176182c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e3be9063f5",
+      "Fields": {
+        "Meaning": "Lĩnh vực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "分野（ぶんや）có nghĩa là lĩnh vực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103187": "Anh ấy nghiên cứu trong lĩnh vực sinh học.",
+        "113715": "Ông ấy là người tiên phong trong lĩnh vực này."
+      },
+      "SourceHash": "dc8f44834d0b275439ed62edf202d61a0b1534ffc8d1011cc01ca14da70c6bfe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5083117601",
+      "Fields": {
+        "Meaning": "Tường, hàng rào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "塀（へい）có nghĩa là tường, hàng rào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83576": "Đừng trèo lên tường.",
+        "187036": "Có tường bao quanh ngôi nhà."
+      },
+      "SourceHash": "d8063a0349bc61b369010d97625f8ffe3905f70f614811e00078ad7c26797c72"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5874850a67",
+      "Fields": {
+        "Meaning": "Trung bình",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "平均（へいきん）có nghĩa là trung bình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101497": "Anh ấy học trung bình mười giờ mỗi ngày.",
+        "171367": "Nhiệt độ mùa đông năm nay cao hơn mức trung bình."
+      },
+      "SourceHash": "a0e5defae621221b1ebb446a3b3894e8ec6868b83dd2f97e0e3c2c9ecc7f70e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98a4d36edd",
+      "Fields": {
+        "Meaning": "Hòa bình",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "平和（へいわ）có nghĩa là hòa bình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143413": "Thế giới vẫn chưa tìm được hòa bình.",
+        "197942": "Bồ câu là biểu tượng hòa bình."
+      },
+      "SourceHash": "b1b62842a4549c83b028c88f108d8c4cf0f13c6d2ee7b396cd0a69a0384837fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91695e543a",
+      "Fields": {
+        "Meaning": "Riêng, không đặc biệt",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "別に（べつに）có nghĩa là riêng, không đặc biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213762": "Cho tôi nước xốt riêng ạ.",
+        "218096": "Việc này cũng chẳng có gì sai."
+      },
+      "SourceHash": "348a980e69e8ad75d62e1a86c9d020aea4619e346f2249acc2e9844dc771192b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a054bbbb20",
+      "Fields": {
+        "Meaning": "Giảm, làm bớt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "減らす（へらす）có nghĩa là giảm, làm bớt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215568": "Hãy chạy bộ hoặc tập gì đó để giảm cân.",
+        "236875": "Tôi nghĩ bạn nên ăn ít đi."
+      },
+      "SourceHash": "e8a757623ba81458f23bc7c168918fff2bba5f82e49c5baf934a06872851f160"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b459e9db8c",
+      "Fields": {
+        "Meaning": "Giảm, bớt đi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "減る（へる）có nghĩa là giảm, bớt đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142733": "Số học sinh đang giảm dần.",
+        "185422": "Số hội viên giảm còn năm người."
+      },
+      "SourceHash": "5dd917510734da6b47d5b29db4c833d1037fa57f31ea6fd126ecd7489ef2f88c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44edce4345",
+      "Fields": {
+        "Meaning": "Thắt lưng, dây đai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ベルト（ベルト）có nghĩa là thắt lưng, dây đai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82580": "Đừng quên thắt dây an toàn.",
+        "90069": "Cô ấy đeo thắt lưng da."
+      },
+      "SourceHash": "7029ba2dbd96782d8869c0f2dd56171c6a409d58ef582583c5ae53ca78477d0a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eac8dadcd3",
+      "Fields": {
+        "Meaning": "Thay đổi, biến đổi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "変化（へんか）có nghĩa là thay đổi, biến đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174733": "Ngôn ngữ thay đổi cũng như con người.",
+        "220321": "Bạn có thể nói cách chia động từ này không?"
+      },
+      "SourceHash": "1a6ba49d5c36b4c865b68815a5c5d76d7ccacfe248a8cc92efeba8a475d471d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "525af6640e",
+      "Fields": {
+        "Meaning": "Sơn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ペンキ（ペンキ）có nghĩa là sơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146603": "Áo cậu bé có vết sơn.",
+        "189614": "Sơn bong do dính mưa."
+      },
+      "SourceHash": "0f3e029ad2723f75564288756116bf2c59f348297191e4c6bd25a34cfb76f0ba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "136adbc360",
+      "Fields": {
+        "Meaning": "Thay đổi, điều chỉnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "変更（へんこう）có nghĩa là thay đổi, điều chỉnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106084": "Anh ấy báo cho tôi biết kế hoạch đã thay đổi.",
+        "211504": "Quy định đó tuyệt đối không thể thay đổi."
+      },
+      "SourceHash": "9ed747bb7d6c595352f585798c33e2621b8f2bdfb578d139cc8699b48bb417fb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b696809e2d",
+      "Fields": {
+        "Meaning": "Ghế băng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ベンチ（ベンチ）có nghĩa là ghế băng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165829": "Chúng tôi ngồi trên ghế băng trong công viên.",
+        "212649": "Xin đừng ngồi trên ghế băng đó."
+      },
+      "SourceHash": "cb72407f1bd79576a7cf849f0594ba8db01f9d065430e430a4c74aacbe356116"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0e79e4a9e2",
+      "Fields": {
+        "Meaning": "Cơm hộp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "弁当（べんとう）có nghĩa là cơm hộp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83253": "Bạn không cần mang cơm hộp đâu.",
+        "165980": "Chúng tôi ăn cơm hộp sớm ở trường."
+      },
+      "SourceHash": "f8ef4eafa9980ea8af6eab6c1f6304eedde3378e3e8dda5a37981f104cc85922"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9dda296d47",
+      "Fields": {
+        "Meaning": "Phía, bên, cách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Đọc ほう khi nêu một phía hoặc lựa chọn để so sánh, như ジョンの方が. Cách đọc かた có thể chỉ người một cách lịch sự hoặc chỉ cách làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75362": "Trong hai điều này, điều quan trọng là điều thứ hai.",
+        "215450": "Trong hai người, John cao hơn."
+      },
+      "SourceHash": "39ca12caf2537c8b4e42b47da99d9b8295bb41bcffa75896df9708dbb93b6864"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7344aa7e1",
+      "Fields": {
+        "Meaning": "Luật, pháp luật",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "法（ほう）có nghĩa là luật, pháp luật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82698": "Mọi người đều bình đẳng trước pháp luật.",
+        "214428": "Mọi người đều bình đẳng trước pháp luật."
+      },
+      "SourceHash": "243e02bcd4db25b271b1037f737c79f85cc56f5e376102e6dd69e8b58c3e8a07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b780931140",
+      "Fields": {
+        "Meaning": "Gậy, thanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "棒（ぼう）có nghĩa là gậy, thanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212775": "Tom dùng gậy đánh chết con chuột đó.",
+        "219792": "Đầu cây gậy này nhọn."
+      },
+      "SourceHash": "fbc5d8ad74ecf526a468ce7f150c209276403064026519c9e0b99725f4099104"
+    }
+  ]
+}

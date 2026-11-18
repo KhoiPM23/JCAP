@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5f3091a6cb",
+      "Fields": {
+        "Meaning": "Bạn thân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "親友（しんゆう）có nghĩa là bạn thân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94930": "Cô ấy hầu như không có bạn thân.",
+        "200177": "Tom và Frank là bạn thân."
+      },
+      "SourceHash": "a2286bd539eb3bfae98ead4ca31bf9c1f97aa6cf05d60243f1faf8591775cf20"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1978c546e2",
+      "Fields": {
+        "Meaning": "Tin, tín nhiệm, uy tín",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "信用（しんよう）có nghĩa là tin, tín nhiệm, uy tín.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120595": "Dù anh ấy nói gì cũng đừng tin.",
+        "158731": "Tôi không còn tin anh ấy nữa."
+      },
+      "SourceHash": "e58f05345ced1d703b81b2f882622c6096f2ae2c25107e86cdd80264fe917893"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60594ade18",
+      "Fields": {
+        "Meaning": "Tin cậy, sự tin tưởng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "信頼（しんらい）có nghĩa là tin cậy, sự tin tưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103885": "Anh ta không phải người đáng tin.",
+        "184565": "Anh ấy chắc chắn đáng tin."
+      },
+      "SourceHash": "771f3ef6adf15f5db3d37ebe1e44793e9d8492bac39185136e9b7e43c8f605f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27ccf826bb",
+      "Fields": {
+        "Meaning": "Tâm lý",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "心理（しんり）có nghĩa là tâm lý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164568": "Tôi không hiểu tâm lý thanh thiếu niên.",
+        "164673": "Tôi không hiểu tâm lý của người đàn ông như thế."
+      },
+      "SourceHash": "62379ad8accd5e6cb6a4a1577f3bb89652fc605f04003555ea0db2215195d812"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b428ad249",
+      "Fields": {
+        "Meaning": "Nhân loại, loài người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人類（じんるい）có nghĩa là nhân loại, loài người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143922": "Tôi sẵn sàng làm bất cứ điều gì vì nhân loại.",
+        "143923": "Chỉ loài người biết cách dùng lửa."
+      },
+      "SourceHash": "52720bae9e2f6833c30e048b8e98953f036934a6affc32bd3e36f94a69e56d73"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "73db783ef8",
+      "Fields": {
+        "Meaning": "Tổ, hang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "巣（す）có nghĩa là tổ, hang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88186": "Cô ấy chăm chú nhìn con chim trong tổ.",
+        "125805": "Có lẽ sẽ thấy tổ chim."
+      },
+      "SourceHash": "1a6188aeaa76e6881a1961d8b2495369388af323737f09099ef4741eedb1f524"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e53e93195",
+      "Fields": {
+        "Meaning": "Hình, sơ đồ",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "図（ず）có nghĩa là hình, sơ đồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143893": "Tôi sẽ giải thích bằng sơ đồ.",
+        "208732": "Sơ đồ đó giải thích hoạt động của cơ thể."
+      },
+      "SourceHash": "99eb62835d2383776ebec3d55403ed6c8effb5a982a8b405bef4728711dd8d07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a89f303db8",
+      "Fields": {
+        "Meaning": "Mức, trình độ, tiêu chuẩn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "水準（すいじゅん）có nghĩa là mức, trình độ, tiêu chuẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103486": "Anh ấy không đạt tiêu chuẩn.",
+        "178272": "Công việc của bạn chưa đạt mức tôi kỳ vọng."
+      },
+      "SourceHash": "c4ec9be96672b05a4911e738e81139f75fa69c8e54b5bad8848669ac72e9fe2d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "590eb476e5",
+      "Fields": {
+        "Meaning": "Giới thiệu, đề cử",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "推薦（すいせん）có nghĩa là giới thiệu, đề cử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151321": "Chúng tôi đề cử ông ấy làm chủ tọa.",
+        "225332": "Xin giới thiệu một câu lạc bộ dành cho người đồng tính nam."
+      },
+      "SourceHash": "5e3891bb916070bf07f84f8ae83c94733c12cd6a2ca1d99b037c6c28e6d62e26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a2b28ced4",
+      "Fields": {
+        "Meaning": "Công tắc, nút bật tắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スイッチ（スイッチ）có nghĩa là công tắc, nút bật tắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215137": "Công tắc không hoạt động đúng lúc.",
+        "221847": "Thiết bị này hoạt động bằng công tắc."
+      },
+      "SourceHash": "d4b974c857e29d9cb293370f7b3d4dde123ebea8d87404d8e37990eb49adb323"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "51f103bc27",
+      "Fields": {
+        "Meaning": "Giấc ngủ",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "睡眠（すいみん）có nghĩa là giấc ngủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143609": "Ngủ còn tốt hơn dùng thuốc.",
+        "168147": "Đôi khi người ta ví cái chết với giấc ngủ."
+      },
+      "SourceHash": "fe755e63d30015312e2e876c9da1d6fea51d910c4b21bf200735114afa2fee2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55c4301a2c",
+      "Fields": {
+        "Meaning": "Chữ số, con số",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "数字（すうじ）có nghĩa là chữ số, con số.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194674": "Hãy đọc con số trên đồng hồ đo.",
+        "204741": "Cộng các số đó lại không ra đúng tổng."
+      },
+      "SourceHash": "6151a6808a1306a3b9cc1fbd384a60fadbcec6d12db987c981e7380384efcc7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22544f816e",
+      "Fields": {
+        "Meaning": "Súp, canh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スープ（スープ）có nghĩa là súp, canh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113489": "Anh ấy đang ngửi mùi súp.",
+        "223657": "Súp này mặn quá, không uống được."
+      },
+      "SourceHash": "f5fe2c27929569d07d721241bf02d4a054794d4bba4083a62bc3d7f20a1a2615"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f0c39291a",
+      "Fields": {
+        "Meaning": "Cuối, sau cùng, sau khi đã",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "末（すえ）có nghĩa là cuối, sau cùng, sau khi đã.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99128": "Đến cuối tháng sau, anh ấy sẽ sống ở đây tròn mười năm.",
+        "192778": "Sau khi suy nghĩ kỹ, tôi quyết định ở nhà."
+      },
+      "SourceHash": "d7a1f8678e458e20b4cfe5a0b233e409afee94fa086734593ae10ecbc23aa496"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b250983bb5",
+      "Fields": {
+        "Meaning": "Dáng vẻ, hình dáng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "姿（すがた）có nghĩa là dáng vẻ, hình dáng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77210": "Ở Tokyo giờ không còn mấy khi thấy đàn ông mặc trang phục truyền thống Nhật Bản.",
+        "91538": "Cô ấy có dáng người mảnh mai."
+      },
+      "SourceHash": "802818833a583231d5d3c3b775b1f5578b0a4ad7bfbccd4cd7da6931f5c8e153"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b36d0c00b",
+      "Fields": {
+        "Meaning": "Trượt tuyết, ván trượt tuyết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スキー（スキー）có nghĩa là trượt tuyết, ván trượt tuyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92757": "Cô ấy không biết trượt tuyết.",
+        "231547": "Mỗi năm bạn đi trượt tuyết mấy lần?"
+      },
+      "SourceHash": "106062adf6ff4ced55fd98989923474d83c51e9abf608d20767e4a41d1c30c4a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5a0d393100",
+      "Fields": {
+        "Meaning": "Cứu, cứu giúp",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "救う（すくう）có nghĩa là cứu, cứu giúp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144936": "Chỉ Chúa mới cứu được bạn.",
+        "210969": "Con chó đó đã cứu mạng cô bé."
+      },
+      "SourceHash": "740f4d824e1a3b184a0dbf58b8ebfacb682ad4aaa4c3c90539b195d6c6032ac0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87985bf157",
+      "Fields": {
+        "Meaning": "Vượt trội, xuất sắc",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "優れる（すぐれる）có nghĩa là vượt trội, xuất sắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90211": "Cô ấy là một trong những họa sĩ xuất sắc nhất thời nay.",
+        "102579": "Anh ấy hơn tôi ở nhiều mặt."
+      },
+      "SourceHash": "f1b149fa641d435eed655d1fd8fe907c652b9168b4ced8f8893569c518e3542b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69257fa105",
+      "Fields": {
+        "Meaning": "Trượt băng, giày trượt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "スケート（スケート）có nghĩa là trượt băng, giày trượt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200628": "Trời lạnh lắm nên có thể trượt băng đấy.",
+        "214743": "Trượt băng rất vui."
+      },
+      "SourceHash": "444d44e1330b0e4695953c289957132973f84b9001de26e5b8f867c883722ecb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5569286656",
+      "Fields": {
+        "Meaning": "Chút nào, tí nào",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "少しも（すこしも）có nghĩa là chút nào, tí nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155879": "Tôi chẳng có đồng nào.",
+        "224138": "Đầu bếp chưa rưới chút nào lên món ăn cả."
+      },
+      "SourceHash": "a73e857b403e6ba710df0543b079b5741d84e78e6bf910069f9d9a601865c670"
+    }
+  ]
+}

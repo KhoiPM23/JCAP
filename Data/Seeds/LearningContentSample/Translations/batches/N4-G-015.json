@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "souiu",
+      "Fields": {
+        "Meaning": "Kiểu như vậy, loại như thế",
+        "Formation": "そういう ＋ danh từ",
+        "Explanation": "Chỉ một loại hay đặc điểm đã được người nghe nêu hoặc vừa được nhắc tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "souiu:example:1": "Tôi chưa từng nghe chuyện như vậy.",
+        "souiu:example:2": "Tôi cũng muốn có một cái túi kiểu đó."
+      },
+      "SourceHash": "70f378cea54deb94996858dbbaab2f22e93dac71a714d94f2bdf549db6e054c6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "souda-appearance",
+      "Fields": {
+        "Meaning": "Có vẻ, trông như, sắp",
+        "Formation": "Gốc ます ＋ そうだ／tính từ い bỏ い hoặc gốc tính từ な ＋ そうだ",
+        "Explanation": "Đưa ra nhận định từ dấu hiệu quan sát được. いい chuyển thành よさそう.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "souda-appearance:example:1": "Cái cốc sắp rơi khỏi bàn đấy.",
+        "souda-appearance:example:2": "Món cà ri này trông ngon lắm."
+      },
+      "SourceHash": "1f9e6b47bd4516bfde750c038dffabd9392e1d6ff4b6fc8d114bb29180380dc4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "souda-hearsay",
+      "Fields": {
+        "Meaning": "Nghe nói, theo nguồn tin",
+        "Formation": "Thể thông thường ＋ そうだ (giữ だ sau danh từ và tính từ な)",
+        "Explanation": "Thuật lại thông tin từ nguồn khác. によると có thể nêu nguồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "souda-hearsay:example:1": "Theo bản tin, ngày mai trời sẽ rất lạnh.",
+        "souda-hearsay:example:2": "Nghe nói anh Tanaka sẽ kết hôn vào tháng sau."
+      },
+      "SourceHash": "eae2aceebe6d2f3c4d5bb7407c36755158c38b0d70229be094a99b14b4f2a5e2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sou-ni-sou-na",
+      "Fields": {
+        "Meaning": "Trông có vẻ… khi làm, trông có vẻ…",
+        "Formation": "Gốc động từ hoặc tính từ theo mẫu そうだ ＋ そうに ＋ động từ／cùng gốc ＋ そうな ＋ danh từ",
+        "Explanation": "そうに bổ nghĩa cho hành động. そうな bổ nghĩa cho danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sou-ni-sou-na:example:1": "Bọn trẻ trông rất vui khi chơi.",
+        "sou-ni-sou-na:example:2": "Anh ấy đeo chiếc đồng hồ trông có vẻ đắt tiền."
+      },
+      "SourceHash": "c3d6e667333f1f12cbde995a3c2a2a616c88f485c0e1047708e87a9bb527b93c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sorede",
+      "Fields": {
+        "Meaning": "Vì vậy, rồi sao nữa",
+        "Formation": "Câu nêu tình huống ＋ それで ＋ câu nêu kết quả hoặc câu hỏi",
+        "Explanation": "Nối nguyên nhân với kết quả hoặc hỏi diễn biến tiếp theo khi nghe kể chuyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sorede:example:1": "Hôm qua tôi bị sốt. Vì vậy tôi nghỉ học.",
+        "sorede:example:2": "Ồ, rồi sau đó thế nào?"
+      },
+      "SourceHash": "1cae5604fd0fb4c3c8aa10b1c5e6c802618dac51599f162fef97c1727a35628e"
+    }
+  ]
+}

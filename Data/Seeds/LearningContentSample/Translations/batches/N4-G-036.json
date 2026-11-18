@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-te-hoshii",
+      "Fields": {
+        "Meaning": "Muốn ai làm gì để đạt một kết quả",
+        "Formation": "Động từ thể từ điển hoặc ない ＋ ように、động từ thể て ＋ ほしい",
+        "Explanation": "Vế ように nêu mục đích, còn てほしい nêu hành động muốn người khác thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-te-hoshii:example:1": "Tôi muốn công viên được dọn sạch để trẻ em yên tâm vui chơi.",
+        "you-ni-te-hoshii:example:2": "Tôi muốn bạn chuẩn bị bản đồ để khỏi lạc đường."
+      },
+      "SourceHash": "b951f157bbe2edf969810af8f6987eabca3eb63aa85bc7024ca9908399addcfc"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-iu",
+      "Fields": {
+        "Meaning": "Dặn, bảo ai làm gì",
+        "Formation": "Người nghe ＋ に ＋ động từ thể từ điển hoặc ない ＋ ように言う",
+        "Explanation": "Thuật lại lời yêu cầu hoặc dặn dò. ように言われる nghĩa là được hoặc bị dặn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-iu:example:1": "Giáo viên dặn học sinh luyện kanji mỗi ngày.",
+        "you-ni-iu:example:2": "Mẹ dặn tôi đừng về muộn."
+      },
+      "SourceHash": "e2c695f9dc6a8a1f3ea032f5daaed8dfc863261ee7608f554ab18dd8c7e2aafa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-inoru",
+      "Fields": {
+        "Meaning": "Cầu mong, mong sao",
+        "Formation": "Động từ thể từ điển hoặc ない ＋ ように祈る／ように願う",
+        "Explanation": "Nêu điều hy vọng sẽ thành hiện thực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-inoru:example:1": "Tôi cầu mong gia đình luôn khỏe mạnh.",
+        "you-ni-inoru:example:2": "Tôi mong đội mình thắng trận ngày mai."
+      },
+      "SourceHash": "2fd21b1943cca5848bdac533dd91f6d2d94338ced47b3254f3ab784cc334366a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "you-ni-suru",
+      "Fields": {
+        "Meaning": "Cố gắng làm, chú ý để",
+        "Formation": "Động từ thể từ điển hoặc ない ＋ ようにする",
+        "Explanation": "Diễn tả việc chủ động chú ý hoặc xây dựng thói quen. ようにしている nói về nỗ lực đang duy trì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "you-ni-suru:example:1": "Vì sức khỏe, tôi cố gắng không ăn quá nhiều đồ ngọt.",
+        "you-ni-suru:example:2": "Tôi sẽ chú ý đến đúng giờ hẹn."
+      },
+      "SourceHash": "0ba5f36d00cd2b4fb8ce99706a26b7409e5f1807f1494b44d050a901fca8f3a3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yotei-da",
+      "Fields": {
+        "Meaning": "Dự định, theo lịch sẽ",
+        "Formation": "Động từ thể từ điển hoặc ない ＋ 予定だ／danh từ ＋ の予定だ",
+        "Explanation": "Nêu kế hoạch hoặc lịch trình đã được sắp xếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yotei-da:example:1": "Tháng sau tôi dự định đi du lịch Kyoto.",
+        "yotei-da:example:2": "Cuộc họp dự kiến bắt đầu lúc ba giờ."
+      },
+      "SourceHash": "56a826413b4c16757fd78f75f555bef3d5bb10b1c0442d707ed0856a9b0e0274"
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "14a3436b7e",
+      "Fields": {
+        "Meaning": "Kỳ lạ, khác thường",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "奇妙（きみょう）có nghĩa là kỳ lạ, khác thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95633": "Thật lạ khi cô ấy làm chuyện đó.",
+        "218566": "Đây là một lá thư rất kỳ lạ."
+      },
+      "SourceHash": "122abfb7b5112dfdcf5db614a990f2266ebd0aad11bb5bf3b94fecb7d9da12f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7b7b6282f",
+      "Fields": {
+        "Meaning": "Nghĩa vụ, bổn phận",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "義務（ぎむ）có nghĩa là nghĩa vụ, bổn phận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154057": "Tôi có nghĩa vụ trả lời anh ấy.",
+        "223093": "Tôi không biết có nghĩa vụ như vậy."
+      },
+      "SourceHash": "e5146f809a4190b186164ce48633e03bc3bb8b062c81f8b74e28774da1b75985"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e2ffbbcc1",
+      "Fields": {
+        "Meaning": "Câu hỏi, nghi vấn",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "疑問（ぎもん）có nghĩa là câu hỏi, nghi vấn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168671": "Trẻ con có nhiều câu hỏi.",
+        "205661": "Chuyện đó hoàn toàn không có gì phải nghi ngờ."
+      },
+      "SourceHash": "7bd0415d99a3853770d521837db1bb8af450854c733e81bf8ca339191fb4bfda"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b26978fc7",
+      "Fields": {
+        "Meaning": "Ngược, trái lại, chiều ngược",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "逆（ぎゃく）có nghĩa là ngược, trái lại, chiều ngược.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "2b0064eb8933d9e3b6945a2072d7938b2a7caeb8d0328d81c8579939a8c666e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "036cf72d91",
+      "Fields": {
+        "Meaning": "Đội trưởng, thuyền trưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "キャプテン（キャプテン）có nghĩa là đội trưởng, thuyền trưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114732": "Anh ấy sẽ là một đội trưởng giỏi đấy.",
+        "225839": "Đội trưởng ra lệnh giữ im lặng."
+      },
+      "SourceHash": "1ca5b191904cdb352de1125ee254cdb0fa7fc105df8431363230bd2af4fcd550"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d840b2954",
+      "Fields": {
+        "Meaning": "Cắm trại, trại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "キャンプ（キャンプ）có nghĩa là cắm trại, trại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158016": "Tôi đi cắm trại cùng gia đình.",
+        "165931": "Chúng tôi cắm trại ở đó vào ngày nghỉ."
+      },
+      "SourceHash": "ee693488a6d5c0710e217659a7d0e24db9961c9d9e5cfa57a99212231324a9b8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db7f32ec4c",
+      "Fields": {
+        "Meaning": "Quả bóng, khối cầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "球（きゅう）có nghĩa là quả bóng, khối cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126968": "Trái Đất có dạng gần như hình cầu.",
+        "182377": "Quả bóng lăn xuống suối."
+      },
+      "SourceHash": "36081a8560d5ee1f8bffd2ed76b0d138d61be9349130b15900df16cc9bd0b846"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e69ae617b",
+      "Fields": {
+        "Meaning": "Cấp, hạng, lớp",
+        "PartOfSpeech": "Danh từ, trợ số từ",
+        "Explanation": "級（きゅう）có nghĩa là cấp, hạng, lớp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115300": "Cậu ấy đang học lớp 10.",
+        "542960": "Bạn nhớ được bao nhiêu chữ kanji cấp 4?"
+      },
+      "SourceHash": "ec5ce3b39a02602278a6b8751cf5b671b55ce729e88e0a185570b1500d9d9d74"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "135ed2fc45",
+      "Fields": {
+        "Meaning": "Cũ, trước đây",
+        "PartOfSpeech": "Tiền tố",
+        "Explanation": "旧（きゅう）có nghĩa là cũ, trước đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145302": "Đường hầm mới dài gấp đôi đường hầm cũ.",
+        "183956": "Giới chức đang theo dõi diễn biến việc sửa đổi các quy định cũ."
+      },
+      "SourceHash": "03895aefe37861e176b14f590276698246a58a7caa1ad8b24672072369b45ae6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f2c4210f2b",
+      "Fields": {
+        "Meaning": "Kỳ nghỉ, ngày nghỉ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "休暇（きゅうか）có nghĩa là kỳ nghỉ, ngày nghỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157690": "Tôi tranh thủ kỳ nghỉ để đến Tokyo.",
+        "157697": "Tôi đi xa trong kỳ nghỉ."
+      },
+      "SourceHash": "1405cc6d19f2e3fd8d56a1d3063f591bb5b81d829eb09658fc7baaef4ca0e68d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97e6b17173",
+      "Fields": {
+        "Meaning": "Nghỉ giải lao, giờ nghỉ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "休憩（きゅうけい）có nghĩa là nghỉ giải lao, giờ nghỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182642": "Mình uống cà phê trong giờ nghỉ nhé.",
+        "182643": "Nghỉ một lát rồi uống cà phê nhé."
+      },
+      "SourceHash": "e548bfcac6678b7638dd631064bf77fa70ae960d4dafc703eb454ddb935f5168"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d183c55e59",
+      "Fields": {
+        "Meaning": "Đột ngột, mạnh, nhanh chóng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "急激（きゅうげき）có nghĩa là đột ngột, mạnh, nhanh chóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143429": "Dân số thế giới đang tăng mạnh.",
+        "207526": "Đảng đó phát triển rất nhanh."
+      },
+      "SourceHash": "57e4aa16ef653680eed1fe471620b10f63bec50f7b00db57645943c027342afc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c7f4f73ace",
+      "Fields": {
+        "Meaning": "Hấp thụ, tiếp thu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "吸収（きゅうしゅう）có nghĩa là hấp thụ, tiếp thu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103804": "Ông ấy tiếp thu những tư tưởng mới.",
+        "220079": "Vải này thấm nước tốt."
+      },
+      "SourceHash": "5a3e6443d3021f22c023981350c6fd9ec3f5ab8dac55ea513f5dcbb3aabc7869"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23010891c3",
+      "Fields": {
+        "Meaning": "Cứu hộ, giải cứu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "救助（きゅうじょ）có nghĩa là cứu hộ, giải cứu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96529": "Họ lập tức đến cứu chúng tôi.",
+        "114236": "Anh ấy cứu cậu bé đang đuối nước."
+      },
+      "SourceHash": "c6ea281092db717ee50d0881e3b67cb8c63f64b975b41f0b3497595782c4ac00"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "094660be3e",
+      "Fields": {
+        "Meaning": "Nhanh, mau chóng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "急速（きゅうそく）có nghĩa là nhanh, mau chóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90520": "Khả năng tiếng Anh của cô ấy tiến bộ nhanh.",
+        "217252": "Máy tính đã phát triển nhanh chóng."
+      },
+      "SourceHash": "15239f051ffe9fb4fe800eea727bcaf849c6cf0ac68c082ddcf6d35ac646ecee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6aca833ca",
+      "Fields": {
+        "Meaning": "Đột nhiên, bất chợt",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "急に（きゅうに）có nghĩa là đột nhiên, bất chợt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108466": "Anh ấy đột nhiên quay sang tỏ thái độ thách thức.",
+        "183215": "Vì lo nghĩ, anh ấy bỗng trông già hẳn đi."
+      },
+      "SourceHash": "1be288100f9a7f12b1b31a9caca0410cef106c29083ad70e3e73b8cbda0770bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec6103d8e8",
+      "Fields": {
+        "Meaning": "Tiền lương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "給料（きゅうりょう）có nghĩa là tiền lương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77380": "Người lao động được trả lương là điều đương nhiên.",
+        "107615": "Anh ấy không hài lòng với mức lương hiện tại."
+      },
+      "SourceHash": "b5dac8fae141afa665e99f230ce31b51b280331c4b67266ef224b2d3d23888c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "edda4a4d10",
+      "Fields": {
+        "Meaning": "Khéo tay, khéo léo",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "器用（きよう）có nghĩa là khéo tay, khéo léo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195374": "Max rất khéo tay.",
+        "209382": "Cô bé ấy rất khéo tay."
+      },
+      "SourceHash": "15c1bdbddb9be0ee9fccda6da99b3eda23d0774f1c51b620ebec24971212553f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "939f77d3f0",
+      "Fields": {
+        "Meaning": "Sách giáo khoa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "教科書（きょうかしょ）có nghĩa là sách giáo khoa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180312": "Tôi nên làm gì về sách giáo khoa ạ?",
+        "180314": "Hãy mở sách giáo khoa trang 50."
+      },
+      "SourceHash": "d90a04d1b8e1c14e66c4ef334c646b8645f4438c02ad80240b1e822c6718ba0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b98c5c8b36",
+      "Fields": {
+        "Meaning": "Thi đấu, cuộc thi, môn thi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "競技（きょうぎ）có nghĩa là thi đấu, cuộc thi, môn thi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112997": "Anh ấy muốn tham gia cuộc thi đó.",
+        "232117": "Bạn có tham gia thi đấu không?"
+      },
+      "SourceHash": "a39441c9dc2a73f63a6d61b79278ac857d393747891bd8817e43d095b09b8950"
+    }
+  ]
+}

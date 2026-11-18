@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4ee42f5330",
+      "Fields": {
+        "Meaning": "Học tiếp, lên bậc học cao hơn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "進学（しんがく）có nghĩa là học tiếp, lên bậc học cao hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102433": "Có lẽ anh ấy sẽ không học tiếp lên cao học.",
+        "235250": "Có tới 40% học sinh học tiếp lên đại học."
+      },
+      "SourceHash": "fa64cad9570282a86f62347297fe7491de7c321205c9d3267ad8b942a589724d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6366942bd5",
+      "Fields": {
+        "Meaning": "Dây thần kinh, sự căng thẳng, độ nhạy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "神経（しんけい）có nghĩa là dây thần kinh, sự căng thẳng, độ nhạy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113203": "Anh ấy rất căng thẳng vì việc đó.",
+        "228713": "Tôi lúc nào cũng bồn chồn căng thẳng."
+      },
+      "SourceHash": "a20d7681b22ef75f4e16d319954bd8eb916b6e8ac02ec8985b2728e773a66b50"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df0df5a923",
+      "Fields": {
+        "Meaning": "Nghiêm túc",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "真剣（しんけん）có nghĩa là nghiêm túc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159807": "Tôi đã không suy nghĩ nghiêm túc về vấn đề đó.",
+        "215635": "George không nghiêm túc học hành."
+      },
+      "SourceHash": "81b9d9c19d9ff1b007935bfaf1a92403adf5f6217aa0440f05d6e621346f2074"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ad3b41d6f",
+      "Fields": {
+        "Meaning": "Đức tin, tín ngưỡng, theo đạo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "信仰（しんこう）có nghĩa là đức tin, tín ngưỡng, theo đạo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96813": "Họ đấu tranh cho tự do tín ngưỡng.",
+        "225757": "Bạn có theo đạo Cơ Đốc không?"
+      },
+      "SourceHash": "ff14dbc09eab2c96e8f0e87b3e345913e7e994c7620cc9285bd4d744a6b26c5b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9efe8313d",
+      "Fields": {
+        "Meaning": "Tín hiệu, đèn giao thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "信号（しんごう）có nghĩa là tín hiệu, đèn giao thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145719": "Hãy đợi đến khi đèn chuyển xanh.",
+        "145720": "Đèn tín hiệu chuyển sang xanh rồi kìa."
+      },
+      "SourceHash": "8e82920085dd8bc0ed21dc71d8a2d70063a8c078b0e01f2803832234305cc08b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca92616db2",
+      "Fields": {
+        "Meaning": "Nhân tạo, do con người làm ra",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "人工（じんこう）có nghĩa là nhân tạo, do con người làm ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210852": "Hồ đó do con người tạo ra.",
+        "220458": "Vẻ đẹp của khu vườn này chủ yếu nhờ bàn tay con người."
+      },
+      "SourceHash": "e0157484b4196f2decf349352836546654e1ee0a0b9495b056d45085b6dc0e0c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc6b84dcb4",
+      "Fields": {
+        "Meaning": "Nghiêm trọng, trầm trọng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "深刻（しんこく）có nghĩa là nghiêm trọng, trầm trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100328": "Anh ấy xem thất bại đó là chuyện rất nghiêm trọng.",
+        "150759": "Tình hình rất nghiêm trọng."
+      },
+      "SourceHash": "5a33ff7b876bdae48fe416847633a36814e6b9abc7eeb4e39c0fdc0dfe0ed362"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a6ac640fd",
+      "Fields": {
+        "Meaning": "Khám bệnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "診察（しんさつ）có nghĩa là khám bệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144763": "Giờ khám bệnh từ mấy giờ đến mấy giờ ạ?",
+        "190800": "Bác sĩ khám họng cho tôi."
+      },
+      "SourceHash": "751b0fcae3f401e0dd035d6d46b3d456b1f0e70ce7e4b56948323bac370db307"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6847277390",
+      "Fields": {
+        "Meaning": "Chủng tộc",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "人種（じんしゅ）có nghĩa là chủng tộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96769": "Họ vận động vì bình đẳng chủng tộc.",
+        "143444": "Trên thế giới có nhiều chủng tộc."
+      },
+      "SourceHash": "cd490318e575aa0b4fcdee1bdeb7deeaebb2b5280efe7a06bd210af55afea081"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c53be2d952",
+      "Fields": {
+        "Meaning": "Tin, tin tưởng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "信じる（しんじる）có nghĩa là tin, tin tưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96574": "Họ tin rằng Trái Đất phẳng.",
+        "226003": "Tôi nghĩ chắc chắn anh ấy sẽ tin bạn."
+      },
+      "SourceHash": "55a885974743ac51ccf17b8b63ecb290d218d3f65d89aca38654d4ee0c34cc22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3793fa82cf",
+      "Fields": {
+        "Meaning": "Cuộc đời, đời người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人生（じんせい）có nghĩa là cuộc đời, đời người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103534": "Ông ấy sống phần lớn cuộc đời ở nước ngoài.",
+        "202356": "Hãy tận hưởng cuộc sống khi còn có thể."
+      },
+      "SourceHash": "8cabbf525b9c26264fee0cee16eedca9b5672abd614eb0a78666caee1b7f9354"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8f91562fe",
+      "Fields": {
+        "Meaning": "Họ hàng, bà con",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "親戚（しんせき）có nghĩa là họ hàng, bà con.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197225": "Philip và Tom là họ hàng.",
+        "225802": "Dưa chuột có họ với dưa hấu."
+      },
+      "SourceHash": "403e3bb96a28ecd851b45bc216906ad954c14d8086230b69ac1fbd50ca19a82d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20f712fd71",
+      "Fields": {
+        "Meaning": "Tươi, mới mẻ",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "新鮮（しんせん）có nghĩa là tươi, mới mẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201143": "Chọn cá tươi như thế nào?",
+        "222996": "Quả chanh này còn tươi."
+      },
+      "SourceHash": "4612ee819819e0382c5ca805059f2a139b7634482fb6e26204cb088b70821d99"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a301b00431",
+      "Fields": {
+        "Meaning": "Tim, trái tim",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "心臓（しんぞう）có nghĩa là tim, trái tim.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145559": "Tim đập chậm.",
+        "188752": "Khói có thể không tốt cho tim anh ấy."
+      },
+      "SourceHash": "1b16091ebfa04f56d380163bcf35d10e06411edebb3abbc00783a91f12c948b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d271a61e9b",
+      "Fields": {
+        "Meaning": "Cơ thể, thân thể",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "身体（しんたい）có nghĩa là cơ thể, thân thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144733": "Phải chăm sóc sức khỏe của mình.",
+        "184044": "Khí hậu lạnh ảnh hưởng đến sức khỏe của anh ấy."
+      },
+      "SourceHash": "0f17d66c80a6957249b7ce68948d5845f2fad1a4905d8b9a59f7368c466d1931"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e0d006e02",
+      "Fields": {
+        "Meaning": "Thận trọng, cẩn trọng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "慎重（しんちょう）có nghĩa là thận trọng, cẩn trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90905": "Cô ấy làm gì cũng thận trọng.",
+        "103839": "Anh ấy làm việc rất cẩn thận."
+      },
+      "SourceHash": "10321d53f50f419fa30148475a7d678ec12bf5748b12435c999883b91e342b61"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef1a073c8c",
+      "Fields": {
+        "Meaning": "Chiều cao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "身長（しんちょう）có nghĩa là chiều cao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110569": "Anh ấy đã cao gần bằng bố mình.",
+        "139949": "Con trai tôi đã cao bằng tôi rồi."
+      },
+      "SourceHash": "116422018905c59b7d8d442207ddd51b44d13e4164a14e5002f856ea23cddbc4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f805c3046f",
+      "Fields": {
+        "Meaning": "Trọng tài, sự phán xét",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "審判（しんぱん）có nghĩa là trọng tài, sự phán xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95758": "Chỉ còn thừa mình cậu ấy, vậy để cậu ấy làm trọng tài.",
+        "145617": "Trọng tài thổi còi kết thúc trận đấu."
+      },
+      "SourceHash": "118e8fffcc73eec17187586b52a4641c421c2c990bd1dd51bf4eda32ea9c7d22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fbaf566aaa",
+      "Fields": {
+        "Meaning": "Nhân vật, con người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人物（じんぶつ）có nghĩa là nhân vật, con người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102474": "Có lẽ anh ấy chẳng trở thành nhân vật lớn được đâu.",
+        "230735": "Bạn cho tôi biết người đó là người thế nào được không?"
+      },
+      "SourceHash": "7c74079e14e42541c5713346e53423d4315372460fb77b8240b3a56f1dfd9394"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7e0343eb0",
+      "Fields": {
+        "Meaning": "Tiến bộ, phát triển",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "進歩（しんぽ）có nghĩa là tiến bộ, phát triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109747": "Tiếng Anh của anh ấy hầu như không tiến bộ.",
+        "186878": "Tiến bộ khoa học không ngừng lại."
+      },
+      "SourceHash": "bc68059d498e76f73d32f71bf034d9ae79a3b3ab120e7e6fd86e730c96adaee6"
+    }
+  ]
+}

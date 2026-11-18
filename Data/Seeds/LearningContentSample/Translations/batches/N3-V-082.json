@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50c0503d3d",
+      "Fields": {
+        "Meaning": "Tỷ lệ, suất",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "率（りつ）có nghĩa là tỷ lệ, suất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103206": "Anh ấy đề xuất cách nâng tỷ lệ sản xuất.",
+        "122602": "Tốc độ tăng GNP thực tế của Nhật Bản là 5%."
+      },
+      "SourceHash": "ad0da1967c0d7ef744447252bf07c94f59191d84718052eea63c3eb10211a5ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22aaf6b202",
+      "Fields": {
+        "Meaning": "Du học",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "留学（りゅうがく）có nghĩa là du học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152328": "Tôi bàn với bố mẹ về việc đi du học.",
+        "156198": "Tôi định tự lo để đi du học."
+      },
+      "SourceHash": "7b792b5f4ca7ebf8ceb2428ccb942e78431a17b5833b0317851e0e3a8d70402c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "52a1844352",
+      "Fields": {
+        "Meaning": "Thịnh hành, mốt, lan rộng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "流行（りゅうこう）có nghĩa là thịnh hành, mốt, lan rộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93208": "Cô ấy luôn mặc đồ hợp mốt.",
+        "230899": "Kiểu quần áo đó đang thịnh hành."
+      },
+      "SourceHash": "0c302bf609e482bed3aea390155a01f2bfc543db2d2eb84e2bcef2423df83644"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fb3130c49",
+      "Fields": {
+        "Meaning": "Lượng, số lượng",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "量（りょう）có nghĩa là lượng, số lượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93030": "Cô ấy uống một lượng rượu khá lớn.",
+        "149540": "Số lượng thậm chí còn quan trọng hơn chất lượng."
+      },
+      "SourceHash": "a88d503e2b4078bbc3eee2ade340eccac9ab731cabbe486dcf97ae94b934a356"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38170a2835",
+      "Fields": {
+        "Meaning": "Đổi tiền",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "両替（りょうがえ）có nghĩa là đổi tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196811": "Tôi muốn đổi peso ạ.",
+        "217679": "Xin đổi số tiền này sang đô la."
+      },
+      "SourceHash": "87c8bd4aa0a12ad066db6530de6e7634d070f08ae1b1e33f49560fc3efea3502"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7890b85fc7",
+      "Fields": {
+        "Meaning": "Phí, giá cước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "料金（りょうきん）có nghĩa là phí, giá cước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77961": "Xin thanh toán phí cho nhân viên thu ngân.",
+        "200418": "Phí khoảng bao nhiêu?"
+      },
+      "SourceHash": "9533182317ddfb24c8c108ae35389b893f9dc22913e24637210aa49311b29ad4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9768eacb27",
+      "Fields": {
+        "Meaning": "Ví dụ, trường hợp, tiền lệ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "例（れい）có nghĩa là ví dụ, trường hợp, tiền lệ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92845": "Cô ấy là một nhà khoa học vĩ đại chưa từng có.",
+        "98916": "Ông ấy đưa ví dụ để giải thích lý thuyết."
+      },
+      "SourceHash": "8f24a442800712809dd634dc9cc9c943be53a5c99b2665ee8334554d27b04577"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1dbd51644b",
+      "Fields": {
+        "Meaning": "Lời cảm ơn, lễ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "礼（れい）có nghĩa là lời cảm ơn, lễ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94238": "Anh ấy cảm ơn cô vì lời khuyên tử tế.",
+        "154581": "Tôi cảm ơn anh ấy vì những gì anh ấy đã làm."
+      },
+      "SourceHash": "1d42d924233997a384b36f09a06cfb15b7fd0149f83178ad373f1a75b0bf6644"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4caf52bf1b",
+      "Fields": {
+        "Meaning": "Lễ phép, phép lịch sự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "礼儀（れいぎ）có nghĩa là lễ phép, phép lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77628": "Phải chú ý giữ phép lịch sự.",
+        "204364": "Làm vậy là thiếu phép lịch sự tối thiểu."
+      },
+      "SourceHash": "bf5c9f5f37e6a08ff4fca148ab037e9394ef19518b1782ed7612e0ea29c62e80"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bc774184b",
+      "Fields": {
+        "Meaning": "Bình tĩnh, điềm tĩnh",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "冷静（れいせい）có nghĩa là bình tĩnh, điềm tĩnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87939": "Cô ấy bình tĩnh đón nhận tin ấy.",
+        "177501": "Bạn nên hành động bình tĩnh hơn."
+      },
+      "SourceHash": "e1d8d406f5ee0f9c6b7202b146253243a64620775987c2e6854b386980e4b2df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf2843b87f",
+      "Fields": {
+        "Meaning": "Hàng, dãy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "列（れつ）có nghĩa là hàng, dãy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200913": "Quầy tính tiền nào cũng có người xếp hàng.",
+        "220959": "Hãy cộng dãy số này lại."
+      },
+      "SourceHash": "ae65a4bf7f95485ad7ad3effca0f8004c5b62d36c9e7769813a2c0f8f5e9fea1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d06ebb646b",
+      "Fields": {
+        "Meaning": "Đoàn tàu, tàu hỏa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "列車（れっしゃ）có nghĩa là đoàn tàu, tàu hỏa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77503": "Hãy tra xem tàu đến lúc mấy giờ.",
+        "219159": "Tàu này đi Tokyo."
+      },
+      "SourceHash": "913c9b2bfb7fbbe5df029742617e8839d8e91b9ef239e625e2b41f3d94f4d168"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61c4f4686e",
+      "Fields": {
+        "Meaning": "Liên tưởng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "連想（れんそう）có nghĩa là liên tưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77800": "Màu xanh lá gợi liên tưởng đến cỏ.",
+        "187255": "Nhắc đến mùa hè bạn nghĩ đến gì?"
+      },
+      "SourceHash": "8dc042196c9db8c5be32cf45b8e538e90684c56ac105894b78f0b7ad285aa7d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67153e2a31",
+      "Fields": {
+        "Meaning": "Liên tiếp, liên tục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "連続（れんぞく）có nghĩa là liên tiếp, liên tục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175081": "Một người thông thái từng nói cuộc đời là chuỗi thất vọng.",
+        "203026": "Đội đó vô địch năm năm liên tiếp."
+      },
+      "SourceHash": "1be8044dc6d8a83e740ee1dd380e197af8adf83d714b9b5ae96b70e07059094c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c914e9a90",
+      "Fields": {
+        "Meaning": "Người cao tuổi, ông lão",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "老人（ろうじん）có nghĩa là người cao tuổi, ông lão.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77273": "Ông lão kể chuyện thú vị cho bọn trẻ.",
+        "230415": "Ông lão đó kén ăn."
+      },
+      "SourceHash": "621dea1b19974afdf567c168727ebf6d4b935d4c480302f7ba3725d321716e69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e15214f9a",
+      "Fields": {
+        "Meaning": "Lao động",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "労働（ろうどう）có nghĩa là lao động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98884": "Anh ấy không nhận được tiền công nào.",
+        "194900": "Tôi không thể làm công nhật nặng nhọc như trước nữa."
+      },
+      "SourceHash": "e9374274dc27152fa624063b8053bf824ce3caadf04d40ddb2dca9369a215509"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd42c9314f",
+      "Fields": {
+        "Meaning": "Tên lửa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ロケット（ロケット）có nghĩa là tên lửa.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "9d1b4538db83ffce5c69fc9679de60bd5f9442e256f00352ad1a509118bbd002"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6fcfd8b60b",
+      "Fields": {
+        "Meaning": "Bàn luận, luận bàn",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "論じる（ろんじる）có nghĩa là bàn luận, luận bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159831": "Tôi không muốn bàn về vấn đề đó.",
+        "206364": "Họ tự do bàn luận về vấn đề đó."
+      },
+      "SourceHash": "0f7fea7ca842dd22cb353ccff50b32e2fd6f24aaa605fc2660089fad7040a2c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a7b01e5d4",
+      "Fields": {
+        "Meaning": "Tranh luận, cuộc tranh luận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "論争（ろんそう）có nghĩa là tranh luận, cuộc tranh luận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98861": "Anh ấy sẽ nêu ra những chuyện cần tranh luận.",
+        "206467": "Vấn đề đó gây ra nhiều cuộc tranh luận."
+      },
+      "SourceHash": "94507b6c62a8887925c6c8d00af9f4783b2a8c54b14be8d9bbed8251d3ee417b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60bb4e1af0",
+      "Fields": {
+        "Meaning": "Luận văn, bài nghiên cứu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "論文（ろんぶん）có nghĩa là luận văn, bài nghiên cứu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112366": "Anh ấy viết một bài nghiên cứu về vấn đề đó.",
+        "152245": "Tôi đã viết bản nháp đầu tiên của luận văn."
+      },
+      "SourceHash": "006a096f1f6b98f03395402da1373ee0646bf1af4c5a702b48a233ceb2c121c8"
+    }
+  ]
+}

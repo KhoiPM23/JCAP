@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: c2946190ea."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6ec708ec6",
+      "Fields": {
+        "Meaning": "Phần tiếp theo, kéo dài liên tục",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "続き（つづき）có nghĩa là phần tiếp theo, kéo dài liên tục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85091": "Mất mùa do hạn hán kéo dài.",
+        "122860": "Hạn hán kéo dài khiến ao cạn khô."
+      },
+      "SourceHash": "1fff096347e3ac4d2d5ea926e7ae6251be22c6447cfdabcd6713763c87476015"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c327a33164",
+      "Fields": {
+        "Meaning": "Gói, bọc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "包み（つつみ）có nghĩa là gói, bọc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100061": "Anh ấy kẹp gói đồ dưới cánh tay.",
+        "173339": "Người bán hàng rong cõng một bọc lớn."
+      },
+      "SourceHash": "41ffb05a8f267569c888568f3d990cf6a0926082b954a16d7b5d55005ac62f28"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b30b244443",
+      "Fields": {
+        "Meaning": "Công việc, nơi làm việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "勤め（つとめ）có nghĩa là công việc, nơi làm việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83008": "Mẹ tôi mua sắm trên đường đi làm về.",
+        "227297": "Anh chị làm việc ở đâu ạ?"
+      },
+      "SourceHash": "a0da9ac6225a721ad85efbafa4d033db3e6462306abe009c5918330be409346d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b30544a54e",
+      "Fields": {
+        "Meaning": "Nhiệm vụ, bổn phận",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "務め chỉ bổn phận. Câu đầu dùng 勤め để hỏi nơi làm việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83312": "Học tập là bổn phận của học sinh.",
+        "227297": "Anh chị làm việc ở đâu ạ?"
+      },
+      "SourceHash": "77cddadf52e282866847c1b4744a3e1caa8b36972e38f4b71f9d22524228f5c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e629f70aca",
+      "Fields": {
+        "Meaning": "Nối, buộc, chuyển máy",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "繋ぐ（つなぐ）có nghĩa là nối, buộc, chuyển máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157281": "Tôi đã buộc chó vào cây trong vườn.",
+        "214304": "Xin nối máy cho tôi gặp ông Smith."
+      },
+      "SourceHash": "55b5c0d486e50bfb89e5b052b60997ca6c3e18c38883e15ebd8b0030c77a7b40"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43f9074428",
+      "Fields": {
+        "Meaning": "Luôn luôn, thường xuyên",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "常に（つねに）có nghĩa là luôn luôn, thường xuyên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82699": "Pháp luật không phải lúc nào cũng công bằng.",
+        "146076": "Tôi lúc nào cũng thấy mệt."
+      },
+      "SourceHash": "a473cec60957d00f398af499c07e0417278ca0ba9d268f68a3a3800c9ae735f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "778765a79e",
+      "Fields": {
+        "Meaning": "Góc, sừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "角（つの）có nghĩa là góc, sừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76795": "Con ốc sên nhanh chóng thò râu ra.",
+        "143675": "Trâu có sừng lớn."
+      },
+      "SourceHash": "d0e95f8a5319fa1c71ed5a8a4fa7b7279fe9df989d2399cf4f3ad18b84f4cd93"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "526a0047ad",
+      "Fields": {
+        "Meaning": "Cánh, sải cánh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "翼（つばさ）có nghĩa là cánh, sải cánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150668": "Nỗi buồn bay đi trên đôi cánh thời gian.",
+        "204801": "Nó có sải cánh dài khoảng bốn inch."
+      },
+      "SourceHash": "86b9232d11114ea5e6315f0a68463fb7f93ede9a316a15caa598d94db8a82e91"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a7106c569",
+      "Fields": {
+        "Meaning": "Tóm lại, nói cách khác",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "つまり（つまり）có nghĩa là tóm lại, nói cách khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202527": "Tóm lại, cô ấy nhảy không giỏi.",
+        "202533": "Nói cách khác, lẽ ra cậu phải chịu trách nhiệm."
+      },
+      "SourceHash": "c8c9cdb4107800d63c57869ff413807feaea22eea0c0493d2b582f8314d97bb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc43373a26",
+      "Fields": {
+        "Meaning": "Tội, lỗi",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "罪（つみ）có nghĩa là tội, lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106850": "Cảm giác tội lỗi của anh ấy dần biến mất.",
+        "197360": "Bill không phạm tội đó."
+      },
+      "SourceHash": "4d59c87a2afe10ad9026c849074995a839164854ce9c30300dc544ad4b4dd8f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "236e0b11a0",
+      "Fields": {
+        "Meaning": "Nhét, lấp, thu hẹp",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "詰める（つめる）có nghĩa là nhét, lấp, thu hẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204694": "Hãy xếp những thứ đó vào hộp.",
+        "223238": "Anh chị bóp nhỏ chiếc áo này giúp tôi được không?"
+      },
+      "SourceHash": "10c87bcd186f44b4f2a203032c43c3c96d92c579f1e324a43d853797e7c0f86d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d870dff504",
+      "Fields": {
+        "Meaning": "Tích tụ, chất đống",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "積もる（つもる）có nghĩa là tích tụ, chất đống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141976": "Tuyết phủ khắp nơi.",
+        "143903": "Bụi tích lâu ngày cũng thành núi."
+      },
+      "SourceHash": "6be8c2ab1f9b0e61690f4a13a77bf138e282a98b0ac337e963b4404c8b241d56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33f0992c39",
+      "Fields": {
+        "Meaning": "Mùa mưa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "梅雨（つゆ）có nghĩa là mùa mưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121511": "Trời âm u đúng kiểu mùa mưa.",
+        "125087": "Theo dự báo, mùa mưa sắp bắt đầu."
+      },
+      "SourceHash": "80c7406ef355951469f05e64e8844b99b64677fb5e2bc5c010473a24d20081d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1213823fa2",
+      "Fields": {
+        "Meaning": "Đau khổ, khổ sở, khó chịu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "Đọc つらい khi nói về nỗi đau hay khó khăn. Đọc からい khi nói vị cay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74243": "Sảy thai là một trải nghiệm rất đau lòng.",
+        "184039": "Trời lạnh, buổi sáng dậy thật khó."
+      },
+      "SourceHash": "25b9f942510237538d2a14a9105cc07ba452c678e6d06ae3ed2c57c0dce37d9d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d0f952e4c",
+      "Fields": {
+        "Meaning": "Câu cá, tiền thối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "釣（つり）có nghĩa là câu cá, tiền thối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202519": "Không cần trả lại tiền thừa đâu.",
+        "231718": "Bạn muốn đi câu cá."
+      },
+      "SourceHash": "da77cc6b0a6c0867711d0e1260b3fa100cb44f594f506df6635d5e8aa8e76ad9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7433983c57",
+      "Fields": {
+        "Meaning": "Người đi cùng, đưa đi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "連れ（つれ）có nghĩa là người đi cùng, đưa đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162410": "Bạn đồng hành của tôi nói rằng mệt đến mức đi bộ còn không nổi, nói gì đến chạy.",
+        "188859": "Để tôi đưa anh chị đến ga ạ."
+      },
+      "SourceHash": "d40011af236a72d8f2b3cd3d9a34915a6e5efb60714da883083396095faf9c8f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c2946190ea",
+      "Fields": {
+        "Meaning": "Sự đi ra, chảy ra; người xuất thân hoặc tốt nghiệp từ một nơi",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "出（で）là danh từ chỉ sự đi ra hoặc dòng chảy ra. Khi đứng sau tên nơi chốn hay trường học, nó chỉ người xuất thân hoặc tốt nghiệp từ nơi đó.",
+        "UsageNotes": "Ví dụ dùng đúng nghĩa của mục này gồm 水の出が悪い (nước chảy yếu) và 大学出 (người tốt nghiệp đại học). Hai câu ví dụ từ nguồn dùng trợ từ で hoặc mẫu ～ないで."
+      },
+      "Examples": {
+        "213607": "Nơi đó nổi tiếng vì phong cảnh đẹp.",
+        "233461": "Đừng chen ý kiến của bạn vào."
+      },
+      "SourceHash": "b4d2980aa6b506deae4a5523c83009a554d59e6491241facfdc0aaa367fff533"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "56092bf6de",
+      "Fields": {
+        "Meaning": "Cuộc gặp, sự gặp gỡ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "出会い（であい）có nghĩa là cuộc gặp, sự gặp gỡ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95117": "Từ đó tôi bắt đầu gặp gỡ cô ấy.",
+        "166942": "Cuộc gặp của chúng tôi hoàn toàn tình cờ."
+      },
+      "SourceHash": "eb3a1c86ae1a775e863fc2b8f1d72091cd1d3250b7a10ce2a03161ceb833cd02"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "efa915fbef",
+      "Fields": {
+        "Meaning": "Gặp, tình cờ gặp",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "出会う（であう）có nghĩa là gặp, tình cờ gặp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154817": "Tôi tình cờ gặp một người bạn cũ trên đường.",
+        "225957": "Hôm qua tôi gặp một người bạn cũ."
+      },
+      "SourceHash": "aa2e0860b5752f762e872b967a46936bb0d1aed2080290e188972a442399de23"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8c0205de7",
+      "Fields": {
+        "Meaning": "Đề xuất, kiến nghị",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "提案（ていあん）có nghĩa là đề xuất, kiến nghị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92341": "Cô ấy không đồng ý với đề xuất đó.",
+        "162974": "Anh chị có thể chấp thuận đề xuất của tôi không?"
+      },
+      "SourceHash": "cd60be5b509cff8d0e53b69903d6e26af51377d6325f3ceb0008a23a0dc1e5db"
+    }
+  ]
+}

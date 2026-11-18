@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dai",
+      "Fields": {
+        "Meaning": "Nhóm tuổi theo khoảng mười năm",
+        "Formation": "Số chỉ tuổi ＋ 代",
+        "Explanation": "20代 chỉ độ tuổi từ 20 đến 29. Cách dùng này nêu nhóm tuổi mà không cần cho biết tuổi chính xác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dai:example:1": "Mẹ tôi ngoài năm mươi nhưng trông rất trẻ.",
+        "dai:example:2": "Cửa hàng này có nhiều khách nữ ở độ tuổi hai mươi."
+      },
+      "SourceHash": "20d486244747bca19d3d30470b38de0a6cae36388b11a98d58cfea511ddba73d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-request",
+      "Fields": {
+        "Meaning": "Hãy làm gì (thân mật)",
+        "Formation": "Động từ thể て ở cuối câu",
+        "Explanation": "Kết thúc câu bằng thể て để nhờ hoặc bảo ai làm gì trong giao tiếp thân mật. Thêm ください khi cần lịch sự hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-request:example:1": "Đợi một chút nhé. Mình quay lại ngay.",
+        "te-request:example:2": "Này, xem tấm ảnh này đi."
+      },
+      "SourceHash": "d59cd1530425ffbe0fdeeccc4f1ed65e1c129d894831c82f8d06b1e8fcce1ecc"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "demo-demo",
+      "Fields": {
+        "Meaning": "Dù là A hay B, A hay B đều",
+        "Formation": "Danh từ A ＋ でも ＋ danh từ B ＋ でも",
+        "Explanation": "Nêu hai lựa chọn mà kết quả hoặc thái độ vẫn như nhau. Phần sau cho biết điều áp dụng cho cả hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "demo-demo:example:1": "Ngày thường hay cuối tuần đều được, cứ đến bất cứ lúc nào nhé.",
+        "demo-demo:example:2": "Chó hay mèo đều được, con vật nào tôi cũng thích."
+      },
+      "SourceHash": "59963b9c5e406eb74f7dc88ed1706c7b4ebbe94ce28206de0098f3a9c4d4ebdc"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nai-wa-nai",
+      "Fields": {
+        "Meaning": "Không có cái nào không…, ai cũng…",
+        "Formation": "Mệnh đề có động từ phủ định ＋ danh từ ＋ はない／はいない",
+        "Explanation": "Phủ định sự tồn tại của ngoại lệ để nhấn mạnh tính bao quát. Dùng いない khi nói về người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nai-wa-nai:example:1": "Cửa hàng đó thứ gì cũng mua được.",
+        "nai-wa-nai:example:2": "Ai cũng biết tên anh ấy."
+      },
+      "SourceHash": "1438248407a74beb741a22119173bad98def4eafe5865652ca15846a7aee732d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naide-request",
+      "Fields": {
+        "Meaning": "Đừng làm gì (thân mật)",
+        "Formation": "Động từ thể ない ＋ で ở cuối câu",
+        "Explanation": "Dùng để yêu cầu ai đừng làm một việc trong giao tiếp thân mật. Có thể thêm ください để nói lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naide-request:example:1": "Đừng lo, không sao đâu.",
+        "naide-request:example:2": "Khoan vào. Chưa chuẩn bị xong đâu."
+      },
+      "SourceHash": "3504740ba01d5bbbfd652cfa02b4df97dccf676672ea90c6de28ed151c4ff6e7"
+    }
+  ]
+}

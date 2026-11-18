@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wake-da",
+      "Fields": {
+        "Meaning": "Thảo nào, vậy nên",
+        "Formation": "Mệnh đề bổ nghĩa ＋ わけだ",
+        "Explanation": "Nêu kết luận hợp lý khi đã biết căn cứ. どうりで thường dùng khi người nói vừa hiểu ra lý do.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wake-da:example:1": "Anh ấy sống ở Paris tới mười năm. Thảo nào nói tiếng Pháp giỏi.",
+        "wake-da:example:2": "Đi bộ đến ba tiếng cơ à. Thảo nào mệt."
+      },
+      "SourceHash": "eaeb949b9a503a76acca5b7c9a098023ce9043576fa6e94843b054de51dcf5f5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wake-niwa-ikanai",
+      "Fields": {
+        "Meaning": "Không thể làm vì hoàn cảnh hoặc trách nhiệm",
+        "Formation": "Động từ thể từ điển ＋ わけにはいかない",
+        "Explanation": "Nêu rằng trách nhiệm, quan hệ hoặc quy tắc khiến chủ thể không thể chọn làm việc đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wake-niwa-ikanai:example:1": "Hôm nay có cuộc họp quan trọng nên tôi không thể nghỉ.",
+        "wake-niwa-ikanai:example:2": "Đó là lời nhờ của người thầy từng giúp tôi nên tôi không thể từ chối."
+      },
+      "SourceHash": "60a476f7cb3db24969479e7ec7868b65d5bbd69de99268bea981f87f8c497a74"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wazato",
+      "Fields": {
+        "Meaning": "Cố ý",
+        "Formation": "わざと ＋ động từ",
+        "Explanation": "Nhấn mạnh người làm chủ động chọn hành động đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wazato:example:1": "Tôi cố tình làm mặt xấu để chọc em trai cười.",
+        "wazato:example:2": "Cô ấy cố tình phớt lờ câu hỏi của tôi."
+      },
+      "SourceHash": "645c8923a7468630056133a216c18fd14f8cc9bf8bd03296bcc3f925154cc7db"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wazawaza",
+      "Fields": {
+        "Meaning": "Cất công, đặc biệt bỏ công",
+        "Formation": "わざわざ ＋ động từ",
+        "Explanation": "Nhấn mạnh công sức đặc biệt bỏ ra để làm việc gì, đôi khi nhận xét không cần thiết phải làm vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wazawaza:example:1": "Cảm ơn bạn đã cất công đến từ xa.",
+        "wazawaza:example:2": "Không cần mất công mua cái mới, cái này là đủ rồi."
+      },
+      "SourceHash": "f93d7389a9689892094e3edf6c37062066d3cc6b22a3168a5ff8df0c1132b90f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wari-ni",
+      "Fields": {
+        "Meaning": "So với, xét ra thì",
+        "Formation": "Danh từ ＋ の割に／mệnh đề bổ nghĩa ＋ 割に",
+        "Explanation": "Nêu kết quả hoặc đặc điểm khác với mức thường kỳ vọng từ một tiêu chí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wari-ni:example:1": "So với giá thì khẩu phần ở nhà hàng này khá nhiều.",
+        "wari-ni:example:2": "Anh ấy tập nhiều mà tiến bộ không mấy."
+      },
+      "SourceHash": "9393f6d41057daf2dbf7375e5fbcca88cfd6db0cb67fe7e97b3f3fb5c85c2bef"
+    }
+  ]
+}
