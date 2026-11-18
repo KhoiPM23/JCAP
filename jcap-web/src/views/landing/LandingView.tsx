@@ -335,15 +335,16 @@ export const LandingView: React.FC = () => {
                   </li>
                 ))}
               </ol>
-              <div>
-                {tab === 1 && (
-                  <div className="panel" aria-label="Nói theo câu mẫu">
+              {/* Ba ô chồng lên nhau ở cùng một chỗ: khung luôn cao bằng ô cao nhất nên đổi tab không làm trang co giãn */}
+              <div className="panels">
+                <div className="panel" aria-label="Nói theo câu mẫu" data-off={tab !== 1 || undefined} inert={tab !== 1}>
                     <div className="ptop">
                       <span>
                         <b>Cửa hàng tiện lợi</b>, câu 2 trên 6
                       </span>
                       <span className="lp-tag free">Miễn phí</span>
                     </div>
+                    <div className="pbody">
                     <div className="shd">
                       <div className="shd-l">
                         <div>
@@ -362,17 +363,17 @@ export const LandingView: React.FC = () => {
                       </div>
                       <ScoreRing value={86} size={104} label="Độ khớp" />
                     </div>
+                    </div>
                     <p className="cap">Hệ thống chấm độ khớp phát âm theo từng âm. Một từ chỉ được tính đúng khi bạn nói khớp hết các âm của từ đó.</p>
                   </div>
-                )}
-                {tab === 2 && (
-                  <div className="panel" aria-label="Hội thoại với nhân viên">
+                <div className="panel" aria-label="Hội thoại với nhân viên" data-off={tab !== 2 || undefined} inert={tab !== 2}>
                     <div className="ptop">
                       <span>
                         <b>Cửa hàng tiện lợi</b>, quầy thu ngân
                       </span>
                       <span className="lp-tag cr">Dùng Credit</span>
                     </div>
+                    <div className="pbody">
                     <div>
                       <span className="task done">
                         <Msr name="check_circle" />
@@ -403,19 +404,19 @@ export const LandingView: React.FC = () => {
                         <div className="vi">Bạn có cần túi không ạ?</div>
                       </div>
                     </div>
+                    </div>
                     <p className="cap">
                       Nhân vật AI đóng vai người bạn gặp ở từng nơi, mỗi kịch bản có nhiệm vụ. Hết buổi có đánh giá và kết quả được lưu lại. Bạn có thể nói hoặc gõ.
                     </p>
                   </div>
-                )}
-                {tab === 3 && (
-                  <div className="panel" aria-label="Nhận con dấu">
+                <div className="panel" aria-label="Nhận con dấu" data-off={tab !== 3 || undefined} inert={tab !== 3}>
                     <div className="ptop">
                       <span>
                         <b>Sổ con dấu</b>
                       </span>
                       <span className="lp-tag free">Miễn phí</span>
                     </div>
+                    <div className="pbody">
                     <div className="stamps-demo">
                       <div className="mini-box">
                         <MiniRouteMap />
@@ -441,9 +442,9 @@ export const LandingView: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    </div>
                     <p className="cap">Mỗi nơi học xong là một con dấu. Lật sổ ra là thấy mình đã đi được bao xa.</p>
                   </div>
-                )}
               </div>
             </div>
           </div>

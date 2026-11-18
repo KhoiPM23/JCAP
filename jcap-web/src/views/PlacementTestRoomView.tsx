@@ -1247,8 +1247,8 @@ export const PlacementTestRoomView: React.FC = () => {
                     <div
                       className={`group relative max-w-[80%] rounded-2xl p-4 transition shadow-xs ${
                         isAi
-                          ? 'bubble-ai rounded-tl-sm border border-[var(--line)] bg-white text-[var(--sumi)] shadow-xs'
-                          : 'bubble-user rounded-tr-sm bg-[var(--ai)] text-white shadow-sm'
+                          ? 'rounded-tl-sm border border-[var(--line)] bg-white text-[var(--sumi)] shadow-xs'
+                          : 'rounded-tr-sm bg-[var(--ai)] text-white shadow-sm'
                       }`}
                     >
                       {/* Bubble Header */}
@@ -1286,7 +1286,11 @@ export const PlacementTestRoomView: React.FC = () => {
                         {showFurigana && msg.furiganaHtml ? (
                           <div
                             dangerouslySetInnerHTML={{ __html: msg.furiganaHtml }}
-                            className="[&_rt]:text-[9px] [&_rt]:text-[var(--ai)] [&_rt]:font-normal"
+                            className={
+                              isAi
+                                ? '[&_rt]:text-[9px] [&_rt]:font-normal [&_rt]:text-[var(--ai)]'
+                                : '[&_rt]:text-[9px] [&_rt]:font-normal [&_rt]:text-blue-100'
+                            }
                           />
                         ) : (
                           <p>{msg.japaneseText}</p>

@@ -7,6 +7,15 @@ import { Button, Icon, SegmentedControl, Select, Switch } from '../components/jc
 import { cx } from '../components/jcap/utils';
 import { useTheme, type ThemeMode } from '../contexts/ThemeContext';
 import { getPracticePrefs, setPracticePref, type PracticePrefs } from '../utils/practicePrefs';
+import {
+  INPUT_DEVICE_STORAGE_KEY,
+  INPUT_LABEL_STORAGE_KEY,
+  OUTPUT_DEVICE_STORAGE_KEY,
+  OUTPUT_LABEL_STORAGE_KEY,
+  applyOutputDevice,
+  buildDeviceOptions,
+  normalizeDeviceId,
+} from '../utils/audioDevice';
 
 const SAMPLE_TEXT = 'こんにちは！JCAPで日本語を一緒に練習しましょう。';
 
@@ -31,8 +40,9 @@ export const SettingsView: React.FC = () => {
 
   // Thiết bị âm thanh
   const [isAudioDeviceModalOpen, setIsAudioDeviceModalOpen] = useState<boolean>(false);
-  const [selectedInputId, setSelectedInputId] = useState<string>(localStorage.getItem('jcap_audio_input_device') || '');
-  const [selectedOutputId, setSelectedOutputId] = useState<string>(localStorage.getItem('jcap_audio_output_device') || '');
+  // Rỗng = mặc định của hệ thống (giá trị "default" cũ cũng được hiểu là mặc định)
+  const [selectedInputId, setSelectedInputId] = useState<string>(normalizeDeviceId(localStorage.getItem(INPUT_DEVICE_STORAGE_KEY)));
+  const [selectedOutputId, setSelectedOutputId] = useState<string>(normalizeDeviceId(localStorage.getItem(OUTPUT_DEVICE_STORAGE_KEY)));
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
 
   // Nghe thử: id giọng đang phát (null = không phát)
@@ -105,9 +115,9 @@ export const SettingsView: React.FC = () => {
       if (!audioPlayerRef.current) audioPlayerRef.current = new Audio();
       const audio = audioPlayerRef.current;
       audio.src = url;
-      // Phát qua loa đã chọn nếu trình duyệt hỗ trợ
-      const sink = (audio as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }).setSinkId;
-      if (sink && selectedOutputId) await sink.call(audio, selectedOutputId).catch(() => {});
+      // Phát qua loa đã chọn (chờ chuyển xong rồi mới phát); không chuyển được thì phát qua loa mặc định
+      const routing = await applyOutputDevice(audio as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }, selectedOutputId);
+      if (routing === 'failed') setToastMessage('Không phát được qua loa đã chọn (có thể đã ngắt kết nối), đang dùng loa mặc định.');
       audio.onended = () => setPlayingId(null);
       audio.onerror = () => setPlayingId(null);
       await audio.play();
@@ -136,22 +146,36 @@ export const SettingsView: React.FC = () => {
     if (v) setToastMessage(`Đã chọn giọng ${v.romajiName || v.speakerName}${v.styleVietnamese ? ` · ${v.styleVietnamese}` : ''}.`);
   };
 
+  /** Lưu lựa chọn kèm tên thiết bị; "Mặc định của hệ thống" (rỗng) thì xoá lựa chọn cũ. */
+  const persistDevice = (key: string, labelKey: string, id: string) => {
+    const normalized = normalizeDeviceId(id);
+    if (!normalized) {
+      localStorage.removeItem(key);
+      localStorage.removeItem(labelKey);
+      return;
+    }
+    localStorage.setItem(key, normalized);
+    const label = devices.find((d) => d.deviceId === normalized)?.label;
+    if (label) localStorage.setItem(labelKey, label);
+  };
+
   const saveDevices = (inId: string, outId: string) => {
-    setSelectedInputId(inId);
-    setSelectedOutputId(outId);
-    localStorage.setItem('jcap_audio_input_device', inId);
-    localStorage.setItem('jcap_audio_output_device', outId);
+    setSelectedInputId(normalizeDeviceId(inId));
+    setSelectedOutputId(normalizeDeviceId(outId));
+    persistDevice(INPUT_DEVICE_STORAGE_KEY, INPUT_LABEL_STORAGE_KEY, inId);
+    persistDevice(OUTPUT_DEVICE_STORAGE_KEY, OUTPUT_LABEL_STORAGE_KEY, outId);
     setToastMessage('Đã cập nhật thiết bị âm thanh.');
   };
 
   const setPref = <K extends keyof PracticePrefs>(key: K, value: PracticePrefs[K]) => setPrefs(setPracticePref(key, value));
 
-  const deviceOptions = (kind: MediaDeviceKind) => [
-    { value: '', label: 'Mặc định hệ thống' },
-    ...devices
-      .filter((d) => d.kind === kind && d.deviceId && d.deviceId !== 'default')
-      .map((d, i) => ({ value: d.deviceId, label: d.label || `${kind === 'audioinput' ? 'Micro' : 'Loa'} ${i + 1}` })),
-  ];
+  const deviceOptions = (kind: MediaDeviceKind) =>
+    buildDeviceOptions(
+      kind === 'audioinput' ? 'audioinput' : 'audiooutput',
+      devices.filter((d) => d.kind === kind),
+      kind === 'audioinput' ? selectedInputId : selectedOutputId,
+      localStorage.getItem(kind === 'audioinput' ? INPUT_LABEL_STORAGE_KEY : OUTPUT_LABEL_STORAGE_KEY),
+    );
 
   const goSection = (id: string) => {
     setActiveSection(id);

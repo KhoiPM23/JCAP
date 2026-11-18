@@ -70,9 +70,24 @@ export interface ShadowingDiffToken {
   /** Cách đọc chuẩn (kana) của đoạn này; chỉ có với đoạn chưa đúng, dùng làm chú thích. */
   expectedReading?: string | null;
   errorType?: ShadowingDiffErrorType | null;
+  /** Lỗi từng âm trong từ chưa đúng (thừa っ, く đọc thành ぐ…); null khi từ đúng, thiếu cả từ, hoặc nói từ khác hẳn. */
+  issues?: ShadowingMoraIssue[] | null;
 }
 
-/** Loại lỗi do bộ so khớp theo từ (kana-word-v1) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */
+/** Một lỗi ở mức âm (mora) bên trong một từ; `message` là nhận xét tiếng Việt do backend viết sẵn. */
+export interface ShadowingMoraIssue {
+  kind: 'extra' | 'missing' | 'substitute';
+  expected?: string | null;
+  spoken?: string | null;
+  after?: string | null;
+  errorType?: ShadowingDiffErrorType | null;
+  /** Nêu lỗi, ngắn (vd. "Thừa âm ngắt 「っ」 sau 「え」"). */
+  message: string;
+  /** Cách sửa (vd. "Nối liền hai âm, không dừng hơi."); null nếu không có. */
+  hint?: string | null;
+}
+
+/** Loại lỗi do bộ so khớp theo từ (kana-word-v1/v2) phân loại; các giá trị cũ (particle/word) chỉ còn trong bản ghi cũ. */
 export type ShadowingDiffErrorType =
   | 'chouon' | 'sokuon' | 'hatsuon' | 'voicing' | 'mora' | 'extra'
   | 'particle' | 'word';
@@ -99,6 +114,10 @@ export interface ShadowingFluencyMetrics {
   moraCount?: number | null;
   speakingRateMoraPerSec?: number | null;
   articulationRateMoraPerSec?: number | null;
+  /** Thời gian nói liền trung bình giữa hai khoảng dừng (ms). */
+  meanRunMs?: number | null;
+  /** Số mora trung bình mỗi đoạn nói liền (tính liên tục). */
+  meanRunMoras?: number | null;
   /** Số liệu nhịp nói của giọng mẫu (cùng bộ VAD). */
   reference?: { source: string; speakerId?: number | null; metrics: ShadowingFluencyMetrics } | null;
   /** Kết quả so với giọng mẫu. status = 'unavailable' nghĩa là KHÔNG đủ điều kiện so sánh, không phải nói tốt hay kém. */
@@ -135,6 +154,8 @@ export interface ShadowingFluencyComparison {
   learnerPauseCount?: number | null;
   referencePauseCount?: number | null;
   extraPauseCount?: number | null;
+  /** Khoảng dừng thừa nằm GIỮA một từ (ngập ngừng); null nếu không định vị được. */
+  hesitationCount?: number | null;
   moraCountConsistency?: number | null;
 }
 
@@ -154,7 +175,21 @@ export interface ShadowingAudioEvaluationResult {
   evaluationStatus: ShadowingEvaluationStatus;
   /** recognized | no_speech | unavailable: tách biệt với chất lượng âm thanh. */
   recognitionStatus: 'recognized' | 'no_speech' | 'unavailable';
-  recognitionSource: 'gemini' | 'web_speech' | 'none';
+  recognitionSource: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini' | 'none';
+  /** Trạng thái/điểm từng chiều đánh giá (Shadowing V2). Có từ scoringVersion v3. */
+  dimensions?: ShadowingEvaluationDimensions;
+  /** "content": điểm tổng CHỈ là điểm nội dung — hiển thị là "Điểm nội dung". */
+  overallScoreBasis?: 'content' | null;
+  /** Mô hình ASR đã dùng (vd. faster-whisper:small). */
+  asrModel?: string;
+  processingMs?: number;
+  /**
+   * Khi recognitionSource = phoneme: aligned = chấm theo câu mẫu (từng mora so với các kiểu đọc sai thường gặp),
+   * free = nhận dạng tự do (khi người học đọc câu khác hoặc tắt chấm theo câu mẫu). Rỗng với nguồn khác.
+   */
+  recognitionMode?: 'aligned' | 'free' | '';
+  /** Kana nhận dạng tự do từ bản ghi, chỉ để chẩn đoán. */
+  freeRecognizedText?: string;
   /** Lý do phải dùng nguồn dự phòng (vd. AI_TIMEOUT). */
   fallbackReason?: string | null;
   audioQualityStatus: ShadowingAudioQualityStatus;
@@ -168,6 +203,8 @@ export interface ShadowingAudioEvaluationResult {
   recognizedReading?: string;
   targetText: string;
   recognizedText: string;
+  /** "Bạn đã nói" để hiển thị: từ đọc đúng dùng chữ của câu mẫu (có kanji), phần đọc sai/nói thừa giữ kana như đã nghe. */
+  recognizedDisplayText?: string;
   contentMatchScore?: number | null;
   pronunciationScore?: number | null;
   fluencyScore?: number | null;
@@ -201,7 +238,7 @@ export interface ShadowingSentencePracticeResult {
   /** Không còn được tạo ra: ngữ điệu chưa được đo. Chỉ còn trong bản ghi cũ. */
   intonationScore?: number;
   evaluationStatus?: ShadowingEvaluationStatus;
-  recognitionSource?: 'gemini' | 'web_speech';
+  recognitionSource?: 'faster-whisper' | 'phoneme' | 'web_speech' | 'gemini';
   fallbackReason?: string | null;
   scoringVersion?: string;
   comparisonMethod?: string;
@@ -235,6 +272,75 @@ export interface ShadowingSessionCompletePayload {
   durationSeconds: number;
   startedAt?: string;
   evaluationIds: string[];
+  /** Phiên luyện ở server: có thì backend tự lấy các lần chấm của phiên; gọi lại trả đúng buổi đã tạo. */
+  progressId?: string;
+}
+
+/** Kết quả một chiều đánh giá. score null = chưa có điểm đã kiểm chứng (KHÔNG phải 0). */
+export interface ShadowingEvaluationDimension {
+  status: 'COMPLETED' | 'UNAVAILABLE' | 'FAILED';
+  score?: number | null;
+  reason?: string | null;
+  source?: string | null;
+}
+
+export interface ShadowingEvaluationDimensions {
+  content: ShadowingEvaluationDimension;
+  pronunciation: ShadowingEvaluationDimension;
+  fluency: ShadowingEvaluationDimension;
+  prosody: ShadowingEvaluationDimension;
+}
+
+/** Một đoạn chữ của câu; reading có giá trị trên chữ Hán (Furigana). */
+export interface FuriganaSegment {
+  text: string;
+  reading?: string | null;
+}
+
+/** Trạng thái một câu của vai người học do server suy ra từ các lần chấm đã lưu. */
+export type ShadowingServerSentenceState = 'NOT_STARTED' | 'EVALUATED' | 'EVALUATION_FAILED';
+
+export interface ShadowingProgressSentence {
+  sentenceId: number;
+  /** Chỉ số trong danh sách câu của bài (theo OrderIndex). */
+  sentenceIndex: number;
+  state: ShadowingServerSentenceState;
+  submissionCount: number;
+  bestScore?: number | null;
+  lastErrorCode?: string | null;
+  lastSubmittedAt?: string | null;
+}
+
+/** Phiên luyện ở server (ShadowingPracticeProgress) — nguồn chính thức của tiến độ. */
+export interface ShadowingServerProgress {
+  id: string;
+  dialogueId: number;
+  dialogueTitle: string;
+  jlptLevel: string;
+  learnerRole: 'A' | 'B';
+  status: 'in_progress' | 'completed' | 'abandoned';
+  currentSentenceIndex: number;
+  currentSentenceText: string;
+  totalSentenceCount: number;
+  learnerSentenceCount: number;
+  evaluatedSentenceCount: number;
+  startedAt: string;
+  lastActivityAt: string;
+  completedAt?: string | null;
+  sessionId?: string | null;
+  /** true nếu phiên vừa được tạo (false: tiếp tục phiên đã có). */
+  created: boolean;
+  sentences: ShadowingProgressSentence[];
+}
+
+export interface StartShadowingProgressPayload {
+  dialogueId: number;
+  learnerRole: 'A' | 'B';
+  restart?: boolean;
+  /** Khi làm lại: phiên mà trang đang thấy (tab cũ làm lại không tạo phiên thứ hai). */
+  expectedProgressId?: string;
+  /** Vị trí cũ trong trình duyệt; server chỉ dùng khi CHƯA TỪNG có phiên cho bài + vai này. */
+  suggestedSentenceIndex?: number;
 }
 
 /** Phản hồi của backend khi hoàn thành buổi luyện (điểm tổng do backend tính từ kết quả đã lưu). */
@@ -251,6 +357,39 @@ export interface ShadowingSessionCompleteResult {
   summaryFeedback: string;
   learnerSentenceCount: number;
   scoredSentenceCount: number;
+  /** Tổng kết do backend tính từ các lần chấm đã lưu. */
+  summary?: ShadowingSessionSummary;
+}
+
+export interface ShadowingRetrySentence {
+  sentenceId: number;
+  orderIndex: number;
+  japaneseText: string;
+  bestScore?: number | null;
+  reason: 'NOT_EVALUATED' | 'LOW_SCORE';
+  mainErrorType?: string | null;
+}
+
+/** Tổng kết buổi luyện: lần gửi chấm ≠ buổi luyện; chiều chưa có điểm thì chỉ có trạng thái. */
+export interface ShadowingSessionSummary {
+  totalSentenceCount: number;
+  learnerSentenceCount: number;
+  evaluatedSentenceCount: number;
+  totalSubmissions: number;
+  unscoredSubmissions: number;
+  contentAccuracy: number;
+  pronunciationStatus: 'COMPLETED' | 'UNAVAILABLE';
+  fluencyStatus: 'COMPLETED' | 'UNAVAILABLE';
+  prosodyStatus: 'COMPLETED' | 'UNAVAILABLE';
+  sentencesToRetry: ShadowingRetrySentence[];
+  errorTypeCounts: Record<string, number>;
+}
+
+/** Gợi ý luyện tập theo quy tắc (chỉ khi lỗi lặp lại đủ nhiều). */
+export interface ShadowingRecommendation {
+  focus: { errorType: string; occurrences: number; sentenceCount: number; message: string }[];
+  dialogues: { dialogueId: number; title: string; jlptLevel: string; errorType: string; matchingSentenceCount: number }[];
+  evaluationsAnalyzed: number;
 }
 
 /** Một câu trong buổi luyện đã lưu ở backend. */
@@ -364,3 +503,26 @@ export interface TranslateAssistResult {
   vietnameseTranslation: string;
 }
 
+/** Một vấn đề AI nêu ra: tên vấn đề, bằng chứng từ số liệu đã đo, cách sửa. */
+export interface ShadowingAiReviewPoint {
+  title: string;
+  evidence: string;
+  fix: string;
+}
+
+/** Một phần nhận xét (Phát âm hoặc Lưu loát): đánh giá 1 câu và tối đa 3 vấn đề. */
+export interface ShadowingAiReviewSection {
+  verdict: string;
+  issues: ShadowingAiReviewPoint[];
+}
+
+/** Nhận xét buổi Shadowing do AI viết từ số liệu đã đo, tập trung Phát âm và Lưu loát (không phải điểm; không lưu). */
+export interface ShadowingSessionAiReview {
+  summary: string;
+  priority: string;
+  pronunciation: ShadowingAiReviewSection;
+  /** null khi buổi không có số liệu Lưu loát. */
+  fluency: ShadowingAiReviewSection | null;
+  hasFluencyData: boolean;
+  generatedAt: string;
+}

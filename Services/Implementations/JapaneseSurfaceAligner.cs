@@ -70,7 +70,23 @@ namespace JCAP.Services.Implementations
             (c >= '㐀' && c <= '䶿') || (c >= '一' && c <= '鿿') || (c >= '豈' && c <= '﫿') || c == '々' || c == '〆';
 
         /// <summary>Với mỗi đơn vị trả về khoảng mora [Start, End). Null nếu không có cách gióng hợp lệ.</summary>
-        internal static (int Start, int End)[]? Align(IReadOnlyList<Item> items, IReadOnlyList<Mora> moras)
+        /// <param name="phraseStarts">
+        /// Ranh giới cụm trọng âm của cách đọc (nếu có). G2P luôn ngắt cụm ở dấu câu, nên dấu câu giữa câu phải rơi vào một ranh giới:
+        /// nhờ đó hai cụm chữ Hán cách nhau bởi dấu câu (十時四十分発、七号車) không bị chia mora sai. Không gióng được theo ranh giới
+        /// (nguồn cách đọc gộp hai bên dấu câu vào một cụm) thì gióng lại không có ràng buộc này.
+        /// </param>
+        internal static (int Start, int End)[]? Align(IReadOnlyList<Item> items, IReadOnlyList<Mora> moras, IReadOnlyCollection<int>? phraseStarts = null)
+        {
+            if (phraseStarts is { Count: > 0 })
+            {
+                var boundaries = new HashSet<int>(phraseStarts) { 0, moras.Count };
+                var constrained = AlignCore(items, moras, boundaries);
+                if (constrained != null) return constrained;
+            }
+            return AlignCore(items, moras, null);
+        }
+
+        private static (int Start, int End)[]? AlignCore(IReadOnlyList<Item> items, IReadOnlyList<Mora> moras, HashSet<int>? boundaries)
         {
             var n = items.Count;
             var m = moras.Count;
@@ -80,44 +96,61 @@ namespace JCAP.Services.Implementations
             for (var j = 0; j < m; j++)
                 effective[j] = moras[j].IsLong ? (j > 0 ? effective[j - 1] : null) : JapaneseMora.VowelOf(moras[j]);
 
-            var ranges = new (int, int)[n];
-            var failed = new bool[n + 1, m + 1];
+            // Quy hoạch động: trong các cách gióng hợp lệ, chọn cách mà số mora của mỗi đơn vị tự do gần với ~2 mora/ký tự nhất
+            // (chữ Hán thường đọc 1–3 mora). Tránh chia lệch kiểu 十時四十分発 = "じゅ", 七号車 = phần còn lại khi hai cụm đứng sát nhau.
+            // Cùng chi phí thì ưu tiên ít mora hơn cho đơn vị đứng trước (như trước đây: mỏ neo kana phía sau khớp sớm nhất).
+            const int Infinite = int.MaxValue / 2;
+            var best = new int[n + 1, m + 1];
+            var choice = new int[n + 1, m + 1];
+            for (var i = 0; i <= n; i++)
+                for (var j = 0; j <= m; j++) best[i, j] = -1; // chưa tính
 
-            bool Dfs(int i, int j)
+            int Solve(int i, int j)
             {
-                if (i == n) return j == m;
-                if (failed[i, j]) return false;
+                if (i == n) return j == m ? 0 : Infinite;
+                if (best[i, j] >= 0) return best[i, j];
                 var item = items[i];
+                var result = Infinite;
+                var pick = 0;
 
                 if (item.IsZero)
                 {
-                    ranges[i] = (j, j);
-                    if (Dfs(i + 1, j)) return true;
+                    if (boundaries == null || boundaries.Contains(j)) result = Solve(i + 1, j);
                 }
                 else if (!item.IsWildcard)
                 {
                     if (j < m && KanaMatches(item.Hira, moras[j], j > 0 ? effective[j - 1] : null))
                     {
-                        ranges[i] = (j, j + 1);
-                        if (Dfs(i + 1, j + 1)) return true;
+                        result = Solve(i + 1, j + 1);
+                        pick = 1;
                     }
                 }
                 else
                 {
-                    // đơn vị tự do: thử số mora ít nhất trước để mỏ neo kana phía sau khớp sớm nhất
                     var maxK = Math.Min(m - j, Math.Max(2, item.Text.Length * 5));
+                    var expected = 2 * item.Text.Length;
                     for (var k = 1; k <= maxK; k++)
                     {
-                        ranges[i] = (j, j + k);
-                        if (Dfs(i + 1, j + k)) return true;
+                        var rest = Solve(i + 1, j + k);
+                        if (rest >= Infinite) continue;
+                        var cost = rest + Math.Abs(k - expected);
+                        if (cost < result) { result = cost; pick = k; }
                     }
                 }
 
-                failed[i, j] = true;
-                return false;
+                choice[i, j] = pick;
+                return best[i, j] = result;
             }
 
-            return Dfs(0, 0) ? ranges : null;
+            if (Solve(0, 0) >= Infinite) return null;
+            var ranges = new (int, int)[n];
+            for (int i = 0, j = 0; i < n; i++)
+            {
+                var k = choice[i, j];
+                ranges[i] = (j, j + k);
+                j += k;
+            }
+            return ranges;
         }
 
         private static bool KanaMatches(string hira, Mora mora, char? previousVowel)

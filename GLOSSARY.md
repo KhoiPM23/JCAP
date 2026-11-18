@@ -28,8 +28,12 @@ _Avoid_: Chat thread, bot conversation
 An immutable historical record capturing a completed learner shadowing practice session with weighted scores, performance rank, and audio duration.
 _Avoid_: Practice log, attempt, drill result
 
+**ShadowingPracticeProgress**:
+The server-side record of a learner's ongoing shadowing practice for one dialogue and one role (current sentence, status in_progress/completed/abandoned); resumable on any device, and turned into an immutable ShadowingPracticeSession when completed.
+_Avoid_: Draft session, temp session, local progress
+
 **ShadowingSentenceEvaluation**:
-A backend-produced, stored scoring result for one sentence spoken by a learner; the only source of scores when a ShadowingPracticeSession is completed.
+A backend-produced, stored result of one submission of a sentence spoken by a learner — scored, or not scorable (null scores plus an error code, never 0); the only source of scores when a ShadowingPracticeSession is completed.
 _Avoid_: Sentence attempt, client score, sentence log
 
 **AiPronunciationDiagnostic**:
