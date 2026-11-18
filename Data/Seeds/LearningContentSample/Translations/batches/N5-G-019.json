@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-naka-de-ichiban",
+      "Fields": {
+        "Meaning": "Nhất trong một nhóm",
+        "Formation": "Nhóm ＋ の中で ＋ đối tượng ＋ が ＋ 一番 ＋ tính từ",
+        "Explanation": "の中で xác định phạm vi so sánh. 一番 cho biết đối tượng có mức cao nhất theo tiêu chí được nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-naka-de-ichiban:example:1": "Trong các loại trái cây, tôi thích táo nhất.",
+        "no-naka-de-ichiban:example:2": "Trong lớp, Tanaka cao nhất."
+      },
+      "SourceHash": "141acb531fbbcf76bda96e8ea3e007fe5fe1b0a92ffd47d8c860406096a3ff3d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-topic",
+      "Fields": {
+        "Meaning": "Nêu chủ đề của câu",
+        "Formation": "Chủ đề ＋ は ＋ phần nhận xét",
+        "Explanation": "は đánh dấu điều đang được nói đến. Khi làm trợ từ, は đọc là わ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-topic:example:1": "Tôi là sinh viên.",
+        "wa-topic:example:2": "Tokyo đông người."
+      },
+      "SourceHash": "966651df25a563e582082f3394aaa427518d7e0ff2779734cc356573f76016b0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-dou-desu-ka",
+      "Fields": {
+        "Meaning": "Thế nào, anh/chị thấy sao",
+        "Formation": "Danh từ ＋ はどうですか",
+        "Explanation": "Mẫu này có thể dùng để hỏi ý kiến hoặc đưa ra lời mời. Ngữ cảnh cho biết người nói đang hỏi hay đề nghị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-dou-desu-ka:example:1": "Anh/chị dùng cà phê nhé?",
+        "wa-dou-desu-ka:example:2": "Công việc mới thế nào ạ?"
+      },
+      "SourceHash": "7153ba662c85ccc7fc088ab8224986a88ad34cbed61abbfe373a70620f331bb8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-yori-desu",
+      "Fields": {
+        "Meaning": "A hơn B về một đặc điểm",
+        "Formation": "A ＋ は ＋ B ＋ より ＋ tính từ ＋ です",
+        "Explanation": "より đứng sau B để đánh dấu mốc so sánh. Tính từ nêu đặc điểm mà A hơn B.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-yori-desu:example:1": "Máy bay nhanh hơn tàu điện.",
+        "wa-yori-desu:example:2": "Hôm nay lạnh hơn hôm qua."
+      },
+      "SourceHash": "413bb0506533080fd32f84ff0a68fffd104e87b5aff2eb9d7686e0402849e2de"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "e",
+      "Fields": {
+        "Meaning": "Đến, về phía",
+        "Formation": "Địa điểm ＋ へ ＋ động từ di chuyển",
+        "Explanation": "へ chỉ hướng hoặc đích của chuyển động. Khi làm trợ từ, へ đọc là え.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "e:example:1": "Tôi muốn đi biển.",
+        "e:example:2": "Cũng đến lúc tôi về nhà rồi."
+      },
+      "SourceHash": "30042ccd73615ef52b1f4e00e2a9986d5ff3233cc5ee932ce6ce45c8194119e3"
+    }
+  ]
+}

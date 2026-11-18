@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9c92c47c3",
+      "Fields": {
+        "Meaning": "Đậm, đặc, dày",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "濃い（こい）có nghĩa là đậm, đặc, dày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199263": "Vì sao cà phê đậm lại ngon hơn?",
+        "224910": "Anh chị muốn uống cà phê thế nào? Cà phê đen pha đậm nhé?"
+      },
+      "SourceHash": "1ff80b24fae0e25c6d75c465d1731111535c7c8ec57c5e258324e3be1991d9b0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d53bd6b878",
+      "Fields": {
+        "Meaning": "Tình yêu đôi lứa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "恋（こい）có nghĩa là tình yêu đôi lứa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87217": "Cô ấy yêu anh ấy ngay từ cái nhìn đầu tiên.",
+        "204871": "Đó là một mối tình đơn phương."
+      },
+      "SourceHash": "c60d507045a8e6d956cbf82c496ac53922609fba6dbcb51822dbf513a2f11937"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b106a5072",
+      "Fields": {
+        "Meaning": "Người yêu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "恋人（こいびと）có nghĩa là người yêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152266": "Tôi gọi người yêu là “darling”.",
+        "202113": "Nhưng tôi có người yêu rồi."
+      },
+      "SourceHash": "d4e6711e7f889ac48dd3e5db7f169fc41dcf2b6aa6776e2838ae5e095972653d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "75cd952e9c",
+      "Fields": {
+        "Meaning": "May mắn, vận may",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "幸運（こううん）có nghĩa là may mắn, vận may.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157157": "May mà tôi kiếm được chỗ ngồi tốt.",
+        "157158": "May mắn là tôi tìm được một công việc tốt."
+      },
+      "SourceHash": "7baec0142a7ca3c64b60736246cae2c95695678db0e77efc5cd335736ec49a46"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72529375f7",
+      "Fields": {
+        "Meaning": "Buổi thuyết trình, diễn thuyết",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "講演（こうえん）có nghĩa là buổi thuyết trình, diễn thuyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171153": "Ai là diễn giả tối nay?",
+        "210679": "Tiếc là tôi bỏ lỡ buổi thuyết trình đó."
+      },
+      "SourceHash": "e7efc937c2a78d4a17342c5b830d0883b4fd2d9021e2070937a3f3cdad1c981d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa8bd6f038",
+      "Fields": {
+        "Meaning": "Hiệu quả, tác dụng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "効果（こうか）có nghĩa là hiệu quả, tác dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208813": "Thuốc mới đó có tác dụng ngay.",
+        "222206": "Kế hoạch này có thể mang lại hiệu quả nhất định."
+      },
+      "SourceHash": "5b84cf2168b61dd370f8cf1d407e56ebfa24ad81c2c91e800df0423db0ae1f3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f77ef3c0e5",
+      "Fields": {
+        "Meaning": "Tiền xu, đồng xu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "硬貨（こうか）có nghĩa là tiền xu, đồng xu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173513": "Vì trên đồng xu có ghi “abi” đấy.",
+        "217908": "Những đồng xu này gần như không có giá trị."
+      },
+      "SourceHash": "d27996668a25dc35d544af774b6020ae65fa9be7de7da76f7ee9bc95d463120b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fa27fc74c",
+      "Fields": {
+        "Meaning": "Đắt tiền, giá cao",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "高価（こうか）có nghĩa là đắt tiền, giá cao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204133": "Tôi không mua nổi cuốn sách đắt tiền như thế.",
+        "205204": "Thứ đó đắt quá, tôi không mua nổi."
+      },
+      "SourceHash": "64cf63ed694c4e8ef3042d8ccad41ae9dcbffa512ed831e49a3a11d2b4185a2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83efbaf7bc",
+      "Fields": {
+        "Meaning": "Sang trọng, lộng lẫy",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "豪華（ごうか）có nghĩa là sang trọng, lộng lẫy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187747": "Những ngôi nhà thật lộng lẫy!",
+        "212601": "Khách sạn đó sang trọng đến mức khó tả."
+      },
+      "SourceHash": "dfdde50c4c6372256ed99aca1d16315b5fdb2f12a69be005bfd30557a11cd223"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5075cd7c3a",
+      "Fields": {
+        "Meaning": "Đỗ, đạt yêu cầu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "合格（ごうかく）có nghĩa là đỗ, đạt yêu cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145268": "Chiếc xe mới đã vượt qua bài kiểm tra.",
+        "163796": "Anh tôi không thi đỗ."
+      },
+      "SourceHash": "cb8c96a84181a88042360b51c99b90349ddade1bcbd84f4f477dc54e2bc5fdd2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5fd3da8fb5",
+      "Fields": {
+        "Meaning": "Trao đổi, đổi, thay",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "交換（こうかん）có nghĩa là trao đổi, đổi, thay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107558": "Anh ấy đổi chiếc xe cũ lấy chiếc mới.",
+        "233824": "Mình đổi chỗ ngồi cho nhau nhé."
+      },
+      "SourceHash": "875e3953c01c635fc71bd97b3d4b25aa7da573e3856ee40b761721369459944f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2418b0bd40",
+      "Fields": {
+        "Meaning": "Hàng không",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "航空（こうくう）có nghĩa là hàng không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173430": "Giá vé máy bay cao hơn giá vé tàu.",
+        "192949": "Quầy của United Airlines ở đâu ạ?"
+      },
+      "SourceHash": "723238e65185d10570ffc61741a33530f689ce4013693690a4ef91c1d370b325"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5099ac7aef",
+      "Fields": {
+        "Meaning": "Cảnh tượng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "光景（こうけい）có nghĩa là cảnh tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210769": "Cảnh tượng ấy khiến tôi sợ hãi.",
+        "210776": "Tôi giật mình khi thấy cảnh tượng đó."
+      },
+      "SourceHash": "307ae20e7c07aadcd4d0e03f82b8bdc5f9f206af29edb9db1552835613c241f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87062c3230",
+      "Fields": {
+        "Meaning": "Tổng cộng, cộng lại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "合計（ごうけい）có nghĩa là tổng cộng, cộng lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204741": "Cộng các số đó lại không ra đúng tổng.",
+        "220959": "Hãy cộng dãy số này lại."
+      },
+      "SourceHash": "62c42f92d4f9cbb113ea22b8046a9f6d91bd2fab426d4ea4450d09e639accb45"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30498eff96",
+      "Fields": {
+        "Meaning": "Tấn công, công kích",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "攻撃（こうげき）có nghĩa là tấn công, công kích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74593": "Cho phép mọi đòn tấn công, trừ đòn vào chỗ hiểm.",
+        "221923": "Nước này không lo bị tấn công."
+      },
+      "SourceHash": "f66509c74526ec68ee15ceaf9cd97b0fa0004a1d071d0b33a42f2fd2ac3f4881"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af7b17d479",
+      "Fields": {
+        "Meaning": "Đóng góp, cống hiến",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "貢献（こうけん）có nghĩa là đóng góp, cống hiến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87132": "Cô ấy đóng góp rất nhiều cho công ty.",
+        "112824": "Anh ấy góp phần hoàn thành công việc đó."
+      },
+      "SourceHash": "feef37d5bcce1df1a6d5355e61c322f79474fa2df1cdb0772b5d4042cd278ca5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7c4dfbb71",
+      "Fields": {
+        "Meaning": "Quảng cáo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "広告（こうこく）có nghĩa là quảng cáo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148929": "Tôi đăng quảng cáo bán xe.",
+        "209302": "Sản phẩm đó được quảng cáo trên ti vi."
+      },
+      "SourceHash": "0fe2de726e77eeb2018e70920280f826619f1e579a796ab888dc583b15effe9e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a32b605031",
+      "Fields": {
+        "Meaning": "Giao du, hẹn hò",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "交際（こうさい）có nghĩa là giao du, hẹn hò.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81371": "Em gái tôi không muốn giao du với họ.",
+        "208065": "Người đàn ông đó bắt đầu hẹn hò với người sau này là vợ mình."
+      },
+      "SourceHash": "66df615f69a8e3cabeb33c492738d615f589560d28981ab836954cdcd2e37fe9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5de51daefa",
+      "Fields": {
+        "Meaning": "Cái sau, bên được nhắc sau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "後者（こうしゃ）có nghĩa là cái sau, bên được nhắc sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75362": "Trong hai điều này, điều quan trọng là điều thứ hai.",
+        "140943": "Cái sau tốt hơn cái trước."
+      },
+      "SourceHash": "3248014dfff060f3061258d75b9ff7a4719d05ccc66d706e850af2f4267dcf08"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "009cdbf36f",
+      "Fields": {
+        "Meaning": "Cấu thành, bố cục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "構成（こうせい）có nghĩa là cấu thành, bố cục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191103": "Ủy ban gồm tám thành viên.",
+        "217967": "Những món này tạo thành một bữa ăn cân bằng."
+      },
+      "SourceHash": "926f87027f6b37ea53eb01d4d66d88ced47c372ee0bf2a3b1b004cab36e7cf50"
+    }
+  ]
+}

@@ -1,5 +1,4 @@
 using JCAP.Models;
-using JCAP.Services.Implementations;
 using Microsoft.EntityFrameworkCore;
 
 namespace JCAP.Data.Seeds
@@ -169,7 +168,7 @@ namespace JCAP.Data.Seeds
                 await dbContext.SaveChangesAsync();
             }
 
-            // 3. Đồng bộ toàn diện vào Kho học liệu: Master Vocabularies, Master Grammars & Topic links
+            // 3. Đồng bộ từ vựng và ngữ pháp của kịch bản vào kho học liệu.
             var allSeedScenarios = ScenarioSeedData.GetInitialScenarios();
             await SynchronizeScenarioLearningContentAsync(dbContext, allSeedScenarios);
         }
@@ -225,53 +224,6 @@ namespace JCAP.Data.Seeds
 
         private static async Task SynchronizeScenarioLearningContentAsync(AppDbContext dbContext, List<Scenario> scenarios)
         {
-            // 1. Đảm bảo 5 chủ đề nền tảng liên kết Scenarios luôn tồn tại ở các cấp N5, N4, N3
-            var baseTopicDefinitions = new (string Code, string Name, string Description)[]
-            {
-                ("DINING", "Ẩm thực", "Giao tiếp khi gọi món, chọn khẩu vị và thanh toán tại nhà hàng, quán ăn."),
-                ("TRANSPORT", "Di chuyển", "Giao tiếp khi đi tàu điện, hỏi đường, mua vé và tìm lối đi."),
-                ("SHOPPING", "Mua sắm", "Mua sắm, thanh toán và sử dụng dịch vụ tại cửa hàng tiện lợi."),
-                ("STUDY_WORK", "Công sở & Phỏng vấn", "Phỏng vấn xin việc, chào hỏi ngày đầu đi làm và giao tiếp công sở."),
-                ("DAILY_LIFE", "Sinh hoạt hằng ngày", "Hoạt động, nhu cầu và môi trường sống thường ngày.")
-            };
-
-            var levels = new[] { "N5", "N4", "N3" };
-            var existingTopics = await dbContext.LearningTopics
-                .Include(t => t.TopicVocabularies)
-                .Include(t => t.TopicGrammars)
-                .ToListAsync();
-
-            var topicMap = new Dictionary<string, LearningTopic>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var (code, name, desc) in baseTopicDefinitions)
-            {
-                foreach (var lvl in levels)
-                {
-                    var topicCode = lvl == "N5" ? code : $"{code}_{lvl}";
-                    var key = $"{code}_{lvl}";
-                    var topic = existingTopics.FirstOrDefault(t =>
-                        (t.Code == topicCode || (t.Code == code && t.JLPTLevel == lvl) || (t.Name == name && t.JLPTLevel == lvl)));
-
-                    if (topic == null)
-                    {
-                        topic = new LearningTopic
-                        {
-                            Code = topicCode,
-                            Name = name,
-                            Description = desc,
-                            JLPTLevel = lvl,
-                            IsActive = true,
-                            CreatedAt = DateTime.UtcNow
-                        };
-                        dbContext.LearningTopics.Add(topic);
-                        existingTopics.Add(topic);
-                    }
-                    topicMap[key] = topic;
-                    topicMap[topicCode] = topic;
-                }
-            }
-
-            // 2. Tra cứu Vocabularies và Grammars hiện có trong DB
             var existingVocabs = await dbContext.Vocabularies.ToListAsync();
             var existingGrammars = await dbContext.Grammars.ToListAsync();
 
@@ -283,25 +235,12 @@ namespace JCAP.Data.Seeds
                 .GroupBy(g => $"{g.Pattern.Trim()}_{g.JLPTLevel?.ToUpper() ?? "N5"}", StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-            // 3. Quét qua từng Scenario để đồng bộ vào Master Vocabularies & Grammars và gán vào Topic
             foreach (var scenario in scenarios)
             {
-                var topicBaseCode = ScenarioService.ResolveScenarioTopicCode(scenario);
-
                 foreach (var level in scenario.LevelConfigurations)
                 {
                     var lvl = level.JLPTLevel ?? "N5";
-                    var topicKey = $"{topicBaseCode}_{lvl}";
-                    if (!topicMap.TryGetValue(topicKey, out var learningTopic))
-                    {
-                        if (!topicMap.TryGetValue(topicBaseCode, out learningTopic))
-                        {
-                            learningTopic = existingTopics.FirstOrDefault(t => t.JLPTLevel == lvl);
-                        }
-                    }
 
-                    // Đồng bộ TargetVocabulary sang Master Vocabulary
-                    int vOrder = learningTopic?.TopicVocabularies.Count ?? 0;
                     foreach (var tv in level.TargetVocabularies)
                     {
                         var cleanWord = tv.Word.Trim();
@@ -339,23 +278,8 @@ namespace JCAP.Data.Seeds
                                 masterVocab.JLPTLevel = lvl;
                         }
 
-                        if (learningTopic != null && masterVocab.Id > 0)
-                        {
-                            bool alreadyLinked = learningTopic.TopicVocabularies.Any(x => x.VocabularyId == masterVocab.Id);
-                            if (!alreadyLinked)
-                            {
-                                learningTopic.TopicVocabularies.Add(new TopicVocabulary
-                                {
-                                    Vocabulary = masterVocab,
-                                    Topic = learningTopic,
-                                    OrderIndex = vOrder++
-                                });
-                            }
-                        }
                     }
 
-                    // Đồng bộ TargetGrammar sang Master Grammar
-                    int gOrder = learningTopic?.TopicGrammars.Count ?? 0;
                     foreach (var tg in level.TargetGrammars)
                     {
                         var cleanPattern = tg.Pattern.Trim();
@@ -392,82 +316,11 @@ namespace JCAP.Data.Seeds
                                 masterGrammar.JLPTLevel = lvl;
                         }
 
-                        if (learningTopic != null && masterGrammar.Id > 0)
-                        {
-                            bool alreadyLinked = learningTopic.TopicGrammars.Any(x => x.GrammarId == masterGrammar.Id);
-                            if (!alreadyLinked)
-                            {
-                                learningTopic.TopicGrammars.Add(new TopicGrammar
-                                {
-                                    Grammar = masterGrammar,
-                                    Topic = learningTopic,
-                                    OrderIndex = gOrder++
-                                });
-                            }
-                        }
                     }
                 }
             }
 
             await dbContext.SaveChangesAsync();
-
-            // Đối với các masterVocab / masterGrammar vừa được gán Id mới sau khi SaveChanges, gán nốt liên kết Topic
-            bool hasDeferredLinks = false;
-            foreach (var scenario in scenarios)
-            {
-                var topicBaseCode = ScenarioService.ResolveScenarioTopicCode(scenario);
-                foreach (var level in scenario.LevelConfigurations)
-                {
-                    var lvl = level.JLPTLevel ?? "N5";
-                    var topicKey = $"{topicBaseCode}_{lvl}";
-                    if (!topicMap.TryGetValue(topicKey, out var learningTopic)) continue;
-
-                    int vOrder = learningTopic.TopicVocabularies.Count;
-                    foreach (var tv in level.TargetVocabularies)
-                    {
-                        var cleanWord = tv.Word.Trim();
-                        var key = $"{cleanWord}_{lvl}";
-                        if (vocabByWordLevel.TryGetValue(key, out var masterVocab) && masterVocab.Id > 0)
-                        {
-                            if (!learningTopic.TopicVocabularies.Any(x => x.VocabularyId == masterVocab.Id))
-                            {
-                                learningTopic.TopicVocabularies.Add(new TopicVocabulary
-                                {
-                                    TopicId = learningTopic.Id,
-                                    VocabularyId = masterVocab.Id,
-                                    OrderIndex = vOrder++
-                                });
-                                hasDeferredLinks = true;
-                            }
-                        }
-                    }
-
-                    int gOrder = learningTopic.TopicGrammars.Count;
-                    foreach (var tg in level.TargetGrammars)
-                    {
-                        var cleanPattern = tg.Pattern.Trim();
-                        var key = $"{cleanPattern}_{lvl}";
-                        if (grammarByPatternLevel.TryGetValue(key, out var masterGrammar) && masterGrammar.Id > 0)
-                        {
-                            if (!learningTopic.TopicGrammars.Any(x => x.GrammarId == masterGrammar.Id))
-                            {
-                                learningTopic.TopicGrammars.Add(new TopicGrammar
-                                {
-                                    TopicId = learningTopic.Id,
-                                    GrammarId = masterGrammar.Id,
-                                    OrderIndex = gOrder++
-                                });
-                                hasDeferredLinks = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (hasDeferredLinks)
-            {
-                await dbContext.SaveChangesAsync();
-            }
         }
 
         private static string ExtractPartOfSpeech(string meaning)

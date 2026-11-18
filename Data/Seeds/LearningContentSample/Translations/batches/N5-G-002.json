@@ -1,0 +1,88 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Bản dịch do AI biên soạn và tự rà soát theo 10 câu Nhật cùng giải thích nguồn, chưa có thẩm định độc lập.",
+    "う動詞: bổ sung ngoại lệ う→わ, ある→ない, 行く→行った để tránh suy sai từ quy tắc tổng quát trong nguồn.",
+    "お・ご: phân biệt kính trọng người khác với làm lời nói nhã nhặn; không cấm tuyệt đối dùng お với đồ của mình.",
+    "が: không đồng nhất mọi trường hợp が với chủ thể thực hiện hành động; giữ cách dùng chỉ đối tượng với 好き／分かる."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "u-verbs",
+      "Fields": {
+        "Meaning": "Động từ nhóm 1; cách chia động từ ngũ đoạn",
+        "Formation": "Phủ định: âm cuối hàng う → hàng あ ＋ ない; riêng う → わない. Ví dụ: 書く→書かない, 買う→買わない.\nQuá khứ: う・つ・る→った; む・ぶ・ぬ→んだ; く→いた; ぐ→いだ; す→した.\nPhủ định quá khứ: thay ない bằng なかった.",
+        "Explanation": "Động từ nhóm 1 thay đổi âm cuối khi chia thể, như 書く→書かない và 飲む→飲んだ. Để tạo phủ định thông thường, chuyển âm cuối sang hàng あ rồi thêm ない; đuôi う chuyển thành わ. Thể quá khứ có biến âm tùy âm cuối. Cần xác định đúng nhóm động từ trước khi áp dụng quy tắc.",
+        "UsageNotes": "Động từ kết thúc bằng る có thể thuộc nhóm 1 hoặc nhóm 2: 分かる→分からない nhưng 食べる→食べない. Ngoại lệ cần nhớ: ある→ない; 行く→行った, không phải 行いた. Thể て có các biến âm tương ứng với thể た."
+      },
+      "Examples": {
+        "u-verbs:example:1": "Tôi không uống rượu, nhưng thường uống nước.",
+        "u-verbs:example:2": "Hôm qua tôi đã nói chuyện với bạn suốt ba tiếng."
+      },
+      "SourceHash": "5b534baeee727403d481436650ba04427f60acf89a72fa1b6e7c5fe91a929503"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-go",
+      "Fields": {
+        "Meaning": "Tiền tố お／ご để thể hiện sự kính trọng hoặc làm lời nói nhã nhặn",
+        "Formation": "お ＋ một số từ, thường là từ thuần Nhật: お名前, お金.\nご ＋ một số từ, thường là từ gốc Hán: ご家族, ご住所.\nCó ngoại lệ cố định như お茶, お電話.",
+        "Explanation": "お và ご đứng trước một số danh từ, và trong một số cách nói trước tính từ, để thể hiện sự kính trọng hoặc làm lời nói lịch sự, nhã nhặn. お thường đi với từ thuần Nhật, còn ご thường đi với từ gốc Hán, nhưng đây là xu hướng chứ không phải quy tắc tuyệt đối. Cần học cùng từng từ quen dùng.",
+        "UsageNotes": "Khi nói về gia đình của người khác có thể dùng ご家族, còn gia đình mình thường là 家族. Tuy nhiên, các từ làm lời nói nhã nhặn như お茶 vẫn dùng được cho đồ của mình. Không tự thêm お／ご vào mọi danh từ."
+      },
+      "Examples": {
+        "o-go:example:1": "Mời anh/chị dùng trà.",
+        "o-go:example:2": "Gia đình anh/chị có khỏe không ạ?"
+      },
+      "SourceHash": "6e1b62419ef90eaf010d47e6a0f8988b9cc60400f6cacdc3c0bb023f6dfa1f4b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka",
+      "Fields": {
+        "Meaning": "Trợ từ cuối câu dùng để hỏi",
+        "Formation": "Câu ＋ か. Dạng lịch sự thường gặp: …ですか／…ますか.",
+        "Explanation": "か đặt cuối câu để tạo câu hỏi. Giữ trật tự từ của câu và thêm か, như 学生です→学生ですか. Có thể kết hợp với từ để hỏi, như 何時ですか (mấy giờ?). Trong văn bản tiếng Nhật, câu hỏi có か có thể kết thúc bằng dấu chấm 。.",
+        "UsageNotes": "Trong hội thoại thân mật, người nói thường bỏ か và lên giọng, như 行く？. Thêm か trực tiếp vào thể thông thường có thể tạo sắc thái mạnh hoặc khác với câu hỏi lịch sự, tùy ngữ cảnh và ngữ điệu."
+      },
+      "Examples": {
+        "ka:example:1": "Bạn có phải là học sinh hoặc sinh viên không?",
+        "ka:example:2": "Bây giờ là mấy giờ?"
+      },
+      "SourceHash": "26724974e5b9e4afbae65e63ed0af64a661de0884bcb184b772c70ddb8911d37"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga",
+      "Fields": {
+        "Meaning": "Trợ từ đánh dấu chủ ngữ hoặc xác định đối tượng trong một số mẫu câu",
+        "Formation": "Danh từ ＋ が ＋ vị ngữ. Ví dụ: 私が行きます; 日本語が分かります.",
+        "Explanation": "が thường đánh dấu người hoặc vật làm chủ ngữ của câu, đặc biệt khi giới thiệu thông tin mới hoặc xác định ai/cái gì. Dùng trong câu hỏi だれが… và câu trả lời 私が…. Trong các mẫu như 日本語が分かる hoặc 音楽が好き, が còn đi với đối tượng được hiểu hoặc được yêu thích.",
+        "UsageNotes": "Phân biệt chủ đề với trọng tâm thông tin: 私は行きます nói về việc tôi đi; 私が行きます có thể nhấn mạnh chính tôi là người đi. Không thay は và が cho nhau trong mọi ngữ cảnh; sự khác nhau phụ thuộc câu hỏi và thông tin đã biết."
+      },
+      "Examples": {
+        "ga:example:1": "Ai đã viết cuốn sách này?",
+        "ga:example:2": "Người kia chính là giáo viên."
+      },
+      "SourceHash": "d4149efaf92e0c9dc1f9ad21b54de48c6c4521534892b8b4a938ecc17d298d4a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-aru",
+      "Fields": {
+        "Meaning": "Có; tồn tại một đồ vật, cây cối hoặc sự việc",
+        "Formation": "Địa điểm に ＋ vật が ＋ ある／あります.\nSự việc が ＋ ある／あります cũng dùng để nói có một sự việc diễn ra.",
+        "Explanation": "がある diễn tả sự tồn tại hoặc việc có một thứ. Vật tồn tại đi với が; nơi tồn tại đi với に. Dùng cho đồ vật và cây cối, đồng thời dùng cho sự việc như một kỳ thi hoặc cuộc hẹn. Dạng lịch sự là があります.",
+        "UsageNotes": "Người và động vật thường dùng がいる／がいます. Cây cối dùng がある. Khi diễn tả vị trí tồn tại, dùng に; khi nhấn mạnh nơi một sự kiện được tổ chức, có thể dùng で, như 学校で試験があります."
+      },
+      "Examples": {
+        "ga-aru:example:1": "Trên bàn có một cuốn sách.",
+        "ga-aru:example:2": "Ngày mai có kỳ thi."
+      },
+      "SourceHash": "7a778c4ec8f98f4bf7ad3979dcc75c3e2bf2a5cf63ed212bda70563d7e299dcd"
+    }
+  ]
+}

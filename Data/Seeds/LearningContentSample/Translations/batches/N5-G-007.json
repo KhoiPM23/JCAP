@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "janakatta",
+      "Fields": {
+        "Meaning": "Đã không, đã không phải",
+        "Formation": "Danh từ hoặc gốc tính từ đuôi な ＋ じゃなかった／ではなかった",
+        "Explanation": "Dùng hai dạng này để phủ định một trạng thái trong quá khứ. じゃなかった thông dụng trong hội thoại.",
+        "UsageNotes": "Có thể thêm です sau じゃなかった để nói lịch sự."
+      },
+      "Examples": {
+        "janakatta:example:1": "Hôm qua không phải ngày nghỉ.",
+        "janakatta:example:2": "Bài kiểm tra không dễ đến thế."
+      },
+      "SourceHash": "bd506ade30be072ceee1ef3192bc04d1dadb3127b3bc95582996347c3012d5ae"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sugiru",
+      "Fields": {
+        "Meaning": "Quá, vượt mức",
+        "Formation": "Động từ bỏ ます ＋ すぎる\nTính từ đuôi い bỏ い cuối hoặc gốc tính từ đuôi な ＋ すぎる",
+        "Explanation": "すぎる diễn tả việc làm quá nhiều hoặc một đặc điểm vượt mức phù hợp. 食べすぎる nghĩa là ăn quá nhiều. 大きすぎる nghĩa là quá to.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sugiru:example:1": "Hôm qua tôi ăn quá nhiều.",
+        "sugiru:example:2": "Áo khoác này quá rộng đối với tôi."
+      },
+      "SourceHash": "a679ca0ef4199d3084070c8332563e52cb36ea37e761a63c1af6ae8fa3e9a087"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "suru",
+      "Fields": {
+        "Meaning": "Làm, thực hiện",
+        "Formation": "する → します (lịch sự)／しない (phủ định)／した (quá khứ)／して (thể て)\nDanh từ chỉ hoạt động ＋ する",
+        "Explanation": "する là động từ bất quy tắc. Ghép với danh từ như 勉強 hoặc 電話 để tạo động từ chỉ hoạt động.",
+        "UsageNotes": "何もしない nghĩa là không làm gì cả."
+      },
+      "Examples": {
+        "suru:example:1": "Tôi học tiếng Nhật mỗi ngày.",
+        "suru:example:2": "Cuối tuần tôi không làm gì cả."
+      },
+      "SourceHash": "2ea9bbd7636f0130519fd898bd7b53392f0652d18a714c48d8c38283b3e24da3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "soshite",
+      "Fields": {
+        "Meaning": "Và, rồi",
+        "Formation": "Câu trước。 ＋ そして、 ＋ câu sau。",
+        "Explanation": "そして nối hai câu để bổ sung thông tin hoặc kể việc tiếp theo. Khi nối hai đặc điểm, không nhất thiết có quan hệ trước sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "soshite:example:1": "Tôi ăn sáng rồi đi học.",
+        "soshite:example:2": "Kyoto đẹp và rất yên tĩnh."
+      },
+      "SourceHash": "2a82bebbe03a2c7f4a9e14bd3d6939a7164ab569d7fe94e2860d1b2981943c34"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sore-kara",
+      "Fields": {
+        "Meaning": "Sau đó, rồi, ngoài ra",
+        "Formation": "Câu trước。 ＋ それから ＋ câu sau。",
+        "Explanation": "それから giới thiệu việc xảy ra sau hoặc bổ sung điều muốn nói hay yêu cầu. Trong câu thứ hai, người nói bổ sung bánh mì vào danh sách cần mua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sore-kara:example:1": "Tôi ăn sáng. Sau đó tôi đi học.",
+        "sore-kara:example:2": "Mua sữa giúp tôi nhé. À, mua cả bánh mì nữa."
+      },
+      "SourceHash": "1a20453a22c0cb15f0d0c8a27ce7a03e25ce9b92fe993622bfb1d7ebb3b2be8e"
+    }
+  ]
+}

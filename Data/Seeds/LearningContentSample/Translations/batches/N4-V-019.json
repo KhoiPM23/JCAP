@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: ced135c81e."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b442490fff",
+      "Fields": {
+        "Meaning": "Khá, đáng kể, nhiều",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "Ở đây đọc だいぶ và chỉ mức độ đáng kể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203904": "Tôi đã đỡ đau nhiều rồi.",
+        "203905": "Trời đã ra dáng mùa thu khá rõ."
+      },
+      "SourceHash": "724d7c6a6ac1717533bf4251413cacb2ea11863201d29d81f060336b55ec98c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "14d52a91d3",
+      "Fields": {
+        "Meaning": "Bão, bão nhiệt đới",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "台風（たいふう）có nghĩa là bão, bão nhiệt đới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137793": "Trường nghỉ học vì bão.",
+        "145171": "Theo báo thì bão đang đến."
+      },
+      "SourceHash": "20c26d9063b7b77bf109e21b57613abd8e902e1b9eb71fb9fe05e10206d9cfe2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23afff6d4b",
+      "Fields": {
+        "Meaning": "Ngã, đổ, gục",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "倒れる（たおれる）có nghĩa là ngã, đổ, gục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109533": "Anh ấy đổ vật sang một bên.",
+        "206541": "Cây đó trông như sắp đổ bất cứ lúc nào."
+      },
+      "SourceHash": "32e6f0cdbe7f4dd788b47ff7d91071caa1a17e2e1805e6802f1c32fc24c01cfb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ced135c81e",
+      "Fields": {
+        "Meaning": "Vì vậy, do đó",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "Liên từ だから dẫn từ lý do đã nêu sang kết luận hoặc hành động tiếp theo.",
+        "UsageNotes": "Trong câu giải thích đã chơi quần vợt cả ngày, だから nằm trong cấu trúc のだから dùng để nêu lý do."
+      },
+      "Examples": {
+        "203824": "Vì vậy bạn nên ở trong nhà.",
+        "235690": "Vì tôi đã chơi quần vợt cả ngày mà."
+      },
+      "SourceHash": "266d597e5cd7f5274b626d44b32eb689ce312434d89dcc23a16fb23742d35381"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2b610cb1a7",
+      "Fields": {
+        "Meaning": "Chắc chắn, xác thực",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "確か（たしか）có nghĩa là chắc chắn, xác thực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120503": "Chắc chắn anh ấy sai.",
+        "215672": "Chắc chắn George sẽ đến."
+      },
+      "SourceHash": "fa118326214fc05db9f0def4597fb2d5bd308cf73fa707011e82f354111d7007"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12d94456b3",
+      "Fields": {
+        "Meaning": "Cộng, thêm",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "足す（たす）có nghĩa là cộng, thêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "235078": "Sáu cộng bốn bằng mười.",
+        "235090": "Phải cộng bao nhiêu vào 17 để được 60?"
+      },
+      "SourceHash": "5b98abbe5dc53ea11ce5d4f5ab3c86d18422cc2d1d28107fca1f137832f31a63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d73148e8d0",
+      "Fields": {
+        "Meaning": "Hỏi",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "尋ねる（たずねる）có nghĩa là hỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175140": "Một người lạ hỏi đường đến ga.",
+        "227009": "Tôi xin hỏi được không ạ?"
+      },
+      "SourceHash": "43a033c1430404bb635269713ff406c0ad03f5e37eb3c956536d8d2334bfebda"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2710211107",
+      "Fields": {
+        "Meaning": "Đến thăm",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "訪ねる（たずねる）có nghĩa là đến thăm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147822": "Trong lúc tôi ra ngoài có người đến thăm.",
+        "228832": "Cứ đến văn phòng tôi bất cứ lúc nào."
+      },
+      "SourceHash": "54c08a9bf000e18be9c0e2c726205e761027501020e45681a55e5b434822cbc5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "abb49cd233",
+      "Fields": {
+        "Meaning": "Đúng, chính xác",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "正しい（ただしい）có nghĩa là đúng, chính xác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200730": "Bạn nghĩ bên nào đúng hơn?",
+        "218865": "Tôi không chắc cái này có đúng không."
+      },
+      "SourceHash": "6f9aa98f74c92ce0fb763ed74f9ae3eb51b8c4216e239535bf7e7eb5ba5d8a5b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5579bc4a6",
+      "Fields": {
+        "Meaning": "Chiếu tatami",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "畳（たたみ）có nghĩa là chiếu tatami.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103952": "Anh ấy nằm dang tay chân trên chiếu tatami.",
+        "222975": "Loại chiếu rơm này, tiếng Nhật gọi là tatami, không còn được làm thủ công nữa."
+      },
+      "SourceHash": "ff71ac44d7884d2cd416b2004c178d666cbbd3ac242da049c907c208d7b35fea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c5741f54d6",
+      "Fields": {
+        "Meaning": "Xây, dựng công trình",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "建てる（たてる）có nghĩa là xây, dựng công trình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204608": "Phải mất nhiều năm mới xây xong cái đó.",
+        "221630": "Ngôi chùa này được xây năm 780."
+      },
+      "SourceHash": "7a614c2a15589c5489b93b6e8a9f0fb89cfedadc95c00f882f2cd4fb7e0cc7ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cad7f1010a",
+      "Fields": {
+        "Meaning": "Dựng, làm phát sinh",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "立てる（たてる）có nghĩa là dựng, làm phát sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143888": "Không được gây tiếng động trong thư viện.",
+        "209577": "Chiếc xe cuốn bụi lên rồi chạy đi."
+      },
+      "SourceHash": "bd8b222a6cc72ebd9fd67d3a4422158ef410d7061456404b9b9b980009bfc4ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1cda12dd3f",
+      "Fields": {
+        "Meaning": "Ví dụ, chẳng hạn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "例えば（たとえば）có nghĩa là ví dụ, chẳng hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77709": "Ví dụ, ở London bây giờ là bảy giờ sáng.",
+        "77714": "Ví dụ, đây là một cây bút."
+      },
+      "SourceHash": "a9124d26f3fd41e529055bc8a1132fe9541eaed88a9d4e1c7e97cb47581bee1d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c96fd3cb4",
+      "Fields": {
+        "Meaning": "Kệ, giá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "棚（たな）có nghĩa là kệ, giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84502": "Bố làm cho tôi một cái kệ.",
+        "206686": "Vui lòng đặt cuốn sách đó lên kệ trên cùng."
+      },
+      "SourceHash": "579253bee36ab4decb3a762edcc6bfe5dba42c805b1d681dcc341d0166ed822b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fb53d716c6",
+      "Fields": {
+        "Meaning": "Niềm vui, điều mong đợi",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "楽しみ（たのしみ）có nghĩa là niềm vui, điều mong đợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143698": "Bơi lội là một trong những thú vui của tôi.",
+        "161715": "Tôi rất mong nhận được thư của anh/chị."
+      },
+      "SourceHash": "330436d131943c44fab17adb05cb340e746c0c62e0a48f66f9d72d9ff0a73a08"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f86b83cad",
+      "Fields": {
+        "Meaning": "Thưởng thức, tận hưởng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "楽しむ（たのしむ）có nghĩa là thưởng thức, tận hưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146622": "Các cậu bé đều thích thú khi trượt tuyết.",
+        "225442": "Thầy Gray không thấy vui với công việc của mình."
+      },
+      "SourceHash": "cb36dab90177d63b0d62b0919093a61aa57c07589894d5af1646a849d54a2384"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ebaf7ce5e4",
+      "Fields": {
+        "Meaning": "Thỉnh thoảng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "たまに（たまに）có nghĩa là thỉnh thoảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164670": "Tôi có một người bạn thỉnh thoảng vẫn trao đổi thư.",
+        "203293": "Thỉnh thoảng đến thăm tôi nhé."
+      },
+      "SourceHash": "7de70df0ecd6487b3bc65cb3132c15013c05e120aa0723a4217207cb2622eaf1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "06aec1d647",
+      "Fields": {
+        "Meaning": "Để, vì, cho",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "為（ため）có nghĩa là để, vì, cho.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205610": "Là để nghe giọng con rõ hơn đấy.",
+        "233516": "Vì bạn thì tôi sẵn lòng làm bất cứ việc gì."
+      },
+      "SourceHash": "623dc0a00159f8c0b8aa629be609cd7151d8edd4f3c2f218944b7031b0f46341"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6cf505ee55",
+      "Fields": {
+        "Meaning": "Không được, hỏng, hết cách",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "だめ（だめ）có nghĩa là không được, hỏng, hết cách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75261": "Hết cách rồi.",
+        "176432": "Mưa làm kế hoạch hỏng hoàn toàn."
+      },
+      "SourceHash": "40c22b71b1221122cba5bf4e688853fb9e7033ef0e0238034be740c75f228159"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19f08c094e",
+      "Fields": {
+        "Meaning": "Đủ",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "足りる（たりる）có nghĩa là đủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172932": "Hiện giờ tôi hơi thiếu tiền.",
+        "201065": "Đôi khi tôi không đủ tiền."
+      },
+      "SourceHash": "ce4e25685f4d5c987d3cc69068a29baa349ff8e095de422c67e334f86af717ef"
+    }
+  ]
+}

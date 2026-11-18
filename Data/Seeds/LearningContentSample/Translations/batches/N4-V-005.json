@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "99de4451f7",
+      "Fields": {
+        "Meaning": "Đánh thức, dựng dậy",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Cách viết thường gặp là 起こす. 体を起こす là ngồi hoặc nâng người dậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80506": "Xin đánh thức tôi lúc sáu giờ sáng mai.",
+        "85260": "Đứa trẻ bị ốm gượng ngồi dậy trên giường."
+      },
+      "SourceHash": "25069a6001114b303ad2fca71da3f33daf50e7ef677a473fe4c66680cb0cdca7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2139fab218",
+      "Fields": {
+        "Meaning": "Thực hiện, tiến hành",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "行う（おこなう）có nghĩa là thực hiện, tiến hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91333": "Cô ấy đành phải tự làm một mình.",
+        "229318": "Nói và làm là hai chuyện hoàn toàn khác nhau."
+      },
+      "SourceHash": "2562f5a637ff610057a7677bf7c979109579d6142d90a53afbe14ca1ec01852f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e0f32c097",
+      "Fields": {
+        "Meaning": "Giận, nổi giận, mắng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "怒る（おこる）có nghĩa là giận, nổi giận, mắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162826": "Bố đang giận tôi.",
+        "204653": "Cứ để nguyên như vậy. Nếu không bạn sẽ bị mắng đấy."
+      },
+      "SourceHash": "c2bb80e058bbb4f73d25cfd107c8ba3c11d60b2b6bd9461f360b76226673eb2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3787755f33",
+      "Fields": {
+        "Meaning": "Tủ âm tường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "押し入れ（おしいれ）có nghĩa là tủ âm tường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158225": "Tôi sợ bị nhốt trong tủ âm tường.",
+        "180480": "Tên cướp nhốt đứa trẻ trong tủ âm tường."
+      },
+      "SourceHash": "88b6597cd0606d8c2382e6437cb824f8035c16e664a7cd90bfa9e9a246523ad3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1f5a7d8e07",
+      "Fields": {
+        "Meaning": "Con gái của người khác (lịch sự), cô gái trẻ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お嬢さん（おじょうさん）có nghĩa là con gái của người khác (lịch sự), cô gái trẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227017": "Nghe nói con gái anh/chị đã đỗ kỳ thi nhỉ?",
+        "227020": "Tôi muốn được gặp con gái anh/chị."
+      },
+      "SourceHash": "bba4054353bcb4317752b24826ada93f2145ca08fcd20a3371b5c9aa3b1b3ad4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6693b4e9f7",
+      "Fields": {
+        "Meaning": "Nhà anh/chị, gia đình anh/chị (lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お宅（おたく）có nghĩa là nhà anh/chị, gia đình anh/chị (lịch sự).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179923": "Tôi sẽ sớm đến thăm nhà anh/chị.",
+        "226889": "Cửa hàng nhà anh/chị mở đến mấy giờ?"
+      },
+      "SourceHash": "14902c963e8413a257f787384e3d1a4e0a6a2c5f090bf5c023ee3119f72a1018"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "981ee66f59",
+      "Fields": {
+        "Meaning": "Rơi, rớt, trượt, ngừng hoạt động",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "落ちる（おちる）có nghĩa là rơi, rớt, trượt, ngừng hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83323": "Không học thì sẽ trượt kỳ thi đấy.",
+        "2298216": "Máy chủ đã bị sập."
+      },
+      "SourceHash": "391c48fb77710a9584ac776747278b67846455d2bd55387ad2db82efcc5784fc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "050024e2d9",
+      "Fields": {
+        "Meaning": "Nói (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "おっしゃる（おっしゃる）có nghĩa là nói (kính ngữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "232385": "Mọi điều anh/chị nói trong email đều có lý, trừ vấn đề giá cả.",
+        "2912698": "Anh/chị nói hoàn toàn đúng."
+      },
+      "SourceHash": "c728284250d2fc610d9f8146b26e59ed39a9262550f9386db9875435245ccccb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8630e0875",
+      "Fields": {
+        "Meaning": "Chồng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夫（おっと）có nghĩa là chồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84999": "Chồng tôi lúc nào cũng đọc sách trên giường.",
+        "170330": "Các bà vợ thường sống lâu hơn chồng."
+      },
+      "SourceHash": "5c504dfd2dea60304d8d50e6dd71393b8db327c59ce73e353e2eefff98ce8b19"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f2c38f9517",
+      "Fields": {
+        "Meaning": "Tiền thối lại, tiền trả lại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Khoản tiền người bán trả lại khi khách đưa nhiều hơn giá phải trả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230565": "Cửa hàng đó đã gian lận tiền thối lại của tôi.",
+        "235837": "Trả một đô la thì có tiền thối lại không?"
+      },
+      "SourceHash": "d2c93131d1cf199a73fad4b2f78f5b5ef96e251814d4c8f9a941e904decd35d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c6815e7618",
+      "Fields": {
+        "Meaning": "Âm thanh, tiếng, nốt nhạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "音（おと）có nghĩa là âm thanh, tiếng, nốt nhạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91684": "Cô ấy đánh một nốt cao trên đàn piano.",
+        "224760": "Từ đây có thể nghe tiếng biển."
+      },
+      "SourceHash": "a53f6c39420d8de3faeb0fc59b176f821544991a4f5f3efb2a193eb7eccd97c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f786333cf9",
+      "Fields": {
+        "Meaning": "Làm rơi, bỏ khỏi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Cách viết thường gặp là 落とす. リストから落とす nghĩa là loại khỏi danh sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192534": "Xin đừng bỏ tên tôi khỏi danh sách.",
+        "213202": "Đừng làm rơi cái cốc đó."
+      },
+      "SourceHash": "786a21be4afb0e674db1faea9b9ad4c420ee3fa0d7a45ee617bec795e769ae8e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c636a46f4",
+      "Fields": {
+        "Meaning": "Điệu múa, việc nhảy múa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "踊り（おどり）có nghĩa là điệu múa, việc nhảy múa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153219": "Tôi nghĩ cô ấy nhảy giỏi.",
+        "164229": "Bạn gái tôi nhảy rất giỏi."
+      },
+      "SourceHash": "005f6f58b03a99d92f66b2eec4f98b654e7aaae8c429fc06090a33a954881f27"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3280103eb8",
+      "Fields": {
+        "Meaning": "Nhảy, múa",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "踊る（おどる）có nghĩa là nhảy, múa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198423": "Trong buổi tiệc chúng tôi ca hát và nhảy múa thỏa thích.",
+        "199153": "Sao bạn không nhảy với anh ấy?"
+      },
+      "SourceHash": "f5f649d4497f0e7db5e66db4289c9071a6172ef7d93db1f0ff3c5272a6aeb467"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d69734463",
+      "Fields": {
+        "Meaning": "Ngạc nhiên, giật mình",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "驚く（おどろく）có nghĩa là ngạc nhiên, giật mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83064": "Mẹ tôi ngạc nhiên khi nghe tin đó.",
+        "208760": "Người đó ngạc nhiên trước tin ấy."
+      },
+      "SourceHash": "0d8ec3d4c73d50f73b85549302d60101587be842a99acc61bc0b2cf4f33da42d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "68ff489ea4",
+      "Fields": {
+        "Meaning": "Lễ hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お祭り（おまつり）có nghĩa là lễ hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160417": "Tôi muốn xem lễ hội đó.",
+        "9393012": "Tôi ăn tôm hùm tại lễ hội."
+      },
+      "SourceHash": "751f30f4eaa03cdb53d6b118d0890ec951920d16dd6b01eb88135a10c4d0a679"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb615955c8",
+      "Fields": {
+        "Meaning": "Việc thăm hỏi người ốm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お見舞い（おみまい）có nghĩa là việc thăm hỏi người ốm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94734": "Mình đi thăm cô ấy nhé.",
+        "141483": "Hôm nọ chúng tôi đi thăm anh trai của anh ấy đang bị ốm."
+      },
+      "SourceHash": "5bed60331a934427fd71f5f258c324b86570be5df06eb19af821828a0e63e015"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f586632207",
+      "Fields": {
+        "Meaning": "Quà lưu niệm, quà mang về",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お土産（おみやげ）có nghĩa là quà lưu niệm, quà mang về.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "218090": "Đây là quà mang về từ Hokkaido.",
+        "223929": "Món quà này cồng kềnh thật."
+      },
+      "SourceHash": "957613ba80a1b3994a6acc4c2301553dc20c8603785a50067289c547dff12e8d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3e4c1468c7",
+      "Fields": {
+        "Meaning": "Nhớ ra, nhớ lại",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "思い出す（おもいだす）có nghĩa là nhớ ra, nhớ lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159953": "Tôi không nhớ ra tên địa danh đó.",
+        "231433": "Nhìn bạn, tôi lại nhớ đến anh trai bạn."
+      },
+      "SourceHash": "9820b2b314e4e593a59a4626e437aa5f35752d12902a797eb9563e6058df5e69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bad913ed8f",
+      "Fields": {
+        "Meaning": "Nghĩ, cho rằng, định",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "思う（おもう）có nghĩa là nghĩ, cho rằng, định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143025": "Tôi nghĩ trời sẽ quang đấy.",
+        "155732": "Tôi đang tính mua ô tô mới."
+      },
+      "SourceHash": "5eb5e6d72490be149ee840cc5179079100cd5842bbfaae9573b49466397b7303"
+    }
+  ]
+}

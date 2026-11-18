@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tte-kanji",
+      "Fields": {
+        "Meaning": "Có cảm giác là, kiểu như",
+        "Formation": "Cụm từ hoặc câu ＋ って感じ",
+        "Explanation": "Cách nói thân mật để diễn đạt ấn tượng hoặc tóm tắt cảm nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tte-kanji:example:1": "Mệt quá, kiểu chẳng muốn làm gì nữa.",
+        "tte-kanji:example:2": "Phim hôm nay tôi thấy cũng tạm được."
+      },
+      "SourceHash": "4da31fe2eebd062989d09a7c81414e4d4e62ba197c156af38592a675afb29d23"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-de",
+      "Fields": {
+        "Meaning": "Nối hành động hoặc nguyên nhân",
+        "Formation": "Động từ thể て／で ＋ mệnh đề tiếp theo",
+        "Explanation": "Có thể nối việc xảy ra theo thứ tự hoặc nêu điều dẫn đến cảm xúc hay kết quả ở vế sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-de:example:1": "Sáng tôi thức dậy rồi rửa mặt.",
+        "te-de:example:2": "Đọc thư của bạn, tôi thấy vui."
+      },
+      "SourceHash": "82ae241a3922c921c9f1440820c50e077b48f771f5597dd86632eb8a038a57c2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-ageru",
+      "Fields": {
+        "Meaning": "Làm gì giúp ai",
+        "Formation": "Động từ thể て ＋ あげる",
+        "Explanation": "Diễn tả hành động mang lợi ích cho người khác. Cân nhắc sắc thái ban ơn khi nói trực tiếp với người được giúp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-ageru:example:1": "Tôi cho bạn mượn sách.",
+        "te-ageru:example:2": "Tôi xách túi giúp mẹ."
+      },
+      "SourceHash": "80bfe5a05b296d3ed4f98031b697839fc927c18d1074ec241c8ff09b5767e54f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-iku",
+      "Fields": {
+        "Meaning": "Tiếp tục từ nay, làm rồi đi",
+        "Formation": "Động từ thể て ＋ いく",
+        "Explanation": "Có thể nêu hành động tiếp diễn về sau hoặc một việc làm trước khi rời chỗ hiện tại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-iku:example:1": "Từ nay tôi vẫn sẽ tiếp tục học tiếng Nhật.",
+        "te-iku:example:2": "Tôi sẽ ăn sáng rồi đi."
+      },
+      "SourceHash": "c24791ab11478e8cb45848e16d8eaa1fbba69c43a3281bbf18ec03ba7ce1eaa6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-ita",
+      "Fields": {
+        "Meaning": "Đang làm, từng ở hoặc từng làm trong quá khứ",
+        "Formation": "Động từ thể て ＋ いた／いました",
+        "Explanation": "Đặt hành động đang diễn ra, trạng thái kéo dài hoặc thói quen vào một thời điểm trong quá khứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-ita:example:1": "Lúc tôi gọi điện, chị tôi đang xem ti vi.",
+        "te-ita:example:2": "Hồi nhỏ tôi sống ở Tokyo."
+      },
+      "SourceHash": "955eb054ef3c032ee1313621000a8c869f7584db0047e14e2211093fb83bc920"
+    }
+  ]
+}

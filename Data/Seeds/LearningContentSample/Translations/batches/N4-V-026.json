@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "546e786cde",
+      "Fields": {
+        "Meaning": "Sân bay, sân bay nhỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "飛行場（ひこうじょう）có nghĩa là sân bay, sân bay nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84881": "Bố sẽ tiện đường chở tôi ra sân bay.",
+        "207492": "Sân bay trên đảo đó giờ cỏ mọc um tùm."
+      },
+      "SourceHash": "6fc93df3fd60efcbd1c0914ca941173974d03f53defbff9bdcc18e3323d7f4c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c813519f4",
+      "Fields": {
+        "Meaning": "Sau một thời gian dài",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "久しぶり（ひさしぶり）có nghĩa là sau một thời gian dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95545": "Lâu lắm rồi cô ấy mới gọi cho tôi.",
+        "137274": "Lâu lắm mới gặp anh/chị."
+      },
+      "SourceHash": "4d43a438e1a4f6195a8b8d1c53cbcbddfe27e64ab7858e87315bae88cec8a52a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eced3a159f",
+      "Fields": {
+        "Meaning": "Bảo tàng mỹ thuật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "美術館（びじゅつかん）có nghĩa là bảo tàng mỹ thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220127": "Vé vào bảo tàng mỹ thuật này là 30 đô la.",
+        "223341": "Xe buýt này có đến bảo tàng mỹ thuật không?"
+      },
+      "SourceHash": "95fea515dba6be20e94f75f22a196982bec1660d5375eea0e0c77ee55e8010eb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be23bfe1f6",
+      "Fields": {
+        "Meaning": "Rất, hết sức",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "非常に（ひじょうに）có nghĩa là rất, hết sức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148973": "Lái xe rất thú vị.",
+        "153129": "Tôi có một con tem rất cổ."
+      },
+      "SourceHash": "0f9120bb6e5564d26e16224cea875880e90b63e50d79bc89ddedef253d984892"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab4a88a2c0",
+      "Fields": {
+        "Meaning": "Giật mình, ngạc nhiên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "びっくりする（びっくりする）có nghĩa là giật mình, ngạc nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97991": "Họ sẽ ngạc nhiên khi nghe tin đó.",
+        "111167": "Anh ấy làm được những màn nhào lộn đáng kinh ngạc."
+      },
+      "SourceHash": "76d64b2dca5f2e8f711f6af7114c88e510b2dcdad12e2ce6b93a83a66663163e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d801b8b37a",
+      "Fields": {
+        "Meaning": "Chuyển nhà",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "引っ越す（ひっこす）có nghĩa là chuyển nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158409": "Tôi vừa mới chuyển đến.",
+        "182222": "Mùa thu năm ngoái chúng tôi chuyển đến New York."
+      },
+      "SourceHash": "4b015a0786a82b4e277543b370d912349d307cc903cc9c5e6491b43306ba4165"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33a024fce6",
+      "Fields": {
+        "Meaning": "Tệ, kinh khủng, dữ dội",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "ひどい（ひどい）có nghĩa là tệ, kinh khủng, dữ dội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156638": "Tôi kiệt sức vì công việc.",
+        "219294": "Thuốc này có vị kinh khủng."
+      },
+      "SourceHash": "e00ad9e033263164cac92472a893564ea2a8848d8855750072fd26cd8bdd5888"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dddceb65a5",
+      "Fields": {
+        "Meaning": "Mở, nở, tổ chức",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "開く（ひらく）có nghĩa là mở, nở, tổ chức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125506": "Nụ hồng trong vườn bắt đầu hé dần.",
+        "198428": "Hay là tổ chức một bữa tiệc?"
+      },
+      "SourceHash": "ee2d33f2be38785826863976e535571a0a3fe9b0a29e32eb8af39688762d5fcf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1fb9d39cd6",
+      "Fields": {
+        "Meaning": "Tòa nhà, cao ốc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ビル（ビル）có nghĩa là tòa nhà, cao ốc.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "f91b470a2a335eada23298be8295add90f320ecb506c255fe6152120add200bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ee0c991348",
+      "Fields": {
+        "Meaning": "Ban ngày",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "昼間（ひるま）có nghĩa là ban ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126410": "Ban ngày có bạn đến gặp tôi.",
+        "197181": "Ban ngày cú không nhìn thấy."
+      },
+      "SourceHash": "1f8b47b5226c57dc13271cad239b07db6089b460de201cc4c7b93f01e0448c45"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26253e5000",
+      "Fields": {
+        "Meaning": "Giờ nghỉ trưa",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "昼休み（ひるやすみ）có nghĩa là giờ nghỉ trưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "1656895": "Có một giờ nghỉ trưa, từ 12 giờ đến 1 giờ.",
+        "10796391": "Giờ nghỉ trưa kéo dài một tiếng."
+      },
+      "SourceHash": "8ea5e45f192661e70fee61710f557c393312df0fe82b1dac447854f8860c3416"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a441432c8a",
+      "Fields": {
+        "Meaning": "Nhặt, đón",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "拾う（ひろう）có nghĩa là nhặt, đón.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146484": "Xin nhặt cây bút dưới sàn lên.",
+        "196196": "Xin lái xe đến đón tôi trước khách sạn."
+      },
+      "SourceHash": "03118f063b6d24e5878fd2388a86802604b0ed23c57510fc5cc370a78da38aca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ced6d3f112",
+      "Fields": {
+        "Meaning": "Máy fax, bản fax",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ファックス（ファックス）có nghĩa là máy fax, bản fax.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75944": "Ngày xưa thì khác, chứ bây giờ có cả fax lẫn email.",
+        "234850": "Anh/chị gửi bản đồ qua fax giúp tôi được không?"
+      },
+      "SourceHash": "4fdb2d48e4c403dddb4b16af7fd6f97b86cc69817861bd1a73710f9581995d32"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59bc2e87aa",
+      "Fields": {
+        "Meaning": "Tăng, tăng lên",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "増える（ふえる）có nghĩa là tăng, tăng lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137682": "Mưa lớn làm nước sông dâng nhanh.",
+        "220521": "Dân số thị trấn này đang tăng."
+      },
+      "SourceHash": "61bfac7d9e05333334217409954d280f8e32b5aade08b47ce64ff39b277ef229"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de718a81e9",
+      "Fields": {
+        "Meaning": "Sâu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "深い（ふかい）có nghĩa là sâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143780": "Nước sâu nhất ở chỗ này.",
+        "174492": "Hồ sâu bao nhiêu?"
+      },
+      "SourceHash": "9af06bb825f8fe655a4db7aa1e2124fb5755f854e4a8ef72d7eea427494ad423"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d83ae6a5a",
+      "Fields": {
+        "Meaning": "Phức tạp",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "複雑（ふくざつ）có nghĩa là phức tạp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200399": "Không biết phức tạp đến mức nào nhỉ?",
+        "204815": "Việc đó có lẽ sẽ làm vấn đề phức tạp hơn."
+      },
+      "SourceHash": "3e0f98250942d4fff8588103afefdee388bd74b4482e2403eedddff0b3a41258"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c00788993b",
+      "Fields": {
+        "Meaning": "Ôn tập",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "復習（ふくしゅう）có nghĩa là ôn tập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177441": "Bạn đã thử ôn lại tiếng Anh chưa?",
+        "211923": "Bạn đã ôn bài đó chưa?"
+      },
+      "SourceHash": "e665023c6994c3aa160cd900d9542b5b3ce106711eb02e532047ced3b9a7ddf3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "346a5da3c2",
+      "Fields": {
+        "Meaning": "Trưởng phòng, trưởng ban",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "部長（ぶちょう）có nghĩa là trưởng phòng, trưởng ban.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "135696": "Không ai qua mặt được trưởng phòng.",
+        "149169": "Giám đốc bổ nhiệm trưởng phòng mới."
+      },
+      "SourceHash": "dd93e7ffc18d2e272fa0f9134870a0dc23eb12a2c515bbe88ab0a56652e43ee1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fbb6245e8b",
+      "Fields": {
+        "Meaning": "Thường, bình thường, tàu thường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "普通（ふつう）có nghĩa là thường, bình thường, tàu thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122131": "Chủ nhật không phải ngày bình thường đối với tôi.",
+        "159019": "Tôi thường đi học bằng xe đạp."
+      },
+      "SourceHash": "13f6b8b0d12162fcd574c6a0e889474404581bfeace35d54716fc0c32cff49ba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fceb1b247e",
+      "Fields": {
+        "Meaning": "Nho",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ぶどう（ぶどう）có nghĩa là nho.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166220": "Chúng tôi có được nhiều nho.",
+        "197141": "Nho được dùng để làm rượu vang."
+      },
+      "SourceHash": "24891a5390510662cf01be954c60c86fdd66aabe8801b28bdad51523bca0bcf4"
+    }
+  ]
+}

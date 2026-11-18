@@ -1656,6 +1656,27 @@ namespace JCAP.Migrations
                     b.ToTable("LearnerSkillMasteries");
                 });
 
+            modelBuilder.Entity("JCAP.Models.LearningContentSeedState", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("CompletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("LearningContentSeedStates");
+                });
+
             modelBuilder.Entity("JCAP.Models.LearningContentSource", b =>
                 {
                     b.Property<int>("Id")

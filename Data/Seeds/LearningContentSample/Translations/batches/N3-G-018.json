@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dai-ichi",
+      "Fields": {
+        "Meaning": "Trên hết, quan trọng nhất",
+        "Formation": "第一に ＋ nhận định／danh từ ＋ が第一だ",
+        "Explanation": "Đặt một điều ở ưu tiên cao nhất hoặc dùng để nêu ý đầu tiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dai-ichi:example:1": "Khi đi du lịch, nên ưu tiên an toàn trước hết.",
+        "dai-ichi:example:2": "Sức khỏe là quan trọng nhất."
+      },
+      "SourceHash": "c80c50aa4670ce25118b0fa9b118d3a105b7990b51ba1ca7fbc673d6ace029d1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dake-shika",
+      "Fields": {
+        "Meaning": "Chỉ đúng, chỉ có mỗi",
+        "Formation": "Danh từ hoặc số lượng ＋ だけしか ＋ vị ngữ phủ định",
+        "Explanation": "Kết hợp だけ và しか để nhấn mạnh phạm vi hay số lượng rất giới hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dake-shika:example:1": "Trong ví chỉ còn đúng 100 yên.",
+        "dake-shika:example:2": "Cửa hàng này chỉ bày bán quần áo cũ."
+      },
+      "SourceHash": "1e7a134c0bd323bbd37d484fe2cd20583b933ff50b71737fc58a0a0fbbaaeeca"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dake-de-nakute-mo",
+      "Fields": {
+        "Meaning": "Không chỉ A mà còn B",
+        "Formation": "A ＋ だけでなく（て）、B ＋ も",
+        "Explanation": "Mở rộng nhận định sang một đối tượng hoặc đặc điểm khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dake-de-nakute-mo:example:1": "Anh ấy nói được cả tiếng Anh lẫn tiếng Trung.",
+        "dake-de-nakute-mo:example:2": "Thị trấn này có cảnh đẹp và đồ ăn cũng ngon."
+      },
+      "SourceHash": "730bedceb15f101be75e51cde12ea2c1ae58e4dd656423ee8be7dc80a2bb039a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tashika-ni",
+      "Fields": {
+        "Meaning": "Quả thật, đúng là",
+        "Formation": "確かに ＋ nhận định",
+        "Explanation": "Xác nhận một điểm đúng. Có thể đi với が để nêu ý tiếp theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tashika-ni:example:1": "Quả thật lời anh ấy nói cũng có lý.",
+        "tashika-ni:example:2": "Đúng là quán này đắt, nhưng hương vị rất chuẩn."
+      },
+      "SourceHash": "dca6f8fdb7e227d7fd42d3c7bdfe48d57ed2a2caaa09420db435482bc30861b9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tadachi-ni",
+      "Fields": {
+        "Meaning": "Ngay lập tức",
+        "Formation": "直ちに ＋ động từ",
+        "Explanation": "Chỉ hành động thực hiện ngay, thường trong thông báo hoặc chỉ dẫn trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tadachi-ni:example:1": "Nếu xảy ra động đất, hãy dập lửa ngay.",
+        "tadachi-ni:example:2": "Chuẩn bị xong là cuộc họp sẽ bắt đầu ngay."
+      },
+      "SourceHash": "d667d21b76b05e8669b72a69c6e332406b523f5bb4e80c1be93c6892c3b89644"
+    }
+  ]
+}

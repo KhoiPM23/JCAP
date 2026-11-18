@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kara-koso",
+      "Fields": {
+        "Meaning": "Chính vì… nên",
+        "Formation": "Mệnh đề thể thường ＋ からこそ",
+        "Explanation": "Nhấn mạnh rằng lý do được nêu là yếu tố quyết định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kara-koso:example:1": "Chính vì có gia đình nên tôi mới cố gắng được mỗi ngày.",
+        "kara-koso:example:2": "Chính vì khó nên mới đáng thử sức."
+      },
+      "SourceHash": "d217ee724bbdfd782eb784a2bce153f446ffb406e33b507192485b2a8870d4bf"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kawari-ni",
+      "Fields": {
+        "Meaning": "Thay cho, đổi lại",
+        "Formation": "Danh từ ＋ の代わりに／mệnh đề bổ nghĩa ＋ 代わりに",
+        "Explanation": "Diễn tả việc thay người hay hành động, hoặc làm một việc để đổi lấy việc khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kawari-ni:example:1": "Hôm nay tôi dự họp thay bố.",
+        "kawari-ni:example:2": "Bạn giúp tôi thì đổi lại tôi sẽ mời bạn ăn tối."
+      },
+      "SourceHash": "18c2d0ac254206adc708c04d8ac00b93b4840bbd3e7dd906868e13b287480548"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kangaerarenai",
+      "Fields": {
+        "Meaning": "Không thể tưởng tượng, khó tin",
+        "Formation": "Danh từ hoặc mệnh đề danh từ hóa ＋ は／が ＋ 考えられない",
+        "Explanation": "Nói điều vượt ngoài khả năng hình dung hoặc khó chấp nhận là có thật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kangaerarenai:example:1": "Giờ tôi không thể tưởng tượng cuộc sống thiếu điện thoại thông minh.",
+        "kangaerarenai:example:2": "Khó tin là có một mùa hè lạnh đến thế."
+      },
+      "SourceHash": "44aeb7d3e4c7cab0e78e6783451d798586a27d97e3d8d167f503ade7612980a9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kankei-ga-aru",
+      "Fields": {
+        "Meaning": "Có liên quan",
+        "Formation": "A ＋ は ＋ B ＋ と関係がある／関係がない",
+        "Explanation": "Nêu mối liên hệ giữa hai sự việc hoặc đối tượng. Phủ định dùng 関係がない.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kankei-ga-aru:example:1": "Vấn đề đó không liên quan đến tôi.",
+        "kankei-ga-aru:example:2": "Thời tiết có liên hệ mật thiết với nông nghiệp."
+      },
+      "SourceHash": "9a046bd2e9e7158d8b85232d97b316aeb8590f8b4cc1f44ff14e8b134947c51e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gimi",
+      "Fields": {
+        "Meaning": "Hơi, có dấu hiệu",
+        "Formation": "Gốc ます hoặc danh từ ＋ 気味（ぎみ）",
+        "Explanation": "Chỉ dấu hiệu nhẹ hoặc một xu hướng mới xuất hiện, thường là điều khiến người nói lưu ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gimi:example:1": "Tôi hơi mệt nên hôm nay sẽ đi ngủ sớm.",
+        "gimi:example:2": "Gần đây tôi có dấu hiệu tăng cân nên thấy lo."
+      },
+      "SourceHash": "017ea6acb1b58456fd9215c82259b2af3238c16c8b769a18f11c675e357ad971"
+    }
+  ]
+}

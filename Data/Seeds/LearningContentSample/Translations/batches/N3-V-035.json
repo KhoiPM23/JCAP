@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3963aabbaa",
+      "Fields": {
+        "Meaning": "Chết rồi, ôi thôi",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "しまった（しまった）có nghĩa là chết rồi, ôi thôi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216081": "Chết rồi! Tôi sơ ý để quên điện thoại ở cửa hàng mất rồi."
+      },
+      "SourceHash": "498fa2747432bda60a987c777221c78ade9920486cc9940e08a7bacbdd6b9ba1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ef7ecde78",
+      "Fields": {
+        "Meaning": "Tự hào, khoe",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "自慢（じまん）có nghĩa là tự hào, khoe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84671": "Bố tôi tự hào vì mình đẹp trai.",
+        "191611": "Chúng tôi khoe sức mạnh thể chất của mình."
+      },
+      "SourceHash": "d62fef24a579b4684cf6ded0ca4668668be59047a9bbfaacd90042b69e7e8bc3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "99dc3e9d67",
+      "Fields": {
+        "Meaning": "Công việc hành chính, văn thư",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事務（じむ）có nghĩa là công việc hành chính, văn thư.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105340": "Anh ấy làm công việc hành chính.",
+        "137867": "Trước khi nghỉ việc, anh ấy bàn giao công việc hành chính."
+      },
+      "SourceHash": "041f93ed1e21144f4706299391c4180c09b7319099dde09186a27a6478d177dc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bab0ffb17a",
+      "Fields": {
+        "Meaning": "Chỉ ra, cho thấy, thể hiện",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "示す（しめす）có nghĩa là chỉ ra, cho thấy, thể hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103453": "Anh ấy thể hiện năng lực toán học vượt trội.",
+        "210237": "Đứa trẻ không hề tỏ ra sợ hãi."
+      },
+      "SourceHash": "637d984ffd550af987968f608b5e3705fd524737f850ecf0348d1c34a7505f4a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f797ab74cc",
+      "Fields": {
+        "Meaning": "Chiếm, chiếm giữ",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "Chỉ sự chiếm chỗ hoặc chiếm tỷ lệ. 味を占める là thành ngữ chỉ việc muốn lặp lại điều từng đem lại lợi ích hoặc cảm giác thích thú.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173622": "Chi phí quảng cáo chiếm khoảng 7% tổng chi phí công ty.",
+        "225806": "Một khi đã nếm mùi thắng bạc thì khó bỏ."
+      },
+      "SourceHash": "34ca2b096d2728680e2d621e4dff5f4c0e578175f9c3bad7f4c7d472f733b75a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b341907305",
+      "Fields": {
+        "Meaning": "Sương giá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "霜（しも）có nghĩa là sương giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172216": "Sáng nay mặt đất phủ sương giá.",
+        "192464": "Hoa táo bị hư vì sương giá."
+      },
+      "SourceHash": "fbb61c6c4c474665dafe463f14e07af8df2401b2551d5df563f1ef2508b88ecf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "823b048f98",
+      "Fields": {
+        "Meaning": "Vậy thì, thế nhé",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "じゃあ（じゃあ）có nghĩa là vậy thì, thế nhé.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215904": "Vậy hẹn gặp nhau ở bữa tiệc nhé.",
+        "236405": "“Rẻ nhỉ. Vậy cho tôi 10 yard”, cô bé đáp."
+      },
+      "SourceHash": "e3f0091b2fb29908761b459022b722d10fb3fe103b3fb4aba83028430ecfc615"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0bd00cd76e",
+      "Fields": {
+        "Meaning": "Nợ, khoản vay",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "借金（しゃっきん）có nghĩa là nợ, khoản vay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147679": "Tôi sẽ trả nợ sớm nhất có thể.",
+        "177166": "Bạn nên trả nợ."
+      },
+      "SourceHash": "31a9b20c655e9cbdcdf35bb607366ed42ab8308a09fc35c7bcf0a810285f1181"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b76d0e68b",
+      "Fields": {
+        "Meaning": "Nói, trò chuyện",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "しゃべる（しゃべる）có nghĩa là nói, trò chuyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97511": "Họ đang nói tiếng Anh à?",
+        "202595": "Tôi lỡ nói ra rằng anh ấy đang ốm."
+      },
+      "SourceHash": "dec851c2195dbe2b25c9d4f58f3c268e28ecb6535601e5745b0ee9a8f82469a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba60eb30d1",
+      "Fields": {
+        "Meaning": "Bang, tiểu bang",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "州（しゅう）có nghĩa là bang, tiểu bang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123200": "Đi du lịch các bang miền Nam vào mùa đông sẽ tốn hơn đi bây giờ.",
+        "230238": "Hoa Kỳ có 50 bang."
+      },
+      "SourceHash": "06ed71499bc41f0eb51990297fd0616c8ef38e1fc472c7ae080479ed74eadb92"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34502f33ca",
+      "Fields": {
+        "Meaning": "Tuần",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "週（しゅう）có nghĩa là tuần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148148": "Hãy tập thể dục, dù chỉ một lần mỗi tuần.",
+        "205482": "Tôi mua cái đó vào tuần trước đó."
+      },
+      "SourceHash": "dd07285173d27139756d8b6041bb5c1c0ac0fa485290e632d7b043108072ed62"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "832f591208",
+      "Fields": {
+        "Meaning": "Súng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "銃（じゅう）có nghĩa là súng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147950": "Trong súng không có đạn.",
+        "176202": "Cảnh sát không được tùy tiện dùng súng."
+      },
+      "SourceHash": "3b422afda13806d9d8f8f4b7da7fb768ddb0703b214738130231f5bdb9cfe143"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fe4cf66fc4",
+      "Fields": {
+        "Meaning": "Xung quanh, chu vi",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "周囲（しゅうい）có nghĩa là xung quanh, chu vi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142806": "Bạn thử điều chỉnh cách sống cho phù hợp với hoàn cảnh xung quanh xem sao?",
+        "219442": "Cây này có chu vi ba mét."
+      },
+      "SourceHash": "a1243455e7d20c7f9b96f358e9b108ddef79e9f2db393239d521c6edceef268e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f1fe65bc6",
+      "Fields": {
+        "Meaning": "Thu hoạch, vụ mùa",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "収穫（しゅうかく）có nghĩa là thu hoạch, vụ mùa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166186": "Tất cả chúng tôi đều phụ thu hoạch.",
+        "171337": "Năm nay chúng tôi mong có vụ mùa bội thu."
+      },
+      "SourceHash": "ddac21b81cd6429005c4142cfe495688525fffca2a31ea7667097c6ae563f463"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "86d6931c5b",
+      "Fields": {
+        "Meaning": "Khoảng thời gian tính theo tuần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "週間（しゅうかん）có nghĩa là khoảng thời gian tính theo tuần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95225": "Đã ba tuần kể từ khi cô ấy bị ốm.",
+        "194529": "Hai tuần nữa tôi sẽ về."
+      },
+      "SourceHash": "7929894fdcc588d0452bfadf0594086823e85a4915f80beb9bf467790a675275"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a24c44422",
+      "Fields": {
+        "Meaning": "Tôn giáo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宗教（しゅうきょう）có nghĩa là tôn giáo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122274": "Người Nhật thường không quá câu nệ tôn giáo.",
+        "206223": "Hai nước đó khác nhau về tôn giáo và văn hóa."
+      },
+      "SourceHash": "237cf196d04b437f2972bdbcad71dc6d0f807bbf372399f7203e5c20e700c643"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60a04003e4",
+      "Fields": {
+        "Meaning": "Coi trọng, chú trọng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "重視（じゅうし）có nghĩa là coi trọng, chú trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144033": "Có người coi trọng tiền bạc trong cuộc sống.",
+        "159909": "Tôi không coi phát hiện đó là quan trọng lắm."
+      },
+      "SourceHash": "1f8e42f96eec66ecc5bbf16927b3366b79fa95ebb32ceff38ab5b85953feb778"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec1934d7b5",
+      "Fields": {
+        "Meaning": "Kiếm được việc, đi làm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "就職（しゅうしょく）có nghĩa là kiếm được việc, đi làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92198": "Cô ấy kiếm được việc đánh máy.",
+        "199174": "Vì sao anh ấy bị từ chối tuyển dụng?"
+      },
+      "SourceHash": "28183cb75a142791862f64db4e64c02096fb1417b8769c6c7be8ba1f1c80df6a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d154c188d",
+      "Fields": {
+        "Meaning": "Nước ép, nước giải khát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ジュース（ジュース）có nghĩa là nước ép, nước giải khát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223684": "Nước ép này hơi chua.",
+        "1015911": "Tôi thích nước ép quả cơm cháy."
+      },
+      "SourceHash": "d11203780f04023e9a2d9d9f1529f976dfba26f2ac8fb751821181b7f05d2581"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fc09cad9c",
+      "Fields": {
+        "Meaning": "Sửa đổi, hiệu chỉnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "修正（しゅうせい）có nghĩa là sửa đổi, hiệu chỉnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105218": "Ông ấy sửa lại quan điểm của mình.",
+        "211505": "Quy định đó nên được sửa đổi."
+      },
+      "SourceHash": "91259133e19bad74ffd7751b43d8aa4513a1e821803b8772ffedf2080669aa2d"
+    }
+  ]
+}

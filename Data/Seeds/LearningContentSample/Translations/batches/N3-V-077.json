@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c40902d092",
+      "Fields": {
+        "Meaning": "Mặt, mặt nạ, bề mặt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "面（めん）có nghĩa là mặt, mặt nạ, bề mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123091": "Hai người đàn ông đối mặt nhau.",
+        "208093": "Người đàn ông đó đeo mặt nạ hổ."
+      },
+      "SourceHash": "53fa8d0c7c46100bffb56e36715129f1dcf9adc439db77bc1f7c48d8f68a3417"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b165e8a57",
+      "Fields": {
+        "Meaning": "Giấy phép, bằng lái",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "免許（めんきょ）có nghĩa là giấy phép, bằng lái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160957": "Mùa hè này tôi đã lấy được bằng lái.",
+        "193057": "Cuối cùng tôi cũng lấy được bằng lái."
+      },
+      "SourceHash": "e671b4d8a27a082c948a901807f4afa38595e4dc09f43706a9a4ee69a7f45b15"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c5dcce6bf",
+      "Fields": {
+        "Meaning": "Sự phiền phức, việc chăm nom",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "面倒（めんどう）có nghĩa là sự phiền phức, việc chăm nom.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217590": "Xin đừng gây thêm phiền phức.",
+        "227722": "Chú tôi luôn chăm sóc chúng tôi chu đáo."
+      },
+      "SourceHash": "0db5bd08b1c7e267632c9b6bc8f367878c66b45f094b08ffb756bc4b2bd3c9f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df62e316d7",
+      "Fields": {
+        "Meaning": "Thành viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "メンバー（メンバー）có nghĩa là thành viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113699": "Anh ấy là thành viên câu lạc bộ golf.",
+        "176845": "Bạn là thành viên đội bóng chày à?"
+      },
+      "SourceHash": "752d1dfcf269eee701f3d92ed5406093d8a770d2675301986e832c22935f92dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7b4c98a742",
+      "Fields": {
+        "Meaning": "Đăng ký, nộp đơn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "申し込む（もうしこむ）có nghĩa là đăng ký, nộp đơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113053": "Anh ấy nộp đơn xin việc vào công ty đó.",
+        "232870": "Bạn nên nộp đơn xin việc đó."
+      },
+      "SourceHash": "cbc466d0f7eb6a2544ac5b0366f11bb8a390986b7f0fe903f88b848dc9ec5e11"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b687c34ed5",
+      "Fields": {
+        "Meaning": "Lời thanh minh, lời xin lỗi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "申し訳（もうしわけ）có nghĩa là lời thanh minh, lời xin lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145042": "Rất tiếc, hết chỗ rồi ạ.",
+        "183737": "Tôi thành thật xin lỗi vì đã mắc lỗi."
+      },
+      "SourceHash": "24591604a443d070c5d67884f8402ebe6801f8cbfe251be6bdc4fd539e1aaf3b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b83a39027b",
+      "Fields": {
+        "Meaning": "Chăn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "毛布（もうふ）có nghĩa là chăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221241": "Chiếc chăn mềm này rất hợp cho em bé.",
+        "225098": "Ken gấp đôi chiếc chăn."
+      },
+      "SourceHash": "2faf01b2fd4906aa7e3cd0165f2516f19d8f19d64ee825b2bfe7090b4b9fb7af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8f720cf6d",
+      "Fields": {
+        "Meaning": "Cháy, bốc cháy",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "燃える（もえる）có nghĩa là cháy, bốc cháy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157782": "Tôi thấy mặt nóng như đang cháy.",
+        "186766": "Lửa đang cháy bùng bùng."
+      },
+      "SourceHash": "e14caf523c3944f70489cf7774d5b32cc937fdb08241057d1840f96cd39f94eb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0440a8bd4f",
+      "Fields": {
+        "Meaning": "Mục đích",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "目的（もくてき）có nghĩa là mục đích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79891": "Có vẻ khó đạt được mục đích đó.",
+        "374701": "Mục đích của anh ấy là thi đỗ."
+      },
+      "SourceHash": "d63fff0c6680a61edb39f4e374eca2fdc4a6529151215ba8cd646bd8d84db604"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5a93587f3a",
+      "Fields": {
+        "Meaning": "Mục tiêu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "目標（もくひょう）có nghĩa là mục tiêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121474": "Doanh số không đạt mục tiêu.",
+        "144005": "Đừng đánh mất mục tiêu cuộc đời."
+      },
+      "SourceHash": "71c0dcbaacdcec9bf98bde4d4770a1f7926d4d1b6cf8014ffe57be8f4744a4e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2b9cc873fb",
+      "Fields": {
+        "Meaning": "Thứ Năm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "木曜（もくよう）có nghĩa là thứ Năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80054": "Tối thứ Năm có bia miễn phí.",
+        "175608": "Tôi sẽ ở đây từ thứ Hai đến thứ Năm."
+      },
+      "SourceHash": "b631d881318975821a2d33b15bdc163064be06da3a055565f4eba3958e2681d1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2ec7e341be",
+      "Fields": {
+        "Meaning": "Chữ, ký tự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文字（もじ）có nghĩa là chữ, ký tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75067": "Ồ, bạn gõ được chữ mà không nhìn bàn phím à? Giỏi thật.",
+        "237581": "Ký hiệu & biểu thị từ “and”."
+      },
+      "SourceHash": "138ac70735111309c88566f0861ff8f3e1c86526b90fe0b5c4d5eac66ff3a2cd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6aa4147162",
+      "Fields": {
+        "Meaning": "Nếu, giả sử",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "もしも（もしも）có nghĩa là nếu, giả sử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193781": "Giá mà có bản đồ thì anh ấy đã không lạc đường.",
+        "193787": "Nếu được tái sinh, tôi muốn làm chim."
+      },
+      "SourceHash": "c4c857de309ac9f1a1d22e3a2be41d5750eb04d4986537a655dadf675eaf672a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1210c0bf0b",
+      "Fields": {
+        "Meaning": "Nhấc lên, nâng lên",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "持ち上げる（もちあげる）có nghĩa là nhấc lên, nâng lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138018": "Tôi cảm thấy người mình được nhấc lên.",
+        "220877": "Tảng đá này nặng quá, không nhấc được."
+      },
+      "SourceHash": "91fea4ec9d168184a8c7971b4eebbf913c088f25489a5557071791545df6f0f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20bdc60bd0",
+      "Fields": {
+        "Meaning": "Dùng, sử dụng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "用いる（もちいる）có nghĩa là dùng, sử dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83692": "Đầu câu dùng chữ viết hoa.",
+        "222014": "Từ này ngày nay không còn được dùng."
+      },
+      "SourceHash": "c833bd01416a3fa59516961f704ae882e093f1b89c9b516b2b253710068ee4fb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "779c980843",
+      "Fields": {
+        "Meaning": "Hợp lý, có lý, cũng phải",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "Trong hai câu ví dụ, từ này nghĩa là hợp lý hoặc dễ hiểu. Khác với 最も, từ cùng cách đọc nghĩa là nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120323": "Anh ấy nghỉ việc cũng phải thôi.",
+        "120950": "Việc anh ấy làm vậy cũng có lý."
+      },
+      "SourceHash": "09979f1bda28bfa3236425ba26fb017ef6bf93471592a5e505ccf899bc157f8f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f4b2590f6",
+      "Fields": {
+        "Meaning": "Nền tảng, cơ sở, nguyên nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "基 chỉ nền tảng. Câu nguồn viết もと bằng kana và dùng nghĩa nguyên nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193096": "Việc đã làm rồi thì không thể đảo ngược.",
+        "209780": "Nhân viên văn phòng đó qua đời vì làm việc quá sức."
+      },
+      "SourceHash": "bf6afdce40ab76ffb89ea5f7b2dc709cfd9bcee189d163e32c4809b7499343e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5b7534060",
+      "Fields": {
+        "Meaning": "Gốc, ban đầu, nguyên nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "元 chỉ gốc, nguồn hoặc trạng thái ban đầu. Trong câu về làm việc quá sức, もと chỉ nguyên nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193096": "Việc đã làm rồi thì không thể đảo ngược.",
+        "209780": "Nhân viên văn phòng đó qua đời vì làm việc quá sức."
+      },
+      "SourceHash": "12564b1c24d0b52fa76e9fcb647e0ed9540d538645ab62d06a39b0e0817a6614"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa6e296421",
+      "Fields": {
+        "Meaning": "Chất gốc, trạng thái nguyên sơ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "素 chỉ chất gốc hoặc trạng thái chưa qua xử lý. Câu về làm việc quá sức viết もと bằng kana với nghĩa nguyên nhân, thường viết 元.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193096": "Việc đã làm rồi thì không thể đảo ngược.",
+        "209780": "Nhân viên văn phòng đó qua đời vì làm việc quá sức."
+      },
+      "SourceHash": "0744cd784a24789f1adff57f445b2fb86a665014b8905efd77c280b5bb445869"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1ba670b85",
+      "Fields": {
+        "Meaning": "Đưa trở lại, trả về",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "戻す（もどす）có nghĩa là đưa trở lại, trả về.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193188": "Hãy trả nó về chỗ cũ.",
+        "206634": "Hãy đặt cuốn sách lại lên kệ."
+      },
+      "SourceHash": "df8e03339acd9a58076f929d51c3f2acec34fc93f9dc0dd03a87ad57f86bf4a4"
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fdef6c9ac9",
+      "Fields": {
+        "Meaning": "Nhu cầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "需要（じゅよう）có nghĩa là nhu cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148313": "Nhu cầu tăng thì giá tăng theo.",
+        "218977": "Những mặt hàng này có nhu cầu cao không?"
+      },
+      "SourceHash": "0542369ce025abba87328a9d4b803c0e180fb38ade790e3afc83141d06871f7c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04ee2e546f",
+      "Fields": {
+        "Meaning": "Loại, chủng loại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "種類（しゅるい）có nghĩa là loại, chủng loại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123735": "Vườn thú có nhiều loài động vật.",
+        "199413": "Có những loại bia nào?"
+      },
+      "SourceHash": "ee878eabf79f5380226b13ba64082bb388a895e26d1ed18fdb43848eebabb904"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "46735bd09f",
+      "Fields": {
+        "Meaning": "Thứ tự",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "順（じゅん）có nghĩa là thứ tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78859": "Các tờ giấy được đánh số theo thứ tự.",
+        "175147": "Các mục từ được sắp theo thứ tự bảng chữ cái."
+      },
+      "SourceHash": "566838841af6fe24c3702cdc90743a9aeac5b7545341efb1214beb24022b6140"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28dddd721c",
+      "Fields": {
+        "Meaning": "Khoảnh khắc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "瞬間（しゅんかん）có nghĩa là khoảnh khắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95146": "Cô ấy nổi nóng ngay lúc đó nhỉ.",
+        "209411": "Khoảnh khắc ấy, tôi có cảm giác mọi thứ không còn thật."
+      },
+      "SourceHash": "5fb8023332b0d43d44339e680686b3e0657826bb6d42c487f157fe5c49d53eac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ec7f868c5",
+      "Fields": {
+        "Meaning": "Thuận lợi, suôn sẻ",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "順調（じゅんちょう）có nghĩa là thuận lợi, suôn sẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214498": "Mọi việc đang diễn ra suôn sẻ.",
+        "218044": "Cho đến nay mọi việc đều thuận lợi."
+      },
+      "SourceHash": "3e0732958d6974005d7fcbd88cad8d4072aacdc5a1a5ab3b9649c3e560d3750c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d39e3de050",
+      "Fields": {
+        "Meaning": "Thứ tự, lượt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "順番（じゅんばん）có nghĩa là thứ tự, lượt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "234018": "Đến lượt bạn trả lời câu hỏi.",
+        "236826": "Chúng tôi cố tình bỏ qua lượt của anh ấy."
+      },
+      "SourceHash": "033b4751f38bc985676c24929bfc4f245d3617d245361376ad668b3882025f60"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "96bec84032",
+      "Fields": {
+        "Meaning": "Nhỏ, cỡ nhỏ",
+        "PartOfSpeech": "Danh từ, danh từ dùng làm tiền tố",
+        "Explanation": "小（しょう）có nghĩa là nhỏ, cỡ nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137762": "Cỡ lớn hay cỡ nhỏ?"
+      },
+      "SourceHash": "a26b07a25d8ba9447ec25bf35113bcfa255a109360864d9120f3698377766c72"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85d4d0e2b9",
+      "Fields": {
+        "Meaning": "Chương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "章（しょう）có nghĩa là chương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141598": "Giáo viên giao cho tôi chương dài nhất.",
+        "219736": "Cuốn sách này gồm ba chương."
+      },
+      "SourceHash": "3fc841c870a131ed287c01966562067067d30ba4f7e0bb6e791025b75995d2c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d22b11ab41",
+      "Fields": {
+        "Meaning": "Giải thưởng, phần thưởng",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "賞（しょう）có nghĩa là giải thưởng, phần thưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146300": "Tôi sẽ tặng bạn album này làm phần thưởng.",
+        "183395": "Đúng như mong đợi, anh ấy đã đoạt giải."
+      },
+      "SourceHash": "7ca2cb778dc896eab91d6019e546c002120048904ca10daf2832329ad095ed94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "21e28bfbca",
+      "Fields": {
+        "Meaning": "Sử dụng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "使用（しよう）có nghĩa là sử dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137993": "Nhà thi đấu sẽ được dùng để tổ chức buổi lễ.",
+        "144260": "Con người đã biết dùng công cụ từ thời xa xưa."
+      },
+      "SourceHash": "70b52cee0e47e1c9919dcae688e9a8f0b09cbc2429374d0623ad29a427a05ca0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2897f44098",
+      "Fields": {
+        "Meaning": "Trở ngại, chướng ngại, khuyết tật",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "障害（しょうがい）có nghĩa là trở ngại, chướng ngại, khuyết tật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85168": "Nghèo khó không cản trở việc sống hạnh phúc.",
+        "102584": "Anh ấy đang đối mặt với nhiều trở ngại."
+      },
+      "SourceHash": "4fe931ceaecdcfa37a5b020fa71bf9baa6c931eda5c20637f6c61412c7a6d559"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d0cc9588b9",
+      "Fields": {
+        "Meaning": "Học bổng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "奨学金（しょうがくきん）có nghĩa là học bổng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147105": "Nhờ học bổng, cô ấy được đi du học.",
+        "160035": "Tôi định nộp đơn xin học bổng đó."
+      },
+      "SourceHash": "def66dacded710e460d7150a0f5cc9c4d303e00e4d60f4130d9aad9dd72af0e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fb2679c1c0",
+      "Fields": {
+        "Meaning": "Hành khách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "乗客（じょうきゃく）có nghĩa là hành khách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146149": "Mời hành khách lên tàu ngay bây giờ.",
+        "146154": "Mỗi bên có bốn hành khách ngồi."
+      },
+      "SourceHash": "c5ada7a1c8b18d676a2287a3ac9554bc45c904313e1a56e3cdf25524f7ace0ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "042e41d200",
+      "Fields": {
+        "Meaning": "Lên Tokyo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "上京（じょうきょう）có nghĩa là lên Tokyo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104178": "Anh ấy lên Tokyo vì công việc.",
+        "173210": "Ngay sau khi học xong trung học phổ thông, tôi lên Tokyo."
+      },
+      "SourceHash": "2232774f656524c8168ef8467a1675d94e83124b0d6c11b0b31bc1d30cd1a31c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b465e5e854",
+      "Fields": {
+        "Meaning": "Tình hình, hoàn cảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "状況（じょうきょう）có nghĩa là tình hình, hoàn cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146018": "Xin cho tôi biết tình hình.",
+        "208911": "Hãy xác minh tình hình đó trước."
+      },
+      "SourceHash": "2d6f915d40729fc483b3256d4a3831ceb691822cae89d80dc96fc50777f45270"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c936d0cf2",
+      "Fields": {
+        "Meaning": "Điều kiện, điều khoản",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "条件（じょうけん）có nghĩa là điều kiện, điều khoản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113801": "Anh ấy chấp nhận chịu đựng trong điều kiện này.",
+        "213478": "Chúng tôi sẽ chấp nhận điều kiện của bên bạn."
+      },
+      "SourceHash": "fa746ecf695b8008a7ee7bac435a74b4f0b70a523754ab435687b86e31905644"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12c19005ea",
+      "Fields": {
+        "Meaning": "Chính ngọ, 12 giờ trưa",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "正午（しょうご）có nghĩa là chính ngọ, 12 giờ trưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103308": "Có lẽ anh ấy sẽ ở đây đến 12 giờ trưa.",
+        "142945": "Bạn có thể làm xong trước 12 giờ trưa không?"
+      },
+      "SourceHash": "b331a307b431a33563c3e013b071ad3ce2398a4a52d507af7974eefefdf890db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59f54d8eb5",
+      "Fields": {
+        "Meaning": "Trung thực, thành thật",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "正直（しょうじき）có nghĩa là trung thực, thành thật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103285": "Anh ấy có nhiều bạn vì sống trung thực.",
+        "110383": "Anh ấy chăm chỉ và trung thực."
+      },
+      "SourceHash": "07f70bc3e0bd0ca050b9072eb2194ecfe966df5765e91324f205a99be9dea484"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2932bfdf1f",
+      "Fields": {
+        "Meaning": "Kiến thức phổ thông, hiểu biết thông thường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "常識（じょうしき）có nghĩa là kiến thức phổ thông, hiểu biết thông thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94936": "Cô ấy thiếu hiểu biết thông thường.",
+        "126990": "Ai cũng biết Trái Đất tự quay."
+      },
+      "SourceHash": "390989f84d1d8fd5839f3f9165487d92d4493dd08009042525f8fe2812cc9592"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17c0d3a658",
+      "Fields": {
+        "Meaning": "Bé gái, thiếu nữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "少女（しょうじょ）có nghĩa là bé gái, thiếu nữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142582": "Cô bé mắt xanh là Jane.",
+        "231347": "Cô bé dễ thương kia là em gái tôi."
+      },
+      "SourceHash": "f981d8672d67c1105e6fa8a7b3b8b15bdbddeea378005c6a7cf11904e0e6b093"
+    }
+  ]
+}

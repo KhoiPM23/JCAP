@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yori",
+      "Fields": {
+        "Meaning": "Hơn, so với",
+        "Formation": "Mốc so sánh ＋ より",
+        "Explanation": "より đánh dấu mốc để so sánh. ほうが có thể đánh dấu phía nổi trội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yori:example:1": "Hôm nay mát hơn hôm qua.",
+        "yori:example:2": "Đi tàu điện nhanh hơn đi ô tô."
+      },
+      "SourceHash": "2536ec23f80c877419bec35572bc946a2e4de0831405104fe45c252166087239"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "rashii",
+      "Fields": {
+        "Meaning": "Nghe nói, có vẻ như",
+        "Formation": "Thể thông thường ＋ らしい (danh từ và tính từ な bỏ だ)",
+        "Explanation": "Trình bày thông tin gián tiếp hoặc suy đoán từ thông tin có được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "rashii:example:1": "Theo dự báo thời tiết, hình như ngày mai có tuyết.",
+        "rashii:example:2": "Nghe nói ramen ở quán đó rất ngon."
+      },
+      "SourceHash": "925ba8bbbe4d6f1112a3749b7e34bf294a714898e1b22042862add7c58aafc87"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "rashii-typical",
+      "Fields": {
+        "Meaning": "Đúng chất, mang đặc trưng",
+        "Formation": "Danh từ ＋ らしい／らしくない",
+        "Explanation": "Nêu nét điển hình hoặc điều phù hợp với hình ảnh thường thấy của ai hay cái gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "rashii-typical:example:1": "Hôm nay thời tiết đúng chất mùa xuân nhỉ.",
+        "rashii-typical:example:2": "Bỏ cuộc dễ dàng như thế chẳng giống anh ấy chút nào."
+      },
+      "SourceHash": "adb9105fd7e407256904fa216b7f7e3083a9773b2cd2019c49a8086e7a4a3bf8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ru-tokoro-da",
+      "Fields": {
+        "Meaning": "Sắp sửa làm gì",
+        "Formation": "Động từ thể từ điển ＋ ところだ",
+        "Explanation": "Hành động chưa bắt đầu nhưng sắp diễn ra ngay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ru-tokoro-da:example:1": "Tôi đang chuẩn bị ra ngoài nên lát nữa sẽ gọi lại.",
+        "ru-tokoro-da:example:2": "Tôi vừa định làm bữa trưa."
+      },
+      "SourceHash": "00541fefa16b6fcb4142cc1d034edb6484514e5218e8052a70b2f71a075d4e0a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "rareru-passive",
+      "Fields": {
+        "Meaning": "Thể bị động",
+        "Formation": "Nhóm 1: hàng あ ＋ れる (う → われる)／nhóm 2: bỏ る ＋ られる／する → される／来る → 来られる",
+        "Explanation": "Đặt người hoặc vật chịu tác động làm chủ thể. Có thể dùng khi sự việc ảnh hưởng đến người nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "rareru-passive:example:1": "Cuộc họp sẽ được tổ chức vào thứ Sáu tuần sau.",
+        "rareru-passive:example:2": "Tôi đang chuẩn bị làm bữa trưa."
+      },
+      "SourceHash": "234dc2de1ad95e8ad3b1a95f0ec15d3e5ec8e4011cb3cd71c21b06d50b7f88e7"
+    }
+  ]
+}

@@ -18,7 +18,7 @@ public class AdminLearningController(AdminLearningService service) : ControllerB
     }
 
     [HttpGet("topics/options")]
-    public Task<IActionResult> Options([FromQuery] string? jlptLevel) => Run(() => service.TopicOptionsAsync(jlptLevel));
+    public Task<IActionResult> Options([FromQuery] string? jlptLevel, [FromQuery] string? kind) => Run(() => service.TopicOptionsAsync(jlptLevel, kind));
     [HttpGet("topics")]
     public Task<IActionResult> Topics([FromQuery] LearningQuery query) => Run(() => service.TopicsAsync(query));
     [HttpGet("topics/{id:int}")]

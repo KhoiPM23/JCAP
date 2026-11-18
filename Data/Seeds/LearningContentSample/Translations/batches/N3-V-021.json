@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1cbf803ac6",
+      "Fields": {
+        "Meaning": "Số tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金額（きんがく）có nghĩa là số tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101044": "Anh ấy đưa cô ấy một khoản tiền khá lớn.",
+        "178986": "Tổng cộng bạn đã tiêu bao nhiêu tiền?"
+      },
+      "SourceHash": "a08eef4c33c6f121c0c2de7757a77a408f2866299b5ee79672ab86e52dbdb781"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "71229cb421",
+      "Fields": {
+        "Meaning": "Két sắt, kho quỹ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金庫（きんこ）có nghĩa là két sắt, kho quỹ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179687": "Xin khóa két sắt lại.",
+        "183030": "Hãy cất đồ quý vào két sắt."
+      },
+      "SourceHash": "4f9a0bc27a72c083b3eed7641e74d686ffcba9a2e0d76d8733ea6c3b7e92c12b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53432207ab",
+      "Fields": {
+        "Meaning": "Cấm, lệnh cấm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "禁止（きんし）có nghĩa là cấm, lệnh cấm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109997": "Anh ấy bị cấm ra ngoài trong một tuần.",
+        "224615": "Ở đây cấm hút thuốc."
+      },
+      "SourceHash": "d718476d5c66a2911192c803dd3aa10c7db7be954ac625e7f8726f7edd66cb16"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "68345f8280",
+      "Fields": {
+        "Meaning": "Tiền bạc",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "金銭（きんせん）có nghĩa là tiền bạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109438": "Anh ấy nhìn mọi việc dưới góc độ tiền bạc.",
+        "179651": "Tôi cãi nhau với anh ấy vì chuyện tiền bạc."
+      },
+      "SourceHash": "510cf3bc68e78fc51e895cf62f651273579cbc1070e4f1b9c99c0efd0aea4968"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "058f981bc3",
+      "Fields": {
+        "Meaning": "Kim loại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金属（きんぞく）có nghĩa là kim loại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125245": "Sắt là kim loại có nhiều công dụng.",
+        "125246": "Sắt là kim loại hữu ích nhất."
+      },
+      "SourceHash": "e074d0c703d6471c60a533da52ddeadbc898d1fc42982a63c108bb4093de369c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c479f65e9c",
+      "Fields": {
+        "Meaning": "Thời cận đại, hiện đại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "近代（きんだい）có nghĩa là thời cận đại, hiện đại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179799": "Công nghệ hiện đại đem lại cho chúng ta nhiều thứ.",
+        "179801": "Y học hiện đại đã trải qua một chặng đường dài."
+      },
+      "SourceHash": "ef90a6ec9c5080ab41b843f57dd86a90bda11c7bd5bd1f80695f807c9fd71805"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9236d54fda",
+      "Fields": {
+        "Meaning": "Căng thẳng, hồi hộp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "緊張（きんちょう）có nghĩa là căng thẳng, hồi hộp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74978": "Bạn không cần căng thẳng đến thế đâu.",
+        "77650": "Căng thẳng trong Chiến tranh Lạnh gia tăng."
+      },
+      "SourceHash": "e4c4644204e3616a91f8cb3269bae515f9a8878cb69fa8ddb310e2d3a284ee99"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a439a2060",
+      "Fields": {
+        "Meaning": "Cơ bắp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "筋肉（きんにく）có nghĩa là cơ bắp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143688": "Bơi lội giúp phát triển cơ bắp.",
+        "214335": "Thể thao giúp cơ bắp phát triển."
+      },
+      "SourceHash": "6b12fb539dba5bf9f774457030edac2dd0c1b2899c32941fcdf19a3d7d96580d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f7398ac14",
+      "Fields": {
+        "Meaning": "Tài chính, tín dụng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金融（きんゆう）có nghĩa là tài chính, tín dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173740": "Số sinh viên quan tâm đến tài chính nhiều hơn số quan tâm đến công nghiệp.",
+        "179629": "Chi phí dịch vụ tài chính đang tăng ở mọi quốc gia."
+      },
+      "SourceHash": "c39128b53f6943126e72418af700ab0c6b7c4c36e8b5c721fc9299f402c36ca9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba23b13843",
+      "Fields": {
+        "Meaning": "Thứ Sáu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "金曜（きんよう）có nghĩa là thứ Sáu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107771": "Anh ấy làm việc từ thứ Hai đến thứ Sáu.",
+        "157319": "Tôi học tiếng Anh vào thứ Hai và thứ Sáu."
+      },
+      "SourceHash": "c0f529d8e0207941a2ed0a5912447708812357d039c8917bdd6f906781183d9c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44bc159936",
+      "Fields": {
+        "Meaning": "Cụm từ, câu thơ",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "句（く）có nghĩa là cụm từ, câu thơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112978": "Ông ấy giải thích nghĩa đen của cụm từ đó.",
+        "149671": "Hãy tra cụm từ đó trong từ điển."
+      },
+      "SourceHash": "93decbc0827f44cd4b347d43d785b70e2264d60f5aaa0ab24740c4fe303315fd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "291125be1d",
+      "Fields": {
+        "Meaning": "Ăn (suồng sã), ngốn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "食う（くう）có nghĩa là ăn (suồng sã), ngốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221667": "Việc kinh doanh này ngốn tiền.",
+        "226677": "Người đàn ông đói bụng ngấu nghiến thức ăn."
+      },
+      "SourceHash": "bdfaaa96a9e31a0e2444d455275da6ea2cbafe0644082a1670840223806673e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f97791279",
+      "Fields": {
+        "Meaning": "Tình cờ, ngẫu nhiên",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "偶然（ぐうぜん）có nghĩa là tình cờ, ngẫu nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154817": "Tôi tình cờ gặp một người bạn cũ trên đường.",
+        "179276": "Tôi tình cờ bắt gặp từ đó."
+      },
+      "SourceHash": "406f77a6b1db1d7eb51538fc0a2f9fa7cc32e228db021e0e91697708cf198bd2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "def0fe1435",
+      "Fields": {
+        "Meaning": "Mùi, mùi hôi, đáng ngờ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "Đọc におい khi là danh từ chỉ mùi. Đọc くさい khi là tính từ chỉ mùi hôi hoặc sự đáng ngờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176191": "Cảnh sát cho chó đánh hơi mùi đó.",
+        "234678": "Tên đó đáng ngờ."
+      },
+      "SourceHash": "652f7dcd39da8fc8721ed40f30c5c94cdfcc83141b64e9f6a484496014fbb279"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23dbfc6d80",
+      "Fields": {
+        "Meaning": "Xích, dây xích",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鎖（くさり）có nghĩa là xích, dây xích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210982": "Nên xích con chó đó lại.",
+        "215660": "George gắn dây xích vào con chó đó."
+      },
+      "SourceHash": "22f80ad165054c480fa80388cd9c5024cd3b9369bd634f70cf9371b5458d05a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af84cff990",
+      "Fields": {
+        "Meaning": "Thối, hỏng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "腐る（くさる）có nghĩa là thối, hỏng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114196": "Anh ấy có tiền nhiều đến mức tiêu không xuể.",
+        "217994": "Mấy quả cam này hỏng rồi."
+      },
+      "SourceHash": "1d42a8fd0e53c9e7f8f54c722a201560134453004c80e1372056e5318db68b33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c7a901471",
+      "Fields": {
+        "Meaning": "Thói quen, tật, nét riêng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "癖（くせ）có nghĩa là thói quen, tật, nét riêng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93028": "Cô ấy có thói quen uống khá nhiều rượu.",
+        "210240": "Đứa trẻ đã bỏ được tật xấu."
+      },
+      "SourceHash": "dd8185cc19b68f15b109544c09c3cc35b83cf8c100eaa15b8497c773a5eaeb1a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "14d9875a05",
+      "Fields": {
+        "Meaning": "Ống, đường ống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "管（くだ）có nghĩa là ống, đường ống.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "2f3da8387b7a9ae16258e80d2d2e2060b366193f0ca9e4d73d1651e8727443d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e73cc9df41",
+      "Fields": {
+        "Meaning": "Sự cụ thể, điều cụ thể",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "具体（ぐたい）có nghĩa là sự cụ thể, điều cụ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "223224a7016e113885e513487202d63fef5c26a72b54b458ad728d16adc8ec76"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "591715a7f5",
+      "Fields": {
+        "Meaning": "Hạ xuống, đưa ra quyết định hoặc phán quyết",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "下す（くだす）có nghĩa là hạ xuống, đưa ra quyết định hoặc phán quyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79819": "Vấn đề là ai sẽ đưa ra quyết định.",
+        "96359": "Họ tuyên anh ấy có tội."
+      },
+      "SourceHash": "1b262e9a368cedba5f3ed83b2cc7af725c7cce77590a5865e631fe971c45296d"
+    }
+  ]
+}

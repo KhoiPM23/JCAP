@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6345553664",
+      "Fields": {
+        "Meaning": "Họ",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "彼ら（かれら）có nghĩa là họ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96434": "Họ không bao giờ gặp lại nhau.",
+        "96532": "Họ đã sống ở đây lâu rồi."
+      },
+      "SourceHash": "345453ef8765e8771c6ec000cc109306c83151a34b0851b44c9f00df0088a7a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "84c24fbab6",
+      "Fields": {
+        "Meaning": "Khô, trở nên khô",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "乾く（かわく）có nghĩa là khô, trở nên khô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212788": "Chiếc áo ướt đó chắc sẽ khô ngay.",
+        "223486": "Sơn trên cánh cửa này vẫn chưa khô."
+      },
+      "SourceHash": "8cda373470055dca80c79caf2a755165aab5ce491ea8b6ccad90428f3d690b60"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34071d7901",
+      "Fields": {
+        "Meaning": "Thứ thay thế, thay cho, thêm một phần",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "代わり（かわり）có nghĩa là thứ thay thế, thay cho, thêm một phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208274": "Thay vào đó mình chơi bài nhé.",
+        "224921": "Anh/chị có muốn thêm cà phê không?"
+      },
+      "SourceHash": "c4094d8c8502e71b006da5fd7724af5602b817d3059944039c9ef7a26b0b91b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec1bdccf03",
+      "Fields": {
+        "Meaning": "Thay đổi, trở nên khác",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "変わる（かわる）có nghĩa là thay đổi, trở nên khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164315": "Địa chỉ email của tôi đã thay đổi.",
+        "170586": "Gần đây người ta phát hiện một sinh vật biển kỳ lạ."
+      },
+      "SourceHash": "40ef274bc773c4b0ff51d3486be15d970f1be750c5dee72bc0b57a14f5c564c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc34f28850",
+      "Fields": {
+        "Meaning": "Nghĩ, suy xét",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "考える（かんがえる）có nghĩa là nghĩ, suy xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123934": "Phải suy nghĩ kỹ trước khi trả lời.",
+        "232178": "Bạn nên nghĩ đến gia đình mình."
+      },
+      "SourceHash": "a0a5a2f5a62c86e9e2998939fc9f673889825c59e292a808dac916acc68dd78d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f960d43119",
+      "Fields": {
+        "Meaning": "Quan hệ, liên quan",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "関係（かんけい）có nghĩa là quan hệ, liên quan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160398": "Tôi chẳng liên quan gì đến chuyện đó.",
+        "218747": "Cái này và cái kia có liên quan thế nào?"
+      },
+      "SourceHash": "bda3d63af06c919d139a29b392510732c07123468d221eae891f2a569732d5a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "374a0aa749",
+      "Fields": {
+        "Meaning": "Nữ y tá, nữ điều dưỡng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Cách gọi nữ điều dưỡng trước đây. Hiện thường dùng 看護師, không phân biệt giới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196209": "Khách sạn có bác sĩ hoặc y tá không?",
+        "199207": "Tại sao bạn muốn trở thành điều dưỡng?"
+      },
+      "SourceHash": "5fd498debdeeba7401fb605fa33dd86787b9c202c1d944951aaffd2a70c53b80"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ac20bba998",
+      "Fields": {
+        "Meaning": "Đơn giản, dễ",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "簡単（かんたん）có nghĩa là đơn giản, dễ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202171": "Đối với tôi, chơi quần vợt rất dễ.",
+        "219496": "Đối với tôi, đọc cuốn sách này rất dễ."
+      },
+      "SourceHash": "7035fa62ec3408df79f56a679657600532626b389c8205ead8d1baab8bcc59da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab366b6c9d",
+      "Fields": {
+        "Meaning": "Tính tình, tâm trí, sự để ý",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気がやさしい nói tính tình hiền. 気が多い có thể nói dễ thay đổi đối tượng mình để ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103674": "Anh ấy đúng hơn là hiền lành chứ không hẳn là tốt bụng.",
+        "108576": "Anh ta là người dễ để ý hết người này đến người khác."
+      },
+      "SourceHash": "7a6788d4d702f817e9b6b76bdd791b90d09c6248288905713fd9776ae020c9d1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f4f3a3b9d",
+      "Fields": {
+        "Meaning": "Cơ hội, dịp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "機会（きかい）có nghĩa là cơ hội, dịp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172615": "Đến giờ tôi chưa có dịp dùng nó.",
+        "195481": "Để dịp khác nhé."
+      },
+      "SourceHash": "e6f2896098d2a1cb96ab42b142999902ea81f6d087f77bb595e5b83ff42c4467"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8bbbe3a9e8",
+      "Fields": {
+        "Meaning": "Nguy hiểm, mối nguy",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "危険（きけん）có nghĩa là nguy hiểm, mối nguy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183571": "Nếu coi thường nguy hiểm, nó sẽ ập đến ngay.",
+        "197987": "Không có mối nguy nào thấy rõ."
+      },
+      "SourceHash": "ed425c779cdd6ae8f26cc09f8d84b8f2eadb3910d93236414f0842b89dae57fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7225b79db5",
+      "Fields": {
+        "Meaning": "Nghe thấy, nghe được",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "聞こえる（きこえる）có nghĩa là nghe thấy, nghe được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149131": "Tôi nghe tiếng xe dừng trước nhà.",
+        "226968": "Cậu không nghe thấy tiếng đó sao?"
+      },
+      "SourceHash": "3c0edd74dba73e8e743b188141dd8f024ecc22b590d8b0aa8db466c9511b6ecf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a0c815188f",
+      "Fields": {
+        "Meaning": "Tàu hỏa, tàu hơi nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "汽車（きしゃ）có nghĩa là tàu hỏa, tàu hơi nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167882": "Tôi vừa đến ga thì tàu chạy.",
+        "183132": "Tàu vẫn chưa đến."
+      },
+      "SourceHash": "349e172ecd2d66405bad5167c8cd432f4a0d90b86b42b2a18aa4fcc8cd25f318"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bbf69b64f8",
+      "Fields": {
+        "Meaning": "Kỹ thuật, công nghệ, kỹ năng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "技術（ぎじゅつ）có nghĩa là kỹ thuật, công nghệ, kỹ năng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160323": "Tôi rất ấn tượng với kỹ thuật tuyệt vời của nghệ sĩ piano đó.",
+        "179799": "Công nghệ hiện đại đem lại cho chúng ta nhiều thứ."
+      },
+      "SourceHash": "71daa8d141b268021c5131b047d7ca6370d35e810553de844f65fecc54d09c94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1afb31e7b",
+      "Fields": {
+        "Meaning": "Mùa, thời điểm trong năm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "季節（きせつ）có nghĩa là mùa, thời điểm trong năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148185": "Mùa thu rất thích hợp để đọc sách.",
+        "222445": "Mùa này thức ăn dễ hỏng."
+      },
+      "SourceHash": "ebd251d2ad8cf565aa16cfffcfdba0da5a0d015a27b0bb4ed247e8fad08a5622"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcca18b129",
+      "Fields": {
+        "Meaning": "Quy tắc, quy định",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "規則（きそく）có nghĩa là quy tắc, quy định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222418": "Có thể hiểu quy định này theo hai cách.",
+        "222439": "Quy định này cũng áp dụng cho bạn."
+      },
+      "SourceHash": "fc474e7d56f7acf8a51d0d689e7a35a599dea8c0b8248f732c675cf26cdffb95"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b284605582",
+      "Fields": {
+        "Meaning": "Chắc hẳn, chắc chắn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "きっと（きっと）có nghĩa là chắc hẳn, chắc chắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202091": "Nhưng mà bố tớ chắc sẽ không vui đâu.",
+        "233420": "Gia đình bạn hẳn rất tốt bụng."
+      },
+      "SourceHash": "27cac410cfdcd5987b05bf067296bdec9489b085baa78b0051473b8d35699a1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d5b12c74c",
+      "Fields": {
+        "Meaning": "Lụa, tơ tằm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "絹（きぬ）có nghĩa là lụa, tơ tằm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153006": "Tôi tặng bố một chiếc cà vạt lụa.",
+        "220131": "Chiếc váy đẹp này làm bằng lụa."
+      },
+      "SourceHash": "377b0ef4e32881c18f29d583e078ed89ae7941a4872a522bdcb0350e3e9f1edf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d90ee2957c",
+      "Fields": {
+        "Meaning": "Nghiêm khắc, khắc nghiệt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "厳しい（きびしい）có nghĩa là nghiêm khắc, khắc nghiệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84524": "Bố rất nghiêm khắc với tôi.",
+        "174979": "Nghe nói mùa đông sẽ rất khắc nghiệt."
+      },
+      "SourceHash": "3db597c51192829def50710435c801a094e862c44aa2f29fe089d5871e43ae2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42f05076b3",
+      "Fields": {
+        "Meaning": "Tâm trạng, cảm giác",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気分（きぶん）có nghĩa là tâm trạng, cảm giác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194206": "Bây giờ tôi thấy dễ chịu hơn nhiều.",
+        "200604": "Tôi thấy tinh thần sảng khoái hẳn."
+      },
+      "SourceHash": "76d182905c927eee6f2865a9f03f6d8ecda7f07b68bf3ccc5a78c37cf9d4ad8b"
+    }
+  ]
+}

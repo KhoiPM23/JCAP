@@ -1,0 +1,313 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 40 câu ví dụ theo nguyên bản tiếng Nhật.",
+    "Câu 192345 chứa tên đường 五つ木通り. Bản dịch giữ chữ Nhật của tên riêng và phần lưu ý giải thích vì sao câu này không minh họa cách đếm.",
+    "Câu 127233 được hiểu theo nghĩa bóng của 見下ろす, tức coi thường. Đối chiếu mục từ trong Digital Daijisen tại https://kotobank.jp/word/%E8%A6%8B%E4%B8%8B%E3%82%8D%E3%81%99-637170",
+    "Mục いる giải thích cả cách dùng chỉ sự hiện diện và cách dùng trợ động từ trong 〜ている. Câu 214668 thuộc cách dùng trợ động từ."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2dc7289c82",
+      "Fields": {
+        "Meaning": "Cùng nhau, cùng với",
+        "PartOfSpeech": "Danh từ, dùng như phó từ với に",
+        "Explanation": "一緒に đứng trước động từ để chỉ việc làm cùng nhau. Dùng người ＋ と一緒に để nêu người làm cùng, như 友だちと一緒に帰る (về cùng bạn).",
+        "UsageNotes": "ご一緒してもいいですか là cách hỏi lịch sự xem mình có thể đi cùng hoặc tham gia cùng được không."
+      },
+      "Examples": {
+        "217215": "“Tôi tham gia cùng được không ạ?” “Tất nhiên rồi.”",
+        "2304921": "Ước gì chúng ta có thể ở bên nhau lâu hơn."
+      },
+      "SourceHash": "c72f942390b4febbb7a6b753ddce7a1982b9dbec51ec9d94b0c5a7d358f2e952"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ac35c3990",
+      "Fields": {
+        "Meaning": "Năm cái, năm món",
+        "PartOfSpeech": "Số từ đếm đồ vật",
+        "Explanation": "五つ là cách đếm năm vật mà không cần nêu loại đơn vị đếm. りんごが五つある nghĩa là có năm quả táo.",
+        "UsageNotes": "Trong câu có 五つ木通り, 五つ木 là một phần của tên đường, nên câu đó minh họa tên riêng."
+      },
+      "Examples": {
+        "192345": "Trên đường 五つ木 có nhiều nhà hàng và quán rượu.",
+        "220200": "Trong hộp này có năm quả táo."
+      },
+      "SourceHash": "22283e7452788ea8218da1788fa7251ccb0474082e00bddf3ac0bc3bac6f99d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dea2a1df8b",
+      "Fields": {
+        "Meaning": "Luôn, lúc nào cũng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "いつも diễn tả điều thường xuyên xảy ra hoặc một thói quen. Chẳng hạn, いつも早く起きる nghĩa là lúc nào cũng dậy sớm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230970": "Đứa bé ấy lúc nào cũng tươi cười.",
+        "230973": "Đứa bé ấy lúc nào cũng mè nheo."
+      },
+      "SourceHash": "b8b0e6716d7171d50c39e3ef0dd5e32780b2751374179200e4a97c74667aa2e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0df89f5010",
+      "Fields": {
+        "Meaning": "Chó",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "犬 chỉ con chó. Có thể dùng 犬を飼う để nói nuôi chó, hoặc 犬がいる để nói có chó ở một nơi nào đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211003": "Con chó đó không cắn đâu.",
+        "222102": "Con chó này hầu như thứ gì cũng ăn."
+      },
+      "SourceHash": "14625613a293d97b8730d2c9c26d40bdf4acaed399819dbdf811afcf93607b22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce75c75644",
+      "Fields": {
+        "Meaning": "Bây giờ, hiện tại, vừa rồi",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "今 chỉ thời điểm hiện tại. 今の ＋ danh từ có thể chỉ thứ đang có hoặc vừa được thấy, nghe hay nhắc đến. 今のアナウンス nghĩa là thông báo vừa rồi trong câu ví dụ.",
+        "UsageNotes": "今 ＋ động từ thể ている thường diễn tả việc đang diễn ra ngay lúc nói."
+      },
+      "Examples": {
+        "172752": "Thông báo vừa rồi nói gì vậy?",
+        "199786": "Cả Tom và Bill đều đang chơi quần vợt."
+      },
+      "SourceHash": "14bfeb41d3c6f23eff716a09361681fafdd507fcb08902662651fd94400438f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb29ccdd2a",
+      "Fields": {
+        "Meaning": "Nghĩa, ý nghĩa",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "意味 chỉ nghĩa của một từ, câu nói hay hành động. 意味がわかる nghĩa là hiểu ý. AはBを意味する nghĩa là A có nghĩa là B.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210824": "Từ đó có vài nghĩa khác nhau.",
+        "227633": "Tôi chưa hiểu ý anh/chị muốn nói."
+      },
+      "SourceHash": "311c36a9ea33a34c69f285dd033632fda7f3fb7c296a2e38a16bee2954f7283c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12047d019b",
+      "Fields": {
+        "Meaning": "Em gái",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "妹 chỉ em gái trong gia đình. Từ này có thể dùng khi nói về em mình hoặc khi đã nói rõ em gái của ai, như 彼の妹 (em gái của anh ấy).",
+        "UsageNotes": "Khi hỏi lịch sự về em gái của người khác, có thể dùng 妹さん（いもうとさん）."
+      },
+      "Examples": {
+        "127233": "Các cậu bé thường có xu hướng coi thường em gái mình.",
+        "234651": "Em gái cậu ấy dễ thương thật nhỉ."
+      },
+      "SourceHash": "619f061386c0677b6e731745b6eeebc1b0b6e2c798980c547ea79baa21f6ceab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eda751e069",
+      "Fields": {
+        "Meaning": "Khó chịu, không thích, không muốn",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "嫌（いや）diễn tả việc cảm thấy khó chịu hoặc không muốn làm hay chấp nhận điều gì. 嫌なこと là chuyện khó chịu, còn スポーツは嫌です bày tỏ sự không thích thể thao.",
+        "UsageNotes": "Khi đứng trước danh từ, dùng 嫌な. Cuối câu có thể dùng 嫌だ hoặc 嫌です."
+      },
+      "Examples": {
+        "81316": "Ngày nào cũng âm u, khó chịu thật nhỉ.",
+        "199479": "Môn thể thao nào tôi cũng không thích."
+      },
+      "SourceHash": "3aba51166f4864f8009c83bc178d38caeb64fc1677f6e5caf50b6b2ee15103f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ff0529d03",
+      "Fields": {
+        "Meaning": "Lối vào, cửa vào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "入口 chỉ nơi đi vào một tòa nhà hay khu vực. Từ này cũng được viết là 入り口, với cùng cách đọc いりぐち.",
+        "UsageNotes": "出口（でぐち）là lối ra."
+      },
+      "Examples": {
+        "143523": "Vài người đang quanh quẩn ở lối vào.",
+        "235719": "Một chiếc xe dừng ở lối vào."
+      },
+      "SourceHash": "a54b1639943588bd6d7631d3fe4dc60f4c7d3942774ad21fd91c188ebbd00ed3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9438889173",
+      "Fields": {
+        "Meaning": "Có, ở (người hoặc động vật), đang (trong 〜ている)",
+        "PartOfSpeech": "Động từ nhóm 2, trợ động từ",
+        "Explanation": "Dùng いる để nói có người hoặc động vật ở đâu, như 部屋に猫がいる (trong phòng có mèo). Sau thể て của động từ, いる chỉ hành động đang diễn ra hoặc trạng thái còn tiếp diễn tùy ngữ cảnh.",
+        "UsageNotes": "食べ終わってはいない nói rằng việc ăn vẫn chưa xong. 要る（いる）có cùng cách đọc nhưng mang nghĩa cần."
+      },
+      "Examples": {
+        "75577": "Đàn ông tốt như thế đâu có dễ gặp!",
+        "214668": "Vẫn chưa ăn hết hẳn."
+      },
+      "SourceHash": "2deaabbdcdd2cf83a8afc8841affb0685ed7907613f0043292ac8206f97d19b5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a84208708",
+      "Fields": {
+        "Meaning": "Cần, cần đến",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "要る chỉ việc cần một thứ gì. Thứ cần thường đi với が, như バターが要る (cần bơ).",
+        "UsageNotes": "Dạng phủ định là 要らない（いらない）. Với いる chỉ sự hiện diện của người hay động vật, dạng phủ định là いない."
+      },
+      "Examples": {
+        "172740": "Hiện giờ tôi không cần tiền.",
+        "198027": "Tôi cần bơ. Bạn có một ít không?"
+      },
+      "SourceHash": "db94b1089374e3c49f9750082abbb88de5d76afc2fd6e64c52142b6dc921c556"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d824d5110",
+      "Fields": {
+        "Meaning": "Cho vào, bỏ vào, đặt vào",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "Dùng vật ＋ を ＋ nơi chứa ＋ に入れる để diễn tả cho vật vào một nơi. 入れておく chỉ việc bỏ vào rồi để đó hoặc làm sẵn.",
+        "UsageNotes": "入る（はいる）diễn tả chủ thể đi hoặc lọt vào, còn 入れる（いれる）diễn tả việc đưa thứ gì vào."
+      },
+      "Examples": {
+        "81634": "Xin đừng đặt sách lộn đầu.",
+        "205330": "Tôi đã cất nó vào ngăn kéo rồi."
+      },
+      "SourceHash": "b6c244e8f055ee1ea07af54e585545294a2d26e653a6dcf65dc4c356220aa838"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "523266ea6f",
+      "Fields": {
+        "Meaning": "Màu, màu sắc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "色 chỉ màu sắc của một vật. この色 là màu này. Khi nói đổi sang một màu, có thể dùng 色が変わる hoặc tên màu ＋ になる tùy cách đặt câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221060": "Bạn có thích màu này không?",
+        "226206": "Tắc kè hoa có thể đổi sang bất kỳ màu nào."
+      },
+      "SourceHash": "98c861c2c51f607307de9ef224b2ae8205c8150e23bc446a0a0dc2d984bfcf30"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f74dd1ee9a",
+      "Fields": {
+        "Meaning": "Nhiều loại, đủ loại, đa dạng",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ",
+        "Explanation": "いろいろ diễn tả sự đa dạng. Có thể nói いろいろな本 (nhiều loại sách) hoặc いろいろある (có đủ loại). いろいろ cũng đứng trước động từ, như いろいろ試す (thử nhiều cách).",
+        "UsageNotes": "Trước danh từ thường dùng いろいろな. Cũng có thể gặp dạng いろいろの."
+      },
+      "Examples": {
+        "141760": "Gọi chung là giáo viên, nhưng cũng có nhiều kiểu.",
+        "224928": "Cà phê cũng có nhiều loại."
+      },
+      "SourceHash": "4e628dba1ddfde0eb5aea821d5db5ebc153eef8202cf40af1f9c963901b798db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08a3ed212d",
+      "Fields": {
+        "Meaning": "Phía trên, bên trên, trên",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "Dùng vật mốc ＋ の上 để chỉ phía trên hoặc mặt trên của vật đó. テーブルの上に chỉ vị trí trên bàn trong hai câu ví dụ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202398": "Có một quả táo trên bàn.",
+        "202408": "Có một quả cam trên bàn."
+      },
+      "SourceHash": "da489e8785c217be4697479a494738dab9b1eaa072469f3b153d30d949361365"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93bdc81dd9",
+      "Fields": {
+        "Meaning": "Phía sau, đằng sau",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "後ろ chỉ vị trí ở phía sau. Dùng người hoặc vật mốc ＋ の後ろ, như あなたの後ろ (phía sau bạn). 後ろから chỉ hướng từ phía sau.",
+        "UsageNotes": "前（まえ）chỉ phía trước."
+      },
+      "Examples": {
+        "173570": "Hiệu trưởng bước vào từ phía sau giáo viên.",
+        "233318": "Xin hãy đóng cánh cửa phía sau bạn."
+      },
+      "SourceHash": "9c026a500a3d0123f588d8d611debc7e4548abf24473d92fb63e4fccd8490256"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2b2316e45",
+      "Fields": {
+        "Meaning": "Mỏng, nhạt, loãng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "薄い diễn tả độ dày nhỏ, vị hoặc màu nhẹ. 薄いコーヒー là cà phê pha loãng. 薄く切る nghĩa là thái thành lát mỏng.",
+        "UsageNotes": "Đối với độ dày, từ trái nghĩa là 厚い（あつい）. Với màu sắc hoặc nồng độ, thường đối lập với 濃い（こい）."
+      },
+      "Examples": {
+        "122981": "Hãy thái thịt thành lát mỏng.",
+        "224899": "Tôi thích cà phê pha loãng."
+      },
+      "SourceHash": "cfdd390c078860d0fd7292271f1d8bcc9c971091ea34fdb82f075bde09d51697"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "036f4180a2",
+      "Fields": {
+        "Meaning": "Bài hát, việc hát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歌 chỉ một bài hát hoặc việc ca hát. 歌を歌う nghĩa là hát một bài. 歌がうまい nói về khả năng hát hay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186791": "Ước gì tôi hát hay.",
+        "222789": "Bài hát này có tên là “Only You”."
+      },
+      "SourceHash": "8385a1a6cc89e48c08a37f53853f9a90ae3ad5188eb7de9ac182dfc1229c3963"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3464318c23",
+      "Fields": {
+        "Meaning": "Hát, ca hát",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "歌う chỉ việc cất giọng hát. Có thể dùng độc lập như うまく歌う (hát hay) hoặc kèm tên bài hát với を.",
+        "UsageNotes": "Thể て là 歌って và thể quá khứ là 歌った."
+      },
+      "Examples": {
+        "196771": "Betty đã hát rất hay.",
+        "215403": "John đã hát gì trên sân khấu?"
+      },
+      "SourceHash": "83da8c4172df83dddf5a149ee2e9c7bcde83b4c4bb185f4ca17b7f01cc0f30ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63bc7722fa",
+      "Fields": {
+        "Meaning": "Được sinh ra, ra đời, nảy sinh",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "生まれる dùng để nói một người hay sinh vật được sinh ra, hoặc một thứ mới hình thành. Nơi sinh đi với で, như 東京で生まれる (sinh ở Tokyo). Nguồn gốc có thể đi với から.",
+        "UsageNotes": "生む（うむ）diễn tả việc sinh ra hoặc tạo ra thứ gì. Trong 生まれる, chủ ngữ là người hoặc thứ ra đời."
+      },
+      "Examples": {
+        "199613": "Cây sồi mọc lên từ hạt sồi.",
+        "224704": "Đây là nơi bố tôi sinh ra."
+      },
+      "SourceHash": "5ac922e2a3d2df67599e1af32593cbcdce630dd486e57ccdabc343481195f663"
+    }
+  ]
+}

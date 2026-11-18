@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97a079585a",
+      "Fields": {
+        "Meaning": "Cát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "後ろ足で砂をかける là thành ngữ chỉ thái độ vô ơn khi rời đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174298": "Người đó cư xử vô ơn khi rời đi.",
+        "226186": "Thủy tinh được làm từ cát."
+      },
+      "SourceHash": "724f92d07ce24ba3af22434d1f1dec57a77e9bc56eaec35938c0c743115bfd15"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0627e3997c",
+      "Fields": {
+        "Meaning": "Tuyệt vời",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "すばらしい（すばらしい）có nghĩa là tuyệt vời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198928": "Gia đình tuyệt vời biết bao!",
+        "207334": "Hôm đó thật sự là một ngày tuyệt vời."
+      },
+      "SourceHash": "8b40196e22e2e886c34f1fad55ab1626f60f1c30398879a56e450fa838ad5d77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "081d0fb4bb",
+      "Fields": {
+        "Meaning": "Trượt",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "滑る（すべる）có nghĩa là trượt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78590": "Năm sau chắc bạn sẽ trượt giỏi hơn.",
+        "168714": "Bọn trẻ đang trượt trên băng."
+      },
+      "SourceHash": "8fde433bb13bbe2fc95d5aefaef4bbb6f5e872a43f2643f10d3d9325c0d110d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9776ccd07d",
+      "Fields": {
+        "Meaning": "Góc, chỗ khuất",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "隅（すみ）có nghĩa là góc, chỗ khuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179267": "Tôi muốn ngồi bàn trong góc.",
+        "179268": "Người đàn ông ở góc phòng bắt chuyện với chồng tôi."
+      },
+      "SourceHash": "8250f996344317cb7e3fb83ea62d159ea6d6a1a957a43f127cc62e010b512a64"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e1b53a2d3",
+      "Fields": {
+        "Meaning": "Xong, kết thúc",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "Câu thứ hai dùng 済みません như một lời xin lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170302": "Xin lỗi, cho tôi đi qua được không?",
+        "236052": "Công việc xong lúc gần mười giờ."
+      },
+      "SourceHash": "8f432e623b013e23e20dd4dfd0595d64dbc4d776d9adfb5bf15ccf3c33c218d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "745024b527",
+      "Fields": {
+        "Meaning": "Kẻ móc túi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "すり（すり）có nghĩa là kẻ móc túi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214107": "Kẻ móc túi biến mất trong đám đông.",
+        "224631": "Ở đây hãy đề phòng kẻ móc túi."
+      },
+      "SourceHash": "4dda6f0d95324e0caae569c570d0f3c23ee7ecb54f2698f90d6697ee4d535232"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "416c1b3679",
+      "Fields": {
+        "Meaning": "Thế thì, rồi thì",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "すると（すると）có nghĩa là thế thì, rồi thì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214097": "Vậy thì chắc bạn sẽ hạnh phúc.",
+        "214099": "Đúng lúc đó bà của cô bé tình cờ đi ngang qua."
+      },
+      "SourceHash": "80081d443dcc2fd8c281822058c1957a64d9b930ee80ecd7e6ec7ed3e5def470"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7817c4eed6",
+      "Fields": {
+        "Meaning": "Sinh hoạt, cuộc sống, sống",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "生活（せいかつ）có nghĩa là sinh hoạt, cuộc sống, sống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84300": "Người cha lo sinh kế cho gia đình.",
+        "200354": "Bạn sẽ sống bằng cách nào?"
+      },
+      "SourceHash": "9c333b1b6e269655b8d81fc4bd158cb37fd8053956f45c0f2fe5426a1c14b2f1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "75acde1d68",
+      "Fields": {
+        "Meaning": "Sản xuất",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "生産（せいさん）có nghĩa là sản xuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209691": "Việc sản xuất mẫu ô tô này bắt đầu vào năm 1980.",
+        "221986": "Nhà máy này sản xuất đầu đĩa CD."
+      },
+      "SourceHash": "f156f263792692f59f53bf5ce78f09b33f25a6e198d6cb4900803562b94f9519"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "75b0305c60",
+      "Fields": {
+        "Meaning": "Chính trị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "政治（せいじ）có nghĩa là chính trị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143206": "Tôi không muốn nói chuyện chính trị.",
+        "197082": "Ông Brown viết một cuốn sách về chính trị."
+      },
+      "SourceHash": "a6deb36a0d454104786d0534c95346fc927c3fe42c2f84911567265dad654d48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e4db2ac9d",
+      "Fields": {
+        "Meaning": "Phương Tây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "西洋（せいよう）có nghĩa là phương Tây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103165": "Anh ấy thích văn hóa phương Tây.",
+        "204702": "Những thứ đó tốt hơn bồn tắm kiểu phương Tây nhiều."
+      },
+      "SourceHash": "eec635941732efc349dba6362e1e2b570bdbbe74cef5406495fe49fbe0f49b95"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bfe54303cd",
+      "Fields": {
+        "Meaning": "Thế giới",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "世界（せかい）có nghĩa là thế giới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143461": "Vì đó là công việc tốt nhất thế giới mà.",
+        "191556": "Sức mạnh của tình yêu làm thế giới chuyển động."
+      },
+      "SourceHash": "a411d9dbbd30b1fd4ae4ac63a1194b494faad1f1442b7ab275f824e4eb2552ef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d11d9a6207",
+      "Fields": {
+        "Meaning": "Chỗ ngồi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "席（せき）có nghĩa là chỗ ngồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220886": "Bạn trông giúp chỗ ngồi này được không?",
+        "233125": "Tôi không nghĩ đây là chỗ của bạn."
+      },
+      "SourceHash": "ecd6c6b0c3f2cba88638b1b3ae688379694831232443949353b5d1c35f95f180"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "123ee74d43",
+      "Fields": {
+        "Meaning": "Giải thích, lời giải thích",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "説明（せつめい）có nghĩa là giải thích, lời giải thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81466": "Tôi xin giới thiệu món đặc biệt hôm nay.",
+        "232557": "Bạn giải thích chuyện đó thế nào?"
+      },
+      "SourceHash": "9b83d26a13d146d6dd9e463be7d0f9e3b1994780c0d94e4d98cac80655ca82b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d8623369cb",
+      "Fields": {
+        "Meaning": "Lưng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "背中（せなか）có nghĩa là lưng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221100": "Áo khoác này hơi chật ở lưng.",
+        "223241": "Chiếc áo kiểu này có cúc ở lưng."
+      },
+      "SourceHash": "bf9572f85b80d6df2276dce13a78c1985598ab98fc4bdf4bf6a257942d307829"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bdf6b26213",
+      "Fields": {
+        "Meaning": "Nhất định, rất mong",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ぜひ（ぜひ）có nghĩa là nhất định, rất mong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214014": "Nhất định hãy đến dự tiệc nhé.",
+        "214020": "Tôi rất muốn xem bộ phim đó."
+      },
+      "SourceHash": "f0ed7e40bf2977bdfc4668310602807d13a757e47cae36015feb2db34dc6b92a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dac7bb4374",
+      "Fields": {
+        "Meaning": "Chăm sóc, trông nom",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "世話（せわ）có nghĩa là chăm sóc, trông nom.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160926": "Tôi định chăm sóc con chó này.",
+        "232403": "Bạn không thể chăm sóc thú cưng."
+      },
+      "SourceHash": "ab08a7462eead85dfff10fc8d57bfde7d9f6fbce5a0538a4a552a746bf826c34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da94019cdd",
+      "Fields": {
+        "Meaning": "Đường, nét, vạch",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "線（せん）có nghĩa là đường, nét, vạch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220781": "Điểm cuối của đường này ở đâu?",
+        "234881": "Hãy kẻ một đường từ A đến B."
+      },
+      "SourceHash": "332d31038cef41cca526e5147e5e39bb089f4226979859eaf2818a1e5dd581ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba20bc66d0",
+      "Fields": {
+        "Meaning": "Hoàn toàn không, chẳng chút nào",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ぜんぜん（ぜんぜん）có nghĩa là hoàn toàn không, chẳng chút nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159061": "Tôi hoàn toàn không uống bia.",
+        "176432": "Mưa làm kế hoạch hỏng hoàn toàn."
+      },
+      "SourceHash": "11b97bd402ec2f94efc8c1b8d0051aed2fd1e7f00e3de632cbe8e67326b75108"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c83cac81c",
+      "Fields": {
+        "Meaning": "Chiến tranh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "戦争（せんそう）có nghĩa là chiến tranh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141305": "Tôi mong chiến tranh không xảy ra.",
+        "141312": "Không biết chiến tranh khi nào kết thúc."
+      },
+      "SourceHash": "1bae9182ca202e45a62afac872bd565c54f489908e034c137008ef2f8e04bd09"
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9726004c78",
+      "Fields": {
+        "Meaning": "Kỹ sư, kỹ thuật viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "技師（ぎし）có nghĩa là kỹ sư, kỹ thuật viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108539": "Anh ấy muốn trở thành kỹ sư.",
+        "199853": "Tom là kỹ sư điện."
+      },
+      "SourceHash": "6b016897c09da1b3a78c037dae1e41e924b4c8ed26f0cca6e4bda3c91247ece6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5900f7f854",
+      "Fields": {
+        "Meaning": "Phóng viên, nhà báo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "記者（きしゃ）có nghĩa là phóng viên, nhà báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160040": "Tôi tưởng người phụ nữ đó là phóng viên.",
+        "183070": "Phóng viên ghi lại mọi điều được nói."
+      },
+      "SourceHash": "6f85014808de394103bc7cef4564596beaae27d9c4f7e5a08a98d63b9818f03d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a70c18ed83",
+      "Fields": {
+        "Meaning": "Vết thương, vết xước, tổn thương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "傷（きず）có nghĩa là vết thương, vết xước, tổn thương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185035": "Nước biển làm vết thương xót quá.",
+        "224405": "Chỗ này có vết xước, anh chị giảm giá giúp tôi nhé."
+      },
+      "SourceHash": "f2da5d0c90165fd1316067f0bed82b8af289fbfbcf44ebd2cbaad5613f6df573"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a4974412ed",
+      "Fields": {
+        "Meaning": "Kỳ vọng, mong đợi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "期待（きたい）có nghĩa là kỳ vọng, mong đợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98969": "Anh ấy trông mong vào tài sản của bố mẹ.",
+        "200440": "Dù sao, hãy hy vọng mọi việc suôn sẻ."
+      },
+      "SourceHash": "d5624a60cc39237c21e5e3b9ea974b5a583779c9d82d14c5839a32add92fcefe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01fdd309f5",
+      "Fields": {
+        "Meaning": "Về nhà",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "帰宅（きたく）có nghĩa là về nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84585": "Bố tôi vừa về đến nhà.",
+        "187903": "Điều gì khiến anh ấy muốn về nhà?"
+      },
+      "SourceHash": "5d9fe4ee70799f83c02d324a748da00c971e3f6978f3af793a9e2533389e47e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7660474b4f",
+      "Fields": {
+        "Meaning": "Quý giá, đáng quý",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "貴重（きちょう）có nghĩa là quý giá, đáng quý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150602": "Thời gian và tiền bạc, thứ nào quý hơn?",
+        "229717": "Đó là một trải nghiệm quý giá."
+      },
+      "SourceHash": "fc9ce0621cc4567547a8f21f69f20c06ac01ba9fe688fa505005142f10b7cf8a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7456693bdd",
+      "Fields": {
+        "Meaning": "Chủ tọa, chủ tịch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "議長（ぎちょう）có nghĩa là chủ tọa, chủ tịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98014": "Họ bổ nhiệm ông Smith làm chủ tọa.",
+        "165253": "Chúng tôi chọn ông ấy làm chủ tọa buổi họp."
+      },
+      "SourceHash": "375a0fd3f37353f02ecf9ccf92f2c99fdb0480950acb94aab0cf4448f4e1d477"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a4e6e6b186",
+      "Fields": {
+        "Meaning": "Đàng hoàng, đúng, chỉnh tề",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "きちんと（きちんと）có nghĩa là đàng hoàng, đúng, chỉnh tề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79538": "Nên thực hiện đúng lời hứa.",
+        "163492": "Đồng hồ của tôi chạy đúng."
+      },
+      "SourceHash": "cbccb0efba5d1bf8458e267766a7ca90f4e19fbf26eac18c43db77c75a82768f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4ab4064451",
+      "Fields": {
+        "Meaning": "Chật, mạnh, gay gắt, vất vả",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "きつい（きつい）có nghĩa là chật, mạnh, gay gắt, vất vả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199848": "Tom bị một cú rất mạnh vào đầu.",
+        "202858": "Phần eo hơi chật nhỉ."
+      },
+      "SourceHash": "514814969c197a1ef99f30ecddc4f364a34b1694919e8cf8f035a6635433fe89"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7157da92eb",
+      "Fields": {
+        "Meaning": "Nhận ra, để ý",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "気付く（きづく）có nghĩa là nhận ra, để ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108671": "Anh ấy không nhận ra nguy hiểm.",
+        "164413": "Anh ấy làm việc đó mà tôi không hay biết."
+      },
+      "SourceHash": "09b24a20caacec8fcc4cce8667842b7ac131f625dcb8039e7114ee929aea8f26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b3b057ef9",
+      "Fields": {
+        "Meaning": "Ưng ý, thích",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "気に入る（きにいる）có nghĩa là ưng ý, thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141560": "Thầy/cô rất thích chiếc xe mới.",
+        "229189": "Có vài điểm ở cô ấy mà tôi không thích."
+      },
+      "SourceHash": "0f414215cdc6e24100e37f7d48fbb26bfa2c1176dd32d4db8a62da61b3b39428"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9cd0baed59",
+      "Fields": {
+        "Meaning": "Điền, ghi vào",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "記入（きにゅう）có nghĩa là điền, ghi vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196457": "Hãy điền đơn đăng ký bằng bút bi.",
+        "221735": "Xin giúp tôi điền tờ giấy này."
+      },
+      "SourceHash": "44c1694115218169e15f253fe6e1586755eba0428f9ddc5567fdb888dc8101a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1426fbe4ea",
+      "Fields": {
+        "Meaning": "Kỷ niệm, tưởng niệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "記念（きねん）có nghĩa là kỷ niệm, tưởng niệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173343": "Một cuộc diễu hành được tổ chức để kỷ niệm sự kiện.",
+        "230087": "Đây sẽ là một kỷ niệm đẹp về chuyến đi Mỹ."
+      },
+      "SourceHash": "368fd1a01e412be91e049d20d2d4ca3e436770a45468e319d9c3ba38d257781a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f8aac6311",
+      "Fields": {
+        "Meaning": "Chức năng, hoạt động",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "機能（きのう）có nghĩa là chức năng, hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196926": "Chức năng của phanh là dừng xe.",
+        "217306": "Sao họ lại thêm chức năng thừa thãi này nhỉ?"
+      },
+      "SourceHash": "2ea70c10ccb4629ba15a2c79db0f8fd7d70e1e8286a0183525c8af37c5e01ecd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "175ca187e3",
+      "Fields": {
+        "Meaning": "Tội nghiệp, đáng tiếc",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "気の毒（きのどく）có nghĩa là tội nghiệp, đáng tiếc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86122": "Tôi không thể không thấy thương anh ấy.",
+        "166340": "Chúng tôi thấy thương cặp vợ chồng lớn tuổi ấy."
+      },
+      "SourceHash": "765c18cabadb5f508888981ca08c6e126cf1d70f379352a938e8bf66e1a24345"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "371182f1b5",
+      "Fields": {
+        "Meaning": "Quyên góp, khoản đóng góp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "寄付（きふ）có nghĩa là quyên góp, khoản đóng góp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88278": "Cô ấy quyên góp cho Hội Chữ thập đỏ.",
+        "97324": "Họ đang quyên tiền cho nhà thờ."
+      },
+      "SourceHash": "31bf29edb4c426b67986595af5e9b33fd194bc2ffc57ce3733432d0c711fee16"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ce18444af",
+      "Fields": {
+        "Meaning": "Hy vọng, nguyện vọng, mong muốn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "希望（きぼう）có nghĩa là hy vọng, nguyện vọng, mong muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179346": "Tôi muốn ở khách sạn gần sân bay.",
+        "218841": "Đó là hy vọng duy nhất của anh ấy."
+      },
+      "SourceHash": "043d2c476a7fac0d961c476ab60cc54547a4276e85e9c0a5e92e65da875291c3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8de918380d",
+      "Fields": {
+        "Meaning": "Cơ bản, nền tảng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "基本（きほん）có nghĩa là cơ bản, nền tảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84636": "Bố dạy tôi những điều cơ bản về làm vườn.",
+        "218460": "Đây là điều cơ bản."
+      },
+      "SourceHash": "bafc2e13f45c38c030520f524929b05fe0b58ad1a8b15e462aafa6b1068705dc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be0db681fa",
+      "Fields": {
+        "Meaning": "Quy định, lệ, điều đã định",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "決まり（きまり）có nghĩa là quy định, lệ, điều đã định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184439": "Phải tuân thủ nội quy của trường đấy.",
+        "199344": "Có quy tắc khi dùng dao và nĩa."
+      },
+      "SourceHash": "1ad01b2646dff608ae1de56ec8b8ca8a70c0f237203ae66cff96fa4daca5e442"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "49b6490720",
+      "Fields": {
+        "Meaning": "Cảm giác, dấu hiệu hơi có",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気味（きみ）có nghĩa là cảm giác, dấu hiệu hơi có.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209975": "Vụ việc đó có điều gì đó khiến người ta thấy rờn rợn."
+      },
+      "SourceHash": "e25e05a3f30e38564bd38153e9ddae9b8cfcac183d22a323c665e7aab49278a5"
+    }
+  ]
+}

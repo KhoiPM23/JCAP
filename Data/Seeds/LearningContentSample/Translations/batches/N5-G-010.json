@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsumori",
+      "Fields": {
+        "Meaning": "Định làm, định không làm",
+        "Formation": "Động từ dạng từ điển hoặc thể ない ＋ つもりだ／です",
+        "Explanation": "Dùng つもり để nêu dự định. Dạng từ điển trước つもり nêu việc định làm, còn thể ない nêu việc định không làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsumori:example:1": "Tôi định về nước vào kỳ nghỉ hè.",
+        "tsumori:example:2": "Hôm nay tôi định không mua gì cả."
+      },
+      "SourceHash": "f4cd3a88176c72b0e3f9a250c0fe1e0e34b50b2b4b59652fd82cb105ed29caef"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-form",
+      "Fields": {
+        "Meaning": "Nối hành động bằng thể て",
+        "Formation": "Động từ A thể て ＋ động từ B",
+        "Explanation": "Thể て có thể nối các hành động theo trình tự hoặc cho biết cách thực hiện hành động sau. Động từ cuối thường thể hiện thời và mức độ lịch sự của câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-form:example:1": "Buổi sáng tôi thức dậy rồi rửa mặt.",
+        "te-form:example:2": "Tôi đi tàu điện về nhà."
+      },
+      "SourceHash": "07eb3cce16e02c1c775bfffd114a157ae9c2ea04afc7933cf3f8db750ac63e6d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de",
+      "Fields": {
+        "Meaning": "Ở, tại, bằng",
+        "Formation": "Danh từ chỉ địa điểm hoặc phương tiện ＋ で ＋ động từ",
+        "Explanation": "で đánh dấu nơi diễn ra hành động hoặc phương tiện, dụng cụ dùng để làm việc đó. 公園で là ở công viên khi nói về một hoạt động, còn ペンで là bằng bút.",
+        "UsageNotes": "Với vị trí tồn tại trong mẫu ある hoặc いる, thường dùng に."
+      },
+      "Examples": {
+        "de:example:1": "Tôi chơi với bạn ở công viên.",
+        "de:example:2": "Tôi viết tên bằng bút."
+      },
+      "SourceHash": "95f002f121875e71d72dc1444481fbe2664366a50f86d2ccfc67fb67e4381e51"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-aru",
+      "Fields": {
+        "Meaning": "Trạng thái còn lại sau khi đã làm gì",
+        "Formation": "Tha động từ thể て ＋ ある",
+        "Explanation": "Mẫu này diễn tả kết quả còn thấy được sau khi ai đó chủ ý làm một việc. Vật ở trạng thái đó thường đi với が, như 花が飾ってある.",
+        "UsageNotes": "Dạng lịch sự là 〜てあります."
+      },
+      "Examples": {
+        "te-aru:example:1": "Trên bàn có hoa được bày sẵn.",
+        "te-aru:example:2": "Tên đã được viết trên bảng đen."
+      },
+      "SourceHash": "d08a2e5378569a37574bf4d0bad69626cf3e5c4daf90b0c236a0f4267d869c25"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-iru",
+      "Fields": {
+        "Meaning": "Đang làm, đang ở một trạng thái",
+        "Formation": "Động từ thể て ＋ いる／います",
+        "Explanation": "Mẫu này có thể chỉ hành động đang diễn ra hoặc trạng thái còn tiếp tục sau khi một thay đổi xảy ra. 聞いている có thể nghĩa là đang nghe, còn 結婚している nghĩa là đã kết hôn và đang trong quan hệ hôn nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-iru:example:1": "Bây giờ tôi đang nghe nhạc.",
+        "te-iru:example:2": "Anh/chị Tanaka đã kết hôn."
+      },
+      "SourceHash": "8bf4b40cc95452324ecbd8ee90a8d8a34ca2c37e247239478ea2b7be125022ff"
+    }
+  ]
+}

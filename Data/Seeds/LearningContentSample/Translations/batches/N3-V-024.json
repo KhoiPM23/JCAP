@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c814ebdd8",
+      "Fields": {
+        "Meaning": "Qua, đi qua, thông qua",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "経由（けいゆ）có nghĩa là qua, đi qua, thông qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110911": "Anh ấy trở về qua Honolulu.",
+        "110951": "Anh ấy đến đây qua Boston."
+      },
+      "SourceHash": "0842ef79dc7661a21c1520a7603f13e455fb17636d043322318a40e9637eaa33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "970f95c9c4",
+      "Fields": {
+        "Meaning": "Trường hợp, hộp đựng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ケース（ケース）có nghĩa là trường hợp, hộp đựng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "5f8bc0e6ef0ae2c4d59ba9574f977be3198db08f19946ccf454bb3c59e2f4518"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3310e5721",
+      "Fields": {
+        "Meaning": "Trò chơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ゲーム（ゲーム）có nghĩa là trò chơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151844": "Chúng tôi chơi nhiều trò khác nhau.",
+        "164815": "Cho tôi chơi trò đó với."
+      },
+      "SourceHash": "0f4eba8bd235f8d7a157f046d179ed19216a7ad61973c2b459d9491fef219046"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1f3f0c4bb0",
+      "Fields": {
+        "Meaning": "Chấn thương, bị thương",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "怪我（けが）có nghĩa là chấn thương, bị thương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75029": "“Á, đau quá!” “Có bị thương không?”",
+        "192640": "Anh ấy bị thương khi chơi bóng bầu dục."
+      },
+      "SourceHash": "a3c1e9c878b41ae6708a392c7b5f5d953d3da0f3dd0ee6c0a5c36ed32c78c1c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "083108d865",
+      "Fields": {
+        "Meaning": "Vở kịch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "劇（げき）có nghĩa là vở kịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175997": "Vở kịch bắt đầu đúng giờ.",
+        "211163": "Vở kịch đó hoàn toàn không phải là một thất bại."
+      },
+      "SourceHash": "1cbd71cab92b7d2e22c7428787af344871542d333ccbd3fb0acbc2e5e70cfd1f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f002b6a695",
+      "Fields": {
+        "Meaning": "Nhà hát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "劇場（げきじょう）có nghĩa là nhà hát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141837": "Thứ Bảy tuần trước bạn có ở nhà hát không?",
+        "216883": "Nào, đến nhà hát rồi."
+      },
+      "SourceHash": "3a5741ad89fc60307bed2bb88ff04c9a3f6de5d29e53c2c1343bc101b10fa378"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b76277df15",
+      "Fields": {
+        "Meaning": "Trang điểm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "化粧（けしょう）có nghĩa là trang điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93324": "Cô ấy lúc nào cũng trang điểm khéo.",
+        "224122": "Khuôn mặt trang điểm đậm trông khác thường."
+      },
+      "SourceHash": "c6644f60b329bcaa194947c94f57695f1a1fffa75aea81db861a4c54351eb9d1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3480dbdcdb",
+      "Fields": {
+        "Meaning": "Keo kiệt, người keo kiệt",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "けち（けち）có nghĩa là keo kiệt, người keo kiệt.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "2bc3a4aa75fda82c0556c932f00fd70f51a9cfc6a3b41349da2d714f844ecfa8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e391d26404",
+      "Fields": {
+        "Meaning": "Kết quả, hệ quả",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "結果（けっか）có nghĩa là kết quả, hệ quả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137416": "Cô ấy đến muộn vì tuyết rơi dày.",
+        "175860": "Đừng bận tâm đến kết quả."
+      },
+      "SourceHash": "3b565671fd8d9c43fbd3844743557c985ac40c6a3a522d9dde667c8cba5e7d36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "09aaedaccc",
+      "Fields": {
+        "Meaning": "Khiếm khuyết, lỗi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "欠陥（けっかん）có nghĩa là khiếm khuyết, lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220928": "Cơ chế này đầy khiếm khuyết.",
+        "223714": "Hệ thống này có khiếm khuyết rõ ràng."
+      },
+      "SourceHash": "a002f779afd049ffd023dafa7cf23af579d7c2bf819e54eb14597990ee0a5ed6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb50e02845",
+      "Fields": {
+        "Meaning": "Rốt cuộc, cuối cùng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "結局（けっきょく）có nghĩa là rốt cuộc, cuối cùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90300": "Rốt cuộc cô ấy không gọi điện.",
+        "192965": "Chậm mà chắc thì cuối cùng sẽ thắng."
+      },
+      "SourceHash": "6685b1c41ff805e8a4d1cb8a8b9f1bfaf4beca4ad06fa0303fcc4624e3ebe143"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a8c569402",
+      "Fields": {
+        "Meaning": "Quyết tâm, quyết định dứt khoát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "決心（けっしん）có nghĩa là quyết tâm, quyết định dứt khoát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109014": "Anh ấy quyết định học ở nước ngoài.",
+        "214793": "Xin hãy quyết định ngay."
+      },
+      "SourceHash": "39054f3597c1f2b95ef5a9871a7940a408cfb6209426b4d50203baf68d106d87"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "51d709a6eb",
+      "Fields": {
+        "Meaning": "Vắng mặt, nghỉ học",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "欠席（けっせき）có nghĩa là vắng mặt, nghỉ học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120512": "Thật lạ khi anh ấy nghỉ học.",
+        "175959": "Hãy nâng ly vì những người bạn vắng mặt."
+      },
+      "SourceHash": "30f90a7cf4af78b5af2b03002e03227c5fe79063f999dc37449c6226e076b2a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5e67da482d",
+      "Fields": {
+        "Meaning": "Quyết định, ấn định",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "決定（けってい）có nghĩa là quyết định, ấn định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185315": "Ngày và địa điểm buổi họp đã được ấn định.",
+        "211059": "Việc đó được quyết định khi anh ấy vắng mặt."
+      },
+      "SourceHash": "44d53bf65a00529c0546895964e8e8883e0ddbb2ddb24f8c72217fea89cf0117"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d17214b7e4",
+      "Fields": {
+        "Meaning": "Khuyết điểm, điểm yếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "欠点（けってん）có nghĩa là khuyết điểm, điểm yếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86948": "Cô ấy chỉ chăm chăm tìm lỗi của chồng.",
+        "175954": "Anh ấy có khuyết điểm nhưng tôi vẫn thích."
+      },
+      "SourceHash": "aea10e6416e86e57cd6dc8436d371038bda073ba25af0fe1f29de1ca59ba9892"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5884288fe1",
+      "Fields": {
+        "Meaning": "Thứ Hai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "月曜（げつよう）có nghĩa là thứ Hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157319": "Tôi học tiếng Anh vào thứ Hai và thứ Sáu.",
+        "173072": "Quốc hội sẽ họp vào thứ Hai tuần sau."
+      },
+      "SourceHash": "4f472f139f9755aaeb460b1d15268679c391d8a37beb52e61b3d4bf1f1e3f881"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5923ebe0d",
+      "Fields": {
+        "Meaning": "Kết luận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "結論（けつろん）có nghĩa là kết luận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123063": "Hai người đi đến cùng một kết luận.",
+        "229622": "Không cần vội kết luận."
+      },
+      "SourceHash": "0be1e6668b98dca461ef4b9ff9d9f8a4a84d4d0ee1e9fefe9cf6d428cd17069d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16dd291b4d",
+      "Fields": {
+        "Meaning": "Khói",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "煙（けむり）có nghĩa là khói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158245": "Tôi không thở được vì khói.",
+        "227894": "Có mùi khói từ thang máy."
+      },
+      "SourceHash": "37738dba9e6ff0d1a58682010fb045dc7700fcebd6f286f9941bd5d595f4b309"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7430f801c4",
+      "Fields": {
+        "Meaning": "Vé, phiếu",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "券（けん）có nghĩa là vé, phiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175426": "Tôi sẽ lo vé cho.",
+        "222131": "Vé này có hiệu lực hai tuần."
+      },
+      "SourceHash": "8b8cae927182d5baffb574daacb10cef07d42ea08f28ae34718de58886732592"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1dc344813d",
+      "Fields": {
+        "Meaning": "Tỉnh",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "県（けん）có nghĩa là tỉnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74900": "Vẫn chưa giải quyết xong à? Tỉnh hay chính quyền trung ương chịu trách nhiệm?",
+        "202943": "Hoa tulip là loài hoa biểu trưng của tỉnh chúng tôi."
+      },
+      "SourceHash": "cfbd767e21f9d95d0d6e01f6f2eedae8db72e178f8c3da8d12e1f066a2fa2db6"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kikoeru",
+      "Fields": {
+        "Meaning": "Nghe thấy, vọng đến tai",
+        "Formation": "Âm thanh ＋ が ＋ 聞こえる",
+        "Explanation": "Nêu âm thanh tự lọt vào tai. 聞こえてくる nhấn mạnh âm thanh vọng đến từ một nơi khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kikoeru:example:1": "Tôi nghe thấy tiếng tàu điện từ xa.",
+        "kikoeru:example:2": "Tiếng ai đó vọng sang từ phòng bên."
+      },
+      "SourceHash": "221a3cbedb5a93a6346f6be86135265cdf4567d96220026bdf6da360d2ab4022"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gimonshi-ka",
+      "Fields": {
+        "Meaning": "Câu hỏi gián tiếp có từ để hỏi",
+        "Formation": "Từ để hỏi ＋ mệnh đề thể thông thường ＋ か",
+        "Explanation": "Đặt câu hỏi như ở đâu, cái gì hoặc khi nào vào bên trong một câu khác. Sau か có thể dùng 知る, 決める hoặc động từ phù hợp khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gimonshi-ka:example:1": "Tôi không biết anh ấy sống ở đâu.",
+        "gimonshi-ka:example:2": "Tôi vẫn chưa quyết định mua gì."
+      },
+      "SourceHash": "3db4491b906d5293efd193d3bfea07139a9a3db7ac8fa229e82e842da100c9b7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ku-ni",
+      "Fields": {
+        "Meaning": "Chuyển tính từ thành trạng từ",
+        "Formation": "Tính từ い: bỏ い ＋ く／tính từ な: gốc ＋ に",
+        "Explanation": "Dạng く hoặc に bổ nghĩa cho động từ để nêu cách hành động diễn ra. いい chuyển thành よく.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ku-ni:example:1": "Hôm nay tôi dậy sớm.",
+        "ku-ni:example:2": "Xin nói khẽ trong thư viện."
+      },
+      "SourceHash": "31d725857f4768f21a02f7a23857991450d14a2005c8a79b740d8cdc654324a2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ku-wa",
+      "Fields": {
+        "Meaning": "Nhấn mạnh hoặc đối chiếu trong phủ định",
+        "Formation": "Tính từ い: bỏ い ＋ く ＋ は ＋ ない／ありません",
+        "Explanation": "は nhấn vào đặc điểm bị phủ định, thường tạo sắc thái đối chiếu hoặc giới hạn mức độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ku-wa:example:1": "Quán này giá không rẻ, nhưng đồ ăn ngon.",
+        "ku-wa:example:2": "Hôm nay không lạnh đến mức đó."
+      },
+      "SourceHash": "e35f9da73121d7a5462ba5d65a3eff412fd5a95ec901e0e8ec7b14df4025f226"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gozaimasu",
+      "Fields": {
+        "Meaning": "Có, ở, là (rất lịch sự)",
+        "Formation": "Danh từ ＋ が ＋ ございます／nơi chốn ＋ に ＋ ございます／danh từ ＋ でございます",
+        "Explanation": "ございます là dạng trang trọng của あります. でございます dùng để giới thiệu hoặc xác định sự vật một cách trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gozaimasu:example:1": "Nhà vệ sinh ở tầng hai ạ.",
+        "gozaimasu:example:2": "Món được giới thiệu hôm nay là món này ạ."
+      },
+      "SourceHash": "239ad566e6927375d0cae976a4b394cd1138016844aa691e83169cc910e48e1c"
+    }
+  ]
+}

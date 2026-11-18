@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "totemo",
+      "Fields": {
+        "Meaning": "Rất, hết sức",
+        "Formation": "とても ＋ tính từ đuôi い hoặc tính từ đuôi な",
+        "Explanation": "Đặt とても trước tính từ để nhấn mạnh mức độ, như とても寒い (rất lạnh).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "totemo:example:1": "Món này rất ngon.",
+        "totemo:example:2": "Hôm qua trời rất lạnh."
+      },
+      "SourceHash": "c6fee7b7aac3f4fcff4aaed792c0dc3c4c83eef96b5b8a5a98d16bb30d04b9a4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "donna",
+      "Fields": {
+        "Meaning": "Loại nào, như thế nào",
+        "Formation": "どんな ＋ danh từ",
+        "Explanation": "どんな đứng trước danh từ để hỏi loại hoặc đặc điểm. どんな音楽 hỏi thể loại nhạc, còn どんな人 hỏi người đó như thế nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "donna:example:1": "Bạn thích thể loại nhạc nào?",
+        "donna:example:2": "Người kia là người như thế nào?"
+      },
+      "SourceHash": "90b802233638f6e1775bc62a0959524744e0d225022b241973e143a24cfd1282"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "na-prohibitive",
+      "Fields": {
+        "Meaning": "Cấm làm, đừng làm",
+        "Formation": "Động từ dạng từ điển ＋ な",
+        "Explanation": "Thêm な vào sau động từ dạng từ điển để cấm làm việc gì. Cách nói trực tiếp và mạnh, thường gặp trong mệnh lệnh hoặc lời cảnh báo.",
+        "UsageNotes": "ないでください phù hợp hơn khi cần yêu cầu lịch sự."
+      },
+      "Examples": {
+        "na-prohibitive:example:1": "Cấm vào đây.",
+        "na-prohibitive:example:2": "Đừng nói dối."
+      },
+      "SourceHash": "09d123a891d4b5fe4eb294864653a5e644b19e024d1d2247f9e55433042415d8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naa",
+      "Fields": {
+        "Meaning": "Nhỉ, quá (bộc lộ cảm xúc)",
+        "Formation": "Câu thể thông thường ＋ なあ",
+        "Explanation": "なあ đứng cuối câu để bộc lộ cảm xúc, sự ngạc nhiên hoặc cảm thán. Người nói có thể đang tự nhủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naa:example:1": "Trời đẹp thật nhỉ.",
+        "naa:example:2": "Núi Phú Sĩ lớn thật đấy."
+      },
+      "SourceHash": "88ccffe543b97be64b451afece23c1066f7db1766cec4f5b9d8314c1b05c6c8c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naide",
+      "Fields": {
+        "Meaning": "Làm B mà không làm A",
+        "Formation": "Động từ A thể ない ＋ で ＋ động từ B",
+        "Explanation": "Dùng 〜ないで để nói việc B diễn ra mà không thực hiện A. 食べないで行く nghĩa là đi mà không ăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naide:example:1": "Tôi đi học mà không ăn sáng.",
+        "naide:example:2": "Tôi đọc sách tiếng Nhật mà không dùng từ điển."
+      },
+      "SourceHash": "76bf94ddab5f72a62e7540ada1725f42bcf02b338e416747e8e655a08dd2d66d"
+    }
+  ]
+}

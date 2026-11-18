@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "628ac894ab",
+      "Fields": {
+        "Meaning": "Cuối năm, lúc chạng vạng",
+        "PartOfSpeech": "Danh từ, phó từ, bổ nghĩa với の, hậu tố",
+        "Explanation": "暮れ chỉ lúc trời tối hoặc cuối một giai đoạn. 途方に暮れる là thành ngữ chỉ việc lúng túng không biết phải làm gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92019": "Cô ấy bối rối không biết phải làm gì.",
+        "101503": "Anh ấy xuất hiện ở đó sau khi trời tối."
+      },
+      "SourceHash": "0d80af1ae25c6a8ca81d0b33591e0f1ced195e1850584213eb3cf34ec4179a8c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08ca0a613f",
+      "Fields": {
+        "Meaning": "Vất vả, công sức",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "苦労（くろう）có nghĩa là vất vả, công sức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108108": "Anh ấy làm lụng vất vả để tích góp tài sản.",
+        "214040": "Bao công sức cuối cùng lại phản tác dụng."
+      },
+      "SourceHash": "babc1e2cdf76a4b75dcae803009e51145ac9361b889f7fb09304418854f68ada"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7aaf7b56d7",
+      "Fields": {
+        "Meaning": "Thêm vào, cộng vào",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "加える（くわえる）có nghĩa là thêm vào, cộng vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143709": "Thêm nước rồi khuấy đến khi thành hỗn hợp sệt.",
+        "146865": "Thêm chút tiêu thì sao?"
+      },
+      "SourceHash": "434170796611efbcc30d709600cb5c39a2ed0183ebe18d7cb8883549c24554b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6448fea52",
+      "Fields": {
+        "Meaning": "Am hiểu, chi tiết",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "詳しい（くわしい）có nghĩa là am hiểu, chi tiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193266": "Tôi muốn biết thông tin chi tiết hơn.",
+        "224025": "Anh chị có rành khu vực này không?"
+      },
+      "SourceHash": "b58d98824555f5aab0ae9f2b1ad621bb9e472f50097e5a57be5706c03f88f1ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc1d83a773",
+      "Fields": {
+        "Meaning": "Tham gia, được thêm vào",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "加わる（くわわる）có nghĩa là tham gia, được thêm vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89756": "Cô ấy chơi cùng bọn trẻ.",
+        "232484": "Bạn muốn tham gia nhóm nào?"
+      },
+      "SourceHash": "bb4308d434c51c2731e501c7545a148fd7b2e63562ab1222a0acb0c8f050f501"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "52377d2422",
+      "Fields": {
+        "Meaning": "Âm Kun, cách đọc thuần Nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "訓（くん）có nghĩa là âm Kun, cách đọc thuần Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "13713990": "Kanji có hai kiểu đọc là âm On và âm Kun."
+      },
+      "SourceHash": "4196ea4d79972df237f812b39a81122c499387b552a76ebbf438b97c31dd9308"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3bb21b401",
+      "Fields": {
+        "Meaning": "Quân, lực lượng quân sự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "軍（ぐん）có nghĩa là quân, lực lượng quân sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96681": "Họ đột ngột đổi chiến thuật rồi cho quân rút lui.",
+        "141252": "Chiến tranh kết thúc với chiến thắng của quân Đồng minh."
+      },
+      "SourceHash": "2fc390e813b9a2c6e887734d76c9e40eaf7ca61b8a2523bb1a614a1782032502"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34bee09fdb",
+      "Fields": {
+        "Meaning": "Quân đội, binh lính",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "軍隊（ぐんたい）có nghĩa là quân đội, binh lính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176658": "Quân đội tiến đến bờ sông.",
+        "199072": "Napoleon đưa quân tiến vào Nga."
+      },
+      "SourceHash": "64a0a68000d5724cd9c318c706575e785f83f5ca1b8ddcc97bd05c8147b9c8fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c1708064c",
+      "Fields": {
+        "Meaning": "Huấn luyện, diễn tập",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "訓練（くんれん）có nghĩa là huấn luyện, diễn tập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154634": "Tôi đang huấn luyện ngựa để đua.",
+        "237466": "Hôm qua chúng tôi diễn tập phòng cháy."
+      },
+      "SourceHash": "ac4ffc9e25e394dfc23cf11423113b539a6259004710b285aef1a36cba2d81f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3d9a6a01ea",
+      "Fields": {
+        "Meaning": "Kế hoạch, tổng cộng",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "Trong 一年の計, 計 chỉ kế hoạch. Đứng trước số lượng như 計６１床, 計 chỉ tổng cộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190232": "Mồng một là lúc lập kế hoạch cho cả năm.",
+        "391892": "Nghe nói họ trả lời rằng không thể tiếp nhận vì cả 61 giường của khoa sản và phụ khoa đều đã kín."
+      },
+      "SourceHash": "f5e8c6b608f2d4257a955c3c7650477cc961425dffc4fc84c483008b1b53b198"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ecf1cc2a23",
+      "Fields": {
+        "Meaning": "Sự kính trọng, tôn trọng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "敬意（けいい）có nghĩa là sự kính trọng, tôn trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142772": "Học sinh không tỏ ra tôn trọng giáo viên đó.",
+        "144835": "Phải thể hiện sự kính trọng với cha mẹ."
+      },
+      "SourceHash": "7191a75c86542c998bbb03a601657045d857f06034375d6a3ec1b115ad88367f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "80d351fd10",
+      "Fields": {
+        "Meaning": "Điều hành, kinh doanh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "経営（けいえい）có nghĩa là điều hành, kinh doanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102094": "Anh ấy điều hành một siêu thị trong thị trấn.",
+        "118833": "Anh ấy có khả năng điều hành doanh nghiệp."
+      },
+      "SourceHash": "622a5936ea516c6c12fbe427f0c1cecde22ed7701c53c23967e8b8ce074c014c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa8c18adb8",
+      "Fields": {
+        "Meaning": "Tình hình kinh tế, tình hình kinh doanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "景気（けいき）có nghĩa là tình hình kinh tế, tình hình kinh doanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179834": "Gần đây kinh tế không khả quan.",
+        "217227": "Ngành máy tính đang làm ăn phát đạt."
+      },
+      "SourceHash": "a9df3d5bf66662179425a333c72a17eb863abfde43a626515bece7efe435ed3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "793da2875f",
+      "Fields": {
+        "Meaning": "Xu hướng, khuynh hướng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "傾向（けいこう）có nghĩa là xu hướng, khuynh hướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92793": "Cô ấy có xu hướng nói quá nhiều.",
+        "211317": "Xu hướng đó có vẻ rõ ở người Mỹ nhỉ."
+      },
+      "SourceHash": "b3734c230be4d6f068c0011654e1f3032e72587234c1faf956d0735a080cc301"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b326211b65",
+      "Fields": {
+        "Meaning": "Cảnh báo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "警告（けいこく）có nghĩa là cảnh báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97282": "Họ không để ý đến lời cảnh báo.",
+        "105856": "Anh ấy chẳng để tâm đến lời cảnh báo của tôi."
+      },
+      "SourceHash": "05a9f88aab4711b0325de904a557234105eb78021980614e97f7bda04cd7183b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fff0dc0674",
+      "Fields": {
+        "Meaning": "Tính toán",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "計算（けいさん）có nghĩa là tính toán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78161": "Bạn tính giúp tổng chi phí chuyến đi được không?",
+        "176405": "Phép tính không được có sai sót."
+      },
+      "SourceHash": "82e64b6e90914189f4312a91d26e887cdb36aad629410353d564c450dc853881"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7aa085a782",
+      "Fields": {
+        "Meaning": "Cảnh sát điều tra, hình sự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "刑事（けいじ）có nghĩa là cảnh sát điều tra, hình sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123113": "Hai cảnh sát điều tra bám theo nghi phạm.",
+        "207684": "Tên trộm nhìn thấy cảnh sát điều tra liền bỏ chạy."
+      },
+      "SourceHash": "41e7393fed6280f8f16b1ad80cbe089d3a281cc0e6454bd09b5516fe8fd38972"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "21a489e0c0",
+      "Fields": {
+        "Meaning": "Thông báo niêm yết, việc niêm yết",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "掲示（けいじ）có nghĩa là thông báo niêm yết, việc niêm yết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176532": "Học sinh không hiểu nội dung thông báo.",
+        "176535": "Trên bảng thông báo ghi “Tất cả chỗ đã được đặt”."
+      },
+      "SourceHash": "b7de3ad72e289e7e9268fd7bc42688555d42b462c09233c7c2e1f184e516deb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3191964869",
+      "Fields": {
+        "Meaning": "Nghệ thuật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "芸術（げいじゅつ）có nghĩa là nghệ thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107923": "Ông ấy quyên một khoản lớn cho nghệ thuật.",
+        "107925": "Anh ấy hoàn toàn không quan tâm đến nghệ thuật."
+      },
+      "SourceHash": "b6e5affa0e23234167027b73cd09c3a6ae51a52b16ea79d38c0c8c384f9e9c5c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "077c9dde2c",
+      "Fields": {
+        "Meaning": "Hợp đồng, ký hợp đồng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "契約（けいやく）có nghĩa là hợp đồng, ký hợp đồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86677": "Cô ấy ký hợp đồng viết sách.",
+        "176554": "Hợp đồng đó khá sơ sài."
+      },
+      "SourceHash": "e5c39a265511de7b878c48e81d5e7c8fb592290b7156870f0ae291b6697bdb82"
+    }
+  ]
+}

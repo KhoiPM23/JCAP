@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f583de9e0",
+      "Fields": {
+        "Meaning": "Thuế",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "税（ぜい）có nghĩa là thuế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203442": "Thuế đánh vào thuốc lá rất cao.",
+        "208630": "Khoản thuế đó là gánh nặng đối với nông dân."
+      },
+      "SourceHash": "681aea41d51fe0e630a3fa4ca226eef6e7382493fe1867edfe6f27a17ec060d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9544a3940b",
+      "Fields": {
+        "Meaning": "Tính cách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "性格（せいかく）có nghĩa là tính cách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88408": "Tính cô ấy giống hệt bố.",
+        "234596": "Cậu ấy cũng có tính khá xuề xòa nhỉ."
+      },
+      "SourceHash": "dc1c3a297784cc0c427c0f1d8ffe0b14ce0e45b824ca3ce31d7b04b659abe135"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0d56731678",
+      "Fields": {
+        "Meaning": "Chính xác",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "正確（せいかく）có nghĩa là chính xác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99284": "Anh ấy chép lại chính xác ghi chép của bạn.",
+        "221623": "Đồng hồ này chạy đúng giờ."
+      },
+      "SourceHash": "80e1a5f4f6185d6b03704be8c5acb38a8b1f99c6d793c1c3a8d4c02d6b8e45cd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e592c506e",
+      "Fields": {
+        "Meaning": "Thế kỷ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "世紀（せいき）có nghĩa là thế kỷ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115269": "Ông ấy sinh vào thế kỷ 19.",
+        "206051": "Câu chuyện đó có từ thế kỷ 16."
+      },
+      "SourceHash": "8f9d56bd2b7f63caf952290817a712591e24fa7908d1a2c1e07522ed3e94aa3d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0196b60080",
+      "Fields": {
+        "Meaning": "Yêu cầu, đòi thanh toán",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "請求（せいきゅう）có nghĩa là yêu cầu, đòi thanh toán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78178": "Bạn có thể yêu cầu hoàn lại chi phí đi lại.",
+        "191600": "Chúng tôi yêu cầu anh ấy trả nợ."
+      },
+      "SourceHash": "410b94487c8cb18891770e8b07845b37461035d4643e6c02ce8c76d5cb56bc17"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9abf9d145",
+      "Fields": {
+        "Meaning": "Tiền thuế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "税金（ぜいきん）có nghĩa là tiền thuế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145362": "Rượu vang bị đánh thêm một loại thuế mới.",
+        "199378": "Những mặt hàng nào phải chịu thuế?"
+      },
+      "SourceHash": "e5518fc4bb8aba8f71762cf67b6404a7d9d546a6818c621b16e5d430ebfe279f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad0f14e0b8",
+      "Fields": {
+        "Meaning": "Sạch sẽ, vệ sinh",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "清潔（せいけつ）có nghĩa là sạch sẽ, vệ sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93234": "Cô ấy luôn giữ tóc sạch.",
+        "114462": "Anh ấy luôn giữ phòng sạch sẽ."
+      },
+      "SourceHash": "8d3bedc2666647f6b7d0cf45ad630418559a5bbb6b6782b003f1e1199b5f2c80"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2bbee375a5",
+      "Fields": {
+        "Meaning": "Giới hạn, hạn chế",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "制限（せいげん）có nghĩa là giới hạn, hạn chế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91340": "Cô ấy hạn chế ăn uống để giảm cân.",
+        "143315": "Đừng chạy quá tốc độ cho phép."
+      },
+      "SourceHash": "73a02ad1a72488bb8466c3cb2a2cb73a30f9b79027d28e01cc4a0389d4fee963"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "99906bc37f",
+      "Fields": {
+        "Meaning": "Thành công",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "成功（せいこう）có nghĩa là thành công.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88114": "Cô ấy tin chắc con trai sẽ thành công.",
+        "143292": "Thành công rồi. Chúc mừng!"
+      },
+      "SourceHash": "e54534130a4db90d1ae044d0062ae049ea799fd1b946f7dbead2abc521ca0467"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e3d5f33744",
+      "Fields": {
+        "Meaning": "Chính thức",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, Danh từ",
+        "Explanation": "正式（せいしき）có nghĩa là chính thức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102706": "Ông ấy công nhận con trai là người thừa kế chính thức.",
+        "200269": "Việc đó chính thức đến mức nào?"
+      },
+      "SourceHash": "df4df64e20d407673406d273e1f1feadfe4c477afe67dcc074405652421b6251"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61471e9d95",
+      "Fields": {
+        "Meaning": "Tinh thần, tâm trí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "精神（せいしん）có nghĩa là tinh thần, tâm trí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123374": "Đọc sách giúp nuôi dưỡng tinh thần.",
+        "142666": "Nên phát triển tinh thần cùng với thể chất."
+      },
+      "SourceHash": "48c45ce2783f4572f36a9d0cf47e4e53fb44e653b8a1f6dba825c93f611b68eb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c7d468b06d",
+      "Fields": {
+        "Meaning": "Người trưởng thành, đến tuổi trưởng thành",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "成人（せいじん）có nghĩa là người trưởng thành, đến tuổi trưởng thành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212251": "Chỉ người trưởng thành mới được xem phim đó.",
+        "216620": "Sandra lớn lên thành một cô gái xinh đẹp."
+      },
+      "SourceHash": "d896d3acef7899979867b2523d3ecb2fc1b8f5ca822590e96d537bd1aca9d913"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df6d75a59e",
+      "Fields": {
+        "Meaning": "Tối đa, hết mức có thể",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "精々（せいぜい）có nghĩa là tối đa, hết mức có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169577": "Hoa anh đào chỉ nở vài ngày, nhiều nhất là một tuần.",
+        "180098": "Họ tận dụng căn phòng chật sao cho rộng rãi nhất có thể."
+      },
+      "SourceHash": "676c128828a4bc4fe4402ae66199c8493ecd0a69a5431838facf86dbb4b650f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be926ffe0c",
+      "Fields": {
+        "Meaning": "Thành tích, điểm số",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "成績（せいせき）có nghĩa là thành tích, điểm số.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114501": "Anh ấy luôn đứng đầu lớp về thành tích học tập.",
+        "184433": "Điểm số ở trường của tôi ở mức trung bình."
+      },
+      "SourceHash": "4446c5fba876bd6a2c0af68e4be1094a1b142de15b0584ea1c27382e0e248346"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b79aa00dea",
+      "Fields": {
+        "Meaning": "Chế tạo, sản xuất",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "製造（せいぞう）có nghĩa là chế tạo, sản xuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209728": "Chiếc đồng hồ đó được sản xuất ở Thụy Sĩ.",
+        "222670": "Công ty này sản xuất ti vi."
+      },
+      "SourceHash": "94a765799f31874346aabd6aa8212630388dd92eba7e60af5b0a283982d5814e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "81009f3e01",
+      "Fields": {
+        "Meaning": "Xa xỉ, xa hoa",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "贅沢（ぜいたく）có nghĩa là xa xỉ, xa hoa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92659": "Cô ấy sống xa hoa.",
+        "96721": "Trước kia họ từng sống xa hoa."
+      },
+      "SourceHash": "6a34e4e2185c64eb82c62a790916eeaf8e3890ee63560d16b2c87bbf0040f89a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed4e8d935d",
+      "Fields": {
+        "Meaning": "Lớn lên, phát triển",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "成長（せいちょう）có nghĩa là lớn lên, phát triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88396": "Cô ấy lớn lên thành một phụ nữ xinh đẹp.",
+        "103364": "Anh ấy lớn lên thành một thanh niên chững chạc."
+      },
+      "SourceHash": "2160fbe9406cc2290f7c8a082f72ae3efbfdc518b80d37c4f1f579ce6d235fe6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "579b318330",
+      "Fields": {
+        "Meaning": "Chế độ, thể chế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "制度（せいど）có nghĩa là chế độ, thể chế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97895": "Họ đã sửa đổi chế độ đó.",
+        "220927": "Chế độ này không còn chỗ để cải thiện."
+      },
+      "SourceHash": "b78c0ed74c488279de3f0db59a234c45e07b08cb529bb1921a05ac7a7068966d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "005faaf9cf",
+      "Fields": {
+        "Meaning": "Thanh niên, người trẻ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "青年（せいねん）có nghĩa là thanh niên, người trẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208633": "Người thanh niên đó rất phù hợp với vị trí ấy.",
+        "230573": "Thanh niên tóc dài kia cư xử thô lỗ."
+      },
+      "SourceHash": "962fd36f5c9a4b78b4666e91b289153a3c95a23a69e11294d03284986c1fd17f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0b3c0db0c",
+      "Fields": {
+        "Meaning": "Sản phẩm, thành phẩm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "製品（せいひん）có nghĩa là sản phẩm, thành phẩm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217838": "Các sản phẩm này có cùng chất lượng.",
+        "220900": "Sản phẩm này được hoàn thiện rất đẹp."
+      },
+      "SourceHash": "6915d97136d2b5191d9f50426bef4f97b2bd4a2654a4c0d28a6ae84f5a5eb21a"
+    }
+  ]
+}

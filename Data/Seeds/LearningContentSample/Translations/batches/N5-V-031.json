@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật. Dùng lại bản dịch câu 227740.",
+    "Câu 201079 theo nghĩa nổi tiếng của bản Nhật. Câu 143446 giữ nội dung ví dụ nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33b86212ca",
+      "Fields": {
+        "Meaning": "Rẻ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "安い（やすい）chỉ giá thấp. もっと安いもの nghĩa là món rẻ hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193311": "Cho tôi xem món nào rẻ hơn với ạ.",
+        "193312": "Có món nào rẻ hơn không ạ?"
+      },
+      "SourceHash": "ec707c95e7099f36c128a494f6e432a8464c130d451c4db2d1242b2e90448d26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d4a1d27d3b",
+      "Fields": {
+        "Meaning": "Nghỉ, thời gian nghỉ, kỳ nghỉ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "休み（やすみ）chỉ thời gian nghỉ hoặc việc được nghỉ. 休みを取る nghĩa là nghỉ ngơi hoặc xin nghỉ tùy hoàn cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184412": "Trường đã nghỉ lễ Giáng sinh.",
+        "202088": "Nhưng bạn nên nghỉ ngơi thì hơn."
+      },
+      "SourceHash": "c8bc2199c21414b5df5bc6fef12dc2f3d9cf42f70194e2fd63bd4783d3710524"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3e3efcb45f",
+      "Fields": {
+        "Meaning": "Nghỉ, nghỉ ngơi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "休む（やすむ）chỉ việc nghỉ ngơi hoặc tạm ngừng một hoạt động. 学校を休む nghĩa là nghỉ học.",
+        "UsageNotes": "Thể て là 休んで."
+      },
+      "Examples": {
+        "84662": "Bố tôi vẫn đang nghỉ.",
+        "113559": "Anh ấy nghỉ ngơi một lúc."
+      },
+      "SourceHash": "54725afacc85e20ea93abbb7644a725ae918f07b61847f453f3ac0d6332ef218"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "62c4216674",
+      "Fields": {
+        "Meaning": "Tám cái, tám phần",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "八つ（やっつ）dùng để đếm chung tám vật hoặc tám phần. Có thể viết ８つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83078": "Mẹ tôi chia chiếc bánh thành tám phần.",
+        "519714": "Ở đó có tám viên sỏi."
+      },
+      "SourceHash": "59a3a54092038870a48277b1dd028ba1e02fe9bc33ebdfbcfc9b05392ad53ee2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8a5cbdf0a",
+      "Fields": {
+        "Meaning": "Núi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "山（やま）chỉ núi. 山の高さ nghĩa là độ cao của ngọn núi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210451": "Ngọn núi đó cao bao nhiêu?",
+        "221853": "Ngọn núi này cao bao nhiêu?"
+      },
+      "SourceHash": "c2b6f9c6593ef81041fccc33c4b0dcb1bdc2643eb2b6f42b17a34ef4735b58f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f81d503d6f",
+      "Fields": {
+        "Meaning": "Làm, cho",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "やる có thể mang nghĩa làm một việc hoặc cho ai thứ gì. Sau thể て, 〜てやる có thể nói làm việc gì đó cho người khác.",
+        "UsageNotes": "Cách nói 〜てやる có thể nghe suồng sã hoặc bề trên."
+      },
+      "Examples": {
+        "235161": "Tôi cho bạn năm đô la.",
+        "430482": "Tôi ký tặng cho cậu cũng được đấy."
+      },
+      "SourceHash": "7251e0f4d7b024a69c405cb75daec48a8836c2521d9b992199c38a14ebae4166"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "285b008622",
+      "Fields": {
+        "Meaning": "Chiều muộn, chập tối",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "夕方（ゆうがた）chỉ khoảng cuối buổi chiều, gần tối. 夕方前に nghĩa là trước lúc chiều muộn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197417": "Có khi trời sẽ mưa trước lúc chập tối.",
+        "229774": "Một buổi chiều muộn, có một người đàn ông đến."
+      },
+      "SourceHash": "1635307aa643dd12df173562e87fb794caff9ad097f1cde97de291accbfef8c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae2b9f6d7e",
+      "Fields": {
+        "Meaning": "Bữa tối, cơm tối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夕飯（ゆうはん）chỉ bữa ăn tối. 夕飯を食べる nghĩa là ăn tối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79058": "Điện thoại reo khi tôi đang ăn tối.",
+        "79059": "Bạn ăn tối chưa?"
+      },
+      "SourceHash": "4af1339a3e8a1bfa7065f4f6298061cafb0e0d25c71fc46f2105ae90a3828b51"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b86921749",
+      "Fields": {
+        "Meaning": "Bưu điện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "郵便局（ゆうびんきょく）là nơi gửi thư, bưu phẩm và sử dụng các dịch vụ bưu chính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224027": "Quanh đây có bưu điện không ạ?",
+        "231383": "Xin lỗi, bưu điện ở đâu ạ?"
+      },
+      "SourceHash": "1d7fc556e29cd5ed0f9af47f65f7e056ef7d16d638a4a35a1d8aab9d0f480fc1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39fff8fc4b",
+      "Fields": {
+        "Meaning": "Tối qua, đêm qua",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "昨夜 chỉ đêm trước. Có thể đọc là ゆうべ hoặc さくや.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169654": "Đêm qua bạn ngủ ngon không?",
+        "169693": "Tối qua bạn có xem ti vi không?"
+      },
+      "SourceHash": "8fe746bf926e6e4d110013fbd70183b7ae9e79893433474acbb99188ca94338e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50b217ed0b",
+      "Fields": {
+        "Meaning": "Nổi tiếng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "有名（ゆうめい）nghĩa là được nhiều người biết đến. 〜で有名 nêu lý do nổi tiếng, còn 有名な đứng trước danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201079": "Thầy Thomas là một giáo viên rất nổi tiếng.",
+        "212598": "Khách sạn đó nổi tiếng về đồ ăn."
+      },
+      "SourceHash": "567ca0cbaa1f1a9920763147fdc0bf7fbc20a4fe6bc2c289075bc8778ce29c49"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78c044b951",
+      "Fields": {
+        "Meaning": "Tuyết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "雪（ゆき）chỉ tuyết. 雪のため nêu tuyết là nguyên nhân của việc được nói đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142003": "Vì tuyết nên không thể ra ngoài.",
+        "197547": "Vì tuyết rơi dày nên không thể ra ngoài."
+      },
+      "SourceHash": "9d569f73a82dd8e5abc94e1ba633f0b71053f9f998a019c392ffec3e709575e4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d980cb1531",
+      "Fields": {
+        "Meaning": "Chậm rãi, thong thả",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ゆっくりと diễn tả việc làm chậm rãi hoặc thong thả. Cũng có thể dùng ゆっくり trong những câu như hai ví dụ nguồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194720": "Mary nói tiếng Nhật chậm rãi.",
+        "227740": "Ông nói rất chậm."
+      },
+      "SourceHash": "6b3c7f152c9b3a89743914f2a6732b3492787ab8d09a6252493d0653657dc5f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f8e83945d",
+      "Fields": {
+        "Meaning": "Tám ngày, ngày mùng tám",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "八日（ようか）chỉ ngày mùng tám trong tháng hoặc thời lượng tám ngày. Hai câu nguồn chỉ ngày trong tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162088": "Tôi sinh ngày 8 tháng 1 năm 1950 tại Tokyo.",
+        "184424": "Trường bắt đầu học từ ngày 8 tháng 4."
+      },
+      "SourceHash": "5e3ee667f767c5cb4c22be91d7355c9f444a36fa06042271c168495aa0f93214"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1907b6fc38",
+      "Fields": {
+        "Meaning": "Quần áo, trang phục kiểu Tây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "洋服（ようふく）chỉ quần áo kiểu Tây, hoặc quần áo thường ngày trong nhiều ngữ cảnh. Từ này không chỉ riêng bộ com-lê hay váy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226963": "Để tôi may cho con một bộ đồ mới nhé.",
+        "236922": "Bộ đồ đẹp quá nhỉ."
+      },
+      "SourceHash": "72b97fbfb5c8257d4c7dc891f29dbdb9396cf246b5b09f4053401ecea0e21f5f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19db29fbbb",
+      "Fields": {
+        "Meaning": "Thường, tốt, thật là",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "よく có thể chỉ tần suất thường xuyên hoặc làm việc gì đó tốt. Trong hai câu nguồn, từ này nhấn mạnh phản ứng của người nói.",
+        "UsageNotes": "よく来てくれたね bày tỏ sự vui mừng hoặc cảm kích. よくそんな口がきけるな bày tỏ sự bực tức."
+      },
+      "Examples": {
+        "192833": "Sao cậu dám nói như thế!",
+        "215788": "Jack, vui quá vì bạn đã đến!"
+      },
+      "SourceHash": "41310bc1a2148574246be23edcfa2870ddff822289f022c07d2fd123757b177d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4cb7c969c4",
+      "Fields": {
+        "Meaning": "Bên cạnh, chiều ngang, nằm ngang",
+        "PartOfSpeech": "Danh từ chỉ vị trí hoặc hướng",
+        "Explanation": "横（よこ）chỉ phía bên cạnh hoặc chiều ngang. 横にする là đặt nằm ngang, còn 横にスリップする là trượt sang bên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82787": "Người mẹ đặt em bé nằm xuống giường.",
+        "123621": "Vì đường ướt nên chắc chiếc xe đã trượt ngang."
+      },
+      "SourceHash": "08c6bf51686b819a2d4f72023269f728d46fd9c9f91a69ecee647b47c5bd15f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "222ae96df7",
+      "Fields": {
+        "Meaning": "Bốn ngày, ngày mùng bốn",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "四日（よっか）chỉ thời lượng bốn ngày hoặc ngày mùng bốn trong tháng. Cách hiểu dựa vào ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125908": "Tôi chỉ có thể đợi tối đa bốn ngày thôi.",
+        "162081": "Tôi sinh ngày 4 tháng 6 năm 1974."
+      },
+      "SourceHash": "ee68685dd1b276e11de2d5851fffeabe7170dbd51a4b39344c4dc3cd637c4c14"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1000ee441a",
+      "Fields": {
+        "Meaning": "Bốn cái, bốn phần",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "四つ（よっつ）là cách đếm chung cho bốn vật hoặc phần. 四つ折りにする nghĩa là gấp thành bốn phần.",
+        "UsageNotes": "Câu về số đại dương là nội dung của ví dụ nguồn."
+      },
+      "Examples": {
+        "143446": "Trên thế giới có bốn đại dương.",
+        "210071": "Hãy gấp tờ giấy đó làm tư."
+      },
+      "SourceHash": "2f52c17a391148b56ecca67c30ac252228c53a52aa914d48639c3755a4085eff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76f05a0739",
+      "Fields": {
+        "Meaning": "Gọi, gọi tên, mời đến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "呼ぶ（よぶ）dùng khi gọi ai, mời ai đến hoặc gọi ai bằng một tên. AをBと呼ぶ nghĩa là gọi A là B.",
+        "UsageNotes": "Thể て là 呼んで."
+      },
+      "Examples": {
+        "231456": "Tôi sẽ gọi bạn là Cephas.",
+        "234086": "Nếu bạn gọi thì anh ấy sẽ đến."
+      },
+      "SourceHash": "968dcb7e893a18bb11ca3bc092a976d13cf211b0ea8cee4a08f6dff550c483d3"
+    }
+  ]
+}

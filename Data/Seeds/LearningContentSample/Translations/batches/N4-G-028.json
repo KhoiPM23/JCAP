@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nasai",
+      "Fields": {
+        "Meaning": "Hãy làm, làm đi",
+        "Formation": "Gốc ます ＋ なさい",
+        "Explanation": "Mệnh lệnh thường dùng với trẻ em hoặc học sinh. Sắc thái có thể cứng khi dùng với người ngang hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nasai:example:1": "Muộn rồi, đi ngủ sớm đi.",
+        "nasai:example:2": "Trật tự và chú ý nghe thầy cô nói."
+      },
+      "SourceHash": "d8fac294b6edda7deca484da64b316b72ddfeb7d081e635b5d95d11b1d8bfc86"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nasaru",
+      "Fields": {
+        "Meaning": "Làm (kính ngữ)",
+        "Formation": "する → なさる／danh từ chỉ hành động ＋ なさる",
+        "Explanation": "Dùng khi nói về hành động của người được tôn trọng. Dạng lịch sự là なさいます.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nasaru:example:1": "Thầy đi dạo trong công viên mỗi sáng.",
+        "nasaru:example:2": "Trưởng phòng có dự cuộc họp ngày mai không ạ?"
+      },
+      "SourceHash": "3af150283f29254a53dd49f8641b000349e0a969ed1a433f51e8e7878563cd1c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nado",
+      "Fields": {
+        "Meaning": "Chẳng hạn như, vân vân",
+        "Formation": "Danh từ ＋ など／A ＋ や ＋ B ＋ など",
+        "Explanation": "Liệt kê một vài ví dụ đại diện. や thường nối các ví dụ trước など.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nado:example:1": "Cuối tuần tôi làm những việc như mua sắm và dọn dẹp.",
+        "nado:example:2": "Trong cặp có bút, vở và vài thứ khác."
+      },
+      "SourceHash": "970ff306c17f6b07baca157ea3c978d5bc6645eea688200b609ae5ef9e0502b3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nara",
+      "Fields": {
+        "Meaning": "Nếu, còn về… thì",
+        "Formation": "Thể thông thường ＋ なら (danh từ và tính từ な thường bỏ だ)",
+        "Explanation": "Tiếp nhận một giả định hoặc chủ đề đã nêu để đưa lời khuyên hay thông tin liên quan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nara:example:1": "Nếu đi Kyoto thì đi tàu điện tiện đấy.",
+        "nara:example:2": "“Từ điển ở đâu?” “Từ điển thì ở trên bàn.”"
+      },
+      "SourceHash": "0575537c8784048e27b4df3208a09fd0d1add2753fc047fe9d582d839b4c9a8b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naru-beku",
+      "Fields": {
+        "Meaning": "Cố gắng hết mức có thể",
+        "Formation": "なるべく ＋ cụm diễn tả hành động hoặc mức độ",
+        "Explanation": "Nêu điều sẽ cố thực hiện trong khả năng cho phép.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naru-beku:example:1": "Mai là ngày quan trọng nên tôi sẽ cố ngủ sớm nhất có thể.",
+        "naru-beku:example:2": "Tôi không có nhiều tiền nên sẽ cố mua ở cửa hàng càng rẻ càng tốt."
+      },
+      "SourceHash": "645910851ef65b2c1490d46c0a56eef55a7a21c2b70dcde8bb0e2a5971b3a67d"
+    }
+  ]
+}

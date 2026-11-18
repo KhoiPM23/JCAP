@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-itadakemasen-ka",
+      "Fields": {
+        "Meaning": "Có thể vui lòng làm giúp tôi không?",
+        "Formation": "Động từ thể て ＋ いただけませんか",
+        "Explanation": "Dạng yêu cầu trang trọng, hỏi người nghe có thể làm giúp một việc hay không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-itadakemasen-ka:example:1": "Xin lỗi, anh chị có thể đợi một chút được không ạ?",
+        "te-itadakemasen-ka:example:2": "Anh chị có thể chỉ tôi cách đọc chữ kanji này được không ạ?"
+      },
+      "SourceHash": "da94eab1891717233ce974c11496bc9b24ccbe488461fa54ddd333c66fc4f6d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "teiru-tokoro",
+      "Fields": {
+        "Meaning": "Đang đúng lúc làm gì",
+        "Formation": "Động từ thể て ＋ いるところだ／いるところに",
+        "Explanation": "Nhấn mạnh hành động đang diễn ra ngay lúc nói hoặc lúc sự việc khác xen vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "teiru-tokoro:example:1": "Bây giờ tôi đang nấu bữa tối.",
+        "teiru-tokoro:example:2": "Đúng lúc tôi đang viết báo cáo thì bạn đến."
+      },
+      "SourceHash": "d4ecd27feccc74f039d5339b3fd6876bdbae7dec699bb7e2bb94bf3d72ea750a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-oku",
+      "Fields": {
+        "Meaning": "Làm trước, chuẩn bị sẵn",
+        "Formation": "Động từ thể て ＋ おく",
+        "Explanation": "Thực hiện trước để phục vụ mục đích sau hoặc giữ trạng thái để dùng về sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-oku:example:1": "Mai có bài thi nên tối nay tôi sẽ học trước.",
+        "te-oku:example:2": "Tôi đã dọn phòng trước khi khách đến."
+      },
+      "SourceHash": "98506a1d061e691b1954bc4aad799f3d27255ac0c39320584aa9a1f8d0800bfa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kuru",
+      "Fields": {
+        "Meaning": "Làm rồi quay lại, dần trở nên đến hiện tại",
+        "Formation": "Động từ thể て ＋ くる",
+        "Explanation": "Có thể chỉ việc đi làm rồi quay về hoặc sự thay đổi tiến triển đến mốc hiện tại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kuru:example:1": "Tôi đi mua bánh mì một lát rồi về.",
+        "te-kuru:example:2": "Trời đã dần ấm lên rồi nhỉ."
+      },
+      "SourceHash": "a0a83af61e54d117ee6640527e555cea9591ba099a2ae88799499ec913d34857"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kurete-arigatou",
+      "Fields": {
+        "Meaning": "Cảm ơn vì đã làm gì",
+        "Formation": "Động từ thể て ＋ くれて ＋ ありがとう／ありがとうございました",
+        "Explanation": "Cảm ơn người đã làm việc có ích cho mình hoặc phía mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kurete-arigatou:example:1": "Cảm ơn bạn đã đến.",
+        "te-kurete-arigatou:example:2": "Cảm ơn anh chị đã giúp đỡ."
+      },
+      "SourceHash": "8d3b6269aab3dc7a55f535e836fcb427c1cf92db30e86890fe7ee8365852b63a"
+    }
+  ]
+}

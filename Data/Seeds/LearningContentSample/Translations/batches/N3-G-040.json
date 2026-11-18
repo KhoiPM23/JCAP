@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-iu-made-mo-nai",
+      "Fields": {
+        "Meaning": "Khỏi phải nói, hiển nhiên",
+        "Formation": "Danh từ hoặc mệnh đề ＋ は言うまでもない",
+        "Explanation": "Nêu điều rõ ràng đến mức không cần giải thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-iu-made-mo-nai:example:1": "Khỏi phải nói, chuẩn bị là việc quan trọng.",
+        "wa-iu-made-mo-nai:example:2": "Mùa đông vùng này lạnh thế nào thì khỏi phải nói."
+      },
+      "SourceHash": "49ca2c81327f23e3b5476a1b68ae929f1accf9969b235910c26cd9aa553250a0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "bakari-da",
+      "Fields": {
+        "Meaning": "Cứ ngày càng, cứ tiếp tục",
+        "Formation": "Động từ thể từ điển ＋ ばかりだ",
+        "Explanation": "Nêu một thay đổi cứ tiếp diễn theo cùng một hướng, thường theo hướng bất lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "bakari-da:example:1": "Giá cả cứ tăng mãi.",
+        "bakari-da:example:2": "Không luyện tập thì chỉ ngày càng kém đi thôi."
+      },
+      "SourceHash": "baa9fd59cc50085cb1f4381b468ea88c9ed5c4bd675d55e9c7d7aea97543b717"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "bakari-de",
+      "Fields": {
+        "Meaning": "Chỉ toàn, chỉ có… mà",
+        "Formation": "Động từ thể từ điển hoặc tính từ bổ nghĩa ＋ ばかりで",
+        "Explanation": "Giới hạn nhận xét ở một đặc điểm rồi nêu điều khác bị thiếu hoặc không như mong đợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "bakari-de:example:1": "Em trai tôi chỉ chơi game chứ chẳng học chút nào.",
+        "bakari-de:example:2": "Quán này chỉ được cái đắt, đồ ăn chẳng ngon lắm."
+      },
+      "SourceHash": "6e379e7eba1e626a24bfca7de0aaec030453417da1693f999fb08c2a562746c0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "bakari-denaku",
+      "Fields": {
+        "Meaning": "Không chỉ… mà còn",
+        "Formation": "Danh từ hoặc mệnh đề bổ nghĩa ＋ ばかりでなく、B ＋ も",
+        "Explanation": "Mở rộng nhận xét sang đối tượng hoặc đặc điểm thứ hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "bakari-denaku:example:1": "Công viên này không chỉ trẻ em mà người lớn cũng có thể vui chơi.",
+        "bakari-denaku:example:2": "Cô ấy không chỉ hát hay mà còn biết nhảy."
+      },
+      "SourceHash": "eff080d15eed1974516672a1e88255d318a9f0584210b60653cb5a5fd70deb99"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "bakari-ni",
+      "Fields": {
+        "Meaning": "Chỉ vì… mà",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ばかりに",
+        "Explanation": "Nhấn mạnh một nguyên nhân dẫn tới kết quả đáng tiếc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "bakari-ni:example:1": "Chỉ vì hơi chủ quan mà tôi thua trận.",
+        "bakari-ni:example:2": "Chỉ vì quên hộ chiếu mà tôi không đi du lịch được."
+      },
+      "SourceHash": "b0628aabde197a1cc424d96cf977238efa8a2f20d00e58d55e56e0fba535d32d"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd96cff1ab",
+      "Fields": {
+        "Meaning": "Bị bẩn, bị ô nhiễm",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "汚れる（よごれる）có nghĩa là bị bẩn, bị ô nhiễm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188570": "Đừng dụi mắt bằng tay bẩn.",
+        "220022": "Không khí trong phòng này bị ô nhiễm."
+      },
+      "SourceHash": "df4f42b74fe4267ae239770d6aa70e72df63d1ff64224b66031e05432c15e6ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de815ae4e6",
+      "Fields": {
+        "Meaning": "Chuẩn bị bài trước",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予習（よしゅう）có nghĩa là chuẩn bị bài trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79019": "Bạn nên bắt đầu chuẩn bị bài đi.",
+        "176829": "Bạn nên xem bài trước khi lên lớp."
+      },
+      "SourceHash": "da0cb21ed5810300cef81bec531ccfb75b019b9514eba5e5a04658ab4d08cb03"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a9fe0e98c1",
+      "Fields": {
+        "Meaning": "Dự định, lịch trình",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予定（よてい）có nghĩa là dự định, lịch trình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78630": "Tôi dự định lên đường sang châu Âu vào tuần tới.",
+        "161907": "Tôi định gặp Bob lúc sáu giờ."
+      },
+      "SourceHash": "23ed1abd55a13492631e768979db2bcaa49091cffa0b3f24928d8ae5f03d835b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ffceb4055",
+      "Fields": {
+        "Meaning": "Ghé qua, tiến lại gần",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "寄る（よる）có nghĩa là ghé qua, tiến lại gần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175265": "Con chó vừa thấy tôi đã chạy lại gần.",
+        "202805": "Bạn có muốn ghé qua một lát không?"
+      },
+      "SourceHash": "0ba4c23122c3041bc72b701b029a36ce4351473128d9e9f7fd5296ac4152184a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "82b0bf966f",
+      "Fields": {
+        "Meaning": "Vui mừng, vui lòng",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "喜ぶ（よろこぶ）có nghĩa là vui mừng, vui lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96030": "Họ vui mừng khi nghe tin tốt.",
+        "183538": "Tôi sẵn lòng trả lời câu hỏi của bạn."
+      },
+      "SourceHash": "e10960414dafea84e6d6e58f41c77abd54fc385841d20f343b2ca04c319c0466"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5f81e206e3",
+      "Fields": {
+        "Meaning": "Được, ổn (lịch sự)",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "よろしい（よろしい）có nghĩa là được, ổn (lịch sự).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150058": "Tôi mượn xe đạp được không ạ?",
+        "233649": "Tôi nhờ anh/chị một việc được không ạ?"
+      },
+      "SourceHash": "7c6df71e1fad7657dfb182eb116d44af01fee8b8342a670d3c8ff365c806a595"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df83eb2b9c",
+      "Fields": {
+        "Meaning": "Lý do",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "理由（りゆう）có nghĩa là lý do.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81592": "Vì sao bạn muốn vào trường chúng tôi?",
+        "179483": "Bạn có biết vì sao bầu trời trông có màu xanh không?"
+      },
+      "SourceHash": "6b3f91f3aa7ff65f81c5417f724f4c5a5992727b989eff7839bae8f66be998e9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "977d6bf88c",
+      "Fields": {
+        "Meaning": "Sử dụng, tận dụng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "利用（りよう）có nghĩa là sử dụng, tận dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143870": "Nên tận dụng sách của thư viện.",
+        "184238": "Sinh viên nên sử dụng sách của thư viện."
+      },
+      "SourceHash": "ee5cb331819f0f7f23e6a864851dffa4123d6ac3b97e4113fbac6d7452865ff4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "520cc83d87",
+      "Fields": {
+        "Meaning": "Cả hai, hai bên",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "両方（りょうほう）có nghĩa là cả hai, hai bên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77975": "Không thể làm sao cho cả hai bên đều có lợi.",
+        "221299": "Đôi găng tay này không đủ cả hai chiếc."
+      },
+      "SourceHash": "56713f6c4b5fbaa74ec76fbd051b084138a30a4010f0f85555a414ddd279408c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd95253850",
+      "Fields": {
+        "Meaning": "Nhà trọ kiểu Nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "旅館（りょかん）có nghĩa là nhà trọ kiểu Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112299": "Anh ấy đặt giúp tôi một phòng tại nhà trọ kiểu Nhật đó.",
+        "230419": "Nhà trọ kiểu Nhật đó có không khí ấm cúng."
+      },
+      "SourceHash": "163351d210fc3a1d6de476686c35c6baaf5638673a7cb36e2780367873a673e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0989d94de1",
+      "Fields": {
+        "Meaning": "Vắng nhà, trông nhà",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "留守（るす）có nghĩa là vắng nhà, trông nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186954": "Cả nhà tôi sẽ đi vắng một tuần.",
+        "393817": "Tôi nhờ cô ấy trông nhà rồi đi ra ngoài."
+      },
+      "SourceHash": "e903d932f8bd8bfebba770fc759bbdbda0d6eabd4691fce60ba4b19a0de627e6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ff4f12975",
+      "Fields": {
+        "Meaning": "Điều hòa làm mát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "冷房（れいぼう）có nghĩa là điều hòa làm mát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77629": "Điều hòa đang để lạnh quá ạ.",
+        "206940": "Phòng đó có điều hòa không?"
+      },
+      "SourceHash": "63d612b0247bf669cff12aeaf8cf432ea64e0842a54babe3fff834fdc3fb4759"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcb7922671",
+      "Fields": {
+        "Meaning": "Lịch sử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歴史（れきし）có nghĩa là lịch sử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152284": "Tôi muốn nghiên cứu lịch sử.",
+        "155123": "Tôi thích lịch sử hơn địa lý."
+      },
+      "SourceHash": "e94fc07f6833f35541050475ee437446d36871fab1b3ad4cf0810376f99c0f70"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b80da200ff",
+      "Fields": {
+        "Meaning": "Quầy tính tiền, máy tính tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "レジ（レジ）có nghĩa là quầy tính tiền, máy tính tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185332": "Xin thanh toán ở quầy lúc ra về.",
+        "192354": "Quầy tính tiền ở đâu ạ?"
+      },
+      "SourceHash": "65f788c921df5b8c3b463946e3543c2ad47e96a73af16b0c5d79a966a0fd91f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9f9f17224",
+      "Fields": {
+        "Meaning": "Báo cáo, bài báo cáo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "レポート（レポート）có nghĩa là báo cáo, bài báo cáo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222997": "Tôi định nghỉ sau khi làm xong báo cáo này.",
+        "228688": "Bạn nộp báo cáo khi nào?"
+      },
+      "SourceHash": "d9f5af038d67222b172817e79435852407ed0e5fc687efd436349cba72350423"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6926bbe9d4",
+      "Fields": {
+        "Meaning": "Liên lạc, thông báo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "連絡（れんらく）có nghĩa là liên lạc, thông báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179918": "Chúng tôi sẽ sớm liên lạc với bạn.",
+        "224384": "Khi đến đây nhớ liên lạc với tôi nhé."
+      },
+      "SourceHash": "da52b3d66367748f3c4499ef18305333d6d41731f8702661cc58dfe03d46e069"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f079ca12a7",
+      "Fields": {
+        "Meaning": "Máy hoặc chương trình xử lý văn bản",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ワープロ（ワープロ）có nghĩa là máy hoặc chương trình xử lý văn bản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84521": "Bố mua cho tôi một chiếc máy soạn văn bản.",
+        "222986": "Tôi mượn máy soạn văn bản này được không?"
+      },
+      "SourceHash": "ef45e5be7702828436827bb953b1031d7699bd6d6c3d28928145c26c9b5e5550"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "58c9a21aa1",
+      "Fields": {
+        "Meaning": "Đun sôi, đun nóng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "沸かす（わかす）có nghĩa là đun sôi, đun nóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216402": "Jessie đang đun nước để pha cà phê.",
+        "226794": "Hãy đun một ít nước."
+      },
+      "SourceHash": "31009c1066215479541ceb9ff4820bec4d0cc79e3d6f1321ac238cce03088c25"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e1641974f4",
+      "Fields": {
+        "Meaning": "Chia tay, chia xa",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "別れる（わかれる）có nghĩa là chia tay, chia xa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200181": "Tom và Nancy chia tay tháng trước.",
+        "215473": "John và Mary chia tay tuần trước."
+      },
+      "SourceHash": "b86586d7b5eefb4f756048de9a83135890362e14a7269854ab864108dc981975"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7e0744822",
+      "Fields": {
+        "Meaning": "Sôi, sôi nổi, phấn khởi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "Nói nước tự sôi hoặc không khí trở nên sôi nổi. 沸かす dùng khi có người đun nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79471": "Nước trong ấm đang sôi.",
+        "168382": "Các ngành công nghiệp của thành phố đều phấn khởi trước đà kinh tế khởi sắc."
+      },
+      "SourceHash": "1c4a6fd3189c8a7c6a2fd82e95e8901061a3f935df2a1030c7dce811b9319a5e"
+    }
+  ]
+}

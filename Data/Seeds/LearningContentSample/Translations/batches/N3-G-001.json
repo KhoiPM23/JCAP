@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nashi",
+      "Fields": {
+        "Meaning": "Không có, không kèm",
+        "Formation": "Danh từ ＋ なし／なしで",
+        "Explanation": "Chỉ sự vắng mặt của thứ được nêu. なしで cho biết một việc được thực hiện mà không có điều đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nashi:example:1": "Không đặt chỗ trước thì có vào nhà hàng này được không ạ?",
+        "nashi:example:2": "Anh ấy làm hết những việc tôi nhờ mà không phàn nàn."
+      },
+      "SourceHash": "60f19c334a2799afced46bb0ceb40735d2f850d54a88b9fd59f8c65c9a18685c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "au",
+      "Fields": {
+        "Meaning": "Làm gì với nhau, cho nhau",
+        "Formation": "Gốc ます ＋ 合う",
+        "Explanation": "Chỉ hành động qua lại hoặc cùng thực hiện, như 助け合う là giúp đỡ lẫn nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "au:example:1": "Cả nhà đã bàn bạc kỹ rồi tôi quyết định đi du học.",
+        "au:example:2": "Khi gặp khó khăn, bạn bè giúp đỡ lẫn nhau là điều quan trọng."
+      },
+      "SourceHash": "0767bf6cba695a7d79db15be4a1aecc7fd5acb039adac833ea8577d8a98c6e35"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ageru",
+      "Fields": {
+        "Meaning": "Làm xong hẳn, hoàn thành",
+        "Formation": "Gốc ます ＋ 上がる／上げる",
+        "Explanation": "上がる nêu kết quả đã hoàn tất, còn 上げる nhấn mạnh chủ thể hoàn thành công việc. Hai câu dùng 上げる.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ageru:example:1": "Cuối cùng tôi cũng viết xong báo cáo và thấy nhẹ nhõm.",
+        "ageru:example:2": "Tôi mất ba năm để hoàn thành tác phẩm này."
+      },
+      "SourceHash": "3cd976e627ad38e56822684d20495107bea814d37cdc23135bd4cb2b61663185"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "atari",
+      "Fields": {
+        "Meaning": "Tính trên mỗi đơn vị",
+        "Formation": "Đơn vị số lượng hoặc thời gian ＋ 当たり",
+        "Explanation": "Nêu mức tiền, số lượng hoặc tỷ lệ tương ứng với một đơn vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "atari:example:1": "Bãi đỗ xe này tính 300 yên mỗi giờ.",
+        "atari:example:2": "Phí dự tiệc là 3.000 yên một người."
+      },
+      "SourceHash": "9f31bfbef038af5b0ec968c1898a7c7e3415716e4139702bd637650ce5574aaa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "amari",
+      "Fields": {
+        "Meaning": "Vì quá… nên",
+        "Formation": "Danh từ ＋ のあまり／động từ thể thường ＋ あまり",
+        "Explanation": "Cảm xúc hoặc trạng thái quá mạnh dẫn đến một phản ứng, thường ngoài ý muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "amari:example:1": "Tôi vui quá đến bật khóc.",
+        "amari:example:2": "Tôi căng thẳng đến mức nói nhầm tên mình."
+      },
+      "SourceHash": "66b2107672dbba719f3e51b4ec9e184b32e0370ef197456ba545d7a4c3b36688"
+    }
+  ]
+}

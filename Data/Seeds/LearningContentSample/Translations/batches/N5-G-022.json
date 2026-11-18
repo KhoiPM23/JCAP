@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mo",
+      "Fields": {
+        "Meaning": "Cũng, cả",
+        "Formation": "Danh từ ＋ も\nDanh từ A ＋ も ＋ danh từ B ＋ も",
+        "Explanation": "も thêm một người hoặc vật vào nhóm có cùng đặc điểm. Lặp も để nói cả A lẫn B.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mo:example:1": "Tôi cũng là sinh viên.",
+        "mo:example:2": "Cả Tanaka và Yamada đều là người Nhật."
+      },
+      "SourceHash": "52cde7e78a2e7d9862498698b34b6bd169a8ded6eeaf83484a84505677fc0de8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mou",
+      "Fields": {
+        "Meaning": "Đã, rồi, không còn",
+        "Formation": "もう ＋ câu khẳng định hoặc phủ định",
+        "Explanation": "もう với khẳng định thường báo việc đã xảy ra. Với phủ định, nó thường cho biết trạng thái trước đó đã chấm dứt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mou:example:1": "Tôi ăn trưa rồi.",
+        "mou:example:2": "Anh ấy không còn ở đây nữa."
+      },
+      "SourceHash": "32a4e401219d34b54d5cb3651648e5a122e27d590419925c7f9f4380aa569381"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "morau",
+      "Fields": {
+        "Meaning": "Nhận, được cho",
+        "Formation": "Người nhận ＋ は／が ＋ người cho ＋ に／から ＋ vật ＋ を ＋ もらう",
+        "Explanation": "もらう diễn tả việc nhận từ phía người nhận. Có thể lược người nhận nếu đã rõ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "morau:example:1": "Tôi được bạn tặng một cuốn sách.",
+        "morau:example:2": "Tôi nhận một chiếc xe đạp cũ từ chị gái."
+      },
+      "SourceHash": "bf2e8ceb9ae4a9244bf5a3f597f80068258a420e69568909c822eb39dd6975ab"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ya",
+      "Fields": {
+        "Meaning": "Và những thứ như",
+        "Formation": "Danh từ A ＋ や ＋ danh từ B（＋ など）",
+        "Explanation": "や nêu một vài ví dụ trong danh sách còn có thể có những mục khác. Có thể thêm など để làm rõ ý liệt kê mở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ya:example:1": "Trên bàn có sách, vở và những thứ tương tự.",
+        "ya:example:2": "Trong tủ lạnh có trứng, sữa và những thứ khác."
+      },
+      "SourceHash": "3125de99fe94ac3b90f001eba4e5dffb6511b01994d631ad5bd01912971808b4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yo",
+      "Fields": {
+        "Meaning": "Đấy, nhé (báo tin hoặc nhấn mạnh)",
+        "Formation": "Câu ＋ よ",
+        "Explanation": "よ đứng cuối câu khi người nói muốn báo thông tin, lưu ý hoặc nhấn mạnh điều người nghe có thể chưa biết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yo:example:1": "Bánh ở tiệm này ngon đấy.",
+        "yo:example:2": "Chìa khóa ở trên bàn đấy."
+      },
+      "SourceHash": "757c7f4929a40355ff5769820204a0db05a955ad3de288ea887c71bfa4a3f3c8"
+    }
+  ]
+}

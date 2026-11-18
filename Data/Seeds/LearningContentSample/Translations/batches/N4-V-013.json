@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "856f1c8216",
+      "Fields": {
+        "Meaning": "Dốc, đường dốc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "坂（さか）có nghĩa là dốc, đường dốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142399": "Ngày trước con dốc đó rất vắng vẻ.",
+        "158090": "Tôi ngã nhiều lần khi đi xuống dốc."
+      },
+      "SourceHash": "8648cd34077b3335c088f6c81ccb2e899f4f6f4810df0ca176437179db93d103"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f4440571e",
+      "Fields": {
+        "Meaning": "Tìm, tìm kiếm",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "探す（さがす）có nghĩa là tìm, tìm kiếm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155234": "Tôi đang tìm phòng cho thuê.",
+        "162327": "Tôi phải tìm thứ đó."
+      },
+      "SourceHash": "fc37e6b1ca7637a84eff511f8db24d796944b4ee5218150825ec326a48e5dac3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "608037bdca",
+      "Fields": {
+        "Meaning": "Hạ xuống, tụt xuống, treo thõng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "下がる（さがる）có nghĩa là hạ xuống, tụt xuống, treo thõng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192281": "Hãy bám và treo người trên sợi dây.",
+        "192547": "Chiếc đèn treo từ trần nhà xuống."
+      },
+      "SourceHash": "9ed45beab919aba721b9b2a9d6fa420e7622c304a992553e096931478ed9e4ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c70caf0317",
+      "Fields": {
+        "Meaning": "Phát triển mạnh, sôi nổi",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "盛ん（さかん）có nghĩa là phát triển mạnh, sôi nổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110837": "Anh ấy vẫn còn tràn đầy sinh lực.",
+        "122789": "Việc dạy tiếng Anh rất phát triển ở Nhật."
+      },
+      "SourceHash": "b3c0ebb268dd24cb32c861d9b749fdc479e6cbb4dbe0ee33280191ecd283b036"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92226ca7db",
+      "Fields": {
+        "Meaning": "Hạ, giảm, treo",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "下げる（さげる）có nghĩa là hạ, giảm, treo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192617": "Bạn vặn nhỏ tiếng radio giúp tôi được không?",
+        "195941": "Bạn giảm âm lượng giúp tôi được không?"
+      },
+      "SourceHash": "34d8933d8977e5c441d2144d5a61ba84b9a2b967edeccf18927c5e10337cd734"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d497f75cf",
+      "Fields": {
+        "Meaning": "Biếu, tặng (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "差し上げる（さしあげる）có nghĩa là biếu, tặng (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145875": "Sau bữa ăn tôi sẽ mời anh/chị cà phê.",
+        "189953": "Tôi mời anh/chị dùng đồ uống nhé?"
+      },
+      "SourceHash": "4dbe47a0e9724bafe870754645eb4113815b0ab96f6e19b4cac2dac2d2a324ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97bf3a5f9e",
+      "Fields": {
+        "Meaning": "Vừa nãy, lúc nãy",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "さっき（さっき）có nghĩa là vừa nãy, lúc nãy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75173": "Chẳng hiểu sao lúc nãy mic không hoạt động.",
+        "216791": "Lúc nãy điện thoại reo nhỉ?"
+      },
+      "SourceHash": "6b137c5505820b0a86586d376e8505694077147798ee3111ff701bc0acbf5b65"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6dc70626da",
+      "Fields": {
+        "Meaning": "Cô đơn, buồn vắng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "寂しい（さびしい）có nghĩa là cô đơn, buồn vắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205781": "Vì vậy cô ấy cảm thấy rất cô đơn.",
+        "216740": "Chìm trong nỗi cô đơn rồi rơi sâu hơn."
+      },
+      "SourceHash": "f4e09ed69405cf78c493f19d76a133fb00a6ed0d5b3ee3f4f0fb10fd759a4284"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22a8ff8a88",
+      "Fields": {
+        "Meaning": "Tháng sau nữa",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "再来月（さらいげつ）có nghĩa là tháng sau nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170805": "Tháng sau nữa là tháng Mười Hai."
+      },
+      "SourceHash": "f66f62c61b15c82734d46f4aa9415e5f6f8cca71d535707abbba5f8967bdf455"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6678a1d99",
+      "Fields": {
+        "Meaning": "Tuần sau nữa",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "再来週（さらいしゅう）có nghĩa là tuần sau nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170804": "Thứ Năm của tuần sau nữa thì sao?"
+      },
+      "SourceHash": "3a96c0bb38d158e6f08b65456035f2bb2de6c8919d9ac67a5ab30cfcf4db54d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43f6c947f9",
+      "Fields": {
+        "Meaning": "Salad, rau trộn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "サラダ（サラダ）có nghĩa là salad, rau trộn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194137": "Anh/chị dùng thêm chút salad nhé?",
+        "223721": "Món salad này có hương chanh."
+      },
+      "SourceHash": "c01fcd57855dced74d548b60760efddf02f1e855259a78b821254b6afabd45b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5afe333d1c",
+      "Fields": {
+        "Meaning": "Làm ồn, náo động",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "騒ぐ（さわぐ）có nghĩa là làm ồn, náo động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201665": "Xin đừng làm ồn như thế.",
+        "213922": "Trong lúc như vậy không được làm ầm lên."
+      },
+      "SourceHash": "bc60d1b8a5e61a602547e7617b599542f0afb96eb3a1095fbdfc9b6fec7f4f1a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d0bb40a1f",
+      "Fields": {
+        "Meaning": "Chạm, sờ",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "触る（さわる）có nghĩa là chạm, sờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145944": "Cứ để nguyên đó, đừng chạm vào.",
+        "196385": "Đừng chạm vào máy ảnh của tôi."
+      },
+      "SourceHash": "6b2682cfc262245084212e5f0351820e37ac758ce8cf8c660069f84626e9545d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28faf8f7a3",
+      "Fields": {
+        "Meaning": "Công nghiệp, ngành sản xuất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "産業（さんぎょう）có nghĩa là công nghiệp, ngành sản xuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122463": "Nhật Bản là một nước công nghiệp.",
+        "210593": "Nước đó sống dựa vào công nghiệp."
+      },
+      "SourceHash": "1c9e111cddf76b4a99c1a6690afd5575651d70148ee80e046fef6b70c7973c9f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4b94df57e2",
+      "Fields": {
+        "Meaning": "Dép xăng-đan",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "サンダル（サンダル）có nghĩa là dép xăng-đan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229530": "Đi xăng-đan đế dày như thế coi chừng ngã trẹo chân đấy."
+      },
+      "SourceHash": "1cc5082f022da5edf003320a99f4d3b4b1fbc104e20e1322981abd87982f205c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f919deef04",
+      "Fields": {
+        "Meaning": "Bánh mì kẹp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "サンドイッチ（サンドイッチ）có nghĩa là bánh mì kẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216626": "Nếu gọi bánh mì kẹp thì mất bao lâu?",
+        "226824": "Bữa trưa ăn bánh mì kẹp được không?"
+      },
+      "SourceHash": "489ec5ea23fa488ced806ad1fc196eb74243bed6ec85c5c0dc70978e88acc953"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6243a1575b",
+      "Fields": {
+        "Meaning": "Tiếc, đáng tiếc",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "残念（ざんねん）có nghĩa là tiếc, đáng tiếc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204390": "Thật đáng tiếc vì đã làm chuyện đó.",
+        "227123": "Tôi rất tiếc vì không thể đến thăm."
+      },
+      "SourceHash": "1a5d0273989c3e0f7162a6bb12579bfcccc4052e607251752a97552819b49691"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "988f9bb24f",
+      "Fields": {
+        "Meaning": "Thành phố",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "市（し）có nghĩa là thành phố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207785": "Thị trấn đó phát triển thành thành phố.",
+        "221749": "Dân số thành phố này khoảng bao nhiêu?"
+      },
+      "SourceHash": "f3511d606ac5f7879713314dfc264021c1092a84bff7f020fecaa6c2fd6c6514"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd89673ae0",
+      "Fields": {
+        "Meaning": "Chữ, nét chữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "字（じ）có nghĩa là chữ, nét chữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150736": "Hãy viết các chữ cách nhau rộng hơn.",
+        "177217": "Bạn viết chữ đẹp nhỉ."
+      },
+      "SourceHash": "d89d6b87213f3d5884f4a3513205376b1d67d388f5a0371525366e0da54f5a5d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fd00937783",
+      "Fields": {
+        "Meaning": "Trận đấu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "試合（しあい）có nghĩa là trận đấu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151031": "Trận đấu chẳng thú vị chút nào.",
+        "210021": "Trận đấu đó bắt đầu lúc mấy giờ?"
+      },
+      "SourceHash": "92f701fc67731ad491b45ef9369738c04d2c745fae245922f160a77f196b4371"
+    }
+  ]
+}

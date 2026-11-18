@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ppanashi",
+      "Fields": {
+        "Meaning": "Cứ để nguyên trạng thái",
+        "Formation": "Gốc ます ＋ っぱなし／っぱなしにする",
+        "Explanation": "Giữ một trạng thái hoặc hành động kéo dài, thường do quên xử lý sau khi làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ppanashi:example:1": "Tôi ra ngoài mà quên tắt đèn.",
+        "ppanashi:example:2": "Tôi để cửa sổ mở mãi nên phòng lạnh đi."
+      },
+      "SourceHash": "970c3f048a5c9142a748958e7262997c6bd931f2f75c39d2fb91e38965b13fbd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ppoi",
+      "Fields": {
+        "Meaning": "Có vẻ như, mang tính, hay",
+        "Formation": "Danh từ hoặc gốc ます ＋ っぽい",
+        "Explanation": "Gợi đặc điểm nổi bật hoặc khuynh hướng. Từ tạo thành chia như tính từ い.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ppoi:example:1": "Anh ấy hay quên nên thường quên các cuộc hẹn.",
+        "ppoi:example:2": "Tôi thấy màu đó hơi trẻ con."
+      },
+      "SourceHash": "f4baa86dcb9883895a21736b9dd102d402c493ee35f8287352b794d1deda148b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsumari",
+      "Fields": {
+        "Meaning": "Tức là, tóm lại",
+        "Formation": "Ý trước ＋ つまり ＋ ý diễn giải hoặc kết luận",
+        "Explanation": "Nói lại cho rõ hoặc rút ra kết luận từ thông tin vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsumari:example:1": "Chị của bố tôi, tức bác tôi, đến chơi.",
+        "tsumari:example:2": "Anh ấy không trả lời. Tức là anh ấy không quan tâm."
+      },
+      "SourceHash": "809e25173274bb787d364f1321f59b565a15d94b678e7070ea79f7578052efd4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsumori-datta",
+      "Fields": {
+        "Meaning": "Đã định, cứ tưởng đã làm",
+        "Formation": "Động từ thể từ điển／thể た ＋ つもりだった",
+        "Explanation": "Thể từ điển nói dự định trước đó. Thể た nói việc người nói tưởng mình đã làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsumori-datta:example:1": "Tôi định ngủ sớm hôm nay, vậy mà lại thức muộn.",
+        "tsumori-datta:example:2": "Tôi cứ tưởng đã gửi email, nhưng nó vẫn nằm trong mục thư nháp."
+      },
+      "SourceHash": "cc66c52d6a8a8581d644434b5e8d5afb51e73c33cde6bad6971c600a467b133b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsumori-de",
+      "Fields": {
+        "Meaning": "Với ý định, coi như",
+        "Formation": "Động từ thể từ điển hoặc thể た ＋ つもりで",
+        "Explanation": "Chỉ mục đích khi hành động hoặc tâm thế giả định mà chủ thể chọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsumori-de:example:1": "Tôi sẽ lấy lại tinh thần và cố gắng như thể mình mới vào năm nhất.",
+        "tsumori-de:example:2": "Tôi đến để giúp, nên cứ bảo tôi làm bất cứ việc gì."
+      },
+      "SourceHash": "af6c12bf79a6c7de27e9302bb713e5094eb551ac17f6feebc7500f4836b27302"
+    }
+  ]
+}

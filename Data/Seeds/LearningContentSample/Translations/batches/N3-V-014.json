@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c7a0c5f8b",
+      "Fields": {
+        "Meaning": "Bánh kẹo, đồ ngọt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "菓子（かし）có nghĩa là bánh kẹo, đồ ngọt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210134": "Đứa trẻ chộp lấy bánh.",
+        "222701": "Xin cứ tự nhiên lấy bánh kẹo này."
+      },
+      "SourceHash": "3b0e65060c060b880f2fe0b8de39188a9339dfe9fb9fb7825e6c822926cc3eb7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a88999f659",
+      "Fields": {
+        "Meaning": "Việc cho mượn, món nợ ân tình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "貸し（かし）có nghĩa là việc cho mượn, món nợ ân tình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196643": "Nếu cần bút, tôi sẽ cho bạn mượn.",
+        "202119": "Nhưng lần này cậu nợ tớ một lần giúp đỡ nhé."
+      },
+      "SourceHash": "b037761ec854c1d92117e8210c89999497fcbb601a96eec19a09dca6e9d8b56e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33875d6135",
+      "Fields": {
+        "Meaning": "Việc nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家事（かじ）có nghĩa là việc nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152333": "Tôi giúp bố mẹ làm việc nhà.",
+        "170362": "Những việc vợ tôi làm chỉ giới hạn trong việc nhà."
+      },
+      "SourceHash": "35318c41dc3f934b9278bc6e5c890972daa8c49f7be0fa4b99941586749cc29e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d26324d28a",
+      "Fields": {
+        "Meaning": "Thông minh, khôn ngoan",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "賢い（かしこい）có nghĩa là thông minh, khôn ngoan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191137": "Người vĩ đại chưa chắc đã khôn ngoan.",
+        "232241": "Em đúng là một học sinh thông minh!"
+      },
+      "SourceHash": "20d01e18655582a707c4dc9b89c55eff8b49d6dd1073d0f80786de0416b307cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f554d2951b",
+      "Fields": {
+        "Meaning": "Ca sĩ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歌手（かしゅ）có nghĩa là ca sĩ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90827": "Cô ấy mà là ca sĩ thì thật khó tin.",
+        "211970": "Ca sĩ đó là thần tượng của giới trẻ."
+      },
+      "SourceHash": "dfa7bb9d6664c79dab399abd2fea867e69e5095c03ef3493f15cc9210f2b8c07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44d7586ff3",
+      "Fields": {
+        "Meaning": "Số, số lượng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "数（かず）có nghĩa là số, số lượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78140": "Số khách du lịch đã tăng mạnh trong những năm gần đây.",
+        "168310": "Số ô tô lưu thông trong thành phố đã tăng."
+      },
+      "SourceHash": "4d33fd634c22ace34c5bdf7409e4c31fab3ea63a2df95c166689c8737dfb9fcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d45fe050fc",
+      "Fields": {
+        "Meaning": "Kiếm tiền, kiếm được",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "稼ぐ（かせぐ）có nghĩa là kiếm tiền, kiếm được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106591": "Anh ấy kiếm được nhiều tiền đến mức tiêu không hết.",
+        "156228": "Tôi phải tự kiếm tiền trang trải sinh hoạt."
+      },
+      "SourceHash": "4c71a706a9aaea36abf1a0e5ccb43859058bca5230a4765eabcb83477586b67e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3b808e41e",
+      "Fields": {
+        "Meaning": "Đếm",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "数える（かぞえる）có nghĩa là đếm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79932": "Hãy nhắm mắt và đếm đến 10.",
+        "230974": "Đứa trẻ đó đếm được đến 20."
+      },
+      "SourceHash": "898862009237644ca1653233dff34214f24f290b723b2f9fb9ffc9665157d406"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d48dc95a3",
+      "Fields": {
+        "Meaning": "Khuôn, kiểu, mẫu",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "型（かた）có nghĩa là khuôn, kiểu, mẫu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123478": "Quý khách có muốn kiểu nào cụ thể không ạ?",
+        "208331": "Bức tượng đó được đúc bằng khuôn."
+      },
+      "SourceHash": "3589204ca1dbab40226c863190a7776743f7d08934a1d9eceec922bfc6b6cd56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d0f1d715ac",
+      "Fields": {
+        "Meaning": "Vai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "肩（かた）có nghĩa là vai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86778": "Cô ấy tựa đầu lên vai mẹ.",
+        "175202": "Tôi đau vai."
+      },
+      "SourceHash": "457081bf7f199117e35c17e26d1cc06cfe2f8f99ea53433ad876338c3496be5b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cae9ac1779",
+      "Fields": {
+        "Meaning": "Cứng, chắc, khô cứng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "硬い（かたい）có nghĩa là cứng, chắc, khô cứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78488": "Hãy luộc trứng chín kỹ.",
+        "203869": "Không có gì cứng bằng kim cương."
+      },
+      "SourceHash": "175435c9aa6f660e90f16387be149b5538e801209d35a8506f1d8615b7898dd7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9627ee0f6",
+      "Fields": {
+        "Meaning": "Các vị, những người, nhiều nơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Đọc かたがた khi gọi nhiều người một cách kính trọng và ほうぼう khi chỉ nhiều nơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192039": "Nếu không hiểu thì nên hỏi người ở nhiều nơi.",
+        "230802": "Đó có phải những người anh chị gặp hôm qua không?"
+      },
+      "SourceHash": "16e06f80aa459e666f51eb7cbb2cc7e244b1cd6e323a3ca763f8bdd9f23ddcee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26c040c009",
+      "Fields": {
+        "Meaning": "Kiếm, đao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "刀（かたな）có nghĩa là kiếm, đao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75236": "“Đang luyện ném kiếm à?” “Chỉ là tuột tay thôi.”",
+        "522676": "Thanh kiếm ấy xứng với một hoàng tử."
+      },
+      "SourceHash": "c3bc14f7cafaf51bfb09f010f71d8d8d6e9246b5abc7614f3193dafe171a7b3b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c34db201ec",
+      "Fields": {
+        "Meaning": "Kể, thuật lại, nói lên",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "語る（かたる）có nghĩa là kể, thuật lại, nói lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84850": "Bố kể cho tôi nghe những trải nghiệm trong chiến tranh.",
+        "173334": "Hành động có sức nói lên nhiều hơn lời nói."
+      },
+      "SourceHash": "4a6a3b2d0a496e68c3fa723323f991d4f5003cedd7b2de87660029b3a14fac1a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "24c7b38c0b",
+      "Fields": {
+        "Meaning": "Giá trị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "価値（かち）có nghĩa là giá trị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111178": "Ông ấy đã có một phát hiện rất có giá trị.",
+        "219771": "Cuốn sách này có giá trị nhất định."
+      },
+      "SourceHash": "2367785f323c335676918dedf9c389f2c23df088de5eeec7a9f743ae62422cb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "74be6d8f27",
+      "Fields": {
+        "Meaning": "Chiến thắng, phần thắng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "勝ち（かち）có nghĩa là chiến thắng, phần thắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140534": "Đừng vội mừng. Ai cười được đến cuối cùng mới là người thắng.",
+        "151014": "Trận đấu kết thúc với phần thắng thuộc về anh ấy."
+      },
+      "SourceHash": "0541143e685ab992b0ffe1db3b7ca481d6b725b338239b3a6f38e7c07d1e5b94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca8605d113",
+      "Fields": {
+        "Meaning": "Thất vọng, hụt hẫng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "がっかり（がっかり）có nghĩa là thất vọng, hụt hẫng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155324": "Tôi thất vọng về con trai mình.",
+        "207971": "Tôi thất vọng về tin đó."
+      },
+      "SourceHash": "cc5f05a3677633bb7af7aab7595f4b677865bdcf3f1d0c3d8e8b87a853988cbd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0973ea4445",
+      "Fields": {
+        "Meaning": "Sức sống, sự sôi động",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "活気（かっき）có nghĩa là sức sống, sự sôi động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148749": "Người trẻ thường tràn đầy sinh lực.",
+        "211688": "Thành phố đó tràn đầy sức sống."
+      },
+      "SourceHash": "384da3017fb4989aa9ce19c35720470eeb21812de069c3b08196c6376669089c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bd15630c9",
+      "Fields": {
+        "Meaning": "Học kỳ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "学期（がっき）có nghĩa là học kỳ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140952": "Học kỳ trước tôi có kết quả tốt.",
+        "172483": "Học kỳ này bạn có học môn chính trị học không?"
+      },
+      "SourceHash": "f4ec1a3d065e053a4f510426143abd712a6aac91924c08175d5c7f2514458676"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "791cdda968",
+      "Fields": {
+        "Meaning": "Hoạt động",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "活動（かつどう）có nghĩa là hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88075": "Cô ấy tham gia nhiều hoạt động ở trường.",
+        "114600": "Anh ấy lúc nào cũng tất bật hoạt động."
+      },
+      "SourceHash": "5710b499e8df18c390331b0e095d2436cc82051df011d9eeb5d89637fe89ae7c"
+    }
+  ]
+}

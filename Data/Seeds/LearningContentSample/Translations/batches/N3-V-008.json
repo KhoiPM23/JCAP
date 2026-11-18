@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2306950c03",
+      "Fields": {
+        "Meaning": "Cán, tay cầm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "柄（え）có nghĩa là cán, tay cầm.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "81a833ef1f999c0e016f68276276e181c26cda9e55d747846f3512db4437759a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "881624f8c3",
+      "Fields": {
+        "Meaning": "Vĩnh cửu, mãi mãi",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, tính từ đuôi な",
+        "Explanation": "永遠（えいえん）có nghĩa là vĩnh cửu, mãi mãi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148765": "Đừng quên tuổi trẻ không kéo dài mãi.",
+        "211917": "Có thể nói họa sĩ ấy là một cậu bé mãi không lớn."
+      },
+      "SourceHash": "a1b3167e98dceabcf2a6a91aa7ab7f204ec028654f91d0b5dfbae4e976b7a38e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1aeb94b13",
+      "Fields": {
+        "Meaning": "Vĩnh viễn, lâu dài",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "永久（えいきゅう）có nghĩa là vĩnh viễn, lâu dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109769": "Ông ấy rời Nhật Bản vĩnh viễn.",
+        "160858": "Tôi sẽ không bao giờ quên chuyện này."
+      },
+      "SourceHash": "75d9954d8eb7d21f9b1e031c02bbd3b172c6e1e25526f9f57dcc2c3efad00130"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef5af5c903",
+      "Fields": {
+        "Meaning": "Ảnh hưởng, tác động",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "影響（えいきょう）có nghĩa là ảnh hưởng, tác động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138450": "Nhiều chương trình truyền hình tác động xấu đến trẻ em.",
+        "223510": "Có thể thấy ảnh hưởng của Trung Quốc trong thiết kế này."
+      },
+      "SourceHash": "92a13b52956f3037b55364bac329aec8d8344b7b63d3b1ec7f4be6ac479669c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b43c2524a1",
+      "Fields": {
+        "Meaning": "Kinh doanh, bán hàng, hoạt động của cửa hàng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "営業（えいぎょう）có nghĩa là kinh doanh, bán hàng, hoạt động của cửa hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114714": "Trông anh ấy đúng kiểu dân bán hàng nhỉ.",
+        "189354": "Tôi đã thử trao đổi với người bên bộ phận kinh doanh."
+      },
+      "SourceHash": "59a88820b83c52d12fe5af7101383b07aedebf3e4e67939891ea26ca421b9b74"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c9a230646c",
+      "Fields": {
+        "Meaning": "Vệ tinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "衛星（えいせい）có nghĩa là vệ tinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175634": "Mặt Trăng là vệ tinh tự nhiên duy nhất của Trái Đất.",
+        "188968": "Vệ tinh hiện đã vào quỹ đạo."
+      },
+      "SourceHash": "fbc489b3e777b33a9e4e2cfe177171ad18da690f042da9dc2d2150493ab408f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d4e493846",
+      "Fields": {
+        "Meaning": "Dinh dưỡng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "栄養（えいよう）có nghĩa là dinh dưỡng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89733": "Cô ấy chú ý đến chế độ dinh dưỡng của con.",
+        "222368": "Loại cá này vừa rẻ vừa bổ dưỡng."
+      },
+      "SourceHash": "d8474e4fddec5a5f3a53794925c2a12d49c58350b5008736da9ad7de99a2c550"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c74bb9a118",
+      "Fields": {
+        "Meaning": "Gương mặt tươi cười, nụ cười",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "笑顔（えがお）có nghĩa là gương mặt tươi cười, nụ cười.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96980": "Họ tươi cười đón tôi.",
+        "198994": "Nancy hiếm khi mỉm cười."
+      },
+      "SourceHash": "191e018708156769d9dec1342a8b86b6d2f8d618f364b53cb8108c774bd18bd1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a359eccfaf",
+      "Fields": {
+        "Meaning": "Vẽ, khắc họa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "描く（えがく）có nghĩa là vẽ, khắc họa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157926": "Tôi muốn có một căn phòng để vẽ.",
+        "193074": "Cuối cùng tôi cũng vẽ xong bức tranh."
+      },
+      "SourceHash": "2061eabdd0c84de55b93a2189a55b35ecb52894286d288339f44652c9d05fabf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "35c17c9820",
+      "Fields": {
+        "Meaning": "Thức ăn cho động vật, mồi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "餌（えさ）có nghĩa là thức ăn cho động vật, mồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90251": "Cô ấy quên cho chó ăn.",
+        "175320": "Hãy cho chó ăn mỗi ngày."
+      },
+      "SourceHash": "097b875c5bf25e87841b72f0451990461f1003314f4259a7b8dd2e00fa9a49a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e06f642257",
+      "Fields": {
+        "Meaning": "Năng lượng, sức lực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "エネルギー（エネルギー）có nghĩa là năng lượng, sức lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82121": "Tôi đã cạn hết sức lực.",
+        "121890": "Nhiệt là một dạng năng lượng."
+      },
+      "SourceHash": "6016860d69332df36575c7c4592669a1d0c072b183a92f4eb1f0a501629d2974"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c4965a193",
+      "Fields": {
+        "Meaning": "Đạt được, thu được, giành được",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "得る（える）có nghĩa là đạt được, thu được, giành được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123404": "Có người tìm được cảm giác thư thái nhờ đọc sách.",
+        "236092": "Mười đội tranh nhau giành giải."
+      },
+      "SourceHash": "8fed8c3324f031a604fc252c8e311ae382fcfab4c7344b5f7c55519745a3c2ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f671b4241c",
+      "Fields": {
+        "Meaning": "Hình tròn, đồng yên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "円（えん）có nghĩa là hình tròn, đồng yên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160305": "Tôi mất 3.000 yên để mua đĩa nhạc đó.",
+        "183967": "Nó không còn trông như một hình tròn hoàn hảo nữa."
+      },
+      "SourceHash": "08dd7e86479dad3dc42a0f2a9f1868076ce8fe0f2a601478be7fab92a23f45bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25232583e5",
+      "Fields": {
+        "Meaning": "Hoãn, dời lịch",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "延期（えんき）có nghĩa là hoãn, dời lịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97606": "Họ buộc phải hoãn chuyến đi.",
+        "166009": "Chúng tôi phải hoãn cuộc họp."
+      },
+      "SourceHash": "bf85fa753bf5766dc5adfae26d2af8f4d93616278c73b8aacd5248ec79f40648"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb6a8a28be",
+      "Fields": {
+        "Meaning": "Diễn xuất, phần trình diễn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "演技（えんぎ）có nghĩa là diễn xuất, phần trình diễn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91001": "Cô ấy có năng khiếu diễn xuất.",
+        "184561": "Cô ấy hát hay thật, nhưng diễn không tốt."
+      },
+      "SourceHash": "1ece67bfb86fc62c3aa050f00550faed4ee975e3edcf097adf704133111e8197"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc5a9c3372",
+      "Fields": {
+        "Meaning": "Hỗ trợ, viện trợ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "援助（えんじょ）có nghĩa là hỗ trợ, viện trợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157765": "Tôi sẵn lòng giúp bạn.",
+        "158727": "Tôi không còn nhận sự hỗ trợ của bố nữa."
+      },
+      "SourceHash": "b1a64f3208a2bfedc726bf028d26f107fe498dc93e19fb2277d378d0c1723dd3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bea34c67cd",
+      "Fields": {
+        "Meaning": "Động cơ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "エンジン（エンジン）có nghĩa là động cơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99805": "Anh ấy kiểm tra động cơ mỗi ngày.",
+        "213332": "Động cơ đó chạy bằng hơi nước."
+      },
+      "SourceHash": "092759e83d1530066eb247abb2671e96315f5003eb7289cb0810ed17ba8c0e48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33abea1364",
+      "Fields": {
+        "Meaning": "Bài diễn văn, phát biểu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "演説（えんぜつ）có nghĩa là bài diễn văn, phát biểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95140": "Bài phát biểu của họ rất hay.",
+        "112063": "Ông ấy phát biểu trước đông người."
+      },
+      "SourceHash": "62736766dd80ff8bb38265e5ab2808d30d6c750777c723f92006445443120a95"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec9c550d48",
+      "Fields": {
+        "Meaning": "Biểu diễn âm nhạc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "演奏（えんそう）có nghĩa là biểu diễn âm nhạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188770": "Buổi biểu diễn sắp kết thúc.",
+        "223303": "Tôi đang nghe ban nhạc này biểu diễn."
+      },
+      "SourceHash": "bd00d724e1dbd1be525ba33c38deed0da1f0ed05e5b183d7f68949eff33ef6a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c851c43f7",
+      "Fields": {
+        "Meaning": "Tiền tố kính ngữ",
+        "PartOfSpeech": "Tiền tố",
+        "Explanation": "御 đứng trước từ khác để tạo sắc thái kính trọng, như 御社 (quý công ty). Câu thứ hai mở đầu bằng thán từ お.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76178": "Xin quý công ty cho biết ý kiến trước ạ.",
+        "76834": "Ồ, Tae, phô mai này ngon đấy."
+      },
+      "SourceHash": "92bfb8594d317ad7f5a7a4e1cd8230d7696ee256c6a40e3703c0b4dd7d6efeb1"
+    }
+  ]
+}

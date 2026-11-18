@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật.",
+    "Mục たて phân biệt phương dọc và kích thước theo phương đó. Đối chiếu Digital Daijisen tại https://kotobank.jp/word/%E7%B8%A6-526217"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ee7cd3382",
+      "Fields": {
+        "Meaning": "Rất thích, mê",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "大好き（だいすき）nhấn mạnh mức độ yêu thích. Dùng đối tượng ＋ が大好き.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144314": "Con người rất thích trò chuyện.",
+        "192202": "Roger rất mê tiệc tùng."
+      },
+      "SourceHash": "94b6c2d3f16d59efe847da98f70a78e008b4d0d9906fb50a9ef95887f7f3cad0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3a8593e53",
+      "Fields": {
+        "Meaning": "Quan trọng, quý giá",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "大切（たいせつ）chỉ điều có giá trị hoặc đáng được coi trọng. 〜にとって大切 nghĩa là quan trọng đối với ai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81616": "Đọc sách là việc quan trọng.",
+        "143754": "Nước rất quan trọng đối với con người."
+      },
+      "SourceHash": "6f433ef4d289af68097f72cf157d3cbed956cb1d411ee3b37d6468f817a4dbdf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e04372c490",
+      "Fields": {
+        "Meaning": "Rất, hết sức, nghiêm trọng",
+        "PartOfSpeech": "Phó từ, tính từ đuôi な",
+        "Explanation": "たいへん có thể nhấn mạnh mức độ, như たいへんおもしろい. Dạng たいへんな đứng trước danh từ, như たいへんなショック (cú sốc lớn).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219705": "Cuốn sách này rất thú vị.",
+        "237333": "Đó là một cú sốc lớn."
+      },
+      "SourceHash": "9920f6331c56809d26eb26a3c3d875ba8441b065956f859b7c41c02e9934439a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c74892f565",
+      "Fields": {
+        "Meaning": "Cao, đắt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "高い（たかい）chỉ độ cao hoặc giá cao. 高い木 là cây cao, còn 値段が高い là giá đắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123179": "Trong hai cái, cái nào đắt hơn?",
+        "218541": "Cây này cao quá!"
+      },
+      "SourceHash": "8793619ed816d19d667c2aea7f3e5052ccb7e0f0bf5111ed182043825e25c845"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7c72d9bb1",
+      "Fields": {
+        "Meaning": "Nhiều, rất nhiều",
+        "PartOfSpeech": "Phó từ, danh từ",
+        "Explanation": "たくさん chỉ số lượng lớn. Có thể nói たくさんある (có nhiều) hoặc たくさんの本 (nhiều sách).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199298": "Vẫn còn nhiều việc phải làm.",
+        "204301": "Anh/chị đã cho tôi nhiều đến thế."
+      },
+      "SourceHash": "ae9ca51220269f39ca4a61ddc6167d4d355b0263cdb523c41e4df8ea0ab53445"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d5a93eb11",
+      "Fields": {
+        "Meaning": "Taxi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "タクシー chỉ xe taxi. タクシーをつかまえる là bắt taxi, còn タクシーに乗る là lên taxi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212991": "Chiếc taxi đó đột ngột rẽ trái.",
+        "224661": "Tôi có thể bắt taxi ở đây không?"
+      },
+      "SourceHash": "e13d70300fdcf855cac2fffce7776a74ed7718da3d665124aa7c607c176aa456"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6298cfc5d6",
+      "Fields": {
+        "Meaning": "Đưa ra, lấy ra, phục vụ, nêu ra",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "出す（だす）chỉ việc đưa một thứ ra. 食べ物を出す là dọn hoặc phục vụ đồ ăn. 名前を出す là nêu tên.",
+        "UsageNotes": "Thể て là 出して."
+      },
+      "Examples": {
+        "222164": "Tôi không muốn nêu tên mình trong chuyện này.",
+        "224634": "Ở đây phục vụ đồ ăn ngon."
+      },
+      "SourceHash": "d65a83b385fae2d9d28baff45f7c34c8e83125db4c5139b95ece91ca319cecb9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "932afda20b",
+      "Fields": {
+        "Meaning": "Đứng, đứng lên",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "立つ（たつ）chỉ việc đứng lên. 立っている là đang đứng. 立たせる là bảo hoặc bắt ai đứng.",
+        "UsageNotes": "Thể て là 立って."
+      },
+      "Examples": {
+        "78277": "Những người đang đứng đều là đàn ông.",
+        "199215": "Sao lại để tôi đứng mãi ở đây?"
+      },
+      "SourceHash": "ee65f6c9ccf26b5a7d397b02a88a0b09167daf042303c130035dafd40bf0a7e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7ca1b2fd5",
+      "Fields": {
+        "Meaning": "Chiều dọc, chiều dài hoặc chiều cao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "たて thường viết là 縦, chỉ phương dọc theo chiều trên dưới hoặc trước sau, hoặc kích thước theo chiều đó. 縦一列 là một hàng dọc.",
+        "UsageNotes": "Từ đối ứng là 横（よこ）, nghĩa là chiều ngang."
+      },
+      "Examples": {
+        "184932": "Không thể bắt cua đi theo chiều dọc được.",
+        "202374": "Hãy xếp các bàn nối tiếp nhau thành một hàng dọc."
+      },
+      "SourceHash": "41592b62aa3e29ef067043ebf131adf27b32b82dc5c7453356303300c027a424"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "372b08211e",
+      "Fields": {
+        "Meaning": "Tòa nhà, công trình xây dựng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "建物（たてもの）chỉ công trình như nhà hoặc tòa nhà. 建物の中 nghĩa là bên trong tòa nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175391": "Các tòa nhà trông bé xíu.",
+        "192428": "Linda bước vào trong tòa nhà."
+      },
+      "SourceHash": "6fe0d07f8f01bd837a8c4dc0dbe080d6f70430332e514364010a68452cea93a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b2d455dfe",
+      "Fields": {
+        "Meaning": "Vui, thú vị",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "楽しい（たのしい）diễn tả cảm giác vui khi trải nghiệm một việc. 楽しそう chỉ vẻ vui hoặc trông có vẻ thú vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197488": "Hitomi trông rất vui.",
+        "233856": "Tôi đã rất vui khi ở cùng bạn."
+      },
+      "SourceHash": "56601ca27ef65257d237035b4f2be9635487be611530ee12d91149f1886b1384"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7e9d38afeb",
+      "Fields": {
+        "Meaning": "Nhờ, yêu cầu, đặt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "頼む（たのむ）dùng khi nhờ ai làm gì hoặc đặt món, đặt chỗ. Người được nhờ đi với に, thứ được yêu cầu đi với を.",
+        "UsageNotes": "Thể て là 頼んで."
+      },
+      "Examples": {
+        "223523": "Tôi đâu có yêu cầu bàn này.",
+        "233649": "Tôi nhờ anh/chị một việc được không ạ?"
+      },
+      "SourceHash": "9af343f74bd583e8543f8d0b783f8e1222d358d67206e2fd19ba0412e94bd7b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "80beed00bf",
+      "Fields": {
+        "Meaning": "Thuốc lá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "たばこ chỉ thuốc lá, có thể viết タバコ. たばこに火をつける là châm thuốc, còn たばこをやめる là bỏ hút thuốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127211": "Người đàn ông dùng bật lửa châm một điếu thuốc.",
+        "203430": "Bỏ thuốc lá không dễ chút nào."
+      },
+      "SourceHash": "70497fc52cc12c4aac9a972bcb419baf26d40423e6be1da480c980b6fc18abdd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9eba03b7b",
+      "Fields": {
+        "Meaning": "Có lẽ, chắc là",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "たぶん diễn tả suy đoán có khả năng đúng. Thường gặp với でしょう hoặc と思う.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178680": "Chắc bạn đã biết hết chuyện này rồi.",
+        "203356": "Có lẽ anh ấy có nhiều bạn gái."
+      },
+      "SourceHash": "3eeecc364bc236fc609d284a8c8082f972df907c30d014b6f1f260a7a83f02a5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d66739694",
+      "Fields": {
+        "Meaning": "Trứng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "卵（たまご）chỉ trứng. 一ダースずつ là mỗi nhóm một tá.",
+        "UsageNotes": "Câu nguồn dùng cách viết づつ cho ずつ."
+      },
+      "Examples": {
+        "78471": "Ăn trứng vào thì bị nổi mề đay.",
+        "78480": "Hãy đóng trứng thành từng tá."
+      },
+      "SourceHash": "ea7e91680c9f18b5cf2bdcd2d8b4bf9eda85c137027390f321389e002f4164fb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3d2ca62c5f",
+      "Fields": {
+        "Meaning": "Ai",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "誰（だれ）dùng để hỏi người. 誰が hỏi ai là người làm hoặc đảm nhiệm việc gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137017": "Không biết ai đã làm việc này.",
+        "137043": "Ai là người quản lý tòa nhà này?"
+      },
+      "SourceHash": "00edfb579c0f0586cf91a20f313774f0acd8ccbac9370e3a2adf45ab6d019062"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e610178ae",
+      "Fields": {
+        "Meaning": "Sinh nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "誕生日（たんじょうび）chỉ ngày sinh hoặc dịp kỷ niệm ngày sinh. 誕生日のプレゼント là quà sinh nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127349": "Sinh nhật là ngày một người được sinh ra.",
+        "217561": "Đây là quà sinh nhật cho bạn."
+      },
+      "SourceHash": "782269a4fbef3a6077b06c984cb614ec109aeea03d0c30dcba2eb8ceda6a72d2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55dbb815ba",
+      "Fields": {
+        "Meaning": "Dần dần, ngày càng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "だんだん diễn tả thay đổi từng bước theo thời gian. だんだん大きくなる nghĩa là dần lớn lên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122958": "Ban ngày đang dần dài hơn.",
+        "205465": "Nó dần lớn lên."
+      },
+      "SourceHash": "7d8ddd391f98b4dc8678adcadd99b49bf1d95e82757d73b74f183a2a8eff5e7f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d4779ac36c",
+      "Fields": {
+        "Meaning": "Nhỏ, bé",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "小さい（ちいさい）tả kích thước nhỏ. もっと小さい là nhỏ hơn, còn 小さいの có thể thay cho vật nhỏ đã biết.",
+        "UsageNotes": "Có thể dùng 小さい làm vị ngữ hoặc đứng trước danh từ."
+      },
+      "Examples": {
+        "193270": "Có cỡ nhỏ hơn không ạ?",
+        "218012": "Không có cái nào nhỏ hơn cái này sao?"
+      },
+      "SourceHash": "25893e185ccbd4a34383a56242449b302f6d6f63d59ed81deac61bc9dfd9f080"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38a8411ec3",
+      "Fields": {
+        "Meaning": "Nhỏ, bé (đứng trước danh từ)",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "小さな（ちいさな）đứng trước danh từ, như 小さなことで nói về chuyện nhỏ.",
+        "UsageNotes": "Khi làm vị ngữ, dùng 小さい."
+      },
+      "Examples": {
+        "147022": "Đừng buồn phiền vì chuyện nhỏ.",
+        "229481": "Ann là một cô bé."
+      },
+      "SourceHash": "2bfc35495476166e99ba100edbaf761439461a40787e0143117c7cd332aa50e3"
+    }
+  ]
+}

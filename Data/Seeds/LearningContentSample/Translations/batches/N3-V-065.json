@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e512ff0725",
+      "Fields": {
+        "Meaning": "Trần truồng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "裸（はだか）có nghĩa là trần truồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142232": "Em bé không mặc quần áo.",
+        "168704": "Bọn trẻ bơi mà không mặc gì."
+      },
+      "SourceHash": "946057e87d693097024d901345b3dcf0e574758a1e232ee9a993e82e0cb144ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f4fd9f8f66",
+      "Fields": {
+        "Meaning": "Ruộng cạn, lĩnh vực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "畑（はたけ）có nghĩa là ruộng cạn, lĩnh vực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108343": "Ông ấy trưởng thành trong ngành giáo dục.",
+        "147634": "Sang xuân, chúng tôi xới đất ruộng rồi gieo hạt."
+      },
+      "SourceHash": "17961caafeb80a164179eaa2c09fabd856f3b2b4c2b733ecdba6e87100bd7230"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d26933404",
+      "Fields": {
+        "Meaning": "Hoạt động, công dụng, sự làm việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "働き（はたらき）có nghĩa là hoạt động, công dụng, sự làm việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123805": "Làm việc quá sức có lẽ không tốt cho cơ thể.",
+        "208732": "Sơ đồ đó giải thích hoạt động của cơ thể."
+      },
+      "SourceHash": "958a4c32b3479d3127482aa5bccc359e2e9afd9fa059b8a717c55e17d590b259"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a68fa62f5",
+      "Fields": {
+        "Meaning": "Túi xách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "バッグ（バッグ）có nghĩa là túi xách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195970": "Kìa, túi của bạn ở đó.",
+        "197972": "Tôi nên để túi ở đâu?"
+      },
+      "SourceHash": "ea7efa9a7b3222052bd227aee7fb6185657c27157cb52b865bc70b427e698f5b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b9edd7963b",
+      "Fields": {
+        "Meaning": "Phát hiện, khám phá",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発見（はっけん）có nghĩa là phát hiện, khám phá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203207": "Tôi tự hỏi ai đã phát hiện ra nó.",
+        "217552": "Columbus đã khám phá châu Mỹ."
+      },
+      "SourceHash": "ac20220ee540c5fa2db36b90f4da3a302efc54e0ff2c060dca3665bad6821cce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7b2ac42cba",
+      "Fields": {
+        "Meaning": "Phát hành, xuất bản",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発行（はっこう）có nghĩa là phát hành, xuất bản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145359": "Tem mới sẽ được phát hành vào tuần tới.",
+        "220572": "Tờ báo địa phương này phát hành mỗi tuần một lần."
+      },
+      "SourceHash": "302991e8e8420084f1e938b4014e0371650ef8f858ccdaf530c2195a5e38071b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "215a642747",
+      "Fields": {
+        "Meaning": "Khởi hành, rời bến",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発車（はっしゃ）có nghĩa là khởi hành, rời bến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188914": "Tàu đã rời ga trước khi tôi đến.",
+        "198114": "Xe buýt sẽ khởi hành sau năm phút."
+      },
+      "SourceHash": "6ce00983da83726cad283665c3b50edbc226de39d0a9915303e2224e69aaa14a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b57a219b43",
+      "Fields": {
+        "Meaning": "Trừng phạt, xử phạt",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "罰する（ばっする）có nghĩa là trừng phạt, xử phạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142717": "Ông ấy chẳng bận tâm khi phạt học sinh.",
+        "201569": "Tại sao bạn lại phạt họ?"
+      },
+      "SourceHash": "e1e195288a63b59dbe3dd723940a9d5b52b12b96ea8a7324ccb0999d2f9f8b17"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7bf9f0076e",
+      "Fields": {
+        "Meaning": "Phát triển, hình thành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発達（はったつ）có nghĩa là phát triển, hình thành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143688": "Bơi lội giúp phát triển cơ bắp.",
+        "174423": "Tục hôn nhau dần hình thành."
+      },
+      "SourceHash": "896dde09d72d71264d13278f8c541c1fe020698c8767bd70de4753a31f0011aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1038a70c3e",
+      "Fields": {
+        "Meaning": "Tình cờ, bất chợt",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "ばったり（ばったり）có nghĩa là tình cờ, bất chợt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109607": "Anh ấy tình cờ gặp cô ấy ở ga.",
+        "123619": "Tôi tình cờ gặp cô ấy trên đường."
+      },
+      "SourceHash": "ca5e6232bb0099681065cfc9ad791786018fae7c2b654055a78509058c97343d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5b2724a2f",
+      "Fields": {
+        "Meaning": "Phát triển, mở rộng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発展（はってん）có nghĩa là phát triển, mở rộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147150": "Thương mại thúc đẩy đô thị phát triển.",
+        "176474": "Kinh tế phát triển chậm."
+      },
+      "SourceHash": "651faab42119976f8f71254bba89aeb0f1d3fd322ad7196f5363d7d2fe57220e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "738eff46a4",
+      "Fields": {
+        "Meaning": "Công bố, phát biểu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発表（はっぴょう）có nghĩa là công bố, phát biểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106504": "Anh ấy không dám nêu ý kiến.",
+        "207185": "Nghe thông báo đó, anh ấy nhảy bật lên."
+      },
+      "SourceHash": "3dcbe27f5ac4251986d42807ac966315756da58250ff441c7c1ffcd438cfe4ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9d15cf734",
+      "Fields": {
+        "Meaning": "Phát minh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "発明（はつめい）có nghĩa là phát minh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121306": "Có thể nói phát minh nảy sinh từ nhu cầu.",
+        "227978": "Edison đã phát minh ra bóng đèn."
+      },
+      "SourceHash": "aee509ac1eab2669764b3900c32bda0ed4b865181a49355db5191be95b989cf8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc409e931a",
+      "Fields": {
+        "Meaning": "Thảo luận, bàn bạc",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "話し合う（はなしあう）có nghĩa là thảo luận, bàn bạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84827": "Sau khi bàn với bố, tôi quyết định đổi việc.",
+        "224662": "Chúng ta bàn chuyện đó ở đây nhé."
+      },
+      "SourceHash": "4d4360029615d3342dc05752333a6e8c3160d27bcdfd61ac99821dacf156a667"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa0b4f216c",
+      "Fields": {
+        "Meaning": "Thả, buông",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "放す（はなす）có nghĩa là thả, buông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210997": "Con chó không chịu nhả bóng.",
+        "9045415": "Xin chú ý đừng thả chó ra."
+      },
+      "SourceHash": "a1717676b57e3861c430d139614b8d9cdc5612d6135ba19604a35f47be048c08"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "156957f2ed",
+      "Fields": {
+        "Meaning": "Tách ra, buông ra",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "離す（はなす）có nghĩa là tách ra, buông ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167911": "Anh chị bỏ tay ra khỏi người tôi được không?",
+        "214187": "Xin lỗi. Bây giờ tôi đang bận tay."
+      },
+      "SourceHash": "505da84eddb6b94f06a83c741e718de545cb97970fc823410cfb4b511458dba5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0024055e8e",
+      "Fields": {
+        "Meaning": "Rời xa, tách khỏi",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "離れる（はなれる）có nghĩa là rời xa, tách khỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94877": "Tôi gắn bó với cô ấy nên không thể rời xa.",
+        "101767": "Anh ấy rời Tokyo đi Kyoto."
+      },
+      "SourceHash": "c36dbb370ef2f0012afe584874d5d0961eae7eebfeafd0b9ee944bb031cb6c3d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a101c852f4",
+      "Fields": {
+        "Meaning": "Lông vũ, cánh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "羽（はね）có nghĩa là lông vũ, cánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123696": "Chim cùng màu lông thường tụ lại với nhau.",
+        "203602": "Đà điểu có cánh nhưng không bay được."
+      },
+      "SourceHash": "508342d7df0ccbd09435387e33a13708b573847a33f7fd385b8a88ce44fbdf0a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fe84c43ef",
+      "Fields": {
+        "Meaning": "Chiều rộng, bề ngang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "幅（はば）có nghĩa là chiều rộng, bề ngang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207413": "Con đường đó rộng mười feet.",
+        "220823": "Sông này rộng một dặm."
+      },
+      "SourceHash": "c02bf292419631d0c732b48ea30f96a247af4745990ba2726e658a080d7d8ed6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0caca661c5",
+      "Fields": {
+        "Meaning": "Mẹ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "母親（ははおや）có nghĩa là mẹ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82772": "Người mẹ đang bận nấu bữa tối.",
+        "209353": "Cô bé giống mẹ mình."
+      },
+      "SourceHash": "c97b6ccc991873345c64bd9a4723ca375ce19e5707fca754b40f806d02f1bbf1"
+    }
+  ]
+}
