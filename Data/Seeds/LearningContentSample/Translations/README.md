@@ -37,7 +37,7 @@ Lô chưa dịch đủ ví dụ không được đưa vào `batches/`. Lưu nhá
 
 ## Áp dụng
 
-Backend tự áp dụng `reviewed.sql` sau seed nội dung và đợt Việt hóa cũ, cùng transaction của seed.
+Trong mỗi phiên bản seed chưa hoàn tất, backend áp dụng `reviewed.sql` sau seed nội dung và đợt Việt hóa cũ, cùng transaction của seed. Sau khi hoàn tất, dấu phiên bản trong `LearningContentSeedStates` giúp bỏ qua toàn bộ pipeline ở những lần startup tiếp theo. Thay đổi tài nguyên seed làm fingerprint đổi và pipeline chạy lại một lần; có thể chủ động gọi `--seed-learning-content --force`.
 Máy chạy ứng dụng không cần Node.js, Python hay dịch vụ AI cho bước seed.
 Để áp dụng riêng lên DB local đã có dữ liệu:
 
@@ -48,7 +48,7 @@ sqlcmd -S localhost -E -C -d JCAP_DB -b -f 65001 -i Data/Seeds/LearningContentSa
 SQL đối chiếu nguồn, phiên bản, ID gốc và trường nhận diện. Nội dung chính được thay khi toàn bộ trường còn khớp nguyên bản hoặc khớp bản dịch cũ đã ghi trong `previous-translations.json`. Ví dụ được cập nhật khi câu Nhật còn nguyên và bản dịch đang trống hoặc khớp chính xác bản dịch cũ cần hiệu đính. Bản ghi mất nguồn hoặc đổi nhận diện được bỏ qua và đếm. Nguồn bị gắn trùng làm transaction dừng để kiểm tra. Các chỉnh sửa riêng của admin được giữ lại cùng với ID, trạng thái và quan hệ. Chạy lại sau khi hiệu đính sẽ bỏ qua các mục đã cập nhật.
 
 Các số liệu trong tiến độ là độ bao phủ ở source. DB đã được admin chỉnh sửa có thể bỏ qua một số mục.
-Không cần migration vì chỉ bổ sung nội dung.
+Các đợt bổ sung bản dịch không cần migration mới. Cơ chế theo dõi seed cần migration `20261118052838_TrackLearningContentSeedVersion` một lần; backend hoặc lệnh `--seed-learning-content` tự áp dụng khi cập nhật.
 
 ## Nguồn và giấy phép
 

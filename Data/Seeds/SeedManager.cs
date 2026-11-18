@@ -22,7 +22,11 @@ namespace JCAP.Data.Seeds
                 await CreditPackageSeeder.SeedAsync(services);
 
                 // 2b. Nạp học liệu N5–N3 và các bản dịch đã biên soạn.
-                await LearningContentSeeder.SeedAsync(context);
+                var learningOptions = app.Configuration.GetSection(LearningContentSeedOptions.SectionName)
+                    .Get<LearningContentSeedOptions>() ?? new();
+                var learningStatus = await LearningContentSeeder.SeedAsync(context, learningOptions);
+                services.GetRequiredService<ILoggerFactory>().CreateLogger("LearningContentSeed")
+                    .LogInformation("Learning content seed: {Status}.", learningStatus);
 
                 // 3. Seed các kịch bản mẫu (Scenarios) & đồng bộ kho học liệu khớp với Scenarios
                 await ScenarioSeeder.SeedAsync(services);
