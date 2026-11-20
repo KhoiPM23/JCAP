@@ -33,7 +33,7 @@ AUDIO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", 
 os.makedirs(AUDIO_DIR, exist_ok=True)
 app.mount("/audio/roleplay", StaticFiles(directory=AUDIO_DIR), name="audio")
 
-MODEL_SIZE = os.getenv("WHISPER_MODEL", "base")
+MODEL_SIZE = os.getenv("WHISPER_MODEL", "small")
 DEVICE = os.getenv("WHISPER_DEVICE", "cpu")
 COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
 
