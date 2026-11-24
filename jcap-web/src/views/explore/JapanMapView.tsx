@@ -18,12 +18,28 @@ import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
 import { BOUNDARY_CREDIT, prefectureLandmarks } from './prefectureDetail';
 import { SpotFocusCard } from './SpotFocusCard';
-import { SpotLesson, shadowingPracticeUrl } from './SpotLesson';
+import { SpotLesson } from './SpotLesson';
+import { SpotShadowing } from './SpotShadowing';
+import { resumeOf } from './spotShadowingShared';
 import { WordCard } from './WordCard';
 
 const PANEL_WIDTH_PX = 400;
 const SHEET_HEIGHT_PX = 320;
 const PANEL_EXIT_MS = 180;
+/** Điểm đạt Shadowing mặc định (khớp AdminExploreSpotService.DefaultShadowingPass) */
+const DEFAULT_SHADOWING_PASS = 60;
+/** Khung chat Shadowing tại mốc (khớp --cw trong spotShadowing.css): clamp(420px, 37.5vw, 540px), cách ngăn tỉnh 12px */
+const practiceChatWidth = (vw: number) => Math.min(540, Math.max(420, vw * 0.375));
+
+function useViewportWidth(): number {
+  const [w, setW] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const onResize = () => setW(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return w;
+}
 
 const PREFECTURE_BY_SLUG = new Map(PREFECTURES.map((p) => [p.slug, p]));
 const REGION_JP = new Map(REGIONS.map((r) => [r.id, r.nameJp]));
@@ -45,7 +61,7 @@ const normalize = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().trim();
 
 /** Trạng thái lịch sử do trang này đẩy vào: số mục đã đẩy (để "Xem toàn quốc" lùi đúng bấy nhiêu bước) */
-type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmLesson?: boolean } | null;
+type MapNavState = { jmDepth?: number; jmSpot?: boolean; jmLesson?: boolean; jmPractice?: boolean } | null;
 
 /**
  * Trang "Khám phá": bản đồ Nhật Bản toàn màn hình, kéo/phóng to tự do. Bấm một tỉnh để bay tới tỉnh đó,
@@ -63,6 +79,7 @@ export const JapanMapView: React.FC<{
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const isWide = useMediaQuery('(min-width: 1024px)');
+  const viewportWidth = useViewportWidth();
   const isTouch = useMediaQuery('(pointer: coarse)');
   const isWideHint = useMediaQuery('(min-width: 761px)');
   const [interacted, setInteracted] = useState(false);
@@ -96,6 +113,20 @@ export const JapanMapView: React.FC<{
     selected && activeSpot != null && searchParams.get('hoc') === '1'
       ? cachedSpot(prefectureLandmarks(selected.id)[activeSpot].spotId)
       : undefined;
+  // Đang luyện Shadowing của địa điểm (?luyen=1): khung chat mở cạnh ngăn thông tin tỉnh
+  const practiceSpotRaw =
+    selected && activeSpot != null && searchParams.get('luyen') === '1'
+      ? cachedSpot(prefectureLandmarks(selected.id)[activeSpot].spotId)
+      : undefined;
+  const practiceActivity = practiceSpotRaw?.lesson?.activities.find((a) => a.type === 'Shadowing' && a.referenceId);
+  const practiceSpot = practiceActivity ? practiceSpotRaw : undefined;
+  /** Thông báo trên bản đồ sau khi đóng khung luyện giữa chừng ("Đã lưu. Lần sau bạn tiếp tục từ câu N.") */
+  const [practiceToast, setPracticeToast] = useState<{ text: string; key: number } | null>(null);
+  useEffect(() => {
+    if (!practiceToast) return;
+    const t = window.setTimeout(() => setPracticeToast(null), 4500);
+    return () => window.clearTimeout(t);
+  }, [practiceToast]);
 
   const selectedWord = toProvinceWord(selected ? journey.prefecture(selected.id)?.word : null);
 
@@ -157,6 +188,32 @@ export const JapanMapView: React.FC<{
     if (!selected || activeSpot == null) return;
     if (navState.jmLesson) navigate(-1);
     else setSearchParams({ tinh: selected.slug, dd: String(activeSpot + 1) }, { replace: true, state: { ...navState, jmLesson: false } });
+  };
+
+  /**
+   * Mở khung luyện Shadowing của địa điểm n cạnh ngăn thông tin (?luyen=1): đẩy thêm một mục lịch sử để Back đóng khung.
+   * Mở từ ngăn bài học thì thay mục bài học (Back về đúng chỗ trước khi mở bài học).
+   */
+  const openPractice = (n: number) => {
+    if (!selected) return;
+    const params = { tinh: selected.slug, dd: String(n + 1), luyen: '1' };
+    if (lessonSpot) {
+      setSearchParams(params, { replace: true, state: { ...navState, jmLesson: false, jmPractice: !!navState.jmLesson } });
+      return;
+    }
+    if (activeSpot !== n) {
+      const spotParams = { tinh: selected.slug, dd: String(n + 1) };
+      if (activeSpot != null) setSearchParams(spotParams, { replace: true, state: navState });
+      else setSearchParams(spotParams, { state: { jmDepth: depth + 1, jmSpot: true } });
+    }
+    const base = activeSpot != null ? navState : { jmDepth: depth + 1, jmSpot: true };
+    setSearchParams(params, { state: { ...base, jmDepth: (base.jmDepth ?? 0) + 1, jmPractice: true } });
+  };
+  const closePractice = (toast: string | null) => {
+    if (toast) setPracticeToast({ text: toast, key: Date.now() });
+    if (!selected || activeSpot == null) return;
+    if (navState.jmPractice) navigate(-1);
+    else setSearchParams({ tinh: selected.slug, dd: String(activeSpot + 1) }, { replace: true, state: { ...navState, jmPractice: false } });
   };
 
   const selectedData = usePrefectureData(selectedId);
@@ -241,7 +298,10 @@ export const JapanMapView: React.FC<{
           activeSpot={activeSpot}
           onSpotSelect={selectSpot}
           onSpotLearn={openLesson}
-          reserveRight={selected && isWide ? PANEL_WIDTH_PX + 24 : 0}
+          practicing={!!practiceSpot}
+          reserveRight={
+            selected && isWide ? PANEL_WIDTH_PX + 24 + (practiceSpot ? practiceChatWidth(viewportWidth) + 12 : 0) : 0
+          }
           reserveBottom={selected && !isWide ? SHEET_HEIGHT_PX : 0}
           onInteract={() => setInteracted(true)}
           legend={<MapLegend />}
@@ -249,7 +309,8 @@ export const JapanMapView: React.FC<{
         />
 
         {/* Đang xem một tỉnh: nút về toàn quốc + đường dẫn (thanh bên đã trượt ra ngoài) */}
-        {selected && (
+        {/* Đang luyện Shadowing ở khung bên cạnh: ẩn để không che trang ghi chú (đóng khung bằng nút X hoặc Esc) */}
+        {selected && !practiceSpot && (
           <div className="jm-backbar">
             <button type="button" onClick={() => selectPrefecture(null)} className="jm-back">
               <Icon name="arrow_back" size={22} />
@@ -327,18 +388,50 @@ export const JapanMapView: React.FC<{
             activeSpot={selected ? activeSpot : null}
             onSpotSelect={selectSpot}
             onSpotLearn={openLesson}
+            onShadowing={openPractice}
+            practicingSpot={selected && practiceSpot ? activeSpot : null}
             onClose={() => selectPrefecture(null)}
             headingRef={headingRef}
           />
         )}
 
+        {/* Shadowing tại mốc (?luyen=1): khung chat bên trái ngăn thông tin, bản đồ trượt sang trái */}
+        {selected && practiceSpot && practiceActivity?.referenceId && (
+          <SpotShadowing
+            key={`${practiceSpot.id}:${practiceActivity.referenceId}`}
+            spot={practiceSpot}
+            pref={selected}
+            dialogueId={practiceActivity.referenceId}
+            pass={practiceActivity.passThreshold ?? DEFAULT_SHADOWING_PASS}
+            regionInk={REGION_STYLE[selected.region].ink}
+            furigana={furigana}
+            onClosed={closePractice}
+          />
+        )}
+
+        {practiceToast && !practiceSpot && (
+          <p key={practiceToast.key} className="jm-practice-toast" role="status">
+            <Icon name="check_circle" size={20} />
+            {practiceToast.text}
+          </p>
+        )}
+
         {/* Bài học của địa điểm (?hoc=1): ngăn nổi trên bản đồ */}
         {selected && lessonSpot && (
-          <SpotLesson key={lessonSpot.id} spot={lessonSpot} spotIndex={activeSpot!} pref={selected} furigana={furigana} isWide={isWide} onClose={closeLesson} />
+          <SpotLesson
+            key={lessonSpot.id}
+            spot={lessonSpot}
+            spotIndex={activeSpot!}
+            pref={selected}
+            furigana={furigana}
+            isWide={isWide}
+            onClose={closeLesson}
+            onShadowing={() => openPractice(activeSpot!)}
+          />
         )}
 
         {/* Vừa đạt con dấu / con dấu tỉnh / chương mới */}
-        <AwardOverlay lessonSpotId={lessonSpot?.id ?? null} journey={journey} isWide={isWide} />
+        <AwardOverlay lessonSpotId={lessonSpot?.id ?? practiceSpot?.id ?? null} journey={journey} isWide={isWide} />
 
         <style>{`
           .jm-ukiyoe { ${THEME_CSS_VARS} }
@@ -478,6 +571,10 @@ interface PrefecturePanelProps {
   onSpotSelect: (index: number | null) => void;
   /** Mở bài học của địa điểm */
   onSpotLearn: (index: number) => void;
+  /** Mở khung luyện Shadowing của địa điểm cạnh ngăn này */
+  onShadowing?: (index: number) => void;
+  /** Địa điểm đang luyện Shadowing ở khung bên cạnh */
+  practicingSpot?: number | null;
   onClose: () => void;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
 }
@@ -490,6 +587,8 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
   activeSpot,
   onSpotSelect,
   onSpotLearn,
+  onShadowing,
+  practicingSpot = null,
   onClose,
   headingRef,
 }) => {
@@ -542,7 +641,7 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
       } ${closing ? 'jm-closing pointer-events-none' : ''} jm-ppanel z-20 flex flex-col overflow-hidden`}
       style={isWide ? { width: PANEL_WIDTH_PX } : { height: SHEET_HEIGHT_PX }}
     >
-      <div ref={scrollRef} className={`flex flex-1 flex-col gap-[18px] overflow-y-auto overscroll-contain ${isWide ? 'px-5 pt-[18px] pb-4' : 'px-4 pt-3 pb-3'}`}>
+      <div ref={scrollRef} className={`jm-ppanel-scroll flex flex-1 flex-col gap-[18px] overflow-y-auto overscroll-contain ${isWide ? 'px-5 pt-[18px] pb-4' : 'px-4 pt-3 pb-3'}`}>
         {/* Vùng + nút đóng */}
         <div className="flex items-center justify-between">
           <span className="jm-region-chip">
@@ -622,7 +721,13 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
             ink={region.ink}
             onToggle={() => onSpotSelect(activeSpot === focusIdx ? null : focusIdx)}
             onLearn={() => onSpotLearn(focusIdx)}
-            onShadowing={(id) => navigate(shadowingPracticeUrl(id, pref.slug, focusIdx))}
+            onShadowing={() => onShadowing?.(focusIdx)}
+            practicing={practicingSpot === focusIdx}
+            shadowingLabel={(() => {
+              const id = spotData(focusIdx)?.lesson?.activities.find((a) => a.type === 'Shadowing')?.referenceId;
+              const r = id != null ? resumeOf(id) : null;
+              return r ? `Tiếp tục (câu ${r.index + 1}/${r.total})` : undefined;
+            })()}
             onRoleplay={(id) => {
               const returnUrl = `/explore?tinh=${pref.slug}&spot=${focusIdx}`;
               navigate(`/scenarios/${id}?return=${encodeURIComponent(returnUrl)}`);

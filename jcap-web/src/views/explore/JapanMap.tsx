@@ -290,6 +290,8 @@ export interface JapanMapProps {
   legend?: React.ReactNode;
   /** Ô tìm tỉnh (nằm trong cột nút, cạnh nút furigana) */
   search?: React.ReactNode;
+  /** Đang luyện Shadowing của địa điểm đang chọn ở khung bên cạnh: ẩn thẻ nổi và cụm nút, gắn nhãn "Đang luyện" trên ghim */
+  practicing?: boolean;
 }
 
 export const JapanMap: React.FC<JapanMapProps> = ({
@@ -303,6 +305,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   onInteract,
   legend,
   search,
+  practicing = false,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -1673,7 +1676,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       )}
 
       {/* Thẻ nổi của địa điểm đang chọn: đặt ở phía không che ghim nào, bám theo ghim khi kéo/phóng to */}
-      {showLabels && activePos && activeLandmark && activeSpot != null && selected && (
+      {practicing && activePos && activeSpot != null && selected && (
+        <span className="jm-practice-tag" style={{ left: activePos.x, top: activePos.y }}>
+          Đang luyện
+        </span>
+      )}
+
+      {!practicing && showLabels && activePos && activeLandmark && activeSpot != null && selected && (
         <SpotCard
           pin={activePos}
           obstacles={[
@@ -1708,8 +1717,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
 
       {/* Góc dưới phải: Chú giải, rồi cột nút [ふ · tìm tỉnh] và [+ · − · về toàn quốc] (không đặt nút nào ở góc trên phải) */}
       <div
-        className="absolute z-30 flex items-end gap-2.5 transition-[right,bottom] duration-300"
-        style={{ right: reserveRight + 20, bottom: reserveBottom + 20 }}
+        className="absolute z-30 flex items-end gap-2.5 transition-[right,bottom,opacity] duration-300"
+        style={{
+          right: reserveRight + 20,
+          bottom: reserveBottom + 20,
+          ...(practicing ? { opacity: 0, pointerEvents: 'none' as const } : null),
+        }}
+        aria-hidden={practicing || undefined}
       >
         {legend}
         <div className="flex flex-col gap-2">
@@ -1735,6 +1749,9 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       </div>
 
       <style>{`
+        .jm-practice-tag { position: absolute; z-index: 19; transform: translate(-50%, calc(-100% - 30px)); height: 26px; padding: 0 12px; border-radius: 999px;
+          background: var(--shu); color: var(--on-shu); font-size: 13px; font-weight: 700; line-height: 26px; white-space: nowrap; pointer-events: none;
+          box-shadow: 0 0 0 2px var(--paper-50); animation: jm-reveal .2s ease-out both; }
         .jm-ctlgroup { display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50); overflow: hidden;
           box-shadow: 0 6px 18px rgba(8,26,56,.22); }
         .jm-mapctl { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent;
