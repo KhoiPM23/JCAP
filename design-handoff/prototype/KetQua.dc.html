@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>JCAP · Kết quả Vòng 3 (gọn, thân thiện) · Hội thoại AI</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;family=Lora:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;display:inline-block}
+.mincho{font-family:var(--font-mincho)}
+.tnum{font-variant-numeric:tabular-nums}
+/* ---- con dấu mốc ---- */
+.stp{--ink:var(--ai);position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:var(--s,72px);height:var(--s,72px);color:var(--ink);transform:rotate(var(--r,0deg));filter:url(#inkfx);mix-blend-mode:multiply;box-sizing:border-box;vertical-align:top}
+.stp.son{--ink:var(--shu)}
+.stp .in{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-align:center;line-height:1}
+.stp .msr{font-size:calc(var(--s,72px)*.27)}
+.stp b{font-family:var(--font-mincho);font-weight:700;font-size:calc(var(--s,72px)*.15);line-height:1.08;letter-spacing:.02em;white-space:pre-line}
+.stp i{font-style:normal;font-size:calc(var(--s,72px)*.105);font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.stp--ring{border:3px solid var(--ink);border-radius:50%}
+.stp--ring::before{content:"";position:absolute;inset:4px;border:1px solid var(--ink);border-radius:50%}
+.stp--sq{border:3px double var(--ink);border-radius:9px}
+.stp--sq b{font-size:calc(var(--s,72px)*.2)}
+.stp--oval{height:calc(var(--s,72px)*.78);border:2.5px solid var(--ink);border-radius:50%}
+.stp--oval::before{content:"";position:absolute;inset:3.5px;border:1px solid var(--ink);border-radius:50%}
+.stp--band{border:2.5px solid var(--ink);border-radius:8px;overflow:hidden;align-items:stretch;justify-content:flex-start;flex-direction:column}
+.stp--band .top{background:var(--ink);color:var(--paper-50);display:flex;align-items:center;justify-content:center;height:34%;padding:0 4px}
+.stp--band .top b{font-size:calc(var(--s,72px)*.17)}
+.stp--band .in{flex:1;gap:2px}
+/* ô trống (chưa có) */
+.slot{width:var(--s,72px);height:var(--s,72px);box-sizing:border-box;border:1.5px dashed var(--line-strong);border-radius:50%;opacity:.55;display:inline-flex;align-items:center;justify-content:center;color:var(--sumi-faint);flex:none}
+.slot--sq{border-radius:12px}
+/* ---- con dấu tỉnh ---- */
+.pst{display:inline-flex;flex-direction:column;align-items:center;gap:6px;flex:none;width:var(--s,88px)}
+.pst svg{width:var(--s,88px);height:var(--s,88px);display:block;overflow:visible}
+.pst{color:var(--ink,var(--sumi-muted))}.pst.ink{--ink:var(--ai)}.pst.son{--ink:var(--shu)}
+.pst.ink svg,.pst.son svg{filter:url(#inkfx);mix-blend-mode:multiply;transform:rotate(var(--r,-4deg))}
+.pcap{font-size:12px;line-height:16px;font-weight:700;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+/* ---- giấy ---- */
+.paper{background:var(--paper-50);color:var(--sumi);border:1px solid var(--line)}
+.grain{background-image:repeating-linear-gradient(0deg,transparent 0 27px,var(--paper-100) 27px 28px)}
+.stat-n{font-family:var(--font-mincho);font-weight:700;font-variant-numeric:tabular-nums}
+@keyframes stampdown{0%{transform:scale(1.7) rotate(var(--r,0deg));opacity:0}55%{transform:scale(.94) rotate(var(--r,0deg));opacity:1}100%{transform:scale(1) rotate(var(--r,0deg));opacity:1}}
+@keyframes ripple{0%{transform:scale(.7);opacity:.5}100%{transform:scale(1.35);opacity:0}}
+.ripple.off{display:none}
+.skl{border-radius:14px;background:var(--paper-200);animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.skl{animation:none}}
+.pressed{animation:stampdown .42s cubic-bezier(.2,.8,.2,1) .25s both}
+.ripple{position:absolute;inset:0;border-radius:50%;border:2px solid var(--shu);animation:ripple .9s ease-out .55s both;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.ripple.off{display:none}
+.skl{border-radius:14px;background:var(--paper-200);animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.skl{animation:none}}
+.pressed{animation:none}.ripple{display:none}}
+.row{display:flex;align-items:center;gap:12px;width:100%;height:42px;box-sizing:border-box;padding:0 13px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--sumi-muted);cursor:pointer;text-align:left;text-decoration:none}
+.row:hover{background:var(--paper-200);color:var(--sumi)}
+.row.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.row.on .jc-icon{color:var(--shu)}
+.ib{display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.ib:hover{background:var(--paper-200);color:var(--sumi)}
+.glbl{height:18px;padding:0 13px;font-size:12px;line-height:18px;font-weight:600}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+
+.rs-page{display:flex;align-items:stretch;min-height:inherit}
+.rs-main{flex:1 1 0;min-width:0;padding:32px 36px 64px}
+@media (max-width:760px){.rs-page>aside{display:none!important}.rs-main{padding:20px 16px 88px}}
+
+
+.rs{color:var(--sumi);font-family:var(--font-sans)}
+.rs h1,.rs h2,.rs h3,.rs p,.rs ol,.rs ul,.rs dl,.rs dd{margin:0;padding:0}
+.rs ol,.rs ul{list-style:none}
+.rs-in{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.rs :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.rs-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px}
+.rs-head h1{font-size:28px;line-height:38px;font-weight:700}
+.rs-head p{margin-top:4px;font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.rs-tnum{font-variant-numeric:tabular-nums}
+/* chữ Hán biểu trưng tình huống: cùng hệ với ghim trên landing */
+.rs-emb{display:inline-flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--ai-soft);color:var(--ai);font-family:var(--font-mincho);font-weight:700;font-size:18px;line-height:1}
+.rs-emb.lg{width:56px;height:56px;font-size:26px}
+/* ---- hồ sơ phản xạ ---- */
+.rs-top{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:stretch}
+.rs-prof{display:flex;flex-direction:column;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.rs-ph{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;padding:18px 24px 0}
+.rs-ph h2{font-size:17px;line-height:24px;font-weight:700}
+.rs-ph span{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.rs-m4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:22px 0 20px}
+.rs-m4>div{display:flex;flex-direction:column;gap:8px;padding:2px 24px;border-left:1px solid var(--line)}
+.rs-m4>div:first-child{border-left:0}
+.rs-m4 dt{font-size:13px;line-height:20px;font-weight:600;color:var(--sumi-muted)}
+.rs-m4 dd{display:flex;align-items:baseline;gap:2px}
+.rs-m4 dd b{font-size:32px;line-height:36px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rs-m4 dd small{font-size:14px;color:var(--sumi-muted);font-weight:600}
+.rs-m4 .sub{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.rs-m4 .sub[lang]{font-family:var(--font-jp);letter-spacing:.12em}
+.rs-sf{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:16px 24px 20px;border-top:1px solid var(--line);margin-top:auto}
+.rs-sf h3{font-size:13px;line-height:20px;font-weight:600;color:var(--sumi-muted);margin-bottom:8px}
+.rs-sf ul{display:flex;flex-wrap:wrap;gap:6px}
+.rs-next{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:22px 22px 20px;border-radius:var(--radius-xl);background:var(--ai-soft)}
+.rs-next h2{margin-top:6px;font-size:13px;line-height:20px;font-weight:600;color:var(--sumi-muted)}
+.rs-next .t{font-size:20px;line-height:28px;font-weight:700}
+.rs-next .d{font-size:14px;line-height:22px;color:var(--sumi-muted);margin-bottom:auto}
+.rs-next .jc-btn{margin-top:8px}
+/* ---- đầu danh sách ---- */
+.rs-lh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
+.rs-lh h2{display:flex;align-items:baseline;gap:8px;font-size:20px;line-height:28px;font-weight:700}
+.rs-lh h2 .n{font-size:15px;font-weight:600;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.rs-flt{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.rs-flt .jc-field{width:320px;margin:0}
+/* ---- sổ kết quả: một tờ, mỗi buổi một dòng ---- */
+.rs-led{border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line);overflow:hidden}
+.rs-led>li+li{border-top:1px solid var(--line)}
+.rs-row{display:grid;grid-template-columns:72px 40px minmax(0,1fr) 96px 200px 24px;align-items:center;gap:0 18px;width:100%;min-height:76px;padding:12px 22px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.rs-row:hover{background:var(--paper-100)}
+.rs-date{display:flex;flex-direction:column;font-variant-numeric:tabular-nums}
+.rs-date b{font-size:15px;line-height:22px;font-weight:700}
+.rs-date small{font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.rs-tt{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rs-title{font-size:16px;line-height:24px;font-weight:600;overflow-wrap:anywhere}
+.rs-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.rs-score{display:flex;align-items:baseline;justify-content:flex-end;gap:2px;font-variant-numeric:tabular-nums}
+.rs-score b{font-size:26px;line-height:30px;font-weight:700;letter-spacing:-.02em}
+.rs-score small{font-size:13px;color:var(--sumi-muted);font-weight:600}
+.rs-gr{display:flex;align-items:center;gap:12px}
+.rs-gn{display:flex;flex-direction:column;font-size:14px;line-height:20px;font-weight:600}
+.rs-gn small{font-size:12px;line-height:18px;font-weight:500;color:var(--sumi-muted)}
+.rs-chev{color:var(--sumi-faint)}
+/* triện hạng: đạt thì đóng mực son, chưa đạt là ô chờ đóng */
+.rs-seal{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border-radius:7px;font-family:var(--font-mincho);font-weight:700;font-size:25px;line-height:1}
+.rs-seal.on{color:var(--shu);border:2.5px solid currentColor;box-shadow:inset 0 0 0 2px var(--paper-50),inset 0 0 0 3.2px currentColor;transform:rotate(-5deg);filter:url(#inkfx);mix-blend-mode:multiply}
+.rs-seal.off{color:var(--sumi-muted);border:1.5px dashed var(--line-strong)}
+[data-theme$="-dem"] .rs-seal.on{mix-blend-mode:normal}
+.rs-pager{display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;line-height:20px;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+/* ---- shadowing ---- */
+.rs-sum{display:flex;flex-wrap:wrap;align-items:stretch;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.rs-sum>div{flex:1 1 280px;display:flex;align-items:center;gap:18px;padding:20px 24px}
+.rs-sum>div+div{border-left:1px solid var(--line)}
+.rs-sum .lbl{display:block;font-size:15px;line-height:22px;font-weight:700}
+.rs-sum p{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.rs-big{display:flex;align-items:baseline;gap:4px;min-width:72px;font-variant-numeric:tabular-nums}
+.rs-big b{font-size:40px;line-height:44px;font-weight:700;letter-spacing:-.02em}
+.rs-big small{font-size:15px;font-weight:600;color:var(--sumi-muted)}
+.rs-none{font-size:15px;line-height:22px;font-weight:600;color:var(--sumi-muted)}
+.rs-srow{display:grid;grid-template-columns:72px minmax(0,1fr) 150px 176px auto;align-items:center;gap:0 20px;padding:16px 22px}
+.rs-sh>li.open{background:var(--paper-100)}
+.rs-sc{display:flex;flex-direction:column;gap:4px}
+.rs-sc .v{display:flex;align-items:baseline;gap:2px;font-variant-numeric:tabular-nums}
+.rs-sc .v b{font-size:24px;line-height:28px;font-weight:700}
+.rs-sc .v small{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.rs-rank{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.rs-rank b{font-size:14px;font-weight:700;white-space:nowrap}
+.rs-rank.s b,.rs-rank.a b{color:var(--score-good)}
+.rs-rank.b b{color:var(--score-mid)}
+.rs-rank.c b{color:var(--score-low)}
+.rs-stats{display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:20px;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.rs-stats li{display:flex;align-items:center;gap:6px}
+.rs-act{display:flex;gap:8px;justify-content:flex-end}
+.rs-act .rs-xp .jc-icon{transition:transform .2s}
+.rs-sh>li.open .rs-act .rs-xp .jc-icon{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.rs-act .rs-xp .jc-icon{transition:none}}
+/* chi tiết buổi */
+.rs-det{padding:0 22px 22px 114px;display:flex;flex-direction:column;gap:16px}
+.rs-dsum{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:12px 0;border-top:1px solid var(--line);font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.rs-dsum b{color:var(--sumi);font-variant-numeric:tabular-nums}
+.rs-sents{display:flex;flex-direction:column;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line)}
+.rs-sent{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 16px;padding:16px 18px}
+.rs-sent+.rs-sent{border-top:1px solid var(--line)}
+.rs-sent .i{grid-row:span 2;font-size:13px;line-height:30px;font-weight:700;color:var(--sumi-faint);font-variant-numeric:tabular-nums}
+.rs-sent .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rs-sent .said{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.rs-sent .said span[lang]{font-family:var(--font-jp);color:var(--sumi)}
+.rs-sent .vi{font-size:14px;line-height:22px}
+.rs-sent .fb{display:flex;gap:8px;align-items:flex-start;margin-top:2px;padding:8px 12px;border-radius:var(--radius-md);background:var(--paper-100);font-size:14px;line-height:22px}
+.rs-sent .fb .jc-icon{color:var(--ai);margin-top:1px}
+.rs-sent .side{grid-row:span 2;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.rs-pt{display:inline-flex;align-items:baseline;gap:6px;height:30px;padding:0 10px;border-radius:999px;font-size:13px;line-height:30px;font-weight:600;white-space:nowrap}
+.rs-pt b{font-size:15px;font-variant-numeric:tabular-nums}
+.rs-pt.good{background:var(--score-good-soft);color:var(--score-good)}
+.rs-pt.mid{background:var(--score-mid-soft);color:var(--score-mid)}
+.rs-pt.low{background:var(--score-low-soft);color:var(--score-low)}
+.rs-dfoot{display:flex;flex-wrap:wrap;gap:10px}
+/* đề xuất (chưa có trên giao diện thật) */
+.rs-prop{position:relative;border:1.5px dashed var(--ai);border-radius:var(--radius-lg);padding:16px 18px;background:var(--paper-50)}
+.rs-prop .tag{position:absolute;top:-11px;left:14px;padding:0 8px;background:var(--paper-100);font-size:12px;line-height:20px;font-weight:700;color:var(--ai)}
+.rs-prop h3{font-size:16px;line-height:24px;font-weight:700}
+.rs-prop p{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.rs-iss{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.rs-iss li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding-top:10px;border-top:1px solid var(--line);font-size:14px;line-height:22px}
+.rs-iss li b{font-weight:600}
+.rs-iss .ev{color:var(--sumi-muted)}
+.rs-iss .ev span[lang]{font-family:var(--font-jp);color:var(--sumi)}
+.rs-sug{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.rs-sug li{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-top:12px;border-top:1px solid var(--line);font-size:14px;line-height:22px}
+.rs-sug li .w{flex:1 1 260px}
+.rs-sug li .w b{display:block;font-size:15px}
+/* trạng thái */
+.rs-skel{display:flex;flex-direction:column;gap:28px}
+.rs-skrow{display:grid;grid-template-columns:40px minmax(0,1fr) 44px;align-items:center;gap:18px;padding:18px 22px}
+.rs-sk0{background:var(--paper-200)}
+.rs-sk1{width:44px;height:44px;border-radius:7px;background:var(--paper-200)}
+.rs-err{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.rs-err .jc-alert{align-self:stretch}
+.rs-empty{border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line);padding:24px}
+.rs-empty .acts{display:flex;justify-content:center;gap:10px;margin-top:-4px;padding-bottom:12px}
+.rs-mbar,.rs-mnav{display:none}
+/* chế độ tối: các màu điểm, cấp độ và trạng thái cần sáng hơn để đọc được trên nền tối */
+[data-theme="hoc-tap-dem"]{--shu:#e2674f;--success:#6cc7a8;--success-soft:#173029;--warning:#e5ad55;--warning-soft:#3a2d16;--danger:#f2958a;--danger-soft:#3d1f1b;--info:#8cc3e8;--score-good:#6cc7bf;--score-good-soft:#163130;--score-mid:#e5ad55;--score-mid-soft:#3a2d16;--score-low:#f2958a;--score-low-soft:#3d1f1b;--n5:#9ccf8f;--n5-soft:#1f2e1c;--n4:#86c4dc;--n4-soft:#17303a;--n3:#c7a6ea;--n3-soft:#2c2338}
+/* ---- điện thoại ---- */
+@media (max-width:760px){
+  .rs-mbar{display:block;margin:-20px -16px 0}
+  .rs-mnav{display:block}
+  .rs-in{gap:22px}
+  .rs-head{align-items:stretch;flex-direction:column}
+  .rs-head h1{font-size:24px;line-height:32px}
+  .rs-head .jc-seg{align-self:stretch}
+  .rs-top{grid-template-columns:1fr;gap:14px}
+  .rs-m4{grid-template-columns:1fr 1fr;padding:6px 0 12px}
+  .rs-m4>div{padding:12px 18px;border-left:0}
+  .rs-m4>div:nth-child(even){border-left:1px solid var(--line)}
+  .rs-m4>div:nth-child(n+3){border-top:1px solid var(--line)}
+  .rs-m4 dd b{font-size:26px;line-height:30px}
+  .rs-ph{padding:16px 18px 0}
+  .rs-sf{grid-template-columns:1fr;padding:14px 18px 16px}
+  .rs-next{flex-direction:row;flex-wrap:wrap;align-items:center;padding:16px 18px}
+  .rs-next .rs-emb.lg{width:44px;height:44px;font-size:20px}
+  .rs-next>div{flex:1 1 160px}
+  .rs-next .jc-btn{margin-top:0;flex:1 1 100%}
+  .rs-lh{flex-direction:column;align-items:stretch}
+  .rs-flt{flex-direction:column;align-items:stretch}
+  .rs-flt .jc-field{width:auto}
+  .rs-row{grid-template-columns:40px minmax(0,1fr) auto;grid-template-areas:"e t g" "e m g";gap:2px 12px;padding:14px 16px}
+  .rs-row .rs-emb{grid-area:e;width:36px;height:36px;font-size:16px;align-self:start}
+  .rs-row .rs-tt{grid-area:t}
+  .rs-row .rs-date{grid-area:m;flex-direction:row;gap:6px}
+  .rs-row .rs-date b,.rs-row .rs-date small{font-size:13px;line-height:18px;font-weight:500;color:var(--sumi-muted)}
+  .rs-row .rs-score{display:none}
+  .rs-row .rs-gr{grid-area:g;flex-direction:column;gap:4px}
+  .rs-row .rs-gn{display:none}
+  .rs-row .rs-chev{display:none}
+  .rs-row .rs-mscore{display:block}
+  .rs-title{font-size:15px;line-height:22px}
+  .rs-sum>div{padding:16px 18px}
+  .rs-sum>div+div{border-left:0;border-top:1px solid var(--line)}
+  .rs-srow{grid-template-columns:minmax(0,1fr);grid-template-areas:"t" "s" "d" "x" "a";gap:10px;padding:16px}
+  .rs-srow .rs-date{grid-area:d;flex-direction:row;gap:6px}
+  .rs-srow .rs-date b,.rs-srow .rs-date small{font-size:13px;line-height:18px;font-weight:500;color:var(--sumi-muted)}
+  .rs-srow .rs-tt{grid-area:t}
+  .rs-srow .rs-sc{grid-area:s;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+  .rs-srow .rs-stats{grid-area:x;flex-direction:row;flex-wrap:wrap;gap:4px 14px}
+  .rs-srow .rs-act{grid-area:a;justify-content:stretch}
+  .rs-srow .rs-act>*{flex:1 1 0}
+  .rs-srow .rs-act .jc-btn{width:100%}
+  .rs-det{padding:0 16px 18px}
+  .rs-sent{grid-template-columns:22px minmax(0,1fr);padding:14px}
+  .rs-sent .side{grid-row:auto;grid-column:2;flex-direction:row;align-items:center;justify-content:flex-start}
+  .rs-iss li{grid-template-columns:1fr}
+}
+.rs-mscore{display:none;font-size:13px;line-height:18px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+
+
+.f-num{font-family:"Lora",var(--font-mincho),serif;font-variant-numeric:lining-nums proportional-nums}
+/* lời chào + bước tiếp theo */
+.f-hi{display:flex;align-items:center;gap:20px;padding:22px 24px;border-radius:var(--radius-xl);background:var(--ai-soft)}
+.f-hi .rs-emb{width:56px;height:56px;font-size:26px;background:var(--paper-50)}
+.f-hi .w{flex:1;min-width:0}
+.f-hi p{font-size:16px;line-height:26px}
+.f-hi p b{font-weight:700}
+.f-hi .sm{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+/* kỹ năng */
+.f-sec{display:flex;flex-direction:column;gap:14px}
+.f-sh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px}
+.f-sh h2{font-size:20px;line-height:28px;font-weight:700}
+.f-sh h2 .n{margin-left:6px;font-size:15px;font-weight:600;color:var(--sumi-muted)}
+.f-sh .note{font-size:14px;color:var(--sumi-muted)}
+.f-skills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.f-sk{display:flex;flex-direction:column;gap:10px;padding:20px 22px;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.f-sk .hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.f-sk h3{font-size:16px;line-height:24px;font-weight:700}
+.f-sk .v{display:flex;align-items:baseline;gap:3px}
+.f-sk .v .f-num{font-size:40px;line-height:44px;font-weight:600}
+.f-sk .v small{font-size:15px;font-weight:600;color:var(--sumi-muted)}
+.f-sk p{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.f-lv{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.f-lv.good{background:var(--score-good-soft);color:var(--score-good)}
+.f-lv.mid{background:var(--score-mid-soft);color:var(--score-mid)}
+.f-lv.low{background:var(--score-low-soft);color:var(--score-low)}
+.f-sf{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:14px;line-height:22px}
+.f-sf>div{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.f-sf .l{color:var(--sumi-muted);margin-right:2px}
+/* danh sách */
+.f-list{border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line);overflow:hidden}
+.f-list>li+li{border-top:1px solid var(--line)}
+.f-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto 24px;align-items:center;gap:0 18px;width:100%;padding:16px 22px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.f-row:hover{background:var(--paper-100)}
+.f-row .rs-emb{width:44px;height:44px;font-size:19px}
+.f-row .tt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f-row .t{font-size:16px;line-height:24px;font-weight:600;overflow-wrap:anywhere}
+.f-row .m{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.f-res{display:flex;align-items:center;gap:14px}
+.f-res .s{display:flex;flex-direction:column;align-items:flex-end}
+.f-res .s b{font-size:18px;line-height:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.f-res .s span{font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.f-res .rs-seal{width:40px;height:40px;font-size:22px;border-radius:6px}
+.f-res .rs-seal.on{border-width:2px;box-shadow:inset 0 0 0 1.5px var(--paper-50),inset 0 0 0 2.6px currentColor}
+.f-chev{color:var(--sumi-faint)}
+/* shadowing */
+.f-sum{display:flex;flex-wrap:wrap;align-items:center;gap:20px 32px;padding:20px 24px;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.f-sum .it{display:flex;align-items:center;gap:16px}
+.f-sum .it p{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.f-sum .it b{display:block;font-size:16px;line-height:24px;color:var(--sumi)}
+.f-sum .sep{width:1px;align-self:stretch;background:var(--line)}
+.f-sum .big{font-size:40px;line-height:44px;font-weight:600}
+.f-srow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:0 20px;padding:16px 22px}
+.f-shl>li.open{background:var(--paper-100)}
+.f-acts{display:flex;gap:8px}
+.f-acts .rs-xp .jc-icon{transition:transform .2s}
+.f-shl>li.open .f-acts .rs-xp .jc-icon{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.f-acts .rs-xp .jc-icon{transition:none}}
+.f-det{display:flex;flex-direction:column;gap:12px;padding:0 22px 22px}
+.f-det .sumline{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.f-det .sumline b{color:var(--sumi)}
+.f-sent{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:16px 18px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line)}
+.f-sent .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f-sent .said{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.f-sent .said span[lang]{font-family:var(--font-jp);color:var(--sumi)}
+.f-sent .vi{font-size:14px;line-height:22px}
+.f-sent .fb{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-radius:var(--radius-md);background:var(--ai-soft);font-size:14px;line-height:22px}
+.f-sent .fb .jc-icon{color:var(--ai);margin-top:1px}
+.f-sent .side{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+@media (max-width:760px){
+  .f-sh{flex-direction:column;align-items:stretch}
+  .f-sh .rs-flt{flex-direction:column;align-items:stretch}
+  .f-sh .rs-flt .jc-field{width:auto}
+  .f-hi{flex-wrap:wrap;padding:18px}
+  .f-hi .rs-emb{width:44px;height:44px;font-size:20px}
+  .f-hi .w{flex:1 1 200px}
+  .f-hi .jc-btn{width:100%}
+  .f-hi>span:last-child{flex:1 1 100%}
+  .f-skills{grid-template-columns:1fr;gap:10px}
+  .f-sk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:16px 18px}
+  .f-sk .hd{grid-column:1 / -1}
+  .f-sk .v .f-num{font-size:30px;line-height:34px}
+  .f-sk .jc-progress{grid-column:1 / -1}
+  .f-sk p{grid-column:1 / -1}
+  .f-row{grid-template-columns:40px minmax(0,1fr) auto;padding:14px 16px;gap:0 12px}
+  .f-row .rs-emb{width:40px;height:40px;font-size:17px;align-self:start}
+  .f-row .f-chev{display:none}
+  .f-res .rs-seal{display:none}
+  .f-sum{flex-direction:column;align-items:flex-start;padding:18px}
+  .f-sum .sep{display:none}
+  .f-srow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t s" "a a";gap:12px;padding:14px 16px}
+  .f-srow>.tt{grid-area:t}
+  .f-srow>.f-res{grid-area:s;align-self:start}
+  .f-srow>.f-acts{grid-area:a}
+  .f-srow>.f-acts>*{flex:1 1 0}
+  .f-srow>.f-acts .jc-btn{width:100%}
+  .f-acts .rs-xp{display:flex}
+  .f-det{padding:0 12px 16px}
+  .f-sent{grid-template-columns:1fr;padding:14px}
+  .f-sent .side{flex-direction:row;align-items:center;justify-content:space-between}
+}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<filter id="inkfx" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+  <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n1"/>
+  <feDisplacementMap in="SourceGraphic" in2="n1" scale="1.7" result="d"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="11" result="n2"/>
+  <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.6 2.75" result="m"/>
+  <feComposite in="d" in2="m" operator="in"/>
+</filter></defs></svg>
+<div data-theme="hoc-tap" style="min-height: 1360px; background: var(--paper-100); color: var(--sumi); font-family: var(--font-sans);">
+  <div class="rs-page">
+    <aside aria-label="Thanh điều hướng" style="flex: 0 0 240px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 16px 12px 12px; background: var(--paper-50); border-right: 1px solid var(--line);">
+      <div style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 6px;">
+        <x-import component-from-global-scope="JCAP.Logo" src="/_blob/7edefd7813c04c88c51c3424c28856ad" size="{{i36}}" with-name="{{no}}"></x-import>
+        <span style="flex-grow: 1; font-size: 18px; font-weight: 700; letter-spacing: .08em;">JCAP</span>
+        <button type="button" class="ib" aria-label="Đóng thanh bên" title="Đóng thanh bên"><x-import component-from-global-scope="JCAP.Icon" name="left_panel_close" size="{{i22}}"></x-import></button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span class="glbl" style="color: var(--shu);">Đang học</span>
+        <a href="#" class="row" style="color: var(--sumi);"><span lang="ja" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--shu); color: var(--on-shu); font-family: var(--font-mincho); font-size: 13px; font-weight: 700;">一</span><span style="flex-grow: 1;">Chương 1</span><span style="font-size: 12px; font-weight: 700; color: var(--shu);">3/10</span></a>
+        <a href="#" class="row" style="color: var(--sumi);"><x-import component-from-global-scope="JCAP.Icon" name="stadium" size="{{i22}}"></x-import><span style="flex-grow: 1;">Makuhari Messe</span><span style="font-size: 12px; font-weight: 700; color: var(--shu);">3/6</span></a>
+        <a href="#" class="row" style="color: var(--sumi);"><x-import component-from-global-scope="JCAP.Icon" name="forum" size="{{i22}}" style="color: var(--ai);"></x-import><span style="flex-grow: 1;">Mua vé tàu ở ga</span><span style="font-size: 12px; font-weight: 700;">2/4</span></a>
+      </div>
+      <nav aria-label="Điều hướng chính" style="display: flex; flex-direction: column; gap: 2px;">
+        <span class="glbl" style="color: var(--sumi-muted);">Học</span>
+        <a href="#" class="row"><x-import component-from-global-scope="JCAP.Icon" name="travel_explore" size="{{i22}}"></x-import><span>Hành trình</span></a>
+        <a href="#" class="row"><x-import component-from-global-scope="JCAP.Icon" name="forum" size="{{i22}}"></x-import><span>Hội thoại AI</span></a>
+        <a href="#" class="row"><x-import component-from-global-scope="JCAP.Icon" name="record_voice_over" size="{{i22}}"></x-import><span>Shadowing</span></a>
+        <a href="#" class="row on" aria-current="page"><x-import component-from-global-scope="JCAP.Icon" name="insights" size="{{i22}}" fill="{{yes}}"></x-import><span>Kết quả</span></a>
+        <a href="#" class="row"><x-import component-from-global-scope="JCAP.Icon" name="approval" size="{{i22}}"></x-import><span>Sổ con dấu</span></a>
+      </nav>
+      <div style="flex-grow: 1;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--line);">
+        <a href="#" class="row"><span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--credit-coin); color: #3d2600;"><x-import component-from-global-scope="JCAP.Icon" name="toll" size="{{i16}}"></x-import></span><span style="flex-grow: 1;">Số dư</span><span style="font-size: 13px; font-weight: 700; color: var(--credit);">3.800</span></a>
+        <button type="button" class="row" aria-haspopup="menu" aria-label="Tài khoản" style="height: 48px; padding-left: 8px; color: var(--sumi);">
+          <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--sora); color: var(--on-sora); font-weight: 700;">H</span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 14px; line-height: 20px;">Học Viên Luyện Nói 1</span><span style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--sumi-muted);">Mục tiêu JLPT N5</span></span>
+          <x-import component-from-global-scope="JCAP.Icon" name="expand_less" size="{{i20}}"></x-import>
+        </button>
+      </div>
+    </aside>
+    <main class="rs-main">
+<div class="rs">
+  <div class="rs-mbar"><x-import component-from-global-scope="JCAP.AppHeader" name="Minh Anh" level="N4" credits="{{rs.credits}}" on-menu="{{rs.noop}}"></x-import></div>
+  <div class="rs-in">
+    <header class="rs-head">
+      <div><h1>Kết quả</h1><p>Xem lại các buổi đã luyện và điểm của từng buổi.</p></div>
+      <x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Loại kết quả" options="{{rs.tabOpts}}" value="{{rs.tab}}" on-change="{{rs.setTab}}"></x-import>
+    </header>
+    <sc-if value="{{rs.loading}}" hint-placeholder-val="{{false}}"><div class="rs-skel" aria-busy="true" aria-label="Đang tải kết quả">
+        <div class="rs-prof"><div class="rs-m4"><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2"></x-import></div><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2"></x-import></div><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2"></x-import></div><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2"></x-import></div></div></div>
+        <ol class="rs-led"><li class="rs-skrow"><span class="rs-emb rs-sk0"></span><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2" width="60%"></x-import></div><span class="rs-sk1"></span></li><li class="rs-skrow"><span class="rs-emb rs-sk0"></span><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2" width="60%"></x-import></div><span class="rs-sk1"></span></li><li class="rs-skrow"><span class="rs-emb rs-sk0"></span><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2" width="60%"></x-import></div><span class="rs-sk1"></span></li><li class="rs-skrow"><span class="rs-emb rs-sk0"></span><div><x-import component-from-global-scope="JCAP.Skeleton" variant="text" lines="2" width="60%"></x-import></div><span class="rs-sk1"></span></li></ol>
+      </div></sc-if>
+    <sc-if value="{{rs.error}}" hint-placeholder-val="{{false}}"><div class="rs-err" role="alert"><x-import component-from-global-scope="JCAP.Alert" tone="danger" title="{{rs.errTitle}}">Kiểm tra kết nối mạng rồi bấm Thử lại. Các buổi luyện của bạn vẫn được lưu.</x-import><x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="refresh" on-click="{{rs.retry}}">Thử lại</x-import></div></sc-if>
+    <sc-if value="{{rs.isAi}}" hint-placeholder-val="{{true}}">
+      <sc-if value="{{rs.aiReady}}" hint-placeholder-val="{{true}}">
+        <section class="f-hi" aria-label="Tóm tắt">
+          <span class="rs-emb" aria-hidden="true">{{rs.pf.nextEmb}}</span>
+          <div class="w"><p>Bạn đã hoàn thành <b>{{rs.pf.sessions}} buổi</b> Hội thoại AI. Buổi tiếp theo nên luyện: <b>{{rs.pf.next}}</b>.</p><p class="sm">Gợi ý dựa trên các kỹ năng bên dưới.</p></div>
+          <span><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="play_arrow" on-click="{{rs.goScen}}">Luyện ngay</x-import></span>
+        </section>
+        <section class="f-sec" aria-labelledby="f-sk-h">
+          <div class="f-sh"><h2 id="f-sk-h">Kỹ năng của bạn</h2><span class="note">Cập nhật sau mỗi buổi Hội thoại AI</span></div>
+          <div class="f-skills">
+            <sc-for list="{{rs.skills}}" as="k" hint-placeholder-count="3">
+              <div class="f-sk"><div class="hd"><h3>{{k.name}}</h3><span class="{{k.lvCls}}">{{k.lv}}</span></div>
+                <p class="v"><span class="f-num">{{k.val}}</span><small>{{k.unit}}</small></p><x-import component-from-global-scope="JCAP.ProgressBar" value="{{k.val}}" size="sm"></x-import><p>{{k.desc}}</p></div>
+            </sc-for>
+          </div>
+          <div class="f-sf"><div><span class="l">Bạn làm tốt:</span><sc-for list="{{rs.strengthsTxt}}" as="x" hint-placeholder-count="2"><x-import component-from-global-scope="JCAP.Badge" tone="success">{{x}}</x-import></sc-for></div><div><span class="l">Nên chú ý:</span><sc-for list="{{rs.focusTxt}}" as="x" hint-placeholder-count="2"><x-import component-from-global-scope="JCAP.Badge" tone="warning">{{x}}</x-import></sc-for></div></div>
+        </section>
+        <section class="f-sec" aria-labelledby="f-ls-h">
+          <div class="f-sh"><h2 id="f-ls-h">Các buổi đã luyện<span class="n">{{rs.aiTotal}}</span></h2><x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Lọc theo kết quả" size="sm" options="{{rs.fOpts}}" value="{{rs.f}}" on-change="{{rs.setF}}"></x-import></div>
+          <sc-if value="{{rs.aiHasRows}}" hint-placeholder-val="{{true}}">
+            <ol class="f-list" aria-label="Các buổi Hội thoại AI, mới nhất trước">
+              <sc-for list="{{rs.aiRows}}" as="r" hint-placeholder-count="8">
+                <li><button type="button" class="f-row" aria-label="{{r.aria}}" onClick="{{r.go}}">
+                  <span class="rs-emb" aria-hidden="true">{{r.emb}}</span>
+                  <span class="tt"><span class="t">{{r.title}}</span><span class="m">{{r.when}}<x-import component-from-global-scope="JCAP.JlptBadge" level="{{r.lv}}" size="sm"></x-import></span></span>
+                  <span class="f-res"><span class="s"><b>{{r.pts}}</b><span>{{r.gname}}</span></span><span class="{{r.sealCls}}" aria-hidden="true">{{r.k}}</span></span>
+                  <span class="f-chev"><x-import component-from-global-scope="JCAP.Icon" name="chevron_right" size="{{rs.i20}}"></x-import></span>
+                </button></li>
+              </sc-for>
+            </ol>
+            <sc-if value="{{rs.aiMulti}}" hint-placeholder-val="{{true}}"><nav class="rs-pager" aria-label="Phân trang kết quả"><x-import component-from-global-scope="JCAP.IconButton" icon="chevron_left" label="Trang trước" variant="ghost" disabled="{{rs.aiFirst}}" on-click="{{rs.aiPrev}}"></x-import><span>Trang {{rs.aiPg}} trên {{rs.aiPages}}</span><x-import component-from-global-scope="JCAP.IconButton" icon="chevron_right" label="Trang sau" variant="ghost" disabled="{{rs.aiLast}}" on-click="{{rs.aiNext}}"></x-import></nav></sc-if>
+          </sc-if>
+          <sc-if value="{{rs.aiNoRows}}" hint-placeholder-val="{{false}}"><div class="rs-empty"><x-import component-from-global-scope="JCAP.EmptyState" icon="filter_alt_off" title="Chưa có kết quả trong danh mục này" compact="{{yes}}">{{rs.fEmpty}}</x-import><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="secondary" on-click="{{rs.fAll}}">Xem tất cả</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="forum" on-click="{{rs.goScen}}">Bắt đầu một buổi Hội thoại AI</x-import></div></div></sc-if>
+        </section>
+</sc-if>
+      <sc-if value="{{rs.aiNew}}" hint-placeholder-val="{{false}}"><div class="rs-empty kq-new"><x-import component-from-global-scope="JCAP.EmptyState" icon="forum" title="Bạn chưa có buổi Hội thoại AI nào">Hoàn thành một buổi Hội thoại AI để thấy điểm từng buổi và hồ sơ phản xạ của bạn ở đây.</x-import><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="forum" on-click="{{rs.goScen}}">Chọn tình huống để luyện</x-import></div></div></sc-if>
+    </sc-if>
+    <sc-if value="{{rs.isSh}}" hint-placeholder-val="{{false}}">
+      <sc-if value="{{rs.shReady}}" hint-placeholder-val="{{true}}">
+        <section class="f-sum" aria-label="Tổng quan Shadowing">
+          <div class="it"><x-import component-from-global-scope="JCAP.ScoreRing" value="{{rs.shAvg}}" size="{{rs.i72}}"></x-import><div><b>Điểm trung bình</b><p>Tính trên {{rs.shCount}} buổi đã luyện</p></div></div>
+          <span class="sep" aria-hidden="true"></span>
+          <div class="it"><span class="f-num big">{{rs.shMin}}</span><div><b>phút luyện tổng cộng</b><p>{{rs.shSents}} câu đã được chấm</p></div></div>
+        </section>
+        <section class="f-sec" aria-labelledby="f-sl-h">
+          <div class="f-sh"><h2 id="f-sl-h">Các buổi đã luyện<span class="n">{{rs.shTotal}}</span></h2><div class="rs-flt"><x-import component-from-global-scope="JCAP.TextField" icon="search" placeholder="Tìm theo tên bài hoặc tình huống" aria-label="Tìm buổi luyện" value="{{rs.q}}" on-change="{{rs.setQ}}"></x-import><x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Lọc theo cấp JLPT" size="sm" options="{{rs.lvOpts}}" value="{{rs.lv}}" on-change="{{rs.setLv}}"></x-import></div></div>
+          <sc-if value="{{rs.shHasRows}}" hint-placeholder-val="{{true}}">
+            <ol class="f-list f-shl" aria-label="Các buổi Shadowing, mới nhất trước">
+              <sc-for list="{{rs.shRows}}" as="s" hint-placeholder-count="5">
+                <li class="{{s.cls}}">
+                  <div class="f-srow">
+                    <div class="tt" style="display: flex; flex-direction: column; gap: 4px; min-width: 0;"><span class="rs-title">{{s.title}}</span><span class="rs-meta" style="font-size: 14px;">{{s.when}}<x-import component-from-global-scope="JCAP.JlptBadge" level="{{s.lv}}" size="sm"></x-import><span>{{s.metaTxt}}</span></span></div>
+                    <div class="f-res"><span class="s"><b>{{s.pts}}</b><span>{{s.rankTxt}}</span></span></div>
+                    <div class="f-acts"><span class="rs-xp"><x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" icon="expand_more" aria-expanded="{{s.open}}" aria-controls="{{s.did}}" on-click="{{s.toggle}}">{{s.xLabel2}}</x-import></span><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="replay" on-click="{{s.again}}">Luyện lại</x-import></div>
+                  </div>
+                  <sc-if value="{{s.open}}" hint-placeholder-val="{{false}}">
+                  <div class="f-det" id="{{s.did}}">
+                    <p class="sumline">{{s.detTxt}}</p>
+                    <ol style="display: flex; flex-direction: column; gap: 10px;" aria-label="Từng câu bạn đã nói">
+                      <sc-for list="{{s.sents}}" as="t" hint-placeholder-count="3">
+                      <li class="f-sent">
+                  <div class="body">
+                    <x-import component-from-global-scope="JCAP.WordDiff" tokens="{{t.tokens}}" show-legend="{{t.legend}}"></x-import>
+                    <p class="said">Bạn đã nói: <span lang="ja">{{t.said}}</span></p>
+                    <p class="vi">{{t.vi}}</p>
+                    <sc-if value="{{t.fb}}" hint-placeholder-val="{{true}}"><p class="fb"><x-import component-from-global-scope="JCAP.Icon" name="tips_and_updates" size="{{rs.i20}}"></x-import><span>{{t.fb}}</span></p></sc-if>
+                  </div>
+                  <div class="side"><span class="{{t.cls}}" aria-label="{{t.aria}}"><b>{{t.score}}</b>{{t.word}}</span><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe mẫu"></x-import></div>
+                </li>
+                      </sc-for>
+                    </ol>
+                    <div class="rs-dfoot"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="replay" on-click="{{rs.again}}">Luyện lại cả bài</x-import></div>
+                  </div>
+                  </sc-if>
+                </li>
+              </sc-for>
+            </ol>
+            <sc-if value="{{rs.shMulti}}" hint-placeholder-val="{{true}}"><nav class="rs-pager" aria-label="Phân trang buổi luyện"><x-import component-from-global-scope="JCAP.IconButton" icon="chevron_left" label="Trang trước" variant="ghost" disabled="{{rs.shFirst}}" on-click="{{rs.shPrev}}"></x-import><span>Trang {{rs.shPg}} trên {{rs.shPages}}</span><x-import component-from-global-scope="JCAP.IconButton" icon="chevron_right" label="Trang sau" variant="ghost" disabled="{{rs.shLast}}" on-click="{{rs.shNext}}"></x-import></nav></sc-if>
+          </sc-if>
+          <sc-if value="{{rs.shNoRows}}" hint-placeholder-val="{{false}}"><div class="rs-empty"><x-import component-from-global-scope="JCAP.EmptyState" icon="search_off" title="Không tìm thấy buổi luyện phù hợp" compact="{{yes}}">{{rs.shNoText}}</x-import><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="close" on-click="{{rs.clearQ}}">Xoá bộ lọc</x-import></div></div></sc-if>
+        </section>
+</sc-if>
+      <sc-if value="{{rs.shNew}}" hint-placeholder-val="{{false}}"><div class="rs-empty kq-new"><x-import component-from-global-scope="JCAP.EmptyState" icon="record_voice_over" title="Bạn chưa có buổi Shadowing nào">Chọn một bài trong thư viện, nghe câu mẫu rồi nói theo. Điểm từng câu sẽ được lưu ở đây.</x-import><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="library_music" on-click="{{rs.goShadow}}">Mở thư viện Shadowing</x-import></div></div></sc-if>
+    </sc-if>
+  </div>
+  <div class="rs-mnav"><x-import component-from-global-scope="JCAP.BottomNav" items="{{rs.navItems}}" value="results"></x-import></div>
+</div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1360}}'>
+
+var RS_AI = [
+  ['Gọi món tại quán mì Ramen', 'N5', 86, true, '20/11', '21:40'],
+  ['Hỏi đường đến bảo tàng Ueno', 'N5', 72, true, '19/11', '20:15'],
+  ['Mua đồ ở cửa hàng tiện lợi', 'N5', 91, true, '18/11', '22:02'],
+  ['Khám bệnh ở phòng khám', 'N4', 54, false, '17/11', '19:30'],
+  ['Nhận phòng khách sạn', 'N4', 63, true, '16/11', '08:45'],
+  ['Mua vé tàu đi Kyoto', 'N4', 58, false, '14/11', '21:10'],
+  ['Phỏng vấn xin việc làm thêm', 'N3', 47, false, '12/11', '20:00'],
+  ['Gọi món tại quán mì Ramen', 'N5', 68, true, '10/11', '12:20'],
+  ['Hỏi đường đến bảo tàng Ueno', 'N5', 55, false, '08/11', '18:05'],
+  ['Mua đồ ở cửa hàng tiện lợi', 'N5', 77, true, '06/11', '21:55'],
+  ['Nhận phòng khách sạn', 'N4', 81, true, '04/11', '09:30'],
+  ['Khám bệnh ở phòng khám', 'N4', 49, false, '02/11', '20:40']
+];
+var RS_PF = { sessions: 12, turns: 96, reflex: 58, particle: 76, keigo: 49, last: '20/11/2026, 21:40',
+  strengths: ['Chào hỏi tự nhiên', 'Hỏi lại khi chưa nghe rõ'], focus: ['Kính ngữ khi nhờ vả', 'Trợ từ に và で'], next: 'Nhận phòng khách sạn' };
+var RS_S1 = [
+  { tokens: [{ text: 'はじめまして', status: 'ok' }, { text: '、', status: 'ok' }, { text: 'テニス部', reading: 'テニスぶ', status: 'ok' }, { text: 'の', status: 'ok' }, { text: '田中', reading: 'たなか', status: 'ok' }, { text: 'です', status: 'ok' }, { text: '。', status: 'ok' }],
+    said: 'はじめまして、テニス部の田中です。', vi: 'Xin chào, mình là Tanaka ở câu lạc bộ tennis.', score: 96, fb: '' },
+  { tokens: [{ text: '毎週', reading: 'まいしゅう', status: 'ok' }, { text: '火曜日', reading: 'かようび', status: 'ok' }, { text: 'と', status: 'ok' }, { text: '木曜日', reading: 'もくようび', status: 'ok' }, { text: 'に', status: 'missing', error: 'particle' }, { text: '練習', reading: 'れんしゅう', status: 'ok' }, { text: 'しています', status: 'ok' }],
+    said: '毎週火曜日と木曜日練習しています', vi: 'Tụi mình tập vào thứ Ba và thứ Năm hằng tuần.', score: 78, fb: 'Thiếu trợ từ に sau 木曜日. Với thứ trong tuần, cần に để chỉ thời điểm.' },
+  { tokens: [{ text: '初心者', reading: 'しょしんしゃ', status: 'ok' }, { text: 'でも', status: 'ok' }, { text: '大丈夫', reading: 'だいじょうぶ', status: 'ok' }, { text: 'です', status: 'ok' }, { text: 'よ', status: 'missing' }],
+    said: '初心者でも大丈夫です', vi: 'Người mới bắt đầu cũng không sao đâu.', score: 88, fb: '' },
+  { tokens: [{ text: '見学', reading: 'けんがく', status: 'ok' }, { text: 'は', status: 'ok' }, { text: 'いつも', status: 'wrong', error: 'word', expected: 'いつでも' }, { text: 'できます', status: 'ok' }],
+    said: '見学はいつもできます', vi: 'Bạn có thể đến xem tập bất cứ lúc nào.', score: 61, fb: 'いつでも (bất cứ lúc nào) bị nói thành いつも (lúc nào cũng). Hai từ khác nghĩa, nghe lại câu mẫu ở đoạn này.' },
+  { tokens: [{ text: '興味', reading: 'きょうみ', status: 'ok' }, { text: 'が', status: 'ok' }, { text: 'あったら', status: 'ok' }, { text: 'ぜひ', status: 'ok' }, { text: '来て', reading: 'きて', status: 'ok' }, { text: 'ください', status: 'ok' }],
+    said: '興味があったらぜひ来てください', vi: 'Nếu bạn thấy hứng thú thì nhất định hãy đến nhé.', score: 90, fb: '' },
+  { tokens: [{ text: 'よろしく', status: 'ok' }, { text: 'お願い', reading: 'おねがい', status: 'ok' }, { text: 'します', status: 'ok' }],
+    said: 'よろしくお願いします', vi: 'Rất mong được giúp đỡ.', score: 95, fb: '' }
+];
+var RS_S2 = [
+  { tokens: [{ text: 'すみません', status: 'ok' }, { text: '、', status: 'ok' }, { text: '駅', reading: 'えき', status: 'ok' }, { text: 'は', status: 'ok' }, { text: 'どこ', status: 'ok' }, { text: 'ですか', status: 'ok' }],
+    said: 'すみません、駅はどこですか', vi: 'Xin lỗi, nhà ga ở đâu ạ?', score: 92, fb: '' },
+  { tokens: [{ text: 'まっすぐ', status: 'ok' }, { text: '行って', reading: 'いって', status: 'ok' }, { text: '、', status: 'ok' }, { text: 'ふたつ', status: 'wrong', error: 'mora', expected: 'ふたつめ' }, { text: 'の', status: 'ok' }, { text: '角', reading: 'かど', status: 'ok' }, { text: 'を', status: 'ok' }, { text: '右', reading: 'みぎ', status: 'ok' }, { text: 'です', status: 'ok' }],
+    said: 'まっすぐ行って、ふたつの角を右です', vi: 'Đi thẳng, đến góc đường thứ hai thì rẽ phải.', score: 66, fb: 'Thiếu âm め trong 二つ目 (thứ hai).' },
+  { tokens: [{ text: 'ありがとう', status: 'ok' }, { text: 'ございます', status: 'ok' }],
+    said: 'ありがとうございます', vi: 'Cảm ơn bạn.', score: 97, fb: '' }
+];
+var RS_SH = [
+  ['sh1', 'Hội thoại 01: クラブ紹介の案内 (Ngày giới thiệu CLB)', 'Ngày hội câu lạc bộ', 'N5', 'A', 84, false, 200, '6/6', 92, '19/11', '21:05', RS_S1],
+  ['sh2', 'Hội thoại 04: 駅で道を聞く (Hỏi đường ở nhà ga)', 'Hỏi đường đến bảo tàng Ueno', 'N5', 'B', 71, false, 165, '5/6', 81, '18/11', '20:30', RS_S2],
+  ['sh3', 'Hội thoại 07: コンビニで (Ở cửa hàng tiện lợi)', 'Mua đồ ở cửa hàng tiện lợi', 'N5', 'A', 93, false, 130, '6/6', 97, '17/11', '22:12', RS_S1],
+  ['sh4', 'Hội thoại 12: 病院の受付 (Quầy tiếp đón bệnh viện)', '', 'N4', 'B', 58, false, 245, '7/8', 66, '15/11', '19:48', RS_S2],
+  ['sh5', 'Hội thoại 02: 自己紹介 (Tự giới thiệu)', '', 'N5', 'A', 79, false, null, '4/4', null, '13/11', '07:55', RS_S2],
+  ['sh6', 'Hội thoại 05: ホテルのチェックイン (Nhận phòng khách sạn)', 'Nhận phòng khách sạn', 'N4', 'A', 88, false, 190, '6/6', 90, '11/11', '21:20', RS_S1],
+  ['sh7', 'Hội thoại 01: クラブ紹介の案内 (Ngày giới thiệu CLB)', 'Ngày hội câu lạc bộ', 'N5', 'B', 70, true, 260, '6/6', null, '02/11', '20:10', RS_S1]
+];
+
+
+function rsGrade(s) { return s >= 90 ? ['極', 'Xuất sắc'] : s >= 80 ? ['優', 'Ưu tú'] : s >= 70 ? ['良', 'Khá tốt'] : s >= 60 ? ['可', 'Đạt chuẩn'] : ['研', 'Cần rèn luyện thêm']; }
+function rsRank(s) { return s >= 90 ? ['S', 'Rất xuất sắc', 's'] : s >= 80 ? ['A', 'Rất tốt', 'a'] : s >= 65 ? ['B', 'Đạt chuẩn', 'b'] : ['C', 'Cần luyện thêm', 'c']; }
+function rsEmb(t) { t = t.toLowerCase();
+  if (/hỏi đường/.test(t)) return '道'; if (/quán|món|nhà hàng/.test(t)) return '食'; if (/ga |tàu|sân bay/.test(t)) return '駅';
+  if (/cửa hàng|mua đồ|siêu thị/.test(t)) return '店'; if (/khách sạn|nhận phòng/.test(t)) return '宿'; if (/khám|bệnh/.test(t)) return '医'; return '会'; }
+function rsDur(sec) { if (sec == null) return 'Không lưu thời lượng'; var m = Math.floor(sec / 60), s = sec % 60; return m + ' phút ' + (s < 10 ? '0' : '') + s + ' giây'; }
+function resultsVals(self, st0, setRs, hk) {
+  hk = hk || {}; var nf = function () {};
+  var st = Object.assign({ tab: 'ai', f: 'all', pg: 1, q: '', lv: 'all', open: 'sh1', spg: 1, mode: 'ok', prop: false, propBtn: false }, st0 || {});
+  function set(p) { setRs(Object.assign({}, st, p)); }
+  var mode = st.mode, ok = mode !== 'loading' && mode !== 'error';
+  var ai = RS_AI.filter(function (x) { return mode === 'fewPass' ? x[3] : true; });
+  var nPass = ai.filter(function (x) { return x[3]; }).length;
+  var fl = ai.filter(function (x) { return st.f === 'all' || (st.f === 'pass' ? x[3] : !x[3]); });
+  var aiPages = Math.max(1, Math.ceil(fl.length / 8)), aiPg = Math.min(st.pg, aiPages);
+  var aiRows = fl.slice((aiPg - 1) * 8, aiPg * 8).map(function (x) {
+    var g = rsGrade(x[2]);
+    return { title: x[0], lv: x[1], score: x[2], d: x[4], t: x[5], emb: rsEmb(x[0]), k: g[0], gname: g[1], passText: (x[3] ? 'Đạt chuẩn' : 'Chưa đạt') === g[1] ? '' : (x[3] ? 'Đạt chuẩn' : 'Chưa đạt'),
+      sealCls: 'rs-seal ' + (x[3] ? 'on' : 'off'), go: function () {},
+      aria: x[0] + ', ' + x[2] + ' trên 100 điểm, hạng ' + g[1] + ', ' + (x[3] ? 'đạt chuẩn' : 'chưa đạt') + ', ngày ' + x[4] + ' lúc ' + x[5] + '. Mở chi tiết' };
+  });
+  var sh = mode === 'new' ? [] : RS_SH;
+  var q = (st.q || '').toLowerCase();
+  var sf = sh.filter(function (x) { return (st.lv === 'all' || x[3] === st.lv) && (!q || (x[1] + ' ' + x[2]).toLowerCase().indexOf(q) >= 0); });
+  var shPages = Math.max(1, Math.ceil(sf.length / 5)), shPg = Math.min(st.spg, shPages);
+  var shRows = sf.slice((shPg - 1) * 5, shPg * 5).map(function (x) {
+    var r = rsRank(x[5]), o = st.open === x[0];
+    return { d: x[10], t: x[11], title: x[1], scen: x[2] ? 'Tình huống: ' + x[2] : 'Không gắn tình huống', lv: x[3], role: x[4], score: x[5],
+      legacy: x[6], ranked: !x[6], rank: 'Hạng ' + r[0], rname: r[1], rcls: 'rs-rank ' + r[2],
+      rankLine: x[6] ? 'Bản ghi cũ, không xếp hạng' : 'Hạng ' + r[0] + ', ' + r[1].toLowerCase(),
+      dur: rsDur(x[7]), sent: x[8] + ' câu đã chấm', sentN: x[8] + ' câu', match: x[9] == null ? 'Chưa có độ khớp' : 'Khớp ' + x[9] + '%', matchV: x[9] == null ? 'chưa có' : x[9] + '%',
+      open: o, cls: o ? 'open' : '', did: 'rs-det-' + x[0], xLabel: o ? 'Thu gọn' : 'Chi tiết',
+      toggle: function () { set({ open: o ? null : x[0], prop: false }); }, again: hk.again || nf,
+      sents: x[12].map(function (t, i) { var c = t.score >= 80 ? ['good', 'Tốt'] : t.score >= 65 ? ['mid', 'Khá'] : ['low', 'Cần sửa'];
+        return { n: i + 1, tokens: t.tokens, legend: i === 0, said: t.said, vi: t.vi, fb: t.fb, score: t.score, word: c[1], cls: 'rs-pt ' + c[0], aria: 'Câu ' + (i + 1) + ': ' + t.score + ' điểm, ' + c[1].toLowerCase() }; }) };
+  });
+  var withDur = sh.filter(function (x) { return x[7] != null; });
+  var avg = sh.length ? Math.round(sh.reduce(function (a, x) { return a + x[5]; }, 0) / sh.length) : 0;
+  return {
+    i16: 16, i20: 20, i72: 72, credits: 120, noop: function () {},
+    tab: st.tab, isAi: st.tab === 'ai' && ok, isSh: st.tab === 'sh' && ok,
+    tabOpts: [{ value: 'ai', label: 'Hội thoại AI', icon: 'forum' }, { value: 'sh', label: 'Shadowing', icon: 'record_voice_over' }],
+    setTab: function (v) { set({ tab: v }); },
+    loading: mode === 'loading', error: mode === 'error', errTitle: st.tab === 'ai' ? 'Không tải được kết quả Hội thoại AI' : 'Không tải được các buổi Shadowing',
+    retry: function () { set({ mode: 'ok' }); },
+    aiReady: mode !== 'new', aiNew: mode === 'new', pf: Object.assign({ nextEmb: rsEmb(RS_PF.next) }, RS_PF), last: RS_PF.last,
+    goScen: hk.goScen || nf, goShadow: hk.goShadow || nf, again: hk.again || nf,
+    f: st.f, setF: function (v) { set({ f: v, pg: 1 }); }, fAll: function () { set({ f: 'all', pg: 1 }); },
+    fEmpty: st.f === 'fail' ? 'Mọi buổi của bạn đều đạt từ 60 điểm trở lên. Thử một tình huống ở cấp cao hơn để thử sức.' : st.f === 'pass' ? 'Chưa có buổi nào đạt từ 60 điểm. Luyện lại một tình huống quen thuộc để cải thiện điểm.' : 'Hoàn thành một buổi Hội thoại AI, kết quả sẽ hiện ở đây.',
+    fOpts: [{ value: 'all', label: 'Tất cả', count: ai.length }, { value: 'pass', label: 'Đạt chuẩn', count: nPass }, { value: 'fail', label: 'Cần rèn luyện', count: ai.length - nPass }],
+    aiTotal: fl.length, aiRows: aiRows, aiHasRows: aiRows.length > 0, aiNoRows: aiRows.length === 0,
+    aiPg: aiPg, aiPages: aiPages, aiMulti: aiPages > 1, aiFirst: aiPg <= 1, aiLast: aiPg >= aiPages,
+    aiPrev: function () { set({ pg: Math.max(1, aiPg - 1) }); }, aiNext: function () { set({ pg: Math.min(aiPages, aiPg + 1) }); },
+    shReady: mode !== 'new', shNew: mode === 'new', shAvg: avg, shCount: sh.length, shMin: Math.round(withDur.reduce(function (a, x) { return a + x[7]; }, 0) / 60), shDurN: withDur.length,
+    q: st.q, setQ: function (e) { set({ q: e && e.target ? e.target.value : e, spg: 1 }); }, clearQ: function () { set({ q: '', lv: 'all', spg: 1 }); },
+    lv: st.lv, setLv: function (v) { set({ lv: v, spg: 1 }); },
+    lvOpts: [{ value: 'all', label: 'Tất cả' }, { value: 'N5', label: 'N5' }, { value: 'N4', label: 'N4' }, { value: 'N3', label: 'N3' }],
+    shTotal: sf.length, shRows: shRows, shHasRows: shRows.length > 0, shNoRows: shRows.length === 0,
+    shNoText: st.q ? 'Không có buổi nào có "' + st.q + '" trong tên bài hoặc tình huống. Thử từ khoá ngắn hơn.' : 'Chưa có buổi nào ở cấp ' + st.lv + '. Chọn "Tất cả" để xem mọi buổi.',
+    shPg: shPg, shPages: shPages, shMulti: shPages > 1, shFirst: shPg <= 1, shLast: shPg >= shPages,
+    shPrev: function () { set({ spg: Math.max(1, shPg - 1), open: null }); }, shNext: function () { set({ spg: Math.min(shPages, shPg + 1), open: null }); },
+    prop: !!st.prop, propBtn: !!st.propBtn && !st.prop, showProp: function () { set({ prop: true }); },
+    navItems: [{ id: 'map', label: 'Hành trình', icon: 'travel_explore' }, { id: 'role', label: 'Hội thoại', icon: 'forum' }, { id: 'shadow', label: 'Shadowing', icon: 'record_voice_over' }, { id: 'results', label: 'Kết quả', icon: 'insights' }, { id: 'stamps', label: 'Sổ dấu', icon: 'approval' }]
+  };
+}
+
+
+function rsWeek(d) { var day = +d.split('/')[0]; return day >= 16 ? 'Tuần này, 16 đến 22/11' : day >= 9 ? 'Tuần trước, 9 đến 15/11' : 'Đầu tháng 11'; }
+function rsTone(s) { return s >= 80 ? 'good' : s >= 60 ? 'mid' : 'low'; }
+function results2Vals(self, st0, setRs, hk) {
+  var v = resultsVals(self, st0, setRs, hk);
+  var L = RS_AI[0], g = rsGrade(L[2]), pv = null;
+  for (var i = 1; i < RS_AI.length; i++) if (RS_AI[i][0] === L[0]) { pv = RS_AI[i][2]; break; }
+  var dl = pv == null ? null : L[2] - pv;
+  v.lastR = { title: L[0], lv: L[1], score: L[2], dt: L[4] + '/2026, ' + L[5], emb: rsEmb(L[0]), k: g[0], gname: g[1], pass: L[3] ? 'đạt chuẩn' : 'chưa đạt',
+    sealCls: 'kq-bigseal ' + (L[3] ? 'on' : 'off'), hasDelta: dl != null, delta: dl == null ? '' : (dl >= 0 ? '+' : '−') + Math.abs(dl) + ' so với lần trước',
+    deltaCls: 'kq-delta ' + (dl >= 0 ? 'up' : 'down'), deltaIcon: dl >= 0 ? 'trending_up' : 'trending_down' };
+  var B = RS_AI.slice(0, 12).reverse(), slot = 1100 / B.length;
+  v.bars = B.map(function (x, i) { var h = x[2] * 1.5, cx = i * slot + slot / 2;
+    return { x: (cx - 18).toFixed(1), y: (170 - h).toFixed(1), h: h.toFixed(1), cx: cx.toFixed(1), ty: (170 - h - 8).toFixed(1), s: x[2], d: x[4], cls: 'kq-bar ' + rsTone(x[2]) }; });
+  v.aiRows.forEach(function (r) { r.tone = 'kq-card ' + rsTone(r.score); r.dt = r.d + ', ' + r.t; });
+  var wk = [], ix = {};
+  v.aiRows.forEach(function (r) { var w = rsWeek(r.d); if (!(w in ix)) { ix[w] = wk.length; wk.push({ name: w, items: [] }); } wk[ix[w]].items.push(r); });
+  v.weeks = wk;
+  var cnt = { S: 0, A: 0, B: 0, C: 0 }, n = 0, sents = 0;
+  RS_SH.forEach(function (x) { sents += +x[8].split('/')[0]; if (!x[6]) { cnt[rsRank(x[5])[0]]++; n++; } });
+  var NM = { S: 'Rất xuất sắc', A: 'Rất tốt', B: 'Đạt chuẩn', C: 'Cần luyện thêm' };
+  var acc = 0;
+  v.dist = ['S', 'A', 'B', 'C'].map(function (k) { var w = n ? cnt[k] / n * 1000 : 0, x = acc; acc += w; return { k: k, name: NM[k], n: cnt[k], cls: 'kq-seg ' + k.toLowerCase(), show: cnt[k] > 0, x: (x + (x ? 3 : 0)).toFixed(1), w: Math.max(0, w - (x ? 3 : 0)).toFixed(1) }; });
+  v.distAria = ['S', 'A', 'B', 'C'].map(function (k) { return cnt[k] + ' buổi hạng ' + k; }).join(', ');
+  v.distN = n; v.shSents = sents;
+  v.shRows.forEach(function (s) { var c = s.legacy ? 'legacy' : s.rcls.split(' ')[1]; s.rbox = 'kq-rank ' + c; s.letter = s.legacy ? '—' : s.rank.replace('Hạng ', ''); s.rsub = s.legacy ? 'Bản ghi cũ' : s.rname; s.icls = 's-item' + (s.open ? ' open' : '');
+    s.sents.forEach(function (t) { t.scol = 'scol ' + t.cls.split(' ')[1]; t.lab = 'Câu ' + t.n; }); });
+  return v;
+}
+
+function rsDay(d) { return d === '20/11' ? 'Hôm nay' : d === '19/11' ? 'Hôm qua' : d; }
+function rsLv(v) { return v >= 80 ? ['Tốt', 'good'] : v >= 60 ? ['Khá', 'mid'] : ['Cần luyện thêm', 'low']; }
+function results4Vals(self, st0, setRs, hk) {
+  var st = Object.assign({ tab: 'ai', mode: 'ok', open: null }, st0 || {});
+  var v = results2Vals(self, st, setRs, hk);
+  var P = v.pf;
+  v.skills = [
+    { name: 'Phản xạ', val: P.reflex, unit: '/100', desc: 'Bạn trả lời nhanh và tự nhiên đến đâu.' },
+    { name: 'Trợ từ', val: P.particle, unit: '%', desc: 'Dùng đúng は, が, を, に, で trong câu nói.' },
+    { name: 'Kính ngữ', val: P.keigo, unit: '%', desc: 'Nói lịch sự đúng mức với từng người.' }
+  ].map(function (s) { var l = rsLv(s.val); s.lv = l[0]; s.lvCls = 'f-lv ' + l[1]; return s; });
+  v.strengthsTxt = P.strengths; v.focusTxt = P.focus;
+  v.aiRows.forEach(function (r) { r.when = rsDay(r.d) + ', ' + r.t; r.pts = r.score + ' điểm'; });
+  v.shRows.forEach(function (s) { s.when = rsDay(s.d) + ', ' + s.t; s.pts = s.score + ' điểm'; s.rankTxt = s.legacy ? 'Bản ghi cũ' : s.rank + ', ' + s.rname.toLowerCase();
+    s.xLabel2 = s.open ? 'Thu gọn' : 'Xem lại từng câu'; s.metaTxt = 'Vai ' + s.role + (s.scen.indexOf('Tình huống: ') === 0 ? ', ' + s.scen.replace('Tình huống: ', '') : '');
+    s.detTxt = s.sentN + ' đã chấm' + (s.matchV === 'chưa có' ? '' : ', khớp nội dung ' + s.matchV) + (s.dur.indexOf('Không') === 0 ? '' : ', luyện ' + s.dur); });
+  return v;
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { rs: {"tab": "ai"} };
+  }
+  renderVals() {
+    var self = this, st = this.state || {};
+    return {
+      yes: true, no: false, i16: 16, i20: 20, i22: 22, i36: 36, iconSm: 20, iconMd: 22,
+      rs: results4Vals(self, st.rs, function (p) { self.setState({ rs: p }); })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCAP · Shadowing tại mốc · khung chat cạnh ngăn thông tin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;family=Lora:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.sr-board{position:relative;overflow:hidden;font-family:var(--font-sans);color:var(--sumi)}
+.sr-map{position:absolute;inset:0;background:var(--nami-soft)}
+.sr-map svg{width:100%;height:100%;display:block}
+.sr-map path{fill:var(--paper-200);stroke:var(--paper-50);stroke-width:1.2;stroke-linejoin:round}
+.sr-map path.on{fill:var(--paper-50);stroke:var(--line-strong)}
+.sr-map .pin{stroke:var(--paper-50);stroke-width:2}
+.sr-map .pin.done{fill:var(--ai)}.sr-map .pin.cur{fill:var(--shu)}.sr-map .pin.todo{fill:var(--sumi-faint)}
+.sr-scrim{position:absolute;inset:0;background:color-mix(in srgb,#0b1a2e 46%,transparent)}
+/* ---------- phòng ---------- */
+.sr-room{position:absolute;inset:20px;display:flex;flex-direction:column;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);color:var(--sumi);background-color:var(--paper-100);background-image:radial-gradient(rgba(15,37,56,.10) 1px,transparent 1.4px);background-size:22px 22px}
+[data-theme="phong-luyen"].sr-room{--paper-100:#f4f6f8;--paper-200:#e9edf1;--paper-300:#dde3e9;--line:#dce2e8}
+[data-theme="phong-luyen-dem"].sr-room{background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.4px)}
+.sr-room :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+:where(.sr-room,.ls) :where(h2,h3,p,ol,ul){margin:0;padding:0}
+:where(.sr-room,.ls) :where(ol,ul){list-style:none}
+.sr-ink{color:#24407A}.sr-red{color:var(--shu)}.sr-ghost{color:var(--sumi-faint)}
+[data-theme="phong-luyen-dem"] .sr-ink{color:var(--ai)}
+/* thanh trên */
+.sr-top{flex:none;display:flex;align-items:center;gap:14px;height:56px;padding:0 12px 0 8px;background:color-mix(in srgb,var(--paper-50) 88%,transparent);border-bottom:1px solid var(--line)}
+.sr-top .tt{display:flex;flex-direction:column;min-width:0}
+.sr-top .tt b{font-size:15px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-top .tt span{font-size:13px;line-height:18px;color:var(--sumi-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-top .sp{flex:1}
+.sr-stampbtn{display:inline-flex;border:0;padding:0;background:transparent;cursor:default}
+.sr-set{position:relative}
+.sr-set .dot{position:absolute;right:8px;top:8px;width:8px;height:8px;border-radius:50%;background:var(--ai);box-shadow:0 0 0 2px var(--paper-50);pointer-events:none}
+/* thân phòng */
+.sr-body{flex:1 1 auto;min-height:0;display:flex;position:relative}
+.sr-rail{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;background:color-mix(in srgb,var(--paper-50) 70%,transparent)}
+.sr-rail.l{border-right:1px solid var(--line)}.sr-rail.r{border-left:1px solid var(--line)}
+.sr-rb{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:52px;min-height:56px;padding:6px 0;border:0;border-radius:12px;background:transparent;color:var(--sumi-muted);font:inherit;font-size:11px;line-height:14px;font-weight:600;cursor:pointer;text-align:center}
+.sr-rb:hover{background:var(--paper-200);color:var(--sumi)}
+.sr-rb.on{background:var(--ai-soft);color:var(--ai)}
+.sr-rb .nd{position:absolute;right:10px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--shu);box-shadow:0 0 0 2px var(--paper-50)}
+.sr-panel{flex:none;display:flex;flex-direction:column;min-height:0;background:var(--paper-50);overflow:hidden}
+.sr-panel.l{width:320px;border-right:1px solid var(--line)}
+.sr-panel.r{width:360px;border-left:1px solid var(--line)}
+.sr-ph{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:52px;padding:0 8px 0 20px;border-bottom:1px solid var(--line)}
+.sr-ph h2{font-size:16px;line-height:22px;font-weight:700}
+.sr-pb{flex:1 1 auto;min-height:0;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:18px}
+.sr-lbl{font-size:13px;line-height:18px;font-weight:600;color:var(--sumi-muted)}
+.sr-sub{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.sr-prop{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;border:1px dashed var(--ai);font-size:11px;font-weight:700;color:var(--ai);white-space:nowrap}
+/* giữa */
+.sr-mid{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;position:relative}
+.sr-conv{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column-reverse;padding:28px 24px 20px}
+.sr-pbody{display:flex;flex-direction:column;gap:18px}
+.sr-col{width:100%;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.sr-resume{align-self:center;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 14px;border-radius:999px;background:var(--paper-50);border:1px solid var(--line);font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.ln{display:flex;align-items:flex-start;gap:12px}
+.ln.me{flex-direction:row-reverse}
+.ln-col{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:540px}
+.ln.me .ln-col{align-items:flex-end;max-width:600px}
+.ln.ai .ln-col{max-width:600px}
+.ln-av{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--paper-200);color:var(--ai);font-family:var(--font-mincho);font-weight:700;font-size:16px}
+.ln.me .ln-av{background:var(--sora);color:var(--on-sora);font-family:var(--font-sans);font-size:14px}
+.sc-pill{position:absolute;left:50%;top:-12px;transform:translateX(-50%);min-width:30px;height:20px;padding:0 6px;border-radius:999px;font-family:var(--font-sans);font-size:12px;line-height:20px;font-weight:700;text-align:center;box-shadow:0 0 0 2px var(--paper-100)}
+.sc-pill.good{background:var(--score-good);color:var(--paper-50)}.sc-pill.mid{background:var(--score-mid);color:var(--paper-50)}.sc-pill.low{background:var(--score-low);color:var(--paper-50)}.sc-pill.na{background:var(--paper-300);color:var(--sumi-muted)}
+[data-theme="phong-luyen-dem"] .sc-pill.good,[data-theme="phong-luyen-dem"] .sc-pill.mid,[data-theme="phong-luyen-dem"] .sc-pill.low{color:#141311}
+.sr-room .ln.me .jc-bubble__box{background:var(--sumi);border-color:var(--sumi);color:#fff;padding:12px 20px;border-radius:20px;border-top-right-radius:6px;cursor:pointer}
+.sr-room .ln.me .jc-jp{font-size:20px;line-height:34px;font-weight:600}
+.sr-room .ln.me .jc-bubble__vi{color:rgba(255,255,255,.82)}
+.sr-room .ln.me.sel .jc-bubble__box{box-shadow:0 0 0 3px var(--paper-100),0 0 0 5px var(--ai)}
+.sr-room .ln.pending .jc-bubble__box,.sr-room .ln.pending .jc-bubble__box:hover{background:var(--paper-50);color:var(--sumi);border:2px dashed var(--ai);cursor:default}
+.sr-room .ln.pending .jc-bubble__name{color:var(--ai);font-weight:700}
+[data-theme="phong-luyen-dem"] .ln.me:not(.pending) .jc-bubble__box{background:var(--ai-soft);border-color:#3d4668;color:var(--sumi)}
+[data-theme="phong-luyen-dem"] .ln.me .jc-bubble__vi{color:var(--sumi-muted)}
+.ln-tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ln.ai .ln-tools{padding-left:48px}
+.sr-room .jc-bubble__tools:empty{display:none}
+.sr-room .jc-bubble__col{max-width:100%}
+.sr-room .jc-bubble__box{cursor:default}
+.sr-room .jc-bubble--ai .jc-bubble__box:hover{background:var(--paper-50)}
+.sr-room .jc-bubble__avatar{background:var(--paper-200);color:var(--ai);font-family:var(--font-mincho);font-weight:700;font-size:16px}
+.ln.me .ln-av{margin-top:2px}
+.sr-newest{position:absolute;right:24px;bottom:132px;z-index:3}
+/* khung thu âm */
+.sr-dock{flex:none;padding:0 24px 18px}
+.sr-dk{max-width:720px;margin:0 auto;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line);box-shadow:var(--shadow-md)}
+.dk-row{display:flex;align-items:center;gap:12px;padding:14px 18px}
+.dk-row .sp{flex:1}
+.dk-mic{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:14px 18px}
+.dk-mic .hintL{font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.dk-mic .r{justify-self:end}
+.dk-who{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px}
+.dk-who b{font-weight:700}
+.wv{flex:none;fill:var(--ai)}
+.wv.big{height:36px;flex:1 1 auto;min-width:0;width:100%;fill:var(--shu)}
+.dk-rec{display:flex;align-items:center;gap:14px;padding:14px 18px}
+.dk-rec .t{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;min-width:40px}
+.dk-rec .live{display:flex;flex-direction:column;gap:2px;padding:0 18px 14px}
+.dk-live{padding:0 18px 14px;font-size:14px;line-height:22px;color:var(--sumi-faint)}
+.dk-live span[lang]{font-family:var(--font-jp)}
+.dk-scored{display:flex;align-items:center;gap:14px;padding:12px 18px}
+.dk-scored .s{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dk-scored .s b{font-size:15px;line-height:22px;font-weight:700}
+.dk-scored .s span{font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.dk-scored .acts{flex:none}
+.sr-dk .jc-audiochip{white-space:nowrap}
+.dk-fail{display:flex;flex-direction:column;gap:12px;padding:14px 18px}
+.dk-fail .msg{display:flex;align-items:flex-start;gap:12px}
+.dk-fail .ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--warning-soft);color:var(--warning)}
+.dk-fail .ic.sys{background:var(--info-soft);color:var(--info)}
+.dk-fail .msg b{display:flex;align-items:center;gap:8px;font-size:15px;line-height:22px}
+.dk-fail .msg span{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.dk-fail .acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.dk-fail .acts .sp{flex:1}
+.dk-note{padding:0 18px 12px;font-size:12px;line-height:18px;color:var(--sumi-muted);text-align:right}
+.dk-warn{display:flex;align-items:center;gap:8px;padding:8px 18px;border-top:1px solid var(--line);font-size:13px;line-height:18px;color:var(--warning)}
+.dk-scoring{display:flex;align-items:center;justify-content:center;gap:12px;padding:20px 18px;font-size:15px;font-weight:600;color:var(--sumi-muted)}
+.dk-spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ai);animation:srspin .9s linear infinite}
+@keyframes srspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.dk-spin{animation:none}}
+/* ngăn trái */
+.ctx-scene{position:relative;height:132px;border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(var(--ai-soft),var(--paper-200))}
+.ctx-scene .desk{position:absolute;left:0;right:0;bottom:0;height:40px;background:var(--paper-300)}
+.ctx-scene .booth{position:absolute;left:24px;bottom:28px;width:120px;height:64px;border-radius:10px 10px 0 0;background:var(--paper-50);border:1px solid var(--line)}
+.ctx-scene .booth::after{content:"入国審査";position:absolute;left:0;right:0;top:-24px;text-align:center;font-family:var(--font-jp);font-size:12px;font-weight:700;color:var(--ai);letter-spacing:.2em}
+.ctx-scene .plane{position:absolute;right:22px;top:16px;color:var(--ai);opacity:.6}
+.ctx-who{display:flex;align-items:center;gap:12px;margin-top:-28px;padding:0 10px;position:relative}
+.ctx-who .av{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;border:3px solid var(--paper-50);background:var(--paper-200);color:var(--ai);font-family:var(--font-mincho);font-weight:700;font-size:22px}
+.ctx-who b{display:block;font-size:15px;line-height:20px;padding-top:24px}
+.ctx-who span{font-size:13px;color:var(--sumi-muted)}
+.ctx-box{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--radius-md);background:var(--paper-100);border:1px solid var(--line)}
+.ctx-role{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 14px;border-radius:var(--radius-md);border:1px solid var(--line)}
+.ctx-role b{font-weight:700}
+.sc-line{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.sc-line:first-child{border-top:0}
+.sc-line .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sc-line .rn{font-size:12px;line-height:16px;font-weight:700;color:var(--sumi-muted)}
+.sc-line.me{margin:0 -10px;padding:10px;border-radius:var(--radius-md);background:var(--ai-soft);border-top-color:transparent}
+.sc-line.me .rn{color:var(--ai)}
+.sc-line .vi{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.vc{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.vc:first-of-type{border-top:0;padding-top:0}
+.vc .hd{display:flex;align-items:center;gap:8px}
+.vc .hd .w{flex:1;min-width:0}
+.vc .mean{font-size:15px;line-height:22px;font-weight:600}
+.vc .ex{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.vc .ex span[lang]{font-family:var(--font-jp);color:var(--sumi)}
+.gr-top{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:var(--radius-md);background:var(--sora-soft)}
+/* ngăn phải */
+.fb-head{display:flex;align-items:center;gap:14px}
+.fb-head .w{display:flex;flex-direction:column;gap:4px}
+.fb-lv{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;width:max-content}
+.fb-lv.good{background:var(--score-good-soft);color:var(--score-good)}.fb-lv.mid{background:var(--score-mid-soft);color:var(--score-mid)}.fb-lv.low{background:var(--score-low-soft);color:var(--score-low)}
+.fb-err{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--line);background:var(--paper-100)}
+.fb-err .hd{display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:700}
+.fb-err .hd span[lang]{font-family:var(--font-jp)}
+.fb-err p{font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.fb-said{font-size:14px;line-height:22px}
+.fb-said span[lang]{font-family:var(--font-jp);font-size:16px}
+.fb-tempo{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius-md);background:var(--info-soft);font-size:14px;line-height:22px}
+.fb-tempo .jc-icon{color:var(--info);margin-top:1px}
+.fb-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pg-big{display:flex;align-items:baseline;gap:6px}
+.pg-big b{font-family:"Lora",var(--font-mincho),serif;font-size:34px;line-height:38px;font-weight:600}
+.pg-big span{font-size:14px;color:var(--sumi-muted)}
+.thr{position:relative;padding-top:18px}
+.thr .mk{position:absolute;top:0;bottom:-4px;width:2px;background:var(--sumi);border-radius:1px}
+.thr .mk span{position:absolute;top:-2px;left:6px;font-size:11px;font-weight:700;white-space:nowrap}
+.pg-list li{border-top:1px solid var(--line)}
+.pg-list button{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:48px;padding:8px 6px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
+.pg-list button:hover{background:var(--paper-100)}
+.pg-list .n{font-size:12px;font-weight:700;color:var(--sumi-faint);font-variant-numeric:tabular-nums}
+.pg-list .jp{font-family:var(--font-jp);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-list .st{font-size:13px;font-weight:700;white-space:nowrap}
+.pg-list .st.good{color:var(--score-good)}.pg-list .st.mid{color:var(--score-mid)}.pg-list .st.low{color:var(--score-low)}.pg-list .st.na{color:var(--sumi-muted);font-weight:500}
+.pg-list .flag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--score-low)}
+.pg-list .cur{background:var(--ai-soft)}
+/* tổng kết */
+.sm-wrap{flex:1 1 auto;min-height:0;overflow-y:auto;padding:28px 24px 32px}
+.sm-col{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.sm-hero{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0 4px;text-align:center}
+.sm-stamps{position:relative;display:flex;align-items:center;justify-content:center;gap:28px;min-height:176px}
+.sm-hero h2{font-size:22px;line-height:30px;font-weight:700}
+.sm-hero p{font-size:15px;line-height:24px;color:var(--sumi-muted);max-width:520px}
+.sm-stampwait{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--sumi-muted);font-size:14px}
+.sr-big{filter:url(#inkfx);mix-blend-mode:multiply}
+[data-theme="phong-luyen-dem"] .sr-big{mix-blend-mode:normal}
+.sr-big.rot{transform:rotate(-6deg)}
+.sr-big.rot2{transform:rotate(7deg)}
+.sr-big.press{transform:scale(1.35) rotate(-14deg);opacity:.55;filter:url(#inkfx) blur(.6px)}
+.sm-shadow{position:absolute;bottom:6px;left:50%;width:150px;height:14px;margin-left:-75px;border-radius:50%;background:color-mix(in srgb,var(--sumi) 18%,transparent);filter:blur(6px)}
+.sr-pstamp{color:#24407A;filter:url(#inkfx);mix-blend-mode:multiply;transform:rotate(5deg)}
+[data-theme="phong-luyen-dem"] .sr-pstamp{color:var(--ai);mix-blend-mode:normal}
+.sm-card{display:flex;flex-direction:column;gap:14px;padding:20px 22px;border-radius:var(--radius-xl);background:var(--paper-50);border:1px solid var(--line)}
+.sm-score{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.sm-score .v{display:flex;align-items:baseline;gap:6px}
+.sm-score .v b{font-family:"Lora",var(--font-mincho),serif;font-size:56px;line-height:56px;font-weight:600}
+.sm-score .v small{font-size:16px;font-weight:600;color:var(--sumi-muted)}
+.sm-pass{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:700}
+.sm-pass.ok{background:var(--success-soft);color:var(--success)}.sm-pass.no{background:var(--warning-soft);color:var(--warning)}
+.sm-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sm-stats>div{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:var(--radius-lg);background:var(--paper-100)}
+.sm-stats b{font-size:20px;line-height:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.sm-split{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;line-height:18px;color:var(--sumi-muted)}
+.sm-split i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.sm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.sm-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--paper-100);border:1px solid var(--line);font-size:13px;font-weight:600}
+.sm-chip b{font-variant-numeric:tabular-nums}
+.sm-retry li+li{border-top:1px solid var(--line)}
+.sm-retry button{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 4px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.sm-retry .jp{font-family:var(--font-jp);font-size:16px}
+.sm-retry .e{font-size:13px;color:var(--sumi-muted)}
+.sm-tip{display:flex;align-items:center;gap:10px;font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.sm-acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.sm-acts .sp{flex:1}
+.sm-note{font-size:14px;line-height:22px;color:var(--sumi-muted);text-align:center}
+.sm-und{display:flex;flex-direction:column;gap:10px;padding:18px 20px;border-radius:var(--radius-xl);background:var(--ai-soft)}
+.sm-ph{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--radius-lg);border:1.5px dashed var(--line-strong);font-size:14px;color:var(--sumi-muted)}
+.sm-saving{display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-weight:600;color:var(--sumi-muted)}
+/* hộp thoại, thông báo, popover */
+.sr-dlgscrim{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,#0b1a2e 40%,transparent)}
+.sr-dlg{width:420px;display:flex;flex-direction:column;gap:14px;padding:22px 22px 18px;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:var(--shadow-lg)}
+.sr-dlg h2{font-size:18px;line-height:26px;font-weight:700}
+.sr-dlg p{font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.sr-dlg .acts{display:flex;justify-content:flex-end;gap:8px}
+.sr-toast{position:absolute;left:50%;top:70px;z-index:15;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:560px;padding:10px 16px;border-radius:12px;background:var(--sumi);color:var(--paper-50);font-size:14px;line-height:20px;box-shadow:var(--shadow-md)}
+.sr-pop{position:absolute;right:10px;top:52px;z-index:16;width:320px;display:flex;flex-direction:column;gap:14px;padding:16px 18px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line);box-shadow:var(--shadow-lg)}
+.sr-pop .row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+.sr-hint{position:absolute;left:66px;top:150px;z-index:14;display:flex;align-items:flex-start;gap:8px;max-width:260px;padding:10px 12px;border-radius:12px;background:var(--sumi);color:var(--paper-50);font-size:13px;line-height:19px;box-shadow:var(--shadow-md)}
+.sr-hint::before{content:"";position:absolute;left:-6px;top:14px;border:6px solid transparent;border-left:0;border-right-color:var(--sumi)}
+.sr-err{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+/* ngăn bài học trên bản đồ (khung 18) */
+.ls-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,#0b1a2e 32%,transparent)}
+.ls{width:620px;max-height:calc(100% - 64px);display:flex;flex-direction:column;border-radius:14px;background:var(--paper-50);box-shadow:inset 0 0 0 3px var(--paper-50),inset 0 0 0 4px var(--line),var(--shadow-lg);overflow:hidden;color:var(--sumi)}
+.ls-h{position:relative;display:flex;align-items:center;gap:16px;padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+.ls-h .meta{font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.ls-h h2{margin:2px 0 0;font-size:20px;line-height:28px;font-weight:700}
+.ls-h .jp{font-family:var(--font-jp);font-size:14px;color:var(--sumi-muted)}
+.ls-h .stt{margin-top:6px;font-size:12px;font-weight:700}
+.ls-h .x{position:absolute;right:8px;top:8px}
+.ls ol{list-style:none;margin:0;padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.ls-step{padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--paper-100)}
+.ls-step.soon{border-style:dashed;background:transparent}
+.ls-step.hl{border:2px solid var(--ai);background:var(--paper-50);box-shadow:0 0 0 4px var(--ai-soft)}
+.ls-step .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ls-step .hd .n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--sumi-faint);font-size:12px;font-weight:700;color:var(--sumi-muted)}
+.ls-step .hd .n.done{background:var(--sumi);border-color:var(--sumi);color:var(--paper-50)}
+.ls-step .hd b{font-size:14px}
+.ls-step p{margin:0;font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.ls-act{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;background:var(--paper-50);border:1px solid var(--line)}
+.ls-act .w{flex:1;min-width:0}
+.ls-act b{display:block;font-size:15px}
+.ls-wrap.all{gap:28px}
+.ls-vars{width:360px;display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:14px;background:var(--paper-50);box-shadow:var(--shadow-lg);color:var(--sumi)}
+.ls-vars .ls-act{flex-wrap:wrap}
+.ls-vars p{margin:2px 0 0;font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.ls-toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;background:var(--sumi);color:var(--paper-50);font-size:14px;box-shadow:var(--shadow-lg)}
+/* ---------- điện thoại ---------- */
+.sr-tabs{display:none}
+.showM{display:none!important}
+.sr-sheet{display:none}
+@media (max-width:760px){
+  .sr-room{inset:0;border-radius:0}
+  .sr-top{gap:8px;padding:0 6px 0 2px}
+  .sr-top .tt span,.sr-top .jc-jlpt,.sr-top .hideM{display:none}
+  .sr-top .tt b{font-size:14px}
+  .sr-rail,.sr-panel{display:none!important}
+  .sr-tabs{display:flex;flex:none;gap:2px;overflow-x:auto;padding:6px 8px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper-50) 80%,transparent)}
+  .sr-tabs .sr-rb{flex:1 1 0;width:auto;min-width:0;min-height:52px;padding:6px 0;font-size:11px}
+  .sr-tabs .sr-rb .nd{right:8px}
+  .dk-rec{flex-wrap:wrap}
+  .dk-rec .wv.big{order:-1;flex:1 1 100%}
+  .dk-rec .t{margin-right:auto}
+  .showM{display:inline-flex!important}
+  .sr-conv{padding:20px 12px 12px}
+  .ln-col,.ln.me .ln-col{max-width:85%}
+  .sr-room .ln.me .jc-jp{font-size:18px;line-height:30px}
+  .ln.ai .ln-av{display:none}
+  .sr-dock{padding:0 0 env(safe-area-inset-bottom)}
+  .sr-dk{border-radius:20px 20px 0 0;border-bottom:0;box-shadow:0 -6px 20px rgba(15,37,56,.08)}
+  .dk-mic{grid-template-columns:1fr auto 1fr;padding:12px 14px 18px}
+  .dk-mic .hintL{font-size:13px}
+  .dk-scored{flex-wrap:wrap}
+  .dk-scored .s{flex:1 1 180px}
+  .dk-scored .acts{display:flex;gap:8px;width:100%}
+  .dk-scored .acts>*{flex:1 1 0}
+  .dk-scored .acts .jc-btn{width:100%}
+  .dk-fail .acts>*{flex:1 1 auto}
+  .sr-sheet{display:flex;position:absolute;inset:0;z-index:12;flex-direction:column;justify-content:flex-end;background:color-mix(in srgb,#0b1a2e 40%,transparent)}
+  .sr-sheet .sh{height:70%;display:flex;flex-direction:column;border-radius:20px 20px 0 0;background:var(--paper-50);overflow:hidden}
+  .sr-sheet .grip{display:flex;justify-content:center;padding:8px 0 2px}
+  .sr-sheet .grip i{width:40px;height:5px;border-radius:3px;background:var(--line-strong);opacity:.5}
+  .sm-wrap{padding:20px 14px 96px}
+  .sm-stats{grid-template-columns:1fr 1fr}
+  .sm-stats>div:first-child{grid-column:1/-1}
+  .sm-score .v b{font-size:44px;line-height:46px}
+  .sm-acts.stick{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:var(--paper-50);border-top:1px solid var(--line)}
+  .sm-acts.stick>*{flex:1 1 100%}
+  .sm-acts.stick .jc-btn{width:100%}
+  .sr-dlg{width:calc(100% - 32px)}
+  .sr-toast{top:118px;max-width:calc(100% - 32px)}
+}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;display:inline-block}
+.cm{--sea:#26497B;--foam:#F6F1E6;--land:#ECE2CF;--kanto:#E5C3B3;--kanto-ink:#843526;--card:#FBF7EE;--pw:clamp(380px,30.5vw,440px);--cw:clamp(420px,37.5vw,540px);--gap:12px;--tw:132px;--tv:34px;--tg:14px;--nw:clamp(240px,calc(100vw - var(--pw) - var(--cw) - var(--tv) - var(--tg) - 44px),380px);
+  position:relative;width:100%;height:100vh;min-height:560px;overflow:hidden;font-family:var(--font-sans);color:var(--sumi);
+  background-color:var(--sea);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28' viewBox='0 0 56 28'%3E%3Cg fill='none' stroke='%23335C8F' stroke-width='1.1'%3E%3Cpath d='M0 28a14 14 0 0 1 28 0M28 28a14 14 0 0 1 28 0M-14 14a14 14 0 0 1 28 0M14 14a14 14 0 0 1 28 0M42 14a14 14 0 0 1 28 0'/%3E%3Cpath d='M5 28a9 9 0 0 1 18 0M33 28a9 9 0 0 1 18 0M-9 14a9 9 0 0 1 18 0M19 14a9 9 0 0 1 18 0M47 14a9 9 0 0 1 18 0'/%3E%3Cpath d='M10 28a4 4 0 0 1 8 0M38 28a4 4 0 0 1 8 0M-4 14a4 4 0 0 1 8 0M24 14a4 4 0 0 1 8 0M52 14a4 4 0 0 1 8 0' opacity='.7'/%3E%3C/g%3E%3C/svg%3E")}
+.cm :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+:where(.cm) :where(h2,h3,p,ol,ul){margin:0;padding:0}
+:where(.cm) :where(ol,ul){list-style:none}
+/* bản đồ, dịch sang trái khi mở khung chat để mốc đang luyện nằm trong dải bản đồ còn lại */
+.cm-map{position:absolute;left:0;top:0;width:1440px;height:900px;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.cm-map.pan{transform:translateX(-296px)}
+.cm-svg{position:absolute;inset:0}
+.cm-svg .land{fill:var(--land);stroke:var(--foam);stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.cm-svg .chiba{fill:var(--kanto);stroke:var(--kanto-ink);stroke-width:2.6;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.cm-svg .route{fill:none;stroke:var(--foam);stroke-width:2.4;stroke-dasharray:2 5;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.95}
+.cm-svg .city{font-size:2.3px;font-weight:700;fill:#22324D;text-anchor:middle;font-family:var(--font-sans)}
+.cm-svg .city.jp{font-size:1.7px;font-weight:500}
+.cm-pin{position:absolute;transform:translate(-50%,-50%);display:block;width:52px;height:52px;padding:0;border:0;background:transparent;font:inherit;color:inherit;text-align:center}
+button.cm-pin{cursor:pointer}
+.cm-pin::before{content:"";position:absolute;inset:-14px;border-radius:50%;background:color-mix(in srgb,var(--kanto-ink) 10%,transparent)}
+.cm-pin .pc{position:relative;display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--card);border:2.5px solid var(--kanto-ink);color:var(--kanto-ink);box-shadow:0 2px 6px rgba(11,22,46,.22)}
+.cm-pin .pc .msr{font-size:26px}
+.cm-pin .pn{position:absolute;left:-6px;bottom:-6px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--sumi);color:var(--paper-50);border:2px solid var(--card);font-size:12px;font-weight:700}
+.cm-pin .pk{position:absolute;right:-6px;top:-6px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:2px solid var(--card);color:#fff}
+.cm-pin .pk .msr{font-size:14px;font-variation-settings:'FILL' 1,'wght' 700}
+.cm-pin .pk.ink{background:var(--ai)}.cm-pin .pk.red{background:var(--shu)}
+.cm-pin .pl{position:absolute;display:flex;flex-direction:column;width:200px;pointer-events:none;line-height:1}
+.cm-pin .pl.b{left:50%;top:62px;transform:translateX(-50%);align-items:center;text-align:center}
+.cm-pin .pl.l{right:64px;top:50%;transform:translateY(-50%);align-items:flex-end;text-align:right}
+.cm-pin .pl.r{left:64px;top:50%;transform:translateY(-50%);align-items:flex-start;text-align:left}
+.cm-pin .pl b,.cm-pin .pl span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-pin .pl b{font-family:var(--font-jp);font-size:15px;line-height:20px;font-weight:700;color:var(--sumi);text-shadow:0 0 3px var(--kanto),0 0 3px var(--kanto),0 0 3px var(--kanto)}
+.cm-pin .pl span{font-size:13px;line-height:18px;font-weight:600;color:var(--kanto-ink);text-shadow:0 0 3px var(--kanto),0 0 3px var(--kanto),0 0 3px var(--kanto)}
+.cm-pin.on .pc{border-width:3px;box-shadow:0 0 0 5px var(--paper-50),0 0 0 8px var(--shu),0 4px 12px rgba(11,22,46,.3)}
+.cm-pin .ptag{position:absolute;left:50%;top:-34px;transform:translateX(-50%);height:26px;padding:0 12px;border-radius:999px;background:var(--shu);color:#fff;font-size:13px;font-weight:700;line-height:26px;white-space:nowrap;box-shadow:0 0 0 2px var(--paper-50)}
+.cm-ui{position:absolute;left:24px;top:24px;display:flex;align-items:center;gap:14px;z-index:2}
+.cm-back{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 22px 0 18px;border-radius:999px;background:var(--card);font-size:17px;font-weight:700;box-shadow:var(--shadow-md)}
+.cm-crumb{display:inline-flex;align-items:center;gap:4px;height:40px;padding:0 16px;border-radius:999px;background:color-mix(in srgb,var(--card) 90%,transparent);font-size:15px;color:var(--sumi-muted)}
+.cm-crumb b{color:var(--sumi)}
+.cm-ctl{position:absolute;right:calc(var(--pw) + 32px);bottom:24px;display:flex;align-items:flex-end;gap:12px;transition:opacity .2s}
+.cm-legend{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px;border-radius:999px;background:var(--card);font-size:15px;font-weight:600;box-shadow:var(--shadow-md)}
+.cm-zoom{display:flex;flex-direction:column;gap:18px;padding:14px 12px;border-radius:16px;background:var(--card);box-shadow:var(--shadow-md);color:var(--sumi-muted)}
+.cm.chat .cm-ctl,.cm.chat .cm-crumb{opacity:0;pointer-events:none}
+.cm-crumb{transition:opacity .2s}
+/* ngăn thông tin */
+.cp{position:absolute;right:16px;top:16px;bottom:16px;width:var(--pw);z-index:6;display:flex;flex-direction:column;border-radius:18px;background:var(--card);box-shadow:0 2px 4px rgba(11,22,46,.16),0 20px 48px rgba(11,22,46,.30);overflow:hidden}
+.cp-top{flex:none}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 0 24px}
+.cp-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:14px;font-weight:600}
+.cp-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:var(--paper-50)}
+.cp-tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;padding:8px 2px 9px;border:0;border-radius:10px 10px 0 0;background:transparent;color:var(--sumi-muted);font:inherit;font-size:12px;line-height:15px;font-weight:600;cursor:pointer;white-space:nowrap}
+.cp-tab:hover{color:var(--sumi);background:var(--paper-100)}
+.cp-tab.on{color:var(--ai);background:var(--card);box-shadow:inset 0 -3px 0 var(--ai)}
+.cp-tab .msr{font-size:21px}
+.cp-tab .nd{position:absolute;right:calc(50% - 18px);top:6px;width:9px;height:9px;border-radius:50%;background:var(--shu);box-shadow:0 0 0 2px var(--paper-50)}
+.cp-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:18px 24px 24px}
+.cp-body .sr-pbody,.cp-sec{display:flex;flex-direction:column;gap:18px}
+.cp-foot{flex:none;padding:12px 24px;border-top:1px solid var(--line);font-size:13px;color:var(--sumi-muted)}
+.cp-pref{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cp-k{font-family:var(--font-mincho);font-size:52px;line-height:62px;font-weight:700}
+.cp-v{display:flex;align-items:center;gap:4px;font-size:19px;font-weight:600}
+.cp-cnt{display:flex;align-items:center;gap:12px;color:var(--shu)}
+.cp-cnt>div{display:flex;flex-direction:column;align-items:flex-end}
+.cp-cnt b{font-family:var(--font-sans);font-size:34px;line-height:40px;font-weight:800;font-variant-numeric:lining-nums tabular-nums}
+.cp-cnt>div>span{font-size:14px;color:var(--sumi-muted)}
+.cp-cnt em{font-style:normal;font-size:14px;font-weight:700}
+.cp-lbl{font-size:16px;font-weight:700}
+.cp-lbl span{font-weight:500;color:var(--sumi-muted)}
+.cp-word{display:flex;flex-direction:column;gap:10px}
+.cp-wc{display:flex;justify-content:space-between;gap:8px;padding:16px 16px 16px 18px;border-radius:16px;background:var(--paper-200)}
+.cp-wc>div{display:flex;flex-direction:column;gap:2px}
+.cp-wc b{font-family:var(--font-mincho);font-size:28px;line-height:36px}
+.cp-wc span{font-size:16px}
+.cp-wc small{font-size:13px;color:var(--sumi-muted)}
+.cp-spot{display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:14px;border:2px solid var(--kanto-ink);background:var(--card)}
+.cp-spot header{display:flex;align-items:flex-start;gap:12px}
+.cp-ic{flex:none;display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--kanto-ink);color:var(--paper-50)}
+.cp-ic .msr{font-size:26px}
+.cp-ic.sm{width:40px;height:40px;background:var(--paper-200);color:var(--kanto-ink)}
+.cp-ic.sm .msr{font-size:21px}
+.cp-ic.sm.red{background:var(--shu-soft);color:var(--shu)}
+.cp-spot .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cp-spot .w b{font-size:17px;line-height:24px}
+.cp-spot .w span{font-family:var(--font-jp);font-size:14px;color:var(--sumi-muted)}
+.cp-state{font-size:15px;font-weight:700;color:var(--shu);white-space:nowrap}
+.cp-state.ink{color:var(--ai)}
+.cp-learn{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:10px;background:var(--paper-200)}
+.cp-lbl2{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.cp-learn b{font-family:var(--font-jp);font-size:19px;line-height:28px}
+.cp-learn>span:last-child{font-size:15px;color:var(--sumi-muted)}
+.cp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.cp-steps .st{position:relative;display:flex;flex-direction:column;gap:3px;font-size:14px}
+.cp-steps .st::after{content:"";position:absolute;left:48px;right:8px;top:19px;height:3px;border-radius:2px;background:var(--line)}
+.cp-steps .st:last-child::after{display:none}
+.cp-steps .st.done::after{background:var(--sumi)}
+.cp-steps .dot{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--card);color:var(--sumi-muted)}
+.cp-steps .dot .msr{font-size:20px}
+.cp-steps .done .dot{background:var(--sumi);border-color:var(--sumi);color:var(--paper-50)}
+.cp-steps .cur .dot{border-color:var(--ai);color:var(--ai);font-weight:700}
+.cp-steps .soon .dot{border-style:dashed}
+.cp-steps b{font-size:15px}
+.cp-steps small{font-size:13px;color:var(--sumi-muted)}
+.cp-steps .chip{align-self:flex-start;padding:3px 8px;border-radius:6px;background:var(--paper-200);font-weight:600}
+.cp-und{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:var(--ai-soft);font-size:13px;line-height:18px}
+.cp-open{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;border:1.5px dashed var(--ai);color:var(--ai);font-weight:700;font-size:15px}
+.cp-saved{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:var(--success-soft);color:var(--success);font-size:14px;font-weight:600;animation:srFade .2s both}
+.cp-others li{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--line)}
+.cp-others .w{flex:1;min-width:0;display:flex;flex-direction:column}
+.cp-others b{font-size:15px;line-height:22px}
+.cp-others .w span{font-family:var(--font-jp);font-size:13px;color:var(--sumi-muted)}
+.cp-others .t{font-size:14px;font-weight:700;color:var(--sumi-muted)}
+.cp-others .t.red{color:var(--shu)}
+.cp-div{height:1px;background:var(--line)}
+.pg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cp-acts{display:flex;flex-wrap:wrap;gap:8px}
+.cp-oct{color:var(--shu)}
+.cp-sheetx{display:none}
+/* khung chat: cùng chất liệu giấy ngà và mực của trang bản đồ */
+.ccw{position:absolute;top:16px;bottom:16px;right:calc(16px + var(--pw) + var(--gap));width:var(--cw);z-index:5}
+.ccw.in{animation:ccIn .32s cubic-bezier(.2,.7,.2,1) both}
+.ccw.out{animation:ccOut .22s cubic-bezier(.4,0,1,1) both}
+@keyframes ccIn{from{transform:translateX(56px);opacity:0}to{transform:none;opacity:1}}
+@keyframes ccOut{from{transform:none;opacity:1}to{transform:translateX(56px);opacity:0}}
+.cc{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--paper-100);box-shadow:0 2px 4px rgba(11,22,46,.16),0 20px 48px rgba(11,22,46,.30)}
+/* tab sổ tay gắn ở mép trái khung chat */
+.nb-tabs{position:absolute;right:100%;top:96px;z-index:1;display:flex;flex-direction:column;gap:14px;width:var(--tw)}
+.nb-tab{--tc:var(--sumi);position:relative;transform:translateX(calc(100% - var(--tv)));transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .15s,color .15s;
+  display:flex;align-items:center;justify-content:flex-start;gap:8px;width:100%;height:64px;padding:0 12px 0 0;border:1px solid var(--line);border-right:0;border-radius:10px 0 0 10px;
+  background:var(--card);color:var(--sumi);font:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:-2px 3px 8px rgba(11,22,46,.16)}
+.nb-tab::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;background:var(--tc);opacity:0;transition:opacity .15s}
+.t-ctx{--tc:var(--nami)}.t-script{--tc:var(--ai)}.t-vocab{--tc:var(--kanto-ink)}.t-gram{--tc:var(--n3)}.t-res{--tc:var(--shu)}
+.nb-tab .k{flex:none;width:var(--tv);display:flex;justify-content:center;writing-mode:vertical-rl;text-orientation:upright;font-family:var(--font-mincho);font-size:15px;line-height:1;font-weight:700;letter-spacing:2px;color:var(--tc)}
+.nb-tab .l{white-space:nowrap;opacity:0;transition:opacity .12s}
+.nb-tab:hover,.nb-tab:focus-visible{transform:none;z-index:2}
+.nb-tab:hover .l,.nb-tab:focus-visible .l{opacity:1;transition-delay:.06s}
+.nb-tab:hover::before,.nb-tab:focus-visible::before{opacity:1}
+.nb-tab:focus-visible{outline-offset:-3px}
+.nb-tab.on,.nb-tab.on:hover,.nb-tab.on:focus-visible{transform:translateX(calc(100% - var(--tv) - var(--tg) - 2px));background:var(--tc);border-color:var(--tc);z-index:1}
+.nb-tab.on .l{display:none}
+.nb-tab.on .k{color:var(--paper-50)}
+.nb-tab.on .l{color:var(--paper-50)}
+.nb-tab.on::before{display:none}
+.nb-tab .nd{position:absolute;right:calc(var(--tv) - 6px);top:6px;width:10px;height:10px;border-radius:50%;background:var(--shu);box-shadow:0 0 0 2px var(--card)}
+/* trang ghi chú: giấy kẻ dòng, lề đỏ như trang sổ */
+.nb-page{position:absolute;right:calc(100% + var(--tv) + var(--tg));top:0;bottom:0;z-index:0;width:var(--nw);display:flex;flex-direction:column;border-radius:14px 4px 4px 14px;overflow:hidden;
+  background-color:var(--card);background-image:linear-gradient(90deg,transparent 31px,color-mix(in srgb,var(--kanto-ink) 22%,transparent) 31px,color-mix(in srgb,var(--kanto-ink) 22%,transparent) 32px,transparent 32px);
+  box-shadow:0 2px 4px rgba(11,22,46,.16),0 20px 48px rgba(11,22,46,.30);animation:nbIn .24s cubic-bezier(.2,.7,.2,1) both;transform-origin:100% 50%}
+@keyframes nbIn{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.nb-h{position:relative;flex:none;display:flex;align-items:baseline;gap:10px;padding:20px 12px 14px 48px}
+.nb-h::after{content:"";position:absolute;left:48px;right:22px;bottom:0;height:2px;border-radius:1px;background:var(--nbc,var(--kanto-ink));opacity:.85}
+.nb-h .jc-iconbtn,.nb-h button{align-self:center}
+.nb-h h2{flex:1;font-size:17px;line-height:24px;font-weight:700}
+.nb-jp{font-family:var(--font-mincho);font-size:20px;font-weight:700;letter-spacing:.04em;color:var(--nbc,var(--kanto-ink))}
+.nb-page.ctx{--nbc:var(--nami)}.nb-page.script{--nbc:var(--ai)}.nb-page.vocab{--nbc:var(--kanto-ink)}.nb-page.gram{--nbc:var(--n3)}.nb-page.res{--nbc:var(--shu)}
+.nb-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 22px 28px 48px}
+.nb-body .sr-pbody,.nb-body .cp-sec{display:flex;flex-direction:column;gap:16px}
+.nb-body .ctx-box,.nb-body .gr-top,.nb-body .fb-err,.nb-body .fb-tempo{background:color-mix(in srgb,var(--paper-200) 80%,transparent)}
+.nb-body .vc,.nb-body .sc-line,.nb-body .pg-list li{border-top-color:color-mix(in srgb,var(--kanto-ink) 18%,transparent)}
+.nb-body .sc-line.me{background:color-mix(in srgb,var(--ai-soft) 85%,transparent)}
+.nt{display:flex;flex-direction:column;gap:20px;font-size:15px;line-height:24px}
+.nt-place{display:flex;align-items:flex-start;gap:10px}
+.nt-place .msr{font-size:22px;color:var(--nbc,var(--kanto-ink));margin-top:1px}
+.nt-place div{display:flex;flex-direction:column}
+.nt-place b{font-size:16px;line-height:24px}
+.nt-place span{font-family:var(--font-mincho);font-size:14px;color:var(--sumi-muted)}
+.nt-p{color:var(--sumi)}
+.nt-sec{display:flex;flex-direction:column;gap:10px;padding-top:18px;border-top:1px solid var(--line)}
+.nt-sec.first{padding-top:0;border-top:0}
+.nt-l{font-size:13px;line-height:18px;font-weight:700;color:var(--sumi-muted)}
+.nt-q{display:flex;flex-direction:column;gap:8px;counter-reset:q}
+.nt-q li{counter-increment:q;display:grid;grid-template-columns:22px 1fr;column-gap:6px;font-size:14px;line-height:20px;color:var(--sumi-muted)}
+.nt-q li::before{content:counter(q);grid-row:span 2;font-family:"Lora",var(--font-mincho),serif;font-variant-numeric:lining-nums;font-size:14px;font-weight:600;color:var(--nbc,var(--kanto-ink))}
+.nt-q li span{font-family:var(--font-jp);font-size:15px;line-height:22px;color:var(--sumi)}
+.nt-quote{display:flex;flex-direction:column;gap:4px;padding:2px 0 2px 16px;border-left:3px solid var(--nbc,var(--kanto-ink))}
+.nt-quote span{font-size:15px;font-weight:600}
+.nt-quote small{font-size:13px;color:var(--sumi-muted)}
+.nt-quote .pat{font-family:var(--font-jp);font-size:20px;line-height:28px}
+.nt-role{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:16px;border-top:1px solid var(--line);font-size:14px}
+.nt-link{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--ai);font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.nt-link:hover{background:var(--paper-200)}
+.nt-link .msr{font-size:18px}
+.nt-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.nt-ic:hover{background:var(--paper-200);color:var(--ai)}
+.nt-ic .msr{font-size:19px}
+.nt-script li{display:flex;align-items:flex-start;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.nt-script li:first-child{border-top:0;padding-top:0}
+.nt-script .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.nt-script .rn{font-size:12px;line-height:16px;font-weight:700;color:var(--sumi-muted)}
+.nt-script .vi{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.nt-script li.me .w{padding-left:12px;border-left:3px solid var(--ai)}
+.nt-script li.me .rn{color:var(--ai)}
+.nt-words li{display:flex;flex-direction:column;gap:2px;padding:14px 0;border-top:1px solid var(--line)}
+.nt-words li:first-child{border-top:0;padding-top:0}
+.nt-words .hd{display:flex;align-items:center;gap:8px}
+.nt-words .hd .t,.nt-words .hd .nt-ic{margin-left:auto}
+.nt-words .hd .t+.nt-ic{margin-left:0}
+.nt-words .t{font-size:12px;color:var(--sumi-muted)}
+.nt-words b{font-size:15px;line-height:22px}
+.nt-words .ex{display:flex;flex-direction:column;font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.nt-words .ex span{font-family:var(--font-jp);color:var(--sumi)}
+.nt-roles{display:flex;flex-direction:column;gap:8px}
+.nt-roles li{display:flex;align-items:center;gap:10px;font-size:15px}
+.cc-av.sm{width:32px;height:32px;margin:0;font-size:14px}
+.rs-top{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rs-top>div{display:flex;flex-direction:column;gap:4px}
+.rs-big{display:flex;align-items:baseline;gap:2px}
+.rs-big b{font-family:"Lora",var(--font-mincho),serif;font-variant-numeric:lining-nums;font-size:32px;line-height:38px;font-weight:600}
+.rs-big>span{font-size:15px;font-weight:600;color:var(--sumi-faint)}
+.rs-big.ai b{color:var(--ai)}
+.rs-tiers{display:flex;flex-direction:column;gap:1px;font-size:12px;line-height:18px;color:var(--sumi-muted)}
+.rs-tiers li{display:flex;align-items:center;gap:6px}
+.rs-tiers i,.ce-stats .tiers i{display:inline-block;width:8px;height:8px;border-radius:50%}
+i.good{background:var(--score-good)}i.mid{background:var(--warning)}i.low{background:var(--score-low)}
+.rs-bar{width:100%;height:6px;margin-top:4px}
+.rs-bar .bg{fill:var(--paper-200)}.rs-bar .fg{fill:var(--ai)}
+.rs-note{font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.rs-list{display:flex;flex-direction:column}
+.rs-list>li{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.rs-list>li:first-child{border-top:0;padding-top:4px}
+.rs-list>li.sel .rs-jp{color:var(--ai)}
+.rs-row{display:flex;align-items:center;gap:8px;padding:2px 0;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.rs-row .chev{font-size:20px;color:var(--sumi-muted);transition:transform .18s}
+.rs-row[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.rs-row .n{font-size:12px;font-weight:700;color:var(--sumi-muted)}
+.rs-row .att{font-size:12px;color:var(--sumi-faint)}
+.rs-chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid transparent}
+.rs-chip.good{background:var(--score-good-soft);color:var(--score-good)}.rs-chip.mid{background:var(--warning-soft);color:var(--warning)}.rs-chip.low{background:var(--score-low-soft);color:var(--score-low)}.rs-chip.na{background:var(--paper-200);color:var(--sumi-muted)}.rs-chip.wait{background:var(--warning-soft);color:var(--warning)}
+.rs-jp{font-family:var(--font-jp);font-size:15px;line-height:22px;padding-left:28px}
+.rs-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding-left:28px}
+.cc-t.sm{height:32px;padding:0 12px;font-size:13px}
+.rs-btns .nt-link{height:32px;font-size:13px}
+.rs-detail{display:flex;flex-direction:column;gap:6px;margin:4px 0 0 28px;padding:12px;border-radius:10px;background:var(--paper-100);border:1px solid var(--line)}
+.rs-said{display:flex;flex-direction:column;font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.rs-said span[lang]{font-family:var(--font-jp);font-size:14px;color:var(--sumi)}
+.rs-ro{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--sumi-faint)}
+.rs-vi{font-size:13px;color:var(--sumi-muted)}
+.ce-h{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ce-h h2{font-size:22px;line-height:30px;font-weight:800}
+.ce-sub{font-size:14px;color:var(--sumi-muted)}
+.ce-save{font-size:13px;font-weight:600;color:var(--success)}
+.ce-save.fail{color:var(--danger)}
+.ce-stamp{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;width:100%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:20px;font-weight:600}
+.ce-stamp .msr{font-size:20px}
+.ce-stamp.ok{background:color-mix(in srgb,var(--ai) 9%,var(--card));color:var(--ai)}
+.ce-stamp.no{background:var(--paper-200);color:var(--sumi)}
+.ce-stamp.err{background:var(--danger-soft);color:var(--danger)}
+.ce-score{display:grid;grid-template-columns:auto 1fr;align-items:stretch;gap:14px;width:100%;text-align:left}
+.ce-main{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 18px 4px 4px;border-right:1px solid var(--line)}
+.ce-num{display:flex;align-items:baseline;gap:6px}
+.ce-num b{font-family:"Lora",var(--font-mincho),serif;font-variant-numeric:lining-nums;font-size:52px;line-height:54px;font-weight:600}
+.ce-num>span{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.ce-num.good b{color:var(--ai)}.ce-num.mid b{color:var(--score-mid)}.ce-num.low b{color:var(--score-low)}
+.ce-rank{font-size:13px;font-weight:700}
+.ce-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0}
+.ce-stats>div{display:flex;flex-direction:column;gap:2px;margin:0}
+.ce-stats dt{font-size:12px;line-height:16px;font-weight:600;color:var(--sumi-muted)}
+.ce-stats dd{margin:0;font-size:14px;color:var(--sumi-faint)}
+.ce-stats dd b{font-size:22px;line-height:28px;color:var(--sumi);font-variant-numeric:tabular-nums}
+.ce-stats .tiers{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sumi-muted)}
+.ce-stats .tiers i{margin-left:4px}.ce-stats .tiers i:first-child{margin-left:0}
+.ce-stats .unit{font-size:12px}
+.ce-none{display:flex;flex-direction:column;gap:4px;width:100%;padding:16px;border-radius:12px;border:1.5px dashed var(--line-strong);font-size:14px;line-height:21px;color:var(--sumi-muted)}
+.ce-none b{color:var(--sumi)}
+.ce-warn{display:flex;align-items:flex-start;gap:8px;width:100%;padding:10px 12px;border-radius:10px;background:var(--warning-soft);color:var(--warning);font-size:13px;line-height:19px;text-align:left}
+.ce-warn .msr{font-size:18px}
+.ce-sec{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;padding-top:14px;border-top:1px solid var(--line)}
+.ce-retry button{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;width:100%;padding:8px 0;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.ce-retry li+li{border-top:1px dashed var(--line)}
+.ce-retry .jp{font-family:var(--font-jp);font-size:15px;margin-right:auto}
+.ce-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--paper-200);font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.ce-errs{width:100%;text-align:left;font-size:13px;color:var(--sumi-muted)}
+.ce-ai{display:flex;flex-direction:column;gap:6px;width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--line);text-align:left}
+.ce-ai-h{margin-top:6px;font-size:13px;font-weight:700}
+.ce-ai-h span{font-weight:400;color:var(--sumi-muted)}
+.ce-sk{display:flex;flex-direction:column;gap:6px}
+.ce-sk i{display:block;height:9px;border-radius:5px;background:var(--paper-200)}
+.ce-sk i.s{width:62%}
+.ce-ai-f{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;line-height:16px;color:var(--sumi-muted)}
+.ce-ai-demo{font-size:11px;color:var(--sumi-faint)}
+.ce-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;padding-top:14px;border-top:1px solid var(--line)}
+.ce-acts .sp{flex:1}
+/* thanh cuộn: mảnh như nét bút, chỉ hiện khi rê chuột vào vùng cuộn */
+.cp-body,.nb-body,.cc-conv,.dm-pan{scrollbar-width:thin;scrollbar-color:transparent transparent;transition:scrollbar-color .2s}
+.cp-body:hover,.nb-body:hover,.cc-conv:hover,.dm-pan:hover,.cp-body:focus-within,.nb-body:focus-within{scrollbar-color:color-mix(in srgb,var(--line-strong) 45%,transparent) transparent}
+.cp-body::-webkit-scrollbar,.nb-body::-webkit-scrollbar,.cc-conv::-webkit-scrollbar,.dm-pan::-webkit-scrollbar{width:10px;height:10px}
+.cp-body::-webkit-scrollbar-track,.nb-body::-webkit-scrollbar-track,.cc-conv::-webkit-scrollbar-track,.dm-pan::-webkit-scrollbar-track{background:transparent;margin:14px 0}
+.cp-body::-webkit-scrollbar-thumb,.nb-body::-webkit-scrollbar-thumb,.cc-conv::-webkit-scrollbar-thumb,.dm-pan::-webkit-scrollbar-thumb{border-radius:10px;border:3px solid transparent;background-clip:padding-box;background-color:transparent}
+.cp-body:hover::-webkit-scrollbar-thumb,.nb-body:hover::-webkit-scrollbar-thumb,.cc-conv:hover::-webkit-scrollbar-thumb,.dm-pan:hover::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--line-strong) 45%,transparent)}
+.cp-body::-webkit-scrollbar-thumb:hover,.nb-body::-webkit-scrollbar-thumb:hover,.cc-conv::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--kanto-ink) 55%,transparent)}
+.cp-body::-webkit-scrollbar-button,.nb-body::-webkit-scrollbar-button,.cc-conv::-webkit-scrollbar-button,.dm-pan::-webkit-scrollbar-button{display:none;height:0}
+/* mép dưới mờ dần: báo còn nội dung bên dưới */
+.cp-body,.nb-body{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent)}
+.cm-toast{position:absolute;left:24px;bottom:84px;z-index:7;display:flex;align-items:center;gap:8px;max-width:320px;padding:10px 14px;border-radius:12px;background:var(--sumi);color:var(--paper-50);font-size:14px;line-height:20px;box-shadow:var(--shadow-md);animation:srFade .2s both}
+.cm-toast .msr{font-size:20px;color:var(--success-soft)}
+.cc-top{position:relative;flex:none;display:flex;align-items:center;gap:8px;padding:18px 14px 14px 26px;background:var(--paper-100)}
+.cc-top::after{content:"";position:absolute;left:26px;right:26px;bottom:0;height:1px;background:var(--line)}
+.cc-tt{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px}
+.cc-tt span{font-family:var(--font-mincho);font-size:14px;font-weight:600;letter-spacing:.06em;color:var(--kanto-ink);white-space:nowrap}
+.cc-top h2{min-width:0;font-size:18px;line-height:26px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-info{display:none}
+.cc-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;position:relative;z-index:1}
+.cc-conv{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column-reverse;padding:20px 20px 12px}
+.cc-col{display:flex;flex-direction:column;gap:20px}
+.cc-conv{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 28px);mask-image:linear-gradient(180deg,transparent 0,#000 28px)}
+.cc-col.empty{flex:1 1 auto;justify-content:center}
+.cc-cover{align-self:center;display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:420px;padding:26px 24px 22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center;box-shadow:0 1px 2px rgba(11,22,46,.06)}
+.cv-roles{display:flex;align-items:flex-start;justify-content:center;gap:12px;width:100%}
+.cv-p{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cv-p .cc-av{margin:0 0 4px;width:52px;height:52px;font-size:20px}
+.cv-p.me .cc-av{background:var(--sumi);color:var(--paper-50);font-family:var(--font-sans);font-size:15px}
+.cv-p b{font-size:14px;line-height:20px}
+.cv-p small{font-size:12px;color:var(--sumi-muted)}
+.cv-dash{flex:none;width:44px;margin-top:26px;border-top:2px dashed var(--line-strong)}
+.cv-say{font-size:15px;line-height:24px;color:var(--sumi)}
+.cv-meta{display:flex;justify-content:center;gap:0;width:100%;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cv-meta li{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.cv-meta li+li{border-left:1px solid var(--line)}
+.cv-meta b{font-family:"Lora",var(--font-mincho),serif;font-variant-numeric:lining-nums;font-size:24px;line-height:28px;font-weight:600;color:var(--sumi)}
+.cv-tip{font-size:13px;line-height:20px;color:var(--sumi-muted)}
+.cc-intro{align-self:center;display:flex;flex-direction:column;gap:6px;max-width:400px;margin-bottom:8px;padding:16px 18px;border-radius:16px;background:var(--card);border:1px solid var(--line);text-align:center;font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.cc-intro b{color:var(--sumi);font-size:15px}
+.cc-resume{align-self:center;display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--sumi-muted)}
+.cc-resume .msr{font-size:18px}
+.cc-ln{display:flex;align-items:flex-start;gap:12px}
+.cc-ln.me{flex-direction:row-reverse}
+.cc-av{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;margin-top:22px;background:var(--kanto-ink);color:var(--paper-50);font-family:var(--font-mincho);font-weight:700;font-size:18px}
+.cc-ln.me .cc-av{background:var(--sumi);color:var(--paper-50);font-family:var(--font-sans);font-size:15px}
+.cc-c{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:78%}
+.cc-ln.me .cc-c{align-items:flex-end}
+.cc-name{display:flex;align-items:center;gap:8px;min-height:22px;font-size:14px;font-weight:700}
+.cc-ln.me .cc-name{flex-direction:row-reverse}
+.cc-pill{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:700}
+.cc-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.cc-pill.good{background:var(--score-good-soft);color:var(--score-good)}.cc-pill.mid{background:var(--score-mid-soft);color:var(--score-mid)}.cc-pill.low,.cc-pill.na{background:var(--score-low-soft);color:var(--score-low)}
+.cc-b{display:flex;flex-direction:column;gap:6px;padding:12px 20px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--sumi);font:inherit;text-align:left;cursor:default}
+.cc-ln.ai .cc-b{border-top-left-radius:6px}
+.cc-ln.me .cc-b{background:var(--sumi);border-color:var(--sumi);color:#fff;border-top-right-radius:6px;padding:14px 24px;cursor:pointer}
+.cc-ln.me .cc-b .jc-jp{font-size:21px;line-height:36px;font-weight:600}
+.cc-ln.me .cc-b rt{color:rgba(255,255,255,.72)}
+.cc-ln.me.sel .cc-b{box-shadow:0 0 0 3px var(--paper-100),0 0 0 5px var(--ai)}
+.cc-ln.pending .cc-b{background:var(--card);color:var(--sumi);border:2px dashed var(--ai);cursor:default}
+.cc-ln.pending .cc-b rt{color:var(--sumi-muted)}
+.cc-ln.pending .cc-name{color:var(--ai)}
+.cc-ln.talking .cc-b{box-shadow:0 0 0 3px color-mix(in srgb,var(--ai) 25%,transparent)}
+.cc-vi{font-size:14px;line-height:22px;opacity:.85}
+.cc-ln.me .cc-vi{color:rgba(255,255,255,.85)}
+.cc-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cc-t{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--sumi);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.cc-t:hover{background:var(--paper-200)}
+.cc-t .msr{font-size:18px;color:var(--ai)}
+.cc-t.ic{width:44px;justify-content:center;padding:0}
+.cc .sr-dock{padding:0 16px 16px}
+.cc .dk-row{flex-wrap:wrap}
+.cc .sr-dk{max-width:none;background:var(--card);border:2px dashed var(--line-strong);box-shadow:none}
+.cc-end{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px;padding:24px 20px 22px;border-radius:20px;background:var(--card);border:1px solid var(--line);text-align:center}
+.cc-end h2{font-size:20px;line-height:28px;font-weight:700}
+.cc-end>p{max-width:420px;font-size:14px;line-height:22px;color:var(--sumi-muted)}
+.cc-stamps{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;min-height:140px}
+.cc-shadow{position:absolute;bottom:2px;left:50%;width:120px;height:12px;margin-left:-60px;border-radius:50%;background:color-mix(in srgb,var(--sumi) 16%,transparent);filter:blur(6px)}
+.cc-pref svg{width:116px;height:116px}
+.cc-score{display:flex;align-items:baseline;gap:6px}
+.cc-score b{font-family:"Lora",var(--font-mincho),serif;font-size:40px;line-height:44px;font-weight:600}
+.cc-score>span{font-size:15px;color:var(--sumi-muted)}
+.cc-score .sm-pass{margin-left:8px;align-self:center}
+.cc-und{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:14px;border-radius:14px;background:var(--ai-soft)}
+.cc-und b{font-family:var(--font-jp);font-size:20px}
+.cc-und span{font-size:14px;color:var(--sumi-muted)}
+.cc-acts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px}
+.cc-link{border:0;background:transparent;color:var(--ai);font:inherit;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px}
+.cc-note{font-size:13px;color:var(--sumi-muted)}
+.cc-saving{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--sumi-muted)}
+.cc-err{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:24px}
+.cc .sr-dlgscrim{border-radius:18px}
+/* con dấu */
+.sr-big.rot{animation:srStamp .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes srStamp{0%{transform:scale(1.35) rotate(-14deg);opacity:.55}60%{transform:scale(.95) rotate(-5deg);opacity:1}100%{transform:rotate(-6deg)}}
+@keyframes srFade{from{opacity:0}to{opacity:1}}
+.sr-big.rot2{transform:rotate(7deg)}
+.cm-pin .pk{animation:pkIn .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes pkIn{0%{transform:scale(1.8);opacity:0}60%{transform:scale(.9);opacity:1}100%{transform:none}}
+/* bảng demo */
+.dm{position:absolute;left:24px;bottom:24px;z-index:9}
+.dm-fab{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px 0 12px;border:1px dashed var(--line-strong);border-radius:999px;background:var(--card);color:var(--sumi-muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-md)}
+.dm-fab .msr{font-size:18px}
+.dm-pan{position:absolute;left:0;bottom:48px;width:320px;max-height:calc(100vh - 100px);overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow-lg)}
+.dm-hd{display:flex;align-items:center;justify-content:space-between}
+.dm-note{margin:0 0 4px;font-size:12px;line-height:18px;color:var(--sumi-muted)}
+.dm-sec{margin:8px 0 0;font-size:12px;font-weight:700;color:var(--sumi-muted)}
+.dm-tg{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px;border:0;border-radius:10px;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.dm-tg:hover{background:var(--paper-200)}
+.dm-tg .w{display:flex;flex-direction:column;gap:1px}
+.dm-tg b{font-size:13px;font-weight:600}
+.dm-tg .w>span{font-size:12px;color:var(--sumi-muted)}
+.dm-sw{flex:none;position:relative;width:34px;height:20px;border-radius:999px;background:var(--paper-300)}
+.dm-sw i{position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.dm-sw.on{background:var(--ai)}
+.dm-sw.on i{transform:translateX(14px)}
+.dm-foot{margin-top:8px}
+.dm.mini{left:8px;bottom:8px}
+.dm.hide{display:none}
+.dm.mini .dm-fab{width:36px;height:36px;padding:0;justify-content:center}
+.dm.mini .dm-fab .t{display:none}
+@media (max-width:1300px){.cm-map.pan{transform:translateX(-340px)}}
+@media (prefers-reduced-motion:reduce){
+  .cm-map{transition:none}
+  .nb-tab,.nb-tab .l{transition:none}
+  .ccw.in{animation:srFade .15s both}.ccw.out{animation:srFade .15s reverse both}.nb-page{animation:none}
+  .sr-big.rot,.cm-pin .pk{animation:none}
+}
+/* điện thoại: ngăn thông tin là bottom sheet trên bản đồ; khung chat phủ màn, tab sổ tay thành một hàng dưới tên bài, trang ghi chú mở thành bottom sheet */
+@media (max-width:760px){
+  .cm{--pw:100%}
+  .cm-map{transform:translate(-300px,-60px) scale(.8);transform-origin:0 0}
+  .cm-map.pan{transform:translate(-300px,-60px) scale(.8)}
+  .cm-ui{left:12px;top:12px}.cm-crumb,.cm-ctl{display:none}
+  .cm-back{height:44px;font-size:15px}
+  .cp{left:0;right:0;bottom:0;top:auto;width:auto;height:62%;border-radius:20px 20px 0 0}
+  .cp-k{font-size:40px;line-height:48px}
+  .ccw{left:0;right:0;top:0;bottom:0;width:auto;z-index:8}
+  .cc{border-radius:0}
+  .nb-tabs{right:0;left:0;top:58px;z-index:3;flex-direction:row;gap:4px;width:auto;padding:6px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+  .nb-tab{transform:none;flex:1 1 0;height:52px;flex-direction:column-reverse;justify-content:center;gap:2px;border:1px solid var(--line);border-radius:10px;box-shadow:none;padding:4px 2px;font-size:11px}
+  .nb-tab .l{opacity:1}
+  .nb-tab .k{writing-mode:horizontal-tb;width:auto;font-size:14px;letter-spacing:0}
+  .nb-tab::before{display:none}
+  .nb-tab .nd{right:6px}
+  .cc-main{padding-top:66px}
+  .nb-page{right:0;left:0;top:auto;bottom:0;width:auto;height:72%;z-index:4;border-radius:20px 20px 0 0;animation-name:srFade}
+  .nb-h{padding-left:20px}.nb-body{padding:16px 16px 24px 44px}
+  .cc-c{max-width:86%}
+  .cc-av{display:none}
+  .cc-ln.me .cc-b .jc-jp{font-size:19px;line-height:32px}
+  .cc .sr-dock{padding:0}
+  .cc .sr-dk{border-radius:20px 20px 0 0;border-bottom:0}
+  .cm-toast{left:12px;right:12px;bottom:auto;top:64px;max-width:none}
+  .dm,.dm.mini{left:auto;right:56px;bottom:auto;top:12px}
+  .dm:not(.mini){right:12px}
+  .dm-fab .t{display:none}
+  .dm-fab,.dm.mini .dm-fab{width:36px;height:36px;padding:0;justify-content:center}
+  .dm-pan{left:auto;right:0;bottom:auto;top:52px;width:min(320px,calc(100vw - 24px))}
+}
+
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<filter id="inkfx" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+  <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n1"/>
+  <feDisplacementMap in="SourceGraphic" in2="n1" scale="1.7" result="d"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="11" result="n2"/>
+  <feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.6 2.75" result="m"/>
+  <feComposite in="d" in2="m" operator="in"/>
+</filter></defs></svg>
+<div class="{{sr.rootCls}}" data-theme="kham-pha">
+  <div class="{{sr.mapCls}}"><svg class="cm-svg" width="1440" height="900" viewBox="1376.3 975.2 228.57 142.86" aria-hidden="true"><g class="lands"><path class="land" d="M1473.1 906.2L1474.6 905.5L1476.9 909.6L1482.1 910.7L1485 912.8L1488.2 912.8L1488.7 913.8L1489.9 913.3L1490.4 914.4L1491.1 914.2L1492 916.9L1489.2 918L1487.3 921.9L1484.9 930.7L1484.9 933.8L1483.1 935.6L1482.7 937.8L1480 942.4L1477.9 950.5L1476.6 951.3L1477.5 951.8L1476.6 952.2L1476.3 956L1477.8 955.9L1477.8 956.9L1476.3 956.9L1476.9 958.9L1476.4 959.5L1477.8 961.9L1477.4 963.8L1475.2 966.3L1474.7 968.9L1472.9 969.5L1472.4 974.4L1473.4 981.5L1476.4 991.3L1481.5 1003.1L1482.1 1002.9L1483.7 1006.2L1481.9 1008L1480.6 1007.1L1481.6 1010.3L1482.8 1011.7L1481.8 1008.8L1484.1 1007.5L1489.5 1017.7L1494 1024.7L1495.6 1025.6L1495.2 1026L1493.1 1026L1487.3 1021.8L1484.1 1016.3L1482.2 1015L1478.2 1014.1L1475.5 1009.7L1468.6 1004.1L1466.7 1007.2L1467.9 1009.4L1464.4 1007.4L1461.4 1009.4L1459.7 1009.1L1457.1 1010L1453.2 1013.6L1450.3 1012.6L1447.4 1014.5L1444.4 1013.9L1441.4 1015.5L1439.7 1015.4L1437.7 1012.6L1435.1 1011.6L1433.6 1012.2L1429.4 1008.9L1427.5 1009L1423.2 1006L1422.8 1003.2L1418.8 1001.1L1418.4 999.3L1413 993.4L1411.1 989.6L1409.8 991.9L1406.6 991.2L1406.4 988.9L1403.5 982.7L1403.6 979.4L1404.7 979.8L1404.8 978.9L1405.8 978.8L1406.4 979.8L1413.9 976L1415.4 972.5L1415 970.6L1416 968.9L1418.4 967.7L1418.5 969L1420.9 969.9L1421.2 966.3L1425.2 964.9L1425.9 962.1L1427.1 963.2L1428.2 963.2L1428.1 962.3L1431.6 962.5L1433.5 961.1L1433.3 959.6L1436 960.6L1436.8 959.2L1438.4 958.5L1439.5 958.6L1440.4 960.2L1443.2 959.6L1444.1 958L1444.1 954.6L1446.4 949.7L1448.7 948.2L1447.4 943.7L1447.6 938.7L1446.7 937.6L1447.2 935.1L1445.5 931.4L1446.4 930L1451.2 928.7L1450.5 926.7L1448.4 924.3L1448.2 921.6L1449.1 921.1L1449.2 917.6L1448.1 915L1448.1 907.2L1450.5 906.5L1451.7 907.1L1453.3 908.7L1453.9 910.7L1457.2 911.9L1458 916.2L1461 916.8L1462.3 918.2L1462.8 917.8L1464.8 920.8L1466 920.2L1466.7 918.2L1468.6 917.8L1470.8 914.1L1475 912.7L1474.1 909.5L1472.9 908.7L1473.1 906.2Z"/><path class="land" d="M1425 884.6L1430.8 886L1432.8 887.4L1435.6 887.6L1438.4 889.6L1439 889.4L1440.8 892L1443.4 893.6L1444.3 897.6L1445.5 898.1L1447.8 897.4L1448 899.1L1447.1 899.9L1448.1 903.7L1447.1 905L1449 906.7L1447.8 908L1448.1 915L1449.2 917.6L1448.3 923.5L1451.2 928.7L1446.4 930L1445.5 931.4L1447.2 935.1L1446.7 937.6L1447.6 938.7L1447.4 943.7L1448.7 948.2L1446.4 949.7L1444.1 954.6L1444.1 958L1442.7 960.2L1440.4 960.2L1439.5 958.6L1438.4 958.5L1436.8 959.2L1436 960.6L1433.3 959.6L1433.5 961.1L1431.6 962.5L1428.1 962.3L1428.2 963.2L1427.1 963.2L1425.9 962.1L1425.2 964.9L1421.2 966.3L1420.9 969.9L1418.5 969L1418.4 967.7L1416 968.9L1415 970.6L1415.4 972.5L1413.9 976L1406.4 979.8L1405.6 978.8L1404.8 978.9L1404.7 979.8L1402.5 979.9L1402.2 979.1L1401.4 979.2L1401.3 977L1400 976L1398.8 974.5L1399.7 973.3L1397.7 972.6L1393.4 973.3L1392.6 972.1L1390.5 971.5L1385.5 972.8L1385.1 971.1L1383.9 971.2L1383.4 970.3L1383.3 970.8L1381.7 968.4L1381.6 967.5L1382.6 967.4L1381.9 966.3L1378 963.3L1377.3 961.6L1378.9 958.4L1381.3 955.1L1381.2 954.1L1382.9 954.2L1383.2 953.6L1383.5 952.5L1383 952.9L1382 949.9L1383.8 946.8L1383.2 946.7L1383.5 945.2L1385.2 944.7L1387.1 941.8L1385.6 939.3L1382.7 939.9L1380.8 939.1L1380.3 939.8L1375 937.3L1374.7 934.4L1375.4 930.8L1377.3 928.6L1378.2 925.4L1376.8 924.7L1376.7 922.6L1378.4 921.6L1378.7 919.6L1379.9 919L1380.9 917L1376.4 914.7L1377 912.2L1378 912.2L1378.5 910.4L1380.1 909.5L1381.2 907.3L1382.7 907.5L1385.2 903L1387.2 902.5L1387.9 903.2L1391.2 901.9L1394.5 899.7L1395 898.5L1397.2 898.6L1398.4 896.6L1401.5 895.9L1402.1 894.2L1404.3 894L1405.8 892.9L1408.4 892.9L1410.2 890.8L1413.9 891.5L1413.5 888.2L1417.4 885.3L1425 884.6Z"/><path class="land" d="M1320.5 958.8L1316.3 957.6L1313.4 958.2L1311.7 959.8L1308.5 958.6L1308.2 959.8L1305.9 959.5L1305.6 958L1301.2 956.5L1300.9 951.1L1302.1 945.9L1303.4 944.4L1302.7 942.3L1303.3 940.4L1305.3 938.7L1305.7 936.7L1306.9 935.7L1311 934.9L1311.8 933.4L1310.5 932.4L1310.1 931L1313.7 929.3L1315.6 929.9L1316.6 928.5L1317.7 929.4L1318.7 928L1325.8 926.1L1327 923.6L1332 925.5L1332.9 923.8L1334.1 923.8L1334.9 922.8L1335.3 920.6L1334.5 918.3L1337.2 918.8L1339.3 917.4L1343 916.7L1342.1 914.9L1342.6 911.7L1343.9 910.5L1347 910.9L1346 902.1L1352.4 901.3L1355.9 898L1356.4 894.1L1358.4 895.2L1359.2 897.3L1362.3 900L1363 903.5L1365 904.4L1366.8 903.9L1367.5 905.3L1367 906.3L1367.9 907L1369.8 905.9L1372.9 907.4L1375.8 907.2L1376.4 908.7L1378.2 908.2L1379.9 908.9L1378 912.2L1377 912.2L1376.4 914.7L1380.9 917L1379.9 919L1378.7 919.6L1378.4 921.6L1376.7 922.6L1376.8 924.7L1378.2 925.4L1377.3 928.6L1375.4 930.8L1374.7 936.6L1376.9 938.5L1379.5 938.9L1380.3 939.8L1380.8 939.1L1382.7 939.9L1385.6 939.3L1387.1 941.8L1385.2 944.7L1383.5 945.2L1383.2 946.7L1383.8 946.8L1382.2 949.1L1381.9 950.5L1383 952.9L1383.5 952.5L1383.2 953.6L1382.9 954.2L1381.2 954.1L1381.3 955.1L1377.3 961.6L1378 963.3L1381.9 966.3L1382.6 967.4L1381.6 967.5L1381.7 968.4L1383.3 970.8L1383.4 970.3L1383.9 971.2L1385.1 971.1L1385.5 972.8L1390.5 971.5L1392.6 972.1L1393.4 973.3L1398 972.6L1399.7 973.3L1398.8 974.5L1399.7 976.4L1401.3 977L1401 977.9L1401.8 978.8L1400.3 978.9L1400.3 980.3L1398.5 980.5L1398.3 981.3L1395.3 979L1390.4 980.9L1385 980.9L1377.2 974.7L1376.2 974.7L1374.4 977L1373.3 976.7L1372.8 975.4L1370 975L1369.7 975.7L1368 975.5L1361.7 972.1L1359 971.7L1353.7 980.4L1353.6 984.7L1352.1 985.2L1352.1 987L1349 986.7L1347.6 988.4L1345.4 987.6L1345.4 989.2L1344.4 990.4L1343.2 991.2L1341.1 990.8L1338.1 992.2L1336.6 993.3L1335.1 996.3L1332.1 997.1L1330.9 996.2L1329.3 996.5L1328.4 998.9L1325.9 1001.5L1324 1000.8L1323.4 998.9L1321.9 998.9L1319.5 997.2L1320.4 994.9L1319.4 990.9L1320.5 990.1L1320.6 988L1319.7 986.6L1316.8 986.2L1315.2 983.2L1316.1 982.1L1316.3 983.2L1317.7 983.9L1319.9 982.6L1318.8 980.3L1319.9 979.6L1317.2 975.2L1317 972.2L1321.2 969.7L1321.5 963.1L1320.5 958.8Z"/><path class="land" d="M1359 971.7L1361.7 972.1L1368 975.5L1369.7 975.7L1370 975L1372.8 975.4L1373.3 976.7L1374.4 977L1376.2 974.7L1377.2 974.7L1385 980.9L1390.4 980.9L1395.3 979L1398.3 981.3L1398.5 980.5L1400.3 980.3L1400.3 978.9L1401.1 978.5L1401.2 979.2L1403.1 979.6L1404.1 984.8L1406.4 988.9L1406.6 991.2L1409.8 991.9L1410.3 990.9L1411.4 994.1L1413.5 996.7L1413.3 1000.2L1414.2 1002.7L1419.1 1010.3L1420.1 1013.5L1419.2 1017L1419.6 1021.7L1418.3 1021.9L1417.9 1020.3L1416.6 1020.9L1415.2 1019.9L1414.3 1020.6L1413.8 1018.5L1411.9 1019.4L1409.6 1018.2L1408.2 1019.1L1409 1020.2L1408.5 1021.4L1407.2 1021.9L1407 1021L1403.6 1019.9L1400.8 1019.9L1399.6 1020.2L1398 1023.3L1395.4 1022.1L1392.2 1024.6L1392.2 1022.6L1389.6 1023.5L1391.8 1021.8L1391.7 1019.3L1388.1 1022.1L1379.8 1023.7L1378.2 1022.2L1378.1 1020.9L1374.5 1020.5L1373.8 1017.7L1372.9 1017.7L1372.6 1016.6L1371 1015.9L1366.9 1016.3L1365.3 1015.4L1364.3 1016L1359.7 1013.6L1353.7 1012.7L1350.6 1010.3L1349.5 1010.3L1348.8 1011.6L1346.2 1011.8L1344.4 1013.1L1344.3 1014.5L1341.6 1014.8L1340.2 1016L1336.5 1013.3L1333.9 1013.8L1332.3 1012.5L1332.1 1010.9L1331.1 1010L1327.7 1009.6L1327.1 1008.3L1328 1006.2L1325.9 1003L1325.9 1001.5L1328.4 998.9L1329.3 996.5L1330.9 996.2L1332.1 997.1L1335.1 996.3L1336.6 993.3L1338.1 992.2L1341.1 990.8L1343.2 991.2L1344.4 990.4L1345.4 989.2L1345.4 987.6L1347.6 988.4L1349 986.7L1352.1 987L1352.1 985.2L1353.6 984.7L1353.7 980.4L1359 971.7Z"/><path class="chiba" d="M1410.3 990.9L1411.1 989.6L1412.3 990.8L1413 993.4L1417.9 998.5L1418.8 1001.1L1422.8 1003.2L1423.2 1006L1427.5 1009L1429.4 1008.9L1433.6 1012.2L1435.1 1011.6L1437.7 1012.6L1440.3 1015.7L1444.4 1013.9L1447.4 1014.5L1450.3 1012.6L1453.2 1013.6L1457.1 1010L1459.7 1009.1L1461.4 1009.4L1464.4 1007.4L1467.9 1009.4L1466.7 1007.2L1468.6 1004.1L1475.5 1009.7L1478.2 1014.1L1482.2 1015L1484.1 1016.3L1487.3 1021.8L1493.1 1026L1496.4 1025.5L1497.1 1028.2L1496.7 1030.7L1495.2 1030.3L1493.9 1028.7L1486.5 1030.8L1484.1 1029.8L1480 1031.2L1469.7 1039.7L1463.7 1047.5L1460.7 1053.8L1459.1 1062.3L1459.4 1066.3L1460.9 1069.3L1459.9 1072.5L1460.2 1076L1458.5 1081.3L1457.5 1082.1L1455.9 1081.9L1454.5 1083.5L1453.9 1086L1452.8 1086.6L1452.8 1085.3L1451.7 1084.9L1450 1086.9L1449.8 1086.3L1447.8 1086.6L1446.6 1088.5L1444.1 1089L1443.3 1087.3L1442.6 1088.1L1441.4 1087.6L1437.7 1088.4L1436.3 1090.2L1436.1 1092.3L1434.4 1093.2L1434.7 1093.7L1431.1 1094.9L1426.6 1098.9L1424.9 1103.2L1425.3 1104.6L1424.6 1106.9L1422.3 1109L1419.1 1110L1417.5 1109.4L1415.1 1109.7L1414.1 1108.9L1414.1 1106.7L1413.1 1105.7L1408.9 1104.1L1408.5 1103.3L1408.5 1102.2L1413.6 1102.2L1414.1 1100.9L1416 1101.5L1416.8 1099.7L1416.2 1097.5L1413 1096.1L1414.7 1095.6L1413.9 1092.8L1415.5 1091.3L1415 1090L1414.1 1089.9L1415.3 1087.1L1414.4 1084.9L1413.5 1084.5L1413.5 1082.3L1414 1080.3L1417.4 1078.1L1417.7 1076.5L1415.5 1070.6L1410.6 1068.5L1413.7 1068.4L1413.5 1067.6L1415.3 1066.6L1414 1065.6L1415.2 1064.1L1415.9 1065.3L1416.6 1064.9L1415.3 1063.3L1415.8 1062.5L1419.9 1064.2L1419.2 1063L1420.7 1063L1419.9 1062.5L1421.6 1061.2L1420.6 1061.1L1419.9 1059.1L1420.5 1056.8L1421.5 1055.9L1424 1055.8L1424.2 1054.4L1425 1054.1L1425.3 1054.9L1424.2 1054.7L1424.4 1055.6L1426 1055.2L1425.3 1053.2L1426.6 1052.5L1427.3 1054.8L1427.9 1054.2L1427.2 1053L1428 1053.4L1428.6 1052.1L1429.8 1053.3L1428.9 1051.6L1429.8 1050.3L1430.9 1050.5L1430 1049.9L1430.7 1048.8L1431.7 1048.9L1431 1048.4L1432 1046.9L1432.8 1047L1432.3 1046.5L1432.9 1045.6L1433.8 1045L1435.7 1046.5L1435 1044.8L1437.2 1044.9L1435.3 1043.6L1438.1 1043.2L1434.9 1043.1L1434.5 1041.2L1436.2 1041.3L1437.1 1042.8L1436.8 1041.1L1437.4 1040.4L1436.6 1040.8L1436.4 1039.7L1436.1 1040.6L1435.1 1040.6L1436 1039.6L1434.6 1038.6L1434.7 1040.3L1429.1 1034.2L1427.1 1034.5L1427 1034L1428.3 1034L1428.2 1033.4L1426.9 1033.6L1427.4 1032.8L1426.8 1030.8L1426.7 1031.8L1424.9 1032.1L1424.3 1031.2L1424.3 1032.8L1423.9 1032L1422.6 1032.5L1422.5 1033.1L1423.9 1033L1421.6 1034.5L1423.2 1035.9L1420.9 1037.6L1420.5 1036.7L1419.9 1037.1L1420.7 1037.7L1419.9 1038.3L1419.5 1037.4L1417.9 1037.5L1419.1 1034.6L1419 1032.3L1421.6 1030.2L1419.9 1027.3L1420.1 1025.6L1418.6 1023.5L1419.6 1022.2L1419.2 1017L1420.1 1013.5L1419.1 1010.3L1414.2 1002.7L1413.3 1000.2L1413.5 996.7L1411.4 994.1L1410.3 990.9Z"/><path class="land" d="M1344.3 1014.5L1344.4 1013.1L1346.2 1011.8L1348.8 1011.6L1349.5 1010.3L1350.6 1010.3L1353.7 1012.7L1359.7 1013.6L1364.3 1016L1365.3 1015.4L1366.9 1016.3L1371 1015.9L1372.6 1016.6L1372.9 1017.7L1373.8 1017.7L1374.5 1020.5L1378.1 1020.9L1378.2 1022.2L1379.8 1023.7L1388.1 1022.1L1391.7 1019.3L1391.8 1021.8L1389.6 1023.5L1392.2 1022.6L1392.2 1024.6L1395.4 1022.1L1398 1023.3L1399.6 1020.2L1403.6 1019.9L1407 1021L1407.2 1021.9L1409 1020.2L1408.6 1018.7L1409.6 1018.2L1411.9 1019.4L1413.8 1018.5L1414.3 1020.6L1415.2 1019.9L1416.6 1020.9L1417.9 1020.3L1418.3 1021.9L1419.6 1021.7L1418.6 1023.5L1420.1 1025.6L1419.9 1027.3L1421.6 1030.2L1419 1032.3L1419.1 1034.6L1418 1036.1L1415.4 1035.7L1415.4 1036.6L1413.9 1036.8L1414.8 1036.5L1414.9 1035.6L1412.7 1035.9L1412.1 1037.8L1410.5 1036.3L1412 1035.5L1411.8 1035L1410.3 1035.8L1411.3 1034.3L1410 1035.4L1409.6 1034.2L1409.1 1034.7L1407.7 1041.1L1408.5 1043.8L1411 1043L1412.9 1046.2L1411.4 1047.3L1408.8 1045.6L1404.4 1046.3L1404.4 1044.6L1402.5 1043.7L1401.5 1041.1L1393.3 1036.7L1390.4 1035.7L1389.5 1037.5L1388 1038.3L1388.1 1039.5L1385.4 1037.5L1384.3 1038.8L1384.7 1039.5L1385.6 1039.1L1388.9 1042.4L1387.5 1043.8L1387 1042.9L1387.6 1041.6L1386.2 1042.4L1386 1043.9L1386.8 1044.2L1387.3 1046.4L1386.6 1048.8L1387.2 1049.6L1385.8 1049.8L1385 1047.2L1380.3 1041.6L1375.8 1039.5L1371.1 1038.7L1369.7 1039.8L1367.8 1039.4L1366.2 1037.4L1365.8 1035.4L1364.6 1034.8L1363 1035.4L1361.5 1033.2L1359.1 1032.8L1357.3 1031L1353.9 1030.2L1350.7 1028.1L1347.4 1023.1L1346.3 1016.9L1345 1016.3L1344.3 1014.5ZM1408.2 1041.1L1408.4 1038.2L1410.3 1040.9L1409.8 1041.9L1410.5 1041.4L1411.1 1042L1408.7 1042.3L1408.2 1041.1ZM1383.5 1132.1L1380.2 1131.7L1377.2 1129.8L1376.4 1123.5L1377.3 1120.1L1381.4 1121.3L1383.2 1123L1384.4 1128.5L1383.5 1132.1ZM1370.3 1167L1368.1 1165.2L1367.9 1163.8L1369 1160L1371 1158L1370.8 1156.9L1371.7 1157.6L1371.8 1159.2L1370.7 1161.1L1370.3 1167ZM1358.9 1181.5L1358.2 1180.8L1359.3 1179.6L1358.9 1177.8L1359.9 1175.7L1362.1 1176.8L1362.6 1179.5L1361.5 1179.4L1360.3 1181.2L1358.9 1181.5ZM1388.5 1195.5L1387 1194.9L1386.2 1192.3L1387.9 1189.7L1387.7 1188.3L1391.4 1187.6L1393.5 1189.8L1393.3 1193.2L1390.7 1195.4L1388.5 1195.5ZM1398 1214.8L1394.5 1213.8L1394.5 1212L1396.3 1209.9L1398.8 1213L1398 1214.8ZM1414.7 1295.4L1411.1 1293.2L1410.4 1290L1408.6 1289.6L1407.4 1286.9L1407.9 1284.4L1409.9 1284.2L1413.6 1288L1415.9 1288.4L1416.8 1292.2L1415.4 1292.5L1414.7 1295.4Z"/><path class="land" d="M1359.1 1032.8L1361.5 1033.2L1363 1035.4L1364.6 1034.8L1365.8 1035.4L1366.2 1037.4L1368.8 1039.8L1371.1 1038.7L1375.8 1039.5L1380.3 1041.6L1385 1047.2L1385.8 1049.8L1387.2 1049.6L1386.6 1048.8L1387.3 1046.4L1386.8 1044.2L1386 1043.9L1386.2 1042.4L1387.6 1041.6L1387 1042.9L1387.5 1043.8L1388.9 1042.4L1385.6 1039.1L1384.7 1039.5L1384.3 1038.8L1385.4 1037.5L1388.1 1039.5L1388 1038.3L1389.5 1037.5L1390.4 1035.7L1397.8 1038.7L1401.5 1041.1L1402.5 1043.7L1404.4 1044.6L1404.4 1046.3L1408.8 1045.6L1411.4 1047.3L1411.7 1048.8L1410.3 1049L1408.4 1046.7L1409.4 1048.8L1408.3 1049.1L1408.3 1047.6L1407.3 1048.5L1408.1 1049.2L1406.9 1050L1407.2 1048.6L1406.2 1048.3L1406.8 1050L1405.8 1050.6L1405.4 1049.7L1406 1049.2L1405.2 1049.7L1405.7 1050.6L1403.9 1051.6L1403.3 1050.5L1403.7 1051.8L1402.8 1052.7L1401.7 1053.2L1401.9 1052.2L1399.9 1052.4L1398.9 1053.4L1399.4 1053.7L1398.9 1054.8L1400.2 1054.6L1400.4 1055.5L1401.4 1055L1401.1 1055.9L1402.2 1055L1401.8 1056.1L1402.3 1055.4L1402.8 1055.9L1402.3 1056.9L1403.5 1056.1L1401.8 1059.7L1400.5 1058.7L1398.8 1058.9L1398.7 1059.5L1399.9 1059.7L1398.1 1060.4L1399.1 1060.8L1398.8 1061.8L1400.5 1061.3L1399.9 1062.2L1400.8 1062.7L1400.8 1065.8L1398.1 1066.8L1399 1067.8L1399 1066.9L1401.1 1067.2L1399.8 1069.2L1399.2 1068.8L1399 1070.5L1399.7 1070.1L1401.1 1071.7L1401.2 1070L1402 1069.9L1402.7 1071L1402 1071.3L1403.5 1073.3L1406.8 1073.4L1407.9 1074.7L1406.4 1076L1405.6 1075.3L1406.6 1077.1L1405.3 1077.8L1406.2 1078.8L1403.1 1079.3L1400.8 1081.5L1401.4 1084.2L1402.7 1084.8L1402.5 1086.1L1401.6 1085.4L1400.9 1086.2L1397.2 1085.9L1397.5 1085L1396.9 1084.6L1397.9 1084.5L1397.2 1083.7L1398.4 1083.7L1397.6 1083L1397.6 1081L1396.3 1080.5L1397 1079L1398.1 1079.3L1398.5 1078.5L1396.7 1077.7L1395.7 1075.4L1394.4 1074.7L1393.7 1073.3L1393.9 1070.6L1392.5 1070.6L1391.9 1069.2L1391.2 1069.1L1390.4 1069.8L1387.5 1069.2L1386.6 1070.2L1386.5 1068.8L1383.4 1068.1L1374.9 1068.8L1368.3 1070.8L1360.4 1075.9L1359.6 1082.1L1360 1084.7L1361.5 1085.9L1359.2 1085L1356.8 1085.9L1351 1084.9L1350.8 1082.4L1347.7 1079.9L1346.8 1076.4L1346.7 1073.8L1349.1 1071L1350.2 1067L1348.7 1061.8L1348.8 1060.1L1346.3 1059.5L1342.1 1059.9L1342.1 1059L1343.7 1055.1L1348 1052.6L1350.8 1051.9L1352.4 1049L1355.5 1048.8L1357.7 1046.3L1357.6 1045L1358.9 1043.6L1358.3 1041.3L1359.4 1038.4L1358.5 1037.6L1358.8 1036L1358 1034.7L1359.1 1032.8Z"/><path class="land" d="M1298.7 1002.9L1304.3 1004.8L1305.4 1006.1L1304.6 1008.2L1305.4 1010L1306.7 1010.3L1308.2 1010.4L1309.8 1007.8L1315.1 1008.8L1316.2 1008L1317.9 1009.1L1317.8 1012.6L1323 1013L1324.4 1010.1L1325.5 1009.1L1327.2 1009.1L1331.1 1010L1332.1 1010.9L1332.3 1012.5L1333.9 1013.8L1336.5 1013.3L1340.2 1016L1341.6 1014.8L1344.3 1014.5L1345 1016.3L1346.3 1016.9L1347.4 1023.1L1350.7 1028.1L1353.9 1030.2L1357.3 1031L1359.1 1032.8L1358 1034.7L1358.8 1036L1358.5 1037.6L1359.4 1038.4L1358.3 1041.3L1358.9 1043.6L1357.6 1045L1357.3 1046.8L1355.5 1048.8L1352.4 1049L1350.8 1051.9L1348 1052.6L1343.7 1055.1L1342.1 1059.9L1339.8 1061.4L1338.6 1061.9L1337 1061L1334.6 1062.6L1323.3 1064.2L1322 1060.2L1317.7 1060.7L1316.8 1056.9L1315.5 1055.4L1313.7 1056.6L1311.5 1059.4L1311.8 1066.9L1310 1068.6L1310.7 1071.4L1310.2 1073.7L1311.6 1079.8L1310.2 1080.3L1308.4 1083.2L1307.3 1082.3L1304.3 1082.2L1302.6 1080.2L1301 1080L1300 1075.5L1298.5 1072.8L1298.9 1070.1L1297.8 1068.3L1295.4 1067.2L1292 1069.5L1289.7 1068.1L1289.1 1066.8L1289.7 1066.2L1289.3 1063.8L1287.8 1062.4L1289.8 1059.3L1289.8 1056.2L1288.7 1054.4L1290.6 1048.4L1289.9 1044.8L1288.6 1042.8L1287.8 1036.1L1284.8 1032.9L1284.8 1030.5L1283.7 1028.7L1288.1 1024.2L1284.1 1020.5L1285.6 1018.5L1288.2 1011.8L1289.1 1011.4L1291.9 1014.1L1295.1 1009.7L1298.7 1002.9Z"/><path class="land" d="M1286.7 1035.6L1287.8 1036.1L1288.6 1042.8L1289.9 1044.8L1290.6 1048.4L1288.7 1054.4L1289.8 1056.2L1289.8 1059.3L1287.8 1062.4L1289.3 1063.8L1289.7 1066.2L1289.1 1066.8L1289.7 1068.1L1292 1069.5L1295.4 1067.2L1297.8 1068.3L1298.9 1070.1L1298.5 1072.8L1300 1075.5L1301 1080L1302.6 1080.2L1304.3 1082.2L1307.3 1082.3L1308.4 1083.2L1310.2 1080.3L1311.6 1079.8L1310.2 1073.7L1310.7 1071.4L1310 1068.6L1311.8 1066.9L1311.7 1058.9L1315.5 1055.4L1316.8 1056.9L1317.7 1060.7L1322 1060.2L1323.3 1064.2L1334.6 1062.6L1337 1061L1338.6 1061.9L1342.1 1059.9L1346.3 1059.5L1348.8 1060.1L1348.7 1061.8L1350.2 1067L1349.1 1071L1346.7 1073.8L1346.8 1076.4L1347.7 1079.9L1350.8 1082.4L1351 1084.9L1357.5 1085.9L1354.6 1090.7L1355 1093.1L1354.2 1094.3L1354.6 1095.3L1356.6 1095.4L1356.5 1099.3L1355.3 1099.7L1356.3 1102.4L1358.8 1103.1L1359.4 1104.8L1360.2 1104.4L1360.4 1106.4L1359.2 1110.4L1359.8 1110.9L1355.2 1114.8L1354.9 1118.1L1353.3 1121.5L1352 1122.6L1352.5 1123.2L1351 1123.2L1348.5 1125.7L1346.6 1130.9L1347.1 1131.8L1346.5 1132.4L1347.7 1134.2L1345.3 1134.6L1345.8 1132.7L1344.6 1132.6L1344.6 1133.7L1343.7 1133.3L1344 1133.8L1342.3 1134.7L1341.1 1137.1L1340 1136.6L1339.7 1137.6L1336.8 1138.7L1336.3 1139.9L1334 1138.5L1333.6 1137.2L1332.4 1137.7L1332 1136.1L1331.1 1136L1330.7 1134.5L1332.1 1134.1L1331.9 1133L1331.1 1133.3L1329.4 1130.9L1328 1131L1328 1127.4L1329.3 1126.7L1329.3 1125.3L1330.9 1124.8L1329.1 1120L1330.1 1119.1L1329 1118.1L1329.7 1117.1L1330.3 1117.7L1329.7 1115.7L1330.9 1114.4L1329.2 1113.2L1329.4 1111.6L1332 1109.2L1329.9 1103.7L1330.2 1102.2L1331 1103L1330.5 1101.5L1331.2 1098.3L1332 1097L1331.8 1097.6L1335.1 1097.7L1336.5 1098.6L1338.8 1097.5L1339.9 1098.3L1341.3 1095.2L1339.7 1095.4L1338.5 1092.9L1335 1089.3L1323.7 1085.5L1324.7 1086.5L1320.1 1088.5L1314.9 1089L1313.5 1089.9L1311.7 1094.5L1310.3 1096.2L1309.9 1095.7L1309.9 1096.5L1309.5 1095.8L1309.5 1096.9L1309.3 1096.4L1308.6 1096.8L1309.3 1101.4L1309.9 1100.6L1309.1 1099.9L1309.4 1098.5L1310.4 1099.2L1310.2 1097.9L1311.7 1098.7L1310.2 1101.7L1297.7 1108.5L1295.8 1113.1L1295.1 1113L1295.3 1115.5L1295.6 1115.1L1296.2 1116.7L1293.1 1122.2L1292.3 1121.8L1293.2 1122.9L1287.4 1127.3L1285 1133L1284.8 1136.2L1286.6 1139L1287.9 1139.5L1287.4 1140.5L1274.2 1135.3L1274.4 1134.2L1273.9 1135.2L1267 1133.5L1261.6 1133.3L1253.4 1135.5L1249.4 1134.3L1249.1 1133.2L1249.3 1134.3L1236.5 1132.1L1228.4 1132.6L1229 1130L1227.7 1124.7L1227.9 1122.6L1229.1 1121.3L1228.7 1118.9L1229.9 1116.7L1233.7 1114.8L1236.6 1115L1237.4 1112.8L1240.8 1110.8L1242.5 1105.4L1243.6 1105.5L1245.3 1102.9L1246.1 1102.8L1245.6 1099.7L1246.9 1096.5L1251.5 1092.3L1251.8 1090L1252.9 1090.5L1253.5 1089.5L1252.9 1086.6L1253.8 1086.9L1254.6 1084.8L1255.8 1084.6L1255.3 1083L1253.7 1081.7L1255.9 1079.5L1255.7 1078.9L1257.3 1077.8L1259.2 1078.1L1260 1075.2L1261.1 1074.2L1262.9 1074.5L1263.9 1072.4L1266.8 1071.7L1269 1069.8L1270.8 1069.9L1271.5 1067.9L1273.9 1065.6L1275.1 1065.4L1276.3 1066.2L1277.2 1064.5L1280.6 1062.9L1281.4 1060.2L1280 1059.1L1280.4 1057.7L1279 1057.1L1278.8 1055.2L1279 1054.4L1281.7 1054.1L1282.1 1053L1282.4 1050.6L1280.5 1050L1281 1048.1L1280.3 1047.8L1282 1045.5L1280.7 1044.5L1282.3 1041.8L1284.1 1042.6L1284.4 1042.1L1285.7 1039.1L1285.6 1036.7L1286.7 1035.6Z"/></g><polyline class="route" points="1452.8,1007.7 1467.0,1008.9 1461.7,1023.3 1455.5,1043.8 1452.8,1063.0 1445.7,1079.9 1429.8,1085.9 1435.1,1061.8 1440.4,1040.2"/><text x="1392.0" y="1013.0" class="city">Tokyo</text><text x="1392.0" y="1016.4" class="city jp">東京都</text></svg><button type="button" class="{{sr.pin1Cls}}" style="left: 482px; top: 204px;" onClick="{{sr.focusSpot}}" aria-label="Sân bay Narita · Quầy nhập cảnh"><span class="pc"><span class="msr" aria-hidden="true">badge</span></span><span class="pn">1</span><sc-if value="{{sr.pin1Done}}" hint-placeholder-val="{{false}}"><span class="pk ink" aria-hidden="true"><span class="msr">check</span></span></sc-if><sc-if value="{{sr.pin1Tag}}" hint-placeholder-val="{{true}}"><span class="ptag">{{sr.pin1TagText}}</span></sc-if><span class="pl l"><b lang="ja">成田空港 入国審査</b><span>Sân bay Narita · Quầy nhập cảnh</span></span></button><span class="cm-pin" style="left: 571px; top: 212px;"><span class="pc"><span class="msr" aria-hidden="true">luggage</span></span><span class="pn">2</span><span class="pl r"><b lang="ja">成田空港 手荷物受取所</b><span>Sân bay Narita · Khu nhận hành lý</span></span></span><span class="cm-pin" style="left: 538px; top: 303px;"><span class="pc"><span class="msr" aria-hidden="true">sim_card</span></span><span class="pn">3</span><span class="pl b"><b lang="ja">成田空港 SIM・両替</b><span>Sân bay Narita · Quầy SIM</span></span></span><span class="cm-pin" style="left: 499px; top: 432px;"><span class="pc"><span class="msr" aria-hidden="true">groups</span></span><span class="pn">4</span><span class="pk red" aria-hidden="true"><span class="msr">check</span></span><span class="pl r"><b lang="ja">成田空港 到着ロビー</b><span>Sân bay Narita · Sảnh đón</span></span></span><span class="cm-pin" style="left: 482px; top: 553px;"><span class="pc"><span class="msr" aria-hidden="true">train</span></span><span class="pn">5</span><span class="pl r"><b lang="ja">成田空港駅 サービスセンター</b><span>Ga sân bay Narita · Làm thẻ</span></span></span><span class="cm-pin" style="left: 437px; top: 660px;"><span class="pc"><span class="msr" aria-hidden="true">confirmation_number</span></span><span class="pn">6</span><span class="pl b"><b lang="ja">成田空港駅 きっぷ売り場</b><span>Ga sân bay Narita · Mua vé</span></span></span><span class="cm-pin" style="left: 337px; top: 698px;"><span class="pc"><span class="msr" aria-hidden="true">hotel</span></span><span class="pn">7</span><span class="pk ink" aria-hidden="true"><span class="msr">check</span></span><span class="pl l"><b lang="ja">成田のホテル フロント</b><span>Khách sạn ở Narita · Quầy lễ tân</span></span></span><span class="cm-pin" style="left: 370px; top: 546px;"><span class="pc"><span class="msr" aria-hidden="true">temple_buddhist</span></span><span class="pn">8</span><span class="pl l"><b lang="ja">成田山新勝寺</b><span>Chùa Naritasan Shinshoji</span></span></span><span class="cm-pin" style="left: 404px; top: 409px;"><span class="pc"><span class="msr" aria-hidden="true">storefront</span></span><span class="pn">9</span><span class="pl l"><b lang="ja">コンビニ</b><span>Cửa hàng tiện lợi</span></span></span></div>
+  <div class="cm-ui">
+    <span class="cm-back"><span class="msr" aria-hidden="true">arrow_back</span>Toàn quốc</span>
+    <span class="cm-crumb">Nhật Bản / Kanto / <b>Chiba</b></span>
+  </div>
+  <div class="cm-ctl" aria-hidden="true"><span class="cm-legend"><span class="msr">map</span>Chú giải</span><span class="cm-zoom"><span class="msr">add</span><span class="msr">remove</span></span></div>
+  <sc-if value="{{sr.chatOn}}" hint-placeholder-val="{{false}}"><div class="{{sr.chatCls}}" data-theme="kham-pha">
+  <nav class="nb-tabs" aria-label="Ghi chú của bài hội thoại"><sc-for list="{{sr.notes}}" as="t" hint-placeholder-count="5"><button type="button" class="{{t.cls}}" aria-expanded="{{t.on}}" aria-controls="nbPage" aria-label="{{t.label}}" onClick="{{t.go}}"><span class="k" lang="ja" aria-hidden="true">{{t.jp}}</span><span class="l" aria-hidden="true">{{t.label}}</span><sc-if value="{{t.dot}}" hint-placeholder-val="{{false}}"><i class="nd" aria-label="có kết quả mới"></i></sc-if></button></sc-for></nav>
+  <sc-if value="{{sr.noteOn}}" hint-placeholder-val="{{false}}"><section class="{{sr.nbCls}}" id="nbPage" aria-labelledby="nbT">
+    <header class="nb-h"><span class="nb-jp" lang="ja" aria-hidden="true">{{sr.noteJp}}</span><h2 id="nbT">{{sr.noteTitle}}</h2><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Gấp trang ghi chú" size="sm" variant="ghost" on-click="{{sr.closeNote}}"></x-import></header>
+    <div class="nb-body">
+<sc-if value="{{sr.pCtx}}" hint-placeholder-val="{{false}}"><section class="nt" aria-label="Bối cảnh">
+  <div class="nt-place"><span class="msr" aria-hidden="true">location_on</span><div><b>Sân bay Narita · Quầy nhập cảnh</b><span lang="ja">成田空港 入国審査</span></div></div>
+  <p class="nt-p">Bạn vừa xuống máy bay và đang xếp hàng ở quầy nhập cảnh. Nhân viên hỏi mục đích chuyến đi của bạn.</p>
+  <div class="nt-sec"><p class="nt-l">Dùng khi</p><p class="nt-p">Trả lời câu hỏi <span lang="ja">「入国の目的は何ですか」</span> khi làm thủ tục nhập cảnh ở bất kỳ sân bay Nhật nào.</p></div>
+  <div class="nt-sec"><p class="nt-l">Câu mẫu của mốc</p><div class="nt-quote"><x-import component-from-global-scope="JCAP.JpText" text="{観光|かんこう}です。" size="lg"></x-import><span>Tôi đi du lịch.</span><small>N です: "là N".</small></div></div>
+  <div class="nt-sec"><p class="nt-l">Hai vai trong bài</p><ul class="nt-roles"><li><span class="cc-av sm" aria-hidden="true">入</span>Người nhập cảnh</li><li><span class="cc-av sm" aria-hidden="true">係</span>Nhân viên an ninh</li></ul></div>
+  <div class="nt-role"><span>Bạn đóng vai <b>{{sr.roleName}}</b></span><button type="button" class="nt-link" onClick="{{sr.swapRole}}"><span class="msr" aria-hidden="true">swap_horiz</span>Đổi vai</button></div>
+</section></sc-if>
+<sc-if value="{{sr.pScript}}" hint-placeholder-val="{{false}}"><section class="nt" aria-label="Cả bài"><ol class="nt-script">
+  <sc-for list="{{sr.script}}" as="c" hint-placeholder-count="12"><li class="{{c.cls}}"><div class="w"><span class="rn">{{c.rn}}</span><x-import component-from-global-scope="JCAP.JpText" text="{{c.jp}}" size="sm"></x-import><span class="vi">{{c.vi}}</span></div><button type="button" class="nt-ic" aria-label="Nghe câu này"><span class="msr" aria-hidden="true">volume_up</span></button></li></sc-for>
+</ol></section></sc-if>
+<sc-if value="{{sr.pVocab}}" hint-placeholder-val="{{false}}"><section class="nt" aria-label="Từ vựng"><ul class="nt-words">
+  <sc-for list="{{sr.vocab}}" as="v" hint-placeholder-count="7"><li><div class="hd"><x-import component-from-global-scope="JCAP.JpText" text="{{v.w}}" size="md"></x-import><span class="t">{{v.t}}</span><button type="button" class="nt-ic" aria-label="Nghe từ"><span class="msr" aria-hidden="true">volume_up</span></button></div><b>{{v.m}}</b><span class="ex"><span lang="ja">{{v.ex}}</span>{{v.exv}}</span></li></sc-for>
+</ul></section></sc-if>
+<sc-if value="{{sr.pGram}}" hint-placeholder-val="{{false}}"><section class="nt" aria-label="Ngữ pháp">
+  <div class="nt-sec first"><p class="nt-l">Ngữ pháp của câu mẫu</p><div class="nt-quote"><b class="pat">N です</b><span>"là N". Nói ngắn gọn một thông tin.</span><x-import component-from-global-scope="JCAP.JpText" text="{観光|かんこう}です。" size="sm"></x-import></div></div>
+  <ul class="nt-words"><sc-for list="{{sr.gram}}" as="g" hint-placeholder-count="3"><li><div class="hd"><x-import component-from-global-scope="JCAP.JpText" text="{{g.p}}" size="md"></x-import><button type="button" class="nt-ic" aria-label="Nghe câu ví dụ"><span class="msr" aria-hidden="true">volume_up</span></button></div><b>{{g.m}}</b><span class="ex"><span lang="ja">{{g.ex}}</span>{{g.exv}}</span></li></sc-for></ul>
+</section></sc-if><sc-if value="{{sr.tRes}}" hint-placeholder-val="{{false}}"><section class="nt" aria-label="Kết quả">
+  <div class="rs-top">
+    <div><span class="nt-l">Câu đã chấm</span><p class="rs-big"><b>{{sr.pgScored}}</b><span>/{{sr.pgN}}</span></p>
+      <ul class="rs-tiers"><li><i class="good"></i>{{sr.cGood}} khớp tốt</li><li><i class="mid"></i>{{sr.cMid}} khớp một phần</li><li><i class="low"></i>{{sr.cLow}} cần luyện lại</li></ul></div>
+    <div><span class="nt-l">Độ khớp nội dung</span><p class="rs-big ai"><b>{{sr.pgMatch}}</b><span>%</span></p>
+      <svg class="rs-bar" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true"><rect width="100" height="6" rx="3" class="bg"></rect><rect width="{{sr.pgMatch}}" height="6" rx="3" class="fg"></rect></svg>
+      <small class="rs-note">Tính trên tất cả câu của vai bạn, câu chưa chấm tính 0.</small></div>
+  </div>
+  <div class="nt-sec"><p class="nt-l">Chi tiết từng câu</p>
+  <ol class="rs-list"><sc-for list="{{sr.rows}}" as="r" hint-placeholder-count="3"><li class="{{r.cls}}">
+    <button type="button" class="rs-row" aria-expanded="{{r.open}}" onClick="{{r.toggle}}"><span class="msr chev" aria-hidden="true">expand_more</span><span class="n">Câu {{r.n}}/{{sr.pgN}}</span><span class="{{r.chipCls}}">{{r.chip}}</span><sc-if value="{{r.multi}}" hint-placeholder-val="{{false}}"><span class="att">thử {{r.att}} lần</span></sc-if></button>
+    <p class="rs-jp" lang="ja">{{r.jp}}</p>
+    <div class="rs-btns"><sc-if value="{{r.hasRec}}" hint-placeholder-val="{{false}}"><button type="button" class="cc-t sm"><span class="msr" aria-hidden="true">mic</span>Nghe bạn</button></sc-if><button type="button" class="cc-t sm"><span class="msr" aria-hidden="true">volume_up</span>Nghe mẫu</button><sc-if value="{{r.canRedo}}" hint-placeholder-val="{{false}}"><button type="button" class="nt-link" onClick="{{r.redo}}"><span class="msr" aria-hidden="true">replay</span>Luyện lại câu</button></sc-if></div>
+    <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}"><div class="rs-detail">
+      <sc-if value="{{r.scored}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.WordDiff" tokens="{{r.tokens}}" show-legend="{{sr.no}}"></x-import><p class="rs-said"><span>Hệ thống nghe được</span><span lang="ja">{{r.said}}</span></p></sc-if>
+      <sc-if value="{{r.unscored}}" hint-placeholder-val="{{false}}"><p class="rs-said"><span>{{r.unscoredText}}</span></p></sc-if>
+      <p class="rs-ro">{{r.ro}}</p><p class="rs-vi">{{r.vi}}</p>
+    </div></sc-if>
+  </li></sc-for></ol></div>
+  <sc-if value="{{sr.canEnd}}" hint-placeholder-val="{{true}}"><div class="cp-acts"><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" on-click="{{sr.endIt}}">{{sr.endLabel}}</x-import><sc-if value="{{sr.canRestart}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" on-click="{{sr.askRestart}}">Làm lại từ đầu</x-import></sc-if></div></sc-if>
+</section></sc-if></div>
+  </section></sc-if>
+  <section class="cc" role="dialog" aria-labelledby="ccTitle">
+  <header class="cc-top"><div class="cc-tt"><h2 id="ccTitle">Thủ tục nhập cảnh</h2><span lang="ja">入国審査の会話</span></div><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng khung luyện" variant="ghost" on-click="{{sr.close}}"></x-import></header>
+  <div class="cc-main">
+    <sc-if value="{{sr.loadErrOn}}" hint-placeholder-val="{{false}}"><div class="cc-err"><x-import component-from-global-scope="JCAP.EmptyState" icon="cloud_off" title="Không tải được bài Thủ tục nhập cảnh">Kiểm tra kết nối mạng rồi thử lại. Tiến độ của bạn không bị mất.</x-import><div style="display: flex; gap: 10px; justify-content: center;"><x-import component-from-global-scope="JCAP.Button" variant="secondary" on-click="{{sr.close}}">Về bản đồ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="refresh" on-click="{{sr.retry}}">Thử lại</x-import></div></div></sc-if>
+    <sc-if value="{{sr.isBody}}" hint-placeholder-val="{{true}}"><div class="cc-conv"><div class="{{sr.colCls}}">
+  <sc-if value="{{sr.intro}}" hint-placeholder-val="{{false}}"><div class="cc-cover">
+    <div class="cv-roles"><span class="cv-p me"><span class="cc-av" aria-hidden="true">Bạn</span><b>{{sr.roleName}}</b><small>{{sr.meNote}}</small></span><span class="cv-dash" aria-hidden="true"></span><span class="cv-p"><span class="cc-av" aria-hidden="true">{{sr.otherAv}}</span><b>{{sr.otherName}}</b><small>{{sr.otherNote}}</small></span></div>
+    <p class="cv-say">Bạn vừa đến Nhật Bản và đang làm thủ tục ở quầy nhập cảnh.</p>
+    <ul class="cv-meta"><li><b>{{sr.N}}</b> câu của bạn</li><li><b>60</b> điểm để nhận con dấu</li><li><b>5</b> phút</li></ul>
+    <p class="cv-tip">Bối cảnh, cả bài, từ vựng và ngữ pháp nằm ở các tab bên trái.</p>
+  </div></sc-if>
+  <sc-if value="{{sr.resume}}" hint-placeholder-val="{{false}}"><p class="cc-resume"><span class="msr" aria-hidden="true">history</span>{{sr.resumeText}}</p></sc-if>
+  <sc-for list="{{sr.lines}}" as="l" hint-placeholder-count="5">
+    <div class="{{l.cls}}">
+      <span class="cc-av" aria-hidden="true">{{l.av}}</span>
+      <div class="cc-c">
+        <div class="cc-name"><span>{{l.name}}</span><sc-if value="{{l.hasPill}}" hint-placeholder-val="{{false}}"><span class="{{l.pillCls}}">{{l.pill}}</span></sc-if></div>
+        <button type="button" class="cc-b" onClick="{{l.open}}" aria-label="{{l.aria}}"><x-import component-from-global-scope="JCAP.JpText" text="{{l.jp}}" size="md"></x-import><sc-if value="{{l.showVi}}" hint-placeholder-val="{{false}}"><span class="cc-vi">{{l.vi}}</span></sc-if></button>
+        <sc-if value="{{l.showTools}}" hint-placeholder-val="{{true}}"><div class="cc-tools">
+          <sc-if value="{{l.isMe}}" hint-placeholder-val="{{false}}"><button type="button" class="cc-t ic" aria-label="Nói lại câu này" onClick="{{l.redo}}"><span class="msr" aria-hidden="true">mic</span></button></sc-if>
+          <button type="button" class="cc-t"><span class="msr" aria-hidden="true">volume_up</span>Nghe mẫu</button>
+          <button type="button" class="cc-t" aria-pressed="{{l.showVi}}" onClick="{{l.toggleVi}}"><span class="msr" aria-hidden="true">translate</span>{{l.viLabel}}</button>
+        </div></sc-if>
+      </div>
+    </div>
+  </sc-for>
+  <sc-if value="{{sr.isSum}}" hint-placeholder-val="{{false}}"><div class="cc-end" aria-live="polite">
+    <sc-if value="{{sr.saving}}" hint-placeholder-val="{{false}}"><p class="cc-saving"><span class="dk-spin" aria-hidden="true"></span>Đang lưu buổi luyện vào lịch sử...</p></sc-if>
+    <sc-if value="{{sr.showStamp}}" hint-placeholder-val="{{false}}"><div class="cc-stamps"><span class="cc-shadow" aria-hidden="true"></span><svg class="{{sr.bigCls}}" viewBox="0 0 200 200" width="120" height="120" aria-hidden="true"><g opacity="{{sr.bigOp}}"><circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="{{sr.bigDash}}"/><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" transform="translate(62.8 64.8) scale(3.10)"/><path id="ccBigT" d="M 38 100 A 62 62 0 0 1 162 100" fill="none"/><path id="ccBigB" d="M 30 100 A 70 70 0 0 0 170 100" fill="none"/><circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="2.5"/><text font-size="19" font-weight="700" fill="currentColor" letter-spacing="1.5" style="font-family: var(--font-jp);"><textPath href="#ccBigT" startOffset="50%" text-anchor="middle">成田空港 入国審査</textPath></text><text font-size="15" font-weight="700" fill="currentColor" dominant-baseline="hanging" style="font-family: var(--font-jp);"><textPath href="#ccBigB" startOffset="50%" text-anchor="middle">千葉県{{sr.bigDate}}</textPath></text></g></svg><sc-if value="{{sr.showRed}}" hint-placeholder-val="{{false}}"><svg class="sr-big sr-red rot2" viewBox="0 0 200 200" width="104" height="104" aria-hidden="true"><g opacity="1"><circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="8"/><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor" transform="translate(62.8 64.8) scale(3.10)"/><path id="ccRedT" d="M 38 100 A 62 62 0 0 1 162 100" fill="none"/><path id="ccRedB" d="M 30 100 A 70 70 0 0 0 170 100" fill="none"/><circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="2.5"/><text font-size="19" font-weight="700" fill="currentColor" letter-spacing="1.5" style="font-family: var(--font-jp);"><textPath href="#ccRedT" startOffset="50%" text-anchor="middle">成田空港 入国審査</textPath></text><text font-size="15" font-weight="700" fill="currentColor" dominant-baseline="hanging" style="font-family: var(--font-jp);"><textPath href="#ccRedB" startOffset="50%" text-anchor="middle">千葉県 2026.11.24</textPath></text><sc-if value="{{sr.yes}}" hint-placeholder-val="{{false}}"><g transform="translate(146 140) rotate(-6)"><rect width="32" height="32" rx="3" fill="var(--shu)"/><text x="16" y="23" text-anchor="middle" font-size="20" font-weight="800" fill="var(--paper-50)" style="font-family: var(--font-mincho);">朱</text></g></sc-if></g></svg></sc-if><sc-if value="{{sr.showPref}}" hint-placeholder-val="{{false}}"><span class="cc-pref"><svg class="sr-pstamp" viewBox="0 0 200 200" width="104" height="104" aria-hidden="true"><path d="M 60 6 H 140 L 194 60 V 140 L 140 194 H 60 L 6 140 V 60 Z" fill="none" stroke="currentColor" stroke-width="8"/><path d="M 64 18 H 136 L 182 64 V 136 L 136 182 H 64 L 18 136 V 64 Z" fill="none" stroke="currentColor" stroke-width="2.5"/><g transform="translate(50 40) scale(1)"><path d="M1410.3 990.9L1411.1 989.6L1412.3 990.8L1413 993.4L1417.9 998.5L1418.8 1001.1L1422.8 1003.2L1423.2 1006L1427.5 1009L1429.4 1008.9L1433.6 1012.2L1435.1 1011.6L1437.7 1012.6L1440.3 1015.7L1444.4 1013.9L1447.4 1014.5L1450.3 1012.6L1453.2 1013.6L1457.1 1010L1459.7 1009.1L1461.4 1009.4L1464.4 1007.4L1467.9 1009.4L1466.7 1007.2L1468.6 1004.1L1475.5 1009.7L1478.2 1014.1L1482.2 1015L1484.1 1016.3L1487.3 1021.8L1493.1 1026L1496.4 1025.5L1497.1 1028.2L1496.7 1030.7L1495.2 1030.3L1493.9 1028.7L1486.5 1030.8L1484.1 1029.8L1480 1031.2L1469.7 1039.7L1463.7 1047.5L1460.7 1053.8L1459.1 1062.3L1459.4 1066.3L1460.9 1069.3L1459.9 1072.5L1460.2 1076L1458.5 1081.3L1457.5 1082.1L1455.9 1081.9L1454.5 1083.5L1453.9 1086L1452.8 1086.6L1452.8 1085.3L1451.7 1084.9L1450 1086.9L1447.8 1086.6L1446.6 1088.5L1444.1 1089L1443.3 1087.3L1442.6 1088.1L1441.4 1087.6L1437.7 1088.4L1436.3 1090.2L1436.1 1092.3L1434.4 1093.2L1431.1 1094.9L1426.6 1098.9L1424.9 1103.2L1425.3 1104.6L1424.6 1106.9L1422.3 1109L1419.1 1110L1417.5 1109.4L1415.1 1109.7L1414.1 1108.9L1414.1 1106.7L1413.1 1105.7L1408.9 1104.1L1408.5 1103.3L1408.5 1102.2L1413.6 1102.2L1414.1 1100.9L1416 1101.5L1416.8 1099.7L1416.2 1097.5L1413 1096.1L1414.7 1095.6L1413.9 1092.8L1415.5 1091.3L1415 1090L1414.1 1089.9L1415.3 1087.1L1414.4 1084.9L1413.5 1084.5L1413.5 1082.3L1414 1080.3L1417.4 1078.1L1417.7 1076.5L1415.5 1070.6L1410.6 1068.5L1413.7 1068.4L1413.5 1067.6L1415.3 1066.6L1414 1065.6L1415.2 1064.1L1415.9 1065.3L1416.6 1064.9L1415.3 1063.3L1415.8 1062.5L1419.9 1064.2L1419.2 1063L1420.7 1063L1419.9 1062.5L1421.6 1061.2L1420.6 1061.1L1419.9 1059.1L1420.5 1056.8L1421.5 1055.9L1424 1055.8L1424.2 1054.4L1425 1054.1L1425.3 1054.9L1424.2 1054.7L1424.4 1055.6L1426 1055.2L1425.3 1053.2L1426.6 1052.5L1427.3 1054.8L1427.9 1054.2L1427.2 1053L1428 1053.4L1428.6 1052.1L1429.8 1053.3L1428.9 1051.6L1429.8 1050.3L1430.9 1050.5L1430 1049.9L1430.7 1048.8L1431.7 1048.9L1431 1048.4L1432 1046.9L1432.8 1047L1432.3 1046.5L1432.9 1045.6L1433.8 1045L1435.7 1046.5L1435 1044.8L1437.2 1044.9L1435.3 1043.6L1438.1 1043.2L1434.9 1043.1L1434.5 1041.2L1436.2 1041.3L1437.1 1042.8L1436.8 1041.1L1437.4 1040.4L1436.6 1040.8L1436.4 1039.7L1436.1 1040.6L1435.1 1040.6L1436 1039.6L1434.6 1038.6L1434.7 1040.3L1429.1 1034.2L1427.1 1034.5L1428.3 1034L1426.9 1033.6L1427.4 1032.8L1426.8 1030.8L1426.7 1031.8L1424.9 1032.1L1424.3 1031.2L1424.3 1032.8L1423.9 1032L1422.6 1032.5L1423.9 1033L1421.6 1034.5L1423.2 1035.9L1420.9 1037.6L1420.5 1036.7L1419.9 1037.1L1420.7 1037.7L1419.9 1038.3L1419.5 1037.4L1417.9 1037.5L1419.1 1034.6L1419 1032.3L1421.6 1030.2L1419.9 1027.3L1420.1 1025.6L1418.6 1023.5L1419.6 1022.2L1419.2 1017L1420.1 1013.5L1419.1 1010.3L1414.2 1002.7L1413.3 1000.2L1413.5 996.7L1411.4 994.1L1410.3 990.9Z" transform="translate(-649.85 -455.72) scale(0.4817)" fill="currentColor" opacity=".9"/></g><text x="100" y="170" text-anchor="middle" font-size="26" font-weight="700" fill="currentColor" style="font-family: var(--font-mincho);">千葉県</text></svg></span></sc-if></div></sc-if>
+    <sc-if value="{{sr.endReady}}" hint-placeholder-val="{{true}}"><header class="ce-h">
+      <h2>{{sr.endTitle}}</h2>
+      <p class="ce-sub">{{sr.endSub}}</p>
+      <p class="{{sr.saveCls}}" role="status">{{sr.saveText}}</p>
+    </header>
+    <div class="{{sr.stampLineCls}}"><span class="msr" aria-hidden="true">{{sr.stampIcon}}</span><span>{{sr.stampLine}}</span><sc-if value="{{sr.smErr}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="refresh" on-click="{{sr.resave}}">Lưu lại</x-import></sc-if><sc-if value="{{sr.smUnd}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="check" on-click="{{sr.doUnderstood}}">Tôi đã hiểu</x-import></sc-if></div>
+    <sc-if value="{{sr.hasScored}}" hint-placeholder-val="{{true}}"><div class="ce-score">
+      <div class="ce-main"><p class="{{sr.bigScoreCls}}"><b>{{sr.smScore}}</b><span>/ 100 điểm</span></p><p class="ce-rank">{{sr.rank}}</p></div>
+      <dl class="ce-stats">
+        <div><dt>Câu đã chấm</dt><dd><b>{{sr.pgScored}}</b>/{{sr.pgN}}</dd><dd class="tiers"><i class="good"></i>{{sr.cGood}}<i class="mid"></i>{{sr.cMid}}<i class="low"></i>{{sr.cLow}}</dd></div>
+        <div><dt>Độ khớp nội dung</dt><dd><b>{{sr.pgMatch}}</b>%</dd></div>
+        <div><dt>Thời gian luyện</dt><dd><b>{{sr.dur}}</b></dd><dd class="unit">phút : giây</dd></div>
+      </dl>
+    </div></sc-if>
+    <sc-if value="{{sr.noneScored}}" hint-placeholder-val="{{false}}"><div class="ce-none"><b>Chưa có câu nào được chấm điểm</b><span>Bấm Luyện lại bài này, ghi âm từng câu của vai bạn rồi gửi để nhận điểm và lưu vào lịch sử.</span></div></sc-if>
+    <sc-if value="{{sr.gateWarn}}" hint-placeholder-val="{{false}}"><p class="ce-warn"><span class="msr" aria-hidden="true">mic_external_off</span>Tín hiệu micro hơi nhỏ hoặc có tạp âm ở một số câu. Dùng tai nghe có micro sẽ cho kết quả ổn định hơn.</p></sc-if>
+    <sc-if value="{{sr.hasRetry}}" hint-placeholder-val="{{false}}"><div class="ce-sec"><p class="nt-l">Câu nên luyện lại</p><ul class="ce-retry"><sc-for list="{{sr.retryList}}" as="t" hint-placeholder-count="2"><li><button type="button" onClick="{{t.go}}"><span class="jp" lang="ja">{{t.jp}}</span><span class="{{t.chipCls}}">{{t.chip}}</span><sc-if value="{{t.hasErr}}" hint-placeholder-val="{{false}}"><span class="ce-tag">{{t.err}}</span></sc-if></button></li></sc-for></ul></div></sc-if>
+    <sc-if value="{{sr.hasErrs}}" hint-placeholder-val="{{false}}"><p class="ce-errs">Lỗi trong buổi: {{sr.errText}}</p></sc-if>
+    <sc-if value="{{sr.aiIdle}}" hint-placeholder-val="{{false}}"><div><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="auto_awesome" on-click="{{sr.askAi}}">Nhận xét phát âm và lưu loát từ AI</x-import></div></sc-if>
+    <sc-if value="{{sr.aiLoading}}" hint-placeholder-val="{{false}}"><p class="cc-saving"><span class="dk-spin" aria-hidden="true"></span>Đang phân tích phát âm và nhịp nói…</p></sc-if>
+    <sc-if value="{{sr.aiShown}}" hint-placeholder-val="{{false}}"><section class="ce-ai" aria-label="Nhận xét từ AI"><p class="ce-sk"><i></i><i></i><i class="s"></i></p><p class="ce-ai-h">Ưu tiên luyện ngay</p><p class="ce-sk"><i class="s"></i></p><p class="ce-ai-h">Phát âm</p><p class="ce-sk"><i></i><i class="s"></i></p><p class="ce-ai-h">Lưu loát <span>so với nhịp giọng mẫu</span></p><p class="ce-sk"><i></i><i class="s"></i></p><p class="ce-ai-f">AI viết từ số liệu hệ thống đã đo, không phải điểm. Lỗi âm dựa trên những gì hệ thống nhận ra nên có thể bỏ sót.</p><p class="ce-ai-demo">Trong bản demo, phần chữ do AI viết được thay bằng vạch xám.</p></section></sc-if>
+    <button type="button" class="cc-link" onClick="{{sr.toRes}}">Xem chi tiết từng câu</button>
+    <div class="ce-acts"><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" on-click="{{sr.retryAll}}">Luyện lại bài này</x-import><x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" on-click="{{sr.swapEnd}}">Đổi sang vai ({{sr.otherRole}})</x-import><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" on-click="{{sr.close}}">Xong</x-import></div>
+    <sc-if value="{{sr.smRoleplay}}" hint-placeholder-val="{{false}}"><p class="cc-note">Hội thoại AI ở mốc này sẽ cho bạn dấu son.</p></sc-if>
+    </sc-if>
+  </div></sc-if>
+</div></div></sc-if>
+    <sc-if value="{{sr.isConv}}" hint-placeholder-val="{{true}}"><div class="sr-dock"><div class="sr-dk" aria-live="polite">
+        <sc-if value="{{sr.isTalk}}" hint-placeholder-val="{{false}}"><div class="dk-row">
+          <svg class="wv" viewBox="0 0 60 28" width="60" height="28" aria-hidden="true"><sc-for list="{{sr.sbars}}" as="b" hint-placeholder-count="12"><rect x="{{b.x}}" y="{{b.y}}" width="3" height="{{b.h}}" rx="1.5"></rect></sc-for></svg>
+          <div class="dk-who"><span><b>{{sr.speaker}}</b> đang nói</span></div><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" icon="skip_next" on-click="{{sr.toMyTurn}}">Sang lượt của bạn</x-import></div></sc-if>
+        <sc-if value="{{sr.isWait}}" hint-placeholder-val="{{false}}"><div class="dk-row"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="volume_up" on-click="{{sr.listen}}">{{sr.listenLabel}}</x-import><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="skip_next" on-click="{{sr.toMyTurn}}">Sang lượt của bạn</x-import></div></sc-if>
+        <sc-if value="{{sr.isReady}}" hint-placeholder-val="{{true}}"><div class="dk-mic">
+          <span class="hintL">Bấm micro rồi đọc câu đang viền xanh.</span><x-import component-from-global-scope="JCAP.MicButton" state="idle" label="Bấm để thu âm" hide-label="{{sr.yes}}" on-click="{{sr.startRec}}"></x-import><span class="r"><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe mẫu"></x-import></span></div></sc-if>
+        <sc-if value="{{sr.isRec}}" hint-placeholder-val="{{false}}"><div>
+          <div class="dk-rec"><span class="t" aria-label="Đã thu 2 giây">{{sr.recTime}}</span><svg class="wv big" viewBox="0 0 240 36" preserveAspectRatio="none" height="36" aria-hidden="true"><sc-for list="{{sr.bars}}" as="b" hint-placeholder-count="40"><rect x="{{b.x}}" y="{{b.y}}" width="3" height="{{b.h}}" rx="1.5"></rect></sc-for></svg><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.cancelRec}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="stop" on-click="{{sr.stopRec}}">Dừng</x-import></div>
+          <p class="dk-live">Trình duyệt đang nghe: <span lang="ja">{{sr.liveText}}</span> (chỉ để tham khảo, không dùng để chấm)</p></div></sc-if>
+        <sc-if value="{{sr.isRecorded}}" hint-placeholder-val="{{false}}"><div class="dk-row"><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe lại"></x-import><x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="mic" on-click="{{sr.startRec}}">Thu lại</x-import><x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="delete" on-click="{{sr.discard}}">Bỏ</x-import><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="send" on-click="{{sr.send}}">Gửi chấm</x-import></div></sc-if>
+        <sc-if value="{{sr.isScoring}}" hint-placeholder-val="{{false}}"><div class="dk-scoring"><span class="dk-spin" aria-hidden="true"></span>Đang chấm câu của bạn…</div></sc-if>
+        <sc-if value="{{sr.isScored}}" hint-placeholder-val="{{false}}"><div class="dk-scored">
+          <x-import component-from-global-scope="JCAP.ScoreRing" value="{{sr.curRing}}" size="{{sr.i52}}"></x-import><div class="s"><b>Câu {{sr.curWho}}: {{sr.curScore}} điểm</b><span>{{sr.curSum}}</span></div>
+          <div class="acts" style="display: flex; gap: 8px; align-items: center;"><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe lại"></x-import><x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="replay" on-click="{{sr.retryLine}}">Luyện lại câu</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="arrow_forward" on-click="{{sr.next}}">Câu tiếp</x-import></div></div></sc-if>
+        <sc-if value="{{sr.isFailRec}}" hint-placeholder-val="{{false}}"><div class="dk-fail">
+          <div class="msg"><span class="ic"><x-import component-from-global-scope="JCAP.Icon" name="mic_off" size="{{sr.i22}}"></x-import></span><div><b>{{sr.failTitle}} <x-import component-from-global-scope="JCAP.Badge" tone="neutral">Lần thử {{sr.attempt}}</x-import></b><span>{{sr.failText}} Lần thử này không tính điểm và không trừ gì.</span></div></div>
+          <div class="acts"><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe lại bản thu"></x-import><span class="sp"></span><span style="display: flex; flex-direction: column; align-items: flex-end;"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.skipLine}}">Bỏ qua câu</x-import></span><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="mic" on-click="{{sr.startRec}}">Thu âm lại</x-import></div>
+          <p class="dk-note" style="padding: 0;">Câu bỏ qua tính 0 điểm. Muốn nhận con dấu, cần chấm đủ mọi câu.</p></div></sc-if>
+        <sc-if value="{{sr.isFailSys}}" hint-placeholder-val="{{false}}"><div class="dk-fail">
+          <div class="msg"><span class="ic sys"><x-import component-from-global-scope="JCAP.Icon" name="hourglass_top" size="{{sr.i22}}"></x-import></span><div><b>{{sr.sysTitle}}</b><span>{{sr.sysText}}</span></div></div>
+          <div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.skipLine}}">Bỏ qua câu</x-import><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="secondary" icon="mic" on-click="{{sr.startRec}}">Thu âm lại</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="send" on-click="{{sr.resend}}">Gửi lại</x-import></div>
+          <p class="dk-note" style="padding: 0;">Câu bỏ qua tính 0 điểm. Muốn nhận con dấu, cần chấm đủ mọi câu.</p></div></sc-if>
+        <sc-if value="{{sr.isMic}}" hint-placeholder-val="{{false}}"><div class="dk-fail">
+          <div class="msg"><span class="ic"><x-import component-from-global-scope="JCAP.Icon" name="mic_off" size="{{sr.i22}}"></x-import></span><div><b>JCAP chưa được dùng micro</b><span>Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép micro, rồi bấm Thử lại. Bạn vẫn đọc và nghe được bài.</span></div></div>
+          <div class="acts"><span class="sp"></span><x-import component-from-global-scope="JCAP.AudioPlayer" variant="chip" label="Nghe mẫu"></x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="refresh" on-click="{{sr.micRetry}}">Thử lại</x-import></div></div></sc-if>
+        <sc-if value="{{sr.sync}}" hint-placeholder-val="{{false}}"><p class="dk-warn"><x-import component-from-global-scope="JCAP.Icon" name="cloud_off" size="{{sr.i18}}"></x-import>Chưa đồng bộ được tiến độ. Bạn vẫn luyện được; con dấu được xét khi lưu buổi luyện ở cuối.</p></sc-if>
+      </div></div></sc-if>
+  </div>
+  
+    <sc-if value="{{sr.dlgEnd}}" hint-placeholder-val="{{false}}"><div class="sr-dlgscrim"><div class="sr-dlg" role="alertdialog" aria-modal="true" aria-labelledby="srdE"><h2 id="srdE">Kết thúc buổi luyện?</h2><p>{{sr.endText}}</p><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.endNow}}">Vẫn kết thúc</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" on-click="{{sr.dlgClose}}">Luyện tiếp</x-import></div></div></div></sc-if>
+    <sc-if value="{{sr.dlgRestart}}" hint-placeholder-val="{{false}}"><div class="sr-dlgscrim"><div class="sr-dlg" role="alertdialog" aria-modal="true" aria-labelledby="srdR"><h2 id="srdR">Làm lại từ đầu?</h2><p>Bắt đầu lại từ câu 1. Điểm các câu đã nói lần này không tính vào lần mới.</p><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.dlgClose}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" on-click="{{sr.restart}}">Bắt đầu lại</x-import></div></div></div></sc-if>
+    <sc-if value="{{sr.dlgLeave}}" hint-placeholder-val="{{false}}"><div class="sr-dlgscrim"><div class="sr-dlg" role="alertdialog" aria-modal="true" aria-labelledby="srdL"><h2 id="srdL">Rời phòng luyện?</h2><p>Bản thu của câu này chưa được gửi và sẽ bị bỏ. Các câu đã chấm vẫn được lưu.</p><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.leaveNow}}">Bỏ và rời phòng</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" on-click="{{sr.dlgClose}}">Ở lại</x-import></div></div></div></sc-if>
+    <sc-if value="{{sr.dlgRole}}" hint-placeholder-val="{{false}}"><div class="sr-dlgscrim"><div class="sr-dlg" role="alertdialog" aria-modal="true" aria-labelledby="ccdV"><h2 id="ccdV">Đổi vai bây giờ?</h2><p>Bản thu của câu này chưa được gửi và sẽ bị bỏ. Tiến độ của vai hiện tại vẫn được giữ.</p><div class="acts"><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sr.dlgClose}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" on-click="{{sr.doSwap}}">Đổi vai</x-import></div></div></div></sc-if>
+    <sc-if value="{{sr.toastRole}}" hint-placeholder-val="{{false}}"><div class="sr-toast" role="status"><x-import component-from-global-scope="JCAP.Icon" name="swap_horiz" size="{{sr.i20}}"></x-import><span>{{sr.toastText}}</span></div></sc-if>
+    <sc-if value="{{sr.pop}}" hint-placeholder-val="{{false}}"><div class="sr-pop" role="dialog" aria-label="Cài đặt phòng luyện">
+      <div class="row"><b>Micro và loa</b><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="mic">Thử micro</x-import></div>
+      <x-import component-from-global-scope="JCAP.Switch" label="Hiện furigana" description="Đang theo Cài đặt chung. Bật tắt ngay ở đây là đề xuất." checked="{{sr.yes}}"></x-import><x-import component-from-global-scope="JCAP.Switch" label="Tự phát câu của nhân vật" description="Đề xuất, cần làm thêm code." checked="{{sr.yes}}"></x-import>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="row"><b>Tốc độ giọng mẫu</b><span class="sr-prop">Đề xuất</span></span><x-import component-from-global-scope="JCAP.SegmentedControl" aria-label="Tốc độ giọng mẫu" size="sm" options="{{sr.spdOpts}}" value="1"></x-import></div>
+    </div></sc-if>
+  </section>
+</div></sc-if>
+  <sc-if value="{{sr.mapToastOn}}" hint-placeholder-val="{{false}}"><p class="cm-toast" role="status"><span class="msr" aria-hidden="true">check_circle</span>{{sr.mapToast}}</p></sc-if>
+  <aside class="cp" data-theme="kham-pha" aria-label="Thông tin tỉnh Chiba">
+  <div class="cp-head"><span class="cp-chip">Vùng Kanto <span lang="ja">関東</span></span><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng thông tin tỉnh" size="sm" variant="ghost"></x-import></div>
+  <div class="cp-body"><section class="cp-sec" aria-label="Địa điểm">
+  <div class="cp-pref">
+    <div><p class="cp-k" lang="ja">千葉県</p><p class="cp-v">Chiba <x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="Nghe tên tỉnh" size="sm" variant="ghost"></x-import></p></div>
+    <div class="cp-cnt"><svg viewBox="0 0 100 100" width="72" height="72" aria-hidden="true" class="cp-oct"><path d="M30 3H70L97 30V70L70 97H30L3 70V30Z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M1410.3 990.9L1411.1 989.6L1412.3 990.8L1413 993.4L1417.9 998.5L1418.8 1001.1L1422.8 1003.2L1423.2 1006L1427.5 1009L1429.4 1008.9L1433.6 1012.2L1435.1 1011.6L1437.7 1012.6L1440.3 1015.7L1444.4 1013.9L1447.4 1014.5L1450.3 1012.6L1453.2 1013.6L1457.1 1010L1459.7 1009.1L1461.4 1009.4L1464.4 1007.4L1467.9 1009.4L1466.7 1007.2L1468.6 1004.1L1475.5 1009.7L1478.2 1014.1L1482.2 1015L1484.1 1016.3L1487.3 1021.8L1493.1 1026L1496.4 1025.5L1497.1 1028.2L1496.7 1030.7L1495.2 1030.3L1493.9 1028.7L1486.5 1030.8L1484.1 1029.8L1480 1031.2L1469.7 1039.7L1463.7 1047.5L1460.7 1053.8L1459.1 1062.3L1459.4 1066.3L1460.9 1069.3L1459.9 1072.5L1460.2 1076L1458.5 1081.3L1457.5 1082.1L1455.9 1081.9L1454.5 1083.5L1453.9 1086L1452.8 1086.6L1452.8 1085.3L1451.7 1084.9L1450 1086.9L1447.8 1086.6L1446.6 1088.5L1444.1 1089L1443.3 1087.3L1442.6 1088.1L1441.4 1087.6L1437.7 1088.4L1436.3 1090.2L1436.1 1092.3L1434.4 1093.2L1431.1 1094.9L1426.6 1098.9L1424.9 1103.2L1425.3 1104.6L1424.6 1106.9L1422.3 1109L1419.1 1110L1417.5 1109.4L1415.1 1109.7L1414.1 1108.9L1414.1 1106.7L1413.1 1105.7L1408.9 1104.1L1408.5 1103.3L1408.5 1102.2L1413.6 1102.2L1414.1 1100.9L1416 1101.5L1416.8 1099.7L1416.2 1097.5L1413 1096.1L1414.7 1095.6L1413.9 1092.8L1415.5 1091.3L1415 1090L1414.1 1089.9L1415.3 1087.1L1414.4 1084.9L1413.5 1084.5L1413.5 1082.3L1414 1080.3L1417.4 1078.1L1417.7 1076.5L1415.5 1070.6L1410.6 1068.5L1413.7 1068.4L1413.5 1067.6L1415.3 1066.6L1414 1065.6L1415.2 1064.1L1415.9 1065.3L1416.6 1064.9L1415.3 1063.3L1415.8 1062.5L1419.9 1064.2L1419.2 1063L1420.7 1063L1419.9 1062.5L1421.6 1061.2L1420.6 1061.1L1419.9 1059.1L1420.5 1056.8L1421.5 1055.9L1424 1055.8L1424.2 1054.4L1425 1054.1L1425.3 1054.9L1424.2 1054.7L1424.4 1055.6L1426 1055.2L1425.3 1053.2L1426.6 1052.5L1427.3 1054.8L1427.9 1054.2L1427.2 1053L1428 1053.4L1428.6 1052.1L1429.8 1053.3L1428.9 1051.6L1429.8 1050.3L1430.9 1050.5L1430 1049.9L1430.7 1048.8L1431.7 1048.9L1431 1048.4L1432 1046.9L1432.8 1047L1432.3 1046.5L1432.9 1045.6L1433.8 1045L1435.7 1046.5L1435 1044.8L1437.2 1044.9L1435.3 1043.6L1438.1 1043.2L1434.9 1043.1L1434.5 1041.2L1436.2 1041.3L1437.1 1042.8L1436.8 1041.1L1437.4 1040.4L1436.6 1040.8L1436.4 1039.7L1436.1 1040.6L1435.1 1040.6L1436 1039.6L1434.6 1038.6L1434.7 1040.3L1429.1 1034.2L1427.1 1034.5L1428.3 1034L1426.9 1033.6L1427.4 1032.8L1426.8 1030.8L1426.7 1031.8L1424.9 1032.1L1424.3 1031.2L1424.3 1032.8L1423.9 1032L1422.6 1032.5L1423.9 1033L1421.6 1034.5L1423.2 1035.9L1420.9 1037.6L1420.5 1036.7L1419.9 1037.1L1420.7 1037.7L1419.9 1038.3L1419.5 1037.4L1417.9 1037.5L1419.1 1034.6L1419 1032.3L1421.6 1030.2L1419.9 1027.3L1420.1 1025.6L1418.6 1023.5L1419.6 1022.2L1419.2 1017L1420.1 1013.5L1419.1 1010.3L1414.2 1002.7L1413.3 1000.2L1413.5 996.7L1411.4 994.1L1410.3 990.9Z" transform="translate(-649.85 -455.72) scale(0.4817)" fill="currentColor"/></svg><div><b>{{sr.prefCount}}/9</b><span>con dấu</span><em>Dấu son {{sr.redCount}}/2</em></div></div>
+  </div>
+  <div class="cp-word"><span class="cp-lbl">Một từ ở tỉnh</span><div class="cp-wc"><div><b lang="ja">落花生</b><span>đậu phộng</span><small>Chiba là vùng trồng lạc nổi tiếng nhất Nhật Bản.</small></div><x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="Nghe từ" size="sm" variant="ghost"></x-import></div></div>
+  <div class="cp-lbl">Địa điểm học <span>9</span></div>
+  <article class="cp-spot">
+    <header><span class="cp-ic"><span class="msr" aria-hidden="true">badge</span></span><div class="w"><b>1. Sân bay Narita · Quầy nhập cảnh</b><span lang="ja">成田空港 入国審査</span></div><span class="{{sr.spotStateCls}}">{{sr.spotState}}</span></header>
+    <div class="cp-learn"><span class="cp-lbl2">Câu bạn sẽ học</span><b lang="ja">観光です。</b><span>Tôi đi du lịch.</span></div>
+    <ol class="cp-steps">
+      <li class="{{sr.st1Cls}}"><span class="dot"><span class="msr" aria-hidden="true">{{sr.st1Ic}}</span></span><b>Hiểu</b></li>
+      <li class="{{sr.st2Cls}}"><span class="dot"><span class="msr" aria-hidden="true">{{sr.st2Ic}}</span></span><b>Shadowing</b><small>Đạt từ 60</small></li>
+      <li class="st soon"><span class="dot"><span class="msr" aria-hidden="true">lock</span></span><b>Kiểm tra</b><small class="chip">Sắp có</small></li>
+    </ol>
+    <sc-if value="{{sr.btnNew}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.Button" variant="primary" block="{{sr.yes}}" icon="mic" on-click="{{sr.openChat}}">Luyện Shadowing</x-import></sc-if>
+    <sc-if value="{{sr.btnResume}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="primary" block="{{sr.yes}}" icon="play_arrow" on-click="{{sr.openChat}}">Tiếp tục (câu {{sr.resumeNo}}/6)</x-import></sc-if>
+    <sc-if value="{{sr.btnDone}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="secondary" block="{{sr.yes}}" icon="replay" on-click="{{sr.openChat}}">Luyện lại</x-import></sc-if>
+    <sc-if value="{{sr.btnOpen}}" hint-placeholder-val="{{false}}"><p class="cp-open"><span class="msr" aria-hidden="true">forum</span>Đang luyện ở khung bên cạnh</p></sc-if>
+  </article>
+  <ul class="cp-others">
+    <li><span class="cp-ic sm"><span class="msr" aria-hidden="true">luggage</span></span><span class="w"><b>2. Sân bay Narita · Khu nhận hành lý</b><span lang="ja">成田空港 手荷物受取所</span></span><span class="t">0/3</span></li>
+    <li><span class="cp-ic sm"><span class="msr" aria-hidden="true">sim_card</span></span><span class="w"><b>3. Sân bay Narita · Quầy SIM</b><span lang="ja">成田空港 SIM・両替</span></span><span class="t">0/3</span></li>
+    <li><span class="cp-ic sm red"><span class="msr" aria-hidden="true">groups</span></span><span class="w"><b>4. Sân bay Narita · Sảnh đón</b><span lang="ja">成田空港 到着ロビー</span></span><span class="t red">Dấu son</span></li>
+  </ul>
+</section></div>
+  <p class="cp-foot">Nguồn: Biểu tượng © NDC · Ranh giới: 国土数値情報 (MLIT)</p>
+</aside>
+  <div class="{{sr.dmCls}}" data-theme="kham-pha">
+    <button type="button" class="dm-fab" aria-expanded="{{sr.demo}}" onClick="{{sr.togDemo}}"><span class="msr" aria-hidden="true">tune</span><span class="t">Tình huống demo</span></button>
+    <sc-if value="{{sr.demo}}" hint-placeholder-val="{{false}}"><div class="dm-pan" role="dialog" aria-label="Tình huống demo">
+      <div class="dm-hd"><b>Tình huống demo</b><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng" size="sm" variant="ghost" on-click="{{sr.togDemo}}"></x-import></div>
+      <p class="dm-note">Chỉ có trong bản demo, để mở các nhánh hiếm gặp. App thật không có bảng này.</p>
+      <p class="dm-sec">Trước khi luyện</p><sc-for list="{{sr.dmBefore}}" as="t" hint-placeholder-count="5"><button type="button" class="dm-tg" role="switch" aria-checked="{{t.on}}" onClick="{{t.go}}"><span class="w"><b>{{t.label}}</b><span>{{t.sub}}</span></span><span class="{{t.cls}}" aria-hidden="true"><i></i></span></button></sc-for>
+      <p class="dm-sec">Trong lúc luyện</p><sc-for list="{{sr.dmIn}}" as="t" hint-placeholder-count="5"><button type="button" class="dm-tg" role="switch" aria-checked="{{t.on}}" onClick="{{t.go}}"><span class="w"><b>{{t.label}}</b><span>{{t.sub}}</span></span><span class="{{t.cls}}" aria-hidden="true"><i></i></span></button></sc-for>
+      <div class="dm-foot"><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" block="{{sr.yes}}" icon="restart_alt" on-click="{{sr.resetAll}}">Làm lại từ đầu bản demo</x-import></div>
+    </div></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+
+var SR_TITLE = 'Thủ tục nhập cảnh', SR_LEVEL = 'N5';
+var SR_LINES = [
+  { r: 'A', jp: 'こんにちは。{入国|にゅうこく}の{目的|もくてき}は{何|なん}ですか。', ro: 'Konnichiwa. Nyuukoku no mokuteki wa nan desu ka.', vi: 'Xin chào. Mục đích nhập cảnh của bạn là gì?' },
+  { r: 'B', jp: '{観光|かんこう}です。', ro: 'Kankou desu.', vi: 'Tôi đi du lịch.' },
+  { r: 'A', jp: 'パスポートを{見|み}せてください。', ro: 'Pasupooto o misete kudasai.', vi: 'Xin cho tôi xem hộ chiếu.' },
+  { r: 'B', jp: 'はい、どうぞ。', ro: 'Hai, douzo.', vi: 'Vâng. Xin mời.' },
+  { r: 'A', jp: '{何日|なんにち}、{日本|にほん}にいますか。', ro: 'Nannichi, Nihon ni imasu ka.', vi: 'Bạn ở Nhật mấy ngày?' },
+  { r: 'B', jp: '{一週間|いっしゅうかん}です。', ro: 'Isshuukan desu.', vi: 'Một tuần.' }
+];
+var SR_ROLE = { A: 'Người nhập cảnh', B: 'Nhân viên an ninh' };
+var SR_AV = { A: '入', B: '係' };
+// Kết quả chấm mẫu cho demo (khung giống dữ liệu backend: điểm, tier, token so sánh, chữ nhận dạng)
+var SR_RES = {
+  A: [
+    { said: 'こんにちは。にゅこくのもくてきはなんですか。', tokens: [{ text: 'こんにちは', status: 'ok' }, { text: '。', status: 'ok' }, { text: 'にゅこく', status: 'wrong', error: 'chouon', expected: 'にゅうこく' }, { text: 'の', status: 'ok' }, { text: '目的', reading: 'もくてき', status: 'ok' }, { text: 'は', status: 'ok' }, { text: '何', reading: 'なん', status: 'ok' }, { text: 'ですか', status: 'ok' }, { text: '。', status: 'ok' }], err: 'chouon' },
+    { said: 'パスポートをみてください。', tokens: [{ text: 'パスポート', status: 'ok' }, { text: 'を', status: 'ok' }, { text: 'みて', status: 'wrong', error: 'mora', expected: 'みせて' }, { text: 'ください', status: 'ok' }, { text: '。', status: 'ok' }], err: 'mora' },
+    { said: 'なんにち、にほんにいますか。', tokens: [{ text: '何日', reading: 'なんにち', status: 'ok' }, { text: '、', status: 'ok' }, { text: '日本', reading: 'にほん', status: 'ok' }, { text: 'に', status: 'ok' }, { text: 'います', status: 'ok' }, { text: 'か', status: 'ok' }, { text: '。', status: 'ok' }], err: '' }
+  ],
+  B: [
+    { said: 'かんこうです。', tokens: [{ text: '観光', reading: 'かんこう', status: 'ok' }, { text: 'です', status: 'ok' }, { text: '。', status: 'ok' }], err: '' },
+    { said: 'はい、どうぞ。', tokens: [{ text: 'はい', status: 'ok' }, { text: '、', status: 'ok' }, { text: 'どうぞ', status: 'ok' }, { text: '。', status: 'ok' }], err: '' },
+    { said: 'いっしゅかんです。', tokens: [{ text: 'いっしゅかん', status: 'wrong', error: 'chouon', expected: 'いっしゅうかん' }, { text: 'です', status: 'ok' }, { text: '。', status: 'ok' }], err: 'chouon' }
+  ]
+};
+var SR_GOOD = { A: [88, 72, 91], B: [93, 90, 74] };
+var SR_LOW = { A: [58, 40, 62], B: [60, 52, 45] };
+// Nhãn lỗi giống SessionSummaryPanel.tsx
+var SR_ERRLBL = { chouon: 'trường âm', sokuon: 'âm ngắt っ', hatsuon: 'âm ん', voicing: 'âm đục/trong', mora: 'sai âm', extra: 'nói thừa', missing: 'thiếu từ' };
+// Hạng giống sessionRankTitle (utils/shadowingSessionScores.ts)
+function srRank(n) { return n >= 90 ? 'Hạng S · Rất xuất sắc' : n >= 80 ? 'Hạng A · Rất tốt' : n >= 65 ? 'Hạng B · Đạt chuẩn' : 'Hạng C · Cần luyện thêm'; }
+// Từ vựng và ngữ pháp lấy từ chính các câu của bài
+var SR_VOCAB = [
+  { w: '{入国|にゅうこく}', m: 'nhập cảnh', t: 'Danh từ', ex: 'こんにちは。入国の目的は何ですか。', exv: 'Xin chào. Mục đích nhập cảnh của bạn là gì?' },
+  { w: '{目的|もくてき}', m: 'mục đích', t: 'Danh từ', ex: '入国の目的は何ですか。', exv: 'Mục đích nhập cảnh của bạn là gì?' },
+  { w: '{観光|かんこう}', m: 'du lịch, tham quan', t: 'Danh từ', ex: '観光です。', exv: 'Tôi đi du lịch.' },
+  { w: 'パスポート', m: 'hộ chiếu', t: 'Danh từ', ex: 'パスポートを見せてください。', exv: 'Xin cho tôi xem hộ chiếu.' },
+  { w: '{見|み}せる', m: 'cho xem', t: 'Động từ', ex: 'パスポートを見せてください。', exv: 'Xin cho tôi xem hộ chiếu.' },
+  { w: '{何日|なんにち}', m: 'mấy ngày', t: 'Từ để hỏi', ex: '何日、日本にいますか。', exv: 'Bạn ở Nhật mấy ngày?' },
+  { w: '{一週間|いっしゅうかん}', m: 'một tuần', t: 'Danh từ', ex: '一週間です。', exv: 'Một tuần.' }
+];
+var SR_GRAM = [
+  { p: 'N は{何|なん}ですか', m: 'N là gì? (hỏi thông tin)', ex: '入国の目的は何ですか。', exv: 'Mục đích nhập cảnh của bạn là gì?' },
+  { p: 'N を〜てください', m: 'Xin hãy làm ~ (nhờ lịch sự)', ex: 'パスポートを見せてください。', exv: 'Xin cho tôi xem hộ chiếu.' },
+  { p: 'N にいます', m: 'ở N (người ở một nơi)', ex: '何日、日本にいますか。', exv: 'Bạn ở Nhật mấy ngày?' }
+];
+
+
+function srTone(s) { return s == null ? 'na' : s >= 80 ? 'good' : s >= 65 ? 'mid' : 'low'; }
+function srLv(s) { return s >= 80 ? 'Khớp tốt' : s >= 65 ? 'Khớp một phần' : 'Cần luyện lại'; }
+function srPlain(t) { return t.replace(/\{([^|}]+)\|[^}]+\}/g, '$1'); }
+function srW() { try { return window.innerWidth || 1440; } catch (e) { return 1440; } }
+var SR_FRESH = { cur: 0, reach: 0, sc: {}, att: {}, fail: {}, skip: {}, vi: {} };
+var SR_D = { open: false, anim: '', note: '', ls: 'new', mapToast: '', role: 'A', byRole: {}, openRows: {}, ai: '', t0: 0, dur: 0, gate: false,
+  cur: 0, reach: 0, phase: 'wait', sc: {}, att: {}, fail: {}, skip: {}, vi: {}, sel: 0,
+  outcome: '', stamp: '', dlg: '', resume: false, resumeNo: 1, toast: '', first: false, newRes: false, seen: false, retryMode: false,
+  loadErrOn: false, passed: false, redGot: false, prefGot: false, demo: false,
+  understood: true, hasStamp: false, hasAi: false, lastSpot: false, loadErr: false, lowScore: false, failNext: '', micBlocked: false, saveFail: false, sync: false };
+function ccVals(self, setSr) {
+  function S() { return Object.assign({}, SR_D, (self.state && self.state.sr) || {}); }
+  var st = S();
+  function set(p) { setSr(Object.assign({}, S(), p)); }
+  function later(ms, fn) { setTimeout(fn, ms); }
+  var role = st.role, other = role === 'A' ? 'B' : 'A';
+  var mine = []; SR_LINES.forEach(function (l, i) { if (l.r === role) mine.push(i); });
+  var N = mine.length, thr = 60;
+  function kOf(i) { return mine.indexOf(i); }
+  function stats(s) { var n = 0, sum = 0, all = true; for (var k = 0; k < N; k++) { if (s.sc[k] != null) { n++; sum += s.sc[k]; } else all = false; } return { n: n, score: Math.round(sum / N), all: all }; }
+  var ss = stats(st), scored = ss.n, sessionScore = ss.score;
+  var curK = kOf(st.cur);
+  var busyPh = ['ready', 'rec', 'recorded', 'scoring', 'failRec', 'failSys', 'mic'];
+  function resOf(k) { return (SR_RES[role] || [])[k] || { said: '', tokens: [], err: '' }; }
+  function go(i, ph) { var s = S(); set({ cur: i, reach: Math.max(s.reach, i), phase: ph }); if (ph === 'talk') autoTalk(i); }
+  function autoTalk(i) { later(1700, function () { var s = S(); if (s.phase === 'talk' && s.cur === i && s.open) nextFrom(i); }); }
+  function firstWeak(s, after) { for (var k = 0; k < N; k++) { if (k > after && (s.sc[k] == null || s.sc[k] < 65)) return k; } return -1; }
+  function nextFrom(i) {
+    var s = S();
+    if (s.retryMode) { var w = firstWeak(s, kOf(i)); return w >= 0 ? go(mine[w], 'ready') : finish(); }
+    if (i < s.reach) { var r = s.reach; if (SR_LINES[r].r === s.role && s.sc[kOf(r)] == null) return go(r, 'ready'); i = r; }
+    var j = i + 1;
+    if (j >= SR_LINES.length) return finish();
+    go(j, SR_LINES[j].r === s.role ? 'ready' : 'talk');
+  }
+  function outcomeOf(s) {
+    var x = stats(s);
+    if (!x.all) return 'unscored';
+    if (x.score < thr) return 'low';
+    if (s.hasStamp) return 'already';
+    if (!s.understood) return 'und';
+    if (s.hasAi) return 'red';
+    if (s.lastSpot) return 'pref';
+    return 'stamp';
+  }
+  function apply(o) {
+    if (['stamp', 'pref', 'red'].indexOf(o) >= 0) {
+      set({ outcome: o, stamp: 'before', passed: true });
+      later(650, function () { if (S().phase === 'summary') set({ stamp: 'press' }); });
+      later(1000, function () { if (S().phase !== 'summary') return; set({ stamp: 'after', hasStamp: true, ls: 'done', redGot: o === 'red' || S().redGot, prefGot: o === 'pref' || S().prefGot }); });
+    } else set({ outcome: o, stamp: 'after', passed: S().passed || o === 'und' || o === 'already' });
+  }
+  function finish() {
+    var s0 = S(); set({ phase: 'summary', stamp: 'saving', outcome: '', retryMode: false, dlg: '', ai: '', reach: SR_LINES.length - 1, dur: Math.max(1, Math.round((Date.now() - (s0.t0 || Date.now())) / 1000)) });
+    later(800, function () { var s = S(); if (s.phase !== 'summary' || !s.open) return; if (s.saveFail) return set({ outcome: 'saveErr', stamp: 'after' }); apply(outcomeOf(s)); });
+  }
+  function fresh(extra) {
+    var s = S();
+    set(Object.assign({}, SR_FRESH, { phase: SR_LINES[0].r === s.role ? 'ready' : 'wait', resume: false, outcome: '', stamp: '', retryMode: false, sel: 0, dlg: '', openRows: {}, ai: '', t0: Date.now() }, extra || {}));
+  }
+  function score(k) {
+    var s = S(), base = s.retryMode ? 78 + (k % 3) * 5 : (s.lowScore ? SR_LOW : SR_GOOD)[s.role][k];
+    var sc = Object.assign({}, s.sc); sc[k] = Math.max(s.sc[k] || 0, base);
+    var f = Object.assign({}, s.fail); delete f[k];
+    var or = Object.assign({}, s.openRows); or[k] = true; set({ phase: 'scored', sc: sc, fail: f, sel: k, newRes: s.note !== 'res', openRows: or });
+  }
+  function openChat() {
+    var s = S(), p = { open: true, anim: 'in', dlg: '', toast: '', mapToast: '', demo: false, note: '', loadErrOn: !!s.loadErr };
+    if (s.ls === 'resume') { Object.assign(p, { resume: true, phase: 'ready', retryMode: false, outcome: '', stamp: '' }); set(p); }
+    else {
+      if (!s.seen) Object.assign(p, { seen: true });
+      set(p); fresh();
+    }
+    later(340, function () { if (S().anim === 'in') set({ anim: '' }); });
+  }
+  function doClose() {
+    set({ anim: 'out', dlg: '' });
+    later(220, function () {
+      var s = S(), q = { open: false, anim: '', note: '', loadErrOn: false, first: false, newRes: false, mapToast: '' };
+      if (s.phase === 'summary') {
+        q.ls = s.hasStamp ? 'done' : 'new';
+        q.mapToast = s.outcome === 'saveErr' ? '' : (['stamp', 'pref', 'red'].indexOf(s.outcome) >= 0 ? 'Con dấu đã vào Sổ con dấu.' : 'Đã lưu buổi luyện.');
+        Object.assign(q, SR_FRESH, { outcome: '', stamp: '', phase: 'wait', resume: false });
+      } else {
+        var x = stats(s), k = -1; for (var i = 0; i < N; i++) if (s.sc[i] == null && !s.skip[i]) { k = i; break; }
+        if (x.n > 0 && k >= 0) { q.ls = 'resume'; q.cur = mine[k]; q.resumeNo = k + 1; q.mapToast = 'Đã lưu. Lần sau bạn tiếp tục từ câu ' + (k + 1) + '.'; }
+        else q.ls = s.hasStamp ? 'done' : 'new';
+      }
+      set(q);
+      if (q.mapToast) later(4000, function () { if (S().mapToast === q.mapToast) set({ mapToast: '' }); });
+    });
+  }
+  function tryClose() { var s = S(); if (s.phase === 'rec' || s.phase === 'recorded') set({ dlg: 'leave' }); else doClose(); }
+  function doSwap() {
+    var s = S(), by = Object.assign({}, s.byRole);
+    by[s.role] = { cur: s.cur, reach: s.reach, sc: s.sc, att: s.att, fail: s.fail, skip: s.skip };
+    var o = s.role === 'A' ? 'B' : 'A', L = by[o] || SR_FRESH;
+    var ph = SR_LINES[L.cur].r === o ? 'ready' : (L.cur === 0 ? 'wait' : 'talk');
+    set({ byRole: by, role: o, cur: L.cur, reach: L.reach, sc: L.sc, att: L.att, fail: L.fail, skip: L.skip, vi: {}, phase: ph, dlg: '', toast: 'role', outcome: '', stamp: '', sel: 0, resume: false, retryMode: false, first: false });
+    if (ph === 'talk') autoTalk(L.cur);
+    later(4000, function () { if (S().toast === 'role') set({ toast: '' }); });
+  }
+  function toNote(id) { var s = S(), v = s.note === id ? '' : id; set({ note: v, newRes: v === 'res' ? false : s.newRes, first: v === 'ctx' ? s.first : false }); }
+  function openRes(k) { var or = Object.assign({}, S().openRows); or[k] = true; set({ sel: k, note: 'res', newRes: false, openRows: or }); }
+  function practice(i) { var s = S(); set({ cur: i, phase: 'ready', sel: kOf(i), note: srW() <= 760 ? '' : s.note }); }
+  var NB = [['ctx', 'Bối cảnh', 'image'], ['script', 'Cả bài', 'article'], ['vocab', 'Từ vựng', 'dictionary'], ['gram', 'Ngữ pháp', 'menu_book'], ['res', 'Kết quả', 'insights']];
+  var NBJP = { ctx: '背景', script: '台本', vocab: '単語', gram: '文法', res: '結果' }, NBT = {};
+  NB.forEach(function (t) { NBT[t[0]] = t[1]; });
+  var notes = NB.map(function (t) { var on = st.note === t[0]; return { id: t[0], label: t[1], icon: t[2], jp: NBJP[t[0]], on: on, cls: 'nb-tab t-' + t[0] + (on ? ' on' : ''), dot: t[0] === 'res' && st.newRes && !on, go: function () { toNote(t[0]); } }; });
+  var tab = st.open ? st.note : '';
+  // hội thoại
+  var shown = st.phase === 'summary' ? SR_LINES.length : (st.phase === 'wait' && st.cur >= st.reach ? st.cur : st.reach + 1);
+  var lines = SR_LINES.slice(0, Math.min(shown, SR_LINES.length)).map(function (l, i) {
+    var me = l.r === role, k = kOf(i), sc = me ? st.sc[k] : null, failed = me && (st.fail[k] || st.skip[k]);
+    var pend = me && i === st.cur && busyPh.indexOf(st.phase) >= 0;
+    var res = me && k >= 0 ? resOf(k) : null, showVi = !!st.vi[i];
+    var talking = !me && i === st.cur && st.phase === 'talk';
+    var cls = 'cc-ln ' + (me ? 'me' : 'ai') + (pend ? ' pending' : '') + (me && tab === 'res' && st.sel === k && !pend ? ' sel' : '') + (talking ? ' talking' : '');
+    return { isMe: me, cls: cls, name: pend ? 'Lượt của bạn' : SR_ROLE[l.r] + (me ? ' (bạn)' : ''), av: me ? 'Bạn' : SR_AV[l.r],
+      jp: l.jp, vi: l.vi, showVi: showVi, viLabel: showVi ? 'Ẩn nghĩa' : 'Dịch',
+      toggleVi: function () { var s = S(), v = Object.assign({}, s.vi); v[i] = !s.vi[i]; set({ vi: v }); },
+      hasPill: me && (sc != null || failed) && !pend, pillCls: 'cc-pill ' + (sc != null ? srTone(sc) : 'na'), pill: sc != null ? sc + ' điểm' : 'Chưa chấm được',
+      aria: me && sc != null ? 'Câu ' + (k + 1) + ', ' + sc + ' điểm. Bấm để xem nhận xét' : SR_ROLE[l.r],
+      showTools: !pend,
+      open: function () { if (me && !pend && sc != null) openRes(k); },
+      redo: function () { if (S().phase !== 'summary') practice(i); } };
+  });
+  var cl = SR_LINES[st.cur] || SR_LINES[0], ph = st.phase;
+  var curRes = curK >= 0 ? resOf(curK) : null, curScore = curK >= 0 ? st.sc[curK] : null;
+  var sk = Math.min(Math.max(st.sel, 0), N - 1), ssc = st.sc[sk], sres = resOf(sk);
+  var plist = mine.map(function (i, k) {
+    var s = st.sc[k], f = st.fail[k], sk2 = st.skip[k];
+    return { n: k + 1, jp: srPlain(SR_LINES[i].jp), st: s != null ? s + ' điểm' : sk2 ? 'Đã bỏ qua' : f ? 'Không chấm được' : 'Chưa nói', stCls: 'st ' + (s != null ? srTone(s) : 'na'),
+      weak: (s != null && s < 65) || (s == null && (f || sk2)), cls: k === sk ? 'cur' : '',
+      go: function () { set({ sel: k }); } };
+  });
+  var o = st.outcome || '';
+  var stamping = ['stamp', 'pref', 'red'].indexOf(o) >= 0, inked = stamping || o === 'already';
+  var landed = inked && st.stamp === 'after';
+  var titles = { stamp: 'Bạn đã có con dấu Sân bay Narita.', pref: 'Bạn có con dấu Sân bay Narita và con dấu tỉnh Chiba.', red: 'Bạn có cả con dấu và dấu son Sân bay Narita.', und: 'Bạn đã đạt điểm.', low: 'Còn thiếu ' + Math.max(0, thr - sessionScore) + ' điểm để nhận con dấu.', unscored: 'Còn ' + (N - scored) + ' câu chưa chấm.', already: 'Bạn đã luyện xong bài này.', saveErr: 'Chưa lưu được buổi luyện.' };
+  var subs = { stamp: 'Con dấu đã được đóng vào Sổ con dấu của bạn.', pref: 'Đây là mốc cuối của Chiba, nên bạn có thêm con dấu tỉnh.', red: 'Bạn đã xong Hội thoại AI ở mốc này từ trước, nên dấu son đến cùng lúc.', und: 'Còn bước Hiểu câu mẫu. Đọc câu dưới đây rồi bấm "Tôi đã hiểu" để nhận con dấu.', low: 'Luyện lại các câu dưới 65 điểm. Điểm tốt nhất của mỗi câu luôn được giữ.', unscored: 'Cần chấm đủ mọi câu để nhận con dấu.', already: 'Bạn đã có con dấu mốc này từ trước. Luyện thêm không làm mất dấu.', saveErr: 'Kết quả vẫn còn trên máy. Con dấu chỉ được xét sau khi lưu. Lưu nhiều lần cũng không tạo buổi thứ hai.' };
+  var animTitle = stamping && !landed && st.stamp !== 'saving';
+  function tog(key, label, sub, extra) { var on = !!st[key]; return { label: label, sub: sub, on: on, cls: 'dm-sw' + (on ? ' on' : ''), go: function () { var p = {}; p[key] = !S()[key]; if (extra) Object.assign(p, extra(!S()[key])); set(p); } }; }
+  function once(key, val, label, sub) { var on = st[key] === val; return { label: label, sub: sub, on: on, cls: 'dm-sw' + (on ? ' on' : ''), go: function () { var p = {}; p[key] = S()[key] === val ? '' : val; set(p); } }; }
+  var pref0 = st.lastSpot ? 8 : 2;
+  var cnt2 = { good: 0, mid: 0, low: 0 }; mine.forEach(function (i, k) { var v = st.sc[k]; if (v != null) cnt2[srTone(v)]++; });
+  var rows = mine.map(function (i, k) {
+    var v = st.sc[k], r = resOf(k), open = !!st.openRows[k], tried = st.att[k] || 0, failed = st.fail[k];
+    return { n: k + 1, jp: srPlain(SR_LINES[i].jp), ro: SR_LINES[i].ro, vi: SR_LINES[i].vi, open: open, cls: k === st.sel && st.note === 'res' ? 'sel' : '',
+      chip: v != null ? v + ' điểm' : (failed ? 'Chưa chấm được' : 'Chưa chấm'), chipCls: 'rs-chip ' + (v != null ? srTone(v) : failed ? 'wait' : 'na'),
+      multi: tried > 1, att: tried, hasRec: tried > 0, scored: v != null, unscored: v == null,
+      unscoredText: failed ? 'Lần thu gần nhất chưa chấm được. Bản ghi chưa được đánh giá không tính vào điểm tổng.' : 'Bạn chưa nói câu này.',
+      said: r.said, tokens: r.tokens, canRedo: ph !== 'summary' || true,
+      toggle: function () { var or = Object.assign({}, S().openRows); or[k] = !or[k]; set({ openRows: or, sel: k }); },
+      redo: function () { var s = S(); if (s.phase === 'summary') set({ retryMode: true, outcome: '', stamp: '' }); practice(i); } };
+  });
+  var retryList = [], errCount = {};
+  mine.forEach(function (i, k) {
+    var v = st.sc[k], r = resOf(k);
+    if (v != null && r.err) errCount[r.err] = (errCount[r.err] || 0) + 1;
+    if (v == null || v < 65) retryList.push({ jp: srPlain(SR_LINES[i].jp), chip: v == null ? 'chưa chấm được' : v + '/100', chipCls: 'rs-chip ' + (v == null ? 'wait' : 'low'),
+      err: v != null && r.err ? SR_ERRLBL[r.err] : '', hasErr: v != null && !!r.err, go: function () { openRes(k); } });
+  });
+  var errText = Object.keys(errCount).sort(function (a, b) { return errCount[b] - errCount[a]; }).map(function (e) { return SR_ERRLBL[e] + ' ×' + errCount[e]; }).join(' · ');
+  var oo = st.outcome || '';
+  var stampLines = { stamp: ['ok', 'verified', 'Bạn đã có con dấu Sân bay Narita. Con dấu đã vào Sổ con dấu.'], pref: ['ok', 'verified', 'Bạn có con dấu Sân bay Narita và con dấu tỉnh Chiba.'],
+    red: ['ok', 'verified', 'Bạn có cả con dấu và dấu son Sân bay Narita.'], already: ['ok', 'verified', 'Mốc này đã có con dấu từ trước. Luyện thêm không làm mất dấu.'],
+    und: ['no', 'school', 'Đã đạt điểm. Còn bước Hiểu câu mẫu để nhận con dấu.'], low: ['no', 'flag', 'Cần điểm buổi từ 60 để nhận con dấu. Còn thiếu ' + Math.max(0, 60 - sessionScore) + ' điểm.'],
+    unscored: ['no', 'flag', 'Cần chấm đủ ' + N + ' câu để nhận con dấu. Còn ' + (N - scored) + ' câu chưa chấm.'], saveErr: ['err', 'cloud_off', 'Chưa lưu được buổi luyện vào lịch sử. Con dấu chỉ được xét sau khi lưu.'] };
+  var sl = stampLines[oo] || ['no', 'hourglass_top', 'Đang đóng dấu…'];
+
+  var stepDone = st.hasStamp;
+  return {
+    yes: true, no: false, nothing: null, i16: 16, i18: 18, i20: 20, i22: 22, i40: 40, i52: 52, i72: 72,
+    rootCls: 'cm' + (st.open ? ' chat' : ''),
+    cGood: cnt2.good, cMid: cnt2.mid, cLow: cnt2.low, pgMatch: sessionScore, rows: rows, canEnd: ph !== 'summary',
+    endReady: st.stamp !== 'saving' && !!oo, endTitle: scored > 0 ? 'Hoàn thành bài luyện!' : 'Buổi luyện đã kết thúc',
+    endSub: SR_TITLE + ' · JLPT ' + SR_LEVEL + ' · Vai ' + role + ' (' + SR_ROLE[role] + ')',
+    saveCls: 'ce-save' + (oo === 'saveErr' ? ' fail' : ''), saveText: oo === 'saveErr' ? 'Chưa lưu được buổi luyện vào lịch sử. Kiểm tra kết nối rồi bấm Lưu lại.' : 'Đã lưu buổi luyện vào lịch sử.',
+    stampLineCls: 'ce-stamp ' + sl[0], stampIcon: sl[1], stampLine: (['stamp', 'pref', 'red'].indexOf(oo) >= 0 && st.stamp !== 'after') ? 'Đang đóng dấu…' : sl[2],
+    showStamp: ['stamp', 'pref', 'red', 'already'].indexOf(oo) >= 0,
+    hasScored: scored > 0 && !!oo, noneScored: scored === 0 && !!oo, bigScoreCls: 'ce-num ' + srTone(sessionScore), rank: srRank(sessionScore),
+    dur: Math.floor((st.dur || 0) / 60) + ':' + ('0' + ((st.dur || 0) % 60)).slice(-2), gateWarn: !!st.gate && !!oo,
+    hasRetry: !!oo && retryList.length > 0, retryList: retryList, hasErrs: !!oo && !!errText, errText: errText,
+    aiIdle: !!oo && oo !== 'saveErr' && !st.ai && scored > 0, aiLoading: st.ai === 'loading', aiShown: st.ai === 'shown',
+    askAi: function () { set({ ai: 'loading' }); later(1200, function () { if (S().ai === 'loading') set({ ai: 'shown' }); }); },
+    otherRole: other, swapEnd: function () { doSwap(); fresh({ role: S().role }); },
+    meNote: SR_LINES[0].r === role ? 'vai của bạn, nói trước' : 'vai của bạn', otherAv: SR_AV[other], otherName: SR_ROLE[other], otherNote: SR_LINES[0].r === other ? 'nói trước' : 'nói sau bạn', open: !!st.open, closedPanel: !st.open, chatOn: !!st.open,
+    mapCls: 'cm-map' + (st.open ? ' pan' : ''), chatCls: 'ccw' + (st.anim ? ' ' + st.anim : ''),
+    notes: notes, noteOn: !!tab, nbCls: 'nb-page ' + tab, noteTitle: NBT[tab] || '', noteJp: NBJP[tab] || '', closeNote: function () { set({ note: '', first: false }); }, tRes: tab === 'res',
+    pCtx: tab === 'ctx', pScript: tab === 'script', pVocab: tab === 'vocab', pGram: tab === 'gram',
+    // bản đồ và thẻ mốc
+    pin1Cls: 'cm-pin' + (st.open ? ' on' : ''), pin1Done: st.hasStamp, pin1Tag: !st.hasStamp || st.open, pin1TagText: st.open ? 'Đang luyện' : 'Tiếp theo',
+    focusSpot: function () {},
+    prefCount: pref0 + (st.hasStamp ? 1 : 0), redCount: 1 + (st.redGot ? 1 : 0),
+    spotState: st.redGot ? 'Dấu son' : st.hasStamp ? 'Đã có dấu' : (st.understood ? '1/3' : '0/3'), spotStateCls: 'cp-state' + (st.hasStamp && !st.redGot ? ' ink' : ''),
+    st1Cls: 'st ' + (st.understood ? 'done' : 'cur'), st1Ic: st.understood ? 'check' : 'school',
+    st2Cls: 'st ' + (stepDone ? 'done' : st.understood ? 'cur' : ''), st2Ic: stepDone ? 'check' : 'mic',
+    understand: function () {
+      var s = S(), p = { understood: true };
+      if (s.passed && !s.hasStamp) Object.assign(p, { hasStamp: true, ls: 'done', mapToast: 'Bạn đã có con dấu Sân bay Narita.' });
+      set(p);
+    },
+    btnNew: !st.open && st.ls === 'new', btnResume: !st.open && st.ls === 'resume', btnDone: !st.open && st.ls === 'done', btnOpen: !!st.open,
+    resumeNo: st.resumeNo || 1, openChat: openChat, mapToast: st.mapToast, mapToastOn: !!st.mapToast,
+    // khung chat
+    close: tryClose, lines: lines, intro: scored === 0 && st.cur === 0 && !st.resume && ph !== 'summary' && !(st.fail[0]), colCls: 'cc-col' + (scored === 0 && st.cur === 0 && ph !== 'summary' ? ' empty' : ''), listenLabel: 'Nghe ' + SR_ROLE[cl.r].charAt(0).toLowerCase() + SR_ROLE[cl.r].slice(1) + ' nói', isConv: ph !== 'summary' && !st.loadErrOn, isSum: ph === 'summary', isBody: !st.loadErrOn, loadErrOn: !!st.loadErrOn,
+    resume: !!st.resume && ph !== 'summary', resumeText: 'Tiếp tục từ câu ' + (st.resumeNo || 1) + '. Các câu trước đã được lưu.',
+    isTalk: ph === 'talk', isWait: ph === 'wait', isReady: ph === 'ready', isRec: ph === 'rec', isRecorded: ph === 'recorded', isScoring: ph === 'scoring', isScored: ph === 'scored',
+    isFailRec: ph === 'failRec', isFailSys: ph === 'failSys', isMic: ph === 'mic', sync: !!st.sync,
+    speaker: SR_ROLE[cl.r], attempt: (st.att[curK] || 1),
+    listen: function () { go(S().cur, 'talk'); },
+    toMyTurn: function () { var s = S(), j = s.cur; while (j < SR_LINES.length && SR_LINES[j].r !== s.role) j++; if (j >= SR_LINES.length) finish(); else go(j, 'ready'); },
+    startRec: function () { if (S().micBlocked) set({ phase: 'mic' }); else set({ phase: 'rec' }); },
+    micRetry: function () { set({ micBlocked: false, phase: 'ready' }); },
+    stopRec: function () { set({ phase: 'recorded' }); }, cancelRec: function () { set({ phase: 'ready' }); }, discard: function () { set({ phase: 'ready' }); },
+    send: function () {
+      var s = S(), k = kOf(s.cur), a = (s.att[k] || 0) + 1, att = Object.assign({}, s.att); att[k] = a;
+      set({ phase: 'scoring', att: att });
+      later(1100, function () {
+        var s2 = S(); if (s2.phase !== 'scoring') return;
+        if (s2.failNext === 'rec') { var f = Object.assign({}, s2.fail); f[k] = true; return set({ phase: 'failRec', fail: f, failNext: '' }); }
+        if (s2.failNext === 'sys') { var f2 = Object.assign({}, s2.fail); f2[k] = true; return set({ phase: 'failSys', fail: f2, failNext: '' }); }
+        score(k);
+      });
+    },
+    resend: function () { var k = kOf(S().cur); set({ phase: 'scoring' }); later(1000, function () { if (S().phase === 'scoring') score(k); }); },
+    skipLine: function () { var s = S(), sk3 = Object.assign({}, s.skip); sk3[kOf(s.cur)] = true; set({ skip: sk3 }); nextFrom(s.cur); },
+    next: function () { nextFrom(S().cur); }, retryLine: function () { set({ phase: 'ready' }); },
+    curScore: curScore, curRing: curScore || 0, curSum: curScore != null ? srLv(curScore) + ((st.att[curK] || 1) > 1 ? ' · lần thử ' + st.att[curK] : '') : '', curWho: curK + 1,
+    failTitle: 'Không nghe thấy tiếng nói', failText: 'Hãy nói to và rõ, để micro gần miệng hơn rồi thu lại.',
+    sysTitle: 'Hệ thống đang bận chấm cho nhiều người', sysText: 'Bản thu của bạn vẫn còn. Hãy gửi lại sau vài giây.',
+    liveText: srPlain(cl.jp).slice(0, 4) + '…', recTime: '0:02',
+    bars: [8, 14, 22, 12, 26, 18, 9, 24, 30, 16, 11, 20, 27, 15, 8, 19, 25, 13, 22, 10, 17, 28, 12, 21, 9, 15, 24, 18, 11, 7, 20, 26, 14, 9, 18, 23, 12, 16, 8, 13].map(function (h, i) { return { x: i * 6, y: (36 - h) / 2, h: h }; }),
+    sbars: [6, 12, 18, 10, 16, 8, 14, 20, 11, 7, 15, 9].map(function (h, i) { return { x: i * 5, y: (28 - h) / 2, h: h }; }),
+    // ngăn Bối cảnh, Cả bài, Từ vựng, Ngữ pháp
+    N: N, roleName: SR_ROLE[role], first: !!st.first, startPractice: function () { set({ first: false, note: '' }); },
+    swapRole: function () { var p = S().phase; if (p === 'rec' || p === 'recorded') return set({ dlg: 'role' }); doSwap(); }, doSwap: doSwap,
+    script: SR_LINES.map(function (l) { return { rn: SR_ROLE[l.r] + (l.r === role ? ' (bạn)' : ''), jp: l.jp, vi: l.vi, cls: l.r === role ? 'me' : '' }; }),
+    vocab: SR_VOCAB, gram: SR_GRAM,
+    // Kết quả
+    fbHas: ssc != null, fbNone: ssc == null, fbScore: ssc || 0, fbNo: sk + 1, fbAtt: st.att[sk] || 1, fbLv: ssc != null ? srLv(ssc) : '', fbLvCls: 'fb-lv ' + srTone(ssc),
+    fbTokens: sres ? sres.tokens : [], fbSaid: sres ? sres.said : '', fbHasErr: !!(sres && sres.err), fbErr: sres && sres.err ? sres.err : { w: '', t: '', fix: '' },
+    fbTempo: sres ? sres.tempo : '', fbHasTempo: !!(sres && sres.tempo),
+    fbRedo: function () { var s = S(); if (s.phase === 'summary') set({ retryMode: true, outcome: '', stamp: '' }); practice(mine[sk]); },
+    pgScored: scored, pgN: N, pgScore: sessionScore, plist: plist,
+    endIt: function () { var x = stats(S()); if (S().phase === 'summary') return; if (x.n === 0) doClose(); else if (x.all) finish(); else set({ dlg: 'end' }); },
+    endLabel: ph === 'summary' ? 'Buổi luyện đã kết thúc' : scored === 0 ? 'Về bản đồ' : 'Kết thúc buổi luyện', canRestart: ph !== 'summary' && scored > 0,
+    endText: 'Còn ' + (N - scored) + ' câu chưa chấm. Kết thúc bây giờ thì các câu đó tính 0 điểm và buổi này không nhận được con dấu.',
+    askRestart: function () { set({ dlg: 'restart' }); },
+    dlgEnd: st.dlg === 'end', dlgRestart: st.dlg === 'restart', dlgLeave: st.dlg === 'leave', dlgRole: st.dlg === 'role',
+    dlgClose: function () { set({ dlg: '' }); }, endNow: function () { finish(); }, restart: function () { fresh(); },
+    leaveNow: function () { set({ phase: 'ready', dlg: '' }); doClose(); },
+    toastRole: st.toast === 'role', toastText: 'Đã đổi sang vai ' + SR_ROLE[role] + '. Tiến độ vai ' + SR_ROLE[other] + ' vẫn được giữ.',
+    pop: false, togPop: function () {}, spdOpts: [], i28: 28,
+    // tổng kết trong khung chat
+    saving: st.stamp === 'saving', bigCls: st.stamp === 'press' ? 'sr-big sr-ink press' : landed ? 'sr-big sr-ink rot' : 'sr-ghost',
+    bigOp: st.stamp === 'press' || landed ? '1' : (scored / N * 0.85 + 0.15).toFixed(2), bigDash: st.stamp === 'press' || landed ? '' : '14 10',
+    bigDate: landed ? ' 2026.11.24' : '', showRed: o === 'red' && landed, showPref: o === 'pref' && landed,
+    smTitle: st.stamp === 'saving' ? '' : animTitle ? 'Đang đóng dấu…' : (titles[o] || ''), smSub: st.stamp === 'saving' ? '' : animTitle ? 'Buổi luyện đã đạt và đã được lưu.' : (subs[o] || ''),
+    smHasScore: !!o && st.stamp !== 'saving', smScore: sessionScore, smPassCls: 'sm-pass ' + (sessionScore >= thr ? 'ok' : 'no'), smPassTxt: sessionScore >= thr ? 'Đạt ngưỡng 60' : 'Cần 60',
+    smErr: o === 'saveErr', smWin: stamping && landed, smMiss: o === 'low' || o === 'unscored', smAlready: o === 'already', smUnd: o === 'und',
+    smRoleplay: (o === 'stamp' || o === 'pref') && landed && !st.redGot, smDetail: !!o && o !== 'saveErr' && (!stamping || landed),
+    toRes: function () { var w = firstWeak(S(), -1); openRes(w >= 0 ? w : 0); },
+    doUnderstood: function () { var s = Object.assign({}, S(), { understood: true }); set({ understood: true }); apply(outcomeOf(s)); },
+    retryWeak: function () { var s = S(), w = firstWeak(s, -1); set({ retryMode: true, outcome: '', stamp: '' }); practice(mine[w < 0 ? 0 : w]); },
+    retryAll: function () { fresh(); },
+    resave: function () { set({ saveFail: false, stamp: 'saving', outcome: '' }); later(700, function () { apply(outcomeOf(S())); }); },
+    retry: function () { set({ loadErr: false, loadErrOn: false }); },
+    // bảng demo
+    dmCls: 'dm' + (st.open ? ' mini' : '') + (st.open && st.note ? ' hide' : ''), demo: !!st.demo, togDemo: function () { set({ demo: !S().demo }); },
+    dmBefore: [
+      tog('understood', 'Đã bấm "Tôi đã hiểu"', 'Tắt để xem trường hợp đạt điểm nhưng chưa hiểu câu mẫu'),
+      tog('hasStamp', 'Mốc đã có dấu từ trước', 'Nút ở thẻ mốc thành "Luyện lại"', function (v) { var s = S(); return { ls: v ? 'done' : (s.ls === 'done' ? 'new' : s.ls) }; }),
+      tog('hasAi', 'Đã xong Hội thoại AI ở mốc này', 'Đạt thì nhận con dấu và dấu son cùng lúc'),
+      tog('lastSpot', 'Đây là mốc cuối của Chiba', 'Đạt thì nhận thêm con dấu tỉnh'),
+      tog('loadErr', 'Không tải được bài', 'Mở khung chat sẽ báo lỗi tải')
+    ],
+    dmIn: [
+      tog('lowScore', 'Nói chưa tốt', 'Điểm thấp, buổi luyện không đạt 60'),
+      once('failNext', 'rec', 'Lần gửi tới: không nghe thấy tiếng', 'Lỗi do bản thu, một lần'),
+      once('failNext', 'sys', 'Lần gửi tới: hệ thống bận', 'Lỗi do hệ thống, một lần'),
+      tog('micBlocked', 'Chặn quyền micro', 'Bấm micro sẽ hiện hướng dẫn cấp quyền'),
+      tog('saveFail', 'Lưu buổi luyện bị lỗi', 'Cuối buổi, nút "Lưu lại" sẽ lưu được'),
+      tog('gate', 'Micro có tạp âm', 'Cuối buổi hiện cảnh báo micro'),
+      tog('sync', 'Mất đồng bộ tiến độ', 'Dòng cảnh báo dưới khung thu âm')
+    ],
+    resetAll: function () { setSr(Object.assign({}, SR_D)); }
+  };
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sr: {} };
+  }
+  renderVals() {
+    var self = this;
+    return { sr: ccVals(self, function (p) { self.setState({ sr: p }); }) };
+  }
+}
+</script>
+</body>
+</html>
