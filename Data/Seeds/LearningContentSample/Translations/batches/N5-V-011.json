@@ -1,0 +1,312 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 từ và 40 câu theo bản Nhật. Dùng lại bản dịch câu 234637.",
+    "Hai câu nguồn của グラム được dịch theo ngữ cảnh và có ghi chú vì không minh họa đơn vị khối lượng.",
+    "Hai cách dùng 結構です được đối chiếu với Digital Daijisen tại https://kotobank.jp/word/%E7%B5%90%E6%A7%8B-490460"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b55dd305d1",
+      "Fields": {
+        "Meaning": "Nước, quốc gia",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "国（くに）chỉ quốc gia hoặc quê hương. あなたの国 nghĩa là đất nước của bạn.",
+        "UsageNotes": "Khi nói ở lại một nước, dùng 国にいる. Trong câu nguồn この国は, は đưa đất nước đang nói đến lên làm chủ đề."
+      },
+      "Examples": {
+        "221927": "Bạn định ở lại nước này bao lâu?",
+        "233291": "Ở nước bạn, người ta nói tiếng gì?"
+      },
+      "SourceHash": "6bbd33d619216d5ed4b1623f04c12d32b6ca305c69666347cc0e4c194afccd07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eec0f93991",
+      "Fields": {
+        "Meaning": "Trời nhiều mây",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "曇り（くもり）chỉ thời tiết nhiều mây. 曇りの日 là một ngày trời nhiều mây.",
+        "UsageNotes": "曇る là động từ chỉ việc trời trở nên nhiều mây."
+      },
+      "Examples": {
+        "123255": "Hôm nay trời nhiều mây.",
+        "171526": "Hôm nay có vẻ trời nhiều mây phải không?"
+      },
+      "SourceHash": "2df9edc81bf8175d1b72871ff72d7042db053d30e72d61ea3d523b51678472cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c34fdb6092",
+      "Fields": {
+        "Meaning": "Trở nên nhiều mây, mờ đi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "曇る（くもる）dùng khi trời trở nên nhiều mây hoặc bề mặt như kính bị mờ. 曇っている có thể diễn tả trạng thái hiện tại.",
+        "UsageNotes": "Thể て là 曇って."
+      },
+      "Examples": {
+        "146006": "Hơi nước làm kính mắt tôi bị mờ.",
+        "171528": "Hôm nay trời nhiều mây."
+      },
+      "SourceHash": "27abf83c2adb7e2b619133b8ce81d8680c7d24a9d81a6336c84fd2953360f72f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01a0587b49",
+      "Fields": {
+        "Meaning": "Tối, u ám",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "暗い（くらい）tả nơi thiếu ánh sáng hoặc bầu không khí u ám. 暗くなる nghĩa là trở nên tối hơn.",
+        "UsageNotes": "Từ trái nghĩa về ánh sáng là 明るい（あかるい）."
+      },
+      "Examples": {
+        "191267": "Tối quá nên không nhìn rõ được.",
+        "234367": "Tôi nhận ra xung quanh đã tối rồi."
+      },
+      "SourceHash": "c3d38e1056c63f8f281a6f7f174ad659a35c79ab0a5be5c76ec59815afdfba0a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72c04ce067",
+      "Fields": {
+        "Meaning": "Lớp, lớp học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "クラス chỉ lớp hoặc nhóm người học. クラスでいちばん dùng để nói ai hoặc điều gì đứng đầu theo một tiêu chí trong lớp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223857": "Lớp này có bao nhiêu bạn nam?",
+        "234637": "Tên đó ngốc nhất lớp."
+      },
+      "SourceHash": "9ab820005ec47f87b23a99e5355f8346297a5fb38a28e203ffa448266e9bacde"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5538df2bce",
+      "Fields": {
+        "Meaning": "Gam (đơn vị khối lượng)",
+        "PartOfSpeech": "Danh từ chỉ đơn vị",
+        "Explanation": "グラム là gam. Khi đếm khối lượng, đặt số trước đơn vị, như 100グラム (100 gam).",
+        "UsageNotes": "Hai câu nguồn chỉ chứa グラム như một phần của プログラム (chương trình) và インスタグラム (Instagram). Chúng không minh họa nghĩa đơn vị khối lượng."
+      },
+      "Examples": {
+        "196880": "Cho tôi xin một bản chương trình được không?",
+        "10704636": "Bạn có dùng Instagram không?"
+      },
+      "SourceHash": "cda0e4843da6456fc24c6d35c6096a9e7a992efbd92c3b71736794b876eaf44b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e2abd26ca",
+      "Fields": {
+        "Meaning": "Đến, tới",
+        "PartOfSpeech": "Động từ bất quy tắc, tự động từ",
+        "Explanation": "来る（くる）chỉ việc đến phía người nói hoặc đến một địa điểm đang được lấy làm mốc. 来てくださる là cách nói kính trọng về việc ai đó đến.",
+        "UsageNotes": "Đọc 来ます là きます, 来て là きて và 来ない là こない. までに chỉ hạn chót."
+      },
+      "Examples": {
+        "78725": "Cảm ơn anh/chị đã đến.",
+        "236043": "Tôi sẽ đến chậm nhất là lúc mười giờ."
+      },
+      "SourceHash": "088e812862302aade0abd42f076186d486e0f528b296170e5210536246ebdb10"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6b85573f3",
+      "Fields": {
+        "Meaning": "Xe, ô tô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "車（くるま）thường chỉ ô tô, cũng có thể chỉ xe tùy ngữ cảnh. 車のわき là bên cạnh xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149061": "Hãy nhìn cậu bé bên cạnh chiếc xe.",
+        "199672": "Chiếc xe đó có gắn một rơ-moóc."
+      },
+      "SourceHash": "efd30546ecd247dfebcf317bc0521d8969f08bcecbfa6eaefd4d4f2e32fc759b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c32cfb08a",
+      "Fields": {
+        "Meaning": "Màu đen",
+        "PartOfSpeech": "Danh từ chỉ màu sắc",
+        "Explanation": "黒（くろ）là tên màu đen. Có thể nói 黒のペン để chỉ bút màu đen.",
+        "UsageNotes": "Câu 黒に黒をたしても白にはならぬ có thể hiểu theo nghĩa bóng rằng việc sai này không làm cho việc sai khác trở thành đúng."
+      },
+      "Examples": {
+        "142223": "Bạn có bút lông hoặc bút dạ màu đỏ và đen không?",
+        "172985": "Thêm đen vào đen cũng chẳng thành trắng."
+      },
+      "SourceHash": "3c374df3493554ba1c0797f6e3c1d329ceaa7a789aaea9978e632a2825a95cd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5e5300cf62",
+      "Fields": {
+        "Meaning": "Đen, sẫm màu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "黒い（くろい）tả vật có màu đen. Khi nói về nước da trong cụm 色が黒い, có thể dịch là da sẫm màu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198990": "Da Nancy sẫm hơn da Helen một chút.",
+        "231019": "Cái túi đen kia là của bạn à?"
+      },
+      "SourceHash": "78bef6e3dc6fbd5314ce0cd005d396b25eabc54c5d52a90641adee72e5fab56f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e1634cb3e9",
+      "Fields": {
+        "Meaning": "Cảnh sát, viên cảnh sát",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "警官（けいかん）chỉ một người làm cảnh sát. 警官はその男をつけた dùng つける theo nghĩa bám theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123109": "Hai viên cảnh sát cũng đã kiệt sức.",
+        "176362": "Viên cảnh sát bám theo người đàn ông đó."
+      },
+      "SourceHash": "8768be1879fbbff5a6beaf43d2863effdc0e5c5f0bd348bd782c8455c0447638"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c1d724a61",
+      "Fields": {
+        "Meaning": "Sáng nay",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "今朝 có cách đọc thông dụng là けさ. Từ này chỉ buổi sáng của ngày hôm nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172291": "Sáng nay trời rất lạnh.",
+        "172293": "Sáng nay tôi có nhiều việc phải làm."
+      },
+      "SourceHash": "95a6f5407bc339c189042c72bdf1dd2dbfa949050b47bf730041923bf808b033"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19f270c68f",
+      "Fields": {
+        "Meaning": "Tắt, dập tắt, xóa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "消す（けす）dùng khi ai đó tắt đèn, dập lửa hoặc xóa dấu vết. Đối tượng đi với を.",
+        "UsageNotes": "消える diễn tả thứ gì đó tự tắt hoặc biến mất."
+      },
+      "Examples": {
+        "145648": "Hãy tắt đèn trước khi đi ngủ.",
+        "192284": "Anh/chị có thể tắt nến giúp tôi được không ạ?"
+      },
+      "SourceHash": "c9b40bbcda1bb2d2d48784bd6258641a166eac41dd33207391ebdfae4f37bc4e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd34250740",
+      "Fields": {
+        "Meaning": "Được, đủ rồi, tốt",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ",
+        "Explanation": "結構です có thể chấp nhận một lựa chọn hoặc lịch sự từ chối thêm. Khi làm phó từ, 結構 còn mang nghĩa khá, như 結構おもしろい.",
+        "UsageNotes": "Dựa vào lời mời và phần còn lại của câu để hiểu 結構です là đồng ý hay từ chối."
+      },
+      "Examples": {
+        "200732": "Ngày nào trong hai ngày đó cũng được ạ.",
+        "228472": "Dạ thôi, tôi dùng nhiều rồi. Cảm ơn ạ."
+      },
+      "SourceHash": "b872eb864c67437926c5699abbe8e8a31f506ab782f50fc31f285d2b9cc97495"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2eb252da72",
+      "Fields": {
+        "Meaning": "Hôn nhân, kết hôn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "結婚（けっこん）chỉ hôn nhân hoặc việc kết hôn. Dùng người ＋ と結婚する để nói kết hôn với ai.",
+        "UsageNotes": "結婚している thường chỉ trạng thái đã kết hôn."
+      },
+      "Examples": {
+        "215406": "John đã kết hôn với Jane.",
+        "228877": "Một khi lấy vợ hoặc chồng rồi thì coi như xong đấy."
+      },
+      "SourceHash": "55569c69fb643bc501e9a059c6842844138af808110d6a65f15dbf2bfb26c479"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04e80a2ba1",
+      "Fields": {
+        "Meaning": "Thứ Hai",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "月曜日（げつようび）là thứ Hai. 月曜日までに nghĩa là chậm nhất vào thứ Hai, còn 月曜日以外 nghĩa là ngoài thứ Hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175588": "Ngày nào ngoài thứ Hai cũng được.",
+        "175591": "Chậm nhất đến thứ Hai tôi sẽ có mặt ở đây."
+      },
+      "SourceHash": "fb2d2a3708abb4dd74ad0bab20394ec8b4009526498fb91a001a2077aa5650a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e1642b248",
+      "Fields": {
+        "Meaning": "Lối vào nhà, khu vực cửa ra vào",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "玄関（げんかん）chỉ cửa chính hoặc khu vực ngay trong lối vào. Trong nhà kiểu Nhật, đây thường là nơi cởi và để giày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174948": "Khóa cửa chính hoạt động thế nào?",
+        "224964": "Xin hãy treo áo khoác ở khu vực cửa ra vào."
+      },
+      "SourceHash": "323003706096bb5ec6a9e6076b7fdc28789f8aa304f0f649cb094263334f2587"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "442c4aa1ca",
+      "Fields": {
+        "Meaning": "Khỏe, khỏe mạnh, tràn đầy sức sống",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "元気（げんき）nói về sức khỏe hoặc sự hoạt bát. 元気です là khỏe, còn 元気になる là khỏe lại hoặc lấy lại tinh thần tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141667": "Thầy cô đã khỏe hẳn trở lại.",
+        "217292": "Chào Roger. Tôi khỏe lắm!"
+      },
+      "SourceHash": "83c4c8eb660d40097051af4284482a8e7b013c9d6de4275c25e0ab402667c9a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47c1fdbe2f",
+      "Fields": {
+        "Meaning": "Năm",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "五（ご）là số năm. 五時（ごじ）là năm giờ, còn 五千円（ごせんえん）là năm nghìn yên.",
+        "UsageNotes": "Khi đếm đồ vật theo cách đếm chung, dùng 五つ（いつつ）."
+      },
+      "Examples": {
+        "201024": "Chắc giờ này ở đâu đó đang là năm giờ.",
+        "218159": "Tính theo tiền Nhật thì cái này là năm nghìn yên."
+      },
+      "SourceHash": "c8ca8484eb53b6c045da754cc19cad935c2b6aa4dd328fea4ed892b6f5016c6b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05cf590971",
+      "Fields": {
+        "Meaning": "Công viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "公園（こうえん）chỉ công viên. 二つの公園の間 nghĩa là khoảng giữa hai công viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123167": "Có con sông nào giữa hai công viên không?",
+        "222003": "Công viên này mở cửa cho tất cả mọi người."
+      },
+      "SourceHash": "c583b9ac4434dfa86d3a66b59db1ea885f8ef321c10ab888aa40dcf089dfe72a"
+    }
+  ]
+}

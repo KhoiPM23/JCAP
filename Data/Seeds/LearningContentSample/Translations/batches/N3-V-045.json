@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9af40a4fd4",
+      "Fields": {
+        "Meaning": "Tất cả mọi người",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "全員（ぜんいん）có nghĩa là tất cả mọi người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184278": "Gần như tất cả sinh viên đều thích tiếng Anh.",
+        "225557": "Cả lớp đợi giáo viên mới."
+      },
+      "SourceHash": "284715d86e19ae008f6fca105c6003ae6cc240c79d82835b304a2ea7b28ad14d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c723266c3",
+      "Fields": {
+        "Meaning": "Chuyên ngành, học chuyên ngành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "専攻（せんこう）có nghĩa là chuyên ngành, học chuyên ngành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158983": "Tôi định học chuyên ngành tiếng Pháp.",
+        "225370": "Kate học chuyên ngành tiếng Đức."
+      },
+      "SourceHash": "36a66351ffffbac634c3bc27c15f8000321a2e3cd938f907e8c2096406b1e852"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cbe69abc51",
+      "Fields": {
+        "Meaning": "Toàn quốc, cả nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "全国（ぜんこく）có nghĩa là toàn quốc, cả nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168220": "Các chi nhánh trải khắp cả nước.",
+        "206782": "Tin đó lan khắp cả nước."
+      },
+      "SourceHash": "07293ca57e646ad2c32b9f46feb246faafeba24c3e78300fa25060898653dbc5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ab1c9e916",
+      "Fields": {
+        "Meaning": "Hôm nọ, mới đây",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "先日（せんじつ）có nghĩa là hôm nọ, mới đây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88232": "Cô ấy mới mua nhà hôm nọ.",
+        "141455": "Hôm nọ tôi dự buổi họp lớp tiểu học."
+      },
+      "SourceHash": "560d9d9d49146ca357a1f937620485b3291f2a2a7a3f09b676acfc8b2f4913b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec83c27906",
+      "Fields": {
+        "Meaning": "Cái trước, bên được nhắc trước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "前者（ぜんしゃ）có nghĩa là cái trước, bên được nhắc trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140943": "Cái sau tốt hơn cái trước.",
+        "140945": "Nếu giải quyết được vấn đề trước thì vấn đề sau cũng sẽ được giải quyết."
+      },
+      "SourceHash": "ccdc65539b2d746ff421015a7f3a5a19d68b760dad73478018fe05a7c68750f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72f846250a",
+      "Fields": {
+        "Meaning": "Vận động viên, cầu thủ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "選手（せんしゅ）có nghĩa là vận động viên, cầu thủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113650": "Anh ấy nổi tiếng với vai trò cầu thủ bóng đá.",
+        "234513": "Akira là một tay vợt giỏi."
+      },
+      "SourceHash": "66935d3fc59818cdc9ee5f1929ddd6eb6baffbc09f85bc2c12a0446b0215f41c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3426903e6",
+      "Fields": {
+        "Meaning": "Tiến lên, tiến triển",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "前進（ぜんしん）có nghĩa là tiến lên, tiến triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102975": "Anh ấy quyết định không tiến cũng không lùi.",
+        "140942": "Không tiến lên thì dễ dẫn đến tụt lùi."
+      },
+      "SourceHash": "32d7e3ec587167bc28607d74043bd5ff496000cc5c60156772b076cbfbb359f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fee426e7d0",
+      "Fields": {
+        "Meaning": "Trung tâm, vị trí giữa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Ngoài nghĩa trung tâm, trong bóng chày từ này chỉ vị trí giữa sân ngoài hoặc cầu thủ giữ vị trí đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184324": "Trung tâm sinh viên là chỗ thích hợp để trò chuyện.",
+        "211424": "Cầu thủ giữ vị trí giữa sân ngoài đã đổi vị trí phòng thủ để đối phó tay đánh mạnh đó."
+      },
+      "SourceHash": "ce8ba25ba744977c5ce220f9e2e0431a6f80bbb8b4fd4428cf8bdb3c281a987f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c0d834ed70",
+      "Fields": {
+        "Meaning": "Toàn bộ, tổng thể",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "全体（ぜんたい）có nghĩa là toàn bộ, tổng thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159786": "Tôi biết toàn bộ câu chuyện.",
+        "211050": "Từ tòa nhà đó có thể nhìn xuống toàn bộ thị trấn."
+      },
+      "SourceHash": "a5ca73c6cdcb85ad17c5b01d836353810435712aa529ca8ec8fb4ea7ea6298a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a17498ab62",
+      "Fields": {
+        "Meaning": "Lựa chọn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "選択（せんたく）có nghĩa là lựa chọn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144025": "Điều khó trong cuộc sống là phải lựa chọn.",
+        "165376": "Chúng tôi đang đứng trước một lựa chọn khó khăn."
+      },
+      "SourceHash": "93085d2c24db208b2cff6029a32ef592ee48b9b7a68f3de0cde35b6a73d657f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3836c2c8bd",
+      "Fields": {
+        "Meaning": "Voi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "象（ぞう）có nghĩa là voi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146308": "Voi lớn hơn mọi loài động vật khác.",
+        "208992": "Con voi đó được đưa đến vườn thú."
+      },
+      "SourceHash": "c5ae6e1461a7b6f8beb7623aa7282568f252a8990577804e145fed4faa4479e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f01cb21b79",
+      "Fields": {
+        "Meaning": "Tiếng ồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "騒音（そうおん）có nghĩa là tiếng ồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88156": "Cô ấy vẫn tiếp tục nói bất chấp tiếng ồn.",
+        "154898": "Tôi chưa quen với tiếng ồn thành phố."
+      },
+      "SourceHash": "c847d42258327bb4f904203ac0611f38ea6bfe1e46e63207cd782a9cda45784c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b8ad938b3",
+      "Fields": {
+        "Meaning": "Tăng, gia tăng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "増加（ぞうか）có nghĩa là tăng, gia tăng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78140": "Số khách du lịch đã tăng mạnh trong những năm gần đây.",
+        "144220": "Chính sự gia tăng dân số đã dẫn đến nghèo đói."
+      },
+      "SourceHash": "131d2569c42a6f27103b0d29d9d93d3dbd6ac56d29000c5b25628f1436d5e634"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb48e3fc15",
+      "Fields": {
+        "Meaning": "Thao tác, vận hành",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "操作（そうさ）có nghĩa là thao tác, vận hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208359": "Thao tác đó hoàn toàn không nguy hiểm.",
+        "223731": "Máy tính này khó sử dụng."
+      },
+      "SourceHash": "532f09fc37d1e9b1d236d122b5237c62826dbaa3e258c57523d18507d491e1ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8597a13b30",
+      "Fields": {
+        "Meaning": "Tưởng tượng, hình dung",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "想像（そうぞう）có nghĩa là tưởng tượng, hình dung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147179": "Đừng tự ý tưởng tượng như thế.",
+        "233745": "Bạn không thể tưởng tượng nổi, đúng không?"
+      },
+      "SourceHash": "ab40eaeb448b1f8df4508f44c7f67ef996886f334d1a6857d954caba4688ff7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9efbc296d",
+      "Fields": {
+        "Meaning": "Thừa kế",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "相続（そうぞく）có nghĩa là thừa kế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100337": "Anh ấy thừa kế một mảnh đất lớn từ bố.",
+        "203095": "Taro thừa kế tài sản của người cha đã mất."
+      },
+      "SourceHash": "a59076313f37dc48ffa98ad6a00a8e34df4eda96e2f392b87c5d0c3d1fa0230c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b23ed610d",
+      "Fields": {
+        "Meaning": "Thiết bị, bộ phận máy",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "装置（そうち）có nghĩa là thiết bị, bộ phận máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195025": "Mọi người rất ấn tượng với thiết bị đó.",
+        "218182": "Đây là thiết bị tạo ra điện."
+      },
+      "SourceHash": "4f7dec929babba4488e648d11cc204419c45e5d8734253392f890f2b089c82e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "814b2c6fa4",
+      "Fields": {
+        "Meaning": "Khá, đáng kể, tương đương",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "相当（そうとう）có nghĩa là khá, đáng kể, tương đương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208938": "Khu đó giờ xây dựng khá dày đặc.",
+        "210823": "Bạn có biết từ tiếng Pháp nào tương đương với từ đó không?"
+      },
+      "SourceHash": "5476a79765c37ea8a36282437205f557c9d218223467feb6f40916d6cd18d30d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30381aa09c",
+      "Fields": {
+        "Meaning": "Tốc độ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "速度（そくど）có nghĩa là tốc độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174087": "Tốc độ ánh sáng lớn hơn tốc độ âm thanh rất nhiều.",
+        "208081": "Người đàn ông đó lái xe với tốc độ không đổi."
+      },
+      "SourceHash": "ed260d61e10301d19dd11033e7698106b567aedb829785017b098ffa5597298f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fb8c3bd96c",
+      "Fields": {
+        "Meaning": "Đáy, đế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "底（そこ）có nghĩa là đáy, đế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179253": "Đế giày đã mòn.",
+        "197249": "Dưới đáy chai còn một ít nước."
+      },
+      "SourceHash": "10c72a7905b9df520206caca43cfdb595a1c3eef36dce9f030825106a38614ba"
+    }
+  ]
+}

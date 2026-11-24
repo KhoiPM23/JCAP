@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naru",
+      "Fields": {
+        "Meaning": "Trở thành, trở nên",
+        "Formation": "Danh từ hoặc gốc tính từ đuôi な ＋ になる\nTính từ đuôi い bỏ い cuối ＋ くなる",
+        "Explanation": "なる diễn tả sự thay đổi sang trạng thái mới. 寒くなる nghĩa là trở nên lạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naru:example:1": "Năm sau em trai tôi sẽ trở thành sinh viên đại học.",
+        "naru:example:2": "Gần đây trời đã lạnh hơn."
+      },
+      "SourceHash": "dea2773923558b06fefdf2e1fe40df8030e13ea7d95b1cffca88958080014690"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ne",
+      "Fields": {
+        "Meaning": "Nhỉ, phải không",
+        "Formation": "Câu ＋ ね",
+        "Explanation": "ね ở cuối câu có thể mời người nghe đồng tình hoặc chia sẻ một nhận xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ne:example:1": "Hôm nay trời đẹp nhỉ.",
+        "ne:example:2": "Quán này yên tĩnh nhỉ."
+      },
+      "SourceHash": "7fba1939e6f05932eae48612febae5017f848458e9fffbdcddc7a28f3fff1150"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-possession",
+      "Fields": {
+        "Meaning": "Của, thuộc về, liên quan đến",
+        "Formation": "Danh từ A ＋ の ＋ danh từ B",
+        "Explanation": "Aの bổ nghĩa cho B. Quan hệ có thể là sở hữu hoặc lĩnh vực, như 日本語の先生 là giáo viên tiếng Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-possession:example:1": "Đây là sách của tôi.",
+        "no-possession:example:2": "Giáo viên tiếng Nhật rất dịu dàng."
+      },
+      "SourceHash": "c04e1f770d986be8dc65acd30820c948afd187b9dd6f9dbc10fe3183feca64e9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-explanatory",
+      "Fields": {
+        "Meaning": "Đuôi の dùng để hỏi hoặc giải thích",
+        "Formation": "Động từ hoặc tính từ đuôi い thể thông thường ＋ の\nDanh từ hoặc gốc tính từ đuôi な ＋ なの",
+        "Explanation": "の ở cuối câu có thể hỏi chuyện gì xảy ra hoặc đưa ra lời giải thích. Ngữ điệu và ngữ cảnh giúp phân biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-explanatory:example:1": "Có chuyện gì vậy?",
+        "no-explanatory:example:2": "Tôi buồn ngủ nên đi ngủ đây."
+      },
+      "SourceHash": "a8b7ec6a8f682ada4d9d8ab138d582eac8989c4e6e056f6b4ef56e9da6ab3f67"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-nominalizer",
+      "Fields": {
+        "Meaning": "Việc làm gì",
+        "Formation": "Mệnh đề thể thông thường ＋ の ＋ は／が／を…",
+        "Explanation": "の biến mệnh đề thành cụm có chức năng như danh từ. Trợ từ sau の cho biết vai trò của cụm trong câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-nominalizer:example:1": "Nói tiếng Nhật khó.",
+        "no-nominalizer:example:2": "Tôi đã thấy anh ấy chạy."
+      },
+      "SourceHash": "8267704c8117f1ff290c5f6b33cbf9a6a38ef933bfd4b9b15305451dba00a500"
+    }
+  ]
+}

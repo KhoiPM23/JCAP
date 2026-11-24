@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kaku",
+      "Fields": {
+        "Meaning": "Mỗi, từng",
+        "Formation": "各（かく）＋ danh từ",
+        "Explanation": "Tiền tố chỉ từng đơn vị trong một nhóm. 各駅 chỉ từng ga, còn 各自 chỉ mỗi người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kaku:example:1": "Tàu này dừng ở tất cả các ga.",
+        "kaku:example:2": "Mỗi người hãy tự mang theo cơm hộp."
+      },
+      "SourceHash": "7bae74f854bdafc39d82ee876822170b5bbf200e78279ff83724ab94aeebc526"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-shira",
+      "Fields": {
+        "Meaning": "Không biết liệu… (sắc thái truyền thống thiên về nữ)",
+        "Formation": "Thể thông thường ＋ かしら",
+        "Explanation": "Trợ từ cuối câu bộc lộ sự băn khoăn hoặc tự hỏi. Sau danh từ và tính từ な thường bỏ だ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-shira:example:1": "Không biết anh ấy có thật sự đến không nhỉ.",
+        "ka-shira:example:2": "Bộ này có hơi sặc sỡ không nhỉ?"
+      },
+      "SourceHash": "bd60e000755bfae91bd264b92eb0d205a7f4df9024b47a8094b42e4c7db2442e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-suru",
+      "Fields": {
+        "Meaning": "Có mùi, tiếng, vị hoặc cảm giác",
+        "Formation": "Danh từ chỉ cảm giác ＋ がする",
+        "Explanation": "Dùng khi tự cảm nhận một dấu hiệu như mùi, âm thanh hay vị. から có thể chỉ nơi phát ra mùi hoặc tiếng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ga-suru:example:1": "Có mùi thơm từ bếp bay ra.",
+        "ga-suru:example:2": "Lúc nãy bên ngoài có tiếng động lớn."
+      },
+      "SourceHash": "5e885aa39dfbe5ff701fc94002b5fec6d189f72d4e14b051134201da95ab1143"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-dou-ka",
+      "Fields": {
+        "Meaning": "Liệu có… hay không",
+        "Formation": "Thể thông thường ＋ かどうか (danh từ và tính từ な thường bỏ だ)",
+        "Explanation": "Đưa câu hỏi có hoặc không vào bên trong câu lớn hơn, thường đi với động từ chỉ biết, hỏi hoặc kiểm tra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-dou-ka:example:1": "Tôi vẫn chưa biết chuyện đó có thật không.",
+        "ka-dou-ka:example:2": "Tôi sẽ hỏi xem anh ấy có đến dự tiệc không."
+      },
+      "SourceHash": "fe25813523d902394e6bf41036cb9c52043c250e3f2aa84c3d79773639230b92"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kana",
+      "Fields": {
+        "Meaning": "Không biết…, liệu… nhỉ?",
+        "Formation": "Thể thông thường ＋ かな",
+        "Explanation": "Đặt ở cuối câu để tự hỏi hoặc nói nhẹ sự băn khoăn trong giao tiếp thân mật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kana:example:1": "Không biết ngày mai trời có nắng không nhỉ.",
+        "kana:example:2": "Không biết mẹ có thích bộ này không nhỉ."
+      },
+      "SourceHash": "09dc6b1377dc51780732a558f34f019762fb3e417d8334ba1eef1c7735a6efbc"
+    }
+  ]
+}

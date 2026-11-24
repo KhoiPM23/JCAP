@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật. Dùng lại ba câu đã dịch ở các lô trước."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "750786cc55",
+      "Fields": {
+        "Meaning": "Hai ngày, ngày mùng hai",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "二日（ふつか）chỉ thời lượng hai ngày hoặc ngày mùng hai của tháng. Thêm 間 để nói rõ thời lượng, như 二日間.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205590": "Việc đó diễn ra một tuần trước, tức ngày 2 tháng 4.",
+        "223124": "Sữa này để được hai ngày."
+      },
+      "SourceHash": "d645d22950f11e291afca53c2f05c8b9a324fee6eea9a92b6f47990866140f3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4162724f9a",
+      "Fields": {
+        "Meaning": "To, dày, có bề ngang lớn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "太い（ふとい）tả vật có tiết diện lớn hoặc bộ phận cơ thể to, như 太い首 (cổ to).",
+        "UsageNotes": "Từ trái nghĩa là 細い（ほそい）."
+      },
+      "Examples": {
+        "102554": "Anh ấy có cái cổ to.",
+        "162597": "Em gái tôi rất để tâm đến việc chân mình to."
+      },
+      "SourceHash": "e896860bc182a779e1cee6ad78ab50311dfabc583a2243765558c7700a45baae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb9acca7ba",
+      "Fields": {
+        "Meaning": "Mùa đông",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "冬（ふゆ）chỉ mùa đông. 冬でも nghĩa là ngay cả vào mùa đông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124383": "Ngay cả mùa đông vẫn có thể ăn măng tây.",
+        "195261": "Sắp đến mùa đông rồi."
+      },
+      "SourceHash": "80647e6af6e27e731a4626178a74fd4f563195c16cf38fda5d3f6c4528ade060"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5791e248f1",
+      "Fields": {
+        "Meaning": "Rơi (mưa, tuyết)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "降る（ふる）dùng khi mưa hoặc tuyết rơi. 雨が降る nghĩa là trời mưa.",
+        "UsageNotes": "Thể て là 降って."
+      },
+      "Examples": {
+        "77239": "Tháng Sáu trời mưa ngày này qua ngày khác.",
+        "216365": "Khu vực quanh Chicago lúc đó đang có mưa."
+      },
+      "SourceHash": "1c7a1ecb0a73e6d59044876abe2b6b134e4a36f52ed7a848c921c8873e2da148"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa60dd4a11",
+      "Fields": {
+        "Meaning": "Cũ, xưa, lâu đời",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "古い（ふるい）chỉ đồ vật cũ hoặc điều có từ lâu, như 古いことわざ (tục ngữ lâu đời).",
+        "UsageNotes": "Khi nói về tuổi của người, thường dùng 年を取っている hoặc 年上 tùy ý."
+      },
+      "Examples": {
+        "150654": "Một câu tục ngữ xưa cũng nói rằng thời gian là vàng bạc.",
+        "217719": "Những cuốn sách này cũ quá!"
+      },
+      "SourceHash": "1447d19af88d9fad3b50bf1e297898050601f8fce898695ec165fe2859e9afe7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34784ed6ca",
+      "Fields": {
+        "Meaning": "Bồn tắm, việc tắm bồn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ふろ cũng viết là 風呂. 風呂に入る nghĩa là tắm bồn, còn 風呂に水を入れる là cho nước vào bồn tắm.",
+        "UsageNotes": "お風呂 là cách nói có tiền tố お."
+      },
+      "Examples": {
+        "111040": "Anh ấy cho nước vào bồn tắm.",
+        "158438": "Tôi tắm bồn cách ngày."
+      },
+      "SourceHash": "bb55539ee1e901145c741a773a1acc090a1eff18394a3843bbcccf23cb19513d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "79ddbb2b98",
+      "Fields": {
+        "Meaning": "Đoạn văn, bài viết, văn phong",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "文章（ぶんしょう）chỉ phần văn bản viết ra hoặc lối viết. Có thể dịch là đoạn văn, bài viết hoặc văn phong tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74604": "Văn của Hemingway viết dở.",
+        "150227": "Hãy dịch đoạn văn sau sang tiếng Nhật."
+      },
+      "SourceHash": "4035c0a5edfd1fe9655ebb27b077c89bf9c5d303f0ce7fac340fa0c5da3dcf55"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f8fc73bd75",
+      "Fields": {
+        "Meaning": "Trang, trang web",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ページ dùng cho trang sách hoặc trang web. Sau số, như ３ページ, từ này có thể chỉ số trang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76749": "Bạn có thể tự do đặt liên kết đến trang này.",
+        "194523": "Vẫn còn ba trang nữa."
+      },
+      "SourceHash": "9e2641a6b78a27d1125554d92796a1f4678e69a3585afdae530c487fbd3e5906"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "619dae70e9",
+      "Fields": {
+        "Meaning": "Kém, vụng, không giỏi",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "下手（へた）tả khả năng làm việc gì đó kém. Dùng 〜が下手 hoặc động từ ＋ のが下手 để nêu việc không giỏi.",
+        "UsageNotes": "Từ trái nghĩa là 上手（じょうず）."
+      },
+      "Examples": {
+        "114691": "Anh ấy sinh ở Anh nhưng tiếng Anh rất kém.",
+        "229378": "Anh ấy rất vụng khi kiếm cớ."
+      },
+      "SourceHash": "6449b6f55d98355ca61993767a87ccbd7ab1a2852566d5284c25c6e5b7483d48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91cf4ea2fd",
+      "Fields": {
+        "Meaning": "Giường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ベッド chỉ giường. ベッドにつく nghĩa là lên giường đi ngủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194366": "Tôi phải đi ngủ rồi.",
+        "199480": "Giường nào cũng được, có còn hơn không."
+      },
+      "SourceHash": "4d7b7bdf9151dd7747aff252853f7e9dfddc1e7853151d3614bc77822dd8d65a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db38ebd955",
+      "Fields": {
+        "Meaning": "Thú cưng, vật nuôi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ペット chỉ động vật được nuôi làm thú cưng. ペットの世話をする nghĩa là chăm sóc thú cưng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172937": "Dạo này thú cưng tí hon đang thịnh hành.",
+        "232403": "Bạn không thể chăm sóc thú cưng."
+      },
+      "SourceHash": "5a24cc1423b9b5180dc421eac15e83e9a636521a6d57955afbf531b2eb7845ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e78074927c",
+      "Fields": {
+        "Meaning": "Phòng, căn phòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "部屋（へや）chỉ phòng. 部屋に入る là vào phòng. そのままにしておく là để nguyên như vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84128": "Hãy để nguyên căn phòng như vậy.",
+        "195194": "Mayuko bước vào phòng."
+      },
+      "SourceHash": "cf75e3dee04a85e802f00d250ca74833f0ed2383e3dd50d03a24adc4d70f1a7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "71c372d7b2",
+      "Fields": {
+        "Meaning": "Khu vực, vùng lân cận",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "辺（へん）chỉ khu vực quanh một vị trí. この辺 nghĩa là quanh đây, khu vực này.",
+        "UsageNotes": "Với nghĩa này cũng thường viết へん."
+      },
+      "Examples": {
+        "223204": "Khu này rất vắng vẻ.",
+        "223208": "Quanh đây có khách sạn nào không?"
+      },
+      "SourceHash": "5f6eee774d5d64e28d3ae8c350f8d9c82b90a23e15cda7ad53acf0472d7478a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd1183b005",
+      "Fields": {
+        "Meaning": "Bút, bút mực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ペン thường chỉ bút dùng mực. ペンで書く nghĩa là viết bằng bút.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192465": "Có một cây bút giữa quả táo và cuốn sách.",
+        "196625": "Hãy viết bằng bút và mực."
+      },
+      "SourceHash": "55c1bf1a4433a589d0feaa41d0182d33a01e0026aec6650d268250cfe12286d9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65783b95dd",
+      "Fields": {
+        "Meaning": "Học, việc học",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "勉強（べんきょう）chỉ việc học. 勉強する có nghĩa là học bài, học kiến thức hoặc nghiên cứu một chủ đề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199272": "Tại sao bạn học mỗi ngày?",
+        "232202": "Bạn đã học được bao nhiêu tiếng rồi?"
+      },
+      "SourceHash": "dd9b002d1e63453bbe370b3701bef44197df142f33920d6423e4f3cb0ba4f79f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "84887dde48",
+      "Fields": {
+        "Meaning": "Tiện, tiện lợi",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "便利（べんり）tả thứ dễ dùng hoặc giúp làm việc thuận tiện. 便利なもの là một thứ tiện lợi.",
+        "UsageNotes": "そりゃ là cách nói rút gọn của それは."
+      },
+      "Examples": {
+        "124682": "Điện thoại là một vật tiện lợi.",
+        "205969": "Cái đó tiện thật nhỉ."
+      },
+      "SourceHash": "849049888b2f8106848bac04babf28890f8ccbcd787b2ef3e5eb34f1c01bdfc6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cfc75623ae",
+      "Fields": {
+        "Meaning": "Mũ, nón",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "帽子（ぼうし）chỉ đồ đội đầu, như mũ hoặc nón. 帽子をかぶる nghĩa là đội mũ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206735": "Chiếc mũ đó nhỏ quá so với bạn.",
+        "219814": "Chiếc mũ này mà giá 1.000 yên thì rẻ."
+      },
+      "SourceHash": "2ccb7d9420f09379e7ee6972d29dc140439ec5108189ffc4955ad752df097c08"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "785a997045",
+      "Fields": {
+        "Meaning": "Bút bi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ボールペン là bút bi. ボールペンで書く nghĩa là viết bằng bút bi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196456": "Bút bi hết mực rồi.",
+        "196458": "Anh/chị có thể viết bằng bút bi được không ạ?"
+      },
+      "SourceHash": "0b0a231acc9d0eca2e514b5ba042ca6a5bae622eafde125c77c0f778e9a5eab0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f71c69492e",
+      "Fields": {
+        "Meaning": "Khác, phần còn lại, ngoài ra",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ほか chỉ người hoặc vật khác ngoài thứ đang nói đến. ほかの ＋ danh từ nghĩa là danh từ đó ở nhóm khác hoặc phần còn lại.",
+        "UsageNotes": "Có thể viết 他. ほかのどの〜よりも mang nghĩa hơn bất kỳ thứ nào khác trong nhóm."
+      },
+      "Examples": {
+        "196427": "Các bạn gái khác đang ở đâu vậy?",
+        "218528": "Cây này cao hơn mọi cây khác."
+      },
+      "SourceHash": "5331a9187c9f4982eb0b1af37ae2848ec0dc12f56b946ec12218c68314762312"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab9f2792c4",
+      "Fields": {
+        "Meaning": "Túi áo, túi quần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ポケット chỉ túi trên quần áo hoặc ngăn nhỏ tương tự. ポケットに chỉ vị trí trong túi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223814": "Chiếc áo khoác này không có túi.",
+        "232398": "Bạn có gì trong túi?"
+      },
+      "SourceHash": "3e2b29126c3a7b874df60984b49d641751d7a3fff006c23764fcda23b2ccf392"
+    }
+  ]
+}

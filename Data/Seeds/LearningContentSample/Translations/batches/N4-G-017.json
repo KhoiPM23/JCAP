@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dake-de",
+      "Fields": {
+        "Meaning": "Chỉ cần, chỉ bằng",
+        "Formation": "Động từ thể từ điển hoặc danh từ ＋ だけで",
+        "Explanation": "Nêu một việc hoặc phương tiện đã đủ để có kết quả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dake-de:example:1": "Chỉ cần nghe giọng bạn là tôi thấy phấn chấn.",
+        "dake-de:example:2": "Chỉ với cuốn này là có thể nắm được kiến thức cơ bản."
+      },
+      "SourceHash": "472510fa3fa3cec2da8958a49244da6388d83ac3b2f6061dd6c6b18bd876d00b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dake-de-naku",
+      "Fields": {
+        "Meaning": "Không chỉ A mà còn B",
+        "Formation": "A ＋ だけでなく ＋ B ＋ も",
+        "Explanation": "Mở rộng phạm vi từ A sang B. A và B thường là các thành phần song song.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dake-de-naku:example:1": "Cô ấy nói được cả tiếng Anh lẫn tiếng Trung.",
+        "dake-de-naku:example:2": "Ở tiệm này, bánh ngọt và bánh mì đều được ưa chuộng."
+      },
+      "SourceHash": "498194e32a7a696dd91d3b733c717fcc7d11b1444e20b53aed9e95bdbc7e38bb"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tadoushi-jidoushi",
+      "Fields": {
+        "Meaning": "Tha động từ và tự động từ",
+        "Formation": "Chủ thể ＋ が／は ＋ tân ngữ ＋ を ＋ tha động từ／đối tượng ＋ が／は ＋ tự động từ",
+        "Explanation": "Tha động từ như 消す nêu hành động tác động lên đối tượng. Tự động từ như 消える nêu sự thay đổi của chính đối tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tadoushi-jidoushi:example:1": "Tôi tắt đèn.",
+        "tadoushi-jidoushi:example:2": "Đèn đột nhiên tắt."
+      },
+      "SourceHash": "3f4627e3c656466849769bb5903351e36cec4c35b2047319631d2dc52b2b83f9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tatoeba",
+      "Fields": {
+        "Meaning": "Ví dụ, chẳng hạn",
+        "Formation": "例えば ＋ ví dụ hoặc đề xuất",
+        "Explanation": "Đưa ra trường hợp cụ thể để minh họa ý chung hoặc nêu một phương án.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tatoeba:example:1": "Tôi thích trái cây, chẳng hạn như táo và quýt.",
+        "tatoeba:example:2": "Chẳng hạn, dậy sớm đi dạo thì sao?"
+      },
+      "SourceHash": "37f63612080437fea1b00ce64b52384f6b5265fd0bd2f4c1eac179e93ef1b5e1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ta-tokoro",
+      "Fields": {
+        "Meaning": "Vừa mới làm xong",
+        "Formation": "Động từ thể た ＋ ところだ",
+        "Explanation": "Đặt thời điểm nói ngay sau khi hành động vừa kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ta-tokoro:example:1": "Tôi vừa đến ga.",
+        "ta-tokoro:example:2": "Tôi vừa ăn cơm xong nên đang no."
+      },
+      "SourceHash": "cbc54447f4ed467bdde2621fd477fa5b675b56a5ff368e64d16a830bbc4e7aac"
+    }
+  ]
+}

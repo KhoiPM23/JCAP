@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "903f33a220",
+      "Fields": {
+        "Meaning": "Tốc độ cao",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, Danh từ",
+        "Explanation": "高速（こうそく）có nghĩa là tốc độ cao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126012": "Tốc độ cực cao là đặc trưng của máy bay Concorde.",
+        "189451": "Tài xế tiếp tục chạy với tốc độ cao."
+      },
+      "SourceHash": "c9169682ca2edb8b4349fabb41b9251c351f98d8f8dcdc14f67fccd2c1d96742"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef340011e3",
+      "Fields": {
+        "Meaning": "Hành động, cách cư xử",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "行動（こうどう）có nghĩa là hành động, cách cư xử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168033": "Tôi chịu toàn bộ trách nhiệm về hành động này.",
+        "177244": "Bạn bảo chúng tôi hành động như thế."
+      },
+      "SourceHash": "0a7ed6d8e388df5b41cebd321d4d9409bd062c7327dfe569e58ddd97e5cb6cb2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a786043e89",
+      "Fields": {
+        "Meaning": "Cướp, kẻ cướp, vụ cướp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "強盗（ごうとう）có nghĩa là cướp, kẻ cướp, vụ cướp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82493": "Băng nhóm đó đang lên kế hoạch cướp.",
+        "84605": "Bố tôi vật lộn với tên cướp."
+      },
+      "SourceHash": "46ccb5a5bcf1eb3241f132b272c3a9dba7a98f759a8d42e91f073195a7ca7d23"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9adc22cc25",
+      "Fields": {
+        "Meaning": "Nhà máy, xưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "工場（こうば）có nghĩa là nhà máy, xưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162902": "Bố và anh tôi làm việc ở nhà máy này.",
+        "173736": "Nhà máy không muốn nhận anh ấy."
+      },
+      "SourceHash": "9d6adeea345f7e86708e2d4509a450f86d1575b1b0b8ee324ee7b8d2ee279395"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40a60f6e48",
+      "Fields": {
+        "Meaning": "Hạnh phúc",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "幸福（こうふく）có nghĩa là hạnh phúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84953": "Giàu có chưa chắc mang lại hạnh phúc.",
+        "179680": "Người giàu chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "3ac454fddb925867d14e29ea4290c42da8711567f5b666389dc3c99d3d8c87b5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "41ad5f20ad",
+      "Fields": {
+        "Meaning": "Công bằng, không thiên vị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "公平（こうへい）có nghĩa là công bằng, không thiên vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82699": "Pháp luật không phải lúc nào cũng công bằng.",
+        "141548": "Giáo viên phải đối xử công bằng với học sinh."
+      },
+      "SourceHash": "31c0ab257c675ada7899b4b2a548f50664d55f2c504103a4020824899653efdd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1224c14c05",
+      "Fields": {
+        "Meaning": "Ứng viên, người hoặc phương án được đề cử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "候補（こうほ）có nghĩa là ứng viên, người hoặc phương án được đề cử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174527": "Ông Togawa được đề cử làm ứng viên thị trưởng.",
+        "214250": "Ông Smith là ứng viên thị trưởng."
+      },
+      "SourceHash": "7433308b02fb0df5aacf8e073818c7e9a0e7d247abf87b48185c4295ac63bcf7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "63a1944ca4",
+      "Fields": {
+        "Meaning": "Cân nhắc, tính đến",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "考慮（こうりょ）có nghĩa là cân nhắc, tính đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98603": "Tôi đang cân nhắc có nên đi cùng họ không.",
+        "183569": "Vì tính đến nguy hiểm nên anh ấy ở lại phía sau."
+      },
+      "SourceHash": "139e08fae1f73cb94a49da932acd4f995669633814d7cba79f17bfc984130f03"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5dbb5639ea",
+      "Fields": {
+        "Meaning": "Vượt qua, băng qua",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "越える（こえる）có nghĩa là vượt qua, băng qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205050": "Điều đó vượt quá giới hạn hiểu biết của con người.",
+        "210438": "Chỉ có một đường mòn vượt qua ngọn núi đó."
+      },
+      "SourceHash": "0ed6322778acb2cc38ace5859a823b541300f092ea86abe90ee33838e19d3766"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1f6a386a7",
+      "Fields": {
+        "Meaning": "Huấn luyện viên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "コーチ（コーチ）có nghĩa là huấn luyện viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213214": "Huấn luyện viên đó cho anh ấy lời khuyên hữu ích.",
+        "224977": "Huấn luyện viên cho tôi lời khuyên."
+      },
+      "SourceHash": "222c1377b793d9f6bf52a2ae1c7c52c8016ebb689dc6cb24b9c51c366643077e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c3ddb98b7",
+      "Fields": {
+        "Meaning": "Mã, dây điện, hợp âm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コード（コード）có nghĩa là mã, dây điện, hợp âm.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "cb3a9e54985be87507cea95e520db4fec46b5c4ec76495405a9da728c983d0ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf7176ee78",
+      "Fields": {
+        "Meaning": "Băng, nước đá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "氷（こおり）có nghĩa là băng, nước đá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85378": "Đừng nhìn tôi lạnh lùng như băng thế.",
+        "141097": "Con tàu bị mắc kẹt trong băng."
+      },
+      "SourceHash": "fd11755a2292c6c6264f84a96cb78bcb81a130c7e901aa959ecdfaa5cbdd3624"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76369c4c63",
+      "Fields": {
+        "Meaning": "Đóng băng, đông cứng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "凍る（こおる）có nghĩa là đóng băng, đông cứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123622": "Đường đóng băng rồi, cẩn thận đấy.",
+        "126564": "Không vào trong thì tai tôi sắp đóng băng mất."
+      },
+      "SourceHash": "bb8f0f94c619b5021ecf86035018ebeb38ab7220f5300c05991450416ee29982"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f77e1d360",
+      "Fields": {
+        "Meaning": "Đích, khung thành, bàn thắng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ゴール（ゴール）có nghĩa là đích, khung thành, bàn thắng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "66df57b33efd4a34dd8e08449fc4d62f1c0704e0c93404bf3832e8f024fb0e12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6795b8e330",
+      "Fields": {
+        "Meaning": "Hiểu lầm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "誤解（ごかい）có nghĩa là hiểu lầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157397": "Có vẻ tôi đã hiểu lầm bạn.",
+        "231429": "Xin lỗi vì tôi đã hiểu lầm bạn."
+      },
+      "SourceHash": "a3771e4dfc7593906662675d8e21077b0dcbef2f9428a4dd5bc7281273fcf5ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76f3332f8f",
+      "Fields": {
+        "Meaning": "Việc học ngoại ngữ, khả năng ngoại ngữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "語学（ごがく）có nghĩa là việc học ngoại ngữ, khả năng ngoại ngữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194634": "Meg có năng khiếu ngoại ngữ.",
+        "218309": "Đây là cơ hội tốt để tôi phát huy khả năng ngoại ngữ."
+      },
+      "SourceHash": "e11f41d11fc76919ea34324d4ed8dd662c3746a1d8eca94953e3668b41fa7cd6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f9c7285539",
+      "Fields": {
+        "Meaning": "Hơi thở, hô hấp, nhịp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "Ngoài hơi thở, 呼吸 có thể chỉ nhịp hoặc cách phối hợp để thực hiện một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107541": "Anh ấy thấy khó thở.",
+        "189164": "Tôi mãi chưa nắm được cái nhịp của phát âm tiếng Anh."
+      },
+      "SourceHash": "aa859bb78ad05d315233ffbf2367635ee2d57737c973fe79807141715d22a8ec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc21114bf3",
+      "Fields": {
+        "Meaning": "Quê hương, quê nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "故郷（こきょう）có nghĩa là quê hương, quê nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77333": "Bạn nên nghĩ đến cha mẹ già ở quê.",
+        "12179643": "Lâu lắm mới về quê, bao cảm xúc hoài niệm lại ùa về."
+      },
+      "SourceHash": "84d81371f918c2f8f3b2f326d912e0c632534b104b52248b778892c62d6b9f78"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28a5ee1cda",
+      "Fields": {
+        "Meaning": "Rất, hết sức",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "極（ごく）có nghĩa là rất, hết sức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92908": "Cô ấy nổi nóng vì một chuyện rất nhỏ.",
+        "172937": "Dạo này thú cưng tí hon đang thịnh hành."
+      },
+      "SourceHash": "96edb46f1034aa7a1136882d7553b00d7391cde2600b05be173d5ffea2832d9a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd17a14f44",
+      "Fields": {
+        "Meaning": "Quốc ngữ, môn tiếng Nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Trong trường học Nhật Bản, 国語 là môn tiếng Nhật dành cho người học trong hệ phổ thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107254": "Anh ấy thích và học giỏi môn tiếng Nhật.",
+        "194767": "Mary đã làm xong bài tập môn tiếng Nhật."
+      },
+      "SourceHash": "09c34e525844d17e35a1b30052ed4c593406c9b9affd73f84dde4f7c862d085c"
+    }
+  ]
+}

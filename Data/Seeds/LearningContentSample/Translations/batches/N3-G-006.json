@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-nani-ka",
+      "Fields": {
+        "Meaning": "Hay thứ gì tương tự",
+        "Formation": "Danh từ ＋ か何か",
+        "Explanation": "Nêu một ví dụ mà người nói chưa xác định chắc hoặc để ngỏ lựa chọn tương tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-nani-ka:example:1": "Tôi khát nên muốn uống trà hay thứ gì đó.",
+        "ka-nani-ka:example:2": "Trông bạn mệt nhỉ. Bị cảm hay sao vậy?"
+      },
+      "SourceHash": "f3424440c1343a9df816c7d7dfb7597390c9f703c9f3bc74a4eb726544824622"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kanarazushimo",
+      "Fields": {
+        "Meaning": "Không nhất thiết, chưa chắc",
+        "Formation": "必ずしも ＋ vị ngữ phủ định",
+        "Explanation": "Thường đi với とは限らない hoặc わけではない để nói một nhận định không đúng trong mọi trường hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kanarazushimo:example:1": "Đồ đắt tiền chưa chắc đã tốt.",
+        "kanarazushimo:example:2": "Có tiền chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "39fdbbdc277014944d3f0f374edf8a1867406a0596df10c97ba1def98a85d975"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-wa-ni-yotte-chigau",
+      "Fields": {
+        "Meaning": "Điều gì hay liệu có… tùy vào…",
+        "Formation": "Mệnh đề nghi vấn ＋ かは ＋ yếu tố ＋ によって違う",
+        "Explanation": "Nêu rằng câu trả lời thay đổi theo người, hoàn cảnh hoặc yếu tố được chỉ ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-wa-ni-yotte-chigau:example:1": "Phương pháp nào tốt còn tùy vào tình huống.",
+        "ka-wa-ni-yotte-chigau:example:2": "Mỗi người coi trọng những điều khác nhau."
+      },
+      "SourceHash": "1af6fa0fc1181e78a69d2eb04deecda45d62d82321bbd99143251e95a92dc374"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kara-ni-kakete",
+      "Fields": {
+        "Meaning": "Từ… đến khoảng…",
+        "Formation": "Mốc bắt đầu ＋ から ＋ mốc cuối ＋ にかけて",
+        "Explanation": "Chỉ một khoảng thời gian hoặc khu vực trải từ mốc này đến mốc kia, thường với ranh giới tương đối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kara-ni-kakete:example:1": "Vùng này mưa nhiều từ mùa hè đến mùa thu.",
+        "kara-ni-kakete:example:2": "Có lẽ tuyết sẽ rơi từ tối nay đến sáng mai."
+      },
+      "SourceHash": "1b23778336779c68a81dba35808e98d2510ec99c6aa047e818268627f8121421"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kara-iu-to",
+      "Fields": {
+        "Meaning": "Xét theo, nói từ góc độ",
+        "Formation": "Danh từ chỉ căn cứ hoặc tiêu chí ＋ から言うと",
+        "Explanation": "Nêu căn cứ hoặc góc nhìn dùng để đưa ra nhận định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kara-iu-to:example:1": "Theo kinh nghiệm của tôi, cách này sẽ không hiệu quả.",
+        "kara-iu-to:example:2": "Xét về giá thì cửa hàng này chẳng hề rẻ."
+      },
+      "SourceHash": "c7a403d33c972a62f93d6b7ae22dba1d9a1b98dd35c8a6f23278fe304605a575"
+    }
+  ]
+}

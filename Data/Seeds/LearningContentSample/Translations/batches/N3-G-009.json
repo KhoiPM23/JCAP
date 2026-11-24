@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kekka",
+      "Fields": {
+        "Meaning": "Kết quả là, sau khi",
+        "Formation": "Động từ thể た ＋ 結果／danh từ ＋ の結果",
+        "Explanation": "Dẫn từ hành động hoặc quá trình đến kết quả thu được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kekka:example:1": "Sau khi suy nghĩ kỹ, tôi quyết định đi du học.",
+        "kekka:example:2": "Nhờ nỗ lực, tôi đã thi đỗ."
+      },
+      "SourceHash": "f4c69e19902a6552e475f3b69b1edef6eb98a699952617da202b6e4056b77931"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kekkyoku",
+      "Fields": {
+        "Meaning": "Cuối cùng, rốt cuộc",
+        "Formation": "結局 ＋ mệnh đề kết quả",
+        "Explanation": "Nêu kết quả sau một quá trình, cân nhắc hoặc chờ đợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kekkyoku:example:1": "Tôi suy nghĩ đủ điều nhưng cuối cùng quyết định không đi.",
+        "kekkyoku:example:2": "Mọi người đã chờ, nhưng rốt cuộc anh ấy không đến."
+      },
+      "SourceHash": "522d19644570010ce1b86715eb16693a5f6b1fb8bb5e5ac947033c2d4149ef3d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kesshite-nai",
+      "Fields": {
+        "Meaning": "Nhất quyết không, tuyệt đối không",
+        "Formation": "決して ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh lời cam kết, sự phủ nhận hoặc nhận định phủ định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kesshite-nai:example:1": "Tôi nhất định sẽ không quên lời hứa này.",
+        "kesshite-nai:example:2": "Anh ấy tuyệt đối không phải kiểu người nói dối."
+      },
+      "SourceHash": "2a167253eb72307c3f7871a3b1e6b18238ac4f51484bbdc66b6ee400c80defae"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koso",
+      "Fields": {
+        "Meaning": "Chính, lần này nhất định",
+        "Formation": "Từ hoặc cụm cần nhấn mạnh ＋ こそ",
+        "Explanation": "Đặt trọng tâm vào đối tượng hoặc thời điểm. こちらこそ đáp lại rằng chính mình mới là người nên nói lời đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koso:example:1": "Năm nay tôi nhất định muốn đỗ kỳ thi năng lực tiếng Nhật.",
+        "koso:example:2": "“Cảm ơn bạn đã giúp.” “Chính tôi mới phải cảm ơn.”"
+      },
+      "SourceHash": "f391a96c13da7851329e88949057684eb82dff156f438b8ac4b743b5d520ff80"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-ka",
+      "Fields": {
+        "Meaning": "Biết bao, đến nhường nào",
+        "Formation": "どんなに／どれほど ＋ mệnh đề thể thường ＋ ことか",
+        "Explanation": "Câu cảm thán nhấn mạnh mức độ cảm xúc hoặc thời gian mong đợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-ka:example:1": "Khi nghe tin thi đỗ, tôi vui biết bao!",
+        "koto-ka:example:2": "Tôi đã mong chờ ngày này biết bao!"
+      },
+      "SourceHash": "fa9ab3b690ea9b2dac306d049539b25467d706e04fc2eec976a0562e211b73ce"
+    }
+  ]
+}

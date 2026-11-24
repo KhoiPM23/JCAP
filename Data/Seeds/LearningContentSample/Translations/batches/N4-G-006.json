@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ikou-kei",
+      "Fields": {
+        "Meaning": "Cùng làm nhé, mình sẽ làm",
+        "Formation": "Nhóm 1 chuyển âm cuối sang hàng お ＋ う／nhóm 2 bỏ る ＋ よう／する → しよう／来る → 来よう",
+        "Explanation": "Thể ý hướng diễn tả dự định của người nói hoặc lời rủ cùng làm, tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ikou-kei:example:1": "Mệt rồi, nghỉ một chút đi.",
+        "ikou-kei:example:2": "Kỳ nghỉ tới, mình đi biển nhé."
+      },
+      "SourceHash": "4693241adf3c2bf0ecedc50d6d1eddeb84e5df1859f24256e85a8a58e680b531"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ijou",
+      "Fields": {
+        "Meaning": "Trở lên, lớn hơn hoặc bằng",
+        "Formation": "Số lượng hoặc mốc ＋ 以上",
+        "Explanation": "Chỉ phạm vi bằng hoặc cao hơn mốc đã nêu, bao gồm chính mốc đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ijou:example:1": "Những ai từ 18 tuổi trở lên, xin ghi tên vào đây.",
+        "ijou:example:2": "Hôm qua có ít nhất 20 người đến dự tiệc."
+      },
+      "SourceHash": "53660aa029ab819a810cfca4d1846f11711b15d35346177b8775f2720af2fc08"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "itasu",
+      "Fields": {
+        "Meaning": "Làm (khiêm nhường, lịch sự)",
+        "Formation": "する → いたす／danh từ chỉ hành động ＋ いたす／お・ご ＋ từ chỉ hành động ＋ いたす",
+        "Explanation": "Dùng khi nói một cách khiêm nhường hoặc trang trọng về hành động của mình hay phía mình. いたします là dạng lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "itasu:example:1": "Ở quầy lễ tân, tôi sẽ hướng dẫn quý khách.",
+        "itasu:example:2": "Tôi sẽ gửi giấy tờ vào ngày mai ạ."
+      },
+      "SourceHash": "651c50e99a847e22108eba2d74ef1f8364bdd11a643f0bae2c5e9ddf81514bd9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "irassharu",
+      "Fields": {
+        "Meaning": "Ở, đến, đi (kính ngữ)",
+        "Formation": "いる／来る／行く → いらっしゃる",
+        "Explanation": "Dùng để nói về sự hiện diện hoặc di chuyển của người cần bày tỏ sự tôn trọng. Dạng lịch sự là いらっしゃいます.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "irassharu:example:1": "Thầy đang ở trong lớp ạ.",
+        "irassharu:example:2": "Anh chị có đến dự tiệc ngày mai không ạ?"
+      },
+      "SourceHash": "20a387a3f1600ea11e79d2bddea3243869ec1d8d502fddab79f6458dcd258aa8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "o-kudasai-honorific",
+      "Fields": {
+        "Meaning": "Xin vui lòng làm gì",
+        "Formation": "お ＋ gốc ます ＋ ください／ご ＋ danh từ Hán Nhật chỉ hành động ＋ ください",
+        "Explanation": "Mẫu yêu cầu lịch sự thường gặp trong hướng dẫn hoặc khi phục vụ. Tiền tố phụ thuộc vào cách dùng của từng từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "o-kudasai-honorific:example:1": "Xin vui lòng đợi một chút.",
+        "o-kudasai-honorific:example:2": "Xin quý khách sử dụng thang máy."
+      },
+      "SourceHash": "009e3ed3bb5af0bc6c9e10a1a18753e8a3655f1b7d44ed071e3cf4c635878365"
+    }
+  ]
+}

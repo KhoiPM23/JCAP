@@ -33,9 +33,15 @@ public class AdminLearningService(AppDbContext db)
     private static TopicRow Row(LearningTopic t) => new(t.Id, t.Code, t.Name, t.JLPTLevel,
         t.Description, t.IsActive, t.TopicVocabularies.Count, t.TopicGrammars.Count);
 
-    public async Task<List<TopicOption>> TopicOptionsAsync(string? level) => await db.LearningTopics.AsNoTracking()
-        .Where(t => level == null || t.JLPTLevel == level).OrderByDescending(t => t.JLPTLevel).ThenBy(t => t.Name)
-        .Select(t => new TopicOption(t.Id, t.Code, t.Name, t.JLPTLevel, t.IsActive)).ToListAsync();
+    public async Task<List<TopicOption>> TopicOptionsAsync(string? level, string? kind = null)
+    {
+        if (kind is not null) Kind(kind);
+        var query = db.LearningTopics.AsNoTracking().Where(t => level == null || t.JLPTLevel == level);
+        if (kind == "vocabularies") query = query.Where(t => t.TopicVocabularies.Any());
+        if (kind == "grammars") query = query.Where(t => t.TopicGrammars.Any());
+        return await query.OrderByDescending(t => t.JLPTLevel).ThenBy(t => t.Name)
+            .Select(t => new TopicOption(t.Id, t.Code, t.Name, t.JLPTLevel, t.IsActive)).ToListAsync();
+    }
 
     public async Task<LearningPage<TopicRow>> TopicsAsync(LearningQuery q)
     {
@@ -76,10 +82,11 @@ public class AdminLearningService(AppDbContext db)
         Check(!await db.LearningTopics.AnyAsync(t => t.Id != id && t.Code == code), "Mã chủ đề đã tồn tại.", 409);
         Check(!await db.LearningTopics.AnyAsync(t => t.Id != id && t.Name == input.Name.Trim() && t.JLPTLevel == input.JLPTLevel),
             "Tên chủ đề đã tồn tại ở level này.", 409);
-        Check(topic!.TopicVocabularies.All(t => Level(t.Vocabulary.JLPTLevel) == input.JLPTLevel)
-            && topic.TopicGrammars.All(t => Level(t.Grammar.JLPTLevel) == input.JLPTLevel),
+        Check(input.Contents is not null || (topic!.TopicVocabularies.All(t => Level(t.Vocabulary.JLPTLevel) == input.JLPTLevel)
+            && topic.TopicGrammars.All(t => Level(t.Grammar.JLPTLevel) == input.JLPTLevel)),
             "Chỉ đổi level sau khi gỡ các nội dung không cùng level khỏi chủ đề.");
-        topic.Code = code; topic.Name = input.Name.Trim(); topic.JLPTLevel = input.JLPTLevel;
+        if (input.Contents is not null) await ReplaceTopicContentsAsync(topic!, input.Contents, input.JLPTLevel);
+        topic!.Code = code; topic.Name = input.Name.Trim(); topic.JLPTLevel = input.JLPTLevel;
         topic.Description = Clean(input.Description);
         if (id.HasValue) topic.UpdatedAt = DateTime.UtcNow; else db.LearningTopics.Add(topic);
         await db.SaveChangesAsync();
@@ -260,13 +267,21 @@ public class AdminLearningService(AppDbContext db)
         var topic = await db.LearningTopics.Include(t => t.TopicVocabularies).Include(t => t.TopicGrammars)
             .AsSplitQuery().SingleOrDefaultAsync(t => t.Id == id);
         Check(topic is not null, "Không tìm thấy chủ đề.", 404);
+        await ReplaceTopicContentsAsync(topic!, input, topic!.JLPTLevel);
+        topic.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(); return await TopicAsync(id);
+    }
+
+    // Validate both lists before changing tracked entities; the caller saves the whole edit once.
+    private async Task ReplaceTopicContentsAsync(LearningTopic topic, TopicContentsRequest input, string level)
+    {
         var vIds = input.VocabularyIds.Distinct().ToArray(); var gIds = input.GrammarIds.Distinct().ToArray();
         var words = await db.Vocabularies.Where(v => vIds.Contains(v.Id)).ToListAsync();
         var grammars = await db.Grammars.Where(g => gIds.Contains(g.Id)).ToListAsync();
         Check(words.Count == vIds.Length && grammars.Count == gIds.Length, "Có nội dung không tồn tại.");
-        Check(words.All(v => Level(v.JLPTLevel) == topic!.JLPTLevel)
-            && grammars.All(g => Level(g.JLPTLevel) == topic!.JLPTLevel), "Chỉ được gán nội dung cùng level với chủ đề.");
-        foreach (var link in topic!.TopicVocabularies.Where(t => !vIds.Contains(t.VocabularyId)).ToArray()) db.TopicVocabularies.Remove(link);
+        Check(words.All(v => Level(v.JLPTLevel) == level)
+            && grammars.All(g => Level(g.JLPTLevel) == level), "Chỉ được gán nội dung cùng level với chủ đề.");
+        foreach (var link in topic.TopicVocabularies.Where(t => !vIds.Contains(t.VocabularyId)).ToArray()) db.TopicVocabularies.Remove(link);
         foreach (var link in topic.TopicGrammars.Where(t => !gIds.Contains(t.GrammarId)).ToArray()) db.TopicGrammars.Remove(link);
         foreach (var (itemId, index) in vIds.Select((itemId, index) => (itemId, index)))
         {
@@ -280,8 +295,6 @@ public class AdminLearningService(AppDbContext db)
             if (link is null) { link = new TopicGrammar { GrammarId = itemId }; topic.TopicGrammars.Add(link); }
             link.OrderIndex = index;
         }
-        topic.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(); return await TopicAsync(id);
     }
 
     public async Task AssignTopicsAsync(AssignTopicsRequest input)

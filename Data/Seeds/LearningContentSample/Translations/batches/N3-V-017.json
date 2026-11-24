@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a380b73ffa",
+      "Fields": {
+        "Meaning": "Hoàn thành, hoàn thiện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "完成（かんせい）có nghĩa là hoàn thành, hoàn thiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145351": "Tuyến đường sắt mới vẫn chưa hoàn thành.",
+        "160933": "Tôi rất muốn hoàn thành kế hoạch này."
+      },
+      "SourceHash": "0adaeb98285e7ab07f330ccf5d3112b41273013355ef31225b3c323b1702ac5e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "51ed2ee220",
+      "Fields": {
+        "Meaning": "Hoàn toàn, hoàn hảo, đầy đủ",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, Danh từ",
+        "Explanation": "完全（かんぜん）có nghĩa là hoàn toàn, hoàn hảo, đầy đủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108788": "Anh ấy còn lâu mới hoàn hảo.",
+        "183961": "Cứ đòi hoàn hảo thì có khi lại thất bại."
+      },
+      "SourceHash": "0518502973d2ef6af1ce02e2803930b5941be35ac55778f0114c7e73bacf6a13"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "90ae05137c",
+      "Fields": {
+        "Meaning": "Cảm động, xúc động",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "感動（かんどう）có nghĩa là cảm động, xúc động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85480": "Chắc chắn bạn sẽ xúc động trước cảnh tượng ấy.",
+        "160033": "Tôi vô cùng xúc động khi đọc cuốn tiểu thuyết đó."
+      },
+      "SourceHash": "2e8074f2b02f7a41c7b861a91c743a1f6bec1c8b047b096ed297326206afa4e6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13e4d7359c",
+      "Fields": {
+        "Meaning": "Giám sát, người giám sát, đạo diễn, huấn luyện viên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "監督（かんとく）có nghĩa là giám sát, người giám sát, đạo diễn, huấn luyện viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95480": "Người ta nghe thấy cô ấy chỉ trích người giám sát.",
+        "207631": "Cửa hàng đó nằm dưới sự giám sát của cảnh sát."
+      },
+      "SourceHash": "64a6be69709fc9bad1660f97f990aacd2c03bc937bfcba7f989e9d74fdeab299"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d3adca2034",
+      "Fields": {
+        "Meaning": "Hoàn tất, kết thúc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "完了（かんりょう）có nghĩa là hoàn tất, kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178822": "Khi nào các bạn định chuẩn bị xong?",
+        "235117": "Sau năm ngày công việc có lẽ sẽ hoàn tất."
+      },
+      "SourceHash": "02c60765ba1bad6377833f91df0683217adc2d28500a54acd7d5bb4436405001"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3438025b5",
+      "Fields": {
+        "Meaning": "Liên quan, mối liên hệ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "関連（かんれん）có nghĩa là liên quan, mối liên hệ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209808": "Những sự việc này có liên quan đến nhau.",
+        "218720": "Có ai muốn phát biểu về vấn đề này không?"
+      },
+      "SourceHash": "87ca5e3eb743828668fd676b369f0b1366cbdd4e009f34f6e170a93997500df3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "49827ea986",
+      "Fields": {
+        "Meaning": "Nghị sĩ, đại biểu hội đồng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "議員（ぎいん）có nghĩa là nghị sĩ, đại biểu hội đồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152201": "Tôi cũng là một nghị sĩ.",
+        "168385": "Đó là việc các thành viên hội đồng thành phố thường làm."
+      },
+      "SourceHash": "12a02cce14cc987698f49a549a295a3ed92afff325a9448dc85398098ceaa10d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e5ea476418",
+      "Fields": {
+        "Meaning": "Ký ức, trí nhớ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "記憶（きおく）có nghĩa là ký ức, trí nhớ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159917": "Tôi cố nhớ lại ngày hôm đó.",
+        "206516": "Tôi không nhớ gì về vấn đề đó cả."
+      },
+      "SourceHash": "25f9c98182300920b28feb3de579f5ad27a0615ec26411b0501f6beb728d389f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b3917013d",
+      "Fields": {
+        "Meaning": "Nhiệt độ không khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気温（きおん）có nghĩa là nhiệt độ không khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173231": "Càng lên cao, nhiệt độ không khí càng giảm.",
+        "183231": "Khi trời lạnh đi, các khớp của tôi lại đau."
+      },
+      "SourceHash": "0649fad5a6c1a2167339cc01c706e10906095737f7b91d1d50ca1a9485a52701"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "086990d912",
+      "Fields": {
+        "Meaning": "Máy, máy móc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "機械（きかい）có nghĩa là máy, máy móc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112621": "Anh ấy đã dùng thử chiếc máy mới đó.",
+        "192047": "Được rồi. Tôi sẽ gửi ngay khi máy rảnh."
+      },
+      "SourceHash": "d4cb98ca1a6dc0c038206b4925ba43b9ea568492898048c52970539bfbb149f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "180d018762",
+      "Fields": {
+        "Meaning": "Nghị viện, hội đồng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "議会（ぎかい）có nghĩa là nghị viện, hội đồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147289": "Nữ hoàng dự định phát biểu trước nghị viện vào tuần sau.",
+        "182900": "Cuối cùng cuộc họp nghị viện biến thành một cuộc cãi vã."
+      },
+      "SourceHash": "0353d3079548442e5e8d91dce053ebd01e444edb241957d23efa757a220f61c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c18796bfd9",
+      "Fields": {
+        "Meaning": "Khoảng thời gian, thời hạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "期間（きかん）có nghĩa là khoảng thời gian, thời hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147596": "Kỳ nghỉ xuân kéo dài bao lâu?",
+        "150178": "Mất bao lâu thì khỏi ạ?"
+      },
+      "SourceHash": "9c60b664f1940aa81413e1672da6f13c90ce6066372862b445b9109d86955dcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e6a8e069db",
+      "Fields": {
+        "Meaning": "Cơ quan, tổ chức, bộ máy, động cơ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "機関（きかん）có nghĩa là cơ quan, tổ chức, bộ máy, động cơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173076": "Quốc hội là một cơ quan quản trị chủ chốt của Nhật Bản.",
+        "211528": "Cơ quan đó được thành lập vào cuối thập niên 1960."
+      },
+      "SourceHash": "7025ec2d699c53cdf01dbf1e7b90c3611b1bfcea895b716e41c1d510d9da77ef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4209a354cb",
+      "Fields": {
+        "Meaning": "Doanh nghiệp, công ty",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "企業（きぎょう）có nghĩa là doanh nghiệp, công ty.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154350": "Tôi cùng anh ấy tham gia vào doanh nghiệp đó.",
+        "160243": "Tôi định xin việc ở công ty đó."
+      },
+      "SourceHash": "9bc40facc830d1d97cb24a8f87c3142eede7c67c57d3cd650580f6802355e2c7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b921696612",
+      "Fields": {
+        "Meaning": "Có tác dụng, phát huy hiệu quả",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "効く chỉ sự phát huy tác dụng. Câu đầu dùng 口がきける, dạng khả năng của 口をきく (nói chuyện).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192806": "Sao cậu dám nói với tôi kiểu đó?",
+        "219287": "Tôi nghĩ thuốc này sẽ rất có tác dụng với bạn."
+      },
+      "SourceHash": "1092f22ddfa7d4f86795ba8cd1d414fcdff01ecac187645d49959ccd0e9ead45"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "457b919489",
+      "Fields": {
+        "Meaning": "Tâm trạng, sắc mặt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "機嫌（きげん）có nghĩa là tâm trạng, sắc mặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102612": "Anh ấy cẩn thận để không làm người khác phật ý.",
+        "108602": "Khó mà làm ông ấy vui lòng."
+      },
+      "SourceHash": "3e65a58e9c8b61a55937c799e905542ae1e10a64ad693112b67458e3a91d8ea3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "00077af4b5",
+      "Fields": {
+        "Meaning": "Khí hậu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "気候（きこう）có nghĩa là khí hậu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123986": "Khí hậu ở đây rất giống ở Anh.",
+        "210607": "Nước đó có khí hậu ôn hòa."
+      },
+      "SourceHash": "d383b60a83125963e858a8a0cf96898523969a276a9789748e410142fa43c698"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ab4faa7de",
+      "Fields": {
+        "Meaning": "Bờ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "岸（きし）có nghĩa là bờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97889": "Họ đưa chiếc thuyền lên bờ.",
+        "196552": "Chiếc thuyền bị sóng đánh dạt vào bờ."
+      },
+      "SourceHash": "5ca0065f79fdfe7723c48b59201fdff903c184742ce5cb083f6bf2ee69318ccd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4b4adfa7dc",
+      "Fields": {
+        "Meaning": "Bài báo, bản tin",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "記事（きじ）có nghĩa là bài báo, bản tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108547": "Anh ấy rất bận viết bài.",
+        "198750": "Công việc của anh ấy là viết tin bài."
+      },
+      "SourceHash": "57082f389b2750d539e084e63aea411b96c90042c5337df9f4366ca9d05d358d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "302bc4694a",
+      "Fields": {
+        "Meaning": "Vải, chất liệu, bột nền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生地（きじ）có nghĩa là vải, chất liệu, bột nền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142776": "Nếu tôi gửi vải, anh chị có may váy giúp tôi không?",
+        "220914": "Hãy may quần áo bằng loại vải này."
+      },
+      "SourceHash": "e51d4b584920161dcde97cb9eaf24355bae890a322ddc23e3a77806ee162818c"
+    }
+  ]
+}

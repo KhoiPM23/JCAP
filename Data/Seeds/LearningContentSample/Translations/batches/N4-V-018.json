@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: 074e70b529."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b3ce398bd",
+      "Fields": {
+        "Meaning": "Tiền bối, người đi trước",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "先輩（せんぱい）có nghĩa là tiền bối, người đi trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106634": "Anh ấy là tiền bối của tôi trong công việc.",
+        "165249": "Chúng tôi kính trọng anh ấy như một người đi trước tốt."
+      },
+      "SourceHash": "b382bcd9b86b2e45b151b9e6589ffccfe04de0ef7c6b1ea7f9e14b8879c246a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "554ab81272",
+      "Fields": {
+        "Meaning": "Như vậy, có vẻ",
+        "PartOfSpeech": "Trợ từ phụ trợ, tính từ đuôi な",
+        "Explanation": "Sau gốc động từ, そうだ chỉ dấu hiệu một việc sắp xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195298": "Có vẻ trời sắp mưa.",
+        "197488": "Hitomi trông rất vui."
+      },
+      "SourceHash": "e1efeac7db2f90594ffe596406f122c8950da33b949dfa31d7edbb654e9879fc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa663833e4",
+      "Fields": {
+        "Meaning": "Trao đổi, bàn bạc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "相談（そうだん）có nghĩa là trao đổi, bàn bạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148113": "Mình tập trung lại để bàn chuyện đó nhé.",
+        "233668": "Tôi có chuyện muốn bàn với bạn."
+      },
+      "SourceHash": "96a728e0daa9453626a661440d687ce6a3ba45b3b17f72511da4ba01c6726669"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec43853e0f",
+      "Fields": {
+        "Meaning": "Nuôi, nuôi dạy",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "育てる（そだてる）có nghĩa là nuôi, nuôi dạy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114273": "Anh ấy lớn lên ở Úc.",
+        "225672": "Cookie được Kate nuôi."
+      },
+      "SourceHash": "d9e19a110012fcb3e2a59c65317840eda483eabc7753818e6eb1d89542a7a1b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a89d1feee",
+      "Fields": {
+        "Meaning": "Tốt nghiệp, thôi gắn bó với một việc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "卒業（そつぎょう）có nghĩa là tốt nghiệp, thôi gắn bó với một việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "139676": "Sau khi tốt nghiệp bạn định làm gì?",
+        "158934": "Tôi nghĩ đã đến lúc thôi nghe nhạc pop rồi."
+      },
+      "SourceHash": "aed0cc233c7d12666ce1d8f3ea7cef5f07de43ff3bcec38ac589d0ada3006cfd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "14363682cb",
+      "Fields": {
+        "Meaning": "Ông nội, ông ngoại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "祖父（そふ）có nghĩa là ông nội, ông ngoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140710": "Ông tôi không đi được nếu không có gậy.",
+        "140723": "Ông tôi qua đời được mười năm rồi."
+      },
+      "SourceHash": "0110f1a844e2af8da19dbd3726f129f5e73c1bbe56cb1673f87db52826afd906"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2ab60015b",
+      "Fields": {
+        "Meaning": "Mềm, nhẹ nhàng, phần mềm",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の",
+        "Explanation": "ソフト（ソフト）có nghĩa là mềm, nhẹ nhàng, phần mềm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210246": "Đứa bé mè nheo đòi trò chơi PlayStation mới.",
+        "3234378": "Ông Smith nói năng nhẹ nhàng."
+      },
+      "SourceHash": "0ad47900314be8905452d13af71e13953991903b2ea8f36516136da71a73420b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f0ed38b4c",
+      "Fields": {
+        "Meaning": "Bà nội, bà ngoại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "祖母（そぼ）có nghĩa là bà nội, bà ngoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140653": "Bà tôi mặc quần áo đến khi sờn rách mới thôi.",
+        "155382": "Tôi rất yêu bà."
+      },
+      "SourceHash": "b287f2c8888768a67c7c1daa0c62f1d427c5e534e8ff05a47d6deb3564ef2c95"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67c8e8ac31",
+      "Fields": {
+        "Meaning": "Vì vậy, thế rồi",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "それで（それで）có nghĩa là vì vậy, thế rồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151105": "Tôi thi đỗ rồi. Vì vậy tôi sẽ trở thành học sinh được hưởng học bổng.",
+        "205786": "Thế số tiền đó sẽ lấy từ đâu?"
+      },
+      "SourceHash": "faac8d76e5651131150afb8b683d08a3a7dff566b3069378198e019adc903784"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "074e70b529",
+      "Fields": {
+        "Meaning": "Hơn nữa, ngoài ra",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "Liên từ それに bổ sung thông tin cho ý vừa nêu.",
+        "UsageNotes": "Trong câu có nghĩa thêm nước vào đó, それ là đại từ và に là trợ từ chỉ đích. Câu này minh họa một cách tách khác."
+      },
+      "Examples": {
+        "205647": "Hãy thêm nước vào đó.",
+        "205709": "Hơn nữa, mọi người còn có thêm bạn bè nữa."
+      },
+      "SourceHash": "1b9d54c290d4cdbc58efbe089c7eec19c315a5e14147657eb0f686d08bde3d69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e35f288b22",
+      "Fields": {
+        "Meaning": "Đến mức đó, như thế",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "それほど（それほど）có nghĩa là đến mức đó, như thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204788": "Tôi chưa từng nghe ý kiến nào ngớ ngẩn đến thế.",
+        "228507": "Không, không đông đến thế đâu."
+      },
+      "SourceHash": "caf4781ca3c4c5cc63ea2f8a26585f66818dcda50d0cfa5706abe3075c2f363e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0039e17a55",
+      "Fields": {
+        "Meaning": "Sắp, cũng đến lúc",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "そろそろ（そろそろ）có nghĩa là sắp, cũng đến lúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194401": "Cũng sắp đến giờ khởi hành rồi.",
+        "204450": "Sắp đến giờ đi ngủ rồi đấy."
+      },
+      "SourceHash": "58f441c46307f7d0f252e2242e0584d50f1a4f51f46d6e44eb57c0646c0c44ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "73688428ee",
+      "Fields": {
+        "Meaning": "Như thế, kiểu đó",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "そんな（そんな）có nghĩa là như thế, kiểu đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201543": "Sao chuyện như thế lại xảy ra?",
+        "204115": "Làm chuyện như thế thật bất cẩn."
+      },
+      "SourceHash": "f0904e7e00bbde702d2c86fc8daefae71f2518d4919f98ebd625d9bbead01467"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d1cca83038",
+      "Fields": {
+        "Meaning": "Đến thế, nhiều như vậy",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "そんなに（そんなに）có nghĩa là đến thế, nhiều như vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202116": "Nhưng cũng không tệ đến thế đâu.",
+        "204266": "Ăn nhiều như thế thì sẽ ốm đấy."
+      },
+      "SourceHash": "a357314be443e53a0a6ec12259bfdc01cb346efe6401a75e1441f33aed06342d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ced7c01cf1",
+      "Fields": {
+        "Meaning": "Xuất viện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "退院（たいいん）có nghĩa là xuất viện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91453": "Chắc cô ấy sẽ sớm xuất viện.",
+        "93617": "Cô ấy xuất viện một giờ trước."
+      },
+      "SourceHash": "e9930f165751236c19ecffe3020953902ffaf95ba6bdb7279bc7849fdb10eb28"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "138dee4a26",
+      "Fields": {
+        "Meaning": "Sinh viên đại học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大学生（だいがくせい）có nghĩa là sinh viên đại học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "163789": "Anh trai tôi là sinh viên đại học.",
+        "522655": "Sinh viên đó đang học kỹ thuật."
+      },
+      "SourceHash": "ac76e0e6c90bfa4926ab3b709817283b34e0c86250445f8ff4e2467b11af9566"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de9d61dd71",
+      "Fields": {
+        "Meaning": "Quan trọng, quý, chuyện lớn",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "大事（だいじ）có nghĩa là quan trọng, quý, chuyện lớn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75362": "Trong hai điều này, điều quan trọng là điều thứ hai.",
+        "106339": "Anh ấy là người quan trọng đối với chúng tôi."
+      },
+      "SourceHash": "d862b4c8ca6bdce15f0d806c560f60e025239c110ed4a424c289fe186256d782"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c0afe72b73",
+      "Fields": {
+        "Meaning": "Đại khái, phần lớn, gần xong",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "大体（だいたい）có nghĩa là đại khái, phần lớn, gần xong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196305": "Tôi gần chuẩn bị xong rồi.",
+        "204724": "Chúng có kích thước gần bằng nhau."
+      },
+      "SourceHash": "ee8b83b33968efad10fe6d1482980b4bd1802fd64b00ed0587f24c6a3541ccc6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e5dab579c",
+      "Fields": {
+        "Meaning": "Thường, phần lớn",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ, Danh từ",
+        "Explanation": "たいてい（たいてい）có nghĩa là thường, phần lớn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79711": "Ban đêm là lúc hầu hết mọi người ngủ.",
+        "84780": "Bố tôi thường ở nhà vào Chủ nhật."
+      },
+      "SourceHash": "34c11c3a60b82a599a9d495d14599ee40636287ee7aa12f2ccc61449f7089a7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a174ca4443",
+      "Fields": {
+        "Meaning": "Kiểu, loại, đánh máy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "タイプ（タイプ）có nghĩa là kiểu, loại, đánh máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152844": "Tôi đã đánh máy xong bản báo cáo.",
+        "225076": "Kiểu người này không thú vị."
+      },
+      "SourceHash": "88dda167370d95bf465112df3840efb2e9159a337daff9164cdb5d6d6fcd3761"
+    }
+  ]
+}

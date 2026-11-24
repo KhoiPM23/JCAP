@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdabcdd725",
+      "Fields": {
+        "Meaning": "Bị ướt",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "ぬれる（ぬれる）có nghĩa là bị ướt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80133": "Nhờ có cái cây mà tôi không bị ướt mưa.",
+        "160527": "Tôi ướt sũng mất rồi."
+      },
+      "SourceHash": "9b4898ad0da8929dfe31c1240b5477c36a52e4ec2b49db7f68cdc90788102465"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b89d0618be",
+      "Fields": {
+        "Meaning": "Giá, giá tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ねだん（ねだん）có nghĩa là giá, giá tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127118": "Giá cao đến mức không thể bàn tới.",
+        "223033": "Chiếc radio này giá bao nhiêu?"
+      },
+      "SourceHash": "b2a5eaf44d951a5981099445715ae89e3803dbc834931e4c800400e732375eec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fbc32438d",
+      "Fields": {
+        "Meaning": "Nhiệt, sốt, cơn say mê",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "熱（ねつ）có nghĩa là nhiệt, sốt, cơn say mê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108825": "Anh ấy đang say mê phong trào sinh viên.",
+        "236102": "Tôi sốt 102 độ F."
+      },
+      "SourceHash": "79c02bf1e54cb904f7e96c4d13429e4e912d8d55217d0a2c952174ff90383f1c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9de5a5daff",
+      "Fields": {
+        "Meaning": "Nhiệt tình, say mê",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "ねっしん（ねっしん）có nghĩa là nhiệt tình, say mê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87587": "Cô ấy rất chăm chút cho chim nhỏ ăn.",
+        "87589": "Cô ấy bắt đầu say sưa chơi đàn piano."
+      },
+      "SourceHash": "70211e0cd6fcc0db788cb8bf87d1758077b50d104c3cf4fd3c791d638d0c2a55"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1af14ddd32",
+      "Fields": {
+        "Meaning": "Ngủ dậy muộn, ngủ quên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "寝坊（ねぼう）có nghĩa là ngủ dậy muộn, ngủ quên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111682": "Anh ấy đôi khi ngủ dậy muộn.",
+        "145625": "Hãy cẩn thận đừng ngủ quên."
+      },
+      "SourceHash": "8093734e92be4163972b0cdd399943f0c101b5ff172989cc5d74f9e2d4de6ad5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ac5fa7fe3b",
+      "Fields": {
+        "Meaning": "Buồn ngủ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "眠い（ねむい）có nghĩa là buồn ngủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201962": "Xem ti vi là tôi nhanh buồn ngủ.",
+        "224860": "Uống cà phê thì tôi không buồn ngủ."
+      },
+      "SourceHash": "25611e2c0869d410698c5dd0ccf8893c7337427f011ec4e4c18f3f0658d1dce7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3575e37548",
+      "Fields": {
+        "Meaning": "Ngủ, thiếp đi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "眠る（ねむる）có nghĩa là ngủ, thiếp đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201963": "Tôi ngủ thiếp đi khi đang xem ti vi.",
+        "237325": "Hãy đặt báo thức phòng khi ngủ quên."
+      },
+      "SourceHash": "cfc50e509f53a5f0b314d65f53f7bcc4ef9235fbb6f2150b88826b3c4671d31e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d7f56d8d34",
+      "Fields": {
+        "Meaning": "Còn lại, ở lại",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "残る（のこる）có nghĩa là còn lại, ở lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194523": "Vẫn còn ba trang nữa.",
+        "227246": "Hầu như không còn tiền."
+      },
+      "SourceHash": "4e9e6a916a17810777663cb5c40064991438010be2c6e862dbdeede187a4490e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a3d0e7070",
+      "Fields": {
+        "Meaning": "Cổ họng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "のど（のど）có nghĩa là cổ họng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171456": "Sáng nay thức dậy tôi thấy cổ họng khô rát.",
+        "198567": "Cổ họng tôi rát."
+      },
+      "SourceHash": "1dc53f76d6ed4b936244b42da992ad59e0fc347be6823388b752383765c1c39c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0114521256",
+      "Fields": {
+        "Meaning": "Đổi chuyến, chuyển tàu xe",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "乗り換える（のりかえる）có nghĩa là đổi chuyến, chuyển tàu xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124179": "Hãy đổi tàu ở ga Tokyo.",
+        "154867": "Tôi đổi tàu ở ga Tokyo."
+      },
+      "SourceHash": "8abf8200e76911838b21961d3af7e9348b55975df0038c821b3b6fc77e4ade7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0787fd5472",
+      "Fields": {
+        "Meaning": "Phương tiện, trò chơi để đi hoặc cưỡi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "乗り物（のりもの）có nghĩa là phương tiện, trò chơi để đi hoặc cưỡi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146171": "Trò chơi này dành cho trẻ em.",
+        "148987": "Ô tô, xe buýt và xe tải đều là phương tiện."
+      },
+      "SourceHash": "4d48526d3a317068e54f0455a53ab52c3db3f69555a445e8014f4a623f320ec4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "254439ebbe",
+      "Fields": {
+        "Meaning": "Lá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "葉（は）có nghĩa là lá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138295": "Nhiều cây rụng hết lá khi mùa đông đến.",
+        "224180": "Ở đây có những lá sen lớn."
+      },
+      "SourceHash": "c35292cb0e5f18868c523b9e286fce54acc2a6f8885e09af3161a1d663aaee4b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d86d7e0fc",
+      "Fields": {
+        "Meaning": "Trường hợp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "場合（ばあい）có nghĩa là trường hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81179": "Nếu có chuyện bất trắc, hãy gọi số này.",
+        "216182": "Có trường hợp hệ thống không hoạt động."
+      },
+      "SourceHash": "da09f7c8a2c6b4d6e80432c99825530038730c6cd020db913ac3954a12c023cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d051720806",
+      "Fields": {
+        "Meaning": "Việc bán thời gian, phần",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "パート（パート）có nghĩa là việc bán thời gian, phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76720": "Xin lỗi nhé. Sáng mai tôi có ca làm thêm.",
+        "210043": "Bài thi được chia thành hai phần."
+      },
+      "SourceHash": "b93a17657de1efc28898b2bf15125e318a047b43e635dc50ad8c9c159107ccab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7dd1f219b",
+      "Fields": {
+        "Meaning": "Lần, gấp",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "倍（ばい）có nghĩa là lần, gấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230998": "Ngọn núi kia cao gấp năm lần ngọn núi này.",
+        "236095": "Mười lần mười xu là một đô la."
+      },
+      "SourceHash": "a996b228050a6d05a7b620c6baa0474c8bcebff826f330f61d3a971c247c0ce5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88a295c433",
+      "Fields": {
+        "Meaning": "Xem (khiêm nhường)",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "拝見（はいけん）có nghĩa là xem (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198077": "Tôi xin xem hộ chiếu được không ạ?",
+        "198079": "Tôi xin phép xem hộ chiếu được không ạ?"
+      },
+      "SourceHash": "3a4778fd1047d7ddb552debffede406131cbe1a453044cb2a4765fa92549aacd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9bb337edc6",
+      "Fields": {
+        "Meaning": "Nha sĩ, phòng khám nha",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歯医者（はいしゃ）có nghĩa là nha sĩ, phòng khám nha.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171440": "Hôm nay tôi đi nha sĩ.",
+        "214781": "Hãy đi khám nha sĩ ngay."
+      },
+      "SourceHash": "c4d55c9310903ebaf820a42de5ed5f1a5dcc60dca56a76b64508413fd4fe0808"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2404bdfdb3",
+      "Fields": {
+        "Meaning": "Chở, mang, tiến triển",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "運ぶ（はこぶ）có nghĩa là chở, mang, tiến triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169115": "Công việc tiến triển suôn sẻ.",
+        "213282": "Cái túi nặng quá nên tôi không mang nổi."
+      },
+      "SourceHash": "932c74d06933a1d75e83def60632d796658f1e266c0a88b5bbf0dc90ce26b0d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4610276c99",
+      "Fields": {
+        "Meaning": "Bắt đầu",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "始める（はじめる）có nghĩa là bắt đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84729": "Bố tôi bắt đầu công việc kinh doanh này bốn mươi năm trước.",
+        "232836": "Bạn bắt đầu chơi golf khi nào?"
+      },
+      "SourceHash": "a38756ef0c95b66a535275d1225ee6b75b47997b76e97493e439dcbed4379c9f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "32ca6422d6",
+      "Fields": {
+        "Meaning": "Nơi, địa điểm, chỗ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "場所（ばしょ）có nghĩa là nơi, địa điểm, chỗ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81668": "Hãy chỉ cho tôi chỗ có thể đọc sách.",
+        "223590": "Chiếc sofa này chiếm quá nhiều chỗ."
+      },
+      "SourceHash": "26baaa33a8b7eddbc1e689aa0c1e42ef9dbc3bdfcc33927b999df10970cad738"
+    }
+  ]
+}

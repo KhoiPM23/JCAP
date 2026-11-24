@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae7eaba50f",
+      "Fields": {
+        "Meaning": "Tốt, hay",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "よい（よい）có nghĩa là tốt, hay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87231": "Cô ấy nói họ là bạn tốt.",
+        "164645": "Tôi có vài người bạn tốt."
+      },
+      "SourceHash": "246282363439f2bfb27d6b319b9e40da26488f728df86ceeb423437304f59b4a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72fe9b634b",
+      "Fields": {
+        "Meaning": "Say, say xe",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "酔う（よう）có nghĩa là say, say xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103482": "Anh ấy say quá, không thể lái xe về.",
+        "195145": "Trông cứ như đang say."
+      },
+      "SourceHash": "e3487a67e50758167fcdd57f4b9f7812ec655837e0474aeea0a8ea9240fccc49"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcab821414",
+      "Fields": {
+        "Meaning": "Có vẻ, cách, kiểu",
+        "PartOfSpeech": "Hậu tố, Danh từ",
+        "Explanation": "様（よう）có nghĩa là có vẻ, cách, kiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112241": "Có vẻ anh ấy biết chuyện đó.",
+        "219227": "Anh ấy đã thất bại như thế đấy."
+      },
+      "SourceHash": "39d656ae2ae8113f150a66c0d375f0cd1a8b40a3ff805226d33fac00e7b655d7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "120086e720",
+      "Fields": {
+        "Meaning": "Dễ dàng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "容易（ようい）có nghĩa là dễ dàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86378": "Tôi nghĩ cô ấy sẽ dễ dàng thi đỗ.",
+        "224351": "Đo chỉ số IQ của Koko không dễ."
+      },
+      "SourceHash": "4607ac261b1e8d0dcb90ab9f0b27a8070f3c9119449dd381563c0cb75e790814"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e96372be15",
+      "Fields": {
+        "Meaning": "Vui tính, thời tiết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "陽気（ようき）có nghĩa là vui tính, thời tiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171660": "Hôm nay trời nóng đến mức hơi đổ mồ hôi.",
+        "198995": "Nancy có tính tình rất vui vẻ và dễ mến."
+      },
+      "SourceHash": "d44078cd4f2486fa79e2f8660192bacf371baf3b45b4ff1539c5f9dea372e90a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7b812f29c4",
+      "Fields": {
+        "Meaning": "Yêu cầu, đòi hỏi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "要求（ようきゅう）có nghĩa là yêu cầu, đòi hỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78807": "Tôi đã gửi tất cả những gì được yêu cầu.",
+        "87054": "Cô ấy đòi nhiều hơn mức cần thiết."
+      },
+      "SourceHash": "8004d069c5235d5bf3a43e49b4fe42c08be1aa0c6b71cb0e1c146abe105bdaff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6693cfdf82",
+      "Fields": {
+        "Meaning": "Cẩn thận, đề phòng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "用心（ようじん）có nghĩa là cẩn thận, đề phòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186753": "Hãy cẩn thận với lửa.",
+        "224639": "Xin đề phòng kẻ móc túi ở đây."
+      },
+      "SourceHash": "8aec764c3baa3affc24189da9c67983ecd822cad4b27c8502ca3351e98d43097"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "571736e080",
+      "Fields": {
+        "Meaning": "Dáng vẻ, tình hình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "様子（ようす）có nghĩa là dáng vẻ, tình hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92276": "Cô ấy rùng mình khi thấy cảnh đó.",
+        "111737": "Trông anh ấy có vẻ không biết phải làm gì."
+      },
+      "SourceHash": "ef5015cdab786c440429136970175a80f9725ab4be290123ef695bfc2604a777"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0910eee377",
+      "Fields": {
+        "Meaning": "Tóm lại, nói gọn là",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "要するに（ようするに）có nghĩa là tóm lại, nói gọn là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78817": "Tóm lại, anh ấy đã nhầm.",
+        "86369": "Nói cho cùng, cô ấy là người nói nhiều."
+      },
+      "SourceHash": "87a9cd1f1e59ad80c9805ff8f15f264cd2a466fba6d46c89a4e7dd7266e930f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b6f29d6b8e",
+      "Fields": {
+        "Meaning": "Yếu tố, thành phần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "要素（ようそ）có nghĩa là yếu tố, thành phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "180343": "Giáo dục là một yếu tố quan trọng.",
+        "226466": "Giá thảm do ba yếu tố quyết định."
+      },
+      "SourceHash": "43dfa806027ddfb584e7dde3e14c76352fb47fed31816d0124846c044eab5e70"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "654dd204be",
+      "Fields": {
+        "Meaning": "Điểm chính, ý chính",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "要点（ようてん）có nghĩa là điểm chính, ý chính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98849": "Có vẻ anh ấy không nắm được ý chính của câu chuyện.",
+        "112304": "Anh ấy cố giải thích để người nghe hiểu ý chính."
+      },
+      "SourceHash": "0506d006886141494ae78a2029f860facc03c8384237c27b9912d6ff181963bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72afed9688",
+      "Fields": {
+        "Meaning": "Thứ trong tuần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "曜日（ようび）có nghĩa là thứ trong tuần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "10123559": "Tôi học tiếng Pháp ba năm rồi mà đến tên các thứ trong tuần vẫn chưa thuộc."
+      },
+      "SourceHash": "2a8ff2818c915ae62831cf3684c8531851324f42ee6f634ece1b3a4254be5b4b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bb4b5f7ee0",
+      "Fields": {
+        "Meaning": "Châu Âu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ヨーロッパ（ヨーロッパ）có nghĩa là châu Âu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78630": "Tôi dự định lên đường sang châu Âu vào tuần tới.",
+        "88260": "Cô ấy đi du lịch châu Âu tháng trước."
+      },
+      "SourceHash": "23a0938ae54ad2c49ee1ba400282f5680107efe6dbee0707bfe5c7b1c9618ada"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c36af4c9f",
+      "Fields": {
+        "Meaning": "Dự liệu, dự đoán trước",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予期（よき）có nghĩa là dự liệu, dự đoán trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121024": "Tôi dự đoán anh ấy sẽ đến.",
+        "224666": "Tôi hoàn toàn không ngờ lại được gặp anh chị ở đây."
+      },
+      "SourceHash": "b4a70e2fbca3eacbce1afd15cc52e31425dd05c0af200fd679a9f4d929566d56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dfec3a3604",
+      "Fields": {
+        "Meaning": "Băng qua",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "横切る（よこぎる）có nghĩa là băng qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107101": "Anh ấy đang băng qua đường.",
+        "153486": "Tôi thấy cô ấy băng qua đường."
+      },
+      "SourceHash": "afc151e8ac777a2f075191923a59472df216c89d9834aa91e9831374e604196e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d7dea8a506",
+      "Fields": {
+        "Meaning": "Ngân sách",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予算（よさん）có nghĩa là ngân sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191079": "Ủy ban đã phê duyệt ngân sách.",
+        "10252173": "Tôi rất muốn mua nhưng không có ngân sách."
+      },
+      "SourceHash": "32ecc6f02b3f6508bf4e447ac76950d8ab5cdf0e128b342eb021aa90b30148af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9054323c74",
+      "Fields": {
+        "Meaning": "Thôi, dừng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Đọc よす, nghĩa là thôi hoặc dừng. Câu thứ hai của nguồn có chỗ nối chữ bất thường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83822": "Hãy nhìn sự vật như chúng vốn có.",
+        "204058": "Thôi đừng hỏi câu khó như vậy."
+      },
+      "SourceHash": "87bd988dc012760524c13cd3e2a586557b6dac37d0f2a9541e833deecf824242"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "908b44a04b",
+      "Fields": {
+        "Meaning": "Dự đoán, dự báo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "予測（よそく）có nghĩa là dự đoán, dự báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80505": "Thật khó dự đoán thời tiết ngày mai.",
+        "188002": "Không thể dự đoán chuyện gì sẽ xảy ra."
+      },
+      "SourceHash": "6da36bfddccae5fd2e15ec301e8387b6a7626194bc97f710c7f7b3ada4e84f12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "82611a8f51",
+      "Fields": {
+        "Meaning": "Du thuyền, thuyền buồm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ヨット（ヨット）có nghĩa là du thuyền, thuyền buồm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110365": "Anh ấy vượt Thái Bình Dương bằng du thuyền.",
+        "212462": "Chiếc thuyền buồm đi vòng qua phao."
+      },
+      "SourceHash": "d5ec3ec3c5eab05ac5c31374d160d8a78f99ba512ac25769da38cfbf0733a133"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19a41952db",
+      "Fields": {
+        "Meaning": "Nửa đêm, giữa đêm",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "夜中（よなか）có nghĩa là nửa đêm, giữa đêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152550": "Tôi tỉnh giấc ba lần giữa đêm.",
+        "165070": "Chúng tôi nói chuyện đến hai giờ sáng."
+      },
+      "SourceHash": "eb2d5de88db8bdb512f45ac188d33ee4cc4372668e73a181a3a091efadbdf011"
+    }
+  ]
+}

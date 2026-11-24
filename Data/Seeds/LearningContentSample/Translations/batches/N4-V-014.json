@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88125cd960",
+      "Fields": {
+        "Meaning": "Cách làm, phương pháp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "仕方（しかた）có nghĩa là cách làm, phương pháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "232519": "Bạn có biết cách chơi cờ vua không?",
+        "236881": "Tôi biết cách trượt tuyết."
+      },
+      "SourceHash": "234a2e78337332dbca341882880b34fb1f7c7b8a2d821b34dd26d6e6505f7a37"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f9a20b5203",
+      "Fields": {
+        "Meaning": "Mắng, rầy",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "しかる（しかる）có nghĩa là mắng, rầy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99133": "Hễ đến là anh ấy lại mắng chúng tôi.",
+        "144815": "Cha mẹ mắng con khi chúng làm điều xấu."
+      },
+      "SourceHash": "d181cc7ce024d63da7d727d52726da78cece5c95e1d308c515153a30f5953045"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7855de335f",
+      "Fields": {
+        "Meaning": "Kỳ thi, bài thi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "試験（しけん）có nghĩa là kỳ thi, bài thi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151080": "Kỳ thi bắt đầu vào thứ Hai tới.",
+        "200472": "Dù sao thì thi xong tôi cũng thấy nhẹ nhõm."
+      },
+      "SourceHash": "94088a372dda9a449af3d56cfc7886b18968a9d92eab5f899adcbe27a96a7151"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f6ffe3432",
+      "Fields": {
+        "Meaning": "Tai nạn, sự cố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事故（じこ）có nghĩa là tai nạn, sự cố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150834": "Tai nạn thường xảy ra do bất cẩn.",
+        "209899": "Tôi hỏi anh ấy về tai nạn đó."
+      },
+      "SourceHash": "63b4f207e156f9b63e2b05572676adbdd951d5ab65d7550a3a403a56c7991620"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba8831572d",
+      "Fields": {
+        "Meaning": "Động đất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地震（じしん）có nghĩa là động đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126888": "Khi có động đất, hãy khóa gas.",
+        "211029": "Tòa nhà đó bị hư hại nặng do động đất."
+      },
+      "SourceHash": "6ab941870a40b0a735400085ed0f5af4a7fd58ebca6d6a0718058eaf2d7cde1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "62ebad7ac3",
+      "Fields": {
+        "Meaning": "Thời đại, thời kỳ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "時代（じだい）có nghĩa là thời đại, thời kỳ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137613": "Thời đại học tôi đặt mua báo tiếng Anh.",
+        "173205": "Hồi học cấp ba tôi thường chơi quần vợt."
+      },
+      "SourceHash": "eae48fcaa05cb31503907d9ab0a7579f787c71182b56aa2fa4ad3488fea71e8d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c0fb94d28",
+      "Fields": {
+        "Meaning": "Đồ lót",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "下着（したぎ）có nghĩa là đồ lót.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155744": "Tôi thích bộ đồ lót mới.",
+        "188216": "Ướt sũng đến cả đồ lót."
+      },
+      "SourceHash": "5e4b6e1db64552a373ea616da2cbaa2d5909c02dc0bf9933a02b7cce5a68fa1e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ecb83e16fd",
+      "Fields": {
+        "Meaning": "Sự chuẩn bị, chuẩn bị",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "支度（したく）có nghĩa là sự chuẩn bị, chuẩn bị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82847": "Mẹ đang chuẩn bị bữa tối.",
+        "214817": "Hãy chuẩn bị đi ngay."
+      },
+      "SourceHash": "96af970ce868bdec9ca3909b48a23a6dcff087fecc3a482b8235e4e2655388ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "48fce6928c",
+      "Fields": {
+        "Meaning": "Chắc chắn, vững, nghiêm túc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "しっかり（しっかり）có nghĩa là chắc chắn, vững, nghiêm túc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178641": "Tôi muốn bạn làm việc nghiêm túc hơn.",
+        "192637": "Hãy nắm chắc vợt."
+      },
+      "SourceHash": "e7027c0bb8ade8122c2f29328d5a6eff88ae74536fefd61bd468e81475c2e10e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a89d2853ea",
+      "Fields": {
+        "Meaning": "Thất bại, sai sót",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "失敗（しっぱい）có nghĩa là thất bại, sai sót.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149599": "Nếu thất bại thì thử lại nhé.",
+        "235715": "Ai cũng có lúc thất bại một hai lần."
+      },
+      "SourceHash": "af744c9d848b7e6c3da13fc1049567d5f38d0744ae2c60b2bdc73038d8f9d820"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "695b6626d4",
+      "Fields": {
+        "Meaning": "Từ điển",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "辞典（じてん）có nghĩa là từ điển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161379": "Tôi luôn để ba cuốn từ điển trong tầm tay."
+      },
+      "SourceHash": "80973f087ce1776d8ca17a02ecc3e573cf90367fd34d09af1146098e8ba07212"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17af6092db",
+      "Fields": {
+        "Meaning": "Hàng hóa, món đồ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "品物（しなもの）có nghĩa là hàng hóa, món đồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207047": "Tôi sẽ mua món đó với giá ba đô la một tá.",
+        "217797": "Những món này không bán."
+      },
+      "SourceHash": "2933e61f87700e45935d4796b4a9b6daf76440a9676ee60432dd58c77cb57314"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "03712fac9d",
+      "Fields": {
+        "Meaning": "Một lúc, một thời gian",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "しばらく（しばらく）có nghĩa là một lúc, một thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201673": "Xin để tôi một mình một lúc.",
+        "224699": "Đã một thời gian rồi tôi không gặp anh ấy."
+      },
+      "SourceHash": "45a6d7bffaf0c03de88303c707da08898b27455e80aed9b98b3a86ad2de45c6d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1573ec234",
+      "Fields": {
+        "Meaning": "Đảo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "島（しま）có nghĩa là đảo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207508": "Rất dễ đến gần hòn đảo đó.",
+        "3222725": "Trên đảo hoàn toàn không có bóng người."
+      },
+      "SourceHash": "7165c6a8ad1085da9ddd32c5b44a4278fa0794ea486557373226faaf7213494f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f69279374",
+      "Fields": {
+        "Meaning": "Cư dân thành phố, công dân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "市民（しみん）có nghĩa là cư dân thành phố, công dân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124430": "Những người dân phẫn nộ lập tức hành động.",
+        "155440": "Tôi sống ở thành phố Chiba nhưng làm việc ở Tokyo."
+      },
+      "SourceHash": "125c545ee8c53a6907161844c22649c0d2f17a7396b01b410c29d53f79b68dfe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9690043102",
+      "Fields": {
+        "Meaning": "Văn phòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "事務所（じむしょ）có nghĩa là văn phòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150747": "Xin nối máy cho tôi đến văn phòng.",
+        "164261": "Chú tôi làm việc tại văn phòng này."
+      },
+      "SourceHash": "92727801a34d54ff54fdf64eea5e9ce90ce2b1216dbc742996e12205a322291b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7dc742b01",
+      "Fields": {
+        "Meaning": "Xã hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "社会（しゃかい）có nghĩa là xã hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118414": "Ông ấy sống cả đời ở tầng lớp dưới của xã hội.",
+        "205092": "Việc đó có lẽ sẽ có ích cho xã hội."
+      },
+      "SourceHash": "c5b6a7e2531fa0741274fc9171b0b9577d5d673999cd85d813527273b9e9337b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a40ee6e509",
+      "Fields": {
+        "Meaning": "Giám đốc, chủ tịch công ty",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "社長（しゃちょう）có nghĩa là giám đốc, chủ tịch công ty.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160067": "Tôi đã làm quen với vị giám đốc đó.",
+        "222672": "Ai là giám đốc công ty này?"
+      },
+      "SourceHash": "08bb47fbdadc25cf92bb13d6870b55dda79d8e62ab5a0ad6b114241eb5093d4f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "694ea10b56",
+      "Fields": {
+        "Meaning": "Cản trở, vướng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "じゃま（じゃま）có nghĩa là cản trở, vướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209598": "Chiếc xe đó chắn đường. Xin hãy dời đi.",
+        "229097": "Xin dời ghế đi. Nó vướng quá."
+      },
+      "SourceHash": "a8ebfbb05720a5c46187b811b1adfacabbb337c371eee24321e7e0ad663013c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ddfb670acf",
+      "Fields": {
+        "Meaning": "Mứt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ジャム（ジャム）có nghĩa là mứt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213049": "Tôi nếm thử một chút mứt đó.",
+        "229062": "Dâu tây được làm thành mứt."
+      },
+      "SourceHash": "65f77e798366fa18bf21fd82b441b939a89a59f3d3a55272947a2bcd68f701f7"
+    }
+  ]
+}

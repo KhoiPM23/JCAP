@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "seizei",
+      "Fields": {
+        "Meaning": "Nhiều nhất, cùng lắm",
+        "Formation": "せいぜい ＋ số lượng hoặc mức độ",
+        "Explanation": "Đặt giới hạn trên theo ước tính của người nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "seizei:example:1": "Công việc này mà làm gấp thì chắc sẽ xong trong vòng một tuần là cùng.",
+        "seizei:example:2": "Dù đi du lịch được trong kỳ nghỉ hè thì cũng chỉ hai, ba chuyến là cùng."
+      },
+      "SourceHash": "eed30cc2e944d686e446ff6471edbc39bf728d4f8a6bb719ae8e205d777fd6f7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sei-de",
+      "Fields": {
+        "Meaning": "Do, tại, vì… mà",
+        "Formation": "Danh từ ＋ のせいで／mệnh đề bổ nghĩa ＋ せいで",
+        "Explanation": "Quy một kết quả không mong muốn cho nguyên nhân ở trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sei-de:example:1": "Vì tối qua thức khuya nên sáng nay tôi đau đầu.",
+        "sei-de:example:2": "Tàu phải ngừng chạy vì mưa lớn."
+      },
+      "SourceHash": "727cff24e09087109f06f0194c18f6b120265c36caee1cf1ff16b585b653186c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sekkaku",
+      "Fields": {
+        "Meaning": "Đã cất công, đúng dịp quý",
+        "Formation": "せっかく ＋ mệnh đề／せっかくの ＋ danh từ",
+        "Explanation": "Nhấn mạnh công sức hoặc cơ hội đáng quý, thường kèm lời tận dụng cơ hội hay tiếc nuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sekkaku:example:1": "Đã cất công đến Kyoto rồi thì mình đi thăm các chùa nhé.",
+        "sekkaku:example:2": "Hiếm hoi mới có kỳ nghỉ mà trời mưa suốt."
+      },
+      "SourceHash": "ac09a939301bd96f813988df6940ce5cb1adb4c4bec3da34c34ef754c7bed25c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "zensha-kousha",
+      "Fields": {
+        "Meaning": "Đối tượng trước, đối tượng sau",
+        "Formation": "Nêu A và B, rồi dùng 前者／後者 ＋ は／のほうが",
+        "Explanation": "前者 thay cho A, còn 後者 thay cho B theo thứ tự đã nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "zensha-kousha:example:1": "Giữa chó và mèo, tôi nghĩ chó dễ chăm hơn.",
+        "zensha-kousha:example:2": "So với tàu điện, xe buýt thường rẻ hơn."
+      },
+      "SourceHash": "087244201f396941ea86caf28ab2a4723c9071e9674df12f9895c631ef7b48b3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sou-suru-to",
+      "Fields": {
+        "Meaning": "Làm vậy thì, khi đó",
+        "Formation": "Câu hướng dẫn ＋ そうすると ＋ kết quả",
+        "Explanation": "Chỉ kết quả có thể xảy ra khi làm theo bước vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sou-suru-to:example:1": "Hãy tập thể dục mỗi ngày. Làm vậy thì cơ thể sẽ khỏe hơn.",
+        "sou-suru-to:example:2": "Bỏ tiền vào đây. Khi đó vé sẽ chạy ra."
+      },
+      "SourceHash": "c7059798e2fff1e27d97bbfd1933073372329dcabb93082af78fc5ef5469d3a5"
+    }
+  ]
+}

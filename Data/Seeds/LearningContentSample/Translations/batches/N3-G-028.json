@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-yori",
+      "Fields": {
+        "Meaning": "Nói đúng hơn là",
+        "Formation": "A ＋ というより（も）、B",
+        "Explanation": "Đưa ra nhận định B vì sát hơn cách gọi hoặc nhận xét A.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-yori:example:1": "Anh ấy không hẳn hiền, đúng hơn là thiếu cứng cỏi.",
+        "to-iu-yori:example:2": "Gọi đây là công việc thì đúng hơn là sở thích."
+      },
+      "SourceHash": "8f06e1ec827132f3bcdbdb399c5faadeb5664562abcca4bef90f3c4ffb06d1b6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-riyuu-de",
+      "Fields": {
+        "Meaning": "Vì lý do, với lý do",
+        "Formation": "Mệnh đề thể thường ＋ という理由で",
+        "Explanation": "Nêu lý do được đưa ra cho quyết định hoặc sự việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-riyuu-de:example:1": "Anh ấy vắng họp vì lý do sức khỏe không tốt.",
+        "to-iu-riyuu-de:example:2": "Con đường đó bị cấm lưu thông vì được xác định là nguy hiểm."
+      },
+      "SourceHash": "4a4d507403e0390cf235489f2b896be0908cae3c15c7f309285120c6a33c3578"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-ieba",
+      "Fields": {
+        "Meaning": "Nhắc đến, nói đến",
+        "Formation": "Chủ đề ＋ と言えば",
+        "Explanation": "Lấy một điều vừa được nhắc làm điểm chuyển sang liên tưởng hoặc chuyện liên quan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-ieba:example:1": "Nhắc đến mùa hè thì phải nghĩ đến pháo hoa rồi.",
+        "to-ieba:example:2": "Nhắc đến anh Tanaka mới nhớ, dạo này chẳng thấy anh ấy nhỉ."
+      },
+      "SourceHash": "0d8a5c0b3f19d5bb62c2be8472b6ef7a4d51b9e1f233b18def76198ac9adbfff"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-ieru",
+      "Fields": {
+        "Meaning": "Có thể nói rằng",
+        "Formation": "Mệnh đề thể thường ＋ と言える／とは言えない",
+        "Explanation": "Đánh giá có đủ cơ sở để gọi hoặc kết luận như vậy hay không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-ieru:example:1": "Không thể nói cứ cố gắng là chắc chắn thành công.",
+        "to-ieru:example:2": "Nhìn kết quả này, có lẽ có thể nói kế hoạch đã thành công."
+      },
+      "SourceHash": "75c243bef4a83d03ec8d42e4131037cbda1998bdd3e96136fbd8f0619ec938ca"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-ittemo",
+      "Fields": {
+        "Meaning": "Nói là… nhưng thực ra",
+        "Formation": "Mệnh đề thể thường ＋ と言っても",
+        "Explanation": "Điều chỉnh ấn tượng do phát biểu trước tạo ra, thường bằng một giới hạn cụ thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-ittemo:example:1": "Nói là biết nấu ăn, nhưng tôi chỉ biết chiên trứng thôi.",
+        "to-ittemo:example:2": "Nói là gần, nhưng đi bộ cũng phải mất chừng ba mươi phút."
+      },
+      "SourceHash": "d650c3554a0910b24aea17e68ba4dcabe717ccfddbc45919622fc099049e54e6"
+    }
+  ]
+}

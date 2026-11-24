@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae7bf4b275",
+      "Fields": {
+        "Meaning": "Nhận, tiếp nhận",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "受け取る（うけとる）có nghĩa là nhận, tiếp nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146950": "Bạn có thể nhận thanh toán bằng séc không?",
+        "220689": "Tôi không thể nhận món quà này."
+      },
+      "SourceHash": "3278a9b07256f520bbba653f9965cbd4703e3b399dd2af51daa8860807e4ccd0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bb0ec0bbd4",
+      "Fields": {
+        "Meaning": "Di chuyển, làm lay động",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "動かす（うごかす）có nghĩa là di chuyển, làm lay động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188278": "Âm nhạc làm lay động cảm xúc.",
+        "224801": "Hãy chuyển tảng đá này từ đây sang kia."
+      },
+      "SourceHash": "b7b01646554325b97bbc2f7b5093a6f1362ea6ba1d292dad7bb16cdefcf42d9c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fbbdf50bbb",
+      "Fields": {
+        "Meaning": "Thỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "兎（うさぎ）có nghĩa là thỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161319": "Tôi phải chăm sóc con thỏ.",
+        "228280": "Tai thỏ dài hơn tai cáo."
+      },
+      "SourceHash": "cf7a2c0fc1a5886bc182895b84d1c2b96b2d87f9eec49b8f187631938d603238"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c06233b95e",
+      "Fields": {
+        "Meaning": "Bò, gia súc họ bò",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "牛（うし）có nghĩa là bò, gia súc họ bò.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106520": "Anh ấy nuôi bò để đem bán ở chợ.",
+        "172598": "Tôi chưa từng thấy bò thật."
+      },
+      "SourceHash": "4aba9972c9f03ad41e1dc223c5e5cddf2bd07cda599adcddfec515a0d7115f21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13fe04cb12",
+      "Fields": {
+        "Meaning": "Mất, đánh mất",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "失う（うしなう）có nghĩa là mất, đánh mất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103945": "Anh ấy lo sẽ mất việc.",
+        "195103": "Tôi mất tài sản vì một sai lầm."
+      },
+      "SourceHash": "ecab98fbcc22966cf3ad83bb33840c634622be437245fc3a4c6ed866fcfcf645"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60e8b7bc2b",
+      "Fields": {
+        "Meaning": "Nghi ngờ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "疑う（うたがう）có nghĩa là nghi ngờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104206": "Anh ấy nghi ngờ khả năng chiến thắng à?",
+        "196384": "Bạn vẫn nghi ngờ lời tôi nói à?"
+      },
+      "SourceHash": "7592df7d00d75a8bdc2ac35cc8d3fa505604f7284a15ec08e460b4146b7839e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2594292c24",
+      "Fields": {
+        "Meaning": "Vũ trụ, không gian",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宇宙（うちゅう）có nghĩa là vũ trụ, không gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120741": "Họ đang nghiên cứu những bí ẩn của vũ trụ.",
+        "189885": "Vũ trụ không có giới hạn."
+      },
+      "SourceHash": "d76f8fb379b39c101127c357784443b6ed6f90c2d589491a33ca36fb62257f1c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "215cb207d4",
+      "Fields": {
+        "Meaning": "Bắn, nổ súng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "撃つ（うつ）có nghĩa là bắn, nổ súng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "ad1562d68c7f932051ead5c89a141a392c1455107de1074a58b4d2fe48099a3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d11008b0c",
+      "Fields": {
+        "Meaning": "Chuyển, dời, lây sang",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "移す（うつす）có nghĩa là chuyển, dời, lây sang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74880": "Có thật là lây cảm cho người khác thì sẽ khỏi không?",
+        "127108": "Biết và đưa vào hành động là hai chuyện khác nhau."
+      },
+      "SourceHash": "acf0cec9ba6f585d65fdb727937eee77a04080535423797929b06dbb811347d7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e729fb355f",
+      "Fields": {
+        "Meaning": "Kiện, kêu gọi, than phiền",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "訴える（うったえる）có nghĩa là kiện, kêu gọi, than phiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88197": "Cô ấy nhìn tôi bằng ánh mắt như đang cầu xin.",
+        "211609": "Bệnh nhân đó lúc nào cũng than đau đầu."
+      },
+      "SourceHash": "eb967995be2264c309c3acf6902a63be2c0c477f01fa4b5f6ab3277e640ba095"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5e53fbc57d",
+      "Fields": {
+        "Meaning": "Rên, gầm gừ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "うなる（うなる）có nghĩa là rên, gầm gừ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210970": "Con chó gầm gừ với cậu bé.",
+        "213368": "Tiếng gầm gừ mỗi lúc một to."
+      },
+      "SourceHash": "082f1234310d3e3f28192d29316dfaed6b59207a9dd16229cc85e7aec509be93"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92871301e1",
+      "Fields": {
+        "Meaning": "Giật, cướp, tước đi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "奪う（うばう）có nghĩa là giật, cướp, tước đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148782": "Cô ấy bị một thanh niên giật túi.",
+        "207039": "Nỗi bất hạnh đó khiến cô ấy mất lý trí."
+      },
+      "SourceHash": "cd3f3f979944496840308f110a539d53a6f06605c6303d78165b3be423226324"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8a4d2c95f",
+      "Fields": {
+        "Meaning": "Ngựa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "馬（うま）có nghĩa là ngựa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177011": "Bạn biết cưỡi ngựa không?",
+        "193163": "Đừng săm soi răng ngựa được tặng."
+      },
+      "SourceHash": "185f5242380d8538dda2164357a6b90ed16f77aafeae38497e82848c5ab0bce0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1af1b6c3ed",
+      "Fields": {
+        "Meaning": "Nơi sinh, xuất thân, thời điểm sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生まれ（うまれ）có nghĩa là nơi sinh, xuất thân, thời điểm sinh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93627": "Cô ấy sinh vào thập niên 1950.",
+        "155548": "Tôi sinh ra và lớn lên ở Tokyo."
+      },
+      "SourceHash": "23e3679bdad2c411944de1c30bf0e3180c50b25965e3cc911cb310c56e82151c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8320d2162f",
+      "Fields": {
+        "Meaning": "Cây mơ Nhật, quả mơ Nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "梅（うめ）có nghĩa là cây mơ Nhật, quả mơ Nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121521": "Hoa mơ nở vào tháng ba.",
+        "3520711": "Tuần này là lúc ngắm hoa mơ đẹp nhất."
+      },
+      "SourceHash": "873d87626bd3d7214d9e55d961bedcf67aae421e0c3c78a27cf2987cd46790c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d48460042",
+      "Fields": {
+        "Meaning": "Phản bội, phụ lòng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "裏切る（うらぎる）có nghĩa là phản bội, phụ lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167658": "Người tôi tin tưởng đã phản bội tôi.",
+        "192440": "Chồng Linda đã phản bội cô ấy."
+      },
+      "SourceHash": "411a924a3e6b02204401224eb4efdeabe71dd99f9dd00ae8d2f5d5a5d66969c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed41514a67",
+      "Fields": {
+        "Meaning": "Bán được, bán chạy",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "売れる（うれる）có nghĩa là bán được, bán chạy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219633": "Dạo này cuốn sách này bán rất chạy.",
+        "223698": "Mẫu áo sơ mi này bán chạy."
+      },
+      "SourceHash": "dc769a8b63df4bf27e4aef58e7ec37022c6113c396ea8b91f595fecf1575d518"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ce542fed7",
+      "Fields": {
+        "Meaning": "Phần trên, mặt ngoài",
+        "PartOfSpeech": "Danh từ, tiền tố",
+        "Explanation": "上（うわ）có nghĩa là phần trên, mặt ngoài.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "e7b59115c4265b18a450ef77414c882ad09f2debd967c9967473bf8288237b22"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19d224b10d",
+      "Fields": {
+        "Meaning": "Tin đồn, lời đồn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "噂（うわさ）có nghĩa là tin đồn, lời đồn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144628": "Tin đồn về người khác khó mà tin được.",
+        "228076": "Tin đồn lan ra khắp nơi."
+      },
+      "SourceHash": "04737e119782715b799d1cd3f7e8cdf6aaf124e57c91ea1dc0780300f9d3016e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a83326bf0",
+      "Fields": {
+        "Meaning": "Vận, may mắn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "運（うん）có nghĩa là vận, may mắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "213862": "Làm vậy thì rồi vận may sẽ đến với bạn.",
+        "235011": "Người ta nói số 7 là con số may mắn."
+      },
+      "SourceHash": "f057a39aa878543027e379433a501caa6917757b2a08708c491788bf3ec35e2d"
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: 524a699a99."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "867e9165fc",
+      "Fields": {
+        "Meaning": "Má",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "頬（ほほ）có nghĩa là má.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77736": "Nước mắt chảy dọc má cô ấy."
+      },
+      "SourceHash": "d4bf76ff68ecd06f596e3b70682db2fa5361148c0c4fa9e84660166962e29eb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fa769c0e9b",
+      "Fields": {
+        "Meaning": "Gần như, xấp xỉ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ほぼ（ほぼ）có nghĩa là gần như, xấp xỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "ec5b72cb800237f6ac1da8492bf9d01f48c51d052306a0295359142f1aa9718a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "702cecd159",
+      "Fields": {
+        "Meaning": "Mỉm cười",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "微笑む（ほほえむ）có nghĩa là mỉm cười.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87104": "Cô ấy mỉm cười đón tôi.",
+        "155516": "Thấy em bé là tôi không nhịn được cười."
+      },
+      "SourceHash": "58820802d869e3a30ef908c09273bce7aa280ea2c7c8ffac0d056edfc384ce1d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1151601f8e",
+      "Fields": {
+        "Meaning": "Hào, hào nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "濠（ほり）có nghĩa là hào, hào nước.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "fde52f6571fd17fad6df67a4cff71bffe4081de2bf755498a6d1d5ea43cd3cca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f544e7ada",
+      "Fields": {
+        "Meaning": "Chính người đó, đương sự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "本人（ほんにん）có nghĩa là chính người đó, đương sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137840": "Xin chính anh chị đến thay vì cử người đại diện.",
+        "231389": "Chính bạn phải nói với cô ấy."
+      },
+      "SourceHash": "5c3e7958666a287e09cf21ac3aa3981a79f010c65bc6635af6a01aba0e81b649"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3067b8986a",
+      "Fields": {
+        "Meaning": "Đồ thật, hàng thật",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "本物（ほんもの）có nghĩa là đồ thật, hàng thật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172598": "Tôi chưa từng thấy bò thật.",
+        "218082": "Đây có thể không phải kim cương thật."
+      },
+      "SourceHash": "af6338c3ae044fab157944ce71ab5c5a099110911cf10b5b3739e7a0c731d2b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20410e72ff",
+      "Fields": {
+        "Meaning": "Lơ đãng, mơ hồ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ぼんやり（ぼんやり）có nghĩa là lơ đãng, mơ hồ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188692": "Tôi thấy một ánh đèn mờ ở xa.",
+        "216035": "Jim là kiểu học sinh hay lơ đãng."
+      },
+      "SourceHash": "04f08503146aafda70505e6b4358fdf6098a61b543fc070d59969549cb308d9e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8421f715e7",
+      "Fields": {
+        "Meaning": "Khoảng, lúc, thời gian giữa hai việc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鬼の居ぬ間に洗濯 là thành ngữ nói việc tranh thủ thư giãn khi người khiến mình dè chừng đi vắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182946": "Tranh thủ giặt giũ lúc quỷ đi vắng."
+      },
+      "SourceHash": "1a08ea08f29b9ccaca835beee4b21c84e5ee5f441b059284d5ce84157aa1cdb9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "440279fbf1",
+      "Fields": {
+        "Meaning": "Ồ, thôi nào, cũng tạm",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "まあ（まあ）có nghĩa là ồ, thôi nào, cũng tạm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195835": "Thôi nào, bạn sẽ sớm quen thôi.",
+        "195845": "Ồ, cái này là gì vậy?"
+      },
+      "SourceHash": "98f07304de6a7aef8ec326c8b82bb4f6f0b0445f26462e3fb83013029dfe470e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea7888aea6",
+      "Fields": {
+        "Meaning": "Chợ, thị trường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "マーケット（マーケット）có nghĩa là chợ, thị trường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82993": "Mẹ đi chợ mua đồ.",
+        "195823": "Chợ vừa mở cửa thì xảy ra hỏa hoạn."
+      },
+      "SourceHash": "f231c6a48d7f7d2fb8e8c2d70c8d791063a8d7ae2fdc5ec27c1730d258203bcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97ddf0dc45",
+      "Fields": {
+        "Meaning": "Micrô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Thường là dạng rút gọn của マイクロホン (micrô). Câu thứ hai dùng tên riêng Mike.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75173": "Chẳng hiểu sao lúc nãy mic không hoạt động.",
+        "219034": "Mike, đây là sách của bạn à?"
+      },
+      "SourceHash": "3d177b021e036fef24c842c4b8f7503d7a610d4c69632399d45906ff5d99da1f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6262822f7e",
+      "Fields": {
+        "Meaning": "Trẻ đi lạc, người đi lạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "迷子（まいご）có nghĩa là trẻ đi lạc, người đi lạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97635": "Mọi người cùng tìm đứa trẻ đi lạc.",
+        "230438": "Không biết đứa trẻ đi lạc đó ra sao rồi."
+      },
+      "SourceHash": "591f57b263a0df110a52740b111ee4e6e6ac209d017f370936806569dff84ae4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da87fe49d1",
+      "Fields": {
+        "Meaning": "Giao phó, để tùy",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "任せる（まかせる）có nghĩa là giao phó, để tùy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170519": "Tôi giao cho anh ấy quyết định cuối cùng.",
+        "217085": "Xin để anh chị tự tưởng tượng."
+      },
+      "SourceHash": "ea3473afdc6504aa9ed6cad2af10109966e97947a8a79072f6fd4e89ce077e00"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b08a90a19e",
+      "Fields": {
+        "Meaning": "Màn, sự kết thúc",
+        "PartOfSpeech": "Danh từ, trợ số từ",
+        "Explanation": "幕（まく）có nghĩa là màn, sự kết thúc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188249": "Buổi hòa nhạc kết thúc bằng quốc ca.",
+        "212886": "Lúc đó màn đang từ từ mở."
+      },
+      "SourceHash": "07f3ee603008bece86a65627a97319e3d5726a73ade34174987062c36d486ba8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "190905e79b",
+      "Fields": {
+        "Meaning": "Thua, thất bại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "負け（まけ）có nghĩa là thua, thất bại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100326": "Anh ấy không nhận thua.",
+        "200688": "Đằng nào cậu cũng thua thôi."
+      },
+      "SourceHash": "9dab5772e1278ea1a1bb1c2e996bfe7292ea394d3743a5abcbf4bf764ba884cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e008354e7b",
+      "Fields": {
+        "Meaning": "Cháu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "孫（まご）có nghĩa là cháu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102662": "Ông ấy hết mực yêu thương cháu.",
+        "139615": "Bà ấy lúc nào cũng vui khi ở bên cháu."
+      },
+      "SourceHash": "f87cf22364d1cb7bdf3ff8f324ff4225704f34ab2d88f0d0ebf56ea62d9688a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "524a699a99",
+      "Fields": {
+        "Meaning": "Không ngờ, không thể nào",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "まさか diễn tả sự ngạc nhiên hoặc khó tin trước một việc.",
+        "UsageNotes": "Nghĩa chuyện bất trắc xuất hiện trong cụm まさかの時."
+      },
+      "Examples": {
+        "195665": "Tôi không ngờ có thể gặp anh ấy.",
+        "195674": "Nếu có chuyện bất trắc, tôi sẽ giúp bạn."
+      },
+      "SourceHash": "d79b12598d14a1ead28d6bfb07e64c9c2d72c3a81ca0d3984e7ff6cd57ba58ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "379f6158b5",
+      "Fields": {
+        "Meaning": "Đúng lúc, chính xác",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "まさに（まさに）có nghĩa là đúng lúc, chính xác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86169": "Cô ấy đang đúng lúc chuẩn bị lên đường.",
+        "233082": "Tôi vừa định ra ngoài thì bạn gọi."
+      },
+      "SourceHash": "ba03afbc5535c54603d3c1c508a697c8a2c829c2eb71130937035c7ced8205ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a1d67f659",
+      "Fields": {
+        "Meaning": "Tăng, làm tăng",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "増す（ます）có nghĩa là tăng, làm tăng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207979": "Tin đó khiến anh ấy càng lo.",
+        "212146": "Âm nhạc làm chúng tôi vui hơn."
+      },
+      "SourceHash": "499a3f08b68e98cfc61651f4e382028bef8da5f167e8ffc1299e4771805b24db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b718c116a2",
+      "Fields": {
+        "Meaning": "Nghèo, thiếu thốn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "貧しい（まずしい）có nghĩa là nghèo, thiếu thốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85192": "Đừng khinh thường người nghèo.",
+        "191591": "Chúng ta không nên chế giễu người nghèo."
+      },
+      "SourceHash": "8edc7942f456e7f6ae4684bdeaa24bae6fcfe16e44688863b2721708fe750b59"
+    }
+  ]
+}

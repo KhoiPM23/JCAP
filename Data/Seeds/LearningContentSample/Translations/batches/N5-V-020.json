@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 mục và 38 câu nguồn. Mục どう không có câu nguồn.",
+    "Câu 230516 dùng できている theo nghĩa quan hệ tình cảm. Đối chiếu Digital Daijisen tại https://kotobank.jp/word/%E5%87%BA%E6%9D%A5%E3%82%8B-575490"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0cf2b43e9c",
+      "Fields": {
+        "Meaning": "Băng, băng ghi âm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テープ có thể chỉ băng ghi âm hoặc băng dùng để dán. Trong hai câu nguồn, từ này chỉ băng ghi âm.",
+        "UsageNotes": "テープをかける nghĩa là mở băng cho phát."
+      },
+      "Examples": {
+        "177769": "Bạn có ghi âm buổi hòa nhạc đó vào băng không?",
+        "212956": "Bạn mở cuộn băng đó giúp tôi được không?"
+      },
+      "SourceHash": "d288da4bc5ace013080bd8ce1a045ade990b8babc42cabeb57c2554151b5809b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff161262dd",
+      "Fields": {
+        "Meaning": "Bàn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テーブル chỉ bàn, chẳng hạn bàn ăn hoặc bàn trong nhà hàng. テーブルの上 là trên mặt bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202398": "Có một quả táo trên bàn.",
+        "223523": "Tôi đâu có yêu cầu bàn này."
+      },
+      "SourceHash": "ae766f46ad1c1be57cafb00e974ed2ad9815e0e1b959147b60adc37996a2b840"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc0ae29019",
+      "Fields": {
+        "Meaning": "Máy ghi âm dùng băng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テープレコーダー là thiết bị ghi âm bằng băng từ. Trong câu thứ hai, ４万円しました nghĩa là có giá bốn mươi nghìn yên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223518": "Chiếc máy ghi âm dùng băng này không mới.",
+        "223521": "Chiếc máy ghi âm dùng băng này có giá 40.000 yên."
+      },
+      "SourceHash": "a8991440db9841e0d7c946bb8459f9f0aab50a92985b875f44eae8cbb36bb27b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "375cfbefdd",
+      "Fields": {
+        "Meaning": "Ra ngoài, đi ra ngoài",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "出かける（でかける）chỉ việc rời nơi đang ở để đi đâu đó. 出かけられなかった nghĩa là đã không thể ra ngoài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147811": "Tôi muốn ở yên một chỗ hơn là ra ngoài.",
+        "189654": "Vì trời mưa nên tôi không ra ngoài được."
+      },
+      "SourceHash": "16a83848b1834bf3c7e1ff5b9fac3eb941d658dda82daea5a4848802891fb499"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "218ea67735",
+      "Fields": {
+        "Meaning": "Thư, lá thư",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手紙（てがみ）chỉ thư viết gửi cho người khác. 手紙を書く là viết thư, còn người nhận có thể đi với に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147430": "Tôi có một lá thư cần viết.",
+        "196892": "Fred đã viết một lá thư dài cho mẹ."
+      },
+      "SourceHash": "660074c8e15736078d8084782e9e678cef3ed7b7a15525e249e6285c748fe714"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69d0d632fa",
+      "Fields": {
+        "Meaning": "Có thể, làm được, hoàn thành",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "できる có thể diễn tả khả năng hoặc việc một thứ được làm xong. お借りできますか là cách hỏi lịch sự xem có thể mượn hoặc dùng một thứ hay không.",
+        "UsageNotes": "Khi nói về hai người, できている đôi khi mang nghĩa họ đang có quan hệ tình cảm, như trong câu đầu."
+      },
+      "Examples": {
+        "201738": "Tôi có thể dùng nhà vệ sinh được không ạ?",
+        "230516": "Hình như hai người đó đang yêu nhau."
+      },
+      "SourceHash": "7a08a0d816b908d2b8be7fc191ae33464f71cbae7fa294489acb71627f4e30e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "151fd72164",
+      "Fields": {
+        "Meaning": "Lối ra, cửa ra",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "出口（でぐち）chỉ nơi để đi ra. 出口から nghĩa là đi từ hoặc qua lối ra đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147749": "Lối ra ở hướng nào ạ?",
+        "234867": "Vui lòng đi lên mặt đất qua lối ra B2."
+      },
+      "SourceHash": "39f437e3718d0e4bfc1d16edec3333b20458453b42a8b4e84c8c10fc965431d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "90e9410bff",
+      "Fields": {
+        "Meaning": "Bài kiểm tra, phép thử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テスト có thể chỉ bài kiểm tra hoặc việc thử xem thứ gì hoạt động ra sao. Hai câu nguồn nói về bài kiểm tra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202236": "Tôi cũng xoay xở làm được bài kiểm tra.",
+        "212948": "Bài kiểm tra đó khó."
+      },
+      "SourceHash": "a66f65d302cf27beb24d2a8ccd876f3cc7a7da07bd38d3b3c122d4b5175f977c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d33540fe8e",
+      "Fields": {
+        "Meaning": "Vậy thì, thế thì, ở… thì",
+        "PartOfSpeech": "Liên từ, cụm trợ từ",
+        "Explanation": "では đứng đầu câu có thể mở lời chuyển ý hoặc chào tạm biệt. Trong アメリカでは, で chỉ địa điểm, còn は đưa địa điểm đó làm chủ đề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187507": "Ở Mỹ, người ta nói tiếng gì?",
+        "202137": "Vậy hẹn gặp lại tối nay nhé. Tạm biệt!"
+      },
+      "SourceHash": "c7f7946ed3c88f9f1dba479ebe024f8478b3ff328afb9edee59118448fbc9197"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0144505953",
+      "Fields": {
+        "Meaning": "Cửa hàng bách hóa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "デパート là cửa hàng bách hóa lớn, thường có nhiều khu bán các loại hàng khác nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155750": "Tôi muốn mua áo khoác mới ở cửa hàng bách hóa kia.",
+        "212947": "Có một hiệu sách trước cửa hàng bách hóa đó."
+      },
+      "SourceHash": "7f1990bac58b5e180ff6de337e186ab49fb1d162d0de92e2b4cf17857777a264"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f71089c32",
+      "Fields": {
+        "Meaning": "Nhưng, tuy nhiên, dù là, bất kỳ",
+        "PartOfSpeech": "Liên từ, trợ từ",
+        "Explanation": "でも đứng đầu câu thường có nghĩa là nhưng. Sau cụm nghi vấn như どんな人 hoặc どんなベッド, でも có thể mang nghĩa bất kỳ.",
+        "UsageNotes": "Hai câu nguồn dùng mẫu どんな〜でも, nghĩa là dù là loại nào."
+      },
+      "Examples": {
+        "199395": "Có ai đó vẫn hơn là chẳng có ai.",
+        "199480": "Giường nào cũng được, có còn hơn không."
+      },
+      "SourceHash": "234c92d12f1e79b91c895b80d56f81d1a0257fa270ff11e9e516c0205ad2336b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ef4f7dde9",
+      "Fields": {
+        "Meaning": "Ra, xuất hiện, phát ra, bắt máy",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "出る（でる）có nhiều nghĩa tùy cụm từ. 電話に出る là nghe điện thoại, còn 火が出る là phát lửa hoặc bốc cháy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124855": "Máy cạo râu điện bốc cháy.",
+        "449040": "Vì không có ai bắt máy nên tôi đã gửi tin nhắn."
+      },
+      "SourceHash": "57e7f750fdd8ffdfdac9efcded9af8c83486ff5922b70ba6c972b29e1f4ae7a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c7e14d8454",
+      "Fields": {
+        "Meaning": "Ti vi, truyền hình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テレビ có thể chỉ thiết bị hoặc truyền hình nói chung. テレビを見る là xem ti vi.",
+        "UsageNotes": "Trong câu thứ hai, 見られていない được hiểu theo nghĩa bị động là không được xem."
+      },
+      "Examples": {
+        "201993": "Ở đây người ta không xem ti vi.",
+        "232489": "Bạn xem ti vi ở đâu?"
+      },
+      "SourceHash": "5447e8ed20c3579a3bdae6425594ed171b39ae79b0a4a70756d04de70639068e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "679e34031e",
+      "Fields": {
+        "Meaning": "Thời tiết, trời đẹp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "天気（てんき）chỉ thời tiết. いい天気 là thời tiết đẹp. Trong một số ngữ cảnh, 天気 đứng riêng có thể hàm ý trời quang hoặc đẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "171537": "Ước gì hôm nay trời đẹp.",
+        "190284": "Có vẻ hôm nay trời sẽ đẹp cả ngày đấy."
+      },
+      "SourceHash": "e90c0990d4d3a156ea8b6cdc85ee9d989df1c74cac7f774ebaff5ea07f98b0ff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7c36fdb70",
+      "Fields": {
+        "Meaning": "Điện, đèn điện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "電気（でんき）chỉ điện hoặc đèn điện trong giao tiếp. 電気をつける là bật đèn, còn 電気シェーバー là máy cạo râu điện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124844": "Anh/chị bật đèn giúp tôi được không ạ?",
+        "124855": "Máy cạo râu điện bốc cháy."
+      },
+      "SourceHash": "29fbf29a0d3bf9d3d4d38cd01dae73be427ebf0cb93163fd60f036bd0fcf18f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c039918ba",
+      "Fields": {
+        "Meaning": "Điện thoại, cuộc gọi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "電話（でんわ）chỉ điện thoại hoặc cuộc gọi. 電話をかける là gọi điện, còn 電話に出る là bắt máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124718": "Cảm ơn anh/chị về cuộc gọi vừa rồi.",
+        "197096": "Hình như ông Brown gọi điện đến."
+      },
+      "SourceHash": "b79065d59776ab0f3e20051a59c392fe88f9b620833083353e4163e29349ccbb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f4691297f",
+      "Fields": {
+        "Meaning": "Cửa, cánh cửa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "戸（と）chỉ cánh cửa, thường gặp khi nói về cửa trượt hoặc cửa kiểu truyền thống. 戸にかぎをかける là khóa cửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137092": "Có ai đó đang gõ cửa ầm ĩ.",
+        "175163": "Tôi nhìn thì thấy cửa đã khóa."
+      },
+      "SourceHash": "3593d68d358773462bcacbd6ced6cffe747bf3f96cacdf12c1b16107bbc1631d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "677d3c5fac",
+      "Fields": {
+        "Meaning": "Cửa, cánh cửa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ドア chỉ cửa, thường dùng cho cửa kiểu phương Tây hoặc cửa xe. ドアをノックする là gõ cửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122091": "Xin hãy gõ cửa trước khi vào.",
+        "201824": "Anh/chị mở cửa giúp tôi được không ạ?"
+      },
+      "SourceHash": "97acde9ca9a36d95b99bff2dd05409c6fc8075159875c31a200060381ff6461e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e1e7c2d290",
+      "Fields": {
+        "Meaning": "Nhà vệ sinh, bồn cầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トイレ chỉ nhà vệ sinh. Khi nói về nước hoặc thiết bị, từ này cũng có thể chỉ bồn cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201725": "Nhà vệ sinh ở đâu ạ?",
+        "201731": "Nước trong bồn cầu cứ chảy mãi."
+      },
+      "SourceHash": "750583aab0e1addbbd7791b737eedd05b8a700551a88f31b017f29ac4a386096"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d0fb41651f",
+      "Fields": {
+        "Meaning": "Thế nào, bằng cách nào",
+        "PartOfSpeech": "Phó từ nghi vấn",
+        "Explanation": "どう hỏi về cách làm, tình trạng hoặc ý kiến. どうする là làm thế nào hoặc định làm gì, còn どうですか hỏi tình hình hoặc ý kiến.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "57617b56fce3bf49d9f28dfbbea0180e85dd8b19e0c68bd9e942798b524b1695"
+    }
+  ]
+}

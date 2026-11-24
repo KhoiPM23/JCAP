@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "207f712b62",
+      "Fields": {
+        "Meaning": "Chẳng bao lâu nữa, rồi sẽ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "今に（いまに）có nghĩa là chẳng bao lâu nữa, rồi sẽ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107191": "Rồi anh ấy sẽ làm nên chuyện.",
+        "172765": "Rồi cậu sẽ bị quả báo đấy."
+      },
+      "SourceHash": "a4d75081aa62f7ea759d429d5b08f10dd68c5e7dd273b8dc41d83ec3a61c4be6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e8763b3a8",
+      "Fields": {
+        "Meaning": "Sắp, bất cứ lúc nào",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "今にも（いまにも）có nghĩa là sắp, bất cứ lúc nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90038": "Cô ấy trông như sắp ngất.",
+        "199940": "Tom chắc sắp đến đây rồi."
+      },
+      "SourceHash": "f88ceebbe1f6cc5775a52c04ef4ac7f0d9528172946d6197427386251ee94147"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15d4ea5f82",
+      "Fields": {
+        "Meaning": "Không, lời phủ nhận",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "否（いや）có nghĩa là không, lời phủ nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228496": "Không, ban đầu tôi nghĩ như vậy.",
+        "228504": "Không, giờ tôi không có."
+      },
+      "SourceHash": "c43eeda9bc091880bd7818099728765079f9bdbdc4e155c482f3ccb39ae0a875"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b96dc58373",
+      "Fields": {
+        "Meaning": "Kể từ, từ đó đến nay",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "以来（いらい）có nghĩa là kể từ, từ đó đến nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141836": "Trời mưa suốt từ thứ Bảy tuần trước.",
+        "235889": "Tôi không gặp Tom kể từ năm 1988."
+      },
+      "SourceHash": "599b7cc16f5262ed3998ca6078c9237bdc0feaf52191067a02c755de55fd22a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9654422570",
+      "Fields": {
+        "Meaning": "Yêu cầu, nhờ, ủy thác",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "依頼（いらい）có nghĩa là yêu cầu, nhờ, ủy thác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87402": "Cô ấy nhờ anh ấy huy động vốn.",
+        "167898": "Có lẽ tôi nên là người đưa ra lời yêu cầu."
+      },
+      "SourceHash": "2d774dcd797d122e0cd1ee71aa058b79d63e881e081792d1919e9412f7c2ccec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "99f743f623",
+      "Fields": {
+        "Meaning": "Bồn chồn, sốt ruột, bực bội",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "いらいら（いらいら）có nghĩa là bồn chồn, sốt ruột, bực bội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101098": "Cô ấy đến muộn khiến anh ấy sốt ruột.",
+        "197315": "Bill lo lắng vì kỳ thi."
+      },
+      "SourceHash": "c3f71a913a4a164c842096dbe71790b3e49d2438ce8fb8a48964c0dd2f4996d9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95c33dd7eb",
+      "Fields": {
+        "Meaning": "Xin chào, mời vào, hãy đến",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "いらっしゃい（いらっしゃい）có nghĩa là xin chào, mời vào, hãy đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228452": "Hãy mang theo chừng nào cần.",
+        "228989": "Khi nào có dịp, hãy đến thị trấn của chúng tôi nhé."
+      },
+      "SourceHash": "e9bf520623fc454c98b4d5768eab6895aaba1cbc5947f09ef4559e2e7bc6e738"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3bbedbe5a9",
+      "Fields": {
+        "Meaning": "Chăm sóc y tế, điều trị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "医療（いりょう）có nghĩa là chăm sóc y tế, điều trị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110038": "Ông ấy cống hiến cả đời cho ngành y.",
+        "210186": "Đứa trẻ cần được chăm sóc y tế phù hợp tại bệnh viện."
+      },
+      "SourceHash": "f1e95a132f70cb84336b984bc074f6eda1b77419ce8fa0c493492b1907b1044f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "35b6339af7",
+      "Fields": {
+        "Meaning": "Tảng đá, vách đá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "岩（いわ）có nghĩa là tảng đá, vách đá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97971": "Họ dùng đòn bẩy để nhấc tảng đá lên.",
+        "222551": "Tảng đá này trông giống cái gì?"
+      },
+      "SourceHash": "1b4738aaa8c47d209c3e34f97b8bbf71ca29cfc10a5283278ed7c9720ad815a0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "474dad1005",
+      "Fields": {
+        "Meaning": "Dịp mừng, lời hoặc quà chúc mừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "祝い（いわい）có nghĩa là dịp mừng, lời hoặc quà chúc mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84420": "Bố tặng tôi đồng hồ nhân dịp sinh nhật.",
+        "153832": "Tôi gửi điện chúc mừng anh ấy tốt nghiệp."
+      },
+      "SourceHash": "d16c6bc3958c47a713012086b5f8d587cf3ea4fdcb46c27a4bd8eb8dda1e283d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b8faff812",
+      "Fields": {
+        "Meaning": "Chúc mừng, ăn mừng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "祝う（いわう）có nghĩa là chúc mừng, ăn mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97690": "Họ mừng Giáng sinh bằng cách tặng quà.",
+        "165294": "Chúng tôi chúc mừng anh ấy thi đỗ."
+      },
+      "SourceHash": "1c60409aed55140b6e56205a1be25dcca3b0e90de2e5f057fa52c2d23eeb89bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "54d52e6958",
+      "Fields": {
+        "Meaning": "Có thể nói là, ví như",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "言わば（いわば）có nghĩa là có thể nói là, ví như.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206129": "Ông cụ ấy có thể ví như một cuốn từ điển sống.",
+        "222098": "Có thể nói con chó này là một thành viên trong gia đình tôi."
+      },
+      "SourceHash": "80c71e6c32dc8c15778141087645c167617197fda98f3f600c394a9389844f1e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92270be892",
+      "Fields": {
+        "Meaning": "Cái gọi là, thường gọi là",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "いわゆる（いわゆる）có nghĩa là cái gọi là, thường gọi là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114378": "Anh ấy thuộc kiểu người hay khoe chữ.",
+        "219011": "Đây là món người ta gọi là tempura."
+      },
+      "SourceHash": "b356cefb6811e5ad2d9c58d7edc6ce826f3d21e6fb8aa094b620e463831eddfe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "753c588c58",
+      "Fields": {
+        "Meaning": "Mực viết, mực in",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "インク（インク）có nghĩa là mực viết, mực in.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151214": "Trên tờ giấy có vết mực.",
+        "232992": "Bạn phải viết tên bằng mực."
+      },
+      "SourceHash": "5670dc97aab89836313255bd3d6eb2c097e629e175853547ba24428437ec6939"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c943d4f77a",
+      "Fields": {
+        "Meaning": "In, in ấn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "印刷（いんさつ）có nghĩa là in, in ấn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190002": "Người ta tìm thấy nhiều lỗi in.",
+        "212829": "Bản tin đó được in gấp."
+      },
+      "SourceHash": "fb6e241c77f7c27b93816f6763f578551b7b6a052c00b97637e1db0cceeed69f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ddedf2e7ba",
+      "Fields": {
+        "Meaning": "Ấn tượng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "印象（いんしょう）có nghĩa là ấn tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90579": "Cô ấy khiến tôi có ấn tượng sâu sắc rằng cô rất tinh tế.",
+        "160285": "Bài diễn văn đó để lại ấn tượng mạnh trong tôi."
+      },
+      "SourceHash": "7edd7667cf9994132348dbb4dd727fd42dfaed7edd4462a673aaaac0cbf6ff3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5514dc4a90",
+      "Fields": {
+        "Meaning": "Nghỉ hưu, giải nghệ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "引退（いんたい）có nghĩa là nghỉ hưu, giải nghệ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104185": "Ông ấy đóng cửa cơ sở kinh doanh rồi nghỉ hưu.",
+        "158408": "Tôi đã quyết định nghỉ hưu."
+      },
+      "SourceHash": "496ad5fea07e5f9b5133941a69b95962df2dc9d45ac4733050097307fcac25a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1c2d4445fd",
+      "Fields": {
+        "Meaning": "Trích dẫn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "引用（いんよう）có nghĩa là trích dẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110393": "Anh ấy thường trích dẫn Kinh Thánh.",
+        "197910": "Bạn có thể trích một câu trong Hamlet không?"
+      },
+      "SourceHash": "4c3a96fe380394c099c0a86927a32d66767e53a589d9a4a4e263e6e6d11d971b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f4c977989",
+      "Fields": {
+        "Meaning": "Rượu whisky",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ウイスキー（ウイスキー）có nghĩa là rượu whisky.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114348": "Anh ấy uống một chút whisky.",
+        "228340": "Whisky hợp với trà đen."
+      },
+      "SourceHash": "1fd634baba71d13b08dce7a2040fb8b4854d78bd5f41224467fb27e4f6343b7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b73c4e0e07",
+      "Fields": {
+        "Meaning": "Súc miệng, súc họng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "うがい chỉ việc súc miệng hoặc súc họng. Hai câu nguồn dùng mẫu ほうがいい để khuyên và không chứa từ này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121904": "Bạn đang sốt nên tốt nhất là ở nhà.",
+        "177297": "Lúc này tốt nhất bạn đừng gặp cô ấy."
+      },
+      "SourceHash": "377dd7b619a48e87e2d511184461ce26bfe48f2d38dca68216c1467ba2e5cd73"
+    }
+  ]
+}

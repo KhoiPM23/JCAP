@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e2a52daf95",
+      "Fields": {
+        "Meaning": "Chính phủ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "政府（せいふ）có nghĩa là chính phủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103327": "Anh ấy có quen biết đôi chút với các quan chức cấp cao.",
+        "143078": "Chính phủ đã bị lật đổ."
+      },
+      "SourceHash": "00dd0b8f02f99fe679c12c7f5259ec059e398e9a5a4991403fd1061537dcaccf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87333c0d40",
+      "Fields": {
+        "Meaning": "Sinh vật, môn sinh học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生物（せいぶつ）có nghĩa là sinh vật, môn sinh học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103190": "Anh ấy gian lận trong bài thi sinh học.",
+        "126939": "Có sinh vật trên thiên thể nào ngoài Trái Đất không?"
+      },
+      "SourceHash": "a1ed916521e32763bb588df88bec91726a010a809265525f2706966f53d81943"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "766c710757",
+      "Fields": {
+        "Meaning": "Sự sống, sinh mạng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生命（せいめい）có nghĩa là sự sống, sinh mạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142688": "Sự sống xuất hiện từ khi nào?",
+        "165549": "Chúng tôi có nguy cơ mất mạng."
+      },
+      "SourceHash": "7cb7d7953f234090921ca18348d99b137f52edc73066cb158255aa198969f37d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f5a8d92a63",
+      "Fields": {
+        "Meaning": "Sắp xếp, dọn dẹp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "整理（せいり）có nghĩa là sắp xếp, dọn dẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84160": "Hãy sắp xếp đồ đạc trong phòng cho gọn gàng.",
+        "84185": "Bạn nên dọn phòng đi."
+      },
+      "SourceHash": "a73bc58ce2107b8da663e2b4b7319568e653da8b28b4092d201972e15911fb86"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8eae03ec6e",
+      "Fields": {
+        "Meaning": "Cơn ho, tiếng ho",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "咳（せき）có nghĩa là cơn ho, tiếng ho.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77291": "Ông cụ phải ngừng nói nhiều lần vì ho.",
+        "82805": "Mẹ Tom lo vì cậu ấy bị ho."
+      },
+      "SourceHash": "ce612e30467978fed02227d21c759361c5fd56efd713c935e2556fb552b89e28"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76b7811036",
+      "Fields": {
+        "Meaning": "Than đá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "石炭（せきたん）có nghĩa là than đá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142330": "Chúng tôi dùng than đá thay cho dầu mỏ.",
+        "165543": "Chúng tôi đã dùng hết than đá."
+      },
+      "SourceHash": "40a73077877e02427186660d5097913f415a5650e040e104ca2503dc2abb0d97"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4c29ad3233",
+      "Fields": {
+        "Meaning": "Trách nhiệm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "責任（せきにん）có nghĩa là trách nhiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140070": "Tôi sẽ chịu trách nhiệm về sai sót của con trai.",
+        "225211": "Cả hai bên đều có trách nhiệm trong vụ cãi nhau."
+      },
+      "SourceHash": "228c9d621d3f59223fb51bd39728bbd3e8b91ea35cde2ff8ad64ebd951a88d7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0aedc1119d",
+      "Fields": {
+        "Meaning": "Dầu mỏ, dầu hỏa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "石油（せきゆ）có nghĩa là dầu mỏ, dầu hỏa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96717": "Họ đang bơm dầu lên tàu.",
+        "143408": "Thế giới đang dần dùng cạn dầu mỏ."
+      },
+      "SourceHash": "b4bfe751a49fb8141def5a0131f72f8b47914e205a5d337afe137119c486b906"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61ddee48f6",
+      "Fields": {
+        "Meaning": "Xã hội, người đời",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "世間（せけん）có nghĩa là xã hội, người đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103406": "Anh ấy đúng là người thực sự yêu âm nhạc, như người ta vẫn nói.",
+        "143359": "Hãy chấp nhận xã hội như nó vốn có."
+      },
+      "SourceHash": "c8808df66db7488fa290b9c0f0d0f4ccae0baa711c1a68979b58cd57e87f073e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "79891aefd2",
+      "Fields": {
+        "Meaning": "Thuyết, giả thuyết, quan điểm",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "説（せつ）có nghĩa là thuyết, giả thuyết, quan điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160838": "Tôi không thể tin giả thuyết này.",
+        "234158": "Dù bạn nói gì, tôi vẫn cho rằng giả thuyết đó đúng."
+      },
+      "SourceHash": "e2a9c55c18aeffed769085fa1a90f8155577dbcc2ffc72c2bdf034891bd3e087"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f755485505",
+      "Fields": {
+        "Meaning": "Chủ động, tích cực",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "Tính từ đuôi な chỉ sự chủ động. Trong câu đầu, danh từ tự nhiên hơn là 積極性, nghĩa là tính chủ động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118488": "Anh ấy chẳng có chút chủ động nào như bố mình.",
+        "231115": "Sinh viên đó rất chủ động."
+      },
+      "SourceHash": "8a70ae76c2b142def4264d97ef610090d4cb371b4536d7d131197d31af7683c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e394e09d00",
+      "Fields": {
+        "Meaning": "Thiết kế",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "設計（せっけい）có nghĩa là thiết kế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120891": "Anh ấy thiết kế tòa nhà mới đó.",
+        "163203": "Tôi nhờ người làm theo bản thiết kế của mình."
+      },
+      "SourceHash": "5de675ea2870219de5d6979c33f7f5fd3c2f774eb3c23870f94459ddf2e599e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fe228bbe40",
+      "Fields": {
+        "Meaning": "Tuyệt đối, chắc chắn",
+        "PartOfSpeech": "Bổ nghĩa với の",
+        "Explanation": "絶対（ぜったい）có nghĩa là tuyệt đối, chắc chắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182555": "Không nhanh lên thì chắc chắn sẽ lỡ tàu đấy.",
+        "234729": "Ôi, tôi cứ tưởng chắc chắn sẽ suôn sẻ."
+      },
+      "SourceHash": "e388c97839e5bcf3f384e41251c58aaaab343df5d911ce0b8777c85984666533"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65dfe9149d",
+      "Fields": {
+        "Meaning": "Bộ, cài đặt, tạo kiểu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "セット（セット）có nghĩa là bộ, cài đặt, tạo kiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79909": "Hãy đặt báo thức lúc bảy giờ.",
+        "141199": "Tôi muốn đặt lịch gội đầu và tạo kiểu ạ."
+      },
+      "SourceHash": "61baa3dc9ef88dca6a6fc243acb68dbabb65cfccec0c102528f0b3e9d03598ac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "140ef1e848",
+      "Fields": {
+        "Meaning": "Trang thiết bị, cơ sở vật chất",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "設備（せつび）có nghĩa là trang thiết bị, cơ sở vật chất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147390": "Anh chị sẽ phải trả chi phí sử dụng các thiết bị.",
+        "209631": "Phòng thí nghiệm đó có trang thiết bị hiện đại nhất."
+      },
+      "SourceHash": "c3678017809c599f67751916d59cfdf66373c2f430acc8c7fc4aa1b92bfb7c59"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2848d83eb7",
+      "Fields": {
+        "Meaning": "Tuyệt chủng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "絶滅（ぜつめつ）có nghĩa là tuyệt chủng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141928": "Tuyệt chủng là một phần của quá trình tiến hóa.",
+        "216744": "Nhiều loài sinh vật đang dần tuyệt chủng."
+      },
+      "SourceHash": "62b6d18d81e4412fbd6ab01b75ebfdddb97dd764b74707c69f76c416284d2f60"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c406cea71",
+      "Fields": {
+        "Meaning": "Tiết kiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "節約（せつやく）có nghĩa là tiết kiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148686": "Người nội trợ nên cố gắng tiết kiệm.",
+        "224994": "Làm vậy sẽ tiết kiệm được vài giờ."
+      },
+      "SourceHash": "31c806c9f6c04b398204a620e90b25595d49cf7c907779645a2083e48ba2f508"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4008d80f82",
+      "Fields": {
+        "Meaning": "Trách, đổ lỗi",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "責める（せめる）có nghĩa là trách, đổ lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101123": "Anh ấy trách cô ấy đã nói dối.",
+        "106370": "Anh ấy trách tôi vì đã không đến."
+      },
+      "SourceHash": "7f5925bc1b524ed17cdefae4bdf53da346545330fd50133968e7089e28e65961"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff077d041a",
+      "Fields": {
+        "Meaning": "Điều thiện, điều tốt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "善（ぜん）có nghĩa là điều thiện, điều tốt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85570": "Cái đẹp chưa chắc đã là cái thiện.",
+        "181522": "Bản thân cạnh tranh chẳng thiện cũng chẳng ác."
+      },
+      "SourceHash": "2ce784160f8357f6baddfe7d1bfcf2ef9622f8ffb906be0e5a827a9794d4e8bd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2a6a01df9",
+      "Fields": {
+        "Meaning": "Toàn bộ, tất cả",
+        "PartOfSpeech": "Tiền tố",
+        "Explanation": "全（ぜん）có nghĩa là toàn bộ, tất cả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140800": "Tất cả các báo đều đưa tin đậm về vụ việc đó.",
+        "209680": "Bộ từ điển gồm hai tập."
+      },
+      "SourceHash": "b848829c6f41fae2afe2c97e1d78907f695051520a01bab17a8d4e628b85b49e"
+    }
+  ]
+}

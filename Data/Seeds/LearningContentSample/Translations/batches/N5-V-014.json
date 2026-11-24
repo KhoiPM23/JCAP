@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 từ và 40 câu theo bản Nhật.",
+    "Câu 201896 dùng 閉まっていた. Dịch là cửa đóng vì câu Nhật không nói rõ cửa có khóa."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e2695084c9",
+      "Fields": {
+        "Meaning": "Đi dạo, cuộc đi dạo",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "散歩する là đi dạo. 散歩に出かける diễn tả việc ra ngoài để đi dạo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76557": "Mình ra ngoài đi dạo một lát nhé.",
+        "169336": "Tôi ra ngoài đi dạo được không ạ?"
+      },
+      "SourceHash": "6c5a0cb497b37fca33c931657e5f870ee0315cf38a534ee82b03fcd9937f52ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da4b805e0b",
+      "Fields": {
+        "Meaning": "Bốn",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "四 là số bốn, có thể đọc し hoặc よん tùy cách dùng.",
+        "UsageNotes": "Trong hai câu nguồn, 四分 (bốn phút) đọc là よんぷん và 四回 (bốn lần) đọc là よんかい."
+      },
+      "Examples": {
+        "77561": "Nếu đi tàu thì từ đây chỉ mất bốn phút.",
+        "175658": "Tôi đi xem phim ba hoặc bốn lần mỗi tháng."
+      },
+      "SourceHash": "8402a4c6360ea09fc7e1bf387f01cd100cd47b56f94da43683c45a9432b7ed98"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b366a3d677",
+      "Fields": {
+        "Meaning": "Muối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "塩（しお）là muối. 塩が足りない nghĩa là thiếu muối, còn 塩を入れる là cho muối vào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188597": "Bạn chuyền muối sang đây giúp tôi được không?",
+        "223651": "Món súp này thiếu một chút muối."
+      },
+      "SourceHash": "e23353a35eba384bad019348d85683c38a38347327832fa79c5710f52e324a5a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c41aedcba",
+      "Fields": {
+        "Meaning": "Nhưng, tuy nhiên",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "しかし nối hai ý có sự tương phản. Từ này thường đứng ở đầu câu hoặc đầu vế sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216279": "Nhưng hãy cất cuốn sách này đi nhé.",
+        "216307": "Tuy nhiên, con người thì khác."
+      },
+      "SourceHash": "9549f4e3d4d85e77cb5ef2fd3f992f99b09e519c438144fe34a10c194c847ac9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5c916ca85",
+      "Fields": {
+        "Meaning": "Thời gian, giờ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "時間（じかん）chỉ thời gian hoặc khoảng thời gian. 読書の時間 là thời gian đọc sách, còn 時間がたつ nghĩa là thời gian trôi qua.",
+        "UsageNotes": "Sau số, 時間 có thể chỉ số giờ, như 二時間 (hai giờ)."
+      },
+      "Examples": {
+        "150629": "Tôi không nhận ra thời gian đang trôi qua.",
+        "228889": "Lúc nào cũng có thể thu xếp thời gian để đọc sách."
+      },
+      "SourceHash": "183b49fbb4dba2d2678b2fac3f3df23fd575126866f5dbdef4873174ca63d6c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "573bc15b1d",
+      "Fields": {
+        "Meaning": "Công việc, việc làm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "仕事（しごと）chỉ việc làm hoặc công việc phải thực hiện. 仕事をする là làm việc. 仕事をサボる là trốn việc hoặc chểnh mảng trong công việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76109": "Anh ấy bị sa thải vì chểnh mảng trong công việc.",
+        "200317": "Công việc nào cũng chẳng dễ làm."
+      },
+      "SourceHash": "b0bb5a63c4f8dbd1e001618082e6333755c9b098edf0ae1cc752c44444ca3fa3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ec35978bd",
+      "Fields": {
+        "Meaning": "Từ điển",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "辞書（じしょ）là từ điển dùng để tra từ. 辞書に出ている nghĩa là có ghi trong từ điển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205423": "Từ điển nào cũng có mục đó.",
+        "218820": "Đây đúng là cuốn từ điển mà tôi đã muốn có từ lâu."
+      },
+      "SourceHash": "e360a608b11546cfe80f69b88d7c24603783386df7c13046d122be62af34cd1e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "178469ba7a",
+      "Fields": {
+        "Meaning": "Yên tĩnh, im lặng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "静か（しずか）tả nơi hoặc tình huống ít tiếng động. 静かな部屋 là căn phòng yên tĩnh. 静かにする nghĩa là giữ im lặng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142511": "Hãy chú ý giữ im lặng.",
+        "225839": "Đội trưởng ra lệnh giữ im lặng."
+      },
+      "SourceHash": "6312c5fe334d41fdfcf141bafcebe13b6c6576ffc0f7c3a2ed98a34b633d92e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd36cae3a9",
+      "Fields": {
+        "Meaning": "Dưới, phía dưới",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "下（した）chỉ phía dưới. Dùng danh từ ＋ の下 để nêu vật mốc, như テーブルの下 (dưới bàn).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80128": "Có một chiếc ghế băng dưới gốc cây.",
+        "225669": "Cookie đang ở dưới bàn."
+      },
+      "SourceHash": "1b1bc155644c3ec933c87ddebec1a05e26ecd2053e4d5a72892adfa27d6e24f1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "988db98632",
+      "Fields": {
+        "Meaning": "Bảy",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "七 là số bảy, có thể đọc しち hoặc なな tùy cách dùng. 七時 đọc là しちじ (bảy giờ).",
+        "UsageNotes": "七時半 là bảy giờ rưỡi."
+      },
+      "Examples": {
+        "201696": "Dù đi bằng cách nào, chúng ta cũng phải đến trước hoặc đúng bảy giờ.",
+        "202909": "Đúng bảy giờ rưỡi."
+      },
+      "SourceHash": "a9536e28f4c59c2f69d6f94384d33a6370dc2e13a6354d7c4581706c158171c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c5c99977c",
+      "Fields": {
+        "Meaning": "Câu hỏi, việc đặt câu hỏi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "質問（しつもん）là câu hỏi. 質問する nghĩa là đặt câu hỏi, và người được hỏi có thể đi với に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149514": "Anh/chị có thể viết câu hỏi ra được không ạ?",
+        "230657": "Bạn có thể đặt câu hỏi cho thầy cô đó."
+      },
+      "SourceHash": "186269bc61a66964b8f59d074d3918cba18ef7dbc9e4462d71aeb8b32f372154"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ebf194a316",
+      "Fields": {
+        "Meaning": "Xe đạp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "自転車（じてんしゃ）chỉ xe đạp. 自転車で nói về phương tiện di chuyển, còn パンクする chỉ việc lốp bị thủng hoặc xì hơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195201": "Mayuko đi học bằng xe đạp.",
+        "196377": "Xe đạp của tôi bị xì lốp."
+      },
+      "SourceHash": "8aa4eb7d7c243e7c574377a60d6a5bc800d537106fb133ba78e3807d1fcd9b32"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78fd1a0e8a",
+      "Fields": {
+        "Meaning": "Ô tô, xe hơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "自動車（じどうしゃ）chỉ ô tô. 自動車にひかれる diễn tả việc bị ô tô đâm hoặc cán, tùy ngữ cảnh.",
+        "UsageNotes": "ガソリンをくう là cách nói thân mật chỉ xe tiêu tốn xăng."
+      },
+      "Examples": {
+        "150044": "Chẳng phải người đó bị ô tô cán sao?",
+        "196376": "Xe ô tô của tôi tốn khá nhiều xăng."
+      },
+      "SourceHash": "1a1cff0d214eaa5af360050fa828fd5fd99eb6d2d4985465446c99ed54e3b132"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec6fd2f845",
+      "Fields": {
+        "Meaning": "Chết, qua đời",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "死ぬ（しぬ）chỉ việc chết. Trong 死んだものとして, người hoặc vật được coi là đã chết.",
+        "UsageNotes": "Thể て là 死んで, thể quá khứ là 死んだ."
+      },
+      "Examples": {
+        "142836": "Mọi sinh vật rồi cũng sẽ chết.",
+        "209091": "Người ta cho rằng cậu bé đã chết nên đành bỏ cuộc."
+      },
+      "SourceHash": "09ea8bc583281d808a57034f0baf27ee0a7cc598786328e35e3409fbe2f5bc21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6156bfb418",
+      "Fields": {
+        "Meaning": "Từ điển",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "字引（じびき）là một cách gọi từ điển. Cụm 生き字引 chỉ người biết nhiều và có thể cung cấp thông tin như một cuốn từ điển sống.",
+        "UsageNotes": "Cả hai câu nguồn đều dùng cụm 生き字引."
+      },
+      "Examples": {
+        "166907": "Có thể nói thầy cô của chúng tôi là một cuốn từ điển sống.",
+        "215504": "Ông Johnson đúng là một cuốn từ điển sống."
+      },
+      "SourceHash": "1e8d5c1f28954da55cb724db88d70967490414b672dd9c4e6ca6d43d3d3bff26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "995a632b12",
+      "Fields": {
+        "Meaning": "Bản thân, chính mình",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "自分（じぶん）chỉ bản thân người đang được nói đến. 自分で nghĩa là tự mình làm, còn 自分の nêu thứ thuộc về mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149918": "Hãy làm theo nhịp độ của riêng bạn.",
+        "149971": "Bạn phải tự làm việc đó."
+      },
+      "SourceHash": "533cd4163f9718ba34eb196a7266beae8039f1071cb18b50964eec68d1d956d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01420cdf0f",
+      "Fields": {
+        "Meaning": "Đóng, khép, đóng cửa",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "閉まる（しまる）dùng khi cửa khép lại hoặc cửa hàng đóng cửa. 閉まっている diễn tả trạng thái đang đóng.",
+        "UsageNotes": "閉まる không tự nói rõ cửa có khóa hay không. 閉める là tha động từ, chỉ hành động đóng thứ gì."
+      },
+      "Examples": {
+        "201896": "Vì cửa đóng nên tôi không vào được.",
+        "234558": "Tiếc là cửa hàng đã đóng cửa."
+      },
+      "SourceHash": "28af9bc5171e6de84aa75fb0b5531820f3268fa8b0ffc4e6837704571329ca4f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e6c15bef9",
+      "Fields": {
+        "Meaning": "Buộc, thắt, siết",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "締める（しめる）dùng khi buộc, siết chặt hoặc thắt một thứ như dây an toàn. シートベルトを締める nghĩa là thắt dây an toàn.",
+        "UsageNotes": "Phân biệt với 閉める, cũng đọc しめる, nghĩa là đóng cửa hoặc đóng một vật."
+      },
+      "Examples": {
+        "216597": "Xin hãy thắt dây an toàn.",
+        "228764": "Hãy luôn thắt dây an toàn."
+      },
+      "SourceHash": "2991c1e62602639495d423580be0e234dd9e2b69d2c1b76bd7e457facbd9f429"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95827b08e3",
+      "Fields": {
+        "Meaning": "Đóng, khép",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "閉める（しめる）diễn tả hành động đóng cửa hoặc đóng cửa hàng. Vật được đóng đi với を.",
+        "UsageNotes": "閉まる chỉ việc tự đóng hoặc trạng thái đóng. 締める dùng khi thắt hoặc siết."
+      },
+      "Examples": {
+        "201657": "Bạn đóng cửa giúp tôi được không?",
+        "223505": "Cửa hàng bách hóa này đóng cửa lúc bảy giờ."
+      },
+      "SourceHash": "ef8221efb81ad3074099db918d397e0c39dfc7879ffb3daa698142fe5574278d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "091c8c0e07",
+      "Fields": {
+        "Meaning": "Vậy thì, thế thì",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "じゃ và じゃあ là cách nói thân mật của では khi nối sang quyết định, đề nghị hoặc lời chào tiếp theo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215754": "Vậy lát nữa tôi quay lại nhé.",
+        "215913": "Vậy cho tôi xin chìa khóa được không ạ?"
+      },
+      "SourceHash": "2b36ffdd0ae262842d9cbcdeac8728b30147ac16e0e3f19b26bdc5361c0f68d8"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu nguồn. Dùng lại bản dịch câu 214855, 223642 và 214120.",
+    "Mục ズボン ghi cách diễn đạt tự nhiên hơn cho câu 202838."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8722990f1",
+      "Fields": {
+        "Meaning": "Ngay, ngay lập tức",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "すぐに đứng trước động từ để chỉ việc xảy ra ngay hoặc rất sớm. すぐに出かける là ra ngoài ngay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214855": "Tôi có phải viết ngay không?",
+        "214879": "Có vẻ nên đi ngay thì hơn."
+      },
+      "SourceHash": "3ee7c1510ce9d7eea7398aa98fd4a422e05754d92434447492fc50cc612b3ab5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c373555102",
+      "Fields": {
+        "Meaning": "Một chút, một ít",
+        "PartOfSpeech": "Phó từ, danh từ",
+        "Explanation": "少し chỉ lượng hoặc mức độ nhỏ. 少しテレビを見る là xem ti vi một lúc, còn 少しきつい là hơi chật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146856": "Tôi xem ti vi một chút được không?",
+        "223642": "Chiếc chân váy này hơi chật quá."
+      },
+      "SourceHash": "7a85b46851a4803be9e2378603c0a1d482724e2628d8cf5851628437e31d6143"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "67f5908e10",
+      "Fields": {
+        "Meaning": "Mát, mát mẻ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "涼しい（すずしい）tả không khí hoặc thời tiết mát. 涼しくなる nghĩa là trở nên mát hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122850": "Trời ngày một mát hơn.",
+        "203059": "Trời đang dần mát hơn."
+      },
+      "SourceHash": "797f2b2517e6e7a67451f869129769bf112110bbb398e962579888f9f66bd234"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8149d77689",
+      "Fields": {
+        "Meaning": "Lò sưởi, máy sưởi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ストーブ thường chỉ thiết bị sưởi ấm. ストーブで体を暖める nghĩa là sưởi ấm người bằng lò sưởi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113365": "Anh ấy sưởi ấm người bên lò sưởi.",
+        "157236": "Tôi trả giá mười đô la cho chiếc lò sưởi cũ."
+      },
+      "SourceHash": "edce4e88057554ef86ccdb6d818b740e80c640c2645c3b102891ac031c465916"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "938a169f6c",
+      "Fields": {
+        "Meaning": "Thìa, muỗng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スプーン chỉ thìa hoặc muỗng dùng để ăn, khuấy hoặc múc. スプーンをいただけますか là cách xin thìa lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214525": "Cho tôi xin một cái thìa được không ạ?",
+        "214526": "Thiếu một cái thìa."
+      },
+      "SourceHash": "fe2ed58571b0b540580ee15330093a12e74597a31a68071816cead896697cad1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a33903ccf",
+      "Fields": {
+        "Meaning": "Thể thao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スポーツ chỉ các môn hoặc hoạt động thể thao. スポーツがうまい nghĩa là chơi thể thao giỏi.",
+        "UsageNotes": "なさる là dạng kính ngữ của する."
+      },
+      "Examples": {
+        "197412": "Billy chơi thể thao giỏi.",
+        "200376": "Anh/chị chơi những môn thể thao nào ạ?"
+      },
+      "SourceHash": "5e6378dd46f3767ba57e3688f8d33a04ba743533b1fdd870d1f74dfdc5ef2142"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "10fe0704ca",
+      "Fields": {
+        "Meaning": "Quần dài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ズボン chỉ quần dài. ズボンをはく nghĩa là mặc quần. ひざが出る nói phần đầu gối của quần bị dão, phồng ra.",
+        "UsageNotes": "Câu 202838 dùng につめて. Khi nhờ bóp quần cho nhỏ lại, cách nói tự nhiên hơn là ズボンを少し詰めてください."
+      },
+      "Examples": {
+        "202838": "Bóp chiếc quần này vào một chút giúp tôi nhé.",
+        "223621": "Chiếc quần này dễ bị dão ở đầu gối."
+      },
+      "SourceHash": "5148f5988388ed99239331c9428a974f3f246accfcffce490e0bccc6b9542a41"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "feae64eac4",
+      "Fields": {
+        "Meaning": "Xin lỗi, xin phép làm phiền",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "すみません dùng khi xin lỗi, thu hút sự chú ý hoặc mở đầu lời nhờ vả. すみませんが thường mở đầu lời nhờ lịch sự.",
+        "UsageNotes": "Từ này cũng có thể bày tỏ sự cảm kích khi người khác đã giúp mình."
+      },
+      "Examples": {
+        "214132": "Xin lỗi, anh/chị nghe điện thoại giúp tôi với.",
+        "214207": "Xin lỗi, chỗ này còn trống không ạ?"
+      },
+      "SourceHash": "8b0cee4bdc9c5ee44d830f136a78f484e337e2b3e62e3ca5b4f42b94ec08ea2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d671097071",
+      "Fields": {
+        "Meaning": "Sống, cư trú",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "住む（すむ）chỉ việc sống ở một nơi. Nơi cư trú đi với に. 住んでいた chỉ việc đã từng sống ở đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201568": "Sao anh ấy lại từng sống ở Mỹ?",
+        "224491": "Trước đây anh/chị từng sống ở đây à?"
+      },
+      "SourceHash": "872aa6598585097d933ea4a740dbc3008dd840ee954c7d816805fed802a3568a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "508131fe89",
+      "Fields": {
+        "Meaning": "Dép lê, dép đi trong nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スリッパ thường chỉ dép lê đi trong nhà. スリッパをはく nghĩa là mang dép, còn スリッパで có thể nói đang mang dép khi đi đâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214119": "Xin hãy mang dép đi trong nhà.",
+        "214120": "Không được đi dép lê xuống sảnh đâu."
+      },
+      "SourceHash": "3a94c0ef01a928b15850c0048b68d3fd2f20307c3daacf58a3a51929240962d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c4cdc162d7",
+      "Fields": {
+        "Meaning": "Làm, thực hiện",
+        "PartOfSpeech": "Động từ bất quy tắc",
+        "Explanation": "する chỉ việc làm hoặc thực hiện. Ghép với danh từ chỉ hoạt động để tạo động từ, như ログアウトする (đăng xuất).",
+        "UsageNotes": "Thể て là して và thể quá khứ là した. Câu về người bố chứa していた trong 長生きしていた (đã sống lâu)."
+      },
+      "Examples": {
+        "4858": "Lẽ ra tôi không nên đăng xuất.",
+        "84880": "Ước gì bố tôi đã sống lâu hơn."
+      },
+      "SourceHash": "ce97b8b0650cdff2e593c2378566f6d1ef2555b1a051ae95470fb6dc53bcba2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c9a15e8777",
+      "Fields": {
+        "Meaning": "Ngồi, ngồi xuống",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "座る（すわる）chỉ việc ngồi xuống. Chỗ ngồi thường đi với に. 座っている diễn tả trạng thái đang ngồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84829": "Bố mẹ tôi đang ngồi dưới gốc cây.",
+        "231252": "Không được ngồi trên chiếc ghế băng kia."
+      },
+      "SourceHash": "4b287539a8b78f685b4f1a95b83ca23fa0d5da8343cf781778601b54df13b3f5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "898b067287",
+      "Fields": {
+        "Meaning": "Chiều cao, lưng, mặt sau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "背（せ）chỉ vóc người trong 背が高い (cao) hoặc mặt sau, lưng của một vật như いすの背 (lưng ghế).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114666": "Anh ấy đang tựa vào lưng ghế.",
+        "200083": "Tom cao gần bằng Jack."
+      },
+      "SourceHash": "8a30ba1a1f4a5baab4797e1f0fb6cd7e8d7bca1de2e35d3dad05e22d457b474e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af7459ef1e",
+      "Fields": {
+        "Meaning": "Học sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生徒（せいと）chỉ người học, thường là học sinh ở trường phổ thông hoặc học viên trong lớp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222600": "Trường này có nhiều học sinh.",
+        "231798": "Bạn không phải là học sinh."
+      },
+      "SourceHash": "27b3decc123d1fc4eb623224b0245e491da30405d93a6557da3aff1e93d470af"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4b0b49a42d",
+      "Fields": {
+        "Meaning": "Áo len",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "セーター chỉ áo len hoặc áo dệt kim mặc ở thân trên. セーターを着る nghĩa là mặc áo len.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83138": "Tôi đã nhờ mẹ vá chiếc áo len này.",
+        "223610": "Tôi không thích chiếc áo len này."
+      },
+      "SourceHash": "8d5adac04a3190e99d2f4f4217bf16914757af3f746caa5c99e3cec4b8db11b2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b48d0c99d4",
+      "Fields": {
+        "Meaning": "Xà phòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "せっけん có thể viết là 石鹸. せっけんで手を洗う nghĩa là rửa tay bằng xà phòng. だらけ chỉ việc dính đầy thứ gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214032": "Đừng chạm vào tôi bằng đôi tay đầy xà phòng.",
+        "10899704": "Tôi đã rửa tay bằng xà phòng."
+      },
+      "SourceHash": "db3a24a15ce9d84cb309be24e2f7c66200a1804502b1873f3e272dd33fff00ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d432ac114",
+      "Fields": {
+        "Meaning": "Bộ com-lê, bộ vest",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "背広（せびろ）thường chỉ bộ com-lê nam. 背広を着る nghĩa là mặc com-lê. くたくたの背広 chỉ bộ đồ đã sờn cũ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74070": "Anh ấy mặc một bộ com-lê đã sờn cũ.",
+        "155725": "Tôi mua một bộ com-lê mới."
+      },
+      "SourceHash": "25722137d2ff91deb965a7b4a8435aa43ba9c2f8065170e0fd3e09b1db545e57"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d12ee2e932",
+      "Fields": {
+        "Meaning": "Hẹp, chật, nhỏ về diện tích",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "狭い（せまい）tả nơi có ít không gian hoặc diện tích nhỏ. 狭い通り là đường hẹp, còn 狭い国 là nước có diện tích nhỏ.",
+        "UsageNotes": "Từ trái nghĩa là 広い（ひろい）."
+      },
+      "Examples": {
+        "207729": "Con đường đó rất hẹp.",
+        "227474": "Hà Lan là một nước có diện tích nhỏ."
+      },
+      "SourceHash": "8f8fe991729891d27b80fe55e9963d95dd1bae4f5c58abc946136a683a507673"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "434707d737",
+      "Fields": {
+        "Meaning": "Số không, bằng không",
+        "PartOfSpeech": "Danh từ, số từ",
+        "Explanation": "ゼロ chỉ số không hoặc việc không có gì. ゼロから始める nghĩa là bắt đầu từ con số không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165629": "Chúng tôi phải bắt đầu kinh doanh từ con số không.",
+        "213989": "Khái niệm số không bắt nguồn từ văn hóa Hindu."
+      },
+      "SourceHash": "7b783b28068c71d066693a68c180e9cbe9b3655195a35bf09e086ca449fd484b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1729d60f09",
+      "Fields": {
+        "Meaning": "Một nghìn",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "千（せん）là một nghìn. 二千人（にせんにん）là hai nghìn người. Trong 千人も, も nhấn mạnh số lượng lớn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141432": "Có tới một nghìn người ở đó.",
+        "223188": "Hội trường này chứa được hai nghìn người."
+      },
+      "SourceHash": "dcf1c7a62143376076a53ae81f31911f9bddbbed2186af5d17835b4955d9ae6d"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "382bde5adf",
+      "Fields": {
+        "Meaning": "Giới hạn, chỉ, là lựa chọn tốt nhất",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "とは限らない chỉ điều chưa chắc đúng. に限る có thể nêu lựa chọn tốt nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147466": "Ngày nóng thì bia lạnh là nhất.",
+        "179680": "Người giàu chưa chắc đã hạnh phúc."
+      },
+      "SourceHash": "58c46e5433031b7f913189b2d290485e82e4b58b754917224f298110205a9757"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f06c0b68a6",
+      "Fields": {
+        "Meaning": "Đồ nội thất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "家具（かぐ）có nghĩa là đồ nội thất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84222": "Trong phòng không có đồ nội thất.",
+        "84228": "Trong phòng hầu như không có đồ nội thất."
+      },
+      "SourceHash": "1062a035466b45dcf342d0fbac1f8aa0ff3cb4b94b9e2f1f0b0e1971ae5fb847"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a0748eb71f",
+      "Fields": {
+        "Meaning": "Học vấn, ngành học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "学（がく）có nghĩa là học vấn, ngành học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100723": "Ông ấy rất uyên bác.",
+        "146487": "Tuổi trẻ qua mau, học vấn khó thành."
+      },
+      "SourceHash": "e76cb63d7d868380fadc5bb81eb2b8924e4f911a450025a8ca4d82f13b050764"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27db6f596b",
+      "Fields": {
+        "Meaning": "Khung tranh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "額（がく）có nghĩa là khung tranh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222592": "Giá khung này đã bao gồm thuế.",
+        "222593": "Đặt vào khung này thì bức tranh sẽ nổi bật."
+      },
+      "SourceHash": "e59108874251b2bf18819228c14b65b71f265a4e7686df1f121edfbd90df484c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c231d12e3a",
+      "Fields": {
+        "Meaning": "Sự chuẩn bị tinh thần, quyết tâm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "覚悟（かくご）có nghĩa là sự chuẩn bị tinh thần, quyết tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160508": "Tôi đã chuẩn bị tinh thần rồi.",
+        "170767": "Bạn đã chuẩn bị tinh thần cho trường hợp xấu nhất chưa?"
+      },
+      "SourceHash": "1c43789c853c083d32aac2ad63a785e26b088bf3aa268a033331846395a08ec0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a56358cae",
+      "Fields": {
+        "Meaning": "Chắc chắn, đáng tin cậy",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "確実（かくじつ）có nghĩa là chắc chắn, đáng tin cậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205383": "Chuyện đó cũng chưa hoàn toàn chắc chắn.",
+        "218196": "Cách này chậm nhưng chắc chắn."
+      },
+      "SourceHash": "b261d14d20376510b80ebf6a8a973b112033dae0789abc8ebbec1035ca7f5302"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "658366a1aa",
+      "Fields": {
+        "Meaning": "Học giả, nhà nghiên cứu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "学者（がくしゃ）có nghĩa là học giả, nhà nghiên cứu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104110": "Ông ấy cũng có đôi nét của một học giả.",
+        "211651": "Nhà nghiên cứu ấy tiếp tục công trình cả đời mình."
+      },
+      "SourceHash": "ac9231a0ecfe43109b242719380574c817e3e574c39640d008f81e39b0df8bbb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcb8af927c",
+      "Fields": {
+        "Meaning": "Học tập",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "学習（がくしゅう）có nghĩa là học tập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184331": "Nên tận dụng mọi cơ hội học tập.",
+        "218237": "Tôi nghĩ đây chưa phải là cách tốt để học môn sinh học."
+      },
+      "SourceHash": "ec6d39672bbe66bbf50c591b2565372a46800e62717f5a0933bbf807df222a65"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cb73559c84",
+      "Fields": {
+        "Meaning": "Giấu, che giấu",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "隠す（かくす）có nghĩa là giấu, che giấu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77289": "Ông lão định giấu tiền dưới đất.",
+        "152874": "Tôi thấy mẹ giấu bánh."
+      },
+      "SourceHash": "ca400446e0f1c1bb0d8f5a0d199e652127e7b434aacdaee36fc94a5d38591208"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "adc631a6f6",
+      "Fields": {
+        "Meaning": "Mở rộng, phóng to",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "拡大（かくだい）có nghĩa là mở rộng, phóng to.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107695": "Ông ấy mở rộng đối tượng nghiên cứu.",
+        "236817": "Năm nay hoạt động kinh doanh mở rộng 50%."
+      },
+      "SourceHash": "b473126bab573c793a428c7f5a8373212a52779bd8b9666d90c9ec443cc85246"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc65b93656",
+      "Fields": {
+        "Meaning": "Học vấn, học thuật",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "学問（がくもん）có nghĩa là học vấn, học thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146844": "Hiểu biết hời hợt có thể nguy hiểm.",
+        "184185": "Học vấn không có đường tắt."
+      },
+      "SourceHash": "2b6ec3b2b782acba059479cdc70ebde19c056fa73daeb2da3c2c2db269b4ed17"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a8f495a2f",
+      "Fields": {
+        "Meaning": "Ẩn, trốn, khuất",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "隠れる（かくれる）có nghĩa là ẩn, trốn, khuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138184": "Mặt trời khuất sau mây.",
+        "168856": "Đứa trẻ trốn trong hộp."
+      },
+      "SourceHash": "056e65f446e56c3cd527235dbb8d0255287290ffcf39c1799bb301d14f46c8d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20fbba9af9",
+      "Fields": {
+        "Meaning": "Bóng râm, nơi khuất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "陰（かげ）có nghĩa là bóng râm, nơi khuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189937": "Không nên nói xấu người khác sau lưng.",
+        "230435": "Mình ngồi dưới bóng cây kia nhé."
+      },
+      "SourceHash": "9fd8c1c483464b353dea63851c3290cbc023a2f3a906b660d30813586da3a303"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7582c1d86e",
+      "Fields": {
+        "Meaning": "Bóng, bóng phản chiếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "影（かげ）có nghĩa là bóng, bóng phản chiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143812": "Tôi thấy bóng phản chiếu trong vũng nước.",
+        "209181": "Cô bé sợ chính cái bóng của mình."
+      },
+      "SourceHash": "a791307e00e9b4179fc231c5fb0a984a787a414344c7c66e2f46aa2b2157d6de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5afc90a96",
+      "Fields": {
+        "Meaning": "Thiếu, bị mẻ, khuyết",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "欠ける（かける）có nghĩa là thiếu, bị mẻ, khuyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188549": "Tôi bị mẻ răng hàm.",
+        "194593": "Mary thiếu sự cảm thông."
+      },
+      "SourceHash": "9e46115e8d711595999ed49bfb243f834de93e63faff876a6f0aac60cdf0c726"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04e1e7a756",
+      "Fields": {
+        "Meaning": "Mức độ, tình trạng, sự điều chỉnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "焼き加減 là độ chín khi nướng. 加減 cũng có thể chỉ tình trạng sức khỏe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74914": "Quý khách muốn thịt chín tới mức nào ạ?",
+        "83124": "Sức khỏe của mẹ tôi không khá lên chút nào. Dường như còn tệ hơn."
+      },
+      "SourceHash": "16a045b42811c0338a2f4efcc212f0cca4669f8ea52662dcbc717debce453458"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0384482e1f",
+      "Fields": {
+        "Meaning": "Quá khứ",
+        "PartOfSpeech": "Danh từ, phó từ, bổ nghĩa với の",
+        "Explanation": "過去（かこ）có nghĩa là quá khứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161409": "Tôi cố không mãi bận lòng về quá khứ.",
+        "165109": "Chúng ta tìm hiểu quá khứ vì tương lai."
+      },
+      "SourceHash": "eb681ed784501a2cf6d053ed8875bd35c625c3278e90b409ebe8c5581060221c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef51ee87ac",
+      "Fields": {
+        "Meaning": "Giỏ, lồng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "籠（かご）có nghĩa là giỏ, lồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77085": "Hãy đếm số táo trong giỏ.",
+        "213288": "Chiếc giỏ đầy táo."
+      },
+      "SourceHash": "60b04226fb9a7578a105ec7a132f4e8dc34e9684f30b84f9b5e4cba6d2460169"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01be08cd64",
+      "Fields": {
+        "Meaning": "Bao quanh, vây quanh",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "囲む（かこむ）có nghĩa là bao quanh, vây quanh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106562": "Ông ấy ngồi giữa vòng vây của lũ trẻ.",
+        "207707": "Khu vườn được bao quanh bởi hàng rào gỗ."
+      },
+      "SourceHash": "35631b30e5d7fced38bf9ee1e7402a0e2e13e7ac87bfa4f05fde78f95d4c52db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "222231aefb",
+      "Fields": {
+        "Meaning": "Hỏa hoạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "火災（かさい）có nghĩa là hỏa hoạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126127": "Một vụ cháy xảy ra giữa thị trấn.",
+        "186714": "Nguyên nhân vụ cháy là gì?"
+      },
+      "SourceHash": "2f8e0324b67b7ccf708ee42a89fa088c6d27284af63de7f719637067eb82913e"
+    }
+  ]
+}

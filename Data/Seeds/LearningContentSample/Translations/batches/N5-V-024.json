@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 39 câu theo bản Nhật. Mục バス có một câu nguồn.",
+    "Dùng lại bản dịch các câu 198453, 122091 và 173570."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28111455cd",
+      "Fields": {
+        "Meaning": "Bữa tiệc, buổi tiệc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パーティー chỉ một buổi tiệc hoặc buổi gặp mặt. パーティーはいつにする dùng khi bàn chọn thời điểm tổ chức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198449": "Buổi tiệc có vui không?",
+        "198453": "Mình tổ chức tiệc khi nào nhỉ."
+      },
+      "SourceHash": "e57af6292183bbcf82fdad257632e0eb05b873a8769e61252705eba7f73db628"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "542f39c93d",
+      "Fields": {
+        "Meaning": "Vâng, dạ, đúng vậy",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "はい dùng để đáp lời hoặc xác nhận. Trong はい、そうです, người nói xác nhận điều vừa được hỏi.",
+        "UsageNotes": "はい vẫn có thể đứng trước một mệnh đề phủ định để xác nhận điều được hỏi."
+      },
+      "Examples": {
+        "198381": "Vâng, tôi đã không ra ngoài.",
+        "236422": "“A lô, có phải anh/chị Brown không ạ?” “Vâng, đúng rồi.”"
+      },
+      "SourceHash": "283f0a7f1eebff805a76c11da4c8e542e7425f0cbd8b4e1daf0ded9793095ad6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5cc1dad1e8",
+      "Fields": {
+        "Meaning": "Gạt tàn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "灰皿（はいざら）là đồ đựng tàn thuốc. 灰皿の代わりになる nghĩa là dùng thay gạt tàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185012": "Cho tôi xin một cái gạt tàn.",
+        "211587": "Cái lon đó dùng thay gạt tàn được."
+      },
+      "SourceHash": "cedffab8b3a2768550bbff69e6602988cdaa6e337ec40d5e1ef789b3a462ffd6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c428d02d43",
+      "Fields": {
+        "Meaning": "Vào, đi vào, chứa được",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "入る（はいる）chỉ việc đi vào một nơi hoặc vật vừa trong chỗ chứa. 入ってくる nghĩa là đi vào phía người nói hoặc nơi đang được nhắc đến.",
+        "UsageNotes": "Thể て là 入って."
+      },
+      "Examples": {
+        "122091": "Xin hãy gõ cửa trước khi vào.",
+        "173570": "Hiệu trưởng bước vào từ phía sau giáo viên."
+      },
+      "SourceHash": "91bc435ec9ae15bef4f797d45df9f94afb5ed28c36cc9bf524d488ae4dd89a6f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "645e1e3b4d",
+      "Fields": {
+        "Meaning": "Bưu thiếp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "葉書（はがき）chỉ bưu thiếp, cũng thường viết là はがき. 葉書を送る là gửi bưu thiếp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78830": "Gửi cho tôi một tấm bưu thiếp nhé.",
+        "220432": "Cửa hàng này có nhiều bưu thiếp."
+      },
+      "SourceHash": "c2adf20c184015bc71fe6a78aa4dfe071d0264748cc5458e4fda5397c94d6bf8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4729cc56f4",
+      "Fields": {
+        "Meaning": "Mặc quần, mang giày hoặc tất",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "はく dùng với đồ mặc ở phần thân dưới hoặc đồ mang ở chân. Có thể viết 履く với giày dép và 穿く với quần.",
+        "UsageNotes": "Thể て là はいて. はけない nghĩa là không mang hoặc mặc được."
+      },
+      "Examples": {
+        "201604": "Bạn sao thế, lại mặc quần ống loe?",
+        "222263": "Đôi giày này chật quá, không xỏ vào được."
+      },
+      "SourceHash": "0514cfa1a787c0f750fe3b934754fa2921a1fd05f8f8650f1639e45a3d308ad4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "658b912df8",
+      "Fields": {
+        "Meaning": "Hộp, thùng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "箱（はこ）chỉ hộp hoặc thùng để đựng đồ. 箱の中 là bên trong hộp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207213": "Cái hộp đó gần đầy rồi.",
+        "207226": "Trong cái hộp đó không có gì cả."
+      },
+      "SourceHash": "4793d666c459b8c9a8fc4906d1cb2ead66823da54fbeea4f40f375d55a6dae7b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ce7f7d305",
+      "Fields": {
+        "Meaning": "Đũa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "はし với nghĩa đũa thường viết là 箸. 箸で食べる là ăn bằng đũa.",
+        "UsageNotes": "橋 (cây cầu) cũng đọc là はし."
+      },
+      "Examples": {
+        "192400": "Lucy không biết dùng đũa.",
+        "198541": "Ông Parker đã thử ăn bằng đũa."
+      },
+      "SourceHash": "c5b3cd39584ce6a988be1fabc2ba2f5357d91bac74ee9aec87fef979dfc1b553"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f663254b0",
+      "Fields": {
+        "Meaning": "Cầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "橋（はし）chỉ công trình nối hai bên để đi qua. 橋の長さ nghĩa là chiều dài của cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211383": "Cây cầu đó dài 100 mét.",
+        "211389": "Cây cầu đó dài bao nhiêu?"
+      },
+      "SourceHash": "c2e1bb46541d38ec98b8986d13a534ebfe46493eea5b72af4c9e90ca08d39ff3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fea1e3f3c",
+      "Fields": {
+        "Meaning": "Bắt đầu, khai mạc",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "始まる（はじまる）dùng khi một sự kiện hoặc hoạt động bắt đầu. Sự kiện đi với が.",
+        "UsageNotes": "始める là tha động từ, dùng khi ai đó bắt đầu một việc."
+      },
+      "Examples": {
+        "172848": "Buổi hòa nhạc sắp bắt đầu rồi.",
+        "184419": "Trường bắt đầu vào học lúc tám giờ rưỡi phải không?"
+      },
+      "SourceHash": "5575521c44b84258f3a1ca8876b709d027c9cf3ff08f965aa54f1b87af77512a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e5b36d7b24",
+      "Fields": {
+        "Meaning": "Ban đầu, phần đầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "初め（はじめ）chỉ lúc đầu hoặc phần đầu của một khoảng thời gian. 初めの二日間 là hai ngày đầu tiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147521": "Khởi đầu tốt thì mọi việc sẽ tốt.",
+        "162444": "Hai ngày đầu của chuyến đi trời mưa."
+      },
+      "SourceHash": "aa16025b45dc492b7516b0b575c1850a6b917790a7408637cf48f4347e9bc9b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f18999e09",
+      "Fields": {
+        "Meaning": "Lần đầu tiên",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "初めて（はじめて）đứng trước động từ để nói làm gì lần đầu. 初めての ＋ danh từ chỉ một trải nghiệm hoặc thứ mới gặp lần đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147558": "Toàn là những thứ tôi mới gặp lần đầu.",
+        "147562": "Tôi ăn sầu riêng lần đầu tiên."
+      },
+      "SourceHash": "ea678e254db2d56cae73abecef120960ceaf3631a00928ec4f94f41053dce082"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2c1e54c17",
+      "Fields": {
+        "Meaning": "Rất vui được gặp anh/chị",
+        "PartOfSpeech": "Cụm từ chào hỏi",
+        "Explanation": "はじめまして là lời chào khi gặp ai lần đầu. Cũng có thể viết 初めまして.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147522": "Rất vui được gặp bạn, Ken.",
+        "198254": "Rất vui được gặp bà, bà Jones."
+      },
+      "SourceHash": "bd378299451e9bcf080f61b01e6dd2e5fa45b8a9fece3d263aff056edf260c36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "244e138920",
+      "Fields": {
+        "Meaning": "Chạy, chạy xe",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "走る（はしる）dùng khi người chạy hoặc phương tiện di chuyển. 走ってる là cách nói rút gọn của 走っている.",
+        "UsageNotes": "Thể て là 走って."
+      },
+      "Examples": {
+        "214986": "Xe buýt đưa đón học sinh không chạy được.",
+        "230641": "Hãy nhìn cậu bé đang chạy kia."
+      },
+      "SourceHash": "7d39e1b7debaa0baf4f3f2dbefebb00b5a28dbf86ce1a9912af4a120a8256a34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd7df6c7a2",
+      "Fields": {
+        "Meaning": "Xe buýt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "バス chỉ xe buýt. バス通学 là đi học bằng xe buýt hoặc việc đưa đón học sinh bằng xe buýt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77225": "Việc đưa đón học sinh bằng xe buýt và các biện pháp chủ động khắc phục phân biệt đối xử là những chủ đề gây nhiều tranh luận."
+      },
+      "SourceHash": "45b206b14117c16a2c0374c549f8848849203a4a60f0a59a179d63522cc098f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4385616659",
+      "Fields": {
+        "Meaning": "Bơ (từ sữa)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "バター chỉ bơ làm từ sữa. バターつきパン là bánh mì ăn kèm hoặc có phết bơ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198015": "Bơ được làm từ sữa.",
+        "223336": "Tôi dùng bánh mì với bơ này được không ạ?"
+      },
+      "SourceHash": "2549afb6b97c33c4eccd7e3e34eeb90196ca0e0d38959ab2aeff3aa6ac8b0113"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c65a346458",
+      "Fields": {
+        "Meaning": "Hai mươi tuổi",
+        "PartOfSpeech": "Danh từ chỉ tuổi",
+        "Explanation": "二十歳 có cách đọc đặc biệt là はたち. ２０歳になる nghĩa là bước sang tuổi hai mươi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "4707": "Muiriel đã bước sang tuổi hai mươi.",
+        "161998": "Tôi vừa tròn hai mươi tuổi."
+      },
+      "SourceHash": "0b69802e081142d8d054bc50c98052bf8cf62bf96e6175d875e2d124625c1c63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ea671262d",
+      "Fields": {
+        "Meaning": "Làm việc, hoạt động",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "働く（はたらく）thường chỉ làm việc. Với thiết bị hoặc bộ phận, từ này cũng có nghĩa là hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141700": "Không biết thầy cô ấy có làm việc ở đây không nhỉ.",
+        "215137": "Công tắc không hoạt động đúng lúc."
+      },
+      "SourceHash": "bd5d9d91f5e038c674ce3a7e75af39ba5ab2d40f68a0f6f27656bec4d79f9c34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6eeff514e0",
+      "Fields": {
+        "Meaning": "Tám",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "八（はち）là số tám. 八時（はちじ）là tám giờ, còn 八時間（はちじかん）là tám tiếng.",
+        "UsageNotes": "Trong 八時間も, も nhấn mạnh thời lượng dài."
+      },
+      "Examples": {
+        "204945": "Việc đó xảy ra trong khoảng từ tám đến mười giờ.",
+        "212749": "Chuyến đi bộ đường dài đó chắc sẽ mất tới tám tiếng."
+      },
+      "SourceHash": "9c36aecc4f0a0d03a7787e0f05202ba1f2321fd5411b4dec756b7c155c5461de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "153de06669",
+      "Fields": {
+        "Meaning": "Hai mươi ngày, ngày hai mươi",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "二十日（はつか）chỉ ngày hai mươi trong tháng hoặc khoảng thời gian hai mươi ngày. Hai câu nguồn đều dùng nghĩa ngày trong tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "139663": "Lễ tốt nghiệp sẽ diễn ra vào ngày 20 tháng 3.",
+        "154765": "Tôi định về chậm nhất vào ngày hai mươi."
+      },
+      "SourceHash": "86a94bd43b535640c30288547fa5961f3f49f406851e8d9017a195c5b670e175"
+    }
+  ]
+}

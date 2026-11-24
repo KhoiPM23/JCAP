@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "chuu-juu",
+      "Fields": {
+        "Meaning": "Trong, suốt, nội trong",
+        "Formation": "Khoảng thời gian ＋ 中（ちゅう／じゅう）",
+        "Explanation": "午前中に đặt hạn trong buổi sáng. 一日中 đọc là いちにちじゅう và chỉ suốt cả ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "chuu-juu:example:1": "Tôi sẽ làm xong bài tập trong buổi sáng.",
+        "chuu-juu:example:2": "Em trai tôi chơi game suốt ngày."
+      },
+      "SourceHash": "86abed90f351f47b4df867b823f2facb8d2ac75fa656d34308ec6cde3e6320f0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsui",
+      "Fields": {
+        "Meaning": "Lỡ, vô tình, bất giác",
+        "Formation": "つい ＋ động từ (thường đi với てしまう)",
+        "Explanation": "Nói về việc làm ngoài dự định hoặc không cưỡng lại được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsui:example:1": "Đang ăn kiêng mà tôi lỡ ăn đồ ngọt.",
+        "tsui:example:2": "Sách hay quá nên tôi đọc mãi đến khuya."
+      },
+      "SourceHash": "7d7c62551b83fd185bb3587ce9962cb9cd437f5993457fab53ebf2a478df5fdb"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsuide-ni",
+      "Fields": {
+        "Meaning": "Nhân tiện, tiện thể",
+        "Formation": "Động từ thể từ điển hoặc thể た ＋ ついでに／danh từ ＋ のついでに",
+        "Explanation": "Tận dụng dịp thực hiện việc chính để làm thêm việc khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsuide-ni:example:1": "Tiện đi mua đồ, tôi sẽ ghé luôn bưu điện.",
+        "tsuide-ni:example:2": "Tôi đi dạo rồi tiện mua bánh mì mang về."
+      },
+      "SourceHash": "d7f93daa3031ce08db95c653e0f4f8fa15d83ac264147373b2f21de6c955cefc"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tsui-ni",
+      "Fields": {
+        "Meaning": "Cuối cùng, rốt cuộc",
+        "Formation": "ついに ＋ mệnh đề kết quả",
+        "Explanation": "Nhấn mạnh kết quả sau thời gian chờ đợi hoặc cố gắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tsui-ni:example:1": "Sau bao nỗ lực, cuối cùng tôi cũng thi đỗ.",
+        "tsui-ni:example:2": "Trò chơi mới tôi mong chờ cuối cùng cũng đã ra mắt."
+      },
+      "SourceHash": "54a8cece0de76f80aa1f5824b5883789365733bda60c8749565589ef966128a5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kke",
+      "Fields": {
+        "Meaning": "Ấy nhỉ, rồi nhỉ?",
+        "Formation": "Thể thường ＋ っけ／danh từ ＋ だっけ",
+        "Explanation": "Cách nói thân mật để tự nhớ lại hoặc hỏi xác nhận điều mình nhớ chưa chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kke:example:1": "Ơ, mình để chìa khóa ở đâu ấy nhỉ?",
+        "kke:example:2": "Cuộc họp ngày mai bắt đầu lúc mấy giờ nhỉ?"
+      },
+      "SourceHash": "fc2b21db3d777139dba098000b74d42f163122d2e771e7c8724c3cc33a2e9fae"
+    }
+  ]
+}

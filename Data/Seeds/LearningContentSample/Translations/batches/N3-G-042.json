@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "furi-o-suru",
+      "Fields": {
+        "Meaning": "Giả vờ làm, làm như thể",
+        "Formation": "Mệnh đề bổ nghĩa ＋ ふりをする",
+        "Explanation": "Tỏ ra đang làm, biết hoặc cảm thấy điều gì để người khác tin như vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "furi-o-suru:example:1": "Gặp thầy ngoài đường nhưng tôi giả vờ không nhận ra.",
+        "furi-o-suru:example:2": "Em trai giả vờ ngủ để lén nghe chuyện."
+      },
+      "SourceHash": "d90c3bcff6f1cd4bc8d0c8cb5121f4f8f21a21ab3e57300fadbf946e1e4ce5cf"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "beki-da",
+      "Fields": {
+        "Meaning": "Nên, cần phải",
+        "Formation": "Động từ thể từ điển ＋ べきだ (する → するべき／すべき)",
+        "Explanation": "Nêu điều nên làm theo trách nhiệm hoặc cách ứng xử được cho là đúng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "beki-da:example:1": "Đã hứa rồi thì nên chịu trách nhiệm đến cùng.",
+        "beki-da:example:2": "Nếu thấy không khỏe thì nên nghỉ, đừng cố quá."
+      },
+      "SourceHash": "7ffa79607f6b79f5c812a2b16a1c67c6dd0c35b60e373cbb9285ab7b69243cbb"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "beki-dewa-nai",
+      "Fields": {
+        "Meaning": "Không nên",
+        "Formation": "Động từ thể từ điển ＋ べきではない",
+        "Explanation": "Nêu hành động không phù hợp. べきではなかった diễn tả lẽ ra không nên làm một việc đã xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "beki-dewa-nai:example:1": "Không nên tự tiện đọc nhật ký của người khác.",
+        "beki-dewa-nai:example:2": "Lẽ ra tôi không nên nói vậy khi chưa nghĩ đến cảm xúc của người kia."
+      },
+      "SourceHash": "42b9cac984f947344025cba0a8876356f56bea66cd05d53a1be92dad5bb1fdd9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "betsu-ni-nai",
+      "Fields": {
+        "Meaning": "Không có gì đặc biệt, không… lắm",
+        "Formation": "別に ＋ vị ngữ phủ định",
+        "Explanation": "Phủ nhận rằng có điều gì đáng kể, thường với giọng thản nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "betsu-ni-nai:example:1": "“Có chuyện gì vậy?” “Không có gì đâu.”",
+        "betsu-ni-nai:example:2": "Phim này cũng chẳng hay lắm."
+      },
+      "SourceHash": "4c3be4c116ff0652aae1261ee0a781243262d3e84a9b2b80a85eb2e13c46ec66"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hodo",
+      "Fields": {
+        "Meaning": "Đến mức, tới độ",
+        "Formation": "Mệnh đề hoặc cụm chỉ mức độ ＋ ほど",
+        "Explanation": "Dùng một tình huống cụ thể để minh họa mức độ mạnh của cảm giác hoặc trạng thái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hodo:example:1": "Chân tôi mỏi đến mức không đứng nổi.",
+        "hodo:example:2": "Tôi vui đến mức muốn khóc."
+      },
+      "SourceHash": "3208f86828781f4c6101f7d3c8e5c70abf5f9226381cb322e4a08e04574b0fb5"
+    }
+  ]
+}

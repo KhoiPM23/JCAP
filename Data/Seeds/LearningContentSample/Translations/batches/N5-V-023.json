@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật.",
+    "Giữ nhất quán bốn câu đã xuất hiện ở các lô trước."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1227b20370",
+      "Fields": {
+        "Meaning": "Xếp hàng, đứng thành hàng, ở cạnh nhau",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "並ぶ（ならぶ）chỉ người hoặc vật tự xếp thành hàng. 並んで座る nghĩa là ngồi cạnh nhau.",
+        "UsageNotes": "並べる chỉ hành động xếp các vật thành hàng."
+      },
+      "Examples": {
+        "147326": "Các cô bé ngồi cạnh nhau.",
+        "229608": "Sao bạn lại xếp hàng vậy?"
+      },
+      "SourceHash": "a4d2a0051b372def95e3e5c42ebe020e67abeaa731c6fb7ddea40f3dcff559f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1635de1a94",
+      "Fields": {
+        "Meaning": "Xếp, bày ra",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "並べる（ならべる）chỉ việc sắp xếp hoặc bày nhiều thứ. テーブルに並べる là bày lên bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79117": "Bữa tối được bày lên bàn.",
+        "194690": "Người giúp việc bày dao và nĩa lên bàn."
+      },
+      "SourceHash": "7b6c5b114d75f53311433f5edcd497af348ff615d59558ba26b91a6fe950b655"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e05de4981d",
+      "Fields": {
+        "Meaning": "Trở thành, trở nên",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "なる chỉ sự thay đổi. Với tính từ đuôi い, đổi い thành く trước なる, như 長くなる (trở nên dài hơn).",
+        "UsageNotes": "Trong インターネットなるもの, なる mang nghĩa được gọi là. Đây là cách dùng khác với nghĩa trở thành."
+      },
+      "Examples": {
+        "122958": "Ban ngày đang dần dài hơn.",
+        "202981": "Ngoài xã hội, thứ gọi là Internet đang thịnh hành."
+      },
+      "SourceHash": "5d6d2eef3bfc4cfe2101a7f6ba35508608fcca3c6862b67b089e34b5cdb13dbb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "558866ef86",
+      "Fields": {
+        "Meaning": "Gì, mấy, bao nhiêu",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "何 có thể đọc なん hoặc なに tùy cấu trúc. 何と言う thường đọc なんという khi hỏi cách gọi.",
+        "UsageNotes": "何本か nghĩa là vài vật được đếm bằng 本. Câu nguồn dùng để nói vài cây."
+      },
+      "Examples": {
+        "184431": "Có thể thấy vài cây trước trường.",
+        "236417": "Hoa ly gọi là gì trong tiếng Anh?"
+      },
+      "SourceHash": "54040faba7410c899d7b557296b051c1da9a3d5678f6758852210550ec91f379"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34108268e1",
+      "Fields": {
+        "Meaning": "Hai",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "二（に）là số hai. 二千人 là hai nghìn người.",
+        "UsageNotes": "二、三 có thể chỉ khoảng hai hoặc ba."
+      },
+      "Examples": {
+        "123182": "Có hai, ba điểm bất lợi nhỉ.",
+        "223188": "Hội trường này chứa được hai nghìn người."
+      },
+      "SourceHash": "9b644b7a43326aad81a1538e9e42b899244c30db44a8b320407a9d50e2772a1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c17f97fafc",
+      "Fields": {
+        "Meaning": "Náo nhiệt, nhộn nhịp",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "賑やか（にぎやか）tả nơi đông vui, nhộn nhịp. Trước danh từ dùng にぎやかな.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198795": "Tôi thích những nơi náo nhiệt.",
+        "220474": "Con phố này nhộn nhịp."
+      },
+      "SourceHash": "72ca554612557328e46a960997b2a9295a436e28d7330e1302013df8c8fb0008"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "436f1c3c65",
+      "Fields": {
+        "Meaning": "Tây, phía tây",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "西（にし）chỉ hướng tây. 西へ chỉ hướng di chuyển, còn 〜の西の方に chỉ vị trí về phía tây của một mốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77480": "Đoàn tàu đang chạy về phía tây.",
+        "188893": "Nhà ga nằm về phía tây của khách sạn."
+      },
+      "SourceHash": "91879a75abe17623ec0e773b87c570b7f505d9e99c6449107069dfbd52b5317f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d8c3a3f0d0",
+      "Fields": {
+        "Meaning": "Chủ nhật",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "日曜日（にちようび）là Chủ nhật. 日曜日に chỉ thời điểm vào Chủ nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122163": "Tôi thường chơi quần vợt vào Chủ nhật.",
+        "202889": "Rơi đúng vào Chủ nhật nhỉ."
+      },
+      "SourceHash": "fcb4d35d49d42b4a856b4a6bfa97f7bf573043cbee0fb8f1692beb6e8ecfab3d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2e6c7d2d9d",
+      "Fields": {
+        "Meaning": "Hành lý, đồ đạc mang theo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "荷物（にもつ）chỉ hành lý hoặc đồ cần mang, chuyển. 荷物をはかりにのせる là đặt hành lý lên cân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186542": "Vui lòng đặt hành lý lên cân.",
+        "217565": "Tôi đưa hành lý này lên trên được không ạ?"
+      },
+      "SourceHash": "b7714f52369944407ccc0eee09aac423ee159d98bac8c61113015b28dcbf569a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b824bec2c5",
+      "Fields": {
+        "Meaning": "Tin tức, bản tin",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ニュース chỉ tin tức hoặc chương trình bản tin. テレビニュース là bản tin truyền hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "212803": "Tôi nghe tin đó trên đài.",
+        "231300": "Anh/chị thấy bản tin truyền hình đó thế nào?"
+      },
+      "SourceHash": "38a173262dc40a42e992b85b8f3f0036a204d8de08d8631f2fc3ab93fd9c62bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ef6c9d703",
+      "Fields": {
+        "Meaning": "Vườn, sân vườn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "庭（にわ）chỉ khoảng sân hoặc vườn thuộc một ngôi nhà hay công trình. 庭の中 là trong vườn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207712": "Trong vườn đó không có một bông hồng nào.",
+        "228283": "Một con thỏ đang chạy trong vườn."
+      },
+      "SourceHash": "fc1dbd36be7759238d491a9a4146a9e2a4a4f7490cc60b133a77a7521bf72cad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3af80b5b2a",
+      "Fields": {
+        "Meaning": "Cởi, tháo (quần áo, giày dép)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "脱ぐ（ぬぐ）dùng khi cởi đồ đang mặc hoặc tháo giày dép. Thứ được cởi đi với を.",
+        "UsageNotes": "Thể て là 脱いで."
+      },
+      "Examples": {
+        "224569": "Tôi có phải cởi giày ở đây không?",
+        "224957": "Bạn cởi áo khoác ra đi, được không?"
+      },
+      "SourceHash": "bfa4a9e7a54c849abff234d77b64930c56c93632721714b8b422bc3bca6ddd9b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f01adebd7",
+      "Fields": {
+        "Meaning": "Âm ấm, không đủ nóng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "温い（ぬるい）thường viết ぬるい. Từ này tả chất lỏng chỉ hơi ấm hoặc đã nguội so với mức mong muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196881": "Nước tắm không đủ nóng nên tắm chẳng thấy đã.",
+        "223801": "Cà phê này không đủ nóng."
+      },
+      "SourceHash": "8f89021a85f49bb65d4061d2d5ad1efbfeeba72025a3bef2958d7072ba0e69f3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "18046e46a1",
+      "Fields": {
+        "Meaning": "Cà vạt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ネクタイ chỉ cà vạt. ネクタイを締める là thắt cà vạt, còn ネクタイがほどける là cà vạt bị tuột nút.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178510": "Cà vạt của bạn bị tuột nút rồi kìa.",
+        "223401": "Chiếc cà vạt này giá bao nhiêu?"
+      },
+      "SourceHash": "cef50f910f03b23df89b2c3b5710c74b72f9c1b67bda22faafecff09fac72d52"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cbbfc8cad6",
+      "Fields": {
+        "Meaning": "Mèo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "猫（ねこ）chỉ mèo. にゃーにゃー mô phỏng tiếng mèo kêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121967": "Con mèo cứ kêu meo meo mãi.",
+        "122010": "Con mèo đang ngủ trên ghế sofa."
+      },
+      "SourceHash": "0995869794abc3840c1a995581d4dccbd362b9ab196f019f62871023c49817b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c6e923ef9",
+      "Fields": {
+        "Meaning": "Ngủ, đi ngủ",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "寝る（ねる）dùng khi đi ngủ hoặc ngủ. 寝てしまう có thể nói lỡ ngủ thiếp đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81604": "Tôi ngủ thiếp đi trong lúc đang đọc sách.",
+        "232828": "Bạn thường đi ngủ lúc mấy giờ?"
+      },
+      "SourceHash": "84875188ad4aedaa0bee3ea61af08110a0cf66bbc0e9393e511e8c4c14cfbbbc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "278c1e0e04",
+      "Fields": {
+        "Meaning": "Vở, sổ ghi chép",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ノート chỉ vở hoặc sổ để ghi chép. ノートに書く nghĩa là viết vào vở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217911": "Hãy ghi những từ này vào vở.",
+        "233500": "Cho tôi xem vở của bạn với."
+      },
+      "SourceHash": "e6aedf5c56066e6522c44f98bf9c736f5dfb29bf00fec265585383608f88d099"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7817fc9d64",
+      "Fields": {
+        "Meaning": "Leo, trèo",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "登る（のぼる）chỉ việc leo lên một nơi cao. 木に登る là trèo cây. 登りにくい là khó leo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80091": "Cây càng cao thì càng khó trèo.",
+        "200059": "Tom đã cố trèo lên cái cây cao đó."
+      },
+      "SourceHash": "42961da6549d8f9632aef1d678c56ff9a8b7c8a820a1d22355331ee889021b40"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "822c5e11a6",
+      "Fields": {
+        "Meaning": "Lên xe, đi bằng phương tiện",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "乗る（のる）dùng khi lên hoặc đi bằng phương tiện. Phương tiện thường đi với に.",
+        "UsageNotes": "降りる nghĩa là xuống xe."
+      },
+      "Examples": {
+        "149076": "Tôi hỏi bạn có muốn đi xe cùng không.",
+        "195969": "Kìa, tàu bạn sẽ đi đến rồi."
+      },
+      "SourceHash": "ba4043d6307e65c32ee1d1e4268110f11ea274625fe4b016904a64250dc740b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "390ac6443d",
+      "Fields": {
+        "Meaning": "Răng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "歯（は）chỉ răng. 歯が生える nghĩa là mọc răng, còn 歯をくいしばる là cắn chặt răng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150960": "Xin hãy cắn chặt hai hàm răng lại.",
+        "208598": "Em bé đó đang bắt đầu mọc răng."
+      },
+      "SourceHash": "292bf867ded4d1ec42cf40eb70fcc0befe2a67a251d1e845ffd737afad5e7aa0"
+    }
+  ]
+}

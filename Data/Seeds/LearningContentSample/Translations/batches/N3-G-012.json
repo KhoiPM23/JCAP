@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sa-casual-yo",
+      "Fields": {
+        "Meaning": "Đấy, mà (thân mật)",
+        "Formation": "Mệnh đề thể thường ＋ さ ở cuối câu",
+        "Explanation": "Đưa ra nhận định với giọng thân mật, nhẹ hoặc tự tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sa-casual-yo:example:1": "Đừng lo mà, chắc sẽ suôn sẻ thôi.",
+        "sa-casual-yo:example:2": "Chuyện đó dễ ấy mà."
+      },
+      "SourceHash": "3e0bf8bf68c03bc3f0230ddcc179c74fa518a2642e430797058f7abb88b1004d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "saichuu-ni",
+      "Fields": {
+        "Meaning": "Đúng giữa lúc",
+        "Formation": "Danh từ ＋ の最中に／động từ thể ている ＋ 最中に",
+        "Explanation": "Nhấn mạnh một việc xen vào khi việc khác đang diễn ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "saichuu-ni:example:1": "Đúng lúc đang ăn thì có điện thoại gọi đến.",
+        "saichuu-ni:example:2": "Đang nói chuyện thì đèn đột nhiên tắt."
+      },
+      "SourceHash": "715236ffd1d8ddd827f9eda5c73e579626b73e1b89ac35333d8ead8da58bb0b7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sai-ni",
+      "Fields": {
+        "Meaning": "Khi, vào dịp",
+        "Formation": "Danh từ ＋ の際に／động từ thể từ điển hoặc thể た ＋ 際に",
+        "Explanation": "Nêu thời điểm hay dịp xảy ra việc, thường trong văn phong trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sai-ni:example:1": "Khi đăng ký, cần có giấy tờ tùy thân.",
+        "sai-ni:example:2": "Tôi gặp bạn cũ nhân dịp đi công tác ở Tokyo."
+      },
+      "SourceHash": "0c1340548847510585c782a44c7b062fb263468d86688ac0cba9b9fc277b6c51"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sae",
+      "Fields": {
+        "Meaning": "Ngay cả, đến cả",
+        "Formation": "Danh từ ＋ さえ／でさえ",
+        "Explanation": "Nêu trường hợp tối thiểu hoặc gây bất ngờ. Với phủ định, có thể dịch là đến cả… cũng không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sae:example:1": "Chuyện đó ngay cả trẻ con cũng biết.",
+        "sae:example:2": "Tôi bận đến mức chẳng có cả thời gian ăn."
+      },
+      "SourceHash": "0b392702c9ccbcc49567f59620282b32f005b932ad2885ffc2744d3eb20543f2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sae-ba",
+      "Fields": {
+        "Meaning": "Chỉ cần X thì",
+        "Formation": "Danh từ ＋ さえ ＋ điều kiện thể ば／gốc ます ＋ さえすれば",
+        "Explanation": "Đặt X làm điều kiện đủ trong nhận định, kể cả khi cả nhận định sau đó bị phủ định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sae-ba:example:1": "Có tiền cũng chưa chắc mua được mọi thứ.",
+        "sae-ba:example:2": "Chỉ cần nhấn nút này là máy chạy."
+      },
+      "SourceHash": "65c614938efd91e54b3de97de1f8fb9c2ae9f313692f09d34a78de06cc01957d"
+    }
+  ]
+}

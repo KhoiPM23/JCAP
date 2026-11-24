@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d389db4db",
+      "Fields": {
+        "Meaning": "Tại sao, bằng gì",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "何で（なんで）có nghĩa là tại sao, bằng gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "187813": "Tại sao cô ấy làm chuyện đó?",
+        "187817": "Sao bạn lại tin chuyện đó?"
+      },
+      "SourceHash": "5d61954dd0fdfb07ef547ba4a7dcb53e7c816382e3bd6aed905f97ae090b2687"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ebc3edd19",
+      "Fields": {
+        "Meaning": "Bất cứ thứ gì, mọi thứ",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "何でも（なんでも）có nghĩa là bất cứ thứ gì, mọi thứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83018": "Mẹ tôi nhìn mọi việc dưới góc độ tiền bạc.",
+        "222102": "Con chó này hầu như thứ gì cũng ăn."
+      },
+      "SourceHash": "7727fbf77e33b8b5c51e8a0dbf81affb526067eda1762b8de1fd62d13e2dc5be"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39dd361425",
+      "Fields": {
+        "Meaning": "Bằng cách nào đó, xoay xở",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "何とか（なんとか）có nghĩa là bằng cách nào đó, xoay xở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121350": "Chiếc hộp nặng nhưng anh ấy vẫn xoay xở mang được.",
+        "182483": "Tôi nghĩ nếu nhanh lên thì vẫn kịp."
+      },
+      "SourceHash": "e96ff4b31ab791da48b53c79d3e46e9eb2dce01fd410efaf919aed38cc724120"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "395b9a867b",
+      "Fields": {
+        "Meaning": "Hợp, trông hợp",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "似合う（にあう）có nghĩa là hợp, trông hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206917": "Bộ đồ đó rất hợp với cô ấy.",
+        "231285": "Chiếc váy đó rất hợp với cô ấy."
+      },
+      "SourceHash": "aa8e9ac74f1cbac8973ea2e62d9219536426de784ca471cd7f43eff7ad7ce8f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b01e686ddf",
+      "Fields": {
+        "Meaning": "Không giỏi, ngại, không ưa",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "苦手（にがて）có nghĩa là không giỏi, ngại, không ưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100187": "Anh ấy biết lắng nghe nhưng không giỏi nói chuyện.",
+        "155611": "Tôi không giỏi toán."
+      },
+      "SourceHash": "5b7c28c9096c41ecf234553117080e0c67a323db2bdabc46f459cc7feef78788"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d0ffc4ad62",
+      "Fields": {
+        "Meaning": "Nắm chặt, cầm, lái",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "握る（にぎる）có nghĩa là nắm chặt, cầm, lái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91280": "Cô ấy nắm chặt sợi dây.",
+        "98669": "Tôi cầm lái trong lúc họ ngủ."
+      },
+      "SourceHash": "6e3024a467acd41081069447f6d82d87637a84aed68601a49f87eb8336bc8bd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b115c24eac",
+      "Fields": {
+        "Meaning": "Ngày, Chủ nhật (viết tắt)",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "日（にち）có nghĩa là ngày, Chủ nhật (viết tắt).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74691": "Mở cửa thứ Bảy, Chủ nhật và thứ Hai từ 10 giờ 30 sáng đến 4 giờ chiều.",
+        "207988": "Hai, ba ngày sau tin đó mới đến."
+      },
+      "SourceHash": "162a2365b23366faa67ededef1656538add026a0e58e34257b4440a75f6da777"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8906b928b2",
+      "Fields": {
+        "Meaning": "Hằng ngày, thường ngày",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ, phó từ",
+        "Explanation": "日常（にちじょう）có nghĩa là hằng ngày, thường ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122859": "Tập thể dục hằng ngày có lợi cho bạn.",
+        "165597": "Chúng ta biết các sự kiện thường ngày qua báo chí."
+      },
+      "SourceHash": "d8ff8da8bdbf1ab96275bbb3c03f4bc3528e6a8056a27970ff9f442d0b1c3417"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "183905b21d",
+      "Fields": {
+        "Meaning": "Chủ nhật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日曜（にちよう）có nghĩa là chủ nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84710": "Bố tôi chơi golf vào sáng Chủ nhật đó.",
+        "179565": "Ngân hàng không mở cửa vào Chủ nhật."
+      },
+      "SourceHash": "07082192c76e83d46d1a77aa09a9093aebc1ba2e1b37a34a6bd7e6f747fa771f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2128a2cade",
+      "Fields": {
+        "Meaning": "Ánh nắng, ánh sáng mặt trời",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日光（にっこう）có nghĩa là ánh nắng, ánh sáng mặt trời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97911": "Họ đem cuốn sách đó ra phơi nắng.",
+        "220019": "Phòng này ít có ánh nắng chiếu vào."
+      },
+      "SourceHash": "b155b76a8b0722ba2088e8194764e3663ad9f9c0025584d268f9a88355d3de4b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fca12641c2",
+      "Fields": {
+        "Meaning": "Mỉm cười, cười tươi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "にっこり（にっこり）có nghĩa là mỉm cười, cười tươi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86750": "Cô ấy nhìn mẹ và mỉm cười.",
+        "91813": "Cô ấy mỉm cười rồi nói vậy."
+      },
+      "SourceHash": "b4fbcb67d380183949d8a6790bfb8668781f11b763bdadb25c3352f6a3866655"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ae490b220",
+      "Fields": {
+        "Meaning": "Ban ngày, Nhật–Trung",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "Có thể chỉ ban ngày hoặc Nhật Bản và Trung Quốc tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76285": "Công ty được điều hành dưới hình thức liên doanh Nhật–Trung.",
+        "118382": "Dì anh ấy chăm chó giúp anh ấy vào ban ngày."
+      },
+      "SourceHash": "39012561214ba3855bd8748eb6d69d95e47ee0289ba7a8ae3e1d56deca34af71"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "831bd5addd",
+      "Fields": {
+        "Meaning": "Nhật Bản",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日本（にっぽん）có nghĩa là nhật Bản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96425": "Họ đến Nhật Bản được năm năm rồi.",
+        "122419": "Nhật Bản nằm về phía đông Trung Quốc."
+      },
+      "SourceHash": "5208ce5bb318f96eb92c0c0d18db8d2aa594903468070aeb435e5237cfd35014"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9fafb3a7a8",
+      "Fields": {
+        "Meaning": "Vào cửa, vào địa điểm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "入場（にゅうじょう）có nghĩa là vào cửa, vào địa điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122064": "Mấy giờ bắt đầu cho vào cửa?",
+        "220863": "Vé này cho phép hai người vào cửa."
+      },
+      "SourceHash": "a2fd308f0b5cc24fe4e029808c07542e91314a58d5a502517099731ab4a4e167"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "81d5a1e831",
+      "Fields": {
+        "Meaning": "Sự nổi tiếng, được ưa chuộng",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "人気（にんき）có nghĩa là sự nổi tiếng, được ưa chuộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111740": "Không rõ vì sao anh ấy không được ưa chuộng.",
+        "144224": "Cô ấy trở nên tự phụ sau khi nổi tiếng."
+      },
+      "SourceHash": "f65508345553a4e1621d35cd8482ccf65407f165bed155b4795d5d9098dd7c78"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f4e93c10e",
+      "Fields": {
+        "Meaning": "Con người, loài người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人間（にんげん）có nghĩa là con người, loài người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103566": "Anh ấy là người có nhân cách tốt.",
+        "123767": "Trong các loài động vật, chỉ con người biết cười."
+      },
+      "SourceHash": "c68ed7996d634235227a0e191f6df13c075927a740e4e4bdf43aca0d40c8bf74"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d40e2575e0",
+      "Fields": {
+        "Meaning": "Rút, bỏ qua, làm đến cùng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "抜く（ぬく）có nghĩa là rút, bỏ qua, làm đến cùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170547": "Hãy chiến đấu đến cùng.",
+        "203278": "Thỉnh thoảng bỏ bữa sáng cũng chẳng sao."
+      },
+      "SourceHash": "92fad70f1d445d8b68bc93a09e85f8395963b34e122567e2ec78973a597b09a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8af7987ba6",
+      "Fields": {
+        "Meaning": "Rụng, tuột, thoát ra",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "抜ける（ぬける）có nghĩa là rụng, tuột, thoát ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150978": "Tôi rụng một chiếc răng.",
+        "231162": "Bài hát đó cứ văng vẳng trong đầu tôi."
+      },
+      "SourceHash": "3705e329fd206faa4511d6e69b73fd64c0db323ba22c69bf2a880fa9b55f2bf4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04380e6c35",
+      "Fields": {
+        "Meaning": "Vải",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "布（ぬの）có nghĩa là vải.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220078": "So với giá thì tấm vải này có chất lượng tốt.",
+        "225371": "Kate trải vải lên bàn."
+      },
+      "SourceHash": "3221e80ed1cff40a58ddf604f30a602a8ba9daf4a72fbf3494a3e2500984231b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20b5089feb",
+      "Fields": {
+        "Meaning": "Nhé, nhỉ, này",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Trợ từ cuối câu hoặc tiếng gọi để thu hút sự chú ý. Câu đầu dùng từ đồng âm 値, nghĩa là giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113046": "Anh ấy định giá bức tranh đó rất cao.",
+        "198647": "Này, làm ơn đi."
+      },
+      "SourceHash": "015f257845580d2de5ac9711061dac35be304945d2c15f58d55db433f65b3be8"
+    }
+  ]
+}

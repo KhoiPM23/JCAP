@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nan-josuushi-ka",
+      "Fields": {
+        "Meaning": "Vài, một số",
+        "Formation": "何 ＋ trợ số từ ＋ か",
+        "Explanation": "Chỉ số lượng không xác định của người, đồ vật hoặc số lần. Chọn trợ số từ phù hợp với đối tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nan-josuushi-ka:example:1": "Năm ngoái tôi đến Kyoto vài lần.",
+        "nan-josuushi-ka:example:2": "Ở buổi tiệc có vài người tôi không quen."
+      },
+      "SourceHash": "a915860e585e2bcd3f1925595e3adca45cb22cd21d1876f86cb4b89529aedd33"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-frequency",
+      "Fields": {
+        "Meaning": "Mỗi, trên một đơn vị thời gian",
+        "Formation": "Khoảng thời gian ＋ に ＋ số lần hoặc số lượng",
+        "Explanation": "に đánh dấu đơn vị thời gian làm mốc cho tần suất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-frequency:example:1": "Tôi đến phòng tập hai lần mỗi tuần.",
+        "ni-frequency:example:2": "Tuyến tàu này có bốn chuyến mỗi giờ."
+      },
+      "SourceHash": "d4b5eb9950621a042b0fb12b826bf1c2110d2f1961bccd8b8b7261d7072a38e9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-ki-ga-tsuku",
+      "Fields": {
+        "Meaning": "Nhận ra, để ý thấy",
+        "Formation": "Danh từ ＋ に気がつく／mệnh đề ＋ ことに気がつく",
+        "Explanation": "に đánh dấu điều được nhận ra. Nếu là sự việc, có thể dùng こと để danh từ hóa mệnh đề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-ki-ga-tsuku:example:1": "Về đến nhà rồi tôi mới nhận ra mình để quên ô.",
+        "ni-ki-ga-tsuku:example:2": "Nhận ra lỗi của mình, tôi thấy xấu hổ."
+      },
+      "SourceHash": "0b54fe042ad63b34573624a8def4879db8e65bfbfaf9c6a62b4d701e1f15d308"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-suru-ku-suru",
+      "Fields": {
+        "Meaning": "Làm cho trở nên",
+        "Formation": "Đối tượng ＋ を ＋ gốc tính từ な ＋ にする／tính từ い bỏ い ＋ くする",
+        "Explanation": "Diễn tả việc chủ động thay đổi trạng thái hoặc mức độ của đối tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-suru-ku-suru:example:1": "Vì sắp có khách nên tôi đã dọn phòng sạch sẽ.",
+        "ni-suru-ku-suru:example:2": "Âm thanh to quá, xin vặn nhỏ một chút."
+      },
+      "SourceHash": "017edfe0a9e5834909fd8d914ddad62000dbbf8f3c2049d866d37d90fb8c721f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-mieru",
+      "Fields": {
+        "Meaning": "Trông như, có vẻ",
+        "Formation": "Danh từ hoặc gốc tính từ な ＋ に見える／tính từ い bỏ い ＋ く見える",
+        "Explanation": "Nêu ấn tượng từ vẻ ngoài hoặc dấu hiệu nhìn thấy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-mieru:example:1": "Tòa nhà kia trông như một ngôi chùa cổ, nhưng thực ra mới xây.",
+        "ni-mieru:example:2": "Cô ấy lúc nào trông cũng khỏe khoắn."
+      },
+      "SourceHash": "57a4c41948fcd62db608aa62ca2cc7d70faed563dde8ba34c7bdb33fc906a820"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-kiita",
+      "Fields": {
+        "Meaning": "Tôi nghe nói rằng",
+        "Formation": "Thể thông thường ＋ と聞いた／と聞きました",
+        "Explanation": "Thuật lại điều người nói đã nghe. Sau danh từ hoặc tính từ な, dùng だ trước と.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-kiita:example:1": "Tôi nghe nói anh Tanaka sẽ kết hôn vào tháng sau.",
+        "to-kiita:example:2": "Tôi nghe nói quán đó hôm nay nghỉ."
+      },
+      "SourceHash": "3bd16f4560e0b9cfdbf2ce64a0177837d4c3113f75dfeba77f7c53233d932999"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-sarete-iru",
+      "Fields": {
+        "Meaning": "Được xem là, được quy định là",
+        "Formation": "Thể thông thường ＋ とされている",
+        "Explanation": "Nêu cách đánh giá hoặc quy ước đang được chấp nhận, thường không chỉ rõ ai đưa ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-sarete-iru:example:1": "Ngôi đền này được xem là lâu đời nhất thị trấn.",
+        "to-sarete-iru:example:2": "Gọi điện trong cuộc họp được xem là thiếu lịch sự."
+      },
+      "SourceHash": "d692c6cc20058f84a5947c4cc5600fe2c4907e1972a2af054e8aa30e0c603324"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-mieru-to-miete",
+      "Fields": {
+        "Meaning": "Xem ra, có vẻ như",
+        "Formation": "Thể thông thường ＋ とみえる／とみえて",
+        "Explanation": "Suy đoán từ dấu hiệu quan sát được. とみえて có thể nối suy đoán với dấu hiệu ở vế sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-mieru-to-miete:example:1": "Đường ướt. Xem ra đêm qua có mưa.",
+        "to-mieru-to-miete:example:2": "Có vẻ đứa trẻ mệt nên ngủ ngay."
+      },
+      "SourceHash": "e7143fc3459c9e2390f82b752fa5730af6c28f5c2ae9fc54103a10f703e2b71a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dondon",
+      "Fields": {
+        "Meaning": "Nhanh chóng, liên tục, cứ thoải mái",
+        "Formation": "どんどん ＋ động từ",
+        "Explanation": "Nêu sự tiến triển nhanh hoặc nhiều lần liên tiếp. Trong lời mời, khuyến khích người nghe làm mà không ngại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dondon:example:1": "Bọn trẻ lớn nhanh lắm.",
+        "dondon:example:2": "Có câu hỏi thì cứ thoải mái hỏi nhé."
+      },
+      "SourceHash": "4b50a54eb0b7226f07a40e69db9ee64ad272aff4a13917ca283f05ed7bca2bcd"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naito",
+      "Fields": {
+        "Meaning": "Phải làm, cần làm",
+        "Formation": "Động từ thể ない ＋ と（いけない）",
+        "Explanation": "Dạng nói thân mật có thể lược いけない khi người nghe hiểu điều phải làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naito:example:1": "Muộn rồi, tôi phải về thôi.",
+        "naito:example:2": "Mai phải dậy sớm nên tôi phải đi ngủ sớm."
+      },
+      "SourceHash": "de6385257bf629fd3cb4cda65bf628b1ab5cb25f8cfdc66d6caba0c47ae7a900"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-betsu-toshite",
+      "Fields": {
+        "Meaning": "Tạm gác… sang một bên",
+        "Formation": "Danh từ hoặc mệnh đề danh từ hóa ＋ は別として",
+        "Explanation": "Tạm loại một vấn đề khỏi phạm vi đang bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-betsu-toshite:example:1": "Tạm gác chuyện hương vị thì quán này có giá rẻ, cũng đỡ tốn tiền.",
+        "wa-betsu-toshite:example:2": "Chuyện có tham gia hay không tính sau. Trước hết cứ nghe thử đã."
+      },
+      "SourceHash": "2ca18021ed5516f1460ed33c0f67dc167f27495a13dab53599a3db5c4b35c4e5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-mochiron",
+      "Fields": {
+        "Meaning": "Đương nhiên… và cả…",
+        "Formation": "A ＋ はもちろん、B ＋ も",
+        "Explanation": "Nêu A là trường hợp hiển nhiên rồi thêm B.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-mochiron:example:1": "Món này trẻ em thích đã đành, người lớn cũng rất mê.",
+        "wa-mochiron:example:2": "Anh ấy không chỉ nói được tiếng Anh mà còn nói được tiếng Pháp."
+      },
+      "SourceHash": "c1f9f15cc4187fb34e7f1697d6ddc9b328b3d568e6a77904c952e3385b5a388a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "futatabi",
+      "Fields": {
+        "Meaning": "Lại, một lần nữa",
+        "Formation": "再び ＋ động từ",
+        "Explanation": "Nói về việc lặp lại hoặc tiếp diễn sau khi tạm dừng. Thường gặp trong văn viết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "futatabi:example:1": "Sau cuộc tranh luận dài, cuộc họp lại tiếp tục.",
+        "futatabi:example:2": "Từ khi tốt nghiệp, tôi không gặp lại anh ấy nữa."
+      },
+      "SourceHash": "cbb43325d435e6f5690f87ce54f215366767b47dce04891cf3abaed611c81418"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "futo",
+      "Fields": {
+        "Meaning": "Chợt, bất chợt",
+        "Formation": "ふと ＋ động từ",
+        "Explanation": "Nêu một ý nghĩ hoặc hành động tự nhiên xuất hiện mà không có chủ ý rõ ràng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "futo:example:1": "Chợt ngẩng nhìn trời, tôi thấy một cầu vồng lớn.",
+        "futo:example:2": "Tôi chợt nhớ chuyện xưa và thấy bồi hồi."
+      },
+      "SourceHash": "ee5abda0ba13bbcae9c9ee9df608bd3e3bd5b1f407dafef4b141ced72406650d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "buri-ni",
+      "Fields": {
+        "Meaning": "Lần đầu sau một khoảng thời gian",
+        "Formation": "Khoảng thời gian ＋ ぶりに ＋ hành động",
+        "Explanation": "Chỉ một việc xảy ra lại sau khoảng thời gian được nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "buri-ni:example:1": "Sau mười năm, tôi mới gặp lại bạn thời cấp ba.",
+        "buri-ni:example:2": "Sau hai năm, tôi mới lại đi du lịch nước ngoài."
+      },
+      "SourceHash": "ffc866c99eeab66b5b028bd95f209bddcae7b93a46320a4339c64099e2e1ab17"
+    }
+  ]
+}

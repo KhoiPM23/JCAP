@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76a8947aac",
+      "Fields": {
+        "Meaning": "Chỗ ngồi, ghế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "座席（ざせき）có nghĩa là chỗ ngồi, ghế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170832": "Anh chị có thể ngồi sát vào một chút được không?",
+        "184096": "Xin đặt túi dưới ghế."
+      },
+      "SourceHash": "27dec6b755e4857a5869955e60dd428cd8275553b7243f79b32833a68be8c795"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c39a99fa2",
+      "Fields": {
+        "Meaning": "Rủ, mời, lôi cuốn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "誘う（さそう）có nghĩa là rủ, mời, lôi cuốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92092": "Anh ấy rủ cô ấy đi hẹn hò.",
+        "228092": "Nắng dịu khiến tôi thiếp đi."
+      },
+      "SourceHash": "c1976c700ba24fa8e8971d139a91b690fe430edbd53971a2f5f7d99eab21fa72"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0696f63fdf",
+      "Fields": {
+        "Meaning": "Tiền giấy, tờ tiền",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "札（さつ）có nghĩa là tiền giấy, tờ tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140762": "Xin đổi hết thành các tờ 20 đô la.",
+        "236120": "Anh chị đổi giúp tờ 1.000 yên này được không?"
+      },
+      "SourceHash": "793f25753259fb4251a0b13fe9696563073ad1e9f4c29d65049fac70da334e06"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f84a6eb064",
+      "Fields": {
+        "Meaning": "Nhà văn, tác giả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "作家（さっか）có nghĩa là nhà văn, tác giả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97933": "Họ cho rằng nhà văn đó thuộc hàng đầu.",
+        "210512": "Chúng tôi biết rõ nhà văn đó."
+      },
+      "SourceHash": "a275a2cf7a574d329864ef9f7b1272bc4834cddecb536261fdd6982be6352886"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1fda1b853a",
+      "Fields": {
+        "Meaning": "Sáng tác nhạc, soạn nhạc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "作曲（さっきょく）có nghĩa là sáng tác nhạc, soạn nhạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167461": "Tôi sáng tác nhạc cho bài hát của cô ấy.",
+        "222882": "Bản nhạc này do Bach sáng tác."
+      },
+      "SourceHash": "43f128408e6033e2cf7b9ccd3eff5169d4927eb459c4305a6a8d7dbd7d336dde"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a7495ca386",
+      "Fields": {
+        "Meaning": "Sơ qua, đại khái",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ざっと（ざっと）có nghĩa là sơ qua, đại khái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147270": "Một phụ nữ đang đọc lướt cuốn sách.",
+        "159080": "Tôi đọc lướt tờ giới thiệu."
+      },
+      "SourceHash": "0a6635257c7c67816b2ed760a6d54eae612def1f6ad70bb5ea6c739f40432d7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4e0df7a25",
+      "Fields": {
+        "Meaning": "Sảng khoái, thanh nhẹ, hoàn toàn không",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "Có thể chỉ cảm giác sảng khoái hoặc vị thanh nhẹ. Đi với phủ định, từ này có nghĩa hoàn toàn không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160868": "Mấy việc kiểu này tôi chẳng rành chút nào.",
+        "231453": "Tôi hoàn toàn không hiểu bạn."
+      },
+      "SourceHash": "630d6145377a248780378d24b1435bf072afbd210db31c337b6d36347c76aefb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94c462cd78",
+      "Fields": {
+        "Meaning": "Nào, vậy thì, sau đây",
+        "PartOfSpeech": "Liên từ, Thán từ",
+        "Explanation": "さて（さて）có nghĩa là nào, vậy thì, sau đây.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "34c18ab4473d871cc993f40146e8c84185e5a7e560c3e12394fc13b556c05b31"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "66c155bf9f",
+      "Fields": {
+        "Meaning": "Sa mạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "砂漠（さばく）có nghĩa là sa mạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192650": "Có thể ví lạc đà như con tàu của sa mạc.",
+        "216754": "Sahara là một sa mạc rộng lớn."
+      },
+      "SourceHash": "9163097d8e532e6b334d5755ddd9a7083dd3684883612cf2abb5bf152c5f0742"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e79255ce69",
+      "Fields": {
+        "Meaning": "Phân biệt đối xử",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "差別（さべつ）có nghĩa là phân biệt đối xử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144387": "Phân biệt đối xử vì chủng tộc là sai.",
+        "209436": "Tuần lễ đó không liên quan gì đến việc phân biệt đối xử."
+      },
+      "SourceHash": "22a41b68b5480be32b6d874a3c2fb418077b7a5591351fc9e910f053e9f67620"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a663b5a2f5",
+      "Fields": {
+        "Meaning": "Phép tắc, nghi thức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "作法（さほう）có nghĩa là phép tắc, nghi thức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97295": "Họ bực vì cách cư xử thiếu phép tắc của bạn.",
+        "106822": "Cách cư xử của anh ấy còn vụng về."
+      },
+      "SourceHash": "2d9bb79df1d9b8b467e6f1591431add32cd67900f098c7ff0b8bd9586db6c0d7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9fc5f5ca7f",
+      "Fields": {
+        "Meaning": "Đa dạng, đủ loại",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "様々（さまざま）có nghĩa là đa dạng, đủ loại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125517": "Trong vườn đủ loại hoa đua nở.",
+        "160657": "Tôi đã trải qua nhiều khó khăn khác nhau."
+      },
+      "SourceHash": "f7afab908e04e609491f079d89bdc7e9a8789b56a4e11adb66748f62fee75e24"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc270e7f06",
+      "Fields": {
+        "Meaning": "Đánh thức, làm tỉnh",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "覚ます（さます）có nghĩa là đánh thức, làm tỉnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143600": "Tôi ra ngoài đi dạo cho tỉnh rượu.",
+        "206912": "Tiếng động đó đánh thức tôi."
+      },
+      "SourceHash": "b907d11731cf49ca1d4ed72ade2c2a1245c0a977468d7552b5bd89e3feb2cc66"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9e9186ae73",
+      "Fields": {
+        "Meaning": "Tỉnh giấc, tỉnh lại",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "覚める（さめる）có nghĩa là tỉnh giấc, tỉnh lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79956": "Tôi đang tỉnh.",
+        "212165": "Tiếng động đó khiến cô ấy tỉnh giấc."
+      },
+      "SourceHash": "fee37b390b41658413930cf82fe3dbe231fe2bb0789c20acbe8156d6ae50f7c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec257ddb78",
+      "Fields": {
+        "Meaning": "Trái và phải, chi phối",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "左右（さゆう）có nghĩa là trái và phải, chi phối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101824": "Anh ấy tức giận lắc đầu qua lại.",
+        "150958": "Hãy nghiến răng qua lại sang hai bên."
+      },
+      "SourceHash": "bd807ecc4bc28488131ba0d55f7f1c7599afb15ae79003c7f206a024da42496b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "947efd8771",
+      "Fields": {
+        "Meaning": "Đĩa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "皿（さら）có nghĩa là đĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92088": "Cô ấy đặt đĩa lên bàn.",
+        "153502": "Tôi giúp cô ấy rửa đĩa."
+      },
+      "SourceHash": "4d39ec7768b9dad4bc44cc699f23c49ce706f5335df288ec34c1c958dd5bee35"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e32542ef92",
+      "Fields": {
+        "Meaning": "Hơn nữa, thêm, càng",
+        "PartOfSpeech": "Phó từ, Liên từ",
+        "Explanation": "更に（さらに）có nghĩa là hơn nữa, thêm, càng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209257": "Cuốn tiểu thuyết đó càng làm ông ấy nổi tiếng.",
+        "219445": "Cây này cao, nhưng cây kia còn cao hơn."
+      },
+      "SourceHash": "7b8e2db58b4b908830be534f99f86abea22f7c3708b28bb5757cdd385f7d44b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a2e1c93de",
+      "Fields": {
+        "Meaning": "Khỉ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "猿（さる）có nghĩa là khỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109569": "Anh ấy trèo cây như khỉ.",
+        "168833": "Đứa trẻ đang cho khỉ ăn chuối."
+      },
+      "SourceHash": "cd944d2005d98fd94d40f49effbc6405202275808970b5ff25f61ef91747cba2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8190d9ad28",
+      "Fields": {
+        "Meaning": "Rời đi, qua đi",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "去る（さる）có nghĩa là rời đi, qua đi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174604": "Thời vàng son đã qua và sẽ không bao giờ trở lại.",
+        "235915": "Năm 1900, ông ấy rời nước Anh và không bao giờ quay lại."
+      },
+      "SourceHash": "e242378e54f7649d62c1ba5a715294d42c3db3e681f6ce4c36cf138be5ea02ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "813ca3b6fc",
+      "Fields": {
+        "Meaning": "Sự náo động, ầm ĩ",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "騒ぎ（さわぎ）có nghĩa là sự náo động, ầm ĩ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202552": "Chuyện chẳng đáng gì mà làm ầm ĩ lên thế.",
+        "220705": "Có chuyện gì mà ầm ĩ thế?"
+      },
+      "SourceHash": "116278cac52050b4370327d80130adccf21f668949628361f941dc4953cdb211"
+    }
+  ]
+}

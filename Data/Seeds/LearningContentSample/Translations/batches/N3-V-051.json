@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce509fd4c7",
+      "Fields": {
+        "Meaning": "Tổ chức, đoàn thể",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "団体（だんたい）có nghĩa là tổ chức, đoàn thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92859": "Cô ấy là thành viên của tổ chức này.",
+        "208187": "Tổ chức đó cung cấp thức ăn cho người tị nạn."
+      },
+      "SourceHash": "5d4b2ad1ee3b64a65e8ad5f2a9bcf753cdb94536fc1738f88a94a3827662c675"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e587e8c18a",
+      "Fields": {
+        "Meaning": "Phụ trách, đảm nhiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "担当（たんとう）có nghĩa là phụ trách, đảm nhiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127419": "Ai là người phụ trách ạ?",
+        "232548": "Có lẽ bạn không cần phụ trách việc đó."
+      },
+      "SourceHash": "56eb3f8f85e471eb01597f76008a647819ee0cf3bdb8b209eab691008b9e9c99"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c7e318382a",
+      "Fields": {
+        "Meaning": "Đơn thuần là, chỉ là",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "単なる（たんなる）có nghĩa là đơn thuần là, chỉ là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159773": "Tôi nghĩ đó chỉ là trùng hợp.",
+        "204990": "Đó chỉ là một sơ suất."
+      },
+      "SourceHash": "996488c5b7f914ce59b4101f0a1bdd7d58427c0dedae5c4c2d29379d674e8efb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28e78ea570",
+      "Fields": {
+        "Meaning": "Chỉ, đơn giản là",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "単に（たんに）có nghĩa là chỉ, đơn giản là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102278": "Anh ấy làm vậy chỉ vì tò mò.",
+        "173640": "Hạnh phúc không chỉ nằm ở của cải."
+      },
+      "SourceHash": "778fd115d9615890f4d14b81f550843d9108f2890f6bfff9777781261352d472"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20bef3d13c",
+      "Fields": {
+        "Meaning": "Đất, mặt đất, vùng đất",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "地（ち）có nghĩa là đất, mặt đất, vùng đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93466": "Cô ấy đành chấp nhận sống ở nơi đó.",
+        "102233": "Anh ấy thiếu thực tế."
+      },
+      "SourceHash": "547368e0cd3f77c1a6351ad2d8311293a6abb3f09071e7eeb7da130d25bfee4d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a4766630c6",
+      "Fields": {
+        "Meaning": "Địa vị, chức vị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地位（ちい）có nghĩa là địa vị, chức vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109068": "Anh ấy giữ chức vụ cao trong công ty.",
+        "112674": "Anh ấy ở vị trí có thể xem tài liệu đó."
+      },
+      "SourceHash": "9a591907c9355e2d138b1448b8cfd90d9170bc1d469b14b60623885788caec60"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d74252cb1f",
+      "Fields": {
+        "Meaning": "Khu vực, vùng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地域（ちいき）có nghĩa là khu vực, vùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173629": "Tuyết rơi dày trên một vùng rộng lớn.",
+        "220600": "Mưa có lẽ sẽ kéo dài ở khu vực này."
+      },
+      "SourceHash": "82e72912ec3385091e300a764b0ac9d669eef6a46bb4a600d500e0766a404134"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed560b721e",
+      "Fields": {
+        "Meaning": "Phô mai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "チーズ（チーズ）có nghĩa là phô mai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159523": "Tôi mua một ít phô mai và sữa.",
+        "215640": "George đã ăn nhiều phô mai vào buổi sáng."
+      },
+      "SourceHash": "1359ae26c9378919e23f6f256fbd7096a6db8dad9f2f128d225a13149cd4c422"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7864a376ed",
+      "Fields": {
+        "Meaning": "Đội, nhóm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "チーム（チーム）có nghĩa là đội, nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111972": "Anh ấy là cầu thủ giỏi vượt trội trong đội.",
+        "161000": "Tôi là đội trưởng của đội này."
+      },
+      "SourceHash": "ed07c2c00cf6ddfdd42fa18020582a693ddd2c5490d2048a92ba0775ebbe93f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4dc1084ef7",
+      "Fields": {
+        "Meaning": "Trí khôn, sự khôn ngoan",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "知恵（ちえ）có nghĩa là trí khôn, sự khôn ngoan.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102248": "Anh ấy là người khôn ngoan.",
+        "112253": "Anh ấy cũng chỉ nghĩ được đến thế thôi."
+      },
+      "SourceHash": "9ccf5ca7817c6ccec8b51c69a56490ba744d87ad2eb0140efa96df5a6748d778"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "79d117da8a",
+      "Fields": {
+        "Meaning": "Dưới đất, ngầm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "地下（ちか）có nghĩa là dưới đất, ngầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102230": "Anh ấy bị nghi tham gia hoạt động ngầm.",
+        "213514": "Và họ có hệ thống cống ngầm để thoát nước thải."
+      },
+      "SourceHash": "b154af011c62491ea5a546181f52034e08159225bb39ec1009484b05544e3155"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c6bc56d6df",
+      "Fields": {
+        "Meaning": "Khác biệt, sự khác nhau",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "違い（ちがい）có nghĩa là khác biệt, sự khác nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78090": "Giữa hai bên có sự khác biệt rất lớn.",
+        "149295": "Thật ra hai bên gần như không có gì khác nhau."
+      },
+      "SourceHash": "37198e0479839079a0ff0b01e4ffb76aa46cff9d2d9e2a53bec090bf36ca106c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce7946728d",
+      "Fields": {
+        "Meaning": "Chắc chắn, hẳn là",
+        "PartOfSpeech": "Cụm từ, Tính từ đuôi い",
+        "Explanation": "違いない（ちがいない）có nghĩa là chắc chắn, hẳn là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92241": "Chắc chắn cô ấy đã làm việc đó hôm qua.",
+        "110547": "Giờ đã tái hôn, chắc hẳn anh ấy hạnh phúc hơn."
+      },
+      "SourceHash": "85f566c00fdf3f1bcf5f545ffb98a6bbfc4a52de11bbd14a2c29164e1a5d5184"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d4f4be7f4",
+      "Fields": {
+        "Meaning": "Gần đây, dạo này",
+        "PartOfSpeech": "Phó từ, Danh từ, bổ nghĩa với の",
+        "Explanation": "近頃（ちかごろ）có nghĩa là gần đây, dạo này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179829": "Ngày nay đi du lịch dễ dàng.",
+        "179856": "Dạo này tôi không nhận được tin gì từ cô ấy."
+      },
+      "SourceHash": "c6007aa53bbc2c6cedaaea4be9d81374a11ce259ed41c226cd4b0fcd126a22c7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "88fa4babd2",
+      "Fields": {
+        "Meaning": "Trái Đất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地球（ちきゅう）có nghĩa là trái Đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96574": "Họ tin rằng Trái Đất phẳng.",
+        "126939": "Có sinh vật trên thiên thể nào ngoài Trái Đất không?"
+      },
+      "SourceHash": "f5f68c188ffabad6467736a3422ac432ec324b69e881f1b58a6172e25f049398"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdb26b7f16",
+      "Fields": {
+        "Meaning": "Khu vực, địa bàn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地区（ちく）có nghĩa là khu vực, địa bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110300": "Anh ấy sống ở một khu nghèo của London.",
+        "232706": "Bạn có biết rõ khu vực này không?"
+      },
+      "SourceHash": "0c0fab8af443b9c5ff4adb745741744f3122fcddd3ecc6fed0fd4e9f1437d93b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44dc289889",
+      "Fields": {
+        "Meaning": "Đi muộn, đến trễ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "遅刻（ちこく）có nghĩa là đi muộn, đến trễ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101521": "Anh ấy hứa sẽ không bao giờ đến muộn nữa.",
+        "126640": "Tôi lo mình sẽ đến muộn."
+      },
+      "SourceHash": "258c86d26cebcf577492b1fd1dfc69d715fa80dc3f8e07c9b7d0dbb238a3520c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f86edd9d41",
+      "Fields": {
+        "Meaning": "Thống đốc, tỉnh trưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "知事（ちじ）có nghĩa là thống đốc, tỉnh trưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102246": "Anh ấy quen vị thống đốc nhiều năm rồi.",
+        "127056": "Chính thống đốc đã xuất hiện trên truyền hình."
+      },
+      "SourceHash": "29f4e4436fbe63035c6eab4675aecfe6fb9e567d57141bdcce915da6980da8f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae8e7129b1",
+      "Fields": {
+        "Meaning": "Kiến thức, hiểu biết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "知識（ちしき）có nghĩa là kiến thức, hiểu biết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82865": "Mẹ tôi học được tiếng Anh ở Hoa Kỳ.",
+        "164147": "Kiến thức tiếng Đức của tôi còn hạn chế."
+      },
+      "SourceHash": "a434200163161dcd3701fd76cc95bb138d76ff34ddf88372f37a6944e862585e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f98b61203",
+      "Fields": {
+        "Meaning": "Cha, bố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "父親（ちちおや）có nghĩa là cha, bố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86903": "Cô ấy chăm sóc bố cho đến khi ông qua đời.",
+        "209033": "Cậu bé đó giống bố."
+      },
+      "SourceHash": "67ec1dfc6b20ab435cb6fb250bc592c4197d43b487d0b70382b9ccd217abb6a9"
+    }
+  ]
+}

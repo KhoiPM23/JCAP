@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 40 câu theo bản Nhật.",
+    "Giữ bản dịch đã có cho sáu câu xuất hiện ở lô trước."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a891b73f8b",
+      "Fields": {
+        "Meaning": "Tại sao, vì sao",
+        "PartOfSpeech": "Phó từ nghi vấn",
+        "Explanation": "どうして dùng để hỏi lý do hoặc nguyên nhân. Trong hội thoại, どうして〜の？ là cách hỏi vì sao một việc xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201551": "Tại sao bạn học tiếng Tây Ban Nha?",
+        "201572": "Sao bạn lại ở một mình thế?"
+      },
+      "SourceHash": "8db940a02a4ec2108050bdaa1a94a17997c362256a4fe4e4aacd8b9ed5fdb006"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a71cbc3ce4",
+      "Fields": {
+        "Meaning": "Xin mời, xin vui lòng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "どうぞ dùng để mời, cho phép hoặc làm lời yêu cầu lịch sự hơn. Thường gặp cùng ください.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149251": "Xin cho tôi xem ảnh với ạ.",
+        "201333": "Xin cứ tự nhiên ạ."
+      },
+      "SourceHash": "e4f1bb7631829d7d88a14e67d45989512625966cb0139e48c1a026ae99abbd48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93b9cec3d4",
+      "Fields": {
+        "Meaning": "Rất mong được giúp đỡ, rất vui được gặp, xin gửi lời thăm",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "どうぞよろしく thường dùng khi mới gặp, bắt đầu hợp tác hoặc nhờ ai chuyển lời hỏi thăm. Ý nghĩa cụ thể tùy tình huống.",
+        "UsageNotes": "〜にどうぞよろしく dùng để nhờ gửi lời hỏi thăm đến ai."
+      },
+      "Examples": {
+        "201303": "Rất vui được gặp anh/chị.",
+        "217197": "Xin gửi lời hỏi thăm tới cả gia đình anh/chị."
+      },
+      "SourceHash": "e53435ba06fe5e98e5e4c472ac722121dbd0bc99634e7f1b0c1035b42d0bd90f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "03d03cf25d",
+      "Fields": {
+        "Meaning": "Động vật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "動物（どうぶつ）chỉ động vật. 動物の名前 nghĩa là tên của con vật hoặc loài vật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144525": "Trên hết, con người là động vật biết nói.",
+        "159921": "Tôi biết tên con vật đó."
+      },
+      "SourceHash": "aecdafff127ca252995e3c394d4eadb5614dee2b380f8dbfebe1c8f3a8b5405b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2cb14f88a",
+      "Fields": {
+        "Meaning": "Cảm ơn, rất, hình như",
+        "PartOfSpeech": "Phó từ, thán từ",
+        "Explanation": "どうも nhấn mạnh lời cảm ơn trong どうもありがとうございます. Trong câu suy đoán với らしい, nó có thể gợi ý rằng sự việc có vẻ đúng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141797": "Cảm ơn bác sĩ rất nhiều ạ.",
+        "230516": "Hình như hai người đó đang yêu nhau."
+      },
+      "SourceHash": "e934e63b479ff4402e742c37b735fc53f3571bcb25d93bc87894d952a085b589"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f840779b9e",
+      "Fields": {
+        "Meaning": "Xa",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "遠い（とおい）chỉ khoảng cách xa. Dùng 〜から遠い để nói xa một địa điểm. Dạng phủ định lịch sự là 遠くありません.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205405": "Chỗ đó không xa khách sạn.",
+        "224795": "Sydney xa chỗ này nhỉ."
+      },
+      "SourceHash": "28f03015d1c1c0d1a483b5e9eab7573f4dbb6741e78d14adbe5cc0df798fe27d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8579084ba",
+      "Fields": {
+        "Meaning": "Mười ngày, ngày mùng mười",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "十日（とおか）có thể chỉ ngày mùng mười trong tháng hoặc khoảng thời gian mười ngày. Hai câu nguồn đều chỉ ngày trong tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202538": "Tức là ngày 10 tháng 5.",
+        "215846": "Jack sinh ngày 10 tháng 8."
+      },
+      "SourceHash": "0f5f04b60c2bfe8ffdc5faeca4296fa0e0371400f5e994fe7c02531f854ab728"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "978a2cefa5",
+      "Fields": {
+        "Meaning": "Thỉnh thoảng, đôi khi",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "時々（ときどき）nói về việc xảy ra một số lần, không thường xuyên. Cũng có thể viết ときどき.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214732": "Hay quá! Vậy từ giờ thỉnh thoảng mình có thể gặp nhau nhỉ.",
+        "216490": "Jane thỉnh thoảng chạy bộ đến trường."
+      },
+      "SourceHash": "f0bbb8f1132508947004a66733ef36ed7231ce1daff3cdd5f8a18cc6590629f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e3ad76810f",
+      "Fields": {
+        "Meaning": "Đồng hồ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "時計（とけい）có thể chỉ đồng hồ treo tường, để bàn hoặc đeo tay. 腕時計 chỉ rõ đồng hồ đeo tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221611": "Chiếc đồng hồ này giá nhiều nhất là 10 đô la.",
+        "233246": "Đồng hồ của bạn chỉ mấy giờ?"
+      },
+      "SourceHash": "d6b9fddfa6f258c5a32481ed2dc4f155d85f342ba9608544663733f59b9923a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad884a3b70",
+      "Fields": {
+        "Meaning": "Đâu, ở đâu",
+        "PartOfSpeech": "Đại từ nghi vấn chỉ nơi chốn",
+        "Explanation": "どこ hỏi về địa điểm. どこで hỏi nơi diễn ra hành động, còn どこへ hỏi hướng hoặc nơi sẽ đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182700": "Trong kỳ nghỉ bạn định đi đâu?",
+        "232489": "Bạn xem ti vi ở đâu?"
+      },
+      "SourceHash": "fa6747a21b80a918f23dad18e3a21368d5b5f3dc6facc9ebba20457855ac0d33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca332ac7b4",
+      "Fields": {
+        "Meaning": "Chỗ, nơi, địa điểm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "所（ところ）chỉ nơi hoặc chỗ. どんな所 và どういう所 đều có thể hỏi về loại địa điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199406": "Có thể làm thêm ở những chỗ nào?",
+        "201701": "Bạn muốn tham quan những nơi như thế nào?"
+      },
+      "SourceHash": "3554b3d9a8805875f7bd1832c4178c6429c955a519dfbc0786cd17c51564da4f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "358fc382cb",
+      "Fields": {
+        "Meaning": "Năm, tuổi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "年 có thể đọc とし khi chỉ năm hoặc tuổi. お年 là cách nói lịch sự khi hỏi tuổi. Trong từ ghép 今年, cả từ đọc là ことし.",
+        "UsageNotes": "Sau số khi đếm năm, thường đọc 年 là ねん."
+      },
+      "Examples": {
+        "171289": "Mong năm nay cũng là một năm tốt đẹp.",
+        "226785": "Tôi có thể hỏi anh/chị bao nhiêu tuổi được không ạ?"
+      },
+      "SourceHash": "bd0b174b0cd6f5a3644c1024c728dd28c601db4954600929257aa21a68e1372d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de5a452667",
+      "Fields": {
+        "Meaning": "Thư viện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "図書館（としょかん）là nơi có sách để đọc hoặc mượn. 図書館の中で chỉ hoạt động diễn ra bên trong thư viện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143872": "Không được nói chuyện trong thư viện.",
+        "143878": "Trong thư viện có nhiều sách."
+      },
+      "SourceHash": "4e569b7fa278cbdc45ca09eb8afe9f170f497d561708052b9d8142bb4fc748ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5480c153dc",
+      "Fields": {
+        "Meaning": "Cái nào, bên nào (cách nói lịch sự)",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "どちら thường hỏi lựa chọn giữa hai thứ hoặc hai phía. Có thể dùng どちらの ＋ danh từ khi hỏi cụ thể về một loại đồ vật.",
+        "UsageNotes": "どっち là cách nói thân mật hơn."
+      },
+      "Examples": {
+        "123179": "Trong hai cái, cái nào đắt hơn?",
+        "200726": "Cuốn sách nào là của bạn?"
+      },
+      "SourceHash": "b73f5a73aa5dfa3cf74564dea81b315dbf18d4141ce1133c43777d6453f2d487"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8a4843059",
+      "Fields": {
+        "Meaning": "Cái nào, bên nào (thân mật)",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "どっち thường dùng khi chọn giữa hai thứ trong hội thoại thân mật. どっちもどっち nói hai bên cũng như nhau, thường mang ý chê cả hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219777": "Cuốn này với cuốn kia, cuốn nào dễ đọc hơn?",
+        "10472406": "Tom với Mary thì ai cũng có lỗi cả."
+      },
+      "SourceHash": "d589467ebf78c471ced416cf571e9ad9a701acd98f8e95e2c7ef702f1b7da926"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a3679ee665",
+      "Fields": {
+        "Meaning": "Rất, hết sức",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "とても nhấn mạnh mức độ, như とても大きい (rất to). Khi đi với phủ định về khả năng, từ này có thể nhấn mạnh rằng việc đó không thể làm được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204722": "Đó là những quả táo rất to.",
+        "222938": "Mưa thế này thì không thể ra ngoài được."
+      },
+      "SourceHash": "85c09bf6cd7d2519d0bc71a39baa89e89aa98d581ec5a7614cdcf342592414e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "10fb2e55c0",
+      "Fields": {
+        "Meaning": "Ai (cách hỏi lịch sự)",
+        "PartOfSpeech": "Đại từ nghi vấn",
+        "Explanation": "どなた là cách hỏi ai lịch sự hơn 誰（だれ）. どなたですか có thể dùng khi hỏi người đang gõ cửa hoặc hỏi danh tính một người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "4914": "“Ai đấy ạ?” “Mẹ đây.”",
+        "233903": "Người anh/chị vừa nói chuyện cùng là ai ạ?"
+      },
+      "SourceHash": "6ab94d6782f0da5fa8c5db1b413d53f5dd62936a7be93e93a675487110f059ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c597c353cb",
+      "Fields": {
+        "Meaning": "Bên cạnh, sát bên, nhà bên",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "隣（となり）chỉ chỗ ngay cạnh. Dùng danh từ ＋ の隣 để nêu mốc, như ビルの隣 (bên cạnh tòa nhà).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229394": "Được chứ. Ở ngay bên cạnh cửa hàng bách hóa Plaza.",
+        "231268": "Ở ngay bên cạnh tòa nhà kia."
+      },
+      "SourceHash": "fb3cc0b607ffc3e52cf5e08eca64bdb1fb0b7c0026df58423e16366f9d41511a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd4b8c6381",
+      "Fields": {
+        "Meaning": "Nào (đứng trước danh từ)",
+        "PartOfSpeech": "Từ chỉ định nghi vấn",
+        "Explanation": "どの đứng trước danh từ để hỏi thứ nào, như どのＣＤ (đĩa CD nào). Trong ほかのどの木よりも, mẫu này mang nghĩa hơn bất kỳ cây nào khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "218528": "Cây này cao hơn mọi cây khác.",
+        "232473": "Bạn muốn nghe đĩa CD nào?"
+      },
+      "SourceHash": "69b3148726bc96733440dc6955522ab826efb999d0c203488402212aa6ba102c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "397b682fa7",
+      "Fields": {
+        "Meaning": "Bay, nhảy, chuyển đột ngột",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "飛ぶ（とぶ）thường chỉ bay hoặc chuyển nhanh từ chỗ này sang chỗ khác. ヒューズが飛ぶ là cầu chì bị đứt, còn 話が飛ぶ là câu chuyện nhảy sang chủ đề khác.",
+        "UsageNotes": "Thể て là 飛んで."
+      },
+      "Examples": {
+        "115795": "Khi nói chuyện, anh ấy hay nhảy từ chủ đề này sang chủ đề khác.",
+        "197450": "Cầu chì bị đứt rồi."
+      },
+      "SourceHash": "3b3b1d224a5e24539e0ec075c52d91b0ac173a9cdc60120dd00c0f6aee9ebc00"
+    }
+  ]
+}

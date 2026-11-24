@@ -24,9 +24,12 @@ export interface PlacementTestStatusDto {
   placementTestStatus: 'NotStarted' | 'Skipped' | 'InProgress' | 'InsufficientEvidence' | 'Completed';
   hasSeenPlacementPrompt: boolean;
   activeSessionId?: number | null;
+  allowRetakeForTesting?: boolean;
+  canStartOrRetake?: boolean;
   initialEstimatedLevel?: string | null;
   initialConfidenceTier?: string | null;
   initialProficiencySnapshotJson?: string | null;
+  placementTestCompletedAtUtc?: string | null;
   contextPackage: HotelContextPackageDto;
   eventSummaries?: PlacementEventEvidenceSummary[];
 }

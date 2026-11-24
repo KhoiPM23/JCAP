@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koro-goro",
+      "Fields": {
+        "Meaning": "Khoảng, hồi",
+        "Formation": "Giờ ＋ ごろ／danh từ ＋ の ＋ ころ",
+        "Explanation": "ごろ chỉ giờ gần đúng. ころ có thể chỉ một giai đoạn trong đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koro-goro:example:1": "Ngày mai tôi sẽ gọi khoảng tám giờ.",
+        "koro-goro:example:2": "Hồi nhỏ tôi thường chơi ở công viên này."
+      },
+      "SourceHash": "1b8f2c5c0d19415a976688dd51b3be76708d88ba3a98124c64380c7db3922f8b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sa",
+      "Fields": {
+        "Meaning": "Độ, mức độ của một đặc điểm",
+        "Formation": "Bỏ い của tính từ い hoặc lấy gốc tính từ な ＋ さ",
+        "Explanation": "Tạo danh từ chỉ mức độ hay đặc điểm, như 深さ là độ sâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sa:example:1": "Bạn có biết con sông này sâu bao nhiêu không?",
+        "sa:example:2": "Có đi làm rồi tôi mới hiểu công việc vất vả đến mức nào."
+      },
+      "SourceHash": "d1799238c9dc9005096032afbd098aa707184e4ada076273cdee4d62fb0f6f1e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sasuga",
+      "Fields": {
+        "Meaning": "Đúng là, quả nhiên, cũng phải",
+        "Formation": "さすが ＋ danh từ／さすがに ＋ vị ngữ",
+        "Explanation": "さすが khen điều xứng với kỳ vọng. さすがに cũng dùng cho phản ứng dễ hiểu trong hoàn cảnh đã nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sasuga:example:1": "Đúng là dân chuyên nghiệp nhỉ. Làm nhanh thật.",
+        "sasuga:example:2": "Đi bộ nhiều thế này thì tôi cũng mệt rồi."
+      },
+      "SourceHash": "6566b111e9bb734138dfe984ca156e252f2cc6b872408faadbe4f4af2a393b35"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sasete-kudasai",
+      "Fields": {
+        "Meaning": "Xin cho tôi làm gì",
+        "Formation": "Động từ thể sai khiến dạng て ＋ ください",
+        "Explanation": "Xin phép để chính người nói thực hiện hành động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sasete-kudasai:example:1": "Xin lỗi, cho tôi dùng điện thoại này được không ạ?",
+        "sasete-kudasai:example:2": "Hôm nay xin cho tôi về sớm một chút ạ."
+      },
+      "SourceHash": "745f09e82e6efcef3123409f4085447d539038ae121a539da62f2c41627c3109"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "saserareru",
+      "Fields": {
+        "Meaning": "Bị bắt làm gì",
+        "Formation": "Thể sai khiến bị động, như 食べさせられる hoặc 待たされる",
+        "Explanation": "Chủ thể phải làm việc do người khác yêu cầu. に có thể đánh dấu người khiến chủ thể làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "saserareru:example:1": "Hồi nhỏ tôi bị mẹ bắt ăn rau.",
+        "saserareru:example:2": "Tôi phải đợi bạn ở ga đến hai tiếng."
+      },
+      "SourceHash": "87fc8274db76e4108a8c9abb981044d07b1a704e46b0fc858f2de0e2f80bfa77"
+    }
+  ]
+}

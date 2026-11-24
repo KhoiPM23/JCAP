@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "634490494f",
+      "Fields": {
+        "Meaning": "Cả nhà, gia đình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "一家（いっか）có nghĩa là cả nhà, gia đình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190682": "Cả nhà cùng ra ngoài đi dạo.",
+        "215499": "Gia đình Johnson rất thích tổ chức tiệc."
+      },
+      "SourceHash": "9d204042d4a2ed66319713294413f7c594fc4f6584693a56a6a6124abb78a42f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42473b9a9e",
+      "Fields": {
+        "Meaning": "Một ngày nào đó, khi nào đó",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "いつか（いつか）có nghĩa là một ngày nào đó, khi nào đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93337": "Một ngày nào đó cô ấy sẽ leo ngọn núi kia.",
+        "161429": "Rồi sẽ có lúc tôi phải đi."
+      },
+      "SourceHash": "351884d2f90129b0e5fb87d22b603b7bcc571c208ae65fc3bff97c04c70f4df7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0b3458a80",
+      "Fields": {
+        "Meaning": "Một loại, một dạng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "一種（いっしゅ）có nghĩa là một loại, một dạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183085": "Bài viết có giọng điệu khá bi quan.",
+        "218472": "Đây là một loài động vật sống ở biển."
+      },
+      "SourceHash": "fc54b66f21ed8c699fab35bd2c7f5956a427c0ab1c126dbe5880669423bba1a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc1d99931b",
+      "Fields": {
+        "Meaning": "Khoảnh khắc, chớp mắt",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "一瞬（いっしゅん）có nghĩa là khoảnh khắc, chớp mắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205149": "Đó là một khoảnh khắc khiến tôi thót tim.",
+        "214725": "Ghê thật, kết thúc chỉ trong chớp mắt."
+      },
+      "SourceHash": "c45c9a3111ced84c1f1fd97fc828d9c514b9aa286fef36548eb81b721b4abaf2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e21a9f62b7",
+      "Fields": {
+        "Meaning": "Cả đời, suốt đời",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "一生（いっしょう）có nghĩa là cả đời, suốt đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "232927": "Bạn phải học suốt đời.",
+        "236791": "Ông ấy dành cả đời cho nghiên cứu khoa học."
+      },
+      "SourceHash": "5f361fd863fe547c5f51e95ed8256d84f71d8316c0ca854f812f3863998d1083"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78ee271a60",
+      "Fields": {
+        "Meaning": "Càng, hơn nữa",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "一層（いっそう）có nghĩa là càng, hơn nữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103049": "Được thầy cô khen, anh ấy càng chăm học.",
+        "179078": "Nhờ có bạn đi cùng, kỳ nghỉ vui hơn hẳn."
+      },
+      "SourceHash": "8137abf02646ced33e67a5c9c54af1ff3a328c88d97a785cb48cd8ad2fe0aaff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a184ecb80",
+      "Fields": {
+        "Meaning": "Rốt cuộc, thế quái nào, một thể thống nhất",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "一体（いったい）có nghĩa là rốt cuộc, thế quái nào, một thể thống nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91128": "Rốt cuộc cô ấy bị sao thế nhỉ?",
+        "190362": "Rốt cuộc bạn gặp anh ấy ở đâu vậy?"
+      },
+      "SourceHash": "f8f077419ee97563eedfcbf44f941fcb95b677dbd5a6f35cdde48c6eaec63b71"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "10f3cfd7c0",
+      "Fields": {
+        "Meaning": "Trùng khớp, nhất trí",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "一致（いっち）có nghĩa là trùng khớp, nhất trí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107573": "Lời nói và hành động của anh ấy không nhất quán.",
+        "185363": "Mọi người nhất trí họp vào thứ Sáu."
+      },
+      "SourceHash": "f1edf1cec9a698e7285894ec436fc546428dab20b2e20a9823a8a3a3baeebadf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b9b33028c",
+      "Fields": {
+        "Meaning": "Bất cứ lúc nào, luôn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "いつでも（いつでも）có nghĩa là bất cứ lúc nào, luôn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161417": "Tôi luôn sẵn lòng giúp bạn.",
+        "232830": "Bạn lúc nào cũng được chào đón."
+      },
+      "SourceHash": "10e57143bfd29c9dab2987e77c7d8a685b9e3779fb53660a6b70eca0cfed247f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b65151eaec",
+      "Fields": {
+        "Meaning": "Chung, phổ thông, công chúng",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "一般（いっぱん）có nghĩa là chung, phổ thông, công chúng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190145": "Vé vào cửa thông thường cho người lớn là 7 đô la.",
+        "206247": "Lý thuyết đó vẫn chưa được công nhận rộng rãi."
+      },
+      "SourceHash": "07ac989f532b6edc50eec37fce21cac1db9dde8f91d5ca937a687710e487a7b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25664c20f9",
+      "Fields": {
+        "Meaning": "Một bên, mặt khác, trong khi đó",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "一方（いっぽう）có nghĩa là một bên, mặt khác, trong khi đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190050": "Một bên màu đỏ, còn bên kia màu trắng.",
+        "216343": "Mặt khác, đến lúc ấy tiếng Latinh đã trở thành một ngôn ngữ chết."
+      },
+      "SourceHash": "a372b34b4087ef22e01e4ee898c3efb15168abd187b7c6c849a05ad9282b1b0e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff86f2105c",
+      "Fields": {
+        "Meaning": "Mãi, mãi mãi",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "いつまでも（いつまでも）có nghĩa là mãi, mãi mãi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161408": "Tôi sẽ mãi nhớ tên anh ấy.",
+        "161410": "Tôi sẽ không bao giờ quên bạn."
+      },
+      "SourceHash": "31c75fbff2874219852a479deb436c99f50fe1b39f030d8cdb6603cf14c041c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fec9b37a7",
+      "Fields": {
+        "Meaning": "Di chuyển, dịch chuyển, di cư",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "移動（いどう）có nghĩa là di chuyển, dịch chuyển, di cư.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98240": "Họ di chuyển từ nơi này sang nơi khác.",
+        "121403": "Thiên nga di cư từ vùng này đến Florida."
+      },
+      "SourceHash": "00bce877a1789ee17125c04d3b27d30409f76ebf0835117e82982cad28f2c2bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3485a5b479",
+      "Fields": {
+        "Meaning": "Anh em họ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "従兄弟（いとこ）có nghĩa là anh em họ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105866": "Anh ấy là anh em họ của tôi, chứ không phải anh ruột.",
+        "215290": "John là anh em họ của tôi, chứ không phải anh em ruột."
+      },
+      "SourceHash": "838dd6fecd1f5b1cf278926c48392f1088a0c8e90d4519f0952425561671704a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f034b79d36",
+      "Fields": {
+        "Meaning": "Cây lúa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "稲（いね）có nghĩa là cây lúa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77666": "Thời tiết lạnh làm lúa chậm phát triển.",
+        "190014": "Lúa được trồng ở vùng có nhiều mưa."
+      },
+      "SourceHash": "512ac89855d597e1206ddfd0a6f7eebc93ef26c34e14de2cf5ee7f6f0937c916"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19f535bb08",
+      "Fields": {
+        "Meaning": "Ngủ gật",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "居眠り（いねむり）có nghĩa là ngủ gật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148324": "Tôi không cho phép ngủ gật trong giờ học.",
+        "196532": "Đôi khi cả Homer cũng ngủ gật."
+      },
+      "SourceHash": "e9258a3e408fcfa659da49a9be4571abe00e785b2fe21620368a42ec8ec4e118"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c84ab5b83d",
+      "Fields": {
+        "Meaning": "Mạng sống, sinh mệnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "命（いのち）có nghĩa là mạng sống, sinh mệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90080": "Cô ấy đã hy sinh mạng sống vì đất nước.",
+        "210969": "Con chó đó đã cứu mạng cô bé."
+      },
+      "SourceHash": "c06cf84cc256267120e2dbb3accaf187bd966e03118d8bcc58f16e2ed9f1a414"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc23b8e07b",
+      "Fields": {
+        "Meaning": "Vi phạm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "違反（いはん）có nghĩa là vi phạm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183109": "Không được vi phạm quy định.",
+        "205351": "Làm vậy là phạm luật."
+      },
+      "SourceHash": "d8fe08759a6ab2408ab4c791ee2d1c90813ff2c3ef572d9ee6975b92dab10fbf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcdd7c0d87",
+      "Fields": {
+        "Meaning": "Quần áo, y phục",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "衣服（いふく）có nghĩa là quần áo, y phục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83024": "Mẹ tôi chi nhiều tiền cho quần áo.",
+        "97548": "Họ hầu như không mặc quần áo."
+      },
+      "SourceHash": "497237e216905a08260584f0fb8d8e5f164fb704c749035c84e90b0fc42c48ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da1e1e97a8",
+      "Fields": {
+        "Meaning": "Phòng khách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "居間（いま）có nghĩa là phòng khách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88048": "Cô ấy không có trong bếp lẫn phòng khách.",
+        "97339": "Họ đang uống trà trong phòng khách."
+      },
+      "SourceHash": "edf4fa963111f6021338f4950282f1d354f5f621e8790e9a65ef964dec1ef287"
+    }
+  ]
+}

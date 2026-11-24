@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 37 câu theo bản Nhật. 零 không có ví dụ, ラジカセ có một ví dụ.",
+    "Câu 78052 được dịch theo cách phủ định một phần trong câu Nhật. Đối chiếu cách dùng both trong từ điển Sanseido tại https://www.sanseido.jp/site/07ncdic/JCE000948.html"
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb7e675902",
+      "Fields": {
+        "Meaning": "Đọc",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "読む（よむ）chỉ việc đọc. 本を読む là đọc sách. Thể て là 読んで.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152798": "Tôi hầu như không có thời gian đọc sách.",
+        "157196": "Tôi đã đọc sách suốt buổi sáng."
+      },
+      "SourceHash": "31e3ccb6ad43afcbc1468e82ca917ee14fa9a704fbeff20e26f3db1e0b894841"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6c214111ea",
+      "Fields": {
+        "Meaning": "So với, hơn",
+        "PartOfSpeech": "Trợ từ",
+        "Explanation": "より đánh dấu mốc so sánh. AよりBがいい nghĩa là B tốt hơn A. これよりほかに〜ない nghĩa là ngoài cái này ra thì không còn lựa chọn nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194478": "Giờ không còn cách nào khác ngoài cách này.",
+        "199480": "Giường nào cũng được, có còn hơn không."
+      },
+      "SourceHash": "9e868018150322fb2586411dd15d859d5a8fd45ea5c0db20f120c8d29d6ed96e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a0aec6793",
+      "Fields": {
+        "Meaning": "Đêm, ban đêm",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "夜（よる）chỉ buổi tối hoặc ban đêm. 夜に chỉ thời điểm vào ban đêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79751": "Ban đêm tôi không bật đèn trong phòng làm việc.",
+        "231522": "Ban đêm bạn ngủ không ngon à?"
+      },
+      "SourceHash": "2df54dbb38d317bbcdc6772d30ce70f6332f75d01596f26ad1781c23b72beb82"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83da293775",
+      "Fields": {
+        "Meaning": "Yếu, không bền, khó đối phó",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "弱い（よわい）tả sức lực hoặc độ bền thấp. Khi phản ứng trước một lời nói, 弱い có thể diễn tả việc bị đặt vào thế khó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204593": "Bạn nói thế thì tôi khó xử quá.",
+        "212696": "Sợi dây đó rất yếu."
+      },
+      "SourceHash": "506b6eae9c7f4fcdbfbfa0bbcae227681704ac2fbe1ed6e4576b85e56ff9ca97"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61fd50f12e",
+      "Fields": {
+        "Meaning": "Tháng sau, tháng tới",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "来月（らいげつ）chỉ tháng ngay sau tháng này. 来月で có thể lấy tháng sau làm mốc tính đủ một khoảng thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78688": "Tháng sau giá cước taxi sẽ tăng.",
+        "227704": "Đến tháng sau là chú tôi đã ở New York được tròn hai năm."
+      },
+      "SourceHash": "8ad55af2404ba100a534afda66d2f17b0ef06f5dd6d0bd06c5796ec6e1059e61"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a4ef637be",
+      "Fields": {
+        "Meaning": "Tuần sau, tuần tới",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "来週（らいしゅう）chỉ tuần ngay sau tuần này. Có thể đứng đầu câu để nêu thời điểm.",
+        "UsageNotes": "Câu 78640 ghi いらしゃいませんか. Cách viết chuẩn là いらっしゃいませんか."
+      },
+      "Examples": {
+        "78640": "Tuần sau anh/chị đến nhà tôi chơi nhé?",
+        "191765": "Tuần sau tôi định đi châu Âu."
+      },
+      "SourceHash": "642c710bfde72c398034a7c4118f17adc64f81482eb8b01e86a91603be1b82cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c68f2caa2f",
+      "Fields": {
+        "Meaning": "Năm sau, năm tới",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "来年（らいねん）chỉ năm ngay sau năm nay. 来年の四月 là tháng Tư năm sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152393": "Tháng Tư năm sau tôi sẽ vào học.",
+        "231498": "Năm sau chắc bạn sẽ đọc được cuốn sách này."
+      },
+      "SourceHash": "d077a30f164f7047002f58156d229f2fe99460ae702ffe817bb83e39b47d616e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "670f2dd0dc",
+      "Fields": {
+        "Meaning": "Radio, đài phát thanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ラジオ chỉ máy thu thanh hoặc chương trình phát thanh. ラジオで聞く là nghe trên đài. ラジオをつける là bật radio.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192597": "Tôi bật radio được không ạ?",
+        "212803": "Tôi nghe tin đó trên đài."
+      },
+      "SourceHash": "dc2751740c0ce939807fe320c392d1e8f86725dd9cef79702a3f15639236e0c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "924572e50c",
+      "Fields": {
+        "Meaning": "Máy radio kiêm máy cassette",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ラジカセ là cách gọi rút gọn của ラジオカセットレコーダー, thiết bị kết hợp radio và máy cassette.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "1174918": "Quả thật, ở Nhật ngày nay, “ラジカセ” có lẽ đã là một từ cũ rồi."
+      },
+      "SourceHash": "bdb061314916c1222b7decafc4b7c03af3e0a82516a3dde52e096fb70f4c47a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a45af4ed89",
+      "Fields": {
+        "Meaning": "Xuất sắc, đáng nể, đàng hoàng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "りっぱ thường viết là 立派. Từ này dùng để khen người hoặc việc làm tốt, đáng nể. りっぱに đứng trước động từ để diễn tả làm tốt.",
+        "UsageNotes": "Trong ごりっぱな言いわけ, lời khen có thể mang giọng mỉa mai."
+      },
+      "Examples": {
+        "102449": "Anh ấy học rất tốt ở đại học.",
+        "201196": "Đúng là một cái cớ hay ho đấy."
+      },
+      "SourceHash": "f357e3038cc10092474523886d7aa85ddfd4fb939a76723e894ab47859394426"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc7d39c7af",
+      "Fields": {
+        "Meaning": "Du học sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "留学生（りゅうがくせい）chỉ người học ở một nước khác. 入学を許される nghĩa là được phép nhập học.",
+        "UsageNotes": "Câu 235285 có cách nối trợ từ không tự nhiên. Bản dịch theo ý ba du học sinh được nhận vào trường."
+      },
+      "Examples": {
+        "235285": "Ba du học sinh Trung Quốc được nhận vào trường đại học đó.",
+        "237462": "Không biết du học sinh có được tham gia không nhỉ?"
+      },
+      "SourceHash": "00f676b2935cc7643c7d84fc44ecad8d281180e58a9e9383ec4a297aeddcc750"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0139a208fe",
+      "Fields": {
+        "Meaning": "Cha mẹ, bố mẹ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "両親（りょうしん）chỉ cả cha và mẹ. 二人とも nghĩa là cả hai người.",
+        "UsageNotes": "Trong câu 78052, わけではない phủ định mệnh đề cả hai đều còn sống. Câu Nhật không xác định rằng cả hai đã qua đời."
+      },
+      "Examples": {
+        "77996": "Cả bố và mẹ tôi đều còn sống.",
+        "78052": "Không phải cả bố lẫn mẹ tôi đều còn sống."
+      },
+      "SourceHash": "f2b5084b8d7613d991ab4e6deaddbf0b83355266e681a48925a4a9d85ce04cd0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ee85169acd",
+      "Fields": {
+        "Meaning": "Món ăn, việc nấu ăn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "料理（りょうり）có thể chỉ món ăn, ẩm thực hoặc việc nấu ăn. 料理用 là dùng để nấu ăn. もってこい nghĩa là rất thích hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198943": "Món này ngon quá!",
+        "217962": "Những quả táo này rất thích hợp để nấu ăn."
+      },
+      "SourceHash": "7376c2bf55b41e1ab19b4502eaa3051001ce7895f71f7f59b953197d8e56e0cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2ba96bef9a",
+      "Fields": {
+        "Meaning": "Du lịch, chuyến đi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "旅行（りょこう）chỉ chuyến đi hoặc việc đi du lịch. 旅行する nghĩa là đi du lịch.",
+        "UsageNotes": "プチッと trong câu nguồn diễn tả một chuyến đi ngắn hoặc nhỏ."
+      },
+      "Examples": {
+        "76816": "Vì không có tiền nên tôi chỉ đi một chuyến ngắn thôi.",
+        "228596": "Khi nào anh/chị đi du lịch ạ?"
+      },
+      "SourceHash": "f8cae7cc6b76787213ccd128cc0ffd52081f5ba494150b73537aa62aa439f4bb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92b3bb727e",
+      "Fields": {
+        "Meaning": "Số không",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "零（れい）là số không. Chẳng hạn, 零度（れいど）nghĩa là không độ.",
+        "UsageNotes": "ゼロ cũng thường dùng để chỉ số không."
+      },
+      "Examples": {},
+      "SourceHash": "1adbba125174f5da62b84a782dac565c7076bf611085f638127563d7e035a9b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7a15687a1",
+      "Fields": {
+        "Meaning": "Tủ lạnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "冷蔵庫（れいぞうこ）là tủ lạnh. 冷蔵庫の中 là bên trong tủ lạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77638": "Trong tủ lạnh có hai pao bơ.",
+        "77648": "Trong tủ lạnh có bơ không?"
+      },
+      "SourceHash": "b19efc7c571cf07a7fd3012f6d9192dd2fde95515607be9b47849b3d3f719b9b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0455201fe6",
+      "Fields": {
+        "Meaning": "Đĩa hát, đĩa nhạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "レコード trong hai câu nguồn chỉ đĩa hát. レコードをかける nghĩa là mở đĩa để phát nhạc.",
+        "UsageNotes": "〜に取って代わる nghĩa là thay thế thứ gì."
+      },
+      "Examples": {
+        "214601": "Xin hãy mở một đĩa hát trên dàn âm thanh.",
+        "234862": "Đĩa CD đã thay thế hoàn toàn đĩa hát."
+      },
+      "SourceHash": "d45eddc6603419a488ed47424f89cb6c30379df8c3484c26143cc3fc513b0503"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d23f06249a",
+      "Fields": {
+        "Meaning": "Luyện tập, buổi tập",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "練習（れんしゅう）chỉ việc luyện tập để cải thiện kỹ năng. ピアノの練習をする nghĩa là tập đàn piano.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174352": "Lát nữa tôi có buổi tập quần vợt.",
+        "232827": "Bạn tập đàn piano khi nào?"
+      },
+      "SourceHash": "d132df247fe5a1d2f406ce7a8c9ce5ee90163212aa81aeea590de290ec411179"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5fc0f979e6",
+      "Fields": {
+        "Meaning": "Hành lang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "廊下（ろうか）là hành lang trong tòa nhà. 廊下の突き当たり nghĩa là cuối hành lang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77345": "Có hỏa hoạn ở cuối hành lang.",
+        "173664": "Hanako bước tới dọc hành lang, chân gõ lóc cóc."
+      },
+      "SourceHash": "c6f9224f1d0375f82b0e9313e8e6aea224c8661c69a379f8d3de3a7bd27e3186"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f9ccc7bfdf",
+      "Fields": {
+        "Meaning": "Sáu",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "六（ろく）là số sáu. 六時（ろくじ）là sáu giờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152733": "Tôi thức dậy lúc sáu giờ mỗi sáng.",
+        "519112": "Sắp sáu giờ rồi."
+      },
+      "SourceHash": "af22ab677bbb1ded7477623ef7141b757d020c252b88e51ab120fac26c4fb11e"
+    }
+  ]
+}

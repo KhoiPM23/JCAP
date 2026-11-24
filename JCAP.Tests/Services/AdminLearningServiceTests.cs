@@ -33,6 +33,115 @@ public class AdminLearningServiceTests
     }
 
     [Fact]
+    public async Task CombinedTopicSave_CreatesAndEditsInformationAndOrderedContents()
+    {
+        await using var db = Db(); var service = new AdminLearningService(db);
+        var first = await service.SaveContentAsync("vocabularies", null, Word());
+        var second = await service.SaveContentAsync("vocabularies", null, Word(text: "犬"));
+        var grammar = await service.SaveContentAsync("grammars", null, Word(text: "〜です"));
+        var created = await service.SaveTopicAsync(null, new()
+        {
+            Code = "PETS", Name = "Thú cưng", Description = "Ban đầu",
+            Contents = new() { VocabularyIds = [first.Item.Id, second.Item.Id], GrammarIds = [grammar.Item.Id] }
+        });
+        Assert.Equal(2, created.Vocabularies.Count);
+        Assert.Single(created.Grammars);
+        var updated = await service.SaveTopicAsync(created.Topic.Id, new()
+        {
+            Code = "PETS", Name = "Động vật", Description = "Đã sửa",
+            Contents = new() { VocabularyIds = [second.Item.Id, first.Item.Id], GrammarIds = [] }
+        });
+        Assert.Equal("Động vật", updated.Topic.Name);
+        Assert.Equal("Đã sửa", updated.Topic.Description);
+        Assert.Equal(new[] { second.Item.Id, first.Item.Id }, updated.Vocabularies.Select(item => item.Id));
+        Assert.Empty(updated.Grammars);
+        Assert.Single(await db.Grammars.ToListAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CombinedTopicSave_InvalidContentDoesNotPartiallyChangeInformationOrLinks(bool missing)
+    {
+        await using var db = Db(); var service = new AdminLearningService(db);
+        var first = await service.SaveContentAsync("vocabularies", null, Word());
+        var second = await service.SaveContentAsync("vocabularies", null, Word(text: "犬"));
+        var wrongLevel = await service.SaveContentAsync("grammars", null, Word("N4", "〜そうです"));
+        var created = await service.SaveTopicAsync(null, new()
+        {
+            Code = "PETS", Name = "Thú cưng", Description = "Giữ nguyên",
+            Contents = new() { VocabularyIds = [first.Item.Id] }
+        });
+        await Assert.ThrowsAsync<LearningRequestException>(() => service.SaveTopicAsync(created.Topic.Id, new()
+        {
+            Code = "PETS", Name = "Tên không được lưu", Description = "Không được lưu",
+            Contents = new() { VocabularyIds = [second.Item.Id], GrammarIds = [missing ? int.MaxValue : wrongLevel.Item.Id] }
+        }));
+        // A later save in the same context must not persist a rejected edit either.
+        await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+        var unchanged = await service.TopicAsync(created.Topic.Id);
+        Assert.Equal("Thú cưng", unchanged.Topic.Name);
+        Assert.Equal("Giữ nguyên", unchanged.Topic.Description);
+        Assert.Equal(first.Item.Id, Assert.Single(unchanged.Vocabularies).Id);
+        Assert.Empty(unchanged.Grammars);
+    }
+
+    [Fact]
+    public async Task CombinedTopicSave_ExplicitlyClearsLinksBeforeChangingLevel_LegacyEditPreservesLinks()
+    {
+        await using var db = Db(); var service = new AdminLearningService(db);
+        var word = await service.SaveContentAsync("vocabularies", null, Word());
+        var topic = await service.SaveTopicAsync(null, new()
+        {
+            Code = "PETS", Name = "Thú cưng", Contents = new() { VocabularyIds = [word.Item.Id] }
+        });
+        var legacyEdit = await service.SaveTopicAsync(topic.Topic.Id, new() { Code = "PETS", Name = "Thú cưng đã sửa" });
+        Assert.Single(legacyEdit.Vocabularies);
+        var updated = await service.SaveTopicAsync(topic.Topic.Id, new()
+        {
+            Code = "PETS", Name = "Thú cưng", JLPTLevel = "N4", Contents = new()
+        });
+        Assert.Equal("N4", updated.Topic.JLPTLevel);
+        Assert.Empty(updated.Vocabularies);
+        Assert.Single(await db.Vocabularies.ToListAsync());
+    }
+
+    [Fact]
+    public async Task TopicFilterOptions_OnlyContainTopicsWithTheRequestedContentKind()
+    {
+        await using var db = Db(); var service = new AdminLearningService(db);
+        var word = await service.SaveContentAsync("vocabularies", null, Word());
+        var grammar = await service.SaveContentAsync("grammars", null, Word(text: "〜です"));
+        var vocabularyTopic = await service.SaveTopicAsync(null, new()
+        {
+            Code = "VOCAB", Name = "Từ vựng", Contents = new() { VocabularyIds = [word.Item.Id] }
+        });
+        var grammarTopic = await service.SaveTopicAsync(null, new()
+        {
+            Code = "GRAMMAR", Name = "Ngữ pháp", Contents = new() { GrammarIds = [grammar.Item.Id] }
+        });
+        var sharedTopic = await service.SaveTopicAsync(null, new()
+        {
+            Code = "SHARED", Name = "Dùng chung", Contents = new() { VocabularyIds = [word.Item.Id], GrammarIds = [grammar.Item.Id] }
+        });
+        await service.SaveTopicAsync(null, new() { Code = "EMPTY", Name = "Chưa gán nội dung" });
+        // Admin can still filter hidden content and topics.
+        await service.SetStatusAsync("vocabularies", word.Item.Id, false);
+        await service.SetStatusAsync("topics", vocabularyTopic.Topic.Id, false);
+        Assert.Equal(4, (await service.TopicOptionsAsync(null)).Count);
+        var vocabularyOptions = await service.TopicOptionsAsync("N5", "vocabularies");
+        Assert.Equal(2, vocabularyOptions.Count);
+        Assert.Contains(vocabularyOptions, option => option.Id == vocabularyTopic.Topic.Id);
+        Assert.Contains(vocabularyOptions, option => option.Id == sharedTopic.Topic.Id);
+        var grammarOptions = await service.TopicOptionsAsync("N5", "grammars");
+        Assert.Equal(2, grammarOptions.Count);
+        Assert.Contains(grammarOptions, option => option.Id == grammarTopic.Topic.Id);
+        Assert.Contains(grammarOptions, option => option.Id == sharedTopic.Topic.Id);
+        Assert.Empty(await service.TopicOptionsAsync("N4", "grammars"));
+        await Assert.ThrowsAsync<LearningRequestException>(() => service.TopicOptionsAsync(null, "invalid"));
+    }
+
+    [Fact]
     public async Task CrossLevelAssignment_IsRejectedWithoutRemovingCurrentLinks()
     {
         await using var db = Db(); var service = new AdminLearningService(db);

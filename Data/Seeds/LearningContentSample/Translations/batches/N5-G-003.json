@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu ngữ pháp và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-aru-noun",
+      "Fields": {
+        "Meaning": "Danh từ chỉ người, nơi hoặc vật có A",
+        "Formation": "Danh từ A ＋ が ＋ ある ＋ danh từ B",
+        "Explanation": "Đặt mệnh đề Aがある ngay trước danh từ B để diễn tả B có A. 窓がある部屋 nghĩa là căn phòng có cửa sổ.",
+        "UsageNotes": "Không thêm の giữa ある và danh từ B. Trong ví dụ này, có thể thay が bên trong mệnh đề bằng の, thành 窓のある部屋."
+      },
+      "Examples": {
+        "ga-aru-noun:example:1": "Tôi muốn sống trong một ngôi nhà có sân vườn.",
+        "ga-aru-noun:example:2": "Tôi đang tìm khách sạn có hồ bơi."
+      },
+      "SourceHash": "923faad00651aebe3b4e90b884c9dbe9d4749c92a33dcbb6169a1e057057bf20"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ga-iru",
+      "Fields": {
+        "Meaning": "Có người hoặc động vật",
+        "Formation": "Địa điểm ＋ に ＋ người hoặc động vật ＋ が ＋ いる",
+        "Explanation": "いる diễn tả sự hiện diện của người hoặc động vật. Nơi họ có mặt đi với に, còn người hoặc động vật đi với が. Dạng lịch sự là います.",
+        "UsageNotes": "Khi nói có người thân hoặc thú cưng, cũng dùng いる, như 妹がいます (tôi có em gái). Với đồ vật hoặc cây cối, thường dùng ある."
+      },
+      "Examples": {
+        "ga-iru:example:1": "Có trẻ em trong công viên.",
+        "ga-iru:example:2": "Tôi có hai anh trai."
+      },
+      "SourceHash": "abb25d4b439f86abe4c324fedfd6987aa8c75ccf0bca4a9f10ea395fda8a33c9"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-ka",
+      "Fields": {
+        "Meaning": "A hoặc B",
+        "Formation": "Danh từ A ＋ か ＋ danh từ B ＋（か）\nMệnh đề A ＋ か ＋ mệnh đề B ＋ か",
+        "Explanation": "Dùng か để nêu các lựa chọn, như コーヒーか紅茶 (cà phê hoặc trà đen). Với hai danh từ, thường chỉ cần か giữa hai lựa chọn, rồi đặt trợ từ chỉ vai trò của cả cụm ở cuối.",
+        "UsageNotes": "Trong mẫu này, か nối các lựa chọn. Trong コーヒーですか, か ở cuối câu đánh dấu câu hỏi. Để liệt kê các mục cùng được chọn, dùng と hoặc や tùy ý."
+      },
+      "Examples": {
+        "ka-ka:example:1": "Tôi sẽ uống cà phê hoặc trà đen.",
+        "ka-ka:example:2": "Mình gặp nhau vào thứ Bảy hoặc Chủ nhật nhé."
+      },
+      "SourceHash": "e662aae1c955575e28b31a4924928f0d058469a9bbd7e5bd5ac83536a01ba28b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kata",
+      "Fields": {
+        "Meaning": "Cách làm, cách thực hiện",
+        "Formation": "Động từ bỏ ます ＋ 方（かた）",
+        "Explanation": "Thêm 方 vào phần động từ đứng trước ます để tạo danh từ chỉ cách làm. Ví dụ, 使います → 使い方 (cách sử dụng), 書きます → 書き方 (cách viết).",
+        "UsageNotes": "Đối tượng của hành động thường nối với cụm bằng の, như 漢字の書き方 (cách viết chữ Hán). 読む方 có thể mang nghĩa khác, chẳng hạn người đọc, tùy ngữ cảnh và cách đọc 方."
+      },
+      "Examples": {
+        "kata:example:1": "Xin hãy chỉ cho tôi cách sử dụng chiếc máy này.",
+        "kata:example:2": "Tôi không biết cách viết chữ Hán."
+      },
+      "SourceHash": "0b803b32efaf36824d5fee3e031c46e7e95053d008286cd9f81bf1f20037c416"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "katta",
+      "Fields": {
+        "Meaning": "Dạng quá khứ của tính từ đuôi い",
+        "Formation": "Tính từ đuôi い bỏ い ＋ かった\nTính từ đuôi い bỏ い ＋ かった ＋ です (lịch sự)",
+        "Explanation": "Bỏ い cuối rồi thêm かった để nói về đặc điểm hoặc trạng thái trong quá khứ. Ví dụ, 高い → 高かった (đã đắt), 楽しい → 楽しかった (đã vui).",
+        "UsageNotes": "Dạng lịch sự là 高かったです. Với いい, dạng quá khứ là よかった."
+      },
+      "Examples": {
+        "katta:example:1": "Buổi tiệc hôm qua rất vui.",
+        "katta:example:2": "Bộ phim tuần trước rất hay."
+      },
+      "SourceHash": "90f7097127344f78ce2d3786bec5582677c3934a76bd5a87c9161e73f5c71d55"
+    }
+  ]
+}
