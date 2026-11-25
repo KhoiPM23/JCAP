@@ -4,7 +4,7 @@ import { PREFECTURES, REGIONS, type PrefectureShape, type RegionId } from '../..
 import { PICTOGRAM_CREDIT, PICTOGRAM_KIND_LABEL, PICTOGRAM_PREFECTURES, pictogramUrl } from '../../data/japanPictograms';
 import { JapanMap, PREFECTURE_BY_ID, REGION_NAME, REGION_STYLE } from './JapanMap';
 import type { ProvinceWord } from '../../data/learnContent';
-import type { ExploreProvinceWord } from '../../types/explore';
+import type { ExploreProvinceWord, ExplorePrefectureSummary } from '../../types/explore';
 import { cachedSpot, useExploreJourney, usePrefectureData, type JourneyState } from './exploreStore';
 import { AwardOverlay } from './AwardOverlay';
 import { PrefectureStampMark, STAMP_CSS, STAMP_INK, SpotStampMark } from './ExploreStamp';
@@ -305,7 +305,14 @@ export const JapanMapView: React.FC<{
           reserveBottom={selected && !isWide ? SHEET_HEIGHT_PX : 0}
           onInteract={() => setInteracted(true)}
           legend={<MapLegend />}
-          search={<PrefecturePicker onPick={selectPrefecture} isClosed={(id) => journey.status === 'ok' && !journey.prefecture(id)?.isOpen} />}
+          search={
+            <PrefecturePicker
+              onPick={selectPrefecture}
+              isClosed={(id) => journey.status === 'ok' && !journey.prefecture(id)?.isOpen}
+              summaryOf={journey.prefecture}
+              currentId={selectedId}
+            />
+          }
         />
 
         {/* Đang xem một tỉnh: nút về toàn quốc + đường dẫn (thanh bên đã trượt ra ngoài) */}
@@ -445,18 +452,68 @@ export const JapanMapView: React.FC<{
           .jm-lock { position: absolute; z-index: 30; top: 20px; left: 50%; transform: translateX(-50%); width: min(300px, calc(100% - 2rem)); box-sizing: border-box;
             display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 14px; border-radius: 16px; background: var(--paper-50);
             border: 1px solid var(--line); box-shadow: 0 14px 36px rgba(8,26,56,.38); color: var(--sumi); }
-          .jm-legend { position: absolute; right: 0; bottom: calc(100% + 10px); width: 300px; box-sizing: border-box; display: flex; flex-direction: column;
-            gap: 2px; padding: 14px 16px 12px; border-radius: 18px; background: var(--paper-50); border: 1px solid var(--line);
-            box-shadow: 0 14px 32px rgba(8,26,56,.3); color: var(--sumi); }
-          .jm-legend-btn { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
-            background: var(--paper-50); color: var(--sumi); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-          .jm-legend-btn:hover { background: var(--paper-100); }
-          .jm-legend-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-          .jm-lg-sw { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 26px; border-radius: 6px; }
-          .jm-lg-seal { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
-            border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 12px; font-weight: 700; }
-          .jm-lg-region { writing-mode: vertical-rl; padding: 2px 1px; background: var(--paper-50); border: 3px double var(--sumi);
-            font-family: var(--font-mincho); font-size: 10px; line-height: 11px; font-weight: 700; }
+          /* Chú giải: bảng gọn mở sang trái cột nút, mép dưới ngang đáy cột nút (102px = phần cột nằm dưới nút chú giải:
+             nút tìm 2+40, đệm 3+1, khe 8, cụm về khung khi gập 48) để bảng không tràn khỏi màn hình */
+          .jm-legend { position: absolute; right: calc(100% + 14px); bottom: -102px; width: 248px; box-sizing: border-box; display: flex; flex-direction: column;
+            gap: 0; padding: 8px 8px 10px 14px; border-radius: 14px; background: var(--paper-50); border: 1px solid var(--line);
+            box-shadow: 0 14px 32px rgba(8,26,56,.3); color: var(--sumi); transform-origin: right calc(100% - 122px); animation: jm-pop-in .22s cubic-bezier(.2,.7,.2,1) both; }
+          /* Bảng nổi bung ra từ nút và thu về nút khi đóng (tâm co giãn đặt ở chính nút) */
+          .jm-legend.is-closing, .jm-pk.is-closing { animation: jm-pop-out ${POP_OUT_MS}ms cubic-bezier(.4,0,1,1) both; pointer-events: none; }
+          @keyframes jm-pop-in { from { opacity: 0; transform: translateX(14px) scale(.9); } to { opacity: 1; transform: none; } }
+          @keyframes jm-pop-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(14px) scale(.86); } }
+          @media (prefers-reduced-motion: reduce) { .jm-legend, .jm-pk, .jm-legend.is-closing, .jm-pk.is-closing { animation: none; } }
+          /* Ô tìm tỉnh: giấy ngà, vùng dính đầu danh sách, ô màu theo vùng như trên bản đồ */
+          .jm-pk { position: absolute; right: calc(100% + 14px); bottom: -4px; z-index: 40; width: 340px; display: flex; flex-direction: column;
+            border-radius: 16px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 14px 32px rgba(8,26,56,.3); overflow: hidden; color: var(--sumi);
+            transform-origin: right calc(100% - 24px); animation: jm-pop-in .22s cubic-bezier(.2,.7,.2,1) both; }
+          .jm-pk-head { display: flex; flex-direction: column; gap: 6px; padding: 12px 12px 8px; border-bottom: 1px solid var(--line); }
+          .jm-pk-field { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 6px 0 12px; border-radius: 10px; border: 1px solid var(--line);
+            background: var(--paper-100); color: var(--sumi-muted); transition: border-color .12s, box-shadow .12s, background .12s; }
+          .jm-pk-field:focus-within { border-color: var(--ai); background: var(--paper-50); box-shadow: 0 0 0 3px var(--ai-soft); }
+          .jm-pk-field input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none; font: inherit; font-size: 14px; color: var(--sumi); }
+          .jm-pk-field input::placeholder { color: var(--sumi-faint); }
+          .jm-pk-clear { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 0; border-radius: 8px;
+            background: transparent; color: var(--sumi-muted); cursor: pointer; }
+          .jm-pk-clear:hover { background: var(--paper-200); color: var(--sumi); }
+          .jm-pk-clear:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+          .jm-pk-count { margin: 0; padding: 0 4px; font-size: 12px; line-height: 16px; color: var(--sumi-muted); }
+          .jm-pk-list { max-height: min(380px, 56vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 6px 6px; list-style: none;
+            scrollbar-width: thin; scrollbar-color: transparent transparent; }
+          .jm-pk-list:hover { scrollbar-color: color-mix(in srgb, var(--line-strong) 45%, transparent) transparent; }
+          .jm-pk-list::-webkit-scrollbar { width: 10px; }
+          .jm-pk-list::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
+          .jm-pk-list::-webkit-scrollbar-thumb { border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; background-color: transparent; }
+          .jm-pk-list:hover::-webkit-scrollbar-thumb { background-color: color-mix(in srgb, var(--line-strong) 45%, transparent); }
+          .jm-pk-list::-webkit-scrollbar-button { display: none; height: 0; }
+          .jm-pk-region { position: sticky; top: 0; z-index: 1; display: flex; align-items: baseline; gap: 6px; margin: 0 -6px; padding: 10px 16px 5px;
+            background: var(--paper-50); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+          .jm-pk-rname { font-size: 12px; font-weight: 700; color: var(--sumi); }
+          .jm-pk-rjp { font-family: var(--font-mincho); font-size: 12px; font-weight: 600; color: var(--sumi-muted); }
+          .jm-pk-rcount { margin-left: auto; font-size: 11px; color: var(--sumi-faint); font-variant-numeric: tabular-nums; }
+          .jm-pk-opt { position: relative; display: flex; align-items: center; gap: 10px; min-height: 40px; margin-top: 2px; padding: 0 10px; border-radius: 8px; cursor: pointer; }
+          .jm-pk-opt.is-active { background: var(--paper-200); }
+          .jm-pk-opt.is-active::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 0 2px 2px 0; background: var(--pk-ink); }
+          .jm-pk-sw { flex: none; width: 14px; height: 14px; border-radius: 4px; border: 1.5px dashed var(--line-strong); }
+          .jm-pk-name { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
+          .jm-pk-vi { font-size: 14px; font-weight: 600; color: var(--sumi); white-space: nowrap; }
+          .jm-pk-jp { font-family: var(--font-mincho); font-size: 13px; font-weight: 600; color: var(--sumi-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .jm-pk-opt.is-muted .jm-pk-vi { color: var(--sumi-muted); font-weight: 500; }
+          .jm-pk-opt.is-muted .jm-pk-jp { color: var(--sumi-faint); }
+          .jm-pk-mark { background: transparent; color: var(--ai); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+          .jm-pk-st { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--sumi-faint); font-variant-numeric: tabular-nums; }
+          .jm-pk-st.is-current { color: var(--ai); }
+          .jm-pk-st.is-done { color: var(--shu); }
+          .jm-pk-seal { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid currentColor;
+            font-family: var(--font-mincho); font-size: 9px; font-weight: 700; }
+          .jm-pk-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 28px 16px; text-align: center; font-size: 13px; color: var(--sumi-muted); }
+          .jm-pk-empty .jc-icon { color: var(--sumi-faint); margin-bottom: 4px; }
+          .jm-pk-empty b { color: var(--sumi); font-size: 14px; }
+          @media (max-width: 639px) { .jm-pk { position: fixed; left: 12px; right: 12px; top: 12px; bottom: auto; width: auto; } }
+          .jm-lg-sw { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 22px; border-radius: 5px; }
+          .jm-lg-seal { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%;
+            border: 2px solid var(--shu); color: var(--shu); font-family: var(--font-mincho); font-size: 11px; font-weight: 700; }
+          .jm-lg-region { writing-mode: vertical-rl; padding: 1px; background: var(--paper-50); border: 3px double var(--sumi);
+            font-family: var(--font-mincho); font-size: 9px; line-height: 10px; font-weight: 700; }
           /* Gợi ý thao tác nằm ngay bên phải thanh bên (240px + lề 12px + khe 12px; thanh bên thu gọn: 72px) */
           .jm-hint { left: 264px; top: 20px; max-width: calc(100% - 264px - 16px); transition: left .2s cubic-bezier(.2,.7,.2,1); }
           .jx-app.is-collapsed .jm-hint { left: 96px; max-width: calc(100% - 96px - 16px); }
@@ -920,16 +977,35 @@ const LockedNotice: React.FC<{ pref: PrefectureShape; journey: JourneyState; onG
 };
 
 /** Chú giải bản đồ: nút ở góc dưới phải, bảng mở lên phía trên */
+/** Thời gian thu bảng nổi về nút (khớp jm-pop-out) */
+const POP_OUT_MS = 160;
+const popOutMs = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : POP_OUT_MS);
+
 const MapLegend: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  /** Đóng: chạy hiệu ứng thu về nút rồi mới gỡ bảng */
+  const close = () => {
+    if (!open || closing) return;
+    window.clearTimeout(closeTimer.current);
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, popOutMs());
+  };
+  const closeRef = useRef(close);
+  closeRef.current = close;
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const onDown = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && closeRef.current();
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
-      setOpen(false);
+      closeRef.current();
     };
     document.addEventListener('pointerdown', onDown);
     window.addEventListener('keydown', onKey, true);
@@ -941,10 +1017,10 @@ const MapLegend: React.FC = () => {
   return (
     <div ref={ref} className="relative" data-map-ui>
       {open && (
-        <div className="jm-legend" role="dialog" aria-label="Chú giải bản đồ">
-          <div className="mb-1 flex items-center justify-between">
-            <strong className="text-[15px]">Chú giải bản đồ</strong>
-            <IconButton icon="close" label="Đóng chú giải" size="sm" onClick={() => setOpen(false)} />
+        <div className={`jm-legend ${closing ? 'is-closing' : ''}`} role="dialog" aria-label="Chú giải bản đồ">
+          <div className="flex items-center justify-between">
+            <strong className="text-sm">Chú giải</strong>
+            <IconButton icon="close" label="Đóng chú giải" size="sm" onClick={close} />
           </div>
           <LegendRow sw={<span className="jm-lg-sw" style={{ background: 'var(--paper)', boxShadow: 'inset 0 0 0 2px var(--sumi)' }} />} title="Tỉnh đã mở" text="Bấm vào để vào tỉnh và học" />
           <LegendRow
@@ -1005,19 +1081,31 @@ const MapLegend: React.FC = () => {
           />
         </div>
       )}
-      <button type="button" className="jm-legend-btn" onClick={() => setOpen(!open)} aria-expanded={open}>
-        <Icon name="map" size={20} />
-        Chú giải
+      <button
+        type="button"
+        className={`jm-mapctl ${open && !closing ? 'is-open' : ''}`}
+        onClick={() => {
+          if (open && !closing) return close();
+          // Bấm lại khi bảng đang thu về: huỷ việc đóng, mở lại ngay
+          window.clearTimeout(closeTimer.current);
+          setClosing(false);
+          setOpen(true);
+        }}
+        aria-expanded={open && !closing}
+        aria-label="Chú giải bản đồ"
+        data-tip="Chú giải"
+      >
+        <Icon name="map" size={22} />
       </button>
     </div>
   );
 };
 
 const LegendRow: React.FC<{ sw: React.ReactNode; title: string; text: string }> = ({ sw, title, text }) => (
-  <div className="flex items-center gap-3 py-[7px] text-[13px] leading-[18px]">
+  <div className="flex items-center gap-2.5 py-[5px] text-xs leading-4">
     {sw}
-    <div>
-      <b className="block text-sm font-semibold leading-5">{title}</b>
+    <div className="min-w-0">
+      <b className="block text-[13px] font-bold leading-[18px]">{title}</b>
       <span className="text-[var(--sumi-muted)]">{text}</span>
     </div>
   </div>
@@ -1047,7 +1135,55 @@ const ClosedNotice: React.FC<{ pref: PrefectureShape; onClose: () => void }> = (
 // Ô tìm tỉnh (combobox): cách chọn thay thế cho tỉnh nhỏ khó bấm và cho người dùng bàn phím
 // ============================================================
 
-const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: number) => boolean }> = ({ onPick, isClosed }) => {
+/** Tô phần chữ khớp từ khoá (so như ô tìm: bỏ dấu, chữ thường), giữ nguyên chữ gốc */
+function highlightMatch(text: string, query: string): React.ReactNode {
+  const q = normalize(query);
+  if (!q) return text;
+  const chars = [...text];
+  const normChars = chars.map((c) => normalize(c));
+  const joined = normChars.join('');
+  const at = joined.indexOf(q);
+  if (at < 0) {
+    const jp = text.indexOf(query.trim());
+    if (jp < 0 || !query.trim()) return text;
+    return (
+      <>
+        {text.slice(0, jp)}
+        <mark className="jm-pk-mark">{text.slice(jp, jp + query.trim().length)}</mark>
+        {text.slice(jp + query.trim().length)}
+      </>
+    );
+  }
+  // Đổi vị trí trong chuỗi đã chuẩn hoá về vị trí ký tự gốc
+  let pos = 0;
+  let start = -1;
+  let end = chars.length;
+  for (let i = 0; i < chars.length; i++) {
+    if (start < 0 && pos >= at) start = i;
+    pos += normChars[i].length;
+    if (start >= 0 && pos >= at + q.length) {
+      end = i + 1;
+      break;
+    }
+  }
+  if (start < 0) return text;
+  return (
+    <>
+      {chars.slice(0, start).join('')}
+      <mark className="jm-pk-mark">{chars.slice(start, end).join('')}</mark>
+      {chars.slice(end).join('')}
+    </>
+  );
+}
+
+const PrefecturePicker: React.FC<{
+  onPick: (id: number) => void;
+  isClosed: (id: number) => boolean;
+  /** Tóm tắt tỉnh từ hành trình (số mốc, số con dấu, khoá theo chương) */
+  summaryOf?: (id: number) => ExplorePrefectureSummary | undefined;
+  /** Tỉnh đang xem */
+  currentId?: number | null;
+}> = ({ onPick, isClosed, summaryOf, currentId = null }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -1070,11 +1206,27 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
 
   useEffect(() => setActiveIndex(0), [query]);
 
+  // Đóng: bảng thu về nút tìm rồi mới gỡ
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  const finishClose = () => {
+    setClosing(true);
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      setQuery('');
+    }, popOutMs());
+  };
+  const finishCloseRef = useRef(finishClose);
+  finishCloseRef.current = finishClose;
+
   useEffect(() => {
     if (!open) return;
     inputRef.current?.focus();
     const onDown = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) finishCloseRef.current();
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -1086,8 +1238,7 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
   }, [activeIndex, listId]);
 
   const close = (returnFocus: boolean) => {
-    setOpen(false);
-    setQuery('');
+    finishClose();
     if (returnFocus) triggerRef.current?.focus();
   };
 
@@ -1122,20 +1273,25 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
         ref={triggerRef}
         type="button"
         aria-haspopup="listbox"
-        aria-expanded={open}
+        aria-expanded={open && !closing}
         aria-label="Tìm tỉnh"
-        onClick={() => (open ? close(false) : setOpen(true))}
-        title="Tìm tỉnh"
-        className={`jm-mapctl ${open ? 'on' : ''}`}
+        onClick={() => {
+          if (open && !closing) return close(false);
+          window.clearTimeout(closeTimer.current);
+          setClosing(false);
+          setOpen(true);
+        }}
+        data-tip="Tìm kiếm"
+        className={`jm-mapctl ${open && !closing ? 'is-open' : ''}`}
       >
         <Icon name="search" size={22} />
       </button>
 
       {open && (
-        <div className="jm-reveal fixed sm:absolute left-3 right-3 sm:left-auto sm:right-[calc(100%+10px)] top-3 sm:top-auto sm:bottom-0 sm:w-[320px] rounded-[16px] bg-[var(--paper-50)] border border-[var(--line)] shadow-[0_14px_32px_rgba(8,26,56,.3)] overflow-hidden z-40">
-          <div className="p-3 border-b border-[var(--rule)]">
-            <label className="flex items-center gap-2 h-11 px-3 rounded-[6px] border-[1.5px] border-[var(--rule)] bg-white focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]">
-              <SearchIcon className="w-4 h-4 text-[var(--muted)] shrink-0" />
+        <div className={`jm-pk ${closing ? 'is-closing' : ''}`} role="dialog" aria-label="Tìm tỉnh">
+          <div className="jm-pk-head">
+            <label className="jm-pk-field">
+              <Icon name="search" size={18} />
               <span className="sr-only">Tên tỉnh</span>
               <input
                 ref={inputRef}
@@ -1149,48 +1305,114 @@ const PrefecturePicker: React.FC<{ onPick: (id: number) => void; isClosed: (id: 
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="Ví dụ: Kyoto, 大阪"
-                className="flex-1 min-w-0 bg-transparent text-base sm:text-sm text-[var(--ink)] outline-none placeholder:text-[var(--muted)]"
               />
+              {query && (
+                <button
+                  type="button"
+                  className="jm-pk-clear"
+                  aria-label="Xoá từ khoá"
+                  onClick={() => {
+                    setQuery('');
+                    inputRef.current?.focus();
+                  }}
+                >
+                  <Icon name="close" size={16} />
+                </button>
+              )}
             </label>
+            <p className="jm-pk-count" aria-live="polite">
+              {query.trim() ? `${results.length} tỉnh khớp` : `${PREFECTURES.length} tỉnh · ${REGIONS.length} vùng`}
+            </p>
           </div>
 
-          <ul id={listId} role="listbox" aria-label="Danh sách tỉnh" className="max-h-[min(360px,60vh)] overflow-y-auto py-1">
-            {results.length === 0 && <li className="px-4 py-6 text-center text-sm text-[var(--muted)]">Không tìm thấy tỉnh phù hợp</li>}
+          <ul id={listId} role="listbox" aria-label="Danh sách tỉnh" className="jm-pk-list">
+            {results.length === 0 && (
+              <li className="jm-pk-empty">
+                <Icon name="travel_explore" size={28} />
+                <b>Không tìm thấy tỉnh phù hợp</b>
+                <span>Thử tên không dấu (kyoto) hoặc chữ Nhật (京都).</span>
+              </li>
+            )}
             {results.map((p, i) => {
               const showRegion = p.region !== lastRegion;
               lastRegion = p.region;
+              const style = REGION_STYLE[p.region];
+              const sum = summaryOf?.(p.id);
+              const closed = isClosed(p.id);
+              const locked = !closed && !!sum?.isLocked;
+              const muted = closed || locked;
+              const current = p.id === currentId;
+              let status: React.ReactNode = null;
+              if (current) {
+                status = (
+                  <span className="jm-pk-st is-current">
+                    <Icon name="check" size={16} />
+                    Đang xem
+                  </span>
+                );
+              } else if (closed) {
+                status = <span className="jm-pk-st">Sắp có</span>;
+              } else if (locked) {
+                status = (
+                  <span className="jm-pk-st">
+                    <Icon name="lock" size={14} />
+                    Chương sau
+                  </span>
+                );
+              } else if (sum && sum.spotCount > 0) {
+                status = sum.stamp ? (
+                  <span className="jm-pk-st is-done" title="Đã có con dấu tỉnh">
+                    <span className="jm-pk-seal" aria-hidden="true">
+                      印
+                    </span>
+                    {`${sum.stampCount}/${sum.spotCount}`}
+                  </span>
+                ) : (
+                  <span className="jm-pk-st" title={`${sum.stampCount} trên ${sum.spotCount} mốc đã có con dấu`}>
+                    {sum.stampCount > 0 ? `${sum.stampCount}/${sum.spotCount} dấu` : `${sum.spotCount} mốc`}
+                  </span>
+                );
+              }
+              const count = showRegion ? results.filter((r) => r.region === p.region).length : 0;
               return (
                 <React.Fragment key={p.id}>
                   {showRegion && (
-                    <li role="presentation" className="flex items-baseline gap-1.5 px-4 pt-2.5 pb-1 text-xs font-semibold text-[var(--muted)]">
-                      {REGION_NAME[p.region]} <span className="font-jp font-medium">{REGION_JP.get(p.region)}</span>
+                    <li role="presentation" className="jm-pk-region">
+                      <span className="jm-pk-rname">{REGION_NAME[p.region]}</span>
+                      <span className="jm-pk-rjp" lang="ja">
+                        {REGION_JP.get(p.region)}
+                      </span>
+                      <span className="jm-pk-rcount">{`${count} tỉnh`}</span>
                     </li>
                   )}
                   <li
                     id={`${listId}-${i}`}
                     role="option"
                     aria-selected={i === activeIndex}
+                    aria-disabled={closed || undefined}
                     onMouseEnter={() => setActiveIndex(i)}
                     onClick={() => pick(p)}
-                    className={`mx-1 flex items-center gap-3 min-h-11 px-3 rounded-lg cursor-pointer ${
-                      i === activeIndex ? 'bg-[var(--primary-soft)]' : ''
-                    }`}
+                    className={`jm-pk-opt ${i === activeIndex ? 'is-active' : ''} ${muted ? 'is-muted' : ''}`}
+                    style={{ '--pk-ink': style.ink } as React.CSSProperties}
                   >
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ background: REGION_STYLE[p.region].ink }}
+                      className="jm-pk-sw"
                       aria-hidden="true"
+                      style={muted ? undefined : { background: style.fill, borderColor: style.ink }}
                     />
-                    <span className={`flex-1 text-sm font-semibold ${isClosed(p.id) ? 'text-[var(--ink-2)]' : 'text-[var(--ink)]'}`}>{p.nameVi}</span>
-                    {isClosed(p.id) && (
-                      <span className="rounded-full border border-[var(--rule)] px-2 py-0.5 text-[11px] font-semibold text-[var(--ink-2)]">Sắp có</span>
-                    )}
-                    <span className="font-jp text-sm text-[var(--ink-2)]">{p.nameJp}</span>
+                    <span className="jm-pk-name">
+                      <span className="jm-pk-vi">{highlightMatch(p.nameVi, query)}</span>
+                      <span className="jm-pk-jp" lang="ja">
+                        {highlightMatch(p.nameJp, query)}
+                      </span>
+                    </span>
+                    {status}
                   </li>
                 </React.Fragment>
               );
             })}
           </ul>
+
         </div>
       )}
     </div>
