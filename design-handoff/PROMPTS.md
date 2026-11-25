@@ -52,6 +52,26 @@ Dán lần lượt từng câu vào khung chat Claude Code. Gõ `@` để gắn 
 
 > Làm mục 9e trong @design-handoff/HANDOFF.md cho LoginView, RegisterView, EmailVerificationPendingView, ForgotPasswordView và AuthLayout, đối chiếu khối .auth trong @design-handoff/prototype/AppPrototype.dc.html. Giữ nguyên toàn bộ logic auth và AuthContext, chỉ đổi giao diện. Lập kế hoạch trước và chờ tôi duyệt.
 
+## Bước 12 · Trang Kết quả
+
+> Làm mục 9f (vòng 3) trong @design-handoff/HANDOFF.md, đối chiếu @design-handoff/prototype/KetQua.dc.html và @design-handoff/BRIEF-ket-qua.md. Sửa trang Kết quả (/roleplay/results, tab lưu ở ?tab=). Giữ nguyên API và cách lấy dữ liệu, chỉ đổi giao diện. Bỏ bộ lọc và hai cột "Giáo trình", "Bài học" của Shadowing, thay bằng lọc theo cấp JLPT. Thêm các màu tối trong mục 9f vào khối hoc-tap-dem. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 13 · Shadowing tại mốc (khung chat cạnh ngăn thông tin)
+
+Làm thành 3 lượt, mỗi lượt một prompt, xong lượt nào thì chạy thử và commit lượt đó.
+
+**13a · Tách logic và dựng vỏ**
+
+> Đọc mục 9g trong @design-handoff/HANDOFF.md và mở @design-handoff/prototype/ShadowingTaiMoc.dc.html để đối chiếu. Bước này: (1) tách phần thu âm, gửi chấm, lưu buổi trong @jcap-web/src/views/shadowing/LearnerShadowingPracticeView.tsx thành một hook dùng chung, trang luyện cũ vẫn chạy như trước; (2) trên trang bản đồ tỉnh, khi bấm "Luyện Shadowing" ở thẻ mốc thì mở khung chat bên trái ngăn thông tin, bản đồ trượt sang trái, đóng thì trượt về. Ngăn thông tin giữ nguyên. Không đổi API hay cách tính điểm. Lập kế hoạch trước và chờ tôi duyệt.
+
+**13b · Hội thoại, khung thu âm, tab ghi chú**
+
+> Tiếp mục 9g: dựng phần hội thoại, khung thu âm và 5 tab ghi chú kiểu sổ tay bên trái khung chat (thu gọn còn chữ Hán dọc, rê chuột thì trượt ra, tab đang mở nối với trang ghi chú). Trang Kết quả làm giống "Chi tiết từng câu" của modal tổng kết hiện có. Từ vựng và Ngữ pháp lấy từ dữ liệu dialogue, thiếu thì hiện EmptyState, không tự sinh. Đối chiếu prototype, lập kế hoạch trước và chờ tôi duyệt.
+
+**13c · Tổng kết và con dấu**
+
+> Tiếp mục 9g: thay modal tổng kết bằng thẻ tổng kết cuối khung chat, chỉ dùng số liệu backend như modal và SessionSummaryPanel hiện có, thêm dòng con dấu của mốc và hiệu ứng đóng dấu sau khi server xác nhận. Thêm kiểu thanh cuộn mảnh như mục 9g. Chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

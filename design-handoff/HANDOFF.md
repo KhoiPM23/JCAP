@@ -243,6 +243,103 @@ Chỉ đổi giao diện. Giữ nguyên logic trong `LoginView`, `RegisterView`,
 - **Chuyển trang:** landing và auth mờ vào 280ms. Khi `prefers-reduced-motion` thì hiện ngay.
 - **Điện thoại (≤ 760px):** ẩn phần hình bên trái, form chiếm toàn màn (lề 20px).
 
+
+## 9f. Trang Kết quả (`/roleplay/results`, `?tab=shadowing`), vòng 3 (bản dùng)
+
+Theo `design-handoff/BRIEF-ket-qua.md`. Prototype: `prototype/KetQua.dc.html` (bấm Play: đổi tab, lọc, phân trang, xem lại từng câu) và trang "Kết quả" trong `prototype/AppPrototype.dc.html`. Canvas: hàng "Kết quả vòng 3" có bản sáng, tối, 390px và trạng thái. Vòng 1 và vòng 2 (A, B) vẫn trên canvas để tham khảo, **không làm theo**.
+
+**Ý chính:** gọn và dễ hiểu. Trang trả lời ba câu hỏi theo thứ tự: mình đã luyện đến đâu và nên làm gì tiếp, kỹ năng nào ổn và kỹ năng nào cần luyện, từng buổi ra sao. Không biểu đồ, không khối tối, không nhãn "đề xuất".
+
+**Khung trang:** tiêu đề "Kết quả", mô tả, `SegmentedControl` hai tab (Hội thoại AI `forum`, Shadowing `record_voice_over`), giá trị lưu ở `?tab=`. Cột nội dung tối đa 1180px. Hai tab cùng nhịp: khối tóm tắt → tiêu đề "Các buổi đã luyện" + số buổi + bộ lọc → danh sách → phân trang.
+
+**Tab Hội thoại AI**
+1. **Khối tóm tắt** (nền `--ai-soft`, bo `--radius-xl`, đệm 22/24px): ô chữ Hán biểu trưng 56px nền `--paper-50`, câu "Bạn đã hoàn thành **12 buổi** Hội thoại AI. Buổi tiếp theo nên luyện: **{nextRecommendedScenarioTitle}**." (16/26px), dòng phụ "Gợi ý dựa trên các kỹ năng bên dưới." và nút primary "Luyện ngay". Không có `nextRecommendedScenarioTitle` thì chỉ giữ câu đầu, ẩn nút.
+2. **"Kỹ năng của bạn"** (tiêu đề 20px, bên phải "Cập nhật sau mỗi buổi Hội thoại AI"): ba thẻ ngang nhau.
+   - Phản xạ (`speakingReflexIndex`/100): "Bạn trả lời nhanh và tự nhiên đến đâu."
+   - Trợ từ (`particleAccuracyRate`%): "Dùng đúng は, が, を, に, で trong câu nói."
+   - Kính ngữ (`keigoCommandScore`%): "Nói lịch sự đúng mức với từng người."
+   - Mỗi thẻ: tên 16px đậm, nhãn mức bên phải (≥ 80 "Tốt" `--score-good`, ≥ 60 "Khá" `--score-mid`, < 60 "Cần luyện thêm" `--score-low`, nền `*-soft`, bo tròn), số 40px font Lora, `ProgressBar` sm, câu giải thích 14px `--sumi-muted`.
+   - Dưới ba thẻ, một dòng: "Bạn làm tốt:" + `Badge` success (`strengths`), "Nên chú ý:" + `Badge` warning (`targetFocusAreas`).
+   - Số buổi (`totalSessionsCompleted`) đã nằm trong khối tóm tắt. `totalPracticeTurns` không hiện để trang gọn.
+3. **"Các buổi đã luyện"** + `totalCount`, bên phải `SegmentedControl` sm Tất cả / Đạt chuẩn / Cần rèn luyện (có `count`). Danh sách là một tờ, mỗi dòng là một nút (→ `/roleplay/results/:id`):
+   - ô chữ Hán 44px · tên tình huống 16px đậm, dưới là thời điểm thân thiện ("Hôm nay, 21:40", "Hôm qua, 20:15", ngày cũ hơn ghi "18/11, 22:02") + `JlptBadge` · bên phải "86 điểm" (18px đậm) và tên hạng (極 Xuất sắc, 優 Ưu tú, 良 Khá tốt, 可 Đạt chuẩn, 研 Cần rèn luyện thêm) · triện 40px (đạt: mực son, chưa đạt: ô nét đứt) · `chevron_right`.
+   - 8 dòng mỗi trang, phân trang bằng `IconButton` + "Trang 1 trên 2".
+
+**Tab Shadowing**
+1. **Khối tóm tắt** một tờ: `ScoreRing` 72px + "Điểm trung bình", "Tính trên N buổi đã luyện" | số phút (Lora 40px) + "phút luyện tổng cộng", "N câu đã được chấm". Chưa có buổi thì không hiện khối (xem trạng thái).
+2. **"Các buổi đã luyện"** + số buổi, bên phải ô tìm (`TextField` icon `search`) và `SegmentedControl` sm Tất cả / N5 / N4 / N3. Đã bỏ bộ lọc và hai cột "Giáo trình", "Bài học".
+3. Mỗi dòng: tên bài (`dialogueTitle`), dòng phụ "Hôm qua, 21:05" + `JlptBadge` + "Vai A, {scenarioTitle}" · bên phải "84 điểm" + "Hạng A, rất tốt" (bản ghi cũ: "Bản ghi cũ") · nút ghost sm "Xem lại từng câu"/"Thu gọn" (icon `expand_more` xoay khi mở, `aria-expanded`) và secondary sm "Luyện lại". Thời lượng, số câu, độ khớp **không hiện trên dòng** để dòng gọn; chúng nằm trong phần mở.
+4. Phần mở (nền dòng đổi `--paper-100`): một câu tóm tắt "6/6 câu đã chấm, khớp nội dung 92%, luyện 3 phút 20 giây" (bỏ phần nào không có dữ liệu), rồi mỗi câu một thẻ: `WordDiff` (chú thích chỉ ở câu đầu), "Bạn đã nói: …", nghĩa tiếng Việt, nhận xét (nền `--ai-soft`, icon `tips_and_updates`) khi có; bên phải nhãn điểm (Tốt/Khá/Cần sửa theo `--score-*`) và `AudioPlayer` chip "Nghe mẫu". Cuối là nút primary "Luyện lại cả bài".
+
+**Trạng thái:** đang tải (`Skeleton` đặt đúng bố cục: tờ có 4 cột và 4 dòng), lỗi (`Alert` danger + nút "Thử lại"), học viên mới (`EmptyState` + nút "Chọn tình huống để luyện" / "Mở thư viện Shadowing", không hiện số 0), rỗng theo bộ lọc (câu giải thích đổi theo bộ lọc, nút "Xem tất cả" và "Bắt đầu một buổi Hội thoại AI"), tìm không ra (nút "Xoá bộ lọc").
+
+**Điện thoại (≤ 760px):** thanh bên ẩn, có `AppHeader` trên và `BottomNav` dưới. Khối tóm tắt xếp dọc, nút "Luyện ngay" giãn hết chiều ngang. Ba thẻ kỹ năng xếp dọc. Dòng Hội thoại AI giữ ô chữ Hán, tên, điểm; ẩn triện và mũi tên. Dòng Shadowing: tên và điểm trên, hai nút chia đôi bên dưới. Ô tìm và bộ lọc JLPT xếp dọc, giãn hết chiều ngang.
+
+**Chế độ tối:** `hoc-tap-dem` cộng các màu tối bổ sung: `--shu:#e2674f; --success:#6cc7a8; --success-soft:#173029; --warning:#e5ad55; --warning-soft:#3a2d16; --danger:#f2958a; --danger-soft:#3d1f1b; --info:#8cc3e8; --score-good:#6cc7bf; --score-good-soft:#163130; --score-mid:#e5ad55; --score-mid-soft:#3a2d16; --score-low:#f2958a; --score-low-soft:#3d1f1b; --n5:#9ccf8f; --n5-soft:#1f2e1c; --n4:#86c4dc; --n4-soft:#17303a; --n3:#c7a6ea; --n3-soft:#2c2338`. Triện bỏ `mix-blend-mode: multiply`.
+
+**Font:** số lớn (điểm kỹ năng, số phút) dùng Lora 600 như landing; còn lại Be Vietnam Pro.
+
+**Không làm:** biểu đồ, điểm Phát âm/Ngữ điệu cho Shadowing, nút xoá kết quả, các phần "Đề xuất" của vòng 1 và 2.
+
+Cần kiểm tra: thứ tự đoán chữ Hán biểu trưng ("hỏi đường" xét trước "ga"); "Hôm nay/Hôm qua" tính theo giờ máy người dùng.
+
+## 9g. Shadowing tại mốc: khung chat cạnh ngăn thông tin trên bản đồ (bản chốt)
+
+Prototype: `prototype/ShadowingTaiMoc.dc.html` (bấm Play, rồi "Luyện Shadowing" ở thẻ mốc 1). Nút "Tình huống demo" ở góc dưới trái chỉ có trong prototype, **không làm** trong app. Brief gốc: `BRIEF-shadowing-tai-moc.md`; chỗ nào brief khác mục này thì làm theo mục này (bố cục đã đổi sau góp ý).
+
+**Nguyên tắc**
+- Bản đồ tỉnh và ngăn thông tin bên phải **giữ nguyên như hiện tại**. Không thêm tab, không đổi nội dung ngăn.
+- Không đổi API, cách chấm, cách tính điểm buổi, điều kiện nhận con dấu. Dùng lại `shadowingService`, logic thu âm, gửi chấm, lưu buổi đang có trong `views/shadowing/LearnerShadowingPracticeView.tsx` (nên tách thành hook dùng chung, ví dụ `useShadowingSession`, rồi cho cả trang cũ lẫn khung mới cùng dùng).
+- Chỉ dùng token. Màu bản đồ lấy từ `views/explore/exploreTheme.ts` (`T.sea`, `T.paper`, `T.card`, `REGION_STYLE.kanto`…), chữ và nút dùng token `kham-pha`.
+
+**Bố cục (1440px)**
+```
+| dải bản đồ | trang ghi chú 380 | 14 | tab 34 | khung chat 540 | 12 | ngăn thông tin 440 | 16 |
+```
+- Ngăn thông tin: như cũ, `right:16px; top/bottom:16px; width:clamp(380px,30.5vw,440px)`.
+- Khung chat: `width:clamp(420px,37.5vw,540px)`, cách ngăn thông tin 12px, cao bằng ngăn, `radius 18px`, nền `--paper-100` **trơn** (không chấm), bóng như ngăn thông tin.
+- Mở khung chat: bản đồ trượt sang trái (`transform`, 450ms) để mốc đang luyện nằm trong dải bản đồ còn lại; khung chat trượt vào từ phải 56px + mờ dần, 320ms; đóng 220ms. Giảm chuyển động: chỉ mờ dần.
+- Ở thẻ mốc trong ngăn thông tin, khi khung chat đang mở, nút "Luyện Shadowing" đổi thành ô viền đứt "Đang luyện ở khung bên cạnh". Ghim mốc trên bản đồ có nhãn "Đang luyện".
+- Đóng khung giữa chừng: không hỏi (trừ khi có bản thu chưa gửi). Hiện thông báo trên bản đồ "Đã lưu. Lần sau bạn tiếp tục từ câu N." và nút ở thẻ mốc thành "Tiếp tục (câu N/3)".
+- ≤760px: khung chat phủ màn; 5 tab ghi chú thành một hàng dưới tiêu đề; trang ghi chú mở dạng bottom sheet 72%.
+
+**Tiêu đề khung chat**: chỉ tên bài "Thủ tục nhập cảnh" (18px, 700) + tên tiếng Nhật nhỏ màu `kanto-ink` chữ Mincho, nút đóng bên phải. Không có thanh nền, chỉ một đường kẻ mảnh thụt 26px hai bên.
+
+**Hội thoại**
+- Câu nhân vật: avatar tròn 44px nền `kanto-ink` chữ Mincho; bóng thoại nền `card` viền `line`.
+- Câu của bạn: avatar "Bạn" nền `sumi`; bóng thoại nền `sumi` chữ trắng, luôn hiện **câu mẫu** (không thay bằng chữ nhận dạng). Điểm hiện thành viên nhỏ cạnh tên: "88 điểm" màu theo tier backend (green/yellow/red), hoặc "Chưa chấm được".
+- Câu đang tới: viền đứt `--ai`, nhãn "Lượt của bạn".
+- Dưới mỗi câu: "Nghe mẫu", "Dịch"; câu của bạn thêm nút micro để nói lại. Bấm câu đã chấm thì mở ghi chú Kết quả đúng câu đó.
+- Chưa nói câu nào: thẻ mở đầu ở giữa khung (hai vai, câu mô tả bài `sourceDescription`, số câu của bạn, ngưỡng 60, `estimatedMinutes`).
+- Khung thu âm ở đáy: viền đứt `line-strong`, các trạng thái giữ như mục 8 (sẵn sàng, đang thu, đã thu, đang chấm, có điểm, không chấm được do bản thu/hệ thống, chưa cấp micro). Câu nhân vật tự phát rồi chuyển lượt.
+
+**Tab ghi chú (bên trái khung chat)**
+- 5 tab: Bối cảnh 背景 (`--nami`), Cả bài 台本 (`--ai`), Từ vựng 単語 (`kanto-ink`), Ngữ pháp 文法 (`--n3`), Kết quả 結果 (`--shu`).
+- Lúc thường: mỗi tab chỉ nhô 34px khỏi mép khung chat, hiện hai chữ Hán viết dọc (`writing-mode: vertical-rl`) màu của tab. Tab cao 64px, cách nhau 14px, bắt đầu từ top 96px.
+- Rê chuột hoặc focus: chỉ tab đó trượt ra (rộng 132px) hiện thêm tên tiếng Việt và một vạch màu ở mép trái (`transform`, 200ms).
+- Đang mở: tab tô màu của nó, chữ trắng, nhô thêm 14px để chạm vào trang ghi chú. Bấm lại để gấp. Mới vào phòng không mở sẵn trang nào.
+- Tab Kết quả có chấm đỏ khi vừa có điểm mới mà trang Kết quả chưa mở.
+- `button` có `aria-expanded`, `aria-controls`, `aria-label` là tên tiếng Việt.
+
+**Trang ghi chú**: nền `card`, chỉ có một lề đỏ mảnh ở x=31px như trang sổ, cách cột tab 14px. Tiêu đề = chữ Hán màu tab + tên, gạch chân 2px màu tab. Nội dung dạng chữ, ngăn bằng đường kẻ mảnh, không bọc trong hộp.
+- Bối cảnh: tên mốc + tên Nhật, `lesson.situation`, "Dùng khi" (`lesson.realUse`), câu mẫu dạng trích dẫn + `grammarNote`, hai vai trong bài, dòng "Bạn đóng vai … · Đổi vai".
+- Cả bài: các câu của dialogue (vai, câu Nhật có furigana, nghĩa); câu của bạn đánh dấu bằng vạch `--ai` bên trái.
+- Từ vựng, Ngữ pháp: lấy từ `dialogue.vocabularies` / `grammars`. Bài "Thủ tục nhập cảnh" hiện chưa có dữ liệu này; prototype lấy tạm từ các câu của bài. Khi thiếu dữ liệu thì hiện EmptyState, **không tự sinh**.
+- Kết quả: giống mục "Chi tiết từng câu" của modal tổng kết hiện có: "Câu đã chấm x/N" kèm số khớp tốt / một phần / cần luyện lại, "Độ khớp nội dung %" có thanh và câu "Tính trên tất cả câu của vai bạn, câu chưa chấm tính 0.". Danh sách câu: Câu i/N, chip điểm hoặc "Chưa chấm", "thử n lần", câu mẫu, Nghe bạn / Nghe mẫu / Luyện lại câu; mở ra thì có `JapaneseSentenceDiffView`, chữ hệ thống nghe được, romaji, nghĩa.
+
+**Tổng kết cuối khung chat** (thay cho modal hiện tại khi luyện tại mốc). Chỉ dùng số liệu backend trả về, đúng các trường của modal và `SessionSummaryPanel`:
+1. Con dấu mốc (nếu nhận được), đóng cộp sau khi server xác nhận.
+2. "Hoàn thành bài luyện!" (hoặc "Buổi luyện đã kết thúc" khi chưa chấm câu nào), dòng "Thủ tục nhập cảnh · JLPT N5 · Vai A (Người nhập cảnh)", trạng thái lưu lịch sử.
+3. Một dòng về con dấu của mốc (đã nhận / còn thiếu bao nhiêu điểm / còn câu chưa chấm / còn bước Hiểu câu mẫu + nút "Tôi đã hiểu" / lưu lỗi + "Lưu lại").
+4. Điểm buổi /100 + `sessionRankTitle`, Câu đã chấm, Độ khớp nội dung, Thời gian luyện (phút : giây).
+5. Cảnh báo micro khi `gateStatus === 'needs_retry'`.
+6. Câu nên luyện lại (`sentencesToRetry`), "Lỗi trong buổi" (`errorTypeCounts`, nhãn như `SessionSummaryPanel`), nút `AiSessionReview`.
+7. Liên kết "Xem chi tiết từng câu" (mở ghi chú Kết quả). Nút: "Luyện lại bài này", "Đổi sang vai (B)", "Xong" (đóng khung chat, về bản đồ).
+
+**Thanh cuộn** (ngăn thông tin, trang ghi chú, hội thoại): ẩn khi không rê chuột; khi rê chuột là nét 4px bo tròn màu `line-strong` 45%, rê lên nét thì sang `kanto-ink`; không mũi tên, không rãnh. Firefox: `scrollbar-width: thin`. Mép dưới ngăn thông tin và trang ghi chú mờ dần 28px.
+
+**Không làm trong bước này**: bảng "Tình huống demo", Đến mốc tiếp theo, lưu Flashcard, các mục ghi "đề xuất" trong brief.
+
 ## 10. Thứ tự làm và cách nghiệm thu
 
 | Bước | Nội dung | Xong khi |
@@ -258,6 +355,8 @@ Chỉ đổi giao diện. Giữ nguyên logic trong `LoginView`, `RegisterView`,
 | 9 | Sổ con dấu (9c) | Tab vùng, lật trang, Mục lục tìm/lọc, Tổng quan, đúng dữ liệu thật, không lộ tên mốc chưa đóng |
 | 10 | Landing page (9d) | Khách vào `/` thấy landing, đã đăng nhập vào bản đồ; giá đọc từ dữ liệu thật; ổn ở 390px |
 | 11 | Đăng nhập / Đăng ký (9e) | Đủ 4 màn, giữ logic auth cũ, ô mật khẩu hiện/ẩn, ổn ở 390px |
+| 12 | Trang Kết quả (9f) | Hai tab, lọc JLPT, xem lại một buổi, đủ trạng thái tải/lỗi/rỗng |
+| 13 | Shadowing tại mốc (9g) | Khung chat mở cạnh ngăn thông tin, bản đồ trượt; 5 tab ghi chú bên trái; đủ trạng thái khung thu âm; tổng kết đúng số liệu backend; ổn ở 1280 và 390px |
 
 Mỗi bước: chạy `npm run build` (typecheck) và `npm test`, chụp màn hình so với prototype, commit riêng.
 

@@ -1,9 +1,9 @@
 ﻿# Cài đặt một lần để chạy và test Shadowing (chấm bằng Faster-Whisper) trên máy mới.
-# Chạy ở thư mục gốc repo:   .\scripts\setup-shadowing.ps1
-# Chỉ kiểm tra, không cài gì:  .\scripts\setup-shadowing.ps1 -CheckOnly
+# Cách chạy dễ nhất (dán vào terminal ở thư mục gốc repo, không vướng ExecutionPolicy):  scripts\setup-shadowing.cmd
+# Chỉ kiểm tra, không cài gì:  scripts\setup-shadowing.cmd -CheckOnly
 #
 # Việc script làm:
-#   1. Kiểm tra .NET 8, Node.js, Python 3.10–3.12, VOICEVOX, appsettings.Local.json (không in giá trị bí mật).
+#   1. Kiểm tra .NET 8, Node.js, Python 3.10–3.14 (thiếu thì tự cài 3.12 bằng winget), VOICEVOX, appsettings.Local.json (không in giá trị bí mật).
 #   2. Tạo môi trường ảo Python riêng tools/shadowing-asr/.venv (đã có trong .gitignore; không đụng Python chung
 #      hay dịch vụ Whisper của Hội thoại AI) và cài thư viện trong tools/shadowing-asr/requirements.txt.
 #   3. Tải sẵn model Whisper (mặc định "small", ~460 MB) để lần chấm đầu tiên không bị quá giờ.
@@ -33,16 +33,34 @@ if ($dotnet -and ((& dotnet --list-sdks) -match '^8\.')) { Ok ".NET 8 SDK" } els
 # Node.js
 if (Get-Command node -ErrorAction SilentlyContinue) { Ok "Node.js $(& node --version)" } else { Bad "Node.js (https://nodejs.org)" }
 
-# Python 3.10–3.12: thử py launcher trước, rồi python
-$python = $null
-foreach ($candidate in @(@("py", "-3.12"), @("py", "-3.11"), @("py", "-3.10"), @("python"))) {
-    $exe = $candidate[0]
-    if (-not (Get-Command $exe -ErrorAction SilentlyContinue)) { continue }
-    $probeArgs = @($candidate | Select-Object -Skip 1) + @("-c", "import sys; print('%d.%d' % sys.version_info[:2])")
-    try { $version = (& $exe @probeArgs 2>$null | Select-Object -First 1) } catch { continue }
-    if ($version -in @("3.10", "3.11", "3.12")) { $python = $candidate; break }
+# Python: thư viện nhận dạng có bản cài sẵn cho 3.10–3.14 (3.15 chưa có, pip sẽ phải tự biên dịch và hỏng).
+# Ưu tiên 3.12. Thử py launcher, python trên PATH, rồi chỗ cài mặc định của python.org.
+$supported = @("3.12", "3.13", "3.11", "3.14", "3.10")
+function Find-Python {
+    $candidates = New-Object System.Collections.Generic.List[object]
+    foreach ($v in $supported) { $candidates.Add([pscustomobject]@{ Exe = "py"; Args = @("-$v") }) }
+    $candidates.Add([pscustomobject]@{ Exe = "python"; Args = @() })
+    foreach ($v in $supported) {
+        $path = Join-Path $env:LOCALAPPDATA ("Programs\Python\Python" + ($v -replace '\.', '') + "\python.exe")
+        $candidates.Add([pscustomobject]@{ Exe = $path; Args = @() })
+    }
+    foreach ($c in $candidates) {
+        if (-not (Get-Command $c.Exe -ErrorAction SilentlyContinue)) { continue }
+        $probe = @($c.Args) + @("-c", "import sys; print('%d.%d' % sys.version_info[:2])")
+        $v = $null
+        try { $v = (& $c.Exe @probe 2>$null | Select-Object -First 1) } catch { continue }
+        if ($v -in $supported) { return [pscustomobject]@{ Exe = $c.Exe; Args = @($c.Args); Version = $v } }
+    }
+    return $null
 }
-if ($python) { Ok "Python $version ($($python -join ' '))" } else { Bad "Python 3.10, 3.11 hoặc 3.12 (https://www.python.org/downloads/)" }
+$python = Find-Python
+if ($python) {
+    Ok "Python $($python.Version) ($($python.Exe) $($python.Args -join ' '))"
+} elseif (Get-Command winget -ErrorAction SilentlyContinue) {
+    Warn "Chưa có Python 3.10–3.14 (bản 3.15 chưa dùng được). Script sẽ tự cài Python 3.12 cho riêng tài khoản này"
+} else {
+    Bad "Python 3.12 (https://www.python.org/downloads/release/python-3120/), bản 3.15 chưa dùng được"
+}
 
 # VOICEVOX
 try {
@@ -71,20 +89,47 @@ if ($CheckOnly) {
     Write-Host "`nChỉ kiểm tra (-CheckOnly): không cài gì." -ForegroundColor Cyan
     if ($problems.Count -gt 0) { exit 1 } else { exit 0 }
 }
-if (-not $python) { Write-Host "`nCài Python 3.10–3.12 rồi chạy lại script." -ForegroundColor Red; exit 1 }
+
+if (-not $python) {
+    Write-Host "`n== Cài Python 3.12 ==" -ForegroundColor Cyan
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Host "Máy không có winget. Tải và cài Python 3.12 tại https://www.python.org/downloads/ rồi chạy lại." -ForegroundColor Red
+        exit 1
+    }
+    & winget install -e --id Python.Python.3.12 --scope user --silent --accept-package-agreements --accept-source-agreements
+    $python = Find-Python
+    if (-not $python) {
+        Write-Host "Cài Python 3.12 chưa xong. Tải tại https://www.python.org/downloads/ rồi chạy lại." -ForegroundColor Red
+        exit 1
+    }
+    Ok "Đã cài Python $($python.Version)"
+}
 
 Write-Host "`n== 2. Môi trường ảo Python và thư viện nhận dạng ==" -ForegroundColor Cyan
+# Môi trường ảo cũ tạo bằng Python không hỗ trợ (vd. 3.15) hoặc bị hỏng thì tạo lại
+if (Test-Path $venv) {
+    $venvVersion = $null
+    try { $venvVersion = (& $venvPython -c "import sys; print('%d.%d' % sys.version_info[:2])" 2>$null | Select-Object -First 1) } catch { }
+    if ($venvVersion -notin $supported) {
+        Warn "Môi trường ảo cũ dùng Python '$venvVersion' không hợp, tạo lại"
+        Remove-Item -Recurse -Force $venv
+    }
+}
 if (-not (Test-Path $venvPython)) {
-    $pyArgs = @($python | Select-Object -Skip 1) + @("-m", "venv", $venv)
-    & $python[0] @pyArgs
+    $venvArgs = @($python.Args) + @("-m", "venv", $venv)
+    & $python.Exe @venvArgs
     if ($LASTEXITCODE -ne 0) { throw "Không tạo được môi trường ảo." }
     Ok "Đã tạo $venv"
 } else {
     Ok "Đã có $venv"
 }
-& $venvPython -m pip install --disable-pip-version-check -r (Join-Path $asrDir "requirements.txt")
+& $venvPython -m pip install --disable-pip-version-check --upgrade pip
+& $venvPython -m pip install --disable-pip-version-check --prefer-binary -r (Join-Path $asrDir "requirements.txt")
 if ($LASTEXITCODE -ne 0) { throw "Cài thư viện nhận dạng thất bại (xem lỗi pip ở trên)." }
-Ok "Đã cài thư viện trong requirements.txt"
+$check = "import importlib.util as u; m=[n for n in ('faster_whisper','fastapi','uvicorn','multipart','numpy','pyopenjtalk') if u.find_spec(n) is None]; print(','.join(m))"
+$missing = (& $venvPython -c $check | Select-Object -First 1)
+if ($missing) { throw "Vẫn thiếu thư viện: $missing (xem lỗi pip ở trên)." }
+Ok "Đã cài đủ thư viện nhận dạng"
 
 Write-Host "`n== 3. Tải sẵn model Whisper '$Model' (lần đầu ~460 MB với small) ==" -ForegroundColor Cyan
 & $venvPython -c "from faster_whisper import WhisperModel; WhisperModel('$Model', device='cpu', compute_type='int8'); print('ok')"
@@ -101,8 +146,7 @@ if (-not (Test-Path (Join-Path $web "node_modules"))) {
     Ok "jcap-web/node_modules đã có"
 }
 
-Write-Host "`n== Xong. Mỗi lần test: ==" -ForegroundColor Cyan
-Write-Host "  1. Mở VOICEVOX"
-Write-Host "  2. Cửa sổ PowerShell riêng:  .\scripts\run-shadowing-asr.ps1   (để nguyên cửa sổ)"
-Write-Host "  3. dotnet run   (lần đầu tự áp migration vào CSDL trên máy và tạo dữ liệu câu mẫu)"
-if ($warnings.Count -gt 0) { Write-Host "`nCòn $($warnings.Count) cảnh báo ở trên, xem lại trước khi test." -ForegroundColor Yellow }
+Write-Host "`n== Xong. Mỗi lần test: mở VOICEVOX rồi dotnet run ==" -ForegroundColor Cyan
+Write-Host "  dotnet run tự bật dịch vụ nhận dạng; lần đầu tự áp migration vào CSDL trên máy và tạo dữ liệu câu mẫu."
+if ($problems.Count -gt 0) { Write-Host "`nCòn $($problems.Count) mục THIẾU ở phần 1, sửa trước khi test." -ForegroundColor Red }
+if ($warnings.Count -gt 0) { Write-Host "Còn $($warnings.Count) cảnh báo ở phần 1, xem lại trước khi test." -ForegroundColor Yellow }
