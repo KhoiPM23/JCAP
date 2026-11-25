@@ -185,8 +185,23 @@
   transition: left .2s var(--e) .09s;
 }
 .jx-app.is-collapsed .jx-page { left: 72px; }
+/* Thanh cuộn của trang: nét bo tròn mảnh theo màu theme, không mũi tên, không rãnh; rê chuột vào thì đậm và dày hơn.
+   Chrome/Edge: đặt scrollbar-width thì bị vẽ kiểu mặc định (có mũi tên), nên thuộc tính chuẩn chỉ dành cho Firefox. */
+.jx-page::-webkit-scrollbar { width: 12px; }
+.jx-page::-webkit-scrollbar-track { background: transparent; }
+.jx-page::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.jx-page::-webkit-scrollbar-thumb { min-height: 48px; border: 3.5px solid transparent; border-radius: 12px; background-clip: padding-box; background-color: color-mix(in srgb, var(--line-strong) 38%, transparent); }
+.jx-page::-webkit-scrollbar-thumb:hover { border-width: 2.5px; background-color: color-mix(in srgb, var(--line-strong) 70%, transparent); }
+.jx-page::-webkit-scrollbar-thumb:active { border-width: 2.5px; background-color: var(--line-strong); }
+@supports not selector(::-webkit-scrollbar) {
+  .jx-page { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--line-strong) 55%, transparent) transparent; }
+}
 /* Nội dung trang hiện sau khi nền đã phủ được một nửa (trễ 0,14s) */
-.jx-page-inner { animation: jx-page-fade .22s linear .14s both, jx-page-rise .32s var(--e) .14s both; }
+/* jx-page-rise chỉ fill "backwards": giữ transform sau khi chạy xong sẽ biến khung trang thành gốc toạ độ của mọi
+   phần tử position:fixed bên trong, làm hộp thoại lệch chỗ và trôi theo khi cuộn */
+.jx-page-inner { animation: jx-page-fade .22s linear .14s both, jx-page-rise .32s var(--e) .14s backwards; }
+/* Đang mở hộp thoại: trang phía sau không cuộn, lớp phủ che được cả thanh bên (z-index 40) */
+.jx-page:has([aria-modal="true"]) { overflow: hidden; scrollbar-gutter: stable; z-index: 45; }
 /* Đang chờ chuyển cảnh: trang đã dựng và bố cục xong nhưng chưa hiện, hoạt ảnh vào chưa bắt đầu */
 .jx-page.is-pending { visibility: hidden; pointer-events: none; }
 .jx-page.is-pending .jx-page-inner { animation: none; opacity: 0; }

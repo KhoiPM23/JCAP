@@ -193,9 +193,6 @@ export const LearnerShadowingListView: React.FC = () => {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[28px] font-bold leading-[38px]">Shadowing</h1>
-          <p className="m-0 text-[15px] leading-6 text-sumi-muted">
-            Nghe câu của người bản xứ rồi nói theo. Hệ thống chấm từng âm và chỉ ra chỗ cần sửa.
-          </p>
         </div>
         <div className="flex gap-2">
           {isAdmin && (

@@ -477,9 +477,11 @@ export const JapanMapView: React.FC<{
           .jm-pk-clear:hover { background: var(--paper-200); color: var(--sumi); }
           .jm-pk-clear:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           .jm-pk-count { margin: 0; padding: 0 4px; font-size: 12px; line-height: 16px; color: var(--sumi-muted); }
-          .jm-pk-list { max-height: min(380px, 56vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 6px 6px; list-style: none;
-            scrollbar-width: thin; scrollbar-color: transparent transparent; }
-          .jm-pk-list:hover { scrollbar-color: color-mix(in srgb, var(--line-strong) 45%, transparent) transparent; }
+          .jm-pk-list { max-height: min(380px, 56vh); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 6px 6px; list-style: none; }
+          @supports not selector(::-webkit-scrollbar) {
+            .jm-pk-list { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+            .jm-pk-list:hover { scrollbar-color: color-mix(in srgb, var(--line-strong) 45%, transparent) transparent; }
+          }
           .jm-pk-list::-webkit-scrollbar { width: 10px; }
           .jm-pk-list::-webkit-scrollbar-track { background: transparent; margin: 6px 0; }
           .jm-pk-list::-webkit-scrollbar-thumb { border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; background-color: transparent; }
