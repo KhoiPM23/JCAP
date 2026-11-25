@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Shadowing;
 using JCAP.Models;
+using JCAP.Services.Implementations;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,15 +24,24 @@ namespace JCAP.Controllers
 
         private readonly IShadowingService _shadowingService;
         private readonly IAiShadowingAssessmentService _aiAssessmentService;
+        private readonly IShadowingPracticeProgressService _progressService;
+        private readonly IShadowingSentenceAssetService _assets;
+        private readonly IShadowingSessionInsightsService _insights;
         private readonly ILogger<ShadowingController> _logger;
 
         public ShadowingController(
             IShadowingService shadowingService,
             IAiShadowingAssessmentService aiAssessmentService,
+            IShadowingPracticeProgressService progressService,
+            IShadowingSentenceAssetService assets,
+            IShadowingSessionInsightsService insights,
             ILogger<ShadowingController> logger)
         {
             _shadowingService = shadowingService;
             _aiAssessmentService = aiAssessmentService;
+            _progressService = progressService;
+            _assets = assets;
+            _insights = insights;
             _logger = logger;
         }
 
@@ -81,6 +91,9 @@ namespace JCAP.Controllers
             {
                 return BadRequest(result);
             }
+            // Tổng kết do backend tính từ các lần chấm đã lưu (số lần gửi, câu cần luyện lại, trạng thái từng chiều)
+            if (result.Data != null)
+                result.Data.Summary = await _insights.BuildSummaryAsync(result.Data.SessionId) ?? new ShadowingSessionSummaryDto();
             return Ok(result);
         }
 
@@ -96,7 +109,59 @@ namespace JCAP.Controllers
                 return Unauthorized(ApiResponse<List<ShadowingPracticeSessionDto>>.Fail("Không xác định được danh tính người dùng."));
             }
 
-            return Ok(await _shadowingService.GetHistoryAsync(userId));
+            var history = await _shadowingService.GetHistoryAsync(userId);
+            if (history.Success && history.Data is { Count: > 0 } items)
+            {
+                var counts = await _insights.CountSubmissionsAsync(items.Select(i => i.Id).ToList());
+                foreach (var item in items) item.TotalSubmissions = counts.TryGetValue(item.Id, out var n) ? n : null;
+            }
+            return Ok(history);
+        }
+
+        /// <summary>Chi tiết một buổi luyện: tổng kết và MỌI lần gửi chấm (kể cả chưa chấm được), đánh dấu lần được tính.</summary>
+        [HttpGet("history/{sessionId:guid}")]
+        public async Task<ActionResult<ApiResponse<ShadowingSessionDetailDto>>> GetSessionDetail(Guid sessionId, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingSessionDetailDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var history = await _shadowingService.GetHistoryAsync(userId);
+            var sessionDto = history.Data?.FirstOrDefault(s => s.Id == sessionId);
+            var detail = sessionDto == null ? null : await _insights.GetSessionDetailAsync(userId, sessionId, sessionDto, cancellationToken);
+            return detail == null
+                ? NotFound(ApiResponse<ShadowingSessionDetailDto>.Fail("Không tìm thấy buổi luyện."))
+                : Ok(ApiResponse<ShadowingSessionDetailDto>.Ok(detail));
+        }
+
+        /// <summary>Gợi ý luyện tập theo quy tắc từ các lỗi lặp lại trong 60 ngày gần đây (chỉ khi đủ bằng chứng).</summary>
+        /// <summary>
+        /// Nhận xét tổng hợp buổi luyện do AI viết từ số liệu đã đo (không chấm điểm, không lưu, miễn phí).
+        /// Chỉ tạo khi người học bấm nút ở màn tổng kết.
+        /// </summary>
+        [HttpPost("history/{sessionId:guid}/ai-review")]
+        public async Task<ActionResult<ApiResponse<ShadowingSessionAiReviewDto>>> CreateSessionAiReview(
+            Guid sessionId, [FromServices] IShadowingSessionReviewService reviews, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingSessionAiReviewDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var result = await reviews.GenerateAsync(userId, sessionId, cancellationToken);
+            if (result.NotFound) return NotFound(ApiResponse<ShadowingSessionAiReviewDto>.Fail("Không tìm thấy buổi luyện."));
+            if (result.Review == null)
+                return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                    ApiResponse<ShadowingSessionAiReviewDto>.Fail(result.ErrorMessage ?? "Chưa tạo được nhận xét lúc này."));
+            return Ok(ApiResponse<ShadowingSessionAiReviewDto>.Ok(result.Review));
+        }
+
+        [HttpGet("recommendations")]
+        public async Task<ActionResult<ApiResponse<ShadowingRecommendationDto>>> GetRecommendations([FromQuery] int? excludeDialogueId, CancellationToken cancellationToken)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingRecommendationDto>.Fail("Không xác định được danh tính người dùng."));
+            return Ok(ApiResponse<ShadowingRecommendationDto>.Ok(await _insights.GetRecommendationsAsync(userId, excludeDialogueId, cancellationToken)));
         }
 
         /// <summary>
@@ -130,41 +195,48 @@ namespace JCAP.Controllers
                 return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Thiếu câu mẫu tiếng Nhật cần đánh giá."));
             }
 
-            if (request.Audio == null || request.Audio.Length == 0)
+            var canRecord = sentence != null && !string.IsNullOrEmpty(userId);
+
+            // Gửi lại cùng một lần chấm (mất mạng, quá hạn): trả kết quả đã lưu, không chấm và không lưu thêm.
+            if (canRecord && request.ClientSubmissionId is { } submissionId)
             {
-                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                var existing = await _shadowingService.FindEvaluationBySubmissionAsync(userId!, submissionId);
+                if (existing != null)
                 {
-                    EvaluationStatus = "unavailable",
-                    RecognitionStatus = "unavailable",
-                    RecognitionSource = "none",
-                    Source = "none",
-                    TargetText = request.TargetText,
-                    ErrorCode = "EMPTY_AUDIO",
-                    ErrorMessage = "Không tìm thấy dữ liệu âm thanh."
-                }, "Dữ liệu âm thanh trống."));
+                    if (existing.ShadowingSentenceId != sentence!.Id)
+                        return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Mã lần gửi đã dùng cho câu khác."));
+                    return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(
+                        ShadowingService.ToStoredResult(existing, sentence.JapaneseText), "Lần gửi này đã được chấm trước đó."));
+                }
             }
 
+            // Lần chấm thuộc phiên luyện: phiên phải của người dùng này, đang luyện, đúng bài và vai của câu.
+            if (request.ProgressId is { } progressId)
+            {
+                if (!canRecord)
+                    return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail("Cần mã câu luyện tập khi gửi kèm phiên luyện."));
+                var progressError = await _progressService.ValidateForEvaluationAsync(userId!, progressId, sentence!);
+                if (progressError != null)
+                    return BadRequest(ApiResponse<ShadowingAudioEvaluationResponseDto>.Fail(progressError));
+            }
+
+            ShadowingAudioEvaluationResponseDto result;
             try
             {
-                using var buffer = new MemoryStream();
-                await request.Audio.CopyToAsync(buffer, cancellationToken);
+                // Kích thước tổng đã bị chặn bởi RequestSizeLimit; định dạng/thời lượng/tín hiệu do ShadowingAudioValidator kiểm tra.
+                var audio = await ReadAllAsync(request.Audio, MaxEvaluateRequestBytes, cancellationToken);
+                var analysisWav = await ReadAllAsync(request.AnalysisWav, MaxAnalysisWavBytes + 1, cancellationToken);
 
-                byte[]? analysisWav = null;
-                if (request.AnalysisWav is { Length: > 0 and <= MaxAnalysisWavBytes })
-                {
-                    using var wavBuffer = new MemoryStream();
-                    await request.AnalysisWav.CopyToAsync(wavBuffer, cancellationToken);
-                    analysisWav = wavBuffer.ToArray();
-                }
-
-                var result = await _aiAssessmentService.EvaluateAsync(
+                result = await _aiAssessmentService.EvaluateAsync(
                     new ShadowingAudioEvaluationInput
                     {
                         AnalysisWav = analysisWav,
                         ReferenceSpeakerId = request.ReferenceSpeakerId,
-                        Audio = buffer.ToArray(),
-                        MimeType = request.Audio.ContentType,
+                        ReferencePlaybackRate = request.ReferencePlaybackRate,
+                        Audio = audio ?? Array.Empty<byte>(),
+                        MimeType = request.Audio?.ContentType ?? string.Empty,
                         TargetText = request.TargetText,
+                        // Chỉ để ghi nhận; KHÔNG dùng để chấm.
                         ClientTranscript = request.ClientTranscript,
                         ClientRecognitionStatus = request.ClientRecognitionStatus,
                         ClientRecognitionError = request.ClientRecognitionError,
@@ -172,31 +244,16 @@ namespace JCAP.Controllers
                         AudioGateDetail = request.AudioGateDetail
                     },
                     cancellationToken);
-
-                if (sentence != null && !string.IsNullOrEmpty(userId))
-                {
-                    result.SentenceId = sentence.Id;
-                    try
-                    {
-                        result.EvaluationId = await _shadowingService.RecordSentenceEvaluationAsync(userId, sentence.Id, result);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Không lưu được chỉ làm câu này không vào được lịch sử; người học vẫn thấy điểm.
-                        _logger.LogError(ex, "Không lưu được kết quả chấm câu {SentenceId}.", sentence.Id);
-                    }
-                }
-
-                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Đã xử lý yêu cầu đánh giá."));
             }
             catch (OperationCanceledException)
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Không trả ex.Message cho client để tránh lộ thông tin nội bộ.
-                return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(new ShadowingAudioEvaluationResponseDto
+                _logger.LogError(ex, "Lỗi khi chấm câu Shadowing.");
+                result = new ShadowingAudioEvaluationResponseDto
                 {
                     EvaluationStatus = "failed",
                     RecognitionStatus = "unavailable",
@@ -205,8 +262,103 @@ namespace JCAP.Controllers
                     TargetText = request.TargetText,
                     ErrorCode = "EVALUATION_EXCEPTION",
                     ErrorMessage = "Đã xảy ra lỗi khi đánh giá. Điểm chưa được ghi nhận, hãy thử lại."
-                }, "Đã xảy ra lỗi khi phân tích."));
+                };
             }
+
+            // MỖI lần gửi chấm đều được lưu (kể cả chưa chấm được: điểm null + mã lỗi).
+            if (canRecord)
+            {
+                result.SentenceId = sentence!.Id;
+                try
+                {
+                    result.EvaluationId = await _shadowingService.RecordSentenceEvaluationAsync(
+                        userId!, sentence.Id, result, request.ProgressId, request.ClientSubmissionId);
+                }
+                catch (Exception ex)
+                {
+                    // Không lưu được chỉ làm lần này không vào được lịch sử; người học vẫn thấy kết quả.
+                    _logger.LogError(ex, "Không lưu được kết quả chấm câu {SentenceId}.", sentence.Id);
+                }
+            }
+
+            return Ok(ApiResponse<ShadowingAudioEvaluationResponseDto>.Ok(result, "Đã xử lý yêu cầu đánh giá."));
+        }
+
+        /// <summary>Đọc tệp tải lên, tối đa <paramref name="maxBytes"/> byte (phần thừa bị cắt, bộ kiểm tra sẽ báo quá lớn/sai định dạng).</summary>
+        private static async Task<byte[]?> ReadAllAsync(IFormFile? file, int maxBytes, CancellationToken cancellationToken)
+        {
+            if (file == null || file.Length == 0) return null;
+            if (file.Length > maxBytes)
+            {
+                // Không đọc hết tệp quá lớn: trả về đủ lớn để bộ kiểm tra báo AUDIO_TOO_LARGE.
+                return new byte[maxBytes];
+            }
+            using var buffer = new MemoryStream();
+            await file.CopyToAsync(buffer, cancellationToken);
+            return buffer.ToArray();
+        }
+
+        /// <summary>
+        /// Furigana của các câu trong bài (từ dữ liệu câu mẫu tính sẵn: cách đọc G2P gióng với chữ viết, không đoán).
+        /// Câu chưa có dữ liệu thì không có trong kết quả (hiển thị chữ thường).
+        /// </summary>
+        [HttpGet("{id:int}/furigana")]
+        public async Task<ActionResult<ApiResponse<Dictionary<int, List<FuriganaSegmentDto>>>>> GetFurigana(int id, CancellationToken cancellationToken)
+        {
+            var sentenceIds = await _shadowingService.GetActiveSentenceIdsAsync(id);
+            var furigana = sentenceIds.Count == 0
+                ? new Dictionary<int, List<FuriganaSegmentDto>>()
+                : await _assets.FindFuriganaAsync(sentenceIds, cancellationToken);
+            return Ok(ApiResponse<Dictionary<int, List<FuriganaSegmentDto>>>.Ok(furigana));
+        }
+
+        // ---- Phiên luyện ở server (ShadowingPracticeProgress) ----
+
+        /// <summary>Bắt đầu hoặc tiếp tục phiên luyện cho một bài + vai (làm lại khi Restart = true).</summary>
+        [HttpPost("progress")]
+        public async Task<ActionResult<ApiResponse<ShadowingPracticeProgressDto>>> StartProgress([FromBody] StartShadowingProgressDto dto)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingPracticeProgressDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var result = await _progressService.StartAsync(userId, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>Phiên đang luyện của một bài + vai (Data = null nếu chưa có).</summary>
+        [HttpGet("progress")]
+        public async Task<ActionResult<ApiResponse<ShadowingPracticeProgressDto?>>> GetActiveProgress([FromQuery] int dialogueId, [FromQuery] string role)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingPracticeProgressDto?>.Fail("Không xác định được danh tính người dùng."));
+
+            var result = await _progressService.GetActiveAsync(userId, dialogueId, role);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>Phiên đang luyện gần nhất của người dùng (cho "Tiếp tục").</summary>
+        [HttpGet("progress/latest")]
+        public async Task<ActionResult<ApiResponse<ShadowingPracticeProgressDto?>>> GetLatestProgress()
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingPracticeProgressDto?>.Fail("Không xác định được danh tính người dùng."));
+
+            return Ok(await _progressService.GetLatestAsync(userId));
+        }
+
+        /// <summary>Cập nhật vị trí câu đang luyện.</summary>
+        [HttpPut("progress/{id:guid}")]
+        public async Task<ActionResult<ApiResponse<ShadowingPracticeProgressDto>>> UpdateProgress(Guid id, [FromBody] UpdateShadowingProgressDto dto)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<ShadowingPracticeProgressDto>.Fail("Không xác định được danh tính người dùng."));
+
+            var result = await _progressService.UpdatePositionAsync(userId, id, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         private string? GetCurrentUserId()

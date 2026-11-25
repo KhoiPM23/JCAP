@@ -11,5 +11,11 @@ namespace JCAP.DTOs.Profile
         public string Role { get; set; } = "Learner";
         public int CreditBalance { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string PlacementTestStatus { get; set; } = "NotStarted";
+        public bool HasSeenPlacementPrompt { get; set; }
+        public string? InitialEstimatedLevel { get; set; }
+        public string? InitialConfidenceTier { get; set; }
+        public string? InitialProficiencySnapshotJson { get; set; }
+        public DateTime? PlacementTestCompletedAtUtc { get; set; }
     }
 }

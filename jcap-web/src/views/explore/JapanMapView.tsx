@@ -623,7 +623,10 @@ const PrefecturePanel: React.FC<PrefecturePanelProps> = ({
             onToggle={() => onSpotSelect(activeSpot === focusIdx ? null : focusIdx)}
             onLearn={() => onSpotLearn(focusIdx)}
             onShadowing={(id) => navigate(shadowingPracticeUrl(id, pref.slug, focusIdx))}
-            onRoleplay={(id) => navigate(`/scenarios/${id}`)}
+            onRoleplay={(id) => {
+              const returnUrl = `/explore?tinh=${pref.slug}&spot=${focusIdx}`;
+              navigate(`/scenarios/${id}?return=${encodeURIComponent(returnUrl)}`);
+            }}
           />
         )}
 

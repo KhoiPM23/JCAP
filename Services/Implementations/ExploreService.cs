@@ -244,7 +244,11 @@ namespace JCAP.Services.Implementations
             // Hội thoại AI kết thúc tự nhiên (đủ nhiệm vụ và AI chốt hội thoại); không cần đạt điểm vì người học đã trả Credit
             var roleplay = await _context.RoleplaySessions
                 .AsNoTracking()
-                .Where(x => x.UserId == userId && x.IsNaturallyConcluded && configIds.Contains(x.ScenarioLevelConfigurationId))
+                .Where(x => x.UserId == userId
+                    && x.SessionType != "PlacementTest"
+                    && x.IsNaturallyConcluded
+                    && x.ScenarioLevelConfigurationId != null
+                    && configIds.Contains(x.ScenarioLevelConfigurationId.Value))
                 .OrderBy(x => x.CreatedAt)
                 .Select(x => new { x.Id, x.ScenarioLevelConfigurationId })
                 .ToListAsync();

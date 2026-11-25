@@ -11,6 +11,7 @@ import { voicevoxService, type VoiceOption } from './voicevoxService';
 class ScenarioVoiceService {
   private currentAudio: HTMLAudioElement | null = null;
   private isSpeechCancelled = false;
+  private currentPlaySessionId = 0;
 
   // MediaRecorder audio capture for Whisper STT Engine
   private mediaRecorder: MediaRecorder | null = null;
@@ -19,6 +20,8 @@ class ScenarioVoiceService {
   private recordingStartedAt = 0;
   private visemeAnimFrame: number | null = null;
   private onVisemeCallback: ((v: any) => void) | null = null;
+  private whisperOfflineUntil = 0;
+  private isAutoStartingWhisper = false;
 
   /**
    * Lấy danh sách giọng đọc từ VOICEVOX
@@ -51,11 +54,34 @@ class ScenarioVoiceService {
   }
 
   /**
-   * Lấy tốc độ đọc AI từ localStorage (mặc định là 1.0)
+   * Tốc độ đọc AI khởi tạo thích ứng theo trình độ JLPT (N5: 0.85x, N4: 0.92x, N3+: 1.0x)
    */
-  public getSpeechRate(): number {
-    if (typeof window === 'undefined') return 1.0;
+  public getDefaultSpeechRateForLevel(level?: string): number {
+    const norm = (level || '').toUpperCase().trim();
+    if (norm === 'N5') return 0.85;
+    if (norm === 'N4') return 0.92;
+    return 1.0;
+  }
+
+  /**
+   * Lấy tốc độ đọc AI từ localStorage (hoặc theo cấp độ thích ứng JLPT: N5: 0.85x, N4: 0.92x, N3+: 1.0x)
+   */
+  public getSpeechRate(level?: string): number {
+    const norm = (level || '').toUpperCase().trim();
+    if (typeof window === 'undefined') return this.getDefaultSpeechRateForLevel(norm);
     try {
+      if (norm) {
+        const levelKey = `jcap_scenario_speech_rate_${norm}`;
+        const levelVal = window.localStorage.getItem(levelKey);
+        if (levelVal !== null && levelVal.trim() !== '') {
+          const parsed = parseFloat(levelVal);
+          if (!Number.isNaN(parsed) && parsed >= 0.5 && parsed <= 2.0) {
+            return parsed;
+          }
+        }
+        // Khi phiên có cấp độ cụ thể và người dùng chưa từng đổi riêng cho cấp đó, ưu tiên tốc độ thích ứng
+        return this.getDefaultSpeechRateForLevel(norm);
+      }
       const raw = window.localStorage.getItem('jcap_scenario_speech_rate');
       if (raw !== null && raw.trim() !== '') {
         const parsed = parseFloat(raw);
@@ -66,16 +92,20 @@ class ScenarioVoiceService {
     } catch {
       // ignore storage errors
     }
-    return 1.0;
+    return this.getDefaultSpeechRateForLevel(norm);
   }
 
   /**
-   * Lưu tốc độ đọc AI vào localStorage
+   * Lưu tốc độ đọc AI vào localStorage (hỗ trợ lưu cả toàn cục và theo cấp độ nếu có)
    */
-  public setSpeechRate(rate: number): void {
+  public setSpeechRate(rate: number, level?: string): void {
     if (typeof window === 'undefined') return;
     try {
       window.localStorage.setItem('jcap_scenario_speech_rate', rate.toString());
+      const norm = (level || '').toUpperCase().trim();
+      if (norm) {
+        window.localStorage.setItem(`jcap_scenario_speech_rate_${norm}`, rate.toString());
+      }
     } catch {
       // ignore
     }
@@ -86,6 +116,7 @@ class ScenarioVoiceService {
    */
   public stopAllAudio(): void {
     this.isSpeechCancelled = true;
+    this.currentPlaySessionId++; // Invalidate any in-flight synthesis promises immediately
 
     if (this.visemeAnimFrame !== null) {
       cancelAnimationFrame(this.visemeAnimFrame);
@@ -196,6 +227,7 @@ class ScenarioVoiceService {
     onViseme?: (viseme: any) => void
   ): Promise<void> {
     this.stopAllAudio();
+    const playSessionId = ++this.currentPlaySessionId;
     this.isSpeechCancelled = false;
     this.onVisemeCallback = onViseme || null;
 
@@ -213,8 +245,9 @@ class ScenarioVoiceService {
     }
 
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId);
-      if (this.isSpeechCancelled) {
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 25000);
+      // Kiểm tra request có bị hủy hoặc bị thay thế bởi request mới hơn trong lúc fetch mạng không
+      if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {
         return;
       }
       const audio = new Audio(audioUrl);
@@ -222,13 +255,13 @@ class ScenarioVoiceService {
       this.currentAudio = audio;
 
       audio.onplay = () => {
-        if (!this.isSpeechCancelled) {
+        if (!this.isSpeechCancelled && playSessionId === this.currentPlaySessionId) {
           onStart?.();
           if (onViseme) {
-            const visemes = voicevoxService.getVisemes(text, resolvedVoiceId);
+            const visemes = voicevoxService.getVisemes(cleanText, resolvedVoiceId);
             if (visemes && visemes.length > 0) {
               const step = () => {
-                if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || this.isSpeechCancelled) {
+                if (!this.currentAudio || this.currentAudio.paused || this.currentAudio.ended || this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {
                   onViseme('closed');
                   return;
                 }
@@ -257,25 +290,61 @@ class ScenarioVoiceService {
         }
         onViseme?.('closed');
         this.currentAudio = null;
-        if (!this.isSpeechCancelled) {
+        if (!this.isSpeechCancelled && playSessionId === this.currentPlaySessionId) {
           onEnd?.();
         }
       };
 
       audio.onerror = () => {
         this.currentAudio = null;
-        if (this.isSpeechCancelled) return;
-        this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+        if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) return;
+        // Fallback sang Web Speech nếu Voicevox Engine không online (offline hoặc chưa khởi tạo)
+        if (voicevoxService.isAvailable() !== true) {
+          this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+        } else {
+          console.warn('[Scenario Voice] Audio element error with VOICEVOX. Suppressing Web Speech override.');
+          onEnd?.();
+        }
       };
 
-      await audio.play().catch(() => {
+      await audio.play().catch((err: any) => {
+        if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) return;
+        // Nếu trình duyệt chặn do Autoplay policy (chưa có thao tác nhấn trên tài liệu):
+        // Tuyệt đối KHÔNG fallback sang Web Speech để tránh phát giọng máy móc đè lên,
+        // gắn listener tương tác chạm 1 lần để phát ngay khi người dùng chạm vào màn hình.
+        if (err && (err.name === 'NotAllowedError' || err.name === 'AbortError')) {
+          console.warn('[Scenario Voice] Audio playback blocked by browser Autoplay policy. Awaiting user interaction.');
+          if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            const resumeOnInteraction = () => {
+              window.removeEventListener('pointerdown', resumeOnInteraction);
+              window.removeEventListener('keydown', resumeOnInteraction);
+              if (!this.isSpeechCancelled && playSessionId === this.currentPlaySessionId && this.currentAudio === audio) {
+                audio.play().then(() => {
+                  onStart?.();
+                }).catch(() => {});
+              }
+            };
+            window.addEventListener('pointerdown', resumeOnInteraction, { once: true });
+            window.addEventListener('keydown', resumeOnInteraction, { once: true });
+          }
+          return;
+        }
         this.currentAudio = null;
-        if (this.isSpeechCancelled) return;
-        this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+        if (voicevoxService.isAvailable() !== true) {
+          this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+        } else {
+          onEnd?.();
+        }
       });
     } catch {
-      if (this.isSpeechCancelled) return;
-      this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+      if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) return;
+      // Fallback sang Web Speech nếu Voicevox Engine không online
+      if (voicevoxService.isAvailable() !== true) {
+        this.speakWithWebSpeech(text, onEnd, resolvedRate, onStart);
+      } else {
+        console.warn('[Scenario Voice] VOICEVOX synthesis failed or delayed. Suppressing Web Speech to prevent robotic override.');
+        onEnd?.();
+      }
     }
   }
 
@@ -318,7 +387,13 @@ class ScenarioVoiceService {
       return;
     }
 
-    // Với Web Speech: cắt lát chuỗi văn bản và phát tiếp tức thời từ vị trí chữ tương ứng
+    // Nếu VOICEVOX đang online, ưu tiên phát âm thanh bản xứ thay vì nhảy vào Web Speech máy móc
+    if (voicevoxService.isAvailable() !== false) {
+      void this.playAiSpeech(fullText, voiceId, onEnd, rate, onStart);
+      return;
+    }
+
+    // Với Web Speech Fallback khi VOICEVOX thực sự offline:
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       const textToUse = fullText.trim();
       if (!textToUse) return;
@@ -352,6 +427,7 @@ class ScenarioVoiceService {
    */
   public createSpeechRecognition(options?: {
     onStart?: () => void;
+    onSpeechStart?: () => void;
     onResult?: (transcript: string, isFinal: boolean, confidence?: number) => void;
     onError?: (error: any) => void;
     onEnd?: () => void;
@@ -374,6 +450,10 @@ class ScenarioVoiceService {
 
       recognition.onstart = () => {
         options?.onStart?.();
+      };
+
+      recognition.onspeechstart = () => {
+        options?.onSpeechStart?.();
       };
 
       recognition.onresult = (event: any) => {
@@ -539,8 +619,25 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Kích hoạt lệnh khởi động Whisper STT Engine ngầm qua Backend
+   */
+  public async triggerAutoStartWhisper(): Promise<void> {
+    if (this.isAutoStartingWhisper) return;
+    this.isAutoStartingWhisper = true;
+    try {
+      await fetch('/api/stt/start-engine', { method: 'POST' });
+    } catch {
+      // ignore
+    } finally {
+      setTimeout(() => {
+        this.isAutoStartingWhisper = false;
+      }, 20000);
+    }
+  }
+
+  /**
    * Nhận diện giọng nói tiếng Nhật chính xác cao qua Whisper STT Engine
-   * Hỗ trợ tự động fallback: Backend proxy -> Direct Engine -> null (để dùng Web Speech)
+   * Hỗ trợ tự động fallback tức thì sang Web Speech API nếu Whisper chưa bật
    */
   public async transcribeWithWhisper(audioBlob: Blob): Promise<{
     text: string;
@@ -551,14 +648,19 @@ class ScenarioVoiceService {
   } | null> {
     if (!audioBlob || audioBlob.size === 0) return null;
 
+    // Nếu vừa phát hiện Whisper offline trong vòng 25s, fallback ngay lập tức không chờ đợi
+    if (Date.now() < this.whisperOfflineUntil) {
+      return null;
+    }
+
     const ext = audioBlob.type.includes('ogg') ? 'ogg' : audioBlob.type.includes('wav') ? 'wav' : 'webm';
     const formData = new FormData();
     formData.append('file', audioBlob, `recording.${ext}`);
 
-    // Tier 1: Thử gọi qua Backend proxy /api/stt/transcribe (Lưu audio persistent luôn) với Timeout 4.5s
+    // Tier 1: Gọi qua Backend proxy /api/stt/transcribe với timeout nhanh (2500ms)
     try {
       const controller1 = new AbortController();
-      const timeout1 = setTimeout(() => controller1.abort(), 7500);
+      const timeout1 = setTimeout(() => controller1.abort(), 2500);
       const res = await fetch('/api/stt/transcribe?language=ja', {
         method: 'POST',
         body: formData,
@@ -576,37 +678,14 @@ class ScenarioVoiceService {
             audioUrl: json.data.audioUrl,
           };
         }
+      } else if (res.status === 503 || res.status === 502) {
+        this.whisperOfflineUntil = Date.now() + 25000;
+        void this.triggerAutoStartWhisper();
       }
     } catch (err) {
-      console.warn('[Scenario STT] Backend Whisper proxy unavailable or timed out, trying direct engine:', err);
-    }
-
-    // Tier 2: Thử gọi trực tiếp Whisper Engine /whisper/transcribe với Timeout 4.5s
-    try {
-      const controller2 = new AbortController();
-      const timeout2 = setTimeout(() => controller2.abort(), 7500);
-      const directRes = await fetch('/whisper/transcribe?language=ja', {
-        method: 'POST',
-        body: formData,
-        signal: controller2.signal,
-      }).finally(() => clearTimeout(timeout2));
-
-      if (directRes.ok) {
-        const json = await directRes.json();
-        if (json.success) {
-          // Lưu audio file song song lên backend để có link phát lại
-          const savedUrl = await this.saveLearnerAudio(audioBlob);
-          return {
-            text: json.text || '',
-            confidence: json.confidence ?? 0.88,
-            durationSeconds: json.durationSeconds ?? 0,
-            speechPace: json.speechPace ?? 0,
-            audioUrl: savedUrl || undefined,
-          };
-        }
-      }
-    } catch (err) {
-      console.warn('[Scenario STT] Direct Whisper engine call failed or timed out:', err);
+      console.warn('[Scenario STT] Backend Whisper proxy offline or timed out, triggering background auto-launch:', err);
+      this.whisperOfflineUntil = Date.now() + 25000;
+      void this.triggerAutoStartWhisper();
     }
 
     return null;
@@ -641,8 +720,15 @@ class ScenarioVoiceService {
    * Kiểm tra xem Whisper Engine có sẵn sàng phục vụ không
    */
   public async isWhisperAvailable(): Promise<boolean> {
+    if (Date.now() < this.whisperOfflineUntil) {
+      return false;
+    }
+
     try {
-      const res = await fetch('/api/stt/health');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch('/api/stt/health', { signal: controller.signal })
+        .finally(() => clearTimeout(timeout));
       if (res.ok) {
         const json = await res.json();
         if (json.data?.available) return true;
@@ -651,16 +737,8 @@ class ScenarioVoiceService {
       // ignore
     }
 
-    try {
-      const direct = await fetch('/whisper/health');
-      if (direct.ok) {
-        const json = await direct.json();
-        return json.status === 'ok';
-      }
-    } catch {
-      // ignore
-    }
-
+    this.whisperOfflineUntil = Date.now() + 25000;
+    void this.triggerAutoStartWhisper();
     return false;
   }
 }

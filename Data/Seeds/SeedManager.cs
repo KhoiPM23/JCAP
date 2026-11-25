@@ -21,7 +21,14 @@ namespace JCAP.Data.Seeds
                 // 2. Seed các gói credit mặc định
                 await CreditPackageSeeder.SeedAsync(services);
 
-                // 3. Seed các kịch bản mẫu (Scenarios)
+                // 2b. Nạp học liệu N5–N3 và các bản dịch đã biên soạn.
+                var learningOptions = app.Configuration.GetSection(LearningContentSeedOptions.SectionName)
+                    .Get<LearningContentSeedOptions>() ?? new();
+                var learningStatus = await LearningContentSeeder.SeedAsync(context, learningOptions);
+                services.GetRequiredService<ILoggerFactory>().CreateLogger("LearningContentSeed")
+                    .LogInformation("Learning content seed: {Status}.", learningStatus);
+
+                // 3. Seed các kịch bản mẫu (Scenarios) & đồng bộ kho học liệu khớp với Scenarios
                 await ScenarioSeeder.SeedAsync(services);
 
                 // 4. Seed bài hội thoại Shadowing mẫu (DEV SAMPLE / NON-PRODUCTION)
@@ -30,10 +37,7 @@ namespace JCAP.Data.Seeds
                 // 4b. Seed bản đồ Khám phá: 47 tỉnh, chương, mốc học thử (Chiba/Tokyo/Kyoto/Nara)
                 await ExploreSeeder.SeedAsync(services);
 
-                // 4c. Gắn bộ mẫu đã import với 5 chủ đề phẳng; giữ nguyên chủ đề admin đã sửa.
-                await LearningTopicSeeder.SeedAsync(services);
-
-                // 4d. Seed hòm thư góp ý ẩn danh mẫu (FeedbackTickets, FeedbackMessages, FeedbackAttachments)
+                // 4c. Seed hòm thư góp ý ẩn danh mẫu (FeedbackTickets, FeedbackMessages, FeedbackAttachments)
                 await FeedbackSeeder.SeedAsync(services);
 
                 // 5. Chuẩn hóa diễn giải các giao dịch đã tạo trước đây trong DB

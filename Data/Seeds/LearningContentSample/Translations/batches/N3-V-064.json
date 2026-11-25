@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b937b60491",
+      "Fields": {
+        "Meaning": "Phi công",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パイロット（パイロット）có nghĩa là phi công.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111316": "Anh ấy quyết tâm trở thành phi công.",
+        "162584": "Ước mơ của tôi là trở thành phi công."
+      },
+      "SourceHash": "696f4989a22ec82d417b7cb30fdb6cd6816ed446673c1baa94ae462de6ca6871"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2ebc49d99b",
+      "Fields": {
+        "Meaning": "Mộ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "墓（はか）có nghĩa là mộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153801": "Tôi không nỡ rời mộ ông ấy.",
+        "236412": "“Romeo đâu?” “Lối này, đến ngôi mộ.”"
+      },
+      "SourceHash": "0b0e55a2eead58ed9f4958251064fa778eea69e9ddcbef7b84ba941b20eb77fd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d6bea343d",
+      "Fields": {
+        "Meaning": "Ngốc, ngu ngốc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "馬鹿（ばか）có nghĩa là ngốc, ngu ngốc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94885": "Anh ấy thật ngốc khi gặp lại cô ấy.",
+        "198852": "Thật là một việc ngớ ngẩn."
+      },
+      "SourceHash": "25cf06faa7fed01a3a7562e3537690c90b8a3ff22a84c4bd02f8d9fe9e31d526"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b445da9d8",
+      "Fields": {
+        "Meaning": "Tiến sĩ, người am hiểu",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "博士（はかせ）có nghĩa là tiến sĩ, người am hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103842": "Ông ấy có bằng tiến sĩ tâm lý học.",
+        "195900": "Xin nối máy cho tôi gặp tiến sĩ White."
+      },
+      "SourceHash": "7d174ab9e3f3bed2094f583bd3b406a1e1c1ab983614899a6e9067dc98580a94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6b741662df",
+      "Fields": {
+        "Meaning": "Đo, tính",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "計る（はかる）có nghĩa là đo, tính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137988": "Tôi đo thử thì thân nhiệt vẫn bình thường.",
+        "216972": "Nào, để tôi đo thân nhiệt cho bạn."
+      },
+      "SourceHash": "6015a88a73f0e8f1eba70dab8400e6ef7777ba1ef7743e1801ac5a69c35cb583"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ee21222664",
+      "Fields": {
+        "Meaning": "Nôn, nhổ, thở ra",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "吐く（はく）có nghĩa là nôn, nhổ, thở ra.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "182a90fa8031330c2be187d6d07c9407af5f54aba6b4528a2819ed387feb2f33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "00612a587a",
+      "Fields": {
+        "Meaning": "Vỗ tay",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "拍手（はくしゅ）có nghĩa là vỗ tay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183818": "Khán giả vỗ tay tán thưởng nữ diễn viên.",
+        "210747": "Buổi biểu diễn nhận được tràng vỗ tay như sấm."
+      },
+      "SourceHash": "a68829c87e4cdf1008fb0d4277410ea4de8ff0d8d89d5a3ff61527d6e53c213a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "978071c13d",
+      "Fields": {
+        "Meaning": "Khổng lồ, rất lớn",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "莫大（ばくだい）có nghĩa là khổng lồ, rất lớn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111305": "Ông ấy tích lũy được một gia tài khổng lồ.",
+        "215230": "John thừa kế một gia tài khổng lồ."
+      },
+      "SourceHash": "f68c72e6261a6ded22e959216538d7b790b2c2b621c8c3471f26bf3f274fd25c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30f0623cca",
+      "Fields": {
+        "Meaning": "Nổ, bùng nổ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "爆発（ばくはつ）có nghĩa là nổ, bùng nổ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188429": "Vụ nổ thổi bay mái nhà.",
+        "212813": "Tin đó khiến cơn giận của anh ấy bùng lên."
+      },
+      "SourceHash": "a13d1b286d92248e18c8022033f133cbe40ddbfca1840a0dfff405ff4d3ceda4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "24194e1918",
+      "Fields": {
+        "Meaning": "Bảo tàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "博物館（はくぶつかん）có nghĩa là bảo tàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121446": "Còn bao xa mới đến bảo tàng?",
+        "230496": "Bảo tàng đó đáng để ghé thăm."
+      },
+      "SourceHash": "f97052ae3c23a773b75094d16d5876f6f349365af33093bc8186c60f5c85b88c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "049907be5e",
+      "Fields": {
+        "Meaning": "Dữ dội, mãnh liệt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "激しい（はげしい）có nghĩa là dữ dội, mãnh liệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149141": "Ô tô đâm mạnh vào xe tải.",
+        "213458": "Hai đội thi đấu quyết liệt."
+      },
+      "SourceHash": "ab34c88315cc3dc399f1fc0bcc1c5e5385e9658c5fbea7da6ed766c73d2d7f18"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c4b4192429",
+      "Fields": {
+        "Meaning": "Kéo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "はさみ（はさみ）có nghĩa là kéo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198275": "Anh chị cho tôi mượn kéo được không?",
+        "216566": "Jay nhặt chiếc kéo cũ lên."
+      },
+      "SourceHash": "0671a29ca2f33bcb24305aa06370e3d452ff401e16d172e9d8f3fb3ec49b30b6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3726f128a",
+      "Fields": {
+        "Meaning": "Phá sản",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "破産（はさん）có nghĩa là phá sản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "119566": "Chuyện anh ấy phá sản là thật.",
+        "226427": "Anh ấy phá sản vì cờ bạc."
+      },
+      "SourceHash": "74297cd870e46709517470d9ea1411bef60e22b79005427fb157ed8b8251c8f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65a7467d0d",
+      "Fields": {
+        "Meaning": "Đầu, mép, rìa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "端（はし）có nghĩa là đầu, mép, rìa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206962": "Phòng đó nằm ở cuối hành lang.",
+        "224126": "Bạn giữ đầu bên này giúp tôi được không?"
+      },
+      "SourceHash": "25ed7ad1d360512715d0e5929fda2be0a0cba75244f4a245e23e3c88e2b0b157"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "74d028f694",
+      "Fields": {
+        "Meaning": "Khởi đầu, sự bắt đầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "始まり（はじまり）có nghĩa là khởi đầu, sự bắt đầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168954": "Khởi đầu tốt coi như đã thành công một nửa.",
+        "182885": "Chủ tọa tuyên bố bắt đầu buổi họp ủy ban."
+      },
+      "SourceHash": "a2c7ce815e34c3dc8386803a4f64035e011a5091ee3045efb6ef50530278caf9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "242a0bb0ea",
+      "Fields": {
+        "Meaning": "Vé thông hành, chuyền, bỏ lượt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パス（パス）có nghĩa là vé thông hành, chuyền, bỏ lượt.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "9b6459cda0bc48995015789569ecdd8e2e9e1a5698520d0d7d363409d3c9d8df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "54c6e05e14",
+      "Fields": {
+        "Meaning": "Tháo, bỏ ra, loại khỏi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "外す（はずす）có nghĩa là tháo, bỏ ra, loại khỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152544": "Tôi bị loại khỏi đội bóng chày.",
+        "204628": "Xin hãy bỏ mục đó khỏi danh sách."
+      },
+      "SourceHash": "2cf3aab7576aeaaa2610cabf119481a9308c9b183fe9eaab456989f2662fff2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c795debc35",
+      "Fields": {
+        "Meaning": "Hộ chiếu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パスポート（パスポート）có nghĩa là hộ chiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137267": "Chết rồi! Tôi mất hộ chiếu rồi!",
+        "198077": "Tôi xin xem hộ chiếu được không ạ?"
+      },
+      "SourceHash": "dd5ae5707436a32a9a1f89308af6c63632b9df8168d9231a880599e92e76d622"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "847b06de33",
+      "Fields": {
+        "Meaning": "Cờ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "旗（はた）có nghĩa là cờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108613": "Anh ấy vẫy cờ lên xuống.",
+        "183407": "Đừng để mất dấu lá cờ."
+      },
+      "SourceHash": "6143247d87f6cc43f4d1e36668bb6c5d2de7749851becf5c16d9c226b7779dab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05e4ce3a94",
+      "Fields": {
+        "Meaning": "Da, cảm giác hợp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Chỉ da. 肌に合う là thành ngữ chỉ sự phù hợp với sở thích hoặc tính cách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87533": "Cô ấy không để da tiếp xúc với nắng.",
+        "126504": "Nhạc Trung Quốc có vẻ không hợp gu tôi."
+      },
+      "SourceHash": "48741cc4747ee8667d6a5078d8e906f93970ba3e2a5c4070a9f7b593b21926de"
+    }
+  ]
+}

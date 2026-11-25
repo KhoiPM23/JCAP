@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "009c03bfe9",
+      "Fields": {
+        "Meaning": "Việc bơi, cách bơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泳ぎ（およぎ）có nghĩa là việc bơi, cách bơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109764": "Anh ấy sợ bơi.",
+        "223748": "Dạo này trẻ con học bơi ở trường."
+      },
+      "SourceHash": "01d395f5b1393124ebdde793c994d9405298fdcf5a749a7e616e613475c15d41"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ed0978af53",
+      "Fields": {
+        "Meaning": "Khoảng, xấp xỉ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "およそ（およそ）có nghĩa là khoảng, xấp xỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161266": "Tôi ở đây khoảng ba tuần.",
+        "227476": "Nó đáng giá khoảng bao nhiêu?"
+      },
+      "SourceHash": "dec422911c4a152b604954ff9d434d5d2e4555a45b7247f3c2c8a2de3b8dcbb4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b4ca53eb6",
+      "Fields": {
+        "Meaning": "Gây ra, tác động đến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "及ぼす（およぼす）có nghĩa là gây ra, tác động đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125891": "Mưa kéo dài gây hại cho cây cối.",
+        "233662": "Tôi chưa bao giờ nghĩ mình sẽ gây thiệt hại cho bạn."
+      },
+      "SourceHash": "cc46518c8bc6bf0bf63e920c41b5cee55dd018a89be3a2ee679bf38733671fba"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cf3cbde2a8",
+      "Fields": {
+        "Meaning": "Ở, có mặt (người hoặc động vật)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "いる chỉ sự hiện diện của người hoặc động vật. Hai câu nguồn dùng おる, dạng khiêm nhường hoặc cách nói theo vùng của いる.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157713": "Tôi không thể không nói ra những nghi ngờ của mình.",
+        "227760": "Nhờ anh chị quan tâm, tôi vẫn khỏe ạ."
+      },
+      "SourceHash": "d21e7974936a66c1e73387271020b501a050c8dd48ff00cb50577c74a3282e7d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23538b01de",
+      "Fields": {
+        "Meaning": "Đưa xuống, cho xuống xe",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "降ろす（おろす）có nghĩa là đưa xuống, cho xuống xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224036": "Xin cho tôi xuống quanh đây.",
+        "230827": "Xin cho tôi xuống ngay trước đèn giao thông kia."
+      },
+      "SourceHash": "116e80a3e3ededd634b917341d3b70b216be4a3caab701a780560842025c7356"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ce645af89",
+      "Fields": {
+        "Meaning": "Ơn, ân nghĩa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "恩（おん）có nghĩa là ơn, ân nghĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80757": "Còn sống ngày nào tôi sẽ không quên ơn anh chị ngày đó.",
+        "226934": "Cậu lấy oán báo ơn rồi đấy."
+      },
+      "SourceHash": "b2b4dbbf6017dab3d44259cc75c78be082d18fed80e89883dd808788a5fd5d27"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26e15c1ade",
+      "Fields": {
+        "Meaning": "Âm thanh, tiếng",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "音（おん）có nghĩa là âm thanh, tiếng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188309": "Bạn vặn nhỏ tiếng giúp tôi được không?",
+        "188319": "Từ điển phát âm thanh giờ đã thành hiện thực."
+      },
+      "SourceHash": "9305256633fe51cc0f11eccea8b4e71874024b0cb6b0363b3f1aeafcae4216e4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d171dfcac5",
+      "Fields": {
+        "Meaning": "Ấm áp, ôn hòa",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "温暖（おんだん）có nghĩa là ấm áp, ôn hòa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123985": "Khí hậu ở đây ấm hơn Tokyo.",
+        "124321": "Thời tiết trên đảo rất ấm áp."
+      },
+      "SourceHash": "a852d4d7208daf0052b2e69b4f7b4714384f4599039204d4cb4743ecdfa98b07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3767dad3d1",
+      "Fields": {
+        "Meaning": "Nhiệt độ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "温度（おんど）có nghĩa là nhiệt độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83744": "Vật chất thay đổi hình dạng tùy nhiệt độ.",
+        "126255": "Nhiệt độ đã giảm dần từ sáng."
+      },
+      "SourceHash": "dee4bf8f1ecb10cd463a9e3f29d00519ba0cf323f091e2ab917edbfa1340216f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ad5c766ea",
+      "Fields": {
+        "Meaning": "Được phép, mức đạt",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "可（か）có nghĩa là được phép, mức đạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143557": "Tôi vừa đủ đạt môn toán.",
+        "221703": "Kỳ thi này được phép mang từ điển vào."
+      },
+      "SourceHash": "d0135dd2c69fc416d04ed5e92211d835d52cd1051776252439cac6aa96715fd2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dd3e8e77f0",
+      "Fields": {
+        "Meaning": "Bài học, đơn vị đếm bài",
+        "PartOfSpeech": "Trợ số từ",
+        "Explanation": "課（か）có nghĩa là bài học, đơn vị đếm bài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162059": "Tôi không thể hiểu hết bài đó trong một giờ.",
+        "236069": "Bắt đầu từ bài 10 nhé."
+      },
+      "SourceHash": "e300e48d04bdd3076f20f68a5aa09c6b1f10909df16d58fb9ef1ef55cc40e02f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a80b19470d",
+      "Fields": {
+        "Meaning": "Ô tô, xe hơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カー（カー）có nghĩa là ô tô, xe hơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98250": "Họ rất thích xe GT.",
+        "234639": "Cậu ấy mê xe nên chuyện gì về ô tô cũng biết."
+      },
+      "SourceHash": "337010d70c6973458479122cdec2fc7fba7cbd7df91990a0391a775d912e7765"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c139bcdcb4",
+      "Fields": {
+        "Meaning": "Thẻ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カード（カード）có nghĩa là thẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "094f583e8cd529053def0e4504b4b4c31e8dfac39359dc9b11c5e21521d667b2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "53e1ba680a",
+      "Fields": {
+        "Meaning": "Hội, buổi họp, buổi gặp",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "会（かい）có nghĩa là hội, buổi họp, buổi gặp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185444": "Họ ăn tối trước buổi họp.",
+        "222689": "Hội này sẽ mang tên E.S.S."
+      },
+      "SourceHash": "1ff280057150d3da4554c3eb03256f823b4d0c743fc2cc69b07810938865bd27"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d630014a3f",
+      "Fields": {
+        "Meaning": "Lần, lượt",
+        "PartOfSpeech": "Trợ số từ",
+        "Explanation": "回（かい）có nghĩa là lần, lượt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86649": "Cô ấy đi xem phim mỗi tuần một lần.",
+        "107783": "Anh ấy chơi golf hai đến ba lần một tháng."
+      },
+      "SourceHash": "dcaf27d12d18ba66950d0ce4dd281c43b882cd857e3d665155b2cbd80b5d26a9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43db81a024",
+      "Fields": {
+        "Meaning": "Tác hại, tổn hại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "害（がい）có nghĩa là tác hại, tổn hại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184706": "Đừng đọc những cuốn sách có thể gây hại.",
+        "192064": "Bản thân rượu vang không gây hại."
+      },
+      "SourceHash": "2c7f2b4c3f97ccda54b172d332a2a0e1691839ddc6c5203079cef9a536244bd8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b4863250e1",
+      "Fields": {
+        "Meaning": "Hội viên, thành viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "会員（かいいん）có nghĩa là hội viên, thành viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223845": "Câu lạc bộ này có 50 hội viên.",
+        "225547": "Các thành viên câu lạc bộ tập trung trong phòng họp."
+      },
+      "SourceHash": "074bdbc181ceb4b60f1bcf0e36533a1eee69287b6af847156d5439ef5fb740b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f3020dd7b",
+      "Fields": {
+        "Meaning": "Tranh vẽ, hội họa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "絵画（かいが）có nghĩa là tranh vẽ, hội họa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203801": "Có nhiều bức tranh treo trong cửa hàng đó.",
+        "211702": "Tôi thấy bức tranh đó thú vị khi xem."
+      },
+      "SourceHash": "f2f723629a58d3a5ad7f847159e2508fb5beb3d331c74c3bed7e375cc01a2276"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d54acd27e",
+      "Fields": {
+        "Meaning": "Nước ngoài, hải ngoại",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "海外（かいがい）có nghĩa là nước ngoài, hải ngoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109014": "Anh ấy quyết định học ở nước ngoài.",
+        "177613": "Bạn thường ra nước ngoài bao lâu một lần?"
+      },
+      "SourceHash": "317980389241d76cb006d58b0895a569cc53d654302a7a458b70bf03754516cb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "45f44c2449",
+      "Fields": {
+        "Meaning": "Thanh toán, kế toán, sổ sách",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "会計（かいけい）có nghĩa là thanh toán, kế toán, sổ sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185326": "Nhân viên kế toán phát hiện sổ quỹ bị thiếu tiền.",
+        "203012": "Tôi muốn trả phòng, xin tính tiền giúp tôi."
+      },
+      "SourceHash": "38536c5c0949a6ea5f9f48928fcd83f215053294aacdc5b5bbf98d7f0cde66e0"
+    }
+  ]
+}

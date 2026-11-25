@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shi",
+      "Fields": {
+        "Meaning": "Vừa…, lại…, vì…",
+        "Formation": "Mệnh đề thể thông thường ＋ し",
+        "Explanation": "Liệt kê đặc điểm hoặc lý do. Có thể dùng một lần để gợi ý còn các lý do khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shi:example:1": "Quán này vừa rẻ vừa ngon nên tôi thường đến.",
+        "shi:example:2": "Hôm nay trời mưa, mình xem phim ở nhà nhé."
+      },
+      "SourceHash": "847fb4c2d3cdcaf8b8fc2722ce85bf48ca0483177999c264a45e626e2440545b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shika-nai",
+      "Fields": {
+        "Meaning": "Chỉ có, chỉ làm được",
+        "Formation": "Danh từ ＋ しか ＋ vị ngữ phủ định",
+        "Explanation": "Giới hạn phạm vi vào đối tượng đứng trước しか.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shika-nai:example:1": "Trong tủ lạnh chỉ có trứng.",
+        "shika-nai:example:2": "Tôi chỉ đọc được chữ hiragana."
+      },
+      "SourceHash": "53cf5069e95255722246bf4bd3cd2a086811f03c5fe3adb57002d517a84ea091"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "janai-ka",
+      "Fields": {
+        "Meaning": "Chẳng phải… sao, đấy chứ",
+        "Formation": "Thể thông thường ＋ じゃないか (danh từ và tính từ な bỏ だ)",
+        "Explanation": "Dùng trong lời nói để xác nhận, bộc lộ sự ngạc nhiên hoặc khen ngợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "janai-ka:example:1": "Đây chẳng phải ô của cậu sao?",
+        "janai-ka:example:2": "Cậu làm tốt đấy chứ!"
+      },
+      "SourceHash": "f0652dd832dedd7b34ca04603cd3bc7a02c67dc78cc0c97300cc4a8b335d0723"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "suuji-mo",
+      "Fields": {
+        "Meaning": "Tới, đến tận, không một… nào",
+        "Formation": "Số lượng ＋ も ＋ vị ngữ",
+        "Explanation": "Với khẳng định, nhấn mạnh số lượng đáng kể. Với đơn vị tối thiểu và phủ định, nhấn mạnh số lượng bằng không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "suuji-mo:example:1": "Hôm qua tôi uống tới năm cốc cà phê.",
+        "suuji-mo:example:2": "Không có lấy một câu hỏi nào."
+      },
+      "SourceHash": "48a68ba23f7a6533b4b74a10b7201e2fcb1a52a84d0497fb201d65becb3d86f4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "suuryou-shika-nai",
+      "Fields": {
+        "Meaning": "Chỉ có chừng ấy",
+        "Formation": "Số lượng ＋ しか ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh số lượng ít hoặc giới hạn so với kỳ vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "suuryou-shika-nai:example:1": "Trong ví chỉ có 500 yên.",
+        "suuryou-shika-nai:example:2": "Hôm qua tôi chỉ ngủ ba tiếng."
+      },
+      "SourceHash": "18a278670b4453357d008fc38dbcf6ee9612999df4b8f0694a9c5f72c1d2d9fc"
+    }
+  ]
+}

@@ -111,7 +111,7 @@ namespace JCAP.Tests.Services
             Assert.True(response.Success);
             var savedResult = await dbContext.RoleplayResults.SingleAsync();
             Assert.False(savedResult.PassStatus);
-            Assert.Equal(59, savedResult.OverallScore);
+            Assert.Equal(75, savedResult.OverallScore);
             Assert.Contains("1/2", savedResult.GeneralFeedbackText);
             Assert.Contains("Chưa đạt", savedResult.GeneralFeedbackText);
         }
@@ -517,6 +517,392 @@ namespace JCAP.Tests.Services
             Assert.Empty(await dbContext.Set<ExploreSpotProgress>().ToListAsync());
         }
 
+        [Fact]
+        public async Task GetDetailAsync_DetectsWeakVocabularies_WhenTargetVocabulariesUnusedOrPenalized()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+
+            var scenario = new Scenario
+            {
+                Id = 1,
+                Title = "Gọi món tại quán Ramen",
+                ScenarioCode = "RAMEN_N5",
+                IsActive = true
+            };
+            var levelConfig = new ScenarioLevelConfiguration
+            {
+                Id = 1,
+                ScenarioId = 1,
+                JLPTLevel = "N5",
+                Scenario = scenario,
+                TargetVocabularies =
+                [
+                    new TargetVocabulary { Id = 1, Word = "豚骨ラーメン", Reading = "とんこつらーめん", Meaning = "Mì ramen tonkotsu" },
+                    new TargetVocabulary { Id = 2, Word = "カウンター席", Reading = "かうんたーせき", Meaning = "Chỗ ngồi quầy bar" },
+                    new TargetVocabulary { Id = 3, Word = "大盛り", Reading = "おおもり", Meaning = "Phần lớn" }
+                ],
+                TargetGrammars = []
+            };
+            dbContext.Scenarios.Add(scenario);
+            dbContext.ScenarioLevelConfigurations.Add(levelConfig);
+
+            var session = new RoleplaySession
+            {
+                Id = 201,
+                UserId = "learner-vocab-test",
+                ScenarioLevelConfigurationId = 1,
+                Status = "Completed",
+                IsNaturallyConcluded = true,
+                Messages =
+                [
+                    new RoleplayMessage
+                    {
+                        Id = 1,
+                        Sender = "User",
+                        JapaneseText = "豚骨ラーメンをお願いします。",
+                        LinguisticFeedbackJson = """
+                        {
+                            "evaluationSource": "AI",
+                            "status": "Good",
+                            "summary": "Tuyệt vời",
+                            "details": [
+                                { "type": "success", "aspect": "Từ vựng", "comment": "Dùng từ chính xác." }
+                            ]
+                        }
+                        """,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-5)
+                    },
+                    new RoleplayMessage
+                    {
+                        Id = 2,
+                        Sender = "User",
+                        JapaneseText = "大盛りで。",
+                        LinguisticFeedbackJson = """
+                        {
+                            "evaluationSource": "AI",
+                            "status": "Warning",
+                            "summary": "Hơi cộc lốc",
+                            "details": [
+                                { "type": "warning", "aspect": "Từ vựng và Văn phong", "comment": "Cần thêm tiền tố hoặc trợ từ lịch sự." }
+                            ]
+                        }
+                        """,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-3)
+                    }
+                ]
+            };
+            dbContext.RoleplaySessions.Add(session);
+
+            var result = CreateResult(201, "learner-vocab-test", true, DateTime.UtcNow);
+            result.Id = 201;
+            result.ScenarioTitle = "Gọi món tại quán Ramen";
+            result.JLPTLevel = "N5";
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            var service = CreateService(dbContext, provider.Object);
+
+            var response = await service.GetDetailAsync("learner-vocab-test", 201);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+
+            Assert.Equal(2, response.Data.WeakVocabularies.Count);
+
+            var notAttempted = response.Data.WeakVocabularies.FirstOrDefault(v => v.Word == "カウンター席");
+            Assert.NotNull(notAttempted);
+            Assert.Equal(2, notAttempted.Id);
+            Assert.Equal("NotAttempted", notAttempted.Status);
+            Assert.Equal(30, notAttempted.MasteryScore);
+            Assert.Contains("Chưa chủ động vận dụng", notAttempted.Reason);
+
+            var needsPractice = response.Data.WeakVocabularies.FirstOrDefault(v => v.Word == "大盛り");
+            Assert.NotNull(needsPractice);
+            Assert.Equal(3, needsPractice.Id);
+            Assert.Equal("NeedsPractice", needsPractice.Status);
+            Assert.Equal(50, needsPractice.MasteryScore);
+            Assert.Contains("gặp lỗi", needsPractice.Reason);
+
+            Assert.DoesNotContain(response.Data.WeakVocabularies, v => v.Word == "豚骨ラーメン");
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_DetectsWeakGrammar_WhenFeedbackReportsGrammarError()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+
+            var scenario = new Scenario
+            {
+                Id = 2,
+                Title = "Gọi món tại quán Ramen",
+                ScenarioCode = "RAMEN_N5",
+                IsActive = true
+            };
+            var levelConfig = new ScenarioLevelConfiguration
+            {
+                Id = 2,
+                ScenarioId = 2,
+                JLPTLevel = "N5",
+                Scenario = scenario,
+                TargetVocabularies = [],
+                TargetGrammars =
+                [
+                    new TargetGrammar { Id = 10, Pattern = "～をお願いします", Meaning = "Làm ơn cho tôi...", ExampleSentence = "ラーメンをお願いします。" },
+                    new TargetGrammar { Id = 11, Pattern = "～はいくらですか", Meaning = "Giá bao nhiêu?", ExampleSentence = "これはいくらですか。" }
+                ]
+            };
+            dbContext.Scenarios.Add(scenario);
+            dbContext.ScenarioLevelConfigurations.Add(levelConfig);
+
+            var session = new RoleplaySession
+            {
+                Id = 202,
+                UserId = "learner-grammar-test",
+                ScenarioLevelConfigurationId = 2,
+                Status = "Completed",
+                IsNaturallyConcluded = true,
+                Messages =
+                [
+                    new RoleplayMessage
+                    {
+                        Id = 1,
+                        Sender = "User",
+                        JapaneseText = "ラーメンをお願いします。",
+                        LinguisticFeedbackJson = """
+                        {
+                            "evaluationSource": "AI",
+                            "status": "Error",
+                            "summary": "Sai trợ từ",
+                            "details": [
+                                { "type": "error", "aspect": "Ngữ pháp", "comment": "Mẫu câu bị nhầm lẫn trợ từ." }
+                            ]
+                        }
+                        """,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-2)
+                    }
+                ]
+            };
+            dbContext.RoleplaySessions.Add(session);
+
+            var result = CreateResult(202, "learner-grammar-test", true, DateTime.UtcNow);
+            result.Id = 202;
+            result.ScenarioTitle = "Gọi món tại quán Ramen";
+            result.JLPTLevel = "N5";
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            var service = CreateService(dbContext, provider.Object);
+
+            var response = await service.GetDetailAsync("learner-grammar-test", 202);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+
+            Assert.Equal(2, response.Data.WeakGrammars.Count);
+
+            var usedWithError = response.Data.WeakGrammars.FirstOrDefault(g => g.Pattern == "～をお願いします");
+            Assert.NotNull(usedWithError);
+            Assert.Equal("NeedsPractice", usedWithError.Status);
+            Assert.Equal(50, usedWithError.MasteryScore);
+            Assert.Contains("sai sót", usedWithError.Reason);
+
+            var notAttempted = response.Data.WeakGrammars.FirstOrDefault(g => g.Pattern == "～はいくらですか");
+            Assert.NotNull(notAttempted);
+            Assert.Equal("NotAttempted", notAttempted.Status);
+            Assert.Equal(30, notAttempted.MasteryScore);
+            Assert.Contains("Chưa vận dụng", notAttempted.Reason);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_RanksMatchingShadowingDialogue_ByScenarioAndWeakItems()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+
+            var scenario = new Scenario
+            {
+                Id = 3,
+                Title = "Gọi món tại quán Ramen",
+                ScenarioCode = "RAMEN_N5",
+                IsActive = true
+            };
+            var levelConfig = new ScenarioLevelConfiguration
+            {
+                Id = 3,
+                ScenarioId = 3,
+                JLPTLevel = "N5",
+                Scenario = scenario,
+                TargetVocabularies =
+                [
+                    new TargetVocabulary { Id = 31, Word = "豚骨ラーメン", Reading = "とんこつらーめん", Meaning = "Mì ramen tonkotsu" },
+                    new TargetVocabulary { Id = 32, Word = "カウンター席", Reading = "かうんたーせき", Meaning = "Chỗ ngồi quầy bar" }
+                ],
+                TargetGrammars = []
+            };
+            dbContext.Scenarios.Add(scenario);
+            dbContext.ScenarioLevelConfigurations.Add(levelConfig);
+
+            var dialogue1 = new ShadowingDialogue
+            {
+                Id = 1,
+                ScenarioId = 3,
+                Title = "Hội thoại gọi món Ramen và xin thêm nước",
+                JLPTLevel = "N5",
+                IsActive = true,
+                Sentences =
+                [
+                    new ShadowingSentence { Id = 1, OrderIndex = 1, SpeakerRole = "A", JapaneseText = "いらっしゃいませ。カウンター席へどうぞ。" },
+                    new ShadowingSentence { Id = 2, OrderIndex = 2, SpeakerRole = "B", JapaneseText = "豚骨ラーメンをお願いします。" }
+                ]
+            };
+
+            var dialogue2 = new ShadowingDialogue
+            {
+                Id = 2,
+                ScenarioId = null,
+                Title = "Phỏng vấn kỹ sư IT tại Tokyo",
+                JLPTLevel = "N3",
+                IsActive = true,
+                Sentences =
+                [
+                    new ShadowingSentence { Id = 3, OrderIndex = 1, SpeakerRole = "A", JapaneseText = "志望動機を教えてください。" }
+                ]
+            };
+
+            dbContext.ShadowingDialogues.AddRange(dialogue1, dialogue2);
+
+            var session = new RoleplaySession
+            {
+                Id = 203,
+                UserId = "learner-shadowing-test",
+                ScenarioLevelConfigurationId = 3,
+                Status = "Completed",
+                IsNaturallyConcluded = true,
+                Messages =
+                [
+                    new RoleplayMessage
+                    {
+                        Id = 1,
+                        Sender = "User",
+                        JapaneseText = "豚骨ラーメンをください。",
+                        LinguisticFeedbackJson = """
+                        {
+                            "evaluationSource": "AI",
+                            "status": "Good",
+                            "summary": "Chuẩn xác",
+                            "details": []
+                        }
+                        """
+                    }
+                ]
+            };
+            dbContext.RoleplaySessions.Add(session);
+
+            var result = CreateResult(203, "learner-shadowing-test", true, DateTime.UtcNow);
+            result.Id = 203;
+            result.ScenarioTitle = "Gọi món tại quán Ramen";
+            result.JLPTLevel = "N5";
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            var service = CreateService(dbContext, provider.Object);
+
+            var response = await service.GetDetailAsync("learner-shadowing-test", 203);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+            Assert.NotEmpty(response.Data.RecommendedShadowingDialogues);
+
+            var topRecommendation = response.Data.RecommendedShadowingDialogues[0];
+            Assert.Equal(1, topRecommendation.Id);
+            Assert.Equal("Hội thoại gọi món Ramen và xin thêm nước", topRecommendation.Title);
+            Assert.Equal("N5", topRecommendation.JLPTLevel);
+            Assert.Equal(3, topRecommendation.ScenarioId);
+            Assert.True(topRecommendation.Score >= 80, $"Expected score >= 80, actual: {topRecommendation.Score}");
+            Assert.Equal(2, topRecommendation.SentencesCount);
+            Assert.Contains("カウンター席", topRecommendation.MatchReason);
+            Assert.Contains("Gọi món tại quán Ramen", topRecommendation.MatchReason);
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_PreservesExistingContracts_BackwardCompatibility()
+        {
+            using var dbContext = CreateInMemoryDbContext();
+
+            var scenario = new Scenario
+            {
+                Id = 4,
+                Title = "Gọi món tại quán Ramen",
+                ScenarioCode = "RAMEN_N5",
+                IsActive = true
+            };
+            var levelConfig = new ScenarioLevelConfiguration
+            {
+                Id = 4,
+                ScenarioId = 4,
+                JLPTLevel = "N5",
+                Scenario = scenario,
+                TargetVocabularies =
+                [
+                    new TargetVocabulary { Id = 40, Word = "ラーメン", Meaning = "Mì ramen" }
+                ],
+                TargetGrammars =
+                [
+                    new TargetGrammar { Id = 41, Pattern = "～をください", Meaning = "Cho tôi..." }
+                ]
+            };
+            dbContext.Scenarios.Add(scenario);
+            dbContext.ScenarioLevelConfigurations.Add(levelConfig);
+
+            var mission = new Mission
+            {
+                Id = 1,
+                ScenarioLevelConfigurationId = 4,
+                Content = "Gọi một tô ramen",
+                CompletionCriteriaJson = """{"target":"ramen"}""",
+                Order = 1
+            };
+            dbContext.Missions.Add(mission);
+
+            var session = CreateSession(204, "learner-contract-test");
+            session.ScenarioLevelConfigurationId = 4;
+            session.SessionMissions.First().Mission = mission;
+            dbContext.RoleplaySessions.Add(session);
+
+            var result = CreateResult(204, "learner-contract-test", true, DateTime.UtcNow);
+            result.Id = 204;
+            result.ScenarioTitle = "Gọi món tại quán Ramen";
+            result.JLPTLevel = "N5";
+            dbContext.RoleplayResults.Add(result);
+            await dbContext.SaveChangesAsync();
+
+            var provider = new Mock<IRoleplaySessionSnapshotProvider>();
+            var service = CreateService(dbContext, provider.Object);
+
+            var response = await service.GetDetailAsync("learner-contract-test", 204);
+
+            Assert.True(response.Success);
+            Assert.NotNull(response.Data);
+
+            Assert.Equal(204, response.Data.Id);
+            Assert.Equal(4, response.Data.ScenarioId);
+            Assert.Equal("Gọi món tại quán Ramen", response.Data.ScenarioTitle);
+            Assert.Equal("N5", response.Data.JLPTLevel);
+            Assert.NotEmpty(response.Data.TargetVocabularies);
+            Assert.NotEmpty(response.Data.TargetGrammars);
+            Assert.NotEmpty(response.Data.Messages);
+            Assert.NotEmpty(response.Data.AllMissions);
+            Assert.NotNull(response.Data.AttemptComparison);
+            Assert.NotNull(response.Data.HankoStampType);
+            Assert.NotEmpty(response.Data.CompetencyBadges);
+
+            Assert.NotNull(response.Data.WeakVocabularies);
+            Assert.NotNull(response.Data.WeakGrammars);
+            Assert.NotNull(response.Data.RecommendedShadowingDialogues);
+        }
+
         private static RoleplayResult CreateResult(
             int sessionId,
             string userId,
@@ -573,6 +959,7 @@ namespace JCAP.Tests.Services
                 [
                     new RoleplaySessionMission
                     {
+                        RoleplaySessionId = sessionId,
                         MissionId = 1,
                         IsCompleted = true,
                         CompletedAt = DateTime.UtcNow

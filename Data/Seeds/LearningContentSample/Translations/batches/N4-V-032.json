@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ceec15828f",
+      "Fields": {
+        "Meaning": "Lý do, ý nghĩa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "訳（わけ）có nghĩa là lý do, ý nghĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204363": "Hãy cho tôi biết vì sao bạn làm thế.",
+        "213944": "Vì lý do đó mà tôi về sớm thế này."
+      },
+      "SourceHash": "763810784ddbc42f79d0d59b0190ae4cf3e3ef20f92f7eed95d6d9f90a9c27dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12abb2a2c6",
+      "Fields": {
+        "Meaning": "Đồ bỏ quên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "忘れ物（わすれもの）có nghĩa là đồ bỏ quên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81395": "Em gái tôi hấp tấp nên hay để quên đồ.",
+        "171417": "Hôm nay tôi để quên đồ."
+      },
+      "SourceHash": "54f208efbd82760db0dfeab92a4c7a34dc157dac0c2cfb4496466edba167e71a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "327c67b830",
+      "Fields": {
+        "Meaning": "Cười, mỉm cười",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "笑う（わらう）có nghĩa là cười, mỉm cười.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123767": "Trong các loài động vật, chỉ con người biết cười.",
+        "216291": "Thế nhưng anh ấy hiếm khi cười."
+      },
+      "SourceHash": "6f32343ff52ffaa24fec54f8d69c0b2763b4892af1fe426bf2ce436061dd62b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44a2bc7c32",
+      "Fields": {
+        "Meaning": "Tỷ lệ, tốc độ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "割合（わりあい）có nghĩa là tỷ lệ, tốc độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98294": "Họ đi bộ với tốc độ ba dặm một giờ.",
+        "225583": "Tỷ lệ nữ so với nam trong lớp là ba trên hai."
+      },
+      "SourceHash": "b0bc84120c0fc8338e5e35f26b014c189457dcd19bdc56a8141b80d22ea42641"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27046b71e1",
+      "Fields": {
+        "Meaning": "Vỡ, nứt",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "割れる（われる）có nghĩa là vỡ, nứt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197036": "Nhựa khó vỡ.",
+        "224120": "Chiếc cốc vỡ tan tành."
+      },
+      "SourceHash": "f0645a9ba765754340492f8b86dc7a2af98ea497196d767e096092a8a706fd2c"
+    }
+  ]
+}

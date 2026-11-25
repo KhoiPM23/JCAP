@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await authService.getCurrentUser(activeToken);
       if (res.success && res.data) {
-        const savedLevel = localStorage.getItem('jcap_level') || 'N5';
+        const savedLevel = res.data.jlptLevel || localStorage.getItem('jcap_level') || 'N5';
         setUser((prev) => {
           const refreshed: User = {
             id: res.data.userId,
@@ -107,6 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             level: savedLevel,
             avatarUrl: prev?.avatarUrl,
             creditBalance: res.data.creditBalance,
+            placementTestStatus: res.data.placementTestStatus ?? prev?.placementTestStatus ?? 'NotStarted',
+            hasSeenPlacementPrompt: res.data.hasSeenPlacementPrompt ?? prev?.hasSeenPlacementPrompt ?? false,
+            initialEstimatedLevel: res.data.initialEstimatedLevel ?? prev?.initialEstimatedLevel ?? null,
+            initialConfidenceTier: res.data.initialConfidenceTier ?? prev?.initialConfidenceTier ?? null,
           };
           localStorage.setItem('jcap_user', JSON.stringify(refreshed));
           return refreshed;
@@ -131,6 +135,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             level: detail.jlptLevel || detail.level || prev.level,
             avatarUrl: detail.profilePictureUrl || detail.avatarUrl || prev.avatarUrl,
             creditBalance: detail.creditBalance !== undefined ? detail.creditBalance : prev.creditBalance,
+            placementTestStatus: detail.placementTestStatus !== undefined ? detail.placementTestStatus : prev.placementTestStatus,
+            hasSeenPlacementPrompt: detail.hasSeenPlacementPrompt !== undefined ? detail.hasSeenPlacementPrompt : prev.hasSeenPlacementPrompt,
+            initialEstimatedLevel: detail.initialEstimatedLevel !== undefined ? detail.initialEstimatedLevel : prev.initialEstimatedLevel,
+            initialConfidenceTier: detail.initialConfidenceTier !== undefined ? detail.initialConfidenceTier : prev.initialConfidenceTier,
           };
           localStorage.setItem('jcap_user', JSON.stringify(updated));
           return updated;
@@ -156,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const googleRole = urlParams.get('role');
         const googleCreditBalance = urlParams.get('creditBalance');
 
-        let activeToken = token;
+        let activeToken = localStorage.getItem('jcap_token') || token;
 
         if (googleError) {
           setGoogleError(decodeURIComponent(googleError));
@@ -190,7 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (activeToken) {
           const res = await authService.getCurrentUser(activeToken);
           if (res.success && res.data) {
-            const savedLevel = localStorage.getItem('jcap_level') || 'N5';
+            const savedLevel = res.data.jlptLevel || localStorage.getItem('jcap_level') || 'N5';
             const refreshedUser: User = {
               id: res.data.userId,
               email: res.data.email,
@@ -198,6 +206,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               role: res.data.role,
               level: savedLevel,
               creditBalance: res.data.creditBalance,
+              placementTestStatus: res.data.placementTestStatus ?? 'NotStarted',
+              hasSeenPlacementPrompt: res.data.hasSeenPlacementPrompt ?? false,
+              initialEstimatedLevel: res.data.initialEstimatedLevel ?? null,
+              initialConfidenceTier: res.data.initialConfidenceTier ?? null,
             };
             saveSession(refreshedUser, activeToken, savedLevel);
           } else if (!res.success && (res.message?.includes('401') || res.message?.includes('hết hạn') || res.message?.includes('không hợp lệ'))) {
@@ -230,8 +242,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error(errorMsg);
     }
 
-    const { token: jwtToken, userId, fullName, role, creditBalance } = res.data;
-    const finalLevel = level || userLevel || 'N5';
+    const {
+      token: jwtToken,
+      userId,
+      fullName,
+      role,
+      jlptLevel,
+      creditBalance,
+      placementTestStatus,
+      hasSeenPlacementPrompt,
+      initialEstimatedLevel,
+      initialConfidenceTier,
+    } = res.data;
+    const finalLevel = level || jlptLevel || userLevel || 'N5';
 
     const userData: User = {
       id: userId,
@@ -240,6 +263,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       role,
       level: finalLevel,
       creditBalance: creditBalance ?? 0,
+      placementTestStatus: placementTestStatus ?? 'NotStarted',
+      hasSeenPlacementPrompt: hasSeenPlacementPrompt ?? false,
+      initialEstimatedLevel: initialEstimatedLevel ?? null,
+      initialConfidenceTier: initialConfidenceTier ?? null,
     };
 
     saveSession(userData, jwtToken, finalLevel);
@@ -317,4 +344,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-

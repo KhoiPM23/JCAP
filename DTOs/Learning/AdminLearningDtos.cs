@@ -36,6 +36,7 @@ public class SaveTopicRequest
     [Required, StringLength(200)] public string Name { get; set; } = "";
     [Required, RegularExpression("N[1-5]")] public string JLPTLevel { get; set; } = "N5";
     [StringLength(1000)] public string? Description { get; set; }
+    public TopicContentsRequest? Contents { get; set; }
 }
 public class SaveExampleRequest
 {

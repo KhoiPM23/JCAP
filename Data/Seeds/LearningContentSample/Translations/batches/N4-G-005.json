@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "aida-ni",
+      "Fields": {
+        "Meaning": "Trong lúc, vào một thời điểm trong khoảng",
+        "Formation": "Danh từ ＋ の ＋ 間に／mệnh đề bổ nghĩa ＋ 間に",
+        "Explanation": "Cho biết một việc diễn ra vào một thời điểm hoặc được hoàn thành trong khoảng đã nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "aida-ni:example:1": "Trong giờ nghỉ trưa, tôi đã đi mua vài thứ.",
+        "aida-ni:example:2": "Tôi dọn phòng trong lúc mẹ đi vắng."
+      },
+      "SourceHash": "021658e0d212ad904217ba69c4d432c243abaaa8d72d2b370d91836ccf6c7e24"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ato-de",
+      "Fields": {
+        "Meaning": "Sau khi, sau đó",
+        "Formation": "Động từ thể た ＋ 後で／danh từ ＋ の ＋ 後で",
+        "Explanation": "Đặt hành động hoặc mốc làm trước trước 後で, rồi nêu việc diễn ra sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ato-de:example:1": "Làm bài tập xong, tôi sẽ xem ti vi một lát.",
+        "ato-de:example:2": "Sau bữa trưa, mình uống cà phê nhé?"
+      },
+      "SourceHash": "6d0392a4b2b286fc8d1c86db092b45910978b646164d481a5ad8e74f9a5e0a47"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "amari-nai",
+      "Fields": {
+        "Meaning": "Không… lắm, không… nhiều",
+        "Formation": "あまり ＋ vị ngữ phủ định",
+        "Explanation": "Giảm mức độ của đặc điểm hoặc tần suất của hành động được nói đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "amari-nai:example:1": "Phim này không hay lắm.",
+        "amari-nai:example:2": "Dạo này tôi không xem ti vi nhiều."
+      },
+      "SourceHash": "fa5431e4ff0add286a719c66c4c8930b0fd6ac68c4cccf9d882b77880d113530"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ika",
+      "Fields": {
+        "Meaning": "Trở xuống, nhỏ hơn hoặc bằng",
+        "Formation": "Số lượng hoặc mốc ＋ 以下",
+        "Explanation": "Chỉ phạm vi bằng hoặc thấp hơn mốc đã nêu, bao gồm chính mốc đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ika:example:1": "Tất cả mặt hàng trong cửa hàng này đều có giá từ 1.000 yên trở xuống.",
+        "ika:example:2": "Trẻ từ 12 tuổi trở xuống được tính nửa giá."
+      },
+      "SourceHash": "98eff5183a73856c9fe5121068b0e3e3a0247cf8180bc97434699dec66c41f04"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "igai",
+      "Fields": {
+        "Meaning": "Ngoài, ngoại trừ",
+        "Formation": "Danh từ ＋ 以外",
+        "Explanation": "Loại đối tượng đứng trước 以外 ra khỏi phạm vi đang nói đến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "igai:example:1": "Trừ thứ Tư, tôi đều ở nhà.",
+        "igai:example:2": "Ngoài tôi ra, không ai hiểu câu này."
+      },
+      "SourceHash": "f90bb9742846bfcd98450bdd29fe8ece68ac4c27e387c6ce585aa5347e2428a2"
+    }
+  ]
+}

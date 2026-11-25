@@ -58,6 +58,20 @@ public class FluencyAnalyzerTests
     // ---- trường hợp không đo được: unavailable kèm mã lý do, không phải số 0 ----
 
     [Fact]
+    public void Continuity_IsTheAverageRunBetweenPauses()
+    {
+        // 3 đoạn nói 1 giây, cách nhau 2 khoảng dừng 0,5 giây; câu 12 mora → trung bình 4 mora mỗi đoạn
+        var choppy = Analyzer.Analyze(Wav(Cat(Noise(300), Sine(1000), Noise(500), Sine(1000), Noise(500), Sine(1000), Noise(300))), 12);
+        Assert.Equal(2, choppy.PauseCount);
+        Assert.Equal(4.0, choppy.MeanRunMoras);
+        Assert.InRange(choppy.MeanRunMs!.Value, 900, 1100);
+
+        // Cùng câu nói liền một hơi: 12 mora một đoạn
+        var fluent = Analyzer.Analyze(Wav(Cat(Noise(300), Sine(3000), Noise(300))), 12);
+        Assert.Equal(12.0, fluent.MeanRunMoras);
+    }
+
+    [Fact]
     public void DigitalSilence_IsUnavailable_NoSignal()
     {
         var r = Analyzer.Analyze(Wav(Zeros(2000)), 10);

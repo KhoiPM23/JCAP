@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-wa-ikenai-kara",
+      "Fields": {
+        "Meaning": "Để tránh, vì không được để…",
+        "Formation": "Động từ thể て ＋ はいけないから",
+        "Explanation": "Nêu điều cần tránh làm lý do cho hành động phòng ngừa ở vế sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-wa-ikenai-kara:example:1": "Hôm nay tôi đeo khẩu trang để tránh lây cảm cho người khác.",
+        "te-wa-ikenai-kara:example:2": "Để khỏi quên, tôi đã ghi vào sổ tay."
+      },
+      "SourceHash": "eeb6a599bc0644cc48023a0ee13c51c96e3ec903a119c1ba6aa2cfec7ec9271f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-bakari-iru",
+      "Fields": {
+        "Meaning": "Suốt ngày chỉ làm",
+        "Formation": "Động từ thể て ＋ ばかりいる",
+        "Explanation": "Nhấn mạnh một việc lặp đi lặp lại và thường thể hiện sự không hài lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-bakari-iru:example:1": "Em trai tôi suốt ngày chơi, chẳng làm bài tập gì cả.",
+        "te-bakari-iru:example:2": "Dạo này chị tôi cứ dán mắt vào điện thoại."
+      },
+      "SourceHash": "bf3f36658aebadd09a9598f1c22c2c599fc9be1ff4270c93a133767629060c54"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-hajimete",
+      "Fields": {
+        "Meaning": "Chỉ sau khi… mới",
+        "Formation": "Động từ thể て ＋ 初めて",
+        "Explanation": "Nêu trải nghiệm khiến người nói lần đầu nhận ra hoặc làm được điều gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-hajimete:example:1": "Đến khi sống một mình, tôi mới hiểu công ơn cha mẹ.",
+        "te-hajimete:example:2": "Chỉ sau khi bị ốm, tôi mới nhận ra sức khỏe quan trọng thế nào."
+      },
+      "SourceHash": "4997a885c370031e6d327b061350ae5dbd7e06d17b0272b96ceed644292980e0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dewa-nakute",
+      "Fields": {
+        "Meaning": "Không phải A mà là B",
+        "Formation": "A ＋ ではなくて／じゃなくて、B",
+        "Explanation": "Sửa hoặc thay cách xác định A bằng B. じゃなくて là dạng thân mật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dewa-nakute:example:1": "Bài kiểm tra vào ngày kia, không phải ngày mai đâu.",
+        "dewa-nakute:example:2": "Đây là túi của chị tôi, không phải của tôi."
+      },
+      "SourceHash": "9b42bd9fbf1498506a870ac30a38c4ae898d629d51926d5f03806ee985aad216"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "temo-nakutemo",
+      "Fields": {
+        "Meaning": "Dù có hay không",
+        "Formation": "Động từ thể て ＋ も ＋ cùng động từ dạng なくても",
+        "Explanation": "Nêu hai khả năng đối lập cùng dẫn đến một kết quả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "temo-nakutemo:example:1": "Dù trời có mưa hay không, trận đấu vẫn diễn ra.",
+        "temo-nakutemo:example:2": "Dù tham gia hay không, mức phí vẫn như nhau."
+      },
+      "SourceHash": "711dd982f8bf376cb6a9fd4b9eff28e8a0b38dfbb24e2a0a4a96d23a31f70ee3"
+    }
+  ]
+}

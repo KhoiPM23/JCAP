@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import type { TopicOption } from '../../../types/adminLearning';
 
@@ -25,8 +25,8 @@ export function LearningModal({ title, children, footer, onClose, busy = false, 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const dialog = container.current?.closest('[role="dialog"]');
-    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), a[href]') || []);
-    (container.current?.querySelector<HTMLElement>('input, textarea, select, button') || focusable()[0])?.focus();
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not(:disabled):not([tabindex="-1"]), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), a[href]') || []).filter(element => element.getClientRects().length > 0);
+    (focusable().find(element => container.current?.contains(element)) || focusable()[0])?.focus();
     const handle = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !saving.current) { event.preventDefault(); close.current(); }
       if (event.key === 'Tab') {
@@ -38,8 +38,16 @@ export function LearningModal({ title, children, footer, onClose, busy = false, 
     document.addEventListener('keydown', handle);
     return () => { document.removeEventListener('keydown', handle); previous?.focus(); };
   }, []);
-  return <Modal isOpen onClose={() => { if (!busy) onClose(); }} title={title} maxWidth={wide ? '2xl' : 'lg'} footer={footer}><div ref={container}>{children}</div></Modal>;
+  return <Modal isOpen onClose={() => { if (!busy) onClose(); }} title={title} maxWidth={wide ? '2xl' : 'lg'} footer={footer}><div className="al-modal-content" ref={container}>{children}</div></Modal>;
 }
 export function TopicChoices({ topics, selected, onChange, disabled = false }: { topics: TopicOption[]; selected: number[]; onChange: (ids: number[]) => void; disabled?: boolean }) {
-  return <div className="max-h-36 overflow-y-auto rounded-lg border border-[#E6EDF5] p-2 space-y-1">{topics.length ? topics.map(topic => <label key={topic.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-slate-50"><input type="checkbox" className="accent-[#0878EE]" checked={selected.includes(topic.id)} disabled={disabled} onChange={e => onChange(e.target.checked ? [...selected, topic.id] : selected.filter(id => id !== topic.id))} /><span className="flex-1">{topic.name}</span><span className="text-xs text-slate-400">{topic.jlptLevel}{!topic.isActive ? ' · Đã ẩn' : ''}</span></label>) : <p className="p-2 text-xs text-slate-400">Chưa có chủ đề ở level này.</p>}</div>;
+  const [keyword, setKeyword] = useState('');
+  const visible = topics.filter(topic => topic.name.toLocaleLowerCase('vi').includes(keyword.trim().toLocaleLowerCase('vi')));
+  return <div className="al-topic-choices rounded-lg border border-[#E6EDF5]">
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6EDF5] p-2.5">
+      <input className="min-w-0 flex-1 bg-transparent text-xs outline-none" aria-label="Tìm chủ đề để chọn" placeholder="Tìm chủ đề…" value={keyword} onChange={event => setKeyword(event.target.value)} />
+      <span className="text-xs text-slate-400" aria-live="polite">Đã chọn {selected.length}</span>
+    </div>
+    <div className="max-h-44 overflow-y-auto p-1.5 space-y-1">{visible.length ? visible.map(topic => <label key={topic.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-slate-50"><input type="checkbox" className="accent-[#0878EE]" checked={selected.includes(topic.id)} disabled={disabled} onChange={e => onChange(e.target.checked ? [...selected, topic.id] : selected.filter(id => id !== topic.id))} /><span className="min-w-0 flex-1">{topic.name}</span><span className="shrink-0 text-xs text-slate-400">{topic.jlptLevel}{!topic.isActive ? ' · Đã ẩn' : ''}</span></label>) : <p className="p-3 text-xs text-slate-400">{topics.length ? 'Không tìm thấy chủ đề phù hợp.' : 'Chưa có chủ đề ở level này.'}</p>}</div>
+  </div>;
 }

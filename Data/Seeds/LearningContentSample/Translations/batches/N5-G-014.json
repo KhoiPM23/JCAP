@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naide-kudasai",
+      "Fields": {
+        "Meaning": "Xin đừng làm gì",
+        "Formation": "Động từ thể ない ＋ でください",
+        "Explanation": "Mẫu này dùng để lịch sự yêu cầu người nghe không làm một việc. 撮らないでください nghĩa là xin đừng chụp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naide-kudasai:example:1": "Xin đừng chụp ảnh ở đây.",
+        "naide-kudasai:example:2": "Xin đừng lo lắng."
+      },
+      "SourceHash": "a77bdd366b4354a1c25cf4e6c40d144988eeffde9c285faa8c6a64e0e442f0a8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naito-ikenai",
+      "Fields": {
+        "Meaning": "Phải làm gì",
+        "Formation": "Động từ thể ない ＋ といけない／といけません",
+        "Explanation": "Mẫu này diễn tả nghĩa vụ hoặc việc cần làm. Có thể hiểu là nếu không làm thì không được, nên phải làm.",
+        "UsageNotes": "いけません là dạng lịch sự."
+      },
+      "Examples": {
+        "naito-ikenai:example:1": "Ngày mai tôi phải dậy sớm.",
+        "naito-ikenai:example:2": "Tôi phải uống thuốc mỗi ngày."
+      },
+      "SourceHash": "863beffe7b4cf9b779143e3ef3d86eed54c850d99b9804c8d65f8037a690cde8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nai-hou-ga-ii",
+      "Fields": {
+        "Meaning": "Tốt hơn là đừng làm gì",
+        "Formation": "Động từ thể ない ＋ ほうがいい",
+        "Explanation": "Dùng mẫu này để khuyên người nghe tránh một việc. Có thể nêu điều kiện trước, như 熱があるなら (nếu bị sốt).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nai-hou-ga-ii:example:1": "Bạn không nên uống cà phê vào đêm muộn.",
+        "nai-hou-ga-ii:example:2": "Nếu bị sốt thì tốt nhất đừng ra ngoài."
+      },
+      "SourceHash": "4c951b470852f681e017f8d17c7edd0670fae83df27c7faf813e17a7982c8153"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakucha",
+      "Fields": {
+        "Meaning": "Phải làm, cần làm (thân mật)",
+        "Formation": "Động từ thể ない: đổi ない thành なくちゃ hoặc なきゃ",
+        "Explanation": "なくちゃ rút gọn từ なくては, còn なきゃ rút gọn từ なければ. Trong hội thoại, phần diễn tả nghĩa vụ ở sau thường được lược mà câu vẫn mang nghĩa phải làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakucha:example:1": "Tôi phải về rồi.",
+        "nakucha:example:2": "Tôi phải làm bài tập về nhà."
+      },
+      "SourceHash": "6ca91444c3ecfe0293c1ac878d23c7063ee601edd5883fbd72dde60391c753a7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakute-wa-ikenai",
+      "Fields": {
+        "Meaning": "Phải làm gì",
+        "Formation": "Động từ thể ない: đổi ない thành なくて ＋ はいけない／はいけません",
+        "Explanation": "Dùng mẫu này khi một hành động là cần thiết hoặc bắt buộc. 〜なくてはいけません là cách nói lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakute-wa-ikenai:example:1": "Học sinh phải học mỗi ngày.",
+        "nakute-wa-ikenai:example:2": "Tôi phải đi rồi."
+      },
+      "SourceHash": "3b2a02ac0fc4d4f3f6cb7b1d5813a30e6271ce6703bea98974bea54d52ccd4f8"
+    }
+  ]
+}

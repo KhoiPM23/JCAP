@@ -8,9 +8,13 @@ import { voicevoxService, type VoiceOption } from '../services/voicevoxService';
 import { AiVoiceSettingsModal } from '../components/shadowing/AiVoiceSettingsModal';
 import { AudioWaveformPlayer } from '../components/common/AudioWaveformPlayer';
 import { LivingAvatar, type AvatarState, type MouthViseme } from '../components/roleplay/LivingAvatar';
+import { SumiInkIndicator, SumiInkPill, SumiInkWhisperBubble } from '../components/roleplay/SumiInkIndicator';
+import { HanabiSparkleBurst } from '../components/roleplay/HanabiSparkleBurst';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { GraduatedHintCard } from '../components/roleplay/GraduatedHintCard';
 import { TypewriterText } from '../components/roleplay/TypewriterText';
-import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination } from '../utils/japaneseSanitizer';
+import { sanitizeDisplayJapanese, containsJapanese, extractJapaneseKeywords, deriveJapaneseCloze, isWhisperHallucination, cleanFuriganaHtml, cleanPedagogicMeaning, generateClientFuriganaHtml, alignFuriganaWithOriginal, stripRubyToPlainJapanese } from '../utils/japaneseSanitizer';
+import { getPracticePrefs, setPracticePref } from '../utils/practicePrefs';
 import { ukiyoSound, detectScenarioTheme, type AmbientTheme } from '../utils/ukiyoSoundEngine';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -45,11 +49,67 @@ import type {
 } from '../types/roleplay';
 
 
-import { countJapaneseMora } from '../utils/moraPhonetics.ts';
+import { countJapaneseMora } from '../utils/moraPhonetics';
 export { countJapaneseMora };
 
 
-export const RoleplayPracticeView: React.FC = () => {
+const getScenarioThemePalette = (scenarioCode?: string, title?: string, sceneType?: string) => {
+  const code = (scenarioCode || '').toLowerCase();
+  const scene = (sceneType || '').toLowerCase();
+  const titleLower = (title || '').toLowerCase();
+
+  // 1. Ẩm thực (Ramen, ăn uống, nhà hàng): 薄黄茶 (Usucha) - Ấm áp, nhẹ nhàng
+  if (
+    code.includes('ramen') || code.includes('food') ||
+    scene.includes('ramen') || scene.includes('food') || scene.includes('restaurant') ||
+    titleLower.includes('ramen') || titleLower.includes('ăn') || titleLower.includes('quán')
+  ) {
+    return {
+      bgStyle: { backgroundColor: '#FCF9F4' },
+      accentColor: '#b45309',
+    };
+  }
+  // 2. Di chuyển (Ga tàu, sân bay, vé): 浅葱 (Asagi) - Thoáng đãng, thanh tao
+  if (
+    code.includes('station') || code.includes('train') || code.includes('travel') ||
+    scene.includes('station') || scene.includes('airport') ||
+    titleLower.includes('ga') || titleLower.includes('tàu') || titleLower.includes('bay')
+  ) {
+    return {
+      bgStyle: { backgroundColor: '#F4F8FC' },
+      accentColor: '#0284c7',
+    };
+  }
+  // 3. Công sở (Phỏng vấn, công việc): 藍染 (Aizome) - Chuyên nghiệp, nghiêm túc
+  if (
+    code.includes('baito') || code.includes('work') || code.includes('interview') ||
+    scene.includes('interview') || scene.includes('office') ||
+    titleLower.includes('phỏng vấn') || titleLower.includes('công sở') || titleLower.includes('baito')
+  ) {
+    return {
+      bgStyle: { backgroundColor: '#F5F6FA' },
+      accentColor: '#4f46e5',
+    };
+  }
+  // 4. Mua sắm (Konbini, chợ, tính tiền): 鴇色 (Toki-iro) - Tinh tế, hiếu khách
+  if (
+    code.includes('konbini') || code.includes('shop') ||
+    scene.includes('konbini') || scene.includes('shop') ||
+    titleLower.includes('mua') || titleLower.includes('tiện lợi')
+  ) {
+    return {
+      bgStyle: { backgroundColor: '#FDF8F6' },
+      accentColor: '#e11d48',
+    };
+  }
+  // 5. Đời sống / Mặc định: 若葉 (Wakaba) - Mát lành, tự nhiên
+  return {
+    bgStyle: { backgroundColor: '#F6F9F7' },
+    accentColor: '#059669',
+  };
+};
+
+const RoleplayPracticeViewInternal: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -62,12 +122,50 @@ export const RoleplayPracticeView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Bảng màu bối cảnh Nhật Bản truyền thống (Nippon Colors - 3% nhẹ nhàng theo chủ đề)
+  const scenarioTheme = useMemo(
+    () => getScenarioThemePalette(session?.scenarioCode, session?.scenarioTitle, session?.sceneType),
+    [session?.scenarioCode, session?.scenarioTitle, session?.sceneType]
+  );
+
 
   // Toggles hiển thị
-  const [showTranslation, setShowTranslation] = useState(true);
-  const [showFurigana, setShowFurigana] = useState(false); // Mặc định TẮT theo yêu cầu
-  const [autoPlayAudio, setAutoPlayAudio] = useState(true); // Toggle tự động phát âm thanh AI
-  const autoPlayAudioRef = useRef(true);
+  const [showTranslation, setShowTranslation] = useState(() => getPracticePrefs().translation);
+  const [showFurigana, setShowFurigana] = useState(() => getPracticePrefs().furigana);
+  // Per-sentence Furigana override state (Bật/Tắt Furigana theo từng câu độc lập)
+  const [toggledFuriMessageIds, setToggledFuriMessageIds] = useState<Set<number>>(() => new Set());
+  const isFuriActiveForMsg = useCallback(
+    (msgId: number) => {
+      return toggledFuriMessageIds.has(msgId) ? !showFurigana : showFurigana;
+    },
+    [showFurigana, toggledFuriMessageIds]
+  );
+  const toggleFuriForMessage = useCallback((msgId: number) => {
+    ukiyoSound.playSubtleTap();
+    setToggledFuriMessageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(msgId)) next.delete(msgId);
+      else next.add(msgId);
+      return next;
+    });
+  }, []);
+
+  const getResolvedMessageFurigana = useCallback((msg: RoleplayMessageDto): string => {
+    let html = '';
+    if (msg.furiganaHtml && msg.furiganaHtml.includes('<ruby>') && msg.furiganaHtml.includes('</ruby>')) {
+      html = cleanFuriganaHtml(msg.furiganaHtml);
+    } else if (msg.japaneseText && msg.japaneseText.includes('<ruby>') && msg.japaneseText.includes('</ruby>')) {
+      html = cleanFuriganaHtml(msg.japaneseText);
+    } else {
+      const scenarioVocabs = session?.targetVocabularies?.map(v => ({ word: v.word, reading: v.reading })) || [];
+      html = generateClientFuriganaHtml(stripRubyToPlainJapanese(msg.japaneseText), scenarioVocabs);
+    }
+    const plainOriginal = stripRubyToPlainJapanese(msg.japaneseText);
+    return alignFuriganaWithOriginal(html, plainOriginal);
+  }, [session?.targetVocabularies]);
+
+  const [autoPlayAudio, setAutoPlayAudio] = useState(() => getPracticePrefs().autoPlay);
+  const autoPlayAudioRef = useRef(getPracticePrefs().autoPlay);
   useEffect(() => {
     autoPlayAudioRef.current = autoPlayAudio;
   }, [autoPlayAudio]);
@@ -80,6 +178,18 @@ export const RoleplayPracticeView: React.FC = () => {
   const [isWhisperEngineOnline, setIsWhisperEngineOnline] = useState(false);
   const aiFinishedSpeakingAtRef = useRef<number | null>(null);
   const micStartedAtRef = useRef<number | null>(null);
+  const firstUtteranceAtRef = useRef<number | null>(null);
+
+  // Hủy bản ghi âm tạm thời khi học viên chuyển sang gõ phím, dán (paste) hoặc nạp câu từ Gợi ý
+  const invalidateVoiceRecording = useCallback(() => {
+    micStartedAtRef.current = null;
+    firstUtteranceAtRef.current = null;
+    lastSpeechConfidenceRef.current = null;
+    if (lastRecordedAudioUrlRef.current && lastRecordedAudioUrlRef.current.startsWith('blob:')) {
+      URL.revokeObjectURL(lastRecordedAudioUrlRef.current);
+    }
+    lastRecordedAudioUrlRef.current = null;
+  }, []);
   const lastSpeechConfidenceRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
   const [micError, setMicError] = useState<string | null>(null);
@@ -107,7 +217,7 @@ export const RoleplayPracticeView: React.FC = () => {
         if (isRecordingMicRef.current) {
           void stopSpeechRecognition();
         }
-      }, 12000);
+      }, 25000);
     } else {
       setRecordingDurationSec(0);
     }
@@ -245,14 +355,81 @@ export const RoleplayPracticeView: React.FC = () => {
 
   // AI Proactive Engagement (Chủ động gợi ý đồng hành khi người học im lặng > 14s)
   const [showProactiveHint, setShowProactiveHint] = useState(false);
+  const [sessionHintUseCount, setSessionHintUseCount] = useState<number>(0);
+  const sessionHintUseCountRef = useRef<number>(0);
+  const [sessionHintOffersCount, setSessionHintOffersCount] = useState<number>(0);
+  const sessionHintOffersCountRef = useRef<number>(0);
+  const hasPriorUserMessagesRef = useRef<boolean>(false);
   const idleTimerRef = useRef<any>(null);
   const proactiveDismissedTurnRef = useRef<number>(-1);
+
+  // Kích hoạt hiển thị Banner gợi ý chủ động và ghi nhận số lần chào mời trong phiên
+  const triggerProactiveHint = useCallback(() => {
+    setShowProactiveHint(true);
+    setSessionHintOffersCount((c) => {
+      const next = c + 1;
+      sessionHintOffersCountRef.current = next;
+      const currentSessionId = session?.id || session?.sessionId || sessionId;
+      if (currentSessionId) {
+        try {
+          sessionStorage.setItem(`jcap_hint_offers_${currentSessionId}`, String(next));
+        } catch {
+          // ignore
+        }
+      }
+      return next;
+    });
+  }, [session?.id, session?.sessionId, sessionId]);
 
 
   // Trạng thái sao chép và phát âm câu gợi ý bản xứ
   const [copiedFeedbackText, setCopiedFeedbackText] = useState(false);
+  // Game Feel & Pro Micro-interactions: Combo Streak & Hanabi Sparkle Burst
+  const [comboCount, setComboCount] = useState<number>(0);
+  const [showSparkleBurst, setShowSparkleBurst] = useState<boolean>(false);
+  const [sparkleText, setSparkleText] = useState<string>('見事！ Xuất sắc');
   const [isPlayingAlternativeAudio, setIsPlayingAlternativeAudio] = useState(false);
 
+
+  // Đồng bộ số lần đã dùng gợi ý và xem bản dịch trong phiên từ Backend DTO hoặc lịch sử tin nhắn
+  useEffect(() => {
+    if (session) {
+      const currentSessionId = session.id || session.sessionId || sessionId;
+      const isUserMsg = (sender?: string) => {
+        const s = (sender || '').toLowerCase().trim();
+        return s === 'user' || s === 'learner' || s === 'me';
+      };
+      const hasPriorUserMsgs = Boolean(session.messages && session.messages.some((m) => isUserMsg(m.sender)));
+      hasPriorUserMessagesRef.current = hasPriorUserMsgs;
+
+      let storedOffers = 0;
+      let storedHints = 0;
+      if (currentSessionId) {
+        try {
+          storedOffers = Number(sessionStorage.getItem(`jcap_hint_offers_${currentSessionId}`) || '0');
+          storedHints = Number(sessionStorage.getItem(`jcap_hint_used_${currentSessionId}`) || '0');
+        } catch {
+          // ignore
+        }
+      }
+
+      const msgHints = session.messages?.filter(
+        (m) => isUserMsg(m.sender) && m.linguisticFeedback?.speechDelivery?.hintLevelUsed != null && m.linguisticFeedback.speechDelivery.hintLevelUsed > 0
+      ).length || 0;
+      const priorHints = Math.max(session.totalHintTurnsUsed || 0, msgHints, storedHints);
+      sessionHintUseCountRef.current = priorHints;
+      setSessionHintUseCount(priorHints);
+
+      // Nếu tiếp tục phiên dở dang (đã có tin nhắn người học) thì không còn là lần đầu mở gợi ý nữa
+      const initialOffers = hasPriorUserMsgs ? Math.max(1, storedOffers) : storedOffers;
+      sessionHintOffersCountRef.current = initialOffers;
+      setSessionHintOffersCount(initialOffers);
+
+      const priorPeeks = session.totalTranslationPeeksUsed || 0;
+      sessionTranslationPeeksUsedRef.current = priorPeeks;
+      setSessionTranslationPeeksUsed(priorPeeks);
+    }
+  }, [session?.id, session?.sessionId, sessionId, session?.totalHintTurnsUsed, session?.totalTranslationPeeksUsed, session?.messages]);
 
   // Phím tắt bàn phím (Escape đóng menu/modal)
   useEffect(() => {
@@ -316,6 +493,122 @@ export const RoleplayPracticeView: React.FC = () => {
   // Theo dõi ID của tin nhắn AI mới nhất đang chạy hiệu ứng máy đánh chữ mượt mà (Claude style)
   const [streamingAiMessageId, setStreamingAiMessageId] = useState<number | null>(null);
 
+  // M3: Danh sách ID tin nhắn đã mở soi nghĩa tiếng Việt trong phiên
+  const [revealedAiTranslationIds, setRevealedAiTranslationIds] = useState<Set<number>>(() => new Set());
+  const unlockedTranslationMsgIdsRef = useRef<Set<number>>(new Set());
+  const [sessionTranslationPeeksUsed, setSessionTranslationPeeksUsed] = useState<number>(0);
+  const sessionTranslationPeeksUsedRef = useRef<number>(0);
+  const [turnPeekPenalty, setTurnPeekPenalty] = useState<number>(0);
+  const [turnTranslationPeekCount, setTurnTranslationPeekCount] = useState<number>(0);
+
+  // Trạng thái mở rộng bong bóng tin nhắn gợi ý trợ lý Sensei cho từng câu thoại người học
+  const [expandedSumiInkMsgIds, setExpandedSumiInkMsgIds] = useState<Set<number>>(() => new Set());
+  const toggleSumiInkMsg = useCallback((messageId: number) => {
+    setExpandedSumiInkMsgIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) next.delete(messageId);
+      else next.add(messageId);
+      return next;
+    });
+  }, []);
+
+  // Game-like Floating Score Deduction Pill (-10đ Tự chủ, -30đ Tự chủ, etc.)
+  const [floatingDeduction, setFloatingDeduction] = useState<{ text: string; id: number } | null>(null);
+  const maxDeductedTierRef = useRef<number>(0);
+  const maxDeductedPenaltyInTurnRef = useRef<number>(0);
+
+  // M3: Túi đồ Vé soi nghĩa dự phòng (Roguelike Game Token)
+  const [bonusPeekTokens, setBonusPeekTokens] = useState<number>(() => {
+    try {
+      const stored = window.localStorage.getItem('jcap_bonus_peek_tokens');
+      return stored ? parseInt(stored, 10) || 0 : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  // Điều phối thông báo trừ điểm tự chủ: Toast chỉ hiển thị đúng 1 lần trong lượt nói
+  // NGOẠI LỆ DUY NHẤT: khi mức phạt tăng cao hơn (vd: Cấp 1 -> Cấp 2 hoặc 5đ -> 10đ)
+  const notifyDeduction = useCallback((penalty: number, label: string) => {
+    if (penalty > 0) {
+      setFloatingDeduction({ text: `-${penalty}đ Tự chủ`, id: Date.now() });
+    } else {
+      setFloatingDeduction({ text: '0đ (Ưu đãi lần đầu)', id: Date.now() });
+    }
+    setTimeout(() => {
+      setFloatingDeduction((prev) => (prev?.id ? null : prev));
+    }, 1800);
+
+    // Kiểm tra quy tắc Toast duy nhất 1 lần (trừ phi mức phạt tăng cao hơn)
+    if (penalty > 0 && penalty <= maxDeductedPenaltyInTurnRef.current) {
+      return;
+    }
+    if (penalty === 0 && maxDeductedPenaltyInTurnRef.current > 0) {
+      return;
+    }
+    maxDeductedPenaltyInTurnRef.current = Math.max(maxDeductedPenaltyInTurnRef.current, penalty);
+
+    setToastMessage(label);
+    setTimeout(() => setToastMessage(null), 3200);
+  }, []);
+
+  const toggleAiTranslationPeek = (messageId: number) => {
+    const isCurrentlyRevealed = revealedAiTranslationIds.has(messageId);
+    setRevealedAiTranslationIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+
+    // Chỉ tính lượt xem dịch nếu đây là lần đầu mở khóa câu AI này trong phiên (tránh double-trigger StrictMode)
+    if (!isCurrentlyRevealed && !unlockedTranslationMsgIdsRef.current.has(messageId)) {
+      unlockedTranslationMsgIdsRef.current.add(messageId);
+      const nextSessionTotal = sessionTranslationPeeksUsedRef.current + 1;
+      sessionTranslationPeeksUsedRef.current = nextSessionTotal;
+      setSessionTranslationPeeksUsed(nextSessionTotal);
+      translationPeekCountRef.current += 1;
+      setTurnTranslationPeekCount((c) => c + 1);
+
+      if (nextSessionTotal === 1) {
+        notifyDeduction(0, 'Xem dịch câu AI: Miễn phí lần đầu trong phiên (0đ Tự chủ)');
+      } else {
+        setTurnPeekPenalty((prevPenalty) => {
+          const newPenalty = Math.min(20, prevPenalty + 5);
+          notifyDeduction(newPenalty, `Xem dịch câu AI: -${newPenalty}đ Tự chủ cho lượt nói này`);
+          return newPenalty;
+        });
+      }
+    }
+  };
+
+  // Lần đầu dùng gợi ý trong phiên chỉ dựa trên số lượt đã gửi có gợi ý (khớp Backend AssistancePolicy)
+  const isFirstHintInSession = sessionHintUseCount === 0;
+  // Banner chào mời chỉ ghi "Lần đầu" ở duy nhất lần xuất hiện đầu tiên khi chưa dùng gợi ý nào
+  const isFirstHintOffer = sessionHintUseCount === 0 && sessionHintOffersCount === 0;
+
+  // Tính trần tự chủ tối đa thời gian thực cho lượt nói hiện tại
+  const currentTurnMaxAutonomy = useMemo(() => {
+    const isFirstHint = isFirstHintInSession;
+    let hintCeiling = 100;
+    let hintPenalty = 0;
+    if (appliedHintTier === 1) {
+      hintCeiling = isFirstHint ? 90 : 85;
+      hintPenalty = isFirstHint ? 0 : 10;
+    } else if (appliedHintTier === 2) {
+      hintCeiling = isFirstHint ? 80 : 70;
+      hintPenalty = isFirstHint ? 15 : 30;
+    } else if (appliedHintTier === 3) {
+      hintCeiling = isFirstHint ? 60 : 50;
+      hintPenalty = isFirstHint ? 40 : 60;
+    }
+    const totalPenalty = hintPenalty + turnPeekPenalty;
+    const rawAutonomy = Math.max(20, 100 - totalPenalty);
+    return Math.min(rawAutonomy, hintCeiling);
+  }, [appliedHintTier, isFirstHintInSession, turnPeekPenalty]);
 
   // Gợi ý Hint
   const [hint, setHint] = useState<RoleplayHintDto | null>(null);
@@ -359,7 +652,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
   const handleToggleBookmark = async (
     type: 'Vocabulary' | 'Grammar',
-    item: { id: number; text: string }
+    item: { id: number; text: string; subtext?: string; meaning?: string; exampleSentence?: string }
   ) => {
     const isVocab = type === 'Vocabulary';
     const isBookmarked = isVocab ? practiceBookmarkedVocabIds.has(item.id) : practiceBookmarkedGrammarIds.has(item.id);
@@ -373,7 +666,38 @@ export const RoleplayPracticeView: React.FC = () => {
       return next;
     });
 
-    const res = await flashcardService.toggleBookmark(type, item.id);
+    // Lưu đồng bộ vào localStorage để khi mở Kho Flashcard Đã Lưu luôn thấy ngay lập tức
+    try {
+      const rawLocal = localStorage.getItem('jcap_saved_flashcards');
+      let localList: any[] = [];
+      try { localList = rawLocal ? JSON.parse(rawLocal) : []; } catch {}
+      if (!Array.isArray(localList)) localList = [];
+      const existsIndex = localList.findIndex((it: any) => (it.word === item.text || it.pattern === item.text || it.frontText === item.text));
+      if (isBookmarked && existsIndex >= 0) {
+        localList.splice(existsIndex, 1);
+      } else if (!isBookmarked && existsIndex < 0) {
+        localList.push({
+          id: item.id || Date.now(),
+          type: isVocab ? 'vocab' : 'grammar',
+          word: isVocab ? item.text : undefined,
+          reading: item.subtext,
+          pattern: !isVocab ? item.text : undefined,
+          meaning: item.meaning,
+          exampleSentence: item.exampleSentence,
+          jlptLevel: session?.jlptLevel || session?.level || 'N4',
+          savedAt: new Date().toISOString(),
+        });
+      }
+      localStorage.setItem('jcap_saved_flashcards', JSON.stringify(localList));
+    } catch {}
+
+    const res = await flashcardService.toggleBookmark(
+      type,
+      item.id,
+      isVocab
+        ? { word: item.text, reading: item.subtext, meaning: item.meaning, jlptLevel: session?.jlptLevel || session?.level || 'N4' }
+        : { pattern: item.text, meaning: item.meaning, exampleSentence: item.exampleSentence, jlptLevel: session?.jlptLevel || session?.level || 'N4' }
+    );
     if (!res.success) {
       setIds((prev) => {
         const next = new Set(prev);
@@ -386,20 +710,19 @@ export const RoleplayPracticeView: React.FC = () => {
       const isSaved = res.data?.isBookmarked ?? !isBookmarked;
       if (isSaved) {
         ukiyoSound.playMigotoChime();
-        setToastMessage(`✨ Đã lưu ${itemLabel} 「${item.text}」 vào Flashcard!`);
+        setToastMessage(`Đã lưu ${itemLabel} 「${item.text}」 vào Flashcard!`);
       } else {
-        ukiyoSound.playSubtleTap();
         setToastMessage(`Đã bỏ lưu ${itemLabel} 「${item.text}」 khỏi Flashcard.`);
       }
     }
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleToggleCheatVocabBookmark = (v: { id: number; word: string }) =>
-    handleToggleBookmark('Vocabulary', { id: v.id, text: v.word });
+  const handleToggleCheatVocabBookmark = (v: { id: number; word: string; reading?: string; meaning?: string }) =>
+    handleToggleBookmark('Vocabulary', { id: v.id, text: v.word, subtext: v.reading, meaning: v.meaning });
 
-  const handleToggleCheatGrammarBookmark = (g: { id: number; pattern: string }) =>
-    handleToggleBookmark('Grammar', { id: g.id, text: g.pattern });
+  const handleToggleCheatGrammarBookmark = (g: { id: number; pattern: string; meaning?: string; exampleSentence?: string }) =>
+    handleToggleBookmark('Grammar', { id: g.id, text: g.pattern, meaning: g.meaning, exampleSentence: g.exampleSentence });
 
 
 
@@ -410,12 +733,34 @@ export const RoleplayPracticeView: React.FC = () => {
   // Tốc độ đọc AI (0.85x / 1.0x / 1.15x)
   const [speechRate, setSpeechRate] = useState<number>(() => scenarioVoiceService.getSpeechRate());
 
+  // Tự động điều chỉnh tốc độ đọc giọng AI thích ứng theo cấp độ JLPT (N5: 0.85x, N4: 0.90x, N3+: 1.0x)
+  useEffect(() => {
+    if (session?.jlptLevel) {
+      const defaultRate = scenarioVoiceService.getDefaultSpeechRateForLevel(session.jlptLevel);
+      try {
+        const stored = window.localStorage.getItem(`jcap_scenario_speech_rate_${session.jlptLevel.toUpperCase()}`);
+        if (stored) {
+          const parsed = parseFloat(stored);
+          if (!Number.isNaN(parsed) && parsed >= 0.5 && parsed <= 2.0) {
+            setSpeechRate(parsed);
+            return;
+          }
+        }
+      } catch {}
+      setSpeechRate(defaultRate);
+    }
+  }, [session?.jlptLevel]);
+  // Epoch theo dõi lượt thao tác của ô nhập văn bản: ngăn ngừa Faster-Whisper trễ đè Katakana rác lên ô đã xóa
+  const inputEpochRef = useRef<number>(0);
 
-  // Tab Cheat Sheet (Từ vựng vs Ngữ pháp)
-  const [cheatSheetTab, setCheatSheetTab] = useState<'vocab' | 'grammar'>('vocab');
+
+  // Tab Bên trái: Nhiệm vụ vs Kiến thức trọng tâm
+  const [sidebarTab, setSidebarTab] = useState<'missions' | 'knowledge'>('missions');
+  // Phân tab Kiến thức trọng tâm: Từ vựng vs Ngữ pháp
+  const [knowledgeSubTab, setKnowledgeSubTab] = useState<'vocab' | 'grammar'>('vocab');
 
 
-  // Direction A & B augmentations: Return URL, LivingAvatar visemes, Eki-Stamp overlay, Telemetry counters
+  // Direction A & B augmentations: Return URL, LivingAvatar visemes, Telemetry counters
   const [searchParams] = useSearchParams();
   const rawReturnUrl = searchParams.get('return');
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : null;
@@ -425,17 +770,28 @@ export const RoleplayPracticeView: React.FC = () => {
   const [sttNotice, setSttNotice] = useState<string | null>(null);
   const [reflexCountdown, setReflexCountdown] = useState<number | null>(null);
 
-  // Game-like Floating Score Deduction Pill (-10đ Tự chủ, -30đ Tự chủ, etc.)
-  const [floatingDeduction, setFloatingDeduction] = useState<{ text: string; id: number } | null>(null);
-
   const triggerFloatingDeduction = useCallback((tier: number) => {
-    const penalty = tier === 1 ? 10 : tier === 2 ? 30 : 60;
-    ukiyoSound.playSubtleTap();
-    setFloatingDeduction({ text: `-${penalty}đ Tự chủ`, id: Date.now() });
-    setTimeout(() => {
-      setFloatingDeduction((prev) => (prev?.id ? null : prev));
-    }, 1800);
-  }, []);
+    // Chỉ kích hoạt khi mở cấp độ có mức trừ phạt cao hơn mức đã từng mở trong lượt này
+    if (tier <= maxDeductedTierRef.current && maxDeductedTierRef.current > 0) return;
+    maxDeductedTierRef.current = Math.max(maxDeductedTierRef.current, tier);
+
+    const isFirstTime = sessionHintUseCountRef.current === 0;
+    const penalty = tier === 1
+      ? (isFirstTime ? 0 : 10)
+      : tier === 2
+        ? (isFirstTime ? 15 : 30)
+        : (isFirstTime ? 40 : 60);
+
+    const expectedMax = isFirstTime
+      ? (tier === 1 ? 90 : tier === 2 ? 80 : 60)
+      : (tier === 1 ? 85 : tier === 2 ? 70 : 50);
+
+    const label = penalty > 0
+      ? `Gợi ý Cấp ${tier}: -${penalty}đ Tự chủ (Tự chủ tối đa: ${expectedMax}/100đ${isFirstTime ? ' - Ưu đãi lần đầu' : ''})`
+      : `Gợi ý Cấp 1: Miễn phí (Tự chủ tối đa: ${expectedMax}/100đ - Ưu đãi lần đầu)`;
+
+    notifyDeduction(penalty, label);
+  }, [notifyDeduction]);
 
   const [isLearnerUttering, setIsLearnerUttering] = useState(false);
   const learnerUtterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -482,9 +838,8 @@ export const RoleplayPracticeView: React.FC = () => {
   const silenceIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 
-  // Taiko sound on room entry & cleanup ambient and recorded audio Blob on exit
+  // Cleanup ambient and recorded audio Blob on exit
   useEffect(() => {
-    ukiyoSound.playTaikoThud();
     return () => {
       ukiyoSound.stopAmbientSound();
       if (lastRecordedAudioUrlRef.current) {
@@ -531,6 +886,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
   // Telemetry metric counters for current turn (TikTok-style S1..S12)
   const hintLevelUsedRef = useRef<number>(0);
+  const cachedTurnHintRef = useRef<RoleplayHintDto | null>(null);
   const translationPeekCountRef = useRef<number>(0);
   const retryCountRef = useRef<number>(0);
 
@@ -556,6 +912,20 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+
+  const handleDialogueScroll = useCallback(() => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setIsScrolledUp(distanceToBottom > 140);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsScrolledUp(false);
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasPlayedOpeningRef = useRef(false);
 
@@ -601,6 +971,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     // Dừng MediaRecorder và phân tích nhận diện bằng Whisper STT Engine
+    const startEpoch = inputEpochRef.current;
     try {
       const audioResult = await scenarioVoiceService.stopAudioRecording();
       if (audioResult && audioResult.blob && audioResult.durationSeconds >= 0.3) {
@@ -614,6 +985,12 @@ export const RoleplayPracticeView: React.FC = () => {
 
         setIsProcessingStt(true);
         const whisperRes = await scenarioVoiceService.transcribeWithWhisper(audioResult.blob);
+        // Ngăn Whisper ghi đè nếu người dùng đã thao tác phím, xóa ô nhập hoặc đã gửi tin nhắn
+        if (inputEpochRef.current !== startEpoch || isSendingRef.current) {
+          console.info('[Scenario STT] Bỏ qua kết quả Whisper do người dùng đã thao tác/xóa/gửi ô nhập (epoch mismatch)');
+          return;
+        }
+
         if (whisperRes && whisperRes.text && whisperRes.text.trim()) {
           const rawText = whisperRes.text.trim();
           if (!isWhisperHallucination(rawText)) {
@@ -634,11 +1011,14 @@ export const RoleplayPracticeView: React.FC = () => {
           }
         } else {
           // Fallback: Lưu audio lên server để có link nghe lại vĩnh viễn
-          void scenarioVoiceService.saveLearnerAudio(audioResult.blob).then((serverUrl) => {
+          try {
+            const serverUrl = await scenarioVoiceService.saveLearnerAudio(audioResult.blob);
             if (serverUrl) {
               lastRecordedAudioUrlRef.current = serverUrl;
             }
-          });
+          } catch (e) {
+            console.warn('[Scenario STT] Failed to save learner audio:', e);
+          }
           // Nếu cả Web Speech lẫn Whisper đều chưa bắt được từ nào
           if (!inputText.trim() && !latestTranscriptRef.current) {
             setToastMessage('Chưa nhận diện được giọng nói. Hãy nói to, rõ ràng bằng tiếng Nhật (VD: こんにちは, すみません) hoặc kiểm tra micro.');
@@ -713,7 +1093,8 @@ export const RoleplayPracticeView: React.FC = () => {
     text: string,
     customSpeedScale?: number,
     onAudioStarted?: () => void,
-    voiceIdOverride?: number
+    voiceIdOverride?: number,
+    rateOverride?: number
   ) => {
     // Luôn đảm bảo ngắt micro trước khi phát âm thanh để tránh dội âm thanh AI vào mic
     stopSpeechRecognition();
@@ -731,9 +1112,11 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     const voiceToUse = voiceIdOverride ?? getSpeakerVoiceId(text);
-    const effectiveRate = typeof customSpeedScale === 'number' && customSpeedScale > 0
-      ? Number((speechRate * customSpeedScale).toFixed(2))
-      : speechRate;
+    const effectiveRate = typeof rateOverride === 'number' && rateOverride > 0
+      ? rateOverride
+      : (typeof customSpeedScale === 'number' && customSpeedScale > 0
+          ? Number((speechRate * customSpeedScale).toFixed(2))
+          : speechRate);
 
 
     void scenarioVoiceService.playAiSpeech(
@@ -744,7 +1127,7 @@ export const RoleplayPracticeView: React.FC = () => {
         setPlayingMessageId(null);
         setCurrentViseme('closed');
         aiFinishedSpeakingAtRef.current = Date.now();
-        // Tự động mở micro đón câu trả lời sau khi AI kết thúc lượt nói (320ms khoảng nghỉ)
+        // Tự động mở micro đón câu trả lời sau khi AI kết thúc lượt nói (450ms Acoustic Guard Band chống vọng loa ngoài)
         if (isHandsFreeModeRef.current && !sessionConcludedRef.current && !isSendingRef.current) {
           if (handsFreeAutoListenTimeoutRef.current) {
             clearTimeout(handsFreeAutoListenTimeoutRef.current);
@@ -753,14 +1136,14 @@ export const RoleplayPracticeView: React.FC = () => {
             if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current) {
               startSpeechRecognition();
             }
-          }, 320);
+          }, 450);
 
 
           // GIÀN GIÁO THÍCH ỨNG: Chờ người học phản hồi tự nhiên (AI đệm lời nhẹ nhàng nếu chờ quá 10s)
           if (deadlockTimerRef.current) clearTimeout(deadlockTimerRef.current);
           deadlockTimerRef.current = setTimeout(() => {
             if (isHandsFreeModeRef.current && !isSendingRef.current && !sessionConcludedRef.current) {
-              setShowProactiveHint(true);
+              triggerProactiveHint();
               if (!hasSpokenVocalFillerRef.current && !isPlayingAiSpeechRef.current) {
                 hasSpokenVocalFillerRef.current = true;
                 // Tạm dừng micro và đánh dấu AI đang nói để tránh âm thanh đệm dội ngược vào micro
@@ -778,7 +1161,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current) {
                           startSpeechRecognition();
                         }
-                      }, 320);
+                      }, 450);
                     }
                   },
                   effectiveRate,
@@ -920,6 +1303,29 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
       if (res.success && res.data) {
+        if (!Array.isArray(res.data.messages) || res.data.messages.length === 0) {
+          const titleLower = (res.data.scenarioTitle || '').toLowerCase();
+          const openingJp = titleLower.includes('ramen') || titleLower.includes('quán') || titleLower.includes('cafe')
+            ? 'いらっしゃいませ！何名様ですか？カウンター席へどうぞ。ご注文はお決まりですか？'
+            : titleLower.includes('ga ') || titleLower.includes('tàu') || titleLower.includes('đường')
+            ? 'はい、駅員です。何かお困りですか？どちらまで行かれますか？'
+            : 'こんにちは！本日はどのようなご用件でしょうか？どうぞお話しください。';
+          const openingVi = titleLower.includes('ramen') || titleLower.includes('quán') || titleLower.includes('cafe')
+            ? 'Xin kính chào quý khách! Quý khách đi mấy người ạ? Xin mời vào ghế quầy bar. Quý khách đã chọn được món chưa ạ?'
+            : titleLower.includes('ga ') || titleLower.includes('tàu') || titleLower.includes('đường')
+            ? 'Vâng, tôi là nhân viên nhà ga đây ạ. Bạn đang gặp khó khăn gì sao? Bạn muốn đi đến đâu ạ?'
+            : 'Xin chào! Hôm nay bạn có yêu cầu gì cần hỗ trợ không ạ? Xin mời bạn cứ trao đổi nhé.';
+          res.data.messages = [
+            {
+              id: -1,
+              sender: 'Ai',
+              japaneseText: openingJp,
+              furiganaHtml: generateClientFuriganaHtml(openingJp),
+              vietnameseMeaning: openingVi,
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        }
         setSession(res.data);
 
 
@@ -941,9 +1347,16 @@ export const RoleplayPracticeView: React.FC = () => {
         }
 
 
+        const sessionLevel = res.data.jlptLevel || res.data.level;
+        const adaptiveRate = scenarioVoiceService.getSpeechRate(sessionLevel);
+        setSpeechRate(adaptiveRate);
+
         // Tự động phát âm thanh câu mở đầu đầu tiên của AI nếu autoPlay bật và phiên chưa có lượt nói từ User
         const hasNoUserMessages = !res.data.messages.some((m) => m.sender === 'User');
         const openingAiMsg = res.data.messages.find((m) => m.sender === 'Ai');
+        if (openingAiMsg?.japaneseText) {
+          void scenarioVoiceService.prefetchAudio(openingAiMsg.japaneseText, res.data.recommendedAiVoiceId || undefined);
+        }
         if (
           !hasPlayedOpeningRef.current &&
           autoPlayAudioRef.current &&
@@ -951,7 +1364,7 @@ export const RoleplayPracticeView: React.FC = () => {
           openingAiMsg?.japaneseText
         ) {
           hasPlayedOpeningRef.current = true;
-          handlePlayMessageAudio(openingAiMsg.id, openingAiMsg.japaneseText, undefined, undefined, res.data.recommendedAiVoiceId || undefined);
+          handlePlayMessageAudio(openingAiMsg.id, openingAiMsg.japaneseText, undefined, undefined, res.data.recommendedAiVoiceId || undefined, adaptiveRate);
         }
       } else {
         setLoadError(res.message || 'Không thể tải dữ liệu phiên luyện tập.');
@@ -984,7 +1397,7 @@ export const RoleplayPracticeView: React.FC = () => {
     if (proactiveDismissedTurnRef.current === session?.messages.length) return;
     if (!isHandsFreeMode && !isSending && !isPlayingAiSpeech && !session?.isNaturallyConcluded && !hint) {
       idleTimerRef.current = setTimeout(() => {
-        setShowProactiveHint(true);
+        triggerProactiveHint();
         if (!hasSpokenVocalFillerRef.current && !isPlayingAiSpeechRef.current) {
           hasSpokenVocalFillerRef.current = true;
           const filler = getSituationalVocalFiller();
@@ -1087,7 +1500,7 @@ export const RoleplayPracticeView: React.FC = () => {
   }, [session?.messages]);
 
 
-  // Tự động sinh Đạo cụ Ngôn ngữ Bối cảnh (Tangible Countertop Props) thích ứng 100% mọi kịch bản trong dự án
+  // Tự động sinh Gợi ý Ngôn ngữ Bối cảnh (Contextual Prompts) thích ứng 100% mọi kịch bản trong dự án
   const dynamicStageProps = useMemo(() => {
     if (!session) return [];
     const theme = detectScenarioTheme(session.scenarioTitle, session.aiPersona);
@@ -1095,20 +1508,20 @@ export const RoleplayPracticeView: React.FC = () => {
 
     const inferIcon = (jp: string, vi: string): string => {
       const combined = `${jp} ${vi}`.toLowerCase();
-      if (/カード|現金|支払|会計|円|いくら|thẻ|tiền|thanh toán|giá/.test(combined)) return '💳';
-      if (/味玉|玉子|卵|トッピング|チャーシュー|ねぎ|trứng|topping|thêm/.test(combined)) return '🥚';
-      if (/麺|ラーメン|スープ|硬|濃|うどん|そば|mì|nước dùng|sợi|món/.test(combined)) return '🍜';
-      if (/コーヒー|水|お茶|抹茶|ビール|ドリンク|nước|trà|cà phê|uống/.test(combined)) return '🍵';
-      if (/切符|駅|電車|新幹線|ホーム|乗|改札|空港|vé|tàu|ga|sân bay|chuyến/.test(combined)) return '🎫';
-      if (/荷物|宅配便|スーツケース|送|箱|hành lý|bưu phẩm|gửi hàng|gói hàng/.test(combined)) return '📦';
-      if (/時間|時|明日|今日|予約|シフト|午前|午後|giờ|hẹn|lịch|ca làm/.test(combined)) return '🕒';
-      if (/仕事|面接|経験|志望|御社|会社|バイト|phỏng vấn|công ty|kinh nghiệm|ứng tuyển/.test(combined)) return '💼';
-      if (/薬|痛|熱|病院|アレルギー|症状|thuốc|đau|dị ứng|bệnh|khám/.test(combined)) return '💊';
-      if (/コピー|マルチ|チケット|袋|温め|弁当|máy in|túi|hâm nóng|cơm hộp/.test(combined)) return '🏪';
-      if (/部屋|チェックイン|鍵|温泉|予約|phòng|khách sạn|suối nước nóng/.test(combined)) return '🔑';
+      if (/カード|現金|支払|会計|円|いくら|thẻ|tiền|thanh toán|giá/.test(combined)) return '金';
+      if (/味玉|玉子|卵|トッピング|チャーシュー|ねぎ|trứng|topping|thêm/.test(combined)) return '具';
+      if (/麺|ラーメン|スープ|硬|濃|うどん|そば|mì|nước dùng|sợi|món/.test(combined)) return '麺';
+      if (/コーヒー|水|お茶|抹茶|ビール|ドリンク|nước|trà|cà phê|uống/.test(combined)) return '飲';
+      if (/切符|駅|電車|新幹線|ホーム|乗|改札|空港|vé|tàu|ga|sân bay|chuyến/.test(combined)) return '切';
+      if (/荷物|宅配便|スーツケース|送|箱|hành lý|bưu phẩm|gửi hàng|gói hàng/.test(combined)) return '荷';
+      if (/時間|時|明日|今日|予約|シフト|午前|午後|giờ|hẹn|lịch|ca làm/.test(combined)) return '時';
+      if (/仕事|面接|経験|志望|御社|会社|バイト|phỏng vấn|công ty|kinh nghiệm|ứng tuyển/.test(combined)) return '職';
+      if (/薬|痛|熱|病院|アレルギー|症状|thuốc|đau|dị ứng|bệnh|khám/.test(combined)) return '薬';
+      if (/コピー|マルチ|チケット|袋|温め|弁当|máy in|túi|hâm nóng|cơm hộp/.test(combined)) return '店';
+      if (/部屋|チェックイン|鍵|温泉|予約|phòng|khách sạn|suối nước nóng/.test(combined)) return '宿';
       switch (theme) {
         case 'ramen': return '';
-        case 'cafe': return '☕';
+        case 'cafe': return '珈';
         case 'konbini': return '';
         case 'train': return '';
         case 'office': return '';
@@ -1154,7 +1567,7 @@ export const RoleplayPracticeView: React.FC = () => {
     const seenJp = new Set<string>();
 
 
-    // 1. Nếu nhiệm vụ hiện tại có chứa từ tiếng Nhật (ví dụ trong ngoặc như 味玉), ưu tiên đưa lên đầu làm đạo cụ nhiệm vụ!
+    // 1. Nếu nhiệm vụ hiện tại có chứa từ tiếng Nhật (ví dụ trong ngoặc như 味玉), ưu tiên đưa lên đầu làm từ khóa nhiệm vụ!
     if (activeMission) {
       const missionJpMatches = (`${activeMission.content} ${activeMission.target || ''}`).match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]{2,}/g);
       if (missionJpMatches) {
@@ -1239,7 +1652,7 @@ export const RoleplayPracticeView: React.FC = () => {
           { icon: '', labelJp: '志望動機', meaningVi: 'Lý do ứng tuyển', actionSentenceJp: '御社のサービスに魅力を感じて応募いたしました。' },
         ],
         cafe: [
-          { icon: '☕', labelJp: 'おすすめを聞く', meaningVi: 'Hỏi món gợi ý', actionSentenceJp: 'おすすめのメニューは何ですか？' },
+          { icon: '薦', labelJp: 'おすすめを聞く', meaningVi: 'Hỏi món gợi ý', actionSentenceJp: 'おすすめのメニューは何ですか？' },
           { icon: '', labelJp: 'ホットで注文', meaningVi: 'Gọi đồ uống nóng', actionSentenceJp: 'ホットコーヒーを一つお願いします。' },
           { icon: '', labelJp: 'お会計', meaningVi: 'Thanh toán hóa đơn', actionSentenceJp: 'すみません、お会計をお願いします。' },
         ],
@@ -1262,7 +1675,7 @@ export const RoleplayPracticeView: React.FC = () => {
     }
 
 
-    // 5. Luôn đính kèm 1 đạo cụ Phản xạ Cứu nguy chuẩn Nhật (Nhờ nói lại / Giải thích lại)
+    // 5. Luôn đính kèm 1 mẫu câu Phản xạ Cứu nguy chuẩn Nhật (Nhờ nói lại / Giải thích lại)
     propsList.push({
       id: 'coping-repeat',
       icon: '',
@@ -1288,30 +1701,25 @@ export const RoleplayPracticeView: React.FC = () => {
 
   const prevCompletedCountRef = useRef(0);
   useEffect(() => {
-    if (!session?.missions) return;
-    const completedList = session.missions.filter((m) => m.isCompleted);
+    if (!session?.missions || !Array.isArray(session.missions)) return;
+    const completedList = session.missions.filter((m) => m?.isCompleted);
     const newCompletedCount = completedList.length;
 
     if (newCompletedCount > prevCompletedCountRef.current && prevCompletedCountRef.current > 0) {
       // Xác định nhiệm vụ vừa mới được đánh dấu hoàn thành
-      const newlyFinished = completedList.find((m) => !prevCompletedMissionIdsRef.current.has(m.id || m.content));
+      const newlyFinished = completedList.find((m) => m && !prevCompletedMissionIdsRef.current?.has(m.id || m.missionId || m.content));
       const missionTitle = newlyFinished?.content || newlyFinished?.target || 'Mục tiêu hội thoại';
-      const isAll = newCompletedCount >= (session.missions?.length || 0);
+      const isAll = newCompletedCount >= (session.missions.length || 0);
 
       setCelebratingMission({
-        title: missionTitle,
+        title: typeof missionTitle === 'string' ? missionTitle : 'Mục tiêu hội thoại',
         count: newCompletedCount,
         total: session.missions.length,
         isAll,
       });
 
       setIsBowing(true);
-      if (isAll) {
-        ukiyoSound.playTaikoThud();
-        setTimeout(() => ukiyoSound.playMigotoChime(), 300);
-      } else {
-        ukiyoSound.playMigotoChime();
-      }
+      try { ukiyoSound.playMigotoChime(); } catch { /* ignore */ }
       setTimeout(() => setIsBowing(false), 1600);
 
       // Tự động đóng banner vinh danh sau 3.8s
@@ -1322,7 +1730,7 @@ export const RoleplayPracticeView: React.FC = () => {
     }
 
     prevCompletedCountRef.current = newCompletedCount;
-    prevCompletedMissionIdsRef.current = new Set(completedList.map((m) => m.id || m.content));
+    prevCompletedMissionIdsRef.current = new Set(completedList.map((m) => m?.id || m?.missionId || m?.content).filter(Boolean));
   }, [completedMissionsCount, session?.missions]);
 
   // M2: Live Momentum (Thanh năng lượng / Phong độ hội thoại dựa trên các lượt nói gần nhất)
@@ -1371,7 +1779,7 @@ export const RoleplayPracticeView: React.FC = () => {
     } else if (pts >= 7) {
       return {
         level: 'flowing',
-        label: 'Đang vào nhịp ⚡',
+        label: 'Đang vào nhịp',
         detail: 'Đối thoại rất lưu loát và tự nhiên',
         points: pts,
         badgeClass: 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold shadow-xs',
@@ -1396,10 +1804,14 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
   // Derived Avatar State for LivingAvatar
+  const [avatarEmotionOverride, setAvatarEmotionOverride] = useState<'puzzled' | 'delighted' | null>(null);
+
   const avatarState: AvatarState = isBowing
     ? 'bowing'
     : isSending
     ? 'thinking'
+    : avatarEmotionOverride
+    ? avatarEmotionOverride
     : isPlayingAiSpeech
     ? 'speaking'
     : isRecordingMic
@@ -1454,7 +1866,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
     const currentSessionId = session.sessionId || session.id || sessionId;
     const tempId = Date.now();
-    const userAudioToAttach = lastRecordedAudioUrlRef.current;
+    const userAudioToAttach = micStartedAtRef.current ? lastRecordedAudioUrlRef.current : null;
     lastRecordedAudioUrlRef.current = null;
 
 
@@ -1488,7 +1900,6 @@ export const RoleplayPracticeView: React.FC = () => {
     }
 
     setIsSending(true);
-    ukiyoSound.playAizuchi();
     setInputText('');
     setHint(null); // Đóng hint nếu đang mở
 
@@ -1498,13 +1909,21 @@ export const RoleplayPracticeView: React.FC = () => {
     let responseLatencySeconds: number | undefined;
 
 
-    if (micStartedAtRef.current) {
-      speakingDurationSeconds = Math.max(0.5, (now - micStartedAtRef.current) / 1000);
-      if (aiFinishedSpeakingAtRef.current) {
-        responseLatencySeconds = Math.max(0.2, (micStartedAtRef.current - aiFinishedSpeakingAtRef.current) / 1000);
+    if (aiFinishedSpeakingAtRef.current) {
+      // Phản xạ chuẩn: Đo từ lúc AI dứt câu đến khi người học CẤT TIẾNG NÓI ĐẦU TIÊN (first utterance)
+      // Nếu học viên gõ phím/paste hoặc không có tín hiệu âm thanh, đo đến thời điểm bấm gửi
+      const firstSoundTime = firstUtteranceAtRef.current || now;
+      const rawLatency = Math.max(0.5, (firstSoundTime - aiFinishedSpeakingAtRef.current) / 1000);
+      responseLatencySeconds = Math.round(rawLatency * 10) / 10;
+      if (firstUtteranceAtRef.current) {
+        speakingDurationSeconds = Math.max(0.4, (now - firstUtteranceAtRef.current) / 1000);
+      } else if (micStartedAtRef.current) {
+        speakingDurationSeconds = Math.max(0.4, (now - micStartedAtRef.current) / 1000);
       }
-    } else if (aiFinishedSpeakingAtRef.current) {
-      responseLatencySeconds = Math.max(0.5, (now - aiFinishedSpeakingAtRef.current) / 1000);
+    } else if (firstUtteranceAtRef.current) {
+      speakingDurationSeconds = Math.max(0.4, (now - firstUtteranceAtRef.current) / 1000);
+    } else if (micStartedAtRef.current) {
+      speakingDurationSeconds = Math.max(0.4, (now - micStartedAtRef.current) / 1000);
     }
 
 
@@ -1530,8 +1949,14 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     micStartedAtRef.current = null;
+    firstUtteranceAtRef.current = null;
     lastSpeechConfidenceRef.current = null;
     hintLevelUsedRef.current = 0;
+    maxDeductedTierRef.current = 0;
+    maxDeductedPenaltyInTurnRef.current = 0;
+    setTurnPeekPenalty(0);
+    setTurnTranslationPeekCount(0);
+    cachedTurnHintRef.current = null;
     setAppliedHintTier(null);
     retryCountRef.current = 0;
 
@@ -1548,6 +1973,9 @@ export const RoleplayPracticeView: React.FC = () => {
       }
       const finalUserMsg: RoleplayMessageDto = {
         ...turn.userMessage,
+        furiganaHtml: (turn.userMessage.furiganaHtml && turn.userMessage.furiganaHtml.includes('<ruby>'))
+          ? turn.userMessage.furiganaHtml
+          : generateClientFuriganaHtml(turn.userMessage.japaneseText),
         audioUrl: turn.userMessage.audioUrl || userAudioToAttach || undefined,
         userAudioUrl: userAudioToAttach ?? undefined,
       };
@@ -1560,15 +1988,63 @@ export const RoleplayPracticeView: React.FC = () => {
         return {
           ...prev,
           messages: [...filteredMessages, finalUserMsg],
-          missions: turn.updatedMissions,
-          isNaturallyConcluded: turn.isNaturallyConcluded,
+          missions: Array.isArray(turn.updatedMissions) && turn.updatedMissions.length > 0 ? turn.updatedMissions : (prev.missions || []),
+          isNaturallyConcluded: turn.isNaturallyConcluded ?? prev.isNaturallyConcluded,
           creditBalance: turn.creditBalance ?? prev.creditBalance,
         };
       });
 
 
+      if (deliveryPayload.hintLevelUsed > 0) {
+        const nextHints = sessionHintUseCountRef.current + 1;
+        sessionHintUseCountRef.current = nextHints;
+        setSessionHintUseCount(nextHints);
+        try {
+          sessionStorage.setItem(`jcap_hint_used_${currentSessionId}`, String(nextHints));
+        } catch {
+          // ignore
+        }
+      }
+
       if (turn.userMessage.linguisticFeedback) {
         setSelectedMessageId(turn.userMessage.id);
+      }
+
+      // Pro UI/UX: Biểu cảm sống động của Avatar phản ứng tức thì
+      const stain = turn.sumiInkFeedback || turn.userMessage.linguisticFeedback?.sumiInk;
+      if (stain?.hasStain && (stain.stainType === 'error' || stain.stainType === 'warning' || stain.stainType === 'TameguchiSlip')) {
+        setAvatarEmotionOverride('puzzled');
+        setTimeout(() => setAvatarEmotionOverride(null), 3500);
+      } else if (
+        (turn.newlyCompletedMissionIds && turn.newlyCompletedMissionIds.length > 0) ||
+        turn.activeBranchingEventCode ||
+        (turn.userMessage.linguisticFeedback?.speechDelivery?.turnAutonomyScore ?? 0) >= 95
+      ) {
+        setAvatarEmotionOverride('delighted');
+        setTimeout(() => setAvatarEmotionOverride(null), 3500);
+      }
+
+      // Game Feel: Combo Streak & Hanabi Sparkle Logic
+      const fbStatus = turn.userMessage.linguisticFeedback?.status?.toLowerCase();
+      const hasStainIssue = Boolean(stain?.hasStain && (stain.stainType === 'error' || stain.stainType === 'warning' || stain.stainType === 'TameguchiSlip'));
+      const isGoodTurn = (fbStatus === 'good' || fbStatus === 'success') && !hasStainIssue;
+      const autonomy = turn.userMessage.linguisticFeedback?.speechDelivery?.turnAutonomyScore ?? 100;
+
+      if (isGoodTurn) {
+        setComboCount((prev) => {
+          const next = prev + 1;
+          if (autonomy >= 95 || next >= 3) {
+            setSparkleText(next >= 3 ? `連撃 ${next}x · 見事！` : '見事！ Xuất sắc');
+            setShowSparkleBurst(true);
+            ukiyoSound.playMigotoChime();
+          } else if (next >= 2) {
+            ukiyoSound.playWoodblockSnap();
+          }
+          return next;
+        });
+      } else if (fbStatus === 'warning' || fbStatus === 'error' || hasStainIssue) {
+        setComboCount(0);
+        ukiyoSound.playTaikoThud();
       }
 
 
@@ -1581,7 +2057,8 @@ export const RoleplayPracticeView: React.FC = () => {
 
         setSession((prev) => {
           if (!prev) return null;
-          if (prev.messages.some((m) => m.id === turn.aiMessage.id)) return prev;
+          if (!turn.aiMessage) return prev;
+          if (prev.messages.some((m) => m.id === turn.aiMessage?.id)) return prev;
           return {
             ...prev,
             messages: [...prev.messages, turn.aiMessage],
@@ -1597,15 +2074,20 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
         // Micro-Celebration: Bắn thông báo chúc mừng & âm thanh khi vừa hoàn thành nhiệm vụ mới
-        if (turn.newlyCompletedMissionIds && turn.newlyCompletedMissionIds.length > 0) {
-          ukiyoSound.playMigotoChime();
-          setRecentlyCompletedMissionIds(turn.newlyCompletedMissionIds);
+        const newlyIds = Array.isArray(turn.newlyCompletedMissionIds) ? turn.newlyCompletedMissionIds : [];
+        if (newlyIds.length > 0) {
+          try { ukiyoSound.playMigotoChime(); } catch { /* ignore audio error */ }
+          setRecentlyCompletedMissionIds(newlyIds);
           setTimeout(() => setRecentlyCompletedMissionIds([]), 4500);
 
+          const missionPool = Array.isArray(turn.updatedMissions) && turn.updatedMissions.length > 0
+            ? turn.updatedMissions
+            : (session?.missions || []);
 
-          const completedNames = turn.updatedMissions
-            .filter((m) => turn.newlyCompletedMissionIds.includes(m.missionId))
-            .map((m) => m.content);
+          const completedNames = missionPool
+            .filter((m) => m && newlyIds.some((id) => id === m.missionId || id === m.id || id === m.order))
+            .map((m) => m.content)
+            .filter(Boolean);
           const nameText = completedNames.length > 0 ? `: "${completedNames[0]}"` : '!';
           setToastMessage(`Xuất sắc! Bạn vừa hoàn thành nhiệm vụ${nameText}`);
           setTimeout(() => setToastMessage(null), 4000);
@@ -1613,7 +2095,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
         // Dynamic Scaffolding DDA: Khích lệ học viên khi hệ thống phát hiện cần trợ lực phản xạ
         if (turn.shouldOfferEncouragement && !turn.newlyCompletedMissionIds?.length) {
-          setToastMessage('💡 Tiếp tục phát huy! Hãy thử trả lời bằng câu hoàn chỉnh (như 〜をお願いします) để ghi điểm tối đa.');
+          setToastMessage('Tiếp tục phát huy! Hãy thử trả lời bằng câu hoàn chỉnh (như 〜をお願いします) để ghi điểm tối đa.');
           setTimeout(() => setToastMessage(null), 4500);
         }
 
@@ -1621,36 +2103,23 @@ export const RoleplayPracticeView: React.FC = () => {
         // Không tự động bung pop-up Eki-Stamp khi nói xong câu thoại cuối;
         // Học viên vẫn có thể tự do đọc lại transcript, nghe lại audio và chỉ mở bảng pop-up khi tự bấm nút 'Hoàn thành phiên'
         if (turn.isNaturallyConcluded || turn.allMissionsCompleted) {
-          setToastMessage('🎉 Bạn đã hoàn thành toàn bộ nhiệm vụ! Hãy bấm "Hoàn thành phiên" ở thanh trên cùng khi đã sẵn sàng.');
+          setToastMessage('Bạn đã hoàn thành toàn bộ nhiệm vụ! Hãy bấm "Hoàn thành phiên" ở thanh trên cùng khi đã sẵn sàng.');
           setTimeout(() => setToastMessage(null), 5000);
         }
       };
 
 
-      // 3. ĐỒNG BỘ CHUẨN XÁC: Chỉ khi VOICEVOX nhận xong và BẮT ĐẦU PHÁT ÂM THANH thì câu thoại mới bung ra và miệng avatar mới mấp máy
+      // 3. Hiển thị câu thoại AI ngay lập tức để giảm triệt để độ trễ nhận thức (Zero perceived latency)
+      revealAiMessage();
+
       if (autoPlayAudioRef.current && turn.aiMessage?.japaneseText) {
         setCurrentViseme('closed');
-
-
-        // Fallback an toàn: nếu quá 4s VOICEVOX chưa phản hồi thì bung text ra ngay
-        const fallbackTimer = setTimeout(() => {
-          revealAiMessage();
-        }, 4000);
-
 
         handlePlayMessageAudio(
           turn.aiMessage.id,
           turn.aiMessage.japaneseText,
-          turn.speedScale,
-          // onAudioStarted: ĐÚNG LÚC âm thanh bắt đầu phát ra từ loa
-          () => {
-            clearTimeout(fallbackTimer);
-            revealAiMessage();
-          }
+          turn.speedScale
         );
-      } else {
-        // Nếu không bật tự động phát âm thanh: bung ra ngay
-        revealAiMessage();
       }
     } else {
       // Khi gửi thất bại: xóa tin nhắn tạm và khôi phục nội dung vào ô nhập liệu
@@ -1668,6 +2137,10 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
     hintLevelUsedRef.current = 0;
+    maxDeductedTierRef.current = 0;
+    maxDeductedPenaltyInTurnRef.current = 0;
+    setTurnPeekPenalty(0);
+    setTurnTranslationPeekCount(0);
     translationPeekCountRef.current = 0;
     retryCountRef.current = 0;
     micStartedAtRef.current = null;
@@ -1741,11 +2214,14 @@ export const RoleplayPracticeView: React.FC = () => {
             lastRecordedAudioUrlRef.current = whisperRes.audioUrl;
           }
         } else {
-          void scenarioVoiceService.saveLearnerAudio(audioResult.blob).then((serverUrl) => {
+          try {
+            const serverUrl = await scenarioVoiceService.saveLearnerAudio(audioResult.blob);
             if (serverUrl) {
               lastRecordedAudioUrlRef.current = serverUrl;
             }
-          });
+          } catch (e) {
+            console.warn('[Scenario STT] Failed to save learner audio:', e);
+          }
         }
       }
     } catch (err) {
@@ -1784,7 +2260,25 @@ export const RoleplayPracticeView: React.FC = () => {
         }
         return;
       }
-      ukiyoSound.playSubtleTap();
+
+      const minConfidence = typeof lastSpeechConfidenceRef.current === 'number' ? lastSpeechConfidenceRef.current : 0.8;
+      const isMeaningful = textToSend.trim().length >= 2 && !/^(はい|うん|あの|ええと|えっと|あのー|えー|その|うーん)$/.test(textToSend.trim());
+      if (isHandsFreeModeRef.current && (minConfidence < 0.45 || !isMeaningful)) {
+        console.warn('[Scenario STT] Chặn tự gửi rảnh tay do độ tin cậy thấp hoặc chưa rõ nghĩa:', textToSend, minConfidence);
+        setSttNotice('Chưa nghe rõ câu nói (tiếng ồn hoặc độ tin cậy thấp). Hãy thử nói lại nhé!');
+        setTimeout(() => setSttNotice(null), 3500);
+        latestTranscriptRef.current = '';
+        setInputText('');
+        if (!sessionConcludedRef.current && !isSendingRef.current) {
+          setTimeout(() => {
+            if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current) {
+              startSpeechRecognition();
+            }
+          }, 500);
+        }
+        return;
+      }
+
       latestTranscriptRef.current = '';
       setInputText('');
       void handleSendMessage(textToSend.trim());
@@ -1835,8 +2329,18 @@ export const RoleplayPracticeView: React.FC = () => {
 
   const handleGetInstantHint = async () => {
     if (!session || isLoadingHint) return;
-    ukiyoSound.playSubtleTap();
-    // Không phạt khi mở xem preview - chỉ phạt khi người học thực sự bấm "Dùng" hoặc chèn từ khóa
+    const currentSessionId = session.sessionId || session.id || sessionId;
+
+    // Đánh dấu đã mở lời mời gợi ý trong phiên (chỉ tính tiêu thụ lượt gợi ý khi gửi lượt thoại thực tế, khớp Backend)
+    sessionHintOffersCountRef.current = Math.max(sessionHintOffersCountRef.current, 1);
+    setSessionHintOffersCount((c) => Math.max(c, 1));
+    if (currentSessionId) {
+      try {
+        sessionStorage.setItem(`jcap_hint_offers_${currentSessionId}`, String(sessionHintOffersCountRef.current));
+      } catch {
+        // ignore
+      }
+    }
     
     // Xóa bỏ tất cả các timer chờ đợi ngầm (hesitation, deadlock, overload, idle)
     if (hesitationTimerRef.current) clearTimeout(hesitationTimerRef.current);
@@ -1844,31 +2348,34 @@ export const RoleplayPracticeView: React.FC = () => {
     if (overloadTimerRef.current) clearTimeout(overloadTimerRef.current);
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     setShowProactiveHint(false);
-
-
-    // Chỉ nạp và mở bảng gợi ý khi LLM backend đã trả về dữ liệu thực tế, tránh lộ mock giật lag
-    const currentSessionId = session.sessionId || session.id || sessionId;
-    setIsLoadingHint(true);
-    try {
-      const res = await roleplayService.getHint(currentSessionId);
-      if (res.success && res.data) {
-        hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
-        setAppliedHintTier(1);
-        setHint(res.data);
-      } else {
-        const fallback = synthesizeInstantHint(session);
-        hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
-        setAppliedHintTier(1);
-        setHint(fallback);
-      }
-    } catch {
-      const fallback = synthesizeInstantHint(session);
-      hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
-      setAppliedHintTier(1);
-      setHint(fallback);
-    } finally {
-      setIsLoadingHint(false);
+    // Mở lại tức thì nếu trong cùng lượt đã tải gợi ý trước đó (0ms, giữ nguyên các lựa chọn ý khác)
+    if (cachedTurnHintRef.current) {
+      setSingleAssistance('hint', cachedTurnHintRef.current);
+      setAppliedHintTier(hintLevelUsedRef.current || 1);
+      return;
     }
+
+
+    // 1. Phản hồi tức thì 0ms (Zero-latency instant scaffold) từ cấu hình nhiệm vụ & từ vựng bối cảnh
+    const instantFallback = synthesizeInstantHint(session);
+    hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
+    setAppliedHintTier(1);
+    triggerFloatingDeduction(1);
+    cachedTurnHintRef.current = instantFallback;
+    setHint(instantFallback);
+
+    // 2. Chạy ngầm API backend để làm giàu gợi ý chuyên sâu (nếu có mạng tốt)
+    setIsLoadingHint(true);
+    roleplayService.getHint(currentSessionId).then((res) => {
+      if (res.success && res.data) {
+        cachedTurnHintRef.current = res.data;
+        setHint((curr) => (curr ? res.data : curr));
+      }
+    }).catch(() => {
+      // Đã có instantFallback bảo đảm 100% hiển thị mượt mà không lỗi
+    }).finally(() => {
+      setIsLoadingHint(false);
+    });
   };
 
 
@@ -1891,6 +2398,7 @@ export const RoleplayPracticeView: React.FC = () => {
   // 4. Áp dụng gợi ý (Chỉ lấy câu tiếng Nhật, KHÔNG lấy tiếng Việt theo yêu cầu)
   const handleApplyHint = () => {
     if (!hint) return;
+    invalidateVoiceRecording();
     setInputText(hint.suggestedJapaneseText || hint.japaneseSuggestion || '');
     clearAllAssistance();
     inputRef.current?.focus();
@@ -1901,8 +2409,6 @@ export const RoleplayPracticeView: React.FC = () => {
   const handleConfirmEnd = async () => {
     if (!session || isEnding) return;
     setIsEnding(true);
-    ukiyoSound.playTaikoThud();
-
 
     const currentSessionId = session.sessionId || session.id || sessionId;
     const res = await roleplayResultService.completeSession(currentSessionId);
@@ -1916,8 +2422,8 @@ export const RoleplayPracticeView: React.FC = () => {
         rawData?.data?.id ??
         currentSessionId;
       const targetUrl = returnUrl
-        ? `/roleplay/results/${resolvedResultId}?return=${encodeURIComponent(returnUrl)}`
-        : `/roleplay/results/${resolvedResultId}`;
+        ? `/roleplay/results/${resolvedResultId}?justCompleted=true&return=${encodeURIComponent(returnUrl)}`
+        : `/roleplay/results/${resolvedResultId}?justCompleted=true`;
       navigate(targetUrl);
     } else {
       alert(res.message || 'Không thể hoàn tất và lưu kết quả phiên luyện tập.');
@@ -1928,7 +2434,6 @@ export const RoleplayPracticeView: React.FC = () => {
 
   // 6. Tạm dừng và rời phòng (giữ nguyên trạng thái Active, không hoàn tất phiên)
   const handleConfirmLeave = () => {
-    ukiyoSound.playTaikoThud();
     setShowLeaveModal(false);
     if (returnUrl) {
       navigate(returnUrl);
@@ -1943,7 +2448,15 @@ export const RoleplayPracticeView: React.FC = () => {
   // 6b. Luyện lại từ đầu (Khởi tạo phiên mới)
   const handleRestartSession = async () => {
     if (!session) return;
-    ukiyoSound.playTaikoThud();
+    const oldSessionId = session.id || session.sessionId || sessionId;
+    if (oldSessionId) {
+      try {
+        sessionStorage.removeItem(`jcap_hint_offers_${oldSessionId}`);
+        sessionStorage.removeItem(`jcap_hint_used_${oldSessionId}`);
+      } catch {
+        // ignore
+      }
+    }
     setIsLoading(true);
     const res = await roleplayService.startSession(
       session.scenarioId,
@@ -1953,7 +2466,7 @@ export const RoleplayPracticeView: React.FC = () => {
     if (res.success && res.data) {
       const rawData = res.data as any;
       const newId = rawData?.sessionId ?? rawData?.id ?? rawData?.data?.sessionId ?? rawData?.data?.id;
-      const target = returnUrl ? `/roleplay/${newId}?return=${encodeURIComponent(returnUrl)}` : `/roleplay/${newId}`;
+      const target = returnUrl ? `/scenarios/practice/${newId}?return=${encodeURIComponent(returnUrl)}` : `/scenarios/practice/${newId}`;
       navigate(target);
       window.location.reload();
     } else {
@@ -2001,11 +2514,15 @@ export const RoleplayPracticeView: React.FC = () => {
             micStartedAtRef.current = Date.now();
           }
         },
+        onSpeechStart: () => {
+          if (!firstUtteranceAtRef.current) {
+            firstUtteranceAtRef.current = Date.now();
+          }
+        },
         onBargeIn: () => {
           // Barge-In: Học viên cất tiếng nói khi AI đang nói -> ngắt lời AI tức thì
           setIsPlayingAiSpeech(false);
           setPlayingMessageId(null);
-          ukiyoSound.playSubtleTap();
         },
         onResult: (transcript: string, _isFinal: boolean, confidence?: number) => {
           if (handsFreeFallbackTimerRef.current) {
@@ -2014,6 +2531,9 @@ export const RoleplayPracticeView: React.FC = () => {
           }
           const cleanTranscript = transcript.trim();
           if (cleanTranscript && !isWhisperHallucination(cleanTranscript)) {
+            if (!firstUtteranceAtRef.current) {
+              firstUtteranceAtRef.current = Date.now();
+            }
             clearAllAssistance();
             latestTranscriptRef.current = cleanTranscript;
             setInputText(cleanTranscript);
@@ -2030,7 +2550,7 @@ export const RoleplayPracticeView: React.FC = () => {
             }
             const currentLvl = (session?.level || session?.jlptLevel || 'N5').trim().toUpperCase();
             // Chuẩn công thái học học ngoại ngữ: N5: 3500ms, N4: 3000ms, N3+: 2500ms (đủ thời gian ậm à, lấy hơi và suy nghĩ câu)
-            const silenceTimeoutMs = currentLvl === 'N5' ? 3500 : currentLvl === 'N4' ? 3000 : 2500;
+            const silenceTimeoutMs = currentLvl === 'N5' ? 5500 : currentLvl === 'N4' ? 4500 : 4000;
             const intervalStep = 50;
             let elapsed = 0;
             silenceIntervalRef.current = setInterval(() => {
@@ -2077,14 +2597,17 @@ export const RoleplayPracticeView: React.FC = () => {
           setSilenceCountdownProgress(0);
 
 
-          // Nếu người dùng vẫn đang ở trạng thái thu âm, tự động tái kích hoạt để không bị ngắt quãng
-          if (isRecordingMicRef.current && recognitionRef.current) {
-            try {
-              recognitionRef.current.start();
-            } catch {
-              setIsRecordingMic(false);
-              isRecordingMicRef.current = false;
-            }
+          // Nếu người dùng vẫn đang ở trạng thái thu âm, trì hoãn 120ms rồi tái kích hoạt an toàn (chống InvalidStateError của Chrome)
+          if (isRecordingMicRef.current) {
+            setTimeout(() => {
+              if (isRecordingMicRef.current && recognitionRef.current) {
+                try {
+                  recognitionRef.current.start();
+                } catch {
+                  // Bỏ qua lỗi nếu engine Chrome đang trong quá trình chuyển trạng thái
+                }
+              }
+            }, 120);
           } else {
             setIsRecordingMic(false);
             isRecordingMicRef.current = false;
@@ -2168,7 +2691,7 @@ export const RoleplayPracticeView: React.FC = () => {
                   </div>
         <div className="text-center">
           <p className="text-sm font-bold text-[var(--sumi)] font-sans">Chuẩn bị phòng hội thoại...</p>
-          <p className="mt-1 text-xs text-[var(--sumi-faint)] font-sans">Đang nạp nhân vật AI, nhiệm vụ & giọng VOICEVOX</p>
+          <p className="mt-1 text-xs text-[var(--sumi-faint)] font-sans">Đang chuẩn bị bối cảnh đàm thoại & nhân vật AI...</p>
         </div>
       </div>
     );
@@ -2202,13 +2725,22 @@ export const RoleplayPracticeView: React.FC = () => {
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed top-20 right-6 z-50 flex items-center gap-2.5 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
-            toastMessage.startsWith('')
+          className={`fixed top-20 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3.5 text-xs font-semibold shadow-2xl transition-all duration-300 animate-fade-in ${
+            toastMessage.includes('Đã lưu')
               ? 'border border-emerald-400/80 bg-[var(--sumi)] text-white shadow-[0_12px_36px_rgba(16,185,129,0.35)]'
               : 'border border-blue-400/40 bg-[var(--sumi)] text-white shadow-[0_12px_36px_rgba(7,26,68,0.3)]'
           }`}
         >
-                    <span className="leading-snug">{toastMessage}</span>
+          <span className="leading-snug">{toastMessage}</span>
+          {toastMessage.includes('Flashcard') && (
+            <Link
+              to="/flashcards/bookmarks"
+              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-amber-400 px-2.5 py-1 text-[11px] font-extrabold text-slate-950 hover:bg-amber-300 transition shadow-2xs"
+            >
+              <span>Xem ngay</span>
+              <ArrowRightIcon className="w-3 h-3" />
+            </Link>
+          )}
         </div>
       )}
 
@@ -2252,7 +2784,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 </span>
                 {isBlindMode && (
                   <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 px-2.5 py-0.5 text-[10px] font-black text-white shadow-2xs">
-                    <span>⚡ 10s Phản xạ</span>
+                    <span>10s Phản xạ</span>
                     {reflexCountdown !== null && (
                       <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-mono ${reflexCountdown <= 3 ? 'bg-rose-700 animate-ping' : 'bg-black/30'}`}>
                         {reflexCountdown}s
@@ -2272,13 +2804,29 @@ export const RoleplayPracticeView: React.FC = () => {
 
         {/* Center/Right: Compact Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Combo Streak Badge (Game Feel / 連撃) */}
+          {comboCount >= 2 && (
+            <div
+              className="inline-flex items-center gap-1 rounded-xl border border-amber-400/90 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-2 sm:px-2.5 py-1 text-xs font-black text-white shadow-xs animate-combo-glow shrink-0 select-none"
+              title={`Chuỗi ${comboCount} câu nói chuẩn liên tiếp không mắc lỗi ngữ pháp!`}
+            >
+              <span className="text-amber-200 font-bold">★</span>
+              <span className="font-mono tracking-tight">{comboCount}x</span>
+              <span className="hidden md:inline font-sans text-[11px] font-bold">連撃</span>
+            </div>
+          )}
+
           {/* User Credits Coin Badge */}
           <Link
             to="/credits"
             className="inline-flex items-center gap-1 rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50 to-orange-50 px-2 sm:px-2.5 py-1 text-xs font-bold text-amber-900 shadow-2xs hover:bg-amber-100/80 transition shrink-0 active:scale-95"
             title="Số xu hiện có (Bấm để xem lịch sử & nạp thêm)"
           >
-            <span>🪙</span>
+            <svg className="w-3.5 h-3.5 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v12" />
+              <path d="M15 9.5a3 3 0 0 0-3-2.5h-1a2.5 2.5 0 0 0 0 5h2a2.5 2.5 0 0 1 0 5h-2a3 3 0 0 1-3-2.5" />
+            </svg>
             <span className="font-mono">{session?.creditBalance ?? user?.creditBalance ?? 814}</span>
           </Link>
 
@@ -2288,8 +2836,7 @@ export const RoleplayPracticeView: React.FC = () => {
             onClick={() => {
               const nextVal = !isHandsFreeMode;
               setIsHandsFreeMode(nextVal);
-              ukiyoSound.playSubtleTap();
-              setToastMessage(nextVal ? 'Đã bật Đàm thoại Rảnh tay (tự động nhận diện sau câu nói của AI)' : '✋ Đã chuyển sang Bấm nói thủ công');
+              setToastMessage(nextVal ? 'Đã bật Đàm thoại Rảnh tay (tự động nhận diện sau câu nói của AI)' : 'Đã chuyển sang Bấm nói thủ công');
               setTimeout(() => setToastMessage(null), 3200);
             }}
             className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-bold transition whitespace-nowrap shrink-0 shadow-2xs ${
@@ -2335,29 +2882,6 @@ export const RoleplayPracticeView: React.FC = () => {
             </span>
           </button>
 
-
-          {/* Toggle Cột Phải: Đánh giá */}
-          <button
-            type="button"
-            onClick={() => {
-              const nextState = !isRightOpen;
-              if (nextState && window.innerWidth < 1280 && isLeftOpen) {
-                setIsLeftOpen(false);
-              }
-              setIsRightOpen(nextState);
-            }}
-            className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border px-2 sm:px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition ${
-              isRightOpen
-                ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)]'
-                : 'border-[var(--line)] bg-white text-[var(--sumi-muted)] hover:border-[var(--ai)]'
-            }`}
-            title="Ẩn/Hiện Bảng phân tích & đánh giá ngôn ngữ chi tiết"
-          >
-            <span className="text-xs">📊</span>
-            <span className="hidden lg:inline">Đánh giá</span>
-          </button>
-
-
           {/* Dropdown Menu Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI, Tốc độ) */}
           <div className="relative shrink-0">
             <button
@@ -2370,7 +2894,7 @@ export const RoleplayPracticeView: React.FC = () => {
               }`}
               title="Cài đặt hỗ trợ (Dịch, Furigana, Giọng đọc AI)"
             >
-              <span>⚙️</span>
+              <SettingsIcon className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Cài đặt</span>
               {(showTranslation || showFurigana || autoPlayAudio) && (
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--ai)]" />
@@ -2395,54 +2919,6 @@ export const RoleplayPracticeView: React.FC = () => {
                   </button>
                 </div>
 
-
-                {/* Toggle Dịch */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--sumi)]">Dịch nghĩa tiếng Việt</p>
-                    <p className="text-[11px] text-[var(--sumi-faint)]">Hiển thị bản dịch dưới câu</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      translationPeekCountRef.current += 1;
-                      setShowTranslation(!showTranslation);
-                    }}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                      showTranslation ? 'bg-[var(--ai)]' : 'bg-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        showTranslation ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-
-                {/* Toggle Furigana */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--sumi)]">Phiên âm Furigana</p>
-                    <p className="text-[11px] text-[var(--sumi-faint)]">Cách đọc Hiragana trên Kanji</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowFurigana(!showFurigana)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                      showFurigana ? 'bg-[var(--ai)]' : 'bg-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        showFurigana ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-
                 {/* Toggle Giọng AI */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -2457,7 +2933,11 @@ export const RoleplayPracticeView: React.FC = () => {
                         setIsPlayingAiSpeech(false);
                         setPlayingMessageId(null);
                       }
-                      setAutoPlayAudio(!autoPlayAudio);
+                      setAutoPlayAudio((prev) => {
+                        const next = !prev;
+                        setPracticePref('autoPlay', next);
+                        return next;
+                      });
                     }}
                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                       autoPlayAudio ? 'bg-[var(--ai)]' : 'bg-slate-300'
@@ -2485,7 +2965,7 @@ export const RoleplayPracticeView: React.FC = () => {
                         type="button"
                         onClick={() => {
                           setSpeechRate(rate);
-                          scenarioVoiceService.setSpeechRate(rate);
+                          scenarioVoiceService.setSpeechRate(rate, session?.level || session?.jlptLevel);
                         }}
                         className={`rounded-xl py-1 text-center font-bold text-xs transition active:scale-95 ${
                           speechRate === rate
@@ -2500,7 +2980,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
 
 
-                {/* Nút mở cài đặt giọng đọc VOICEVOX */}
+                {/* Nút mở cài đặt giọng đọc AI */}
                 <div className="border-t border-[var(--line)] pt-2.5">
                   <button
                     type="button"
@@ -2525,7 +3005,7 @@ export const RoleplayPracticeView: React.FC = () => {
           {isAllMissionsCompleted ? (
             <button
               type="button"
-              onClick={() => void handleConfirmEnd()}
+              onClick={() => setShowEndModal(true)}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-emerald-600 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 animate-pulse whitespace-nowrap"
               title={
                 session.isNaturallyConcluded
@@ -2554,41 +3034,53 @@ export const RoleplayPracticeView: React.FC = () => {
       {/* BODY WORKSPACE (3-COLUMN LAYOUT) */}
       <div className="relative flex flex-1 overflow-hidden">
         {/* ============================================================ */}
-        {/* 1. LEFT SIDEBAR: Missions & Cheat Sheet                     */}
+        {/* 1. LEFT SIDEBAR: Sổ tay Chiến thuật (Missions & Cheat Sheet) */}
         {/* ============================================================ */}
         <aside
-          className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`shrink-0 border-r border-[var(--line)] bg-[var(--paper-50)] washi-parchment relative flex flex-col z-10 overflow-hidden transition-all duration-300 ease-in-out ${
             isLeftOpen
               ? 'w-72 lg:w-80 opacity-100 shadow-md'
               : 'w-0 border-r-0 opacity-0 pointer-events-none'
           }`}
         >
-          <div className="w-72 lg:w-80 flex flex-col h-full shrink-0">
+          {/* Lớp hoa văn sóng biển Seigaiha mờ truyền thống */}
+          <div className="pointer-events-none absolute inset-0 -z-0 opacity-25 seigaiha-subtle" />
+
+          {/* Watermark thư pháp chữ Hán đứng dọc chìm ở góc dưới */}
+          <div className="sb-wm text-4xl opacity-20 select-none pointer-events-none">秘策</div>
+
+          <div className="w-72 lg:w-80 flex flex-col h-full shrink-0 relative z-10">
             {/* Header sidebar */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-white">
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 bg-white/90 backdrop-blur-xs">
               <div>
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--sumi-faint)]">
-                  Tiến độ kịch bản
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ai)] font-mono">
+                  戦術手帳 · SỔ TAY CHIẾN THUẬT
                 </h2>
                 <p className="text-xs font-bold text-[var(--sumi)] mt-0.5">
-                  <span className="text-[var(--ai)]">{completedMissionsCount}</span>
-                  <span className="text-[var(--sumi-faint)]"> / {totalMissionsCount} nhiệm vụ</span>
+                  <span>Mốc hoàn thành: </span>
+                  <span className="text-[var(--ai)] font-mono font-black">{completedMissionsCount}</span>
+                  <span className="text-[var(--sumi-faint)] font-mono">/{totalMissionsCount}</span>
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsLeftOpen(false)}
-                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95"
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setIsLeftOpen(false);
+                }}
+                className="inline-flex items-center gap-1 rounded-xl border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sumi-faint)] hover:bg-[var(--paper-100)] hover:text-[var(--ai)] transition active:scale-95 tactile-press cursor-pointer"
                 title="Thu gọn danh sách nhiệm vụ"
               >
-                <span>◀</span>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
                 <span>Thu gọn</span>
               </button>
             </div>
 
 
             {/* Progress bar */}
-            <div className="px-4 py-3 border-b border-[var(--line)] bg-white">
+            <div className="px-4 py-3 border-b border-[var(--line)] bg-white/80">
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--paper-200)]">
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out"
@@ -2601,64 +3093,77 @@ export const RoleplayPracticeView: React.FC = () => {
                 />
               </div>
               <div className="mt-1.5 flex justify-between text-[10px] font-semibold text-[var(--sumi-faint)]">
-                <span>Bắt đầu</span>
+                <span>Khởi đầu</span>
                 <span className={progressPercent >= 100 ? 'text-[var(--score-good)] font-bold' : 'text-[var(--ai)]'}>
                   {progressPercent}%
                 </span>
-                <span>Hoàn thành</span>
+                <span>Đích mốc</span>
               </div>
             </div>
 
 
-            {/* Tab selector: Nhiệm vụ vs Cheat Sheet */}
-            <div className="flex border-b border-[var(--line)] bg-[var(--paper-50)] text-xs">
+            {/* Tab selector: Nhiệm vụ vs Kiến thức trọng tâm */}
+            <div className="flex border-b border-[var(--line)] bg-[var(--paper-50)] text-xs font-bold">
               <button
                 type="button"
-                onClick={() => setCheatSheetTab('vocab')}
-                className={`flex-1 py-2 font-semibold transition ${
-                  cheatSheetTab === 'vocab'
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setSidebarTab('missions');
+                }}
+                className={`flex-1 py-2.5 font-semibold transition tactile-press ${
+                  sidebarTab === 'missions'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
                 }`}
               >
-                Nhiệm vụ ({session.missions.length})
+                Nhiệm vụ ({(session?.missions || []).length})
               </button>
               <button
                 type="button"
-                onClick={() => setCheatSheetTab('grammar')}
-                className={`flex-1 py-2 font-semibold transition ${
-                  cheatSheetTab === 'grammar'
+                onClick={() => {
+                  ukiyoSound.playSubtleTap();
+                  setSidebarTab('knowledge');
+                }}
+                className={`flex-1 py-2.5 font-semibold transition tactile-press ${
+                  sidebarTab === 'knowledge'
                     ? 'border-b-2 border-[var(--ai)] bg-white text-[var(--ai)]'
                     : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
                 }`}
               >
-                Cheat Sheet
+                Kiến thức trọng tâm
               </button>
             </div>
 
 
             {/* Content list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {cheatSheetTab === 'vocab' ? (
-                // DANH SÁCH NHIỆM VỤ TỰ ĐỘNG TICK
-                <div className="space-y-2.5">
-                  {session.missions.map((mission: RoleplayMissionDto) => (
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
+              {sidebarTab === 'missions' ? (
+                // DANH SÁCH NHIỆM VỤ TỰ ĐỘNG TICK (STEPPER CHIẾN THUẬT)
+                <div className="quest-stepper-container space-y-2.5">
+                  {(session?.missions || []).map((mission: RoleplayMissionDto, idx, arr) => {
+                    const isRecentlyDone = Array.isArray(recentlyCompletedMissionIds) &&
+                      recentlyCompletedMissionIds.some((id) => id === mission.missionId || id === mission.id || id === mission.order);
+                    const hasNext = idx < arr.length - 1;
+                    return (
                     <div
                       key={mission.missionId ?? mission.id ?? mission.order}
-                      className={`flex gap-3 rounded-2xl border p-3 transition-all duration-300 ${
-                        recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
-                          ? 'border-emerald-500 bg-emerald-50/80 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
+                      className={`group quest-stepper-item flex items-start gap-3 rounded-2xl border p-3 transition-all duration-300 tactile-hover ${
+                        isRecentlyDone
+                          ? 'border-emerald-500 bg-emerald-50/90 ring-2 ring-emerald-400 ring-offset-2 scale-[1.02] shadow-md animate-pulse-glow'
                           : mission.isCompleted
-                          ? 'border-emerald-200 bg-emerald-50/50 shadow-xs'
-                          : 'border-[var(--line)] bg-[var(--paper-50)] hover:bg-[var(--paper-100)] hover:border-[var(--line-strong)] shadow-xs'
+                          ? 'border-emerald-200 bg-emerald-50/60 shadow-xs'
+                          : 'border-[var(--line)] bg-white/90 hover:bg-white hover:border-[var(--ai)]/50 shadow-2xs'
                       }`}
                     >
-                      {/* Trạng thái icon: CHỈ CÓ Pending hoặc Completed */}
+                      {hasNext && (
+                        <div className={`quest-stepper-connector ${mission.isCompleted ? 'completed' : ''}`} />
+                      )}
+                      {/* Trạng thái icon: Con dấu slot RPG */}
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                        className={`quest-slot transition-transform ${
                           mission.isCompleted
-                            ? 'bg-emerald-500 text-white shadow-xs'
-                            : 'bg-[var(--paper-200)] text-[var(--sumi-muted)]'
+                            ? 'completed'
+                            : ''
                         }`}
                       >
                         {mission.isCompleted ? '✓' : mission.order}
@@ -2674,84 +3179,189 @@ export const RoleplayPracticeView: React.FC = () => {
                           </p>
                           {mission.isCompleted && (
                             <span className="shrink-0 text-[10px] font-bold text-emerald-600">
-                              {recentlyCompletedMissionIds.includes(mission.missionId ?? mission.id ?? mission.order)
-                                ? 'Vừa đạt!'
-                                : 'Đã đạt'}
+                              {isRecentlyDone ? 'Vừa đạt!' : 'Đã đạt'}
                             </span>
                           )}
                         </div>
-                        <p className="mt-1 text-[11px] leading-tight text-[var(--sumi-faint)]">
-                          Mục tiêu: {mission.target}
-                        </p>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
-                // CHEAT SHEET: TỪ VỰNG & NGỮ PHÁP
-                <div className="space-y-4 text-xs">
-                  <div>
-                    <h3 className="font-bold text-[var(--ai)] uppercase text-[11px] tracking-wide mb-2 font-sans">
-                      Từ vựng trọng tâm ({(session.targetVocabularies ?? []).length})
-                    </h3>
-                    <div className="space-y-2">
-                      {(session.targetVocabularies ?? []).map((v) => (
-                        <div key={v.id} className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)] shadow-xs transition hover:border-[var(--line-strong)]">
-                          <div className="flex justify-between items-baseline">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[var(--sumi)] text-[13px]">{v.word}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleCheatVocabBookmark(v)}
-                                className={`text-[11px] p-0.5 rounded transition ${
-                                  practiceBookmarkedVocabIds.has(v.id)
-                                    ? 'text-amber-600 font-bold'
-                                    : 'text-slate-400 hover:text-amber-600'
-                                }`}
-                                title={practiceBookmarkedVocabIds.has(v.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
-                              >
-                                {practiceBookmarkedVocabIds.has(v.id) ? '🔖' : '☆'}
-                              </button>
-                            </div>
-                            <span className="text-[11px] text-[var(--sumi-faint)]">{v.reading}</span>
-                          </div>
-                          <p className="mt-0.5 text-[11px] text-[var(--sumi-muted)]">{v.meaning}</p>
-                        </div>
-                      ))}
-                    </div>
+                // KIẾN THỨC TRỌNG TÂM: TINH GỌN CHUẨN SCENARIO DETAILS
+                <div className="space-y-3 text-xs">
+                  {/* Sub-tab Selector for Cheatsheet */}
+                  <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-200)]/70 p-1 border border-[var(--line)] text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setKnowledgeSubTab('vocab');
+                      }}
+                      className={`py-1.5 px-2 rounded-lg transition-all ${
+                        knowledgeSubTab === 'vocab'
+                          ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
+                          : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      }`}
+                    >
+                      Từ vựng ({(session?.targetVocabularies ?? []).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setKnowledgeSubTab('grammar');
+                      }}
+                      className={`py-1.5 px-2 rounded-lg transition-all ${
+                        knowledgeSubTab === 'grammar'
+                          ? 'bg-white text-[var(--ai)] shadow-xs font-bold'
+                          : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      }`}
+                    >
+                      Ngữ pháp ({(session?.targetGrammars ?? []).length})
+                    </button>
                   </div>
 
+                  {/* Link nhanh sang Kho Flashcard Đã Lưu */}
+                  <Link
+                    to="/flashcards/bookmarks?level=All&type=All"
+                    onClick={() => ukiyoSound.playSubtleTap()}
+                    className="flex items-center justify-between rounded-xl border border-amber-300/80 bg-amber-50/90 hover:bg-amber-100/80 px-3 py-2 text-[11px] font-bold text-amber-950 shadow-2xs transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <BookmarkIcon className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Kho Flashcard Đã Lưu</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-amber-800">
+                      <span>Mở xem</span>
+                      <ArrowRightIcon className="w-3 h-3" />
+                    </span>
+                  </Link>
 
-                  <div>
-                    <h3 className="font-bold text-[var(--ai)] uppercase text-[11px] tracking-wide mb-2 font-sans">
-                      Mẫu ngữ pháp ({(session.targetGrammars ?? []).length})
-                    </h3>
-                    <div className="space-y-2">
-                      {(session.targetGrammars ?? []).map((g) => (
-                        <div key={g.id} className="rounded-xl bg-[var(--paper-50)] p-2.5 border border-[var(--line)] shadow-xs transition hover:border-[var(--line-strong)]">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="font-bold text-[var(--ai)] font-mono">{g.pattern}</p>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleCheatGrammarBookmark(g)}
-                              className={`text-[11px] p-0.5 rounded transition ${
-                                practiceBookmarkedGrammarIds.has(g.id)
-                                  ? 'text-amber-600 font-bold'
-                                  : 'text-slate-400 hover:text-amber-600'
-                              }`}
-                              title={practiceBookmarkedGrammarIds.has(g.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                  {/* Tab Content: Vocabularies */}
+                  {knowledgeSubTab === 'vocab' && (
+                    <div className="space-y-2.5">
+                      {(session?.targetVocabularies ?? []).length === 0 ? (
+                        <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
+                          Chưa có từ vựng cho cấp độ này.
+                        </p>
+                      ) : (
+                        (session?.targetVocabularies ?? []).map((v) => {
+                          const posMatch = v.meaning.match(/\[(.*?)\]/);
+                          const parts = v.meaning.split('•').map((p) => p.trim());
+                          const mainMeaning = cleanPedagogicMeaning(v.meaning);
+                          const example = parts.length > 2 ? parts.slice(2).join(' • ') : null;
+
+                          return (
+                            <div
+                              key={v.id}
+                              className="rounded-xl border border-[var(--line)]/60 bg-white p-3 hover:bg-[var(--paper-100)]/50 transition-colors shadow-2xs"
                             >
-                              {practiceBookmarkedGrammarIds.has(g.id) ? '🔖' : '☆'}
-                            </button>
-                          </div>
-                          <p className="mt-0.5 text-[11px] text-[var(--sumi-muted)]">{g.meaning}</p>
-                          {g.exampleSentence && (
-                            <p className="mt-1 text-[11px] italic text-[var(--sumi)] border-l-2 border-[var(--line)] pl-2">{g.exampleSentence}</p>
-                          )}
-                        </div>
-                      ))}
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <ruby className="text-sm font-bold text-[var(--sumi)] font-jp">
+                                    {v.word}
+                                    {v.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{v.reading}</rt>}
+                                  </ruby>
+                                  {posMatch && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[var(--paper-200)] text-[var(--sumi-muted)]">
+                                      {posMatch[1]}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => void scenarioVoiceService.playAiSpeech(v.word, 2)}
+                                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                                    title="Nghe phát âm chuẩn Tokyo"
+                                    aria-label={`Nghe phát âm ${v.word}`}
+                                  >
+                                    <VolumeIcon className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCheatVocabBookmark(v)}
+                                    className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs transition active:scale-90 cursor-pointer ${
+                                      practiceBookmarkedVocabIds.has(v.id)
+                                        ? 'text-amber-600 font-bold border-amber-300 bg-amber-50'
+                                        : 'text-slate-400 hover:text-amber-600'
+                                    }`}
+                                    title={practiceBookmarkedVocabIds.has(v.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                                  >
+                                    {practiceBookmarkedVocabIds.has(v.id) ? '★' : '☆'}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="mt-1 text-xs text-[var(--sumi)] font-medium leading-relaxed">
+                                {mainMeaning}
+                              </p>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Tab Content: Grammars */}
+                  {knowledgeSubTab === 'grammar' && (
+                    <div className="space-y-2.5">
+                      {(session?.targetGrammars ?? []).length === 0 ? (
+                        <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
+                          Chưa có cấu trúc ngữ pháp cho cấp độ này.
+                        </p>
+                      ) : (
+                        (session?.targetGrammars ?? []).map((g) => {
+                          const formulaMatch = g.meaning.match(/\[(.*?)\]/);
+                          const cleanMeaning = cleanPedagogicMeaning(g.meaning);
+
+                          return (
+                            <div
+                              key={g.id}
+                              className="rounded-xl border border-[var(--line)]/60 bg-white p-3 space-y-1 hover:bg-[var(--paper-100)]/50 transition-colors shadow-2xs"
+                            >
+                              <div className="flex items-center gap-2 flex-wrap justify-between">
+                                <p className="font-bold font-mono text-xs text-[var(--ai)]">
+                                  {g.pattern}
+                                </p>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {formulaMatch && (
+                                    <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                                      {formulaMatch[1]}
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleCheatGrammarBookmark(g)}
+                                    className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs transition active:scale-90 cursor-pointer ${
+                                      practiceBookmarkedGrammarIds.has(g.id)
+                                        ? 'text-amber-600 font-bold border-amber-300 bg-amber-50'
+                                        : 'text-slate-400 hover:text-amber-600'
+                                    }`}
+                                    title={practiceBookmarkedGrammarIds.has(g.id) ? 'Đã lưu vào Flashcard (Bấm để bỏ lưu)' : 'Lưu vào Flashcard'}
+                                  >
+                                    {practiceBookmarkedGrammarIds.has(g.id) ? '★' : '☆'}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-xs text-[var(--sumi)] font-medium leading-relaxed">
+                                {cleanMeaning}
+                              </p>
+                              {g.exampleSentence && (
+                                <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
+                                  <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
+                                    Ví dụ mẫu:
+                                  </span>
+                                  {g.exampleSentence}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2759,57 +3369,40 @@ export const RoleplayPracticeView: React.FC = () => {
         </aside>
 
 
-        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn (Hiệu ứng trượt êm ái) */}
+        {/* Nút Dock mở rộng Cột Trái khi đang bị thu gọn (Hiệu ứng bookmark thanh mảnh, không đè chữ) */}
         <button
           type="button"
           onClick={() => setIsLeftOpen(true)}
-          className={`absolute top-4 left-0 z-30 flex items-center gap-2 rounded-r-xl border border-l-0 border-[var(--ai)]/30 bg-white px-3 py-2.5 text-xs font-bold text-[var(--ai)] shadow-md hover:bg-[var(--ai-soft)] hover:pr-4 transition-all duration-300 ease-in-out ${
+          className={`absolute top-4 left-0 z-30 flex items-center justify-center w-7 h-10 rounded-r-lg border border-l-0 border-[var(--line-strong)] bg-white/95 text-[var(--ai)] shadow-sm hover:bg-[var(--ai-soft)] hover:w-8 transition-all duration-200 ${
             !isLeftOpen
               ? 'translate-x-0 opacity-100 pointer-events-auto'
               : '-translate-x-full opacity-0 pointer-events-none'
           }`}
-          title="Mở rộng danh sách nhiệm vụ & Cheat sheet"
+          title={`Mở rộng danh sách nhiệm vụ (${completedMissionsCount}/${totalMissionsCount})`}
         >
           <ListTodoIcon className="w-3.5 h-3.5" />
-          <span>Nhiệm vụ ({completedMissionsCount}/{totalMissionsCount})</span>
-          <span>▶</span>
         </button>
 
 
         {/* ============================================================ */}
-        {/* 2. CENTER COLUMN: Chat Stage & Stream (Max Width 760px)      */}
+        {/* 2. CENTER COLUMN: Japanese Roleplay Stage & Dialogue Stream   */}
         {/* ============================================================ */}
-        <main className="flex flex-1 flex-col overflow-hidden bg-[var(--paper-100)]">
-          {/* ============================================================ */}
-          {/* HERO CONVERSATION CANVAS                                    */}
-          {/* ============================================================ */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
-            <div className="mx-auto w-full max-w-[800px] space-y-4">
-              {/* Scenario Context Bar (Gọn gàng, thanh lịch, không trùng lặp Persona/Tiêu đề đã có ở Header) */}
-              {session?.scenarioContext && (
-                <div className="rounded-2xl border border-[var(--line)] bg-white/80 backdrop-blur-xs px-4 py-2.5 shadow-2xs text-xs font-sans">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-[var(--ai)] text-[10px] tracking-wide uppercase">
-                        <span>Bối cảnh tình huống</span>
-                      </div>
-                      <p className={`mt-0.5 text-[var(--sumi)] text-[11px] leading-relaxed ${isContextBannerExpanded ? '' : 'line-clamp-2'}`}>
-                        {session.scenarioContext}
-                      </p>
-                    </div>
-                    {session.scenarioContext.length > 100 && (
-                      <button
-                        type="button"
-                        onClick={() => setIsContextBannerExpanded(!isContextBannerExpanded)}
-                        className="shrink-0 text-[10px] font-bold text-[var(--ai)] hover:underline pt-0.5 cursor-pointer"
-                      >
-                        {isContextBannerExpanded ? 'Thu gọn ▲' : 'Xem thêm ▼'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+        <main
+          className="relative flex flex-1 flex-col overflow-hidden washi-parchment transition-colors duration-500"
+          style={scenarioTheme.bgStyle}
+        >
+          {/* Lớp nền giấy Washi sạch và thoáng đãng (Quiet by Default) */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,58,138,0.03),transparent_70%)]" />
 
+          {/* ============================================================ */}
+          {/* HERO CONVERSATION CANVAS (NO STATIC BANNER, PURE GAME FLOW)   */}
+          {/* ============================================================ */}
+          <div
+            ref={chatContainerRef}
+            onScroll={handleDialogueScroll}
+            className="relative z-10 flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 md:p-6"
+          >
+            <div className="mx-auto w-full max-w-[840px] space-y-4">
               {/* M3: Micro-Celebration Banner for Newly Completed Mission */}
               {celebratingMission && (
                 <div className={`relative overflow-hidden rounded-2xl p-3.5 shadow-lg border text-white transition-all duration-500 animate-slide-up select-none font-sans ${
@@ -2837,7 +3430,7 @@ export const RoleplayPracticeView: React.FC = () => {
                   <div className="relative z-10 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-2xl shrink-0 animate-bounce">
-                        {celebratingMission.isAll ? '🎊' : '🎯'}
+                        {celebratingMission.isAll ? 'Hoàn thành' : 'Mục tiêu'}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -2870,264 +3463,311 @@ export const RoleplayPracticeView: React.FC = () => {
                 const isAi = msg.sender === 'Ai';
                 const isSelected = selectedMessageId === msg.id;
 
-
                 return (
-                  <div
-                    key={msg.id}
-                    className={`flex items-start gap-3 transition-all duration-300 animate-slide-up ${isAi ? '' : 'justify-end'}`}
-                  >
-                    {/* Living Avatar chính của nhân vật đối thoại: Hiển thị cử động miệng, chớp mắt, biểu cảm */}
-                    {isAi && (
-                      <div className="shrink-0 pt-0.5">
-                        <LivingAvatar
-                          size="sm"
-                          avatarState={playingMessageId === msg.id && isPlayingAiSpeech ? 'speaking' : isBowing ? 'bowing' : 'idle'}
-                          personaName={session.aiPersona}
-                          personaRole={session.recommendedAiVoiceName?.split('(')[0].trim()}
-                          scenarioTitle={session.scenarioTitle}
-                          archetype={(session.sceneType as any) || undefined}
-                          currentViseme={playingMessageId === msg.id && isPlayingAiSpeech ? currentViseme : 'closed'}
-                          isAizuchiActive={isLearnerUttering && isAi && msg.id === session.messages[session.messages.length - 1]?.id}
-                          hideLabel
-                        />
-                      </div>
-                    )}
-
-
-                    {/* Chat Bubble */}
+                  <React.Fragment key={msg.id}>
                     <div
-                      onClick={() => {
-                        if (!isAi && msg.linguisticFeedback) {
-                          setSelectedMessageId(msg.id);
-                          if (window.innerWidth < 1280 && isLeftOpen) {
-                            setIsLeftOpen(false);
-                          }
-                          setIsRightOpen(true);
-                        }
-                      }}
-                      className={`group relative max-w-[80%] rounded-2xl p-4 transition shadow-xs ${
-                        isAi
-                          ? 'bubble-ai rounded-tl-sm border border-[var(--line)] bg-white text-[var(--sumi)] shadow-xs'
-                          : `bubble-user rounded-tr-sm bg-[var(--ai)] text-white cursor-pointer shadow-sm ${
-                              isSelected ? 'ring-2 ring-[var(--ai)]/40 shadow-md' : 'hover:bg-[var(--ai-hover)] hover:shadow-md'
-                            }`
-                      }`}
+                      className={`flex items-start gap-3 transition-all duration-300 animate-slide-up ${isAi ? '' : 'justify-end'}`}
                     >
-                      {/* Header in bubble */}
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`text-[10px] font-bold ${
-                              isAi ? 'text-[var(--sumi-faint)]' : 'text-blue-100'
-                            }`}
-                          >
-                            {isAi ? session.aiPersona : 'Bạn'}
-                          </span>
-                          
+                      {/* Living Avatar chính của nhân vật đối thoại: Hiển thị cử động miệng, chớp mắt, biểu cảm */}
+                      {isAi && (
+                        <div className="shrink-0 pt-0.5">
+                          <LivingAvatar
+                            size="sm"
+                            avatarState={playingMessageId === msg.id && isPlayingAiSpeech ? 'speaking' : isBowing ? 'bowing' : 'idle'}
+                            personaName={session.aiPersona}
+                            personaRole={session.recommendedAiVoiceName?.split('(')[0].trim()}
+                            scenarioTitle={session.scenarioTitle}
+                            archetype={(session.sceneType as any) || undefined}
+                            currentViseme={playingMessageId === msg.id && isPlayingAiSpeech ? currentViseme : 'closed'}
+                            isAizuchiActive={isLearnerUttering && isAi && msg.id === session.messages[session.messages.length - 1]?.id}
+                            hideLabel
+                          />
                         </div>
+                      )}
 
 
-                        {/* Quick Status Badge & Autonomy Chip for User message */}
-                        {!isAi && msg.linguisticFeedback && (
-                          <div className="flex items-center gap-1">
-                            <div
-                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-xs ${
-                                getFeedbackStatus(msg.linguisticFeedback) === 'warning'
-                                  ? 'bg-amber-400 text-slate-900'
-                                  : getFeedbackStatus(msg.linguisticFeedback) === 'error'
-                                  ? 'bg-red-500 text-white'
-                                  : 'bg-emerald-500 text-white'
+                      {/* Chat Bubble (Clean Wabi-Sabi Card & Japanese Ink Calligraphy - Landing Page Mirroring) */}
+                      <div
+                        onClick={() => {
+                          if (!isAi) {
+                            setSelectedMessageId(msg.id);
+                          }
+                        }}
+                        className={`group relative max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 sm:p-4 transition duration-200 ${
+                          isAi
+                            ? 'bubble-ai rounded-tl-[4px] border border-[#E5DFD5] bg-[#FAF8F5] text-[#1E293B] shadow-xs hover:shadow-sm'
+                            : `bubble-user rounded-tr-[4px] bg-[#E8EFF6] text-[#0F172A] cursor-pointer border border-[#CADBEA] shadow-xs ${
+                                isSelected ? 'ring-2 ring-[var(--ai)]/50 shadow-sm' : 'hover:bg-[#E1EAF3]'
+                              }`
+                        }`}
+                      >
+                        {/* Header in bubble */}
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`inline-flex items-center text-[10px] font-bold tracking-wide ${
+                                isAi ? 'text-[#5B6170]' : 'text-[#5B6170]'
                               }`}
-                              title="Bấm để xem phân tích ngữ pháp chi tiết"
                             >
-                              <span>
+                              <span>{isAi ? session.aiPersona : 'Bạn'}</span>
+                            </span>
+                          </div>
+
+                          {/* Status chip for User message if warning/error */}
+                          {!isAi && msg.linguisticFeedback && getFeedbackStatus(msg.linguisticFeedback) !== 'good' && (
+                            <div className="flex items-center gap-1">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold shadow-2xs ${
+                                  getFeedbackStatus(msg.linguisticFeedback) === 'warning'
+                                    ? 'bg-amber-400 text-slate-950'
+                                    : 'bg-rose-500 text-white'
+                                }`}
+                                title="Bấm để xem phân tích ngữ pháp chi tiết"
+                              >
                                 {getFeedbackStatus(msg.linguisticFeedback) === 'warning'
-                                  ? '⚠ Lưu ý'
-                                  : getFeedbackStatus(msg.linguisticFeedback) === 'error'
-                                  ? '✕ Cần sửa'
-                                  : '✓ Chuẩn'}
+                                  ? 'Lưu ý'
+                                  : 'Cần sửa'}
                               </span>
                             </div>
-                            {msg.linguisticFeedback.speechDelivery?.turnAutonomyScore != null && getFeedbackStatus(msg.linguisticFeedback) !== 'error' && (
-                              <span
-                                className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold shadow-2xs ${
-                                  msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95
-                                    ? 'bg-emerald-400 text-emerald-950'
-                                    : msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 70
-                                    ? 'bg-amber-300 text-amber-950'
-                                    : 'bg-orange-300 text-orange-950'
-                                }`}
-                                title={msg.linguisticFeedback.speechDelivery.autonomyAssessment || 'Độ tự chủ lượt nói'}
-                              >
-                                <span>{msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95 ? '100đ Tự chủ' : `${msg.linguisticFeedback.speechDelivery.turnAutonomyScore}đ Cấp ${msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 70 ? '1' : msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 50 ? '2' : '3'}`}</span>
-                              </span>
-                            )}
+                          )}
+                        </div>
+
+                        {/* Japanese text (with per-sentence furigana toggle & 100% HTML leak protection & Typewriter Streaming) */}
+                        {isAi && streamingAiMessageId === msg.id ? (
+                          <p className="jc-jp text-[15px] sm:text-base font-medium leading-[1.85] tracking-normal min-h-[1.75rem] text-[#1E2C48] font-jp">
+                            <TypewriterText
+                              text={sanitizeDisplayJapanese(msg.japaneseText)}
+                              baseSpeedMs={20}
+                              onComplete={() => setStreamingAiMessageId(null)}
+                            />
+                          </p>
+                        ) : isFuriActiveForMsg(msg.id) ? (
+                          <div
+                            className="jc-jp text-[15px] sm:text-base font-medium leading-[1.85] tracking-normal min-h-[1.75rem] text-[#1E2C48] font-jp"
+                            dangerouslySetInnerHTML={{ __html: getResolvedMessageFurigana(msg) }}
+                          />
+                        ) : (
+                          <p className="jc-jp text-[15px] sm:text-base font-medium leading-[1.85] tracking-normal min-h-[1.75rem] text-[#1E2C48] font-jp">
+                            {sanitizeDisplayJapanese(msg.japaneseText || msg.furiganaHtml || '')}
+                          </p>
+                        )}
+
+                        {/* Vietnamese translation (Fade-in mượt mà sau khi câu tiếng Nhật chạy hoặc khi xem lại) */}
+                        {revealedAiTranslationIds.has(msg.id) && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
+                          <div
+                            className={`mt-2 border-t pt-1.5 text-[13px] leading-relaxed transition-all duration-500 ease-out ${
+                              isAi ? 'border-[#E2D7C5]/70 text-[#5B6170]' : 'border-[#BED6EE]/60 text-[#5B6170]'
+                            } ${
+                              isAi && streamingAiMessageId === msg.id
+                                ? 'opacity-0 translate-y-1 pointer-events-none'
+                                : 'opacity-100 translate-y-0'
+                            }`}
+                          >
+                            <p>{msg.vietnameseMeaning}</p>
                           </div>
                         )}
-                      </div>
 
-
-                      {/* Japanese text (with furigana toggle support & 100% Vietnamese leak protection & Typewriter Streaming) */}
-                      {isAi && streamingAiMessageId === msg.id ? (
-                        <p className="text-base font-medium leading-relaxed tracking-wide min-h-[1.75rem]">
-                          <TypewriterText
-                            text={sanitizeDisplayJapanese(msg.japaneseText)}
-                            baseSpeedMs={20}
-                            onComplete={() => setStreamingAiMessageId(null)}
-                          />
-                        </p>
-                      ) : showFurigana && msg.furiganaHtml ? (
-                        <div
-                          className="text-base font-medium leading-relaxed tracking-wide min-h-[1.75rem]"
-                          dangerouslySetInnerHTML={{ __html: sanitizeDisplayJapanese(msg.furiganaHtml) }}
-                        />
-                      ) : (
-                        <p className="text-base font-medium leading-relaxed tracking-wide min-h-[1.75rem]">
-                          {sanitizeDisplayJapanese(showFurigana && msg.furiganaText ? msg.furiganaText : msg.japaneseText)}
-                        </p>
-                      )}
-
-
-                      {/* Vietnamese translation (Fade-in mượt mà sau khi câu tiếng Nhật chạy hoặc khi xem lại) */}
-                      {showTranslation && msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
-                        <div
-                          className={`mt-2 border-t pt-2 text-xs leading-relaxed transition-all duration-500 ease-out ${
-                            isAi ? 'border-[var(--line)] text-[var(--sumi-muted)]' : 'border-white/20 text-white/90'
-                          } ${
-                            isAi && streamingAiMessageId === msg.id
-                              ? 'opacity-0 translate-y-1 pointer-events-none'
-                              : 'opacity-100 translate-y-0'
-                          }`}
-                        >
-                          <p>{msg.vietnameseMeaning}</p>
-                        </div>
-                      )}
-
-
-                      {/* Tinh giản Pro UI: Hàng trạng thái & công cụ nhẹ nhàng cho câu thoại của học viên */}
-                      {!isAi && (
-                        <div className="mt-2 flex items-center justify-between gap-1.5 pt-1.5 border-t border-white/20 text-[10px]">
-                          {/* Điểm tự chủ & Rõ ràng */}
-                          <div className="flex items-center gap-1.5">
-                            {msg.linguisticFeedback?.speechDelivery?.turnAutonomyScore != null && (
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded font-mono font-bold ${
-                                getFeedbackStatus(msg.linguisticFeedback) === 'error'
-                                  ? 'bg-rose-500/30 text-rose-200'
-                                  : msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95
-                                  ? 'bg-emerald-500/30 text-emerald-100'
-                                  : 'bg-amber-400/30 text-amber-100'
-                              }`}>
-                                {getFeedbackStatus(msg.linguisticFeedback) === 'error'
-                                  ? '✕ 0đ'
-                                  : msg.linguisticFeedback.speechDelivery.turnAutonomyScore >= 95
-                                  ? '✓ 100đ'
-                                  : `${msg.linguisticFeedback.speechDelivery.turnAutonomyScore}đ`}
-                              </span>
-                            )}
-                            {msg.linguisticFeedback?.speechDelivery?.pronunciationClarityScore != null && (
-                              <span className="font-mono text-blue-200/80">
-                                {msg.linguisticFeedback.speechDelivery.pronunciationClarityScore}% rõ
-                              </span>
-                            )}
+                        {/* Gợi ý văn phong & thể văn nếu có phát hiện lệch vai vế: Nút trigger tinh gọn, không dot tròn */}
+                        {!isAi && msg.linguisticFeedback?.sumiInk?.hasStain && (
+                          <div className="mt-2 pt-1.5 border-t border-[#CADBEA]/60">
+                            <SumiInkPill
+                              feedback={msg.linguisticFeedback.sumiInk}
+                              isExpanded={expandedSumiInkMsgIds.has(msg.id)}
+                              onToggle={() => toggleSumiInkMsg(msg.id)}
+                            />
                           </div>
+                        )}
 
-                          {/* Action tools */}
-                          <div className="flex items-center gap-1 shrink-0">
-                            {/* Nút Xem phân tích đánh giá */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMessageId(msg.id);
-                                setIsRightOpen(true);
-                              }}
-                              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
-                              title="Xem chi tiết phân tích ngữ pháp & phát âm"
-                            >
-                              <span>💡</span>
-                              <span>Đánh giá</span>
-                            </button>
+                        {/* Tinh giản Pro UI: Hàng công cụ tối giản 1 dòng cho câu thoại của học viên chuẩn Wabi-Sabi */}
+                        {!isAi && (
+                          <div className="mt-2.5 flex items-center justify-between gap-1.5 pt-2 border-t border-[#CADBEA]/60 text-[10px]">
+                            {/* Trái: Độ rõ phát âm */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              {msg.linguisticFeedback?.speechDelivery?.isTextInput ? (
+                                <span className="text-[#5B6170] text-[10px] shrink-0 font-medium">
+                                  Gõ phím
+                                </span>
+                              ) : msg.linguisticFeedback?.speechDelivery?.pronunciationClarityScore != null ? (
+                                <span className="font-mono text-[var(--ai)] font-bold text-[11px] shrink-0">
+                                  {msg.linguisticFeedback.speechDelivery.pronunciationClarityScore}% rõ
+                                </span>
+                              ) : null}
+                            </div>
 
-                            {/* Nút Nói lại */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRedoTurn(msg.id);
-                              }}
-                              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-white/90 hover:bg-white/20 transition cursor-pointer"
-                              title="Nói lại câu này"
-                            >
-                              <RefreshIcon className="w-3 h-3" />
-                              <span>Nói lại</span>
-                            </button>
+                            {/* Phải: Các nút hành động trực diện phong cách Zen */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {/* Nút bật/tắt furigana: Chỉ hiển thị khi câu có chữ Hán Kanji */}
+                              {/[\u4E00-\u9FAF]/.test(msg.japaneseText) && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFuriForMessage(msg.id);
+                                  }}
+                                  className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] transition cursor-pointer active:scale-95 ${
+                                    isFuriActiveForMsg(msg.id)
+                                      ? 'border border-[var(--ai)] bg-[var(--ai)] text-white font-bold shadow-xs'
+                                      : 'border border-[#CADBEA] bg-white/80 text-[#1E293B] font-medium hover:bg-white hover:border-[var(--ai)] hover:text-[var(--ai)] shadow-2xs'
+                                  }`}
+                                  title={isFuriActiveForMsg(msg.id) ? "Ẩn phiên âm Furigana" : "Hiện phiên âm Furigana"}
+                                >
+                                  <span>{isFuriActiveForMsg(msg.id) ? "Ẩn Furi" : "Furi"}</span>
+                                </button>
+                              )}
 
-                            {/* Nút nghe lại giọng bạn */}
-                            {(msg.userAudioUrl || userAudioMapRef.current.get(msg.id)) && (
+                              {/* Nút Xem phân tích đánh giá */}
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const url = msg.userAudioUrl || userAudioMapRef.current.get(msg.id);
-                                  if (url) handlePlayUserAudio(msg.id, url);
+                                  setSelectedMessageId(msg.id);
+                                  setIsRightOpen(true);
                                 }}
-                                className={`inline-flex items-center px-1.5 py-0.5 rounded font-medium transition cursor-pointer ${
-                                  playingUserAudioId === msg.id ? 'bg-emerald-400 text-slate-900 font-bold' : 'text-white/90 hover:bg-white/20'
-                                }`}
-                                title="Nghe lại bản thu âm giọng bạn"
+                                className="inline-flex items-center gap-1 rounded-lg border border-[#CADBEA] bg-white/80 px-2 py-0.5 text-[11px] font-medium text-[#1E293B] hover:bg-white hover:border-[var(--ai)] hover:text-[var(--ai)] transition cursor-pointer active:scale-95 shadow-2xs"
+                                title="Xem chi tiết phân tích ngữ pháp & phát âm"
                               >
-                                <span>{playingUserAudioId === msg.id ? 'Đang phát...' : 'Giọng bạn'}</span>
+                                <LightbulbIcon className="w-3.5 h-3.5 text-amber-500" />
+                                <span>Đánh giá</span>
+                              </button>
+
+                              {/* Nút Nói lại */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRedoTurn(msg.id);
+                                }}
+                                className="inline-flex items-center gap-1 rounded-lg border border-[#CADBEA] bg-white/80 px-2 py-0.5 text-[11px] font-medium text-[#1E293B] hover:bg-white hover:border-[var(--ai)] hover:text-[var(--ai)] transition cursor-pointer active:scale-95 shadow-2xs"
+                                title="Nói lại câu này"
+                              >
+                                <RefreshIcon className="w-3 h-3" />
+                                <span>Nói lại</span>
+                              </button>
+
+                              {/* Nút nghe lại giọng bạn */}
+                              {(msg.userAudioUrl || userAudioMapRef.current.get(msg.id)) && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const url = msg.userAudioUrl || userAudioMapRef.current.get(msg.id);
+                                    if (url) handlePlayUserAudio(msg.id, url);
+                                  }}
+                                  className={`inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-medium transition cursor-pointer active:scale-95 shadow-2xs ${
+                                    playingUserAudioId === msg.id
+                                      ? 'border border-emerald-600 bg-emerald-600 text-white font-bold'
+                                      : 'border border-[#BED6EE] bg-white/80 text-[#1E2C48] hover:bg-white hover:border-[var(--ai)]'
+                                  }`}
+                                  title="Nghe lại bản thu âm giọng bạn"
+                                >
+                                  <span>{playingUserAudioId === msg.id ? 'Đang phát...' : 'Giọng bạn'}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* AI Audio button with Soundwave equalizer & Per-sentence Controls */}
+                        {isAi && (
+                          <div
+                            className={`mt-2 flex items-center gap-1.5 transition-all duration-500 ease-out ${
+                              streamingAiMessageId === msg.id ? 'opacity-40 pointer-events-none' : 'opacity-100'
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePlayMessageAudio(msg.id, msg.japaneseText);
+                              }}
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition active:scale-95 shadow-2xs ${
+                                playingMessageId === msg.id && isPlayingAiSpeech
+                                  ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] font-bold shadow-xs'
+                                  : 'border-[#E2D7C5] bg-[#F4EFE6] text-[#5B6170] hover:bg-white hover:text-[var(--ai)] hover:border-[var(--ai)]'
+                              }`}
+                              title="Nghe phát âm tiếng Nhật của AI"
+                            >
+                              {playingMessageId === msg.id && isPlayingAiSpeech ? (
+                                <span className="flex items-center gap-1.5 text-[var(--ai)]">
+                                  <span className="flex items-end gap-0.5 h-3.5">
+                                    <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                                    <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                                    <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                                    <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
+                                  </span>
+                                  <span className="text-[11px] font-bold">Đang phát...</span>
+                                </span>
+                              ) : (
+                                <span>Nghe lại</span>
+                              )}
+                            </button>
+
+                            {/* Nút dịch câu thoại AI */}
+                            {msg.vietnameseMeaning && msg.vietnameseMeaning.trim() !== msg.japaneseText.trim() && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleAiTranslationPeek(msg.id);
+                                }}
+                                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 shadow-2xs cursor-pointer ${
+                                  revealedAiTranslationIds.has(msg.id)
+                                    ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] font-bold'
+                                    : 'border-[#E2D7C5] bg-[#F4EFE6] text-[#5B6170] hover:bg-white hover:text-[var(--ai)] hover:border-[var(--ai)]'
+                                }`}
+                                title={
+                                  revealedAiTranslationIds.has(msg.id)
+                                    ? "Ẩn dịch tiếng Việt câu này"
+                                    : unlockedTranslationMsgIdsRef.current.has(msg.id)
+                                      ? "Xem lại dịch câu này (Đã mở khóa, 0đ)"
+                                      : sessionTranslationPeeksUsed === 0
+                                        ? "Xem dịch tiếng Việt câu này (Miễn phí lần đầu 0đ)"
+                                        : "Xem dịch tiếng Việt câu này (-5đ Tự chủ)"
+                                }
+                              >
+                                <span>{revealedAiTranslationIds.has(msg.id) ? "Ẩn dịch" : "Dịch"}</span>
                               </button>
                             )}
-                          </div>
-                        </div>
-                      )}
 
-                      {/* AI Audio button with Soundwave equalizer */}
-                      {isAi && (
-                        <div
-                          className={`mt-2 flex items-center gap-2 transition-all duration-500 ease-out ${
-                            streamingAiMessageId === msg.id ? 'opacity-40 pointer-events-none' : 'opacity-100'
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePlayMessageAudio(msg.id, msg.japaneseText);
-                            }}
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition active:scale-95 shadow-2xs ${
-                              playingMessageId === msg.id && isPlayingAiSpeech
-                                ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] font-bold shadow-xs'
-                                : 'border-[var(--line)] bg-[var(--paper-100)] text-[var(--sumi-muted)] hover:bg-white hover:text-[var(--ai)] hover:border-[var(--ai)]'
-                            }`}
-                            title="Nghe phát âm tiếng Nhật của AI"
-                          >
-                            {playingMessageId === msg.id && isPlayingAiSpeech ? (
-                              <span className="flex items-center gap-1.5 text-[var(--ai)]">
-                                <span className="flex items-end gap-0.5 h-3.5">
-                                  <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
-                                  <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
-                                  <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
-                                  <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
-                                </span>
-                                <span className="text-[11px] font-bold">Đang phát...</span>
-                              </span>
-                            ) : (
-                              <>
-                                                                <span>Nghe lại</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      )}
+                            {/* Nút bật/tắt furigana câu thoại AI */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFuriForMessage(msg.id);
+                              }}
+                              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 shadow-2xs cursor-pointer ${
+                                isFuriActiveForMsg(msg.id)
+                                  ? 'border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] font-bold'
+                                  : 'border-[#E2D7C5] bg-[#F4EFE6] text-[#5B6170] hover:bg-white hover:text-[var(--ai)] hover:border-[var(--ai)]'
+                              }`}
+                              title={isFuriActiveForMsg(msg.id) ? "Ẩn phiên âm Furigana câu này" : "Hiện phiên âm Furigana câu này"}
+                            >
+                              <span>{isFuriActiveForMsg(msg.id) ? "Ẩn Furi" : "Furi"}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Bong bóng tin nhắn Trợ lý Sensei (Co-pilot Whisper Bubble) tách biệt, không làm phình to bong bóng của người học */}
+                    {!isAi && expandedSumiInkMsgIds.has(msg.id) && msg.linguisticFeedback?.sumiInk && (
+                      <SumiInkWhisperBubble
+                        feedback={msg.linguisticFeedback.sumiInk}
+                        onRedo={() => handleRedoTurn(msg.id)}
+                        onApplyText={(text) => {
+                          setInputText(text);
+                          setToastMessage('Đã nạp mẫu câu gợi ý vào ô nhập!');
+                        }}
+                        onClose={() => toggleSumiInkMsg(msg.id)}
+                      />
+                    )}
+                  </React.Fragment>
                 );
               })}
 
 
-              {/* Typing indicator when AI is generating */}
+              {/* Typing indicator when AI is generating (Warm Wabi-Sabi Paper match) */}
               {isSending && (
                 <div className="flex items-start gap-3 animate-fade-in">
                   <div className="shrink-0 pt-0.5">
@@ -3143,13 +3783,13 @@ export const RoleplayPracticeView: React.FC = () => {
                       hideLabel
                     />
                   </div>
-                  <div className="rounded-2xl rounded-tl-sm border border-[var(--line)] bg-white p-4 shadow-xs text-xs text-[var(--sumi-faint)] flex items-center gap-3">
+                  <div className="rounded-2xl rounded-tl-[4px] border border-[#E2D7C5] bg-[#FAF6EE] p-3.5 shadow-xs text-xs text-[#5B6170] flex items-center gap-3">
                     <span className="flex gap-1">
                       <span className="h-2 w-2 rounded-full bg-[var(--ai)] animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="h-2 w-2 rounded-full bg-[var(--ai)] animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="h-2 w-2 rounded-full bg-[var(--ai)] animate-bounce" style={{ animationDelay: '300ms' }} />
                     </span>
-                    <span className="font-semibold text-[var(--sumi)]">{session.aiPersona}</span>
+                    <span className="font-semibold text-[#1E2C48]">{session.aiPersona}</span>
                     <span>đang soạn câu trả lời...</span>
                   </div>
                 </div>
@@ -3159,6 +3799,22 @@ export const RoleplayPracticeView: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
           </div>
+
+          {/* Scroll-Adaptive Floating Game Action HUD (Nút tròn tối giản cuộn về lượt mới nhất) */}
+          {isScrolledUp && (
+            <button
+              type="button"
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                scrollToBottom();
+              }}
+              className="absolute bottom-24 right-6 sm:right-10 z-30 inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/95 text-slate-700 shadow-md border border-[var(--line-strong)] backdrop-blur-xs hover:bg-[var(--paper-100)] hover:scale-105 active:scale-95 transition-all cursor-pointer animate-fade-in"
+              title="Cuộn xuống lượt đối thoại mới nhất"
+              aria-label="Cuộn xuống lượt đối thoại mới nhất"
+            >
+              <span className="material-symbols-outlined text-[20px] text-slate-700">arrow_downward</span>
+            </button>
+          )}
 
 
           {/* HINT BAR & INPUT BAR */}
@@ -3185,7 +3841,7 @@ export const RoleplayPracticeView: React.FC = () => {
               {hint && !isSending ? (
                 isBlindMode ? (
                   <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-center text-xs font-bold text-amber-900 shadow-2xs flex items-center justify-center gap-2 animate-fade-in">
-                    <span className="text-base">⚡</span>
+                    <SparkIcon className="w-4 h-4 text-amber-500" />
                     <span>Chế độ Phản xạ (Blind Mode): Gợi ý tạm khóa để kích hoạt Active Recall. Hãy tự tin nói theo ý bạn!</span>
                   </div>
                 ) : (
@@ -3201,15 +3857,34 @@ export const RoleplayPracticeView: React.FC = () => {
                   furiganaHtml={hint.furiganaHtml || (hint as any).suggestedFuriganaHtml}
                   vietnameseMeaning={hint.suggestedVietnameseMeaning || hint.vietnameseMeaning}
                   lockedTier={hintLevelUsedRef.current}
+                  isFirstUseInSession={isFirstHintInSession}
                   onUseHint={(sentence, tier) => {
+                    invalidateVoiceRecording();
                     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
                     setAppliedHintTier(tier);
                     triggerFloatingDeduction(tier);
-                    setInputText(sentence);
-                    clearAllAssistance();
-                    const penalty = tier === 1 ? 10 : tier === 2 ? 30 : 60;
-                    setToastMessage(`Đã nạp gợi ý Cấp ${tier} vào ô nhập (Tự chủ dự kiến: ${100 - penalty}/100đ)`);
-                    setTimeout(() => setToastMessage(null), 3500);
+                    if (tier === 1 || tier === 2) {
+                      setInputText((prev) => {
+                        const trimmed = prev.trim();
+                        if (!trimmed) return sentence;
+                        if (trimmed.includes(sentence)) return prev;
+                        return `${trimmed} ${sentence}`;
+                      });
+                    } else {
+                      setInputText(sentence);
+                    }
+                    latestTranscriptRef.current = sentence;
+                    markLearnerUttering();
+                    const isFirstTime = isFirstHintInSession;
+                    const expectedMax = isFirstTime
+                      ? (tier === 1 ? 90 : tier === 2 ? 80 : 60)
+                      : (tier === 1 ? 85 : tier === 2 ? 70 : 50);
+                    const penalty = tier === 1
+                      ? (isFirstTime ? 0 : 10)
+                      : tier === 2
+                        ? (isFirstTime ? 15 : 30)
+                        : (isFirstTime ? 40 : 60);
+                    notifyDeduction(penalty, `Đã nạp gợi ý Cấp ${tier} vào ô nhập (Tự chủ tối đa: ${expectedMax}/100đ${isFirstTime ? ' - Ưu đãi lần đầu' : ''})`);
                   }}
                   onTierChange={(tier) => {
                     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
@@ -3226,17 +3901,21 @@ export const RoleplayPracticeView: React.FC = () => {
               ) : showProactiveHint && !isSending && !session?.isNaturallyConcluded ? (
                 <div className="flex items-center justify-between gap-3 rounded-full border border-[var(--ai)]/20 bg-gradient-to-r from-[var(--ai-soft)] via-white to-sky-50/70 px-4 py-1.5 shadow-xs animate-fadeIn text-xs select-none">
                   <div className="flex items-center gap-2 min-w-0">
-                                        <span className="font-semibold text-[var(--sumi)] truncate">
+                    <span className="font-semibold text-[var(--sumi)] truncate">
                       {session.aiPersona || 'AI'} đang chờ bạn — cần gợi ý đối đáp không?
+                    </span>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 rounded-full px-2 py-0.5 shrink-0">
+                      {isFirstHintOffer ? 'Lần đầu: 0đ Tự chủ' : '-10đ Tự chủ'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => void handleGetInstantHint()}
-                      className="px-3 py-1 rounded-full bg-[var(--ai)] text-white text-[11px] font-bold hover:bg-[var(--ai-hover)] transition shadow-2xs cursor-pointer active:scale-95"
+                      className="px-3 py-1 rounded-full bg-[var(--ai)] text-white text-[11px] font-bold hover:bg-[var(--ai-hover)] transition shadow-2xs cursor-pointer active:scale-95 flex items-center gap-1"
                     >
-                      Xem gợi ý ➔
+                      <span>{isFirstHintOffer ? 'Xem gợi ý (Lần đầu: 0đ)' : 'Xem gợi ý (-10đ)'}</span>
+                      <ArrowRightIcon className="w-3 h-3" />
                     </button>
                     <button
                       type="button"
@@ -3252,18 +3931,39 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
               {/* Input Row */}
-              {/* Applied Hint Feedback Banner - Monotonic locked */}
-              {appliedHintTier !== null && !hint && (
-                <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-xl bg-amber-50/95 border border-amber-300 text-[11px] text-amber-900 shadow-2xs font-sans animate-fade-in">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-amber-700">🔒 Cấp {appliedHintTier}:</span>
-                    <span>Tự chủ tối đa: <strong>{appliedHintTier === 1 ? '90' : appliedHintTier === 2 ? '70' : '40'}/100đ</strong></span>
-                    <span className="text-[10px] text-amber-700/80">(Không hoàn lại khi đổi cấp)</span>
+              {/* Applied Assistance Feedback Banner (Hint and/or Translation Peek) - Monotonic locked & real-time */}
+              {(turnPeekPenalty > 0 || turnTranslationPeekCount > 0 || (appliedHintTier !== null && !hint)) && (
+                <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-[#FAF6EE]/95 border border-[#DFD2B8] text-[11px] text-[var(--sumi)] shadow-2xs font-sans animate-fade-in">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {appliedHintTier !== null && (
+                      <span className="font-bold text-[#6E4D1B] bg-[#EFE6D4] border border-[#DCCCB0] px-2 py-0.5 rounded-md">
+                        Gợi ý Cấp {appliedHintTier}
+                      </span>
+                    )}
+                    {turnPeekPenalty > 0 ? (
+                      <span className="font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
+                        Xem dịch: -{turnPeekPenalty}đ Tự chủ
+                      </span>
+                    ) : turnTranslationPeekCount > 0 ? (
+                      <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                        Xem dịch: Miễn phí lần đầu (0đ)
+                      </span>
+                    ) : null}
+                    <span>
+                      Tự chủ tối đa: <strong>{currentTurnMaxAutonomy}/100đ</strong>
+                      <span className="text-[10px] text-[var(--sumi-muted)] ml-1">
+                        {isFirstHintInSession && appliedHintTier !== null ? '(Ưu đãi lần đầu)' : '(Cập nhật thời gian thực)'}
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-[var(--sumi-faint)]">(Không hoàn lại khi đổi cấp)</span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setAppliedHintTier(null)}
-                    className="text-amber-700 hover:text-amber-950 font-bold text-xs p-0.5 cursor-pointer"
+                    onClick={() => {
+                      setAppliedHintTier(null);
+                      if (turnPeekPenalty === 0) setTurnTranslationPeekCount(0);
+                    }}
+                    className="text-[var(--sumi-muted)] hover:text-[var(--sumi)] font-bold text-xs p-0.5 cursor-pointer"
                     title="Ẩn thông báo"
                   >
                     ✕
@@ -3287,21 +3987,26 @@ export const RoleplayPracticeView: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => navigate(`/roleplay/results/${session.sessionId || session.id || sessionId}`)}
-                    className="shrink-0 px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
+                    onClick={() => {
+                      const sid = session.sessionId || session.id || sessionId;
+                      navigate(returnUrl ? `/roleplay/results/${sid}?justCompleted=true&return=${encodeURIComponent(returnUrl)}` : `/roleplay/results/${sid}?justCompleted=true`);
+                    }}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
                   >
-                    Xem kết quả đánh giá ➔
+                    <span>Xem kết quả đánh giá</span>
+                    <ArrowRightIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
+              <div className="space-y-2">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 {/* Button xin Hint (Tức thì < 5ms) */}
                 <button
                   type="button"
                   onClick={() => handleGetInstantHint()}
-                  disabled={isSending}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border border-[var(--line)] bg-white px-3.5 py-2.5 text-xs font-bold text-[var(--ai)] transition hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] active:scale-95 shadow-2xs"
-                  title="Xin AI gợi ý cách đáp lời"
+                  disabled={isSending || Boolean(session?.isNaturallyConcluded)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--line)] bg-white px-3.5 py-2 text-xs font-bold text-[var(--ai)] transition hover:bg-[var(--ai-soft)] hover:border-[var(--ai)] active:scale-95 cursor-pointer shadow-2xs"
+                  title="Xin AI gợi ý 3 cấp độ (Từ khóa / Khung câu / Câu mẫu)"
                 >
                   {isLoadingHint ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ai)]/20 border-t-[var(--ai)]" />
@@ -3317,12 +4022,12 @@ export const RoleplayPracticeView: React.FC = () => {
                     type="button"
                     onClick={handleToggleMic}
                     disabled={isSending || isProcessingStt}
-                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all shadow-xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
+                    className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all shadow-2xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
                       isProcessingStt
                         ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] min-w-[105px]'
                         : isRecordingMic
                         ? 'border border-rose-500 bg-rose-600 text-white ring-4 ring-rose-400/25 shadow-md min-w-[96px] animate-pulse'
-                        : 'border border-[var(--line)] bg-white text-[var(--sumi)] hover:border-[var(--ai)] hover:text-[var(--ai)] hover:bg-[var(--ai-soft)] hover:shadow-sm active:scale-95 min-w-[80px]'
+                        : 'border border-[var(--ai)]/30 bg-[var(--ai-soft)]/70 text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white active:scale-95 min-w-[84px]'
                     }`}
                     title={
                       isProcessingStt
@@ -3349,7 +4054,7 @@ export const RoleplayPracticeView: React.FC = () => {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5">
-                        <svg className={`w-3.5 h-3.5 shrink-0 ${isRecordingMic ? 'text-white' : 'text-[var(--ai)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
                         <span className="whitespace-nowrap flex items-center gap-1.5">
@@ -3367,71 +4072,79 @@ export const RoleplayPracticeView: React.FC = () => {
                 </div>
 
 
-                {/* Text input */}
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onCompositionStart={() => setIsComposing(true)}
-                  onCompositionEnd={() => setIsComposing(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      if (isComposing || (e.nativeEvent as any).isComposing) {
-                        return;
+                {/* Text input riêng biệt với viền tròn bao quanh */}
+                <div className={`flex-1 flex items-center min-w-0 rounded-full border border-[var(--line-strong)] bg-white px-3.5 py-1.5 shadow-2xs transition ${
+                  isRecordingMic ? 'bg-rose-50/60 ring-1 ring-rose-300 border-rose-300' : 'focus-within:border-[var(--ai)] focus-within:ring-2 focus-within:ring-[var(--ai)]/15'
+                }`}>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => {
+                      inputEpochRef.current += 1;
+                      invalidateVoiceRecording();
+                      setInputText(e.target.value);
+                    }}
+                    onPaste={() => {
+                      inputEpochRef.current += 1;
+                      invalidateVoiceRecording();
+                    }}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={() => setIsComposing(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (isComposing || (e.nativeEvent as any).isComposing) {
+                          return;
+                        }
                       }
+                    }}
+                    placeholder={
+                      isRecordingMic
+                        ? 'Đang lắng nghe giọng nói tiếng Nhật của bạn...'
+                        : 'Nhập câu trả lời bằng tiếng Nhật hoặc bấm nút [Nói]...'
                     }
-                  }}
-                  placeholder={
-                    isRecordingMic
-                      ? 'Đang lắng nghe giọng nói tiếng Nhật của bạn...'
-                      : 'Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)'
-                  }
-                  disabled={isSending}
-                  className={`flex-1 min-w-0 rounded-xl border px-3 sm:px-4 py-2.5 text-sm text-[var(--sumi)] outline-none transition ${
-                    isRecordingMic
-                      ? 'border-red-300 bg-red-50/40 ring-2 ring-red-200'
-                      : 'border-[var(--line)] bg-[var(--paper-50)] focus:border-[var(--ai)] focus:bg-white focus:ring-2 focus:ring-[var(--ai)]/20'
-                  }`}
-                />
+                    disabled={isSending}
+                    className="flex-1 min-w-0 bg-transparent px-1 py-1 text-sm font-jp text-[var(--sumi)] outline-none transition"
+                  />
 
-
-                {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi (compact icon) */}
-                {inputText.trim() && (
-                  <button
-                    type="button"
-                    onClick={() => handlePlayLearnerSample(inputText)}
-                    className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--ai-soft)] p-2.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition"
-                    title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
-                  >
-                    {isPlayingLearnerSample && playingLearnerText === inputText ? (
-                      <span className="flex items-end gap-0.5 h-3">
-                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
-                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
-                        <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
-                      </span>
-                    ) : (
-                      <VolumeIcon className="w-4 h-4 text-[var(--ai)]" />
-                    )}
-                  </button>
-                )}
+                  {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi (compact icon) */}
+                  {inputText.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => handlePlayLearnerSample(inputText)}
+                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--ai-soft)] p-1.5 text-xs font-bold text-[var(--ai)] hover:bg-[var(--paper-200)] active:scale-95 transition cursor-pointer ml-1"
+                      title="Nghe phát âm chuẩn câu bạn vừa nhập trước khi gửi"
+                    >
+                      {isPlayingLearnerSample && playingLearnerText === inputText ? (
+                        <span className="flex items-end gap-0.5 h-3">
+                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-3" />
+                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.15s] h-2" />
+                          <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
+                        </span>
+                      ) : (
+                        <VolumeIcon className="w-3.5 h-3.5 text-[var(--ai)]" />
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {/* Send Button */}
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isSending}
-                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--ai-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-[var(--ai)] px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-xs transition hover:bg-[var(--ai-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 tactile-press"
                 >
                   {isSending ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   ) : (
                     <>
                       <span>Gửi</span>
-                      <span>➔</span>
+                      <ArrowRightIcon className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
               </form>
+              </div>
               )}
 
 
@@ -3475,7 +4188,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
             {/* Content body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
               {selectedMessage && selectedMessage.linguisticFeedback ? (
                 <>
                   {/* Selected User Sentence */}
@@ -3561,9 +4274,20 @@ export const RoleplayPracticeView: React.FC = () => {
                     {/* Delivery Assessment Chips */}
                     {selectedMessage.linguisticFeedback.speechDelivery && (
                       <div className="pt-2 border-t border-indigo-100/70 space-y-1">
+                        <div className="flex items-center gap-1.5 text-[11px] text-indigo-900 font-medium">
+                          {selectedMessage.linguisticFeedback.speechDelivery.isTextInput ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-700">
+                              Nhập bàn phím
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              Nói qua micro
+                            </span>
+                          )}
+                        </div>
                         {selectedMessage.linguisticFeedback.speechDelivery.paceAssessment && (
                           <div className="flex items-center gap-1.5 text-[11px] text-indigo-900 font-medium">
-                            <span className="text-[10px]">⚡</span>
+                            <SparkIcon className="w-3 h-3 text-indigo-500" />
                             <span>{selectedMessage.linguisticFeedback.speechDelivery.paceAssessment}</span>
                           </div>
                         )}
@@ -3578,8 +4302,22 @@ export const RoleplayPracticeView: React.FC = () => {
                           </div>
                         )}
                         {selectedMessage.linguisticFeedback.speechDelivery.moraRate != null && (
-                          <div className="flex items-center gap-1.5 text-[11px] text-indigo-900 font-medium">
-                                                        <span>Tốc độ Mora: {selectedMessage.linguisticFeedback.speechDelivery.moraRate} mora/s (chuẩn người Nhật ~5.0 - 7.5)</span>
+                          <div className="flex items-center gap-2 text-[11px] text-indigo-900 font-medium">
+                            <span>Nhịp điệu:</span>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              selectedMessage.linguisticFeedback.speechDelivery.moraRate < 3.8
+                                ? "bg-sky-100 text-sky-800"
+                                : selectedMessage.linguisticFeedback.speechDelivery.moraRate <= 7.0
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-purple-100 text-purple-800"
+                            }`}>
+                              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                              {selectedMessage.linguisticFeedback.speechDelivery.moraRate < 3.8
+                                ? "Chậm rãi, rõ chữ"
+                                : selectedMessage.linguisticFeedback.speechDelivery.moraRate <= 7.0
+                                ? "Tự nhiên, vừa vặn"
+                                : "Nhanh nhẹn, lưu loát"}
+                            </span>
                           </div>
                         )}
                         {selectedMessage.linguisticFeedback.speechDelivery.turnAutonomyScore != null && (
@@ -3604,100 +4342,11 @@ export const RoleplayPracticeView: React.FC = () => {
                   </div>
 
 
-                  {/* Summary & Quick Badge */}
-                  <div className="rounded-xl border border-[var(--line)]/40 bg-[var(--ai-soft)]/40 p-3 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[var(--sumi)]">Nhận xét chung</span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          getFeedbackStatus(selectedMessage.linguisticFeedback) === 'warning'
-                            ? 'bg-amber-100 text-amber-800'
-                            : getFeedbackStatus(selectedMessage.linguisticFeedback) === 'error'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-emerald-100 text-emerald-700'
-                        }`}
-                      >
-                        {getFeedbackStatus(selectedMessage.linguisticFeedback).toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-[var(--sumi-faint)] leading-relaxed break-words">
-                      {selectedMessage.linguisticFeedback.summary || 'Đã ghi nhận câu nói.'}
-                    </p>
-                  </div>
-
-
-                  {/* Detailed Criterion Blocks */}
-                  <div className="space-y-2.5 text-xs">
-                    {/* Render mảng details từ Gemini API nếu có */}
-                    {selectedMessage.linguisticFeedback.details && selectedMessage.linguisticFeedback.details.length > 0 ? (
-                      selectedMessage.linguisticFeedback.details.map((detail, idx) => (
-                        <div key={idx} className="rounded-xl border border-[var(--line)] p-3 bg-white shadow-2xs">
-                          <div className="flex items-center gap-1.5 font-bold text-[var(--sumi)]">
-                            <span
-                              className={
-                                detail.type === 'warning'
-                                  ? 'text-amber-500'
-                                  : detail.type === 'error'
-                                  ? 'text-red-500'
-                                  : 'text-emerald-500'
-                              }
-                            >
-                              {detail.type === 'warning' ? '⚠' : detail.type === 'error' ? '✕' : '✓'}
-                            </span>
-                            <span>{detail.aspect}</span>
-                          </div>
-                          <p className="mt-1 text-[var(--sumi-faint)] leading-relaxed break-words">{detail.comment}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <>
-                        {/* Grammar */}
-                        {selectedMessage.linguisticFeedback.grammarAssessment && (
-                          <div className="rounded-xl border border-[var(--line)] p-3 bg-white shadow-2xs">
-                            <div className="flex items-center gap-1.5 font-bold text-[var(--sumi)]">
-                                                            <span>Ngữ pháp & Trợ từ</span>
-                            </div>
-                            <p className="mt-1 text-[var(--sumi-faint)] leading-relaxed break-words">
-                              {selectedMessage.linguisticFeedback.grammarAssessment}
-                            </p>
-                          </div>
-                        )}
-
-
-                        {/* Vocabulary */}
-                        {selectedMessage.linguisticFeedback.vocabularyAssessment && (
-                          <div className="rounded-xl border border-[var(--line)] p-3 bg-white shadow-2xs">
-                            <div className="flex items-center gap-1.5 font-bold text-[var(--sumi)]">
-                                                            <span>Dùng từ & Độ tự nhiên</span>
-                            </div>
-                            <p className="mt-1 text-[var(--sumi-faint)] leading-relaxed break-words">
-                              {selectedMessage.linguisticFeedback.vocabularyAssessment}
-                            </p>
-                          </div>
-                        )}
-
-
-                        {/* Politeness */}
-                        {selectedMessage.linguisticFeedback.politenessAssessment && (
-                          <div className="rounded-xl border border-[var(--line)] p-3 bg-white shadow-2xs">
-                            <div className="flex items-center gap-1.5 font-bold text-[var(--sumi)]">
-                                                            <span>Sắc thái & Kính ngữ</span>
-                            </div>
-                            <p className="mt-1 text-[var(--sumi-faint)] leading-relaxed break-words">
-                              {selectedMessage.linguisticFeedback.politenessAssessment}
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-
-                  {/* Natural Alternative */}
+                  {/* Natural Alternative (Cách diễn đạt tự nhiên hơn) */}
                   {selectedMessage.linguisticFeedback.naturalAlternative && (
                     <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-xs">
                       <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                                                <span>Cách diễn đạt tự nhiên hơn</span>
+                        <span>Cách diễn đạt tự nhiên hơn</span>
                       </div>
                       <p className="mt-1.5 font-bold text-sm text-[var(--sumi)] break-words">
                         {selectedMessage.linguisticFeedback.naturalAlternative}
@@ -3705,18 +4354,10 @@ export const RoleplayPracticeView: React.FC = () => {
                     </div>
                   )}
 
-
-                  {/* Cultural Tip */}
-                  {selectedMessage.linguisticFeedback.culturalTip && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-xs">
-                      <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                                                <span>Mẹo văn hóa giao tiếp</span>
-                      </div>
-                      <p className="mt-1.5 text-amber-800 leading-relaxed break-words">
-                        {selectedMessage.linguisticFeedback.culturalTip}
-                      </p>
-                    </div>
-                  )}
+                  {/* Flow-Preserving Subtext */}
+                  <div className="rounded-xl border border-dashed border-[var(--line)] p-2.5 text-center bg-white/60 text-[11px] text-[var(--sumi-faint)] leading-relaxed shadow-2xs">
+                    Chi tiết phân tích ngữ pháp, trợ từ & từ vựng được lưu giữ đầy đủ tại trang <strong className="text-[var(--ai)]">Kết quả phiên</strong>.
+                  </div>
 
 
                   {/* Hành động thiết thực: Nghe phát âm & Sao chép câu bản xứ */}
@@ -3783,22 +4424,6 @@ export const RoleplayPracticeView: React.FC = () => {
             </div>
           </div>
         </aside>
-
-
-        {/* Nút Dock mở rộng Cột Phải khi đang bị thu gọn */}
-        <button
-          type="button"
-          onClick={() => setIsRightOpen(true)}
-          className={`absolute top-4 right-0 z-30 flex items-center gap-2 rounded-l-xl border border-r-0 border-[var(--ai)]/30 bg-white px-3 py-2.5 text-xs font-bold text-[var(--ai)] shadow-md hover:bg-[var(--ai-soft)] hover:pl-4 transition-all duration-300 ease-in-out ${
-            !isRightOpen && selectedMessage?.linguisticFeedback
-              ? 'translate-x-0 opacity-100 pointer-events-auto'
-              : 'translate-x-full opacity-0 pointer-events-none'
-          }`}
-          title="Mở rộng bảng đánh giá lượt nói"
-        >
-          <span>◀</span>
-          <span>Đánh giá</span>
-                  </button>
       </div>
 
 
@@ -3810,13 +4435,17 @@ export const RoleplayPracticeView: React.FC = () => {
           <div className="w-full max-w-md rounded-3xl bg-[var(--paper-50)] border border-[var(--line)] p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-2xl text-xl shadow-xs ${
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-xs ${
                   isAllMissionsCompleted
                     ? 'bg-emerald-100 text-emerald-600'
                     : 'bg-amber-100 text-amber-600'
                 }`}
               >
-                {isAllMissionsCompleted ? '🏆' : '🚪'}
+                {isAllMissionsCompleted ? (
+                  <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+                ) : (
+                  <AlertCircleIcon className="w-5 h-5 text-amber-600" />
+                )}
               </div>
               <div>
                 <h3 className="text-base font-bold text-[var(--sumi)] font-sans">
@@ -3846,7 +4475,7 @@ export const RoleplayPracticeView: React.FC = () => {
                 </p>
               ) : isAllMissionsCompleted ? (
                 <p className="mt-2 text-emerald-700 font-semibold text-[11px]">
-                  ✓ Bạn đã hoàn thành 100% nhiệm vụ! Có thể nói lời chào tạm biệt để cộng thêm điểm ấn tượng hoặc hoàn thành ngay.
+                  Bạn đã hoàn thành 100% nhiệm vụ! Có thể nói lời chào tạm biệt để cộng thêm điểm ấn tượng hoặc hoàn thành ngay.
                 </p>
               ) : null}
             </div>
@@ -3896,7 +4525,10 @@ export const RoleplayPracticeView: React.FC = () => {
           <div className="w-full max-w-md rounded-3xl bg-[var(--paper-50)] border border-[var(--line)] p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl text-xl bg-[var(--ai-soft)] text-[var(--ai)] shadow-xs">
-                <span>⏸️</span>
+                <svg className="w-5 h-5 text-[var(--ai)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
               </div>
               <div>
                 <h3 className="text-base font-bold text-[var(--sumi)] font-sans">Tạm dừng phiên luyện tập?</h3>
@@ -3948,7 +4580,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
       {/* ============================================================ */}
-      {/* 6. MODAL CÀI ĐẶT GIỌNG ĐỌC AI (VOICEVOX)                     */}
+      {/* 6. MODAL CÀI ĐẶT GIỌNG ĐỌC AI                               */}
       {/* ============================================================ */}
       <AiVoiceSettingsModal
         isOpen={isVoiceModalOpen}
@@ -3967,7 +4599,7 @@ export const RoleplayPracticeView: React.FC = () => {
 
 
       {/* ============================================================ */}
-      {/* 7. HANKO EKI-STAMP CELEBRATION OVERLAY                      */}
+      {/* 7. LOADING OVERLAY KHI HOÀN TẤT PHIÊN ĐÀM THOẠI             */}
       {/* Loading Overlay khi đang hoàn tất phiên & tổng hợp kết quả */}
       {isEnding && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm text-white select-none animate-fadeIn">
@@ -3982,13 +4614,25 @@ export const RoleplayPracticeView: React.FC = () => {
       {floatingDeduction && (
         <div
           key={floatingDeduction.id}
-          className="pointer-events-none fixed bottom-28 left-1/2 -translate-x-1/2 z-[100] px-4 py-1.5 rounded-full bg-rose-600/95 text-white font-extrabold text-xs shadow-lg animate-float-deduct flex items-center gap-1.5 border border-rose-300 select-none"
+          className="pointer-events-none fixed top-20 left-1/2 -translate-x-1/2 z-[100] px-4 py-1.5 rounded-full bg-rose-600/95 text-white font-extrabold text-xs shadow-lg animate-float-deduct flex items-center gap-1.5 border border-rose-300 select-none"
         >
-          <span>⚡</span>
+          <SparkIcon className="w-3 h-3" />
           <span>{floatingDeduction.text}</span>
         </div>
       )}
 
+      {/* Hanabi Sparkle Particle Burst on Perfect Turn / High Combo */}
+      <HanabiSparkleBurst
+        active={showSparkleBurst}
+        text={sparkleText}
+        onComplete={() => setShowSparkleBurst(false)}
+      />
     </div>
   );
 };
+
+export const RoleplayPracticeView: React.FC = () => (
+  <ErrorBoundary fallbackTitle="Khôi phục phòng luyện tập">
+    <RoleplayPracticeViewInternal />
+  </ErrorBoundary>
+);

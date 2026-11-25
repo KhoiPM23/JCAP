@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -11,6 +11,7 @@ import {
   saveForumPosts,
   resetForumPosts,
 } from '../services/mockCommunityStore';
+import { communityService } from '../services/communityService';
 import { feedbackService, formatFileSize } from '../services/feedbackService';
 
 function formatTimeAgo(iso: string): string {
@@ -72,6 +73,42 @@ export const CommunityForumView: React.FC = () => {
     setPosts(next);
     saveForumPosts(next);
   };
+
+  const syncPostsFromServer = useCallback(async () => {
+    const res = await communityService.fetchPosts();
+    setPosts(res.posts);
+    setExpandedPostId((prev) => {
+      if (!prev) return null;
+      if (res.posts.some((p) => p.id === prev)) return prev;
+      if (prev === 'post-101' && res.posts.length > 0) return res.posts[0].id;
+      return prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    void syncPostsFromServer();
+
+    const intervalId = window.setInterval(() => {
+      void syncPostsFromServer();
+    }, 8000);
+
+    const handleFocus = () => {
+      void syncPostsFromServer();
+    };
+    const handleStorage = (e: StorageEvent) => {
+      if (!e.key || e.key.includes('jcap_community_forum')) {
+        setPosts(getForumPosts());
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [syncPostsFromServer, user?.id, user?.email]);
 
   const filteredPosts = useMemo(() => {
     const list = posts.filter((p) => {
@@ -149,7 +186,7 @@ export const CommunityForumView: React.FC = () => {
   };
 
   // Thả Upvote bài viết
-  const handleToggleUpvotePost = (postId: string) => {
+  const handleToggleUpvotePost = async (postId: string) => {
     const next = posts.map((p) => {
       if (p.id !== postId) return p;
       const already = !!p.upvotedByMe;
@@ -160,6 +197,15 @@ export const CommunityForumView: React.FC = () => {
       };
     });
     updatePosts(next);
+
+    const updated = await communityService.toggleUpvote(postId);
+    if (updated) {
+      setPosts((prev) => {
+        const list = prev.map((p) => (p.id === postId || p.id === updated.id ? updated : p));
+        saveForumPosts(list);
+        return list;
+      });
+    }
   };
 
   // Thả Upvote bình luận
@@ -183,57 +229,123 @@ export const CommunityForumView: React.FC = () => {
   };
 
   // Đăng bài thảo luận mới
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
+
+    const titleText = newTitle.trim();
+    const contentText = newContent.trim();
+    const channelVal = newChannel;
+    const isAnonVal = newIsAnon;
+    const attachmentsVal = [...newAttachments];
+
+    setNewTitle('');
+    setNewContent('');
+    setNewAttachments([]);
+    setNewIsAnon(false);
+    setIsComposeOpen(false);
+
+    const res = await communityService.createPost({
+      channel: channelVal,
+      title: titleText,
+      content: contentText,
+      isAnonymous: isAnonVal,
+      attachments: attachmentsVal,
+      authorId: user?.id,
+      authorEmail: user?.email,
+      authorName: currentUserName,
+      authorLevel: currentLevel,
+      authorRole: isAdmin ? 'ADMIN' : 'LEARNER',
+      authorAvatar: user?.avatarUrl,
+    });
+
+    if (res.isLiveBackend && res.post) {
+      const serverPost = res.post;
+      setPosts((prev) => {
+        const list = [serverPost, ...prev.filter((p) => p.id !== serverPost.id)];
+        saveForumPosts(list);
+        return list;
+      });
+      setExpandedPostId(serverPost.id);
+      return;
+    }
 
     const anonNum = Math.floor(100 + Math.random() * 900);
     const created: ForumPost = {
       id: `post-${Date.now()}`,
-      channel: newChannel,
-      title: newTitle.trim(),
-      content: newContent.trim(),
+      channel: channelVal,
+      title: titleText,
+      content: contentText,
       authorId: user?.email || 'current-user',
-      authorName: newIsAnon ? `Thành viên ẩn danh #${anonNum}` : currentUserName,
-      authorAvatar: newIsAnon ? undefined : user?.avatarUrl,
+      authorName: isAnonVal ? `Thành viên ẩn danh #${anonNum}` : currentUserName,
+      authorAvatar: isAnonVal ? undefined : user?.avatarUrl,
       authorLevel: currentLevel,
       authorRole: isAdmin ? 'ADMIN' : 'LEARNER',
-      isAnonymous: newIsAnon,
+      isAnonymous: isAnonVal,
       upvotes: 1,
       upvotedByMe: true,
       views: 1,
-      attachments: newAttachments,
+      attachments: attachmentsVal,
       comments: [],
       createdAt: new Date().toISOString(),
     };
 
     updatePosts([created, ...posts]);
     setExpandedPostId(created.id);
-    setNewTitle('');
-    setNewContent('');
-    setNewAttachments([]);
-    setNewIsAnon(false);
-    setIsComposeOpen(false);
   };
 
   // Gửi bình luận vào bài viết
-  const handleAddComment = (e: React.FormEvent, postId: string) => {
+  const handleAddComment = async (e: React.FormEvent, postId: string) => {
     e.preventDefault();
     if (!commentText.trim() && commentAttachments.length === 0) return;
+
+    const contentVal = commentText.trim() || '(Đính kèm tệp/ảnh)';
+    const parentIdVal =
+      replyingToComment?.postId === postId ? replyingToComment.commentId : null;
+    const isAnonVal = commentAnon;
+    const attachmentsVal = [...commentAttachments];
+
+    setCommentText('');
+    setCommentAttachments([]);
+    setReplyingToComment(null);
+
+    const res = await communityService.addComment(postId, {
+      parentCommentId: parentIdVal,
+      content: contentVal,
+      isAnonymous: isAnonVal,
+      attachments: attachmentsVal,
+      authorId: user?.id,
+      authorEmail: user?.email,
+      authorName: currentUserName,
+      authorLevel: currentLevel,
+      authorRole: isAdmin ? 'ADMIN' : 'LEARNER',
+      authorAvatar: user?.avatarUrl,
+    });
+
+    if (res.isLiveBackend && res.post) {
+      const updatedPost = res.post;
+      setPosts((prev) => {
+        const list = prev.map((p) =>
+          p.id === postId || p.id === updatedPost.id ? updatedPost : p
+        );
+        saveForumPosts(list);
+        return list;
+      });
+      return;
+    }
 
     const anonNum = Math.floor(100 + Math.random() * 900);
     const newCmt: ForumComment = {
       id: `cmt-${Date.now()}`,
       postId,
-      parentCommentId:
-        replyingToComment?.postId === postId ? replyingToComment.commentId : null,
-      authorName: commentAnon ? `Thành viên ẩn danh #${anonNum}` : currentUserName,
-      authorAvatar: commentAnon ? undefined : user?.avatarUrl,
+      parentCommentId: parentIdVal,
+      authorName: isAnonVal ? `Thành viên ẩn danh #${anonNum}` : currentUserName,
+      authorAvatar: isAnonVal ? undefined : user?.avatarUrl,
       authorLevel: currentLevel,
       authorRole: isAdmin ? 'ADMIN' : 'LEARNER',
-      isAnonymous: commentAnon,
-      content: commentText.trim() || '(Đính kèm tệp/ảnh)',
-      attachments: commentAttachments,
+      isAnonymous: isAnonVal,
+      content: contentVal,
+      attachments: attachmentsVal,
       upvotes: 0,
       createdAt: new Date().toISOString(),
     };
@@ -242,27 +354,41 @@ export const CommunityForumView: React.FC = () => {
       p.id === postId ? { ...p, comments: [...p.comments, newCmt] } : p
     );
     updatePosts(next);
-    setCommentText('');
-    setCommentAttachments([]);
-    setReplyingToComment(null);
   };
 
   // Đánh dấu Đã giải đáp / Ghim bài / Xóa bài
-  const handleTogglePin = (postId: string) => {
+  const handleTogglePin = async (postId: string) => {
     updatePosts(
       posts.map((p) => (p.id === postId ? { ...p, isPinned: !p.isPinned } : p))
     );
+    const updated = await communityService.togglePin(postId);
+    if (updated) {
+      setPosts((prev) => {
+        const list = prev.map((p) => (p.id === postId || p.id === updated.id ? updated : p));
+        saveForumPosts(list);
+        return list;
+      });
+    }
   };
 
-  const handleToggleSolved = (postId: string) => {
+  const handleToggleSolved = async (postId: string) => {
     updatePosts(
       posts.map((p) => (p.id === postId ? { ...p, isSolved: !p.isSolved } : p))
     );
+    const updated = await communityService.toggleSolved(postId);
+    if (updated) {
+      setPosts((prev) => {
+        const list = prev.map((p) => (p.id === postId || p.id === updated.id ? updated : p));
+        saveForumPosts(list);
+        return list;
+      });
+    }
   };
 
-  const handleDeletePost = (postId: string) => {
+  const handleDeletePost = async (postId: string) => {
     if (!window.confirm('Bạn có chắc muốn xóa bài thảo luận này?')) return;
     updatePosts(posts.filter((p) => p.id !== postId));
+    await communityService.deletePost(postId);
   };
 
   return (
@@ -394,7 +520,10 @@ export const CommunityForumView: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={() => setPosts(resetForumPosts())}
+            onClick={() => {
+              resetForumPosts();
+              void syncPostsFromServer();
+            }}
             className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] text-slate-500 cursor-pointer"
             title="Khôi phục dữ liệu mẫu"
           >
@@ -1027,4 +1156,3 @@ export const CommunityForumView: React.FC = () => {
     </div>
   );
 };
-

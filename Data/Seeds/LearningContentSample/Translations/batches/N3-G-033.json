@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nai-koto-wa-nai",
+      "Fields": {
+        "Meaning": "Không hẳn là không, vẫn có thể",
+        "Formation": "Động từ thể ない ＋ ことはない",
+        "Explanation": "Phủ định hai lần để thừa nhận có khả năng hoặc đôi khi có làm, với sắc thái dè dặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nai-koto-wa-nai:example:1": "Tôi cũng ăn được đồ cay, chỉ là không thích lắm.",
+        "nai-koto-wa-nai:example:2": "Nếu nhanh lên thì vẫn có thể kịp chuyến tàu cuối."
+      },
+      "SourceHash": "ddb0a8b0042fbdfabb2a24a13c40802d4d11559917f33f773daa19d449644b72"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakanaka",
+      "Fields": {
+        "Meaning": "Khá, mãi không",
+        "Formation": "なかなか ＋ vị ngữ khẳng định hoặc phủ định",
+        "Explanation": "Với khẳng định, chỉ mức độ khá cao. Với phủ định, nhấn mạnh việc mãi chưa xảy ra hoặc khó thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakanaka:example:1": "Ramen ở quán này khá ngon.",
+        "nakanaka:example:2": "Xe buýt mãi chưa đến, tôi sắp muộn mất."
+      },
+      "SourceHash": "524ca744713b300ace31b89392904586e136abfa87c5d2babb10070854329312"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nagara-mo",
+      "Fields": {
+        "Meaning": "Mặc dù… vẫn",
+        "Formation": "Gốc ます hoặc dạng bổ nghĩa phù hợp ＋ ながらも",
+        "Explanation": "Nêu điều vẫn đúng dù có hoàn cảnh trái với kỳ vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nagara-mo:example:1": "Dù nói là bận, anh ấy vẫn luôn giúp tôi.",
+        "nagara-mo:example:2": "Dù phòng nhỏ, tôi vẫn vui vì có phòng riêng."
+      },
+      "SourceHash": "3bf1c8a99508aed09d4ecf83374d71bc0d7cf229ea697cdc57e398713ad1cb78"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nazenara",
+      "Fields": {
+        "Meaning": "Lý do là, bởi vì",
+        "Formation": "Nhận định。なぜなら、lý do ＋ からだ／からです",
+        "Explanation": "Giải thích lý do cho nhận định vừa nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nazenara:example:1": "Hôm nay tôi về sớm vì là sinh nhật mẹ tôi.",
+        "nazenara:example:2": "Tôi phản đối kế hoạch đó vì chi phí quá cao."
+      },
+      "SourceHash": "34213ba22d37043427b0b36023de9ae29eddec1b95548f8aa703468b1e5f08a8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nanka-nante",
+      "Fields": {
+        "Meaning": "Những thứ như, chuyện… cơ đấy",
+        "Formation": "Danh từ ＋ なんか／danh từ hoặc mệnh đề ＋ なんて",
+        "Explanation": "なんか có thể hạ nhẹ giá trị của đối tượng. なんて cũng dùng để bộc lộ ngạc nhiên trước sự việc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nanka-nante:example:1": "Tôi chẳng hứng thú gì với mấy môn thể thao.",
+        "nanka-nante:example:2": "Không thể tin được là bạn lại thua."
+      },
+      "SourceHash": "c1fe5b4f29a2338a4432c64010787da5b243864c0f9a9c3c1090952d24230a80"
+    }
+  ]
+}

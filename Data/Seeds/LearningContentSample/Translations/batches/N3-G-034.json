@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-ataru",
+      "Fields": {
+        "Meaning": "Tương đương, tương ứng, có quan hệ là",
+        "Formation": "Danh từ hoặc số lượng ＋ に当たる",
+        "Explanation": "Nêu giá trị tương đương hoặc vị trí trong một quan hệ họ hàng hay phân loại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-ataru:example:1": "Hiện một đô la tương đương khoảng 150 yên.",
+        "ni-ataru:example:2": "Ông ấy là anh trai của mẹ tôi."
+      },
+      "SourceHash": "09463d4c055ef1a21d30d326e72b1010588bf72a49728b06d0fd430c378aee8f"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-awasete",
+      "Fields": {
+        "Meaning": "Điều chỉnh theo, phù hợp với",
+        "Formation": "Danh từ ＋ に合わせて ＋ hành động／に合った ＋ danh từ",
+        "Explanation": "に合わせて nêu tiêu chí để điều chỉnh. に合った dùng khi mô tả thứ phù hợp với tiêu chí đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-awasete:example:1": "Tôi đổi cách nói cho phù hợp với trình độ của người đối diện.",
+        "ni-awasete:example:2": "Hãy cử động theo nhạc."
+      },
+      "SourceHash": "a785bea36f307d82bc20b04c7ec953fb0226d617d4cbb5c6fcd1f6997355266e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-oite",
+      "Fields": {
+        "Meaning": "Trong, tại, thuộc lĩnh vực",
+        "Formation": "Danh từ ＋ において／における ＋ danh từ",
+        "Explanation": "Chỉ bối cảnh, địa điểm hoặc lĩnh vực. における bổ nghĩa trực tiếp cho danh từ theo sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-oite:example:1": "Trong xã hội hiện đại, Internet là thứ không thể thiếu.",
+        "ni-oite:example:2": "Nghiên cứu trong lĩnh vực này chỉ mới bắt đầu."
+      },
+      "SourceHash": "6413a467af9a11107226ef78dfebac6d7d80771c0ae0cfaf3516f6904fcf31e4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-kagiru",
+      "Fields": {
+        "Meaning": "Tốt nhất là, không gì bằng",
+        "Formation": "Danh từ hoặc động từ thể từ điển ＋ に限る",
+        "Explanation": "Nêu lựa chọn người nói cho là tốt nhất trong tình huống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-kagiru:example:1": "Mệt thì ngủ là tốt nhất.",
+        "ni-kagiru:example:2": "Mùa hè đúng là không gì bằng bia lạnh nhỉ."
+      },
+      "SourceHash": "59edcc62fdf8161cf39b6b6e0c4319372de6c01082438d290e1677377f097488"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-kakete",
+      "Fields": {
+        "Meaning": "Trải từ… đến…",
+        "Formation": "Mốc đầu ＋ から ＋ mốc cuối ＋ にかけて",
+        "Explanation": "Chỉ một khoảng thời gian hoặc không gian kéo dài qua các mốc tương đối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-kakete:example:1": "Có lẽ tuyết sẽ rơi từ tối nay đến sáng mai.",
+        "ni-kakete:example:2": "Hoa anh đào đã bắt đầu nở trên dải từ bắc xuống nam."
+      },
+      "SourceHash": "e54737a3267e2a2838edaf043ab3bc9bd48e87ff9338743c14fdf1bca9b1feec"
+    }
+  ]
+}

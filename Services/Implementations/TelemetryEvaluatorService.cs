@@ -22,8 +22,8 @@ namespace JCAP.Services.Implementations
 
         public async Task<LearnerIntelligenceProfile> GetOrCreateProfileAsync(string userId)
         {
-            var profile = await _context.LearnerIntelligenceProfiles
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            var profile = _context.LearnerIntelligenceProfiles.Local.FirstOrDefault(p => p.UserId == userId)
+                ?? await _context.LearnerIntelligenceProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
             {
@@ -43,7 +43,17 @@ namespace JCAP.Services.Implementations
                     UpdatedAtUtc = DateTime.UtcNow
                 };
                 _context.LearnerIntelligenceProfiles.Add(profile);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    // Concurrency race: record already created by concurrent request
+                    profile = _context.LearnerIntelligenceProfiles.Local.FirstOrDefault(p => p.UserId == userId)
+                        ?? await _context.LearnerIntelligenceProfiles.FirstOrDefaultAsync(p => p.UserId == userId)
+                        ?? profile;
+                }
             }
 
             return profile;
@@ -146,19 +156,7 @@ namespace JCAP.Services.Implementations
             double sessionHintDep = Math.Clamp(avgHintLevel * 33.3, 0.0, 100.0);
             profile.HintDependencyRate = Math.Round(profile.HintDependencyRate * 0.8 + sessionHintDep * 0.2, 1);
 
-            // 3. Cập nhật KeigoCommandScore (Kiểm tra thể lịch sự / kính ngữ)
-            var userMsgs = await _context.RoleplayMessages
-                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
-                .Select(m => m.JapaneseText)
-                .ToListAsync();
-            if (userMsgs.Count > 0)
-            {
-                int politeCount = userMsgs.Count(t => t.Contains("です") || t.Contains("ます") || t.Contains("ございます") || t.Contains("でした") || t.Contains("ません") || t.Contains("ください"));
-                double sessionKeigoScore = Math.Clamp(politeCount / (double)userMsgs.Count * 100.0, 20.0, 100.0);
-                profile.KeigoCommandScore = Math.Round(profile.KeigoCommandScore * 0.8 + sessionKeigoScore * 0.2, 1);
-            }
-
-            // 4. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
+            // 3. Tải thông tin Session & Scenario để suy luận SocialRegister phù hợp
             var session = await _context.RoleplaySessions
                 .AsSplitQuery()
                 .Include(s => s.ScenarioLevelConfiguration)
@@ -166,12 +164,50 @@ namespace JCAP.Services.Implementations
                 .Include(s => s.ScenarioLevelConfiguration)
                     .ThenInclude(c => c!.TargetGrammars)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+            var scenarioTitle = session?.ScenarioLevelConfiguration?.Scenario?.Title ?? string.Empty;
+            if (string.IsNullOrEmpty(scenarioTitle) && session?.ScenarioLevelConfiguration?.ScenarioId > 0)
+            {
+                var scenario = await _context.Scenarios.FindAsync(session.ScenarioLevelConfiguration.ScenarioId);
+                scenarioTitle = scenario?.Title ?? string.Empty;
+            }
+
+            var aiPersona = session?.ScenarioLevelConfiguration?.AiPersona ?? string.Empty;
+            var description = session?.ScenarioLevelConfiguration?.Description ?? string.Empty;
+            var reg = RoleplaySocialRegister.Deduce(scenarioTitle, aiPersona, description);
+            // 4. Cập nhật KeigoCommandScore (Kiểm tra thể lịch sự / kính ngữ thích ứng theo vai vế xã hội)
+            var userMsgs = await _context.RoleplayMessages
+                .Where(m => m.RoleplaySessionId == sessionId && m.Sender == "User")
+                .Select(m => m.JapaneseText)
+                .ToListAsync();
+            if (userMsgs.Count > 0)
+            {
+                double sessionKeigoScore;
+                if (reg.RegisterType == SocialRegisterType.PeerFriend)
+                {
+                    // Với bối cảnh bạn bè thân mật (PeerFriend): Thể thân mật (Tamego) là tự nhiên và đúng chuẩn văn hóa.
+                    // Đánh giá dựa trên độ tự nhiên của văn phong thân mật (hạt từ đệm, liên từ, câu hội thoại tự nhiên)
+                    int naturalCasualCount = userMsgs.Count(t =>
+                        t.Contains("ね") || t.Contains("よ") || t.Contains("かな") || t.Contains("うん") ||
+                        t.Contains("だ") || t.Contains("ありがとう") || t.Contains("そう") || t.Contains("いい") ||
+                        t.Contains("です") || t.Contains("ます"));
+                    sessionKeigoScore = Math.Clamp(naturalCasualCount / (double)userMsgs.Count * 100.0, 60.0, 100.0);
+                }
+                else
+                {
+                    int politeCount = userMsgs.Count(t => t.Contains("です") || t.Contains("ます") || t.Contains("ございます") || t.Contains("でした") || t.Contains("ません") || t.Contains("ください"));
+                    sessionKeigoScore = Math.Clamp(politeCount / (double)userMsgs.Count * 100.0, 20.0, 100.0);
+                }
+                profile.KeigoCommandScore = Math.Round(profile.KeigoCommandScore * 0.8 + sessionKeigoScore * 0.2, 1);
+            }
+
+            // 5. Ước lượng Theta (IRT Communicative Ability: -3.0 .. +3.0)
             string jlpt = session?.ScenarioLevelConfiguration?.JLPTLevel ?? "N5";
             double jlptWeight = jlpt == "N3" ? 2.5 : jlpt == "N4" ? 1.5 : 0.5;
             double estimatedTheta = Math.Clamp((avgScore - 70.0) / 25.0 + (jlptWeight - 1.0), -2.5, 2.8);
             profile.ThetaEstimate = Math.Round(profile.ThetaEstimate * 0.8 + estimatedTheta * 0.2, 2);
 
-            // 5. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
+            // 6. Cập nhật InferredTraitsJson (TikTok-style deep behavioral profile & trajectory)
             var strengths = new System.Collections.Generic.List<string>();
             var weaknesses = new System.Collections.Generic.List<string>();
 
@@ -181,8 +217,8 @@ namespace JCAP.Services.Implementations
             if (profile.ParticleAccuracyRate >= 75) strengths.Add("Dùng chuẩn xác trợ từ は/が/を/に");
             else weaknesses.Add("Dễ nhầm lẫn cặp trợ từ に vs で, は vs が");
 
-            if (profile.KeigoCommandScore >= 70) strengths.Add("Làm chủ tốt thể lịch sự Desu/Masu");
-            else weaknesses.Add("Cần củng cố thể lịch sự khi giao tiếp với người lạ");
+            if (profile.KeigoCommandScore >= 70) strengths.Add("Làm chủ tốt thể lịch sự và văn phong ngữ cảnh");
+            else weaknesses.Add("Cần củng cố văn phong giao tiếp phù hợp đối tượng");
 
             if (profile.AverageMoraRate >= 4.2) strengths.Add("Tốc độ phát âm tự nhiên theo nhịp phách Tokyo");
             if (profile.HintDependencyRate <= 20) strengths.Add("Tự tin đối thoại chủ động không lệ thuộc gợi ý");
@@ -276,6 +312,14 @@ namespace JCAP.Services.Implementations
             });
 
             // 6. Kích hoạt cập nhật FSRS LearnerSkillMastery (Spaced Repetition Mastery Tracking)
+            // Tải trước danh sách SkillMastery hiện có của user vào dictionary để tránh N+1 query và triệt tiêu lỗi duplicate key
+            var existingMasteries = await _context.LearnerSkillMasteries
+                .Where(m => m.UserId == userId)
+                .ToListAsync();
+            var masteryMap = existingMasteries
+                .GroupBy(m => m.SkillCode, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
             // (a) Duyệt qua các lỗi sai phát hiện E01-E10 trong phiên để ghi nhận Lapses
             var detectedErrorCodes = signals
                 .Where(s => !string.IsNullOrWhiteSpace(s.DetectedRuleErrorCodes))
@@ -289,10 +333,7 @@ namespace JCAP.Services.Implementations
                 if (code.Length > 100) code = code[..100];
                 if (name.Length > 200) name = name[..200];
 
-                var mastery = await _context.LearnerSkillMasteries
-                    .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == code);
-
-                if (mastery == null)
+                if (!masteryMap.TryGetValue(code, out var mastery))
                 {
                     mastery = new LearnerSkillMastery
                     {
@@ -308,6 +349,7 @@ namespace JCAP.Services.Implementations
                         NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(12)
                     };
                     _context.LearnerSkillMasteries.Add(mastery);
+                    masteryMap[code] = mastery;
                 }
                 else
                 {
@@ -320,47 +362,59 @@ namespace JCAP.Services.Implementations
                 }
             }
 
-            // (b) Duyệt qua các Từ vựng & Ngữ pháp mục tiêu đã sử dụng để củng cố Stability
+            // (b) Duyệt qua các Từ vựng & Ngữ pháp mục tiêu của kịch bản để cập nhật vòng đời FSRS
             var combinedUserText = string.Join(" ", userMsgs);
             if (session?.ScenarioLevelConfiguration?.TargetVocabularies != null)
             {
-                foreach (var vocab in session.ScenarioLevelConfiguration.TargetVocabularies)
+                var distinctVocabs = session.ScenarioLevelConfiguration.TargetVocabularies
+                    .Where(v => !string.IsNullOrWhiteSpace(v.Word))
+                    .GroupBy(v => v.Word.Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var vocab in distinctVocabs)
                 {
-                    if (string.IsNullOrWhiteSpace(vocab.Word)) continue;
-                    if (combinedUserText.Contains(vocab.Word))
+                    bool userSpoke = combinedUserText.Contains(vocab.Word) ||
+                                     (!string.IsNullOrWhiteSpace(vocab.Reading) && combinedUserText.Contains(vocab.Reading));
+
+                    var vCode = "VOCAB_" + vocab.Word.Trim();
+                    if (vCode.Length > 100) vCode = vCode[..100];
+                    var vName = $"Từ vựng: {vocab.Word} ({vocab.Meaning})";
+                    if (vName.Length > 200) vName = vName[..200];
+
+                    if (!masteryMap.TryGetValue(vCode, out var vMastery))
                     {
-                        var vCode = "VOCAB_" + vocab.Word;
-                        if (vCode.Length > 100) vCode = vCode[..100];
-                        var vName = $"Từ vựng: {vocab.Word} ({vocab.Meaning})";
-                        if (vName.Length > 200) vName = vName[..200];
-
-                        var vMastery = await _context.LearnerSkillMasteries
-                            .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == vCode);
-
-                        if (vMastery == null)
+                        vMastery = new LearnerSkillMastery
                         {
-                            vMastery = new LearnerSkillMastery
-                            {
-                                UserId = userId,
-                                SkillCode = vCode,
-                                SkillName = vName,
-                                Category = "Vocabulary",
-                                Stability = 2.0,
-                                Difficulty = 4.0,
-                                Repetitions = 1,
-                                Lapses = 0,
-                                LastPracticedUtc = DateTime.UtcNow,
-                                NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(2)
-                            };
-                            _context.LearnerSkillMasteries.Add(vMastery);
-                        }
-                        else
+                            UserId = userId,
+                            SkillCode = vCode,
+                            SkillName = vName,
+                            Category = "Vocabulary",
+                            Stability = userSpoke ? 2.5 : 1.0,
+                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Repetitions = 1,
+                            Lapses = userSpoke ? 0 : 1,
+                            LastPracticedUtc = DateTime.UtcNow,
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                        };
+                        _context.LearnerSkillMasteries.Add(vMastery);
+                        masteryMap[vCode] = vMastery;
+                    }
+                    else
+                    {
+                        vMastery.Repetitions += 1;
+                        if (userSpoke)
                         {
-                            vMastery.Repetitions += 1;
                             vMastery.Difficulty = Math.Max(1.0, Math.Round(vMastery.Difficulty - 0.2, 2));
                             vMastery.Stability = Math.Min(100.0, Math.Round(vMastery.Stability * 1.5, 2));
                             vMastery.LastPracticedUtc = DateTime.UtcNow;
                             vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(vMastery.Stability, 1)));
+                        }
+                        else
+                        {
+                            vMastery.Lapses += 1;
+                            vMastery.LastPracticedUtc = DateTime.UtcNow;
+                            vMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
                         }
                     }
                 }
@@ -368,44 +422,57 @@ namespace JCAP.Services.Implementations
 
             if (session?.ScenarioLevelConfiguration?.TargetGrammars != null)
             {
-                foreach (var grammar in session.ScenarioLevelConfiguration.TargetGrammars)
+                var distinctGrammars = session.ScenarioLevelConfiguration.TargetGrammars
+                    .Where(g => !string.IsNullOrWhiteSpace(g.Pattern) &&
+                                !string.IsNullOrWhiteSpace(string.Concat(g.Pattern.Where(c => c != '～' && c != '~')).Trim()))
+                    .GroupBy(g => string.Concat(g.Pattern.Where(c => c != '～' && c != '~')).Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
+                foreach (var grammar in distinctGrammars)
                 {
-                    if (string.IsNullOrWhiteSpace(grammar.Pattern)) continue;
-                    var key = grammar.Pattern.Replace("～", "").Replace("~", "").Trim();
-                    if (!string.IsNullOrWhiteSpace(key) && combinedUserText.Contains(key))
+                    var key = string.Concat(grammar.Pattern.Where(c => c != '～' && c != '~')).Trim();
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    bool userSpoke = combinedUserText.Contains(key);
+
+                    var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";
+                    if (gCode.Length > 100) gCode = gCode[..100];
+                    var gName = $"Ngữ pháp: {grammar.Pattern} ({grammar.Meaning})";
+                    if (gName.Length > 200) gName = gName[..200];
+
+                    if (!masteryMap.TryGetValue(gCode, out var gMastery))
                     {
-                        var gCode = grammar.Id > 0 ? $"GRAMMAR_{grammar.Id}" : $"GRAMMAR_{key}";
-                        if (gCode.Length > 100) gCode = gCode[..100];
-                        var gName = $"Ngữ pháp: {grammar.Pattern} ({grammar.Meaning})";
-                        if (gName.Length > 200) gName = gName[..200];
-
-                        var gMastery = await _context.LearnerSkillMasteries
-                            .FirstOrDefaultAsync(m => m.UserId == userId && m.SkillCode == gCode);
-
-                        if (gMastery == null)
+                        gMastery = new LearnerSkillMastery
                         {
-                            gMastery = new LearnerSkillMastery
-                            {
-                                UserId = userId,
-                                SkillCode = gCode,
-                                SkillName = gName,
-                                Category = "Grammar",
-                                Stability = 2.0,
-                                Difficulty = 4.5,
-                                Repetitions = 1,
-                                Lapses = 0,
-                                LastPracticedUtc = DateTime.UtcNow,
-                                NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(2)
-                            };
-                            _context.LearnerSkillMasteries.Add(gMastery);
-                        }
-                        else
+                            UserId = userId,
+                            SkillCode = gCode,
+                            SkillName = gName,
+                            Category = "Grammar",
+                            Stability = userSpoke ? 2.5 : 1.0,
+                            Difficulty = userSpoke ? 3.5 : 5.0,
+                            Repetitions = 1,
+                            Lapses = userSpoke ? 0 : 1,
+                            LastPracticedUtc = DateTime.UtcNow,
+                            NextRecommendedReviewUtc = userSpoke ? DateTime.UtcNow.AddDays(2) : DateTime.UtcNow.AddHours(4)
+                        };
+                        _context.LearnerSkillMasteries.Add(gMastery);
+                        masteryMap[gCode] = gMastery;
+                    }
+                    else
+                    {
+                        gMastery.Repetitions += 1;
+                        if (userSpoke)
                         {
-                            gMastery.Repetitions += 1;
                             gMastery.Difficulty = Math.Max(1.0, Math.Round(gMastery.Difficulty - 0.2, 2));
                             gMastery.Stability = Math.Min(100.0, Math.Round(gMastery.Stability * 1.4, 2));
                             gMastery.LastPracticedUtc = DateTime.UtcNow;
                             gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddDays(Math.Max(1.0, Math.Round(gMastery.Stability, 1)));
+                        }
+                        else
+                        {
+                            gMastery.Lapses += 1;
+                            gMastery.LastPracticedUtc = DateTime.UtcNow;
+                            gMastery.NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6);
                         }
                     }
                 }

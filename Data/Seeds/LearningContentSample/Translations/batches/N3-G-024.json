@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dekireba-dekitara",
+      "Fields": {
+        "Meaning": "Nếu có thể, nếu được",
+        "Formation": "できれば／できたら ＋ mong muốn hoặc lời nhờ",
+        "Explanation": "Nêu mong muốn có điều kiện với giọng nhẹ nhàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dekireba-dekitara:example:1": "Nếu được, tôi mong nhận phản hồi chậm nhất vào ngày mai.",
+        "dekireba-dekitara:example:2": "Nếu bạn đến sớm một chút được thì tốt quá."
+      },
+      "SourceHash": "b5bcb87de3dc80869cd6697ee12c999d5efb2769c24e42c6e558dc9114ccbcff"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-goran",
+      "Fields": {
+        "Meaning": "Thử làm xem, xem kìa",
+        "Formation": "Động từ thể て ＋ ごらん",
+        "Explanation": "Khuyến khích người nghe thử làm, thường khi nói với người nhỏ tuổi hoặc thân thiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-goran:example:1": "Không khó đâu, con thử tự làm xem.",
+        "te-goran:example:2": "Nhìn đằng kia xem. Có cầu vồng kìa."
+      },
+      "SourceHash": "6e00706a818ddec0055312df54bd3171448859861c314acddfc7ef9344e09394"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-shou-ga-nai",
+      "Fields": {
+        "Meaning": "Rất, đến mức không chịu nổi",
+        "Formation": "Dạng て／で ＋ しょうがない／しかたがない",
+        "Explanation": "Nhấn mạnh cảm giác hoặc cảm xúc mạnh khó kiềm chế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-shou-ga-nai:example:1": "Từ sáng chưa ăn gì nên tôi đói cồn cào.",
+        "te-shou-ga-nai:example:2": "Tôi cứ bồn chồn không yên về kết quả kỳ thi."
+      },
+      "SourceHash": "a336ea8ca90685d2c3baf704d82374478404a46a6b7d26744832f6fd478e0a9d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-sumu",
+      "Fields": {
+        "Meaning": "Chỉ cần… là xong",
+        "Formation": "Cách xử lý ＋ で済む／động từ thể từ điển ＋ だけで済む／động từ thể て ＋ 済む",
+        "Explanation": "Nêu cách xử lý đủ để giải quyết việc mà không cần làm thêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-sumu:example:1": "Vết thương nhẹ nên chỉ cần sát trùng là xong.",
+        "te-sumu:example:2": "Hôm nay tôi chỉ có những việc giải quyết được qua điện thoại."
+      },
+      "SourceHash": "505e2b476390e7a2e6499b8f03cb87340d7a4b4605135cc21bebe85319ef79c7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dewa-soredewa",
+      "Fields": {
+        "Meaning": "Vậy thì, thôi nhé",
+        "Formation": "では／それでは／じゃあ ＋ câu tiếp theo",
+        "Explanation": "Chuyển sang việc tiếp theo hoặc kết thúc cuộc trò chuyện. じゃあ thân mật hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dewa-soredewa:example:1": "Vậy thì bắt đầu cuộc họp hôm nay nhé.",
+        "dewa-soredewa:example:2": "Thôi, mai gặp lại nhé."
+      },
+      "SourceHash": "2329a669bb32a9c8d0ab0b6109a8a96de07e600072575ece7331982440d40b25"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gata",
+      "Fields": {
+        "Meaning": "Kiểu, mẫu, loại",
+        "Formation": "Danh từ ＋ 型（がた）",
+        "Explanation": "Gắn sau tên loại hoặc đặc điểm để phân loại. 最新型 là mẫu mới nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gata:example:1": "Nhóm máu của tôi là A.",
+        "gata:example:2": "Công ty này sản xuất rô-bốt mẫu mới nhất."
+      },
+      "SourceHash": "8d76806f89a64cdbdedd9a31a76c34af557049b93aa75fb2df5ab97184782c81"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gatai",
+      "Fields": {
+        "Meaning": "Khó mà làm, khó lòng",
+        "Formation": "Gốc ます ＋ がたい",
+        "Explanation": "Nhấn mạnh cái khó đến mức gần như không thể, thường khi tin, chấp nhận hoặc quên một điều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gatai:example:1": "Chuyện anh ấy nói dối thật khó tin.",
+        "gatai:example:2": "Đến giờ tôi vẫn khó quên cảnh tượng hôm đó."
+      },
+      "SourceHash": "541d2f0b24126b2b3ca306fbaf78d4229b6e9e595ed45e50eb1a9765202de094"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "gachi",
+      "Fields": {
+        "Meaning": "Hay, dễ có xu hướng",
+        "Formation": "Gốc ます hoặc danh từ ＋ がち",
+        "Explanation": "Diễn tả việc thường xảy ra hoặc xu hướng lặp lại, thường là điều không mong muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "gachi:example:1": "Khi bận, tôi hay bỏ bữa sáng.",
+        "gachi:example:2": "Dạo này trời thường nhiều mây."
+      },
+      "SourceHash": "c5226ad6f403526bb4fc01a5f9391cbecd06baa96d17dc6b2beb948496c7802d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-to-iu-to-reason",
+      "Fields": {
+        "Meaning": "Nếu hỏi tại sao thì",
+        "Formation": "なぜ／どうして ＋ mệnh đề ＋ かというと、lý do ＋ からだ",
+        "Explanation": "Nhắc lại câu hỏi về nguyên nhân rồi dẫn vào lời giải thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-to-iu-to-reason:example:1": "Nếu hỏi vì sao tôi chọn công việc này thì đó là vì tôi thích trò chuyện với mọi người.",
+        "ka-to-iu-to-reason:example:2": "Tôi đến muộn vì tàu ngừng chạy."
+      },
+      "SourceHash": "960ebcbb317cef1bf422523af693c4fa6d2e28c0e09e4416346edc69bd630206"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-to-iu-to-choice",
+      "Fields": {
+        "Meaning": "Nếu phải chọn thì, thiên về",
+        "Formation": "どちらかというと ＋ nhận định",
+        "Explanation": "Nói mình nghiêng về một phía khi so sánh hoặc đưa ra nhận xét dè dặt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-to-iu-to-choice:example:1": "Nếu phải chọn thì tôi thấy mình tỉnh táo hơn vào buổi sáng.",
+        "ka-to-iu-to-choice:example:2": "Tôi thuộc kiểu không thích đồ ngọt lắm."
+      },
+      "SourceHash": "ddf516d9a4960954cd2ba2d3871d5ba7a8141296d3fae6769a0e52b8fe2acbdd"
+    }
+  ]
+}

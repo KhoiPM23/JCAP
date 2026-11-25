@@ -2,13 +2,13 @@
 
 ## Luồng và giao diện
 
-Menu learner **Kho học liệu** → chọn chủ đề → tab **Từ vựng / Ngữ pháp** → chọn mục → trang chi tiết.
+Menu learner **Kho học liệu** → chọn **Chủ đề từ vựng** hoặc **Chủ đề ngữ pháp** → chọn chủ đề → chọn mục → trang chi tiết.
 Giao diện dùng LearnerShell, font, token màu theo theme, icon, button, nhãn JLPT và hiển thị furigana của web hiện có.
 Ba màn được tải thành các chunk riêng khi cần. Không dùng dữ liệu mock hoặc thêm thư viện.
 
-- Chủ đề: thẻ tên/mô tả/level, số từ và ngữ pháp đang hiển thị; lọc N5–N1,
+- Chủ đề: thẻ tên/mô tả/level và số mục thuộc danh mục đang xem. Từ vựng nhóm theo tình huống, ngữ pháp nhóm theo mục đích diễn đạt. Lọc N5–N1,
   tìm theo tên/mô tả, **12 chủ đề/trang**. Mặc định xem tất cả level.
-- Nội dung: hai tab có số lượng, tìm theo từ/mẫu, cách đọc và nghĩa;
+- Nội dung: mở danh sách của loại đã chọn, tìm theo từ/mẫu, cách đọc và nghĩa;
   ngữ pháp tìm thêm cấu trúc. **20 mục/trang**, theo thứ tự admin đã sắp xếp,
   hòa thứ tự thì theo ID để không lặp/mất mục qua trang.
 - Chi tiết: từ/mẫu, cách đọc, nghĩa, từ loại/cấu trúc, giải thích, lưu ý,
@@ -28,8 +28,7 @@ Ba màn được tải thành các chunk riêng khi cần. Không dùng dữ li�
   và có liên kết trong Topic đó; level cũ null được hiểu N5.
 - Số đếm, tìm kiếm và phân trang đều thực hiện trên dữ liệu hợp lệ ở backend,
   không tải toàn kho về rồi lọc tại trình duyệt.
-- Topic trống vẫn mở được; hiển thị trạng thái rỗng từng tab. Khi chọn thẻ chỉ có
-  ngữ pháp, hệ thống mở sẵn tab ngữ pháp.
+- Mỗi danh mục chỉ hiện chủ đề có ít nhất một nội dung hợp lệ của loại đó. Các liên kết ngữ pháp trong chủ đề tình huống mẫu vẫn dùng được qua URL cũ và Flashcards. Kho học liệu dùng các chủ đề mẫu theo mục đích diễn đạt để khám phá ngữ pháp.
 - URL detail trực tiếp cũng kiểm tra trạng thái, level và liên kết; không hợp lệ trả 404.
   Chủ đề liên quan ở detail chỉ gồm Topic đang hiển thị, cùng level.
 - Không sửa, xóa hoặc tạo tiến độ khi đọc nội dung. Không có model/migration mới.
@@ -43,12 +42,13 @@ Ba màn được tải thành các chunk riêng khi cần. Không dùng dữ li�
 | URL web | Màn |
 |---|---|
 | `/learning/topics` | Kho chủ đề |
+| `/learning/topics?kind=grammars` | Chủ đề ngữ pháp |
 | `/learning/topics/{topicId}?tab=vocabularies` | List từ vựng |
 | `/learning/topics/{topicId}?tab=grammars` | List ngữ pháp |
 | `/learning/topics/{topicId}/{vocabularies\|grammars}/{id}` | Chi tiết |
 
-Query URL giữ `page`, `keyword`, `level` của kho; danh sách giữ `tab`, `page`,
-`keyword` và `catalogPage/catalogKeyword/catalogLevel` cho đường quay lại.
+Query URL giữ `kind`, `page`, `keyword`, `level` của kho. Danh sách giữ `tab`, `page`,
+`keyword` và `catalogKind/catalogPage/catalogKeyword/catalogLevel` cho đường quay lại.
 Không nhận URL quay về tùy ý hoặc redirect ra ngoài hệ thống.
 
 | API GET dưới `/api/learning` | Kết quả |

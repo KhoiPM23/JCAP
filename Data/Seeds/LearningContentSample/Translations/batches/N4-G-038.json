@@ -1,0 +1,40 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "rareru-potential",
+      "Fields": {
+        "Meaning": "Thể khả năng, có thể làm",
+        "Formation": "Nhóm 1: hàng え ＋ る／nhóm 2: bỏ る ＋ られる／する → できる／来る → 来られる",
+        "Explanation": "Diễn tả khả năng hoặc điều kiện để làm. Nhóm 1 dùng dạng như 読める.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "rareru-potential:example:1": "Bạn đọc được chữ kanji này không?",
+        "rareru-potential:example:2": "Tôi không dậy sớm được nên đã đến muộn."
+      },
+      "SourceHash": "4e703efd989f6a1e71d08c023fc3ed3ea5757c4409f755754b7368e6dda6e792"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ndakedo-ndesuga",
+      "Fields": {
+        "Meaning": "Dẫn vào câu hỏi hoặc lời nhờ một cách nhẹ nhàng",
+        "Formation": "Thể thông thường ＋ んだけど／んですが (danh từ và tính từ な dùng な)",
+        "Explanation": "Nêu bối cảnh trước khi hỏi hoặc nhờ. Người nói có thể bỏ lửng phần sau nếu ý đã rõ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ndakedo-ndesuga:example:1": "À, tôi có chút chuyện muốn hỏi ạ.",
+        "ndakedo-ndesuga:example:2": "Mình đau đầu, nghỉ một chút được không?"
+      },
+      "SourceHash": "acd490980e1bfafef65199eaedf164c447b10e53c01a3685d858922d549f498a"
+    }
+  ]
+}

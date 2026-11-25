@@ -6,6 +6,7 @@ public class LearnerTopicQuery
 {
     [StringLength(200)] public string? Keyword { get; set; }
     [RegularExpression("N[1-5]")] public string? JLPTLevel { get; set; }
+    [RegularExpression("vocabularies|grammars")] public string? Kind { get; set; }
     [Range(1, 1000000)] public int Page { get; set; } = 1;
     [Range(1, 100)] public int PageSize { get; set; } = 12;
 }

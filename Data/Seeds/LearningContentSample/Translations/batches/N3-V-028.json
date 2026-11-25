@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2f232cacf",
+      "Fields": {
+        "Meaning": "Bảng đen, bảng viết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "黒板（こくばん）có nghĩa là bảng đen, bảng viết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159712": "Tôi sẽ viết lên bảng nhé.",
+        "172975": "Bảng đen chưa chắc có màu đen."
+      },
+      "SourceHash": "ac17c7936876004028e2c8ceabe1dbbb3bad03fa383189f029878e93779d2e2b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60b9a40caa",
+      "Fields": {
+        "Meaning": "Khắc phục, vượt qua",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "克服（こくふく）có nghĩa là khắc phục, vượt qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102591": "Anh ấy vượt qua nhiều khó khăn.",
+        "106891": "Ông ấy vẫn chưa vượt qua được nỗi đau mất vợ."
+      },
+      "SourceHash": "6622bb607ecccbbb9b8f492dd763091b9257123741566e0ce4c3877cee8a982c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1fa000031d",
+      "Fields": {
+        "Meaning": "Người dân, công dân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "国民（こくみん）có nghĩa là người dân, công dân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96196": "Họ là một dân tộc yêu chuộng hòa bình.",
+        "173026": "Người dân reo hò chào đón ông lên ngôi vua."
+      },
+      "SourceHash": "c335e8acc860e4bc68d53d8746508eb27ea32a07adc4ac439529471b3a5a19b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fe42a234e2",
+      "Fields": {
+        "Meaning": "Ngũ cốc, hạt lương thực",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "穀物（こくもつ）có nghĩa là ngũ cốc, hạt lương thực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107244": "Ông ấy buôn ngũ cốc.",
+        "125789": "Chim thường ăn quả nhỏ và hạt ngũ cốc."
+      },
+      "SourceHash": "d595d7bfdcb6be58a683dfeec406cc5509d90a9820e8f4984ff0ac331058357c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d527d10b8",
+      "Fields": {
+        "Meaning": "Eo, hông, vùng thắt lưng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "腰（こし）có nghĩa là eo, hông, vùng thắt lưng.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "161f7b5870e396e07560f1cb18f23275ad7a09ec57d0754e725a4246b93205bd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "908ad483d6",
+      "Fields": {
+        "Meaning": "Cá nhân, riêng tư",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "個人（こじん）có nghĩa là cá nhân, riêng tư.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149215": "Xã hội được tạo nên từ các cá nhân.",
+        "149222": "Thay đổi trong xã hội bắt đầu từ các cá nhân."
+      },
+      "SourceHash": "5dd19e9731196083bc7eeaa8090b9bf61f80f92e3163ae1915b420b33d6867e9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a796e4b69",
+      "Fields": {
+        "Meaning": "Vượt qua, trải qua",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "越す（こす）có nghĩa là vượt qua, trải qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141122": "Đêm nay tàu sẽ vượt qua xích đạo.",
+        "201139": "Không biết họ sẽ qua mùa đông lạnh giá trong lều đó bằng cách nào."
+      },
+      "SourceHash": "6e7960908d8da50fd01ed332dd194d40f96137f78cdd47a0720a834fcf0c3cdb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ae2fdd72f",
+      "Fields": {
+        "Meaning": "Quốc gia, nhà nước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "国家（こっか）có nghĩa là quốc gia, nhà nước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123700": "Điều tương tự cũng đúng với các quốc gia.",
+        "173097": "Nhà nước đang đối mặt với khủng hoảng tài chính."
+      },
+      "SourceHash": "9e06b7d49d3cb8814c04fff840c1c87ffe14999b9d62a6e75c31011ac0fe8f9e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25d3414d84",
+      "Fields": {
+        "Meaning": "Quốc hội",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "国会（こっかい）có nghĩa là quốc hội.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173075": "Quốc hội kết thúc kỳ họp và bước vào kỳ nghỉ hè.",
+        "186646": "Quốc hội sẽ họp vào thứ Ba."
+      },
+      "SourceHash": "942c65149aedc33c4b2c11f38159d60ddc56ab17a723859118ab61eeb6d42bf6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1337b1b9ec",
+      "Fields": {
+        "Meaning": "Biên giới",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "国境（こっきょう）có nghĩa là biên giới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80278": "Chúng tôi sẽ qua biên giới trong ngày mai.",
+        "97150": "Họ đã vượt qua biên giới."
+      },
+      "SourceHash": "c8753e93cd867795b2bafa108120f2b0d88b27da9c3509dca06af412eafcfc4e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3edaebb52",
+      "Fields": {
+        "Meaning": "Gãy xương",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "骨折（こっせつ）có nghĩa là gãy xương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76666": "Tôi bị gãy chân khi trượt tuyết.",
+        "189891": "Có vẻ tôi bị gãy tay phải."
+      },
+      "SourceHash": "7fcaad7c041d813e7b01e487c4f699c8bff9afbb8b2962d69600e0aa1bf83327"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c2e8a5848",
+      "Fields": {
+        "Meaning": "Bưu kiện, gói hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小包（こづつみ）có nghĩa là bưu kiện, gói hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221135": "Xin gửi bưu kiện này bằng đường biển.",
+        "221136": "Tôi muốn gửi bảo đảm bưu kiện này ạ."
+      },
+      "SourceHash": "9d0f8a4d6146e0c23967e7883a676c4c513dbea8cb3ee0653276e156686653e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "28bac43acc",
+      "Fields": {
+        "Meaning": "Khác, khác biệt",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "異なる（ことなる）có nghĩa là khác, khác biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98559": "Ý kiến của họ khác với ý kiến của tôi.",
+        "166918": "Tính cách chúng tôi hoàn toàn khác nhau."
+      },
+      "SourceHash": "c4d8401130515e1d08d925a57e9a46ad5ca88f8a2f0481608a97c4a991d9c7dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b0d9b6282",
+      "Fields": {
+        "Meaning": "Tục ngữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "諺（ことわざ）có nghĩa là tục ngữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223759": "Tôi đã từng nghe người ta dùng câu tục ngữ này.",
+        "228305": "Ở xứ Wales có một câu tục ngữ."
+      },
+      "SourceHash": "ce50aca50030cf0bc0fe962a5071de01726f191d34030992793a7d3d632eb865"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6cd948ec5d",
+      "Fields": {
+        "Meaning": "Từ chối, báo trước",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "断る có thể là từ chối hoặc báo trước. 断りなく chỉ hành động làm mà không báo hoặc không xin phép.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102265": "Anh ấy vào phòng tôi mà không xin phép.",
+        "199149": "Vì sao bạn từ chối đề nghị của anh ấy?"
+      },
+      "SourceHash": "c9e0140fa768e43201b78f4816414cd53e82cff286e16c767d290b05afb23c61"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1551075c08",
+      "Fields": {
+        "Meaning": "Bột",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "粉（こな）có nghĩa là bột.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197738": "Bánh mì làm từ bột mì, nước và men.",
+        "221141": "Lúa mì này sẽ được xay thành bột."
+      },
+      "SourceHash": "501387ae5542bc752216de4e709dada1b0ba68c914df4d31944b9faa855daa2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a513d2c3ad",
+      "Fields": {
+        "Meaning": "Sở thích, gu",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "好み（このみ）có nghĩa là sở thích, gu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88610": "Cô ấy kén ăn.",
+        "123479": "Anh chị có màu nào đặc biệt ưa thích không ạ?"
+      },
+      "SourceHash": "99cf5b0dea9e9e3d751a69932f6f5f4d2bf0ec34f01840a275f3be5bbbe94927"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "02122dbf6e",
+      "Fields": {
+        "Meaning": "Ưa thích, chuộng",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "好む（このむ）có nghĩa là ưa thích, chuộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100682": "Anh ấy thích đi du lịch nước ngoài bằng máy bay.",
+        "206117": "Ông lão thích xe ngựa hơn ô tô."
+      },
+      "SourceHash": "9dac07af14325c3d59013cae1ea7767f3b264f9a17c83ac447e2ab900cc5b2cb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4aef785a50",
+      "Fields": {
+        "Meaning": "Bản sao, sao chép, photocopy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "コピー（コピー）có nghĩa là bản sao, sao chép, photocopy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217685": "Bạn sao chép cái này giúp tôi được không?",
+        "223219": "Xin photocopy trang này."
+      },
+      "SourceHash": "c02205eb7ae7d34af5c9741d2333902d0964051c401d2e2d0f3c192dad207793"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1093c8201",
+      "Fields": {
+        "Meaning": "Lúa mì",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小麦（こむぎ）có nghĩa là lúa mì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221141": "Lúa mì này sẽ được xay thành bột.",
+        "226289": "Canada sản xuất lúa mì chất lượng tốt."
+      },
+      "SourceHash": "819dc1b88bb794aedc9c3bb714841007d0f0a23442a72ac3bc345dc81ca1d17c"
+    }
+  ]
+}

@@ -1,24 +1,61 @@
 ruby {
   ruby-position: over;
   ruby-align: center;
+  letter-spacing: normal;
 }
 
 rt {
-  font-size: max(10px, 0.52em);
+  font-size: max(10.5px, 0.52em);
   line-height: 1;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ai);
+  letter-spacing: 0;
+  color: var(--sumi-muted);
   user-select: none;
   position: relative;
   top: -2px;
+  white-space: nowrap;
 }
 
-/* User speech bubble contrast enhancement */
+/* Furigana trong bong bóng thoại của AI (Đối tác): Chàm xám thanh thoát chuẩn Washi, làm nổi bật Kanji chính */
+.bubble-ai rt,
+.bubble-ai ruby rt,
+.bubble-ai .jc-jp rt,
+.jc-bubble--ai rt {
+  color: #445B8A !important;
+  font-weight: 500 !important;
+  font-size: max(11px, 0.54em) !important;
+  opacity: 0.92 !important;
+}
+
+/* Furigana trong bong bóng thoại của Học viên (Người học): Xanh chàm đậm rõ nét trên nền trời dịu */
+.bubble-user rt,
+.bubble-user ruby rt,
+.bubble-user .jc-jp rt,
 .jc-bubble--me rt,
-.bubble-user rt {
-  color: var(--on-ai, #ffffff);
-  opacity: 0.88;
+.jc-bubble--me .jc-jp rt {
+  color: #26437A !important;
+  font-weight: 500 !important;
+  font-size: max(11px, 0.54em) !important;
+  opacity: 0.95 !important;
+  text-shadow: none !important;
+}
+
+/* Bong bóng thoại AI (Landing Page standard: Warm Ivory Wabi-Sabi Paper - Nền ngà ấm áp thanh nhã) */
+.bubble-ai {
+  background-color: #FAF8F5 !important;
+  border: 1px solid #E5DFD5 !important;
+  color: #1E293B !important;
+  border-radius: 16px 16px 16px 4px !important;
+  box-shadow: 0 1px 3px rgba(30, 44, 72, 0.04) !important;
+}
+
+/* Bong bóng thoại Học viên (Landing Page standard: Soft Serene Sky - Xanh ngọc xám dịu, chữ nét căng, tuyệt đối không chìm màu) */
+.bubble-user {
+  background-color: #E8EFF6 !important;
+  border: 1px solid #CADBEA !important;
+  color: #0F172A !important;
+  border-radius: 16px 16px 4px 16px !important;
+  box-shadow: 0 1px 3px rgba(30, 44, 72, 0.04) !important;
 }
 
 /* When furigana is hidden, maintain layout spacing to avoid jarring layout shifts */
@@ -151,8 +188,223 @@ rt {
   animation: floatScoreDeduct 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+/* Hanabi Golden Sparkle & Sakura Petal Burst (Game-like celebratory burst) */
+@keyframes hanabiSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(var(--tx, 20px), var(--ty, -30px)) scale(1.1) rotate(45deg);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translate(var(--tx, 40px), var(--ty, -10px)) scale(0.95) rotate(120deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 50px), var(--ty, 30px)) scale(0.3) rotate(220deg);
+  }
+}
+
+.animate-hanabi-sparkle {
+  animation: hanabiSparkle 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Combo Streak Golden Flame Glow */
+@keyframes comboGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5), inset 0 0 6px rgba(251, 191, 36, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.85), inset 0 0 10px rgba(251, 191, 36, 0.6);
+    transform: scale(1.04);
+  }
+}
+
+.animate-combo-glow {
+  animation: comboGlow 1.6s ease-in-out infinite;
+}
+
 
 /* Vietnamese-safe serif: Noto Serif covers Vietnamese diacritics, JP falls back */
 :root .font-serif {
   font-family: "Noto Serif", "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+/* Ẩn hoàn toàn thanh cuộn mặc định xấu xí nhưng vẫn giữ tính năng cuộn mượt mà */
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ==========================================================================
+   JRPG / Visual Novel / Wabi-Sabi Game Aesthetics (FE-03)
+   ========================================================================== */
+
+/* Nền giấy Washi mộc với đường kẻ chỉ tinh tế */
+.washi-parchment {
+  background-color: var(--paper-50);
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, var(--paper-100) 27px 28px);
+}
+
+/* Nền sóng biển Seigaiha cho Quest Board & Victory Screen */
+.seigaiha-subtle {
+  --sb-wave: color-mix(in srgb, var(--paper-300) 45%, transparent);
+  background-color: var(--paper-100);
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 0 9px, var(--sb-wave) 9px 10px, transparent 10px 15px, var(--sb-wave) 15px 16px, transparent 16px 21px, var(--sb-wave) 21px 22px, transparent 22px),
+    radial-gradient(circle at 50% 100%, transparent 0 9px, var(--sb-wave) 9px 10px, transparent 10px 15px, var(--sb-wave) 15px 16px, transparent 16px 21px, var(--sb-wave) 21px 22px, transparent 22px);
+  background-size: 48px 24px;
+  background-position: 0 0, 24px 12px;
+}
+
+/* Thẻ Nhiệm vụ Quest Card với tương tác Magnetic Hover & Tactile Press */
+.quest-card {
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+.quest-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(35, 33, 30, 0.08);
+  border-color: var(--ai);
+}
+.quest-card:active {
+  transform: scale(0.985);
+}
+
+/* Nút bấm vật lý Tactile Press (nén lò xo cơ học) */
+.tactile-press {
+  transition: transform 0.12s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.12s ease;
+}
+.tactile-press:active {
+  transform: scale(0.965);
+}
+
+/* Thẻ tương tác nổi nhẹ Wabi-Sabi */
+.tactile-hover {
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.tactile-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -2px rgba(35, 33, 30, 0.07);
+}
+
+/* Thẻ Gợi ý Ngôn từ Bối cảnh (Contextual Prompts) trong Roleplay */
+.inventory-prop {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-50);
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--sumi);
+  transition: all 0.15s cubic-bezier(0.2, 0.7, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+.inventory-prop:hover {
+  transform: translateY(-1.5px);
+  border-color: var(--ai);
+  background: var(--paper-100);
+  box-shadow: 0 4px 12px rgba(31, 78, 121, 0.1);
+}
+.inventory-prop:active {
+  transform: scale(0.97);
+}
+
+/* Con dấu Hanko Triện Đỏ xoay -6 độ */
+.hanko-seal-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid var(--shu);
+  border-radius: 9999px;
+  color: var(--shu);
+  background: var(--shu-soft);
+  font-family: var(--font-mincho), serif;
+  font-weight: 700;
+  transform: rotate(-6deg);
+  box-shadow: 0 4px 14px rgba(203, 64, 43, 0.22);
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.hanko-seal-badge:hover {
+  transform: rotate(-3deg) scale(1.04);
+}
+
+/* Ô tròn nét đứt chờ đóng dấu mốc (Quest Slot) */
+.quest-slot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper-50);
+  color: var(--sumi-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.quest-slot.completed {
+  border-style: solid;
+  border-color: #10b981;
+  background: #ecfdf5;
+  color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.18);
+}
+
+/* Stepper mốc nhiệm vụ RPG */
+.quest-stepper-container {
+  position: relative;
+}
+.quest-stepper-item {
+  position: relative;
+}
+.quest-stepper-connector {
+  position: absolute;
+  left: 23px;
+  top: 36px;
+  bottom: -18px;
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  background: transparent !important;
+  z-index: 0;
+  pointer-events: none;
+}
+.quest-stepper-connector.completed {
+  border-left: 2px dashed #10b981;
+  background: transparent !important;
+}
+.quest-stepper-line {
+  position: absolute;
+  top: 15px;
+  left: 14px;
+  bottom: -6px;
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  background: transparent !important;
+}
+.quest-stepper-line.completed {
+  border-left: 2px dashed #10b981;
+  background: transparent !important;
 }

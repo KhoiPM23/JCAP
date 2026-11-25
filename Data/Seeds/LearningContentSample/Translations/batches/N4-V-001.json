@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fff6d0441",
+      "Fields": {
+        "Meaning": "A, à, ôi",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "あ biểu thị sự ngạc nhiên hoặc lúc chợt nhận ra điều gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "234770": "Á, tôi lỡ ghi đè mất rồi.",
+        "234772": "Ôi, không ổn rồi! Sắp hết xăng."
+      },
+      "SourceHash": "d19ccb70e7e1f89a1bbd0ab342556a91717551f17c0d6850894ae5f328c46250"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a4011f27f",
+      "Fields": {
+        "Meaning": "Như thế kia, à",
+        "PartOfSpeech": "Phó từ, thán từ",
+        "Explanation": "ああ chỉ cách thức như thế kia. Khi đứng riêng, nó cũng có thể biểu thị sự nhận ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229847": "Có người nói thế này, lại có người nói thế kia.",
+        "9628722": "À, ra là làm như thế kia."
+      },
+      "SourceHash": "0d9f3de9c8fa01e98d87d8a2be4f3cebbd5b2f640f42535abef8f44ebd087dc7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c3c3ac9f48",
+      "Fields": {
+        "Meaning": "Chào hỏi",
+        "PartOfSpeech": "Động từ với する",
+        "Explanation": "あいさつする là chào hỏi. あいさつ cũng là danh từ, như trong お別れのあいさつ (lời chào chia tay).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164846": "Chẳng có ai chào hỏi tôi.",
+        "226674": "Tôi đến để chào tạm biệt."
+      },
+      "SourceHash": "8e6f930b93ee4e1d2d3eb809b82cba8161b088ab2361b9bb015a5b3e8a0390cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d1a343e501",
+      "Fields": {
+        "Meaning": "Khoảng giữa, trong số, mối quan hệ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "間（あいだ）chỉ khoảng cách hoặc quan hệ giữa các bên. 学生の間で nghĩa là trong giới học sinh, sinh viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75828": "Quan hệ giữa hai người không được hòa thuận.",
+        "202194": "Quần vợt rất được sinh viên ưa chuộng."
+      },
+      "SourceHash": "ea7061e511188c7b5213a682fbddfcd61a86d1149cc67507f45702cb4a5290ef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "54e1f7a772",
+      "Fields": {
+        "Meaning": "Vừa, hợp, khớp",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "合う dùng khi hai thứ khớp nhau hoặc một thứ hợp với ai. Trong câu đầu, hai vạt áo không khép vừa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220206": "Chiếc áo khoác trắng này chắc sẽ rất hợp với bạn.",
+        "223559": "Chiếc áo ghi-lê này không cài vừa phía trước."
+      },
+      "SourceHash": "14494a601236dc74c660bafd743a2201afe19942d90bd57891b086bc8ba681d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2a6a55be8d",
+      "Fields": {
+        "Meaning": "Em bé",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "あかちゃん thường viết là 赤ちゃん, chỉ trẻ sơ sinh hoặc em bé còn rất nhỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208598": "Em bé đó đang bắt đầu mọc răng.",
+        "220868": "Em bé này là bé trai hay bé gái?"
+      },
+      "SourceHash": "cedd1f0711e43a33efcb613e020719f7fd232fb71377f45ece08b90bcd232f04"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4a3152836b",
+      "Fields": {
+        "Meaning": "Lên, tăng, tạnh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "上がる chỉ chuyển động lên hoặc mức tăng. 雨が上がる nghĩa là mưa tạnh. バッテリーが上がる là ắc quy hết điện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149063": "Ắc quy xe hết điện rồi đấy.",
+        "193129": "Tôi nghĩ mưa sẽ sớm tạnh."
+      },
+      "SourceHash": "8c4f8b5ac1f388484e4a8e6e20feed366a267c23052ce1b6839d1b51a72efc98"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e877021bf4",
+      "Fields": {
+        "Meaning": "Em bé, trẻ sơ sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "赤ん坊（あかんぼう）chỉ em bé. 口をきく có thể nói đến việc bắt đầu biết nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142193": "Em bé vẫn chưa biết đi.",
+        "228187": "Em bé nhà tôi bắt đầu biết nói rồi."
+      },
+      "SourceHash": "6106ab793adba1aa3324a7da00c454ac53fea4d2d294024e2939fdff62569405"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91f0d5ac9e",
+      "Fields": {
+        "Meaning": "Trống, rảnh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "空く（あく）chỉ chỗ trở nên trống hoặc lịch có thời gian rảnh. 空いている nêu trạng thái hiện tại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74746": "Bạn thường rảnh vào thứ mấy?",
+        "82709": "Sau giờ học bạn có rảnh không?"
+      },
+      "SourceHash": "a2c87c4b2822eec8213c42da51211b5d651a454fb6c455c50bb0c20a036f6fa6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "628b6b8e9d",
+      "Fields": {
+        "Meaning": "Phụ kiện, đồ trang sức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アクセサリー chỉ phụ kiện trang trí hoặc đồ trang sức. 付ける có thể diễn tả việc đeo hoặc gắn phụ kiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86846": "Cô ấy đeo phụ kiện cùng bộ đồ.",
+        "219960": "Bạn sẽ phối phụ kiện gì với bộ đồ này?"
+      },
+      "SourceHash": "29fc7c797a9c397c355a6fc066a1dd86ddfe928fdbf0103c2c75f36b64de1967"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f935952fed",
+      "Fields": {
+        "Meaning": "Nông, hời hợt",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "浅い chỉ độ sâu nhỏ. 広く浅い nói phạm vi rộng nhưng ít đi sâu vào từng phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220819": "Con sông này nông hơn ở đằng kia.",
+        "222608": "Chương trình học của trường này bao quát rộng nhưng không đi sâu."
+      },
+      "SourceHash": "30b32be3b94c2562f7e06c6cf78be5378c8bd92e402130e4a9ea3d2d2a14533e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "590fa58ca9",
+      "Fields": {
+        "Meaning": "Vị, hương vị",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "味（あじ）chỉ vị cảm nhận khi ăn uống. 〜のような味 là vị giống như một thứ khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211436": "Con cá đó có vị giống cá hồi.",
+        "223564": "Loại phô mai này có vị hơi cay nồng."
+      },
+      "SourceHash": "e27ad8e8431743ada06b83d8bc61c95d464e923b15c10ce24a4493576ab20fd0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97bdb63259",
+      "Fields": {
+        "Meaning": "Châu Á",
+        "PartOfSpeech": "Danh từ riêng",
+        "Explanation": "アジア là tên châu Á. アジアより có thể nêu châu Á làm mốc so sánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192848": "Châu Âu có dân số ít hơn châu Á.",
+        "234480": "Châu Á lớn hơn châu Úc rất nhiều."
+      },
+      "SourceHash": "8a588221844a5ca1a19b9ff1e69aefa75cd2167daf42d6af790bfdf3a11718fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4c3461199c",
+      "Fields": {
+        "Meaning": "Ngày mai",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "明日 có thể đọc あす hoặc あした. あす thường gặp trong lời nói hoặc văn bản trang trọng hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80447": "Tôi nghĩ ngày mai có thể trời sẽ mưa.",
+        "234469": "Ngày mai tôi rảnh cả ngày."
+      },
+      "SourceHash": "d923f4c294c8340409125a472eb929668da90c9630447465be52bad1e868b79c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7fe5e36942",
+      "Fields": {
+        "Meaning": "Việc chơi, vui chơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "遊び（あそび）chỉ hoạt động vui chơi hoặc giải trí. Trong câu về chuyến đi, nó chỉ đi chơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143985": "Cuộc sống đâu chỉ có niềm vui và chuyện vui chơi.",
+        "172116": "Chuyến đi lần này là để đi chơi, không phải đi công tác."
+      },
+      "SourceHash": "ffb7604780b3ebb394fd5d9c32fa8b51028d5e3895fea590ce8a753a222b4d69"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8c98c01eff",
+      "Fields": {
+        "Meaning": "Tụ tập, tập trung",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "集まる diễn tả người hoặc vật tụ lại. Địa điểm tập trung có thể đi với に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125642": "Nhiều người đang tụ tập trên phố.",
+        "203798": "Nhiều sinh viên đã tập trung ở đó."
+      },
+      "SourceHash": "aee0e5724e2155861d5570f979f122b3ba5b0c74cfa4ed585e529f9aed21aa43"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b00801af22",
+      "Fields": {
+        "Meaning": "Thu gom, sưu tầm",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "集める chỉ việc chủ động gom hoặc thu thập thứ gì. Đối tượng đi với を.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81356": "Họ đến thu gom rác vào mỗi thứ Hai.",
+        "225146": "Ken đang sưu tầm tiền xu cũ."
+      },
+      "SourceHash": "d6d76e613bbe1eefdd6928e0a1f976fa6b048e5ea55f1607dd1b300b841baa33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c1fb180c70",
+      "Fields": {
+        "Meaning": "Phát thanh viên, người dẫn chương trình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アナウンサー chỉ người đọc bản tin hoặc dẫn chương trình phát thanh, truyền hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230976": "Mẹ của đứa bé đó là phát thanh viên.",
+        "234281": "Phát thanh viên có thể nói nhanh."
+      },
+      "SourceHash": "9024cbc6fc9d93f571fb4f062ab18c64ec6a4992cab8be801f8d504ad1483880"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0fa879c73d",
+      "Fields": {
+        "Meaning": "Châu Phi",
+        "PartOfSpeech": "Danh từ riêng",
+        "Explanation": "アフリカ là tên châu Phi. 北アフリカ nghĩa là Bắc Phi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217817": "Những con chim này di cư đến Bắc Phi vào mùa đông.",
+        "230388": "Châu Phi có nhiều cảnh quan thiên nhiên."
+      },
+      "SourceHash": "1657ac0b6429de23cb17943bdc7dd04d4da76208d2332a9bae496506a1004db0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b921645383",
+      "Fields": {
+        "Meaning": "Mỹ, Hoa Kỳ",
+        "PartOfSpeech": "Danh từ riêng",
+        "Explanation": "アメリカ trong hai câu chỉ Hoa Kỳ. アメリカに行く nghĩa là đi Mỹ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157652": "Tôi đã đi Mỹ vào mùa thu năm ngoái.",
+        "161524": "Tôi chưa từng đi Mỹ."
+      },
+      "SourceHash": "72b50684dc2b31a0a7348daf7f2339a04197945fb4fc2879914d6a9d069e0dbc"
+    }
+  ]
+}

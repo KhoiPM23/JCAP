@@ -1,0 +1,311 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 40 câu ví dụ theo nguyên bản Nhật.",
+    "Câu 80097 dùng bản dịch đã có ở N5-V-002."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9d648d38ad",
+      "Fields": {
+        "Meaning": "Máy ảnh, camera",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カメラ chỉ thiết bị dùng để chụp ảnh hoặc ghi hình. カメラで写真を撮る nghĩa là chụp ảnh bằng máy ảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223885": "Chiếc máy ảnh này được sản xuất ở Đức.",
+        "227734": "Chú tôi tặng tôi một chiếc máy ảnh."
+      },
+      "SourceHash": "042f37f4f2410fc76261a8e0aafd3205784ad770d0fcda23dfcb9e7251b1c368"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0dbf9ef8ca",
+      "Fields": {
+        "Meaning": "Thứ Ba",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "火曜日（かようび）là thứ Ba. 火曜日に chỉ thời điểm vào thứ Ba, còn 火曜日まで chỉ mốc đến thứ Ba.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186639": "Chúng ta đợi đến thứ Ba cũng được mà, phải không?",
+        "186646": "Quốc hội sẽ họp vào thứ Ba."
+      },
+      "SourceHash": "4c0875f265eb72483904cb334decdcf5fc3d92ebe6391d74e189dd9dff2a957e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2546ac97b",
+      "Fields": {
+        "Meaning": "Cay",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "辛い（からい）tả vị cay. 辛すぎる là cay quá, còn 辛くする là làm cho cay.",
+        "UsageNotes": "Cùng chữ 辛い, cách đọc つらい có nghĩa là khổ sở hoặc khó chịu đựng."
+      },
+      "Examples": {
+        "202330": "Xin làm cay nhất có thể.",
+        "223874": "Món cà ri này cay quá, tôi không ăn được."
+      },
+      "SourceHash": "f28bf4ebdbdb9768c73c01094541289b63a2a2962f167d2aed54ab40b6af2ca7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a556e5edce",
+      "Fields": {
+        "Meaning": "Cơ thể, thân thể",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "体（からだ）chỉ cơ thể. 体に気をつける là giữ gìn sức khỏe. 体に合う có thể nói quần áo vừa với dáng người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199696": "Nhất là phải giữ gìn sức khỏe nhé.",
+        "223641": "Chiếc váy này vừa vặn với tôi."
+      },
+      "SourceHash": "348a7bd54d5acb9457eb5aba990ae4934d88af85d07c27f043a77ecf7abf95d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8cd440a181",
+      "Fields": {
+        "Meaning": "Mượn, thuê",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "借りる chỉ việc mượn đồ hoặc thuê thứ gì để sử dụng tạm thời. Thứ được mượn đi với を, người cho mượn có thể đi với から hoặc に.",
+        "UsageNotes": "貸す nhìn từ phía người cho mượn. お借りしてもよろしいですか là cách hỏi mượn lịch sự."
+      },
+      "Examples": {
+        "148892": "Tôi lỡ làm mất cuốn sách đã mượn.",
+        "219525": "Tôi có thể mượn cuốn sách này được không ạ?"
+      },
+      "SourceHash": "0cf2e4134ab4b332542ebb840684dd89df19299d470c522c2a663ca6480a8a25"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8b9eb425d",
+      "Fields": {
+        "Meaning": "Nhẹ, nhẹ nhàng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "軽い thường tả trọng lượng nhẹ. Dạng 軽く đứng trước động từ để chỉ mức độ nhẹ. 軽く食べる nghĩa là ăn nhẹ hoặc ăn một ít.",
+        "UsageNotes": "Cả hai câu ví dụ dùng 軽く theo nghĩa ăn nhẹ."
+      },
+      "Examples": {
+        "153039": "Tôi thường chỉ ăn sáng nhẹ.",
+        "176051": "Chúng ta ăn nhẹ thôi nhé."
+      },
+      "SourceHash": "71c8c65942d70393ac60bc141d1a4cab3eadc783c681f26039dc15fc3ca82aa1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9decc44f4e",
+      "Fields": {
+        "Meaning": "Cà ri",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カレー chỉ món cà ri. カレーライス là cơm cà ri. Khi nhận xét hương vị, có thể dùng おいしい hoặc うまい trong hội thoại thân mật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "76792": "Món cà ri cũng tạm được.",
+        "223009": "Cà ri ở nhà hàng này ngon đấy."
+      },
+      "SourceHash": "d29b89942b13d485e4638c64a0472765185fc8ab2767da8a26097d338e9d9391"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6382448bd3",
+      "Fields": {
+        "Meaning": "Lịch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カレンダー là lịch để xem ngày tháng. カレンダーをかける nghĩa là treo lịch, còn カレンダーをめくる nghĩa là lật tờ lịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114085": "Anh ấy lật tờ lịch.",
+        "223871": "Mình treo cuốn lịch này ở đâu nhỉ?"
+      },
+      "SourceHash": "8c2226465f72fb90ac0ffedc6e20a74df801b343beada34baead1064fadb31fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcf12e002d",
+      "Fields": {
+        "Meaning": "Sông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "川（かわ）chỉ sông hoặc dòng nước tự nhiên. Có thể dùng 川の長さ để nói chiều dài của sông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208510": "Con sông đó không được sạch lắm.",
+        "220796": "Con sông này dài 500 dặm."
+      },
+      "SourceHash": "ad78b0ac5b5964f0a78eee7cf5719d35c72a7db60f8ecd6db5e6557cc29a1b07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bad3423a93",
+      "Fields": {
+        "Meaning": "Dễ thương, đáng yêu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "かわいい dùng để tả người, con vật hoặc đồ vật trông đáng yêu. Có thể viết là 可愛い.",
+        "UsageNotes": "かわいいそうです giữ nguyên đuôi い trước そうです, nên trong câu ví dụ có nghĩa là nghe nói rất dễ thương."
+      },
+      "Examples": {
+        "192411": "Lucy là một cô bé dễ thương.",
+        "199013": "Nghe nói Nancy rất dễ thương."
+      },
+      "SourceHash": "5ad4a0b5cdfe8d44da65873c060ef7c83bc0e97703fb7ab04bc108412be8cdd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fdc787af58",
+      "Fields": {
+        "Meaning": "Chữ Hán, kanji",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "漢字 chỉ chữ Hán. Trong tiếng Nhật, kanji là chữ Hán dùng cùng hiragana và katakana. Khi hỏi về một chữ, có thể dùng 漢字の意味 (nghĩa của chữ) hoặc 漢字の読み方 (cách đọc chữ).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177847": "Bạn đọc được chữ Hán này không?",
+        "222576": "Chữ Hán này có nghĩa là gì?"
+      },
+      "SourceHash": "8d97d185a36b29d8fa202eaa95ed5b693d57b30a25230d9def8387a38ac270d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22836046e2",
+      "Fields": {
+        "Meaning": "Cây, gỗ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "木（き）chỉ cây đang mọc hoặc gỗ làm vật liệu. 木に実がなる nghĩa là cây ra quả, còn 木でできている nghĩa là được làm bằng gỗ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80097": "Cây cối hầu như không có, mà nếu có thì cũng rất ít.",
+        "206562": "Cây đó sai trĩu quả."
+      },
+      "SourceHash": "ad5b73d3922be726858905f2055a20dfdbbae149fb0fbd9af954f5f4739ea283"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d679a1af2",
+      "Fields": {
+        "Meaning": "Màu vàng",
+        "PartOfSpeech": "Danh từ chỉ màu sắc",
+        "Explanation": "黄色（きいろ）là tên màu vàng. 黄色になる nghĩa là chuyển sang màu vàng. Có thể dùng 黄色の花 để nói hoa màu vàng.",
+        "UsageNotes": "黄色い là dạng tính từ, như 黄色い花."
+      },
+      "Examples": {
+        "80105": "Lá cây chuyển sang màu vàng vào mùa thu.",
+        "222733": "Bông hoa này màu vàng, còn các bông khác đều màu xanh lam."
+      },
+      "SourceHash": "8e771cc2965626a1fdd2297c1ce8d3081309fc207597e816a6508cdd0895ee7c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b36c8d6c6",
+      "Fields": {
+        "Meaning": "Vàng, có màu vàng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "黄色い dùng để tả một vật có màu vàng. Có thể đứng trước danh từ, như 黄色いチョーク (phấn màu vàng).",
+        "UsageNotes": "黄色いの dùng の để thay cho vật đã biết trong hội thoại."
+      },
+      "Examples": {
+        "212174": "Cho tôi lấy cái màu vàng đó nhé.",
+        "229724": "Kia không phải là viên phấn màu vàng."
+      },
+      "SourceHash": "ccbb8d65a233655dc71246588f18a77d6b13e506c45c8929e8e136f4ee50ba14"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6030b50276",
+      "Fields": {
+        "Meaning": "Biến mất, tắt",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "消える chỉ việc tự biến mất hoặc tắt. 火が消える là lửa tắt, còn 明かりが消える là đèn tắt.",
+        "UsageNotes": "消す là tha động từ, dùng khi ai đó tắt hoặc xóa thứ gì."
+      },
+      "Examples": {
+        "186758": "Xin đừng để lửa tắt.",
+        "192296": "Ngọn nến tự tắt."
+      },
+      "SourceHash": "f29b1b77c30da1e4a0073db15b52bfde6c7bffd6c232dfbef1b1e365c82ee293"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dc19a213cd",
+      "Fields": {
+        "Meaning": "Nghe, lắng nghe, hỏi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "聞く dùng khi nghe âm thanh hoặc lời nói. Từ này cũng có nghĩa là hỏi để biết thông tin. Người được hỏi thường đi với に, nội dung hỏi đi với を.",
+        "UsageNotes": "Thể て là 聞いて. Câu ở quầy báo dùng nghĩa hỏi."
+      },
+      "Examples": {
+        "76494": "Hãy hỏi ở quầy bán báo.",
+        "201031": "Tôi có cảm giác đã nghe ở đâu đó rồi."
+      },
+      "SourceHash": "b0211f8713c41f2cbeca713af6adca825a379a5262034fdba74c555939ee0683"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fa320a51ea",
+      "Fields": {
+        "Meaning": "Bắc, phía bắc",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "北（きた）là hướng bắc. Địa điểm ＋ の北に chỉ vị trí phía bắc của địa điểm đó. 北に向かう nghĩa là đi về hướng bắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141143": "Con tàu đang đi thẳng về phía bắc.",
+        "207801": "Thị trấn đó nằm ngay phía bắc London."
+      },
+      "SourceHash": "ad71eb926a566646e9d443bf7685d9ba110bac277b82b068e5300e6c1f8d9292"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fb1c0d758",
+      "Fields": {
+        "Meaning": "Đàn ghi-ta",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ギター chỉ đàn ghi-ta. ギターを弾く（ひく）nghĩa là chơi đàn ghi-ta.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200823": "Cây đàn ghi-ta nào là của bạn?",
+        "226059": "Chơi đàn ghi-ta rất thú vị."
+      },
+      "SourceHash": "5b3acaed4fada0bb557577093cc24b34aa361da47d9780b452bd3a06002fc300"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d1cf1538b",
+      "Fields": {
+        "Meaning": "Bẩn, dơ, xấu xa",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "汚い tả thứ không sạch. Khi nói về thủ đoạn hoặc hành động, từ này có thể diễn tả sự xấu xa hoặc chơi bẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195841": "Trời ơi, vị khách đó bẩn quá!",
+        "215815": "Jack đã chơi xấu tôi bằng một trò khăm."
+      },
+      "SourceHash": "89bdf89dcaf8ed81bbc5a94d054bbd26b4752e3214325112a054972312dd05f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e101e41f54",
+      "Fields": {
+        "Meaning": "Tem thư",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "切手（きって）chỉ tem dùng để gửi thư hoặc bưu phẩm. 切手を貼る nghĩa là dán tem.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142111": "Xin hãy ký vắt qua con tem.",
+        "220864": "Bạn chọn con nào trong hai con tem này, tôi tặng con đó."
+      },
+      "SourceHash": "94eca65587a2ae5942540cedcce66f9b124e7ca9ca9bfb958d2218eb5a1f0ac4"
+    }
+  ]
+}

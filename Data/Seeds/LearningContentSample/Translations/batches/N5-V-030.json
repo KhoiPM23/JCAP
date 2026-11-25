@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 39 câu theo bản Nhật. メートル có một câu nguồn.",
+    "Mục 門 ghi cách ngắt câu 79781. Mục 目 ghi cách dùng hậu tố chỉ thứ tự."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85b37b6884",
+      "Fields": {
+        "Meaning": "Nhìn, xem, thấy",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "見る（みる）chỉ việc nhìn hoặc xem. テレビを見る là xem ti vi.",
+        "UsageNotes": "見られる có thể là dạng khả năng hoặc bị động. Câu về ti vi dùng nghĩa bị động."
+      },
+      "Examples": {
+        "191835": "Tôi giật mình khi nhìn thấy cảnh đó.",
+        "201993": "Ở đây người ta không xem ti vi."
+      },
+      "SourceHash": "d7ac0802a0b74d5239bc4a7a006cc22a66436a99922d95a38618d53438f05cc3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2676514561",
+      "Fields": {
+        "Meaning": "Mọi người, tất cả",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "みんな chỉ tất cả người hoặc vật trong nhóm. ほとんどみんな nghĩa là gần như tất cả.",
+        "UsageNotes": "Khi gọi một nhóm lịch sự hơn, có thể dùng 皆さん."
+      },
+      "Examples": {
+        "147335": "Hầu như cô bé nào cũng dịu dàng.",
+        "216907": "Mọi người đều kéo nhau đi xem xiếc."
+      },
+      "SourceHash": "04886092193aa6dcf64e7af036b4b355f2ca9ad1df9dfd6297f0a1899e889071"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf44ddad08",
+      "Fields": {
+        "Meaning": "Sáu ngày, ngày mùng sáu",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "六日（むいか）chỉ ngày mùng sáu hoặc khoảng thời gian sáu ngày. 六日間 nói rõ thời lượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "235021": "Tôi đã không thể đi học trong sáu ngày.",
+        "235224": "Anh/chị có thể gặp chúng tôi vào ngày 5 hoặc ngày 6 tháng 4 được không ạ?"
+      },
+      "SourceHash": "26506da80bfc87ab6c0f70e3509932c761d5b14ba2696d968ca9532c9202b6d9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e862f05f0",
+      "Fields": {
+        "Meaning": "Đằng kia, phía bên kia",
+        "PartOfSpeech": "Danh từ chỉ vị trí",
+        "Explanation": "向こう（むこう）chỉ nơi ở đằng kia hoặc phía đối diện. 向こうの ＋ danh từ chỉ người hoặc vật ở phía đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173839": "Hãy nhìn tòa nhà lớn đằng kia.",
+        "208147": "Cậu bé đó ở đằng kia."
+      },
+      "SourceHash": "be4696ce4ae1205033e5446dddace87d7c9bc5a0d28284e58079a39ac92942f5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0a3894175f",
+      "Fields": {
+        "Meaning": "Khó",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "難しい（むずかしい）tả việc khó làm hoặc khó hiểu. Có thể dùng động từ ＋ のは難しい để nhận xét việc đó khó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184760": "Học tiếng Nhật là việc khó đối với người nước ngoài.",
+        "196964": "Nói tiếng Pháp rất khó."
+      },
+      "SourceHash": "8e0498656e5197d51fc991f3137d48e2c3de1c06c9d52333b67ea052cf421785"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ecc2c4bfc",
+      "Fields": {
+        "Meaning": "Sáu cái, sáu phần",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "六つ（むっつ）là cách đếm chung cho sáu vật hoặc sáu mục. 六つに分ける nghĩa là chia thành sáu phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92613": "Cô ấy chia chiếc bánh đó thành sáu phần.",
+        "93506": "Anh ấy mắc sáu lỗi trong sáu dòng."
+      },
+      "SourceHash": "842ed746ae7552a377ef0866d0039109b522161d8a34b90ef6191c0d3e1a72c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5028971b39",
+      "Fields": {
+        "Meaning": "Làng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "村（むら）chỉ làng. 村まで chỉ quãng đường đến làng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126109": "Thị trấn lớn hơn làng.",
+        "208294": "Đến ngôi làng đó chỉ hai dặm."
+      },
+      "SourceHash": "6e0a41a3e65cfffc46e9fa5a47c87fe5cc45f5251363e72e2637831520ec12a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae534d4ca8",
+      "Fields": {
+        "Meaning": "Mắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "目（め）chỉ mắt. きれいな目 là đôi mắt đẹp.",
+        "UsageNotes": "Sau số lượng hoặc đơn vị, 目 có thể tạo số thứ tự. ３時間目 trong câu nguồn nghĩa là tiết thứ ba."
+      },
+      "Examples": {
+        "92969": "Cô ấy có đôi mắt đẹp.",
+        "235310": "Tiết thứ ba chúng tôi học tiếng Pháp."
+      },
+      "SourceHash": "d29647be65c47bedc276e078cdfaf2a611adb46f4f2b46e05a39fc5840510623"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb5450490b",
+      "Fields": {
+        "Meaning": "Mét",
+        "PartOfSpeech": "Danh từ chỉ đơn vị",
+        "Explanation": "メートル là đơn vị đo chiều dài mét. １メートル離れる nghĩa là cách nhau một mét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140982": "Vui lòng xếp hàng, cách người đứng trước một mét."
+      },
+      "SourceHash": "ba67eca0e2ac97df466bdc615ba9fb35eea5171b445d7a50c54e90f9345d74f0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "72eb77e07a",
+      "Fields": {
+        "Meaning": "Kính mắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "眼鏡（めがね）là kính mắt, cũng có thể viết メガネ. 眼鏡をかける nghĩa là đeo kính.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83033": "Mẹ tôi không thể đọc sách nếu không đeo kính.",
+        "158805": "Không có kính thì tôi không đọc được."
+      },
+      "SourceHash": "47b687e0bef7f330a9db9a3c84cb0dfbd1c81ba057eea5c80445ee3812f0d893"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c5b7ad76fd",
+      "Fields": {
+        "Meaning": "Đã, rồi, sắp đến lúc",
+        "PartOfSpeech": "Phó từ, thán từ",
+        "Explanation": "もう có thể chỉ việc đã xảy ra hoặc thời điểm đã gần đến. もうそろそろ帰る時間だ nghĩa là đã đến lúc chuẩn bị về.",
+        "UsageNotes": "Kéo dài thành もう～ ở đầu câu có thể thể hiện bực mình."
+      },
+      "Examples": {
+        "74910": "Trời ơi, cậu đang làm gì vậy?",
+        "194403": "Cũng sắp đến lúc về rồi."
+      },
+      "SourceHash": "1097fefa5947e9f0cae4fc0636287b89359669d3094a31a09e6e5c4807078af0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3ae16ad93a",
+      "Fields": {
+        "Meaning": "Một lần nữa",
+        "PartOfSpeech": "Cụm phó từ",
+        "Explanation": "もう一度（もういちど）dùng khi muốn lặp lại một việc. もう一度ゆっくり nói về việc làm lại với tốc độ chậm hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194309": "Anh/chị có thể nói lại chậm hơn được không ạ?",
+        "194328": "Sao bạn không thử lại lần nữa?"
+      },
+      "SourceHash": "6b13793822cdcd7b07cd2dd2cedb6c18f479637a0b88e07415073134f9939e56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d10bb92f3e",
+      "Fields": {
+        "Meaning": "Thứ Năm",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "木曜日（もくようび）là thứ Năm. 木曜日に chỉ thời điểm vào thứ Năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80049": "Tôi muốn anh/chị đến vào thứ Sáu hơn là thứ Năm.",
+        "193147": "Chào Fred. Thứ Năm chơi cầu lông nhé?"
+      },
+      "SourceHash": "2c65ad60a0ccf7db518356e013195660b589d3a69152de9f5158f00d9cb5b1c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16fda19d79",
+      "Fields": {
+        "Meaning": "Cầm, mang, có",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "持つ（もつ）chỉ việc cầm, mang hoặc sở hữu. 持っている có thể nghĩa là đang cầm hoặc đang có.",
+        "UsageNotes": "Thể て là 持って."
+      },
+      "Examples": {
+        "167740": "Đây là tất cả số tiền tôi đang có.",
+        "224958": "Để tôi cầm áo khoác giúp bạn nhé?"
+      },
+      "SourceHash": "d66d5a1fe2985e382dd046b11eba9bd363fc8404d0a2cff3adb431e4e2261fb9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8f5f4c59e",
+      "Fields": {
+        "Meaning": "Hơn, thêm nữa",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "もっと đứng trước tính từ hoặc động từ để tăng mức độ. もっと大きい là lớn hơn, còn もっと長生きする là sống lâu hơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84880": "Ước gì bố tôi đã sống lâu hơn.",
+        "193236": "Có cỡ lớn hơn không ạ?"
+      },
+      "SourceHash": "ebb33cac70668ca19c6f809740296b6598a91a8f866bdd05bff5075b59e88133"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "782272bfda",
+      "Fields": {
+        "Meaning": "Đồ vật, thứ, đồ thuộc về ai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物（もの）chỉ đồ vật hoặc thứ nói chung. あなたの物 nghĩa là đồ của bạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200773": "Chiếc túi nào là của bạn?",
+        "219684": "Tất cả những cuốn sách này đều là của bạn à?"
+      },
+      "SourceHash": "808356a1db0c271f4219c6d43d3425f339dac25066d9346bb85af3936bb13c09"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b92758003",
+      "Fields": {
+        "Meaning": "Cổng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "門（もん）chỉ cổng vào một khu vực. 門のところまで nghĩa là đến chỗ cổng.",
+        "UsageNotes": "Câu thứ hai thiếu dấu ngắt sau たたけ. Có thể đọc thành 門をたたけ。たたくものはあけてもらえるだろう。"
+      },
+      "Examples": {
+        "79781": "Hãy gõ cổng, rồi người gõ sẽ được mở cổng cho.",
+        "215219": "John bước ra tới cổng."
+      },
+      "SourceHash": "2cc0ad6c7982994119260c9ec5fe970312f1db2778aa79ed45c5a59af228f2ae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f0f6b6ae7",
+      "Fields": {
+        "Meaning": "Vấn đề, câu hỏi, bài tập",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "問題（もんだい）chỉ vấn đề cần giải quyết hoặc câu hỏi cần trả lời. 問題にする nghĩa là coi chuyện đó là vấn đề và đem ra bàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79848": "Vấn đề là chúng ta không có tiền.",
+        "213123": "Tôi không muốn làm to chuyện đó."
+      },
+      "SourceHash": "5cb58a5e0edd0ca1bbc15ad837f4b383ed310d3a292027bfb0d9bd4a96067909"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d29f60b23",
+      "Fields": {
+        "Meaning": "Cửa hàng rau quả, người bán rau quả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "八百屋（やおや）chỉ cửa hàng bán rau quả hoặc người bán rau quả tùy ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154612": "Tôi gặp anh ấy bên ngoài cửa hàng rau quả.",
+        "207193": "Người bán rau quả đó rất tử tế với khách."
+      },
+      "SourceHash": "b1786121f32984e1293c581e7d8cfb0e8da5555057efa4896dba683251f7f44b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ead1ae2736",
+      "Fields": {
+        "Meaning": "Dễ, đơn giản",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "易しい（やさしい）tả việc dễ làm hoặc nội dung dễ hiểu. 易しい英語 là tiếng Anh đơn giản.",
+        "UsageNotes": "優しい cũng đọc là やさしい nhưng thường chỉ sự dịu dàng, tử tế."
+      },
+      "Examples": {
+        "193198": "Xin hãy hỏi tôi điều gì dễ hơn.",
+        "219533": "Cuốn sách này được viết bằng tiếng Anh đơn giản."
+      },
+      "SourceHash": "ec65b4816b4a4648f357520165bb7c715308166a8c37ac4300783818a42ce508"
+    }
+  ]
+}

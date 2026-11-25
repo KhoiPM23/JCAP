@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kunakatta",
+      "Fields": {
+        "Meaning": "Dạng phủ định quá khứ của tính từ đuôi い",
+        "Formation": "Tính từ đuôi い bỏ い cuối ＋ くなかった",
+        "Explanation": "Dùng 〜くなかった để nói một đặc điểm hoặc trạng thái không đúng trong quá khứ. Ví dụ, 難しい đổi thành 難しくなかった, nghĩa là đã không khó.",
+        "UsageNotes": "Với いい, dùng よくなかった. Có thể thêm です sau くなかった để nói lịch sự, như 難しくなかったです."
+      },
+      "Examples": {
+        "kunakatta:example:1": "Bộ phim hôm qua không thú vị.",
+        "kunakatta:example:2": "Bài kiểm tra không khó."
+      },
+      "SourceHash": "1d617eeb6f585622f2f8bbd52d230f8deeace3a88dfe33da2abfd83ee778edf3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kurai",
+      "Fields": {
+        "Meaning": "Khoảng, chừng (số lượng hoặc thời lượng)",
+        "Formation": "Số hoặc lượng ＋ くらい／ぐらい",
+        "Explanation": "Đặt くらい hoặc ぐらい sau số lượng hoặc thời lượng để nói con số gần đúng. 五つくらい nghĩa là khoảng năm cái. Hai dạng đều dùng được trong mẫu này.",
+        "UsageNotes": "Để nói một mốc giờ gần đúng, thường dùng ごろ, như 三時ごろ (khoảng ba giờ). 三時間くらい chỉ thời lượng khoảng ba tiếng."
+      },
+      "Examples": {
+        "kurai:example:1": "Tôi đã mua khoảng năm quả táo.",
+        "kurai:example:2": "Trong lớp có khoảng hai mươi sinh viên."
+      },
+      "SourceHash": "a47e44121020b7f5ccae0e98d0beecc6d16e32357c4bf2fbf4bdd3249f89d788"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kuru",
+      "Fields": {
+        "Meaning": "Đến, tới (động từ bất quy tắc)",
+        "Formation": "Dạng từ điển: 来る（くる）\nLịch sự: 来ます（きます）\nPhủ định: 来ない（こない）\nQuá khứ: 来た（きた）\nThể て: 来て（きて）",
+        "Explanation": "来る（くる）chỉ việc đến một nơi. Đây là động từ bất quy tắc. Cách đọc phần 来 thay đổi theo dạng chia, như き trong 来ます và こ trong 来ない.",
+        "UsageNotes": "Dạng phủ định lịch sự là 来ません（きません）, như trong câu ví dụ thứ hai."
+      },
+      "Examples": {
+        "kuru:example:1": "Mỗi sáng, bạn tôi đến nhà tôi.",
+        "kuru:example:2": "Ngày mai tôi sẽ không đến trường."
+      },
+      "SourceHash": "613959a9ba3915e6d9b4f79896ed26b418844c1169d73cebb09823fb883f1ba1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kureru",
+      "Fields": {
+        "Meaning": "Ai đó cho mình hoặc người thuộc phía mình",
+        "Formation": "Người cho ＋ が／は ＋（người nhận ＋ に）＋ vật ＋ を ＋ くれる",
+        "Explanation": "くれる diễn tả việc ai đó cho người nói hoặc người thuộc phía người nói một thứ. Chủ ngữ là người cho. Có thể lược người nhận khi ngữ cảnh đã rõ.",
+        "UsageNotes": "私に nêu rõ người nhận là mình. Khi nói mình cho người khác một thứ, thường dùng あげる."
+      },
+      "Examples": {
+        "kureru:example:1": "Bạn tôi đã tặng tôi một món quà.",
+        "kureru:example:2": "Bố đã cho tôi một chiếc xe đạp mới."
+      },
+      "SourceHash": "065ce6aedb75a7cf29394a1840ed3755ac36ae25ae17a827748c6a7ac52f34ec"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "adjective-no",
+      "Fields": {
+        "Meaning": "Cái hoặc thứ có đặc điểm đã nêu",
+        "Formation": "Tính từ đuôi い ＋ の\nTính từ đuôi な ＋ な ＋ の",
+        "Explanation": "Dùng の sau tính từ để thay cho danh từ mà người nói và người nghe đã biết. 赤いの có nghĩa là cái màu đỏ.",
+        "UsageNotes": "Với tính từ đuôi な, giữ な trước の, như 静かなの trong ngữ cảnh chọn một thứ yên tĩnh. Trong mẫu này, の thay cho danh từ đã biết."
+      },
+      "Examples": {
+        "adjective-no:example:1": "Cho tôi cái màu đỏ với ạ.",
+        "adjective-no:example:2": "Có cái nào rẻ hơn không ạ?"
+      },
+      "SourceHash": "03acc940f8d6fb1e3de537e8bd74e9048f034702ee0858d3757152204380ba9d"
+    }
+  ]
+}

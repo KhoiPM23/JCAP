@@ -32,6 +32,39 @@ public class LearnerLearningServiceTests
     }
 
     [Theory]
+    [InlineData("vocabularies", "Mixed", "Vocabulary only", "Situation")]
+    [InlineData("grammars", "Grammar only", "Mixed")]
+    public async Task TopicKindFiltersBeforePaging_UsesVisibleSameLevelLinks_AndKeepsLegacyDetails(string kind, params string[] expected)
+    {
+        await using var db = Db();
+        var vocabulary = Topic("Vocabulary only");
+        var grammar = Topic("Grammar only");
+        var mixed = Topic("Mixed");
+        var situation = Topic("Situation"); situation.Code = "DINING";
+        var hidden = Topic("Hidden", active: false);
+        var invalid = Topic("Invalid content");
+        Link(db, vocabulary, "vocabularies", "Word", 0, level: null);
+        Link(db, grammar, "grammars", "Pattern", 0);
+        Link(db, mixed, "vocabularies", "Mixed word", 0);
+        Link(db, mixed, "grammars", "Mixed pattern", 0);
+        Link(db, situation, "grammars", "Contextual pattern", 0);
+        Link(db, situation, "vocabularies", "Contextual word", 0);
+        Link(db, hidden, kind, "Hidden topic", 0);
+        Link(db, invalid, kind, "Hidden item", 0, active: false);
+        Link(db, invalid, kind, "Wrong level", 1, level: "N4");
+        await db.SaveChangesAsync();
+        var service = new LearnerLearningService(db);
+
+        var result = await service.TopicsAsync(new() { Kind = kind, JLPTLevel = "N5", Page = 10, PageSize = 1 });
+        Assert.Equal(expected.Length, result.Total);
+        Assert.Equal(expected.Length, result.Page);
+        Assert.Equal(expected.Order().Last(), Assert.Single(result.Items).Name);
+        Assert.Equal(expected.Order(), (await service.TopicsAsync(new() { Kind = kind })).Items.Select(t => t.Name).Order());
+        var legacy = await service.ContentsAsync(situation.Id, "grammars", new());
+        Assert.Equal("Contextual pattern", Assert.Single(legacy.Contents.Items).Text);
+    }
+
+    [Theory]
     [InlineData("vocabularies")]
     [InlineData("grammars")]
     public async Task Contents_Page20_StableAdminOrder_SearchAcrossPages_AndClampStalePage(string kind)

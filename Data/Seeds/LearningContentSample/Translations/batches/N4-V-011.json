@@ -1,0 +1,306 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f17fa2d7e1",
+      "Fields": {
+        "Meaning": "Trẻ con, đứa trẻ, người gốc một nơi",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "Trong ロンドン子, 子 là hậu tố chỉ người gốc London. Câu còn lại dùng nghĩa đứa trẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114048": "Anh ấy là dân London chính gốc.",
+        "198918": "Cậu ta đúng là một đứa ngốc!"
+      },
+      "SourceHash": "c5c7de262c3b889093f712856ce6fa139c9c7bed386b5534627dbb4f7cddf03c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3cd723d544",
+      "Fields": {
+        "Meaning": "Thế này, theo cách này",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "Chỉ cách thức gần với người nói hoặc cách vừa được chỉ ra. こうする nghĩa là làm thế này.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "f11befa9a7572fe656f97f6ae2e453b50c7219447e3015a21999b6797a7dcdc7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aa95e437a0",
+      "Fields": {
+        "Meaning": "Ngoại ô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "郊外（こうがい）có nghĩa là ngoại ô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154872": "Tôi sống ở ngoại ô Tokyo.",
+        "173285": "Những học sinh sống ở ngoại ô đi học bằng xe buýt."
+      },
+      "SourceHash": "4bc53d1c04063825e020381d7ed111aaa150bb5bb5333e470ce5ad1dcf814a1e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8063587e53",
+      "Fields": {
+        "Meaning": "Bài giảng, buổi giảng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "講義（こうぎ）có nghĩa là bài giảng, buổi giảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210672": "Cũng có một vài người đến buổi giảng đó.",
+        "210673": "Hầu như không có ai đến buổi giảng đó."
+      },
+      "SourceHash": "a87b945da46f7cf6128251e7306cf24921936331634a5a01c95019a702673afe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "baaaf1524a",
+      "Fields": {
+        "Meaning": "Công nghiệp, ngành sản xuất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "工業（こうぎょう）có nghĩa là công nghiệp, ngành sản xuất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173740": "Số sinh viên quan tâm đến tài chính nhiều hơn số quan tâm đến công nghiệp.",
+        "234995": "Sản xuất công nghiệp tháng Bảy tăng mạnh."
+      },
+      "SourceHash": "c82ed6ad068fd51cb62cbae40332788f36dd0839c02d05dfcefa3bfe3b15cfc0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "22ba4ea959",
+      "Fields": {
+        "Meaning": "Trường trung học phổ thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "高校（こうこう）có nghĩa là trường trung học phổ thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "163138": "Con trai tôi đã vào trung học phổ thông.",
+        "173210": "Ngay sau khi học xong trung học phổ thông, tôi lên Tokyo."
+      },
+      "SourceHash": "f756504d63fbaacfaeef729ca231b5fefb61c70947696119ccb548ceee53b441"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "795156bbfe",
+      "Fields": {
+        "Meaning": "Học sinh trung học phổ thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "高校生（こうこうせい）có nghĩa là học sinh trung học phổ thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161516": "Tôi trao đổi thư với một học sinh trung học phổ thông ở Mỹ.",
+        "197476": "Một học sinh trung học phổ thông đã làm ra con rô-bốt này."
+      },
+      "SourceHash": "dc7a112a5d9bb3929e9cbc16b01651295d5838c7a2f705ec5e88b045500ef08a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b7434e649",
+      "Fields": {
+        "Meaning": "Nhà máy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "工場（こうじょう）có nghĩa là nhà máy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194894": "Tòa nhà nhìn thấy đằng kia là nhà máy ô tô.",
+        "210728": "Nhà máy đó sẽ ngừng hoạt động từ tháng sau."
+      },
+      "SourceHash": "f31bceed0b45c3af6ea2963443925295c0df31d7751881e6bd1e418d9e9d8e21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c49fbf17c",
+      "Fields": {
+        "Meaning": "Hiệu trưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "校長（こうちょう）có nghĩa là hiệu trưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173570": "Hiệu trưởng bước vào từ phía sau giáo viên.",
+        "228204": "Hiệu trưởng trường tôi thường dành thời gian gặp học sinh."
+      },
+      "SourceHash": "baf459e09e790d42f48a2ead93e48018b3037c6505c381ab64f455663a9e59d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d64432f194",
+      "Fields": {
+        "Meaning": "Giao thông, việc đi lại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "交通（こうつう）có nghĩa là giao thông, việc đi lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174166": "Phải chú ý xe cộ.",
+        "224283": "Ở đây giao thông đặc biệt đông vào buổi sáng."
+      },
+      "SourceHash": "79373159fe6f6828b292fd823e2daf44984b78aa1b4f76fa3ea754e7711fa919"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8786f4e971",
+      "Fields": {
+        "Meaning": "Hội trường, giảng đường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "講堂（こうどう）có nghĩa là hội trường, giảng đường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196402": "Chúng tôi vừa vào hội trường thì buổi lễ bắt đầu.",
+        "211408": "Giáo viên đó tập hợp học sinh tại hội trường."
+      },
+      "SourceHash": "7e6dddb9684f7cdbbc16bceef4e934bbfc9bc146fc18343de65c70a455e119b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9593b3e04f",
+      "Fields": {
+        "Meaning": "Trường trung học phổ thông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "高等学校（こうとうがっこう）có nghĩa là trường trung học phổ thông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107279": "Anh ấy không phải là học sinh trung học phổ thông.",
+        "173185": "Ở trung học phổ thông, tiếng Anh và toán được coi trọng."
+      },
+      "SourceHash": "6e0b95bf4ac220b0580f486ed155dba7a105683a360ba5a9efcb1c1360735979"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a431dff83f",
+      "Fields": {
+        "Meaning": "Công chức, người làm việc trong khu vực công",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "公務員（こうむいん）có nghĩa là công chức, người làm việc trong khu vực công.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115193": "Hai mươi năm trước, anh ấy trở thành công chức ngay sau khi tốt nghiệp đại học.",
+        "157173": "Tôi là công chức."
+      },
+      "SourceHash": "3664f6e424a8b42257d54a18cb32887fbbcf6bcdd6fa9b56014a5586f29bbb3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fd9bc63e8",
+      "Fields": {
+        "Meaning": "Quốc tế",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ",
+        "Explanation": "国際（こくさい）có nghĩa là quốc tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172455": "Tháng này đang diễn ra hội chợ thương mại quốc tế.",
+        "189129": "Tiếng Anh là một ngôn ngữ quốc tế."
+      },
+      "SourceHash": "94ff3435841ddc6818bb7106e7dc3f60e98c625747cdc090ab460b7bd1d10c87"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "be527b9f9d",
+      "Fields": {
+        "Meaning": "Lòng, tâm trí, tinh thần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "心（こころ）có nghĩa là lòng, tâm trí, tinh thần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155760": "Trong đầu tôi có một ý hay.",
+        "224256": "Mỗi lần đến đây tôi đều thấy lòng thư thái."
+      },
+      "SourceHash": "9451ba62fbc1d9405d56223ae2264d8e13803c524d7ba2a816d4f3a551dbbf84"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8bd7bc72e8",
+      "Fields": {
+        "Meaning": "Chồng anh/chị, chồng của người khác (lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "御主人（ごしゅじん）có nghĩa là chồng anh/chị, chồng của người khác (lịch sự).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "233544": "Không biết chồng chị có khó tính về chuyện ăn uống không nhỉ?"
+      },
+      "SourceHash": "423262e9afd3d2af4f0d71d4c402b8395cb87ffe38d3820ca7bd235c90dff580"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce133477e7",
+      "Fields": {
+        "Meaning": "Hỏng, trục trặc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "故障（こしょう）có nghĩa là hỏng, trục trặc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149121": "Tôi đến muộn vì xe bị hỏng.",
+        "150514": "Hình như đồng hồ bị trục trặc ở đâu đó."
+      },
+      "SourceHash": "c23cd21fb40940ed52db5207fae682343edded12c7f58ec6273ca8cb3b724b2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bb88bc7a4",
+      "Fields": {
+        "Meaning": "Biết (kính ngữ)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Dùng khi hỏi hoặc nói một cách kính trọng rằng người nghe hay người được nhắc đến biết điều gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215175": "Anh/chị có biết về Singapore không ạ?",
+        "217080": "Chắc anh/chị biết rồi, ở đây chỉ dùng được đồng 25 xu thôi."
+      },
+      "SourceHash": "9436c3185e070ae253ced27da33bafdfb39f2f9ae224f27559d7e73b8ec3d306"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aac669551b",
+      "Fields": {
+        "Meaning": "Câu trả lời, đáp án",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Cũng thường viết 答え. Cả hai câu dùng nghĩa câu trả lời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123941": "Ai biết đáp án thì giơ tay.",
+        "205616": "Cho tôi biết đáp án đúng của câu đó đi."
+      },
+      "SourceHash": "6cd7669919d39a088266510cf0e7a83fd032d634d54550942baa208e6452776c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bd8adf14c",
+      "Fields": {
+        "Meaning": "Bữa thịnh soạn, món ngon",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ごちそう（ごちそう）có nghĩa là bữa thịnh soạn, món ngon.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161183": "Tôi coi cua là một món rất ngon.",
+        "198836": "Bữa ăn thịnh soạn quá!"
+      },
+      "SourceHash": "0a4125d039e55d9fd0edf6febb5e355adc7a1e4ed8797a68d250016c9ffdedda"
+    }
+  ]
+}

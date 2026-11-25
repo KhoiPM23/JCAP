@@ -24,6 +24,8 @@ export interface ForumComment {
   id: string;
   postId: string;
   parentCommentId?: string | null; // Hỗ trợ trả lời lồng nhau (2 cấp)
+  authorId?: string;
+  isOwnComment?: boolean;
   authorName: string;
   authorAvatar?: string;
   authorLevel: string; // N5, N4, N3, N2, N1, hoặc ADMIN
@@ -48,6 +50,7 @@ export interface ForumPost {
   authorLevel: string;
   authorRole: 'LEARNER' | 'ADMIN';
   isAnonymous: boolean;
+  isOwnPost?: boolean;
   isPinned?: boolean;
   isSolved?: boolean;
   upvotes: number;
@@ -141,7 +144,7 @@ function buildInitialForumPosts(): ForumPost[] {
 
   return [
     {
-      id: 'post-101',
+      id: '1',
       channel: 'RESOURCES',
       title: 'Tổng hợp bảng Kính ngữ (Sonkeigo & Kenjougo) giúp vượt qua mọi kịch bản N4-N3',
       content:
@@ -218,7 +221,7 @@ function buildInitialForumPosts(): ForumPost[] {
       ],
     },
     {
-      id: 'post-102',
+      id: '2',
       channel: 'QA_JAPANESE',
       title: 'Khi gọi món ở quán Ramen, phân biệt 「〜にします」 và 「〜をお願いします」 thế nào ạ?',
       content:
@@ -253,7 +256,7 @@ function buildInitialForumPosts(): ForumPost[] {
       ],
     },
     {
-      id: 'post-103',
+      id: '3',
       channel: 'SPEAKING_TIPS',
       title: 'Mẹo kéo điểm Fluency từ 70 lên 94 khi luyện Shadowing cho người hay bị hụt hơi',
       content:

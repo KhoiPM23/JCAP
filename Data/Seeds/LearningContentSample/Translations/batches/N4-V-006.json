@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1579d0db1b",
+      "Fields": {
+        "Meaning": "Đồ chơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "おもちゃ（おもちゃ）có nghĩa là đồ chơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227491": "Hãy gom đồ chơi lại một chỗ.",
+        "231360": "Món đồ chơi kia làm bằng gỗ."
+      },
+      "SourceHash": "a12cc74a3e57ca6b6b48ce442e2c73cb7903c91b4b1d77bd0516522cbc3d767e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "721424863e",
+      "Fields": {
+        "Meaning": "Mặt trước, mặt phải, bên ngoài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "表（おもて）có nghĩa là mặt trước, mặt phải, bên ngoài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74697": "Mình ra ngoài nhé?",
+        "221729": "Tôi không phân biệt được mặt nào là mặt phải của tờ giấy này."
+      },
+      "SourceHash": "280fd8476309a0af83fc1e0109b14368d6b6ddbbacd8c32e676a33b174efd0ab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9099d4615b",
+      "Fields": {
+        "Meaning": "Cha mẹ, phụ huynh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "親（おや）có nghĩa là cha mẹ, phụ huynh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165585": "Chúng ta không nên dựa dẫm vào bố mẹ.",
+        "213114": "Đừng nói chuyện đó với bố mẹ nhé."
+      },
+      "SourceHash": "4cf0fe437d1eec0ed11cd6f55c6b836100611ea7f35a64c978688831b114fe68"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9cf4f541d",
+      "Fields": {
+        "Meaning": "Cách bơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泳ぎ方（およぎかた）có nghĩa là cách bơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158360": "Tôi biết cách bơi.",
+        "178635": "Để tôi chỉ bạn cách bơi."
+      },
+      "SourceHash": "f4fd27eb32b713fae936814c005356d751362b9d59e62fb86e40e7085704b21e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4806278f5b",
+      "Fields": {
+        "Meaning": "Đi xuống, trèo xuống",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "下りる（おりる）có nghĩa là đi xuống, trèo xuống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190630": "Cả đoàn đi bộ xuống núi.",
+        "225200": "Ken trèo từ trên cây xuống."
+      },
+      "SourceHash": "458bf19bdbdd4df73fc832a3da776425cf7256dfaed5b52b130c1a43beddc977"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ac3d1de39a",
+      "Fields": {
+        "Meaning": "Bẻ, gập, gấp",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "折る（おる）có nghĩa là bẻ, gập, gấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142061": "Tôi định bẻ nó nhưng các ngón tay đã quá yếu.",
+        "210071": "Hãy gấp tờ giấy đó làm tư."
+      },
+      "SourceHash": "036481bc69c7afb285d9d73cd1a41d36b2e6c344756a251337cd5b9f38d427df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "12db3e5f4e",
+      "Fields": {
+        "Meaning": "Lời cảm ơn, sự cảm tạ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お礼（おれい）có nghĩa là lời cảm ơn, sự cảm tạ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140082": "Tôi xin thay mặt con trai gửi lời cảm ơn.",
+        "187760": "Tôi không biết nói gì để bày tỏ lòng cảm ơn."
+      },
+      "SourceHash": "789badba20aaaea9371afa304a16af233b4141419483d460d497dc0c8be3b130"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d517e5d931",
+      "Fields": {
+        "Meaning": "Gãy, gập, nhượng bộ",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "Có thể chỉ vật gãy hoặc một bên nhượng bộ khi thương lượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190767": "Bác sĩ nắn lại chỗ chân bị gãy của anh ấy.",
+        "202669": "Cuối cùng hãng xe buýt đã nhượng bộ."
+      },
+      "SourceHash": "51c0cd2c3415ac8c56776c6968872119770cd8a7026870cf1d5e84f64a7ddecb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "19cb869e4d",
+      "Fields": {
+        "Meaning": "Sự kết thúc, phần cuối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "終わり（おわり）có nghĩa là sự kết thúc, phần cuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199383": "Đêm dài đến đâu cũng có lúc kết thúc.",
+        "216951": "Nào, mình kết thúc một ngày ở đây thôi."
+      },
+      "SourceHash": "cefd9dc6dfa719519fcc36e4d6cd807cc0979ed8fe7f8b55279773aa3b8be5d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cbbc4c3524",
+      "Fields": {
+        "Meaning": "Rèm, màn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "カーテン（カーテン）có nghĩa là rèm, màn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226483": "Rèm vẫn chưa được kéo lên.",
+        "226491": "Rèm cửa bay phấp phới trong gió."
+      },
+      "SourceHash": "fba2b89b3f362199bb828e73249161f6794b9ab9b1e85fa945b2e8fa3d2b99e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f4ad2115e",
+      "Fields": {
+        "Meaning": "Bờ biển",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "海岸（かいがん）có nghĩa là bờ biển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185047": "Bờ biển hầu như không có ai.",
+        "223352": "Xe buýt này có đến bờ biển không?"
+      },
+      "SourceHash": "235b805de5a9dff3a804978877ab209e0b3a362045b942bfcc777a2a8033da91"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93ff1a80c2",
+      "Fields": {
+        "Meaning": "Phòng họp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "会議室（かいぎしつ）có nghĩa là phòng họp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211885": "Phòng họp đang được sử dụng.",
+        "225547": "Các thành viên câu lạc bộ tập trung trong phòng họp."
+      },
+      "SourceHash": "23acb569198abf200eb814b6ffc5c0f59d305106eafd783edb288eb8b73c2776"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7508a7d366",
+      "Fields": {
+        "Meaning": "Địa điểm tổ chức, hội trường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "会場（かいじょう）có nghĩa là địa điểm tổ chức, hội trường.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166008": "Chúng tôi ngồi ở phía sau hội trường.",
+        "188245": "Tại nơi tổ chức buổi hòa nhạc không nghe thấy một tiếng động nào."
+      },
+      "SourceHash": "dbf9de870aa64af547f573174d7427b085d5c32555c45fdb21d5ffa64b0358de"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "81b9c23c14",
+      "Fields": {
+        "Meaning": "Cuộc trò chuyện, hội thoại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "会話（かいわ）có nghĩa là cuộc trò chuyện, hội thoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167052": "Cuộc trò chuyện của chúng tôi lúc nào cũng kết thúc bằng cãi nhau.",
+        "210516": "Nhà văn đó viết lời thoại rất giỏi."
+      },
+      "SourceHash": "bb2d870d5423f8347d9ae850b470c2dd40f0a1dd95783b16abce7bd28148eb0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6365c5ac47",
+      "Fields": {
+        "Meaning": "Việc trở về, đường về",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "帰り（かえり）có nghĩa là việc trở về, đường về.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "175259": "Ít ra con chó vẫn đợi chủ về.",
+        "201483": "Sao bạn về muộn thế?"
+      },
+      "SourceHash": "c5c4df3e4b4ff609c07303dd8cee8ed1b58250e70c5086f2cec92159486732bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "64e3e16740",
+      "Fields": {
+        "Meaning": "Đổi, thay đổi",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "変える（かえる）có nghĩa là đổi, thay đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84836": "Bạn nghĩ bố có đổi ý không?",
+        "198868": "Sao anh ấy lại đổi ý?"
+      },
+      "SourceHash": "10475a226e32150316017f07ee32eef822ff3a39b9c6c2e80b4d061472095319"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea150f3d48",
+      "Fields": {
+        "Meaning": "Khoa học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "科学（かがく）có nghĩa là khoa học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125009": "Thiên văn học là ngành khoa học nghiên cứu các thiên thể.",
+        "162353": "Tôi vẫn học khoa học suốt thời gian qua."
+      },
+      "SourceHash": "1181ac364fcdc997c91ae9f4abc5c174936c45d2b9d8fac027e93b7a3df9bca5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c7db27d62",
+      "Fields": {
+        "Meaning": "Gương",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鏡（かがみ）có nghĩa là gương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146668": "Cô bé đứng nhìn kỹ vào gương.",
+        "180062": "Chẳng lẽ người đó chưa từng soi gương sao?"
+      },
+      "SourceHash": "75d7a797131ea683b3053075efad53485427255781bd4018970a3e120003c3a0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2d6f99582c",
+      "Fields": {
+        "Meaning": "Trang trí, trưng bày",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "飾る（かざる）có nghĩa là trang trí, trưng bày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164973": "Chính chúng tôi đã trang trí căn phòng.",
+        "210725": "Đại sảnh được trang trí bằng tranh Nhật Bản."
+      },
+      "SourceHash": "6acb0f249dd620bef717b81f63f982c7a99adeb4db62dfb3fc5e1fa07361ce58"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b64af0c4f7",
+      "Fields": {
+        "Meaning": "Hỏa hoạn, đám cháy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "火事（かじ）có nghĩa là hỏa hoạn, đám cháy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "186685": "Khi có hỏa hoạn, hãy dùng lối ra này.",
+        "211948": "Đám cháy đó xảy ra hôm kia."
+      },
+      "SourceHash": "79cc8abb1d03e5187246d8e74b7001b2a0760a10c75d8330077877c376727d26"
+    }
+  ]
+}

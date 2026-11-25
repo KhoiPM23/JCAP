@@ -1,0 +1,25 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ndatte",
+      "Fields": {
+        "Meaning": "Nghe nói, nghe đâu (thân mật)",
+        "Formation": "Động từ hoặc tính từ い ở thể thông thường ＋ んだって\nDanh từ hoặc gốc tính từ な ＋ なんだって (ở dạng khẳng định hiện tại)",
+        "Explanation": "Dùng cuối câu để kể lại điều người nói nghe được trong giao tiếp thân mật. Mẫu này kết hợp んだ, dạng nói của のだ, với trợ từ trích dẫn って.",
+        "UsageNotes": "学生なんだって nghĩa là nghe nói người đó là học sinh hoặc sinh viên. だって đứng đầu câu có thể dùng để phân trần. Trong văn phong trung tính hơn, có thể dùng そうだ để thuật lại thông tin."
+      },
+      "Examples": {
+        "ndatte:example:1": "Nghe nói anh Yamada sẽ chuyển đến Hokkaido từ tuần sau.",
+        "ndatte:example:2": "Nghe nói cà phê ở quán mới kia ngon lắm."
+      },
+      "SourceHash": "a21d2bb3d32b131045feb63a2a59d5621864122d5413edd59b70029ff22078ed"
+    }
+  ]
+}

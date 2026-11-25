@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1d8d5ad8d9",
+      "Fields": {
+        "Meaning": "Trò chuyện, nói nhiều",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "おしゃべり（おしゃべり）có nghĩa là trò chuyện, nói nhiều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86369": "Nói cho cùng, cô ấy là người nói nhiều.",
+        "96491": "Họ trò chuyện về thời tiết."
+      },
+      "SourceHash": "0749c5f5f4a0207051d4ffe0042c0abb9772c31b7468d859cf0c54f5030044c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd7e02e772",
+      "Fields": {
+        "Meaning": "Ô nhiễm, nhiễm bẩn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "汚染（おせん）có nghĩa là ô nhiễm, nhiễm bẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137588": "Ngay cả tầng khí quyển phía trên cũng bị ô nhiễm.",
+        "188566": "Ô nhiễm đang làm hại Trái Đất."
+      },
+      "SourceHash": "8f52c4d689c9743351117974adebc94e959fc67c8e034a21b8b89e1ca17e846a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "25a3345e54",
+      "Fields": {
+        "Meaning": "Có lẽ, nhiều khả năng",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "おそらく（おそらく）có nghĩa là có lẽ, nhiều khả năng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79123": "Có lẽ đến chiều tối trời sẽ mưa.",
+        "148414": "Thủ tướng có lẽ sẽ từ chức."
+      },
+      "SourceHash": "7c2f115f79c87115ea6e20d8cfabca323a722c09006b630239a836cd40c49db4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a8059af14",
+      "Fields": {
+        "Meaning": "Sợ, e ngại",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "恐れる（おそれる）có nghĩa là sợ, e ngại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96045": "Họ sợ bị nghe lén.",
+        "137475": "Người lớn thường e ngại sự thay đổi."
+      },
+      "SourceHash": "acf8181d6d3c284d732d90f269a35824a0b21dc625c088a4bacb38d0f3b3eeb5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a801cd8e5",
+      "Fields": {
+        "Meaning": "Đáng sợ, kinh khủng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "恐ろしい（おそろしい）có nghĩa là đáng sợ, kinh khủng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108366": "Anh ấy mắc một căn bệnh đáng sợ.",
+        "206253": "Thời tiết lúc bão thật đáng sợ."
+      },
+      "SourceHash": "329895dc6621784fbd86a656ef72385a921094a23cdb08587a3293fa071dc254"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c2cddd519e",
+      "Fields": {
+        "Meaning": "Lẫn nhau, cả hai bên",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, phó từ",
+        "Explanation": "お互い（おたがい）có nghĩa là lẫn nhau, cả hai bên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98127": "Họ giúp nhau làm bài tập về nhà.",
+        "227161": "Hai người rất hợp nhau."
+      },
+      "SourceHash": "a36e9acf6c995fde933b975950bf669a98f77baf3efc3641af67ee06f5f3bd7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93e1217f4a",
+      "Fields": {
+        "Meaning": "Êm ả, điềm tĩnh, ôn hòa",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "穏やか（おだやか）có nghĩa là êm ả, điềm tĩnh, ôn hòa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82911": "Có vẻ mẹ tôi không được yên lòng.",
+        "185097": "Mặt biển trông êm ả và phẳng lặng."
+      },
+      "SourceHash": "b64d03a766e1512a80976eb3fe81bee00b2540267786c65086c5898b65c26a26"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a8a06b3e15",
+      "Fields": {
+        "Meaning": "Người đàn ông",
+        "PartOfSpeech": "Cụm từ, Danh từ",
+        "Explanation": "男の人（おとこのひと）có nghĩa là người đàn ông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148779": "Một người đàn ông trẻ đang hát trước cửa.",
+        "149256": "Bạn có biết người đàn ông trong ảnh này không?"
+      },
+      "SourceHash": "1b290802e6a31bbb9bc82596be6fdfd5d3926db4bd2288ba1329d523f3b52c5e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dbe7053c89",
+      "Fields": {
+        "Meaning": "Kém hơn, thua kém",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "劣る（おとる）có nghĩa là kém hơn, thua kém.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93694": "Cô ấy kém anh ấy về toán.",
+        "155613": "Tôi kém anh ấy về toán."
+      },
+      "SourceHash": "db92ab172b9c278dd8a20efbbd81c657cf02e291e84c6f78d60b44d8032d75d4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ccad2b9049",
+      "Fields": {
+        "Meaning": "Quỷ, người đuổi trong trò chơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鬼（おに）có nghĩa là quỷ, người đuổi trong trò chơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124610": "Ở đời đâu phải ai cũng xấu bụng.",
+        "126718": "Ai đến muộn thì để quỷ ăn thịt đi."
+      },
+      "SourceHash": "00e586a62cd3c5b92bc09acdf2e510db000ba654c40d1e051394606755171541"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "07ced3db7b",
+      "Fields": {
+        "Meaning": "Đai, thắt lưng, dải",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "帯 là đai, thường dùng với kimono. Thành ngữ 帯に短し、襷に長し chỉ thứ không phù hợp cho cả hai mục đích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75758": "Kimono và đai lưng của cô ấy phối với nhau rất có gu.",
+        "137949": "Ngắn quá để làm đai, dài quá để làm dây buộc tay áo."
+      },
+      "SourceHash": "993e0c0d0f53fdd6e6e9a244a3b8038d8c6747931238b03edb3573b65685172b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "29010ee3b0",
+      "Fields": {
+        "Meaning": "Bữa trưa, buổi trưa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お昼（おひる）có nghĩa là bữa trưa, buổi trưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226820": "Hãy quay lại trước buổi trưa.",
+        "226821": "Bạn có nhớ lần bạn đãi tôi bữa trưa không?"
+      },
+      "SourceHash": "f017513d0b21151e04fbae33eac68da9b3d57b355c7aa5fc9cd711277fc1f6a6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f72e4ff411",
+      "Fields": {
+        "Meaning": "Văn phòng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "オフィス（オフィス）có nghĩa là văn phòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227555": "Tôi đến văn phòng đúng giờ.",
+        "228832": "Cứ đến văn phòng tôi bất cứ lúc nào."
+      },
+      "SourceHash": "44f3bfd6ec9e3adf907752bb70958d46ea3350ec924412e72beffeea133c4ec5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b5422223ea",
+      "Fields": {
+        "Meaning": "Đuối nước, đắm chìm",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "溺れる（おぼれる）có nghĩa là đuối nước, đắm chìm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90622": "Cô ấy suýt bị đuối nước.",
+        "209043": "Cậu bé suýt chết đuối."
+      },
+      "SourceHash": "b46acbef71e52178306784d393e4848282da1c25357965506a3259be01776f36"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e931649d18",
+      "Fields": {
+        "Meaning": "Mày, cậu (cách gọi trực tiếp)",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "おまえ（おまえ）có nghĩa là mày, cậu (cách gọi trực tiếp).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172190": "Lần này ta sẽ bỏ qua việc ngươi làm.",
+        "226919": "Ta sẽ gả con gái cho ngươi."
+      },
+      "SourceHash": "5ff1ecba113589d6ba810810282005aaac775a156ab2c6686629e62ce5ea9129"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ba966a4cb",
+      "Fields": {
+        "Meaning": "Chúc mừng",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "おめでとう（おめでとう）có nghĩa là chúc mừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "225482": "Chúc mừng Giáng sinh.",
+        "347403": "Chúc mừng năm mới."
+      },
+      "SourceHash": "370c181b9a609be82f4fb00b7dea730fa305ec67e495bc9c456539310700009a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34dcc65202",
+      "Fields": {
+        "Meaning": "Được gặp (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "お目に掛かる（おめにかかる）có nghĩa là được gặp (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179919": "Có lẽ tôi sẽ sớm được gặp anh chị.",
+        "186895": "Vợ tôi cũng rất mong được gặp anh chị."
+      },
+      "SourceHash": "d5f7fa5b0116dbd26c44a1eea98d6791d2cd87d6b3e2d06f8ea99e060bf84b7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "77a024455d",
+      "Fields": {
+        "Meaning": "Kỷ niệm, hồi ức",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "思い出（おもいで）có nghĩa là kỷ niệm, hồi ức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110526": "Giờ đây anh ấy chỉ còn là người trong ký ức.",
+        "219196": "Chuyến đi này sẽ trở thành một kỷ niệm đẹp."
+      },
+      "SourceHash": "77826cecac1bbe5b2df823f9c93b56192904aa42561619f23be5a712c4b45244"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43b76d54d8",
+      "Fields": {
+        "Meaning": "Chủ yếu",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "主に（おもに）có nghĩa là chủ yếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122248": "Người Nhật chủ yếu ăn cơm.",
+        "214521": "Mưa ở Tây Ban Nha chủ yếu rơi trên đồng bằng."
+      },
+      "SourceHash": "71fc1c530a52103786480be0c850dab0dd1897c3084cbf9109769075eef681bf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7942f6b1d6",
+      "Fields": {
+        "Meaning": "Bất giác, không kìm được",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "思わず（おもわず）có nghĩa là bất giác, không kìm được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106493": "Anh ấy bất giác bật cười.",
+        "118841": "Tôi cứ vô thức bị anh ấy thuyết phục."
+      },
+      "SourceHash": "a5328d609d880a98830eb1533b55d70b3ad25d83b20ef2de85680e5935e8f225"
+    }
+  ]
+}

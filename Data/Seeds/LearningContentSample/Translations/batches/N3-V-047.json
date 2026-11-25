@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1170de661",
+      "Fields": {
+        "Meaning": "Tồn tại, sự hiện diện",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "存在（そんざい）có nghĩa là tồn tại, sự hiện diện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106163": "Anh ấy giống như một người cha đối với tôi.",
+        "144904": "Bạn có nghĩ Chúa tồn tại không?"
+      },
+      "SourceHash": "b56e57151b11990917e098d6e166f316269d83fc7328ca114b9816c52cacd321"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9429f093fb",
+      "Fields": {
+        "Meaning": "Tôn trọng, coi trọng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "尊重（そんちょう）có nghĩa là tôn trọng, coi trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146647": "Cũng phải tôn trọng ý kiến thiểu số.",
+        "157413": "Tôi tôn trọng phán đoán của bạn."
+      },
+      "SourceHash": "837ae95b9def40b3c57ad12a3bdb536398e5bda9c3c90f64835965e791ad6692"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7adaa6336c",
+      "Fields": {
+        "Meaning": "Khác, ngoài ra",
+        "PartOfSpeech": "Phó từ, Danh từ, bổ nghĩa với の",
+        "Explanation": "他（た）có nghĩa là khác, ngoài ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87193": "Cô ấy nhầm anh ấy với một người khác."
+      },
+      "SourceHash": "c93d089cec5e0e5d6ec4bf56bb6259d0d8a6ba99ff669c0954932b9919e5a08f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fdcce9a17",
+      "Fields": {
+        "Meaning": "Ruộng lúa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "田（た）có nghĩa là ruộng lúa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87778": "Cô ấy đi về phía ruộng lúa.",
+        "207584": "Ruộng lúa đó vẫn bỏ hoang."
+      },
+      "SourceHash": "5ebaae6b4e687eb3f743945987284b3d4c0c0d09a3867d92ac70a05cffcdfcf0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1935a3f544",
+      "Fields": {
+        "Meaning": "Đối, so với, tỷ số",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "対（たい）có nghĩa là đối, so với, tỷ số.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "210031": "Trận đấu kết thúc với tỷ số hòa 6–6.",
+        "214087": "Đội Swallows đang dẫn 4–1."
+      },
+      "SourceHash": "a133d037aa275447a5fa47031cd3895a4547a60051e8c02c4c404d617ed60ada"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20915b1f87",
+      "Fields": {
+        "Meaning": "Bệ, giá đỡ, đơn vị đếm máy hoặc xe",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "台（だい）có nghĩa là bệ, giá đỡ, đơn vị đếm máy hoặc xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148984": "Rất ít người có hai chiếc ô tô.",
+        "220674": "Đừng đặt bình hoa trên bệ này."
+      },
+      "SourceHash": "c6054c7fb921be5f113fadf2822e4d98a44abe883a41a614050cc2c23affa8ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4bf6db45d0",
+      "Fields": {
+        "Meaning": "Lớn, đại học (dạng rút gọn)",
+        "PartOfSpeech": "Tiền tố, tính từ đuôi な, danh từ",
+        "Explanation": "Trong tên trường như ハーバード大, 大 là dạng rút gọn của 大学.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91769": "Cô ấy vào Đại học Harvard.",
+        "137762": "Cỡ lớn hay cỡ nhỏ?"
+      },
+      "SourceHash": "c1036e0dd76ee16abf27c203721bd0fd8377402b3d52fee54330c1e58a99a436"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6cb86b20fc",
+      "Fields": {
+        "Meaning": "Đề, chủ đề, đơn vị đếm bài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "題（だい）có nghĩa là đề, chủ đề, đơn vị đếm bài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141573": "Giáo viên giao cho chúng tôi mười bài tập về nhà.",
+        "236141": "Hãy viết một bài văn với đề “Tình bạn”."
+      },
+      "SourceHash": "ebee03848d61e234cfdc86e458a865e2f508d54d60d30b6a1e48a0b1ee95e4cd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40dcc96658",
+      "Fields": {
+        "Meaning": "Giáo dục thể chất, thể dục",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "体育（たいいく）có nghĩa là giáo dục thể chất, thể dục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137995": "Thể dục có phải môn bắt buộc không?",
+        "225224": "Kelly trốn tiết thể dục rồi về nhà."
+      },
+      "SourceHash": "0c98ef1a2a4b3d403886d9de13682b2cfb6347b47d065bf377909c1d7c2cb5bd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca1f1bf9f2",
+      "Fields": {
+        "Meaning": "Thân nhiệt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "体温（たいおん）có nghĩa là thân nhiệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137988": "Tôi đo thử thì thân nhiệt vẫn bình thường.",
+        "216972": "Nào, để tôi đo thân nhiệt cho bạn."
+      },
+      "SourceHash": "ec251949f4fa673602c0015950f0a78eb64470e1ce7512acdab98388301dc713"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "48385111dd",
+      "Fields": {
+        "Meaning": "Đại hội, giải đấu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大会（たいかい）có nghĩa là đại hội, giải đấu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120280": "Một trong hai người, anh ấy hoặc tôi, phải dự đại hội.",
+        "120885": "Anh ấy thắng giải đấu đó cũng là điều dễ hiểu."
+      },
+      "SourceHash": "af7fdebb2d8d787764064e5b01e608c889287478ab4b28690bdab56ef4f250b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7eb56880eb",
+      "Fields": {
+        "Meaning": "Khí quyển, không khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大気（たいき）có nghĩa là khí quyển, không khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137591": "Khí quyển đang dần bị ô nhiễm.",
+        "137592": "Khí quyển bao quanh Trái Đất."
+      },
+      "SourceHash": "01f7c27b4fce9a4a737c1481809f81fa92664afee4cc9197789e83e68b2a87c7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "caac295eb2",
+      "Fields": {
+        "Meaning": "Số tiền phải trả, tiền hàng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "代金（だいきん）có nghĩa là số tiền phải trả, tiền hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112633": "Anh ấy trả tiền ngay tại chỗ.",
+        "195859": "Tôi trả tiền sách bằng séc được không?"
+      },
+      "SourceHash": "7d894b740b1742791cb804e94553d92197478cf2a1c46931e740be51ab4620a3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e518ce28e",
+      "Fields": {
+        "Meaning": "Buồn chán, tẻ nhạt",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "退屈（たいくつ）có nghĩa là buồn chán, tẻ nhạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92877": "Cô ấy thấy chán cuốn tiểu thuyết này.",
+        "226429": "Tiệc cocktail đôi khi cũng tẻ nhạt."
+      },
+      "SourceHash": "942d60ca919819e7d3a596a501a43b3587a674cc2e76ef2a8094c3fced80a61f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1c0621ee0d",
+      "Fields": {
+        "Meaning": "Lưu trú, ở lại",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "滞在（たいざい）có nghĩa là lưu trú, ở lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148121": "Cuối tuần anh chị định ở lại đó à?",
+        "228557": "Hiện tôi đang ở nhà chú tôi."
+      },
+      "SourceHash": "82be8015003c58e4f40a766bc8d7e354811052f157e719e1b5bf2aae18257475"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38bf87fc8a",
+      "Fields": {
+        "Meaning": "Đại sứ",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "大使（たいし）có nghĩa là đại sứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137532": "Đại sứ được triệu hồi từ Warszawa.",
+        "137533": "Đại sứ chịu trách nhiệm về nhiệm vụ ấy."
+      },
+      "SourceHash": "a3d6cfc0708c8061a9b65535299584569f14e7482cfd3c31d9f89366efb68c6c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f6e77d1fe",
+      "Fields": {
+        "Meaning": "Đáng kể, to tát",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "大した（たいした）có nghĩa là đáng kể, to tát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102474": "Có lẽ anh ấy chẳng trở thành nhân vật lớn được đâu.",
+        "126721": "Đến muộn cũng chẳng có gì to tát."
+      },
+      "SourceHash": "f70a750a2bacae121a3a24a977f5c9de36238e9bb088516f103cbd2f1ba83c2e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5171ce1b55",
+      "Fields": {
+        "Meaning": "Đối tượng, mục tiêu",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "対象（たいしょう）có nghĩa là đối tượng, mục tiêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168476": "Cuốn sách này dành cho trẻ em.",
+        "219177": "Cuốn sách lịch sử này được viết cho học sinh trung học phổ thông."
+      },
+      "SourceHash": "9611268b40b8813e0ae4327321f10e9f0b449e64ad0a6157699bdef020efab5a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "999ca0b1df",
+      "Fields": {
+        "Meaning": "Bộ trưởng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大臣（だいじん）có nghĩa là bộ trưởng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102399": "Ông ấy được thăng lên làm bộ trưởng.",
+        "155193": "Tôi đã nói chuyện với chính bộ trưởng."
+      },
+      "SourceHash": "c1939eeef0a18024b0f5b811aef37f5beea864cbf9f04dbaf0ea0fc36913c0ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "486445bd56",
+      "Fields": {
+        "Meaning": "Đối với, hướng tới",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "対する（たいする）có nghĩa là đối với, hướng tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170390": "Chúng tôi đang nỗ lực hết sức để ứng phó với sự cố hạt nhân."
+      },
+      "SourceHash": "5b5ab7c06c7fbcff50f2a5c0ee6cc2397237146780aa1df9e17c66a20bcd5aa2"
+    }
+  ]
+}

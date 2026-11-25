@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c64697ccaa",
+      "Fields": {
+        "Meaning": "Dụng cụ, công cụ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "道具（どうぐ）có nghĩa là dụng cụ, công cụ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144319": "Con người bắt đầu dùng công cụ từ khi nào?",
+        "220269": "Dụng cụ này chẳng có ích gì."
+      },
+      "SourceHash": "7360babc126fd0d8bcfa5c272e09449fa456c9bee2f2a4ca872897a427a2b79d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ef4ab5d2a",
+      "Fields": {
+        "Meaning": "Cuối cùng, rốt cuộc",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "とうとう（とうとう）có nghĩa là cuối cùng, rốt cuộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200035": "Cuối cùng Tom cũng bỏ thuốc lá.",
+        "201230": "Cuối cùng chúng tôi cũng có thể mua nhà."
+      },
+      "SourceHash": "87c53cdc8f0ce64f63ba94f8f45271c7f63811a6bc2d2d1cca85b71cbd1fb6ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69678bc04e",
+      "Fields": {
+        "Meaning": "Vườn thú",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "動物園（どうぶつえん）có nghĩa là vườn thú.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165392": "Chúng tôi thấy khỉ ở vườn thú.",
+        "217495": "Kền kền Andes không bao giờ lớn lên được trong vườn thú."
+      },
+      "SourceHash": "5347d8029347247d0b535c0649eb8e9d34efcba027565af8a4fbf79688655189"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc60a66d5c",
+      "Fields": {
+        "Meaning": "Ở xa, xa xa",
+        "PartOfSpeech": "Danh từ, phó từ, bổ nghĩa với の",
+        "Explanation": "遠く（とおく）có nghĩa là ở xa, xa xa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188692": "Tôi thấy một ánh đèn mờ ở xa.",
+        "197823": "Tôi thấy một ánh đèn ở tít đằng xa."
+      },
+      "SourceHash": "cfc815fce6585041f9d6d63347794ba3b5587eb93797736d76beaf1ab14643d1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9c1a3ae2c",
+      "Fields": {
+        "Meaning": "Đi qua, được biết đến với tên",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "通る（とおる）có nghĩa là đi qua, được biết đến với tên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91569": "Cô ấy được biết đến với tên Beth.",
+        "152721": "Ngày nào tôi cũng đi qua trước nhà thờ đó."
+      },
+      "SourceHash": "65f5c046f69bec77967fc8535327ea0e9e9089abb4b317c5fb42bf5d40fad87c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0b2acf3460",
+      "Fields": {
+        "Meaning": "Đặc biệt, nhất là",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "特に（とくに）có nghĩa là đặc biệt, nhất là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158186": "Tôi rất thích âm nhạc, đặc biệt là nhạc rock.",
+        "162307": "Tôi không có việc gì đặc biệt phải làm."
+      },
+      "SourceHash": "20655a72e38e5999c4ec1a91d667a168a7faaec13314ae685cf89064ce04115d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cc2bd01f0a",
+      "Fields": {
+        "Meaning": "Đặc biệt",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, phó từ, Danh từ",
+        "Explanation": "特別（とくべつ）có nghĩa là đặc biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123440": "Chúng tôi có món đặc biệt đấy ạ.",
+        "170275": "Có thực đơn đặc biệt cho người ăn chay không?"
+      },
+      "SourceHash": "8682fc7ae13d968762201a59322d468c8705c1d711fe8d199cb8321b02f28fb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8743cb4286",
+      "Fields": {
+        "Meaning": "Tiệm cắt tóc, thợ cắt tóc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "とこや（とこや）có nghĩa là tiệm cắt tóc, thợ cắt tóc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155835": "Tôi định đến tiệm cắt tóc.",
+        "227485": "Ồ, bạn vừa đi cắt tóc về đấy à?"
+      },
+      "SourceHash": "c0341ff7ab9f32f0f1a6fdcdcd3629d3c20a8d9d38a7835d52a16a5944fe020f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b799806d8",
+      "Fields": {
+        "Meaning": "Trên đường, giữa chừng",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "途中（とちゅう）có nghĩa là trên đường, giữa chừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124585": "Đừng bỏ cuộc giữa chừng.",
+        "184373": "Tôi gặp Tom trên đường đi học."
+      },
+      "SourceHash": "7776eb3c195594f20e6d2805154c8408171cf945909ffafd679cf016203f7944"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3753f20423",
+      "Fields": {
+        "Meaning": "Tàu tốc hành đặc biệt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "特急（とっきゅう）có nghĩa là tàu tốc hành đặc biệt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123466": "Tàu tốc hành đặc biệt ở sân ga số mấy?",
+        "150518": "Vì đồng hồ chạy chậm nên tôi lỡ tàu tốc hành đặc biệt."
+      },
+      "SourceHash": "86d04647ee09d2149bcbd537c6ea0e8f71b849d11d4b85835b781625d4350fae"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc1e0c2895",
+      "Fields": {
+        "Meaning": "Giao, chuyển đến, trình báo",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "届ける（とどける）có nghĩa là giao, chuyển đến, trình báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156148": "Tôi trình báo với cảnh sát rằng xe mình bị đánh cắp.",
+        "187063": "Anh/chị giao đến nhà giúp tôi được không ạ?"
+      },
+      "SourceHash": "5d39914339249ae952454471fabb73b0ea9f956b4ff8e7709d4a67d9d87d4405"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1200266b8d",
+      "Fields": {
+        "Meaning": "Ở lại qua đêm, trọ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "泊まる（とまる）có nghĩa là ở lại qua đêm, trọ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155487": "Tuần trước tôi ngủ lại nhà chú.",
+        "166045": "Chúng tôi ở khách sạn trước ga."
+      },
+      "SourceHash": "a65ab2dd360778e608ae60f9d225cf5a9b2c24d37130cfdd8dc39ee31b4daaa0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3aadcbc234",
+      "Fields": {
+        "Meaning": "Dừng, chặn, ghim cố định",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "止める（とめる）có nghĩa là dừng, chặn, ghim cố định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "182470": "Jim đột ngột dừng xe trước ngân hàng.",
+        "192310": "Roy ghim cố định chiếc huy chương bằng kim ghim."
+      },
+      "SourceHash": "7e9a624c3803af7e73f695c817282d472becce5d99432db41b080a11c6f76abe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7becfb8f21",
+      "Fields": {
+        "Meaning": "Đổi, thay thế",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "取り替える（とりかえる）có nghĩa là đổi, thay thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174633": "Thay lốp cũ bằng lốp mới đi.",
+        "217626": "Xin đổi cái này lấy cái màu xanh lam."
+      },
+      "SourceHash": "30103f995ff2b15fb6a6ba44c66ebd421eb3860207c213bf0d4e7ad2bab4e3c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76d7890e5d",
+      "Fields": {
+        "Meaning": "Kẻ trộm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泥棒（どろぼう）có nghĩa là kẻ trộm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125364": "Kẻ trộm lén vào nhà.",
+        "213632": "Hóa ra người ăn xin ở đó là kẻ trộm."
+      },
+      "SourceHash": "a47236daba33c816c0e12ecc04f3aad76a62bb42fe8863d46a358999e8d864b2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ccfefc657c",
+      "Fields": {
+        "Meaning": "Liên tục, nhanh, dồn dập",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "どんどん（どんどん）có nghĩa là liên tục, nhanh, dồn dập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123575": "Đừng chắn đường, cứ nhanh chân đi tiếp!",
+        "203241": "Ai đó đang đập cửa thình thịch."
+      },
+      "SourceHash": "d5e39184e63404e77991d274d87bbdfc96dc7fd3ce157bdb5018da04e616d711"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b7b602246",
+      "Fields": {
+        "Meaning": "Sửa, sửa chữa",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "直す（なおす）có nghĩa là sửa, sửa chữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199216": "Sao bạn không sửa cầu chì?",
+        "233244": "Tôi sẽ sửa xong đồng hồ của anh/chị chậm nhất vào ngày mai."
+      },
+      "SourceHash": "28e16b30064c6e50969492d719abc296ba6b904b0f301cad1e7513e2d48f0362"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9f64a96651",
+      "Fields": {
+        "Meaning": "Khỏi, lành",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "治る（なおる）có nghĩa là khỏi, lành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "150179": "Phải mất một thời gian mới khỏi nhỉ.",
+        "235478": "Chừng hai tuần là sẽ tự khỏi."
+      },
+      "SourceHash": "8467626e549e74b1e7c140d469b1c2307485dcecda1fe809e64d2164dbd43ed3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b43872b197",
+      "Fields": {
+        "Meaning": "Được sửa, trở lại bình thường, bỏ được tật",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "直る（なおる）có nghĩa là được sửa, trở lại bình thường, bỏ được tật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204978": "Cái đó không sửa được đâu. Bạn nên mua cái mới.",
+        "228942": "Rốt cuộc đến khi nào bạn mới bỏ được cái tính keo kiệt đó?"
+      },
+      "SourceHash": "a9586517f10406da146b27ba02a1d5a54714268884c3ed99e7b26e7601f0ece7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d3b3911a79",
+      "Fields": {
+        "Meaning": "Khá, mãi vẫn chưa",
+        "PartOfSpeech": "Phó từ, tính từ đuôi な",
+        "Explanation": "中々（なかなか）có nghĩa là khá, mãi vẫn chưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151059": "Trong thời gian thi, mọi việc khá vất vả.",
+        "229495": "Ann mãi vẫn chưa đến."
+      },
+      "SourceHash": "ee226b0627487fef6da0d9eae51838de874f36ab89b9ac8db28317e946dc30da"
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 8 từ và 16 câu theo bản Nhật.",
+    "Mục 私 phân biệt hai cách đọc わたくし và わたし. Mục 渡す phân biệt trao vật và đưa qua một nơi."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38249a2dd2",
+      "Fields": {
+        "Meaning": "Áo sơ mi công sở, áo sơ mi mặc với com-lê",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ワイシャツ thường chỉ áo sơ mi có cổ mặc cùng com-lê hoặc trong môi trường công sở. アイロンでしわをのばす nghĩa là dùng bàn ủi làm phẳng nếp nhăn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83028": "Mẹ tôi bận ủi phẳng những nếp nhăn trên áo sơ mi.",
+        "192073": "Đính cúc vào áo sơ mi giúp tôi nhé."
+      },
+      "SourceHash": "6beacc02bcef6c650845ffcd01d121a4dabdf9eb8a042686fc2249108d0639ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "640761cb8b",
+      "Fields": {
+        "Meaning": "Trẻ, trẻ tuổi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "若い（わかい）tả người còn trẻ. 若いとき nghĩa là hồi còn trẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156108": "Hồi còn trẻ, tôi thường chơi bóng đá.",
+        "236166": "“Cô ấy còn trẻ không?” “Vâng.”"
+      },
+      "SourceHash": "82455e3ae8a70b292c5b84ce8216e44736a28b3af82df5eac6a3f9de3c90d12d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ecee43eb04",
+      "Fields": {
+        "Meaning": "Hiểu, biết, phân biệt được",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "分かる（わかる）dùng khi hiểu điều gì hoặc biết câu trả lời. Một câu hỏi gián tiếp với か có thể đứng trước 分かる.",
+        "UsageNotes": "Thể て là 分かって."
+      },
+      "Examples": {
+        "196088": "Tôi không biết Bob đến Nhật khi nào.",
+        "200695": "Tôi không phân biệt được cái nào với cái nào."
+      },
+      "SourceHash": "7abeb65808b31008522e091f579cb27fe4b7103ba371ce4c58f12f169d100814"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ca0de9dea",
+      "Fields": {
+        "Meaning": "Quên",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "忘れる（わすれる）chỉ việc quên thông tin hoặc quên làm gì. Động từ ＋ のを忘れる nghĩa là quên làm việc đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80772": "Tôi quên hẳn tên rồi.",
+        "124723": "Xin lỗi vì tôi quên gọi điện."
+      },
+      "SourceHash": "491f7f1d289405c1b8a62bad0f2b3b4fd709610ab241c3e5c1c8a292cbf6dcd4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5c2e69813",
+      "Fields": {
+        "Meaning": "Tôi (cách xưng trang trọng)",
+        "PartOfSpeech": "Đại từ nhân xưng",
+        "Explanation": "私 đọc là わたくし trong cách xưng hô trang trọng. 私の nghĩa là của tôi.",
+        "UsageNotes": "Cùng chữ 私 cũng thường đọc là わたし trong giao tiếp thông thường."
+      },
+      "Examples": {
+        "89373": "Cô ấy chăm sóc con tôi giúp tôi.",
+        "159334": "Tôi không biết bơi."
+      },
+      "SourceHash": "b88a9a6f7c2fe0014b7cbde35ef8931eea6738269023ec42a797bfc72a1ad1f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1d440d4e1",
+      "Fields": {
+        "Meaning": "Đưa, trao, chuyển sang",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "渡す（わたす）dùng khi trao vật cho ai hoặc đưa người hay vật qua một nơi. バトンを渡す nghĩa là trao gậy tiếp sức.",
+        "UsageNotes": "渡る diễn tả việc tự mình đi qua."
+      },
+      "Examples": {
+        "191763": "Xin hãy đưa tôi sang bên kia sông.",
+        "192496": "Trong cuộc chạy tiếp sức, người chạy phải trao gậy tiếp sức."
+      },
+      "SourceHash": "83458d8fe1acafe8a6557498471eec70e997640bc0fb96fc5ca1a5261d7812e2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78255b9860",
+      "Fields": {
+        "Meaning": "Qua, băng qua, sang",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "渡る（わたる）chỉ việc đi qua đường, cầu hoặc sông. Với tên nước, 〜へ渡る có thể diễn tả việc sang nước đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190628": "Cả đoàn đã sang Mỹ.",
+        "224241": "Mình băng qua ở đây nhé."
+      },
+      "SourceHash": "289171608cc2c2fa0fb4e185264c5b0bcd96ac231a87201563a62e516eec714d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13b6dbec03",
+      "Fields": {
+        "Meaning": "Xấu, tệ, có lỗi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "悪い（わるい）tả điều không tốt. 人に悪いことをする có thể nói đã làm điều sai với ai đó.",
+        "UsageNotes": "Dạng phủ định 悪くない nghĩa là không tệ."
+      },
+      "Examples": {
+        "74724": "Chuyện này cũng đâu có tệ, phải không?",
+        "215129": "Xin lỗi. Tôi đã làm điều có lỗi với bạn."
+      },
+      "SourceHash": "b6a145575ebed5c5fa80e56f2558c6f95f04b727eb6ffd1ef97e90ac77612fff"
+    }
+  ]
+}

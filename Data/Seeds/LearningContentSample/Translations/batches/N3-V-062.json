@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp.",
+    "Đối chiếu lại mục từ, cách đọc, từ loại và câu Nhật. Đã hiệu đính: 1e1423597b, 05717efa73."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e7a5df28c0",
+      "Fields": {
+        "Meaning": "Rễ, gốc, bản chất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "根（ね）có nghĩa là rễ, gốc, bản chất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107019": "Bản chất anh ấy là người hiền lành.",
+        "108559": "Trông anh ấy có vẻ khó tính nhưng bản chất lại hiền."
+      },
+      "SourceHash": "b2abb62c42e6c77207055045fa74501b5f297d5ef0ee8acd50629d0b334a4553"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d7cbebb57",
+      "Fields": {
+        "Meaning": "Điều ước, nguyện vọng, lời thỉnh cầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "願い（ねがい）có nghĩa là điều ước, nguyện vọng, lời thỉnh cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "163885": "Ước mơ của tôi là học vẽ ở Paris.",
+        "168329": "Thị trưởng đã chấp thuận nguyện vọng của chúng tôi."
+      },
+      "SourceHash": "8e49c5d9cdcabe46cc8a9cf6fca0b635347af942a7d5c8e619176092775f24e3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7846a5b95f",
+      "Fields": {
+        "Meaning": "Mong muốn, cầu xin, đề nghị",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "願う（ねがう）có nghĩa là mong muốn, cầu xin, đề nghị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "105874": "Anh ấy xin tôi tha thứ.",
+        "139840": "Xin chú ý bước chân ạ."
+      },
+      "SourceHash": "19c6ce147cb3b4ac6cb123d68e8fe7a4461b7fcb72cc08de4d5f8f07be42fd25"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38191588bb",
+      "Fields": {
+        "Meaning": "Chuột",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鼠（ねずみ）có nghĩa là chuột.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122011": "Vắng mèo thì chuột bắt đầu nô đùa.",
+        "220776": "Trên tàu này có rất nhiều chuột."
+      },
+      "SourceHash": "93cd45786ff60400ffd73628b377927f9cee9a04e3001738a689435a6f05ddb0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b27ee03550",
+      "Fields": {
+        "Meaning": "Vùng nhiệt đới",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "熱帯（ねったい）có nghĩa là vùng nhiệt đới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "221278": "Loài cây này chỉ mọc ở vùng nhiệt đới.",
+        "230524": "Đảo đó có khí hậu nhiệt đới."
+      },
+      "SourceHash": "6e47d4587cfc5280019052440602db5a80ddebc24b12932367b8281ad24ef78a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c03a75fe96",
+      "Fields": {
+        "Meaning": "Say mê, mải mê",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "熱中（ねっちゅう）có nghĩa là say mê, mải mê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106653": "Anh ấy rất say mê công việc.",
+        "221903": "Dạo này cô ấy mê quần vợt."
+      },
+      "SourceHash": "1fc9da5a2c8c00b95e5bdf9a9ce864c75b75ba3aba7922707dd3126233b0d34c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "317aef42d7",
+      "Fields": {
+        "Meaning": "Trong khoảng bao nhiêu năm",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "年間（ねんかん）có nghĩa là trong khoảng bao nhiêu năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75787": "Anh ấy tập aikido trong bảy năm.",
+        "161065": "Tôi làm việc ở đây được mười năm rồi."
+      },
+      "SourceHash": "3eb897b79c39347cea99e632d749232664806b9024528f563398226c9cf0def1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "182db962d0",
+      "Fields": {
+        "Meaning": "Suốt năm, quanh năm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "年中（ねんじゅう）có nghĩa là suốt năm, quanh năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162015": "Tôi chơi quần vợt quanh năm.",
+        "224159": "Ở đây quanh năm rất lạnh."
+      },
+      "SourceHash": "2859df630894893a0d860688656a607b8c05286d86f8a9d467694f06765a6108"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df15c38d0a",
+      "Fields": {
+        "Meaning": "Thập niên, thời đại, lứa tuổi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "年代（ねんだい）có nghĩa là thập niên, thời đại, lứa tuổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93627": "Cô ấy sinh vào thập niên 1950.",
+        "235884": "Thập niên 1990 bắt đầu với Chiến tranh vùng Vịnh."
+      },
+      "SourceHash": "2a3b45aef91df380c68b97424dd4ea5d68b92275a948f8973481c433a90f3bb2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3acd232764",
+      "Fields": {
+        "Meaning": "Tuổi, độ tuổi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "年齢（ねんれい）có nghĩa là tuổi, độ tuổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89604": "Cô ấy trạc tuổi tôi.",
+        "102379": "Anh ấy khoảng bằng tuổi bạn."
+      },
+      "SourceHash": "b8d64e7128592f02fd03276f828a52fb5a1fe169bc9f87df54f8d861791fb2a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "413bbde60b",
+      "Fields": {
+        "Meaning": "Đồng, cánh đồng, mọc hoang",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "野（の）có nghĩa là đồng, cánh đồng, mọc hoang.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219319": "Bông hồng dại này tỏa hương ngọt ngào.",
+        "224386": "Ở đây có nhiều hoa dại."
+      },
+      "SourceHash": "ee007096d33c8edb90cf800008ead45a40927f4ab6d9ca3410e052bd791eda6f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ae84a079b",
+      "Fields": {
+        "Meaning": "Kịch Nō",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "能（のう）có nghĩa là kịch Nō.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121728": "Nō là nghệ thuật truyền thống của Nhật Bản.",
+        "154645": "Tôi gặp một người Mỹ thích kịch Nō."
+      },
+      "SourceHash": "3af87bacea1e4760ecddafcada6a35ab661cd0973dff2fc397dab1903bdf6dde"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e1423597b",
+      "Fields": {
+        "Meaning": "Nông dân, hộ làm nông; nhà của một hộ làm nông",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "農家 thường chỉ người hoặc gia đình làm nông. Khi dùng để chỉ nơi chốn, từ này có thể chỉ nhà của hộ làm nông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121711": "Bạn có muốn làm con nhà nông không?",
+        "121712": "Chuồng ngựa nằm ngay sau nhà nông trại."
+      },
+      "SourceHash": "6079a5581e1b4aca60277f0778ea8a34779be56b282db09fe27cfff2d02ec406"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e0e16ed29e",
+      "Fields": {
+        "Meaning": "Nông nghiệp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "農業（のうぎょう）có nghĩa là nông nghiệp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118772": "Anh ấy có kinh nghiệm làm nông không?",
+        "121705": "Nông nghiệp là nền tảng kinh tế của nước đó."
+      },
+      "SourceHash": "e285340e997881ac1e8cc27ae5a3e4d417259531cf983cbc18e266b563e8dc63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "01d17e5891",
+      "Fields": {
+        "Meaning": "Nông dân",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "農民（のうみん）có nghĩa là nông dân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121678": "Nông dân phân loại táo tốt và táo kém.",
+        "153068": "Tôi chỉ là một nông dân nghèo."
+      },
+      "SourceHash": "b9842110662b78aa3c1f7747e08ac61123aeddcb0c604eda76c7ca91307f880f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2cc68f1162",
+      "Fields": {
+        "Meaning": "Không, lời từ chối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "能力（のうりょく）có nghĩa là không, lời từ chối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96402": "Nói rõ có hay không đi.",
+        "113423": "Mẹ tôi chắc chắn sẽ nói không."
+      },
+      "SourceHash": "e2c4e9ff4f9393ecadfb598c6658839a5bdeab60d80dc05b27f0192cbfe1ff34"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "05717efa73",
+      "Fields": {
+        "Meaning": "Không; lời từ chối hoặc phản đối",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "ノー là thán từ dùng để trả lời phủ định hoặc từ chối. Có thể gặp cặp イエスかノーか khi yêu cầu trả lời có hay không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228158": "Mẹ tôi chắc chắn sẽ nói không.",
+        "229314": "Hãy nói rõ là có hay không."
+      },
+      "SourceHash": "077cc0ef554385dbf906da2c3a6f94b404206d197e60756b3013f8621781fd12"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34669ba2b8",
+      "Fields": {
+        "Meaning": "Mái hiên, đơn vị đếm nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "軒（のき）có nghĩa là mái hiên, đơn vị đếm nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87835": "Cô ấy treo lồng chim dưới mái hiên."
+      },
+      "SourceHash": "3587961ae15a3f84a9194c9902d13845061ac3b9fa0541f53119dbb0f3618eda"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a5cf314cf9",
+      "Fields": {
+        "Meaning": "Để lại, chừa lại",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "残す（のこす）có nghĩa là để lại, chừa lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84864": "Đây là một trong những thứ bố để lại cho tôi.",
+        "151347": "Chúng tôi chừa cho anh ấy một ít bánh."
+      },
+      "SourceHash": "08f44ff9ec6e7ff58622d50351ebe7cf0303fdd86874258dfb44b04bb29979ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "17409802d5",
+      "Fields": {
+        "Meaning": "Phần còn lại",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "残り（のこり）có nghĩa là phần còn lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166836": "Những người còn lại trong nhóm chúng tôi sẽ ở lại phía sau.",
+        "169281": "Thời gian còn lại chẳng còn bao nhiêu."
+      },
+      "SourceHash": "04433dfa75bcede8fa281834d938ddd113689f6622fe077b89f2032d208e6866"
+    }
+  ]
+}

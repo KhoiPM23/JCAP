@@ -1,12 +1,14 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
+import { ukiyoSound } from '../utils/ukiyoSoundEngine';
+import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
 import { useAuth } from '../contexts/AuthContext';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
-import { AlertCircleIcon, RefreshIcon, CompassIcon } from '../components/common/Icons';
+import { AlertCircleIcon, RefreshIcon, CompassIcon, VolumeIcon } from '../components/common/Icons';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 
@@ -69,7 +71,7 @@ const sortLevelsByRank = (levels: ScenarioLevelConfiguration[]): ScenarioLevelCo
 
 const checkHasActiveSession = (session?: ActiveRoleplaySessionDto | null): boolean => {
   if (!session) return false;
-  return Boolean(session.hasActiveSession ?? Boolean(session.sessionId || session.activeSessionId));
+  return session.hasActiveSession === true;
 };
 
 export const ScenarioDetailsView: React.FC = () => {
@@ -82,6 +84,12 @@ export const ScenarioDetailsView: React.FC = () => {
   // Ưu tiên param trong URL > state > fallback 1
   const rawId = params.scenarioId || (location.state as { scenarioId?: number } | null)?.scenarioId;
   const scenarioId = Number(rawId) > 0 ? Number(rawId) : 1;
+
+  const [searchParams] = useSearchParams();
+  const rawReturnUrl = searchParams.get('return');
+  const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
+    ? rawReturnUrl
+    : ((location.state as any)?.returnUrl ?? null);
 
   const [scenario, setScenario] = useState<ScenarioDetails | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveRoleplaySessionDto | null>(null);
@@ -97,7 +105,6 @@ export const ScenarioDetailsView: React.FC = () => {
 
   // Tab switch giữa từ vựng và ngữ pháp trọng tâm
   const [cheatsheetTab, setCheatsheetTab] = useState<'vocab' | 'grammar'>('vocab');
-  const [searchParams] = useSearchParams();
   const isBlindRequested = searchParams.get('mode') === 'blind' || searchParams.get('blind') === 'true';
 
   useEffect(() => {
@@ -183,7 +190,9 @@ export const ScenarioDetailsView: React.FC = () => {
     if (result.success && result.data) {
       setConfirmModal(null);
       const targetSessionId = result.data.sessionId || result.data.id;
-      navigate(`/scenarios/practice/${targetSessionId}${isBlindRequested ? "?mode=blind" : ""}`);
+      const blindSuffix = isBlindRequested ? "?mode=blind" : "";
+      const returnParam = returnUrl ? `${blindSuffix ? "&" : "?"}return=${encodeURIComponent(returnUrl)}` : "";
+      navigate(`/scenarios/practice/${targetSessionId}${blindSuffix}${returnParam}`);
     } else {
       setConfirmModal(null);
       setStartError(result.message || 'Không thể bắt đầu phiên luyện tập. Vui lòng thử lại.');
@@ -208,7 +217,7 @@ export const ScenarioDetailsView: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div data-theme="phong-luyen" className="min-h-screen bg-[var(--paper-100)] px-4 py-20 flex flex-col items-center justify-center text-center">
+      <div className="min-h-[60vh] bg-transparent px-4 py-20 flex flex-col items-center justify-center text-center">
         <div className="relative flex items-center justify-center">
           <div className="h-14 w-14 rounded-full border-4 border-[var(--line)] border-t-[var(--ai)] animate-spin" />
           <span className="absolute text-xs font-sans font-bold text-[var(--ai)]">AI</span>
@@ -217,7 +226,7 @@ export const ScenarioDetailsView: React.FC = () => {
           Đang nạp dữ liệu kịch bản hội thoại...
         </p>
         <p className="mt-1 text-xs text-[var(--sumi-faint)]">
-          Chuẩn bị bối cảnh, nhiệm vụ thực chiến và nhân vật VOICEVOX
+          Chuẩn bị bối cảnh, nhiệm vụ thực chiến và nhân vật đàm thoại
         </p>
       </div>
     );
@@ -225,7 +234,7 @@ export const ScenarioDetailsView: React.FC = () => {
 
   if (error || !scenario || !selectedLevel) {
     return (
-      <div data-theme="phong-luyen" className="min-h-screen bg-[var(--paper-100)] px-4 py-16">
+      <div className="min-h-[60vh] bg-transparent px-4 py-16">
         <div className="mx-auto w-full max-w-xl rounded-3xl border border-red-200 bg-[var(--paper-50)] p-8 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600">
             <AlertCircleIcon className="w-8 h-8 text-red-600" />
@@ -237,8 +246,8 @@ export const ScenarioDetailsView: React.FC = () => {
             {error || 'Kịch bản yêu cầu không tồn tại hoặc đã được chuyển vào kho lưu trữ.'}
           </p>
           <div className="mt-6 flex justify-center gap-3">
-            <Button type="button" onClick={() => navigate('/scenarios')} className="shadow-xs">
-              ← Quay lại Thư viện kịch bản
+            <Button type="button" onClick={() => navigate(returnUrl || '/scenarios')} className="shadow-xs">
+              ← {returnUrl ? 'Quay lại Bản đồ Khám phá' : 'Quay lại Thư viện kịch bản'}
             </Button>
           </div>
         </div>
@@ -247,410 +256,327 @@ export const ScenarioDetailsView: React.FC = () => {
   }
 
   const currentMeta = levelMeta[selectedLevel.jlptLevel] || levelMeta.N5;
+  const minMinutes = Math.max(5, (selectedLevel.missions?.length ?? 3) * 2);
+  const maxMinutes = Math.max(10, (selectedLevel.missions?.length ?? 3) * 3);
 
   return (
-    <div data-theme="phong-luyen" className="min-h-screen bg-[var(--paper-100)] text-[var(--sumi)] px-4 py-6 md:px-8 select-none">
-      <div className="mx-auto w-full max-w-[1240px] space-y-6">
-
-        {/* Top Header & Breadcrumb Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)]/60 pb-4">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/scenarios')}
-              className="group inline-flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--paper-50)] px-3.5 py-2 text-xs font-semibold text-[var(--sumi-muted)] transition-all hover:border-[var(--ai)] hover:text-[var(--ai)] hover:shadow-xs active:scale-95"
-            >
-              <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">←</span>
-              <span>Thư viện tình huống</span>
-            </button>
-            <span className="text-xs text-[var(--sumi-faint)]">/</span>
-            <span className="text-xs font-bold text-[var(--sumi)] truncate max-w-[200px] sm:max-w-xs">
-              {scenario.title}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Scenario Code Badge */}
-            <span className="rounded-full border border-[var(--line)] bg-[var(--paper-50)] px-3 py-1 font-mono text-[11px] font-bold text-[var(--ai)] shadow-xs">
-              {scenario.scenarioCode || `SCN-${String(scenario.id).padStart(3, '0')}`}
-            </span>
-
-            {/* Quick Admin CMS Edit Link */}
-            {isAdmin && (
-              <Link
-                to={`/admin/scenarios/edit/${scenario.id}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 shadow-xs active:scale-95"
-                title="Mở trong hệ thống CMS Quản trị"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-                <span>Chỉnh sửa CMS</span>
-              </Link>
-            )}
-          </div>
+    <div className="relative mx-auto flex w-full max-w-[1160px] flex-col gap-4 bg-transparent pb-10 select-none text-[var(--sumi)]">
+      {/* Top Breadcrumb Bar — tinh gọn, không vạch ngăn thừa */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate(returnUrl || '/scenarios')}
+            className="group inline-flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--sumi-muted)] transition-all hover:border-[var(--ai)] hover:text-[var(--ai)] shadow-2xs active:scale-95 cursor-pointer"
+          >
+            <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">←</span>
+            <span>{returnUrl ? 'Bản đồ Khám phá' : 'Thư viện tình huống'}</span>
+          </button>
+          <span className="text-xs text-[var(--sumi-faint)]">/</span>
+          <span className="text-xs font-semibold text-[var(--sumi-muted)] truncate max-w-[220px] sm:max-w-sm">
+            {scenario.title}
+          </span>
         </div>
 
-        {/* Main 2-Column Responsive Layout */}
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px] items-start">
+        <div className="flex items-center gap-2">
+          <span className="rounded-lg border border-[var(--line)] bg-white/90 px-2.5 py-1 font-mono text-[11px] font-bold text-[var(--ai)]">
+            {scenario.scenarioCode || `SCN-${String(scenario.id).padStart(3, '0')}`}
+          </span>
 
-          {/* Left Column: Hero & Level Selector & Missions */}
-          <div className="min-w-0 space-y-6">
+          {isAdmin && (
+            <Link
+              to={`/admin/scenarios/edit/${scenario.id}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 active:scale-95"
+              title="Mở trong hệ thống CMS Quản trị"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              <span>Chỉnh sửa CMS</span>
+            </Link>
+          )}
+        </div>
+      </div>
 
-            {/* Scenario Identity Hero Card */}
-            <section className="relative overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] shadow-sm p-5 md:p-7">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 md:gap-7">
-                {/* Thumbnail Container */}
-                <div className="relative group overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--paper-100)] w-full sm:w-48 md:w-56 aspect-[4/3] sm:aspect-square shrink-0">
-                  <img
-                    src={scenario.thumbnail || '/images/scenario-placeholder.svg'}
-                    alt={scenario.title}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/scenario-placeholder.svg';
-                    }}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2.5 left-2.5 rounded-md bg-[var(--sumi)]/80 backdrop-blur-xs px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                    Thực chiến AI
-                  </div>
-                </div>
+      {/* Main 2-Column Responsive Layout — giữ 2 cột từ lg (1024px+) cho laptop & desktop */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
 
-                {/* Info Text */}
-                <div className="flex flex-col min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--ai)]">
-                      Hội thoại tình huống 2 chiều
-                    </span>
-                    <span className="text-[var(--sumi-faint)]">•</span>
-                    <span className="text-[11px] font-semibold text-[var(--sumi-faint)]">
-                      Giọng đọc VOICEVOX
-                    </span>
-                  </div>
+        {/* Left Column: 2 khối liền mạch (Overview+Setup + Missions), bỏ box-in-box thừa */}
+        <div className="min-w-0 space-y-4">
 
-                  <h1 className="text-2xl md:text-3xl font-black font-sans text-[var(--sumi)] leading-snug">
-                    {scenario.title}
-                  </h1>
-
-                  <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-[var(--sumi-muted)]">
-                    {scenario.description}
-                  </p>
-
-                  {/* Level Quick Badges */}
-                  <div className="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--line)]/50">
-                    <span className="text-xs font-semibold text-[var(--sumi-faint)]">
-                      Cấp độ hỗ trợ:
-                    </span>
-                    {sortedLevelConfigurations.map((lvl) => {
-                      const meta = levelMeta[lvl.jlptLevel] || levelMeta.N5;
-                      const isCurrent = lvl.jlptLevel === activeLevel;
-                      return (
-                        <button
-                          key={lvl.id}
-                          type="button"
-                          onClick={() => setActiveLevel(lvl.jlptLevel)}
-                          className={`rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all ${
-                            isCurrent
-                              ? `${meta.bg} ${meta.text} border ${meta.border} shadow-xs ring-1 ${meta.ring}`
-                              : 'bg-[var(--paper-100)] text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
-                          }`}
-                        >
-                          {lvl.jlptLevel}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Level Selector & Context Dossier */}
-            <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm md:p-8 space-y-6">
-              {/* Level Tab Switcher */}
-              <div>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <div>
-                    <h2 className="text-lg md:text-xl font-bold font-sans text-[var(--sumi)]">
-                      Chọn cấp độ luyện tập
-                    </h2>
-                    <p className="text-xs text-[var(--sumi-faint)] mt-0.5">
-                      Độ khó, từ vựng và nhân vật AI sẽ thích ứng theo cấp độ JLPT bạn chọn
-                    </p>
-                  </div>
-
-                  <span className={`rounded-full border px-3 py-1 text-xs font-bold ${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`}>
-                    {currentMeta.badgeLabel} — {currentMeta.descLabel}
-                  </span>
-                </div>
-
-                <div
-                  className="grid grid-cols-3 gap-2.5 p-1 rounded-2xl bg-[var(--paper-100)] border border-[var(--line)]"
-                  role="tablist"
-                  aria-label="Chọn cấp độ JLPT"
-                >
-                  {sortedLevelConfigurations.map((level) => {
-                    const isSelected = activeLevel === level.jlptLevel;
-                    const meta = levelMeta[level.jlptLevel] || levelMeta.N5;
-                    return (
-                      <button
-                        key={level.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={isSelected}
-                        onClick={() => {
-                          setActiveLevel(level.jlptLevel);
-                          setStartError(null);
-                        }}
-                        className={`flex flex-col items-center justify-center py-2.5 px-3 rounded-xl transition-all ${
-                          isSelected
-                            ? 'bg-[var(--paper-50)] shadow-xs border border-[var(--line)]'
-                            : 'text-[var(--sumi-muted)] hover:bg-[var(--paper-50)]/60'
-                        }`}
-                      >
-                        <span className={`text-sm font-black font-sans ${isSelected ? meta.text : 'text-[var(--sumi)]'}`}>
-                          {level.jlptLevel}
-                        </span>
-                        <span className="text-[10px] font-semibold text-[var(--sumi-faint)] mt-0.5">
-                          {isAdmin || !level.creditCost ? 'Miễn phí' : level.creditCost + ' credits'}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+          {/* Khối 1: Hero & Thiết lập cấp độ Hợp nhất (Zero trùng lặp, liền mạch 1 bề mặt) */}
+          <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/95 shadow-xs">
+            {/* Phần 1A: Scenario Identity Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5">
+              <div className="relative group overflow-hidden rounded-xl border border-[var(--line)]/80 bg-[var(--paper-100)] w-full sm:w-32 md:w-36 aspect-[16/9] sm:aspect-square shrink-0">
+                <img
+                  src={scenario.thumbnail || '/images/scenario-placeholder.svg'}
+                  alt={scenario.title}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/images/scenario-placeholder.svg';
+                  }}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
 
-              {/* Persona & Context Dossier Cards */}
-              <div className="grid gap-4 md:grid-cols-2 pt-2">
-                {/* AI Persona Dossier */}
-                <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-5 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <LivingAvatar
-                      size="sm"
-                      avatarState="idle"
-                      personaName={selectedLevel.aiPersona}
-                      scenarioTitle={scenario.title}
-                      hideLabel
-                    />
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
-                        Nhân vật AI đối thoại
-                      </p>
-                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)]">
-                        {selectedLevel.aiPersona}
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-xs leading-relaxed text-[var(--sumi-muted)] pt-1">
-                    Nhập vai tự nhiên theo văn hóa Nhật, hỗ trợ nhận diện giọng nói tức thì (Whisper STT) và ngắt lời (Barge-in).
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ai)]">
+                  Hội thoại AI phản xạ · Thực chiến
+                </span>
+
+                <h1 className="mt-1 text-xl sm:text-2xl font-extrabold font-sans text-[var(--sumi)] leading-snug tracking-tight">
+                  {scenario.title}
+                </h1>
+
+                <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--sumi-muted)] line-clamp-3">
+                  {scenario.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Phần 1B: Bộ chọn cấp độ tích hợp (1 vị trí duy nhất, không lặp lại) */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)]/70 bg-[var(--paper-50)]/70 px-4 sm:px-5 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[var(--sumi)]">Cấp độ luyện tập:</span>
+                <span className={`rounded-md border px-2 py-0.5 text-[11px] font-semibold ${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`}>
+                  {currentMeta.descLabel}
+                </span>
+              </div>
+
+              <div
+                className="inline-flex items-center gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)]/80"
+                role="tablist"
+                aria-label="Chọn cấp độ JLPT"
+              >
+                {sortedLevelConfigurations.map((level) => {
+                  const isSelected = activeLevel === level.jlptLevel;
+                  const isLevelInProgress = hasActiveSession && activeSessionLevel === level.jlptLevel;
+                  const meta = levelMeta[level.jlptLevel] || levelMeta.N5;
+                  return (
+                    <button
+                      key={level.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isSelected}
+                      onClick={() => {
+                        ukiyoSound.playSubtleTap();
+                        setActiveLevel(level.jlptLevel);
+                        setStartError(null);
+                      }}
+                      className={`relative inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+                        isSelected
+                          ? `bg-white ${meta.text} shadow-2xs ring-1 ring-[var(--line)]`
+                          : 'text-[var(--sumi-muted)] hover:text-[var(--sumi)]'
+                      }`}
+                    >
+                      <span>JLPT {level.jlptLevel}</span>
+                      {isLevelInProgress && (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-amber-500"
+                          title="Đang có phiên dở dang ở cấp độ này"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Phần 1C: Nhân vật & Bối cảnh chia ngăn mảnh trên cùng bề mặt (bỏ box lồng box) */}
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--line)]/70 border-t border-[var(--line)]/70">
+              {/* Người đối thoại AI */}
+              <div className="p-4 sm:px-5 sm:py-4 flex items-start gap-3">
+                <LivingAvatar
+                  size="sm"
+                  avatarState="idle"
+                  personaName={selectedLevel.aiPersona}
+                  scenarioTitle={scenario.title}
+                  hideLabel
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
+                    Người đối thoại
+                  </p>
+                  <h3 className="text-[13px] font-bold font-sans text-[var(--sumi)] leading-snug mt-0.5">
+                    {selectedLevel.aiPersona}
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--sumi-muted)]">
+                    Phản hồi tự nhiên theo ngữ cảnh văn hóa Nhật, điều chỉnh nhịp thoại theo câu trả lời của bạn.
                   </p>
                 </div>
+              </div>
 
-                {/* Scenario Context */}
-                <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper-100)]/60 p-5 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
-                      <CompassIcon className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
-                        Bối cảnh giao tiếp
-                      </p>
-                      <h3 className="text-sm font-bold font-sans text-[var(--sumi)] break-words leading-snug" title={selectedLevel.title}>
-                        {selectedLevel.title}
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-xs leading-relaxed text-[var(--sumi-muted)] pt-1 break-words">
+              {/* Bối cảnh giao tiếp */}
+              <div className="p-4 sm:px-5 sm:py-4 flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 mt-0.5">
+                  <CompassIcon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
+                    Bối cảnh tình huống
+                  </p>
+                  <h3 className="text-[13px] font-bold font-sans text-[var(--sumi)] leading-snug mt-0.5 break-words" title={selectedLevel.title}>
+                    {selectedLevel.title}
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--sumi-muted)] break-words">
                     {selectedLevel.description}
                   </p>
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
-            {/* Missions List */}
-            <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm md:p-8 space-y-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg md:text-xl font-bold font-sans text-[var(--sumi)]">
-                    Nhiệm vụ cần hoàn thành
-                  </h2>
-                  <p className="text-xs text-[var(--sumi-faint)] mt-0.5">
-                    Hội thoại với AI để lần lượt đạt các mục tiêu thực tế sau
-                  </p>
-                </div>
-                <span className="rounded-full bg-[var(--ai-soft)] px-3 py-1 text-xs font-bold text-[var(--ai)]">
-                  {selectedLevel.missions.length} nhiệm vụ
+          {/* Khối 2: Nhiệm vụ cần hoàn thành — Checklist liền mạch dễ quét */}
+          <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/95 shadow-xs">
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-[var(--line)]/70">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold font-sans text-[var(--sumi)]">
+                  Nhiệm vụ cần hoàn thành
+                </h2>
+                <span className="hidden sm:inline text-xs text-[var(--sumi-faint)]">
+                  · Hoàn thành lần lượt trong hội thoại
                 </span>
               </div>
+              <span className="rounded-lg bg-[var(--ai-soft)] px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] shrink-0">
+                {selectedLevel.missions.length} mục tiêu
+              </span>
+            </div>
 
-              <div className="space-y-3">
-                {selectedLevel.missions.map((mission, idx) => (
-                  <div
-                    key={mission.id}
-                    className="group relative flex items-start gap-3.5 rounded-2xl border border-[var(--line)] bg-[var(--paper-50)] p-4 transition-all hover:border-[var(--line-strong)] hover:shadow-xs"
-                  >
-                    {/* Hanko-style Number Badge */}
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--paper-100)] font-sans text-xs font-black text-[var(--sumi)] border border-[var(--line)] group-hover:border-[var(--ai)] group-hover:text-[var(--ai)] group-hover:bg-[var(--ai-soft)] transition-colors">
-                      {String(mission.order || idx + 1).padStart(2, '0')}
-                    </span>
+            <div className="divide-y divide-[var(--line)]/60">
+              {selectedLevel.missions.map((mission, idx) => (
+                <div
+                  key={mission.id}
+                  className="group flex items-center gap-3 px-4 sm:px-5 py-3 transition-colors hover:bg-[var(--paper-50)]/80"
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--paper-100)] font-mono text-[11px] font-bold text-[var(--sumi-muted)] border border-[var(--line)] group-hover:border-[var(--ai)]/50 group-hover:text-[var(--ai)] group-hover:bg-[var(--ai-soft)] transition-colors">
+                    {String(mission.order || idx + 1).padStart(2, '0')}
+                  </span>
 
-                    {/* Mission Details */}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-[var(--sumi)] leading-snug">
-                        {mission.content}
-                      </p>
+                  <p className="min-w-0 flex-1 text-[13px] sm:text-sm font-medium text-[var(--sumi)] leading-snug">
+                    {mission.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
 
-                      {/* Intent Criteria tag if available */}
-                      {mission.completionCriteria?.intent && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-[var(--paper-100)] px-2 py-0.5 text-[10px] font-semibold text-[var(--sumi-faint)]">
-                            <span className="text-[var(--ai)]">Ý đồ:</span>
-                            <span>{mission.completionCriteria.intent}</span>
-                          </span>
-                          {mission.completionCriteria.target && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-[var(--paper-100)] px-2 py-0.5 text-[10px] font-semibold text-[var(--sumi-faint)]">
-                              <span>Mục tiêu: {mission.completionCriteria.target}</span>
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
+        {/* Right Column: Launchpad & Preparation Reference — cân nhịp với cột trái */}
+        <aside className="space-y-4 lg:sticky lg:top-5 self-start">
 
-          {/* Right Column: Sticky Action Box & Cheatsheet */}
-          <aside className="space-y-6 xl:sticky xl:top-6 self-start">
-
-            {/* Resume Card (Hiển thị nổi bật khi có phiên dở dang) */}
-            {hasActiveSession && activeSessionId && (
-              <section className="relative overflow-hidden rounded-3xl border-2 border-[var(--ai)] bg-[var(--ai-soft)]/40 p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                    </span>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ai)]">
-                      Phiên đang dở dang
-                    </span>
-                  </div>
-                  <span className="rounded-full bg-[var(--paper-50)] border border-[var(--line)] px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)]">
-                    JLPT {activeSessionLevel}
+          {/* Main Action Launchpad */}
+          <section className="rounded-2xl border border-[var(--line)] bg-white/95 p-4 sm:p-5 shadow-xs space-y-3.5">
+            {/* Resume Notice nhỏ gọn nếu có phiên dở ở cấp khác */}
+            {hasActiveSession && activeSessionId && !isSelectedLevelActive && (
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[11px]">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                  <span className="font-semibold text-amber-900 truncate">
+                    Đang dở phiên JLPT {activeSessionLevel}
                   </span>
                 </div>
-
-                <p className="mt-2 text-xs leading-relaxed text-[var(--sumi-muted)]">
-                  Bạn có một lượt đàm thoại chưa hoàn thành. Hãy tiếp tục để không làm gián đoạn tiến trình.
-                </p>
-
-                {/* Progress breakdown */}
-                <div className="mt-4 rounded-2xl bg-[var(--paper-50)] p-3.5 space-y-2 border border-[var(--line)] text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[var(--sumi-faint)]">Tiến độ nhiệm vụ:</span>
-                    <span className="font-bold text-emerald-700">
-                      {activeSession?.completedMissionsCount ?? 0} / {activeSession?.totalMissionsCount ?? 0} hoàn thành
-                    </span>
-                  </div>
-
-                  {/* Progress Mini-bar */}
-                  <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${
-                          activeSession?.totalMissionsCount
-                            ? Math.min(100, Math.round(((activeSession.completedMissionsCount ?? 0) / activeSession.totalMissionsCount) * 100))
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center pt-1 text-[11px]">
-                    <span className="text-[var(--sumi-faint)]">Lượt hội thoại:</span>
-                    <span className="font-medium text-[var(--sumi)]">{activeSession?.messageCount ?? 0} lượt</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <Button
-                    type="button"
-                    className="w-full shadow-xs active:scale-[0.98]"
-                    onClick={() => navigate(`/scenarios/practice/${activeSessionId}`)}
-                  >
-                    Tiếp tục phiên này →
-                  </Button>
-                  <button
-                    type="button"
-                    disabled={isStarting}
-                    onClick={() => handleStartPractice(true, activeSessionLevel)}
-                    className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95"
-                  >
-                    Hoặc làm lại từ đầu (JLPT {activeSessionLevel})
-                  </button>
-                </div>
-              </section>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeSessionLevel === 'N5' || activeSessionLevel === 'N4' || activeSessionLevel === 'N3') {
+                      setActiveLevel(activeSessionLevel);
+                    }
+                  }}
+                  className="font-bold text-amber-800 hover:text-amber-950 underline shrink-0 cursor-pointer"
+                >
+                  Mở →
+                </button>
+              </div>
             )}
 
-            {/* Main Action Box: Bắt đầu đàm thoại */}
-            <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--line)]/60">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
-                    Cấp độ đang chọn
-                  </p>
-                  <h3 className="text-xl font-bold font-sans text-[var(--sumi)]">
+            {/* Header Launchpad */}
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--sumi-faint)]">
+                  Thiết lập phiên thoại
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h3 className="text-lg font-extrabold font-sans text-[var(--sumi)]">
                     JLPT {selectedLevel.jlptLevel}
                   </h3>
-                </div>
-                <span className={`rounded-full border px-3 py-1 text-xs font-bold ${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`}>
-                  {isAdmin || !selectedLevel.creditCost ? 'Miễn phí' : selectedLevel.creditCost + ' credits'}
-                </span>
-              </div>
-
-              <div className="space-y-2 text-xs text-[var(--sumi-muted)]">
-                <div className="flex items-center justify-between">
-                  <span>Thời lượng khuyến nghị:</span>
-                  <span className="font-semibold text-[var(--sumi)]">5 - 10 phút</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Chế độ đối thoại:</span>
-                  <span className="font-semibold text-[var(--sumi)]">2 chiều (Hands-Free Call)</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Nhận xét phát âm & phản xạ:</span>
-                  <span className="font-semibold text-emerald-700">Tự động sau phiên</span>
+                  <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${
+                    isSelectedLevelActive
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : `${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`
+                  }`}>
+                    {isSelectedLevelActive ? 'Đang dở dang' : currentMeta.descLabel.split(' (')[0]}
+                  </span>
                 </div>
               </div>
 
-              {startError && (
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 space-y-1">
-                  <p className="font-bold flex items-center gap-1.5">
-                    <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>Không thể khởi tạo phòng:</span>
-                  </p>
-                  <p className="leading-relaxed">{startError}</p>
-                  {startError.includes('credit') && !isAdmin && (
-                    <Link
-                      to="/credits"
-                      className="inline-block pt-1 font-bold text-[var(--ai)] hover:underline"
-                    >
-                      Nạp thêm Credits tại đây →
-                    </Link>
-                  )}
-                </div>
-              )}
+              <span className="text-[11px] font-semibold text-[var(--sumi-muted)] bg-[var(--paper-100)] border border-[var(--line)] rounded-lg px-2 py-1">
+                {minMinutes}–{maxMinutes} phút
+              </span>
+            </div>
 
-              <Button
+            {/* Progress Breakdown khi có phiên đang dở ở cấp độ này */}
+            {isSelectedLevelActive && activeSession && (
+              <div className="rounded-xl bg-[var(--paper-50)] p-3 space-y-1.5 border border-[var(--line)]/80 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-[var(--sumi-muted)] font-medium">Tiến độ phiên hiện tại</span>
+                  <span className="font-bold text-emerald-700">
+                    {activeSession.completedMissionsCount ?? 0}/{activeSession.totalMissionsCount ?? 0} nhiệm vụ · {activeSession.messageCount ?? 0} lượt
+                  </span>
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-[var(--paper-200)] overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${activeSession.totalMissionsCount
+                        ? Math.min(100, Math.round(((activeSession.completedMissionsCount ?? 0) / activeSession.totalMissionsCount) * 100))
+                        : 0
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Quick Session Specs — gọn 2 dòng nhẹ nhàng thay vì bảng rườm rà */}
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="inline-flex items-center rounded-md bg-[var(--paper-100)] px-2 py-1 font-medium text-[var(--sumi-muted)]">
+                Đối thoại rảnh tay
+              </span>
+              <span className="inline-flex items-center rounded-md bg-emerald-50/80 px-2 py-1 font-medium text-emerald-800">
+                Chấm điểm tự động sau phiên
+              </span>
+            </div>
+
+            {startError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>Không thể khởi tạo phòng:</span>
+                </p>
+                <p className="leading-relaxed">{startError}</p>
+                {startError.includes('credit') && !isAdmin && (
+                  <Link
+                    to="/credits"
+                    className="inline-block pt-0.5 font-bold text-[var(--ai)] hover:underline"
+                  >
+                    Nạp thêm Credits tại đây →
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Primary CTA — dùng màu chàm chuẩn JCAP var(--ai) thay xanh chói rời rạc */}
+            <div className="space-y-1.5 pt-0.5">
+              <button
                 type="button"
-                className="w-full text-sm font-bold shadow-sm active:scale-[0.98]"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 disabled={isStarting}
                 onClick={() => {
+                  ukiyoSound.playTaikoThud();
                   if (isSelectedLevelActive) {
-                    navigate(`/scenarios/practice/${activeSessionId}`);
+                    const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
+                    navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
                   } else if (hasActiveSession) {
                     handleStartPractice(true, selectedLevel.jlptLevel);
                   } else {
@@ -659,133 +585,176 @@ export const ScenarioDetailsView: React.FC = () => {
                 }}
               >
                 {isStarting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                    Đang thiết lập phòng thoại...
-                  </span>
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    <span>Đang thiết lập phòng thoại...</span>
+                  </>
                 ) : isSelectedLevelActive ? (
-                  `Tiếp tục luyện tập (JLPT ${selectedLevel.jlptLevel}) →`
+                  <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
                 ) : hasActiveSession ? (
-                  `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
+                  <span>Bắt đầu phiên mới (JLPT {selectedLevel.jlptLevel}) →</span>
                 ) : (
-                  `Bắt đầu hội thoại ngay (JLPT ${selectedLevel.jlptLevel}) →`
+                  <span>Bắt đầu hội thoại (JLPT {selectedLevel.jlptLevel}) →</span>
                 )}
-              </Button>
+              </button>
 
-              <p className="text-center text-[11px] leading-relaxed text-[var(--sumi-faint)]">
-                {isAdmin
-                  ? 'Chế độ Quản trị: Kiểm thử toàn quyền mà không tốn credit tài khoản.'
-                  : '* Miễn phí bắt đầu phòng thoại. Credit chỉ tính theo từng lượt trả lời của AI.'}
-              </p>
-            </section>
-
-            {/* Target Cheatsheet: Vocabularies & Grammars (Tabbed) */}
-            <section className="rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-bold font-sans text-[var(--sumi)]">
-                  Kiến thức trọng tâm
-                </h3>
-                <span className="text-[11px] text-[var(--sumi-faint)]">JLPT {selectedLevel.jlptLevel}</span>
-              </div>
-
-              {/* Tab Selector for Cheatsheet */}
-              <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)] text-xs font-bold">
+              {isSelectedLevelActive && (
                 <button
                   type="button"
-                  onClick={() => setCheatsheetTab('vocab')}
-                  className={`py-1.5 px-2 rounded-lg transition-all ${
+                  disabled={isStarting}
+                  onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
+                  className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer"
+                >
+                  Làm lại từ đầu (JLPT {selectedLevel.jlptLevel})
+                </button>
+              )}
+
+              <p className="text-center text-[11px] text-[var(--sumi-faint)] pt-0.5">
+                {isAdmin
+                  ? 'Chế độ Quản trị · Không trừ credit'
+                  : isSelectedLevelActive
+                    ? 'Tiếp tục phiên không trừ thêm phí mở phòng'
+                    : 'Tính credit tự động theo lượt thoại thực tế'}
+              </p>
+            </div>
+          </section>
+
+          {/* Kiến thức trọng tâm — Gọn theo danh sách mảnh (list-divided), bỏ card lồng card */}
+          <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/95 shadow-xs">
+            <div className="px-4 sm:px-5 pt-4 pb-3 border-b border-[var(--line)]/70 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-bold font-sans text-[var(--sumi)]">
+                  Kiến thức trọng tâm
+                </h3>
+                <span className="text-[11px] font-semibold text-[var(--sumi-faint)]">
+                  Chuẩn bị nhanh
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--paper-100)] p-1 border border-[var(--line)]/80 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    setCheatsheetTab('vocab');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'vocab'
-                      ? 'bg-[var(--paper-50)] text-[var(--ai)] shadow-xs'
-                      : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      ? 'bg-white text-[var(--ai)] shadow-2xs'
+                      : 'text-[var(--sumi-muted)] hover:text-[var(--sumi)]'
                   }`}
                 >
                   Từ vựng ({selectedLevel.targetVocabularies.length})
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCheatsheetTab('grammar')}
-                  className={`py-1.5 px-2 rounded-lg transition-all ${
+                  onClick={() => {
+                    ukiyoSound.playSubtleTap();
+                    setCheatsheetTab('grammar');
+                  }}
+                  className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
                     cheatsheetTab === 'grammar'
-                      ? 'bg-[var(--paper-50)] text-[var(--ai)] shadow-xs'
-                      : 'text-[var(--sumi-faint)] hover:text-[var(--sumi)]'
+                      ? 'bg-white text-[var(--ai)] shadow-2xs'
+                      : 'text-[var(--sumi-muted)] hover:text-[var(--sumi)]'
                   }`}
                 >
                   Ngữ pháp ({selectedLevel.targetGrammars.length})
                 </button>
               </div>
+            </div>
 
-              {/* Tab Content: Vocabularies */}
-              {cheatsheetTab === 'vocab' && (
-                <div className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
-                  {selectedLevel.targetVocabularies.length === 0 ? (
-                    <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
-                      Chưa có từ vựng chỉ định cho cấp độ này.
-                    </p>
-                  ) : (
-                    selectedLevel.targetVocabularies.map((vocab) => (
-                      <div
-                        key={vocab.id}
-                        className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 hover:bg-[var(--paper-100)] transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <ruby className="text-base font-bold text-[var(--sumi)] font-jp">
-                            {vocab.word}
-                            {vocab.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{vocab.reading}</rt>}
-                          </ruby>
+            {/* Tab Content: Vocabularies */}
+            {cheatsheetTab === 'vocab' && (
+              <div className="divide-y divide-[var(--line)]/60 max-h-[340px] overflow-y-auto px-4 sm:px-5">
+                {selectedLevel.targetVocabularies.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-[var(--sumi-faint)]">
+                    Chưa có từ vựng chỉ định cho cấp độ này.
+                  </p>
+                ) : (
+                  selectedLevel.targetVocabularies.map((vocab) => {
+                    const posMatch = vocab.meaning.match(/\[(.*?)\]/);
+                    const parts = vocab.meaning.split('•').map((p) => p.trim());
+                    const mainMeaning = cleanPedagogicMeaning(vocab.meaning);
+                    const example = parts.length > 2 ? parts.slice(2).join(' • ') : null;
+
+                    return (
+                      <div key={vocab.id} className="py-3 first:pt-3.5 last:pb-3.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <ruby className="text-[15px] font-bold text-[var(--sumi)] font-jp">
+                                {vocab.word}
+                                {vocab.reading && <rt className="text-[10px] text-[var(--ai)] font-normal">{vocab.reading}</rt>}
+                              </ruby>
+                              {posMatch && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--paper-100)] text-[var(--sumi-muted)]">
+                                  {posMatch[1]}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-xs text-[var(--sumi)] font-medium leading-snug">
+                              {mainMeaning}
+                            </p>
+                            {example && (
+                              <p className="mt-1 text-[11px] text-[var(--sumi-muted)] font-jp leading-snug">
+                                {example}
+                              </p>
+                            )}
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => void scenarioVoiceService.playAiSpeech(vocab.word, 2)}
-                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-xs text-[var(--ai)] shadow-2xs transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
-                            title="Nghe phát âm chuẩn Tokyo (VoiceVox)"
+                            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--paper-50)] text-[var(--ai)] transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer mt-0.5"
+                            title="Nghe phát âm chuẩn Tokyo"
                             aria-label={`Nghe phát âm ${vocab.word}`}
                           >
-                            🔊
+                            <VolumeIcon className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <p className="mt-1 text-xs text-[var(--sumi-muted)]">
-                          {vocab.meaning}
-                        </p>
                       </div>
-                    ))
-                  )}
-                </div>
-              )}
+                    );
+                  })
+                )}
+              </div>
+            )}
 
-              {/* Tab Content: Grammars */}
-              {cheatsheetTab === 'grammar' && (
-                <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
-                  {selectedLevel.targetGrammars.length === 0 ? (
-                    <p className="py-4 text-center text-xs text-[var(--sumi-faint)]">
-                      Chưa có cấu trúc ngữ pháp chỉ định cho cấp độ này.
-                    </p>
-                  ) : (
-                    selectedLevel.targetGrammars.map((grammar) => (
-                      <div
-                        key={grammar.id}
-                        className="rounded-xl border border-[var(--line)]/60 bg-[var(--paper-100)]/40 p-3 space-y-1 hover:bg-[var(--paper-100)] transition-colors"
-                      >
-                        <p className="font-bold font-mono text-xs text-[var(--ai)]">
-                          {grammar.pattern}
-                        </p>
-                        <p className="text-xs text-[var(--sumi-muted)]">
-                          {grammar.meaning}
-                        </p>
-                        {grammar.exampleSentence && (
-                          <div className="mt-1.5 rounded-lg bg-[var(--paper-50)] p-2 text-[11px] italic text-[var(--sumi)] border border-[var(--line)]/40 font-jp">
-                            <span className="not-italic text-[10px] font-bold text-[var(--sumi-faint)] block font-sans">
-                              Ví dụ mẫu:
+            {/* Tab Content: Grammars */}
+            {cheatsheetTab === 'grammar' && (
+              <div className="divide-y divide-[var(--line)]/60 max-h-[340px] overflow-y-auto px-4 sm:px-5">
+                {selectedLevel.targetGrammars.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-[var(--sumi-faint)]">
+                    Chưa có cấu trúc ngữ pháp chỉ định cho cấp độ này.
+                  </p>
+                ) : (
+                  selectedLevel.targetGrammars.map((grammar) => {
+                    const formulaMatch = grammar.meaning.match(/\[(.*?)\]/);
+                    const cleanMeaning = cleanPedagogicMeaning(grammar.meaning);
+
+                    return (
+                      <div key={grammar.id} className="py-3 first:pt-3.5 last:pb-3.5 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap justify-between">
+                          <p className="font-bold font-mono text-xs text-[var(--ai)]">
+                            {grammar.pattern}
+                          </p>
+                          {formulaMatch && (
+                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                              {formulaMatch[1]}
                             </span>
-                            {grammar.exampleSentence}
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <p className="text-xs text-[var(--sumi-muted)] font-medium leading-snug">
+                          {cleanMeaning}
+                        </p>
                       </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </section>
-          </aside>
-        </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
 
         {/* Confirmation Modal for Resetting / Switching Level */}
         {confirmModal && (
@@ -799,11 +768,10 @@ export const ScenarioDetailsView: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${
-                    confirmModal.isSwitchingLevel
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${confirmModal.isSwitchingLevel
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-blue-100 text-[var(--ai)]'
-                  }`}
+                    }`}
                 >
                   {confirmModal.isSwitchingLevel ? (
                     <svg className="w-5 h-5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -821,8 +789,8 @@ export const ScenarioDetailsView: React.FC = () => {
                     {confirmModal.isSwitchingLevel
                       ? 'Chuyển sang cấp độ mới?'
                       : isAdmin
-                      ? 'Làm lại phiên kiểm thử?'
-                      : 'Làm lại từ đầu phiên luyện tập?'}
+                        ? 'Làm lại phiên kiểm thử?'
+                        : 'Làm lại từ đầu phiên luyện tập?'}
                   </h3>
                   <p className="text-xs text-[var(--sumi-faint)] truncate max-w-xs">
                     Kịch bản: {scenario.title}
@@ -848,7 +816,7 @@ export const ScenarioDetailsView: React.FC = () => {
                       <span className="font-medium text-[var(--sumi)]">
                         {isAdmin
                           ? 'Miễn phí (Admin)'
-                          : (isAdmin || !targetLevelConfig?.creditCost ? 'Miễn phí' : (targetLevelConfig?.creditCost ?? 0) + ' credits')}
+                          : `Trừ theo lượt thoại thực tế`}
                       </span>
                     </div>
                   </>
@@ -877,7 +845,7 @@ export const ScenarioDetailsView: React.FC = () => {
               <p className="text-xs text-[var(--sumi-muted)] leading-relaxed">
                 {confirmModal.isSwitchingLevel ? (
                   <>
-                    Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu ở <strong>JLPT {confirmModal.targetLevel}</strong>, phiên cũ sẽ kết thúc{!isAdmin && ' và tính credit phiên mới'}.
+                    Bạn đang có phiên {isAdmin ? 'kiểm thử' : 'luyện tập'} dở dang ở cấp độ <strong>JLPT {activeSessionLevel}</strong>. Nếu bắt đầu ở <strong>JLPT {confirmModal.targetLevel}</strong>, phiên cũ sẽ kết thúc{!isAdmin && ' và bắt đầu tính credit theo lượt phiên mới'}.
                   </>
                 ) : (
                   <>
@@ -899,11 +867,10 @@ export const ScenarioDetailsView: React.FC = () => {
                   type="button"
                   onClick={() => executeStartSession(confirmModal.targetLevel, true)}
                   disabled={isStarting}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 active:scale-95 ${
-                    confirmModal.isSwitchingLevel
+                  className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-xs transition disabled:opacity-50 active:scale-95 ${confirmModal.isSwitchingLevel
                       ? 'bg-[var(--ai)] hover:bg-[var(--ai-hover)]'
                       : 'bg-amber-600 hover:bg-amber-700'
-                  }`}
+                    }`}
                 >
                   {isStarting ? (
                     <span className="flex items-center gap-1.5">
@@ -921,6 +888,5 @@ export const ScenarioDetailsView: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
-  );
-};
+    );
+  };

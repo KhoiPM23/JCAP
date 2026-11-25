@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f25bc9cd9e",
+      "Fields": {
+        "Meaning": "Giải quyết, cách giải quyết",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "解決（かいけつ）có nghĩa là giải quyết, cách giải quyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86379": "Cô ấy dễ dàng giải quyết vấn đề đó.",
+        "206454": "Vấn đề đó vẫn chưa được giải quyết."
+      },
+      "SourceHash": "4b93c141614a08bb156dd0849824b1b37fb7558e32b4443b8aeaaf34e5e95a33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "986fdb6fe9",
+      "Fields": {
+        "Meaning": "Cuộc họp, buổi gặp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "会合（かいごう）có nghĩa là cuộc họp, buổi gặp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "109074": "Anh ấy tham dự các cuộc họp không đều.",
+        "218560": "Đây là một cuộc họp rất quan trọng."
+      },
+      "SourceHash": "c8bc2a9ee2e586127071529e2b366f98884e610a879e56a873eb8428dded490e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08440c8ace",
+      "Fields": {
+        "Meaning": "Ngoại giao",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "外交（がいこう）có nghĩa là ngoại giao.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "173047": "Các vấn đề quốc tế cần được giải quyết bằng ngoại giao thay vì chiến tranh.",
+        "189138": "Tiếng Anh hữu ích trong ngoại giao và ngành du lịch."
+      },
+      "SourceHash": "234e7e6488c6e2d1098241be25e33fa2f6cc4cfb5d187ab74444dfbf7df57f84"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4275479fa8",
+      "Fields": {
+        "Meaning": "Bắt đầu, khai mạc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "開始（かいし）có nghĩa là bắt đầu, khai mạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125053": "Thời tiết có lẽ sẽ làm cuộc đua bắt đầu muộn.",
+        "198470": "Chúng ta có đến kịp lúc bữa tiệc bắt đầu không?"
+      },
+      "SourceHash": "8dc3eea402e277094af87c6f2fe6ef64565e2df0f1c8b86b53d3e5aeb14d5936"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bb3089103b",
+      "Fields": {
+        "Meaning": "Diễn giải, cách hiểu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "解釈（かいしゃく）có nghĩa là diễn giải, cách hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161700": "Tôi rất tán thành cách bạn diễn giải.",
+        "205583": "Có thể hiểu điều đó theo hai cách."
+      },
+      "SourceHash": "f5053d312a99db9089065112c2d1d7bf7400b686ef4c73e79a57821d088f8bbf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea99623528",
+      "Fields": {
+        "Meaning": "Ra ngoài, đi vắng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "外出（がいしゅつ）có nghĩa là ra ngoài, đi vắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82971": "Mẹ dặn tôi đừng ra ngoài.",
+        "197683": "Tôi ra ngoài mà vẫn để máy sưởi bật."
+      },
+      "SourceHash": "deb6d24370e31e66b4766c365831a72d318274fd657f5c38d01e771ff85b0a63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd41ab95cf",
+      "Fields": {
+        "Meaning": "Cải thiện, cải tiến",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "改善（かいぜん）có nghĩa là cải thiện, cải tiến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185140": "Vẫn còn rất nhiều chỗ có thể cải thiện.",
+        "221533": "Cuốn từ điển này còn nhiều điểm có thể cải tiến."
+      },
+      "SourceHash": "1bda0e4c16a14acb6218f13ac95807e5ed3c0572762417cdf70f90c2100ca6e4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b550808b0f",
+      "Fields": {
+        "Meaning": "Thoải mái, dễ chịu",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "快適（かいてき）có nghĩa là thoải mái, dễ chịu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183321": "Chuyến đi về rất dễ chịu.",
+        "222810": "Sống trong ngôi nhà này rất thoải mái."
+      },
+      "SourceHash": "9565e5b289f2eb1f21b85e25420ee2c6644f3f5befacc9f3103c5e04e4e2efe9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3af04ce9d1",
+      "Fields": {
+        "Meaning": "Hồi phục, khôi phục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "回復（かいふく）có nghĩa là hồi phục, khôi phục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92711": "Cô ấy đã khỏi bệnh hoàn toàn.",
+        "185180": "Khả năng hồi phục gần như không có."
+      },
+      "SourceHash": "86951a008fb523377896c3e250dc7454400492bfe3bc73f53928fef33584b2ce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fc5f82cc4d",
+      "Fields": {
+        "Meaning": "Nuôi động vật",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "飼う（かう）có nghĩa là nuôi động vật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88700": "Cô ấy nuôi một con chó nhỏ màu đen.",
+        "198980": "Nancy có muốn nuôi chó không?"
+      },
+      "SourceHash": "0cefb5f3d1c2b92176b5bbf17145719fa26cc0046f9706b0e1ad957dcd0403d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2f3ce71d72",
+      "Fields": {
+        "Meaning": "Đổi sang, quy đổi",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "換える（かえる）có nghĩa là đổi sang, quy đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179585": "Ngân hàng có thể đổi tấm séc 50 đô la đó thành tiền mặt.",
+        "217653": "Anh chị có thể đổi cái này sang tiền mặt giúp tôi không?"
+      },
+      "SourceHash": "faa871509876dc53f4633a3459d05c8aced900fa732f37f4bda2b448c06b4b60"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33a3172689",
+      "Fields": {
+        "Meaning": "Thay, đổi sang cái khác",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "替える（かえる）có nghĩa là thay, đổi sang cái khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202956": "Tôi đổi kênh được không?",
+        "227392": "Mình thay nước cắm hoa nhé."
+      },
+      "SourceHash": "6ee889a710de5149e90ce19e66ee2ccabce045a8f9e1be792ecb95e8e381ea93"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "533668820b",
+      "Fields": {
+        "Meaning": "Hương, mùi thơm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "香り（かおり）có nghĩa là hương, mùi thơm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209202": "Cô bé đang ngửi hương hoa.",
+        "212720": "Bông hồng đó tỏa hương thơm."
+      },
+      "SourceHash": "895ea64d14bc0f5eda8d08fe7d63b508ecf9500757a38203e051d7b1de51b75a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e904c4fcb0",
+      "Fields": {
+        "Meaning": "Họa sĩ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "画家（がか）có nghĩa là họa sĩ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103942": "Anh ấy chọn làm họa sĩ.",
+        "211917": "Có thể nói họa sĩ ấy là một cậu bé mãi không lớn."
+      },
+      "SourceHash": "bbcddb8b805a10f5e0bdd4f34d8b2108f36034e7509d078d79b21b78291bd104"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f6d4ab33ef",
+      "Fields": {
+        "Meaning": "Ôm, mang trong tay, gánh vác",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "抱える（かかえる）có nghĩa là ôm, mang trong tay, gánh vác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98993": "Anh ấy ôm một chiếc hộp lớn bằng cả hai tay.",
+        "102487": "Anh ấy đến với một bó hoa lớn ôm trong tay."
+      },
+      "SourceHash": "c1ac84dd0d381a3de75911db98cba21a234af470313e7b7007033d6f1202fe33"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5164cf437e",
+      "Fields": {
+        "Meaning": "Giá, mức giá",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "価格（かかく）có nghĩa là giá, mức giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170778": "Xin báo giá tốt nhất.",
+        "187277": "Một số cửa hàng có giảm giá."
+      },
+      "SourceHash": "01365c329a2e7b1bdd0295261e968640b17aec0282cdcae704517e20b5c136ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a2838ec535",
+      "Fields": {
+        "Meaning": "Hóa học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "化学（かがく）có nghĩa là hóa học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97486": "Họ đã làm một thí nghiệm hóa học mới.",
+        "183002": "Bạn có học hóa học không?"
+      },
+      "SourceHash": "2857124ce5bf74ddee653767c430e53ec131cc906d1af458f2e991bef112f79a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b3f81ac90b",
+      "Fields": {
+        "Meaning": "Tỏa sáng, lấp lánh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "輝く（かがやく）có nghĩa là tỏa sáng, lấp lánh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138077": "Mặt trời chói chang ngay trên đầu.",
+        "179455": "Mặt trời đang chiếu sáng trên bầu trời."
+      },
+      "SourceHash": "d96e2a4e18914ae344699939eba52ba61daafc3ee2990ec3d0cd081b215c5c76"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "24d66ba82b",
+      "Fields": {
+        "Meaning": "Người phụ trách, bộ phận phụ trách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "係（かかり）có nghĩa là người phụ trách, bộ phận phụ trách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172899": "Tôi sẽ cử ngay một người phụ trách đến.",
+        "224143": "Đây là bộ phận phụ trách điện thoại quốc tế."
+      },
+      "SourceHash": "ef05895f28c6a1c6057a4146a0245aca002306644224671799c8acccdcfe5abf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60e92a64ac",
+      "Fields": {
+        "Meaning": "Mắc bệnh, bị bệnh",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "罹る（かかる）có nghĩa là mắc bệnh, bị bệnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145797": "Bạn đã bao giờ bị ngộ độc thực phẩm chưa?",
+        "161194": "Tôi từng mắc một căn bệnh nặng."
+      },
+      "SourceHash": "57dd1acc6ec205b609dc3b6c9dd379d3cc7c8b78aa84e4abb19e6ce477d11505"
+    }
+  ]
+}

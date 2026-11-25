@@ -22,7 +22,21 @@ public static class LearningTopicSeedData
             ["te-kudasai", "temo-ii", "koto-ga-aru", "you-ni-naru", "ni-taishite", "wake-dewa-nai"])
     ];
 
-    public static IReadOnlyList<LearningTopicSeed> Topics { get; } = CreateLevelTopics();
+    private static readonly LearningTopicSeed[] GrammarTopics =
+    [
+        new("GRAMMAR_REQUEST_N5", "Yêu cầu", "Nhờ hoặc hướng dẫn người nghe thực hiện một hành động.", [], ["te-kudasai"]),
+        new("GRAMMAR_PERMISSION_N5", "Xin phép và cho phép", "Hỏi xin phép hoặc cho biết một hành động được phép.", [], ["temo-ii"]),
+        new("GRAMMAR_FREQUENCY_N4", "Tần suất", "Diễn đạt sự việc đôi khi xảy ra.", [], ["koto-ga-aru"]) { JLPTLevel = "N4" },
+        new("GRAMMAR_CHANGE_N4", "Thay đổi theo thời gian", "Nói về khả năng hoặc thói quen mới hình thành.", [], ["you-ni-naru"]) { JLPTLevel = "N4" },
+        new("GRAMMAR_CONTRAST_N3", "Đối chiếu", "Đặt hai sự vật hoặc tình trạng tương phản cạnh nhau.", [], ["ni-taishite"]) { JLPTLevel = "N3" },
+        new("GRAMMAR_CLARIFY_N3", "Đính chính nhận định", "Làm rõ giới hạn của một nhận định hoặc đính chính suy luận.", [], ["wake-dewa-nai"]) { JLPTLevel = "N3" }
+    ];
+
+    private static readonly LearningTopicSeed[] SituationTopics = CreateLevelTopics();
+
+    // Keep contextual links for Flashcards and old URLs. Learner grammar discovery uses functional topics.
+    public static string[] SituationCodes { get; } = SituationTopics.Select(topic => topic.Code).ToArray();
+    public static IReadOnlyList<LearningTopicSeed> Topics { get; } = [.. SituationTopics, .. GrammarTopics];
 
     private static LearningTopicSeed[] CreateLevelTopics()
     {

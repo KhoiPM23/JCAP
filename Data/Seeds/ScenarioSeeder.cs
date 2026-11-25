@@ -17,83 +17,160 @@ namespace JCAP.Data.Seeds
                 var initialScenarios = ScenarioSeedData.GetInitialScenarios();
                 await dbContext.Scenarios.AddRangeAsync(initialScenarios);
                 await dbContext.SaveChangesAsync();
-                return;
             }
-
-            // 2. Đồng bộ cập nhật kịch bản mẫu: Tìm theo cả ScenarioCode lẫn Title để chống duplicate
-            var initialScenariosList = ScenarioSeedData.GetInitialScenarios();
-            foreach (var seedScenario in initialScenariosList)
+            else
             {
-                var existingScenario = await dbContext.Scenarios
-                    .Include(s => s.LevelConfigurations)
-                        .ThenInclude(lc => lc.Missions)
-                    .Include(s => s.LevelConfigurations)
-                        .ThenInclude(lc => lc.TargetVocabularies)
-                    .Include(s => s.LevelConfigurations)
-                        .ThenInclude(lc => lc.TargetGrammars)
-                    .FirstOrDefaultAsync(s =>
-                        (!string.IsNullOrEmpty(s.ScenarioCode) && s.ScenarioCode == seedScenario.ScenarioCode) ||
-                        s.Title.Trim().ToLower() == seedScenario.Title.Trim().ToLower());
-
-                if (existingScenario != null)
+                // 2. Đồng bộ cập nhật kịch bản mẫu: Tìm theo cả ScenarioCode lẫn Title để chống duplicate
+                var initialScenariosList = ScenarioSeedData.GetInitialScenarios();
+                foreach (var seedScenario in initialScenariosList)
                 {
-                    // Khôi phục mã kịch bản chuẩn ngữ nghĩa
-                    if (existingScenario.ScenarioCode != seedScenario.ScenarioCode)
-                    {
-                        existingScenario.ScenarioCode = seedScenario.ScenarioCode;
-                    }
-                    existingScenario.Description = seedScenario.Description;
-                    existingScenario.Thumbnail = seedScenario.Thumbnail;
-                    existingScenario.IsActive = true;
+                    var existingScenario = await dbContext.Scenarios
+                        .Include(s => s.LevelConfigurations)
+                            .ThenInclude(lc => lc.Missions)
+                        .Include(s => s.LevelConfigurations)
+                            .ThenInclude(lc => lc.TargetVocabularies)
+                        .Include(s => s.LevelConfigurations)
+                            .ThenInclude(lc => lc.TargetGrammars)
+                        .FirstOrDefaultAsync(s =>
+                            (!string.IsNullOrEmpty(s.ScenarioCode) && s.ScenarioCode == seedScenario.ScenarioCode) ||
+                            s.Title.Trim().ToLower() == seedScenario.Title.Trim().ToLower());
 
-                    foreach (var seedLevel in seedScenario.LevelConfigurations)
+                    if (existingScenario != null)
                     {
-                        var existingLevel = existingScenario.LevelConfigurations
-                            .FirstOrDefault(lc => lc.JLPTLevel == seedLevel.JLPTLevel);
-
-                        if (existingLevel != null)
+                        // Khôi phục mã kịch bản chuẩn ngữ nghĩa
+                        if (existingScenario.ScenarioCode != seedScenario.ScenarioCode)
                         {
-                            existingLevel.Title = seedLevel.Title;
-                            existingLevel.Description = seedLevel.Description;
-                            existingLevel.AiPersona = seedLevel.AiPersona;
-                            existingLevel.CreditCost = seedLevel.CreditCost;
-                            existingLevel.Status = seedLevel.Status;
+                            existingScenario.ScenarioCode = seedScenario.ScenarioCode;
+                        }
+                        existingScenario.Description = seedScenario.Description;
+                        existingScenario.Thumbnail = seedScenario.Thumbnail;
+                        existingScenario.IsActive = true;
 
-                            // Đồng bộ Missions
-                            foreach (var seedMission in seedLevel.Missions)
+                        foreach (var seedLevel in seedScenario.LevelConfigurations)
+                        {
+                            var existingLevel = existingScenario.LevelConfigurations
+                                .FirstOrDefault(lc => lc.JLPTLevel == seedLevel.JLPTLevel);
+
+                            if (existingLevel != null)
                             {
-                                var existingMission = existingLevel.Missions
-                                    .FirstOrDefault(m => m.Order == seedMission.Order);
+                                existingLevel.Title = seedLevel.Title;
+                                existingLevel.Description = seedLevel.Description;
+                                existingLevel.AiPersona = seedLevel.AiPersona;
+                                existingLevel.CreditCost = seedLevel.CreditCost;
+                                existingLevel.Status = seedLevel.Status;
 
-                                if (existingMission != null)
+                                // Đồng bộ Missions
+                                foreach (var seedMission in seedLevel.Missions)
                                 {
-                                    existingMission.Content = seedMission.Content;
-                                    existingMission.CompletionCriteriaJson = seedMission.CompletionCriteriaJson;
-                                }
-                                else
-                                {
-                                    existingLevel.Missions.Add(new Mission
+                                    var existingMission = existingLevel.Missions
+                                        .FirstOrDefault(m => m.Order == seedMission.Order);
+
+                                    if (existingMission != null)
                                     {
-                                        Content = seedMission.Content,
-                                        Order = seedMission.Order,
-                                        CompletionCriteriaJson = seedMission.CompletionCriteriaJson,
-                                        IsActive = true
-                                    });
+                                        existingMission.Content = seedMission.Content;
+                                        existingMission.CompletionCriteriaJson = seedMission.CompletionCriteriaJson;
+                                    }
+                                    else
+                                    {
+                                        existingLevel.Missions.Add(new Mission
+                                        {
+                                            Content = seedMission.Content,
+                                            Order = seedMission.Order,
+                                            CompletionCriteriaJson = seedMission.CompletionCriteriaJson,
+                                            IsActive = true
+                                        });
+                                    }
+                                }
+
+                                // Đồng bộ TargetVocabularies (khớp theo Word để cập nhật hoặc thêm mới)
+                                var seedWords = seedLevel.TargetVocabularies
+                                    .Select(v => v.Word.Trim())
+                                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                                var vocabsToRemove = existingLevel.TargetVocabularies
+                                    .Where(v => !seedWords.Contains(v.Word.Trim()))
+                                    .ToList();
+
+                                foreach (var obsoleteVocab in vocabsToRemove)
+                                {
+                                    existingLevel.TargetVocabularies.Remove(obsoleteVocab);
+                                    dbContext.TargetVocabularies.Remove(obsoleteVocab);
+                                }
+
+                                foreach (var seedVocab in seedLevel.TargetVocabularies)
+                                {
+                                    var existingVocab = existingLevel.TargetVocabularies
+                                        .FirstOrDefault(v => v.Word.Trim().Equals(seedVocab.Word.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                                    if (existingVocab != null)
+                                    {
+                                        existingVocab.Reading = seedVocab.Reading;
+                                        existingVocab.Meaning = seedVocab.Meaning;
+                                    }
+                                    else
+                                    {
+                                        existingLevel.TargetVocabularies.Add(new TargetVocabulary
+                                        {
+                                            Word = seedVocab.Word,
+                                            Reading = seedVocab.Reading,
+                                            Meaning = seedVocab.Meaning
+                                        });
+                                    }
+                                }
+
+                                // Đồng bộ TargetGrammars (khớp theo Pattern để cập nhật hoặc thêm mới)
+                                var seedPatterns = seedLevel.TargetGrammars
+                                    .Select(g => g.Pattern.Trim())
+                                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                                var grammarsToRemove = existingLevel.TargetGrammars
+                                    .Where(g => !seedPatterns.Contains(g.Pattern.Trim()))
+                                    .ToList();
+
+                                foreach (var obsoleteGrammar in grammarsToRemove)
+                                {
+                                    existingLevel.TargetGrammars.Remove(obsoleteGrammar);
+                                    dbContext.TargetGrammars.Remove(obsoleteGrammar);
+                                }
+
+                                foreach (var seedGrammar in seedLevel.TargetGrammars)
+                                {
+                                    var existingGrammar = existingLevel.TargetGrammars
+                                        .FirstOrDefault(g => g.Pattern.Trim().Equals(seedGrammar.Pattern.Trim(), StringComparison.OrdinalIgnoreCase));
+
+                                    if (existingGrammar != null)
+                                    {
+                                        existingGrammar.Meaning = seedGrammar.Meaning;
+                                        existingGrammar.ExampleSentence = seedGrammar.ExampleSentence;
+                                    }
+                                    else
+                                    {
+                                        existingLevel.TargetGrammars.Add(new TargetGrammar
+                                        {
+                                            Pattern = seedGrammar.Pattern,
+                                            Meaning = seedGrammar.Meaning,
+                                            ExampleSentence = seedGrammar.ExampleSentence
+                                        });
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            existingScenario.LevelConfigurations.Add(seedLevel);
+                            else
+                            {
+                                existingScenario.LevelConfigurations.Add(seedLevel);
+                            }
                         }
                     }
+                    else
+                    {
+                        await dbContext.Scenarios.AddAsync(seedScenario);
+                    }
                 }
-                else
-                {
-                    await dbContext.Scenarios.AddAsync(seedScenario);
-                }
+                await dbContext.SaveChangesAsync();
             }
-            await dbContext.SaveChangesAsync();
+
+            // 3. Đồng bộ từ vựng và ngữ pháp của kịch bản vào kho học liệu.
+            var allSeedScenarios = ScenarioSeedData.GetInitialScenarios();
+            await SynchronizeScenarioLearningContentAsync(dbContext, allSeedScenarios);
         }
 
         private static async Task CleanupDuplicatesAsync(AppDbContext dbContext)
@@ -143,6 +220,119 @@ namespace JCAP.Data.Seeds
             {
                 await dbContext.SaveChangesAsync();
             }
+        }
+
+        private static async Task SynchronizeScenarioLearningContentAsync(AppDbContext dbContext, List<Scenario> scenarios)
+        {
+            var existingVocabs = await dbContext.Vocabularies.ToListAsync();
+            var existingGrammars = await dbContext.Grammars.ToListAsync();
+
+            var vocabByWordLevel = existingVocabs
+                .GroupBy(v => $"{v.Word.Trim()}_{v.JLPTLevel?.ToUpper() ?? "N5"}", StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            var grammarByPatternLevel = existingGrammars
+                .GroupBy(g => $"{g.Pattern.Trim()}_{g.JLPTLevel?.ToUpper() ?? "N5"}", StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var scenario in scenarios)
+            {
+                foreach (var level in scenario.LevelConfigurations)
+                {
+                    var lvl = level.JLPTLevel ?? "N5";
+
+                    foreach (var tv in level.TargetVocabularies)
+                    {
+                        var cleanWord = tv.Word.Trim();
+                        var key = $"{cleanWord}_{lvl}";
+
+                        if (!vocabByWordLevel.TryGetValue(key, out var masterVocab))
+                        {
+                            masterVocab = existingVocabs.FirstOrDefault(v => v.Word.Trim().Equals(cleanWord, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (masterVocab == null)
+                        {
+                            masterVocab = new Vocabulary
+                            {
+                                Word = cleanWord,
+                                Reading = tv.Reading?.Trim(),
+                                Meaning = tv.Meaning.Trim(),
+                                JLPTLevel = lvl,
+                                PartOfSpeech = ExtractPartOfSpeech(tv.Meaning),
+                                Explanation = tv.Meaning.Trim(),
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            dbContext.Vocabularies.Add(masterVocab);
+                            existingVocabs.Add(masterVocab);
+                            vocabByWordLevel[key] = masterVocab;
+                        }
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(masterVocab.Reading) && !string.IsNullOrWhiteSpace(tv.Reading))
+                                masterVocab.Reading = tv.Reading.Trim();
+                            if (string.IsNullOrWhiteSpace(masterVocab.Meaning) && !string.IsNullOrWhiteSpace(tv.Meaning))
+                                masterVocab.Meaning = tv.Meaning.Trim();
+                            if (string.IsNullOrWhiteSpace(masterVocab.JLPTLevel))
+                                masterVocab.JLPTLevel = lvl;
+                        }
+
+                    }
+
+                    foreach (var tg in level.TargetGrammars)
+                    {
+                        var cleanPattern = tg.Pattern.Trim();
+                        var key = $"{cleanPattern}_{lvl}";
+
+                        if (!grammarByPatternLevel.TryGetValue(key, out var masterGrammar))
+                        {
+                            masterGrammar = existingGrammars.FirstOrDefault(g => g.Pattern.Trim().Equals(cleanPattern, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (masterGrammar == null)
+                        {
+                            masterGrammar = new Grammar
+                            {
+                                Pattern = cleanPattern,
+                                Meaning = tg.Meaning.Trim(),
+                                ExampleSentence = tg.ExampleSentence?.Trim(),
+                                JLPTLevel = lvl,
+                                Explanation = tg.Meaning.Trim(),
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            dbContext.Grammars.Add(masterGrammar);
+                            existingGrammars.Add(masterGrammar);
+                            grammarByPatternLevel[key] = masterGrammar;
+                        }
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(masterGrammar.Meaning) && !string.IsNullOrWhiteSpace(tg.Meaning))
+                                masterGrammar.Meaning = tg.Meaning.Trim();
+                            if (string.IsNullOrWhiteSpace(masterGrammar.ExampleSentence) && !string.IsNullOrWhiteSpace(tg.ExampleSentence))
+                                masterGrammar.ExampleSentence = tg.ExampleSentence.Trim();
+                            if (string.IsNullOrWhiteSpace(masterGrammar.JLPTLevel))
+                                masterGrammar.JLPTLevel = lvl;
+                        }
+
+                    }
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
+        private static string ExtractPartOfSpeech(string meaning)
+        {
+            if (string.IsNullOrWhiteSpace(meaning)) return "Danh từ";
+            if (meaning.Contains("[Danh từ")) return "Danh từ";
+            if (meaning.Contains("[Động từ")) return "Động từ";
+            if (meaning.Contains("[Tính từ")) return "Tính từ";
+            if (meaning.Contains("[Phó từ")) return "Phó từ";
+            if (meaning.Contains("[Thành ngữ")) return "Thành ngữ";
+            if (meaning.Contains("[Cụm từ")) return "Cụm từ";
+            return "Danh từ";
         }
     }
 }

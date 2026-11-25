@@ -31,6 +31,11 @@ namespace JCAP.Controllers
                 var voices = await _voiceVoxService.GetAvailableVoicesAsync(cancellationToken);
                 return Ok(ApiResponse<List<FlattenedVoiceDto>>.Ok(voices, "Lấy danh sách giọng đọc thành công."));
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Client đã hủy yêu cầu lấy danh sách voice VOICEVOX.");
+                return StatusCode(499);
+            }
             catch (InvalidOperationException ex)
             {
                 return StatusCode(503, ApiResponse<List<FlattenedVoiceDto>>.Fail(ex.Message));
@@ -65,6 +70,16 @@ namespace JCAP.Controllers
                 Response.Headers.CacheControl = "public, max-age=31536000, immutable";
                 return File(wavBytes, "audio/wav", "voicevox_sample.wav");
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Client đã hủy yêu cầu tổng hợp âm thanh VOICEVOX cho câu: {Text}", request.Text);
+                return StatusCode(499);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogWarning(ex, "VOICEVOX Engine phản hồi quá hạn (timeout) cho câu: {Text}", request.Text);
+                return StatusCode(504, Problem(detail: ex.Message, statusCode: 504, title: "VOICEVOX Timeout"));
+            }
             catch (InvalidOperationException ex)
             {
                 return StatusCode(503, Problem(detail: ex.Message, statusCode: 503, title: "VOICEVOX Unavailable"));
@@ -77,4 +92,3 @@ namespace JCAP.Controllers
         }
     }
 }
-

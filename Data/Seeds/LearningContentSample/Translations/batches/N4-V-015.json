@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d1805965ec",
+      "Fields": {
+        "Meaning": "Tự do",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "自由（じゆう）có nghĩa là tự do.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149708": "Tự do quá mức thì ai cũng dễ hư.",
+        "227225": "Muốn tiêu hay để dành tiền thì tùy bạn."
+      },
+      "SourceHash": "48b3583ea8fde1c0b5a13de2b9935174d6b80d93454b125bbd3b33b74b664f1f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eacd8a5221",
+      "Fields": {
+        "Meaning": "Thói quen, tập quán",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "習慣（しゅうかん）có nghĩa là thói quen, tập quán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209444": "Tập quán đó bắt đầu ở Trung Quốc.",
+        "225121": "Ken có thói quen dậy sớm."
+      },
+      "SourceHash": "9a805a3bd4a6ecc1e9769b01601f3d8293503a859ac8ad3a8e5a26e841032fa6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "47593d1123",
+      "Fields": {
+        "Meaning": "Địa chỉ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "住所（じゅうしょ）có nghĩa là địa chỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148094": "Tôi xin hỏi địa chỉ của anh/chị được không?",
+        "232998": "Hãy điền tên và địa chỉ."
+      },
+      "SourceHash": "66c7b66786ad9ace14674612ecf4f2e45d395c75f5e22fd9abf9f34486668dfc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dcfb33317b",
+      "Fields": {
+        "Meaning": "Judo, nhu đạo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "柔道（じゅうどう）có nghĩa là judo, nhu đạo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147997": "Trong judo, kỹ thuật quan trọng hơn sức mạnh.",
+        "164373": "Hãy dạy tôi judo."
+      },
+      "SourceHash": "d958244d9ac59ccc6f9b3214f7e9b33e7301ee0d61108433569aa28d6943b69b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab6fd5bdbb",
+      "Fields": {
+        "Meaning": "Đủ, đầy đủ",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "十分（じゅうぶん）có nghĩa là đủ, đầy đủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "160764": "Tôi có đủ tiền mua cuốn sách này.",
+        "189963": "Hãy chuẩn bị đủ nước uống."
+      },
+      "SourceHash": "55f0b59e74ac1d7cf5188c2e1282d959866e54588ecece525d92f8d9b43b6fe2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "93f910e281",
+      "Fields": {
+        "Meaning": "Có mặt, tham dự",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "出席（しゅっせき）có nghĩa là có mặt, tham dự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147730": "Bạn không tham dự được à? Tại sao?",
+        "147737": "Phần lớn người tham dự là sinh viên."
+      },
+      "SourceHash": "1b94278f9b6f57eb34248b42d250b92dfb6870546b6d849487f6cdd3f69bd6a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c614552d23",
+      "Fields": {
+        "Meaning": "Khởi hành, xuất phát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "出発（しゅっぱつ）có nghĩa là khởi hành, xuất phát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140545": "Có nên khởi hành sớm không nhỉ?",
+        "232659": "Bạn nên khởi hành ngay."
+      },
+      "SourceHash": "4097d96e51402c4a3da313803395bb49f3c87d33ff2f8408fc8420c9a5c797f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7c6d792073",
+      "Fields": {
+        "Meaning": "Sở thích, gu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "趣味（しゅみ）có nghĩa là sở thích, gu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "228380": "Bạn có gu trang trí nội thất đẹp đấy.",
+        "231897": "Bạn đã nói về sở thích chưa?"
+      },
+      "SourceHash": "fcc354d29dadb0838dd686114343445389d9ebf6f22b93fa6fbe428dd44b4d4d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c151fe4163",
+      "Fields": {
+        "Meaning": "Giới thiệu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "紹介（しょうかい）có nghĩa là giới thiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "176623": "Xin giới thiệu anh trai tôi là Tom.",
+        "231428": "Tôi muốn giới thiệu bạn với bố mẹ tôi."
+      },
+      "SourceHash": "2ea5be3da6da26abcdfc0eebaec9d9f0e1a893f7d42f1185dfdc3a09358a3571"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b04bf40187",
+      "Fields": {
+        "Meaning": "Trường tiểu học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小学校（しょうがっこう）có nghĩa là trường tiểu học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152647": "Tôi đã học tiểu học ở Nagoya.",
+        "231844": "Bạn đang học tiểu học à?"
+      },
+      "SourceHash": "91cd2ec6e7fd241c358fcad7137a319abb80286b7fc59267b4a5b6cfad4a2062"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "689dc7a66e",
+      "Fields": {
+        "Meaning": "Tiểu thuyết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "小説（しょうせつ）có nghĩa là tiểu thuyết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155893": "Tôi ở nhà cả ngày đọc tiểu thuyết.",
+        "2312937": "Tom đang đọc tiểu thuyết."
+      },
+      "SourceHash": "09c837fc823d3e9fdefd2960eb02c1ea8cddb7ff1fd8f19a138578545d52d38f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6111e87e72",
+      "Fields": {
+        "Meaning": "Mời, lời mời",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "招待（しょうたい）có nghĩa là mời, lời mời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146452": "Cảm ơn anh/chị đã mời.",
+        "160340": "Tôi được mời đến buổi tiệc đó."
+      },
+      "SourceHash": "160ba37b52d858c174ac58049d285719c45e29f20f8af424b57aaf6b1ef82830"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b377c7b2ea",
+      "Fields": {
+        "Meaning": "Biết, hiểu, chấp thuận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "承知（しょうち）có nghĩa là biết, hiểu, chấp thuận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144566": "Tôi hiểu rằng ai rồi cũng phải chết.",
+        "192707": "Được. Tôi chấp thuận đề nghị của anh/chị."
+      },
+      "SourceHash": "7b5ec58b95f09dbd5c1effcd128c7d34f9f3952f9819875d0db857225dfc9cb1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0e3ecb7665",
+      "Fields": {
+        "Meaning": "Tương lai",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "将来（しょうらい）có nghĩa là tương lai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147071": "Tôi không thể không nghĩ đến tương lai.",
+        "147073": "Bạn nên học vì tương lai của mình."
+      },
+      "SourceHash": "8d243c7e4654d96e2220f514bdd548d346a1cd079ba951830de5b3ba677b0c01"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ad2f6d941",
+      "Fields": {
+        "Meaning": "Bữa ăn, ăn uống",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "食事（しょくじ）có nghĩa là bữa ăn, ăn uống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145829": "Mẹ nấu các bữa ăn cho tôi.",
+        "145839": "Bữa ăn thật sự rất ngon nhỉ."
+      },
+      "SourceHash": "1483317439e3a68919e62ae775a5794915deb3370de20bf08d7307fc495b51e7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2ae7b1cb3b",
+      "Fields": {
+        "Meaning": "Thực phẩm, hàng tạp hóa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食料品（しょくりょうひん）có nghĩa là thực phẩm, hàng tạp hóa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122585": "Cửa hàng có bán thực phẩm Nhật không?",
+        "230545": "Cửa hàng đó bán thực phẩm chất lượng tốt."
+      },
+      "SourceHash": "35db635b17f807602ec842112b4a0a2a501538d19f472484e1374fa1fbe10582"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8410c15b44",
+      "Fields": {
+        "Meaning": "Phụ nữ",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "女性（じょせい）có nghĩa là phụ nữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147270": "Một phụ nữ đang đọc lướt cuốn sách.",
+        "209175": "Cô bé lớn lên thành một phụ nữ có dáng thanh mảnh."
+      },
+      "SourceHash": "cc8d399f3fbd921162366f465d65dc5c08a9f99fe4cfa68f59515ae88d74482f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1a680b4cf9",
+      "Fields": {
+        "Meaning": "Báo, thông báo",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "知らせる（しらせる）có nghĩa là báo, thông báo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124721": "Báo tin đó cho tôi qua điện thoại nhé.",
+        "183080": "Cô ấy đã báo chuyện đó bằng cách nào?"
+      },
+      "SourceHash": "2b70b3abb1372c1f7edb7e0b932e5cd4c8a11b09e4ce795c774192806d66dcce"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "beb32f751c",
+      "Fields": {
+        "Meaning": "Tra cứu, kiểm tra, điều tra",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "調べる（しらべる）có nghĩa là tra cứu, kiểm tra, điều tra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "202728": "Tôi có một việc đang tìm hiểu.",
+        "232179": "Bạn nên kiểm tra kỹ căn nhà trước khi mua."
+      },
+      "SourceHash": "ecd59e89e60dec6df670ed13a42694512a1f9c2db4f99f2498c85288fcd6b732"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7962f0cea1",
+      "Fields": {
+        "Meaning": "Dân số",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人口（じんこう）có nghĩa là dân số.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122286": "Dân số Nhật Bản đông hơn dân số Vương quốc Anh.",
+        "228372": "Dân số Ấn Độ khoảng bao nhiêu?"
+      },
+      "SourceHash": "9692ce4c204ebf3627bd0281f8baf34e07223ac16dba92d2fae7dc9a25a103e6"
+    }
+  ]
+}

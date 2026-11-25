@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakanaka-nai",
+      "Fields": {
+        "Meaning": "Mãi không, khó mà",
+        "Formation": "なかなか ＋ vị ngữ phủ định",
+        "Explanation": "Nêu việc chậm xảy ra hoặc khó thực hiện dù đã đợi hay cố gắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakanaka-nai:example:1": "Xe buýt mãi không đến.",
+        "nakanaka-nai:example:2": "Bài này khó giải quá."
+      },
+      "SourceHash": "ac96bd0dbddc6e847cd5d8b15ed12de47e6e18e06f003a31d9e7b83c1e2bbdda"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nagara",
+      "Fields": {
+        "Meaning": "Vừa làm A vừa làm B",
+        "Formation": "Gốc ます ＋ ながら ＋ hành động chính",
+        "Explanation": "Hai hành động cùng diễn ra và thường có cùng chủ thể. Hành động chính đứng sau ながら.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nagara:example:1": "Tôi vừa nghe nhạc vừa học.",
+        "nagara:example:2": "Mình vừa uống trà vừa nói chuyện nhé."
+      },
+      "SourceHash": "2829057ce372269fec633ee56ef1b9118e767a78e9799a97df51f21c516468b3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakute",
+      "Fields": {
+        "Meaning": "Không… nên, không… và",
+        "Formation": "Phủ định ない → なくて",
+        "Explanation": "Nối ý phủ định với phản ứng, nguyên nhân hoặc ý tiếp theo. Tính từ な và danh từ thường dùng じゃなくて hoặc ではなくて.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakute:example:1": "Bài kiểm tra không khó như tôi nghĩ nên tôi thấy yên tâm.",
+        "nakute:example:2": "Bạn tôi chưa trả lời nên tôi rất lo."
+      },
+      "SourceHash": "b292f5f5cd9519d5cc653e1c4e51b85352f54e5606be4fcf2a6601e0f50ec4c3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakereba-ikenai",
+      "Fields": {
+        "Meaning": "Phải, cần phải làm",
+        "Formation": "Động từ thể ない bỏ い ＋ ければいけない",
+        "Explanation": "Diễn đạt việc cần thực hiện. Có thể dùng いけません để nói lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakereba-ikenai:example:1": "Sáng mai tôi phải dậy sớm.",
+        "nakereba-ikenai:example:2": "Khi đi du lịch, phải mang theo hộ chiếu."
+      },
+      "SourceHash": "21bc41660f4e847fee7c77b91613848519186928c0a5a477b68ae9dfa5bfb46a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nakereba-naranai",
+      "Fields": {
+        "Meaning": "Phải, có nghĩa vụ làm",
+        "Formation": "Động từ thể ない bỏ い ＋ ければならない",
+        "Explanation": "Nêu sự cần thiết hoặc nghĩa vụ, thường gặp khi nói về quy tắc hay yêu cầu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nakereba-naranai:example:1": "Ai cũng phải giữ lời hứa.",
+        "nakereba-naranai:example:2": "Phải trả sách thư viện chậm nhất vào tuần sau."
+      },
+      "SourceHash": "9cdb478c4a23f2a0de6e7663de05d76d085707b84af89dbe9a5c6aa67df302f4"
+    }
+  ]
+}

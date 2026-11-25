@@ -128,4 +128,15 @@ public class SttController : ControllerBase
 
         return Ok(ApiResponse<object>.Ok(status, isAvailable ? "Whisper Engine đang hoạt động." : "Whisper Engine chưa được bật."));
     }
+
+    /// <summary>
+    /// Kích hoạt khởi động Whisper Engine ngầm nếu chưa chạy
+    /// </summary>
+    [HttpPost("start-engine")]
+    public async Task<ActionResult<ApiResponse<object>>> StartEngine(CancellationToken cancellationToken)
+    {
+        var started = await _whisperService.TryAutoStartEngineAsync(cancellationToken);
+        return Ok(ApiResponse<object>.Ok(new { started }, started ? "Đã gửi lệnh kích hoạt Whisper Engine ngầm." : "Tiến trình Whisper đang được khởi động hoặc đã sẵn sàng."));
+    }
 }
+

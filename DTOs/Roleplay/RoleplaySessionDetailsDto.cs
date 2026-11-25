@@ -41,4 +41,8 @@ public class RoleplaySessionDetailsDto
     public int CurrentDayStreak { get; set; }
     public string NpcRelationshipTitle { get; set; } = "Lần đầu gặp gỡ 🌱";
     public List<string> NpcMemories { get; set; } = [];
+
+    // Session Assistance & Scaffolding State (Persisted across resume / page reloads)
+    public int TotalHintTurnsUsed { get; set; }
+    public int TotalTranslationPeeksUsed { get; set; }
 }

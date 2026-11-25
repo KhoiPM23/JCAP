@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "70e6480c13",
+      "Fields": {
+        "Meaning": "Thức trắng đêm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "徹夜（てつや）có nghĩa là thức trắng đêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87796": "Cô ấy đã quen thức trắng đêm.",
+        "162306": "Tôi thường thức trắng đêm."
+      },
+      "SourceHash": "f55c3408be5c0955d0974b503449982e2d553abab9f192f7d2c40020e6eaa65a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "feff56f582",
+      "Fields": {
+        "Meaning": "Công sức, thời gian bỏ ra",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手間（てま）có nghĩa là công sức, thời gian bỏ ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145930": "Sao ăn thôi mà lại tốn công đến thế?",
+        "227081": "Tôi đã làm phiền anh chị rồi."
+      },
+      "SourceHash": "21e3cf7797191218efff2eb40fa982a8aa1a7f39497a8864587f244b73b439c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b18b85729e",
+      "Fields": {
+        "Meaning": "Biểu tình, trình diễn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "デモ（デモ）có nghĩa là biểu tình, trình diễn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112445": "Anh ấy tham gia cuộc biểu tình phản chiến đó.",
+        "202096": "Tôi định tham gia biểu tình."
+      },
+      "SourceHash": "535e0a38100f89540af0175b935bbcb8810855e8573e36845baf6defd36a8054"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "206cb49bde",
+      "Fields": {
+        "Meaning": "Điển hình, mẫu mực",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "典型（てんけい）có nghĩa là điển hình, mẫu mực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83878": "Fukuoka đúng là kiểu thành phố tôi thích.",
+        "93375": "Cô ấy là hình mẫu cho mọi đức tính vốn được coi trọng ở phụ nữ."
+      },
+      "SourceHash": "fe744c8db438dd72fd504bec02760d2f0ccf9c2f5061248f03845c9847288072"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0031b987d",
+      "Fields": {
+        "Meaning": "Thời tiết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "天候（てんこう）có nghĩa là thời tiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125065": "Anh ấy không đến được vì thời tiết xấu.",
+        "205489": "Mọi việc đều phụ thuộc vào thời tiết."
+      },
+      "SourceHash": "b34384e470af868669cc43c0c08e1e9be0fe5144add36fa249c7e2b63f88f656"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "626076af0e",
+      "Fields": {
+        "Meaning": "Điện tử, electron",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "電子（でんし）có nghĩa là điện tử, electron.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124831": "Anh chị có máy đánh chữ điện tử không?",
+        "179787": "Những năm gần đây, máy tính điện tử ngày càng quan trọng."
+      },
+      "SourceHash": "e1ac76abb58e2cc273e7dd9f7b20f8e9d8f376603563449e785b1237e0496674"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f4da6b41b",
+      "Fields": {
+        "Meaning": "Lều",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "テント（テント）có nghĩa là lều.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166098": "Chúng tôi dựng lều trước khi trời tối.",
+        "166289": "Chúng tôi ngủ trong lều."
+      },
+      "SourceHash": "63050f857bf4389437ad8b3ec85cbad7e5c02af97b102b7dc941eaabcd2ae9d8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "29d4d2cb7d",
+      "Fields": {
+        "Meaning": "Truyền thống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "伝統（でんとう）có nghĩa là truyền thống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124924": "Truyền thống đó không còn ý nghĩa gì nữa.",
+        "174615": "Những truyền thống xưa đang dần biến mất."
+      },
+      "SourceHash": "6814a8bcc4c02f15005924a5fa26cf1956c0832c8a6657305f518a90843e4c48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d8f0837321",
+      "Fields": {
+        "Meaning": "Tự nhiên, thiên nhiên",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "天然（てんねん）có nghĩa là tự nhiên, thiên nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "216145": "Sydney có một cảng tự nhiên rất đẹp.",
+        "221380": "Chiếc xe này chạy bằng khí tự nhiên."
+      },
+      "SourceHash": "bbfefbce90c85993b7e0584e84f496b6e307e94b014dce0f62f82d3b8dbdecaf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4c028044a",
+      "Fields": {
+        "Meaning": "Câu hỏi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "問い（とい）có nghĩa là câu hỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159846": "Tôi nhận thấy câu hỏi đó rất dễ.",
+        "206522": "Trả lời câu hỏi đó không khó."
+      },
+      "SourceHash": "68a2adc879f6ab27c1b15382af4f5d38781fac6c1cae170b69946ee3c8e14fb3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a86cad697",
+      "Fields": {
+        "Meaning": "Đảng, phe, người chuộng thứ gì",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "党（とう）có nghĩa là đảng, phe, người chuộng thứ gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89961": "Cô ấy là người mê cà phê chính hiệu.",
+        "101790": "Ông ấy được đề cử làm đại diện của đảng."
+      },
+      "SourceHash": "9fd38c2c7ee496ee8d1b8335bf61973243d2090c9211b76df5c820de6623fae9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e02fa0ef4",
+      "Fields": {
+        "Meaning": "Tháp",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "塔（とう）có nghĩa là tháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126133": "Vào thị trấn rồi tôi không còn thấy ngọn tháp nữa.",
+        "187146": "Từ nhà tôi nhìn thấy ngọn tháp đó."
+      },
+      "SourceHash": "874465a6f3822374f89450d11ae47c5b2516d9144bb364ebe51c3f1788a2072b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2bf06d30d9",
+      "Fields": {
+        "Meaning": "Bài làm, bài thi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "答案（とうあん）có nghĩa là bài làm, bài thi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141527": "Giáo viên đang bận chấm bài.",
+        "150609": "Hết giờ. Hãy nộp bài."
+      },
+      "SourceHash": "88766096921e6d4e50f508617984cb124a5b9d460688b1b218d693f4679077aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab3d3e2bd7",
+      "Fields": {
+        "Meaning": "Cùng một, đồng nhất",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な",
+        "Explanation": "同一（どういつ）có nghĩa là cùng một, đồng nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123689": "Người ta đã quan sát được cùng một hiện tượng.",
+        "190020": "Người ta cho rằng một người đã thực hiện cả loạt vụ phạm tội."
+      },
+      "SourceHash": "8906c1c77148fd3c2ec16db940b8e2268793deeb2a12221e45188d0309d518db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5750d76e14",
+      "Fields": {
+        "Meaning": "Xin hãy, làm ơn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "どうか（どうか）có nghĩa là xin hãy, làm ơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "201606": "Xin đánh thức tôi lúc sáu giờ sáng mai.",
+        "201632": "Xin hãy tha lỗi cho tôi."
+      },
+      "SourceHash": "a47f0adbf9a1882939f3a41fcdf7a37dec540c648499a64cfc2037abbe6b638b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0197af118e",
+      "Fields": {
+        "Meaning": "Thời đó, khi ấy",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "当時（とうじ）có nghĩa là thời đó, khi ấy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207465": "Nhớ lại thời đó cứ như một giấc mơ.",
+        "207469": "Khi ấy tôi vẫn còn là sinh viên."
+      },
+      "SourceHash": "698725419316bf4901b8d46c14b4cff23724215973c684f8cd0ea53b3eedf6e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "271ffb6876",
+      "Fields": {
+        "Meaning": "Động từ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "動詞（どうし）có nghĩa là động từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83694": "Câu thường có chủ ngữ và động từ.",
+        "220321": "Bạn có thể nói cách chia động từ này không?"
+      },
+      "SourceHash": "8c55a4b20e35a34fa9443e83b62b0124dfd19d77884bde581a10a38a2e4e18db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e4e228253",
+      "Fields": {
+        "Meaning": "Cùng lúc, đồng thời",
+        "PartOfSpeech": "Từ bổ nghĩa đứng trước danh từ",
+        "Explanation": "同時（どうじ）có nghĩa là cùng lúc, đồng thời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123149": "Hai máy bay phản lực cất cánh cùng lúc.",
+        "227381": "Không thể vừa giữ bánh kẹo vừa ăn chúng cùng lúc."
+      },
+      "SourceHash": "0c67b9c8811b9c96c4c3842c3b4679f817ae830e3d281957a406674971be4023"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b9f82a4617",
+      "Fields": {
+        "Meaning": "Dù cố thế nào, nhất định",
+        "PartOfSpeech": "Cụm từ, phó từ",
+        "Explanation": "どうしても（どうしても）có nghĩa là dù cố thế nào, nhất định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111727": "Anh ấy cố mãi vẫn không nói nên lời.",
+        "149573": "Tiếc là tôi cố thế nào cũng không nhớ được tên bạn."
+      },
+      "SourceHash": "415bd73b4429dc4a76eb073a002725ec0fa4c2887efc8a37ef0208c7fb9049fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c85827d209",
+      "Fields": {
+        "Meaning": "Đến nơi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "到着（とうちゃく）có nghĩa là đến nơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77529": "Tàu sẽ đến sân ga số 10.",
+        "206173": "Tàu đến đúng lịch."
+      },
+      "SourceHash": "e4e645fd5c5fed1993de7574d409e3a09518ec375c02d968cb09cc8ab54aced3"
+    }
+  ]
+}

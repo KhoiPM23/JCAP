@@ -1,0 +1,304 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7feb0c183f",
+      "Fields": {
+        "Meaning": "Hổ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "虎（とら）có nghĩa là hổ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81159": "Nếu hổ thoát khỏi chuồng thì bạn sẽ làm gì?",
+        "174464": "Hãy nhắm thật chuẩn vào con hổ."
+      },
+      "SourceHash": "41652337163cf06278352a166d8e983bb65d1b75330ed6cf9e479f5473c7da7e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "87d53d42f3",
+      "Fields": {
+        "Meaning": "Lái xe đi chơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ドライブ（ドライブ）có nghĩa là lái xe đi chơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155733": "Tôi rất thích lái xe trên đường cao tốc mới.",
+        "199759": "Đi lái xe chơi nhé?"
+      },
+      "SourceHash": "80f6ac133d57c6d3cdf059ba947fa1db97661d576c17ee13ee8aafee3a1a551f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42d999cbab",
+      "Fields": {
+        "Meaning": "Xe tải, đường chạy, rãnh âm thanh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トラック（トラック）có nghĩa là xe tải, đường chạy, rãnh âm thanh.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "fcf7afc99b19a2a378633a98d320b83f65224a78b412bfa45bb87e96db199493"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bcadb9720d",
+      "Fields": {
+        "Meaning": "Phim truyền hình, kịch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ドラマ（ドラマ）có nghĩa là phim truyền hình, kịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75464": "Mùa thu này tôi xem nhiều phim truyền hình một cách khác thường.",
+        "199079": "Cuộc đời Napoleon là một vở kịch đặc sắc."
+      },
+      "SourceHash": "19e27dc358d56a9c31581ded49d4e69b59271413b542d8744cc85569ae01483a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4e30dab43",
+      "Fields": {
+        "Meaning": "Bài Tây, bộ bài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トランプ（トランプ）có nghĩa là bài Tây, bộ bài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199718": "Gian lận khi chơi bài là không tốt.",
+        "208274": "Thay vào đó mình chơi bài nhé."
+      },
+      "SourceHash": "7950694145ae4b37d649bf40e98288d354f9af71cc11ff6a50403a428bb0b11f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "142fcb9705",
+      "Fields": {
+        "Meaning": "Nhấc lên, đề cập, thu giữ",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "取り上げる（とりあげる）có nghĩa là nhấc lên, đề cập, thu giữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93024": "Cô ấy nhấc chiếc bình thủy tinh lên.",
+        "140800": "Tất cả các báo đều đưa tin đậm về vụ việc đó."
+      },
+      "SourceHash": "9ffefed324075b37020ec839e7d5e9b4ba4f4e2dbaf672f5157809070a2a705c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15f5aaa2cc",
+      "Fields": {
+        "Meaning": "Nỗ lực, cố gắng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "努力（どりょく）có nghĩa là nỗ lực, cố gắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97844": "Anh ấy cố giải bài đó.",
+        "101853": "Anh ấy thất bại vì chưa cố gắng đủ."
+      },
+      "SourceHash": "f9c6a6c40292bad9772b98074a36c86555e746bbb7c8672c3d15bd0c9471f315"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8e0e10e57",
+      "Fields": {
+        "Meaning": "Váy, đầm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ドレス（ドレス）có nghĩa là váy, đầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92768": "Cô ấy mặc váy lụa.",
+        "231285": "Chiếc váy đó rất hợp với cô ấy."
+      },
+      "SourceHash": "01cf5c722f96fe1a869153937b69a18399cd119d39a058e3f495f20c7aebe845"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "58c5df73fd",
+      "Fields": {
+        "Meaning": "Rời ra, lấy được",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "取れる（とれる）có nghĩa là rời ra, lấy được.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193057": "Cuối cùng tôi cũng lấy được bằng lái.",
+        "227468": "Có thể lấy dầu từ quả ô liu."
+      },
+      "SourceHash": "528d0534f2b6e7ef8c8449e1c7063e153a00361246c09e398f9d4ceba395543e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "145a15c354",
+      "Fields": {
+        "Meaning": "Bùn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泥（どろ）có nghĩa là bùn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111106": "Anh ấy cạo bùn khỏi ủng.",
+        "179258": "Hãy gạt bùn khỏi giày."
+      },
+      "SourceHash": "5f02b4de1d56b993c0196bd6e6e8717966f9a0f20f436bc28e18e552c3e5b932"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6556dc10d1",
+      "Fields": {
+        "Meaning": "Tấn (đơn vị khối lượng)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トン（トン）có nghĩa là tấn (đơn vị khối lượng).",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "bfdf9afe7bce35a234012cade07070fe678ade44f055a996fae3cc345471f830"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43bc725de0",
+      "Fields": {
+        "Meaning": "Không đời nào, vô lý, quá mức",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "とんでもない（とんでもない）có nghĩa là không đời nào, vô lý, quá mức.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90827": "Cô ấy mà là ca sĩ thì thật khó tin.",
+        "167451": "Tôi mà buồn ư? Không đời nào."
+      },
+      "SourceHash": "aa0d509d07539748a89596fd795462817466679944dae4193a017d16144eafe4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2def0fe8be",
+      "Fields": {
+        "Meaning": "Thế nào, loại nào, bất kỳ",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "どんな（どんな）có nghĩa là thế nào, loại nào, bất kỳ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159217": "Tôi phản đối mọi cuộc chiến tranh.",
+        "199407": "Bạn thích nơi như thế nào?"
+      },
+      "SourceHash": "d9f5cbbfb6287e97f83b9689b7156c99f6bc8b48e56980f0a3c1e7d7a59be308"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "954f0401d2",
+      "Fields": {
+        "Meaning": "Đến mức nào, dù… đến đâu",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "どんなに（どんなに）có nghĩa là đến mức nào, dù… đến đâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "177247": "Bạn không biết tôi lo đến mức nào đâu.",
+        "199530": "Dù đắt đến đâu, tôi vẫn mua chiếc đồng hồ cổ ấy."
+      },
+      "SourceHash": "dc24cab914af521e1b3da2a0de74382f2535a30f834a08cbd70e27ecff3c1e73"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a6e18afc55",
+      "Fields": {
+        "Meaning": "Đường hầm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トンネル（トンネル）có nghĩa là đường hầm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149008": "Ô tô đi qua đường hầm đó.",
+        "183136": "Tàu hỏa chạy xuyên qua đường hầm."
+      },
+      "SourceHash": "3fce6f1d9be067a9f99677e95db6807a70237527d6c20a96f38ae5accf813999"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fcdc62db50",
+      "Fields": {
+        "Meaning": "Tên, danh tiếng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "名（な）có nghĩa là tên, danh tiếng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90819": "Cô ấy nổi danh với vai trò ca sĩ.",
+        "161408": "Tôi sẽ mãi nhớ tên anh ấy."
+      },
+      "SourceHash": "e6b881b5a68bd24a8f482d42f2aecd3c77336ac824a8e283189de73bd681f0da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15bfdc638d",
+      "Fields": {
+        "Meaning": "Nội dung, thành phần",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "内容（ないよう）có nghĩa là nội dung, thành phần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77930": "Cho tôi xem món ăn gồm những gì được không?",
+        "81469": "Bữa trưa hôm nay có những món gì?"
+      },
+      "SourceHash": "d6a648a6c6f95d2c0ee34d5974f21dce8b919f8445a430b1933d42ed5c8965a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d811ee3160",
+      "Fields": {
+        "Meaning": "Hơn nữa, vẫn, còn",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "なお（なお）có nghĩa là hơn nữa, vẫn, còn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101293": "Anh ấy cao, nhưng anh trai còn cao hơn.",
+        "234309": "Chuyện xảy ra sau đó còn tệ hơn."
+      },
+      "SourceHash": "d16d67d61ac603ff6db8563564eff72598e6c3063441b98f1f5c3a051a7ecd0a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cd33b27e9a",
+      "Fields": {
+        "Meaning": "Quan hệ, mức độ thân thiết",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "仲（なか）có nghĩa là quan hệ, mức độ thân thiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86438": "Tôi với cô ấy chỉ quen biết nhau thôi.",
+        "154354": "Tôi và anh ấy thân đến mức thường qua thăm nhau."
+      },
+      "SourceHash": "7fe0a775a76a9951eb482bb4a6227d0bd506058142b3911456e6a3ef3f015688"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8a2b4c5ed1",
+      "Fields": {
+        "Meaning": "Cho chảy, cuốn trôi, phát",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "流す（ながす）có nghĩa là cho chảy, cuốn trôi, phát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "203802": "Nhiều ngôi nhà bị lũ cuốn trôi.",
+        "229552": "Tôi chẳng có giọt nước mắt nào để khóc cho một người đáng sợ như thế."
+      },
+      "SourceHash": "d4b7c88f3d016bf6d6b3372842354b17bccdc1e5c6a0cbca0c267b5048db69a2"
+    }
+  ]
+}

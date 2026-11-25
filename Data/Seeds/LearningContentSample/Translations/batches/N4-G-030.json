@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-tsugi-ni",
+      "Fields": {
+        "Meaning": "Sau, đứng ngay sau",
+        "Formation": "Danh từ ＋ の次に ＋ hành động hoặc đặc điểm",
+        "Explanation": "Nêu vị trí kế tiếp trong trình tự hoặc thứ hạng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-tsugi-ni:example:1": "Bạn có biết ngọn núi nào cao thứ hai sau núi Phú Sĩ không?",
+        "no-tsugi-ni:example:2": "Sau tiếng Anh, tôi muốn học tiếng Pháp."
+      },
+      "SourceHash": "7bafeaa854d2c27fe8011f89a648dff2723ae3f11ab25c784ca3d9a784c941a6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-naka-de",
+      "Fields": {
+        "Meaning": "Trong số, trong nhóm",
+        "Formation": "Danh từ chỉ nhóm ＋ の中で",
+        "Explanation": "Xác định phạm vi để so sánh hoặc chọn. Thường đi với 一番 để nói mức cao nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-naka-de:example:1": "Trong lớp, bạn Tanaka cao nhất.",
+        "no-naka-de:example:2": "Trong bốn mùa, tôi thích mùa thu nhất."
+      },
+      "SourceHash": "80e6d1781c8ec1a87b02a333a6e52d58c1682e8a26836af4c0b3d712b51b8b2d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "noni-although",
+      "Fields": {
+        "Meaning": "Mặc dù, vậy mà",
+        "Formation": "Thể thông thường ＋ のに (danh từ và tính từ な dùng な)",
+        "Explanation": "Nêu kết quả trái kỳ vọng, thường kèm ngạc nhiên hoặc tiếc nuối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "noni-although:example:1": "Tôi học rất nhiều mà điểm kiểm tra vẫn thấp.",
+        "noni-although:example:2": "Đang mùa đông mà hôm nay trời rất ấm."
+      },
+      "SourceHash": "d78f0e6b761c2e9d08356d80e3a7dfa6ebbb36cd835d78fc82a771b9be6ee9a3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "noni-in-order-to",
+      "Fields": {
+        "Meaning": "Để làm, cho việc làm",
+        "Formation": "Động từ thể từ điển ＋ のに",
+        "Explanation": "Nêu mục đích hoặc việc cần thời gian, công cụ hay phương tiện để thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "noni-in-order-to:example:1": "Tôi mất hai tiếng để làm chiếc bánh này.",
+        "noni-in-order-to:example:2": "Tôi đi xe buýt để đến ga."
+      },
+      "SourceHash": "1c3e9500b5cd908a51e5e0c5c85ab4c1709916aecc19f697d28fd3da076a2f1a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nowa-da",
+      "Fields": {
+        "Meaning": "Điều được nhấn mạnh là…",
+        "Formation": "Mệnh đề thể thông thường ＋ のは ＋ thành phần được nhấn mạnh ＋ だ／です",
+        "Explanation": "Danh từ hóa mệnh đề bằng の rồi nêu thông tin cần xác định, như người, nơi hoặc thời điểm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nowa-da:example:1": "Nơi tôi sinh ra là Hokkaido.",
+        "nowa-da:example:2": "Người không đến dự tiệc hôm qua là bạn Yamada."
+      },
+      "SourceHash": "9f8f7094b4dd732db194a3719b71b05c30474f4f23bb885280a87396594d5f0c"
+    }
+  ]
+}

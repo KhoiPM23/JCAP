@@ -1,0 +1,313 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 40 câu ví dụ theo tiếng Nhật. Bản dịch do AI biên soạn và tự kiểm tra.",
+    "Câu 198017 được hiểu là bán theo đơn giá mỗi pao. Câu 201867 dùng かぎ theo nghĩa móc treo, đối chiếu câu tương ứng tại https://www.manythings.org/japanese/ipad/Japanese-English_Sentences_-_Vol._1.pdf",
+    "Câu 184950 diễn tả tranh treo ở phía trên bàn. Mục 起きる giải thích thêm trạng thái còn thức trong 起きている.",
+    "Các câu lược chủ ngữ được dịch theo ngữ cảnh thông dụng của hội thoại. Phần lưu ý làm rõ cấu trúc với 多い và 大きな."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "06ac21dc7d",
+      "Fields": {
+        "Meaning": "Biển",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "海 chỉ biển. 海に行く nghĩa là đi biển, còn 海まで chỉ quãng đường hoặc đích đến là biển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "185086": "Chỉ còn một dặm nữa là tới biển.",
+        "187770": "Dù thế nào tôi cũng muốn được tận mắt nhìn thấy biển một lần."
+      },
+      "SourceHash": "10a2021ea4ac24169922f5903b6e287550739c8c8c92c0a435231760edee5cac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f7e1da43df",
+      "Fields": {
+        "Meaning": "Bán",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "売る diễn tả việc bán hàng hoặc một vật. Vật được bán đi với を, người mua có thể đi với に. 売られる là dạng bị động, nghĩa là được bán.",
+        "UsageNotes": "Thể て là 売って, thể quá khứ là 売った. 買う（かう）nghĩa là mua."
+      },
+      "Examples": {
+        "198017": "Bơ được bán với giá tính theo từng pao.",
+        "2312116": "Tom đã bán xe máy cho Mary."
+      },
+      "SourceHash": "1e09ad113f83b4eebf8414048586690a88f97dc4f0ed2384bfb98343e0109293"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ecfe0d248",
+      "Fields": {
+        "Meaning": "Ồn ào, phiền phức, khó chịu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "煩い（うるさい）thường viết bằng hiragana. Từ này có thể tả âm thanh ồn hoặc người nói nhiều khiến mình khó chịu.",
+        "UsageNotes": "うるさい！ là lời phản ứng khá mạnh, có thể mang ý bảo người khác im đi. Cần chú ý quan hệ và giọng điệu."
+      },
+      "Examples": {
+        "75438": "Cứ lải nhải mãi, phiền quá. Rốt cuộc có làm hay không?!",
+        "230966": "Đứa bé đó ồn ào quá!"
+      },
+      "SourceHash": "7fad22e4d086d3387ddd83e11291a68e20982e59af5c7631205755ac78a0694d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1ef8a05bf3",
+      "Fields": {
+        "Meaning": "Áo khoác, áo mặc ngoài",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "上着 chỉ áo mặc ở lớp ngoài hoặc phần áo trên của một bộ trang phục. 上着を着る là mặc áo khoác, 上着を脱ぐ là cởi áo khoác.",
+        "UsageNotes": "Trong ví dụ treo áo, かぎ được hiểu là móc treo. よくもった nói chiếc áo dùng được lâu, bền."
+      },
+      "Examples": {
+        "201867": "Hãy treo áo khoác lên cái móc cạnh cửa.",
+        "208973": "Chiếc áo khoác đó bền thật đấy."
+      },
+      "SourceHash": "9c56fe425ac8ba037ce791934fc12776852b9adede3dbc0be9b5497e0cc92bd5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bb390da0b",
+      "Fields": {
+        "Meaning": "Tranh, hình vẽ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "絵 chỉ tranh hoặc hình được vẽ. 絵を描く（えをかく）nghĩa là vẽ tranh, 絵を見る nghĩa là xem tranh.",
+        "UsageNotes": "Trong câu có かかっている, bức tranh đang được treo ở phía trên chiếc bàn."
+      },
+      "Examples": {
+        "184950": "Bức tranh được treo phía trên chiếc bàn.",
+        "199249": "Tại sao bạn đã không xem bức tranh đó?"
+      },
+      "SourceHash": "aca20321f3ab68e65b785de886d0f07f145a970b1e6ca944dd8f9cd87403a6da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "92b1621231",
+      "Fields": {
+        "Meaning": "Phim, điện ảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "映画 chỉ phim hoặc điện ảnh nói chung. 映画を見る là xem phim, 映画を見に行く là đi xem phim.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "189293": "Chúng ta đi xem phim nhé?",
+        "212237": "Tôi muốn xem bộ phim đó thêm một lần nữa."
+      },
+      "SourceHash": "208ab047338e00db6de9ed97177601f2fc063424ee44c7b35b9566d13145d121"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8a88cfbcb8",
+      "Fields": {
+        "Meaning": "Rạp chiếu phim",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "映画館 là nơi chiếu phim cho khán giả. 映画館で映画を見る nghĩa là xem phim ở rạp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179880": "Gần đây có rạp chiếu phim nào không?",
+        "212218": "Rạp chiếu phim đó chật kín người."
+      },
+      "SourceHash": "ceded2bc2afd2fdb0684126799f8c4d75b7a181c496ad821fac5b71be52351dc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16adc7bd03",
+      "Fields": {
+        "Meaning": "Tiếng Anh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "英語 là ngôn ngữ tiếng Anh. 英語を話す nghĩa là nói tiếng Anh, còn 英語で話す nhấn mạnh việc dùng tiếng Anh để nói.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "141734": "Ước gì tôi nói được tiếng Anh như thầy/cô.",
+        "230259": "Ở Mỹ, người ta nói tiếng Anh."
+      },
+      "SourceHash": "ef41a8c132b144dc0d0d5fde867ac4c44b390503e8957e3be3a4a88f0b3debdc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8ac60a4060",
+      "Fields": {
+        "Meaning": "Vâng, ừ, đúng vậy",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "ええ dùng để đáp đồng ý hoặc xác nhận trong hội thoại. So với はい, ええ thường có sắc thái mềm và tự nhiên hơn trong trao đổi hằng ngày.",
+        "UsageNotes": "Cách dịch vâng hay ừ phụ thuộc quan hệ giữa người nói và người nghe."
+      },
+      "Examples": {
+        "202181": "“Chúng ta chơi quần vợt nhé?” “Ừ.”",
+        "228019": "Vâng, tôi là Anthony."
+      },
+      "SourceHash": "605482fab03977b77ef592d51994ad7eea4241fcd4f1df78768498aa29d5eaac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5f359c20b",
+      "Fields": {
+        "Meaning": "Nhà ga, ga tàu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "駅 thường chỉ ga tàu điện hoặc tàu hỏa. 駅まで là đến ga, còn 駅から là từ ga.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "224772": "Từ đây đến ga là hai dặm.",
+        "225536": "Làm ơn đưa tôi đến ga Grand Central."
+      },
+      "SourceHash": "f40554aa810fa26b5a39304121368c4cd517890999d92da2887cc1c06cb459a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eb1695baf6",
+      "Fields": {
+        "Meaning": "Thang máy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "エレベーター chỉ thang máy. エレベーターに乗る nghĩa là đi thang máy. Trong エレベーターで下におりる (đi thang máy xuống dưới), で chỉ phương tiện di chuyển.",
+        "UsageNotes": "エスカレーター là thang cuốn."
+      },
+      "Examples": {
+        "161307": "Tôi đã đi thang máy xuống dưới.",
+        "227886": "Thang máy ở đâu?"
+      },
+      "SourceHash": "70b650b71d6a9136524e286e9043c6160155b8f230f3998324060f06288f9867"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "381da4d060",
+      "Fields": {
+        "Meaning": "Bút chì",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鉛筆 là bút chì. 鉛筆で書く nghĩa là viết bằng bút chì, trong đó で đánh dấu dụng cụ dùng để viết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196645": "Bạn có bút mực hoặc bút chì không?",
+        "227853": "Hãy viết tên của bạn bằng bút chì."
+      },
+      "SourceHash": "3610c1824813436fbce1547692ac48c61545c154fc9295a29095a54118285b96"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f02ae8fa1",
+      "Fields": {
+        "Meaning": "Ngon",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "おいしい diễn tả đồ ăn hoặc thức uống có hương vị ngon. Có thể viết bằng Kanji là 美味しい. おいしい料理 nghĩa là món ăn ngon.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198944": "Món súp này ngon quá!",
+        "227834": "Cảm ơn bạn vì bữa ăn ngon."
+      },
+      "SourceHash": "f4fbcbb09235af166952670c9f743991f5f362d49dd3acf69557f68b14a40194"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "60813fffd1",
+      "Fields": {
+        "Meaning": "Nhiều, đông",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "多い diễn tả số lượng lớn. Dùng danh từ ＋ が多い, như 人が多い (đông người). Trong so sánh, AよりBが多い nghĩa là B nhiều hơn A.",
+        "UsageNotes": "Khi nói nhiều người trước danh từ, thường dùng 多くの人 hoặc たくさんの人. Với 多い, cách nói 人が多い rất thông dụng."
+      },
+      "Examples": {
+        "213686": "Đó là vì ở đó có nhiều nước.",
+        "222596": "Trường này có nhiều nữ sinh hơn nam sinh."
+      },
+      "SourceHash": "0bbe94ba093ceb2ac195d5ee925c8c8dac7a3a356924d57c03403e894728e053"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a2de0afca",
+      "Fields": {
+        "Meaning": "To, lớn",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "大きな đứng ngay trước danh từ để tả kích thước hoặc quy mô lớn, như 大きな家 (ngôi nhà lớn).",
+        "UsageNotes": "Dùng 大きい khi làm vị ngữ, như この家は大きいです. 大きな cần có danh từ theo sau."
+      },
+      "Examples": {
+        "204722": "Đó là những quả táo rất to.",
+        "230634": "Hãy nhìn cái búa lớn kia xem."
+      },
+      "SourceHash": "0edfbd04e90eacf547322db96d3e0741178df7e6e94d954452d511cf501d990d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "57ed89b240",
+      "Fields": {
+        "Meaning": "Nhiều người, đông người",
+        "PartOfSpeech": "Danh từ, có thể dùng như phó từ",
+        "Explanation": "大勢（おおぜい）dùng cho số lượng người đông. 大勢の人 nghĩa là nhiều người, còn 大勢で行く nghĩa là nhiều người cùng đi.",
+        "UsageNotes": "Mục này đọc là おおぜい. Chữ 大勢 còn có cách đọc たいせい với nghĩa khác."
+      },
+      "Examples": {
+        "137691": "Đã có rất nhiều người.",
+        "213674": "Ở đó có rất nhiều người."
+      },
+      "SourceHash": "059d11d6aec656204b19502248202901e24c463945d1b9c929f745cb28b43e10"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2007947770",
+      "Fields": {
+        "Meaning": "Mẹ, mẹ của người khác (cách gọi lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お母さん dùng khi gọi mẹ của mình hoặc nói lịch sự về mẹ của người khác. Trong hội thoại gia đình, cũng thường dùng để nhắc đến mẹ.",
+        "UsageNotes": "Khi nói về mẹ của mình với người ngoài trong tình huống trang trọng, thường dùng 母（はは）."
+      },
+      "Examples": {
+        "203056": "Dan thường bị mẹ mắng.",
+        "226625": "Con không được cãi lại mẹ nhé."
+      },
+      "SourceHash": "1c3d35785d4eddc49e5e620c45611078018abd742d5a71b82d6714bcb160a03e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "669019c625",
+      "Fields": {
+        "Meaning": "Bánh kẹo, đồ ăn vặt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お菓子 chỉ bánh, kẹo và những món ăn vặt như bánh quy hoặc đồ ăn nhẹ. Từ này có thể bao gồm cả đồ ngọt và đồ ăn vặt có vị mặn.",
+        "UsageNotes": "菓子（かし）là dạng không có tiền tố お."
+      },
+      "Examples": {
+        "194419": "Bạn có muốn ăn thêm một ít bánh kẹo không?",
+        "223955": "Tôi ăn món bánh kẹo này được không?"
+      },
+      "SourceHash": "df7ff02f947e9a187a7b9f7001215c9278b706b71dfda132faf8c91a2dfe1f05"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3e015d0a8b",
+      "Fields": {
+        "Meaning": "Tiền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お金 chỉ tiền nói chung. お金を使う nghĩa là tiêu tiền, còn お金を貯める（ためる）nghĩa là tiết kiệm tiền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196392": "Bạn cho tôi một ít tiền được không?",
+        "232498": "Bạn đã kiếm được số tiền đó bằng cách nào?"
+      },
+      "SourceHash": "1790d5c05efc71b4064888eac0cde995a1dee9d55bc102a379362f521a7a8c58"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "248a353e09",
+      "Fields": {
+        "Meaning": "Thức dậy, dậy, xảy ra",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "起きる thường chỉ thức dậy hoặc rời khỏi giường. 起きている có thể diễn tả trạng thái còn thức. Khi dùng với sự việc như 事故が起きる, từ này có nghĩa là xảy ra.",
+        "UsageNotes": "Phân biệt 起きる (thức dậy) với 起こす（おこす）, dùng khi đánh thức ai hoặc gây ra một sự việc."
+      },
+      "Examples": {
+        "227112": "Con anh/chị vẫn còn thức à?",
+        "235061": "Tôi đã dậy vào khoảng sáu giờ."
+      },
+      "SourceHash": "670a2d9d026fa8d4bea525805a20f67567fa73a13929046a79001411f13d766d"
+    }
+  ]
+}

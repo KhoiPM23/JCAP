@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dad6329f85",
+      "Fields": {
+        "Meaning": "Định kỳ, vé tháng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "定期（ていき）có nghĩa là định kỳ, vé tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96516": "Họ lên tàu khách chạy định kỳ.",
+        "183139": "Lúc tôi ngủ trên tàu, ví và vé tháng đã bị lấy trộm."
+      },
+      "SourceHash": "d61a4d5a4ec81b0e3621dd53a2954b61eeb3e0aaae2652f754f1bc3e02982e86"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "964f36527f",
+      "Fields": {
+        "Meaning": "Chống cự, kháng cự, điện trở",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "抵抗（ていこう）có nghĩa là chống cự, kháng cự, điện trở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170990": "Họ kiên quyết chống chọi với khó khăn.",
+        "202349": "Chỉ có hai lựa chọn là chống cự hoặc bỏ chạy."
+      },
+      "SourceHash": "9b529bed55bd8924b493c1d9cb075097706c7b9eca459a0b8f96e6c5e32164a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "46cd2cf7a5",
+      "Fields": {
+        "Meaning": "Nộp, trình",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "提出（ていしゅつ）có nghĩa là nộp, trình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78799": "Hãy nộp bản tóm tắt chậm nhất vào thứ Ba.",
+        "228688": "Bạn nộp báo cáo khi nào?"
+      },
+      "SourceHash": "29adce5f01b7d6c936000267c4dc8aa51b2416dc3ae49bbcbc04c7bcec552e21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dfb2d21193",
+      "Fields": {
+        "Meaning": "Mức độ, chừng",
+        "PartOfSpeech": "Danh từ, phó từ, hậu tố",
+        "Explanation": "程度（ていど）có nghĩa là mức độ, chừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200270": "Có thể tin anh ấy đến mức nào?",
+        "220453": "Số tiền ít thế này chắc không dùng được lâu."
+      },
+      "SourceHash": "eaf47229aa71809ef2088fd47db1e907666f9ba2f1e2026679e5150413e8f723"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bad69dcdd2",
+      "Fields": {
+        "Meaning": "Trạm dừng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "停留所（ていりゅうじょ）có nghĩa là trạm dừng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "179881": "Gần đây có trạm xe buýt.",
+        "198151": "Thi chạy đến trạm xe buýt nhé."
+      },
+      "SourceHash": "42090b6ecf1851ed9b4411b00cf9501188edd728041be4646617c0e2e7b5027c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a64047c66",
+      "Fields": {
+        "Meaning": "Cuộc hẹn hò, hẹn hò",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "デート（デート）có nghĩa là cuộc hẹn hò, hẹn hò.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "225194": "Mẹ ơi, con hẹn hò với Ken được không?",
+        "229595": "Andy chưa bao giờ đến muộn khi hẹn hò."
+      },
+      "SourceHash": "1c2d1f2d457ef066fe246f103ef0d7cc2ef5a7d26fb81eeca57d4c4cf119ec39"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "371f1b3f39",
+      "Fields": {
+        "Meaning": "Kẻ thù, đối thủ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "敵（てき）có nghĩa là kẻ thù, đối thủ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96029": "Họ hợp sức chiến đấu với kẻ thù.",
+        "101960": "Anh ấy bất ngờ tấn công đối phương."
+      },
+      "SourceHash": "4f665065a96c3454c6af7a8ad5c63252bab2b3b9b5c8430374742dfd57d7cff6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1250de70c",
+      "Fields": {
+        "Meaning": "Sự việc, biến cố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "出来事（できごと）có nghĩa là sự việc, biến cố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205344": "Đó là một sự việc như ác mộng.",
+        "223044": "Sự việc xảy ra như thế này."
+      },
+      "SourceHash": "2bed09964b33097867d15b9f573ed1ada6ea0391eafa178e77358974e3caf3aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca16268bbb",
+      "Fields": {
+        "Meaning": "Phù hợp, thích hợp",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "適する（てきする）có nghĩa là phù hợp, thích hợp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200056": "Tom là cậu bé phù hợp với công việc đó.",
+        "207364": "Thịt đó hoàn toàn không thích hợp để ăn."
+      },
+      "SourceHash": "1a6d3cec248c19b8f27a9752497108323f43eaafed360ab59e9aebae37343459"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d2dbd78eca",
+      "Fields": {
+        "Meaning": "Thích hợp, đúng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "適切（てきせつ）có nghĩa là thích hợp, đúng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112841": "Anh ấy phù hợp với công việc đó.",
+        "236334": "“Đã đi” là cách nói thích hợp."
+      },
+      "SourceHash": "5250fd97183b196c0f14531f24a277e947c311916ef0fb9efa177b05e7702a02"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "752d199c2e",
+      "Fields": {
+        "Meaning": "Vừa phải, điều độ",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, Danh từ",
+        "Explanation": "適度（てきど）có nghĩa là vừa phải, điều độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125274": "Vận động vừa phải tốt cho sức khỏe.",
+        "125278": "Tập luyện điều độ có lẽ sẽ tốt cho cơ thể."
+      },
+      "SourceHash": "81ae7172e93007fcd966aa70429faf52b196bf07eb38eb9b6572fbec278401c4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27c52f37c2",
+      "Fields": {
+        "Meaning": "Áp dụng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "適用（てきよう）có nghĩa là áp dụng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "211516": "Quy định đó không áp dụng cho trường hợp này.",
+        "219821": "Luật này áp dụng cho mọi người."
+      },
+      "SourceHash": "7c3854f2fa71e03a7822753fe182ff606a390c5969ef15e3cfb1b2552534727d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df68a4c0c8",
+      "Fields": {
+        "Meaning": "Nếu có thể",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "できれば（できれば）có nghĩa là nếu có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147666": "Nếu có thể, tôi sẽ về chậm nhất vào ngày mai.",
+        "202275": "Nếu được, tôi muốn về nhà ngay."
+      },
+      "SourceHash": "390e2ce25a2b871590f90eb68598fc856d9b123b6aa0fba5afb2673f50f844f7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "639bd22c8d",
+      "Fields": {
+        "Meaning": "Trò ảo thuật",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手品（てじな）có nghĩa là trò ảo thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99555": "Anh ấy biết nhiều trò ảo thuật thú vị.",
+        "146578": "Cậu bé biểu diễn được nhiều trò ảo thuật."
+      },
+      "SourceHash": "532649632871ca1838b008e3611703ee1be1636c21bc1a3526c2b3586508d0c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3dbdf1b28b",
+      "Fields": {
+        "Meaning": "Vì vậy, vì… nên",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "Đứng đầu câu, từ này nghĩa là vì vậy. Hai câu nguồn dùng ですから ở cuối câu để nêu lý do.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227040": "Vì mỗi người có gu đồ uống có cồn khác nhau mà.",
+        "229459": "Không, cảm ơn. Tôi no rồi."
+      },
+      "SourceHash": "9b5343e3275901d8b9898772de03d3c8f5543c6f344550bb08bbd5abad8a0296"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61bb6561cb",
+      "Fields": {
+        "Meaning": "Sắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鉄（てつ）có nghĩa là sắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125242": "Sắt dẫn nhiệt tốt.",
+        "125250": "Sắt có số hiệu nguyên tử là 26."
+      },
+      "SourceHash": "9934d408e6a0ce0a1469d7a7bf645fc4e96963a99d7d21979f92fdbef9b28664"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d7dd2c0312",
+      "Fields": {
+        "Meaning": "Triết học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "哲学（てつがく）có nghĩa là triết học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125257": "Triết học thường được xem là khó.",
+        "211624": "Sinh viên đó học chuyên ngành triết học."
+      },
+      "SourceHash": "1bfac3e9503433ab779422e68ef0344a982b4af456b479de004f324e3dfdefcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4b1cb88257",
+      "Fields": {
+        "Meaning": "Sự giúp đỡ, phụ giúp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手伝い（てつだい）có nghĩa là sự giúp đỡ, phụ giúp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88473": "Cô ấy chủ động giúp mẹ.",
+        "137837": "Con đang phụ mẹ trong bếp à?"
+      },
+      "SourceHash": "27929d36f3a0b8e8b08fa2c7c544a748d1d73a469779b0db31caf679bd520936"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ed2c14da0",
+      "Fields": {
+        "Meaning": "Triệt để, đến cùng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "徹底（てってい）có nghĩa là triệt để, đến cùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142782": "Tự động hóa triệt để giúp tăng năng suất.",
+        "231717": "Bạn đúng là chẳng ưa giao du với ai."
+      },
+      "SourceHash": "fabc89753886ead992308e884645dafa89b63888ee80a5dcdfb47e532c3c1851"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7eedda811b",
+      "Fields": {
+        "Meaning": "Đường sắt",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "鉄道（てつどう）có nghĩa là đường sắt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137425": "Tuyến đường sắt bị gián đoạn vì tuyết dày.",
+        "145351": "Tuyến đường sắt mới vẫn chưa hoàn thành."
+      },
+      "SourceHash": "8a585242996696dc17a138e43b0f8c64c6b724e060f7130b22d8f54df24d11d3"
+    }
+  ]
+}

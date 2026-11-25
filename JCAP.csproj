@@ -36,6 +36,11 @@
   <ItemGroup>
     <InternalsVisibleTo Include="JCAP.Tests" />
     <EmbeddedResource Include="Data\Seeds\LearningContentSample\sample.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\learning-n5-n3.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\tango-n5-topics.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\learning-topic-catalog-n5-n3.json" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\localize-n5-food-permission.sql" />
+    <EmbeddedResource Include="Data\Seeds\LearningContentSample\Translations\reviewed.sql" />
     <EmbeddedResource Include="Data\Seeds\ExploreContent\explore-content.json" />
     <EmbeddedResource Include="Data\Seeds\ExploreContent\explore-content.history.json" />
   </ItemGroup>
@@ -57,6 +62,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

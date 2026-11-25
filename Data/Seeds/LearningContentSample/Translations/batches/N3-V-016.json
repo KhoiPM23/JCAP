@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "39baa3eb87",
+      "Fields": {
+        "Meaning": "Da, vỏ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Chỉ da hoặc vỏ. 腹の皮がよじれる là cười đến quặn bụng. 革 thường chỉ da thuộc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96200": "Họ cười đến quặn cả bụng.",
+        "123757": "Da động vật được phủ lông."
+      },
+      "SourceHash": "a9ed2cf44f31c0997ba4422f29d6de463000f4769c59aa56d160fc27c5720c2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9ace958be5",
+      "Fields": {
+        "Meaning": "Tội nghiệp, đáng thương",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "かわいそう（かわいそう）có nghĩa là tội nghiệp, đáng thương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95500": "Cô ấy thấy thương nên chăm sóc những đứa trẻ đó."
+      },
+      "SourceHash": "69c1cac1bda68a8a2afdd1f708c6fc8138eb6f830bb7e1e58b0706a5f4534433"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fea8ab21fe",
+      "Fields": {
+        "Meaning": "Đáng yêu, xinh xắn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "かわいらしい（かわいらしい）có nghĩa là đáng yêu, xinh xắn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86669": "Cô ấy trông thật đáng yêu.",
+        "176591": "Anh tôi tặng tôi một con búp bê xinh xắn."
+      },
+      "SourceHash": "44ef1d41956e99912e6a7e72555f5749d804e09ca279d1a400781b6e1502ecef"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "89b43cf72a",
+      "Fields": {
+        "Meaning": "Trực giác, linh cảm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "勘（かん）có nghĩa là trực giác, linh cảm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208817": "Phóng viên ấy có trực giác nhạy bén để đánh hơi tin tức."
+      },
+      "SourceHash": "370850e05d9024a4b3178f592cd268f47d1ebfbb3a3599e46a27bca98afd88c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "40c44d898e",
+      "Fields": {
+        "Meaning": "Lon, hộp thiếc",
+        "PartOfSpeech": "Danh từ, trợ số từ",
+        "Explanation": "缶（かん）có nghĩa là lon, hộp thiếc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197656": "Cho tôi thêm một lon bia được không?",
+        "222574": "Cái lon này chứa được khoảng bốn gallon."
+      },
+      "SourceHash": "228b40777b7bbe179c7109d0523cba08562d37c2b3b0bdfbba98e9b54368ccfe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4833b06f7b",
+      "Fields": {
+        "Meaning": "Ý nghĩ, ý kiến, dự định",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "考え（かんがえ）có nghĩa là ý nghĩ, ý kiến, dự định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84836": "Bạn nghĩ bố có đổi ý không?",
+        "233299": "Hãy cho tôi biết ý kiến của bạn."
+      },
+      "SourceHash": "3f3fd7215b57272fe37cf407ac4a6701a2ee47f8306e05e1a7055e862c2168cc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "cdbee06a30",
+      "Fields": {
+        "Meaning": "Cảm giác, giác quan, óc cảm nhận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "感覚（かんかく）có nghĩa là cảm giác, giác quan, óc cảm nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106469": "Ông ấy giữ được óc hài hước cho đến lúc qua đời.",
+        "156518": "Tôi mất cảm giác ở các ngón tay."
+      },
+      "SourceHash": "e696d2ca2ad891859eb34784bbbaf3529f2aaa69bb9960d7e4e1cf983452694a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7460e55135",
+      "Fields": {
+        "Meaning": "Khán giả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "観客（かんきゃく）có nghĩa là khán giả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183814": "Khán giả hét lên rồi bỏ chạy.",
+        "213046": "Khán giả rất thích buổi diễn đó."
+      },
+      "SourceHash": "7af45412af44922c8a32a9ea26053ac66ee904461eda4198d4606d06623e847f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "26061bc72e",
+      "Fields": {
+        "Meaning": "Chào đón, hoan nghênh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "歓迎（かんげい）có nghĩa là chào đón, hoan nghênh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "95772": "Lần nào tôi đến thăm, anh ấy cũng đón tiếp tôi.",
+        "232795": "Lớp chúng tôi rất hoan nghênh bạn."
+      },
+      "SourceHash": "0c3fd14c40ef1a157a122964eadeea7b096db443af0622d688bd49c5ad2f4439"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d883d813ef",
+      "Fields": {
+        "Meaning": "Tham quan, du lịch",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "観光（かんこう）có nghĩa là tham quan, du lịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183808": "Có thể thuê hướng dẫn viên du lịch không?",
+        "226294": "Canada là nơi tuyệt vời để tham quan."
+      },
+      "SourceHash": "200362182605cf28ff865b1c9cbdc2fa2b300554fbe8d4442b10e3dd81241f7f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "888b58c5e4",
+      "Fields": {
+        "Meaning": "Quan sát",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "観察（かんさつ）có nghĩa là quan sát.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79585": "Quan sát chim hoang dã rất thú vị.",
+        "186870": "Khoa học dựa trên quan sát."
+      },
+      "SourceHash": "d82c78ce3b7b24dc58f9dcc77378c8e1a6137d84e1a2f63053e108d9366875d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "884dd65596",
+      "Fields": {
+        "Meaning": "Cảm giác, ấn tượng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "感じ（かんじ）có nghĩa là cảm giác, ấn tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "151221": "Trường tư thục có cảm giác thế nào?",
+        "206959": "Căn phòng đó tạo cảm giác dễ chịu."
+      },
+      "SourceHash": "d5bd85ee2352a6b1c7b5c998f851de2be93a5b35d3db1bc5bb13574a674f825f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "56f1bac262",
+      "Fields": {
+        "Meaning": "Cảm ơn, lòng biết ơn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "感謝（かんしゃ）có nghĩa là cảm ơn, lòng biết ơn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "217115": "Cảm ơn anh chị đã đối xử tử tế với tôi.",
+        "217180": "Cảm ơn anh chị đã hợp tác."
+      },
+      "SourceHash": "aae68b0363f4fbe06488b7d6a5acb2798bbe1a20485cdd50b4eeb4aa9243aae8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f15c9822d2",
+      "Fields": {
+        "Meaning": "Bệnh nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "患者（かんじゃ）có nghĩa là bệnh nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161653": "Tôi sẽ là bệnh nhân đầu tiên của bạn.",
+        "183928": "Bệnh nhân khỏe lên từng ngày."
+      },
+      "SourceHash": "122fa73b02a26824a8c2ebfb53f525b09609f669fbe933065386efcdecd61b21"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "38914b5058",
+      "Fields": {
+        "Meaning": "Tính toán, hóa đơn, tiền phải trả",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "勘定（かんじょう）có nghĩa là tính toán, hóa đơn, tiền phải trả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "183979": "Tổng hóa đơn là 50 đô la.",
+        "183982": "Tổng số tiền phải trả là 500 đô la."
+      },
+      "SourceHash": "29ff5cf857f4d2e8fb56b20356dfe647005c35abe77260ca9be1ac204573ba72"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c2dcadfe14",
+      "Fields": {
+        "Meaning": "Cảm xúc, tình cảm",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "感情（かんじょう）có nghĩa là cảm xúc, tình cảm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103567": "Ông ấy thiếu tình cảm của một con người.",
+        "142640": "Giọng nói đôi khi truyền tải cảm xúc."
+      },
+      "SourceHash": "f454439df93960a8fe0005de412cb82611a9a2ea065a98f8e6601250a16b503c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b333744018",
+      "Fields": {
+        "Meaning": "Cảm thấy, cảm nhận",
+        "PartOfSpeech": "Động từ nhóm 2",
+        "Explanation": "感じる（かんじる）có nghĩa là cảm thấy, cảm nhận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "93344": "Cô ấy cảm thấy hơi mệt.",
+        "159320": "Đôi khi tôi thấy buồn."
+      },
+      "SourceHash": "0ea7e2385bfc6548fbaeeecca70399a4da4e1fa3817a175ec06a870927d881a2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "847a57a03d",
+      "Fields": {
+        "Meaning": "Thán phục, khâm phục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "感心（かんしん）có nghĩa là thán phục, khâm phục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158822": "Tôi khá ấn tượng với tài năng của con trai mình.",
+        "233168": "Tôi không thể không trầm trồ trước chiếc xe mới của bạn."
+      },
+      "SourceHash": "069d882dfdcd421e53c3fcd96f0b1f25c70f81daac070288dfec4474bd49bc92"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4072da73db",
+      "Fields": {
+        "Meaning": "Sự quan tâm, mối quan tâm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "関心（かんしん）có nghĩa là sự quan tâm, mối quan tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153105": "Tôi rất quan tâm đến mỹ thuật.",
+        "177114": "Bạn có quan tâm đến chính trị không?"
+      },
+      "SourceHash": "c181c2977e5a8a44fe6ebed8f0bb8823f03c032e70204a73136fb5b01ac3c428"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "556dac7db6",
+      "Fields": {
+        "Meaning": "Liên quan đến, về",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "関する（かんする）có nghĩa là liên quan đến, về.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87699": "Cô ấy viết một cuốn sách về động vật.",
+        "154830": "Tôi đang đọc sách về động vật."
+      },
+      "SourceHash": "46d4004aa5c6bf90367aa169608bb3188223eeb9d54631c0440cf31344d89e10"
+    }
+  ]
+}

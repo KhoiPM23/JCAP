@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-conditional",
+      "Fields": {
+        "Meaning": "Hễ, cứ… thì",
+        "Formation": "Mệnh đề thể thông thường ＋ と ＋ kết quả (danh từ và tính từ な dùng だ)",
+        "Explanation": "Nêu kết quả tự nhiên, lặp lại hoặc điều được phát hiện khi làm theo hướng dẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-conditional:example:1": "Bấm nút này thì vé sẽ chạy ra.",
+        "to-conditional:example:2": "Đi thẳng thì sẽ thấy ga bên phải."
+      },
+      "SourceHash": "63ff71ee2e80272292ea476c9fbf74bdb824d5b99dd669fc9b88e1d258cc6726"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-to-dochira-ga",
+      "Fields": {
+        "Meaning": "Giữa A và B, bên nào?",
+        "Formation": "A ＋ と ＋ B ＋ と、どちらが ＋ vị ngữ",
+        "Explanation": "Hỏi lựa chọn hoặc so sánh giữa hai đối tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-to-dochira-ga:example:1": "Bạn thích chó hay mèo hơn?",
+        "to-to-dochira-ga:example:2": "Tàu điện và xe buýt, cái nào nhanh hơn?"
+      },
+      "SourceHash": "79d3ab8acc101100e2431000d75d3250c154179f148c3372e373b80a18e038c4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-ii-tara-ii",
+      "Fields": {
+        "Meaning": "Mong là, nếu được thì tốt",
+        "Formation": "Thể thông thường ＋ といい／dạng quá khứ thể thường ＋ らいい",
+        "Explanation": "Diễn tả hy vọng một điều sẽ xảy ra. ね có thể chia sẻ hy vọng với người nghe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-ii-tara-ii:example:1": "Mong ngày mai trời đẹp nhỉ.",
+        "to-ii-tara-ii:example:2": "Mong bạn sớm khỏe lại."
+      },
+      "SourceHash": "b6e64c1a933e021f6578be038668ff44faf0e2e4b675c9d6606d5b52e6838c68"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu",
+      "Fields": {
+        "Meaning": "Tên là, được gọi là",
+        "Formation": "Tên hoặc tên gọi ＋ という ＋ danh từ",
+        "Explanation": "Nêu tên của người, vật hoặc khái niệm trước danh từ được giới thiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu:example:1": "Có một người tên Tanaka gọi điện.",
+        "to-iu:example:2": "Bạn tôi nuôi một con chó tên Pochi."
+      },
+      "SourceHash": "068f414c78f33e57aa9c66e0ee55c71291094a300f043f3fb427f9a9c5bbbbd7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "to-iu-koto",
+      "Fields": {
+        "Meaning": "Việc rằng, chuyện là",
+        "Formation": "Mệnh đề thể thông thường ＋ ということ",
+        "Explanation": "Gói cả nội dung mệnh đề thành danh từ để làm chủ đề hoặc đối tượng của câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "to-iu-koto:example:1": "Tôi nghe tin anh ấy sẽ không đến.",
+        "to-iu-koto:example:2": "Việc giữ lời hứa rất quan trọng."
+      },
+      "SourceHash": "764eaf17ce4972e73b2721688fa75a4ad17c958c941608a861ccb2165e5046a3"
+    }
+  ]
+}

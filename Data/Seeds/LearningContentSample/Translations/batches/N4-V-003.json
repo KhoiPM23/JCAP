@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95f7288e1b",
+      "Fields": {
+        "Meaning": "Đầy, nhiều, suốt",
+        "PartOfSpeech": "Tính từ đuôi な, bổ nghĩa với の, hậu tố",
+        "Explanation": "水をいっぱい入れる là đổ đầy nước. 一日いっぱい chỉ suốt cả ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77696": "Dù mất cả ngày, tôi cũng sẽ đánh máy xong.",
+        "223142": "Hãy đổ đầy nước vào chai này."
+      },
+      "SourceHash": "b9eea0826d5cd54f9a1a86f59e7874faf5a5d2fefe27e15a1519276bcac73a05"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3de1fe452d",
+      "Fields": {
+        "Meaning": "Sợi chỉ, sợi dây",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "糸（いと）có nghĩa là sợi chỉ, sợi dây.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125945": "Sợi chỉ dài dễ bị rối.",
+        "221737": "Sợi chỉ này rất dễ rối."
+      },
+      "SourceHash": "98b31ad26c22eb7eb762ef7b0c6ea6033991e4320119e975cbb48f643a6a8ddb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "556e3e0d99",
+      "Fields": {
+        "Meaning": "Trong vòng, không quá",
+        "PartOfSpeech": "Danh từ, hậu tố, phó từ",
+        "Explanation": "Bao gồm cả mốc được nêu. 一週間以内 là trong vòng một tuần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190564": "Chắc tôi sẽ hoàn thành công việc đó trong vòng một tuần.",
+        "235752": "Tôi sẽ gọi trong vòng một tuần."
+      },
+      "SourceHash": "44fee9cdd8e10af73b0b5e370811519884f436c9f8c6d58ae53a58ca5902f657"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "11d4a3118b",
+      "Fields": {
+        "Meaning": "Nông thôn, quê",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "田舎（いなか）có nghĩa là nông thôn, quê.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158823": "Tôi thích sống một mình ở nông thôn hơn.",
+        "182223": "Mùa hè năm ngoái tôi về quê bố."
+      },
+      "SourceHash": "ad20db254ccd7787192953d718215a7d7994f61c8e5730709654bfeda711eb2f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "877a39a99f",
+      "Fields": {
+        "Meaning": "Cầu nguyện, cầu mong",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "祈る（いのる）có nghĩa là cầu nguyện, cầu mong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140573": "Tôi cầu mong anh/chị sớm bình phục.",
+        "189672": "Tôi đã cầu mong mưa tạnh trước trưa, nhưng…"
+      },
+      "SourceHash": "0d465c155d4e2ecae5d47239ea58f8ec9d1681a1842fdead3972768fd9e0f47f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc25dff617",
+      "Fields": {
+        "Meaning": "Ở, đến, đi (kính ngữ)",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "Kính ngữ của いる, 来る và 行く. Dạng lịch sự là いらっしゃいます.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "582c38b7afdef47baed8115e47e0605eee1ef31defa56d6899f487734e17fd4d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "833af5347e",
+      "Fields": {
+        "Meaning": "Trồng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "植える（うえる）có nghĩa là trồng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154971": "Tôi trồng hoa hồng trong vườn.",
+        "224479": "Mình trồng thật nhiều ở đây nhé."
+      },
+      "SourceHash": "3f1ce82d1b7caab2d1cc4f95d18651b29b2bec75239f4429756c8f1b35dadef4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bf69a1d9f2",
+      "Fields": {
+        "Meaning": "Đến thăm, hỏi (khiêm nhường)",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "うかがう（うかがう）có nghĩa là đến thăm, hỏi (khiêm nhường).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85264": "Hôm nay tôi không thể đến vì bị ốm.",
+        "137976": "Tôi xin hỏi cân nặng của anh/chị được không ạ?"
+      },
+      "SourceHash": "e24626310f5ce2f8cbff715bf7e6591dc7aea6f9febd8667cd33bf109d97ec56"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4bdd43130b",
+      "Fields": {
+        "Meaning": "Quầy tiếp nhận, lễ tân",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "受付（うけつけ）có nghĩa là quầy tiếp nhận, lễ tân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122083": "Quầy tiếp nhận bệnh nhân nhập viện ở đâu?",
+        "148365": "Vui lòng làm thủ tục nhập viện tại quầy tiếp nhận."
+      },
+      "SourceHash": "0d7a1d239747666a3ee28c0978bc59aa0dd9fed025b71320839a57cbd88612b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20989c0cb5",
+      "Fields": {
+        "Meaning": "Nhận, dự thi, tham gia",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "受ける（うける）có nghĩa là nhận, dự thi, tham gia.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85306": "Vì bị ốm nên tôi không thể dự thi.",
+        "122073": "Bạn định thi đầu vào à?"
+      },
+      "SourceHash": "701fda3903b1a9dc960b78ae85c1c4b8e46928209181ab01f4caed4760295fc2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e54d4fef93",
+      "Fields": {
+        "Meaning": "Chuyển động, hoạt động",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "動く（うごく）có nghĩa là chuyển động, hoạt động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158029": "Tôi cảm thấy có thứ gì đó chuyển động trong nhà.",
+        "195415": "Phải bán nó khi nó còn hoạt động."
+      },
+      "SourceHash": "fd66e55f197244c6d5ef6b472ae409645958225f3793176aea535de0056c7751"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "da1a2f9721",
+      "Fields": {
+        "Meaning": "Lời nói dối",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "うそ（うそ）có nghĩa là lời nói dối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111477": "Anh ấy đặc biệt ghét nói dối.",
+        "227962": "Hả, đùa đấy à?"
+      },
+      "SourceHash": "a2def24d09068a921cc50830d3d5161514cb891d9a7eaeb4e6d40dd8d667c0a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "76d4bcd098",
+      "Fields": {
+        "Meaning": "Nhà mình, bên trong, trong khi",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "Hai câu nguồn dùng nghĩa nhà. Trong câu đầu, 中 nói về vị trí giữa hai nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78640": "Tuần sau anh/chị đến nhà tôi chơi nhé?",
+        "180221": "Nhà thờ nằm giữa nhà tôi và nhà bạn."
+      },
+      "SourceHash": "9830451d0db110d5298e06ea170273300ffaecc6df9de567df8bd6030ce68618"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e6f3a7d91a",
+      "Fields": {
+        "Meaning": "Đánh, gõ, chơi máy đánh bạc",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Đồng hồ điểm giờ và chơi máy đánh bạc là hai cách dùng mở rộng của 打つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74669": "Mải chơi máy đánh bạc, thoắt cái đã đến giờ này.",
+        "234931": "Đồng hồ vừa điểm đúng tám giờ nhỉ."
+      },
+      "SourceHash": "709a5db199277beafc6f0bd2d0c4b5ac4451c05f292d6ae71133da58ed89eedb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0dd54894db",
+      "Fields": {
+        "Meaning": "Đẹp",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "美しい（うつくしい）có nghĩa là đẹp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165186": "Chúng tôi mê mẩn ngắm cảnh hoàng hôn tuyệt đẹp.",
+        "198358": "Âm thanh của đàn vĩ cầm rất đẹp."
+      },
+      "SourceHash": "4cdaadddff46fb87c14f29919a0567b3e76141a3f84058c29013e34009a60b52"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69589e0288",
+      "Fields": {
+        "Meaning": "Chụp, chép lại",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "写す（うつす）có nghĩa là chụp, chép lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209615": "Bức ảnh đó được chụp từ trên không.",
+        "223218": "Hãy chép trang này vào vở."
+      },
+      "SourceHash": "42ef281f5f13f8eeff7ed1b2d049500cb8e40c16d7b6c4104a43228b03c210b7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c7362b5e02",
+      "Fields": {
+        "Meaning": "Chuyển sang, chuyển chỗ",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "移る（うつる）có nghĩa là chuyển sang, chuyển chỗ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172902": "Bây giờ tôi đổi chỗ ngồi được không?",
+        "193349": "Ước gì có thêm tiền để chuyển sang nhà lớn hơn."
+      },
+      "SourceHash": "3f1adaf9943c07b177855c525734062f8ccf8d051379a9cc6793246dde01f32c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "78d94c404b",
+      "Fields": {
+        "Meaning": "Cánh tay, tay nghề",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "腕（うで）có nghĩa là cánh tay, tay nghề.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "209168": "Cô bé bám chặt lấy cánh tay bố.",
+        "225274": "Cho tôi xem cánh tay bị thương."
+      },
+      "SourceHash": "56000756e4d5bb8abe282a46677c0c454d10f9fafcf75c81f71bc4bd2bfa54d5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6d3b3fe0a4",
+      "Fields": {
+        "Meaning": "Ngon, giỏi, thuận lợi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "うまい（うまい）có nghĩa là ngon, giỏi, thuận lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92065": "Cô ấy chơi quần vợt giỏi nhưng bơi kém.",
+        "205560": "Chuyện đó nghe tốt đến mức khó tin."
+      },
+      "SourceHash": "56c16d9922ab1691e59b12f2eb6217eb874e9885637cb5741fbf9b892a8df6db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b5a6286d6",
+      "Fields": {
+        "Meaning": "Mặt sau, mặt trái, hậu trường",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "靴の裏 chỉ đế giày. 裏から手を回す chỉ việc thu xếp kín đáo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75059": "Kẹo cao su dính chặt vào đế giày tôi mất rồi.",
+        "78346": "Người đó sẽ thu xếp giúp từ hậu trường."
+      },
+      "SourceHash": "e1dcbbb90a872338f4cf273f64a2cc5ec3b9aa29d1470deed65f41f70f6dea5d"
+    }
+  ]
+}
