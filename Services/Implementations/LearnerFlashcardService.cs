@@ -522,13 +522,22 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<FlashcardSessionDto>.Fail("Không có thẻ khả dụng để ôn tập trong bộ này.");
             }
 
-            int maxSession = Math.Max(1, _options.MaxCardsPerSession);
             var selectedCards = new List<FlashcardCardItemDto>();
             DateTime? nextDueWhenEmpty = candidateCards
                 .Where(c => c.NextReviewAt.HasValue && c.NextReviewAt.Value > nowUtc)
                 .OrderBy(c => c.NextReviewAt)
                 .Select(c => c.NextReviewAt)
                 .FirstOrDefault();
+
+            bool isDueOnlyMode = string.Equals(request.StudyMode, FlashcardStudyMode.DueOnly, StringComparison.OrdinalIgnoreCase);
+            bool isNewOnlyMode = string.Equals(request.StudyMode, FlashcardStudyMode.NewOnly, StringComparison.OrdinalIgnoreCase);
+
+            // Tách biệt phiên ôn thẻ đến hạn của 1 chủ đề khỏi phiên học thẻ mới dang dở của cùng chủ đề (1B)
+            if (sourceType == FlashcardSessionSource.TopicSet && !request.IsExtraPractice && isDueOnlyMode)
+            {
+                sourceType = FlashcardSessionSource.DueReview;
+                setTitle = $"Ôn đến hạn – {setTitle}";
+            }
 
             if (isDueReviewSource)
             {
@@ -542,12 +551,31 @@ namespace JCAP.Services.Implementations
             }
             else if (request.IsExtraPractice)
             {
-                // Chế độ "Ôn thêm" (luyện tự do): lấy tối đa 20 thẻ, ưu tiên thẻ có khoảng cách ngắn hơn
+                // Chế độ "Ôn thêm" (luyện tự do): duyệt toàn bộ thẻ trong nguồn, ưu tiên thẻ có khoảng cách ngắn hơn
                 selectedCards = candidateCards
                     .OrderBy(c => c.IntervalDays)
                     .ThenBy(c => c.ItemId)
-                    .Take(maxSession)
                     .ToList();
+            }
+            else if (isDueOnlyMode)
+            {
+                // Chỉ ôn tập toàn bộ thẻ đến hạn trong nguồn (miễn phí, không tiêu tốn quota thẻ mới)
+                selectedCards = candidateCards
+                    .Where(c => c.SrsState == "Due")
+                    .OrderBy(c => c.NextReviewAt)
+                    .ThenBy(c => c.ItemId)
+                    .ToList();
+            }
+            else if (isNewOnlyMode)
+            {
+                // Chỉ học thẻ mới trong nguồn, lấy theo hạn mức thẻ mới còn lại trong ngày (không kẹp cứng 20 thẻ)
+                if (quota.RemainingNewCardsToday > 0)
+                {
+                    selectedCards = candidateCards
+                        .Where(c => c.SrsState == "New")
+                        .Take(quota.RemainingNewCardsToday)
+                        .ToList();
+                }
             }
             else
             {
@@ -556,14 +584,13 @@ namespace JCAP.Services.Implementations
                     .OrderBy(c => c.NextReviewAt)
                     .ToList();
 
-                selectedCards.AddRange(dueCards.Take(maxSession));
+                selectedCards.AddRange(dueCards);
 
-                if (selectedCards.Count < maxSession && quota.RemainingNewCardsToday > 0)
+                if (quota.RemainingNewCardsToday > 0)
                 {
-                    int remainingSlots = Math.Min(maxSession - selectedCards.Count, quota.RemainingNewCardsToday);
                     var newCards = candidateCards
                         .Where(c => c.SrsState == "New")
-                        .Take(remainingSlots)
+                        .Take(quota.RemainingNewCardsToday)
                         .ToList();
 
                     selectedCards.AddRange(newCards);
@@ -661,6 +688,35 @@ namespace JCAP.Services.Implementations
                 }
             }
 
+            int remainingNewInSource = candidateCards.Count(c => c.SrsState == "New");
+            int learnedInSource = candidateCards.Count(c => c.SrsState != "New");
+            string? emptyReason = null;
+            if (selectedCards.Count == 0)
+            {
+                if (candidateCards.Count == 0)
+                {
+                    emptyReason = "NoCards";
+                }
+                else if (isDueReviewSource || isDueOnlyMode)
+                {
+                    emptyReason = "NoDueCards";
+                }
+                else if (remainingNewInSource > 0 && quota.RemainingNewCardsToday <= 0)
+                {
+                    emptyReason = "QuotaExhausted";
+                }
+                else if (remainingNewInSource == 0)
+                {
+                    emptyReason = "AllCompleted";
+                }
+                else
+                {
+                    emptyReason = "NoCards";
+                }
+            }
+
+            int totalCardsInSession = selectedCards.Count > 0 ? previouslyReviewedCount + selectedCards.Count : 0;
+
             return ApiResponse<FlashcardSessionDto>.Ok(new FlashcardSessionDto
             {
                 SessionId = sessionId,
@@ -671,11 +727,15 @@ namespace JCAP.Services.Implementations
                 IsExtraPractice = request.IsExtraPractice,
                 IsResumedSession = isResumedSession,
                 PreviouslyReviewedCount = previouslyReviewedCount,
+                TotalCardsInSession = totalCardsInSession,
                 StartedAt = DateTime.SpecifyKind(nowUtc, DateTimeKind.Utc),
                 Cards = selectedCards,
                 Quota = quota,
                 NextDueAtWhenEmpty = nextDueWhenEmpty,
-                TotalEligibleInSource = candidateCards.Count
+                TotalEligibleInSource = candidateCards.Count,
+                EmptyReason = emptyReason,
+                RemainingNewCardsInSource = remainingNewInSource,
+                LearnedCardsInSource = learnedInSource
             });
         }
 
@@ -1137,7 +1197,7 @@ namespace JCAP.Services.Implementations
             string itemKey = vocabId.HasValue ? $"v_{vocabId.Value}" : $"g_{grammarId!.Value}";
 
             HashSet<int>? topicIdsContainingItem = null;
-            if (otherIncompleteSessions.Any(s => s.SourceType == FlashcardSessionSource.TopicSet && s.TopicId.HasValue))
+            if (otherIncompleteSessions.Any(s => s.TopicId.HasValue))
             {
                 if (vocabId.HasValue)
                 {
@@ -1181,8 +1241,11 @@ namespace JCAP.Services.Implementations
 
                 if (other.SourceType == FlashcardSessionSource.DueReview && !isNewCard)
                 {
-                    if (other.ContentType == FlashcardContentType.Mixed ||
-                        string.Equals(other.ContentType, itemType, StringComparison.OrdinalIgnoreCase))
+                    bool topicMatches = !other.TopicId.HasValue ||
+                        (topicIdsContainingItem != null && topicIdsContainingItem.Contains(other.TopicId.Value));
+                    if (topicMatches &&
+                        (other.ContentType == FlashcardContentType.Mixed ||
+                         string.Equals(other.ContentType, itemType, StringComparison.OrdinalIgnoreCase)))
                     {
                         belongsToOtherPool = true;
                     }
@@ -1242,6 +1305,13 @@ namespace JCAP.Services.Implementations
                     p.Grammar != null &&
                     p.Grammar.IsActive);
 
+            int totalLearnedCards = await _db.LearnerFlashcardProgresses
+                .AsNoTracking()
+                .CountAsync(p =>
+                    p.UserId == userId &&
+                    ((p.VocabularyId.HasValue && p.Vocabulary != null && p.Vocabulary.IsActive) ||
+                     (p.GrammarId.HasValue && p.Grammar != null && p.Grammar.IsActive)));
+
             int extraUnlocked = dailyQuota?.ExtraUnlockedCards ?? 0;
             int totalAllowed = _options.FreeNewCardsPerDay + extraUnlocked;
             int remaining = Math.Max(0, totalAllowed - studiedNewToday);
@@ -1259,7 +1329,8 @@ namespace JCAP.Services.Implementations
                 HasActiveSubscription = user.SubscriptionExpiresAt.HasValue && user.SubscriptionExpiresAt.Value > nowUtc,
                 TotalDueCardsToday = dueVocabCount + dueGrammarCount,
                 DueVocabularyCount = dueVocabCount,
-                DueGrammarCount = dueGrammarCount
+                DueGrammarCount = dueGrammarCount,
+                TotalLearnedCards = totalLearnedCards
             };
         }
 
