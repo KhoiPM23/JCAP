@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -7,12 +8,14 @@ using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace JCAP.Services.Implementations
 {
     public class CloudinaryStorageService : ICloudStorageService
     {
+        private static readonly Regex SafeFileNameRegex = new(@"[^a-zA-Z0-9_-]", RegexOptions.Compiled);
         private readonly Cloudinary? _cloudinary;
         private readonly ILogger<CloudinaryStorageService> _logger;
         private readonly IWebHostEnvironment _env;
@@ -47,17 +50,24 @@ namespace JCAP.Services.Implementations
                 throw new ArgumentException("File is empty or null.", nameof(file));
             }
 
-            // Nếu Cloudinary chưa được cấu hình, tự động lưu trữ cục bộ (Local Fallback)
+            // Chỉ cho phép lưu trữ cục bộ (Local Fallback) trong môi trường Development
             if (_cloudinary == null)
             {
-                _logger.LogWarning("Cloudinary is not configured. Falling back to local storage for folder: {Folder}", folder);
-                return await SaveLocallyAsync(file, folder);
+                if (_env.IsDevelopment())
+                {
+                    _logger.LogWarning("Cloudinary is not configured. Falling back to local storage in Development for folder: {Folder}", folder);
+                    return await SaveLocallyAsync(file, folder);
+                }
+
+                throw new InvalidOperationException("Dịch vụ lưu trữ đám mây chưa được cấu hình.");
             }
 
             try
             {
                 using var stream = file.OpenReadStream();
-                var isImage = file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+                var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? string.Empty;
+                var isImage = file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+                    || ext is ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif";
 
                 if (isImage)
                 {
@@ -72,8 +82,12 @@ namespace JCAP.Services.Implementations
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
                     if (uploadResult.Error != null)
                     {
-                        _logger.LogWarning("Cloudinary image upload error: {Error}. Falling back to local storage.", uploadResult.Error.Message);
-                        return await SaveLocallyAsync(file, folder);
+                        _logger.LogWarning("Cloudinary image upload error: {Error}.", uploadResult.Error.Message);
+                        if (_env.IsDevelopment())
+                        {
+                            return await SaveLocallyAsync(file, folder);
+                        }
+                        throw new InvalidOperationException("Không thể tải ảnh lên dịch vụ lưu trữ.");
                     }
                     return uploadResult.SecureUrl?.ToString() ?? uploadResult.Url?.ToString() ?? string.Empty;
                 }
@@ -89,15 +103,19 @@ namespace JCAP.Services.Implementations
                     var uploadResult = await _cloudinary.UploadAsync(rawParams);
                     if (uploadResult.Error != null)
                     {
-                        _logger.LogWarning("Cloudinary raw upload error: {Error}. Falling back to local storage.", uploadResult.Error.Message);
-                        return await SaveLocallyAsync(file, folder);
+                        _logger.LogWarning("Cloudinary raw upload error: {Error}.", uploadResult.Error.Message);
+                        if (_env.IsDevelopment())
+                        {
+                            return await SaveLocallyAsync(file, folder);
+                        }
+                        throw new InvalidOperationException("Không thể tải tệp lên dịch vụ lưu trữ.");
                     }
                     return uploadResult.SecureUrl?.ToString() ?? uploadResult.Url?.ToString() ?? string.Empty;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (_env.IsDevelopment())
             {
-                _logger.LogWarning(ex, "Exception during Cloudinary upload. Falling back to local storage.");
+                _logger.LogWarning(ex, "Exception during Cloudinary upload in Development. Falling back to local storage.");
                 return await SaveLocallyAsync(file, folder);
             }
         }
@@ -113,26 +131,19 @@ namespace JCAP.Services.Implementations
             var targetDir = Path.Combine(webRoot, "uploads", folder);
             Directory.CreateDirectory(targetDir);
 
-            var ext = Path.GetExtension(file.FileName);
-            var safeName = $"{Path.GetFileNameWithoutExtension(file.FileName)}_{Guid.NewGuid():N}{ext}";
+            var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? string.Empty;
+            var rawBaseName = Path.GetFileNameWithoutExtension(file.FileName) ?? "file";
+            // Loại bỏ ký tự đặc biệt (#, ?, khoảng trắng, dấu...) để tránh URL bị cắt fragment hoặc 404
+            var cleanBase = SafeFileNameRegex.Replace(rawBaseName, "_").Trim('_');
+            if (string.IsNullOrWhiteSpace(cleanBase)) cleanBase = "file";
+            if (cleanBase.Length > 60) cleanBase = cleanBase[..60];
+
+            var safeName = $"{cleanBase}_{Guid.NewGuid():N}{ext}";
             var filePath = Path.Combine(targetDir, safeName);
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);
-            }
-
-            // Đồng bộ sang jcap-web/public/uploads để Vite dev server phục vụ trực tiếp
-            try
-            {
-                var frontendPublicUploads = Path.Combine(Directory.GetCurrentDirectory(), "jcap-web", "public", "uploads", folder);
-                Directory.CreateDirectory(frontendPublicUploads);
-                var frontendPath = Path.Combine(frontendPublicUploads, safeName);
-                File.Copy(filePath, frontendPath, true);
-            }
-            catch
-            {
-                // Bỏ qua nếu không copy được sang frontend
             }
 
             return $"/uploads/{folder}/{safeName}";

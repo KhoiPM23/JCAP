@@ -85,22 +85,6 @@ export interface CreateCommunityCommentPayload {
   authorAvatar?: string;
 }
 
-function getCurrentStoredUser(): {
-  id?: string;
-  email?: string;
-  fullName?: string;
-  role?: string;
-  level?: string;
-  avatarUrl?: string;
-} | null {
-  try {
-    const raw = localStorage.getItem('jcap_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
 function normalizePostId(rawId: string): string {
   if (rawId === 'post-101') return '1';
   if (rawId === 'post-102') return '2';
@@ -110,18 +94,11 @@ function normalizePostId(rawId: string): string {
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('jcap_token');
-  const storedUser = getCurrentStoredUser();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (storedUser?.id) {
-    headers['X-User-Id'] = String(storedUser.id);
-  }
-  if (storedUser?.email) {
-    headers['X-User-Email'] = String(storedUser.email);
   }
   return headers;
 }
@@ -186,48 +163,9 @@ function mapDtoToForumPost(dto: BackendCommunityPostDto): ForumPost {
   };
 }
 
-let isMigratingLocalPosts = false;
-
 export const communityService = {
   async fetchPosts(): Promise<{ posts: ForumPost[]; isLiveBackend: boolean }> {
     try {
-      // Nếu trong localStorage có bài viết người dùng tạo trước đó (id dạng post-17...) chưa đẩy lên DB thì tự động đồng bộ lên DB
-      if (!isMigratingLocalPosts) {
-        const localPosts = getForumPosts();
-        const unsynced = localPosts.filter((p) => p.id.startsWith('post-17'));
-        if (unsynced.length > 0) {
-          isMigratingLocalPosts = true;
-          try {
-            for (const p of unsynced.reverse()) {
-              await fetch('/api/community/posts', {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                  channel: p.channel,
-                  title: p.title,
-                  content: p.content,
-                  isAnonymous: p.isAnonymous,
-                  authorId: p.authorId,
-                  authorName: p.authorName,
-                  authorLevel: p.authorLevel,
-                  authorRole: p.authorRole,
-                  authorAvatar: p.authorAvatar,
-                  attachments: (p.attachments || []).map((a) => ({
-                    id: a.id,
-                    name: a.fileName,
-                    size: a.fileSize,
-                    type: a.fileType,
-                    url: a.url,
-                  })),
-                }),
-              });
-            }
-          } finally {
-            isMigratingLocalPosts = false;
-          }
-        }
-      }
-
       const res = await fetch('/api/community/posts', {
         method: 'GET',
         headers: getAuthHeaders(),
@@ -249,9 +187,6 @@ export const communityService = {
   async createPost(
     payload: CreateCommunityPostPayload
   ): Promise<{ post: ForumPost | null; isLiveBackend: boolean }> {
-    const storedUser = getCurrentStoredUser();
-    const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
-
     try {
       const res = await fetch('/api/community/posts', {
         method: 'POST',
@@ -261,16 +196,6 @@ export const communityService = {
           title: payload.title,
           content: payload.content,
           isAnonymous: payload.isAnonymous,
-          authorId: payload.authorId || storedUser?.id,
-          authorEmail: payload.authorEmail || storedUser?.email,
-          authorName:
-            payload.authorName ||
-            storedUser?.fullName ||
-            storedUser?.email?.split('@')[0] ||
-            'Học viên JCAP',
-          authorLevel: payload.authorLevel || savedLevel,
-          authorRole: payload.authorRole || storedUser?.role || 'LEARNER',
-          authorAvatar: payload.authorAvatar || storedUser?.avatarUrl,
           attachments: payload.attachments.map((a) => ({
             id: a.id,
             name: a.fileName,
@@ -296,9 +221,6 @@ export const communityService = {
     postId: string,
     payload: CreateCommunityCommentPayload
   ): Promise<{ post: ForumPost | null; isLiveBackend: boolean }> {
-    const storedUser = getCurrentStoredUser();
-    const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
-
     try {
       const res = await fetch(`/api/community/posts/${encodeURIComponent(normalizePostId(postId))}/comments`, {
         method: 'POST',
@@ -307,16 +229,6 @@ export const communityService = {
           parentCommentId: payload.parentCommentId || null,
           content: payload.content,
           isAnonymous: payload.isAnonymous,
-          authorId: payload.authorId || storedUser?.id,
-          authorEmail: payload.authorEmail || storedUser?.email,
-          authorName:
-            payload.authorName ||
-            storedUser?.fullName ||
-            storedUser?.email?.split('@')[0] ||
-            'Học viên JCAP',
-          authorLevel: payload.authorLevel || savedLevel,
-          authorRole: payload.authorRole || storedUser?.role || 'LEARNER',
-          authorAvatar: payload.authorAvatar || storedUser?.avatarUrl,
           attachments: payload.attachments.map((a) => ({
             id: a.id,
             name: a.fileName,

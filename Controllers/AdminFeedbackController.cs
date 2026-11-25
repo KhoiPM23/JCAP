@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using JCAP.Data.Static;
 using JCAP.DTOs.Feedback;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace JCAP.Controllers
 {
     [ApiController]
     [Route("api/admin/feedback")]
-    [Authorize(Roles = UserRoles.Admin)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
     public class AdminFeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -59,4 +60,3 @@ namespace JCAP.Controllers
         }
     }
 }
-
