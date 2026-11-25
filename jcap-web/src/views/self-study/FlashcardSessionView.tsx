@@ -7,6 +7,7 @@ import type {
   FlashcardSession,
   FlashcardCardItem,
   FlashcardRating,
+  FlashcardStudyMode,
   FlashcardSessionSummary,
 } from '../../types/flashcard';
 
@@ -40,6 +41,9 @@ export const FlashcardSessionView: React.FC = () => {
   const { themeFor, isDark } = useTheme();
 
   const isExtraPractice = searchParams.get('extraPractice') === 'true' || searchParams.get('mode') === 'extra';
+  const rawStudyMode = searchParams.get('studyMode')?.toLowerCase();
+  const studyMode: FlashcardStudyMode =
+    rawStudyMode === 'due' ? 'DueOnly' : rawStudyMode === 'new' ? 'NewOnly' : 'All';
   const isDemo = topicId === 'demo' || topicId === '0';
   const isDueReview = topicId === 'due';
   const currentTopicId = topicId && !isDemo && !isDueReview ? parseInt(topicId, 10) : 101;
@@ -69,6 +73,9 @@ export const FlashcardSessionView: React.FC = () => {
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [isEarlyExit, setIsEarlyExit] = useState<boolean>(false);
   const [summary, setSummary] = useState<FlashcardSessionSummary | null>(null);
+  const [sessionReloadKey, setSessionReloadKey] = useState<number>(0);
+  const [unlockingQuota, setUnlockingQuota] = useState<boolean>(false);
+  const [emptyUnlockError, setEmptyUnlockError] = useState<string | null>(null);
 
   // Ratings tracking
   const [ratingCounts, setRatingCounts] = useState<{ again: number; good: number; easy: number }>({
@@ -127,22 +134,27 @@ export const FlashcardSessionView: React.FC = () => {
         topicId: isDueReview ? null : isBookmarkSource ? undefined : currentTopicId,
         contentType: currentContentType,
         isExtraPractice,
+        studyMode,
       });
 
       if (res.success && res.data) {
         const initialCards = Array.isArray(res.data.cards) ? res.data.cards : [];
+        const prevReviewed = res.data.previouslyReviewedCount || 0;
         setSession(res.data);
         setQueue(initialCards);
-        setTotalOriginalCards(res.data.totalCardsInSession || initialCards.length);
-        if (res.data.previouslyReviewedCount) {
-          setResolvedCardsCount(res.data.previouslyReviewedCount);
-        }
+        setTotalOriginalCards(res.data.totalCardsInSession || (prevReviewed + initialCards.length));
+        setResolvedCardsCount(prevReviewed);
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setIsCompleted(false);
+        setIsEarlyExit(false);
+        setEmptyUnlockError(null);
       }
       setLoading(false);
     };
 
     initSession();
-  }, [currentTopicId, currentContentType, isExtraPractice, isDemo, isDueReview]);
+  }, [currentTopicId, currentContentType, isExtraPractice, studyMode, isDemo, isDueReview, sessionReloadKey]);
 
   // Current Card
   const currentCard: FlashcardCardItem | undefined = queue[currentIndex];
@@ -262,12 +274,16 @@ export const FlashcardSessionView: React.FC = () => {
       });
 
       // Chỉ gọi API đánh giá khi KHÔNG phải chế độ Sandbox Demo và KHÔNG phải Mini-round (ôn nhanh thẻ Leech miễn phí)
+      let nextIntervalPreviewFromApi = currentCard.intervalPreview;
       if (!isDemo && !isMiniRound) {
-        await flashcardService.rateCard(session.sessionId, {
+        const rateRes = await flashcardService.rateCard(session.sessionId, {
           itemType: currentCard.itemType,
           itemId: currentCard.itemId,
           rating,
         });
+        if (rateRes.success && rateRes.data?.nextIntervalPreview) {
+          nextIntervalPreviewFromApi = rateRes.data.nextIntervalPreview;
+        }
       }
 
       let shouldRequeue = false;
@@ -278,9 +294,9 @@ export const FlashcardSessionView: React.FC = () => {
         setCardAgainMap((prev) => ({ ...prev, [cardKey]: nextAgainCount }));
 
         if (nextAgainCount <= MAX_RETRIES_PER_CARD) {
-          // Lần 1 hoặc Lần 2 chọn Again -> Đưa thẻ về cuối hàng đợi để ôn lại
+          // Lần 1 hoặc Lần 2 chọn Again -> Đưa thẻ về cuối hàng đợi để ôn lại với preview interval mới nhất từ SM-2
           shouldRequeue = true;
-          setQueue((prev) => [...prev, currentCard]);
+          setQueue((prev) => [...prev, { ...currentCard, intervalPreview: nextIntervalPreviewFromApi }]);
           setLeechNotice(null);
         } else {
           // Lần thứ 3 chọn Again -> Chạm trần giới hạn, KHÔNG đưa vào hàng đợi nữa mà đánh dấu Leech
@@ -539,26 +555,158 @@ export const FlashcardSessionView: React.FC = () => {
     );
   }
 
-  // Trường hợp không có thẻ nào trong phiên học
+  // Trường hợp không có thẻ nào trong phiên học (hiển thị rõ lý do khi vào trực tiếp qua URL)
   if (!session || queue.length === 0) {
+    const emptyReason = session?.emptyReason;
+    const isQuotaExhausted = emptyReason === 'QuotaExhausted';
+    const isNoDueCards = emptyReason === 'NoDueCards';
+    const isAllCompleted = emptyReason === 'AllCompleted';
+    const sessionQuota = session?.quota;
+    const nextDueFormatted = session?.nextDueAtWhenEmpty
+      ? new Date(
+          session.nextDueAtWhenEmpty.endsWith('Z') || session.nextDueAtWhenEmpty.includes('+')
+            ? session.nextDueAtWhenEmpty
+            : `${session.nextDueAtWhenEmpty}Z`
+        ).toLocaleString('vi-VN', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : null;
+
+    const canStartExtraPractice =
+      !isDueReview &&
+      !isExtraPractice &&
+      (session?.totalEligibleInSource ?? 0) > 0 &&
+      (!isQuotaExhausted || (session?.learnedCardsInSource ?? 0) > 0);
+
+    const handleUnlockFromEmptyScreen = async () => {
+      setUnlockingQuota(true);
+      setEmptyUnlockError(null);
+      const res = await flashcardService.unlockExtraNewCards();
+      setUnlockingQuota(false);
+      if (res.success) {
+        setSessionReloadKey((k) => k + 1);
+      } else {
+        setEmptyUnlockError(res.message || 'Không thể mở thêm thẻ mới.');
+      }
+    };
+
+    const handleGoExtraPractice = () => {
+      if (searchParams.get('source') === 'bookmark') {
+        navigate('/flashcards/study/0/Mixed?source=bookmark&extraPractice=true');
+        return;
+      }
+      navigate(`/flashcards/study/${currentTopicId}/${currentContentType.toLowerCase()}?extraPractice=true`);
+    };
+
     return (
       <div data-theme={themeFor('learn')} className="min-h-screen bg-paper-100 flex items-center justify-center p-4 font-sans text-sumi">
-        <div className="max-w-md w-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg text-center space-y-6">
-          <div className="w-20 h-20 bg-ai-soft border border-ai/30 text-ai rounded-full flex items-center justify-center text-4xl mx-auto">
-            🗂️
+        <div className="max-w-md w-full bg-paper-50 rounded-3xl border border-line p-8 shadow-lg text-center space-y-5">
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto border ${
+              isQuotaExhausted
+                ? 'bg-danger-soft border-danger/30 text-danger'
+                : isAllCompleted || isNoDueCards
+                ? 'bg-success-soft border-success/30 text-success'
+                : 'bg-ai-soft border-ai/30 text-ai'
+            }`}
+          >
+            {isQuotaExhausted ? '🔒' : isAllCompleted || isNoDueCards ? '✅' : '🗂️'}
           </div>
-          <div>
-            <h2 className="text-xl font-black text-sumi">Không có thẻ nào trong phiên học</h2>
-            <p className="text-xs text-sumi-muted mt-2">
-              Chưa có thẻ nào đến hạn ôn tập hoặc bộ thẻ này hiện chưa có thẻ nào trong cơ sở dữ liệu.
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-sumi">
+              {isQuotaExhausted
+                ? 'Đã hết hạn mức thẻ mới hôm nay'
+                : isNoDueCards
+                ? 'Hiện chưa có thẻ nào đến hạn ôn tập'
+                : isAllCompleted
+                ? 'Bạn đã học hết toàn bộ thẻ trong bộ này'
+                : 'Không có thẻ nào trong phiên học'}
+            </h2>
+
+            {session?.setTitle && (
+              <div className="text-xs font-bold text-ai">{session.setTitle}</div>
+            )}
+
+            <p className="text-xs text-sumi-muted leading-relaxed">
+              {isQuotaExhausted && sessionQuota ? (
+                <>
+                  Bạn đã sử dụng hết{' '}
+                  <strong className="text-danger">
+                    {sessionQuota.studiedNewCardsToday}/{sessionQuota.totalAllowedNewCardsToday} thẻ mới
+                  </strong>{' '}
+                  trong ngày hôm nay. Bộ này vẫn còn{' '}
+                  <strong className="text-sumi">{session?.remainingNewCardsInSource ?? 0} thẻ mới</strong> chưa học.
+                  Hạn mức miễn phí sẽ tự làm mới vào 00:00 ngày mai.
+                </>
+              ) : isNoDueCards || isAllCompleted ? (
+                nextDueFormatted ? (
+                  <>
+                    Tất cả các thẻ đã học đều đang trong chu kỳ ghi nhớ. Lượt ôn tập đến hạn tiếp theo vào{' '}
+                    <strong className="text-sumi">{nextDueFormatted}</strong>.
+                  </>
+                ) : (
+                  'Hiện chưa có thẻ nào đến hạn ôn tập lại trong bộ này.'
+                )
+              ) : (
+                'Bộ thẻ này hiện chưa có thẻ khả dụng để bắt đầu phiên ôn tập.'
+              )}
             </p>
           </div>
-          <button
-            onClick={() => navigate('/flashcards')}
-            className="w-full py-3 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-sm transition-all shadow-xs cursor-pointer"
-          >
-            Quay lại danh sách bộ thẻ
-          </button>
+
+          {isQuotaExhausted && sessionQuota && (
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-paper-100 border border-line text-xs">
+              <span className="text-sumi-muted">Số dư Credit hiện có</span>
+              <strong className="text-warning">{sessionQuota.userCreditBalance} 🪙</strong>
+            </div>
+          )}
+
+          {emptyUnlockError && (
+            <div className="px-3.5 py-2.5 rounded-xl bg-danger-soft border border-danger/30 text-danger text-xs font-semibold text-left">
+              ⚠️ {emptyUnlockError}
+            </div>
+          )}
+
+          <div className="space-y-2.5 pt-1">
+            {isQuotaExhausted && sessionQuota && (
+              <button
+                type="button"
+                onClick={handleUnlockFromEmptyScreen}
+                disabled={unlockingQuota}
+                className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span>🔓</span>
+                <span>
+                  {unlockingQuota
+                    ? 'Đang mở khóa...'
+                    : `Mở thêm +${sessionQuota.unlockBatchSize} thẻ mới (-${sessionQuota.unlockCreditCost} 🪙)`}
+                </span>
+              </button>
+            )}
+
+            {canStartExtraPractice && (
+              <button
+                type="button"
+                onClick={handleGoExtraPractice}
+                className="w-full py-3 px-4 bg-ai-soft hover:bg-ai-soft/80 text-ai border border-ai/30 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>↻</span>
+                <span>Ôn thêm tự do (không đổi SRS, không tốn hạn mức)</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => navigate('/flashcards')}
+              className="w-full py-3 bg-ai hover:bg-ai-hover text-on-ai font-bold rounded-xl text-sm transition-all shadow-xs cursor-pointer"
+            >
+              Quay lại danh sách bộ thẻ
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1179,7 +1327,7 @@ export const FlashcardSessionView: React.FC = () => {
                   <span>Tốt</span>
                 </div>
                 <div className="text-[11px] text-ai/80 font-medium">
-                  Ôn lại sau {currentCard.intervalPreview.goodDays || 1} ngày
+                  Ôn lại sau {currentCard.intervalPreview?.goodIntervalDays ?? currentCard.intervalPreview?.goodDays ?? 1} ngày
                 </div>
               </button>
 
@@ -1193,7 +1341,7 @@ export const FlashcardSessionView: React.FC = () => {
                   <span>Dễ</span>
                 </div>
                 <div className="text-[11px] text-success/80 font-medium">
-                  Ôn lại sau {currentCard.intervalPreview.easyDays || 3} ngày
+                  Ôn lại sau {currentCard.intervalPreview?.easyIntervalDays ?? currentCard.intervalPreview?.easyDays ?? 3} ngày
                 </div>
               </button>
             </div>
