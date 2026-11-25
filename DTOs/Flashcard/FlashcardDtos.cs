@@ -84,6 +84,7 @@ namespace JCAP.DTOs.Flashcard
         public int TotalDueCardsToday { get; set; }
         public int DueVocabularyCount { get; set; }
         public int DueGrammarCount { get; set; }
+        public int TotalLearnedCards { get; set; }
     }
 
     // ==================== FLASHCARD SET DTOs (UC-55, UC-56) ====================
@@ -140,6 +141,7 @@ namespace JCAP.DTOs.Flashcard
         public string ContentType { get; set; } = "Vocabulary"; // "Vocabulary" | "Grammar" | "Mixed"
         public string? JLPTLevelFilter { get; set; }
         public bool IsExtraPractice { get; set; } = false;
+        public string? StudyMode { get; set; } // "All" | "DueOnly" | "NewOnly"
     }
 
     public class FlashcardSessionDto
@@ -152,11 +154,15 @@ namespace JCAP.DTOs.Flashcard
         public bool IsExtraPractice { get; set; }
         public bool IsResumedSession { get; set; }
         public int PreviouslyReviewedCount { get; set; }
+        public int TotalCardsInSession { get; set; }
         public DateTime StartedAt { get; set; }
         public List<FlashcardCardItemDto> Cards { get; set; } = new();
         public FlashcardQuotaDto Quota { get; set; } = new();
         public DateTime? NextDueAtWhenEmpty { get; set; }
         public int TotalEligibleInSource { get; set; }
+        public string? EmptyReason { get; set; } // "QuotaExhausted" | "NoDueCards" | "AllCompleted" | "NoCards"
+        public int RemainingNewCardsInSource { get; set; }
+        public int LearnedCardsInSource { get; set; }
     }
 
     public class SubmitFlashcardReviewRequestDto
