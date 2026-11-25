@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon } from '../jcap';
+import { Button } from '../jcap';
 import type { ShadowingProgress } from '../../types/shadowingProgress';
 
 /** Dải "Đang học dở": tên bài, câu đang dừng, nút tiếp tục và vạch tiến độ ở mép dưới */
@@ -14,9 +14,8 @@ export const ShadowingContinueStrip: React.FC<{ progress: ShadowingProgress; tit
     <section className="shl-continue" aria-label="Bài đang học dở">
       <div className="l">
         <p className="k">
-          <Icon name="pending" size={16} />
           Đang học dở
-          <span>{[progress.jlptLevel, `Vai ${progress.role}`].filter(Boolean).join(' · ')}</span>
+          <span className="m">{[progress.jlptLevel, `Vai ${progress.role}`].filter(Boolean).join(' · ')}</span>
         </p>
         <h2>{title}</h2>
       </div>

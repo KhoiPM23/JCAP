@@ -23,8 +23,8 @@
 .shl-continue { position: relative; flex: none; display: flex; align-items: center; gap: 24px; padding: 14px 18px 16px 20px; border-radius: var(--radius-xl); background: var(--paper-50); box-shadow: 0 0 0 1px var(--line), var(--shadow-sm); overflow: hidden; }
 .shl-continue .l { flex: 0 1 280px; min-width: 0; }
 .shl-continue .k { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 18px; font-weight: 600; color: var(--ai); white-space: nowrap; }
-.shl-continue .k span { color: var(--sumi-muted); font-weight: 500; }
-.shl-continue .k span::before { content: "·"; margin-right: 6px; }
+.shl-continue .k .m { color: var(--sumi-muted); font-weight: 500; }
+.shl-continue .k .m::before { content: "·"; margin-right: 6px; }
 .shl-continue h2 { margin-top: 2px; font-size: 17px; line-height: 24px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .shl-continue .s { flex: 1; min-width: 0; padding-left: 24px; border-left: 1px solid var(--line); }
 .shl-continue .s p { font-size: 12px; line-height: 18px; color: var(--sumi-muted); }
