@@ -1,18 +1,18 @@
 import React, { useSyncExternalStore } from 'react';
 import type { FuriganaSegment } from '../../data/learnContent';
 
-/** Bật/tắt furigana cho cả trang Khám phá, nhớ trong trình duyệt (mặc định bật) */
+/** Bật/tắt furigana cho cả trang Khám phá (nút ふ trên bản đồ), nhớ trong trình duyệt (mặc định tắt) */
 const STORAGE_KEY = 'jcap.explore.furigana';
 
 function read(): boolean {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) !== '0';
+    return window.localStorage.getItem(STORAGE_KEY) === '1';
   } catch {
-    return true;
+    return false;
   }
 }
 
-let on = typeof window === 'undefined' ? true : read();
+let on = typeof window === 'undefined' ? false : read();
 const listeners = new Set<() => void>();
 
 export function setFurigana(value: boolean) {

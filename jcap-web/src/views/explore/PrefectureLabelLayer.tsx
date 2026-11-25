@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { prefectureFurigana } from '../../data/prefectureKana';
 import { PictogramIcon } from './exploreUi';
 
 /**
@@ -30,9 +31,11 @@ interface Props {
   /** 'main': tên tỉnh ở bản đồ toàn quốc; 'neighbor': tên tỉnh lân cận khi đang xem một tỉnh (nhỏ, nhạt) */
   variant: 'main' | 'neighbor';
   iconColor: string;
+  /** Hiện cách đọc trên tên Nhật (nút ふ) */
+  furigana?: boolean;
 }
 
-export const PrefectureLabels = memo(function PrefectureLabels({ items, scale, variant, iconColor }: Props) {
+export const PrefectureLabels = memo(function PrefectureLabels({ items, scale, variant, iconColor, furigana = false }: Props) {
   const s = scale.toFixed(4);
   return (
     <>
@@ -46,7 +49,13 @@ export const PrefectureLabels = memo(function PrefectureLabels({ items, scale, v
           {it.icon && <PictogramIcon id={it.icon} color={iconColor} className="jm-plabel-icon" />}
           <span className="jm-plabel-vi">{it.nameVi}</span>
           <span className="jm-plabel-jp font-jp" lang="ja">
-            {it.nameJp}
+            {(furigana && prefectureFurigana(it.id, it.nameJp)?.map(([text, reading], i) => (
+              <ruby key={i}>
+                {text}
+                <rt>{reading}</rt>
+              </ruby>
+            ))) ||
+              it.nameJp}
           </span>
         </div>
       ))}
