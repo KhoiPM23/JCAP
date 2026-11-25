@@ -31,8 +31,9 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
 const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards', '/placement-test/history'];
-/** Diễn đàn và Hỗ trợ: sáng dùng giấy ấm của Khám phá (HANDOFF 9h, 9i), tối dùng hoc-tap-dem */
-const isPaperPath = (p: string) => p.startsWith('/community') || p.startsWith('/forum') || p.startsWith('/feedback');
+/** Diễn đàn, Hỗ trợ và Thư viện Shadowing: sáng dùng giấy ấm của Khám phá (HANDOFF 9h–9j), tối dùng hoc-tap-dem */
+const isPaperPath = (p: string) =>
+  p.startsWith('/community') || p.startsWith('/forum') || p.startsWith('/feedback') || p === '/shadowing' || p === '/shadowing/catalog';
 
 const isThemedPath = (p: string) =>
   p === '/learning' ||

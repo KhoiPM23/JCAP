@@ -248,48 +248,6 @@
   .jx-um-row .jx-um-lab { grid-column: 1 / -1; }
 }
 
-/* ===== Thanh lọc một hàng (prototype trang pgShadow, lớp .shf-*) ===== */
-.jx-shf { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); }
-.jx-shf-tabs { display: flex; flex-wrap: wrap; gap: 2px; }
-.jx-shf-tab {
-  position: relative; display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 10px; border: 0; background: transparent;
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--sumi-muted); cursor: pointer; transition: color .15s; white-space: nowrap;
-}
-.jx-shf-tab:hover { color: var(--sumi); }
-.jx-shf-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; border-radius: 8px; }
-.jx-shf-tab::after {
-  content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--ai);
-  transform: scaleX(0); transition: transform .22s cubic-bezier(.2, .7, .2, 1);
-}
-.jx-shf-tab.on { color: var(--sumi); }
-.jx-shf-tab.on::after { transform: scaleX(1); }
-.jx-shf-n {
-  box-sizing: border-box; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--paper-200); font-size: 11px;
-  line-height: 18px; font-weight: 700; color: var(--sumi-muted); text-align: center; font-variant-numeric: tabular-nums; transition: background .15s, color .15s;
-}
-.jx-shf-tab.on .jx-shf-n { background: var(--ai-soft); color: var(--ai); }
-.jx-shf-lv { display: flex; align-items: center; gap: 2px; }
-.jx-shf-chip {
-  height: 28px; min-width: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-size: 13px;
-  font-weight: 600; color: var(--sumi-muted); cursor: pointer; transition: background .15s, color .15s;
-}
-.jx-shf-chip:hover { background: var(--paper-200); color: var(--sumi); }
-.jx-shf-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
-.jx-shf-chip.on { background: var(--paper-200); color: var(--sumi); }
-.jx-shf-chip.on.lv-N5 { background: var(--n5-soft); color: var(--n5); }
-.jx-shf-chip.on.lv-N4 { background: var(--n4-soft); color: var(--n4); }
-.jx-shf-chip.on.lv-N3 { background: var(--n3-soft); color: var(--n3); }
-.jx-shf-sep { width: 1px; height: 20px; background: var(--line); }
-.jx-shf-search {
-  display: flex; align-items: center; width: 36px; height: 36px; margin-bottom: 4px; border-radius: 999px; overflow: hidden;
-  transition: width .24s cubic-bezier(.2, .7, .2, 1), background .15s, box-shadow .15s;
-}
-.jx-shf-search:hover { background: var(--paper-200); }
-.jx-shf-search:focus-within, .jx-shf-search.has-q { width: 220px; background: var(--paper-50); box-shadow: 0 0 0 1px var(--line-strong); }
-.jx-shf-search:focus-within { box-shadow: 0 0 0 2px var(--focus); }
-.jx-shf-search label { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--sumi-muted); cursor: pointer; }
-.jx-shf-search input { flex: 1; min-width: 0; height: 36px; padding: 0 12px 0 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: var(--sumi); outline: none; }
-
 body[data-theme$="-dem"] { background-color: var(--paper-100); color: var(--sumi); }
 /* Tấm sáng cho trang chưa làm lại theo design system khi bật chế độ tối (màu cứng cũ vẫn đọc được) */
 .jx-light-island { padding: 20px; border-radius: 20px; border: 1px solid var(--line); }
