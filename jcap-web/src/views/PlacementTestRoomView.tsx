@@ -106,6 +106,7 @@ export const PlacementTestRoomView: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isRecordingMic, setIsRecordingMic] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
+  const [synthesizingMessageId, setSynthesizingMessageId] = useState<number | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const isMicActiveRef = useRef(false);
@@ -126,11 +127,12 @@ export const PlacementTestRoomView: React.FC = () => {
   }, [messages, isSending]);
 
   // Khởi tạo hoặc tải phiên làm bài kiểm tra từ Backend
-  const [isFinalizingAudio, setIsFinalizingAudio] = useState(false);
   const isMountedRef = useRef(true);
   const sessionRunIdRef = useRef(0);
   const speechTokenRef = useRef(0);
   const cancelActiveSpeechRef = useRef<(() => void) | null>(null);
+  const isCompletingRef = useRef(false);
+  const hasCompletedResultRef = useRef(false);
 
   const MIC_SILENCE_TIMEOUT_MS = 5000;
 
@@ -308,7 +310,9 @@ export const PlacementTestRoomView: React.FC = () => {
     cancelActiveSpeechRef.current?.();
     scenarioVoiceService.stopAllAudio();
     setPlayingMessageId(null);
-    setIsFinalizingAudio(false);
+    setSynthesizingMessageId(null);
+    isCompletingRef.current = false;
+    hasCompletedResultRef.current = false;
     setIsLoading(true);
     setLoadError(null);
     setStrikeWarning(null);
@@ -370,12 +374,11 @@ export const PlacementTestRoomView: React.FC = () => {
     };
   }, []);
 
-  // Tổng hợp & phát giọng đọc AI; chỉ hiển thị tin nhắn khi bắt đầu phát (hoặc fallback),
+  // Tổng hợp & tự động phát giọng đọc AI ở nền ngay khi sẵn sàng (không chặn hiển thị văn bản),
   // và resolve Promise khi âm thanh phát xong 100% (hoặc bị hủy/lỗi).
   const playAiSpeechWithLifecycle = (
     msgId: number,
-    text: string,
-    onReadyToDisplay?: () => void
+    text: string
   ): Promise<void> => {
     stopMicRecording();
     cancelActiveSpeechRef.current?.();
@@ -384,17 +387,12 @@ export const PlacementTestRoomView: React.FC = () => {
     const speakerId = contextPackage?.receptionistSpeakerId;
 
     return new Promise<void>((resolve) => {
-      let hasRevealed = false;
+      let hasStartedPlayback = false;
       let hasFinished = false;
-      let startSafetyTimer: number | null = null;
       let postStartFallbackTimer: number | null = null;
       let playbackEndSafetyTimer: number | null = null;
 
       const clearAllTimers = () => {
-        if (startSafetyTimer !== null) {
-          window.clearTimeout(startSafetyTimer);
-          startSafetyTimer = null;
-        }
         if (postStartFallbackTimer !== null) {
           window.clearTimeout(postStartFallbackTimer);
           postStartFallbackTimer = null;
@@ -413,27 +411,6 @@ export const PlacementTestRoomView: React.FC = () => {
         }, estimatedMaxPlaybackMs);
       };
 
-      const revealNow = (markAsSpeaking: boolean) => {
-        if (startSafetyTimer !== null) {
-          window.clearTimeout(startSafetyTimer);
-          startSafetyTimer = null;
-        }
-        if (postStartFallbackTimer !== null) {
-          window.clearTimeout(postStartFallbackTimer);
-          postStartFallbackTimer = null;
-        }
-        if (!hasRevealed) {
-          hasRevealed = true;
-          if (isMountedRef.current) {
-            onReadyToDisplay?.();
-          }
-        }
-        if (markAsSpeaking && isMountedRef.current && speechTokenRef.current === token) {
-          setPlayingMessageId(msgId);
-        }
-        ensurePlaybackEndSafetyTimer();
-      };
-
       const finishNow = () => {
         if (hasFinished) return;
         hasFinished = true;
@@ -441,9 +418,12 @@ export const PlacementTestRoomView: React.FC = () => {
         if (cancelActiveSpeechRef.current === cancelCurrent) {
           cancelActiveSpeechRef.current = null;
         }
-        revealNow(false);
         if (isMountedRef.current && speechTokenRef.current === token) {
+          setSynthesizingMessageId((prev) => (prev === msgId ? null : prev));
           setPlayingMessageId((prev) => (prev === msgId ? null : prev));
+          if (!isMicActiveRef.current && !usedVoiceInputRef.current && !committedTranscriptRef.current.trim()) {
+            turnStartTimeRef.current = Date.now();
+          }
         }
         resolve();
       };
@@ -458,10 +438,10 @@ export const PlacementTestRoomView: React.FC = () => {
         return;
       }
 
-      // Dự phòng tối đa cho pha tổng hợp + khởi phát audio (VOICEVOX timeout hiện tại cho AI roleplay là 25s)
-      startSafetyTimer = window.setTimeout(() => {
-        revealNow(false);
-      }, 28000);
+      if (isMountedRef.current && speechTokenRef.current === token) {
+        setPlayingMessageId(null);
+        setSynthesizingMessageId(msgId);
+      }
 
       scenarioVoiceService
         .playAiSpeech(
@@ -472,19 +452,26 @@ export const PlacementTestRoomView: React.FC = () => {
           },
           undefined,
           () => {
-            revealNow(true);
+            hasStartedPlayback = true;
+            if (postStartFallbackTimer !== null) {
+              window.clearTimeout(postStartFallbackTimer);
+              postStartFallbackTimer = null;
+            }
+            if (isMountedRef.current && speechTokenRef.current === token) {
+              setSynthesizingMessageId((prev) => (prev === msgId ? null : prev));
+              setPlayingMessageId(msgId);
+            }
+            ensurePlaybackEndSafetyTimer();
           }
         )
         .then(() => {
-          if (startSafetyTimer !== null) {
-            window.clearTimeout(startSafetyTimer);
-            startSafetyTimer = null;
-          }
-          // Khi playAiSpeech resolve: VOICEVOX đã play() hoặc đã kích hoạt fallback Web Speech.
-          // Nếu trình duyệt chặn autoplay khiến onStart chưa bắn kịp, hiển thị text sau tối đa 1.5s.
-          if (!hasRevealed && !hasFinished) {
+          // Nếu trình duyệt chặn autoplay khiến onStart chưa bắn ngay, gỡ nhãn "Đang chuẩn bị giọng..." sau 1.5s
+          if (!hasStartedPlayback && !hasFinished) {
             postStartFallbackTimer = window.setTimeout(() => {
-              revealNow(false);
+              if (isMountedRef.current && speechTokenRef.current === token) {
+                setSynthesizingMessageId((prev) => (prev === msgId ? null : prev));
+              }
+              ensurePlaybackEndSafetyTimer();
             }, 1500);
           }
         })
@@ -498,7 +485,7 @@ export const PlacementTestRoomView: React.FC = () => {
   // Xử lý gửi tin nhắn của học viên lên Backend
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || isSending || isFinalizingAudio || !sessionId) return;
+    if (!inputText.trim() || isSending || isConcluded || !sessionId) return;
 
     const runId = sessionRunIdRef.current;
     const usedMicForTurn = isRecordingMic || isMicActiveRef.current || usedVoiceInputRef.current;
@@ -507,8 +494,11 @@ export const PlacementTestRoomView: React.FC = () => {
         ? Math.max(1.0, Number(((Date.now() - micStartedAtRef.current) / 1000).toFixed(1)))
         : 0;
     stopMicRecording();
+    cancelActiveSpeechRef.current?.();
+    scenarioVoiceService.stopAllAudio();
     usedVoiceInputRef.current = false;
     micStartedAtRef.current = 0;
+    committedTranscriptRef.current = '';
     const userText = inputText.trim();
     setInputText('');
     setIsSending(true);
@@ -543,74 +533,58 @@ export const PlacementTestRoomView: React.FC = () => {
       if (res.success && res.data) {
         const turnData = res.data;
 
-        // Cập nhật ngay tin nhắn của học viên (bản dịch);
-        // giữ trạng thái chờ để đồng bộ tin nhắn AI xuất hiện đúng lúc âm thanh bắt đầu phát.
-        setMessages((prev) => [...prev.slice(0, -1), turnData.userMessage]);
+        // 1. Hiển thị NGAY LẬP TỨC cả bản dịch lượt nói học viên lẫn câu trả lời của AI (Zero perceived latency)
+        setMessages((prev) => [...prev.slice(0, -1), turnData.userMessage, turnData.aiMessage]);
 
-        let aiTurnRevealed = false;
-        const revealAiTurn = () => {
-          if (aiTurnRevealed || !isMountedRef.current || sessionRunIdRef.current !== runId) return;
-          aiTurnRevealed = true;
+        // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp ngay khi nhận phản hồi
+        setCurrentEvent(turnData.currentEvent);
+        setCurrentDifficultyBand(turnData.currentDifficultyBand);
+        setDemonstratedBand(turnData.demonstratedBand);
+        setScaffoldingStep(turnData.scaffoldingStep);
 
-          setMessages((prev) => [...prev, turnData.aiMessage]);
-
-          // Cập nhật trạng thái sự kiện & tiêu chí chấm điểm trực tiếp
-          setCurrentEvent(turnData.currentEvent);
-          setCurrentDifficultyBand(turnData.currentDifficultyBand);
-          setDemonstratedBand(turnData.demonstratedBand);
-          setScaffoldingStep(turnData.scaffoldingStep);
-
-          if (turnData.eventSummaries) {
-            setEventSummaries(turnData.eventSummaries);
-          }
-
-          if (turnData.taskFulfillmentScore != null) {
-            const taskVal = turnData.taskFulfillmentScore;
-            const grammarVal = turnData.grammarAccuracyScore ?? 0;
-            const vocabVal = turnData.vocabularyRangeScore ?? 0;
-            const pragmaticsVal = turnData.pragmaticsScore ?? 0;
-            const overallVal =
-              turnData.overallTurnScore ??
-              Math.round(0.35 * taskVal + 0.25 * grammarVal + 0.2 * vocabVal + 0.2 * pragmaticsVal);
-            setLatestTurnScores({
-              task: taskVal,
-              grammar: grammarVal,
-              vocab: vocabVal,
-              pragmatics: pragmaticsVal,
-              overall: overallVal,
-              note: turnData.evidenceNote || '',
-              classification: turnData.inputClassification || 'Valid',
-              detectedIntent: turnData.detectedIntent || 'GeneralResponse',
-              demonstratedBand: turnData.demonstratedBand || 'N4',
-              estimatedLevelSoFar: turnData.estimatedLevelSoFar || undefined,
-            });
-          }
-
-          // Cảnh báo nếu học viên nói lạc đề hoặc vi phạm nguyên tắc
-          if (turnData.isStrikeWarning && turnData.strikeWarningMessage) {
-            setStrikeWarning(turnData.strikeWarningMessage);
-          }
-
-          setIsSending(false);
-          turnStartTimeRef.current = Date.now();
-        };
-
-        if (turnData.isConcluded) {
-          setIsFinalizingAudio(true);
+        if (turnData.eventSummaries) {
+          setEventSummaries(turnData.eventSummaries);
         }
 
-        const aiText = turnData.aiMessage?.japaneseText || '';
-        const speechPromise = aiText
-          ? playAiSpeechWithLifecycle(turnData.aiMessage.id, aiText, revealAiTurn)
-          : Promise.resolve().then(() => revealAiTurn());
+        if (turnData.taskFulfillmentScore != null) {
+          const taskVal = turnData.taskFulfillmentScore;
+          const grammarVal = turnData.grammarAccuracyScore ?? 0;
+          const vocabVal = turnData.vocabularyRangeScore ?? 0;
+          const pragmaticsVal = turnData.pragmaticsScore ?? 0;
+          const overallVal =
+            turnData.overallTurnScore ??
+            Math.round(0.35 * taskVal + 0.25 * grammarVal + 0.2 * vocabVal + 0.2 * pragmaticsVal);
+          setLatestTurnScores({
+            task: taskVal,
+            grammar: grammarVal,
+            vocab: vocabVal,
+            pragmatics: pragmaticsVal,
+            overall: overallVal,
+            note: turnData.evidenceNote || '',
+            classification: turnData.inputClassification || 'Valid',
+            detectedIntent: turnData.detectedIntent || 'GeneralResponse',
+            demonstratedBand: turnData.demonstratedBand || 'N4',
+            estimatedLevelSoFar: turnData.estimatedLevelSoFar || undefined,
+          });
+        }
+
+        // Cảnh báo nếu học viên nói lạc đề hoặc vi phạm nguyên tắc
+        if (turnData.isStrikeWarning && turnData.strikeWarningMessage) {
+          setStrikeWarning(turnData.strikeWarningMessage);
+        }
+
+        setIsSending(false);
+        turnStartTimeRef.current = Date.now();
 
         if (turnData.isConcluded) {
-          // Chờ lượt đọc cuối của AI phát hết 100% rồi mới bật banner & modal kết thúc
-          await speechPromise;
-          if (!isMountedRef.current || sessionRunIdRef.current !== runId) return;
-          setIsFinalizingAudio(false);
           setIsConcluded(true);
-          await handleConcludeAndFetchResult();
+          void refreshUser();
+        }
+
+        // 2. Đường tiếng: tổng hợp VOICEVOX ở nền, xong lúc nào tự động phát lúc đó
+        const aiText = turnData.aiMessage?.japaneseText || '';
+        if (aiText) {
+          void playAiSpeechWithLifecycle(turnData.aiMessage.id, aiText);
         }
       } else {
         setStrikeWarning(res.message || 'Lỗi xử lý phản hồi từ AI.');
@@ -620,13 +594,17 @@ export const PlacementTestRoomView: React.FC = () => {
       if (isMountedRef.current && sessionRunIdRef.current === runId) {
         setStrikeWarning(err.message || 'Lỗi gửi tin nhắn đến máy chủ.');
         setIsSending(false);
-        setIsFinalizingAudio(false);
       }
     }
   };
 
   // Phát giọng đọc tiếng Nhật cho tin nhắn của AI
   const handlePlayAiSpeech = async (msgId: number, text: string) => {
+    if (playingMessageId === msgId) {
+      cancelActiveSpeechRef.current?.();
+      scenarioVoiceService.stopAllAudio();
+      return;
+    }
     await playAiSpeechWithLifecycle(msgId, text);
   };
 
@@ -644,6 +622,10 @@ export const PlacementTestRoomView: React.FC = () => {
       stopMicRecording();
       return;
     }
+
+    // Ngắt âm thanh AI đang tổng hợp/phát để không dội ngược vào micro
+    cancelActiveSpeechRef.current?.();
+    scenarioVoiceService.stopAllAudio();
 
     try {
       committedTranscriptRef.current = inputText.trim();
@@ -664,19 +646,24 @@ export const PlacementTestRoomView: React.FC = () => {
   // Kết thúc bài kiểm tra và lấy kết quả tổng hợp
   const handleConcludeAndFetchResult = async () => {
     if (!sessionId) return;
-    if (finalResult) {
+    if (hasCompletedResultRef.current || finalResult) {
       setShowResultModal(true);
       return;
     }
+    if (isCompletingRef.current) return;
+    isCompletingRef.current = true;
     try {
       const res = await placementTestService.complete(sessionId);
       if (res.success && res.data && isMountedRef.current) {
+        hasCompletedResultRef.current = true;
         setFinalResult(res.data);
         setShowResultModal(true);
         void refreshUser();
       }
     } catch (err) {
       console.error('Cannot complete session:', err);
+    } finally {
+      isCompletingRef.current = false;
     }
   };
 
@@ -1284,19 +1271,24 @@ export const PlacementTestRoomView: React.FC = () => {
 
                         {isAi && (
                           <div className="flex items-center gap-1.5">
-                            {playingMessageId === msg.id && (
+                            {playingMessageId === msg.id ? (
                               <span className="rounded bg-emerald-100 px-1.5 py-0.2 text-[9px] font-bold text-emerald-800">
                                 ĐANG NÓI
                               </span>
-                            )}
+                            ) : synthesizingMessageId === msg.id ? (
+                              <span className="inline-flex items-center gap-1 rounded bg-[var(--ai-soft)] px-1.5 py-0.2 text-[9px] font-semibold text-[var(--ai)]">
+                                <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border border-[var(--ai)] border-t-transparent" />
+                                <span>Đang chuẩn bị giọng...</span>
+                              </span>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => void handlePlayAiSpeech(msg.id, msg.japaneseText)}
                               className="rounded-full bg-[var(--paper-100)] px-2 py-0.5 text-[10px] font-semibold text-[var(--sumi-muted)] hover:bg-[var(--line)] hover:text-[var(--sumi)] transition active:scale-95 cursor-pointer flex items-center gap-1"
-                              title="Nghe lại câu nói này"
+                              title={playingMessageId === msg.id ? 'Dừng phát âm thanh' : 'Nghe lại câu nói này'}
                             >
                               <VolumeIcon className="w-3 h-3 text-[var(--ai)]" />
-                              <span>Nghe lại</span>
+                              <span>{playingMessageId === msg.id ? 'Dừng' : 'Nghe lại'}</span>
                             </button>
                           </div>
                         )}
@@ -1378,7 +1370,7 @@ export const PlacementTestRoomView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleToggleMic}
-                    disabled={isSending || isFinalizingAudio}
+                    disabled={isSending || isConcluded}
                     className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold transition-all shadow-xs cursor-pointer select-none overflow-hidden ${
                       isRecordingMic
                         ? 'border border-rose-500 bg-rose-600 text-white ring-4 ring-rose-400/25 shadow-md min-w-[96px] animate-pulse'
@@ -1436,7 +1428,7 @@ export const PlacementTestRoomView: React.FC = () => {
                       ? 'Đang lắng nghe giọng nói tiếng Nhật của bạn...'
                       : 'Nhập câu trả lời bằng tiếng Nhật... (Enter để gửi)'
                   }
-                  disabled={isSending || isFinalizingAudio}
+                  disabled={isSending || isConcluded}
                   className={`flex-1 min-w-0 rounded-xl border px-3 sm:px-4 py-2.5 text-sm text-[var(--sumi)] outline-none transition ${
                     isRecordingMic
                       ? 'border-red-300 bg-red-50/40 ring-2 ring-red-200'
@@ -1447,7 +1439,7 @@ export const PlacementTestRoomView: React.FC = () => {
                 {/* Send Button */}
                 <button
                   type="submit"
-                  disabled={!inputText.trim() || isSending || isFinalizingAudio}
+                  disabled={!inputText.trim() || isSending || isConcluded}
                   className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--ai)] px-4 sm:px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--ai-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                 >
                   {isSending ? (
