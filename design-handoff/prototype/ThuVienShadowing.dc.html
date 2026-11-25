@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCAP · Shadowing · Danh sách + kịch bản xem trước · bản tương tác tổng (mở vào Học tiếp)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 450,'GRAD' 0,'opsz' 24;display:inline-block;flex:none}
+:where(.fm) p,:where(.fm) h1,:where(.fm) h3,:where(.fm) h4,:where(.fm) ol,:where(.fm) ul,:where(.fm) fieldset,:where(.fm) figure{margin:0;padding:0}
+:where(.fm) ol,:where(.fm) ul{list-style:none}
+.fm button{font-family:inherit}
+.fm :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fm .jc-input__el:focus-visible{outline:none}
+/* bảng màu: nền giấy ấm + mực chàm như landing (theme kham-pha); 5 kênh lấy từ bộ màu khắc gỗ WOODBLOCK trong exploreTheme.ts
+   cùng độ đậm nhạt, cách đều trên vòng màu: chàm, thông, gạch, đất vàng, mận. Tỉ lệ 60 giấy / 30 mực / 10 điểm nhấn (chàm cho thao tác, son cho ghim). */
+.fm{--wb-indigo:#294669;--wb-indigo-f:#BCCAD6;--wb-pine:#2F4D43;--wb-pine-f:#BFCAC3;--wb-brick:#843526;--wb-brick-f:#E5C3B3;--wb-ochre:#6E5112;--wb-ochre-f:#E4CC97;--wb-plum:#563B5D;--wb-plum-f:#CDBDCB;
+  --ai-soft:color-mix(in srgb,var(--ai) 12%,var(--paper-50));--focus:var(--ai)}
+.fm[data-theme="hoc-tap-dem"]{--ai:var(--sora);--ai-hover:var(--sora);--on-ai:var(--on-sora);--ai-soft:color-mix(in srgb,var(--sora) 16%,var(--paper-50))}
+.fm{position:relative;display:flex;height:100vh;overflow:hidden;background:var(--paper-100);color:var(--sumi);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+.sp{flex:1}
+/* thanh bên */
+.sb{flex:0 0 240px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:16px 12px 12px;background:var(--paper-50);border-right:1px solid var(--line);overflow:hidden}
+.sb-h{display:flex;align-items:center;gap:10px;height:40px;padding:0 6px 10px}
+.sb-h b{font-size:18px;letter-spacing:.08em}
+.sb-logo{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:var(--shu);color:var(--on-shu)}
+.sb-logo .msr{font-size:20px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.ib:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-l{height:18px;margin:10px 0 2px!important;padding:0 12px!important;font-size:12px;line-height:18px;font-weight:600;color:var(--sumi-muted)}
+.sb-l.red{color:var(--shu)}
+.sb-nav{display:flex;flex-direction:column;gap:2px}
+.sb-i{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border-radius:12px;color:var(--sumi-muted);font-size:14px;font-weight:600;text-decoration:none}
+.sb-i .msr{font-size:22px}
+.sb-i:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-i.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.sb-i.on .msr{color:var(--shu);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sb-i .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-i .n{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--sumi)}
+.sb-i .n.red{color:var(--shu)}.sb-i .n.credit{color:var(--credit);font-size:13px}
+.sb-ch{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--shu);color:var(--on-shu);font-family:var(--font-mincho);font-size:13px;font-weight:700}
+.sb-f{margin-top:6px;border-top:1px solid var(--line);border-radius:0;height:48px}
+.coin{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--credit-coin);color:var(--on-sora)}
+.coin .msr{font-size:15px}
+.sb-u{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.sb-u:hover{background:var(--paper-200)}
+.sb-u .who{flex:1;min-width:0;display:flex;flex-direction:column}
+.sb-u b{font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-u .who span{font-size:12px;line-height:16px;color:var(--sumi-muted)}
+/* avatar */
+.av{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;font-size:16px;font-weight:700;line-height:1}
+.av.sm{width:32px;height:32px;font-size:13px}
+.av .msr{font-size:22px}.av.sm .msr{font-size:18px}
+.a0{background:var(--ai);color:var(--on-ai)}.a1{background:var(--sora);color:var(--on-sora)}
+.a2{background:var(--wb-pine-f);color:var(--wb-pine)}.a3{background:var(--wb-plum-f);color:var(--wb-plum)}.a4{background:var(--wb-ochre-f);color:var(--wb-ochre)}
+.av.anon{background:var(--paper-200);color:var(--sumi-muted);box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+/* kênh: màu nhận diện lấy từ token */
+.ch-all{--c:var(--sumi);--cs:var(--paper-200)}
+.ch-qa{--k:var(--wb-indigo);--kf:var(--wb-indigo-f)}.ch-sp{--k:var(--wb-pine);--kf:var(--wb-pine-f)}.ch-bd{--k:var(--wb-brick);--kf:var(--wb-brick-f)}
+.ch-rs{--k:var(--wb-ochre);--kf:var(--wb-ochre-f)}.ch-lg{--k:var(--wb-plum);--kf:var(--wb-plum-f)}
+.ch-qa,.ch-sp,.ch-bd,.ch-rs,.ch-lg{--c:var(--k);--cs:color-mix(in srgb,var(--kf) 55%,var(--paper-50))}
+[data-theme="hoc-tap-dem"] .ch-qa,[data-theme="hoc-tap-dem"] .ch-sp,[data-theme="hoc-tap-dem"] .ch-bd,[data-theme="hoc-tap-dem"] .ch-rs,[data-theme="hoc-tap-dem"] .ch-lg{--c:var(--kf);--cs:color-mix(in srgb,var(--k) 55%,var(--paper-50))}
+/* khung chính */
+.fm-main{flex:1;min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.fm-mtop{display:none}
+.fm-wrap{max-width:1100px;margin:0 auto;padding:32px 40px 96px;box-sizing:border-box}
+.fm-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px}
+.fm-ttl h1{display:flex;align-items:baseline;gap:12px;font-size:28px;line-height:38px;font-weight:700}
+.fm-ttl .kj{font-family:var(--font-mincho);font-size:17px;font-weight:600;letter-spacing:.12em;color:var(--sumi-muted)}
+.fm-ttl p{margin-top:4px;font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.fm-hact{display:flex;gap:8px;flex-wrap:wrap}
+.fm-grid{display:grid;grid-template-columns:264px minmax(0,1fr);gap:32px;align-items:start;margin-top:28px}
+/* cột kênh */
+.fm-rail{position:sticky;top:24px}
+.fm-rl{padding:0 12px 8px!important;font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.rc-list{display:flex;flex-direction:column;gap:2px}
+.rc .cn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:44px;padding:6px 10px 6px 8px;border:0;border-radius:14px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.rc:hover{background:var(--paper-200)}
+.rc.on{background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.rc .ct,.cp-c .ct{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;}
+.rc .ct{width:28px;height:28px;border-radius:8px;align-self:flex-start;margin-top:2px}
+.rc .ct .msr{font-size:18px}
+.rc .ct,.cp-c .ct{background:var(--cs);color:var(--c)}
+.rc.on .ct{background:var(--c);color:var(--paper-50)}
+.rc .cx,.cp-c .cx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rc .cn,.cp-c .cn{font-size:14px;line-height:20px;font-weight:600}
+.rc.on .cn{font-weight:700}
+.rc .cd,.cp-c .cd{font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.rc .cd{display:none}
+.rc.on .cd:not(:empty){display:block}
+.rc .cx>.cd:empty{display:none}
+.rc .cc{flex:none;align-self:flex-start;min-width:22px;padding-top:6px;text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sumi-muted)}
+.fm-chline{display:none}
+.fm-help{display:inline-flex;align-items:center;gap:8px;height:36px;margin:12px 0 0 2px;padding:0 12px 0 8px;border-radius:999px;color:var(--sumi-muted);font-size:13px;font-weight:600;text-decoration:none}
+.fm-help .msr{font-size:18px}
+.fm-help:hover{background:var(--paper-200);color:var(--sumi)}
+/* cột bài */
+.fm-feed{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fm-quick{display:flex;align-items:center;gap:10px;height:56px;box-sizing:border-box;padding:0 8px 0 10px;border-radius:999px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);transition:box-shadow .15s}
+.fm-quick:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow-md)}
+.fm-quick .jc-btn{border-radius:999px;padding:0 16px 0 12px}
+.fm-qbtn{flex:1;min-width:0;height:44px;padding:0 4px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:15px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.fm-qbtn:hover{color:var(--sumi)}
+.fm-qbtn:focus-visible{outline-offset:-2px}
+.fm-tools{display:flex;align-items:center;gap:8px;min-height:40px;margin-top:6px}
+.fm-lh{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;margin:0;font-size:15px;line-height:22px;font-weight:700}
+.fm-lh .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-lh .n{font-size:13px;font-weight:500;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.fm-sort .jc-seg{background:transparent;padding:0;gap:2px}
+.fm-sort .jc-seg__opt{min-height:32px;padding:0 12px 0 10px;border-radius:999px;font-weight:600}
+.fm-sort .jc-seg__opt.is-on{background:var(--paper-50);color:var(--sumi);box-shadow:0 0 0 1px var(--line)}
+.fm-sort .jc-seg__opt .jc-icon{font-size:17px!important;width:17px!important;height:17px!important}
+.fm-tools .jc-iconbtn{border-radius:999px;width:36px;height:36px}
+.fm-search{height:40px;min-height:40px;border-radius:999px}
+.fm-search{flex:1;min-width:0;animation:fmgrow .18s ease-out}
+@keyframes fmgrow{from{opacity:0;transform:scaleX(.6);transform-origin:right}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fm-search{animation:none}}
+.fm-search .jc-input__el::-webkit-search-cancel-button{display:none}
+.fm-x{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.fm-x:hover{background:var(--paper-200);color:var(--sumi)}
+.fm-x .msr{font-size:18px}
+.fm-sort{display:flex;align-items:center;gap:8px}
+.fm-sl{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-count{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-newwrap{position:sticky;top:12px;z-index:3;display:flex;justify-content:center;height:0;overflow:visible}
+.fm-new{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px 0 12px;border:0;border-radius:999px;background:var(--ai);color:var(--on-ai);font-size:14px;font-weight:600;box-shadow:var(--shadow-md);cursor:pointer;transform:translateY(-6px)}
+.fm-new .msr{font-size:18px}
+.fm-list{display:flex;flex-direction:column;gap:12px}
+/* thẻ bài */
+.fp{position:relative;padding:16px 20px 8px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line);transition:box-shadow .15s,border-color .15s}
+.fp:hover{border-color:var(--line-strong)}
+.fp.open{border-color:var(--line-strong);box-shadow:var(--shadow-md)}
+.fp-h{display:flex;align-items:center;gap:12px}
+.fp-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fp-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.fp-n>.nm{font-weight:700}
+.me-tag{font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.fp-m{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;color:var(--c);font-weight:600}
+.chip .msr{font-size:16px}
+.fp-menu{position:relative;align-self:flex-start}
+.fp-pop{position:absolute;right:0;top:44px;z-index:4;min-width:180px;padding:6px;border-radius:12px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+.fp-pop button{display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--sumi);font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.fp-pop button:hover{background:var(--paper-200)}
+.fp-pop .dg{color:var(--danger)}
+.fp-pop .dg:hover{background:var(--danger-soft)}
+.fp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fp-t{margin-top:10px!important}
+.fp-tb{display:block;width:100%;padding:0;border:0;background:transparent;color:var(--sumi);font-size:17px;line-height:26px;font-weight:700;text-align:left;cursor:pointer;font-family:var(--font-sans)}
+.fp-tb:hover{color:var(--ai)}
+.fp-c{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.fp-b{font-size:15px;line-height:24px;color:var(--sumi-muted);white-space:pre-line;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fp.open .fp-b{display:block;color:var(--sumi)}
+.fimgs{display:flex;gap:8px;flex-wrap:wrap}
+.fimg{position:relative;display:block;width:132px;height:96px;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper-100);cursor:zoom-in}
+.fp.open .fimg{width:260px;height:190px}
+.fimg .zoom{position:absolute;right:6px;bottom:6px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--paper-50);color:var(--sumi);box-shadow:var(--shadow-sm);opacity:0;transition:opacity .15s}
+.fimg:hover .zoom,.fimg:focus-visible .zoom{opacity:1}
+.fimg .zoom .msr{font-size:18px}
+/* ảnh ghi chú (thay cho ảnh thật trong bản mẫu) */
+.nimg{position:relative;display:flex;flex-direction:column;justify-content:center;gap:.35em;width:100%;height:100%;box-sizing:border-box;padding:.9em 1.1em;font-size:8.5px;line-height:1.3;color:var(--sumi);text-align:left;background-color:var(--paper-50);background-image:repeating-linear-gradient(180deg,transparent 0 calc(1.65em - 1px),var(--line) calc(1.65em - 1px) 1.65em);font-family:var(--font-jp)}
+.fp.open .nimg{font-size:15px}
+.nimg .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nimg .ln:nth-child(odd){color:var(--ai);font-weight:500}
+.nimg .tape{position:absolute;top:-3px;left:50%;width:28%;height:12%;max-height:14px;transform:translateX(-50%) rotate(-3deg);background:var(--sora);opacity:.75;border-radius:2px}
+.ffiles{display:flex;flex-direction:column;gap:8px}
+.ffile{display:flex;align-items:center;gap:12px;max-width:440px;padding:8px 8px 8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper-100)}
+.ft{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px}
+.ft-pdf{background:color-mix(in srgb,var(--wb-brick-f) 60%,var(--paper-50));color:var(--wb-brick)}.ft-doc{background:color-mix(in srgb,var(--wb-indigo-f) 60%,var(--paper-50));color:var(--wb-indigo)}.ft-img{background:color-mix(in srgb,var(--wb-pine-f) 60%,var(--paper-50));color:var(--wb-pine)}
+[data-theme="hoc-tap-dem"] .ft-pdf,[data-theme="hoc-tap-dem"] .ft-doc,[data-theme="hoc-tap-dem"] .ft-img{background:var(--paper-200);color:var(--sumi)}.ft-txt{background:var(--paper-200);color:var(--sumi-muted)}
+.fx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fn{font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs{display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.fs .msr{font-size:14px}
+/* hàng thao tác */
+.fp-a{display:flex;align-items:center;gap:4px;margin:10px -8px 0}
+.fa{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--sumi-muted);font-size:14px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.fa:hover{background:var(--paper-200);color:var(--sumi)}
+.fa.on{color:var(--ai);background:var(--ai-soft)}
+.fa.solve.on,.fa.solve{--x:0}
+.fa.on .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.fa.solve{color:var(--success)}
+.fa.solve.on{background:var(--success-soft);color:var(--success)}
+.fa-open{color:var(--sumi)}
+/* bình luận */
+.fc{display:flex;flex-direction:column;gap:14px;margin:8px -20px 0;padding:16px 20px 16px;border-top:1px solid var(--line)}
+.fc-h{display:flex;align-items:center;gap:8px;font-size:15px;line-height:22px;font-weight:700}
+.fc-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:var(--paper-200);font-size:12px;font-variant-numeric:tabular-nums}
+.fc-empty{display:flex;align-items:center;gap:10px;padding:14px 16px!important;border-radius:12px;background:var(--paper-100);font-size:14px;color:var(--sumi-muted)}
+.fc-list{display:flex;flex-direction:column;gap:16px}
+.cm{display:flex;gap:12px}
+.cm-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.cm-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.cm-n>.nm{font-weight:700}
+.cm-n>.tm{font-size:12px;color:var(--sumi-muted)}
+.cm-t{font-size:15px;line-height:24px;white-space:pre-line}
+.cm-r{display:inline-flex;align-items:center;gap:4px;height:32px;margin-left:-8px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:13px;font-weight:600;cursor:pointer}
+.cm-r:hover{background:var(--paper-200);color:var(--sumi)}
+.cm-r .msr{font-size:17px}
+.fc-rep{display:flex;flex-direction:column;gap:14px;margin:10px 0 0 15px!important;padding-left:29px!important;border-left:2px solid var(--line)}
+/* viết bình luận */
+.fcw{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--paper-100)}
+.fcw-to{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sumi-muted)}
+.fcw-to b{color:var(--ai)}
+.fcw-to .msr{font-size:17px}
+.fcw-box{display:flex;gap:10px;align-items:flex-start}
+.fcw-box .av{margin-top:4px}
+.fcw-box .av .msr{display:none}
+.fcw-box .av.anon .msr{display:inline-block}.fcw-box .av.anon .ini{display:none}
+.fcw-in{flex:1;min-width:0}
+.fcw-in .jc-input__el{min-height:48px}
+.fcw-row{display:flex;align-items:center;gap:12px;padding-left:38px}
+.fcw-row .jc-switch{gap:10px}
+.fcw-row .jc-switch__label{font-size:13px;font-weight:600}
+.fcw-err{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 10px 8px 12px!important;border-radius:10px;background:var(--danger-soft);color:var(--danger);font-size:13px;line-height:18px;font-weight:600}
+.fcw-err .msr{font-size:18px}
+.fcw-err button{margin-left:auto;height:32px;padding:0 12px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font-size:13px;font-weight:700;cursor:pointer}
+/* trạng thái */
+.fm-empty{padding:48px 24px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px dashed var(--line-strong)}
+.fm-empty .ei{font-size:32px}
+.sk{display:flex;flex-direction:column;gap:10px;padding-bottom:18px}
+.skc{width:40px;height:40px;border-radius:50%;flex:none}
+.sk1{width:38%}.sk2{width:22%}.sk3{width:72%;height:18px}.sk4{width:96%}.sk5{width:60%}
+/* nút nổi điện thoại */
+.fm-fab{display:none}
+/* khung soạn bài */
+.fm-ov{z-index:60}
+.cp-b{display:flex;flex-direction:column;gap:20px;padding-top:12px}
+.cp-ch{border:0}
+.cp-ch legend{margin-bottom:8px}
+.cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cp-c{position:relative;display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--paper-50);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-c:hover{border-color:var(--line-strong)}
+.cp-c.on{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);background:var(--cs)}
+.cp-c.on .ct{background:var(--c);color:var(--paper-50)}
+.cp-c .ck{display:none;color:var(--c)}
+.cp-c.on .ck{display:inline-flex}
+.cp-c.on .ck .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.cp-cnt{margin-top:6px!important;font-size:12px;line-height:16px;color:var(--sumi-muted);text-align:right;font-variant-numeric:tabular-nums}
+.cp-cnt.warn{color:var(--warning);font-weight:600}
+.cp-att{display:flex;flex-direction:column;gap:8px}
+.cp-drop{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:1.5px dashed var(--line-strong);border-radius:14px;background:var(--paper-100);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-drop:hover{border-color:var(--ai);background:var(--ai-soft)}
+.cp-drop>.msr{font-size:26px;color:var(--ai)}
+.dx{display:flex;flex-direction:column;gap:2px}
+.dt{font-size:15px;font-weight:600}
+.dd{font-size:13px;color:var(--sumi-muted)}
+.cp-files{display:flex;flex-direction:column;gap:8px}
+.cpf{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 8px;border:1px solid var(--line);border-radius:12px;background:var(--paper-50)}
+.cpf.err{border-color:var(--danger);background:var(--danger-soft)}
+.cpf.err .fs{color:var(--danger);font-weight:600}
+.cpf.ok .fs .msr{color:var(--success)}
+.cp-th{flex:none;width:48px;height:48px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.cp-th .nimg{font-size:4px;padding:.8em}
+.cpf .ft{width:48px;height:48px;border-radius:8px}
+.bar{display:block;height:4px;margin-top:4px;border-radius:2px;background:var(--paper-200);overflow:hidden}
+.bar i{display:block;width:40%;height:100%;border-radius:2px;background:var(--ai);animation:barmove 1.1s ease-in-out infinite}
+@keyframes barmove{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.cp-anon{padding:14px 16px;border-radius:14px;background:var(--paper-100)}
+.cp-f{align-items:center}
+.cp-why{flex:1;min-width:0;font-size:13px;color:var(--sumi-muted)}
+/* xem ảnh */
+.fm-lb{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:var(--scrim);backdrop-filter:blur(2px)}
+.fm-lbbar{display:flex;align-items:center;gap:12px;padding:12px 16px 12px 24px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+.fm-lbbar p{flex:1;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.lbh{font-size:13px;color:var(--sumi-muted)}
+.fm-lbfig{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px}
+.nimg.big{width:min(720px,90%);height:auto;aspect-ratio:4/3;font-size:30px;border-radius:12px;box-shadow:var(--shadow-lg)}
+.fm-lbfig figcaption{padding:6px 14px;border-radius:999px;background:var(--paper-50);font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-toast{position:fixed;left:50%;bottom:28px;z-index:80;transform:translateX(-50%);min-width:300px}
+@media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}.fp{transition:none}}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .sb{display:none}
+  .fm-mtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:56px;padding:0 12px 0 6px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+  .fm-mtop b{font-size:17px}
+  .fm-mtop .av{width:32px;height:32px;font-size:13px;margin-left:4px}
+  .fm-wrap{padding:16px 16px 112px}
+  .fm-ttl h1{font-size:22px;line-height:30px;gap:8px}
+  .fm-ttl .kj{font-size:14px}
+  .fm-ttl p{font-size:14px;line-height:21px}
+  .fm-hact{display:none}
+  .fm-grid{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}
+  .fm-rail{position:static;margin:0 -16px}
+  .fm-rl{display:none}
+  .rc-list{flex-direction:row;gap:8px;overflow-x:auto;padding:2px 16px 4px;scrollbar-width:none}
+  .rc{flex:none;width:auto;align-items:center;gap:6px;height:40px;padding:0 14px 0 6px;border-radius:999px;background:var(--paper-50);box-shadow:inset 0 0 0 1px var(--line)}
+  .rc.on{background:var(--c);color:var(--paper-50);box-shadow:none}
+  .rc .ct{width:28px;height:28px;border-radius:50%;background:transparent}
+  .rc.on .ct{background:transparent;color:var(--paper-50)}
+  .rc .cd{display:none}
+  .rc .cn{white-space:nowrap}
+  .rc .cc{padding:0;min-width:0;font-size:12px;align-self:center}
+  .rc .ct{align-self:center;margin-top:0}
+  .rc.on .cc{color:var(--paper-50)}
+  .fm-chline.none{display:none!important}
+  .fm-chline{display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+  .fm-chline .ct{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:var(--cs);color:var(--c)}
+  .fm-chline .msr{font-size:16px}
+  .fm-quick{display:none}
+  .fm-tools{gap:6px;margin-top:0}
+  .fm-help{display:none}
+  .fm-lh .t,.fm-lh .n{display:none}
+  .fm-sort .jc-seg__opt{padding:0 10px}
+  .fp{padding:14px 14px 6px;border-radius:14px}
+  .fp-t{margin-top:8px!important}
+  .fp-tb{font-size:16px;line-height:24px}
+  .fa{height:44px;padding:0 10px}
+  .fa-open>span:first-child{display:none}
+  .fp-a{margin:6px -6px 0}
+  .fp.open .fimg{width:100%;height:auto;aspect-ratio:4/3}
+  .fp.open .nimg{font-size:17px}
+  .fc{margin:6px -14px 0;padding:14px}
+  .fc-rep{margin-left:8px!important;padding-left:14px!important}
+  .fcw-row{padding-left:0;flex-wrap:wrap}
+  .ffile{max-width:none}
+  .fm-fab{position:absolute;right:16px;bottom:20px;z-index:6;display:inline-flex;align-items:center;gap:8px;height:56px;padding:0 20px 0 16px;border:0;border-radius:18px;background:var(--ai);color:var(--on-ai);font-size:15px;font-weight:700;box-shadow:var(--shadow-lg);cursor:pointer}
+  .fm-fab .msr{font-size:22px}
+  .has-open .fm-fab{display:none}
+  .fm-mtop .sb-logo{width:28px;height:28px;margin-left:2px}
+  .fm-mtop .sb-logo .msr{font-size:18px}
+  .fm-ov{padding:0!important;align-items:stretch!important}
+  .fm-cmp{max-width:none!important;height:100%;max-height:none!important;border-radius:0!important}
+  .cp-grid{grid-template-columns:1fr}
+  .cp-c{padding:10px 12px}
+  .cp-f{flex-direction:column-reverse;align-items:stretch}
+  .cp-why{text-align:center}
+  .lbh{display:none}
+  .fm-lbfig{padding:16px}
+  .fm-toast{left:16px;right:16px;bottom:92px;transform:none;min-width:0}
+}
+
+/* ============ Thư viện Shadowing ============ */
+.sh-wrap{max-width:980px;margin:0 auto;padding:30px 40px 96px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px}
+.sh-head{display:flex;align-items:center;gap:16px}
+.sp-h1{display:flex;align-items:baseline;gap:10px;margin:0;font-size:26px;line-height:36px;font-weight:700;white-space:nowrap}
+.sp-h1 .kj{font-family:var(--font-mincho);font-size:15px;font-weight:600;letter-spacing:.08em;color:var(--sumi-muted)}
+.sh-hist{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 10px;border-radius:999px;color:var(--sumi-muted);font-size:13px;font-weight:600;text-decoration:none}
+.sh-hist .msr{font-size:18px}
+.sh-hist .n{font-weight:500}
+.sh-hist:hover{background:var(--paper-200);color:var(--sumi)}
+.sp-mtop{display:none}
+/* tiếp tục */
+.ct{position:relative;display:flex;align-items:center;gap:24px;padding:18px 20px 20px 22px;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);overflow:hidden}
+.ct-l{flex:0 1 260px;min-width:0}
+.ct-k{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;line-height:18px;font-weight:600;color:var(--ai)}
+.ct-k .msr{font-size:16px}
+.ct-k .dim{color:var(--sumi-muted);font-weight:500}
+.ct-k .dim::before{content:"·";margin-right:6px}
+.ct-t{margin:4px 0 0;font-size:18px;line-height:26px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-s{flex:1;min-width:0;padding-left:24px;border-left:1px solid var(--line)}
+.ct-cap{margin:0;font-size:12px;line-height:18px;color:var(--sumi-muted)}
+.ct-jp{margin:2px 0 0;font-family:var(--font-jp);font-size:18px;line-height:28px;color:var(--sumi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct .jc-btn{flex:none;border-radius:999px}
+.ct-bar{position:absolute;left:0;right:0;bottom:0;width:100%;height:3px;display:block}
+.ct-bar .tr{fill:var(--paper-200)}.ct-bar .fl{fill:var(--ai)}
+/* thanh lọc */
+.sh-tools{display:flex;align-items:center;gap:8px;min-height:40px;margin-top:4px}
+.sh-tabs{margin:0;flex-wrap:nowrap}
+.sl-chips{display:flex;gap:18px}
+.sl-chip{position:relative;display:inline-flex;align-items:center;gap:5px;height:32px;padding:0;border:0;background:transparent;color:var(--sumi-muted);font-size:14px;font-weight:600;cursor:pointer}
+.sl-chip{white-space:nowrap}
+.sl-chip .n{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sl-chip:hover{color:var(--sumi)}
+.sl-chip.on{color:var(--sumi);font-weight:700}
+.sl-chip.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:var(--sumi)}
+.sh-search{flex:1;max-width:420px;height:40px;min-height:40px;border-radius:999px}
+.sh-lv{position:relative}
+.lvb{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 6px 0 12px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sumi);font-size:13px;font-weight:600;cursor:pointer}
+.lvb .msr{font-size:18px;color:var(--sumi-muted)}
+.lvb:hover{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.lvb.set{background:var(--sumi);color:var(--paper-50);box-shadow:none}.lvb.set .msr{color:var(--paper-50)}
+.sh-lvpop{position:absolute;right:0;top:38px;z-index:5;min-width:150px;margin:0;padding:6px;list-style:none;border-radius:12px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+.sh-lvpop button{display:flex;align-items:center;justify-content:space-between;width:100%;height:36px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--sumi);font-size:14px;cursor:pointer}
+.sh-lvpop button:hover{background:var(--paper-200)}
+.sh-lvpop .ck{font-size:18px;visibility:hidden;color:var(--ai)}
+.sh-lvpop .on{font-weight:700}.sh-lvpop .on .ck{visibility:visible}
+.sh-tools .jc-iconbtn{border-radius:999px}
+/* nhóm + dòng bài */
+.sh-list{display:flex;flex-direction:column;gap:14px}
+.gr{border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.gh{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px 14px 22px;border:0;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.gh:hover{background:var(--paper-100)}
+.gt{flex:1;min-width:0;font-size:15px;line-height:22px;font-weight:700}
+.gp{width:72px;height:4px;display:block}.gp svg{display:block;width:100%;height:4px}
+.gp .tr{fill:var(--paper-200)}.gp .fl{fill:var(--success)}
+.gn{font-size:12px;color:var(--sumi-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gc{font-size:20px;color:var(--sumi-muted)}
+.lr-list{margin:0;padding:0;list-style:none}
+.lr{position:relative;display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 18px 10px 22px;border-top:1px solid var(--line);box-sizing:border-box}
+.lr:hover{background:var(--paper-100)}
+.lr-st{position:relative;flex:none;width:28px;height:28px}
+.lr-st svg{display:block}
+.lr-st .tr{fill:none;stroke:var(--line-strong);stroke-width:1.6;opacity:.55}
+.lr-st .arc{fill:none;stroke:var(--ai);stroke-width:2.6;stroke-linecap:round}
+.lr-st .ok{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:18px;color:var(--paper-50)}
+.lr.done .lr-st .tr{fill:var(--success);stroke:var(--success);opacity:1}
+.lr.done .lr-st .ok{display:flex;font-variation-settings:'FILL' 0,'wght' 700,'GRAD' 0,'opsz' 24}
+.lr:not(.prog) .lr-st .arc{display:none}
+.lr.prog .lr-st .tr{stroke:var(--ai-soft);opacity:1;stroke-width:2.6}
+.lr-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lr-t{display:flex;align-items:center;gap:8px;min-width:0}
+.lr-main{min-width:0;padding:0;border:0;background:transparent;color:var(--sumi);font:inherit;font-size:15px;line-height:22px;font-weight:600;text-align:left;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-main::after{content:"";position:absolute;inset:0}
+.lr-main:focus-visible{outline:none}
+.lr:has(.lr-main:focus-visible){box-shadow:inset 0 0 0 2px var(--focus)}
+.lr-m{font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.lr.prog .lr-m{color:var(--ai);font-weight:600}
+.lr-best{display:inline-flex;align-items:baseline;gap:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lr-best .msr{font-size:15px;align-self:center}
+.lr-best b{font-size:17px;line-height:22px;color:var(--sumi)}
+.lr-best .lb{font-size:12px;color:var(--sumi-muted)}
+.sc-good .msr{color:var(--score-good)}.sc-mid .msr{color:var(--score-mid)}.sc-low .msr{color:var(--score-low)}
+.lr-bm{position:relative;z-index:1;opacity:0;transition:opacity .12s}
+.lr:hover .lr-bm,.lr-bm:focus-within,.lr.saved .lr-bm{opacity:1}
+.lr-go{display:inline-flex;align-items:center;gap:4px;min-width:20px;justify-content:flex-end;color:var(--sumi-muted);font-size:13px;font-weight:600}
+.lr-go .msr{font-size:18px}
+.lr-go .tx{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width .18s,opacity .18s}
+.lr:hover .lr-go{color:var(--ai)}
+.lr:hover .lr-go .tx{max-width:90px;opacity:1}
+.lr.lsk{cursor:default;border-top:1px solid var(--line)}
+.sk-c{display:block;flex:none;width:28px;height:28px;border-radius:50%}
+.sk-a,.sk-b{display:block;height:12px;border-radius:6px}.sk-a{width:46%;height:14px}.sk-b{width:28%;margin-top:6px}
+.lr.lsk:first-child{border-top:0}
+/* chọn vai */
+.rl-sub{margin:0 0 14px!important;font-size:14px;color:var(--sumi-muted)}
+.rl-opts{display:flex;flex-direction:column;gap:8px}
+.rl-o{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:0;border-radius:14px;background:var(--paper-50);box-shadow:inset 0 0 0 1px var(--line);color:var(--sumi);text-align:left;cursor:pointer}
+.rl-o:hover{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.rl-o .rk{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--paper-200);font-weight:700}
+.rl-o .rn{flex:1;font-size:15px;font-weight:600}
+.rl-o .ck{visibility:hidden;color:var(--ai);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.rl-o.on{background:var(--ai-soft);box-shadow:inset 0 0 0 2px var(--ai)}
+.rl-o.on .rk{background:var(--ai);color:var(--on-ai)}
+.rl-o.on .ck{visibility:visible}
+.rl-hint{margin:12px 0 0!important;font-size:13px;line-height:19px;color:var(--sumi-muted)}
+.sh-role .jc-modal__foot .jc-btn{border-radius:999px}
+@media (prefers-reduced-motion:reduce){.lr-go .tx,.lr-bm{transition:none}}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .sh-mtop{display:flex;align-items:center;gap:6px;height:56px;padding:0 12px 0 6px;background:var(--paper-50);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}
+  .sh-mtop b{font-size:17px}.sh-mtop .sb-logo{width:28px;height:28px;margin-left:2px}.sh-mtop .sb-logo .msr{font-size:18px}.sh-mtop .av{width:32px;height:32px;font-size:13px}
+  .sh-wrap{padding:16px 16px 120px;gap:16px}
+  .sp-h1{font-size:22px;line-height:30px}
+  .sh-hist span:nth-child(2),.sh-hist .n{display:none}
+  .sh-hist{padding:0;width:40px;justify-content:center}
+  .sp-h1 .kj{font-size:13px}
+  .ct{position:fixed;left:12px;right:12px;bottom:12px;z-index:6;gap:12px;padding:10px 10px 12px 16px;border-radius:18px;box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+  .ct-s{display:none}
+  .ct-l{flex:1}
+  .ct-t{font-size:15px;line-height:22px;margin-top:0}
+  .ct .jc-btn .jc-btn__label{display:none}
+  .ct .jc-btn{width:44px;height:44px;padding:0;justify-content:center}
+  .sh-tools{gap:4px}
+  .sh-tabs{overflow-x:auto;gap:14px;scrollbar-width:none;flex:1;min-width:0}
+  .sh-tools>.sp{display:none}
+  .gh{padding:12px 14px 12px 16px;gap:10px}
+  .gp{width:44px}
+  .lr{padding:10px 14px 10px 16px;gap:12px}
+  .lr-best .lb{display:none}
+  .lr-bm{opacity:1}
+  .lr:not(.saved) .lr-bm{display:none}
+  .lr-go .tx{display:none}
+}
+
+
+.shb{max-width:1120px}
+.b-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:28px;align-items:start}
+.b-rail{position:sticky;top:24px;display:flex;flex-direction:column;gap:4px}
+.b-rl{margin:0 0 6px!important;padding:0 12px!important;font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.b-t{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:16px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.b-t:hover{background:var(--paper-200)}
+.b-t.on{background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.b-ring{position:relative;flex:none;width:40px;height:40px}
+.b-ring svg{display:block}
+.b-ring .tr{fill:none;stroke:var(--paper-200);stroke-width:4}
+.b-ring .arc{fill:none;stroke:var(--success);stroke-width:4;stroke-linecap:round}
+.b-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-variant-numeric:tabular-nums}
+.b-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--paper-200);color:var(--sumi-muted)}
+.b-t.on .b-ic{background:var(--ai-soft);color:var(--ai)}
+.b-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.b-n{font-size:15px;line-height:22px;font-weight:600}
+.b-t.on .b-n{font-weight:700}
+.b-m{font-size:12px;color:var(--sumi-muted)}
+.b-saved{margin-top:8px}
+.b-detail{border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);overflow:hidden}
+.b-dh{display:flex;align-items:center;gap:8px;padding:18px 18px 16px 22px}
+.b-dt{margin:0;font-size:20px;line-height:28px;font-weight:700}
+.b-dm{margin:2px 0 0;font-size:13px;color:var(--sumi-muted)}
+.b-dh .jc-iconbtn{border-radius:999px}
+.b-list .lr:first-child{border-top:1px solid var(--line)}
+
+.shs{max-width:none;padding:26px 32px 24px;height:100vh;box-sizing:border-box;gap:18px}
+.shs .sh-head{flex:none}
+.shs .ct{flex:none;padding:14px 18px 16px 20px}
+.shs .ct-t{font-size:17px;line-height:24px}
+.shs .ct-jp{font-size:17px;line-height:26px}
+.s-search .jc-input__el::-webkit-search-cancel-button{display:none}
+.s-search{flex:1;min-width:0;height:36px;min-height:36px;border-radius:999px}
+.s-lh .jc-iconbtn{border-radius:999px}
+.s-lh h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-grid{flex:1;min-height:0;display:grid;grid-template-columns:232px minmax(0,1fr) minmax(400px,460px);gap:20px}
+.s-rail{position:static;overflow-y:auto;padding:2px}
+.s-rail .b-search{height:40px;min-height:40px;border-radius:999px;margin-bottom:10px}
+.s-rail .b-rl{margin:14px 0 4px!important}
+.b-div{height:1px;margin:8px 12px;background:var(--line)}
+.b-ic.go{background:var(--ai-soft);color:var(--ai)}
+.b-t.on .b-ic.go{background:var(--ai);color:var(--on-ai)}
+.b-ring.z .arc{display:none}
+/* cột bài */
+.s-list{display:flex;flex-direction:column;min-height:0;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line)}
+.s-lh{display:flex;align-items:center;gap:8px;padding:16px 14px 0 18px}
+.s-lh h2{margin:0;font-size:18px;line-height:26px;font-weight:700}
+.s-lm{margin:2px 0 10px!important;padding:0 18px!important;font-size:12px;color:var(--sumi-muted)}
+.s-items{flex:1;min-height:0;overflow-y:auto;margin:0;padding:0 8px 10px;list-style:none;scrollbar-width:thin;scrollbar-color:transparent transparent}
+.s-items:hover{scrollbar-color:color-mix(in srgb,var(--line-strong) 45%,transparent) transparent}
+.s-it{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:8px 8px 8px 10px;border:0;border-radius:14px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.s-it:hover{background:var(--paper-100)}
+.s-it.on{background:var(--ai-soft)}
+.s-it.on .s-chev{color:var(--ai)}
+.s-t{font-size:15px;line-height:21px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-it .lr-m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-it .lr-st .tr{fill:none;stroke:var(--line-strong);stroke-width:1.6;opacity:.55}
+.s-it .lr-st .arc{fill:none;stroke:var(--ai);stroke-width:2.6;stroke-linecap:round}
+.s-it:not(.prog) .lr-st .arc{display:none}
+.s-it.prog .lr-st .tr{stroke:var(--paper-200);opacity:1;stroke-width:2.6}
+.s-it.done .lr-st .tr{fill:var(--success);stroke:var(--success);opacity:1}
+.s-it.done .lr-st .ok{display:flex}
+.s-it.prog .lr-m{color:var(--ai);font-weight:600}
+.s-bm{font-size:18px;color:var(--ai);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.s-chev{font-size:20px;color:var(--sumi-faint)}
+.s-it .lr-best b{font-size:15px}
+/* xem trước */
+.pv{display:flex;flex-direction:column;min-height:0;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-md);overflow:hidden}
+.pv-none{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center;color:var(--sumi-muted);font-size:14px}
+.pv-none>.msr{font-size:34px}.pv-none p{margin:0}.pv-none .t{font-size:16px;font-weight:700;color:var(--sumi)}
+.pv-head{display:flex;align-items:flex-start;gap:8px;padding:18px 14px 12px 20px}
+.pv-back{display:none}
+.pv-hl{flex:1;min-width:0}
+.pv-k{margin:0!important;font-size:12px;color:var(--sumi-muted)}
+.pv-t{margin:2px 0 0;font-size:20px;line-height:28px;font-weight:700}
+.pv-m{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:6px 0 0!important;font-size:13px;color:var(--sumi-muted)}
+.pv-m .lr-best{gap:3px;font-weight:600}
+.pv-role{padding:4px 20px 14px;border-bottom:1px solid var(--line)}
+.pv-cap{margin:0!important;font-size:12px;line-height:16px;font-weight:600;color:var(--sumi-muted)}
+.pv-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px;padding:4px;border-radius:16px;background:var(--paper-200)}
+.pv-o{display:flex;align-items:center;gap:8px;min-width:0;height:44px;padding:0 10px 0 6px;border:0;border-radius:12px;background:transparent;color:var(--sumi-muted);font-size:13px;font-weight:600;text-align:left;cursor:pointer}
+.rk{flex:none;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700}
+.pv-o .rk{width:28px;height:28px;background:var(--paper-50);color:var(--sumi-muted);font-size:12px}
+.pv-o .rn{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-o:hover{color:var(--sumi)}
+.pv-o.on{background:var(--paper-50);color:var(--sumi);box-shadow:var(--shadow-sm)}
+.pv-o.on .rk{background:var(--ai);color:var(--on-ai)}
+.pv-note{margin:8px 0 0!important;font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.pv-note.warn{color:var(--warning);font-weight:600}
+.pv-bar{display:flex;align-items:center;gap:6px;padding:10px 14px 6px 20px}
+.tg{height:26px;padding:0 10px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sumi-muted);font-size:12px;font-weight:600;cursor:pointer}
+.tg.on{background:var(--sumi);color:var(--paper-50);box-shadow:none}
+.scr{flex:1;min-height:0;overflow-y:auto;margin:0;padding:4px 10px 12px;list-style:none;scrollbar-width:thin;scrollbar-color:transparent transparent}
+.scr:hover{scrollbar-color:color-mix(in srgb,var(--line-strong) 45%,transparent) transparent}
+.sc{display:flex;align-items:flex-start;gap:10px;padding:10px 6px 10px 10px;border-radius:14px}
+.sc+.sc{margin-top:2px}
+.sc-rk{flex:none;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-top:6px;border-radius:50%;background:var(--paper-200);color:var(--sumi-muted);font-size:11px;font-weight:700}
+.sc.mine{background:var(--paper-100)}
+.sc.mine .sc-rk{background:var(--ai);color:var(--on-ai)}
+.sc.other .sc-jp{color:var(--sumi-muted)}
+.sc.cur{background:var(--ai-soft);box-shadow:inset 0 0 0 1.5px var(--ai)}
+.sc-b{flex:1;min-width:0}
+.sc-now{display:inline-flex;margin-bottom:2px;font-size:11px;font-weight:700;color:var(--ai)}
+.sc-jp{margin:0!important;font-family:var(--font-jp);font-size:17px;line-height:30px;color:var(--sumi)}
+.sc-jp rt{font-size:10px;color:var(--sumi-muted)}
+.scr.nofuri rt{display:none}
+.scr.nofuri .sc-jp{line-height:26px}
+.sc-vi{margin:0!important;font-size:13px;line-height:19px;color:var(--sumi-muted)}
+.scr.novi .sc-vi{display:none}
+.sc-tail{display:flex;align-items:center;gap:2px;margin-top:2px}
+.sc-ok{font-size:18px;color:var(--success)}
+.sc-sk{display:flex;flex-direction:column;gap:8px;padding:14px 10px}
+.pv-foot{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:12px 20px 16px;border-top:1px solid var(--line);background:var(--paper-50)}
+.pv-foot .jc-btn{border-radius:999px;height:48px;font-size:15px}
+.pv-alt{align-self:center;height:32px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--sumi-muted);font-size:13px;font-weight:600;cursor:pointer}
+.pv-alt:hover{color:var(--sumi);background:var(--paper-200)}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .shs{height:auto;padding:16px 16px 120px}
+  .s-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+  .s-rail{flex-direction:row;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}
+  .s-rail .b-search,.s-rail .b-rl,.s-rail .b-div{display:none}
+  .b-t{flex:none;width:auto;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--paper-50);box-shadow:inset 0 0 0 1px var(--line)}
+  .b-t.on{background:var(--sumi);color:var(--paper-50);box-shadow:none}
+  .b-t .b-m{display:none}.b-t .b-n{font-size:14px;white-space:nowrap}
+  .b-ring,.b-ic{width:30px;height:30px}.b-ring svg{width:30px;height:30px}.b-ring b{font-size:10px}.b-t.on .b-ring b{color:var(--paper-50)}
+  .pv{display:none}
+  .mv-pv .pv{display:flex;position:fixed;inset:0;z-index:20;border-radius:0;box-shadow:none}
+  .pv-back{display:inline-flex;margin:-6px 0 0 -10px}
+  .pv-head{padding:12px 12px 10px 16px}
+  .pv-role{padding:4px 16px 12px}
+  .pv-bar{padding:10px 12px 6px 16px}
+  .pv-foot{padding:10px 16px 16px}
+}
+
+</style>
+</helmet>
+<div class="{{sh.rootCls}}" data-theme="{{sh.theme}}">
+  <aside class="sb" aria-label="Thanh điều hướng">
+    <div class="sb-h"><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><button type="button" class="ib" aria-label="Thu gọn thanh bên" title="Thu gọn thanh bên"><span class="msr" aria-hidden="true">left_panel_close</span></button></div>
+    <p class="sb-l red">Đang học</p>
+    <a class="sb-i" href="#"><span class="sb-ch" lang="ja" aria-hidden="true">一</span><span class="t">Chương 1</span><span class="n red">3/9</span></a>
+    <a class="sb-i" href="#"><span class="msr" aria-hidden="true">record_voice_over</span><span class="t">Nhận phòng khách sạn</span><span class="n red">1/8</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Gặp người đón ở sân bay Narita</span><span class="n">0/6</span></a>
+    <nav aria-label="Điều hướng chính" class="sb-nav"><p class="sb-l">Học</p><a class="sb-i" href="#"><span class="msr" aria-hidden="true">travel_explore</span><span class="t">Hành trình</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Hội thoại AI</span></a><a class="sb-i on" href="#" aria-current="page"><span class="msr" aria-hidden="true">record_voice_over</span><span class="t">Shadowing</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">menu_book</span><span class="t">Kho học liệu</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">style</span><span class="t">Flashcard</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">insights</span><span class="t">Kết quả</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">approval</span><span class="t">Sổ con dấu</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">groups</span><span class="t">Diễn đàn</span></a></nav>
+    <span class="sp"></span>
+    <a class="sb-i sb-f" href="#"><span class="coin" aria-hidden="true"><span class="msr" aria-hidden="true">toll</span></span><span class="t">Số dư</span><span class="n credit">3.712</span></a>
+    <button type="button" class="sb-u" aria-haspopup="menu" aria-label="Tài khoản"><span class="{{sh.meAv}}" aria-hidden="true">{{sh.meIni}}</span><span class="who"><b>{{sh.meName}}</b><span>{{sh.meSub}}</span></span><span class="msr" aria-hidden="true">expand_less</span></button>
+  </aside>
+  <div class="fm-main">
+    <div class="sp-mtop sh-mtop"><x-import component-from-global-scope="JCAP.IconButton" icon="menu" label="Mở thanh điều hướng"></x-import><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><span class="{{sh.meAv}}" aria-hidden="true">{{sh.meIni}}</span></div>
+    <div class="sh-wrap shs">
+      <header class="sh-head">
+      <h1 class="sp-h1">Shadowing <span class="kj" lang="ja">シャドーイング</span></h1>
+      <span class="sp"></span>
+      <a class="sh-hist" href="#" aria-label="Lịch sử luyện, {{sh.histCount}} buổi, mở trang Kết quả"><span class="msr" aria-hidden="true">history</span><span>Lịch sử luyện</span><sc-if value="{{sh.hasHist}}" hint-placeholder-val="{{true}}"><span class="n">{{sh.histCount}} buổi</span></sc-if></a>
+    </header>
+      <sc-if value="{{sh.hasCont}}" hint-placeholder-val="{{true}}"><section class="ct" aria-label="Bài đang học dở">
+      <div class="ct-l">
+        <p class="ct-k"><span class="msr" aria-hidden="true">pending</span>Đang học dở<span class="dim">{{sh.ct.meta}}</span></p>
+        <h2 class="ct-t">{{sh.ct.title}}</h2>
+      </div>
+      <div class="ct-s">
+        <p class="ct-cap">Bạn dừng ở câu {{sh.ct.at}}/{{sh.ct.n}}</p>
+        <p class="ct-jp" lang="ja">{{sh.ct.text}}</p>
+      </div>
+      <x-import component-from-global-scope="JCAP.Button" variant="primary" icon="play_arrow" on-click="{{sh.ct.go}}">Tiếp tục câu {{sh.ct.at}}</x-import>
+      <svg class="ct-bar" viewBox="0 0 100 3" preserveAspectRatio="none" aria-hidden="true"><rect class="tr" x="0" y="0" width="100" height="3"></rect><rect class="fl" x="0" y="0" width="{{sh.ct.pct}}" height="3"></rect></svg>
+    </section></sc-if>
+      <div class="s-grid">
+        <nav class="b-rail s-rail" aria-label="Mục bài học">
+        <sc-for list="{{sh.rail}}" as="tp" hint-placeholder-count="4">
+          <sc-if value="{{tp.isHead}}" hint-placeholder-val="{{false}}"><p class="b-rl">{{tp.name}}</p></sc-if>
+          <sc-if value="{{tp.isDiv}}" hint-placeholder-val="{{false}}"><span class="b-div" aria-hidden="true"></span></sc-if>
+          <sc-if value="{{tp.isItem}}" hint-placeholder-val="{{true}}"><button type="button" class="{{tp.cls}}" aria-pressed="{{tp.on}}" onClick="{{tp.pick}}">
+            <sc-if value="{{tp.isRing}}" hint-placeholder-val="{{true}}"><span class="{{tp.ringCls}}" aria-hidden="true"><svg viewBox="0 0 40 40" width="40" height="40"><circle class="tr" cx="20" cy="20" r="16"></circle><circle class="arc" cx="20" cy="20" r="16" stroke-dasharray="{{tp.dash}}" transform="rotate(-90 20 20)"></circle></svg><b>{{tp.done}}</b></span></sc-if>
+            <sc-if value="{{tp.isIcon}}" hint-placeholder-val="{{false}}"><span class="{{tp.icCls}}" aria-hidden="true"><span class="msr">{{tp.icon}}</span></span></sc-if>
+            <span class="b-tx"><span class="b-n">{{tp.name}}</span><span class="b-m">{{tp.meta}}</span></span>
+          </button></sc-if>
+        </sc-for>
+      </nav>
+        <section class="s-list" aria-label="{{sh.lTitle}}">
+        <div class="s-lh">
+          <sc-if value="{{sh.searchClosed}}" hint-placeholder-val="{{true}}"><h2>{{sh.lTitle}}</h2><span class="sp"></span></sc-if>
+          <sc-if value="{{sh.searchOpen}}" hint-placeholder-val="{{false}}"><label class="jc-input s-search"><span class="msr jc-input__icon" aria-hidden="true">search</span><input class="jc-input__el" type="search" autofocus placeholder="Tìm bài trong mọi chủ đề" aria-label="Tìm bài học trong mọi chủ đề" value="{{sh.q}}" onInput="{{sh.onQ}}" onKeyDown="{{sh.searchKey}}"><button type="button" class="fm-x" aria-label="Đóng tìm kiếm" onClick="{{sh.closeSearch}}"><span class="msr" aria-hidden="true">close</span></button></label></sc-if>
+          <div class="sh-lv">
+              <button type="button" class="{{sh.lvCls}}" aria-haspopup="listbox" aria-expanded="{{sh.lvOpen}}" onClick="{{sh.togLv}}"><span>{{sh.lvLabel}}</span><span class="msr" aria-hidden="true">expand_more</span></button>
+              <sc-if value="{{sh.lvOpen}}" hint-placeholder-val="{{false}}"><ul class="sh-lvpop" role="listbox" aria-label="Trình độ"><sc-for list="{{sh.lvOpts}}" as="o" hint-placeholder-count="4"><li role="option" aria-selected="{{o.on}}"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}"><span>{{o.label}}</span><span class="msr ck" aria-hidden="true">check</span></button></li></sc-for></ul></sc-if>
+            </div>
+          <sc-if value="{{sh.searchClosed}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.IconButton" icon="search" label="Tìm bài học" size="sm" on-click="{{sh.openSearch}}"></x-import></sc-if>
+        </div>
+        <p class="s-lm">{{sh.lMeta}}</p>
+        <sc-if value="{{sh.lEmpty}}" hint-placeholder-val="{{false}}"><div class="sl-empty"><span class="msr" aria-hidden="true">{{sh.lEmptyIcon}}</span><p>{{sh.lEmptyText}}</p></div></sc-if>
+        <ul class="s-items" role="listbox" aria-label="{{sh.lTitle}}"><sc-for list="{{sh.items}}" as="l" hint-placeholder-count="5"><li role="option" aria-selected="{{l.on}}"><button type="button" class="{{l.cls}}" onClick="{{l.pick}}" aria-label="{{l.aria}}">
+          <span class="lr-st" aria-hidden="true"><svg viewBox="0 0 28 28" width="28" height="28"><circle class="tr" cx="14" cy="14" r="11"></circle><circle class="arc" cx="14" cy="14" r="11" stroke-dasharray="{{l.dash}}" transform="rotate(-90 14 14)"></circle></svg><span class="msr ok">check</span></span>
+          <span class="lr-tx"><span class="s-t">{{l.title}}</span><span class="lr-m">{{l.meta}}</span></span>
+          <sc-if value="{{l.hasBest}}" hint-placeholder-val="{{false}}"><span class="{{l.bestCls}}" title="Điểm cao nhất"><span class="msr" aria-hidden="true">{{l.bestIcon}}</span><b>{{l.best}}</b></span></sc-if>
+          <sc-if value="{{l.saved}}" hint-placeholder-val="{{false}}"><span class="msr s-bm" aria-hidden="true">bookmark</span></sc-if>
+          <span class="msr s-chev" aria-hidden="true">chevron_right</span>
+        </button></li></sc-for></ul>
+      </section>
+        <aside class="pv" aria-label="Xem trước bài">
+        <sc-if value="{{sh.pvNone}}" hint-placeholder-val="{{false}}"><div class="pv-none"><span class="msr" aria-hidden="true">record_voice_over</span><p class="t">Chọn một bài để xem kịch bản</p><p>Bạn sẽ thấy các câu, nghe giọng mẫu và chọn vai trước khi luyện.</p></div></sc-if>
+        <sc-if value="{{sh.pvHas}}" hint-placeholder-val="{{true}}">
+          <div class="pv-head">
+            <span class="pv-back"><x-import component-from-global-scope="JCAP.IconButton" icon="arrow_back" label="Quay lại danh sách" on-click="{{sh.back}}"></x-import></span>
+            <div class="pv-hl">
+              <p class="pv-k">{{sh.p.group}}</p>
+              <h2 class="pv-t">{{sh.p.title}}</h2>
+              <p class="pv-m"><x-import component-from-global-scope="JCAP.JlptBadge" level="{{sh.p.lv}}" size="sm"></x-import><span>{{sh.p.n}} câu · khoảng {{sh.p.mins}} phút</span><sc-if value="{{sh.p.hasBest}}" hint-placeholder-val="{{false}}"><span class="{{sh.p.bestCls}}"><span class="msr" aria-hidden="true">{{sh.p.bestIcon}}</span>tốt nhất {{sh.p.best}}</span></sc-if></p>
+            </div>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="bookmark" label="{{sh.p.bmLabel}}" size="sm" active="{{sh.p.saved}}" on-click="{{sh.p.togSave}}"></x-import>
+          </div>
+          <div class="pv-role">
+            <p class="pv-cap">Vai của bạn</p>
+            <div class="pv-seg" role="radiogroup" aria-label="Vai của bạn"><sc-for list="{{sh.p.roles}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" class="{{o.cls}}" aria-checked="{{o.on}}" onClick="{{o.pick}}"><span class="rk" aria-hidden="true">{{o.key}}</span><span class="rn">{{o.name}}</span></button></sc-for></div>
+            <p class="{{sh.p.roleNoteCls}}">{{sh.p.roleNote}}</p>
+          </div>
+          <div class="pv-bar">
+            <p class="pv-cap">Kịch bản</p><span class="sp"></span>
+            <button type="button" class="{{sh.furiCls}}" aria-pressed="{{sh.furi}}" onClick="{{sh.togFuri}}">Furigana</button>
+            <button type="button" class="{{sh.viCls}}" aria-pressed="{{sh.vi}}" onClick="{{sh.togVi}}">Nghĩa</button>
+          </div>
+          <ol class="{{sh.scrCls}}">
+            <sc-if value="{{sh.pvLoading}}" hint-placeholder-val="{{false}}"><li class="sc-sk" aria-hidden="true"><span class="jc-skel sk-a"></span><span class="jc-skel sk-b"></span></li><li class="sc-sk" aria-hidden="true"><span class="jc-skel sk-a"></span><span class="jc-skel sk-b"></span></li><li class="sc-sk" aria-hidden="true"><span class="jc-skel sk-a"></span><span class="jc-skel sk-b"></span></li></sc-if>
+            <sc-for list="{{sh.p.lines}}" as="s" hint-placeholder-count="6"><li class="{{s.cls}}">
+              <span class="sc-rk" aria-hidden="true">{{s.role}}</span>
+              <div class="sc-b">
+                <sc-if value="{{s.isCur}}" hint-placeholder-val="{{false}}"><span class="sc-now">Bạn dừng ở câu này</span></sc-if>
+                <p class="sc-jp" lang="ja"><sc-for list="{{s.t}}" as="k" hint-placeholder-count="3"><ruby>{{k.b}}<rt>{{k.r}}</rt></ruby></sc-for></p>
+                <p class="sc-vi">{{s.vi}}</p>
+              </div>
+              <span class="sc-tail"><sc-if value="{{s.done}}" hint-placeholder-val="{{false}}"><span class="msr sc-ok" title="Đã nói">check</span></sc-if><x-import component-from-global-scope="JCAP.IconButton" icon="volume_up" label="{{s.playLabel}}" size="sm" on-click="{{s.play}}"></x-import></span>
+            </li></sc-for>
+          </ol>
+          <div class="pv-foot">
+            <x-import component-from-global-scope="JCAP.Button" variant="primary" icon="{{sh.p.goIcon}}" block="{{sh.yes}}" on-click="{{sh.p.go}}">{{sh.p.goLabel}}</x-import>
+            <sc-if value="{{sh.p.hasAlt}}" hint-placeholder-val="{{false}}"><button type="button" class="pv-alt" onClick="{{sh.p.alt}}">{{sh.p.altLabel}}</button></sc-if>
+          </div>
+        </sc-if>
+      </aside>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{sh.toastOn}}" hint-placeholder-val="{{false}}"><div class="fm-toast"><x-import component-from-global-scope="JCAP.Toast" tone="info" icon="play_circle" title="{{sh.toast}}"></x-import></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+
+var SH_L = [{"id": 11, "title": "Đi tham quan đền chùa", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "NOT_STARTED", "best": null, "roleA": "Hướng dẫn viên", "roleB": "Khách tham quan"}, {"id": 12, "title": "Cửa hàng tiện lợi", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "COMPLETED", "best": 68, "roleA": "Khách hàng", "roleB": "Nhân viên cửa hàng"}, {"id": 13, "title": "Nhận phòng khách sạn", "lv": "N5", "n": 8, "group": "Giao tiếp tình huống", "status": "IN_PROGRESS", "cur": 1, "done": 1, "role": "B", "best": 76, "roleA": "Nhân viên lễ tân", "roleB": "Khách (Minh)", "curText": "ミンです。予約しました。"}, {"id": 14, "title": "Mua vé tàu", "lv": "N4", "n": 8, "group": "Giao tiếp tình huống", "status": "COMPLETED", "best": 93, "roleA": "Khách", "roleB": "Nhân viên nhà ga"}, {"id": 15, "title": "Xin hỗ trợ về việc làm thẻ tàu", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "NOT_STARTED", "best": null, "roleA": "Khách", "roleB": "Nhân viên nhà ga"}, {"id": 21, "title": "Thủ tục nhập cảnh", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "IN_PROGRESS", "cur": 3, "done": 3, "role": "A", "best": 2, "roleA": "Người nhập cảnh", "roleB": "Nhân viên an ninh", "curText": "三日間です。"}, {"id": 22, "title": "Tìm người đón", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "IN_PROGRESS", "cur": 2, "done": 2, "role": "A", "best": 13, "roleA": "Học viên", "roleB": "Người đón"}, {"id": 23, "title": "Hỏi đường ra ga", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "NOT_STARTED", "best": null, "roleA": "Khách", "roleB": "Nhân viên sân bay"}], SH_SAVED = [15], SH_HIST = 104;
+function shNorm(s) { return (s || '').toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function shVals(self) {
+  var st = self.state.sh;
+  function S() { return self.state.sh; }
+  function set(p) { self.setState({ sh: Object.assign({}, S(), p) }); }
+  function toast(t) { set({ toast: t, toastAt: Date.now() }); var at = S().toastAt; setTimeout(function () { if (S().toastAt === at) set({ toast: '' }); }, 2600); }
+  var mode = st.mode || 'ok', L = st.lessons, saved = st.saved || {};
+  var v = { yes: true, no: false };
+  v.theme = st.dark ? 'hoc-tap-dem' : 'kham-pha'; v.rootCls = 'fm sh';
+  v.meAv = 'av a1'; v.meIni = 'N'; v.meName = 'Nguyen Van ABC'; v.meSub = 'Mục tiêu JLPT N5';
+  v.histCount = st.histCount != null ? st.histCount : SH_HIST; v.hasHist = v.histCount > 0;
+  function est(n) { return Math.max(1, Math.round(n * 0.45)); }
+  function start(l) {
+    if (l.status === 'IN_PROGRESS') { toast('Mở phòng luyện: ' + l.title + ', vai ' + l.role + ', từ câu ' + (l.cur + 1)); return; }
+    set({ rl: { id: l.id, restart: l.status === 'COMPLETED', pick: 'A' } });
+  }
+  // tiếp tục: bài đang học dở gần nhất (bài đầu tiên có IN_PROGRESS theo thứ tự lưu)
+  var c = mode === 'ok' && st.contId ? L.filter(function (l) { return l.id === st.contId && l.status === 'IN_PROGRESS'; })[0] : null;
+  v.hasCont = !!c;
+  v.ct = c ? { title: c.title, meta: c.lv + ' · Vai ' + c.role, at: c.cur + 1, n: c.n, text: c.curText || '', pct: Math.round(100 * c.done / c.n), go: function () { start(c); } } : {};
+  // lọc
+  var q = st.q || '', nq = shNorm(q).trim(), lv = st.level || 'ALL', tab = st.tab || 'all';
+  var byLv = L.filter(function (l) { return (lv === 'ALL' || l.lv === lv) && (!nq || shNorm(l.title).indexOf(nq) >= 0); });
+  var cnt = { all: byLv.length, 'in-progress': 0, 'not-started': 0, bookmarks: 0 };
+  byLv.forEach(function (l) { if (l.status === 'IN_PROGRESS') cnt['in-progress']++; if (l.status === 'NOT_STARTED') cnt['not-started']++; if (saved[l.id]) cnt.bookmarks++; });
+  v.tabs = [['all', 'Tất cả'], ['in-progress', 'Đang học'], ['not-started', 'Chưa học'], ['bookmarks', 'Đã lưu']].map(function (t) {
+    var on = tab === t[0]; return { label: t[1], n: cnt[t[0]], on: on, cls: 'sl-chip' + (on ? ' on' : ''), pick: function () { set({ tab: t[0] }); } }; });
+  var shown = byLv.filter(function (l) { return tab === 'all' || (tab === 'in-progress' && l.status === 'IN_PROGRESS') || (tab === 'not-started' && l.status === 'NOT_STARTED') || (tab === 'bookmarks' && saved[l.id]); });
+  var so = !!st.searchOpen || !!q;
+  v.searchOpen = so; v.searchClosed = !so; v.q = q;
+  v.openSearch = function () { set({ searchOpen: true, lvOpen: false }); };
+  v.closeSearch = function () { set({ searchOpen: false, q: '' }); };
+  v.searchKey = function (e) { if (e && e.key === 'Escape') set({ searchOpen: false, q: '' }); };
+  v.onQ = function (e) { set({ q: e && e.target ? e.target.value : '' }); };
+  v.showCount = mode === 'ok' && !!nq && shown.length > 0; v.countText = shown.length + ' bài khớp với “' + q.trim() + '”';
+  v.lvOpen = !!st.lvOpen; v.lvLabel = lv === 'ALL' ? 'Mọi cấp' : lv; v.lvCls = 'lvb' + (lv !== 'ALL' ? ' set' : '');
+  v.togLv = function () { set({ lvOpen: !S().lvOpen }); };
+  v.lvOpts = ['ALL', 'N5', 'N4', 'N3'].map(function (x) { var on = lv === x; return { label: x === 'ALL' ? 'Mọi cấp' : x, on: on, cls: on ? 'on' : '', pick: function () { set({ level: x, lvOpen: false }); } }; });
+  // nhóm theo kịch bản
+  var gs = [];
+  shown.forEach(function (l) { var g = gs.filter(function (x) { return x.name === l.group; })[0]; if (!g) { g = { name: l.group, ls: [] }; gs.push(g); } g.ls.push(l); });
+  var C = 2 * Math.PI * 11;
+  v.groups = mode === 'ok' ? gs.map(function (g) {
+    var all = L.filter(function (l) { return l.group === g.name; }), done = all.filter(function (l) { return l.status === 'COMPLETED'; }).length;
+    var open = !(st.collapsed || {})[g.name];
+    return { name: g.name, open: open, chev: open ? 'expand_less' : 'expand_more', pct: Math.round(100 * done / all.length), doneText: done + '/' + all.length + ' bài xong',
+      toggle: function () { var cl = Object.assign({}, S().collapsed || {}); cl[g.name] = !cl[g.name]; set({ collapsed: cl }); },
+      lessons: g.ls.map(function (l) {
+        var prog = l.status === 'IN_PROGRESS', done1 = l.status === 'COMPLETED', sv = !!saved[l.id];
+        var frac = prog ? l.done / l.n : 0, tier = l.best == null ? '' : l.best >= 80 ? 'good' : l.best >= 50 ? 'mid' : 'low';
+        var act = done1 ? 'Luyện lại' : prog ? 'Tiếp tục' : 'Bắt đầu';
+        return { id: l.id, status: l.status, group: l.group, rawBest: l.best, isProg: prog, isDone: done1, isNew: l.status === 'NOT_STARTED', role: l.role, at: prog ? l.cur + 1 : 0, n: l.n, curText: l.curText || '', pct: prog ? Math.round(100 * l.done / l.n) : 0, mins: est(l.n), title: l.title, lv: l.lv, cls: 'lr' + (prog ? ' prog' : '') + (done1 ? ' done' : '') + (sv ? ' saved' : ''),
+          dash: (C * frac).toFixed(1) + ' ' + C.toFixed(1),
+          meta: prog ? 'Vai ' + l.role + ' · đang ở câu ' + (l.cur + 1) + '/' + l.n : l.n + ' câu · khoảng ' + est(l.n) + ' phút',
+          hasBest: l.best != null, best: l.best, bestCls: 'lr-best sc-' + tier, bestIcon: tier === 'good' ? 'check_circle' : tier === 'mid' ? 'change_history' : 'cancel',
+          act: act, aria: l.title + ', ' + l.lv + '. ' + (done1 ? 'Đã xong' : prog ? 'Đang học, câu ' + (l.cur + 1) + '/' + l.n : 'Chưa học') + (l.best != null ? ', điểm cao nhất ' + l.best : '') + '. ' + act,
+          saved: sv, bmLabel: sv ? 'Bỏ lưu bài học' : 'Lưu bài học',
+          togSave: function () { var s2 = Object.assign({}, S().saved || {}); if (s2[l.id]) delete s2[l.id]; else s2[l.id] = true; set({ saved: s2 }); },
+          go: function () { start(l); } };
+      }) };
+  }) : [];
+  v.isLoading = mode === 'loading'; v.isError = mode === 'error';
+  v.retry = function () { set({ mode: 'loading' }); setTimeout(function () { set({ mode: 'ok' }); }, 900); };
+  v.isEmpty = mode === 'ok' && shown.length === 0;
+  var filtered = tab !== 'all' || !!nq || lv !== 'ALL';
+  v.emptyIcon = tab === 'bookmarks' && !nq ? 'bookmark' : tab === 'in-progress' && !nq ? 'pending' : 'search_off';
+  v.emptyTitle = nq || lv !== 'ALL' && tab === 'all' ? 'Không có bài nào khớp bộ lọc' : tab === 'in-progress' ? 'Không có bài nào đang học dở' : tab === 'bookmarks' ? 'Chưa lưu bài nào' : tab === 'not-started' ? 'Bạn đã bắt đầu mọi bài' : 'Chưa có bài học nào';
+  v.emptyText = tab === 'bookmarks' && !nq ? 'Bấm biểu tượng lưu ở một bài để gom vào đây.' : nq ? 'Thử từ khoá ngắn hơn hoặc chọn "Mọi cấp".' : 'Đổi bộ lọc để xem các bài khác.';
+  v.canReset = filtered; v.reset = function () { set({ tab: 'all', q: '', level: 'ALL', searchOpen: false }); };
+  // chọn vai
+  var rl = st.rl, rlL = rl ? L.filter(function (l) { return l.id === rl.id; })[0] : null;
+  v.roleOpen = !!rlL;
+  v.rl = rlL ? { title: rl.restart ? 'Luyện lại bài này' : 'Chọn vai để luyện', lesson: rlL.title, n: rlL.n, goLabel: rl.restart ? 'Luyện lại từ câu 1' : 'Bắt đầu',
+    opts: [['A', rlL.roleA], ['B', rlL.roleB]].map(function (o) { var on = rl.pick === o[0]; return { key: o[0], name: o[1], on: on, cls: 'rl-o' + (on ? ' on' : ''), pick: function () { set({ rl: Object.assign({}, S().rl, { pick: o[0] }) }); } }; }) } : { opts: [] };
+  v.rlClose = function () { set({ rl: null }); };
+  v.rlGo = function () { var r = S().rl; set({ rl: null }); toast('Mở phòng luyện: ' + rlL.title + ', vai ' + r.pick + (r.restart ? ', luyện lại từ đầu' : '')); };
+  v.toast = st.toast || ''; v.toastOn = !!st.toast;
+  return v;
+}
+
+
+var SS_SCR = {"13": [{"i": 0, "role": "A", "t": [{"b": "いらっしゃいませ。お", "r": ""}, {"b": "名前", "r": "なまえ"}, {"b": "をお", "r": ""}, {"b": "願", "r": "ねが"}, {"b": "いします。", "r": ""}], "plain": "いらっしゃいませ。お名前をお願いします。", "vi": "Xin chào quý khách. Xin cho biết tên ạ."}, {"i": 1, "role": "B", "t": [{"b": "ミンです。", "r": ""}, {"b": "予約", "r": "よやく"}, {"b": "しました。", "r": ""}], "plain": "ミンです。予約しました。", "vi": "Tôi là Minh. Tôi đã đặt phòng."}, {"i": 2, "role": "A", "t": [{"b": "ミン", "r": ""}, {"b": "様", "r": "さま"}, {"b": "ですね。パスポートをお", "r": ""}, {"b": "願", "r": "ねが"}, {"b": "いします。", "r": ""}], "plain": "ミン様ですね。パスポートをお願いします。", "vi": "Anh Minh phải không ạ. Xin cho xem hộ chiếu."}, {"i": 3, "role": "B", "t": [{"b": "はい、どうぞ。", "r": ""}], "plain": "はい、どうぞ。", "vi": "Vâng, đây ạ."}, {"i": 4, "role": "A", "t": [{"b": "お", "r": ""}, {"b": "部屋", "r": "へや"}, {"b": "は５０３", "r": ""}, {"b": "号室", "r": "ごうしつ"}, {"b": "です。", "r": ""}], "plain": "お部屋は５０３号室です。", "vi": "Phòng của anh là phòng 503."}, {"i": 5, "role": "B", "t": [{"b": "朝", "r": "あさ"}, {"b": "ごはんは", "r": ""}, {"b": "何時", "r": "なんじ"}, {"b": "からですか。", "r": ""}], "plain": "朝ごはんは何時からですか。", "vi": "Bữa sáng bắt đầu từ mấy giờ ạ?"}, {"i": 6, "role": "A", "t": [{"b": "７", "r": ""}, {"b": "時", "r": "じ"}, {"b": "から１０", "r": ""}, {"b": "時", "r": "じ"}, {"b": "までです。", "r": ""}], "plain": "７時から１０時までです。", "vi": "Từ 7 giờ đến 10 giờ ạ."}, {"i": 7, "role": "B", "t": [{"b": "わかりました。ありがとうございます。", "r": ""}], "plain": "わかりました。ありがとうございます。", "vi": "Tôi hiểu rồi. Cảm ơn chị."}], "21": [{"i": 0, "role": "A", "t": [{"b": "こんにちは。", "r": ""}, {"b": "入国", "r": "にゅうこく"}, {"b": "の", "r": ""}, {"b": "目的", "r": "もくてき"}, {"b": "は", "r": ""}, {"b": "何", "r": "なん"}, {"b": "ですか。", "r": ""}], "plain": "こんにちは。入国の目的は何ですか。", "vi": "Xin chào. Mục đích nhập cảnh của bạn là gì?"}, {"i": 1, "role": "B", "t": [{"b": "観光", "r": "かんこう"}, {"b": "です。", "r": ""}], "plain": "観光です。", "vi": "Tôi đi du lịch."}, {"i": 2, "role": "A", "t": [{"b": "パスポートを", "r": ""}, {"b": "見", "r": "み"}, {"b": "せてください。", "r": ""}], "plain": "パスポートを見せてください。", "vi": "Xin cho tôi xem hộ chiếu."}, {"i": 3, "role": "B", "t": [{"b": "はい、どうぞ。", "r": ""}], "plain": "はい、どうぞ。", "vi": "Vâng. Xin mời."}, {"i": 4, "role": "A", "t": [{"b": "何日", "r": "なんにち"}, {"b": "、", "r": ""}, {"b": "日本", "r": "にほん"}, {"b": "にいますか。", "r": ""}], "plain": "何日、日本にいますか。", "vi": "Bạn ở Nhật mấy ngày?"}, {"i": 5, "role": "B", "t": [{"b": "一週間", "r": "いっしゅうかん"}, {"b": "です。", "r": ""}], "plain": "一週間です。", "vi": "Một tuần."}], "11": [{"i": 0, "role": "A", "t": [{"b": "ここは", "r": ""}, {"b": "浅草寺", "r": "せんそうじ"}, {"b": "です。", "r": ""}], "plain": "ここは浅草寺です。", "vi": "Đây là chùa Sensoji."}, {"i": 1, "role": "B", "t": [{"b": "大", "r": "おお"}, {"b": "きいですね。", "r": ""}], "plain": "大きいですね。", "vi": "To quá nhỉ."}, {"i": 2, "role": "A", "t": [{"b": "あれは", "r": ""}, {"b": "雷門", "r": "かみなりもん"}, {"b": "です。", "r": ""}], "plain": "あれは雷門です。", "vi": "Kia là cổng Kaminarimon."}, {"i": 3, "role": "B", "t": [{"b": "写真", "r": "しゃしん"}, {"b": "を", "r": ""}, {"b": "撮", "r": "と"}, {"b": "ってもいいですか。", "r": ""}], "plain": "写真を撮ってもいいですか。", "vi": "Tôi chụp ảnh được không ạ?"}, {"i": 4, "role": "A", "t": [{"b": "はい、どうぞ。", "r": ""}], "plain": "はい、どうぞ。", "vi": "Vâng, xin mời."}, {"i": 5, "role": "B", "t": [{"b": "ありがとうございます。", "r": ""}], "plain": "ありがとうございます。", "vi": "Cảm ơn anh."}], "12": [{"i": 0, "role": "B", "t": [{"b": "いらっしゃいませ。", "r": ""}], "plain": "いらっしゃいませ。", "vi": "Xin chào quý khách."}, {"i": 1, "role": "A", "t": [{"b": "これをください。", "r": ""}], "plain": "これをください。", "vi": "Cho tôi cái này."}, {"i": 2, "role": "B", "t": [{"b": "袋", "r": "ふくろ"}, {"b": "はいりますか。", "r": ""}], "plain": "袋はいりますか。", "vi": "Quý khách có cần túi không ạ?"}, {"i": 3, "role": "A", "t": [{"b": "いいえ、", "r": ""}, {"b": "大丈夫", "r": "だいじょうぶ"}, {"b": "です。", "r": ""}], "plain": "いいえ、大丈夫です。", "vi": "Không, không cần ạ."}, {"i": 4, "role": "B", "t": [{"b": "３００", "r": ""}, {"b": "円", "r": "えん"}, {"b": "です。", "r": ""}], "plain": "３００円です。", "vi": "300 yên ạ."}, {"i": 5, "role": "A", "t": [{"b": "カードでお", "r": ""}, {"b": "願", "r": "ねが"}, {"b": "いします。", "r": ""}], "plain": "カードでお願いします。", "vi": "Tôi trả bằng thẻ."}], "14": [{"i": 0, "role": "A", "t": [{"b": "すみません、", "r": ""}, {"b": "京都", "r": "きょうと"}, {"b": "までの", "r": ""}, {"b": "切符", "r": "きっぷ"}, {"b": "はどこで", "r": ""}, {"b": "買", "r": "か"}, {"b": "えますか。", "r": ""}], "plain": "すみません、京都までの切符はどこで買えますか。", "vi": "Xin lỗi, mua vé đi Kyoto ở đâu ạ?"}, {"i": 1, "role": "B", "t": [{"b": "あちらの", "r": ""}, {"b": "券売機", "r": "けんばいき"}, {"b": "で", "r": ""}, {"b": "買", "r": "か"}, {"b": "えますよ。", "r": ""}], "plain": "あちらの券売機で買えますよ。", "vi": "Mua ở máy bán vé đằng kia nhé."}, {"i": 2, "role": "A", "t": [{"b": "指定席", "r": "していせき"}, {"b": "も", "r": ""}, {"b": "買", "r": "か"}, {"b": "えますか。", "r": ""}], "plain": "指定席も買えますか。", "vi": "Mua được cả vé ghế chỉ định không ạ?"}, {"i": 3, "role": "B", "t": [{"b": "指定席", "r": "していせき"}, {"b": "は", "r": ""}, {"b": "窓口", "r": "まどぐち"}, {"b": "でお", "r": ""}, {"b": "求", "r": "もと"}, {"b": "めください。", "r": ""}], "plain": "指定席は窓口でお求めください。", "vi": "Vé ghế chỉ định xin mua ở quầy."}, {"i": 4, "role": "A", "t": [{"b": "何時", "r": "なんじ"}, {"b": "の", "r": ""}, {"b": "新幹線", "r": "しんかんせん"}, {"b": "がありますか。", "r": ""}], "plain": "何時の新幹線がありますか。", "vi": "Có chuyến Shinkansen lúc mấy giờ ạ?"}, {"i": 5, "role": "B", "t": [{"b": "１０", "r": ""}, {"b": "時半", "r": "じはん"}, {"b": "の", "r": ""}, {"b": "便", "r": "びん"}, {"b": "が", "r": ""}, {"b": "空", "r": "あ"}, {"b": "いています。", "r": ""}], "plain": "１０時半の便が空いています。", "vi": "Chuyến 10 giờ rưỡi còn chỗ."}, {"i": 6, "role": "A", "t": [{"b": "じゃあ、それを", "r": ""}, {"b": "一枚", "r": "いちまい"}, {"b": "お", "r": ""}, {"b": "願", "r": "ねが"}, {"b": "いします。", "r": ""}], "plain": "じゃあ、それを一枚お願いします。", "vi": "Vậy cho tôi một vé chuyến đó."}, {"i": 7, "role": "B", "t": [{"b": "かしこまりました。", "r": ""}], "plain": "かしこまりました。", "vi": "Vâng ạ."}], "15": [{"i": 0, "role": "A", "t": [{"b": "すみません、ICカードを", "r": ""}, {"b": "作", "r": "つく"}, {"b": "りたいです。", "r": ""}], "plain": "すみません、ICカードを作りたいです。", "vi": "Xin lỗi, tôi muốn làm thẻ IC."}, {"i": 1, "role": "B", "t": [{"b": "こちらの", "r": ""}, {"b": "機械", "r": "きかい"}, {"b": "で", "r": ""}, {"b": "作", "r": "つく"}, {"b": "れます。", "r": ""}], "plain": "こちらの機械で作れます。", "vi": "Có thể làm ở máy này."}, {"i": 2, "role": "A", "t": [{"b": "いくらですか。", "r": ""}], "plain": "いくらですか。", "vi": "Bao nhiêu tiền ạ?"}, {"i": 3, "role": "B", "t": [{"b": "２０００", "r": ""}, {"b": "円", "r": "えん"}, {"b": "です。", "r": ""}], "plain": "２０００円です。", "vi": "2000 yên."}, {"i": 4, "role": "A", "t": [{"b": "チャージもできますか。", "r": ""}], "plain": "チャージもできますか。", "vi": "Nạp tiền được không ạ?"}, {"i": 5, "role": "B", "t": [{"b": "はい、", "r": ""}, {"b": "同", "r": "おな"}, {"b": "じ", "r": ""}, {"b": "機械", "r": "きかい"}, {"b": "でできます。", "r": ""}], "plain": "はい、同じ機械でできます。", "vi": "Được, ở cùng máy này."}], "22": [{"i": 0, "role": "A", "t": [{"b": "すみません、", "r": ""}, {"b": "田中", "r": "たなか"}, {"b": "さんですか。", "r": ""}], "plain": "すみません、田中さんですか。", "vi": "Xin lỗi, anh là anh Tanaka phải không?"}, {"i": 1, "role": "B", "t": [{"b": "はい、そうです。ミンさんですか。", "r": ""}], "plain": "はい、そうです。ミンさんですか。", "vi": "Vâng. Bạn là Minh phải không?"}, {"i": 2, "role": "A", "t": [{"b": "はい、ミンです。よろしくお", "r": ""}, {"b": "願", "r": "ねが"}, {"b": "いします。", "r": ""}], "plain": "はい、ミンです。よろしくお願いします。", "vi": "Vâng, tôi là Minh. Rất mong được giúp đỡ."}, {"i": 3, "role": "B", "t": [{"b": "ようこそ。", "r": ""}, {"b": "車", "r": "くるま"}, {"b": "はあちらです。", "r": ""}], "plain": "ようこそ。車はあちらです。", "vi": "Chào mừng bạn. Xe ở đằng kia."}, {"i": 4, "role": "A", "t": [{"b": "荷物", "r": "にもつ"}, {"b": "が", "r": ""}, {"b": "二", "r": "ふた"}, {"b": "つあります。", "r": ""}], "plain": "荷物が二つあります。", "vi": "Tôi có hai kiện hành lý."}, {"i": 5, "role": "B", "t": [{"b": "大丈夫", "r": "だいじょうぶ"}, {"b": "ですよ。", "r": ""}], "plain": "大丈夫ですよ。", "vi": "Không sao đâu."}], "23": [{"i": 0, "role": "A", "t": [{"b": "すみません、", "r": ""}, {"b": "駅", "r": "えき"}, {"b": "はどこですか。", "r": ""}], "plain": "すみません、駅はどこですか。", "vi": "Xin lỗi, nhà ga ở đâu ạ?"}, {"i": 1, "role": "B", "t": [{"b": "地下", "r": "ちか"}, {"b": "一階", "r": "いっかい"}, {"b": "です。", "r": ""}], "plain": "地下一階です。", "vi": "Ở tầng hầm một."}, {"i": 2, "role": "A", "t": [{"b": "エレベーターはありますか。", "r": ""}], "plain": "エレベーターはありますか。", "vi": "Có thang máy không ạ?"}, {"i": 3, "role": "B", "t": [{"b": "はい、あちらにあります。", "r": ""}], "plain": "はい、あちらにあります。", "vi": "Có, ở đằng kia."}, {"i": 4, "role": "A", "t": [{"b": "ありがとうございます。", "r": ""}], "plain": "ありがとうございます。", "vi": "Cảm ơn anh."}, {"i": 5, "role": "B", "t": [{"b": "どういたしまして。", "r": ""}], "plain": "どういたしまして。", "vi": "Không có gì."}]};
+function sVals(self) {
+  var st = self.state.sh;
+  function S() { return self.state.sh; }
+  function set(p) { self.setState({ sh: Object.assign({}, S(), p) }); }
+  function toast(t) { set({ toast: t, toastAt: Date.now() }); var at = S().toastAt; setTimeout(function () { if (S().toastAt === at) set({ toast: '' }); }, 2600); }
+  var v = { yes: true, no: false };
+  var L = st.lessons, saved = st.saved || {}, mode = st.mode || 'ok';
+  v.theme = st.dark ? 'hoc-tap-dem' : 'kham-pha'; v.rootCls = 'fm sh' + (st.mview === 'pv' ? ' mv-pv' : '');
+  v.meAv = 'av a1'; v.meIni = 'N'; v.meName = 'Nguyen Van ABC'; v.meSub = 'Mục tiêu JLPT N5';
+  v.histCount = st.histCount != null ? st.histCount : SH_HIST; v.hasHist = v.histCount > 0;
+  function est(n) { return Math.max(1, Math.round(n * 0.45)); }
+  var q = st.q || '', nq = shNorm(q).trim(), lv = st.level || 'ALL';
+  v.q = q; v.hasQ = !!q; v.onQ = function (e) { set({ q: e && e.target ? e.target.value : '' }); }; v.clearQ = function () { set({ q: '' }); };
+  var so = !!st.searchOpen || !!q; v.searchOpen = so; v.searchClosed = !so;
+  v.openSearch = function () { set({ searchOpen: true, lvOpen: false }); };
+  v.closeSearch = function () { set({ searchOpen: false, q: '' }); };
+  v.searchKey = function (e) { if (e && e.key === 'Escape') set({ searchOpen: false, q: '' }); };
+  v.lvOpen = !!st.lvOpen; v.lvLabel = lv === 'ALL' ? 'Mọi cấp' : lv; v.lvCls = 'lvb' + (lv !== 'ALL' ? ' set' : '');
+  v.togLv = function () { set({ lvOpen: !S().lvOpen }); };
+  v.lvOpts = ['ALL', 'N5', 'N4', 'N3'].map(function (x) { var on = lv === x; return { label: x === 'ALL' ? 'Mọi cấp' : x, on: on, cls: on ? 'on' : '', pick: function () { set({ level: x, lvOpen: false }); } }; });
+  // cột 1
+  var names = []; L.forEach(function (l) { if (names.indexOf(l.group) < 0) names.push(l.group); });
+  var topic = st.topic || 'cont', C = 2 * Math.PI * 16, searching = !!nq;
+  var prog = L.filter(function (l) { return l.status === 'IN_PROGRESS'; });
+  var savedN = L.filter(function (l) { return saved[l.id]; }).length;
+  function pickT(t) { return function () { set({ topic: t, q: '', sel: null, lvOpen: false }); }; }
+  var rail = [{ isItem: true, isIcon: true, icCls: 'b-ic go', icon: 'play_circle', name: 'Học tiếp', meta: prog.length ? prog.length + ' bài đang dở' : 'Chưa có bài đang dở', on: !searching && topic === 'cont', pick: pickT('cont') },
+    { isHead: true, name: 'Chủ đề' }];
+  names.forEach(function (nm) {
+    var all = L.filter(function (l) { return l.group === nm; }), done = all.filter(function (l) { return l.status === 'COMPLETED'; }).length, pr = all.filter(function (l) { return l.status === 'IN_PROGRESS'; }).length;
+    var lvs = []; all.forEach(function (l) { if (lvs.indexOf(l.lv) < 0) lvs.push(l.lv); }); lvs.sort().reverse();
+    rail.push({ isItem: true, isRing: true, ringCls: 'b-ring' + (done ? '' : ' z'), done: done + '/' + all.length, dash: (C * done / all.length).toFixed(1) + ' ' + C.toFixed(1), name: nm, meta: lvs.join(', ') + (pr ? ' · ' + pr + ' đang học' : ''), on: !searching && topic === nm, pick: pickT(nm) });
+  });
+  rail.push({ isDiv: true });
+  rail.push({ isItem: true, isIcon: true, icCls: 'b-ic', icon: 'bookmark', name: 'Đã lưu', meta: savedN + ' bài', on: !searching && topic === 'saved', pick: pickT('saved') });
+  v.rail = rail.map(function (r) { return Object.assign({ isHead: false, isDiv: false, isItem: false, isRing: false, isIcon: false }, r, { cls: 'b-t' + (r.on ? ' on' : '') }); });
+  // cột 2
+  var base = L.filter(function (l) { return (lv === 'ALL' || l.lv === lv) && (!nq || shNorm(l.title).indexOf(nq) >= 0); });
+  var list;
+  if (searching) list = base;
+  else if (topic === 'cont') list = base.filter(function (l) { return l.status === 'IN_PROGRESS'; }).sort(function (a, b) { return (b.id === st.contId) - (a.id === st.contId); });
+  else if (topic === 'saved') list = base.filter(function (l) { return saved[l.id]; });
+  else list = base.filter(function (l) { return l.group === topic; });
+  var showGroup = searching || topic === 'cont' || topic === 'saved';
+  if (searching) { v.lTitle = 'Kết quả cho “' + q.trim() + '”'; v.lMeta = list.length + ' bài trong mọi chủ đề'; }
+  else if (topic === 'cont') { v.lTitle = 'Học tiếp'; v.lMeta = 'Bài đang dở, bài gần nhất ở trên cùng'; }
+  else if (topic === 'saved') { v.lTitle = 'Đã lưu'; v.lMeta = savedN + ' bài'; }
+  else { var a2 = L.filter(function (l) { return l.group === topic; }); v.lTitle = topic; v.lMeta = a2.length + ' bài · ' + a2.filter(function (l) { return l.status === 'COMPLETED'; }).length + ' đã xong · ' + a2.filter(function (l) { return l.status === 'IN_PROGRESS'; }).length + ' đang học'; }
+  v.lEmpty = mode === 'ok' && list.length === 0;
+  v.lEmptyIcon = searching ? 'search_off' : topic === 'saved' ? 'bookmark' : 'task_alt';
+  v.lEmptyText = searching ? 'Không có bài nào khớp. Thử từ khoá ngắn hơn.' : topic === 'saved' ? 'Chưa lưu bài nào. Bấm biểu tượng lưu ở cột xem trước.' : topic === 'cont' ? 'Không có bài đang dở. Chọn một chủ đề để bắt đầu.' : 'Không có bài nào.';
+  var sel = st.sel === undefined || st.sel === null ? (list[0] && list[0].id) : st.sel;
+  if (st.sel === null && st.noAuto) sel = null;
+  var Cs = 2 * Math.PI * 11;
+  v.items = list.map(function (l) {
+    var pr = l.status === 'IN_PROGRESS', dn = l.status === 'COMPLETED', on = l.id === sel;
+    var tier = l.best == null ? '' : l.best >= 80 ? 'good' : l.best >= 50 ? 'mid' : 'low';
+    return { title: l.title, on: on, saved: !!saved[l.id], cls: 's-it' + (pr ? ' prog' : '') + (dn ? ' done' : '') + (on ? ' on' : ''),
+      dash: (Cs * (pr ? l.done / l.n : 0)).toFixed(1) + ' ' + Cs.toFixed(1),
+      meta: (showGroup ? l.group + ' · ' : '') + l.lv + ' · ' + (pr ? 'Vai ' + l.role + ' · câu ' + (l.cur + 1) + '/' + l.n : l.n + ' câu'),
+      hasBest: l.best != null, best: l.best, bestCls: 'lr-best sc-' + tier, bestIcon: tier === 'good' ? 'check_circle' : tier === 'mid' ? 'change_history' : 'cancel',
+      aria: l.title + ', ' + l.lv + '. ' + (dn ? 'Đã xong' : pr ? 'Đang học, câu ' + (l.cur + 1) + '/' + l.n : 'Chưa học') + (l.best != null ? ', điểm cao nhất ' + l.best : ''),
+      pick: function () { set({ sel: l.id, mview: 'pv' }); } };
+  });
+  // cột 3
+  var p = L.filter(function (l) { return l.id === sel; })[0];
+  v.pvNone = mode === 'ok' && !p; v.pvHas = !!p; v.pvLoading = !!st.pvLoading;
+  v.furi = st.furi !== false; v.vi = st.vi !== false;
+  v.furiCls = 'tg' + (v.furi ? ' on' : ''); v.viCls = 'tg' + (v.vi ? ' on' : '');
+  v.togFuri = function () { set({ furi: !(S().furi !== false) }); }; v.togVi = function () { set({ vi: !(S().vi !== false) }); };
+  v.scrCls = 'scr' + (v.furi ? '' : ' nofuri') + (v.vi ? '' : ' novi');
+  v.back = function () { set({ mview: 'list' }); };
+  if (p) {
+    var pr = p.status === 'IN_PROGRESS', dn = p.status === 'COMPLETED';
+    var role = (st.roles || {})[p.id] || (pr ? p.role : 'A'), switched = pr && role !== p.role;
+    var scr = SS_SCR[p.id] || [], mineN = scr.filter(function (s) { return s.role === role; }).length;
+    var tier = p.best == null ? '' : p.best >= 80 ? 'good' : p.best >= 50 ? 'mid' : 'low';
+    function go(msg) { return function () { toast('Mở phòng luyện: ' + p.title + ', ' + msg); }; }
+    v.p = { group: p.group, title: p.title, lv: p.lv, n: p.n, mins: est(p.n), hasBest: p.best != null, best: p.best, bestCls: 'lr-best sc-' + tier, bestIcon: tier === 'good' ? 'check_circle' : tier === 'mid' ? 'change_history' : 'cancel',
+      saved: !!saved[p.id], bmLabel: saved[p.id] ? 'Bỏ lưu bài học' : 'Lưu bài học',
+      togSave: function () { var s2 = Object.assign({}, S().saved || {}); if (s2[p.id]) delete s2[p.id]; else s2[p.id] = true; set({ saved: s2 }); },
+      roles: [['A', p.roleA], ['B', p.roleB]].map(function (o) { var on = role === o[0]; return { key: o[0], name: o[1], on: on, cls: 'pv-o' + (on ? ' on' : ''), pick: function () { var r = Object.assign({}, S().roles || {}); r[p.id] = o[0]; set({ roles: r }); } }; }),
+      roleNote: switched ? 'Bạn đang luyện dở vai ' + p.role + '. Đổi sang vai ' + role + ' sẽ bắt đầu lại từ câu 1.' : 'Bạn nói ' + mineN + '/' + scr.length + ' câu. Vai còn lại do giọng mẫu đọc.',
+      roleNoteCls: 'pv-note' + (switched ? ' warn' : ''),
+      lines: v.pvLoading ? [] : scr.map(function (s) {
+        var mine = s.role === role, isCur = pr && !switched && s.i === p.cur, done = pr && !switched && mine && s.i < p.done;
+        return { role: s.role, t: s.t, vi: s.vi, isCur: isCur, done: done, cls: 'sc ' + (mine ? 'mine' : 'other') + (isCur ? ' cur' : ''),
+          playLabel: 'Nghe mẫu câu ' + (s.i + 1), play: function () { toast('Phát giọng mẫu câu ' + (s.i + 1)); } };
+      }) };
+    if (pr && !switched) { v.p.goLabel = 'Tiếp tục câu ' + (p.cur + 1); v.p.goIcon = 'play_arrow'; v.p.go = go('vai ' + role + ', từ câu ' + (p.cur + 1)); v.p.hasAlt = true; v.p.altLabel = 'Luyện lại từ câu 1'; v.p.alt = go('vai ' + role + ', luyện lại từ câu 1'); }
+    else if (switched) { v.p.goLabel = 'Luyện lại với vai ' + role; v.p.goIcon = 'replay'; v.p.go = go('vai ' + role + ', từ câu 1'); v.p.hasAlt = true; v.p.altLabel = 'Giữ vai ' + p.role + ' và tiếp tục câu ' + (p.cur + 1); v.p.alt = function () { var r = Object.assign({}, S().roles || {}); delete r[p.id]; set({ roles: r }); }; }
+    else if (dn) { v.p.goLabel = 'Luyện lại với vai ' + role; v.p.goIcon = 'replay'; v.p.go = go('vai ' + role + ', luyện lại'); v.p.hasAlt = false; }
+    else { v.p.goLabel = 'Bắt đầu với vai ' + role; v.p.goIcon = 'play_arrow'; v.p.go = go('vai ' + role); v.p.hasAlt = false; }
+  } else v.p = { roles: [], lines: [] };
+  v.roleOpen = false; v.rl = { opts: [] };
+  var c = mode === 'ok' && st.contId ? L.filter(function (l) { return l.id === st.contId && l.status === 'IN_PROGRESS'; })[0] : null;
+  v.hasCont = !!c;
+  if (c) { var cs = (SS_SCR[c.id] || [])[c.cur]; v.ct = { title: c.title, meta: c.lv + ' · Vai ' + c.role, at: c.cur + 1, n: c.n, text: cs ? cs.plain : '', pct: Math.round(100 * c.done / c.n),
+    go: function () { toast('Mở phòng luyện: ' + c.title + ', vai ' + c.role + ', từ câu ' + (c.cur + 1)); } }; } else v.ct = {};
+  v.toast = st.toast || ''; v.toastOn = !!st.toast;
+  return v;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var s = {"tab": "all", "level": "ALL", "q": "", "mode": "ok", "dark": false, "contId": 13, "topic": "cont", "sel": null, "mview": "list"};
+    if (!s.lessons) s.lessons = [{"id": 11, "title": "Đi tham quan đền chùa", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "NOT_STARTED", "best": null, "roleA": "Hướng dẫn viên", "roleB": "Khách tham quan"}, {"id": 12, "title": "Cửa hàng tiện lợi", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "COMPLETED", "best": 68, "roleA": "Khách hàng", "roleB": "Nhân viên cửa hàng"}, {"id": 13, "title": "Nhận phòng khách sạn", "lv": "N5", "n": 8, "group": "Giao tiếp tình huống", "status": "IN_PROGRESS", "cur": 1, "done": 1, "role": "B", "best": 76, "roleA": "Nhân viên lễ tân", "roleB": "Khách (Minh)"}, {"id": 14, "title": "Mua vé tàu", "lv": "N4", "n": 8, "group": "Giao tiếp tình huống", "status": "COMPLETED", "best": 93, "roleA": "Khách", "roleB": "Nhân viên nhà ga"}, {"id": 15, "title": "Xin hỗ trợ về việc làm thẻ tàu", "lv": "N5", "n": 6, "group": "Giao tiếp tình huống", "status": "NOT_STARTED", "best": null, "roleA": "Khách", "roleB": "Nhân viên nhà ga"}, {"id": 21, "title": "Thủ tục nhập cảnh", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "IN_PROGRESS", "cur": 4, "done": 4, "role": "A", "best": 2, "roleA": "Người nhập cảnh", "roleB": "Nhân viên an ninh"}, {"id": 22, "title": "Tìm người đón", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "IN_PROGRESS", "cur": 2, "done": 2, "role": "A", "best": 13, "roleA": "Học viên", "roleB": "Người đón"}, {"id": 23, "title": "Hỏi đường ra ga", "lv": "N5", "n": 6, "group": "Ở sân bay", "status": "NOT_STARTED", "best": null, "roleA": "Khách", "roleB": "Nhân viên sân bay"}];
+    if (!s.saved) { s.saved = {}; SH_SAVED.forEach(function (id) { s.saved[id] = true; }); }
+    this.state = { sh: s };
+  }
+  renderVals() {
+    return { sh: sVals(this) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCAP · Hỗ trợ & Góp ý · bản tương tác tổng (học viên, phiếu đang trò chuyện)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/jcap/tokens.css">
+<link rel="stylesheet" href="ds/jcap/components/bundle.css">
+<script src="ds/jcap/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+
+.msr{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-feature-settings:"liga";font-variation-settings:'FILL' 0,'wght' 450,'GRAD' 0,'opsz' 24;display:inline-block;flex:none}
+:where(.fm) p,:where(.fm) h1,:where(.fm) h3,:where(.fm) h4,:where(.fm) ol,:where(.fm) ul,:where(.fm) fieldset,:where(.fm) figure{margin:0;padding:0}
+:where(.fm) ol,:where(.fm) ul{list-style:none}
+.fm button{font-family:inherit}
+.fm :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fm .jc-input__el:focus-visible{outline:none}
+/* bảng màu: nền giấy ấm + mực chàm như landing (theme kham-pha); 5 kênh lấy từ bộ màu khắc gỗ WOODBLOCK trong exploreTheme.ts
+   cùng độ đậm nhạt, cách đều trên vòng màu: chàm, thông, gạch, đất vàng, mận. Tỉ lệ 60 giấy / 30 mực / 10 điểm nhấn (chàm cho thao tác, son cho ghim). */
+.fm{--wb-indigo:#294669;--wb-indigo-f:#BCCAD6;--wb-pine:#2F4D43;--wb-pine-f:#BFCAC3;--wb-brick:#843526;--wb-brick-f:#E5C3B3;--wb-ochre:#6E5112;--wb-ochre-f:#E4CC97;--wb-plum:#563B5D;--wb-plum-f:#CDBDCB;
+  --ai-soft:color-mix(in srgb,var(--ai) 12%,var(--paper-50));--focus:var(--ai)}
+.fm[data-theme="hoc-tap-dem"]{--ai:var(--sora);--ai-hover:var(--sora);--on-ai:var(--on-sora);--ai-soft:color-mix(in srgb,var(--sora) 16%,var(--paper-50))}
+.fm{position:relative;display:flex;height:100vh;overflow:hidden;background:var(--paper-100);color:var(--sumi);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+.sp{flex:1}
+/* thanh bên */
+.sb{flex:0 0 240px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:16px 12px 12px;background:var(--paper-50);border-right:1px solid var(--line);overflow:hidden}
+.sb-h{display:flex;align-items:center;gap:10px;height:40px;padding:0 6px 10px}
+.sb-h b{font-size:18px;letter-spacing:.08em}
+.sb-logo{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:var(--shu);color:var(--on-shu)}
+.sb-logo .msr{font-size:20px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.ib:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-l{height:18px;margin:10px 0 2px!important;padding:0 12px!important;font-size:12px;line-height:18px;font-weight:600;color:var(--sumi-muted)}
+.sb-l.red{color:var(--shu)}
+.sb-nav{display:flex;flex-direction:column;gap:2px}
+.sb-i{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border-radius:12px;color:var(--sumi-muted);font-size:14px;font-weight:600;text-decoration:none}
+.sb-i .msr{font-size:22px}
+.sb-i:hover{background:var(--paper-200);color:var(--sumi)}
+.sb-i.on{background:var(--shu-soft);color:var(--sumi);font-weight:700}
+.sb-i.on .msr{color:var(--shu);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sb-i .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-i .n{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--sumi)}
+.sb-i .n.red{color:var(--shu)}.sb-i .n.credit{color:var(--credit);font-size:13px}
+.sb-ch{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--shu);color:var(--on-shu);font-family:var(--font-mincho);font-size:13px;font-weight:700}
+.sb-f{margin-top:6px;border-top:1px solid var(--line);border-radius:0;height:48px}
+.coin{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--credit-coin);color:var(--on-sora)}
+.coin .msr{font-size:15px}
+.sb-u{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.sb-u:hover{background:var(--paper-200)}
+.sb-u .who{flex:1;min-width:0;display:flex;flex-direction:column}
+.sb-u b{font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-u .who span{font-size:12px;line-height:16px;color:var(--sumi-muted)}
+/* avatar */
+.av{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;font-size:16px;font-weight:700;line-height:1}
+.av.sm{width:32px;height:32px;font-size:13px}
+.av .msr{font-size:22px}.av.sm .msr{font-size:18px}
+.a0{background:var(--ai);color:var(--on-ai)}.a1{background:var(--sora);color:var(--on-sora)}
+.a2{background:var(--wb-pine-f);color:var(--wb-pine)}.a3{background:var(--wb-plum-f);color:var(--wb-plum)}.a4{background:var(--wb-ochre-f);color:var(--wb-ochre)}
+.av.anon{background:var(--paper-200);color:var(--sumi-muted);box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+/* kênh: màu nhận diện lấy từ token */
+.ch-all{--c:var(--sumi);--cs:var(--paper-200)}
+.ch-qa{--k:var(--wb-indigo);--kf:var(--wb-indigo-f)}.ch-sp{--k:var(--wb-pine);--kf:var(--wb-pine-f)}.ch-bd{--k:var(--wb-brick);--kf:var(--wb-brick-f)}
+.ch-rs{--k:var(--wb-ochre);--kf:var(--wb-ochre-f)}.ch-lg{--k:var(--wb-plum);--kf:var(--wb-plum-f)}
+.ch-qa,.ch-sp,.ch-bd,.ch-rs,.ch-lg{--c:var(--k);--cs:color-mix(in srgb,var(--kf) 55%,var(--paper-50))}
+[data-theme="hoc-tap-dem"] .ch-qa,[data-theme="hoc-tap-dem"] .ch-sp,[data-theme="hoc-tap-dem"] .ch-bd,[data-theme="hoc-tap-dem"] .ch-rs,[data-theme="hoc-tap-dem"] .ch-lg{--c:var(--kf);--cs:color-mix(in srgb,var(--k) 55%,var(--paper-50))}
+/* khung chính */
+.fm-main{flex:1;min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.fm-mtop{display:none}
+.fm-wrap{max-width:1100px;margin:0 auto;padding:32px 40px 96px;box-sizing:border-box}
+.fm-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px}
+.fm-ttl h1{display:flex;align-items:baseline;gap:12px;font-size:28px;line-height:38px;font-weight:700}
+.fm-ttl .kj{font-family:var(--font-mincho);font-size:17px;font-weight:600;letter-spacing:.12em;color:var(--sumi-muted)}
+.fm-ttl p{margin-top:4px;font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.fm-hact{display:flex;gap:8px;flex-wrap:wrap}
+.fm-grid{display:grid;grid-template-columns:264px minmax(0,1fr);gap:32px;align-items:start;margin-top:28px}
+/* cột kênh */
+.fm-rail{position:sticky;top:24px}
+.fm-rl{padding:0 12px 8px!important;font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.rc-list{display:flex;flex-direction:column;gap:2px}
+.rc .cn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:44px;padding:6px 10px 6px 8px;border:0;border-radius:14px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.rc:hover{background:var(--paper-200)}
+.rc.on{background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.rc .ct,.cp-c .ct{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;}
+.rc .ct{width:28px;height:28px;border-radius:8px;align-self:flex-start;margin-top:2px}
+.rc .ct .msr{font-size:18px}
+.rc .ct,.cp-c .ct{background:var(--cs);color:var(--c)}
+.rc.on .ct{background:var(--c);color:var(--paper-50)}
+.rc .cx,.cp-c .cx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rc .cn,.cp-c .cn{font-size:14px;line-height:20px;font-weight:600}
+.rc.on .cn{font-weight:700}
+.rc .cd,.cp-c .cd{font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.rc .cd{display:none}
+.rc.on .cd:not(:empty){display:block}
+.rc .cx>.cd:empty{display:none}
+.rc .cc{flex:none;align-self:flex-start;min-width:22px;padding-top:6px;text-align:right;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sumi-muted)}
+.fm-chline{display:none}
+.fm-help{display:inline-flex;align-items:center;gap:8px;height:36px;margin:12px 0 0 2px;padding:0 12px 0 8px;border-radius:999px;color:var(--sumi-muted);font-size:13px;font-weight:600;text-decoration:none}
+.fm-help .msr{font-size:18px}
+.fm-help:hover{background:var(--paper-200);color:var(--sumi)}
+/* cột bài */
+.fm-feed{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fm-quick{display:flex;align-items:center;gap:10px;height:56px;box-sizing:border-box;padding:0 8px 0 10px;border-radius:999px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);transition:box-shadow .15s}
+.fm-quick:hover{box-shadow:0 0 0 1px var(--line-strong),var(--shadow-md)}
+.fm-quick .jc-btn{border-radius:999px;padding:0 16px 0 12px}
+.fm-qbtn{flex:1;min-width:0;height:44px;padding:0 4px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:15px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.fm-qbtn:hover{color:var(--sumi)}
+.fm-qbtn:focus-visible{outline-offset:-2px}
+.fm-tools{display:flex;align-items:center;gap:8px;min-height:40px;margin-top:6px}
+.fm-lh{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;margin:0;font-size:15px;line-height:22px;font-weight:700}
+.fm-lh .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-lh .n{font-size:13px;font-weight:500;color:var(--sumi-muted);font-variant-numeric:tabular-nums}
+.fm-sort .jc-seg{background:transparent;padding:0;gap:2px}
+.fm-sort .jc-seg__opt{min-height:32px;padding:0 12px 0 10px;border-radius:999px;font-weight:600}
+.fm-sort .jc-seg__opt.is-on{background:var(--paper-50);color:var(--sumi);box-shadow:0 0 0 1px var(--line)}
+.fm-sort .jc-seg__opt .jc-icon{font-size:17px!important;width:17px!important;height:17px!important}
+.fm-tools .jc-iconbtn{border-radius:999px;width:36px;height:36px}
+.fm-search{height:40px;min-height:40px;border-radius:999px}
+.fm-search{flex:1;min-width:0;animation:fmgrow .18s ease-out}
+@keyframes fmgrow{from{opacity:0;transform:scaleX(.6);transform-origin:right}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fm-search{animation:none}}
+.fm-search .jc-input__el::-webkit-search-cancel-button{display:none}
+.fm-x{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--sumi-muted);cursor:pointer}
+.fm-x:hover{background:var(--paper-200);color:var(--sumi)}
+.fm-x .msr{font-size:18px}
+.fm-sort{display:flex;align-items:center;gap:8px}
+.fm-sl{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-count{font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-newwrap{position:sticky;top:12px;z-index:3;display:flex;justify-content:center;height:0;overflow:visible}
+.fm-new{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px 0 12px;border:0;border-radius:999px;background:var(--ai);color:var(--on-ai);font-size:14px;font-weight:600;box-shadow:var(--shadow-md);cursor:pointer;transform:translateY(-6px)}
+.fm-new .msr{font-size:18px}
+.fm-list{display:flex;flex-direction:column;gap:12px}
+/* thẻ bài */
+.fp{position:relative;padding:16px 20px 8px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px solid var(--line);transition:box-shadow .15s,border-color .15s}
+.fp:hover{border-color:var(--line-strong)}
+.fp.open{border-color:var(--line-strong);box-shadow:var(--shadow-md)}
+.fp-h{display:flex;align-items:center;gap:12px}
+.fp-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fp-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.fp-n>.nm{font-weight:700}
+.me-tag{font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.fp-m{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;color:var(--c);font-weight:600}
+.chip .msr{font-size:16px}
+.fp-menu{position:relative;align-self:flex-start}
+.fp-pop{position:absolute;right:0;top:44px;z-index:4;min-width:180px;padding:6px;border-radius:12px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+.fp-pop button{display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--sumi);font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.fp-pop button:hover{background:var(--paper-200)}
+.fp-pop .dg{color:var(--danger)}
+.fp-pop .dg:hover{background:var(--danger-soft)}
+.fp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fp-t{margin-top:10px!important}
+.fp-tb{display:block;width:100%;padding:0;border:0;background:transparent;color:var(--sumi);font-size:17px;line-height:26px;font-weight:700;text-align:left;cursor:pointer;font-family:var(--font-sans)}
+.fp-tb:hover{color:var(--ai)}
+.fp-c{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.fp-b{font-size:15px;line-height:24px;color:var(--sumi-muted);white-space:pre-line;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fp.open .fp-b{display:block;color:var(--sumi)}
+.fimgs{display:flex;gap:8px;flex-wrap:wrap}
+.fimg{position:relative;display:block;width:132px;height:96px;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper-100);cursor:zoom-in}
+.fp.open .fimg{width:260px;height:190px}
+.fimg .zoom{position:absolute;right:6px;bottom:6px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--paper-50);color:var(--sumi);box-shadow:var(--shadow-sm);opacity:0;transition:opacity .15s}
+.fimg:hover .zoom,.fimg:focus-visible .zoom{opacity:1}
+.fimg .zoom .msr{font-size:18px}
+/* ảnh ghi chú (thay cho ảnh thật trong bản mẫu) */
+.nimg{position:relative;display:flex;flex-direction:column;justify-content:center;gap:.35em;width:100%;height:100%;box-sizing:border-box;padding:.9em 1.1em;font-size:8.5px;line-height:1.3;color:var(--sumi);text-align:left;background-color:var(--paper-50);background-image:repeating-linear-gradient(180deg,transparent 0 calc(1.65em - 1px),var(--line) calc(1.65em - 1px) 1.65em);font-family:var(--font-jp)}
+.fp.open .nimg{font-size:15px}
+.nimg .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nimg .ln:nth-child(odd){color:var(--ai);font-weight:500}
+.nimg .tape{position:absolute;top:-3px;left:50%;width:28%;height:12%;max-height:14px;transform:translateX(-50%) rotate(-3deg);background:var(--sora);opacity:.75;border-radius:2px}
+.ffiles{display:flex;flex-direction:column;gap:8px}
+.ffile{display:flex;align-items:center;gap:12px;max-width:440px;padding:8px 8px 8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper-100)}
+.ft{flex:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px}
+.ft-pdf{background:color-mix(in srgb,var(--wb-brick-f) 60%,var(--paper-50));color:var(--wb-brick)}.ft-doc{background:color-mix(in srgb,var(--wb-indigo-f) 60%,var(--paper-50));color:var(--wb-indigo)}.ft-img{background:color-mix(in srgb,var(--wb-pine-f) 60%,var(--paper-50));color:var(--wb-pine)}
+[data-theme="hoc-tap-dem"] .ft-pdf,[data-theme="hoc-tap-dem"] .ft-doc,[data-theme="hoc-tap-dem"] .ft-img{background:var(--paper-200);color:var(--sumi)}.ft-txt{background:var(--paper-200);color:var(--sumi-muted)}
+.fx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fn{font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs{display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.fs .msr{font-size:14px}
+/* hàng thao tác */
+.fp-a{display:flex;align-items:center;gap:4px;margin:10px -8px 0}
+.fa{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--sumi-muted);font-size:14px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.fa:hover{background:var(--paper-200);color:var(--sumi)}
+.fa.on{color:var(--ai);background:var(--ai-soft)}
+.fa.solve.on,.fa.solve{--x:0}
+.fa.on .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.fa.solve{color:var(--success)}
+.fa.solve.on{background:var(--success-soft);color:var(--success)}
+.fa-open{color:var(--sumi)}
+/* bình luận */
+.fc{display:flex;flex-direction:column;gap:14px;margin:8px -20px 0;padding:16px 20px 16px;border-top:1px solid var(--line)}
+.fc-h{display:flex;align-items:center;gap:8px;font-size:15px;line-height:22px;font-weight:700}
+.fc-n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:var(--paper-200);font-size:12px;font-variant-numeric:tabular-nums}
+.fc-empty{display:flex;align-items:center;gap:10px;padding:14px 16px!important;border-radius:12px;background:var(--paper-100);font-size:14px;color:var(--sumi-muted)}
+.fc-list{display:flex;flex-direction:column;gap:16px}
+.cm{display:flex;gap:12px}
+.cm-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.cm-n{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;line-height:20px}
+.cm-n>.nm{font-weight:700}
+.cm-n>.tm{font-size:12px;color:var(--sumi-muted)}
+.cm-t{font-size:15px;line-height:24px;white-space:pre-line}
+.cm-r{display:inline-flex;align-items:center;gap:4px;height:32px;margin-left:-8px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--sumi-muted);font-size:13px;font-weight:600;cursor:pointer}
+.cm-r:hover{background:var(--paper-200);color:var(--sumi)}
+.cm-r .msr{font-size:17px}
+.fc-rep{display:flex;flex-direction:column;gap:14px;margin:10px 0 0 15px!important;padding-left:29px!important;border-left:2px solid var(--line)}
+/* viết bình luận */
+.fcw{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--paper-100)}
+.fcw-to{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sumi-muted)}
+.fcw-to b{color:var(--ai)}
+.fcw-to .msr{font-size:17px}
+.fcw-box{display:flex;gap:10px;align-items:flex-start}
+.fcw-box .av{margin-top:4px}
+.fcw-box .av .msr{display:none}
+.fcw-box .av.anon .msr{display:inline-block}.fcw-box .av.anon .ini{display:none}
+.fcw-in{flex:1;min-width:0}
+.fcw-in .jc-input__el{min-height:48px}
+.fcw-row{display:flex;align-items:center;gap:12px;padding-left:38px}
+.fcw-row .jc-switch{gap:10px}
+.fcw-row .jc-switch__label{font-size:13px;font-weight:600}
+.fcw-err{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 10px 8px 12px!important;border-radius:10px;background:var(--danger-soft);color:var(--danger);font-size:13px;line-height:18px;font-weight:600}
+.fcw-err .msr{font-size:18px}
+.fcw-err button{margin-left:auto;height:32px;padding:0 12px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font-size:13px;font-weight:700;cursor:pointer}
+/* trạng thái */
+.fm-empty{padding:48px 24px;border-radius:var(--radius-lg);background:var(--paper-50);border:1px dashed var(--line-strong)}
+.fm-empty .ei{font-size:32px}
+.sk{display:flex;flex-direction:column;gap:10px;padding-bottom:18px}
+.skc{width:40px;height:40px;border-radius:50%;flex:none}
+.sk1{width:38%}.sk2{width:22%}.sk3{width:72%;height:18px}.sk4{width:96%}.sk5{width:60%}
+/* nút nổi điện thoại */
+.fm-fab{display:none}
+/* khung soạn bài */
+.fm-ov{z-index:60}
+.cp-b{display:flex;flex-direction:column;gap:20px;padding-top:12px}
+.cp-ch{border:0}
+.cp-ch legend{margin-bottom:8px}
+.cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cp-c{position:relative;display:flex;align-items:flex-start;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--paper-50);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-c:hover{border-color:var(--line-strong)}
+.cp-c.on{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);background:var(--cs)}
+.cp-c.on .ct{background:var(--c);color:var(--paper-50)}
+.cp-c .ck{display:none;color:var(--c)}
+.cp-c.on .ck{display:inline-flex}
+.cp-c.on .ck .msr{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.cp-cnt{margin-top:6px!important;font-size:12px;line-height:16px;color:var(--sumi-muted);text-align:right;font-variant-numeric:tabular-nums}
+.cp-cnt.warn{color:var(--warning);font-weight:600}
+.cp-att{display:flex;flex-direction:column;gap:8px}
+.cp-drop{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border:1.5px dashed var(--line-strong);border-radius:14px;background:var(--paper-100);color:var(--sumi);text-align:left;cursor:pointer}
+.cp-drop:hover{border-color:var(--ai);background:var(--ai-soft)}
+.cp-drop>.msr{font-size:26px;color:var(--ai)}
+.dx{display:flex;flex-direction:column;gap:2px}
+.dt{font-size:15px;font-weight:600}
+.dd{font-size:13px;color:var(--sumi-muted)}
+.cp-files{display:flex;flex-direction:column;gap:8px}
+.cpf{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 8px;border:1px solid var(--line);border-radius:12px;background:var(--paper-50)}
+.cpf.err{border-color:var(--danger);background:var(--danger-soft)}
+.cpf.err .fs{color:var(--danger);font-weight:600}
+.cpf.ok .fs .msr{color:var(--success)}
+.cp-th{flex:none;width:48px;height:48px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.cp-th .nimg{font-size:4px;padding:.8em}
+.cpf .ft{width:48px;height:48px;border-radius:8px}
+.bar{display:block;height:4px;margin-top:4px;border-radius:2px;background:var(--paper-200);overflow:hidden}
+.bar i{display:block;width:40%;height:100%;border-radius:2px;background:var(--ai);animation:barmove 1.1s ease-in-out infinite}
+@keyframes barmove{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+.cp-anon{padding:14px 16px;border-radius:14px;background:var(--paper-100)}
+.cp-f{align-items:center}
+.cp-why{flex:1;min-width:0;font-size:13px;color:var(--sumi-muted)}
+/* xem ảnh */
+.fm-lb{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:var(--scrim);backdrop-filter:blur(2px)}
+.fm-lbbar{display:flex;align-items:center;gap:12px;padding:12px 16px 12px 24px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+.fm-lbbar p{flex:1;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.lbh{font-size:13px;color:var(--sumi-muted)}
+.fm-lbfig{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px}
+.nimg.big{width:min(720px,90%);height:auto;aspect-ratio:4/3;font-size:30px;border-radius:12px;box-shadow:var(--shadow-lg)}
+.fm-lbfig figcaption{padding:6px 14px;border-radius:999px;background:var(--paper-50);font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.fm-toast{position:fixed;left:50%;bottom:28px;z-index:80;transform:translateX(-50%);min-width:300px}
+@media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}.fp{transition:none}}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .sb{display:none}
+  .fm-mtop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:56px;padding:0 12px 0 6px;background:var(--paper-50);border-bottom:1px solid var(--line)}
+  .fm-mtop b{font-size:17px}
+  .fm-mtop .av{width:32px;height:32px;font-size:13px;margin-left:4px}
+  .fm-wrap{padding:16px 16px 112px}
+  .fm-ttl h1{font-size:22px;line-height:30px;gap:8px}
+  .fm-ttl .kj{font-size:14px}
+  .fm-ttl p{font-size:14px;line-height:21px}
+  .fm-hact{display:none}
+  .fm-grid{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}
+  .fm-rail{position:static;margin:0 -16px}
+  .fm-rl{display:none}
+  .rc-list{flex-direction:row;gap:8px;overflow-x:auto;padding:2px 16px 4px;scrollbar-width:none}
+  .rc{flex:none;width:auto;align-items:center;gap:6px;height:40px;padding:0 14px 0 6px;border-radius:999px;background:var(--paper-50);box-shadow:inset 0 0 0 1px var(--line)}
+  .rc.on{background:var(--c);color:var(--paper-50);box-shadow:none}
+  .rc .ct{width:28px;height:28px;border-radius:50%;background:transparent}
+  .rc.on .ct{background:transparent;color:var(--paper-50)}
+  .rc .cd{display:none}
+  .rc .cn{white-space:nowrap}
+  .rc .cc{padding:0;min-width:0;font-size:12px;align-self:center}
+  .rc .ct{align-self:center;margin-top:0}
+  .rc.on .cc{color:var(--paper-50)}
+  .fm-chline.none{display:none!important}
+  .fm-chline{display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:var(--sumi-muted)}
+  .fm-chline .ct{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;background:var(--cs);color:var(--c)}
+  .fm-chline .msr{font-size:16px}
+  .fm-quick{display:none}
+  .fm-tools{gap:6px;margin-top:0}
+  .fm-help{display:none}
+  .fm-lh .t,.fm-lh .n{display:none}
+  .fm-sort .jc-seg__opt{padding:0 10px}
+  .fp{padding:14px 14px 6px;border-radius:14px}
+  .fp-t{margin-top:8px!important}
+  .fp-tb{font-size:16px;line-height:24px}
+  .fa{height:44px;padding:0 10px}
+  .fa-open>span:first-child{display:none}
+  .fp-a{margin:6px -6px 0}
+  .fp.open .fimg{width:100%;height:auto;aspect-ratio:4/3}
+  .fp.open .nimg{font-size:17px}
+  .fc{margin:6px -14px 0;padding:14px}
+  .fc-rep{margin-left:8px!important;padding-left:14px!important}
+  .fcw-row{padding-left:0;flex-wrap:wrap}
+  .ffile{max-width:none}
+  .fm-fab{position:absolute;right:16px;bottom:20px;z-index:6;display:inline-flex;align-items:center;gap:8px;height:56px;padding:0 20px 0 16px;border:0;border-radius:18px;background:var(--ai);color:var(--on-ai);font-size:15px;font-weight:700;box-shadow:var(--shadow-lg);cursor:pointer}
+  .fm-fab .msr{font-size:22px}
+  .has-open .fm-fab{display:none}
+  .fm-mtop .sb-logo{width:28px;height:28px;margin-left:2px}
+  .fm-mtop .sb-logo .msr{font-size:18px}
+  .fm-ov{padding:0!important;align-items:stretch!important}
+  .fm-cmp{max-width:none!important;height:100%;max-height:none!important;border-radius:0!important}
+  .cp-grid{grid-template-columns:1fr}
+  .cp-c{padding:10px 12px}
+  .cp-f{flex-direction:column-reverse;align-items:stretch}
+  .cp-why{text-align:center}
+  .lbh{display:none}
+  .fm-lbfig{padding:16px}
+  .fm-toast{left:16px;right:16px;bottom:92px;transform:none;min-width:0}
+}
+
+/* ============ Hỗ trợ & Góp ý ============ */
+.sp-scope{display:contents}
+.fm[data-theme="quan-tri"]{--ai-deep:color-mix(in srgb,var(--ai) 70%,var(--sumi))}
+.fm[data-theme="quan-tri"]>.sp-scope{--ai:var(--ai-deep);--ai-hover:var(--sumi);--ai-soft:color-mix(in srgb,var(--ai-deep) 10%,var(--paper-50));--focus:var(--ai-deep)}
+.sb-adm{margin-left:2px;padding:2px 8px;border-radius:999px;background:var(--paper-200);font-size:11px;font-weight:700;color:var(--sumi-muted)}
+.sb-u.on{background:var(--shu-soft)}
+.sp-main{flex:1;min-width:0;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;max-width:1230px;margin:0 auto;padding:28px 40px 24px}
+.sp-mtop{display:none}
+.sp-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.sp-ttl h1{display:flex;align-items:baseline;gap:12px;margin:0;font-size:28px;line-height:38px;font-weight:700}
+.sp-ttl .kj{font-family:var(--font-mincho);font-size:17px;font-weight:600;letter-spacing:.12em;color:var(--sumi-muted)}
+.sp-ttl p{margin:4px 0 0;font-size:15px;line-height:24px;color:var(--sumi-muted)}
+.sp-hact{display:flex;align-items:center;gap:4px}
+.sp-tabs{margin-top:18px;flex:none}
+.sp-tabs .jc-tab .msr{font-size:19px}
+.sp-body{flex:1;min-height:0;display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;margin-top:20px}
+/* danh sách phiếu */
+.sp-list{display:flex;flex-direction:column;min-height:0}
+.sl-head{display:flex;align-items:center;gap:12px;min-height:40px}
+.sl-h{flex:1;margin:0;font-size:16px;line-height:24px;font-weight:700}
+.sl-head .jc-btn{border-radius:999px}
+.sl-search{flex:1;height:40px;min-height:40px;border-radius:999px}
+.sl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sl-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--sumi-muted);font-size:13px;font-weight:600;cursor:pointer}
+.sl-chip:hover{color:var(--sumi);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.sl-chip .n{font-variant-numeric:tabular-nums;font-weight:500}
+.sl-chip.on{background:var(--sumi);color:var(--paper-50);box-shadow:none}
+.sl-scroll{flex:1;min-height:0;overflow-y:auto;margin:12px -6px 0;padding:0 6px 8px;scrollbar-width:thin;scrollbar-color:transparent transparent}
+.sl-scroll:hover{scrollbar-color:color-mix(in srgb,var(--line-strong) 45%,transparent) transparent}
+.sl-items{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
+.sl-row{display:flex;flex-direction:column;gap:6px;width:100%;box-sizing:border-box;padding:12px 14px;border:0;border-radius:14px;background:transparent;color:var(--sumi);text-align:left;cursor:pointer}
+.sl-row:hover{background:var(--paper-200)}
+.sl-row.on{background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.sl-row .r1{display:flex;align-items:center;gap:6px}
+.sl-row .tm{font-size:12px;color:var(--sumi-muted);white-space:nowrap}
+.sl-row .nw{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--shu)}
+.sl-row .nw::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--shu)}
+.sl-row .r2{font-size:14px;line-height:20px;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sl-row.unread .r2{font-weight:700}
+.sl-row .r3{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.sl-row .r3>.msr{font-size:15px}
+.sl-row .sub{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding-left:8px;border-left:1px solid var(--line)}
+.sl-row .sub .msr{font-size:14px}
+.code{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--line-strong);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--sumi);white-space:nowrap}
+.code .msr{font-size:14px;color:var(--sumi-muted)}
+.sl-row.sk{cursor:default;gap:10px;background:var(--paper-50)}
+.sl-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px 16px;text-align:center;color:var(--sumi-muted);font-size:14px;line-height:21px}
+.sl-empty>.msr{font-size:28px}
+.sl-anon{display:flex;align-items:flex-start;gap:8px;margin:8px 0 0!important;padding:10px 12px!important;border-radius:12px;background:var(--paper-200);font-size:12px;line-height:17px;color:var(--sumi-muted)}
+.sl-anon .msr{font-size:17px;color:var(--sumi)}
+/* nội dung phiếu */
+.sp-thread{position:relative;display:flex;flex-direction:column;min-height:0;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm);overflow:hidden}
+.th-none{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center;color:var(--sumi-muted);font-size:14px}
+.th-none>.msr{font-size:34px;margin-bottom:4px}
+.th-none .t{margin:0;font-size:16px;font-weight:700;color:var(--sumi)}
+.th-none p{margin:0}
+.th-skel{display:flex;flex-direction:column;gap:10px;padding:24px}
+.th-head{display:flex;align-items:flex-start;gap:12px;padding:18px 22px 16px;border-bottom:1px solid var(--line)}
+.th-back{display:none}
+.th-meta{flex:1;min-width:0}
+.th-r1{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0}
+.th-r1 .cat{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--sumi-muted)}
+.th-r1 .cat .msr{font-size:16px}
+.th-title{margin:10px 0 0;font-size:19px;line-height:28px;font-weight:700}
+.th-r3{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0 0;font-size:13px;color:var(--sumi-muted)}
+.th-r3 .sub{display:inline-flex;align-items:center;gap:4px;padding-left:10px;border-left:1px solid var(--line)}
+.th-r3 .msr{font-size:15px}
+.th-act{display:flex;gap:8px}
+.th-act .jc-btn{border-radius:999px}
+.th-msgs{flex:1;min-height:0;display:flex;flex-direction:column-reverse;overflow-y:auto;background:var(--paper-100);scrollbar-width:thin;scrollbar-color:transparent transparent}
+.th-msgs:hover{scrollbar-color:color-mix(in srgb,var(--line-strong) 45%,transparent) transparent}
+.th-in{display:flex;flex-direction:column;gap:18px;padding:22px 22px 18px}
+.th-ev{display:flex;align-items:center;justify-content:center;gap:6px;margin:0;font-size:12px;font-weight:600;color:var(--sumi-muted)}
+.th-ev::before,.th-ev::after{content:"";flex:1;max-width:80px;height:1px;background:var(--line)}
+.th-ev .msr{font-size:15px}
+.th-ev .tm{font-weight:500}
+.th-m{display:flex;align-items:flex-start;gap:10px;max-width:78%}
+.th-m.me{align-self:flex-end;flex-direction:row-reverse}
+.th-m .mb{display:flex;flex-direction:column;gap:4px;min-width:0}
+.th-m.me .mb{align-items:flex-end}
+.th-m .mn{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;line-height:18px;color:var(--sumi-muted)}
+.th-m .mn b{font-size:13px;color:var(--sumi)}
+.th-m .mn .code{height:18px;padding:0 5px;font-size:11px}
+.th-m .bub{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:4px 16px 16px 16px;background:var(--paper-50);box-shadow:0 0 0 1px var(--line)}
+.th-m.me .bub{border-radius:16px 4px 16px 16px;background:var(--ai-soft);box-shadow:none}
+.th-m .tx{margin:0;font-size:15px;line-height:24px;white-space:pre-line;overflow-wrap:anywhere}
+.th-m .fimg{width:200px;height:146px}
+.th-m .nimg{font-size:12px}
+.th-m .ffile{background:var(--paper-50);max-width:320px}
+.th-newwrap{position:absolute;left:0;right:0;bottom:118px;display:flex;justify-content:center;pointer-events:none}
+.th-newwrap .fm-new{pointer-events:auto;transform:none}
+.th-comp{display:flex;flex-direction:column;gap:8px;padding:12px 16px 14px;border-top:1px solid var(--line);background:var(--paper-50)}
+.th-box{display:flex;align-items:flex-end;gap:8px}
+.th-field{flex:1;min-width:0;border-radius:14px}
+.th-field .jc-input__el{min-height:44px;max-height:160px}
+.th-box .jc-btn{border-radius:999px;height:44px}
+.th-closed{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--paper-50);font-size:14px;color:var(--sumi-muted)}
+.th-closed>.msr{font-size:20px;color:var(--success)}
+.th-closed p{flex:1;margin:0}
+.th-closed .jc-btn{border-radius:999px}
+/* góp ý: học viên */
+.fb-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:20px}
+.fb-form{display:flex;flex-direction:column;gap:16px;align-self:start;padding:22px 24px;border-radius:var(--radius-xl);background:var(--paper-50);box-shadow:0 0 0 1px var(--line),var(--shadow-sm)}
+.fb-h{display:flex;align-items:center;gap:8px;margin:0;font-size:17px;line-height:26px;font-weight:700}
+.fb-d{margin:-8px 0 0;font-size:14px;line-height:21px;color:var(--sumi-muted)}
+.fb-row{display:flex;align-items:center;gap:12px}
+.fb-row .jc-btn{border-radius:999px}
+.fb-anon{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:var(--sumi-muted)}
+.fb-anon .msr{font-size:16px}
+.fb-list{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;padding:4px 2px}
+.fb-items{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.fb-i{padding:14px 2px;border-bottom:1px solid var(--line)}
+.fb-i:first-child{padding-top:4px}
+.fb-i .s{margin:0;font-size:15px;line-height:22px;font-weight:700}
+.fb-i .b{margin:4px 0 0;font-size:14px;line-height:21px;color:var(--sumi-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fb-i .m{display:flex;align-items:center;gap:12px;margin:8px 0 0;font-size:12px;color:var(--sumi-muted)}
+.fb-i .ok{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:var(--success)}
+.fb-i .ok .msr{font-size:15px}
+/* góp ý: admin */
+.fa-wrap{flex:1;min-height:0;overflow-y:auto;margin-top:20px;padding:2px}
+.fa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.fa-c{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:var(--radius-lg);background:var(--paper-50);box-shadow:0 0 0 1px var(--line)}
+.fa-c .m{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0}
+.fa-c .tm{font-size:12px;color:var(--sumi-muted)}
+.fa-c h3{margin:2px 0 0;font-size:15px;line-height:22px;font-weight:700}
+.fa-c .b{margin:0;font-size:14px;line-height:22px;color:var(--sumi);white-space:pre-line}
+/* khung báo sự cố */
+.sc{--c:var(--ai);--cs:var(--ai-soft)}
+.nt-anon{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;background:var(--paper-100);box-shadow:inset 0 0 0 1px var(--line)}
+.nt-anon>.msr{font-size:22px;color:var(--ai)}
+.nt-anon p{margin:0;font-size:13px;line-height:19px;color:var(--sumi-muted)}
+.nt-anon .t{font-size:14px;font-weight:700;color:var(--sumi);margin-bottom:2px}
+.ft-zip{background:var(--paper-200);color:var(--sumi-muted)}.ft-vid{background:var(--paper-200);color:var(--sumi-muted)}
+.sp-err{margin-top:24px}
+/* ---- bản tối giản ---- */
+.sp-head{align-items:center;flex-wrap:nowrap;gap:20px}
+.sp-h1{display:flex;align-items:baseline;gap:10px;margin:0;font-size:26px;line-height:36px;font-weight:700;white-space:nowrap}
+.sp-h1 .kj{font-family:var(--font-mincho);font-size:16px;font-weight:600;letter-spacing:.12em;color:var(--sumi-muted)}
+.sp-seg{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--paper-200)}
+.sg{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--sumi-muted);font-size:14px;font-weight:600;cursor:pointer}
+.sg .n{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sg:hover{color:var(--sumi)}
+.sg.on{background:var(--paper-50);color:var(--sumi);box-shadow:var(--shadow-sm)}
+.sp-body{margin-top:24px;grid-template-columns:320px minmax(0,1fr);gap:24px}
+.sl-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;border:1.5px dashed var(--line-strong);border-radius:14px;background:transparent;color:var(--sumi);font-size:14px;font-weight:600;cursor:pointer;flex:none}
+.sl-new:hover{border-style:solid;border-color:var(--ai);color:var(--ai);background:var(--ai-soft)}
+.sl-new .msr{font-size:20px}
+.sl-chips{gap:16px;margin:16px 4px 0;flex-wrap:nowrap}
+.sl-search{flex:none}
+.sl-chip{height:28px;padding:0;border-radius:0;box-shadow:none!important;background:transparent!important;color:var(--sumi-muted);font-size:13px;gap:4px;position:relative}
+.sl-chip .n{font-size:12px}
+.sl-chip.on{color:var(--sumi);font-weight:700}
+.sl-chip.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:var(--sumi)}
+.sl-scroll{margin-top:8px}
+.sl-items{gap:2px}
+.sl-row{flex-direction:row;align-items:flex-start;gap:12px;padding:12px 12px;position:relative}
+.sl-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:var(--paper-200);color:var(--sumi-muted)}
+.sl-ic .msr{font-size:18px}
+.sl-row.on .sl-ic{background:var(--ai-soft);color:var(--ai)}
+.sl-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sl-row .r3{gap:4px 10px}
+.sl-row .cd{font-weight:700;font-variant-numeric:tabular-nums;color:var(--sumi)}
+.sl-row .nw{position:absolute;right:12px;top:16px;width:8px;height:8px;border-radius:50%;background:var(--shu)}
+.sl-row .nw::before{display:none}
+.st{display:inline-flex;align-items:center;gap:3px;font-weight:600}
+.st .msr{font-size:15px}
+.st-pending{color:var(--warning)}.st-in_progress{color:var(--ai)}.st-closed{color:var(--sumi-muted)}
+.th-head{align-items:flex-start;padding:18px 22px 14px}
+.th-title{margin:0;font-size:18px;line-height:26px}
+.th-r1{margin:6px 0 0;gap:4px 14px;font-size:13px;color:var(--sumi-muted)}
+.th-r1>span{display:inline-flex;align-items:center;gap:4px}
+.th-r1 .msr{font-size:15px}
+.th-r1 .code{height:20px;padding:0 6px;font-size:12px}
+.th-st{flex:none;height:28px;padding:0 10px;border-radius:999px;background:var(--paper-100);font-size:13px}
+.th-m .mn{gap:8px}
+.th-m.me .mn{padding-right:4px}
+.th-box{align-items:flex-end;gap:4px;padding:4px 4px 4px 6px;border-radius:22px;box-shadow:inset 0 0 0 1px var(--line-strong);background:var(--paper-50)}
+.th-box:focus-within{box-shadow:inset 0 0 0 2px var(--ai)}
+.th-ta{flex:1;min-width:0;min-height:36px;max-height:160px;padding:8px 4px;border:0;outline:0;background:transparent;resize:none;font:inherit;font-size:15px;line-height:20px;color:var(--sumi)}
+.th-ta::placeholder{color:var(--sumi-muted)}
+.th-box .jc-btn{height:36px;border-radius:999px}
+.th-anon{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;line-height:16px;color:var(--sumi-muted)}
+.th-anon .msr{font-size:15px}
+.th-comp .th-anon{padding-left:12px}
+.nt-an{padding:2px 0}
+.nt-forum{margin:10px 0 0!important;font-size:13px;color:var(--sumi-muted)}
+.nt-forum a{color:var(--ai);font-weight:600;text-underline-offset:3px}
+.fb-body{margin-top:24px}
+.fb-form{gap:14px}
+.th-newwrap{bottom:96px}
+/* ---------- điện thoại ---------- */
+@media (max-width:760px){
+  .sp-main{padding:0 16px 16px;max-width:none}
+  .sp-head{flex-wrap:wrap;gap:10px}
+  .sp-h1{font-size:22px;line-height:30px}
+  .sl-chips{gap:14px;overflow-x:auto}
+  .sp-mtop{display:flex;align-items:center;gap:6px;height:56px;margin:0 -16px;padding:0 12px 0 6px;background:var(--paper-50);border-bottom:1px solid var(--line);flex:none}
+  .sp-mtop b{font-size:17px}
+  .sp-mtop .sb-logo{width:28px;height:28px;margin-left:2px}.sp-mtop .sb-logo .msr{font-size:18px}
+  .sp-mtop .av{width:32px;height:32px;font-size:13px}
+  .sp-head{margin-top:14px}
+  .sp-hact{display:none}
+  .sp-body{grid-template-columns:minmax(0,1fr);margin-top:14px}
+  .sp-thread{display:none}
+  .mv-thread .sp-mtop,.mv-thread .sp-head,.mv-thread .sp-list{display:none}
+  .th-head{flex-wrap:wrap}
+  .th-meta{flex:1 1 calc(100% - 52px)}
+  .th-st{order:3;margin-left:38px}
+  .mv-thread .sp-main{padding:0}
+  .mv-thread .sp-body{margin:0}
+  .mv-thread .sp-thread{display:flex;border-radius:0;box-shadow:none}
+  .th-back{display:inline-flex;margin:-6px 0 0 -10px}
+  .th-head{padding:12px 16px 12px;gap:4px}
+  .th-title{font-size:17px;line-height:24px;margin-top:6px}
+  .th-in{padding:16px 14px}
+  .th-m{max-width:88%}
+  .th-m .fimg{width:180px;height:132px}
+  .th-comp{padding:10px 12px 12px}
+  .th-newwrap{bottom:96px}
+  .fb-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;margin-top:14px}
+  .fb-form{padding:16px}
+  .fb-list{overflow:visible}
+}
+
+</style>
+</helmet>
+<div class="{{sp.rootCls}}" data-theme="{{sp.theme}}"><div class="sp-scope">
+  <sc-if value="{{sp.isLearner}}" hint-placeholder-val="{{true}}"><aside class="sb" aria-label="Thanh điều hướng">
+    <div class="sb-h"><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><button type="button" class="ib" aria-label="Thu gọn thanh bên" title="Thu gọn thanh bên"><span class="msr" aria-hidden="true">left_panel_close</span></button></div>
+    <p class="sb-l red">Đang học</p>
+    <a class="sb-i" href="#"><span class="sb-ch" lang="ja" aria-hidden="true">一</span><span class="t">Chương 1</span><span class="n red">3/9</span></a>
+    <a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Gặp người đón ở sân bay Narita</span><span class="n">0/6</span></a>
+    <nav aria-label="Điều hướng chính" class="sb-nav"><p class="sb-l">Học</p><a class="sb-i" href="#"><span class="msr" aria-hidden="true">travel_explore</span><span class="t">Hành trình</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">forum</span><span class="t">Hội thoại AI</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">record_voice_over</span><span class="t">Shadowing</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">menu_book</span><span class="t">Kho học liệu</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">style</span><span class="t">Flashcard</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">insights</span><span class="t">Kết quả</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">approval</span><span class="t">Sổ con dấu</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">groups</span><span class="t">Diễn đàn</span></a></nav>
+    <span class="sp"></span>
+    <a class="sb-i sb-f" href="#"><span class="coin" aria-hidden="true"><span class="msr" aria-hidden="true">toll</span></span><span class="t">Số dư</span><span class="n credit">3.712</span></a>
+    <button type="button" class="sb-u on" aria-haspopup="menu" aria-label="Tài khoản (đang mở Hỗ trợ & Góp ý)"><span class="{{sp.meAv}}" aria-hidden="true">{{sp.meIni}}</span><span class="who"><b>{{sp.meName}}</b><span>{{sp.meSub}}</span></span><span class="msr" aria-hidden="true">expand_less</span></button>
+  </aside></sc-if><sc-if value="{{sp.isAdmin}}" hint-placeholder-val="{{false}}"><aside class="sb" aria-label="Thanh điều hướng quản trị">
+    <div class="sb-h"><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sb-adm">Quản trị</span><span class="sp"></span></div>
+    <nav aria-label="Quản trị" class="sb-nav"><a class="sb-i" href="#"><span class="msr" aria-hidden="true">space_dashboard</span><span class="t">Tổng quan</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">group</span><span class="t">Người dùng</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">theater_comedy</span><span class="t">Kịch bản</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">record_voice_over</span><span class="t">Shadowing</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">travel_explore</span><span class="t">Hành trình</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">toll</span><span class="t">Gói & Credit</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">campaign</span><span class="t">Thông báo</span></a><a class="sb-i" href="#"><span class="msr" aria-hidden="true">groups</span><span class="t">Diễn đàn</span></a><a class="sb-i on" href="#" aria-current="page"><span class="msr" aria-hidden="true">support_agent</span><span class="t">Hỗ trợ & Góp ý</span></a></nav>
+    <span class="sp"></span>
+    <button type="button" class="sb-u" aria-haspopup="menu" aria-label="Tài khoản"><span class="av a0" aria-hidden="true">A</span><span class="who"><b>Admin JCAP</b><span>Quản trị viên</span></span><span class="msr" aria-hidden="true">expand_less</span></button>
+  </aside></sc-if>
+  <div class="sp-main">
+    <div class="sp-mtop"><x-import component-from-global-scope="JCAP.IconButton" icon="menu" label="Mở thanh điều hướng"></x-import><span class="sb-logo" aria-hidden="true"><span class="msr">torii_gate</span></span><b>JCAP</b><span class="sp"></span><span class="{{sp.meAv}}" aria-hidden="true">{{sp.meIni}}</span></div>
+    <header class="sp-head">
+      <h1 class="sp-h1">{{sp.h1}}<sc-if value="{{sp.isLearner}}" hint-placeholder-val="{{true}}"> <span class="kj" lang="ja">窓口</span></sc-if></h1>
+      <div class="sp-seg" role="tablist" aria-label="Phần">
+        <button type="button" role="tab" class="{{sp.tab1Cls}}" aria-selected="{{sp.tabSup}}" onClick="{{sp.toSup}}">{{sp.tab1}}<span class="n">{{sp.nT}}</span></button>
+        <button type="button" role="tab" class="{{sp.tab2Cls}}" aria-selected="{{sp.tabFb}}" onClick="{{sp.toFb}}">Góp ý<span class="n">{{sp.nF}}</span></button>
+      </div>
+      <span class="sp"></span>
+      <sc-if value="{{sp.isAdmin}}" hint-placeholder-val="{{false}}"><div class="sp-hact"><x-import component-from-global-scope="JCAP.IconButton" icon="refresh" label="Tải lại" on-click="{{sp.reload}}"></x-import><x-import component-from-global-scope="JCAP.IconButton" icon="groups" label="Quản lý Diễn đàn"></x-import></div></sc-if>
+    </header>
+    <sc-if value="{{sp.tabSup}}" hint-placeholder-val="{{true}}"><sc-if value="{{sp.isError}}" hint-placeholder-val="{{false}}"><div class="jc-empty fm-empty sp-err"><span class="jc-empty__icon"><span class="msr ei" aria-hidden="true">cloud_off</span></span><h3 class="jc-empty__title">Chưa tải được dữ liệu hỗ trợ</h3><p class="jc-empty__text">Máy chủ chưa phản hồi. Kiểm tra kết nối mạng rồi thử lại.</p><div class="jc-empty__actions"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="refresh" on-click="{{sp.retry}}">Thử lại</x-import></div></div></sc-if><sc-if value="{{sp.firstTime}}" hint-placeholder-val="{{false}}"><div class="jc-empty fm-empty sp-err"><span class="jc-empty__icon"><span class="msr ei" aria-hidden="true">support_agent</span></span><h3 class="jc-empty__title">Bạn chưa có phiếu hỗ trợ nào</h3><p class="jc-empty__text">Gặp lỗi thanh toán, micro, chấm điểm hay nội dung bài học? Gửi một phiếu, Admin trả lời ngay trong phiếu đó. Admin chỉ thấy mã phiếu, không thấy tên của bạn.</p><div class="jc-empty__actions"><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="add" on-click="{{sp.openNew}}">Báo sự cố mới</x-import><x-import component-from-global-scope="JCAP.Button" variant="ghost" icon="groups">Hỏi bài tại Diễn đàn</x-import></div></div></sc-if><sc-if value="{{sp.showPanes}}" hint-placeholder-val="{{true}}"><div class="sp-body"><section class="sp-list" aria-label="Danh sách phiếu">
+        <sc-if value="{{sp.isLearner}}" hint-placeholder-val="{{true}}"><button type="button" class="sl-new" onClick="{{sp.openNew}}"><span class="msr" aria-hidden="true">add</span>Báo sự cố mới</button></sc-if>
+        <sc-if value="{{sp.isAdmin}}" hint-placeholder-val="{{false}}"><label class="jc-input sl-search"><span class="msr jc-input__icon" aria-hidden="true">search</span><input class="jc-input__el" type="search" placeholder="Tìm mã phiếu hoặc tiêu đề" aria-label="Tìm theo mã phiếu hoặc tiêu đề" value="{{sp.q}}" onInput="{{sp.onQ}}"><sc-if value="{{sp.hasQ}}" hint-placeholder-val="{{false}}"><button type="button" class="fm-x" aria-label="Xoá từ khoá" onClick="{{sp.clearQ}}"><span class="msr" aria-hidden="true">close</span></button></sc-if></label></sc-if>
+        <div class="sl-chips" role="radiogroup" aria-label="Lọc theo trạng thái"><sc-for list="{{sp.chips}}" as="c" hint-placeholder-count="4"><button type="button" class="{{c.cls}}" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}">{{c.label}}<span class="n">{{c.n}}</span></button></sc-for></div>
+        <div class="sl-scroll">
+          <sc-if value="{{sp.isLoading}}" hint-placeholder-val="{{false}}"><ul class="sl-items" aria-busy="true" aria-label="Đang tải phiếu"><li><div class="sl-row sk" aria-hidden="true"><span class="jc-skel jc-skel--text" style="width: 40%;"></span><span class="jc-skel jc-skel--text" style="width: 92%;"></span><span class="jc-skel jc-skel--text" style="width: 55%;"></span></div></li><li><div class="sl-row sk" aria-hidden="true"><span class="jc-skel jc-skel--text" style="width: 40%;"></span><span class="jc-skel jc-skel--text" style="width: 92%;"></span><span class="jc-skel jc-skel--text" style="width: 55%;"></span></div></li><li><div class="sl-row sk" aria-hidden="true"><span class="jc-skel jc-skel--text" style="width: 40%;"></span><span class="jc-skel jc-skel--text" style="width: 92%;"></span><span class="jc-skel jc-skel--text" style="width: 55%;"></span></div></li><li><div class="sl-row sk" aria-hidden="true"><span class="jc-skel jc-skel--text" style="width: 40%;"></span><span class="jc-skel jc-skel--text" style="width: 92%;"></span><span class="jc-skel jc-skel--text" style="width: 55%;"></span></div></li></ul></sc-if>
+          <sc-if value="{{sp.noTickets}}" hint-placeholder-val="{{false}}"><div class="sl-empty"><span class="msr" aria-hidden="true">inbox</span><p>{{sp.noTicketsText}}</p></div></sc-if>
+          <sc-if value="{{sp.filterEmpty}}" hint-placeholder-val="{{false}}"><div class="sl-empty"><span class="msr" aria-hidden="true">filter_alt_off</span><p>{{sp.filterEmptyText}}</p><x-import component-from-global-scope="JCAP.Button" variant="ghost" size="sm" on-click="{{sp.showAll}}">Xem tất cả phiếu</x-import></div></sc-if>
+          <sc-if value="{{sp.showRows}}" hint-placeholder-val="{{true}}"><ul class="sl-items"><sc-for list="{{sp.rows}}" as="r" hint-placeholder-count="4"><li><button type="button" class="{{r.cls}}" aria-current="{{r.cur}}" aria-label="{{r.aria}}" onClick="{{r.pick}}">
+            <span class="sl-ic" aria-hidden="true"><span class="msr">{{r.catIcon}}</span></span>
+            <span class="sl-tx">
+              <span class="r2">{{r.title}}</span>
+              <span class="r3"><sc-if value="{{r.showCode}}" hint-placeholder-val="{{false}}"><span class="cd">{{r.code}}</span></sc-if><span class="{{r.stCls}}"><span class="msr" aria-hidden="true">{{r.stIcon}}</span>{{r.stText}}</span><span class="tm">{{r.updated}}</span></span>
+            </span>
+            <sc-if value="{{r.unseen}}" hint-placeholder-val="{{false}}"><span class="nw" title="Chưa xem"></span></sc-if>
+          </button></li></sc-for></ul></sc-if>
+        </div>
+      </section><section class="sp-thread" aria-label="Nội dung phiếu">
+        <sc-if value="{{sp.noSel}}" hint-placeholder-val="{{false}}"><div class="th-none"><span class="msr" aria-hidden="true">forum</span><p class="t">{{sp.noSelTitle}}</p><p>{{sp.noSelText}}</p></div></sc-if>
+        <sc-if value="{{sp.isLoading}}" hint-placeholder-val="{{false}}"><div class="th-skel" aria-hidden="true"><span class="jc-skel jc-skel--text" style="width: 30%;"></span><span class="jc-skel jc-skel--text" style="width: 70%; height: 22px;"></span><span class="jc-skel" style="width: 60%; height: 72px; border-radius: 14px; margin-top: 24px;"></span><span class="jc-skel" style="width: 52%; height: 56px; border-radius: 14px; align-self: flex-end;"></span></div></sc-if>
+        <sc-if value="{{sp.hasSel}}" hint-placeholder-val="{{true}}">
+          <header class="th-head">
+            <span class="th-back"><x-import component-from-global-scope="JCAP.IconButton" icon="arrow_back" label="Quay lại danh sách phiếu" on-click="{{sp.back}}"></x-import></span>
+            <div class="th-meta">
+              <h2 class="th-title">{{sp.t.title}}</h2>
+              <p class="th-r1"><span class="code" title="Mã phiếu ẩn danh">{{sp.t.code}}</span><span><span class="msr" aria-hidden="true">{{sp.t.catIcon}}</span>{{sp.t.catVi}}</span><span>Tạo {{sp.t.created}}</span></p>
+            </div>
+            <span class="{{sp.t.stCls}}"><span class="msr" aria-hidden="true">{{sp.t.stIcon}}</span>{{sp.t.stLabel}}</span>
+            <sc-if value="{{sp.isAdmin}}" hint-placeholder-val="{{false}}"><div class="th-act"><sc-if value="{{sp.t.isOpen}}" hint-placeholder-val="{{true}}"><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="task_alt" on-click="{{sp.t.close}}">Đóng phiếu</x-import></sc-if><sc-if value="{{sp.t.isClosed}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="lock_open" on-click="{{sp.t.reopen}}">Mở lại</x-import></sc-if></div></sc-if>
+          </header>
+          <div class="th-msgs"><div class="th-in">
+          <sc-for list="{{sp.t.items}}" as="m" hint-placeholder-count="3">
+            <sc-if value="{{m.isEv}}" hint-placeholder-val="{{false}}"><p class="th-ev"><span class="msr" aria-hidden="true">{{m.evIcon}}</span><span>{{m.evText}}</span><span class="tm">{{m.t}}</span></p></sc-if>
+            <sc-if value="{{m.isMsg}}" hint-placeholder-val="{{true}}"><div class="{{m.cls}}">
+              <sc-if value="{{m.avAdm}}" hint-placeholder-val="{{true}}"><span class="av sm a0 th-av" aria-hidden="true"><span class="msr">support_agent</span></span></sc-if>
+              <sc-if value="{{m.avLrn}}" hint-placeholder-val="{{false}}"><span class="av sm anon th-av" aria-hidden="true"><span class="msr">person</span></span></sc-if>
+              <div class="mb">
+                <p class="mn"><sc-if value="{{m.other}}" hint-placeholder-val="{{true}}"><b>{{m.name}}</b></sc-if><span class="tm">{{m.t}}</span></p>
+                <div class="bub">
+                  <p class="tx">{{m.text}}</p>
+                  <sc-if value="{{m.hasImgs}}" hint-placeholder-val="{{false}}"><div class="fimgs"><sc-for list="{{m.imgs}}" as="im" hint-placeholder-count="1"><button type="button" class="fimg" onClick="{{im.open}}" aria-label="{{im.label}}"><span class="nimg" aria-hidden="true"><span class="tape"></span><sc-for list="{{im.lines}}" as="ln" hint-placeholder-count="4"><span class="ln">{{ln.t}}</span></sc-for></span><span class="zoom" aria-hidden="true"><span class="msr">zoom_in</span></span></button></sc-for></div></sc-if>
+                  <sc-if value="{{m.hasFiles}}" hint-placeholder-val="{{false}}"><ul class="ffiles"><sc-for list="{{m.files}}" as="f" hint-placeholder-count="1"><li class="ffile"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span><span class="fx"><span class="fn">{{f.name}}</span><span class="fs">{{f.sub}}</span></span><x-import component-from-global-scope="JCAP.IconButton" icon="open_in_new" label="{{f.dl}}" size="sm"></x-import></li></sc-for></ul></sc-if>
+                </div>
+              </div>
+            </div></sc-if>
+          </sc-for>
+          </div></div>
+          <sc-if value="{{sp.incoming}}" hint-placeholder-val="{{false}}"><div class="th-newwrap"><button type="button" class="fm-new" onClick="{{sp.takeIncoming}}"><span class="msr" aria-hidden="true">arrow_downward</span>{{sp.incomingText}}</button></div></sc-if>
+          <sc-if value="{{sp.t.canReply}}" hint-placeholder-val="{{true}}"><div class="th-comp">
+            <sc-if value="{{sp.t.hasCFiles}}" hint-placeholder-val="{{false}}"><ul class="cp-files"><sc-for list="{{sp.t.cFiles}}" as="f" hint-placeholder-count="2"><li class="{{f.cls}}">
+            <sc-if value="{{f.isImg}}" hint-placeholder-val="{{false}}"><span class="cp-th"><span class="nimg" aria-hidden="true"><span class="tape"></span><sc-for list="{{f.lines}}" as="ln" hint-placeholder-count="3"><span class="ln">{{ln.t}}</span></sc-for></span></span></sc-if>
+            <sc-if value="{{f.notImg}}" hint-placeholder-val="{{true}}"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span></sc-if>
+            <span class="fx"><span class="fn">{{f.name}}</span><span class="fs"><span class="msr" aria-hidden="true">{{f.stIcon}}</span><span>{{f.sub}}</span></span><sc-if value="{{f.up}}" hint-placeholder-val="{{false}}"><span class="bar" role="progressbar" aria-label="Đang tải lên"><i></i></span></sc-if></span>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="{{f.rmLabel}}" size="sm" on-click="{{f.remove}}"></x-import>
+          </li></sc-for></ul></sc-if>
+            <div class="th-box">
+              <x-import component-from-global-scope="JCAP.IconButton" icon="attach_file" label="Đính kèm ảnh hoặc tệp, tối đa 5MB mỗi tệp" size="sm" on-click="{{sp.t.addFile}}"></x-import>
+              <textarea class="th-ta" rows="1" aria-label="{{sp.t.cAria}}" placeholder="{{sp.t.cPh}}" value="{{sp.t.draft}}" onInput="{{sp.t.onDraft}}"></textarea>
+              <x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="send" loading="{{sp.t.sending}}" disabled="{{sp.t.cantSend}}" on-click="{{sp.t.onSend}}">Gửi</x-import>
+            </div>
+            <sc-if value="{{sp.isLearner}}" hint-placeholder-val="{{true}}"><p class="th-anon"><span class="msr" aria-hidden="true">shield_person</span>Bạn đang ẩn danh. Admin chỉ thấy mã {{sp.t.code}}.</p></sc-if>
+            <sc-if value="{{sp.t.sendErr}}" hint-placeholder-val="{{false}}"><p class="fcw-err" role="alert"><span class="msr" aria-hidden="true">error</span><span>Chưa gửi được. Nội dung và tệp bạn chọn vẫn còn ở đây.</span><button type="button" onClick="{{sp.t.onSend}}">Gửi lại</button></p></sc-if>
+          </div></sc-if>
+          <sc-if value="{{sp.t.closedL}}" hint-placeholder-val="{{false}}"><div class="th-closed"><span class="msr" aria-hidden="true">task_alt</span><p>Sự cố này đã được xử lý xong và đóng lại.</p><x-import component-from-global-scope="JCAP.Button" variant="secondary" size="sm" icon="add" on-click="{{sp.openNew}}">Báo sự cố mới</x-import></div></sc-if>
+          <sc-if value="{{sp.t.closedA}}" hint-placeholder-val="{{false}}"><div class="th-closed"><span class="msr" aria-hidden="true">lock</span><p>Phiếu đã đóng. Mở lại để trả lời tiếp.</p><x-import component-from-global-scope="JCAP.Button" variant="primary" size="sm" icon="lock_open" on-click="{{sp.t.reopen}}">Mở lại phiếu</x-import></div></sc-if>
+        </sc-if>
+      </section></div></sc-if></sc-if>
+    <sc-if value="{{sp.tabFb}}" hint-placeholder-val="{{false}}"><sc-if value="{{sp.isLearner}}" hint-placeholder-val="{{true}}"><div class="fb-body">
+        <div class="fb-form">
+          <h2 class="fb-h">Gửi góp ý</h2>
+          <p class="fb-d">Đội ngũ đọc mọi góp ý, nhưng không trả lời riêng.</p>
+          <div class="jc-field"><label class="jc-field__label" for="fbS">Chủ đề góp ý<span class="jc-field__req" aria-hidden="true"> *</span></label>
+            <div class="jc-input"><input id="fbS" class="jc-input__el" maxlength="300" required placeholder="Ví dụ: Thêm tốc độ 0.5x cho Shadowing" value="{{sp.fbS}}" onInput="{{sp.onFbS}}"></div>
+            <p class="cp-cnt">{{sp.fbCount}}/300 ký tự</p></div>
+          <div class="jc-field"><label class="jc-field__label" for="fbB">Chi tiết đề xuất<span class="jc-field__req" aria-hidden="true"> *</span></label>
+            <div class="jc-input jc-input--multi"><textarea id="fbB" class="jc-input__el" rows="6" required placeholder="Bạn gặp điều gì khi học, và muốn nó thay đổi ra sao?" value="{{sp.fbB}}" onInput="{{sp.onFbB}}"></textarea></div></div>
+          <div class="fb-row"><p class="th-anon"><span class="msr" aria-hidden="true">shield_person</span>Ẩn danh</p><span class="sp"></span><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="send" loading="{{sp.fbSending}}" disabled="{{sp.fbCant}}" on-click="{{sp.sendFb}}">Gửi góp ý</x-import></div>
+        </div>
+        <section class="fb-list" aria-label="Góp ý đã gửi">
+          <h2 class="fb-h">Góp ý đã gửi <span class="fc-n">{{sp.nMyF}}</span></h2>
+          <sc-if value="{{sp.noFb}}" hint-placeholder-val="{{false}}"><div class="sl-empty"><span class="msr" aria-hidden="true">lightbulb</span><p>Chưa gửi góp ý nào. Góp ý đầu tiên của bạn sẽ hiện ở đây.</p></div></sc-if>
+          <ul class="fb-items"><sc-for list="{{sp.myFb}}" as="g" hint-placeholder-count="2"><li class="fb-i"><p class="s">{{g.subject}}</p><p class="b">{{g.body}}</p><p class="m"><span>{{g.t}}</span><span class="ok"><span class="msr" aria-hidden="true">check_circle</span>Đã ghi nhận</span></p></li></sc-for></ul>
+        </section>
+      </div></sc-if><sc-if value="{{sp.isAdmin}}" hint-placeholder-val="{{false}}"><div class="fa-wrap"><sc-if value="{{sp.noAllFb}}" hint-placeholder-val="{{false}}"><div class="sl-empty"><span class="msr" aria-hidden="true">lightbulb</span><p>Chưa có góp ý nào.</p></div></sc-if><div class="fa-grid"><sc-for list="{{sp.allFb}}" as="g" hint-placeholder-count="4"><article class="fa-c"><p class="m"><span class="code"><span class="msr" aria-hidden="true">confirmation_number</span>{{g.code}}</span><span class="tm">{{g.t}}</span></p><h3>{{g.subject}}</h3><p class="b">{{g.body}}</p></article></sc-for></div></div></sc-if></sc-if>
+  </div>
+  <sc-if value="{{sp.newOpen}}" hint-placeholder-val="{{false}}"><div class="jc-overlay fm-ov">
+    <div class="jc-modal jc-modal--lg fm-cmp" role="dialog" aria-modal="true" aria-labelledby="ntT">
+      <div class="jc-modal__head"><h2 class="jc-modal__title" id="ntT">Báo sự cố mới</h2><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng" on-click="{{sp.closeNew}}"></x-import></div>
+      <div class="jc-modal__body cp-b">
+        <fieldset class="cp-ch"><legend class="jc-field__label">Loại sự cố</legend>
+          <div class="cp-grid" role="radiogroup" aria-label="Loại sự cố"><sc-for list="{{sp.newCats}}" as="c" hint-placeholder-count="4"><button type="button" class="{{c.cls}}" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}">
+            <span class="ct" aria-hidden="true"><span class="msr">{{c.icon}}</span></span><span class="cx"><span class="cn">{{c.vi}}</span><span class="cd">{{c.use}}</span></span><span class="ck" aria-hidden="true"><span class="msr">check_circle</span></span>
+          </button></sc-for></div>
+          <p class="nt-forum">Hỏi về ngữ pháp, từ vựng? <a href="#">Hỏi tại Diễn đàn</a></p>
+        </fieldset>
+        <div class="jc-field"><label class="jc-field__label" for="ntTitle">Tiêu đề<span class="jc-field__req" aria-hidden="true"> *</span></label>
+          <div class="jc-input"><input id="ntTitle" class="jc-input__el" maxlength="300" required placeholder="Ví dụ: Đã thanh toán qua PayOS nhưng chưa cộng Credit" value="{{sp.nTitle}}" onInput="{{sp.onNTitle}}" aria-describedby="ntCnt"></div>
+          <p class="{{sp.nCntCls}}" id="ntCnt">{{sp.nCount}}/300 ký tự</p></div>
+        <div class="jc-field"><label class="jc-field__label" for="ntBody">Mô tả chi tiết<span class="jc-field__req" aria-hidden="true"> *</span></label>
+          <div class="jc-input jc-input--multi"><textarea id="ntBody" class="jc-input__el" rows="5" required placeholder="Điều gì đã xảy ra? Nếu có, ghi mã giao dịch hoặc tên bài học bị lỗi." value="{{sp.nBody}}" onInput="{{sp.onNBody}}"></textarea></div></div>
+        <div class="cp-att">
+          <p class="jc-field__label">Ảnh chụp màn hình hoặc tệp</p>
+          <button type="button" class="cp-drop" onClick="{{sp.nAddFile}}"><span class="msr" aria-hidden="true">upload_file</span><span class="dx"><span class="dt">Thêm ảnh hoặc tệp</span><span class="dd">Ảnh, PDF, TXT, LOG, JSON, ZIP, DOC. Mỗi tệp tối đa 5MB.</span></span></button>
+          <sc-if value="{{sp.nHasFiles}}" hint-placeholder-val="{{false}}"><ul class="cp-files"><sc-for list="{{sp.nFiles}}" as="f" hint-placeholder-count="2"><li class="{{f.cls}}">
+            <sc-if value="{{f.isImg}}" hint-placeholder-val="{{false}}"><span class="cp-th"><span class="nimg" aria-hidden="true"><span class="tape"></span><sc-for list="{{f.lines}}" as="ln" hint-placeholder-count="3"><span class="ln">{{ln.t}}</span></sc-for></span></span></sc-if>
+            <sc-if value="{{f.notImg}}" hint-placeholder-val="{{true}}"><span class="{{f.tileCls}}" aria-hidden="true"><span class="msr">{{f.icon}}</span></span></sc-if>
+            <span class="fx"><span class="fn">{{f.name}}</span><span class="fs"><span class="msr" aria-hidden="true">{{f.stIcon}}</span><span>{{f.sub}}</span></span><sc-if value="{{f.up}}" hint-placeholder-val="{{false}}"><span class="bar" role="progressbar" aria-label="Đang tải lên"><i></i></span></sc-if></span>
+            <x-import component-from-global-scope="JCAP.IconButton" icon="close" label="{{f.rmLabel}}" size="sm" on-click="{{f.remove}}"></x-import>
+          </li></sc-for></ul></sc-if>
+        </div>
+        <p class="th-anon nt-an"><span class="msr" aria-hidden="true">shield_person</span>Ẩn danh: Admin chỉ thấy mã phiếu (dạng #ANON-1234), không thấy tên hay email của bạn.</p>
+        <sc-if value="{{sp.nErr}}" hint-placeholder-val="{{false}}"><div class="jc-alert jc-alert--danger" role="alert"><span class="msr jc-alert__icon" aria-hidden="true">error</span><div class="jc-alert__body"><p class="jc-alert__title">Chưa gửi được yêu cầu</p><div class="jc-alert__text">Nội dung bạn viết vẫn được giữ nguyên. Bấm Gửi yêu cầu để thử lại.</div></div></div></sc-if>
+      </div>
+      <div class="jc-modal__foot cp-f"><p class="cp-why" aria-live="polite">{{sp.nWhy}}</p><x-import component-from-global-scope="JCAP.Button" variant="ghost" on-click="{{sp.closeNew}}">Huỷ</x-import><x-import component-from-global-scope="JCAP.Button" variant="primary" icon="send" loading="{{sp.nPosting}}" disabled="{{sp.nCant}}" on-click="{{sp.nSubmit}}">Gửi yêu cầu</x-import></div>
+    </div>
+  </div></sc-if>
+  <sc-if value="{{sp.lbOpen}}" hint-placeholder-val="{{false}}"><div class="fm-lb" role="dialog" aria-modal="true" aria-label="Xem ảnh đính kèm" onKeyDown="{{sp.lbKey}}">
+    <div class="fm-lbbar"><p><span class="msr" aria-hidden="true">image</span><span>{{sp.lbName}}</span></p><span class="lbh" aria-hidden="true">Esc để đóng</span><x-import component-from-global-scope="JCAP.IconButton" icon="close" label="Đóng ảnh" on-click="{{sp.lbClose}}"></x-import></div>
+    <figure class="fm-lbfig"><span class="nimg big" aria-hidden="true"><span class="tape"></span><sc-for list="{{sp.lbLines}}" as="ln" hint-placeholder-count="4"><span class="ln">{{ln.t}}</span></sc-for></span><figcaption>{{sp.lbCap}}</figcaption></figure>
+  </div></sc-if>
+  <sc-if value="{{sp.toastOn}}" hint-placeholder-val="{{false}}"><div class="fm-toast"><x-import component-from-global-scope="JCAP.Toast" tone="success" title="{{sp.toast}}"></x-import></div></sc-if>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+
+var SP_CATS = [{"id": "PAYMENT_CREDIT", "vi": "Gói học & Credit", "icon": "toll", "use": "Thanh toán, cộng hoặc trừ Credit"}, {"id": "SYSTEM_BUG", "vi": "Lỗi kỹ thuật / Hệ thống", "icon": "bug_report", "use": "Micro, trình duyệt, trang không chạy"}, {"id": "SCENARIO_BUG", "vi": "Lỗi kịch bản / Nội dung", "icon": "edit_note", "use": "Sai chữ, thiếu furigana, nội dung bài học"}, {"id": "AI_ASSESSMENT", "vi": "Chấm điểm AI & Giọng nói", "icon": "graphic_eq", "use": "Chấm sai nhiệm vụ, nhận dạng giọng nói"}], SP_T = [{"id": 1, "own": true, "code": "#ANON-4821", "cat": "PAYMENT_CREDIT", "status": "IN_PROGRESS", "seen": "1 giờ trước", "created": "2 giờ trước", "updated": "5 phút trước", "closed": null, "ago": 5, "title": "Đã thanh toán qua PayOS nhưng chưa cộng Credit", "msgs": [{"who": "L", "t": "2 giờ trước", "text": "Mình mua gói 500 Credit lúc 14:05, PayOS báo thành công nhưng số dư vẫn là 3.212.\nMã giao dịch: PO-26112514-0583.", "imgs": [{"name": "hoa-don-payos.png", "lines": ["PayOS · Thành công", "Gói 500 Credit", "PO-26112514-0583", "25/11/2026 14:05"]}], "files": []}, {"ev": "seen", "t": "1 giờ trước"}, {"who": "A", "t": "1 giờ trước", "text": "Chào bạn, Ban Quản trị đã thấy giao dịch PO-26112514-0583 trên PayOS. Lần này hệ thống cộng Credit bị chậm nên mình đã cộng tay 500 Credit.\nBạn tải lại trang Gói & Credit giúp mình nhé.", "imgs": [], "files": []}, {"who": "L", "t": "5 phút trước", "text": "Số dư đã lên 3.712 rồi. Cảm ơn Admin!", "imgs": [], "files": []}]}, {"id": 2, "own": true, "code": "#ANON-5107", "cat": "AI_ASSESSMENT", "status": "PENDING", "seen": "40 phút trước", "created": "3 giờ trước", "updated": "3 giờ trước", "closed": null, "ago": 180, "title": "Câu 入国の目的は何ですか bị chấm 40 điểm dù mình nói đúng", "msgs": [{"who": "L", "t": "3 giờ trước", "text": "Bài Thủ tục nhập cảnh, câu 2. Mình nói 3 lần, nghe lại bản thu thấy rõ nhưng lần nào cũng 40 điểm, báo thiếu âm っ.\nMình gửi kèm nhật ký buổi luyện.", "imgs": [], "files": [{"name": "buoi-luyen-25-11.json", "size": "3 KB", "type": "txt"}]}, {"ev": "seen", "t": "40 phút trước"}]}, {"id": 3, "own": true, "code": "#ANON-5230", "cat": "SCENARIO_BUG", "status": "PENDING", "seen": null, "created": "20 phút trước", "updated": "20 phút trước", "closed": null, "ago": 20, "title": "Câu 3 bài Mua vé tàu ở ga thiếu furigana", "msgs": [{"who": "L", "t": "20 phút trước", "text": "Chữ 切符売り場 ở câu 3 không có cách đọc, các câu khác thì có.", "imgs": [{"name": "cau-3-thieu-furigana.png", "lines": ["3 / 6", "きっぷうりばは", "どこですか。", "(thiếu cách đọc)"]}], "files": []}]}, {"id": 4, "own": true, "code": "#ANON-3398", "cat": "SYSTEM_BUG", "status": "CLOSED", "seen": "12.11.2026 10:02", "created": "12.11.2026 09:20", "updated": "13.11.2026 08:15", "closed": "13.11.2026 08:15", "ago": 18000, "title": "Micro không nhận trên Safari iPhone", "msgs": [{"who": "L", "t": "12.11.2026 09:20", "text": "Bấm nút micro ở phòng Shadowing thì không có gì xảy ra. Mình dùng iPhone 13, Safari.", "imgs": [], "files": []}, {"ev": "seen", "t": "12.11.2026 10:02"}, {"who": "A", "t": "12.11.2026 10:05", "text": "Bạn vào Cài đặt › Safari › Micro, chọn \"Cho phép\", rồi tải lại trang nhé. Ảnh bên dưới chỉ chỗ cần bấm.", "imgs": [{"name": "safari-micro.png", "lines": ["Safari · iPhone", "Micro: bị chặn", "Cài đặt › Safari", "› Micro"]}], "files": []}, {"who": "L", "t": "12.11.2026 10:30", "text": "Được rồi ạ, cảm ơn Admin.", "imgs": [], "files": []}, {"ev": "closed", "t": "13.11.2026 08:15"}]}, {"id": 5, "own": false, "code": "#ANON-6012", "cat": "PAYMENT_CREDIT", "status": "PENDING", "seen": null, "created": "8 phút trước", "updated": "8 phút trước", "closed": null, "ago": 8, "title": "Bị trừ 20 Credit hai lần cho một buổi Hội thoại AI", "msgs": [{"who": "L", "t": "8 phút trước", "text": "Buổi \"Gọi món ở quán ăn\" lúc 20:10 bị trừ 2 lần, mỗi lần 20 Credit. Lịch sử Credit có 2 dòng giống nhau.", "imgs": [], "files": []}]}, {"id": 6, "own": false, "code": "#ANON-5988", "cat": "SYSTEM_BUG", "status": "IN_PROGRESS", "seen": "Hôm qua", "created": "Hôm qua", "updated": "30 phút trước", "closed": null, "ago": 30, "title": "Trang Kết quả trắng trên Firefox", "msgs": [{"who": "L", "t": "Hôm qua", "text": "Mở trang Kết quả trên Firefox 132 thì chỉ thấy nền trắng.", "imgs": [], "files": []}, {"ev": "seen", "t": "Hôm qua"}, {"who": "A", "t": "Hôm qua", "text": "Bạn gửi giúp mình ảnh màn hình phần Console (F12) nhé.", "imgs": [], "files": []}, {"who": "L", "t": "30 phút trước", "text": "Mình gửi ảnh đây ạ.", "imgs": [], "files": [{"name": "console-firefox.png", "size": "240 KB", "type": "img"}]}]}], SP_FB = [{"id": 1, "own": true, "code": "#ANON-4410", "t": "3 ngày trước", "subject": "Thêm tốc độ 0.5x cho Shadowing", "body": "Với câu dài, tốc độ 0.75 vẫn hơi nhanh với người mới. Nếu có 0.5x thì mình nghe rõ từng âm trước khi nói theo."}, {"id": 2, "own": true, "code": "#ANON-4102", "t": "18.11.2026 14:30", "subject": "Lưu câu hay vào Flashcard ngay trong khung chat", "body": "Lúc luyện Hội thoại AI hay gặp câu muốn học lại. Có nút lưu vào Flashcard ngay cạnh câu thì tiện hơn phải chép tay."}, {"id": 3, "own": false, "code": "#ANON-6120", "t": "Hôm qua", "subject": "Bản đồ Hành trình có chế độ tối", "body": "Buổi tối học hơi chói, mong bản đồ cũng theo chế độ tối như các trang khác."}, {"id": 4, "own": false, "code": "#ANON-5871", "t": "2 ngày trước", "subject": "Thêm ví dụ cho phần Ngữ pháp", "body": "Mỗi mẫu ngữ pháp chỉ có một câu ví dụ. Có thêm 2 đến 3 câu ở các tình huống khác nhau thì dễ nhớ hơn."}], SP_FILES = [{"name": "anh-man-hinh.png", "size": "860 KB", "type": "img", "ok": true}, {"name": "quay-man-hinh.mp4", "size": "3,1 MB", "type": "vid", "ok": false, "why": "fmt"}, {"name": "nhat-ky-loi.zip", "size": "6,4 MB", "type": "zip", "ok": false, "why": "size"}, {"name": "lich-su-credit.pdf", "size": "120 KB", "type": "pdf", "ok": true}];
+var SP_ST = { PENDING: { tone: 'warning', icon: 'hourglass_top', label: 'Chờ Admin phản hồi', short: 'Chờ phản hồi' },
+  IN_PROGRESS: { tone: 'ai', icon: 'forum', label: 'Đang trò chuyện', short: 'Đang trò chuyện' },
+  CLOSED: { tone: 'neutral', icon: 'check_circle', label: 'Đã đóng', short: 'Đã đóng' } };
+var SP_IMG = { name: 'anh-man-hinh.png', lines: ['JCAP · Lỗi', 'Không tải được bài', 'Mã lỗi 502'] };
+function spClone(o) { return JSON.parse(JSON.stringify(o)); }
+function spNorm(s) { return (s || '').toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function spVals(self) {
+  var st = self.state.sp;
+  function S() { return self.state.sp; }
+  function set(p) { self.setState({ sp: Object.assign({}, S(), p) }); }
+  function setT(id, fn) { set({ tickets: S().tickets.map(function (x) { if (x.id !== id) return x; var y = spClone(x); fn(y); return y; }) }); }
+  function toast(t) { set({ toast: t, toastAt: Date.now() }); var at = S().toastAt; setTimeout(function () { if (S().toastAt === at) set({ toast: '' }); }, 3200); }
+  var admin = st.role === 'admin', mode = st.mode || 'ok';
+  var catMap = {}; SP_CATS.forEach(function (c) { catMap[c.id] = c; });
+  var mine = st.tickets.filter(function (t) { return admin || t.own; });
+  var v = { yes: true, no: false, n32: 32 };
+  v.isAdmin = admin; v.isLearner = !admin;
+  v.theme = admin ? 'quan-tri' : (st.dark ? 'hoc-tap-dem' : 'kham-pha');
+  v.rootCls = 'fm sp' + (st.mview === 'thread' ? ' mv-thread' : '');
+  v.meAv = admin ? 'av a0' : 'av a1'; v.meIni = admin ? 'A' : 'H'; v.meName = 'Học Viên Luyện Nói 1'; v.meSub = 'Mục tiêu JLPT N5';
+  v.h1 = admin ? 'Quản trị hỗ trợ' : 'Hỗ trợ & Góp ý';
+  v.desc = admin ? 'Phiếu sự cố và góp ý của học viên. Người gửi luôn hiện bằng mã ẩn danh.' : 'Báo sự cố thanh toán, lỗi bài học, hoặc gửi góp ý cho đội ngũ.';
+  v.tabSup = st.tab !== 'fb'; v.tabFb = st.tab === 'fb';
+  v.tab1 = 'Sự cố';
+  v.tab1Cls = 'sg' + (v.tabSup ? ' on' : ''); v.tab2Cls = 'sg' + (v.tabFb ? ' on' : '');
+  v.toSup = function () { set({ tab: 'sup' }); }; v.toFb = function () { set({ tab: 'fb' }); };
+  var fbs = st.fb.filter(function (g) { return admin || g.own; });
+  v.nT = mine.length; v.nF = fbs.length;
+  v.reload = function () { set({ mode: 'loading' }); setTimeout(function () { set({ mode: 'ok' }); }, 900); };
+  v.retry = v.reload;
+  // lọc
+  var q = st.q || '', nq = spNorm(q).trim(), fil = st.filter || 'all';
+  var counts = { all: mine.length, PENDING: 0, IN_PROGRESS: 0, CLOSED: 0 }; mine.forEach(function (t) { counts[t.status]++; });
+  v.chips = [['all', 'Tất cả'], ['PENDING', 'Chờ'], ['IN_PROGRESS', 'Đang xử lý'], ['CLOSED', 'Đã đóng']].map(function (c) {
+    var on = fil === c[0]; return { label: c[1], n: counts[c[0]], on: on, cls: 'sl-chip' + (on ? ' on' : ''), pick: function () { set({ filter: c[0] }); } };
+  });
+  var list = mine.filter(function (t) { return fil === 'all' || t.status === fil; }).filter(function (t) {
+    return !nq || spNorm(t.code + ' ' + t.title).indexOf(nq) >= 0; }).sort(function (a, b) { return a.ago - b.ago; });
+  v.q = q; v.hasQ = !!q; v.onQ = function (e) { set({ q: e && e.target ? e.target.value : '' }); }; v.clearQ = function () { set({ q: '' }); };
+  v.isLoading = mode === 'loading'; v.isError = mode === 'error';
+  v.showRows = mode === 'ok';
+  v.firstTime = mode === 'ok' && !admin && mine.length === 0;
+  v.showPanes = mode !== 'error' && !v.firstTime;
+  v.noTickets = mode === 'ok' && admin && mine.length === 0; v.noTicketsText = 'Chưa có phiếu nào.';
+  v.filterEmpty = mode === 'ok' && mine.length > 0 && list.length === 0;
+  v.filterEmptyText = nq ? 'Không có phiếu nào khớp với “' + q.trim() + '”.' : 'Không có phiếu nào ở trạng thái này.';
+  v.showAll = function () { set({ filter: 'all', q: '' }); };
+  // phiếu đang chọn: mặc định phiếu đầu danh sách
+  var selId = st.sel === 'auto' ? (list[0] && list[0].id) : st.sel;
+  var t = mode === 'ok' ? list.filter(function (x) { return x.id === selId; })[0] : null;
+  if (!t && mode === 'ok' && st.sel !== 'auto') t = mine.filter(function (x) { return x.id === selId; })[0] || null;
+  function pick(x) {
+    var p = { sel: x.id, mview: 'thread' };
+    if (admin && !x.seen) {
+      set(Object.assign(p, { tickets: S().tickets.map(function (y) { if (y.id !== x.id) return y; var z = spClone(y); z.seen = 'Vừa xong'; z.msgs.splice(1, 0, { ev: 'seen', t: 'Vừa xong' }); return z; }) }));
+    } else set(p);
+  }
+  function stView(x) { var s = SP_ST[x.status]; return { tone: s.tone, icon: s.icon, label: s.label, short: s.short }; }
+  function subOf(x) {
+    if (x.status !== 'PENDING') return null;
+    return x.seen ? { icon: 'visibility', text: 'Admin đã xem' } : { icon: 'schedule', text: 'Chờ tiếp nhận' };
+  }
+  v.rows = list.map(function (x) {
+    var s = stView(x), sub = subOf(x), on = t && t.id === x.id;
+    var stText = sub && !admin ? sub.text : s.short, stIc = sub && !admin ? sub.icon : s.icon;
+    return { cls: 'sl-row' + (on ? ' on' : '') + (admin && !x.seen ? ' unread' : ''), cur: on ? 'true' : 'false', pick: function () { pick(x); },
+      stCls: 'st st-' + x.status.toLowerCase(), stIcon: stIc, stText: stText, updated: x.updated, title: x.title, showCode: admin, code: x.code,
+      catIcon: catMap[x.cat].icon, aria: x.title + '. ' + catMap[x.cat].vi + '. ' + stText + ', cập nhật ' + x.updated + (admin && !x.seen ? '. Chưa xem' : ''),
+      unseen: admin && !x.seen };
+  });
+  v.noSel = mode === 'ok' && !t && mine.length > 0;
+  v.noSelTitle = 'Chọn một phiếu để xem trao đổi';
+  v.noSelText = admin ? 'Mở phiếu sẽ đánh dấu "Admin đã xem" cho học viên.' : 'Hoặc bấm "Báo sự cố mới" nếu bạn gặp vấn đề khác.';
+  v.hasSel = !!t;
+  v.back = function () { set({ mview: 'list' }); };
+  // tệp (dùng chung cho khung trả lời và khung báo sự cố)
+  function fileView(f) {
+    var ty = f.type, icon = ty === 'pdf' ? 'picture_as_pdf' : ty === 'img' ? 'image' : ty === 'zip' ? 'folder_zip' : ty === 'vid' ? 'movie' : ty === 'doc' ? 'description' : 'data_object';
+    var kind = ty === 'pdf' ? 'PDF' : ty === 'img' ? 'Ảnh' : ty === 'zip' ? 'ZIP' : ty === 'vid' ? 'Video' : ty === 'doc' ? 'Word' : 'Văn bản';
+    return { name: f.name, icon: icon, tileCls: 'ft ft-' + (ty === 'img' ? 'img' : ty === 'pdf' ? 'pdf' : ty === 'doc' ? 'doc' : ty === 'zip' ? 'zip' : ty === 'vid' ? 'vid' : 'txt'), sub: kind + ' · ' + f.size, dl: 'Mở ' + f.name + ' ở tab mới' };
+  }
+  function pickedView(list0, rm) {
+    return list0.map(function (f, i) {
+      var fv = fileView(f), s = f.st;
+      return { name: f.name, isImg: f.type === 'img', notImg: f.type !== 'img', icon: fv.icon, tileCls: fv.tileCls, lines: SP_IMG.lines.map(function (x) { return { t: x }; }),
+        up: s === 'up', cls: 'cpf ' + s, stIcon: s === 'err' ? 'error' : s === 'up' ? 'progress_activity' : 'check_circle',
+        sub: s === 'err' ? (f.why === 'fmt' ? 'Định dạng .' + f.name.split('.').pop() + ' chưa được hỗ trợ.' : 'Tệp ' + f.size + ', lớn hơn 5MB. Hãy chọn tệp nhỏ hơn.') : s === 'up' ? 'Đang tải lên · ' + f.size : fv.sub + ' · Đã tải lên',
+        rmLabel: 'Bỏ tệp ' + f.name, remove: function () { rm(i); } };
+    });
+  }
+  function addSample(cur, seqKey, apply) {
+    var n = S()[seqKey] || 0, f = spClone(SP_FILES[n % SP_FILES.length]); f.st = f.ok ? 'up' : 'err'; f.key = n;
+    var p = {}; p[seqKey] = n + 1; set(p); apply(cur.concat([f]));
+    if (f.ok) setTimeout(function () { apply(null, n); }, 1400);
+  }
+  if (t) {
+    var s = stView(t), sub = subOf(t), cat = catMap[t.cat];
+    var tv = { code: t.code, title: t.title, created: t.created, tone: s.tone, stIcon: s.icon, stLabel: s.label, stCls: 'st th-st st-' + t.status.toLowerCase(), catIcon: cat.icon, catVi: cat.vi,
+      hasSub: !!sub, subIcon: sub ? sub.icon : '', sub: sub ? (sub.text + (t.seen ? ' ' + t.seen : '')) : '' };
+    if (t.status === 'CLOSED') { tv.hasSub = true; tv.subIcon = 'lock'; tv.sub = 'Đóng ' + t.closed; }
+    tv.items = t.msgs.map(function (m) {
+      if (m.ev) return { isEv: true, isMsg: false, t: m.t, evIcon: m.ev === 'seen' ? 'visibility' : m.ev === 'closed' ? 'lock' : 'lock_open',
+        evText: m.ev === 'seen' ? 'Admin đã xem phiếu' : m.ev === 'closed' ? 'Phiếu đã đóng' : 'Phiếu được mở lại' };
+      var me = admin ? m.who === 'A' : m.who === 'L', lrn = m.who === 'L';
+      return { isEv: false, isMsg: true, cls: 'th-m' + (me ? ' me' : ''), isAdm: !lrn, isLrn: lrn, other: !me, avAdm: !me && !lrn, avLrn: !me && lrn, t: m.t,
+        name: lrn ? 'Học viên ' + t.code : 'Ban Quản trị Hỗ trợ', showCode: lrn, code: t.code, text: m.text || '(Đính kèm tệp/ảnh)',
+        hasImgs: !!(m.imgs && m.imgs.length), imgs: (m.imgs || []).map(function (im) { return { lines: im.lines.map(function (x) { return { t: x }; }), label: 'Phóng to ảnh ' + im.name, open: function () { set({ lb: { name: im.name, lines: im.lines, cap: 'Đính kèm trong phiếu ' + t.code } }); } }; }),
+        hasFiles: !!(m.files && m.files.length), files: (m.files || []).map(fileView) };
+    });
+    var closed = t.status === 'CLOSED';
+    tv.isOpen = !closed; tv.isClosed = closed; tv.canReply = !closed; tv.closedL = closed && !admin; tv.closedA = closed && admin;
+    var dr = (st.drafts || {})[t.id] || '', cf = (st.cfiles || {})[t.id] || [], sending = st.sending === t.id;
+    var up = cf.some(function (f) { return f.st === 'up'; }), okF = cf.some(function (f) { return f.st === 'ok'; });
+    tv.draft = dr; tv.onDraft = function (e) { var d = Object.assign({}, S().drafts || {}); d[t.id] = e && e.target ? e.target.value : ''; set({ drafts: d, sendErr: null }); };
+    tv.cPh = admin ? 'Trả lời ' + t.code + '…' : 'Bổ sung thông tin cho Admin…'; tv.cAria = admin ? 'Trả lời phiếu ' + t.code : 'Tin nhắn cho Admin';
+    function setCF(arr, doneKey) {
+      var all = Object.assign({}, S().cfiles || {});
+      if (arr) all[t.id] = arr; else all[t.id] = (all[t.id] || []).map(function (f) { return f.key === doneKey ? Object.assign({}, f, { st: 'ok' }) : f; });
+      set({ cfiles: all });
+    }
+    tv.hasCFiles = cf.length > 0; tv.cFiles = pickedView(cf, function (i) { setCF(((S().cfiles || {})[t.id] || []).filter(function (_, j) { return j !== i; })); });
+    tv.addFile = function () { addSample((S().cfiles || {})[t.id] || [], 'cseq', setCF); };
+    tv.sending = sending; tv.cantSend = sending || up || (!dr.trim() && !okF); tv.sendErr = st.sendErr === t.id;
+    tv.onSend = function () {
+      var s0 = S(), txt = ((s0.drafts || {})[t.id] || '').trim(), files0 = ((s0.cfiles || {})[t.id] || []).filter(function (f) { return f.st === 'ok'; });
+      if ((!txt && !files0.length) || s0.sending) return;
+      set({ sending: t.id, sendErr: null });
+      setTimeout(function () {
+        var s1 = S();
+        if (s1.failSend) { set({ sending: null, sendErr: t.id, failSend: false }); return; }
+        var d = Object.assign({}, s1.drafts || {}); d[t.id] = ''; var c = Object.assign({}, s1.cfiles || {}); c[t.id] = [];
+        set({ sending: null, drafts: d, cfiles: c, tickets: s1.tickets.map(function (x) {
+          if (x.id !== t.id) return x; var y = spClone(x);
+          y.msgs.push({ who: admin ? 'A' : 'L', t: 'Vừa xong', text: txt, imgs: files0.filter(function (f) { return f.type === 'img'; }).map(function () { return spClone(SP_IMG); }),
+            files: files0.filter(function (f) { return f.type !== 'img'; }).map(function (f) { return { name: f.name, size: f.size, type: f.type }; }) });
+          if (admin && y.status === 'PENDING') y.status = 'IN_PROGRESS';
+          y.updated = 'Vừa xong'; y.ago = 0; return y; }) });
+      }, 900);
+    };
+    tv.close = function () { setT(t.id, function (y) { y.status = 'CLOSED'; y.closed = 'Vừa xong'; y.msgs.push({ ev: 'closed', t: 'Vừa xong' }); }); toast('Đã đóng phiếu ' + t.code); };
+    tv.reopen = function () { setT(t.id, function (y) { y.status = y.msgs.some(function (m) { return m.who === 'A'; }) ? 'IN_PROGRESS' : 'PENDING'; y.closed = null; y.msgs.push({ ev: 'reopened', t: 'Vừa xong' }); }); toast('Đã mở lại phiếu ' + t.code); };
+    v.t = tv;
+  } else v.t = { items: [], cFiles: [] };
+  v.incoming = !!st.incoming && !!t && t.status !== 'CLOSED' && !admin;
+  v.incomingText = 'Admin vừa trả lời';
+  v.takeIncoming = function () { setT(t.id, function (y) { y.msgs.push({ who: 'A', t: 'Vừa xong', text: 'Cảm ơn bạn đã báo. Nếu còn gặp lại lỗi này, bạn trả lời ngay trong phiếu này nhé.', imgs: [], files: [] }); y.updated = 'Vừa xong'; }); set({ incoming: false }); };
+  // khung báo sự cố
+  var nw = st.nw || {};
+  v.newOpen = !!nw.open;
+  v.openNew = function () { set({ nw: { open: true, cat: 'PAYMENT_CREDIT', title: '', body: '', files: [] } }); };
+  v.closeNew = function () { set({ nw: Object.assign({}, S().nw, { open: false }) }); };
+  function setN(p) { set({ nw: Object.assign({}, S().nw, p) }); }
+  v.newCats = SP_CATS.map(function (c) { var on = nw.cat === c.id; return { vi: c.vi, use: c.use, icon: c.icon, on: on, cls: 'cp-c sc' + (on ? ' on' : ''), pick: function () { setN({ cat: c.id }); } }; });
+  v.nTitle = nw.title || ''; v.nBody = nw.body || ''; v.nCount = (nw.title || '').length; v.nCntCls = 'cp-cnt' + ((nw.title || '').length > 270 ? ' warn' : '');
+  v.onNTitle = function (e) { setN({ title: (e && e.target ? e.target.value : '').slice(0, 300), err: false }); };
+  v.onNBody = function (e) { setN({ body: e && e.target ? e.target.value : '', err: false }); };
+  var nf = nw.files || [];
+  function setNF(arr, doneKey) { var c = S().nw; setN({ files: arr || c.files.map(function (f) { return f.key === doneKey ? Object.assign({}, f, { st: 'ok' }) : f; }) }); }
+  v.nHasFiles = nf.length > 0; v.nFiles = pickedView(nf, function (i) { setN({ files: S().nw.files.filter(function (_, j) { return j !== i; }) }); });
+  v.nAddFile = function () { addSample(S().nw.files || [], 'nseq', setNF); };
+  var nUp = nf.some(function (f) { return f.st === 'up'; }), nMiss = !(nw.title || '').trim() || !(nw.body || '').trim();
+  v.nPosting = !!nw.posting; v.nCant = nMiss || nUp || !!nw.posting; v.nErr = !!nw.err;
+  v.nWhy = nUp ? 'Đợi tệp tải lên xong rồi gửi.' : nMiss ? 'Cần có tiêu đề và mô tả để gửi.' : nf.some(function (f) { return f.st === 'err'; }) ? 'Tệp lỗi sẽ không được gửi kèm.' : '';
+  v.nSubmit = function () {
+    var c0 = S().nw; if (!c0 || c0.posting) return;
+    setN({ posting: true, err: false });
+    setTimeout(function () {
+      var s1 = S(), c = s1.nw;
+      if (s1.failPost) { set({ failPost: false, nw: Object.assign({}, c, { posting: false, err: true }) }); return; }
+      var ok = c.files.filter(function (f) { return f.st === 'ok'; }), id = 100 + (s1.seqT || 0), code = '#ANON-' + (7301 + (s1.seqT || 0));
+      var nt = { id: id, own: true, code: code, cat: c.cat, status: 'PENDING', seen: null, created: 'Vừa xong', updated: 'Vừa xong', closed: null, ago: 0, title: c.title.trim(),
+        msgs: [{ who: 'L', t: 'Vừa xong', text: c.body.trim(), imgs: ok.filter(function (f) { return f.type === 'img'; }).map(function () { return spClone(SP_IMG); }),
+          files: ok.filter(function (f) { return f.type !== 'img'; }).map(function (f) { return { name: f.name, size: f.size, type: f.type }; }) }] };
+      var ts = s1.tickets.slice(); ts.unshift(nt);
+      set({ tickets: ts, seqT: (s1.seqT || 0) + 1, sel: id, filter: 'all', tab: 'sup', mview: 'thread', nw: { open: false } });
+      toast('Đã gửi phiếu ' + code + '. Admin sẽ trả lời trong phiếu này.');
+    }, 1000);
+  };
+  // góp ý
+  v.myFb = fbs.filter(function (g) { return !admin; }).map(function (g) { return { subject: g.subject, body: g.body, t: g.t }; });
+  v.nMyF = v.myFb.length; v.noFb = !admin && v.myFb.length === 0;
+  v.allFb = admin ? fbs.map(function (g) { return { code: g.code, t: g.t, subject: g.subject, body: g.body }; }) : [];
+  v.noAllFb = admin && fbs.length === 0;
+  v.fbS = st.fbS || ''; v.fbB = st.fbB || ''; v.fbCount = (st.fbS || '').length; v.fbSending = !!st.fbSending;
+  v.fbCant = !(st.fbS || '').trim() || !(st.fbB || '').trim() || !!st.fbSending;
+  v.onFbS = function (e) { set({ fbS: (e && e.target ? e.target.value : '').slice(0, 300) }); };
+  v.onFbB = function (e) { set({ fbB: e && e.target ? e.target.value : '' }); };
+  v.sendFb = function () {
+    if (v.fbCant) return; set({ fbSending: true });
+    setTimeout(function () { var s1 = S(); var f = s1.fb.slice(); f.unshift({ id: Date.now(), own: true, code: '#ANON-7400', t: 'Vừa xong', subject: s1.fbS.trim(), body: s1.fbB.trim() });
+      set({ fb: f, fbS: '', fbB: '', fbSending: false }); toast('Góp ý đã được ghi nhận. Cảm ơn bạn!'); }, 900);
+  };
+  // xem ảnh
+  v.lbOpen = !!st.lb; v.lbName = st.lb ? st.lb.name : ''; v.lbLines = st.lb ? st.lb.lines.map(function (x) { return { t: x }; }) : []; v.lbCap = st.lb ? st.lb.cap : '';
+  v.lbClose = function () { set({ lb: null }); }; v.lbKey = function (e) { if (e && e.key === 'Escape') set({ lb: null }); };
+  v.toast = st.toast || ''; v.toastOn = !!st.toast;
+  return v;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var s = {"role": "learner", "tab": "sup", "filter": "all", "sel": "auto", "mode": "ok", "dark": false, "mview": "list", "incoming": true};
+    if (!s.tickets) s.tickets = spClone(SP_T);
+    if (!s.fb) s.fb = spClone(SP_FB);
+    this.state = { sp: s };
+  }
+  renderVals() {
+    return { sp: spVals(this) };
+  }
+}
+</script>
+</body>
+</html>
