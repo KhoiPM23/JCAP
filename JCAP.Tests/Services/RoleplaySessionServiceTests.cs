@@ -1330,18 +1330,74 @@ public class RoleplaySessionServiceTests
         Assert.Equal(0, viGuardResult.Data!.CreditsSpentThisTurn);
         Assert.Equal(10, user.CreditBalance);
 
-        // 2. AcousticConfidenceGuard (< 0.60 confidence, 0 LLM tokens)
+        // 2. AcousticConfidenceGuard (< 0.35 confidence -> 0 LLM tokens, hỏi lại nhẹ nhàng)
         var lowConfResult = await service.SendMessageAsync(user.Id, 806, new SendRoleplayMessageRequestDto
         {
             Message = "ラーメンをください。",
-            SpeechConfidence = 0.45,
+            SpeechConfidence = 0.25,
             FallbackToTextInput = false
         });
 
         Assert.True(lowConfResult.Success);
         Assert.Equal(0, lowConfResult.Data!.CreditsSpentThisTurn);
         Assert.Equal(10, user.CreditBalance);
+        Assert.Equal("AcousticConfidenceGuard", lowConfResult.Data.UserMessage.LinguisticFeedback?.EvaluationSource);
         Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_AllowsMediumConfidence_WhenAt045()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-med-conf", CreditBalance = 10 };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 8061,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 8061,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました！",
+                VietnameseMeaning = "Vâng, xin đợi một chút ạ!",
+                UserFuriganaHtml = "ラーメンをください。",
+                LinguisticFeedback = new LinguisticFeedbackDto { Status = "Good", Summary = "Tự nhiên" }
+            });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var res = await service.SendMessageAsync(user.Id, 8061, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。",
+            SpeechConfidence = 0.45,
+            FallbackToTextInput = false
+        });
+
+        Assert.True(res.Success);
+        Assert.NotEqual("AcousticConfidenceGuard", res.Data!.UserMessage.LinguisticFeedback?.EvaluationSource);
+        Assert.Equal("かしこまりました！", res.Data.AiMessage.JapaneseText);
     }
 
     [Fact]

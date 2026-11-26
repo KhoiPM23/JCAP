@@ -5,9 +5,11 @@ using JCAP.DTOs.Scenario;
 using JCAP.Models;
 using JCAP.Services.Interfaces;
 using JCAP.Services.Subscriptions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -27,6 +29,8 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly IVoiceVoxService? _voiceVoxService;
     private readonly IRegisterAnalyzer _registerAnalyzer;
     private readonly IEventDirector _eventDirector;
+    private readonly IPhonemeRecognizer? _phonemeRecognizer;
+    private readonly IWebHostEnvironment? _webHostEnvironment;
 
     private async Task<bool> IsAdminUserAsync(ApplicationUser user)
     {
@@ -74,7 +78,9 @@ public class RoleplaySessionService : IRoleplaySessionService
         IEpisodicFactExtractor? factExtractor = null,
         IVoiceVoxService? voiceVoxService = null,
         IRegisterAnalyzer? registerAnalyzer = null,
-        IEventDirector? eventDirector = null)
+        IEventDirector? eventDirector = null,
+        IPhonemeRecognizer? phonemeRecognizer = null,
+        IWebHostEnvironment? webHostEnvironment = null)
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -87,6 +93,8 @@ public class RoleplaySessionService : IRoleplaySessionService
         _voiceVoxService = voiceVoxService;
         _registerAnalyzer = registerAnalyzer ?? new RegisterAnalyzer();
         _eventDirector = eventDirector ?? new EventDirector();
+        _phonemeRecognizer = phonemeRecognizer;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     public async Task<ApiResponse<ActiveRoleplaySessionDto?>> GetActiveSessionAsync(
@@ -332,20 +340,30 @@ public class RoleplaySessionService : IRoleplaySessionService
                 charMem.EncounterCount++;
                 charMem.LastMetAtUtc = DateTime.UtcNow;
             }
-            await _dbContext.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Không thể nạp hoặc cập nhật ký ức liên phiên cho người dùng {UserId}", userId);
         }
 
-        if (!string.IsNullOrWhiteSpace(circadianGreeting) || !string.IsNullOrWhiteSpace(memoryContext))
+        // Giới hạn tối đa 1.2s chờ AI sinh lời mở đầu để phòng thoại mở nhanh (< 1.5s); fallback tức thì nếu chậm
+        using var openingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        openingCts.CancelAfter(TimeSpan.FromMilliseconds(1200));
+        try
         {
-            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, circadianGreeting, memoryContext, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(circadianGreeting) || !string.IsNullOrWhiteSpace(memoryContext))
+            {
+                opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, circadianGreeting, memoryContext, openingCts.Token);
+            }
+            else
+            {
+                opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, openingCts.Token);
+            }
         }
-        else
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            opening = await _aiRoleplayService.GenerateOpeningMessageAsync(levelConfig.Scenario, levelConfig, cancellationToken);
+            _logger.LogInformation("AI opening vượt quá 1200ms khi tạo phòng {ScenarioId}, dùng mẫu mở đầu tức thì.", scenarioId);
+            opening = null;
         }
         if (opening == null)
         {
@@ -730,9 +748,9 @@ public class RoleplaySessionService : IRoleplaySessionService
             turnResult = RoleplaySocialRegister.ProcessForeignLanguageTurn(levelConfig.Scenario, levelConfig, userMessageText);
         }
 
-        // 2c-bis. Whisper Low Confidence Guard (< 0.60):
-        // Hỏi lại nhẹ nhàng bằng tiếng Nhật tự nhiên, tuyệt đối không trừ oan điểm ngữ pháp của người học
-        if (turnResult == null && request.SpeechConfidence.HasValue && request.SpeechConfidence.Value < 0.60 && !string.IsNullOrWhiteSpace(userMessageText))
+        // 2c-bis. Whisper Low Confidence Guard (< 0.35):
+        // Chỉ chặn âm thanh nhiễu / không nghe được; ngưỡng 0.50-0.60 với tiếng Nhật người học vẫn cho đi tiếp bình thường
+        if (turnResult == null && request.SpeechConfidence.HasValue && request.SpeechConfidence.Value < 0.35 && !string.IsNullOrWhiteSpace(userMessageText))
         {
             var askBackJa = "恐れ入りますが、少し聞き取れませんでした。もう一度よろしいでしょうか？";
             var reg = RoleplaySocialRegister.Deduce(levelConfig.Scenario?.Title, levelConfig.AiPersona, levelConfig.Description);
@@ -743,21 +761,21 @@ public class RoleplaySessionService : IRoleplaySessionService
                 FuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(askBackJa),
                 VietnameseMeaning = askBackVi,
                 UserVietnameseMeaning = userMessageText,
-                UserFuriganaHtml = userMessageText,
+                UserFuriganaHtml = RoleplaySocialRegister.GenerateFuriganaHtml(userMessageText),
                 CompletedMissionIds = new List<int>(),
                 IsNaturallyConcluded = false,
                 LinguisticFeedback = new LinguisticFeedbackDto
                 {
                     Status = "Warning",
-                    Summary = "Âm thanh chưa rõ • Vui lòng nói lại",
+                    Summary = "Âm thanh chưa rõ · Hãy thử nói to và rõ hơn",
                     EvaluationSource = "AcousticConfidenceGuard",
                     Details = new List<LinguisticDetailItemDto>
                     {
                         new()
                         {
                             Type = "warning",
-                            Aspect = "Độ rõ âm học (STT Confidence)",
-                            Comment = "Hệ thống ghi nhận âm thanh có độ rõ thấp (< 0.6). Bạn có thể bấm '言い直す' (Nói lại) hoặc phát âm to, rõ hơn."
+                            Aspect = "Độ rõ giọng nói",
+                            Comment = "Hệ thống ghi nhận âm thanh còn nhỏ hoặc lẫn tạp âm. Bạn hãy giữ micro gần hơn và nói rõ từng âm nhé."
                         }
                     }
                 }
@@ -929,6 +947,18 @@ public class RoleplaySessionService : IRoleplaySessionService
             .OrderBy(m => m.CreatedAt)
             .ThenBy(m => m.Id)
             .ToList();
+
+        // Khởi chạy song song nhận dạng âm vị ONNX với lời gọi Gemini (độ trễ cộng thêm ~0ms)
+        bool shouldRunPhonemeCheck = turnResult == null
+            && !request.FallbackToTextInput
+            && request.SpeechConfidence.HasValue
+            && request.SpeechConfidence.Value >= 0.35
+            && !string.IsNullOrWhiteSpace(request.AudioUrl)
+            && _phonemeRecognizer?.IsAvailable == true;
+
+        Task<PhonemeRecognitionResult?>? phonemeTask = shouldRunPhonemeCheck
+            ? Task.Run(() => AnalyzeAudioPhonemesAsync(request.AudioUrl!, cancellationToken), cancellationToken)
+            : null;
 
         if (turnResult == null && !string.IsNullOrWhiteSpace(combinedDirective))
         {
@@ -1378,6 +1408,26 @@ public class RoleplaySessionService : IRoleplaySessionService
                 }
                 int? finalFluency = isVerifiedVoice ? Math.Clamp(turnFluency, 30, 100) : null;
 
+                List<string>? pronunciationIssues = null;
+                if (isVerifiedVoice && phonemeTask != null)
+                {
+                    try
+                    {
+                        var phonemeResult = await phonemeTask;
+                        if (phonemeResult != null)
+                        {
+                            pronunciationIssues = AlignPronunciationIssues(
+                                turnResult.UserFuriganaHtml,
+                                userMessageText,
+                                phonemeResult);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Bỏ qua đối chiếu âm vị ONNX cho lượt hội thoại");
+                    }
+                }
+
                 turnResult.LinguisticFeedback.SpeechDelivery = new SpeechDeliveryMetricsDto
                 {
                     SpeakingDurationSeconds = isVerifiedVoice && request.SpeakingDurationSeconds.HasValue ? Math.Round(request.SpeakingDurationSeconds.Value, 1) : null,
@@ -1394,7 +1444,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                     LatencyAssessment = isVerifiedVoice ? latencyAssessment : null,
                     AudioUrl = request.AudioUrl,
                     IsTextInput = isTextTurn,
-                    HintLevelUsed = request.HintLevelUsed
+                    HintLevelUsed = request.HintLevelUsed,
+                    PronunciationIssues = pronunciationIssues
                 };
             }
 
@@ -1977,6 +2028,146 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         return null;
+    }
+
+    private async Task<PhonemeRecognitionResult?> AnalyzeAudioPhonemesAsync(
+        string audioUrl,
+        CancellationToken cancellationToken)
+    {
+        if (_phonemeRecognizer == null || !_phonemeRecognizer.IsAvailable || string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return null;
+        }
+
+        var cleanUrl = audioUrl.Split('?', '#')[0].Trim();
+        if (!cleanUrl.StartsWith("/audio/roleplay/", StringComparison.OrdinalIgnoreCase)
+            || cleanUrl.Contains("..", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        try
+        {
+            var webRoot = Path.GetFullPath(
+                _webHostEnvironment?.WebRootPath
+                ?? Path.Combine(_webHostEnvironment?.ContentRootPath ?? Directory.GetCurrentDirectory(), "wwwroot"));
+            var relativePath = cleanUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var fullPath = Path.GetFullPath(Path.Combine(webRoot, relativePath));
+            if (!fullPath.StartsWith(webRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                || !File.Exists(fullPath))
+            {
+                return null;
+            }
+
+            float[] samples16k;
+            if (cleanUrl.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                var wavBytes = await File.ReadAllBytesAsync(fullPath, cancellationToken);
+                samples16k = WavPcmReader.ReadMono16k(wavBytes);
+            }
+            else
+            {
+                var wavBytes = await ConvertAudioToWav16kViaFfmpegAsync(fullPath, cancellationToken);
+                if (wavBytes == null || wavBytes.Length < 44) return null;
+                samples16k = WavPcmReader.ReadMono16k(wavBytes);
+            }
+
+            if (samples16k.Length < 1600) return null; // < 0.1s
+            return _phonemeRecognizer.Recognize(samples16k);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Không thể chạy nhận dạng âm vị ONNX cho file {AudioUrl}", cleanUrl);
+            return null;
+        }
+    }
+
+    private static async Task<byte[]?> ConvertAudioToWav16kViaFfmpegAsync(
+        string inputPath,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMilliseconds(1800));
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = $"-nostdin -loglevel error -y -i \"{inputPath}\" -ar 16000 -ac 1 -f wav pipe:1",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(psi);
+            if (process == null) return null;
+
+            using var ms = new MemoryStream();
+            var copyTask = process.StandardOutput.BaseStream.CopyToAsync(ms, cts.Token);
+            await process.WaitForExitAsync(cts.Token);
+            await copyTask;
+
+            return process.ExitCode == 0 ? ms.ToArray() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    internal static List<string>? AlignPronunciationIssues(
+        string? furiganaHtml,
+        string userMessageText,
+        PhonemeRecognitionResult phonemeResult)
+    {
+        if (phonemeResult.LogProbabilities.Length == 0 || phonemeResult.Labels.Count == 0)
+        {
+            return null;
+        }
+
+        var source = !string.IsNullOrWhiteSpace(furiganaHtml) && furiganaHtml.Contains("<rt", StringComparison.OrdinalIgnoreCase)
+            ? furiganaHtml
+            : RoleplaySocialRegister.GenerateFuriganaHtml(userMessageText);
+
+        var kana = System.Text.RegularExpressions.Regex.Replace(
+            source,
+            @"<ruby[^>]*>.*?<rt[^>]*>(.*?)(?:</rt>|(?=</ruby>)).*?</ruby>",
+            "$1",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
+        kana = RoleplaySocialRegister.StripRubyTags(kana);
+
+        var moras = JapaneseMora.FromKana(kana, preserveLongVowelSpelling: false);
+        if (moras.Count < 2) return null;
+
+        var aligned = PronunciationAligner.Align(moras, phonemeResult.LogProbabilities, phonemeResult.Labels);
+        if (aligned == null || aligned.IsMismatch) return null;
+
+        var issues = new List<string>();
+        foreach (var m in aligned.Moras)
+        {
+            if (string.Equals(m.Kind, "ok", StringComparison.OrdinalIgnoreCase)) continue;
+
+            var desc = m.Kind switch
+            {
+                "missing" => $"Có thể bạn đã đọc lướt hoặc thiếu âm '{m.Target}'",
+                "short" => $"Cần kéo dài trường âm ở '{m.Target}'",
+                "sokuon" => "Cần ngắt hơi rõ hơn ở âm ngắt (っ)",
+                "extra_long" => $"Không cần kéo dài thêm trường âm sau '{m.Target}'",
+                _ when !string.IsNullOrWhiteSpace(m.Heard) && !string.Equals(m.Target, m.Heard, StringComparison.Ordinal)
+                    => $"Âm '{m.Target}' nghe hơi giống '{m.Heard}'",
+                _ => null
+            };
+
+            if (!string.IsNullOrWhiteSpace(desc) && !issues.Contains(desc))
+            {
+                issues.Add(desc);
+                if (issues.Count >= 2) break;
+            }
+        }
+
+        return issues.Count > 0 ? issues : null;
     }
 
     /// <summary>

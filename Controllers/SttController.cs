@@ -116,6 +116,53 @@ public class SttController : ControllerBase
     }
 
     /// <summary>
+    /// Xóa file âm thanh nháp của học viên trong wwwroot/audio/roleplay khi người học hủy/xóa bản ghi trước khi gửi
+    /// </summary>
+    [HttpDelete("audio")]
+    [Authorize]
+    public ActionResult<ApiResponse<object>> DeleteAudio([FromQuery] string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file âm thanh không hợp lệ."));
+        }
+
+        var trimmed = url.Trim();
+        if (!trimmed.StartsWith("/audio/roleplay/", StringComparison.OrdinalIgnoreCase)
+            || trimmed.Contains("..", StringComparison.Ordinal)
+            || trimmed.Contains('\\', StringComparison.Ordinal)
+            || trimmed.Contains('?', StringComparison.Ordinal)
+            || trimmed.Contains('#', StringComparison.Ordinal))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file âm thanh không được phép."));
+        }
+
+        var fileName = Path.GetFileName(trimmed);
+        if (string.IsNullOrWhiteSpace(fileName) || !string.Equals(trimmed, $"/audio/roleplay/{fileName}", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Tên file âm thanh không hợp lệ."));
+        }
+
+        var webRoot = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        var folder = Path.GetFullPath(Path.Combine(webRoot, "audio", "roleplay"));
+        var fullPath = Path.GetFullPath(Path.Combine(folder, fileName));
+
+        if (!fullPath.StartsWith(folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<object>.Fail("Đường dẫn file vượt ngoài phạm vi cho phép."));
+        }
+
+        var deleted = false;
+        if (System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+            deleted = true;
+        }
+
+        return Ok(ApiResponse<object>.Ok(new { deleted }, deleted ? "Đã xóa file âm thanh tạm." : "File không còn tồn tại."));
+    }
+
+    /// <summary>
     /// Kiểm tra trạng thái hoạt động của Whisper Engine
     /// </summary>
     [HttpGet("health")]

@@ -723,7 +723,7 @@ Return strictly pure JSON matching:
             }
 
             var sbHistory = new StringBuilder();
-            foreach (var msg in (conversationHistory ?? []).TakeLast(10))
+            foreach (var msg in (conversationHistory ?? []).TakeLast(8))
             {
                 sbHistory.AppendLine($"[{msg.Sender}]: {msg.JapaneseText}");
             }

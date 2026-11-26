@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams, useParams, Link } from 'reac
 import { Button } from '../components/ui/Button';
 import { scenarioService } from '../services/scenarioService';
 import { roleplayService } from '../services/roleplayService';
+import { roleplayResultService } from '../services/roleplayResultService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
@@ -259,6 +260,40 @@ export const ScenarioDetailsView: React.FC = () => {
   const currentMeta = levelMeta[selectedLevel.jlptLevel] || levelMeta.N5;
   const minMinutes = Math.max(5, (selectedLevel.missions?.length ?? 3) * 2);
   const maxMinutes = Math.max(10, (selectedLevel.missions?.length ?? 3) * 3);
+  const isActiveSessionMissionsDone = Boolean(
+    isSelectedLevelActive &&
+      activeSession &&
+      (activeSession.totalMissionsCount ?? 0) > 0 &&
+      (activeSession.completedMissionsCount ?? 0) >= (activeSession.totalMissionsCount ?? 0)
+  );
+
+  const handleFinalizeCompletedActiveSession = async () => {
+    if (!activeSessionId || isStarting) return;
+    setIsStarting(true);
+    setStartError(null);
+    try {
+      const res = await roleplayResultService.completeSession(activeSessionId);
+      if (res.success && res.data) {
+        const rawData = res.data as any;
+        const resolvedResultId =
+          rawData?.resultId ??
+          rawData?.id ??
+          rawData?.data?.resultId ??
+          rawData?.data?.id ??
+          activeSessionId;
+        const targetPath = returnUrl
+          ? `/roleplay/results/${resolvedResultId}?justCompleted=true&return=${encodeURIComponent(returnUrl)}`
+          : `/roleplay/results/${resolvedResultId}?justCompleted=true`;
+        navigate(targetPath);
+      } else {
+        setStartError(res.message || 'Không thể tổng kết phiên hội thoại.');
+      }
+    } catch {
+      setStartError('Không thể kết nối máy chủ để tổng kết phiên.');
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <div className="relative mx-auto flex w-full max-w-[1160px] flex-col gap-4 bg-transparent pb-10 select-none text-[var(--sumi)]">
@@ -502,11 +537,17 @@ export const ScenarioDetailsView: React.FC = () => {
                     JLPT {selectedLevel.jlptLevel}
                   </h3>
                   <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${
-                    isSelectedLevelActive
+                    isActiveSessionMissionsDone
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : isSelectedLevelActive
+                      ? 'bg-amber-50 text-amber-800 border-amber-200'
                       : `${currentMeta.bg} ${currentMeta.text} ${currentMeta.border}`
                   }`}>
-                    {isSelectedLevelActive ? 'Đang dở dang' : currentMeta.descLabel.split(' (')[0]}
+                    {isActiveSessionMissionsDone
+                      ? 'Đã hoàn thành mục tiêu'
+                      : isSelectedLevelActive
+                      ? 'Đang dở dang'
+                      : currentMeta.descLabel.split(' (')[0]}
                   </span>
                 </div>
               </div>
@@ -575,7 +616,9 @@ export const ScenarioDetailsView: React.FC = () => {
                 disabled={isStarting}
                 onClick={() => {
                   ukiyoSound.playTaikoThud();
-                  if (isSelectedLevelActive) {
+                  if (isActiveSessionMissionsDone) {
+                    void handleFinalizeCompletedActiveSession();
+                  } else if (isSelectedLevelActive) {
                     const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
                     navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
                   } else if (hasActiveSession) {
@@ -590,6 +633,8 @@ export const ScenarioDetailsView: React.FC = () => {
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                     <span>Đang thiết lập phòng thoại...</span>
                   </>
+                ) : isActiveSessionMissionsDone ? (
+                  <span>Chốt & Xem kết quả (JLPT {selectedLevel.jlptLevel}) →</span>
                 ) : isSelectedLevelActive ? (
                   <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
                 ) : hasActiveSession ? (
@@ -606,7 +651,9 @@ export const ScenarioDetailsView: React.FC = () => {
                   onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
                   className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer"
                 >
-                  Làm lại từ đầu (JLPT {selectedLevel.jlptLevel})
+                  {isActiveSessionMissionsDone
+                    ? `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
+                    : `Làm lại từ đầu (JLPT ${selectedLevel.jlptLevel})`}
                 </button>
               )}
 

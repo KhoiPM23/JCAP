@@ -87,4 +87,48 @@ public class SttControllerTests
         Assert.Equal(50022, status.GetProperty("port").GetInt32());
         Assert.False(status.GetProperty("configured").GetBoolean());
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("/audio/other/file.webm")]
+    [InlineData("/audio/roleplay/../secrets.txt")]
+    [InlineData("/audio/roleplay/sub\\file.webm")]
+    public void DeleteAudio_RejectsInvalidOrTraversalPaths(string? url)
+    {
+        var controller = CreateController(null, false);
+        var result = controller.DeleteAudio(url);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public void DeleteAudio_DeletesExistingRoleplayAudioFile()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"jcap_stt_test_{Guid.NewGuid():N}");
+        var folder = Path.Combine(tempRoot, "audio", "roleplay");
+        Directory.CreateDirectory(folder);
+        var filePath = Path.Combine(folder, "user_test123.webm");
+        File.WriteAllBytes(filePath, new byte[] { 1, 2, 3, 4 });
+
+        try
+        {
+            var whisperMock = new Mock<IWhisperSttService>();
+            var envMock = new Mock<IWebHostEnvironment>();
+            envMock.SetupGet(e => e.ContentRootPath).Returns(tempRoot);
+            envMock.SetupGet(e => e.WebRootPath).Returns(tempRoot);
+            var config = new ConfigurationBuilder().Build();
+
+            var controller = new SttController(whisperMock.Object, envMock.Object, config, NullLogger<SttController>.Instance);
+
+            var result = controller.DeleteAudio("/audio/roleplay/user_test123.webm");
+            var payload = ExtractStatus(result);
+
+            Assert.True(payload.GetProperty("deleted").GetBoolean());
+            Assert.False(File.Exists(filePath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot)) Directory.Delete(tempRoot, true);
+        }
+    }
 }

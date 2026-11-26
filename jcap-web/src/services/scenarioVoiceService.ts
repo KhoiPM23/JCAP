@@ -768,6 +768,22 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Xóa bản thu âm nháp trên server nếu người học xóa/hủy trước khi gửi lượt thoại
+   */
+  public async deleteTempAudio(audioUrl?: string | null): Promise<void> {
+    if (!audioUrl || !audioUrl.startsWith('/audio/roleplay/')) return;
+    try {
+      const token = localStorage.getItem('jcap_token');
+      await fetch(resolveApiUrl(`/api/stt/audio?url=${encodeURIComponent(audioUrl)}`), {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch {
+      // Best-effort cleanup
+    }
+  }
+
+  /**
    * Kiểm tra xem Whisper Engine có sẵn sàng phục vụ không
    */
   public async isWhisperAvailable(): Promise<boolean> {

@@ -41,6 +41,7 @@ export interface SpeechDeliveryMetricsDto {
   audioUrl?: string;
   isTextInput?: boolean;
   hintLevelUsed?: number;
+  pronunciationIssues?: string[];
 }
 
 export interface GrammarErrorItemDto {

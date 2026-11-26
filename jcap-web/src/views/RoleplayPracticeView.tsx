@@ -43,7 +43,6 @@ import {
   CheckCircleIcon,
   AlertCircleIcon,
   XCircleIcon,
-  RefreshIcon,
   PhoneCallIcon,
   HandIcon,
   CoinsIcon,
@@ -199,18 +198,23 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     lastSpeechConfidenceRef.current = null;
     webSpeechConfidenceRef.current = null;
     lastRecordedDurationSecondsRef.current = null;
-    if (lastRecordedAudioUrlRef.current && lastRecordedAudioUrlRef.current.startsWith('blob:')) {
-      URL.revokeObjectURL(lastRecordedAudioUrlRef.current);
-    }
+    const prevUrl = lastRecordedAudioUrlRef.current;
     lastRecordedAudioUrlRef.current = null;
+    if (prevUrl) {
+      if (prevUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(prevUrl);
+      } else if (prevUrl.startsWith('/audio/roleplay/')) {
+        void scenarioVoiceService.deleteTempAudio(prevUrl);
+      }
+    }
   }, []);
+  const [isVoiceDraftLocked, setIsVoiceDraftLocked] = useState(false);
   const lastSpeechConfidenceRef = useRef<number | null>(null);
   const webSpeechConfidenceRef = useRef<number | null>(null);
   const lastRecordedDurationSecondsRef = useRef<number | null>(null);
   const recordingEpochRef = useRef<number>(0);
   const lastVocalFillerRef = useRef<string>('');
   const pendingWhisperPromiseRef = useRef<Promise<any> | null>(null);
-  const [allowPostCompletionFreeTalk, setAllowPostCompletionFreeTalk] = useState(false);
   const [isQuotaBlocked, setIsQuotaBlocked] = useState(false);
   const [quotaBlockedMessage, setQuotaBlockedMessage] = useState<string | null>(null);
   const effectiveCreditBalance = session?.creditBalance ?? user?.creditBalance;
@@ -1076,7 +1080,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           if (!isWhisperHallucination(rawText)) {
             if (!isSendingRef.current && !forImmediateSend) {
               setInputText(rawText);
+              inputTextRef.current = rawText;
               latestTranscriptRef.current = rawText;
+              setIsVoiceDraftLocked(true);
               markLearnerUttering();
             } else if (forImmediateSend && !latestTranscriptRef.current) {
               latestTranscriptRef.current = rawText;
@@ -1101,6 +1107,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             }
           } catch (e) {
             console.warn('[Scenario STT] Failed to save learner audio:', e);
+          }
+          if (!forImmediateSend && (latestTranscriptRef.current.trim() || inputTextRef.current.trim())) {
+            setIsVoiceDraftLocked(true);
           }
           // Nếu cả Web Speech lẫn Whisper đều chưa bắt được từ nào
           if (!forImmediateSend && !inputText.trim() && !latestTranscriptRef.current) {
@@ -1295,52 +1304,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         }
       );
     })();
-  };
-
-
-  // Active Recall: Luyện nói lại một lượt hội thoại bất kỳ (thay thế lượt nói hiện tại)
-  const handleRedoTurn = (targetMessageId?: number) => {
-    stopSpeechRecognition();
-    scenarioVoiceService.stopAllAudio();
-    setIsPlayingAiSpeech(false);
-    setPlayingMessageId(null);
-    clearAllAssistance();
-    hasSpokenVocalFillerRef.current = false;
-
-    // Roll back lượt thoại được chọn (hoặc gần nhất) khỏi session.messages để thay thế thay vì bồi thêm lượt mới
-    setSession((prev) => {
-      if (!prev || prev.messages.length === 0) return prev;
-      const msgs = [...prev.messages];
-      let targetIdx = -1;
-      if (typeof targetMessageId === 'number') {
-        targetIdx = msgs.findIndex((m) => m.id === targetMessageId);
-      }
-      if (targetIdx === -1) {
-        for (let i = msgs.length - 1; i >= 0; i--) {
-          if (msgs[i].sender === 'User') {
-            targetIdx = i;
-            break;
-          }
-        }
-      }
-      if (targetIdx !== -1) {
-        return {
-          ...prev,
-          messages: msgs.slice(0, targetIdx),
-        };
-      }
-      return prev;
-    });
-
-    latestTranscriptRef.current = '';
-    setInputText('');
-    retryCountRef.current += 1;
-    ukiyoSound.playSubtleTap();
-    setToastMessage('Đang mở micro để nói lại lượt này...');
-    setTimeout(() => setToastMessage(null), 2500);
-    setTimeout(() => {
-      startSpeechRecognition();
-    }, 250);
   };
 
 
@@ -2060,6 +2023,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     if (!trimmed || isSendingRef.current || isSending || !session) return;
     // Khóa chống gửi đúp tức thì (Double-Submit Prevention Lock)
     isSendingRef.current = true;
+    setIsVoiceDraftLocked(false);
     lastVocalFillerRef.current = '';
     latestTranscriptRef.current = '';
     inputTextRef.current = '';
@@ -2797,14 +2761,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         }
       });
 
-      // Fallback timer cho chế độ Rảnh tay: nếu micro đang thu âm mà Web Speech không bắt được kết quả sau 8.5s
+      // Fallback timer cho chế độ Rảnh tay: nới lên 18s (và tự reset khi nói câu dài) để không cắt ngang câu đang nói
       if (handsFreeFallbackTimerRef.current) clearTimeout(handsFreeFallbackTimerRef.current);
       if (isHandsFreeModeRef.current) {
         handsFreeFallbackTimerRef.current = setTimeout(() => {
           if (isRecordingMicRef.current && !isSendingRef.current && !isOutOfCreditsRef.current) {
             void handleAutoSubmitVoiceTurn();
           }
-        }, 8500);
+        }, 18000);
       }
 
 
@@ -2823,6 +2787,18 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           }
         },
         onSpeechStart: () => {
+          if (handsFreeFallbackTimerRef.current) {
+            clearTimeout(handsFreeFallbackTimerRef.current);
+            if (isHandsFreeModeRef.current) {
+              handsFreeFallbackTimerRef.current = setTimeout(() => {
+                if (isRecordingMicRef.current && !isSendingRef.current && !isOutOfCreditsRef.current) {
+                  void handleAutoSubmitVoiceTurn();
+                }
+              }, 18000);
+            } else {
+              handsFreeFallbackTimerRef.current = null;
+            }
+          }
           if (deadlockTimerRef.current) {
             clearTimeout(deadlockTimerRef.current);
             deadlockTimerRef.current = null;
@@ -2868,40 +2844,41 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             markLearnerUttering();
 
 
-            // Adaptive Silence Ring: Khi phát hiện tiếng nói, kích hoạt đếm ngược im lặng (0.8s-1.2s theo level)
+            // Adaptive Silence Ring: CHỈ tự động nộp câu khi đang bật chế độ Rảnh tay (Hands-Free); giữ nguyên câu dài ở chế độ thủ công
             if (silenceIntervalRef.current) {
               clearInterval(silenceIntervalRef.current);
               silenceIntervalRef.current = null;
             }
-            const currentLvl = (session?.level || session?.jlptLevel || 'N5').trim().toUpperCase();
-            // Chuẩn công thái học học ngoại ngữ: N5: 3500ms, N4: 3000ms, N3+: 2500ms (đủ thời gian ậm à, lấy hơi và suy nghĩ câu)
-            const silenceTimeoutMs = currentLvl === 'N5' ? 5500 : currentLvl === 'N4' ? 4500 : 4000;
-            const intervalStep = 50;
-            let elapsed = 0;
-            silenceIntervalRef.current = setInterval(() => {
-              elapsed += intervalStep;
-              const progress = Math.min(1, elapsed / silenceTimeoutMs);
-              setSilenceCountdownProgress(progress);
-              if (progress >= 1) {
-                if (silenceIntervalRef.current) {
-                  clearInterval(silenceIntervalRef.current);
-                  silenceIntervalRef.current = null;
-                }
-                setSilenceCountdownProgress(0);
+            if (isHandsFreeModeRef.current) {
+              const currentLvl = (session?.level || session?.jlptLevel || 'N5').trim().toUpperCase();
+              const silenceTimeoutMs = currentLvl === 'N5' ? 5500 : currentLvl === 'N4' ? 4500 : 4000;
+              const intervalStep = 50;
+              let elapsed = 0;
+              silenceIntervalRef.current = setInterval(() => {
+                elapsed += intervalStep;
+                const progress = Math.min(1, elapsed / silenceTimeoutMs);
+                setSilenceCountdownProgress(progress);
+                if (progress >= 1) {
+                  if (silenceIntervalRef.current) {
+                    clearInterval(silenceIntervalRef.current);
+                    silenceIntervalRef.current = null;
+                  }
+                  setSilenceCountdownProgress(0);
 
-                // Bộ lọc từ đệm ngắn: nếu chỉ mới nói từ ngập ngừng (あの, ええと, はい, 嗯) hoặc dưới 3 ký tự, không vội gửi ngay
-                const currentSnapshot = (latestTranscriptRef.current || inputText || '').trim();
-                const isShortFiller = currentSnapshot.length < 3 || /^(はい|うん|あの|ええと|えっと|あのー|えー|その)$/.test(currentSnapshot);
-                if (isShortFiller && isRecordingMicRef.current) {
-                  return;
-                }
+                  // Bộ lọc từ đệm ngắn: nếu chỉ mới nói từ ngập ngừng (あの, ええと, はい, 嗯) hoặc dưới 3 ký tự, không vội gửi ngay
+                  const currentSnapshot = (latestTranscriptRef.current || inputText || '').trim();
+                  const isShortFiller = currentSnapshot.length < 3 || /^(はい|うん|あの|ええと|えっと|あのー|えー|その)$/.test(currentSnapshot);
+                  if (isShortFiller && isRecordingMicRef.current) {
+                    return;
+                  }
 
-                // Tự động nộp câu thoại và gửi lượt hội thoại liên tục (Hands-Free Zero-Click)
-                if (isRecordingMicRef.current && !isSendingRef.current) {
-                  void handleAutoSubmitVoiceTurn();
+                  // Tự động nộp câu thoại và gửi lượt hội thoại liên tục (Hands-Free Zero-Click)
+                  if (isRecordingMicRef.current && !isSendingRef.current) {
+                    void handleAutoSubmitVoiceTurn();
+                  }
                 }
-              }
-            }, intervalStep);
+              }, intervalStep);
+            }
           }
         },
         onError: (err: any) => {
@@ -2959,7 +2936,20 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   };
 
 
+  const handleClearVoiceDraft = useCallback(() => {
+    inputEpochRef.current += 1;
+    invalidateVoiceRecording();
+    latestTranscriptRef.current = '';
+    inputTextRef.current = '';
+    setInputText('');
+    setIsVoiceDraftLocked(false);
+    ukiyoSound.playSubtleTap();
+  }, [invalidateVoiceRecording]);
+
   const handleToggleMic = () => {
+    if (isVoiceDraftLocked || (!isVoiceDraftLocked && !isRecordingMic && inputText.trim().length > 0)) {
+      return;
+    }
     if (isOutOfCreditsRef.current && !isRecordingMic) {
       setToastMessage(
         quotaBlockedMessage ||
@@ -3016,6 +3006,14 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       }
       scenarioVoiceService.stopAllAudio();
       scenarioVoiceService.stopAudioRecordingSync(true);
+      if (lastRecordedAudioUrlRef.current) {
+        if (lastRecordedAudioUrlRef.current.startsWith('/audio/roleplay/')) {
+          void scenarioVoiceService.deleteTempAudio(lastRecordedAudioUrlRef.current);
+        } else if (lastRecordedAudioUrlRef.current.startsWith('blob:')) {
+          URL.revokeObjectURL(lastRecordedAudioUrlRef.current);
+        }
+        lastRecordedAudioUrlRef.current = null;
+      }
       void stopSpeechRecognition({ discardAudio: true });
     };
   }, []);
@@ -3971,20 +3969,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                                 <span>Đánh giá</span>
                               </button>
 
-                              {/* Nút Nói lại */}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRedoTurn(msg.id);
-                                }}
-                                className="inline-flex items-center gap-1 rounded-lg border border-[#CADBEA] bg-white/80 px-2 py-0.5 text-[11px] font-medium text-[#1E293B] hover:bg-white hover:border-[var(--ai)] hover:text-[var(--ai)] transition cursor-pointer active:scale-95 shadow-2xs"
-                                title="Nói lại câu này"
-                              >
-                                <RefreshIcon className="w-3 h-3" />
-                                <span>Nói lại</span>
-                              </button>
-
                               {/* Nút nghe lại giọng bạn */}
                               {(msg.userAudioUrl || userAudioMapRef.current.get(msg.id)) && (
                                 <button
@@ -4095,9 +4079,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     {!isAi && expandedSumiInkMsgIds.has(msg.id) && msg.linguisticFeedback?.sumiInk && (
                       <SumiInkWhisperBubble
                         feedback={msg.linguisticFeedback.sumiInk}
-                        onRedo={() => handleRedoTurn(msg.id)}
                         onApplyText={(text) => {
+                          invalidateVoiceRecording();
+                          setIsVoiceDraftLocked(false);
                           setInputText(text);
+                          inputTextRef.current = text;
                           setToastMessage('Đã nạp mẫu câu gợi ý vào ô nhập!');
                         }}
                         onClose={() => toggleSumiInkMsg(msg.id)}
@@ -4213,6 +4199,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   isFirstUseInSession={isFirstHintInSession}
                   onUseHint={(sentence, tier) => {
                     invalidateVoiceRecording();
+                    setIsVoiceDraftLocked(false);
                     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, tier);
                     setAppliedHintTier(tier);
                     triggerFloatingDeduction(tier);
@@ -4356,7 +4343,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     <ArrowRightIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              ) : (isAllMissionsCompleted || session?.isNaturallyConcluded) && !allowPostCompletionFreeTalk ? (
+              ) : isAllMissionsCompleted || session?.isNaturallyConcluded ? (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-3xl bg-gradient-to-r from-emerald-50 via-white to-teal-50/80 border-2 border-emerald-400/80 text-xs shadow-sm font-sans animate-fade-in">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -4372,21 +4359,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-[11px] text-emerald-800 mt-0.5">
-                        Bạn có thể chốt điểm ngay để xem phân tích chi tiết, hoặc bấm <strong>Nói thêm tự do</strong> nếu muốn trò chuyện tiếp cùng {session.aiPersona || 'AI'}.
+                        Phiên hội thoại đã hoàn tất mục tiêu. Hãy bấm <strong>Hoàn thành & Xem kết quả</strong> để lưu điểm và nhận phân tích chi tiết.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        ukiyoSound.playSubtleTap();
-                        setAllowPostCompletionFreeTalk(true);
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-2xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-900 font-bold text-xs transition active:scale-95 cursor-pointer"
-                    >
-                      <span>Nói thêm tự do</span>
-                    </button>
                     <button
                       type="button"
                       onClick={() => void handleConfirmEnd()}
@@ -4449,12 +4426,18 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 </button>
 
 
-                {/* Button Micro thu âm (Voice Input với hiệu ứng Breathing Glow & Inner Ring) */}
+                {/* Button Micro thu âm (Khóa nếu đang có văn bản gõ tay hoặc bản ghi âm nháp chưa gửi) */}
                 <div className="relative inline-flex shrink-0">
                   <button
                     type="button"
                     onClick={handleToggleMic}
-                    disabled={isSending || isProcessingStt || isOutOfCredits}
+                    disabled={
+                      isSending ||
+                      isProcessingStt ||
+                      isOutOfCredits ||
+                      isVoiceDraftLocked ||
+                      (!isVoiceDraftLocked && !isRecordingMic && inputText.trim().length > 0)
+                    }
                     className={`relative z-10 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all shadow-2xs cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${
                       isProcessingStt
                         ? 'border border-[var(--ai)] bg-[var(--ai-soft)] text-[var(--ai)] min-w-[105px]'
@@ -4463,7 +4446,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         : 'border border-[var(--ai)]/30 bg-[var(--ai-soft)]/70 text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white active:scale-95 min-w-[84px]'
                     }`}
                     title={
-                      isProcessingStt
+                      isVoiceDraftLocked
+                        ? 'Đã có bản thu âm. Bấm Xóa bản ghi để thu âm lại hoặc bấm Gửi.'
+                        : !isRecordingMic && inputText.trim().length > 0
+                        ? 'Xóa văn bản đã nhập để chuyển sang thu âm bằng micro.'
+                        : isProcessingStt
                         ? 'Đang nhận diện giọng nói...'
                         : isRecordingMic
                         ? 'Đang bật mic (Bấm để dừng)'
@@ -4505,15 +4492,26 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 </div>
 
 
-                {/* Text input riêng biệt với viền tròn bao quanh */}
+                {/* Text input riêng biệt với viền tròn bao quanh (khóa sửa tay nếu đang giữ bản ghi âm voice) */}
                 <div className={`flex-1 flex items-center min-w-0 rounded-full border border-[var(--line-strong)] bg-white px-3.5 py-1.5 shadow-2xs transition ${
-                  isRecordingMic ? 'bg-rose-50/60 ring-1 ring-rose-300 border-rose-300' : 'focus-within:border-[var(--ai)] focus-within:ring-2 focus-within:ring-[var(--ai)]/15'
+                  isRecordingMic
+                    ? 'bg-rose-50/60 ring-1 ring-rose-300 border-rose-300'
+                    : isVoiceDraftLocked
+                    ? 'bg-emerald-50/50 border-emerald-300'
+                    : 'focus-within:border-[var(--ai)] focus-within:ring-2 focus-within:ring-[var(--ai)]/15'
                 }`}>
+                  {isVoiceDraftLocked && (
+                    <span className="shrink-0 mr-1.5 inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                      Bản thu âm
+                    </span>
+                  )}
                   <input
                     ref={inputRef}
                     type="text"
                     value={inputText}
+                    readOnly={isVoiceDraftLocked}
                     onChange={(e) => {
+                      if (isVoiceDraftLocked) return;
                       const nextValue = e.target.value;
                       inputEpochRef.current += 1;
                       inputTextRef.current = nextValue;
@@ -4524,7 +4522,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       invalidateVoiceRecording();
                       setInputText(nextValue);
                     }}
-                    onPaste={() => {
+                    onPaste={(e) => {
+                      if (isVoiceDraftLocked) {
+                        e.preventDefault();
+                        return;
+                      }
                       inputEpochRef.current += 1;
                       invalidateVoiceRecording();
                     }}
@@ -4543,8 +4545,22 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         : 'Nhập câu trả lời bằng tiếng Nhật hoặc bấm nút [Nói]...'
                     }
                     disabled={isSending || isOutOfCredits}
-                    className="flex-1 min-w-0 bg-transparent px-1 py-1 text-sm font-jp text-[var(--sumi)] outline-none transition"
+                    className={`flex-1 min-w-0 border-0 bg-transparent px-1 py-1 text-sm font-jp text-[var(--sumi)] outline-none ring-0 focus:outline-none focus:ring-0 transition ${
+                      isVoiceDraftLocked ? 'cursor-default select-none text-slate-700' : ''
+                    }`}
                   />
+
+                  {/* Nút Xóa bản ghi âm / Xóa văn bản */}
+                  {(isVoiceDraftLocked || (!isRecordingMic && inputText.length > 0)) && (
+                    <button
+                      type="button"
+                      onClick={handleClearVoiceDraft}
+                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-700 px-2 py-1 text-[11px] font-bold transition cursor-pointer ml-1"
+                      title={isVoiceDraftLocked ? 'Xóa bản ghi âm để nói lại hoặc chuyển sang gõ phím' : 'Xóa văn bản đã nhập'}
+                    >
+                      ✕
+                    </button>
+                  )}
 
                   {/* Nút nghe đọc mẫu câu học viên vừa gõ trước khi gửi (compact icon) */}
                   {inputText.trim() && (
@@ -4737,9 +4753,20 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         )}
                         {typeof selectedMessage.linguisticFeedback.speechDelivery.speechConfidence === 'number' && (
                           <div className="flex items-center gap-1.5 text-[11px] text-indigo-900 font-medium">
-                                                        <span>Độ rõ âm (Acoustic Clarity): {Math.round(selectedMessage.linguisticFeedback.speechDelivery.speechConfidence * 100)}%</span>
+                            <span>Độ rõ giọng nói: {Math.round(selectedMessage.linguisticFeedback.speechDelivery.speechConfidence * 100)}%</span>
                           </div>
                         )}
+                        {selectedMessage.linguisticFeedback.speechDelivery.pronunciationIssues &&
+                          selectedMessage.linguisticFeedback.speechDelivery.pronunciationIssues.length > 0 && (
+                            <div className="mt-1 rounded-lg border border-amber-200 bg-amber-50/90 px-2.5 py-1.5 text-[11px] text-amber-900 space-y-0.5">
+                              <p className="font-bold text-[10px] uppercase tracking-wider text-amber-800">
+                                Điểm cần chú ý về phát âm
+                              </p>
+                              {selectedMessage.linguisticFeedback.speechDelivery.pronunciationIssues.map((issue, idx) => (
+                                <p key={idx} className="leading-snug">• {issue}</p>
+                              ))}
+                            </div>
+                          )}
                         {selectedMessage.linguisticFeedback.speechDelivery.moraRate != null && (
                           <div className="flex items-center gap-2 text-[11px] text-indigo-900 font-medium">
                             <span>Nhịp điệu:</span>
