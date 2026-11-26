@@ -207,6 +207,7 @@ public class RoleplayEvaluationServiceTests
             isNaturallyConcluded: true);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.ScoreBreakdown);
         Assert.Equal(100, result.AutonomyScore);
         Assert.Equal(10, result.ScoreBreakdown.AutonomyPoints);
     }

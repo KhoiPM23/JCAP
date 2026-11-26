@@ -1013,6 +1013,7 @@ public class AiRoleplayServiceTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "豚骨ラーメンをひとつお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         // It must NOT be rejected by Guardrail (Guard 4)
         Assert.NotEqual("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.DoesNotContain("どの料理をひとつご希望でしょうか", result.JapaneseReply);
@@ -1038,6 +1039,7 @@ public class AiRoleplayServiceTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "これをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("どの料理", result.JapaneseReply);
         Assert.DoesNotContain("ご希望でしょうか", result.JapaneseReply);
@@ -1063,6 +1065,7 @@ public class AiRoleplayServiceTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "ラーメンをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("当店はカフェでございますので", result.JapaneseReply);
         Assert.Contains("thực đơn quán cà phê", result.LinguisticFeedback.Summary);
@@ -1087,6 +1090,7 @@ public class AiRoleplayServiceTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "ピザをお願いします。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
         Assert.Contains("医療機関でございますので", result.JapaneseReply);
         Assert.Contains("cơ sở y tế", result.LinguisticFeedback.Summary);
@@ -1174,6 +1178,7 @@ public class AiRoleplayServiceTests
         var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "アニメと猫が好きです。", missions);
 
         Assert.NotNull(result);
+        Assert.NotNull(result.LinguisticFeedback);
         Assert.DoesNotContain("ご注文", result.JapaneseReply);
         Assert.DoesNotContain("ラーメン", result.LinguisticFeedback.NaturalAlternative ?? string.Empty);
         Assert.Contains("切符", result.LinguisticFeedback.NaturalAlternative ?? string.Empty);
