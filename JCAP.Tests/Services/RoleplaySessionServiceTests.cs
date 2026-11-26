@@ -296,9 +296,10 @@ public class RoleplaySessionServiceTests
         using var dbContext = CreateInMemoryDbContext();
         var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
 
-        // user.CreditBalance = 0 (default) → không trừ credit nhưng vẫn hoạt động
-        var user = new ApplicationUser { Id = "user-chat" };
+        var user = new ApplicationUser { Id = "user-chat", CreditBalance = 10 };
         var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
 
         var session = new RoleplaySession
         {
@@ -357,8 +358,9 @@ public class RoleplaySessionServiceTests
         Assert.NotNull(result.Data.UserMessage.LinguisticFeedback);
         Assert.Equal("Warning", result.Data.UserMessage.LinguisticFeedback.Status);
         Assert.Equal("Khá tốt • Cần điều chỉnh nhỏ", result.Data.UserMessage.LinguisticFeedback.Summary);
-        // user.CreditBalance = 0 → creditsSpentThisTurn = 0 (hết credit, được phép tiếp tục nhưng ghi log)
-        Assert.Equal(0, result.Data.CreditsSpentThisTurn);
+        // 1 + ceil((16 + 19) / 50.0) + 0 = 2 credits
+        Assert.Equal(2, result.Data.CreditsSpentThisTurn);
+        Assert.Equal(8, result.Data.CreditBalance);
 
         // Check DB persisted state
         var dbSessionMission = await dbContext.RoleplaySessionMissions.FirstAsync(sm => sm.MissionId == mission.Id);
@@ -428,37 +430,40 @@ public class RoleplaySessionServiceTests
             Message = "ラーメンをください。"
         });
 
-        // Assert
+        // Assert: 1 + ceil((10 + 9) / 50.0) + 0 = 2 credits
         Assert.True(result.Success);
-        Assert.Equal(1, result.Data!.CreditsSpentThisTurn);  // tối thiểu 1 credit
-        Assert.Equal(49, result.Data.CreditBalance);          // 50 - 1 = 49
-        Assert.Equal(49, user.CreditBalance);                 // model được cập nhật
+        Assert.Equal(2, result.Data!.CreditsSpentThisTurn);
+        Assert.Equal(48, result.Data.CreditBalance);          // 50 - 2 = 48
+        Assert.Equal(48, user.CreditBalance);                 // model được cập nhật
 
         // Verify transaction ghi vào DB
         var deductTx = dbContext.CreditTransactions
             .FirstOrDefault(t => t.Type == "Deduct" && t.Description != null && t.Description.Contains("Lượt hội thoại AI"));
         Assert.NotNull(deductTx);
-        Assert.Equal(-1, deductTx!.Amount);
+        Assert.Equal(-2, deductTx!.Amount);
     }
 
     [Fact]
     public void EstimateCreditCost_ReturnsMinimumOne_ForShortReplies()
     {
-        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost(""));
-        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("   "));
-        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("はい。"));           // 3 chars
-        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("かしこまりました。")); // 9 chars
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("", "", 1));
+        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost("   ", "   ", 1));
+        Assert.Equal(2, RoleplaySessionService.EstimateCreditCost("はい。", "はい。", 1));
     }
 
     [Fact]
-    public void EstimateCreditCost_ScalesWithReplyLength()
+    public void EstimateCreditCost_ScalesWithReplyLengthAndContextDepth_AndCapsAtFour()
     {
-        // 30 chars → 30/30 = 1 credit
-        Assert.Equal(1, RoleplaySessionService.EstimateCreditCost(new string('あ', 30)));
-        // 60 chars → 60/30 = 2 credits
-        Assert.Equal(2, RoleplaySessionService.EstimateCreditCost(new string('あ', 60)));
-        // 90 chars → 90/30 = 3 credits
-        Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 90)));
+        // 50 chars -> ceil(50/50)=1, turn 1 (depth=0) -> 1+1+0 = 2
+        Assert.Equal(2, RoleplaySessionService.EstimateCreditCost(new string('あ', 25), new string('い', 25), 1));
+        // 80 chars -> ceil(80/50)=2, turn 1 (depth=0) -> 1+2+0 = 3
+        Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 40), new string('い', 40), 1));
+        // 40 chars -> ceil(40/50)=1, turn 6 (depth=1) -> 1+1+1 = 3
+        Assert.Equal(3, RoleplaySessionService.EstimateCreditCost(new string('あ', 20), new string('い', 20), 6));
+        // 40 chars -> ceil(40/50)=1, turn 13 (depth=2) -> 1+1+2 = 4
+        Assert.Equal(4, RoleplaySessionService.EstimateCreditCost(new string('あ', 20), new string('い', 20), 13));
+        // Clamped at 4
+        Assert.Equal(4, RoleplaySessionService.EstimateCreditCost(new string('あ', 150), new string('い', 150), 20));
     }
 
     [Fact]
@@ -840,6 +845,1100 @@ public class RoleplaySessionServiceTests
         Assert.Equal("PlacementTest", session!.SessionType);
         Assert.Null(session.ScenarioLevelConfigurationId);
         Assert.Equal(0, session.CreditDeducted);
+    }
+
+    [Fact]
+    public void ResolveNpcCode_AndApplyEffortRebate_BehaveDeterministically()
+    {
+        Assert.Equal("SCN_RAMEN_01", RoleplaySessionService.ResolveNpcCode("SCN_RAMEN_01", 1, 5));
+        Assert.Equal("SCN_3", RoleplaySessionService.ResolveNpcCode(null, 3, 9));
+        Assert.Equal("NPC_9", RoleplaySessionService.ResolveNpcCode(null, 0, 9));
+
+        var (rebatedPenalty, isRebated) = AssistancePolicy.ApplyEffortRebate(40, 3, 0.25);
+        Assert.True(isRebated);
+        Assert.Equal(20, rebatedPenalty);
+
+        var (fullPenalty, notRebated) = AssistancePolicy.ApplyEffortRebate(40, 3, 0.90);
+        Assert.False(notRebated);
+        Assert.Equal(40, fullPenalty);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_RecordsHonestTelemetry_ZeroMoraForTextAndRealLowTurnScoreOnError()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-telemetry-honest", CreditBalance = 50 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var session = new RoleplaySession
+        {
+            Id = 505,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active",
+            SessionType = "Standard"
+        };
+        dbContext.RoleplaySessions.Add(session);
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 505,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "もう一度お願いできますか。",
+                VietnameseMeaning = "Bạn nói lại giúp nhé.",
+                CompletedMissionIds = [],
+                IsNaturallyConcluded = false,
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Error",
+                    Summary = "Sai trợ từ và cấu trúc câu",
+                    Details = []
+                }
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var personaMemory = new Mock<IPersonaMemoryService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            loggerMock.Object,
+            errorDetector,
+            telemetryEvaluator,
+            personaMemory.Object);
+
+        var result = await service.SendMessageAsync(user.Id, 505, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンを食べるです",
+            FallbackToTextInput = true,
+            SpeechConfidence = null,
+            MoraRate = null,
+            ResponseLatencySeconds = null
+        });
+
+        Assert.True(result.Success);
+        var signal = await dbContext.LearnerBehaviorSignals
+            .FirstOrDefaultAsync(s => s.SessionId == 505);
+        Assert.NotNull(signal);
+        Assert.Equal(0.0, signal!.MoraRate);
+        Assert.Equal(0, signal.LatencyMs);
+        Assert.True(signal.TurnScore > 0.0 && signal.TurnScore <= 45.0, $"Expected TurnScore in (0, 45], got {signal.TurnScore}");
+    }
+
+    [Fact]
+    public async Task GetIntelligenceProfileAsync_ComputesDynamicLevel_FailStreakAlert_AndRecurringMistakes()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var user = new ApplicationUser { Id = "user-fail-streak", CreditBalance = 20 };
+        var userManagerMock = CreateUserManagerMock(user);
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        dbContext.LearnerIntelligenceProfiles.Add(new LearnerIntelligenceProfile
+        {
+            UserId = user.Id,
+            ThetaEstimate = 0.6,
+            SpeakingReflexIndex = 60,
+            KeigoCommandScore = 62,
+            ParticleAccuracyRate = 65,
+            AverageMoraRate = 3.8,
+            HintDependencyRate = 25,
+            CommunicativeConfidenceScore = 64,
+            CommunicativeProficiencyIndex = 62
+        });
+
+        dbContext.RoleplayResults.AddRange(
+            new RoleplayResult { Id = 701, RoleplaySessionId = 701, UserId = user.Id, ScenarioTitle = "Gọi món Ramen", JLPTLevel = "N5", OverallScore = 82, PassStatus = true, CompletedAt = DateTime.UtcNow.AddDays(-3) },
+            new RoleplayResult { Id = 702, RoleplaySessionId = 702, UserId = user.Id, ScenarioTitle = "Gọi món Ramen", JLPTLevel = "N4", OverallScore = 48, PassStatus = false, CompletedAt = DateTime.UtcNow.AddDays(-2) },
+            new RoleplayResult { Id = 703, RoleplaySessionId = 703, UserId = user.Id, ScenarioTitle = "Mua vé tàu", JLPTLevel = "N4", OverallScore = 51, PassStatus = false, CompletedAt = DateTime.UtcNow.AddDays(-1) }
+        );
+
+        dbContext.LearnerSkillMasteries.Add(new LearnerSkillMastery
+        {
+            UserId = user.Id,
+            SkillCode = "E02_PLACE_DE_NI",
+            SkillName = "Trợ từ tồn tại で vs に (E02)",
+            Category = "Grammar",
+            Stability = 0.8,
+            Difficulty = 6.5,
+            Repetitions = 4,
+            Lapses = 3,
+            LastPracticedUtc = DateTime.UtcNow.AddHours(-2),
+            NextRecommendedReviewUtc = DateTime.UtcNow.AddHours(6)
+        });
+        await dbContext.SaveChangesAsync();
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var personaMemory = new Mock<IPersonaMemoryService>();
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            loggerMock.Object,
+            errorDetector,
+            telemetryEvaluator,
+            personaMemory.Object);
+        var res = await service.GetIntelligenceProfileAsync(user.Id);
+
+        Assert.True(res.Success);
+        Assert.NotNull(res.Data);
+        Assert.Equal(2, res.Data!.ConsecutiveFailCount);
+        Assert.Equal("N5", res.Data.EstimatedJlptLevel);
+        Assert.Equal("N5 (Cơ bản)", res.Data.EstimatedJlptLabel);
+        Assert.Single(res.Data.RecurringMistakes);
+        Assert.Equal(3, res.Data.RecurringMistakes[0].Lapses);
+        Assert.Contains(res.Data.CoachingAlerts, a => a.Severity == "danger" && a.Title.Contains("2 phiên"));
+        Assert.Contains(res.Data.CoachingAlerts, a => a.Severity == "warning" && a.Title.Contains("3 lần"));
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_RejectsZeroCreditNonSubscriptionUser_WithoutCallingAiOrSavingMessage()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-zero-credit", CreditBalance = 0 };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 801,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 801,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.SendMessageAsync(user.Id, 801, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。"
+        });
+
+        Assert.False(result.Success);
+        Assert.Contains("credit", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(await dbContext.RoleplayMessages.Where(m => m.RoleplaySessionId == 801).ToListAsync());
+        Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+        aiMock.Verify(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+        aiMock.Verify(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<string?>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_RejectsSubscriptionUser_WhenQuotaExhaustedAndZeroExtraCredits()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-sub-exhausted",
+            CreditBalance = 0,
+            SubscriptionPlanId = "pro-monthly",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(10)
+        };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.CreditTransactions.Add(new CreditTransaction
+        {
+            UserId = user.Id,
+            Amount = -500,
+            Type = "Deduct",
+            Status = "Paid",
+            CoveredBySubscription = true,
+            Description = "[Gói tháng] Đã dùng hết quota 5h",
+            CreatedAt = DateTime.UtcNow.AddMinutes(-30)
+        });
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 802,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 802,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.SendMessageAsync(user.Id, 802, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。"
+        });
+
+        Assert.False(result.Success);
+        Assert.Contains("hạn ngạch", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(await dbContext.RoleplayMessages.Where(m => m.RoleplaySessionId == 802).ToListAsync());
+        aiMock.Verify(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_AllowsSubscriptionUserWithinQuota_WithoutDeductingCreditBalance()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-sub-active",
+            CreditBalance = 15,
+            SubscriptionPlanId = "pro-monthly",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(20)
+        };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 803,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 803,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました。",
+                VietnameseMeaning = "Toi da hieu."
+            });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.SendMessageAsync(user.Id, 803, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。"
+        });
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(15, user.CreditBalance);
+        Assert.Equal(15, result.Data!.CreditBalance);
+        Assert.True(result.Data.CreditsSpentThisTurn > 0);
+        var subTx = await dbContext.CreditTransactions.SingleAsync(t => t.UserId == user.Id);
+        Assert.Equal("Deduct", subTx.Type);
+        Assert.True(subTx.CoveredBySubscription);
+        userManagerMock.Verify(m => m.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_AllowsAdminViaIdentityRole_WithZeroCreditsAndNoDeduction()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var adminByRole = new ApplicationUser
+        {
+            Id = "user-identity-admin",
+            Role = "Learner",
+            CreditBalance = 0
+        };
+        var userManagerMock = CreateUserManagerMock(adminByRole);
+        userManagerMock.Setup(m => m.GetRolesAsync(adminByRole))
+            .ReturnsAsync(new List<string> { "Admin" });
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 804,
+            UserId = adminByRole.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 804,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "いらっしゃいませ。",
+                VietnameseMeaning = "Kinh chao quy khach."
+            });
+
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.SendMessageAsync(adminByRole.Id, 804, new SendRoleplayMessageRequestDto
+        {
+            Message = "こんにちは。"
+        });
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(0, result.Data!.CreditsSpentThisTurn);
+        Assert.Equal(0, adminByRole.CreditBalance);
+        Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_FailsGracefully_WhenUserNotFound()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var userManagerMock = CreateUserManagerMock(null);
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 805,
+            UserId = "missing-user",
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 805,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.SendMessageAsync("missing-user", 805, new SendRoleplayMessageRequestDto
+        {
+            Message = "こんにちは。"
+        });
+
+        Assert.False(result.Success);
+        Assert.Empty(await dbContext.RoleplayMessages.Where(m => m.RoleplaySessionId == 805).ToListAsync());
+        aiMock.Verify(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_DoesNotDeductCredit_OnPreFlightGuardTurn()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-guard-free", CreditBalance = 10 };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 806,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 806,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        // 1. Pure Vietnamese pre-flight guard (0 LLM tokens)
+        var viGuardResult = await service.SendMessageAsync(user.Id, 806, new SendRoleplayMessageRequestDto
+        {
+            Message = "Cho toi mot to ramen"
+        });
+
+        Assert.True(viGuardResult.Success);
+        Assert.Equal(0, viGuardResult.Data!.CreditsSpentThisTurn);
+        Assert.Equal(10, user.CreditBalance);
+
+        // 2. AcousticConfidenceGuard (< 0.60 confidence, 0 LLM tokens)
+        var lowConfResult = await service.SendMessageAsync(user.Id, 806, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。",
+            SpeechConfidence = 0.45,
+            FallbackToTextInput = false
+        });
+
+        Assert.True(lowConfResult.Success);
+        Assert.Equal(0, lowConfResult.Data!.CreditsSpentThisTurn);
+        Assert.Equal(10, user.CreditBalance);
+        Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_ComputesJapaneseMoraRate_WhenSpeakingDurationProvidedWithoutMoraRate()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-mora-calc", CreditBalance = 20 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 807,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 807,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました。",
+                VietnameseMeaning = "Toi hieu roi.",
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Good",
+                    Summary = "Tot",
+                    Details = []
+                }
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var personaMemory = new Mock<IPersonaMemoryService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            loggerMock.Object,
+            errorDetector,
+            telemetryEvaluator,
+            personaMemory.Object);
+
+        // "ラーメンをください。" = 9 moras; duration 2.0s => 4.5 mora/s
+        var result = await service.SendMessageAsync(user.Id, 807, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。",
+            FallbackToTextInput = false,
+            SpeechConfidence = 0.92,
+            SpeakingDurationSeconds = 2.0,
+            MoraRate = null
+        });
+
+        Assert.True(result.Success);
+        var delivery = result.Data!.UserMessage.LinguisticFeedback?.SpeechDelivery;
+        Assert.NotNull(delivery);
+        Assert.Equal(4.5, delivery!.MoraRate);
+        Assert.Equal(4.5, delivery.SpeechPace);
+
+        var signal = await dbContext.LearnerBehaviorSignals.FirstAsync(s => s.SessionId == 807);
+        Assert.Equal(4.5, signal.MoraRate);
+    }
+
+    [Fact]
+    public async Task GetSessionDetailsAsync_PopulatesHasActiveSubscription_AndResultIdWhenCompleted()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, _) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser
+        {
+            Id = "user-details-sub",
+            CreditBalance = 33,
+            SubscriptionPlanId = "pro-monthly",
+            SubscriptionExpiresAt = DateTime.UtcNow.AddDays(5)
+        };
+        var userManagerMock = CreateUserManagerMock(user);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 808,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Completed",
+            CompletedAt = DateTime.UtcNow
+        });
+        dbContext.RoleplayResults.Add(new RoleplayResult
+        {
+            Id = 9808,
+            RoleplaySessionId = 808,
+            UserId = user.Id,
+            ScenarioTitle = "Gọi món Ramen",
+            JLPTLevel = "N5",
+            OverallScore = 88,
+            PassStatus = true,
+            CompletedAt = DateTime.UtcNow
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        var loggerMock = new Mock<ILogger<RoleplaySessionService>>();
+        var service = CreateRoleplaySessionService(dbContext, userManagerMock.Object, aiMock.Object, loggerMock.Object);
+
+        var result = await service.GetSessionDetailsAsync(user.Id, 808);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.True(result.Data!.HasActiveSubscription);
+        Assert.Equal(9808, result.Data.ResultId);
+        Assert.Equal(33, result.Data.CreditBalance);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_DoesNotPersistUserMessageOrSignal_WhenAiServiceThrows()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-ai-throw", CreditBalance = 10 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 809,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 809,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Simulated AI failure"));
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object,
+            errorDetector,
+            telemetryEvaluator,
+            new Mock<IPersonaMemoryService>().Object);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.SendMessageAsync(user.Id, 809, new SendRoleplayMessageRequestDto
+            {
+                Message = "とんこつラーメンをください。"
+            }));
+
+        Assert.Empty(await dbContext.RoleplayMessages.Where(m => m.RoleplaySessionId == 809).ToListAsync());
+        Assert.Empty(await dbContext.LearnerBehaviorSignals.Where(s => s.SessionId == 809).ToListAsync());
+        Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+        Assert.Equal(10, user.CreditBalance);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_ConcurrentTurnsOnExactBalance_NeverDoubleSpends()
+    {
+        var dbName = $"JCAP_Race_{Guid.NewGuid()}";
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: dbName)
+            .Options;
+
+        using (var seedDb = new AppDbContext(options))
+        {
+            var (_, levelConfig, mission) = SeedBasicScenario(seedDb);
+            seedDb.Users.Add(new ApplicationUser { Id = "user-race-exact", CreditBalance = 2 });
+            seedDb.RoleplaySessions.Add(new RoleplaySession
+            {
+                Id = 810,
+                UserId = "user-race-exact",
+                ScenarioLevelConfigurationId = levelConfig.Id,
+                Status = "Active"
+            });
+            seedDb.RoleplaySessionMissions.Add(new RoleplaySessionMission
+            {
+                RoleplaySessionId = 810,
+                MissionId = mission.Id,
+                IsCompleted = false
+            });
+            await seedDb.SaveChangesAsync();
+        }
+
+        static RoleplaySessionService BuildConcurrentService(AppDbContext db)
+        {
+            var userStore = new Mock<IUserStore<ApplicationUser>>();
+            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
+                userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+
+            userManagerMock.Setup(m => m.FindByIdAsync("user-race-exact"))
+                .Returns(() => db.Users.FirstOrDefaultAsync(u => u.Id == "user-race-exact"));
+            userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .Returns(async (ApplicationUser u) =>
+                {
+                    await db.SaveChangesAsync();
+                    return IdentityResult.Success;
+                });
+
+            var aiMock = new Mock<IAiRoleplayService>();
+            aiMock.Setup(a => a.ProcessTurnAsync(
+                It.IsAny<Scenario>(),
+                It.IsAny<ScenarioLevelConfiguration>(),
+                It.IsAny<List<RoleplayMessage>>(),
+                It.IsAny<string>(),
+                It.IsAny<List<Mission>>(),
+                It.IsAny<CancellationToken>()))
+                .Returns(async (Scenario s, ScenarioLevelConfiguration c, List<RoleplayMessage> h, string u, List<Mission> m, CancellationToken ct) =>
+                {
+                    await Task.Delay(40, ct);
+                    return new AiTurnResult
+                    {
+                        JapaneseReply = "かしこまりました。少々お待ちください。",
+                        VietnameseMeaning = "Toi da hieu.",
+                        CompletedMissionIds = [],
+                        IsNaturallyConcluded = false,
+                        LinguisticFeedback = new LinguisticFeedbackDto
+                        {
+                            Status = "Good",
+                            Summary = "Tot"
+                        }
+                    };
+                });
+
+            var errorDetector = new VietnameseLearnerErrorDetector();
+            var telemetryEvaluator = new TelemetryEvaluatorService(db, errorDetector);
+            return new RoleplaySessionService(
+                db,
+                userManagerMock.Object,
+                aiMock.Object,
+                new Mock<ILogger<RoleplaySessionService>>().Object,
+                errorDetector,
+                telemetryEvaluator,
+                new Mock<IPersonaMemoryService>().Object);
+        }
+
+        using var db1 = new AppDbContext(options);
+        using var db2 = new AppDbContext(options);
+        var svc1 = BuildConcurrentService(db1);
+        var svc2 = BuildConcurrentService(db2);
+
+        var results = await Task.WhenAll(
+            svc1.SendMessageAsync("user-race-exact", 810, new SendRoleplayMessageRequestDto { Message = "ラーメンをください。" }),
+            svc2.SendMessageAsync("user-race-exact", 810, new SendRoleplayMessageRequestDto { Message = "ラーメンをください。" }));
+
+        Assert.Equal(1, results.Count(r => r.Success));
+        Assert.Equal(1, results.Count(r => !r.Success));
+
+        using var verifyDb = new AppDbContext(options);
+        var finalUser = await verifyDb.Users.SingleAsync(u => u.Id == "user-race-exact");
+        Assert.Equal(0, finalUser.CreditBalance);
+
+        var txs = await verifyDb.CreditTransactions.Where(t => t.UserId == "user-race-exact").ToListAsync();
+        Assert.Single(txs);
+        Assert.Equal(-2, txs[0].Amount);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_FailsCleanlyWithoutPersistingMessages_WhenUserManagerUpdateFails()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-update-fail", CreditBalance = 10 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "ConcurrencyFailure", Description = "Conflict" }));
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 811,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 811,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました。",
+                VietnameseMeaning = "Toi da hieu.",
+                LinguisticFeedback = new LinguisticFeedbackDto { Status = "Good", Summary = "Tot" }
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object,
+            errorDetector,
+            telemetryEvaluator,
+            new Mock<IPersonaMemoryService>().Object);
+
+        var result = await service.SendMessageAsync(user.Id, 811, new SendRoleplayMessageRequestDto
+        {
+            Message = "ラーメンをください。"
+        });
+
+        Assert.False(result.Success);
+        Assert.Equal(10, user.CreditBalance);
+        Assert.Empty(await dbContext.RoleplayMessages.Where(m => m.RoleplaySessionId == 811).ToListAsync());
+        Assert.Empty(await dbContext.LearnerBehaviorSignals.Where(s => s.SessionId == 811).ToListAsync());
+        Assert.Empty(await dbContext.CreditTransactions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_ClearsTurnSignalMoraRate_WhenPostAiFuriganaLowersPaceBelowOne()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-mora-sync", CreditBalance = 20 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 812,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 812,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "はい。",
+                VietnameseMeaning = "Vang.",
+                UserFuriganaHtml = "<ruby>一二三<rt>いち</rt></ruby>",
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Good",
+                    Summary = "Tot",
+                    Details = []
+                }
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object,
+            errorDetector,
+            telemetryEvaluator,
+            new Mock<IPersonaMemoryService>().Object);
+
+        // Pre-AI kanji count (3) / 2.6s = 1.2 >= 1.0, but post-AI furigana (<rt>いち</rt>) yields 2 / 2.6s = 0.8 < 1.0
+        var result = await service.SendMessageAsync(user.Id, 812, new SendRoleplayMessageRequestDto
+        {
+            Message = "一二三",
+            FallbackToTextInput = false,
+            SpeechConfidence = 0.90,
+            SpeakingDurationSeconds = 2.6,
+            MoraRate = null
+        });
+
+        Assert.True(result.Success);
+        var delivery = result.Data!.UserMessage.LinguisticFeedback?.SpeechDelivery;
+        Assert.NotNull(delivery);
+        Assert.Null(delivery!.MoraRate);
+
+        var signal = await dbContext.LearnerBehaviorSignals.SingleAsync(s => s.SessionId == 812);
+        Assert.Equal(0.0, signal.MoraRate);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_SyncsTurnSignalMoraRate_WhenLinguisticFeedbackIsNull()
+    {
+        using var dbContext = CreateInMemoryDbContext();
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-mora-null-fb", CreditBalance = 20 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 813,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 813,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "はい。",
+                VietnameseMeaning = "Vang.",
+                UserFuriganaHtml = "<ruby>一二三<rt>いち</rt></ruby>",
+                LinguisticFeedback = null
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object,
+            errorDetector,
+            telemetryEvaluator,
+            new Mock<IPersonaMemoryService>().Object);
+
+        // Pre-AI kanji count (3) / 2.6s = 1.2 >= 1.0, but post-AI furigana (<rt>いち</rt>) yields 2 / 2.6s = 0.8 < 1.0
+        var result = await service.SendMessageAsync(user.Id, 813, new SendRoleplayMessageRequestDto
+        {
+            Message = "一二三",
+            FallbackToTextInput = false,
+            SpeechConfidence = 0.90,
+            SpeakingDurationSeconds = 2.6,
+            MoraRate = null
+        });
+
+        Assert.True(result.Success);
+        var signal = await dbContext.LearnerBehaviorSignals.SingleAsync(s => s.SessionId == 813);
+        Assert.Equal(0.0, signal.MoraRate);
+    }
+
+    private sealed class ThrowingSaveDbContext : AppDbContext
+    {
+        public bool ThrowWhenCreditTransactionAdded { get; set; }
+
+        public ThrowingSaveDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            if (ThrowWhenCreditTransactionAdded
+                && ChangeTracker.Entries<CreditTransaction>().Any(e => e.State == EntityState.Added))
+            {
+                ThrowWhenCreditTransactionAdded = false;
+                throw new DbUpdateException("Simulated SaveChangesAsync failure");
+            }
+            return base.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_DetachesPendingCreditTransactionAndEntities_WhenSaveChangesThrows()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: $"JCAP_SaveThrow_{Guid.NewGuid()}")
+            .Options;
+        using var dbContext = new ThrowingSaveDbContext(options);
+        var (_, levelConfig, mission) = SeedBasicScenario(dbContext);
+
+        var user = new ApplicationUser { Id = "user-save-throw", CreditBalance = 20 };
+        var userManagerMock = CreateUserManagerMock(user);
+        userManagerMock.Setup(m => m.UpdateAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        dbContext.RoleplaySessions.Add(new RoleplaySession
+        {
+            Id = 814,
+            UserId = user.Id,
+            ScenarioLevelConfigurationId = levelConfig.Id,
+            Status = "Active"
+        });
+        dbContext.RoleplaySessionMissions.Add(new RoleplaySessionMission
+        {
+            RoleplaySessionId = 814,
+            MissionId = mission.Id,
+            IsCompleted = false
+        });
+        await dbContext.SaveChangesAsync();
+
+        var aiMock = new Mock<IAiRoleplayService>();
+        aiMock.Setup(a => a.ProcessTurnAsync(
+            It.IsAny<Scenario>(),
+            It.IsAny<ScenarioLevelConfiguration>(),
+            It.IsAny<List<RoleplayMessage>>(),
+            It.IsAny<string>(),
+            It.IsAny<List<Mission>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AiTurnResult
+            {
+                JapaneseReply = "かしこまりました。",
+                VietnameseMeaning = "Toi da hieu.",
+                LinguisticFeedback = new LinguisticFeedbackDto
+                {
+                    Status = "Good",
+                    Summary = "Tot",
+                    Details = []
+                }
+            });
+
+        var errorDetector = new VietnameseLearnerErrorDetector();
+        var telemetryEvaluator = new TelemetryEvaluatorService(dbContext, errorDetector);
+        var service = new RoleplaySessionService(
+            dbContext,
+            userManagerMock.Object,
+            aiMock.Object,
+            new Mock<ILogger<RoleplaySessionService>>().Object,
+            errorDetector,
+            telemetryEvaluator,
+            new Mock<IPersonaMemoryService>().Object);
+
+        dbContext.ThrowWhenCreditTransactionAdded = true;
+
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            service.SendMessageAsync(user.Id, 814, new SendRoleplayMessageRequestDto
+            {
+                Message = "ラーメンをください。"
+            }));
+
+        Assert.DoesNotContain(
+            dbContext.ChangeTracker.Entries<CreditTransaction>(),
+            e => e.State == EntityState.Added);
+        Assert.DoesNotContain(
+            dbContext.ChangeTracker.Entries<RoleplayMessage>(),
+            e => e.State == EntityState.Added);
+        Assert.DoesNotContain(
+            dbContext.ChangeTracker.Entries<LearnerBehaviorSignal>(),
+            e => e.State == EntityState.Added);
     }
 }
 

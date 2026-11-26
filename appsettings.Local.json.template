@@ -1,0 +1,54 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=JCAP_DB;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=true;"
+  },
+  "Jwt": {
+    "Key": "REPLACE_WITH_AT_LEAST_32_CHAR_RANDOM_JWT_SECRET"
+  },
+  "Authentication": {
+    "Google": {
+      "ClientId": "REPLACE_WITH_GOOGLE_CLIENT_ID",
+      "ClientSecret": "REPLACE_WITH_GOOGLE_CLIENT_SECRET",
+      "RedirectUri": "http://localhost:5254/api/auth/google/callback"
+    }
+  },
+  "Gemini": {
+    "ApiKey": "REPLACE_WITH_GEMINI_API_KEY",
+    "Model": "gemini-3.5-flash-lite"
+  },
+  "Email": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "Username": "your-email@example.com",
+    "Password": "REPLACE_WITH_SMTP_APP_PASSWORD",
+    "From": "your-email@example.com",
+    "DisplayName": "JCAP Japanese Learning",
+    "EnableSsl": true
+  },
+  "PayOS": {
+    "ClientId": "REPLACE_WITH_PAYOS_CLIENT_ID",
+    "ApiKey": "REPLACE_WITH_PAYOS_API_KEY",
+    "ChecksumKey": "REPLACE_WITH_PAYOS_CHECKSUM_KEY",
+    "ReturnUrl": "http://localhost:5173/credits/payment-return",
+    "CancelUrl": "http://localhost:5173/credits"
+  },
+  "Cloudinary": {
+    "CloudName": "",
+    "ApiKey": "",
+    "ApiSecret": ""
+  },
+  "Whisper": {
+    "BaseUrl": "http://127.0.0.1:50022",
+    "AutoStart": true,
+    "Token": ""
+  },
+  "VoiceVox": {
+    "BaseUrl": "http://127.0.0.1:50021"
+  },
+  "Shadowing": {
+    "Asr": {
+      "BaseUrl": "http://127.0.0.1:50023",
+      "Token": ""
+    }
+  }
+}

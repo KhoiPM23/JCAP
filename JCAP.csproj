@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <!-- Tự động cài đặt thư viện frontend (npm install) nếu node_modules chưa tồn tại -->
-  <Target Name="EnsureNpmInstall" BeforeTargets="Build" Condition="!Exists('$(SpaRoot)node_modules')">
+  <Target Name="EnsureNpmInstall" BeforeTargets="Build" Condition="!Exists('$(SpaRoot)node_modules') AND '$(SkipEnsureNpmInstall)' != 'true' AND '$(DesignTimeBuild)' != 'true'">
     <Message Importance="high" Text="Tự động cài đặt thư viện frontend (npm install) cho jcap-web..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" ContinueOnError="false" />
   </Target>

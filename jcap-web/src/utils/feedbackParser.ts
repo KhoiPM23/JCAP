@@ -13,11 +13,12 @@ export interface ParsedGeneralFeedback {
 }
 
 const SECTION_MARKERS = [
-  { key: 'turns', label: 'Nhận xét theo lượt:' },
-  { key: 'strengths', label: 'Điểm làm tốt:' },
-  { key: 'improvements', label: 'Điểm cần cải thiện:' },
-  { key: 'naturalAlt', label: 'Cách diễn đạt tự nhiên hơn:' },
-  { key: 'delivery', label: 'Độ trôi chảy & Phát âm:' },
+  { key: 'turns', pattern: /Nhận xét theo lượt:/gi },
+  { key: 'strengths', pattern: /Điểm làm tốt:/gi },
+  { key: 'improvements', pattern: /Điểm cần cải thiện:/gi },
+  { key: 'naturalAlt', pattern: /Cách diễn đạt tự nhiên hơn:/gi },
+  { key: 'delivery', pattern: /Độ trôi chảy\s*&\s*Phát âm(?:\s*\([^)]*\))?:/gi },
+  { key: 'autonomy', pattern: /Mức độ tự chủ giao tiếp:/gi },
 ] as const;
 
 type SectionKey = (typeof SECTION_MARKERS)[number]['key'];
@@ -27,6 +28,15 @@ const stripOuterPunctuation = (value: string): string =>
     .replace(/^[;,\s.:•-]+/, '')
     .replace(/[;\s]+$/, '')
     .trim();
+
+const sanitizeNaturalAltItem = (value: string): string => {
+  return stripOuterPunctuation(
+    value
+      .replace(/Độ trôi chảy\s*&\s*Phát âm[\s\S]*$/i, '')
+      .replace(/Mức độ tự chủ giao tiếp[\s\S]*$/i, '')
+      .replace(/ごちそうさました/g, 'ごちそうさまでした')
+  );
+};
 
 const splitIntoCleanBullets = (rawSegment?: string): string[] => {
   if (!rawSegment) return [];
@@ -85,7 +95,7 @@ export const parseGeneralFeedbackSections = (rawText?: string | null): ParsedGen
 
   const hits: Array<{ key: SectionKey; index: number; endOfMarker: number }> = [];
   for (const marker of SECTION_MARKERS) {
-    const regex = new RegExp(marker.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    const regex = new RegExp(marker.pattern.source, 'gi');
     let match: RegExpExecArray | null;
     while ((match = regex.exec(normalized)) !== null) {
       hits.push({
@@ -125,7 +135,7 @@ export const parseGeneralFeedbackSections = (rawText?: string | null): ParsedGen
   const naturalAlternatives = rawBuckets.naturalAlt
     ? rawBuckets.naturalAlt
         .split(/\s*\|\s*/)
-        .map(stripOuterPunctuation)
+        .map(sanitizeNaturalAltItem)
         .filter(Boolean)
     : [];
 

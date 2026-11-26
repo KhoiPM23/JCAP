@@ -1,7 +1,8 @@
 import type { ApiResponse } from '../types/auth';
 import type { ScenarioDetails, ScenarioListItem, GeneratedLevelContent, ScenarioTopic, AiGeneratedScenario } from '../types/scenarioDetails';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const API_BASE_URL = '/api/scenarios';
+const API_BASE_URL = resolveApiUrl('/api/scenarios');
 
 export const scenarioService = {
   async getScenarios(query?: string, topic?: string): Promise<ApiResponse<ScenarioListItem[]>> {
@@ -122,7 +123,7 @@ export const scenarioService = {
   async getAiStatus(): Promise<ApiResponse<{ modelId: string; displayName: string; isReady: boolean; mode: string }>> {
     const token = localStorage.getItem('jcap_token');
     try {
-      const response = await fetch('/api/admin/scenarios/ai-status', {
+      const response = await fetch(resolveApiUrl('/api/admin/scenarios/ai-status'), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +176,7 @@ export const scenarioService = {
   async getAdminScenarioDetails(scenarioId: number): Promise<ApiResponse<ScenarioDetails>> {
     const token = localStorage.getItem('jcap_token');
     try {
-      const response = await fetch(`/api/admin/scenarios/${scenarioId}`, {
+      const response = await fetch(resolveApiUrl(`/api/admin/scenarios/${scenarioId}`), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +205,7 @@ export const scenarioService = {
   ): Promise<ApiResponse<GeneratedLevelContent>> {
     const token = localStorage.getItem('jcap_token');
     try {
-      const response = await fetch('/api/admin/scenarios/generate-level-content', {
+      const response = await fetch(resolveApiUrl('/api/admin/scenarios/generate-level-content'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,7 +236,7 @@ export const scenarioService = {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/admin/scenarios/upload-thumbnail', {
+      const response = await fetch(resolveApiUrl('/api/admin/scenarios/upload-thumbnail'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -256,7 +257,7 @@ export const scenarioService = {
   ): Promise<ApiResponse<AiGeneratedScenario>> {
     const token = localStorage.getItem('jcap_token');
     try {
-      const response = await fetch('/api/admin/scenarios/ai-generate', {
+      const response = await fetch(resolveApiUrl('/api/admin/scenarios/ai-generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -15,8 +15,9 @@ import type {
   ToggleBookmarkResponse,
 } from '../types/flashcard';
 import { creditService } from './creditService';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const BASE_URL = '/api/flashcards';
+const BASE_URL = resolveApiUrl('/api/flashcards');
 
 // Tự động dọn dẹp các key mock cũ còn sót trong localStorage
 try {
@@ -348,7 +349,7 @@ class FlashcardService {
         payload.vocabularyId = itemId;
       }
 
-      const res = await fetch('/api/bookmarks/toggle', {
+      const res = await fetch(resolveApiUrl('/api/bookmarks/toggle'), {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(payload),
@@ -376,7 +377,7 @@ class FlashcardService {
       if (jlptLevel && jlptLevel !== 'All') params.append('jlptLevel', jlptLevel);
       if (keyword && keyword.trim()) params.append('keyword', keyword.trim());
 
-      const res = await fetch(`/api/bookmarks?${params.toString()}`, {
+      const res = await fetch(resolveApiUrl(`/api/bookmarks?${params.toString()}`), {
         headers: this.getHeaders(),
       });
 

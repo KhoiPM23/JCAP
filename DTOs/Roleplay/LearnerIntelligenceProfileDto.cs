@@ -146,6 +146,58 @@ namespace JCAP.DTOs.Roleplay
         /// Danh sách kỹ năng / từ vựng cần ôn tập hoặc vừa củng cố theo thuật toán FSRS
         /// </summary>
         public List<LearnerSkillMasteryItemDto> DueReviewItems { get; set; } = new();
+
+        /// <summary>
+        /// Trình độ thực lực ước lượng động liên tục theo lịch sử hành vi (N5 / N4 / N3)
+        /// </summary>
+        public string EstimatedJlptLevel { get; set; } = "N5";
+
+        /// <summary>
+        /// Nhãn hiển thị trình độ thực lực tiếng Việt gọn gàng
+        /// </summary>
+        public string EstimatedJlptLabel { get; set; } = "N5 (Cơ bản)";
+
+        /// <summary>
+        /// Xu hướng phong độ gần đây: "Improving" | "Stable" | "Declining"
+        /// </summary>
+        public string ProficiencyTrend { get; set; } = "Stable";
+
+        /// <summary>
+        /// Số phiên Chưa đạt liên tiếp tính từ phiên gần nhất
+        /// </summary>
+        public int ConsecutiveFailCount { get; set; }
+
+        /// <summary>
+        /// Các lỗi hay lặp lại nhiều lần (>= 2 lần) để cảnh báo cho người học
+        /// </summary>
+        public List<RecurringMistakeDto> RecurringMistakes { get; set; } = new();
+
+        /// <summary>
+        /// Thông điệp nhắc nhở / cảnh báo học tập dựa trên fail liên tiếp và lỗi lặp lại
+        /// </summary>
+        public List<LearnerCoachingAlertDto> CoachingAlerts { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Lỗi ngữ pháp / kỹ năng lặp lại nhiều lần của học viên
+    /// </summary>
+    public class RecurringMistakeDto
+    {
+        public string SkillCode { get; set; } = string.Empty;
+        public string SkillName { get; set; } = string.Empty;
+        public int Lapses { get; set; }
+    }
+
+    /// <summary>
+    /// Cảnh báo & nhắc nhở định hướng học tập dựa trên hành vi gần đây
+    /// </summary>
+    public class LearnerCoachingAlertDto
+    {
+        /// <summary>"danger" | "warning" | "positive"</summary>
+        public string Severity { get; set; } = "warning";
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string? SuggestedAction { get; set; }
     }
 
     /// <summary>

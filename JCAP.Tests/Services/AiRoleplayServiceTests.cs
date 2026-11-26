@@ -1139,4 +1139,117 @@ public class AiRoleplayServiceTests
         Assert.Contains("外国語は分かりませんので", result.JapaneseReply);
         Assert.DoesNotContain("日本語が分かりませんので", result.JapaneseReply);
     }
+
+    [Fact]
+    public async Task ProcessTurnAsync_NonDiningOffTopic_UsesContextAwareFallbackWithoutRamenLeak()
+    {
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok("""
+            {
+              "userVietnameseMeaning": "Tôi thích anime và mèo",
+              "replyJapanese": "なるほど、そうなんですね。",
+              "replyVietnamese": "Ra vậy ạ.",
+              "completedMissionIds": [],
+              "isNaturallyConcluded": false,
+              "linguisticFeedback": { "status": "Good", "summary": "Ổn", "details": [] }
+            }
+            """));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { ScenarioCode = "SCN_TRANSIT_01", Title = "Hỏi đường & mua vé tàu tại ga Shinjuku" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên nhà ga" };
+        var history = new List<RoleplayMessage>
+        {
+            new() { Sender = "Ai", JapaneseText = "いらっしゃいませ。どちらまで行かれますか？" }
+        };
+        var missions = new List<Mission>
+        {
+            new() { Id = 1, Order = 1, Content = "Mua vé tàu đi Shinjuku", CompletionCriteriaJson = "{}" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "アニメと猫が好きです。", missions);
+
+        Assert.NotNull(result);
+        Assert.DoesNotContain("ご注文", result.JapaneseReply);
+        Assert.DoesNotContain("ラーメン", result.LinguisticFeedback.NaturalAlternative ?? string.Empty);
+        Assert.Contains("切符", result.LinguisticFeedback.NaturalAlternative ?? string.Empty);
+    }
+
+    [Fact]
+    public void NormalizeLinguisticFeedback_CapsDetailsToTwoAndTrimsVerboseText()
+    {
+        var raw = new LinguisticFeedbackDto
+        {
+            Status = "Warning",
+            Summary = "Nên dùng thể lịch sự (Desu/Masu) và hoàn chỉnh câu giao tiếp trang trọng trong môi trường dịch vụ tại Nhật Bản để người nghe hiểu rõ",
+            Details =
+            [
+                new() { Type = "success", Aspect = "Ngữ cảnh", Comment = "Đúng ý người nói trong bối cảnh chào hỏi đầu phiên." },
+                new() { Type = "warning", Aspect = "Văn phong (Teineigo)", Comment = "Câu còn thiếu đuôi thể lịch sự (Desu/Masu), nên nói đầy đủ hơn để lịch sự với đối phương khi gọi món trong quán." },
+                new() { Type = "error", Aspect = "Trợ từ", Comment = "Sai trợ từ nối vị ngữ." },
+                new() { Type = "warning", Aspect = "Trùng", Comment = "Sai trợ từ nối vị ngữ." }
+            ],
+            CulturalTip = "Trong văn hóa phục vụ Nhật Bản, nhân viên thường xác nhận lại yêu cầu của khách bằng kính ngữ rất cẩn thận và luôn giữ khoảng cách lịch thiệp khi nói chuyện."
+        };
+
+        var normalized = AiRoleplayService.NormalizeLinguisticFeedback(raw);
+
+        Assert.True(normalized.Summary.Length <= 90);
+        Assert.DoesNotContain("(Desu/Masu)", normalized.Summary);
+        Assert.Equal(2, normalized.Details.Count);
+        Assert.Equal("error", normalized.Details[0].Type);
+        Assert.Equal("warning", normalized.Details[1].Type);
+        Assert.DoesNotContain("(Teineigo)", normalized.Details[1].Aspect);
+        Assert.True((normalized.CulturalTip ?? string.Empty).Length <= 140);
+    }
+
+    [Fact]
+    public async Task ProcessTurnAsync_RegeneratesFurigana_OnMismatchKanjiRtOrForeignOverride()
+    {
+        // 1. Mismatched ruby text & Kanji inside <rt> for userFuriganaHtml
+        var mockAiClient = new Mock<IAiClient>();
+        mockAiClient.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""replyJapanese"": ""豚骨ラーメンですね。少々お待ちください。"",
+                ""replyFuriganaHtml"": ""<ruby>味噌<rt>みそ</rt></ruby>ラーメンですね。"",
+                ""replyVietnamese"": ""Vâng mì tonkotsu ạ."",
+                ""userFuriganaHtml"": ""<ruby>豚骨<rt>豚骨</rt></ruby>ラーメンをお願いします。"",
+                ""completedMissionIds"": [],
+                ""isNaturallyConcluded"": false,
+                ""linguisticFeedback"": { ""status"": ""Good"", ""summary"": ""Tốt"", ""details"": [] }
+            }"));
+
+        var service = new AiRoleplayService(mockAiClient.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var scenario = new Scenario { Title = "Gọi món tại quán mì Ramen" };
+        var levelConfig = new ScenarioLevelConfiguration { JLPTLevel = "N5", AiPersona = "Nhân viên quán mì" };
+        var history = new List<RoleplayMessage>
+        {
+            new() { Sender = "Ai", JapaneseText = "いらっしゃいませ！ご注文はお決まりですか？" }
+        };
+
+        var result = await service.ProcessTurnAsync(scenario, levelConfig, history, "豚骨ラーメンをお願いします。", []);
+
+        Assert.Equal("豚骨ラーメンですね。少々お待ちください。", RoleplaySocialRegister.StripRubyTags(result.FuriganaHtml));
+        Assert.Contains("<ruby>豚骨<rt>とんこつ</rt></ruby>", result.FuriganaHtml);
+        Assert.Equal("豚骨ラーメンをお願いします。", RoleplaySocialRegister.StripRubyTags(result.UserFuriganaHtml));
+        Assert.DoesNotContain("<rt>豚骨</rt>", result.UserFuriganaHtml ?? string.Empty);
+
+        // 2. Foreign-language PreFlightGuard and OpeningMessage parity
+        var foreignMock = new Mock<IAiClient>();
+        foreignMock.Setup(c => c.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AiResponse.Ok(@"{
+                ""replyJapanese"": ""いらっしゃいませ！何名様ですか？"",
+                ""replyFuriganaHtml"": ""<ruby>注文<rt>注文</rt></ruby>ですか？"",
+                ""replyVietnamese"": ""Kinh chao quy khach!""
+            }"));
+
+        var foreignService = new AiRoleplayService(foreignMock.Object, new Mock<ILogger<AiRoleplayService>>().Object);
+        var foreignResult = await foreignService.ProcessTurnAsync(scenario, levelConfig, history, "toi muon goi", []);
+        Assert.Equal(foreignResult.JapaneseReply, RoleplaySocialRegister.StripRubyTags(foreignResult.FuriganaHtml));
+
+        var openingResult = await foreignService.GenerateOpeningMessageAsync(scenario, levelConfig);
+        Assert.Equal("いらっしゃいませ！何名様ですか？", RoleplaySocialRegister.StripRubyTags(openingResult.FuriganaHtml));
+        Assert.Contains("<ruby>何名様<rt>なんめいさま</rt></ruby>", openingResult.FuriganaHtml);
+    }
 }

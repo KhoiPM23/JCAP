@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<Props, State> {
     error: null,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
@@ -34,8 +34,12 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-[360px] w-full flex-col items-center justify-center p-8 text-center bg-white rounded-3xl border border-red-200 shadow-sm font-sans my-4 select-none">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600 mb-4 shadow-xs">
-            ⚠️
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 mb-4 shadow-xs">
+            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
           </div>
           <h2 className="text-base font-bold text-slate-800">
             {this.props.fallbackTitle || 'Đã xảy ra lỗi hiển thị tạm thời'}

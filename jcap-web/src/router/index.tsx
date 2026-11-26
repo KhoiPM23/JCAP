@@ -16,6 +16,7 @@ import { RoleplayPracticeView } from '../views/RoleplayPracticeView';
 import { PlacementTestRoomView } from '../views/PlacementTestRoomView';
 import { PlacementTestHistoryView } from '../views/PlacementTestHistoryView';
 import { LearnerProfileView } from '../views/LearnerProfileView';
+import { LearnerCompetencyView } from '../views/LearnerCompetencyView';
 import { StampBookView } from '../views/explore/StampBookView';
 import { UpdateProfileView } from '../views/UpdateProfileView';
 import { CreditPackagesView } from '../views/CreditPackagesView';
@@ -499,6 +500,7 @@ export const AppRouter: React.FC = () => {
         
         {/* UC07: Xem ho so hoc vien */}
         <Route path="/profile" element={<LearnerProfileView />} />
+        <Route path="/profile/competency" element={<LearnerCompetencyView />} />
 
         {/* UC08: Cap nhat ho so hoc vien */}
         <Route path="/profile/edit" element={<UpdateProfileView />} />
@@ -526,9 +528,15 @@ export const AppRouter: React.FC = () => {
         <Route path="/forum" element={<CommunityForumView />} />
       </Route>
 
-      {/* Temporary Development-Only Showcase Route */}
-      <Route path="/dev/ui-foundation" element={<DevShowcaseView />} />
-      <Route path="/voicevox-test" element={<VoiceVoxTestView />} />
+      {/* Development-Only Showcase & Diagnostics Routes */}
+      <Route
+        path="/dev/ui-foundation"
+        element={import.meta.env.DEV ? <DevShowcaseView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/voicevox-test"
+        element={import.meta.env.DEV ? <VoiceVoxTestView /> : <Navigate to="/" replace />}
+      />
 
       {/* Wildcard */}
       <Route path="*" element={<Navigate to="/login" replace />} />

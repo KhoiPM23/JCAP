@@ -4,8 +4,9 @@ import type {
   RoleplayResultDetail,
   RoleplayResultHistoryResponse,
 } from '../types/roleplayResult';
+import { resolveApiUrl } from '../utils/apiBase';
 
-const BASE_URL = '/api/roleplay';
+const BASE_URL = resolveApiUrl('/api/roleplay');
 
 class RoleplayResultService {
   private getHeaders(): HeadersInit {

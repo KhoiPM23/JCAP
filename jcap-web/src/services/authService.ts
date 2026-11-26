@@ -7,8 +7,10 @@ import type {
   RegisterResponseDto,
   ResetPasswordPayload,
 } from '../types/auth';
+import { resolveApiUrl } from '../utils/apiBase.ts';
 
-const API_BASE = ''; // Trong Vite dev proxy, các request /api sẽ tự động chuyển tiếp tới backend http://localhost:5254
+const BACKEND_UNREACHABLE_MESSAGE =
+  'Không thể kết nối đến máy chủ Backend. Vui lòng kiểm tra kết nối mạng hoặc trạng thái dịch vụ API.';
 
 async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
   const text = await response.text();
@@ -30,7 +32,7 @@ async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
     if (response.status === 502 || response.status === 503 || response.status === 504 || response.status === 500) {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ Backend (http://localhost:5254). Vui lòng đảm bảo server ASP.NET Core đang chạy (dotnet run).',
+        message: BACKEND_UNREACHABLE_MESSAGE,
       };
     }
 
@@ -56,7 +58,7 @@ export const authService = {
    */
   async login(payload: LoginPayload): Promise<ApiResponse<AuthResponseDto>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(resolveApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,10 +67,10 @@ export const authService = {
       });
 
       return await parseResponse<AuthResponseDto>(response);
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ Backend (http://localhost:5254). Vui lòng kiểm tra xem bạn đã chạy `dotnet run` ở thư mục backend chưa.',
+        message: BACKEND_UNREACHABLE_MESSAGE,
       };
     }
   },
@@ -78,7 +80,7 @@ export const authService = {
    */
   async register(payload: RegisterPayload): Promise<ApiResponse<RegisterResponseDto>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const response = await fetch(resolveApiUrl('/api/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,10 +95,10 @@ export const authService = {
       });
 
       return await parseResponse<RegisterResponseDto>(response);
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
-        message: 'Không thể kết nối đến máy chủ Backend (http://localhost:5254). Vui lòng kiểm tra xem bạn đã chạy `dotnet run` ở thư mục backend chưa.',
+        message: BACKEND_UNREACHABLE_MESSAGE,
       };
     }
   },
@@ -106,7 +108,7 @@ export const authService = {
    */
   async resendConfirmationEmail(email: string): Promise<ApiResponse<string>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/resend-confirmation-email`, {
+      const response = await fetch(resolveApiUrl('/api/auth/resend-confirmation-email'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +130,7 @@ export const authService = {
    */
   async getCurrentUser(token: string): Promise<ApiResponse<AuthResponseDto>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/me`, {
+      const response = await fetch(resolveApiUrl('/api/auth/me'), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +139,7 @@ export const authService = {
       });
 
       return await parseResponse<AuthResponseDto>(response);
-    } catch (err: any) {
+    } catch {
       return {
         success: false,
         message: 'Không thể kết nối đến máy chủ Backend.',
@@ -147,7 +149,7 @@ export const authService = {
 
   async forgotPassword(email: string): Promise<ApiResponse<string>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      const response = await fetch(resolveApiUrl('/api/auth/forgot-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -164,7 +166,7 @@ export const authService = {
 
   async resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse<string>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      const response = await fetch(resolveApiUrl('/api/auth/reset-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -181,7 +183,7 @@ export const authService = {
 
   async changePassword(payload: ChangePasswordPayload, token: string): Promise<ApiResponse<string>> {
     try {
-      const response = await fetch(`${API_BASE}/api/auth/change-password`, {
+      const response = await fetch(resolveApiUrl('/api/auth/change-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +213,7 @@ export const authService = {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE}/api/auth/logout`, {
+      const response = await fetch(resolveApiUrl('/api/auth/logout'), {
         method: 'POST',
         headers,
       });
@@ -226,9 +228,9 @@ export const authService = {
   },
 
   /**
-   * Lấy đường dẫn điều hướng đến Google OAuth (trỏ trực tiếp vào backend endpoint)
+   * Lấy đường dẫn điều hướng đến Google OAuth endpoint của backend
    */
   getGoogleLoginUrl(): string {
-    return 'http://localhost:5254/api/auth/google';
+    return resolveApiUrl('/api/auth/google');
   },
 };

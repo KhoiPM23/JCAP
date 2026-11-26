@@ -6,6 +6,7 @@ import { roleplayService } from '../services/roleplayService';
 import { scenarioVoiceService } from '../services/scenarioVoiceService';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
+import { resolveMediaUrl } from '../utils/apiBase';
 import { useAuth } from '../contexts/AuthContext';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { AlertCircleIcon, RefreshIcon, CompassIcon, VolumeIcon } from '../components/common/Icons';
@@ -311,7 +312,7 @@ export const ScenarioDetailsView: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5">
               <div className="relative group overflow-hidden rounded-xl border border-[var(--line)]/80 bg-[var(--paper-100)] w-full sm:w-32 md:w-36 aspect-[16/9] sm:aspect-square shrink-0">
                 <img
-                  src={scenario.thumbnail || '/images/scenario-placeholder.svg'}
+                  src={resolveMediaUrl(scenario.thumbnail) || '/images/scenario-placeholder.svg'}
                   alt={scenario.title}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/images/scenario-placeholder.svg';
@@ -732,20 +733,38 @@ export const ScenarioDetailsView: React.FC = () => {
                     const cleanMeaning = cleanPedagogicMeaning(grammar.meaning);
 
                     return (
-                      <div key={grammar.id} className="py-3 first:pt-3.5 last:pb-3.5 space-y-1">
+                      <div key={grammar.id} className="py-3 first:pt-3.5 last:pb-3.5 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap justify-between">
                           <p className="font-bold font-mono text-xs text-[var(--ai)]">
                             {grammar.pattern}
                           </p>
-                          {formulaMatch && (
-                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
-                              {formulaMatch[1]}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {formulaMatch && (
+                              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--ai-soft)] text-[var(--ai)] font-medium">
+                                {formulaMatch[1]}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void scenarioVoiceService.playAiSpeech(
+                                grammar.exampleSentence || grammar.pattern, 2
+                              )}
+                              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--paper-50)] text-[var(--ai)] transition hover:bg-[var(--ai)] hover:text-white active:scale-90 cursor-pointer"
+                              title={`Nghe câu mẫu: ${grammar.exampleSentence || grammar.pattern}`}
+                              aria-label={`Nghe phát âm mẫu ${grammar.pattern}`}
+                            >
+                              <VolumeIcon className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-xs text-[var(--sumi-muted)] font-medium leading-snug">
                           {cleanMeaning}
                         </p>
+                        {grammar.exampleSentence && (
+                          <p className="text-[11px] text-[var(--sumi)] font-jp leading-snug bg-[var(--paper-100)] rounded-lg px-2.5 py-1.5 border border-[var(--line)]/60">
+                            {grammar.exampleSentence}
+                          </p>
+                        )}
                       </div>
                     );
                   })

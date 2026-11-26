@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Badge as JBadge, Button as JButton, Icon as JIcon, IconButton as JIconButton, JlptBadge as JJlptBadge, Logo as JLogo } from '../../components/jcap';
 import { getPracticePrefs } from '../../utils/practicePrefs';
+import { resolveMediaUrl } from '../../utils/apiBase';
 import { shadowingService } from '../../services/shadowingService';
 import { shadowingStorageService } from '../../services/shadowingStorageService';
 import type {
@@ -780,7 +781,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
     const prefetchSequence = async () => {
       // Ưu tiên số 1: Tải câu hiện tại
       const current = sentences[currentSentenceIndex];
-      if (current?.japaneseText && (!current.nativeAudioUrl || !current.nativeAudioUrl.startsWith('http'))) {
+      if (current?.japaneseText && !resolveMediaUrl(current.nativeAudioUrl)) {
         await voicevoxService.prefetchAudio(current.japaneseText, selectedVoiceVoxId);
       }
       if (isCancelled) return;
@@ -789,7 +790,7 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       const nextSentences = sentences.slice(currentSentenceIndex + 1, currentSentenceIndex + 3);
       for (const s of nextSentences) {
         if (isCancelled) return;
-        if (s.japaneseText && (!s.nativeAudioUrl || !s.nativeAudioUrl.startsWith('http'))) {
+        if (s.japaneseText && !resolveMediaUrl(s.nativeAudioUrl)) {
           await voicevoxService.prefetchAudio(s.japaneseText, selectedVoiceVoxId);
         }
       }
@@ -909,8 +910,9 @@ export const LearnerShadowingPracticeView: React.FC = () => {
       window.speechSynthesis.cancel();
     }
 
-    if (url && url.startsWith('http')) {
-      const audio = new Audio(url);
+    const resolvedAudioUrl = resolveMediaUrl(url);
+    if (resolvedAudioUrl) {
+      const audio = new Audio(resolvedAudioUrl);
       audioPlayerRef.current = audio;
       setIsPlayingAudio(true);
 

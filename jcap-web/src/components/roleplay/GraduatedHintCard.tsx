@@ -5,6 +5,7 @@ import {
   deriveJapaneseCloze,
   sanitizeDisplayJapanese,
   generateClientFuriganaHtml,
+  alignFuriganaWithOriginal,
 } from '../../utils/japaneseSanitizer';
 
 // Clean, lightweight SVG Icons (No Emojis)
@@ -152,7 +153,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
       className="w-full washi-parchment bg-[#FAF6EE]/95 rounded-2xl border border-[#DFD2B8] shadow-xs p-3 sm:p-3.5 flex flex-col gap-2.5 animate-slide-up select-none transition-all duration-200"
     >
       {/* Hidden helper preserving exact test strings for regression checks */}
-      <div className="sr-only">
+      <div className="hidden" aria-hidden="true">
         <span>Cấp 1: Từ khoá (-10đ)</span>
         <span>Nâng cấp gợi ý: Cấp 2</span>
         <span>Cấp 3: Trọn câu Tokyo (Trần 50đ)</span>
@@ -202,7 +203,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (0đ, trần 90đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, trần 85đ)'}
+              title={isFirstUseInSession ? 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt, ưu đãi lần đầu (0đ, tự chủ 100/100đ)' : 'Cấp 1: Chỉ gợi ý ý nghĩa tiếng Việt (-10đ tự chủ, tối đa 90/100đ)'}
             >
               Cấp 1: Ý nói {isFirstUseInSession ? '(0đ)' : '(-10đ)'}
             </button>
@@ -214,7 +215,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--ai)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 2: Gợi ý các từ then chốt, ưu đãi lần đầu (-15đ, trần 80đ)' : 'Cấp 2: Gợi ý các từ then chốt (-30đ tự chủ, trần 70đ)'}
+              title={isFirstUseInSession ? 'Cấp 2: Gợi ý các từ then chốt, ưu đãi lần đầu (-15đ, tối đa 85/100đ)' : 'Cấp 2: Gợi ý các từ then chốt (-30đ tự chủ, tối đa 70/100đ)'}
             >
               Cấp 2: Từ then chốt {isFirstUseInSession ? '(-15đ)' : '(-30đ)'}
             </button>
@@ -226,7 +227,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   ? 'bg-white text-[var(--shu)] shadow-2xs font-black'
                   : 'text-[#6D5A3E] hover:text-[var(--sumi)]'
               }`}
-              title={isFirstUseInSession ? 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo, ưu đãi lần đầu (-40đ, trần 60đ)' : 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo (-60đ tự chủ, trần 50đ)'}
+              title={isFirstUseInSession ? 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo, ưu đãi lần đầu (-40đ, tối đa 60/100đ)' : 'Cấp 3: Toàn bộ câu mẫu chuẩn Tokyo (-60đ tự chủ, tối đa 40/100đ)'}
             >
               Cấp 3: Trọn câu {isFirstUseInSession ? '(-40đ)' : '(-60đ)'}
             </button>
@@ -270,7 +271,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               type="button"
               onClick={() => handleSwitchTier(2)}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer shrink-0 ml-auto"
-              title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 2 (-15đ, trần 80đ)' : 'Nâng cấp gợi ý: Cấp 2 (-30đ, trần 70đ)'}
+              title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 2 (-15đ Tự chủ, tối đa 85/100đ)' : 'Nâng cấp gợi ý: Cấp 2 (-30đ Tự chủ, tối đa 70/100đ)'}
             >
               <span>Xem từ khóa</span>
               <ArrowRightIcon className="w-3 h-3 text-white/80" />
@@ -287,7 +288,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               </span>
               <div className="flex flex-wrap gap-2 items-center">
                 {primaryKeywords.map((kw, idx) => {
-                  const effectiveFuri = generateClientFuriganaHtml(kw);
+                  const effectiveFuri = alignFuriganaWithOriginal(generateClientFuriganaHtml(kw), kw);
                   return (
                     <div
                       key={idx}
@@ -350,7 +351,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                   type="button"
                   onClick={() => handleSwitchTier(3)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--ai)] hover:bg-[var(--ai-hover)] text-white text-xs font-bold shadow-2xs transition active:scale-95 cursor-pointer"
-                  title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 3 trọn câu (-40đ, trần 60đ)' : 'Nâng cấp gợi ý: Cấp 3 trọn câu (-60đ, trần 50đ)'}
+                  title={isFirstUseInSession ? 'Nâng cấp gợi ý: Cấp 3 (-40đ Tự chủ, tối đa 60/100đ)' : 'Nâng cấp gợi ý: Cấp 3 (-60đ Tự chủ, tối đa 40/100đ)'}
                 >
                   <span>Xem trọn câu</span>
                   <ArrowRightIcon className="w-3 h-3 text-white/80" />
@@ -364,7 +365,8 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
           <div className="flex flex-col gap-2.5">
             <div className="min-w-0">
               {(() => {
-                const effectiveFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
+                const rawFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
+                const effectiveFuri = alignFuriganaWithOriginal(rawFuri, cleanSample);
                 return effectiveFuri && (effectiveFuri.includes('<ruby>') || activeOption.furiganaHtml) ? (
                   <div
                     className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words"

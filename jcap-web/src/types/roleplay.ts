@@ -118,6 +118,8 @@ export interface RoleplaySessionDetailsDto {
   creditDeducted?: number;
   creditCost?: number;
   creditBalance?: number;
+  hasActiveSubscription?: boolean;
+  resultId?: number | null;
   isNaturallyConcluded: boolean;
   createdAt?: string;
   startedAt?: string;
@@ -157,6 +159,7 @@ export interface RoleplayTurnResponseDto {
   allMissionsCompleted?: boolean;
   isNaturallyConcluded: boolean;
   creditBalance?: number;
+  creditsSpentThisTurn?: number;
   sessionStatus?: string;
   detectedIssues?: DetectedGrammarIssue[];
   speedScale?: number;
@@ -239,4 +242,15 @@ export interface LearnerIntelligenceProfileDto {
   predictedSuccessRateNextScenario?: number;
   adaptiveLearningPathStatus?: string;
   dueReviewItems?: LearnerSkillMasteryItemDto[];
+  estimatedJlptLevel?: string;
+  estimatedJlptLabel?: string;
+  proficiencyTrend?: 'Improving' | 'Stable' | 'Declining' | string;
+  consecutiveFailCount?: number;
+  recurringMistakes?: { skillCode: string; skillName: string; lapses: number }[];
+  coachingAlerts?: {
+    severity: 'danger' | 'warning' | 'positive' | string;
+    title: string;
+    message: string;
+    suggestedAction?: string;
+  }[];
 }

@@ -13,15 +13,18 @@ public class SttController : ControllerBase
 {
     private readonly IWhisperSttService _whisperService;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SttController> _logger;
 
     public SttController(
         IWhisperSttService whisperService,
         IWebHostEnvironment environment,
+        IConfiguration configuration,
         ILogger<SttController> logger)
     {
         _whisperService = whisperService;
         _environment = environment;
+        _configuration = configuration;
         _logger = logger;
     }
 
@@ -118,12 +121,21 @@ public class SttController : ControllerBase
     [HttpGet("health")]
     public async Task<ActionResult<ApiResponse<object>>> Health(CancellationToken cancellationToken)
     {
+        var rawUrl = _configuration["Whisper:BaseUrl"];
+        var configured = !string.IsNullOrWhiteSpace(rawUrl)
+            && Uri.TryCreate(rawUrl.Trim(), UriKind.Absolute, out _);
+        var effectiveUrl = configured ? rawUrl!.Trim() : "http://127.0.0.1:50022";
+        var port = Uri.TryCreate(effectiveUrl, UriKind.Absolute, out var uri) && uri.Port > 0
+            ? uri.Port
+            : 50022;
+
         var isAvailable = await _whisperService.IsAvailableAsync(cancellationToken);
         var status = new
         {
             available = isAvailable,
             engine = "faster-whisper",
-            port = 50022
+            port,
+            configured
         };
 
         return Ok(ApiResponse<object>.Ok(status, isAvailable ? "Whisper Engine đang hoạt động." : "Whisper Engine chưa được bật."));

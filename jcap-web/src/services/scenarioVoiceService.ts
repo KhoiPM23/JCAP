@@ -1,4 +1,5 @@
 import { cleanJapaneseForTts } from '../utils/japaneseSanitizer';
+import { resolveApiUrl } from '../utils/apiBase';
 import { voicevoxService, type VoiceOption } from './voicevoxService';
 
 /**
@@ -523,6 +524,31 @@ class ScenarioVoiceService {
   }
 
   /**
+   * Làm ấm trước luồng micro (Pre-warm MediaStream) để khi người dùng bấm Nói,
+   * MediaRecorder bắt đầu thu âm ngay tức khắc (< 5ms), không bị hụt chữ đầu câu.
+   */
+  public async warmUpMicrophone(): Promise<boolean> {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      return false;
+    }
+    if (this.audioStream && this.audioStream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled)) {
+      return true;
+    }
+    try {
+      this.audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Bắt đầu ghi âm audio stream từ micro cho Whisper STT Engine
    */
   public async startAudioRecording(): Promise<boolean> {
@@ -530,15 +556,18 @@ class ScenarioVoiceService {
       return false;
     }
     try {
-      this.stopAudioRecordingSync();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-      this.audioStream = stream;
+      this.stopAudioRecordingSync(false);
+      let stream = this.audioStream;
+      if (!stream || !stream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled)) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+        this.audioStream = stream;
+      }
       this.audioChunks = [];
       this.recordingStartedAt = Date.now();
 
@@ -552,11 +581,11 @@ class ScenarioVoiceService {
         }
       };
 
-      recorder.start(100);
+      recorder.start(50);
       return true;
     } catch (err) {
       console.warn('[Scenario STT] Failed to start MediaRecorder:', err);
-      this.stopAudioRecordingSync();
+      this.stopAudioRecordingSync(true);
       return false;
     }
   }
@@ -569,7 +598,7 @@ class ScenarioVoiceService {
     const startedAt = this.recordingStartedAt;
 
     if (!recorder || recorder.state === 'inactive') {
-      this.stopAudioRecordingSync();
+      this.stopAudioRecordingSync(false);
       return null;
     }
 
@@ -578,7 +607,7 @@ class ScenarioVoiceService {
         const mime = recorder.mimeType || 'audio/webm';
         const durationSeconds = Math.max(0.1, (Date.now() - startedAt) / 1000);
         const blob = new Blob(this.audioChunks, { type: mime });
-        this.stopAudioRecordingSync();
+        this.stopAudioRecordingSync(false);
         if (blob.size === 0) {
           resolve(null);
         } else {
@@ -589,25 +618,47 @@ class ScenarioVoiceService {
       try {
         recorder.stop();
       } catch {
-        this.stopAudioRecordingSync();
+        this.stopAudioRecordingSync(false);
         resolve(null);
       }
     });
   }
 
   /**
-   * Dọn dẹp luồng micro lập tức (giải phóng mic phần cứng)
+   * Hủy ngay việc thu âm hiện tại và loại bỏ toàn bộ audio chunk (không mã hóa/gửi STT).
    */
-  public stopAudioRecordingSync(): void {
+  public cancelAudioRecording(): void {
+    const recorder = this.mediaRecorder;
+    if (recorder) {
+      recorder.ondataavailable = null;
+      recorder.onstop = null;
+      if (recorder.state !== 'inactive') {
+        try {
+          recorder.stop();
+        } catch {
+          // ignore
+        }
+      }
+    }
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.recordingStartedAt = 0;
+  }
+
+  /**
+   * Dọn dẹp luồng micro (nếu releaseHardware = true thì đóng hẳn phần cứng micro khi rời phòng)
+   */
+  public stopAudioRecordingSync(releaseHardware = false): void {
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
       try {
+        this.mediaRecorder.onstop = null;
         this.mediaRecorder.stop();
       } catch {
         // ignore
       }
     }
     this.mediaRecorder = null;
-    if (this.audioStream) {
+    if (releaseHardware && this.audioStream) {
       try {
         this.audioStream.getTracks().forEach((t) => t.stop());
       } catch {
@@ -625,7 +676,7 @@ class ScenarioVoiceService {
     if (this.isAutoStartingWhisper) return;
     this.isAutoStartingWhisper = true;
     try {
-      await fetch('/api/stt/start-engine', { method: 'POST' });
+      await fetch(resolveApiUrl('/api/stt/start-engine'), { method: 'POST' });
     } catch {
       // ignore
     } finally {
@@ -657,11 +708,11 @@ class ScenarioVoiceService {
     const formData = new FormData();
     formData.append('file', audioBlob, `recording.${ext}`);
 
-    // Tier 1: Gọi qua Backend proxy /api/stt/transcribe với timeout nhanh (2500ms)
+    // Tier 1: Gọi qua Backend proxy /api/stt/transcribe với timeout mở rộng (6000ms cho Whisper cold start / câu dài)
     try {
       const controller1 = new AbortController();
-      const timeout1 = setTimeout(() => controller1.abort(), 2500);
-      const res = await fetch('/api/stt/transcribe?language=ja', {
+      const timeout1 = setTimeout(() => controller1.abort(), 6000);
+      const res = await fetch(resolveApiUrl('/api/stt/transcribe?language=ja'), {
         method: 'POST',
         body: formData,
         signal: controller1.signal,
@@ -700,7 +751,7 @@ class ScenarioVoiceService {
       const ext = audioBlob.type.includes('ogg') ? 'ogg' : audioBlob.type.includes('wav') ? 'wav' : 'webm';
       const formData = new FormData();
       formData.append('file', audioBlob, `recording.${ext}`);
-      const res = await fetch('/api/stt/save-audio', {
+      const res = await fetch(resolveApiUrl('/api/stt/save-audio'), {
         method: 'POST',
         body: formData,
       });
@@ -727,7 +778,7 @@ class ScenarioVoiceService {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 1500);
-      const res = await fetch('/api/stt/health', { signal: controller.signal })
+      const res = await fetch(resolveApiUrl('/api/stt/health'), { signal: controller.signal })
         .finally(() => clearTimeout(timeout));
       if (res.ok) {
         const json = await res.json();

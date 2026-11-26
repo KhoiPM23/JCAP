@@ -93,6 +93,7 @@ public class AiRoleplayService : IAiRoleplayService
         {
             var systemPrompt = BuildSystemInstruction(scenario, levelConfig);
             var userPrompt = @"Start the conversation as your persona with an appropriate opening line.
+CRITICAL: Only greet the learner and set the scene (e.g. 'いらっしゃいませ！何名様ですか？'). NEVER pre-empt, assume, or confirm any dish/item that the learner has NOT ordered yet (e.g. NEVER say '豚骨ラーメンですね' or 'かしこまりました' in the opening greeting!).
 Return strictly pure JSON matching:
 {
   ""replyJapanese"": ""Opening greeting in Japanese suitable for the persona and context"",
@@ -114,12 +115,19 @@ Return strictly pure JSON matching:
                 if (!string.IsNullOrWhiteSpace(ja))
                 {
                     ja = RoleplaySocialRegister.SanitizeJapaneseReply(ja);
+                    // Chặn trường hợp LLM tự ý nói hộ / xác nhận món ăn ở ngay câu mở đầu khi học viên chưa nói câu nào
+                    if (Regex.IsMatch(ja, @"(ラーメンですね|うどんですね|コーヒーですね|かしこまりました|承知いたしました|ご注文ありがとうございます)"))
+                    {
+                        return GenerateSimulatorOpeningMessage(scenario, levelConfig);
+                    }
                     return new AiOpeningMessageResult
                     {
                         JapaneseText = ja.Trim(),
-                        FuriganaHtml = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
-                            ? RoleplaySocialRegister.CleanFuriganaHtml(RoleplaySocialRegister.SanitizeJapaneseReply(fHtml))
-                            : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim()),
+                        FuriganaHtml = RoleplaySocialRegister.EnsureFuriganaParity(
+                            !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                                ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml, ja.Trim())
+                                : null,
+                            ja.Trim()),
                         VietnameseMeaning = vi.Trim()
                     };
                 }
@@ -767,16 +775,17 @@ TASK INSTRUCTIONS:
    - completedMissionIds: Array of Mission IDs satisfied in the current turn. Follow STRICT rules:
      * Intent Verification: The learner's utterance MUST actively and clearly express the specific intent and conditions specified in the mission's Content and CompletionCriteriaJson.
      * NEVER mark a mission complete if the learner only provides generic filler words, passive agreement ('はい', 'そうです', 'わかりました', 'ええと'), or unrelated statements.
-     * Sequential Flow: Missions are ordered by conversation flow. NEVER mark the final departure/closing mission completed if earlier transactional/core missions are still unfulfilled.
-     * Concurrency: Typically at most ONE mission should be completed per turn, unless the learner explicitly combines multiple distinct intents in one compound sentence. Return [] if none.
+     * Closing / Gratitude Missions: When a pending mission is about thanking, paying, or departing (e.g. 'cảm ơn', 'ra về', 'tạm biệt', 'thanh toán') and the learner says a polite closing/gratitude phrase ('ありがとうございます', 'ありがとうございました', 'ごちそうさまでした', 'お会計をお願いします', '失礼します'), ALWAYS include that mission ID in completedMissionIds!
+     * Concurrency: Multiple missions CAN be completed in the same turn if the learner's utterance satisfies multiple pending goals. Return [] if none.
    - isNaturallyConcluded: Boolean (true ONLY IF all scenario missions are accomplished and the learner and AI exchanged closing/departure greetings).
-   - linguisticFeedback: Rigorous, realistic linguistic evaluation in Vietnamese (NO HOLLOW FLATTERY, STRICT PEDAGOGICAL ACCURACY):
+   - linguisticFeedback: Concise, practical, rigorous Vietnamese feedback (EASY TO READ IN 3 SECONDS, NO BLOAT, STRICT PEDAGOGICAL ACCURACY):
+     * LANGUAGE & TONE INTEGRITY: Explain 100% in natural Vietnamese. NEVER mix English UI/tech words (no 'OK', 'Feedback', 'Polite', 'Keigo', 'Natural') or academic Japanese jargon inside Vietnamese explanations.
      * status: ""Good"" | ""Warning"" | ""Error""
-     * summary: Short Vietnamese summary (e.g. ""Rất tốt • Đúng ngữ cảnh"", hoặc ""Cần diễn đạt câu hoàn chỉnh"")
-     * details: Array of items:
+     * summary: Ultra-short Vietnamese summary (MAX 10-12 words, e.g. ""Đúng ý · Cần thêm đuôi lịch sự"" or ""Tốt · Đúng ngữ cảnh"").
+     * details: MAX 2 MOST IMPORTANT ITEMS (prioritize concrete errors/warnings to fix before praise). Each `comment` MUST BE 1 SHORT DIRECT SENTENCE (under 25 words) telling the learner exactly what is right or how to fix it.
        - type: ""success"" | ""warning"" | ""error""
-       - aspect: Aspect in Vietnamese (""Ngữ pháp"" | ""Từ vựng"" | ""Văn phong"" | ""Kính ngữ"" | ""Cấu trúc"" | ""Trợ từ"")
-       - comment: Specific constructive feedback in Vietnamese
+       - aspect: Aspect in pure Vietnamese (""Ngữ pháp"" | ""Từ vựng"" | ""Văn phong"" | ""Kính ngữ"" | ""Cấu trúc"" | ""Trợ từ"")
+       - comment: Short direct 1-sentence guidance in natural Vietnamese
        - ANTI-FLATTERY RULE FOR SHORT UTTERANCES:
          * If the learner only said a bare minimal affirmative/negative word ('はい', 'いいえ', 'そうです'):
            status should be 'Good' or 'Warning'.
@@ -858,17 +867,29 @@ Return strictly pure JSON matching this schema:
 
                 // Cân bằng sư phạm: Nếu câu của học viên biểu đạt rõ ràng mục tiêu nhiệm vụ (không lỗi ngoại ngữ)
                 // đảm bảo nhiệm vụ được tick chính xác, không bị phụ thuộc vào việc LLM trả về ID hay Order
-                if (completedIds.Count == 0 && !IsLikelyForeignOrVietnamese(userMessage) && pendingMissions.Count > 0)
+                if (!IsLikelyForeignOrVietnamese(userMessage) && pendingMissions.Count > 0)
                 {
-                    var currentMission = pendingMissions.OrderBy(m => m.Order).FirstOrDefault();
-                    if (currentMission != null)
+                    var cleanUserMsg = userMessage.Trim();
+                    foreach (var candidateMission in pendingMissions.OrderBy(m => m.Order))
                     {
-                        var crit = (currentMission.CompletionCriteriaJson ?? "").ToLowerInvariant();
-                        var content = (currentMission.Content ?? "").ToLowerInvariant();
-                        var cleanUserMsg = userMessage.Trim();
+                        if (completedIds.Contains(candidateMission.Id)) continue;
+
+                        var crit = (candidateMission.CompletionCriteriaJson ?? "").ToLowerInvariant();
+                        var content = (candidateMission.Content ?? "").ToLowerInvariant();
+                        var combinedMeta = $"{crit} {content}";
 
                         bool matchesIntent = false;
-                        if ((crit.Contains("soy milk") || content.Contains("sữa thực vật") || crit.Contains("sweetness") || content.Contains("độ ngọt")) &&
+                        if ((combinedMeta.Contains("cảm ơn") || combinedMeta.Contains("ra về") || combinedMeta.Contains("tạm biệt") || combinedMeta.Contains("kết thúc") || combinedMeta.Contains("thank") || combinedMeta.Contains("goodbye") || combinedMeta.Contains("bye") || combinedMeta.Contains("closing")) &&
+                            Regex.IsMatch(cleanUserMsg, @"(ありがとう|ごちそうさま|ご馳走様|失礼|お世話になり|また来ます|お気をつけて|お大事に|どういたしまして)"))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((combinedMeta.Contains("chào") || combinedMeta.Contains("số người") || combinedMeta.Contains("chỗ ngồi") || combinedMeta.Contains("vào quán") || combinedMeta.Contains("greet") || combinedMeta.Contains("seat") || combinedMeta.Contains("party")) &&
+                                 Regex.IsMatch(cleanUserMsg, @"(こんにちは|こんばんは|おはよう|すみません|はじめまして|よろしく|1人|一人|2人|二人|3人|三人|ひとり|ふたり|名|席|カウンター|テーブル)"))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("soy milk") || content.Contains("sữa thực vật") || crit.Contains("sweetness") || content.Contains("độ ngọt")) &&
                             (cleanUserMsg.Contains("豆乳") || cleanUserMsg.Contains("甘さ控えめ") || cleanUserMsg.Contains("甘さは") || cleanUserMsg.Contains("ソイミルク")))
                         {
                             matchesIntent = true;
@@ -878,8 +899,13 @@ Return strictly pure JSON matching this schema:
                         {
                             matchesIntent = true;
                         }
-                        else if ((crit.Contains("order") || content.Contains("chọn") || content.Contains("ăn kèm")) &&
-                                 (cleanUserMsg.Contains("ください") || cleanUserMsg.Contains("お願いします") || cleanUserMsg.Contains("にします")))
+                        else if ((crit.Contains("order") || content.Contains("gọi món") || content.Contains("chọn") || content.Contains("ăn kèm") || content.Contains("ramen")) &&
+                                 (cleanUserMsg.Contains("ください") || cleanUserMsg.Contains("お願いします") || cleanUserMsg.Contains("にします") || cleanUserMsg.Contains("注文") || cleanUserMsg.Contains("ラーメン")))
+                        {
+                            matchesIntent = true;
+                        }
+                        else if ((crit.Contains("hardness") || crit.Contains("flavor") || content.Contains("độ cứng") || content.Contains("khẩu vị") || content.Contains("nước dùng") || content.Contains("đậm")) &&
+                                 Regex.IsMatch(cleanUserMsg, @"(硬め|かため|固め|柔らかめ|やわらかめ|普通|ふつう|濃いめ|こいめ|薄め|うすめ|辛め|からめ)"))
                         {
                             matchesIntent = true;
                         }
@@ -889,16 +915,15 @@ Return strictly pure JSON matching this schema:
                         {
                             matchesIntent = true;
                         }
-                        else if ((crit.Contains("card") || crit.Contains("payment") || content.Contains("thanh toán") || content.Contains("thẻ")) &&
-                                 (cleanUserMsg.Contains("カード") || cleanUserMsg.Contains("電子マネー") || cleanUserMsg.Contains("クレカ") || cleanUserMsg.Contains("支払") || cleanUserMsg.Contains("会計")) &&
-                                 (cleanUserMsg.Contains("使え") || cleanUserMsg.Contains("でき") || cleanUserMsg.Contains("いいですか") || cleanUserMsg.Contains("ですか") || cleanUserMsg.Contains("払え")))
+                        else if ((crit.Contains("card") || crit.Contains("payment") || content.Contains("thanh toán") || content.Contains("thẻ") || content.Contains("tính tiền")) &&
+                                 Regex.IsMatch(cleanUserMsg, @"(カード|電子マネー|クレカ|支払|会計|勘定|現金|いくら)"))
                         {
                             matchesIntent = true;
                         }
 
                         if (matchesIntent)
                         {
-                            completedIds.Add(currentMission.Id);
+                            completedIds.Add(candidateMission.Id);
                         }
                     }
                 }
@@ -933,6 +958,7 @@ Return strictly pure JSON matching this schema:
                     if (ja.Contains("かしこまりました") || ja.Contains("承知") || ja.Contains("ですね") || ja.Contains("ですか") || !ja.Contains("日本語"))
                     {
                         ja = "恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。";
+                        fHtml = null;
                         vi = "Xin lỗi, tôi không hiểu tiếng nước ngoài. Bạn có thể nói bằng tiếng Nhật được không ạ?";
                     }
 
@@ -1050,36 +1076,55 @@ Return strictly pure JSON matching this schema:
                     if (feedback != null)
                     {
                         feedback.Status = "Warning";
-                        feedback.Summary = "Văn phong chưa phù hợp • Cần dùng thể lịch sự (Desu/Masu)";
-                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                        feedback.Summary = "Văn phong chưa phù hợp • Cần dùng thể lịch sự";
+                        feedback.NaturalAlternative = BuildContextFallbackAlternative(scenario, levelConfig, pendingMissions);
                     }
                 }
-                // 4. Off-topic evasion: "猫", "アニメ" trong bối cảnh quán ăn
+                // 4. Off-topic evasion: "猫", "アニメ"
                 else if (Regex.IsMatch(userMessage, @"(アニメと猫|猫が好き|アニメが好き)"))
                 {
                     completedIds.Clear();
-                    ja = "恐れ入ります、まずご注文をお伺いしてもよろしいでしょうか？";
-                    fHtml = "恐れ入ります、まずご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
-                    vi = $"Dạ xin lỗi {reg.AiAddressLearner}, {reg.AiSelf} xin phép được lắng nghe yêu cầu gọi món trước nhé ạ?";
+                    if (isDiningScenario)
+                    {
+                        ja = "恐れ入ります、まずご注文をお伺いしてもよろしいでしょうか？";
+                        fHtml = "恐れ入ります、まずご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
+                        vi = $"Dạ xin lỗi {reg.AiAddressLearner}, {reg.AiSelf} xin phép được lắng nghe yêu cầu gọi món trước nhé ạ?";
+                    }
+                    else
+                    {
+                        ja = "恐れ入ります、まず本題に戻ってお話ししてもよろしいでしょうか？";
+                        fHtml = "恐れ入ります、まず<ruby>本題<rt>ほんだい</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>ってお<ruby>話<rt>はな</rt></ruby>ししてもよろしいでしょうか？";
+                        vi = $"Dạ xin lỗi {reg.AiAddressLearner}, mình quay lại nội dung chính của tình huống nhé ạ?";
+                    }
                     if (feedback != null)
                     {
                         feedback.Status = "Warning";
                         feedback.Summary = "Lệch trọng tâm cuộc trò chuyện";
-                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                        feedback.NaturalAlternative = BuildContextFallbackAlternative(scenario, levelConfig, pendingMissions);
                     }
                 }
                 // 5. Parroting AI prompt
                 else if (!string.IsNullOrWhiteSpace(lastAiMsg) && userMessage.Trim().Contains(lastAiMsg.Trim()))
                 {
                     completedIds.Clear();
-                    ja = "恐れ入ります、私のご挨拶を繰り返していただいたようですが、ご注文をお伺いしてもよろしいでしょうか？";
-                    fHtml = "恐れ入ります、<ruby>私<rt>わたし</rt></ruby>のご<ruby>挨拶<rt>あいさつ</rt></ruby>を<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>していただいたようですが、ご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
+                    if (isDiningScenario)
+                    {
+                        ja = "恐れ入ります、私のご挨拶を繰り返していただいたようですが、ご注文をお伺いしてもよろしいでしょうか？";
+                        fHtml = "恐れ入ります、<ruby>私<rt>わたし</rt></ruby>のご<ruby>挨拶<rt>あいさつ</rt></ruby>を<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>していただいたようですが、ご<ruby>注文<rt>ちゅうもん</rt></ruby>をお<ruby>伺<rt>うかが</rt></ruby>いしてもよろしいでしょうか？";
+                    }
+                    else
+                    {
+                        ja = "恐れ入ります、私のご挨拶を繰り返していただいたようですが、ご用件をお聞かせいただけますでしょうか？";
+                        fHtml = "恐れ入ります、<ruby>私<rt>わたし</rt></ruby>のご<ruby>挨拶<rt>あいさつ</rt></ruby>を<ruby>繰<rt>く</rt></ruby>り<ruby>返<rt>かえ</rt></ruby>していただいたようですが、ご<ruby>用件<rt>ようけん</rt></ruby>をお<ruby>聞<rt>き</rt></ruby>かせいただけますでしょうか？";
+                    }
                     vi = $"Dạ xin lỗi {reg.AiAddressLearner}, hình như {reg.AiAddressLearner} vừa lặp lại lời chào của {reg.AiSelf}. Xin cho biết yêu cầu của {reg.AiAddressLearner} ạ?";
                     if (feedback != null)
                     {
                         feedback.Status = "Warning";
                         feedback.Summary = "Lặp lại câu nói của nhân vật";
-                        feedback.NaturalAlternative = "1人です。";
+                        feedback.NaturalAlternative = isDiningScenario
+                            ? "1人です。"
+                            : BuildContextFallbackAlternative(scenario, levelConfig, pendingMissions);
                     }
                 }
                 // 6. Gibberish / character noise (ví dụ: "あああああああああ")
@@ -1093,7 +1138,7 @@ Return strictly pure JSON matching this schema:
                     {
                         feedback.Status = "Warning";
                         feedback.Summary = "Nội dung chưa rõ ràng • Âm thanh lạ";
-                        feedback.NaturalAlternative = "ラーメンをお願いします。";
+                        feedback.NaturalAlternative = BuildContextFallbackAlternative(scenario, levelConfig, pendingMissions);
                     }
                 }
                 // 7. Anti-Ego Keigo: "召し上がります"
@@ -1102,28 +1147,47 @@ Return strictly pure JSON matching this schema:
                     completedIds.Clear();
                     ja = "恐れ入りますが、ご自身の動作には尊敬語ではなく謙譲語をお使いになるとより自然ですよ。";
                     fHtml = "恐れ入りますが、ご<ruby>自身<rt>じしん</rt></ruby>の<ruby>動作<rt>どうさ</rt></ruby>には<ruby>尊敬語<rt>そんけいご</rt></ruby>ではなく<ruby>謙譲語<rt>けんじょうご</rt></ruby>をお<ruby>使<rt>つか</rt></ruby>いになるとより<ruby>自然<rt>しぜん</rt></ruby>ですよ。";
-                    vi = $"Xin lỗi {reg.AiAddressLearner}, khi nói về hành động của chính mình, dùng khiêm nhường ngữ sẽ chuẩn mực hơn là tôn kính ngữ ạ.";
+                    vi = $"Xin lỗi {reg.AiAddressLearner}, khi nói về hành động của chính mình, dùng khiêm nhường ngữ sẽ chuẩn mực hơn ạ.";
                     if (feedback != null)
                     {
                         feedback.Status = "Warning";
-                        feedback.Summary = "Nhầm lẫn Tôn kính ngữ (Sonkeigo) cho bản thân";
+                        feedback.Summary = "Nhầm lẫn Tôn kính ngữ cho bản thân";
                         feedback.NaturalAlternative = "私がいただきます。";
                     }
                 }
-                // 8. Premature abrupt goodbye: "さようなら" khi pendingMissions còn
-                else if (pendingMissions.Count > 0 && Regex.IsMatch(userMessage, @"(さようなら|バイバイ|帰る)"))
+                // 8. Premature abrupt goodbye: "さようなら" khi vẫn còn nhiệm vụ chính chưa hoàn thành (không chặn lời cảm ơn/ra về hợp lệ ở nhiệm vụ cuối)
+                else if (pendingMissions.Any(m => !((m.Content ?? "").Contains("cảm ơn", StringComparison.OrdinalIgnoreCase) ||
+                                                    (m.Content ?? "").Contains("ra về", StringComparison.OrdinalIgnoreCase) ||
+                                                    (m.Content ?? "").Contains("tạm biệt", StringComparison.OrdinalIgnoreCase) ||
+                                                    (m.Content ?? "").Contains("kết thúc", StringComparison.OrdinalIgnoreCase))) &&
+                         Regex.IsMatch(userMessage, @"(さようなら|バイバイ|帰る)") &&
+                         !Regex.IsMatch(userMessage, @"(ありがとう|ごちそうさま|ご馳走様)"))
                 {
                     completedIds.Clear();
                     isConcluded = false;
-                    ja = "あれっ、もうお帰りですか？まだご注文の途中ですが、いかがなさいますか？";
-                    fHtml = "あれっ、もうお<ruby>帰<rt>かえ</rt></ruby>りですか？まだご<ruby>注文<rt>ちゅうもん</rt></ruby>の<ruby>途中<rt>とちゅう</rt></ruby>ですが、いかがなさいますか？";
-                    vi = $"Ơ, {reg.AiAddressLearner} về luôn rồi sao ạ? Vẫn đang trong lúc gọi món mà, {reg.AiAddressLearner} có muốn tiếp tục không ạ?";
+                    if (isDiningScenario)
+                    {
+                        ja = "あれっ、もうお帰りですか？まだご注文の途中ですが、いかがなさいますか？";
+                        fHtml = "あれっ、もうお<ruby>帰<rt>かえ</rt></ruby>りですか？まだご<ruby>注文<rt>ちゅうもん</rt></ruby>の<ruby>途中<rt>とちゅう</rt></ruby>ですが、いかがなさいますか？";
+                        vi = $"Ơ, {reg.AiAddressLearner} về luôn rồi sao ạ? Vẫn đang trong lúc gọi món mà, {reg.AiAddressLearner} có muốn tiếp tục không ạ?";
+                    }
+                    else
+                    {
+                        ja = "あれっ、もうお帰りですか？まだお話の途中ですが、続けましょうか？";
+                        fHtml = "あれっ、もうお<ruby>帰<rt>かえ</rt></ruby>りですか？まだお<ruby>話<rt>はなし</rt></ruby>の<ruby>途中<rt>とちゅう</rt></ruby>ですが、<ruby>続<rt>つづ</rt></ruby>けましょうか？";
+                        vi = $"Ơ, {reg.AiAddressLearner} về luôn rồi sao ạ? Cuộc trò chuyện vẫn đang dở, {reg.AiAddressLearner} có muốn tiếp tục không ạ?";
+                    }
                     if (feedback != null)
                     {
                         feedback.Status = "Warning";
                         feedback.Summary = "Kết thúc cuộc trò chuyện quá sớm";
-                        feedback.NaturalAlternative = "まだ注文したいです。";
+                        feedback.NaturalAlternative = isDiningScenario ? "まだ注文したいです。" : "すみません、もう少し続けたいです。";
                     }
+                }
+
+                if (pendingMissions.Count > 0 && pendingMissions.All(m => completedIds.Contains(m.Id)))
+                {
+                    isConcluded = true;
                 }
 
                 if (!string.IsNullOrWhiteSpace(ja))
@@ -1133,13 +1197,17 @@ Return strictly pure JSON matching this schema:
                             ? "本当にありがとうね。気をつけて帰ってね。"
                             : "丁寧にご対応いただき、誠にありがとうございました。");
 
-                    var resolvedReplyFurigana = !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
-                        ? RoleplaySocialRegister.CleanFuriganaHtml(RoleplaySocialRegister.SanitizeJapaneseReply(fHtml))
-                        : RoleplaySocialRegister.GenerateFuriganaHtml(ja.Trim());
+                    var resolvedReplyFurigana = RoleplaySocialRegister.EnsureFuriganaParity(
+                        !string.IsNullOrWhiteSpace(fHtml) && !RoleplaySocialRegister.HasVietnameseLeak(fHtml)
+                            ? RoleplaySocialRegister.SanitizeJapaneseReply(fHtml, ja.Trim())
+                            : null,
+                        ja.Trim());
 
-                    var resolvedUserFurigana = (!string.IsNullOrWhiteSpace(userFHtml) && userFHtml.Contains("<ruby>"))
-                        ? RoleplaySocialRegister.CleanFuriganaHtml(userFHtml.Trim())
-                        : RoleplaySocialRegister.GenerateFuriganaHtml(userMessage);
+                    var resolvedUserFurigana = RoleplaySocialRegister.EnsureFuriganaParity(userFHtml, userMessage);
+
+                    var normalizedFeedback = feedback != null
+                        ? NormalizeLinguisticFeedback(feedback)
+                        : null;
 
                     return new AiTurnResult
                     {
@@ -1150,7 +1218,7 @@ Return strictly pure JSON matching this schema:
                         UserFuriganaHtml = resolvedUserFurigana,
                         CompletedMissionIds = completedIds,
                         IsNaturallyConcluded = isConcluded,
-                        LinguisticFeedback = feedback
+                        LinguisticFeedback = normalizedFeedback
                     };
                 }
             }
@@ -1278,6 +1346,10 @@ Return strictly pure JSON:
         sb.AppendLine($"  * Your ONLY allowed response is polite native Japanese incomprehension requesting them to speak Japanese (e.g., '恐れ入りますが、外国語は分かりませんので、日本語でお話しいただけますでしょうか。').");
         sb.AppendLine($"  * CRITICAL EXCEPTION: If the learner wrote in Japanese characters (Kanji/Hiragana/Katakana) with NO foreign/Vietnamese words — even with grammar errors or symbols like '～' — DO NOT treat it as foreign language; engage naturally in roleplay and gently fix their phrasing in linguisticFeedback.");
         sb.AppendLine($"- Strict Language Requirement: The learner MUST speak in Japanese (Kanji, Kana, or standard Japanese Romaji). If the learner uses Vietnamese, English, or non-Japanese text, NEVER mark any missions completed (completedMissionIds: []), mark linguisticFeedback status as \"Error\", and do not advance the scenario.");
+        sb.AppendLine("[ACTIVE LISTENING & HUMAN CONVERSATIONAL FOUNDATION]");
+        sb.AppendLine("- ALWAYS acknowledge, react to, or validate what the learner just expressed FIRST (even if imperfect, brief, unexpected, or slightly off-script), so the learner genuinely feels heard by a real human.");
+        sb.AppendLine("- Handle unexpected learner questions, hesitations, topic shifts, or changes of mind gracefully in-character (1 empathetic beat), then smoothly steer back toward the scenario goal without robotic repetition.");
+        sb.AppendLine("- Keep replyJapanese concise and natural (1-2 spoken sentences maximum).");
         var level = (levelConfig.JLPTLevel ?? "N5").ToUpperInvariant().Trim();
         sb.AppendLine($"[PEDAGOGICAL DIFFICULTY ADAPTATION FOR JLPT {level}]");
         if (level == "N5")
@@ -1334,5 +1406,84 @@ Return strictly pure JSON:
         List<Mission> pendingMissions)
     {
         return RoleplaySocialRegister.GenerateHint(levelConfig, pendingMissions);
+    }
+
+    internal static string BuildContextFallbackAlternative(
+        Scenario scenario,
+        ScenarioLevelConfiguration levelConfig,
+        List<Mission> pendingMissions)
+    {
+        var ctx = $"{scenario.Title} {scenario.ScenarioCode} {levelConfig.AiPersona} {levelConfig.Description}".ToLowerInvariant();
+        if (ctx.Contains("ramen") || ctx.Contains("mì")) return "とんこつラーメンをお願いします。";
+        if (ctx.Contains("cafe") || ctx.Contains("cà phê")) return "アイスコーヒーをお願いします。";
+        if (ctx.Contains("ga") || ctx.Contains("tàu") || ctx.Contains("駅")) return "新宿駅までの切符をお願いします。";
+        if (ctx.Contains("phỏng vấn") || ctx.Contains("baito") || ctx.Contains("công sở")) return "よろしくお願いいたします。";
+        if (ctx.Contains("bệnh viện") || ctx.Contains("khám")) return "すみません、診察をお願いします。";
+        if (ctx.Contains("tiện lợi") || ctx.Contains("konbini")) return "お弁当をひとつお願いします。";
+
+        var sampleWord = levelConfig.TargetVocabularies?.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v.Word))?.Word?.Trim();
+        if (!string.IsNullOrWhiteSpace(sampleWord))
+        {
+            return $"{sampleWord}をお願いします。";
+        }
+        return "すみません、もう一度お願いします。";
+    }
+
+    internal static LinguisticFeedbackDto NormalizeLinguisticFeedback(LinguisticFeedbackDto feedback)
+    {
+        static string CleanJargon(string text)
+        {
+            var cleaned = Regex.Replace(text, @"\s*\((Desu/Masu|Teineigo|Futsuukei|Sonkeigo|Kenjougo|Keigo)\)", "", RegexOptions.IgnoreCase);
+            cleaned = cleaned.Replace("Desu/Masu", "thể lịch sự", StringComparison.OrdinalIgnoreCase);
+            return Regex.Replace(cleaned, @"\s{2,}", " ").Trim();
+        }
+
+        static string CapSentence(string text, int maxLen)
+        {
+            var clean = CleanJargon(text);
+            if (clean.Length <= maxLen) return clean;
+            var slice = clean[..(maxLen - 1)];
+            var lastStop = slice.LastIndexOfAny(['.', '!', '?', ' ']);
+            if (lastStop >= maxLen / 2)
+            {
+                slice = slice[..lastStop];
+            }
+            return slice.TrimEnd(',', ';', ' ') + "…";
+        }
+
+        if (!string.IsNullOrWhiteSpace(feedback.Summary))
+        {
+            feedback.Summary = CapSentence(feedback.Summary, 90);
+        }
+
+        if (feedback.Details != null && feedback.Details.Count > 0)
+        {
+            var seenComments = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var normalizedDetails = feedback.Details
+                .Where(d => d != null && !string.IsNullOrWhiteSpace(d.Comment))
+                .Select(d => new LinguisticDetailItemDto
+                {
+                    Type = string.IsNullOrWhiteSpace(d.Type) ? "warning" : d.Type.Trim().ToLowerInvariant(),
+                    Aspect = string.IsNullOrWhiteSpace(d.Aspect) ? "Giao tiếp" : CleanJargon(d.Aspect),
+                    Comment = CapSentence(d.Comment, 160)
+                })
+                .Where(d => seenComments.Add(d.Comment))
+                .OrderBy(d => d.Type == "error" ? 0 : d.Type == "warning" ? 1 : 2)
+                .Take(2)
+                .ToList();
+
+            feedback.Details = normalizedDetails;
+        }
+
+        if (!string.IsNullOrWhiteSpace(feedback.CulturalTip))
+        {
+            feedback.CulturalTip = CapSentence(feedback.CulturalTip, 140);
+        }
+        else
+        {
+            feedback.CulturalTip = null;
+        }
+
+        return feedback;
     }
 }
