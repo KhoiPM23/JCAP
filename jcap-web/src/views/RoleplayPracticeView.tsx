@@ -181,6 +181,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     autoPlayAudioRef.current = autoPlayAudio;
   }, [autoPlayAudio]);
   const [isPlayingAiSpeech, setIsPlayingAiSpeech] = useState(false);
+  const [isAiAudioActuallyPlaying, setIsAiAudioActuallyPlaying] = useState(false);
+  const hasRealVisemeStreamRef = useRef(false);
+  const silenceBarRef = useRef<HTMLSpanElement | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<number | null>(null);
   const [isAmbientOn, setIsAmbientOn] = useState(false);
   const [isRecordingMic, setIsRecordingMic] = useState(false); // Trạng thái thu âm UI
@@ -240,20 +243,26 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   } | null>(null);
   const prevCompletedMissionIdsRef = useRef<Set<string | number>>(new Set());
 
-  // Tối ưu hiệu năng: Đếm thời gian thu âm mượt mà, giảm tần suất re-render component cha
+  // Tối ưu hiệu năng 60fps: Đếm thời gian thu âm mượt mà bằng requestAnimationFrame, không re-render component cha
   const recordingTimerSpanRef = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
-    let interval: any = null;
+    let rafId: number | null = null;
     let autoStopTimeout: any = null;
     if (isRecordingMic) {
-      const start = Date.now();
+      const start = performance.now();
+      let lastShown = '';
       setRecordingDurationSec(0);
-      interval = setInterval(() => {
-        const elapsedSec = Number(((Date.now() - start) / 1000).toFixed(1));
-        if (recordingTimerSpanRef.current) {
-          recordingTimerSpanRef.current.textContent = `${elapsedSec.toFixed(1)}s`;
+      const tick = (nowTs: number) => {
+        if (!isRecordingMicRef.current) return;
+        const elapsedSec = (nowTs - start) / 1000;
+        const formatted = `${elapsedSec.toFixed(1)}s`;
+        if (formatted !== lastShown && recordingTimerSpanRef.current) {
+          lastShown = formatted;
+          recordingTimerSpanRef.current.textContent = formatted;
         }
-      }, 150);
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
       // Giới hạn 25s tự động chốt và chuyển sang Whisper để người học không phải đợi lâu
       autoStopTimeout = setTimeout(() => {
         if (isRecordingMicRef.current) {
@@ -265,9 +274,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       if (recordingTimerSpanRef.current) {
         recordingTimerSpanRef.current.textContent = 'Nói';
       }
+      if (silenceBarRef.current) {
+        silenceBarRef.current.style.width = '0%';
+      }
     }
     return () => {
-      if (interval) clearInterval(interval);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       if (autoStopTimeout) clearTimeout(autoStopTimeout);
     };
   }, [isRecordingMic]);
@@ -887,10 +899,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   }, [inputText]);
 
 
-  // Adaptive Silence Ring state & timer
-  const [silenceCountdownProgress, setSilenceCountdownProgress] = useState<number>(0);
+  // Adaptive Silence Ring timer (DOM ref update — 0 React re-render overhead)
   const silenceIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
 
   // Cleanup ambient and recorded audio Blob on exit
   useEffect(() => {
@@ -903,39 +913,35 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     };
   }, []);
 
-
-  // Viseme mouth sync for LivingAvatar during AI speech (Tự nhiên theo âm điệu mora tiếng Nhật)
+  // Viseme mouth sync fallback: chỉ chạy khi âm thanh AI thực sự đã phát (onplay) và chưa có stream viseme thật từ VOICEVOX
   const [currentViseme, setCurrentViseme] = useState<MouthViseme>('closed');
   useEffect(() => {
-    if (!isPlayingAiSpeech) {
+    if (!isAiAudioActuallyPlaying) {
+      hasRealVisemeStreamRef.current = false;
       setCurrentViseme('closed');
       return;
     }
-    // Chuỗi biến thiên khẩu hình tự nhiên theo nhịp phách tiếng Nhật: A -> I -> closed -> O -> E -> N -> A -> U
     const naturalVisemeSequence: MouthViseme[] = ['A', 'I', 'closed', 'O', 'E', 'A', 'N', 'U', 'I', 'closed'];
     let idx = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let isCancelled = false;
 
-
     const tick = () => {
-      if (isCancelled) return;
+      if (isCancelled || hasRealVisemeStreamRef.current) return;
       idx = (idx + 1) % naturalVisemeSequence.length;
       setCurrentViseme(naturalVisemeSequence[idx]);
       const nextDelay = 110 + (idx % 3) * 20;
       timer = setTimeout(tick, nextDelay);
     };
 
-
     timer = setTimeout(tick, 120);
-
 
     return () => {
       isCancelled = true;
       if (timer) clearTimeout(timer);
       setCurrentViseme('closed');
     };
-  }, [isPlayingAiSpeech]);
+  }, [isAiAudioActuallyPlaying]);
 
 
   // Telemetry metric counters for current turn (TikTok-style S1..S12)
@@ -1018,7 +1024,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       clearTimeout(deadlockTimerRef.current);
       deadlockTimerRef.current = null;
     }
-    setSilenceCountdownProgress(0);
+    if (silenceBarRef.current) {
+      silenceBarRef.current.style.width = '0%';
+    }
 
 
     if (recognitionRef.current) {
@@ -1194,15 +1202,19 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       scenarioVoiceService.stopAllAudio();
       isPlayingAiSpeechRef.current = false;
       setIsPlayingAiSpeech(false);
+      setIsAiAudioActuallyPlaying(false);
       setPlayingMessageId(null);
       return;
     }
 
     // Đặt trạng thái AI đang nói đồng bộ TRƯỚC khi await stopSpeechRecognition / fetch TTS để chặn triệt để race mở micro
+    // Nhưng chỉ bật isAiAudioActuallyPlaying (nhép miệng LivingAvatar) khi audio thực sự bắt đầu phát (onStart)
     recordingEpochRef.current += 1;
     lastVocalFillerRef.current = '';
+    hasRealVisemeStreamRef.current = false;
     isPlayingAiSpeechRef.current = true;
     setIsPlayingAiSpeech(true);
+    setIsAiAudioActuallyPlaying(false);
     setPlayingMessageId(messageId);
 
     const voiceToUse = voiceIdOverride ?? getSpeakerVoiceId(ttsText);
@@ -1220,6 +1232,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         () => {
           isPlayingAiSpeechRef.current = false;
           setIsPlayingAiSpeech(false);
+          setIsAiAudioActuallyPlaying(false);
+          hasRealVisemeStreamRef.current = false;
           setPlayingMessageId(null);
           setCurrentViseme('closed');
           aiFinishedSpeakingAtRef.current = Date.now();
@@ -1263,6 +1277,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                 if (isSendingRef.current || sessionConcludedRef.current || isOutOfCreditsRef.current) {
                   isPlayingAiSpeechRef.current = false;
                   setIsPlayingAiSpeech(false);
+                  setIsAiAudioActuallyPlaying(false);
                   return;
                 }
                 const filler = getSituationalVocalFiller();
@@ -1274,6 +1289,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   () => {
                     isPlayingAiSpeechRef.current = false;
                     setIsPlayingAiSpeech(false);
+                    setIsAiAudioActuallyPlaying(false);
                     if (isHandsFreeModeRef.current && !sessionConcludedRef.current && !isSendingRef.current && !isOutOfCreditsRef.current) {
                       setTimeout(() => {
                         if (!isRecordingMicRef.current && !isPlayingAiSpeechRef.current && !isOutOfCreditsRef.current) {
@@ -1286,6 +1302,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                   () => {
                     isPlayingAiSpeechRef.current = true;
                     setIsPlayingAiSpeech(true);
+                    setIsAiAudioActuallyPlaying(true);
                   }
                 );
               })();
@@ -1297,9 +1314,11 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           // onStart: Khi âm thanh VOICEVOX THỰC SỰ vang lên từ loa
           isPlayingAiSpeechRef.current = true;
           setIsPlayingAiSpeech(true);
+          setIsAiAudioActuallyPlaying(true);
           onAudioStarted?.();
         },
         (viseme) => {
+          hasRealVisemeStreamRef.current = true;
           setCurrentViseme(viseme);
         }
       );
@@ -1943,7 +1962,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     ? 'thinking'
     : avatarEmotionOverride
     ? avatarEmotionOverride
-    : isPlayingAiSpeech
+    : isAiAudioActuallyPlaying
     ? 'speaking'
     : isRecordingMic
     ? 'listening'
@@ -2153,11 +2172,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
         if (userAudioToAttach) {
           userAudioMapRef.current.set(turn.userMessage.id, userAudioToAttach);
         }
+        const scenarioVocabsList = session?.targetVocabularies?.filter(Boolean).map(v => ({ word: v?.word || '', reading: v?.reading || '' })) || [];
         const finalUserMsg: RoleplayMessageDto = {
           ...turn.userMessage,
           furiganaHtml: (turn.userMessage.furiganaHtml && turn.userMessage.furiganaHtml.includes('<ruby>'))
             ? turn.userMessage.furiganaHtml
-            : generateClientFuriganaHtml(turn.userMessage.japaneseText),
+            : generateClientFuriganaHtml(turn.userMessage.japaneseText, scenarioVocabsList),
           audioUrl: turn.userMessage.audioUrl || userAudioToAttach || undefined,
           userAudioUrl: userAudioToAttach ?? undefined,
         };
@@ -2276,13 +2296,6 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             setTimeout(() => setToastMessage(null), 4000);
           }
 
-          // Dynamic Scaffolding DDA: Khích lệ học viên khi hệ thống phát hiện cần trợ lực phản xạ
-          if (turn.shouldOfferEncouragement && !turn.newlyCompletedMissionIds?.length) {
-            setToastMessage('Tiếp tục phát huy! Hãy thử trả lời bằng câu hoàn chỉnh (như 〜をお願いします) để ghi điểm tối đa.');
-            setTimeout(() => setToastMessage(null), 4500);
-          }
-
-
           // Không tự động bung pop-up Eki-Stamp khi nói xong câu thoại cuối;
           // Học viên vẫn có thể tự do đọc lại transcript, nghe lại audio và chỉ mở bảng pop-up khi tự bấm nút 'Hoàn thành phiên'
           if (turn.isNaturallyConcluded || turn.allMissionsCompleted) {
@@ -2368,7 +2381,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
       clearTimeout(deadlockTimerRef.current);
       deadlockTimerRef.current = null;
     }
-    setSilenceCountdownProgress(0);
+    if (silenceBarRef.current) {
+      silenceBarRef.current.style.width = '0%';
+    }
 
 
     if (recognitionRef.current) {
@@ -2590,34 +2605,36 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     if (overloadTimerRef.current) clearTimeout(overloadTimerRef.current);
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     setShowProactiveHint(false);
-    // Mở lại tức thì nếu trong cùng lượt đã tải gợi ý trước đó (0ms, giữ nguyên các lựa chọn ý khác)
+    // Mở lại tức thì nếu trong cùng lượt đã tải gợi ý trước đó (0ms)
     if (cachedTurnHintRef.current) {
       setSingleAssistance('hint', cachedTurnHintRef.current);
       setAppliedHintTier(hintLevelUsedRef.current || 1);
       return;
     }
 
-
-    // 1. Phản hồi tức thì 0ms (Zero-latency instant scaffold) từ cấu hình nhiệm vụ & từ vựng bối cảnh
-    const instantFallback = synthesizeInstantHint(session);
+    // Hiện shimmer loading thực tế trong khi tải gợi ý chuẩn từ AI (không hiện câu placeholder giả gây bối rối)
     hintLevelUsedRef.current = Math.max(hintLevelUsedRef.current, 1);
     setAppliedHintTier(1);
     triggerFloatingDeduction(1);
-    cachedTurnHintRef.current = instantFallback;
-    setHint(instantFallback);
-
-    // 2. Chạy ngầm API backend để làm giàu gợi ý chuyên sâu (nếu có mạng tốt)
+    setHint(null);
     setIsLoadingHint(true);
-    roleplayService.getHint(currentSessionId).then((res) => {
+    try {
+      const res = await roleplayService.getHint(currentSessionId);
       if (res.success && res.data) {
         cachedTurnHintRef.current = res.data;
-        setHint((curr) => (curr ? res.data : curr));
+        setHint(res.data);
+      } else {
+        const fallbackHint = synthesizeInstantHint(session);
+        cachedTurnHintRef.current = fallbackHint;
+        setHint(fallbackHint);
       }
-    }).catch(() => {
-      // Đã có instantFallback bảo đảm 100% hiển thị mượt mà không lỗi
-    }).finally(() => {
+    } catch {
+      const fallbackHint = synthesizeInstantHint(session);
+      cachedTurnHintRef.current = fallbackHint;
+      setHint(fallbackHint);
+    } finally {
       setIsLoadingHint(false);
-    });
+    }
   };
 
 
@@ -2857,13 +2874,17 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               silenceIntervalRef.current = setInterval(() => {
                 elapsed += intervalStep;
                 const progress = Math.min(1, elapsed / silenceTimeoutMs);
-                setSilenceCountdownProgress(progress);
+                if (silenceBarRef.current) {
+                  silenceBarRef.current.style.width = `${Math.max(0, Math.min(100, (1 - progress) * 100))}%`;
+                }
                 if (progress >= 1) {
                   if (silenceIntervalRef.current) {
                     clearInterval(silenceIntervalRef.current);
                     silenceIntervalRef.current = null;
                   }
-                  setSilenceCountdownProgress(0);
+                  if (silenceBarRef.current) {
+                    silenceBarRef.current.style.width = '0%';
+                  }
 
                   // Bộ lọc từ đệm ngắn: nếu chỉ mới nói từ ngập ngừng (あの, ええと, はい, 嗯) hoặc dưới 3 ký tự, không vội gửi ngay
                   const currentSnapshot = (latestTranscriptRef.current || inputText || '').trim();
@@ -2896,7 +2917,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
             clearInterval(silenceIntervalRef.current);
             silenceIntervalRef.current = null;
           }
-          setSilenceCountdownProgress(0);
+          if (silenceBarRef.current) {
+            silenceBarRef.current.style.width = '0%';
+          }
 
 
           // Nếu người dùng vẫn đang ở trạng thái thu âm, trì hoãn 120ms rồi tái kích hoạt an toàn (chống InvalidStateError của Chrome)
@@ -3812,12 +3835,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         <div className="shrink-0 pt-0.5">
                           <LivingAvatar
                             size="sm"
-                            avatarState={playingMessageId === msg.id && isPlayingAiSpeech ? 'speaking' : isBowing ? 'bowing' : 'idle'}
+                            avatarState={playingMessageId === msg.id && isAiAudioActuallyPlaying ? 'speaking' : isBowing ? 'bowing' : 'idle'}
                             personaName={session.aiPersona}
                             personaRole={session.recommendedAiVoiceName?.split('(')[0].trim()}
                             scenarioTitle={session.scenarioTitle}
                             archetype={(session.sceneType as any) || undefined}
-                            currentViseme={playingMessageId === msg.id && isPlayingAiSpeech ? currentViseme : 'closed'}
+                            currentViseme={playingMessageId === msg.id && isAiAudioActuallyPlaying ? currentViseme : 'closed'}
                             isAizuchiActive={isLearnerUttering && isAi && msg.id === session.messages[session.messages.length - 1]?.id}
                             hideLabel
                           />
@@ -4117,7 +4140,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                       <span className="h-2 w-2 rounded-full bg-[var(--ai)] animate-bounce" style={{ animationDelay: '300ms' }} />
                     </span>
                     <span className="font-semibold text-[#1E2C48]">{session.aiPersona}</span>
-                    <span>đang soạn câu trả lời...</span>
+                    <span>{session.aiPersona || 'AI'} đang suy nghĩ...</span>
                   </div>
                 </div>
               )}
@@ -4176,8 +4199,21 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               )}
 
 
-              {/* HỘP GỢI Ý DUY NHẤT: GraduatedHintCard ZPD 3 CẤP HOẶC FLOATING CHIP NHẸ NHÀNG */}
-              {hint && !isSending ? (
+              {/* HỘP GỢI Ý DUY NHẤT: Shimmer Loading hoặc GraduatedHintCard 3 CẤP */}
+              {isLoadingHint && !hint && !isSending ? (
+                <div
+                  role="status"
+                  aria-label="Đang tải gợi ý"
+                  className="w-full rounded-2xl border border-[#DFD2B8] bg-[#FAF6EE]/95 p-3.5 shadow-xs space-y-2.5 animate-pulse"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="h-4 w-28 rounded-md bg-[#E6DAC2]" />
+                    <div className="h-5 w-48 rounded-lg bg-[#E6DAC2]" />
+                  </div>
+                  <div className="h-4 w-3/4 rounded-md bg-[#EFE7D6] ml-7" />
+                  <div className="h-11 w-full rounded-xl bg-white/80 border border-[#E6DAC2]" />
+                </div>
+              ) : hint && !isSending ? (
                 isBlindMode ? (
                   <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-center text-xs font-bold text-amber-900 shadow-2xs flex items-center justify-center gap-2 animate-fade-in">
                     <SparkIcon className="w-4 h-4 text-amber-500" />
@@ -4459,11 +4495,12 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                         : 'Bấm để nói tiếng Nhật bằng micro'
                     }
                   >
-                    {/* Thanh đếm im lặng thông minh bên trong button, không tràn viền */}
-                    {isRecordingMic && silenceCountdownProgress > 0 && (
-                      <span 
+                    {/* Thanh đếm im lặng thông minh bên trong button (cập nhật trực tiếp via DOM ref, không re-render) */}
+                    {isRecordingMic && isHandsFreeMode && (
+                      <span
+                        ref={silenceBarRef}
                         className="absolute bottom-0 left-0 h-1 bg-white/70 transition-all duration-75 ease-linear rounded-full pointer-events-none"
-                        style={{ width: `${Math.max(0, Math.min(100, (1 - silenceCountdownProgress) * 100))}%` }}
+                        style={{ width: '0%' }}
                       />
                     )}
 
@@ -4779,10 +4816,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                             }`}>
                               <span className="h-1.5 w-1.5 rounded-full bg-current" />
                               {selectedMessage.linguisticFeedback.speechDelivery.moraRate < 3.8
-                                ? "Chậm rãi, rõ chữ"
+                                ? "Chậm"
                                 : selectedMessage.linguisticFeedback.speechDelivery.moraRate <= 7.0
-                                ? "Tự nhiên, vừa vặn"
-                                : "Nhanh nhẹn, lưu loát"}
+                                ? "Vừa phải"
+                                : "Nhanh"}
                             </span>
                           </div>
                         )}

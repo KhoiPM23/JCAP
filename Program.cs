@@ -157,6 +157,7 @@ builder.Services.AddSingleton<IRegisterAnalyzer, RegisterAnalyzer>();
 builder.Services.AddSingleton<IEventDirector, EventDirector>();
 builder.Services.AddSingleton<IEpisodicFactExtractor, EpisodicFactExtractor>();
 builder.Services.AddScoped<ITelemetryEvaluatorService, TelemetryEvaluatorService>();
+builder.Services.AddScoped<IAdaptiveProfileService, AdaptiveProfileService>();
 builder.Services.AddScoped<IPersonaMemoryService, PersonaMemoryService>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IVoiceVoxService, VoiceVoxService>();

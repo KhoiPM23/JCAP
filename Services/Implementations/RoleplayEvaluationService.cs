@@ -641,10 +641,10 @@ public sealed class RoleplayEvaluationService : IRoleplayEvaluationService
             if (avgPace >= 1.0)
             {
                 var paceDesc = avgPace >= 3.0 && avgPace <= 5.5
-                    ? "nhịp độ vừa vặn, tự nhiên"
+                    ? "nhịp độ vừa phải"
                     : avgPace > 5.5
-                        ? "tiệm cận người bản xứ"
-                        : "điềm đạm, nắn nót";
+                        ? "nhịp độ nhanh"
+                        : "nhịp độ chậm";
                 deliveryParts.Add($"nhịp nói ~{avgPace:0.0} âm/giây ({paceDesc})");
             }
             if (confidenceScore > 0)

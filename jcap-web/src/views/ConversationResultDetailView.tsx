@@ -372,7 +372,7 @@ const UnifiedHexagonEvaluationPanel: React.FC<{
       shortStatus: !hasActualVoice
         ? 'Miễn trừ (Gõ phím)'
         : (averageSpeechPace
-            ? (averageSpeechPace < 2.5 ? 'Chậm rãi, rõ chữ' : averageSpeechPace <= 5.0 ? 'Tự nhiên, vừa vặn' : 'Nhanh nhẹn, lưu loát')
+            ? (averageSpeechPace < 2.5 ? 'Chậm' : averageSpeechPace <= 5.0 ? 'Vừa phải' : 'Nhanh')
             : 'Phát âm rõ ràng'),
       diagnostic: !hasActualVoice
         ? 'Phiên này bạn nhập câu trả lời bằng bàn phím nên hệ thống miễn trừ tính điểm độ rõ âm qua micro.'
@@ -3867,10 +3867,10 @@ export const ConversationResultDetailView: React.FC = () => {
                                       <span className="h-1.5 w-1.5 rounded-full bg-current" />
                                       <span>
                                         {delivery.speechPace < 2.5
-                                          ? "Nhịp điệu: Điềm đạm, nắn nót"
+                                          ? "Nhịp điệu: Chậm"
                                           : delivery.speechPace <= 5.0
-                                          ? "Nhịp điệu: Tự nhiên, linh hoạt"
-                                          : "Nhịp điệu: Nhanh nhẹn, lưu loát"}
+                                          ? "Nhịp điệu: Vừa phải"
+                                          : "Nhịp điệu: Nhanh"}
                                       </span>
                                     </span>
                                   )}

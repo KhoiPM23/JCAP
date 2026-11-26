@@ -15,13 +15,16 @@ public class RoleplaySessionController : ControllerBase
 {
     private readonly IRoleplaySessionService _roleplaySessionService;
     private readonly ILogger<RoleplaySessionController> _logger;
+    private readonly IAdaptiveProfileService? _adaptiveProfileService;
 
     public RoleplaySessionController(
         IRoleplaySessionService roleplaySessionService,
-        ILogger<RoleplaySessionController> logger)
+        ILogger<RoleplaySessionController> logger,
+        IAdaptiveProfileService? adaptiveProfileService = null)
     {
         _roleplaySessionService = roleplaySessionService;
         _logger = logger;
+        _adaptiveProfileService = adaptiveProfileService;
     }
 
     /// <summary>
@@ -215,6 +218,28 @@ public class RoleplaySessionController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// GET /api/learner/adaptive-context
+    /// Ngữ cảnh thích ứng thống nhất (ngắn hạn + dài hạn) để Roadmap, Shadowing, Flashcard, Explore & Roleplay dùng chung.
+    /// </summary>
+    [HttpGet("/api/learner/adaptive-context")]
+    public async Task<IActionResult> GetAdaptiveContext(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(ApiResponse<AdaptiveContextDto>.Fail("Chưa đăng nhập hoặc phiên đăng nhập không hợp lệ."));
+        }
+
+        if (_adaptiveProfileService == null)
+        {
+            return Ok(ApiResponse<AdaptiveContextDto>.Ok(new AdaptiveContextDto { UserId = userId }, "Dữ liệu thích ứng mặc định."));
+        }
+
+        var context = await _adaptiveProfileService.GetAdaptiveContextAsync(userId, cancellationToken);
+        return Ok(ApiResponse<AdaptiveContextDto>.Ok(context, "Lấy ngữ cảnh thích ứng thành công."));
     }
 
     private string? GetCurrentUserId()

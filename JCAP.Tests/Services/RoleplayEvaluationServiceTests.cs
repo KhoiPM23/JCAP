@@ -241,7 +241,7 @@ public class RoleplayEvaluationServiceTests
         Assert.Equal(1.5, result.AverageResponseLatencySeconds);
         Assert.True(result.FluencyScore >= 90);
         Assert.Contains("4.5 âm/giây", result.GeneralFeedbackText);
-        Assert.Contains("nhịp độ vừa vặn, tự nhiên", result.GeneralFeedbackText);
+        Assert.Contains("nhịp độ vừa phải", result.GeneralFeedbackText);
     }
 
     [Fact]

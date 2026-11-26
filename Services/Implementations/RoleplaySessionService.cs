@@ -31,6 +31,7 @@ public class RoleplaySessionService : IRoleplaySessionService
     private readonly IEventDirector _eventDirector;
     private readonly IPhonemeRecognizer? _phonemeRecognizer;
     private readonly IWebHostEnvironment? _webHostEnvironment;
+    private readonly IAdaptiveProfileService? _adaptiveProfileService;
 
     private async Task<bool> IsAdminUserAsync(ApplicationUser user)
     {
@@ -80,7 +81,8 @@ public class RoleplaySessionService : IRoleplaySessionService
         IRegisterAnalyzer? registerAnalyzer = null,
         IEventDirector? eventDirector = null,
         IPhonemeRecognizer? phonemeRecognizer = null,
-        IWebHostEnvironment? webHostEnvironment = null)
+        IWebHostEnvironment? webHostEnvironment = null,
+        IAdaptiveProfileService? adaptiveProfileService = null)
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -95,6 +97,7 @@ public class RoleplaySessionService : IRoleplaySessionService
         _eventDirector = eventDirector ?? new EventDirector();
         _phonemeRecognizer = phonemeRecognizer;
         _webHostEnvironment = webHostEnvironment;
+        _adaptiveProfileService = adaptiveProfileService;
     }
 
     public async Task<ApiResponse<ActiveRoleplaySessionDto?>> GetActiveSessionAsync(
@@ -937,6 +940,22 @@ public class RoleplaySessionService : IRoleplaySessionService
             }
         }
 
+        if (turnResult == null && _adaptiveProfileService != null)
+        {
+            try
+            {
+                var adaptiveContext = await _adaptiveProfileService.GetAdaptiveContextAsync(userId, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(adaptiveContext.AiRuntimeDirective))
+                {
+                    directiveBuilder.AppendLine($"[ADAPTIVE CONTEXT]: {adaptiveContext.AiRuntimeDirective}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Bỏ qua nạp AdaptiveContext khi gửi lượt hội thoại");
+            }
+        }
+
         var combinedDirective = directiveBuilder.Length > 0 ? directiveBuilder.ToString().Trim() : null;
 
         // 4. Gọi AI phân tích và phản hồi nếu chưa xử lý bởi Pre-flight Guard (lịch sử sạch, chưa gồm userMessage hiện tại)
@@ -1224,9 +1243,18 @@ public class RoleplaySessionService : IRoleplaySessionService
                 userMessage.VietnameseMeaning = turnResult.UserVietnameseMeaning;
             }
 
-            userMessage.FuriganaHtml = RoleplaySocialRegister.EnsureFuriganaParity(
+            var resolvedUserFuri = RoleplaySocialRegister.EnsureFuriganaParity(
                 turnResult.UserFuriganaHtml,
                 userMessageText);
+            if (string.IsNullOrWhiteSpace(resolvedUserFuri) || !resolvedUserFuri.Contains("<ruby>", StringComparison.OrdinalIgnoreCase))
+            {
+                var genFuri = RoleplaySocialRegister.GenerateFuriganaHtml(userMessageText);
+                if (!string.IsNullOrWhiteSpace(genFuri) && genFuri.Contains("<ruby>", StringComparison.OrdinalIgnoreCase))
+                {
+                    resolvedUserFuri = RoleplaySocialRegister.EnsureFuriganaParity(genFuri, userMessageText);
+                }
+            }
+            userMessage.FuriganaHtml = resolvedUserFuri;
 
             var duration = request.SpeakingDurationSeconds;
             int userMoraCount = ComputeMoraCount(userMessageText, userMessage.FuriganaHtml);

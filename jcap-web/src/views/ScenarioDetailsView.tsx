@@ -32,7 +32,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-emerald-500',
     accent: 'var(--n5)',
     badgeLabel: 'JLPT N5',
-    descLabel: 'Cơ bản (Beginner)',
+    descLabel: 'Cơ bản',
   },
   N4: {
     bg: 'bg-sky-50/80',
@@ -41,7 +41,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-sky-500',
     accent: 'var(--n4)',
     badgeLabel: 'JLPT N4',
-    descLabel: 'Sơ trung (Elementary)',
+    descLabel: 'Sơ trung',
   },
   N3: {
     bg: 'bg-purple-50/80',
@@ -50,7 +50,7 @@ const levelMeta: Record<ScenarioLevelConfiguration['jlptLevel'], LevelStyleMeta>
     ring: 'ring-purple-500',
     accent: 'var(--n3)',
     badgeLabel: 'JLPT N3',
-    descLabel: 'Trung cấp (Intermediate)',
+    descLabel: 'Trung cấp',
   },
 };
 
@@ -258,8 +258,14 @@ export const ScenarioDetailsView: React.FC = () => {
   }
 
   const currentMeta = levelMeta[selectedLevel.jlptLevel] || levelMeta.N5;
-  const minMinutes = Math.max(5, (selectedLevel.missions?.length ?? 3) * 2);
-  const maxMinutes = Math.max(10, (selectedLevel.missions?.length ?? 3) * 3);
+  const missionsCount = Math.max(1, selectedLevel.missions?.length ?? 3);
+  const basePerMission =
+    selectedLevel.jlptLevel === 'N3' ? 2.6 : selectedLevel.jlptLevel === 'N4' ? 2.0 : 1.5;
+  const knowledgeCount =
+    (selectedLevel.targetVocabularies?.length ?? 0) + (selectedLevel.targetGrammars?.length ?? 0);
+  const complexityBonus = Math.min(3, Math.floor(knowledgeCount / 8));
+  const minMinutes = Math.max(3, Math.round(missionsCount * basePerMission));
+  const maxMinutes = Math.max(minMinutes + 2, Math.round(minMinutes * 1.45) + complexityBonus);
   const isActiveSessionMissionsDone = Boolean(
     isSelectedLevelActive &&
       activeSession &&
@@ -437,9 +443,6 @@ export const ScenarioDetailsView: React.FC = () => {
                   <h3 className="text-[13px] font-bold font-sans text-[var(--sumi)] leading-snug mt-0.5">
                     {selectedLevel.aiPersona}
                   </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--sumi-muted)]">
-                    Phản hồi tự nhiên theo ngữ cảnh văn hóa Nhật, điều chỉnh nhịp thoại theo câu trả lời của bạn.
-                  </p>
                 </div>
               </div>
 

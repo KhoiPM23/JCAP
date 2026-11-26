@@ -6,6 +6,7 @@ import {
   sanitizeDisplayJapanese,
   generateClientFuriganaHtml,
   alignFuriganaWithOriginal,
+  stripRubyToPlainJapanese,
 } from '../../utils/japaneseSanitizer';
 
 // Clean, lightweight SVG Icons (No Emojis)
@@ -81,6 +82,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 }) => {
   const [hintTier, setHintTier] = useState<1 | 2 | 3>(1);
   const [altIndex, setAltIndex] = useState<number>(0);
+  const [showHintFurigana, setShowHintFurigana] = useState<boolean>(true);
   const effectiveLockedTier = Math.max(hintTier, lockedTier || 1);
 
   // Danh sách các phương án ý đồ (Alternative Intents)
@@ -188,6 +190,24 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
               title="Đổi sang hướng diễn đạt khác"
             >
               <span>Ý khác ({altIndex + 1}/{allOptions.length})</span>
+            </button>
+          )}
+
+          {(hintTier === 2 || hintTier === 3) && (
+            <button
+              type="button"
+              onClick={() => {
+                ukiyoSound.playSubtleTap();
+                setShowHintFurigana((prev) => !prev);
+              }}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-2xs transition active:scale-95 cursor-pointer shrink-0 ${
+                showHintFurigana
+                  ? 'bg-[var(--ai-soft)] text-[var(--ai)] border-[var(--ai)]/40'
+                  : 'bg-white/85 text-[var(--sumi-muted)] border-[#DCCCB0] hover:text-[var(--ai)]'
+              }`}
+              title={showHintFurigana ? 'Ẩn phiên âm Furigana' : 'Hiện phiên âm Furigana'}
+            >
+              <span>{showHintFurigana ? 'Ẩn Furi' : 'Furi'}</span>
             </button>
           )}
         </div>
@@ -303,10 +323,16 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
                         className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 text-xs sm:text-sm font-bold text-[var(--sumi)] font-jp transition active:scale-95 cursor-pointer"
                         title="Bấm để chèn từ này vào ô nhập, hoặc nhìn vào để tự nói"
                       >
-                        <span
-                          className="leading-snug"
-                          dangerouslySetInnerHTML={{ __html: effectiveFuri || kw }}
-                        />
+                        {showHintFurigana ? (
+                          <span
+                            className="leading-snug"
+                            dangerouslySetInnerHTML={{ __html: effectiveFuri || kw }}
+                          />
+                        ) : (
+                          <span className="leading-snug">
+                            {stripRubyToPlainJapanese(kw)}
+                          </span>
+                        )}
                         <span className="text-[10px] text-[#8A6A3B] font-sans font-normal">+</span>
                       </button>
 
@@ -365,6 +391,13 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
           <div className="flex flex-col gap-2.5">
             <div className="min-w-0">
               {(() => {
+                if (!showHintFurigana) {
+                  return (
+                    <p className="text-xs sm:text-sm md:text-base font-bold text-[var(--sumi)] font-jp leading-relaxed break-words">
+                      {stripRubyToPlainJapanese(cleanSample)}
+                    </p>
+                  );
+                }
                 const rawFuri = activeOption.furiganaHtml || generateClientFuriganaHtml(cleanSample);
                 const effectiveFuri = alignFuriganaWithOriginal(rawFuri, cleanSample);
                 return effectiveFuri && (effectiveFuri.includes('<ruby>') || activeOption.furiganaHtml) ? (

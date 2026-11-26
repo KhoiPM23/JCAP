@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
@@ -439,39 +440,29 @@ const InventoryPropBadge: React.FC<{
   example?: string;
 }> = ({ type, wordOrPattern, reading, meaning, example }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [popoverPos, setPopoverPos] = useState<'top' | 'bottom'>('top');
-  const [popoverAlign, setPopoverAlign] = useState<'center' | 'left' | 'right'>('center');
+  const [popoverCoords, setPopoverCoords] = useState<{
+    top: number;
+    left: number;
+    placeAbove: boolean;
+  }>({ top: 0, left: 0, placeAbove: true });
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const cleanMeaning = cleanPedagogicMeaning(meaning);
 
   const updatePopoverPos = () => {
-    if (badgeRef.current) {
-      const rect = badgeRef.current.getBoundingClientRect();
-      if (rect.top < 200) setPopoverPos('bottom');
-      else setPopoverPos('top');
-
-      // Kiểm tra tràn mép ngang trong aside preview và cửa sổ
-      const asideEl = badgeRef.current.closest('aside');
-      if (asideEl) {
-        const asideRect = asideEl.getBoundingClientRect();
-        if (rect.right + 120 > asideRect.right) {
-          setPopoverAlign('right');
-        } else if (rect.left - 120 < asideRect.left) {
-          setPopoverAlign('left');
-        } else {
-          setPopoverAlign('center');
-        }
-      } else {
-        if (rect.right > window.innerWidth - 140) {
-          setPopoverAlign('right');
-        } else if (rect.left < 140) {
-          setPopoverAlign('left');
-        } else {
-          setPopoverAlign('center');
-        }
-      }
-    }
+    if (!badgeRef.current || typeof window === 'undefined') return;
+    const rect = badgeRef.current.getBoundingClientRect();
+    const popoverWidth = 256;
+    const placeAbove = rect.top > 220;
+    const clampedLeft = Math.max(
+      12,
+      Math.min(rect.left + rect.width / 2 - popoverWidth / 2, window.innerWidth - popoverWidth - 12)
+    );
+    setPopoverCoords({
+      top: placeAbove ? rect.top - 8 : rect.bottom + 8,
+      left: clampedLeft,
+      placeAbove,
+    });
   };
 
   return (
@@ -523,45 +514,45 @@ const InventoryPropBadge: React.FC<{
         </span>
       </div>
 
-      {/* Hover Peek Popover */}
-      {isHovered && (
-        <div
-          className={`absolute z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
-            popoverPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-          } ${
-            popoverAlign === 'right'
-              ? 'right-0 translate-x-0'
-              : popoverAlign === 'left'
-              ? 'left-0 translate-x-0'
-              : 'left-1/2 -translate-x-1/2'
-          }`}
-          style={{ boxShadow: '0 8px 24px rgba(35, 33, 30, 0.16)' }}
-        >
-          <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
-              {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
-            </span>
-            <span
-              className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
-              }`}
-            >
-              {type === 'vocab' ? 'VOCAB' : 'GRAMMAR'}
-            </span>
-          </div>
-          <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
-            {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
-          </div>
-          <div className="text-xs text-slate-700 leading-snug font-sans">
-            {cleanMeaning}
-          </div>
-          {example && (
-            <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
-              {example}
+      {/* Hover Peek Popover via Portal (không bao giờ bị border overflow-hidden của thẻ cắt mất) */}
+      {isHovered &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed z-[9999] w-64 max-h-[240px] overflow-y-auto rounded-xl border border-[var(--line-strong)] bg-white/98 backdrop-blur-xs p-3 text-left shadow-xl pointer-events-none transition-opacity duration-150 ease-out"
+            style={{
+              top: popoverCoords.top,
+              left: popoverCoords.left,
+              transform: popoverCoords.placeAbove ? 'translateY(-100%)' : 'none',
+              boxShadow: '0 10px 28px rgba(35, 33, 30, 0.18)',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
+                {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
+              </span>
+              <span
+                className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                  type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
+                }`}
+              >
+                {type === 'vocab' ? 'Từ vựng' : 'Ngữ pháp'}
+              </span>
             </div>
-          )}
-        </div>
-      )}
+            <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
+              {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
+            </div>
+            <div className="text-xs text-slate-700 leading-snug font-sans">
+              {cleanMeaning}
+            </div>
+            {example && (
+              <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
+                {example}
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
