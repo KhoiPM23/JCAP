@@ -31,6 +31,10 @@ export const isMapPath = (p: string) => p === '/' || p.startsWith('/explore');
  * vẫn dùng màu cứng của giao diện cũ, nên ở chế độ tối được đặt trong một tấm sáng để chữ không bị chìm.
  */
 const THEMED_PATHS = ['/stamps', '/scenarios', '/shadowing', '/shadowing/catalog', '/profile', '/subscription', '/credits/subscription', '/settings', '/flashcards', '/placement-test/history'];
+/** Diễn đàn, Hỗ trợ và Thư viện Shadowing: sáng dùng giấy ấm của Khám phá (HANDOFF 9h–9j), tối dùng hoc-tap-dem */
+const isPaperPath = (p: string) =>
+  p.startsWith('/community') || p.startsWith('/forum') || p.startsWith('/feedback') || p === '/shadowing' || p === '/shadowing/catalog';
+
 const isThemedPath = (p: string) =>
   p === '/learning' ||
   p.startsWith('/learning/') ||
@@ -39,6 +43,7 @@ const isThemedPath = (p: string) =>
   p.startsWith('/placement-test') ||
   p.startsWith('/profile') ||
   p.startsWith('/flashcards') ||
+  isPaperPath(p) ||
   THEMED_PATHS.includes(p.replace(/\/+$/, '') || '/');
 
 /**
@@ -200,7 +205,7 @@ export const LearnerShell: React.FC = () => {
   };
 
   return (
-    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={stampsPage && !isDark ? themeFor('map') : themeFor('learn')}>
+    <div className={cx('jx-app', !map && 'is-page', collapsed && 'is-collapsed', inPrefecture && 'is-pref')} data-theme={(stampsPage || isPaperPath(cleanPath)) && !isDark ? themeFor('map') : themeFor('learn')}>
       <AppSidebar collapsed={collapsed} onToggleCollapsed={toggle} onMap={map} />
 
       {/* Lớp bản đồ: ở trang khác thì ẩn (inert: không nhận focus, không bấm được) nhưng vẫn giữ nguyên trạng thái */}

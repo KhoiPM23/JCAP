@@ -6,7 +6,6 @@ import type { ExploreSpot } from '../../types/explore';
 import { describeDeviceStatus } from '../../utils/audioDevice';
 import { buildWordFeedback } from '../../utils/wordFeedback';
 import { JapaneseSentenceDiffView } from '../../components/shadowing/JapaneseSentenceDiffView';
-import WordFeedbackList from '../../components/shadowing/WordFeedbackList';
 import FluencyPanel from '../../components/shadowing/FluencyPanel';
 import { SpotShadowingNotes } from './SpotShadowingNotes';
 import { SpotShadowingSummary } from './SpotShadowingSummary';
@@ -610,9 +609,8 @@ export const SpotShadowing: React.FC<SpotShadowingProps> = ({ spot, pref, dialog
                               spokenText={currentRecognizedText}
                               size="sm"
                             />
-                            {buildWordFeedback(currentDiffTokens).length > 0 ? (
-                              <WordFeedbackList tokens={currentDiffTokens} />
-                            ) : (
+                            {/* Danh sách "Cần chỉnh" đã nằm trong JapaneseSentenceDiffView; ở đây chỉ báo khi đọc đúng hết */}
+                            {buildWordFeedback(currentDiffTokens).length === 0 && (
                               <p className="ssc-dk-good">
                                 <Icon name="check_circle" size={18} />
                                 Bạn đọc đúng mọi từ trong câu.

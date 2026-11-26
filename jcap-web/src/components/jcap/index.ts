@@ -18,6 +18,7 @@ export {
 export { Tabs, Stepper, type TabsProps, type TabItem, type StepperProps, type Step } from './Tabs';
 export { ProgressBar, QuotaMeter, ScoreRing, type ProgressBarProps, type QuotaMeterProps, type ScoreRingProps } from './Progress';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
+export { Modal, Alert, Toast, type ModalProps, type AlertProps } from './Overlay';
 export { JpText, type JpTextProps } from './JpText';
 export { MicButton, AudioPlayer, type MicState, type MicButtonProps, type AudioPlayerProps } from './Speaking';
 export { ChatBubble, type ChatBubbleProps } from './ChatBubble';
