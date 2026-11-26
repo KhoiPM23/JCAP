@@ -48,6 +48,7 @@ import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
 import { FlashcardSetDetailView } from '../views/self-study/FlashcardSetDetailView';
 import { FlashcardSessionView } from '../views/self-study/FlashcardSessionView';
 import { FlashcardTestView } from '../views/self-study/FlashcardTestView';
+import { FlashcardQuizHistoryView } from '../views/self-study/FlashcardQuizHistoryView';
 import { FlashcardReviewHistoryView } from '../views/self-study/FlashcardReviewHistoryView';
 import { LearnerFeedbackView } from '../views/LearnerFeedbackView';
 import { AdminFeedbackView } from '../views/admin/AdminFeedbackView';
@@ -482,6 +483,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+        <Route path="/flashcards/test/history" element={<FlashcardQuizHistoryView />} />
 
         {/* Kho học liệu (Learning Topics & Content) */}
         <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>

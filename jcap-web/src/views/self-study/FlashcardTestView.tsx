@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { flashcardService } from '../../services/flashcardService';
+import { flashcardQuizService } from '../../services/flashcardQuizService';
 import { getDemoSetDetail, DEMO_VOCAB_SET, DEMO_GRAMMAR_SET } from './demoFlashcardData';
 import type { FlashcardCardItem, FlashcardContentType } from '../../types/flashcard';
+import type { SubmitFlashcardQuizAttemptRequest } from '../../types/flashcardQuiz';
 
 export type QuizQuestionType = 'true_false' | 'multiple_choice' | 'matching' | 'written';
 export type AnswerDirection = 'ja_to_vi' | 'vi_to_ja' | 'mixed';
@@ -17,6 +19,8 @@ export interface QuizTestConfig {
   direction: AnswerDirection;
   cardScope: CardScopeFilter;
   instantFeedback: boolean;
+  listeningMode: boolean;
+  timeLimitSeconds: number; // 0 = unlimited
 }
 
 export interface MatchingPairItem {
@@ -107,6 +111,8 @@ export const FlashcardTestView: React.FC = () => {
     direction: 'ja_to_vi',
     cardScope: 'all',
     instantFeedback: false,
+    listeningMode: false,
+    timeLimitSeconds: 0,
   });
 
   // Phase: 'setup' | 'testing' | 'result'
@@ -117,9 +123,19 @@ export const FlashcardTestView: React.FC = () => {
   const [startedAt, setStartedAt] = useState<number>(Date.now());
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [unansweredWarning, setUnansweredWarning] = useState<boolean>(false);
+  const [revealedListeningIds, setRevealedListeningIds] = useState<Record<string, boolean>>({});
+  const [timedOut, setTimedOut] = useState<boolean>(false);
+  const [bulkBookmarking, setBulkBookmarking] = useState<boolean>(false);
+  const [bulkBookmarkMessage, setBulkBookmarkMessage] = useState<string | null>(null);
+
+  // Independent self-assessment attempt persistence state
+  const [savingResult, setSavingResult] = useState<boolean>(false);
+  const [savedAttemptId, setSavedAttemptId] = useState<number | null>(null);
+  const [saveResultError, setSaveResultError] = useState<string | null>(null);
 
   // Matching block interactive state (selected option tracking)
   const questionRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const autoSubmittedRef = useRef<boolean>(false);
 
   // Load cards from API or Demo
   useEffect(() => {
@@ -266,6 +282,56 @@ export const FlashcardTestView: React.FC = () => {
     if (!isDemo) {
       await flashcardService.toggleBookmark(card.itemType, card.itemId);
     }
+  };
+
+  // 1-click Bookmark all missed / skipped cards on Result screen
+  const handleBookmarkAllMissed = async () => {
+    const missedUnbookmarked = questions
+      .filter((q) => {
+        const rec = answers[q.id];
+        return (!rec || !rec.isCorrect) && !q.card.isBookmarked;
+      })
+      .map((q) => q.card);
+
+    // Deduplicate by itemType + itemId
+    const seen = new Set<string>();
+    const uniqueCards = missedUnbookmarked.filter((c) => {
+      const k = `${c.itemType}_${c.itemId}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+
+    if (uniqueCards.length === 0) {
+      setBulkBookmarkMessage('Tất cả các thẻ làm sai đều đã có trong Bookmark rồi.');
+      return;
+    }
+
+    setBulkBookmarking(true);
+    setBulkBookmarkMessage(null);
+
+    if (!isDemo) {
+      await Promise.all(
+        uniqueCards.map((c) => flashcardService.toggleBookmark(c.itemType, c.itemId))
+      );
+    }
+
+    const savedKeys = new Set(uniqueCards.map((c) => `${c.itemType}_${c.itemId}`));
+    setAllCards((prev) =>
+      prev.map((c) =>
+        savedKeys.has(`${c.itemType}_${c.itemId}`) ? { ...c, isBookmarked: true } : c
+      )
+    );
+    setQuestions((prev) =>
+      prev.map((q) =>
+        savedKeys.has(`${q.card.itemType}_${q.card.itemId}`)
+          ? { ...q, card: { ...q.card, isBookmarked: true } }
+          : q
+      )
+    );
+
+    setBulkBookmarking(false);
+    setBulkBookmarkMessage(`Đã lưu ${uniqueCards.length} thẻ làm sai vào Bookmark!`);
   };
 
   // Build Quiz Questions from a target list of cards
@@ -448,6 +514,13 @@ export const FlashcardTestView: React.FC = () => {
     setStartedAt(Date.now());
     setElapsedSeconds(0);
     setUnansweredWarning(false);
+    setRevealedListeningIds({});
+    setTimedOut(false);
+    setBulkBookmarkMessage(null);
+    autoSubmittedRef.current = false;
+    setSavingResult(false);
+    setSavedAttemptId(null);
+    setSaveResultError(null);
     setPhase('testing');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -570,6 +643,57 @@ export const FlashcardTestView: React.FC = () => {
     }
   };
 
+  const persistQuizAttempt = async (
+    targetQuestions: QuizQuestion[],
+    finalizedAnswers: Record<string, UserAnswerRecord>,
+    durationSec: number
+  ) => {
+    if (isDemo || targetQuestions.length === 0) return;
+
+    setSavingResult(true);
+    setSaveResultError(null);
+
+    const hasVocab = targetQuestions.some((q) => q.card.itemType === 'Vocabulary');
+    const hasGrammar = targetQuestions.some((q) => q.card.itemType === 'Grammar');
+    const resolvedContentType: FlashcardContentType | 'Mixed' =
+      hasVocab && hasGrammar ? 'Mixed' : hasGrammar ? 'Grammar' : 'Vocabulary';
+
+    const payload: SubmitFlashcardQuizAttemptRequest = {
+      sourceType: isBookmarkSource ? 'Bookmark' : 'TopicSet',
+      topicId: isBookmarkSource ? null : currentTopicId,
+      contentType: resolvedContentType,
+      setTitle,
+      direction: config.direction,
+      cardScope: config.cardScope,
+      instantFeedback: config.instantFeedback,
+      durationSeconds: Math.max(1, durationSec),
+      items: targetQuestions.map((q) => {
+        const rec = finalizedAnswers[q.id];
+        const isSkipped = !rec || !!rec.isSkipped || !rec.userAnswer.trim();
+        return {
+          questionIndex: q.index,
+          questionType: q.type,
+          direction: q.direction,
+          itemType: q.card.itemType,
+          itemId: q.card.itemId,
+          promptText: q.promptText,
+          correctAnswer: q.correctAnswer,
+          userAnswer: isSkipped ? null : rec.userAnswer,
+          isCorrect: !isSkipped && !!rec?.isCorrect,
+          isSkipped,
+        };
+      }),
+    };
+
+    const res = await flashcardQuizService.submitAttempt(payload);
+    if (res.success && res.data) {
+      setSavedAttemptId(res.data.attemptId);
+    } else {
+      setSaveResultError(res.message || 'Không thể lưu kết quả tự đánh giá.');
+    }
+    setSavingResult(false);
+  };
+
   // Submit entire test
   const handleSubmitTest = (force = false) => {
     const unansweredCount = questions.filter((q) => {
@@ -615,11 +739,102 @@ export const FlashcardTestView: React.FC = () => {
       }
     });
 
+    const finalDuration = Math.max(1, Math.floor((Date.now() - startedAt) / 1000));
     setAnswers(finalized);
-    setElapsedSeconds(Math.max(1, Math.floor((Date.now() - startedAt) / 1000)));
+    setElapsedSeconds(finalDuration);
     setPhase('result');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    void persistQuizAttempt(questions, finalized, finalDuration);
   };
+
+  // Auto-submit when Timed Challenge hits 0
+  useEffect(() => {
+    if (
+      phase === 'testing' &&
+      config.timeLimitSeconds > 0 &&
+      elapsedSeconds >= config.timeLimitSeconds &&
+      !autoSubmittedRef.current
+    ) {
+      autoSubmittedRef.current = true;
+      setTimedOut(true);
+      handleSubmitTest(true);
+    }
+  }, [phase, config.timeLimitSeconds, elapsedSeconds]);
+
+  // Keyboard shortcuts during testing phase (1-4, T/F, R to replay audio, Up/Down arrows)
+  useEffect(() => {
+    if (phase !== 'testing' || questions.length === 0) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName?.toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      const activeQ = questions[activeQuestionIdx];
+      if (!activeQ) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = Math.min(questions.length - 1, activeQuestionIdx + 1);
+        setActiveQuestionIdx(next);
+        questionRefs.current[next]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = Math.max(0, activeQuestionIdx - 1);
+        setActiveQuestionIdx(prev);
+        questionRefs.current[prev]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        playJapaneseAudio(activeQ.card.frontText);
+        return;
+      }
+
+      if (activeQ.type === 'true_false') {
+        if (e.key.toLowerCase() === 't' || e.key === '1') {
+          e.preventDefault();
+          handleSelectAnswer(activeQ, 'TRUE');
+        } else if (e.key.toLowerCase() === 'f' || e.key === '2') {
+          e.preventDefault();
+          handleSelectAnswer(activeQ, 'FALSE');
+        }
+      } else if (activeQ.type === 'multiple_choice' && activeQ.options) {
+        const num = parseInt(e.key, 10);
+        if (num >= 1 && num <= activeQ.options.length) {
+          e.preventDefault();
+          handleSelectAnswer(activeQ, activeQ.options[num - 1]);
+        }
+      } else if (activeQ.type === 'matching' && activeQ.matchingOptions) {
+        const num = parseInt(e.key, 10);
+        if (num >= 1 && num <= activeQ.matchingOptions.length) {
+          e.preventDefault();
+          handleSelectAnswer(activeQ, activeQ.matchingOptions[num - 1]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [phase, questions, activeQuestionIdx, answers]);
+
+  const remainingSeconds =
+    config.timeLimitSeconds > 0
+      ? Math.max(0, config.timeLimitSeconds - elapsedSeconds)
+      : 0;
+
+  const missedUnbookmarkedCount = useMemo(() => {
+    const seen = new Set<string>();
+    return questions.filter((q) => {
+      const rec = answers[q.id];
+      if ((rec && rec.isCorrect) || q.card.isBookmarked) return false;
+      const k = `${q.card.itemType}_${q.card.itemId}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).length;
+  }, [questions, answers]);
 
   // Progress & Results stats
   const answeredCount = useMemo(() => {
@@ -661,63 +876,89 @@ export const FlashcardTestView: React.FC = () => {
   const getQuestionTypeBadge = (type: QuizQuestionType) => {
     switch (type) {
       case 'true_false':
-        return { label: 'Đúng / Sai', icon: '⚖️', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+        return { label: 'Đúng / Sai', icon: '⚖️', color: 'bg-warning-soft text-warning border-warning/30' };
       case 'multiple_choice':
-        return { label: 'Trắc nghiệm', icon: '🎯', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+        return { label: 'Trắc nghiệm', icon: '🎯', color: 'bg-ai-soft text-ai border-ai/30' };
       case 'matching':
-        return { label: 'Ghép thẻ', icon: '🔗', color: 'bg-purple-50 text-purple-700 border-purple-200' };
+        return { label: 'Ghép thẻ', icon: '🔗', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' };
       case 'written':
-        return { label: 'Tự luận', icon: '✍️', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+        return { label: 'Tự luận', icon: '✍️', color: 'bg-success-soft text-success border-success/30' };
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F9FE] font-sans pb-16">
+    <div className="min-h-screen bg-paper-100 text-sumi font-sans pb-16">
       {/* ==================== TOP STICKY BAR ==================== */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
+      <header className="sticky top-0 z-30 bg-paper-50/95 backdrop-blur-md border-b border-line shadow-2xs">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               to={backUrl}
-              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition shrink-0"
+              className="w-9 h-9 rounded-xl bg-paper-100 hover:bg-paper-200 text-sumi border border-line flex items-center justify-center font-bold text-sm transition shrink-0"
               title="Quay lại bộ thẻ"
             >
               ←
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-ai-soft text-ai border border-ai/30 uppercase">
                   📝 Quizlet Test Mode
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-paper-200 text-sumi-muted border border-line">
                   {jlptLevel}
                 </span>
               </div>
-              <h1 className="text-sm sm:text-base font-black text-[#071A44] truncate mt-0.5">
+              <h1 className="text-sm sm:text-base font-black text-sumi truncate mt-0.5">
                 {setTitle || 'Kiểm tra kiến thức Flashcard'}
               </h1>
             </div>
           </div>
 
           {/* Right status / actions */}
+          {phase === 'setup' && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                to="/flashcards/test/history"
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-ai-soft hover:bg-ai/20 text-ai border border-ai/30 transition flex items-center gap-1.5"
+              >
+                <span>🕒</span>
+                <span>Lịch sử tự đánh giá</span>
+              </Link>
+            </div>
+          )}
+
           {phase === 'testing' && (
             <div className="flex items-center gap-3 shrink-0">
-              <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700">
-                <span>⏱️ {formatTime(elapsedSeconds)}</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-blue-700">
+              <div className="hidden sm:flex items-center gap-2 bg-paper-100 border border-line px-3 py-1.5 rounded-xl text-xs font-bold text-sumi">
+                {config.timeLimitSeconds > 0 ? (
+                  <span
+                    className={
+                      remainingSeconds <= 10
+                        ? 'text-danger animate-pulse font-black'
+                        : remainingSeconds <= 30
+                        ? 'text-warning font-black'
+                        : 'text-ai font-bold'
+                    }
+                  >
+                    ⏳ {formatTime(remainingSeconds)}
+                  </span>
+                ) : (
+                  <span>⏱️ {formatTime(elapsedSeconds)}</span>
+                )}
+                <span className="text-line">|</span>
+                <span className="text-ai">
                   Đã làm: {answeredCount}/{questions.length}
                 </span>
               </div>
               <button
                 onClick={() => setPhase('setup')}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-sumi-muted hover:text-sumi hover:bg-paper-100 border border-line transition cursor-pointer"
               >
                 ⚙️ Tùy chỉnh
               </button>
               <button
                 onClick={() => handleSubmitTest(false)}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-ai hover:bg-ai-hover text-on-ai shadow-xs transition cursor-pointer"
               >
                 Nộp bài ✓
               </button>
@@ -728,13 +969,13 @@ export const FlashcardTestView: React.FC = () => {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setPhase('setup')}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-paper-100 hover:bg-paper-200 text-sumi border border-line transition cursor-pointer"
               >
                 ⚙️ Thiết lập đề mới
               </button>
               <button
                 onClick={handleStartTest}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-ai hover:bg-ai-hover text-on-ai shadow-xs transition cursor-pointer"
               >
                 🔄 Làm đề mới
               </button>
@@ -744,9 +985,9 @@ export const FlashcardTestView: React.FC = () => {
 
         {/* Progress Bar under header during testing */}
         {phase === 'testing' && questions.length > 0 && (
-          <div className="w-full bg-slate-100 h-1.5 overflow-hidden">
+          <div className="w-full bg-paper-200 h-1.5 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-300"
+              className="h-full bg-ai transition-all duration-300"
               style={{ width: `${Math.round((answeredCount / questions.length) * 100)}%` }}
             />
           </div>
@@ -755,7 +996,7 @@ export const FlashcardTestView: React.FC = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8">
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center text-slate-400 space-y-3">
+          <div className="py-24 flex flex-col items-center justify-center text-sumi-faint space-y-3">
             <div className="w-10 h-10 border-4 border-blue-200 border-t-[#2563EB] rounded-full animate-spin" />
             <p className="text-sm font-medium">Đang chuẩn bị ngân hàng câu hỏi từ bộ thẻ...</p>
           </div>
@@ -764,7 +1005,7 @@ export const FlashcardTestView: React.FC = () => {
             <div>⚠️ {errorMessage}</div>
             <Link
               to={backUrl}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-red-200 text-xs font-bold text-red-700"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-paper-50 border border-red-200 text-xs font-bold text-red-700"
             >
               ← Quay lại
             </Link>
@@ -773,7 +1014,7 @@ export const FlashcardTestView: React.FC = () => {
           <>
             {/* ==================== PHASE 1: SETUP SCREEN (QUIZLET OPTIONS) ==================== */}
             {phase === 'setup' && (
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-paper-50 rounded-3xl border border-line shadow-sm overflow-hidden">
                 {/* Banner */}
                 <div className="bg-gradient-to-r from-[#071A44] via-[#1E3A8A] to-indigo-900 p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-2">
@@ -801,7 +1042,7 @@ export const FlashcardTestView: React.FC = () => {
                 <div className="p-6 sm:p-8 space-y-8">
                   {/* 1. Chọn phạm vi thẻ */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-black text-slate-800">
+                    <label className="block text-sm font-black text-sumi">
                       1. Phạm vi thẻ đưa vào đề kiểm tra
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -840,20 +1081,20 @@ export const FlashcardTestView: React.FC = () => {
                             className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                               active
                                 ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20'
-                                : 'bg-slate-50/70 hover:bg-slate-100 border-slate-200'
+                                : 'bg-paper-100/80 hover:bg-paper-100 border-line'
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-lg">{scope.icon}</span>
                               <span
                                 className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                                  active ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'
+                                  active ? 'bg-blue-600 text-white' : 'bg-paper-200 text-sumi'
                                 }`}
                               >
                                 {scope.count}
                               </span>
                             </div>
-                            <div className="text-xs font-bold text-slate-800 mt-2">
+                            <div className="text-xs font-bold text-sumi mt-2">
                               {scope.label}
                             </div>
                           </button>
@@ -863,11 +1104,11 @@ export const FlashcardTestView: React.FC = () => {
                   </div>
 
                   {/* 2. Số lượng câu hỏi & Chiều câu hỏi */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-line">
                     {/* Số lượng câu hỏi */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-black text-slate-800">
+                        <label className="text-sm font-black text-sumi">
                           2. Số lượng câu hỏi (Tối đa {eligibleCards.length})
                         </label>
                         <span className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 font-black text-sm border border-blue-200">
@@ -900,7 +1141,7 @@ export const FlashcardTestView: React.FC = () => {
                               className={`px-3 py-1 rounded-lg text-xs font-bold border transition cursor-pointer ${
                                 config.questionCount === preset
                                   ? 'bg-blue-600 text-white border-blue-600'
-                                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                  : 'bg-paper-50 text-sumi-muted border-line hover:bg-paper-100'
                               }`}
                             >
                               {preset === eligibleCards.length ? `Tất cả (${preset})` : `${preset} câu`}
@@ -911,7 +1152,7 @@ export const FlashcardTestView: React.FC = () => {
 
                     {/* Chiều câu hỏi */}
                     <div className="space-y-3">
-                      <label className="block text-sm font-black text-slate-800">
+                      <label className="block text-sm font-black text-sumi">
                         3. Chiều câu hỏi & trả lời
                       </label>
                       <div className="grid grid-cols-1 gap-2">
@@ -946,16 +1187,16 @@ export const FlashcardTestView: React.FC = () => {
                               className={`px-4 py-2.5 rounded-xl border text-left transition cursor-pointer flex items-center justify-between ${
                                 active
                                   ? 'bg-blue-50 border-blue-500 text-blue-950'
-                                  : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+                                  : 'bg-paper-50 hover:bg-paper-100 border-line text-sumi'
                               }`}
                             >
                               <div>
                                 <div className="text-xs font-extrabold">{dir.label}</div>
-                                <div className="text-[11px] text-slate-500">{dir.desc}</div>
+                                <div className="text-[11px] text-sumi-muted">{dir.desc}</div>
                               </div>
                               <div
                                 className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                                  active ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300'
+                                  active ? 'border-blue-600 bg-blue-600 text-white' : 'border-line'
                                 }`}
                               >
                                 {active && <span className="text-[10px]">✓</span>}
@@ -968,8 +1209,8 @@ export const FlashcardTestView: React.FC = () => {
                   </div>
 
                   {/* 4. Các loại câu hỏi kiểu Quizlet */}
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <label className="block text-sm font-black text-slate-800">
+                  <div className="space-y-3 pt-4 border-t border-line">
+                    <label className="block text-sm font-black text-sumi">
                       4. Loại câu hỏi (Chọn ít nhất 1 dạng câu hỏi)
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1012,16 +1253,16 @@ export const FlashcardTestView: React.FC = () => {
                             className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 select-none ${
                               checked
                                 ? 'bg-indigo-50/60 border-indigo-500 ring-1 ring-indigo-500/20'
-                                : 'bg-white hover:bg-slate-50 border-slate-200'
+                                : 'bg-paper-50 hover:bg-paper-100 border-line'
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               <span className="text-xl mt-0.5">{qType.icon}</span>
                               <div>
-                                <div className="text-xs font-extrabold text-slate-800">
+                                <div className="text-xs font-extrabold text-sumi">
                                   {qType.title}
                                 </div>
-                                <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                                <div className="text-[11px] text-sumi-muted mt-0.5 leading-relaxed">
                                   {qType.desc}
                                 </div>
                               </div>
@@ -1030,7 +1271,7 @@ export const FlashcardTestView: React.FC = () => {
                               className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition ${
                                 checked
                                   ? 'bg-indigo-600 border-indigo-600 text-white font-bold text-xs'
-                                  : 'bg-white border-slate-300'
+                                  : 'bg-paper-50 border-line'
                               }`}
                             >
                               {checked && '✓'}
@@ -1041,45 +1282,113 @@ export const FlashcardTestView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 5. Chế độ phản hồi */}
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-black text-slate-800">
-                        ⚡ Chấm điểm tức thì sau mỗi câu (Instant Feedback)
+                  {/* 5. Chế độ nâng cao: Instant Feedback, Listening Mode & Timed Challenge */}
+                  <div className="pt-4 border-t border-line space-y-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-black text-sumi">
+                          ⚡ Chấm điểm tức thì sau mỗi câu (Instant Feedback)
+                        </div>
+                        <p className="text-xs text-sumi-muted">
+                          Nếu bật, hệ thống sẽ báo Đúng/Sai ngay khi bạn chọn đáp án. Nếu tắt, hệ thống sẽ chấm toàn bộ bài thi khi bấm &quot;Nộp bài&quot; giống chuẩn Quizlet Test.
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-500">
-                        Nếu bật, hệ thống sẽ báo Đúng/Sai ngay khi bạn chọn đáp án. Nếu tắt, hệ thống sẽ chấm toàn bộ bài thi khi bấm "Nộp bài" giống chuẩn Quizlet Test.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          instantFeedback: !prev.instantFeedback,
-                        }))
-                      }
-                      className={`w-12 h-7 rounded-full transition-colors p-1 cursor-pointer shrink-0 ${
-                        config.instantFeedback ? 'bg-blue-600' : 'bg-slate-300'
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
-                          config.instantFeedback ? 'translate-x-5' : 'translate-x-0'
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            instantFeedback: !prev.instantFeedback,
+                          }))
+                        }
+                        className={`w-12 h-7 rounded-full transition-colors p-1 cursor-pointer shrink-0 ${
+                          config.instantFeedback ? 'bg-ai' : 'bg-paper-200 border border-line'
                         }`}
-                      />
-                    </button>
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full bg-paper-50 shadow-xs transition-transform ${
+                            config.instantFeedback ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-black text-sumi">
+                          🎧 Chế độ Nghe chọn đáp án (Listening Mode)
+                        </div>
+                        <p className="text-xs text-sumi-muted">
+                          Ẩn mặt chữ tiếng Nhật ở các câu hỏi Nhật ➔ Việt để rèn phản xạ nghe phát âm (có nút mở gợi ý chữ nếu cần).
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            listeningMode: !prev.listeningMode,
+                          }))
+                        }
+                        className={`w-12 h-7 rounded-full transition-colors p-1 cursor-pointer shrink-0 ${
+                          config.listeningMode ? 'bg-ai' : 'bg-paper-200 border border-line'
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full bg-paper-50 shadow-xs transition-transform ${
+                            config.listeningMode ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <div>
+                        <div className="text-sm font-black text-sumi">
+                          ⏳ Chế độ Thi bấm giờ (Timed Challenge)
+                        </div>
+                        <p className="text-xs text-sumi-muted">
+                          Giới hạn thời gian làm bài để tăng áp lực phản xạ; hệ thống tự động nộp bài khi hết giờ.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {[
+                          { secs: 0, label: 'Không giới hạn' },
+                          { secs: 60, label: '1 phút' },
+                          { secs: 180, label: '3 phút' },
+                          { secs: 300, label: '5 phút' },
+                        ].map((opt) => {
+                          const active = config.timeLimitSeconds === opt.secs;
+                          return (
+                            <button
+                              key={opt.secs}
+                              type="button"
+                              onClick={() =>
+                                setConfig((prev) => ({ ...prev, timeLimitSeconds: opt.secs }))
+                              }
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                                active
+                                  ? 'bg-ai text-on-ai border-ai shadow-xs'
+                                  : 'bg-paper-100 text-sumi-muted border-line hover:text-sumi hover:bg-paper-200'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Start CTA */}
-                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="pt-4 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4">
                     {eligibleCards.length === 0 ? (
                       <div className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-xl">
                         ⚠️ Không có thẻ nào thỏa mãn bộ lọc "{config.cardScope}". Vui lòng chọn "Tất cả thẻ".
                       </div>
                     ) : (
-                      <div className="text-xs text-slate-500">
-                        Đề kiểm tra gồm <strong className="text-slate-800">{config.questionCount} câu hỏi</strong> được sinh ngẫu nhiên từ <strong className="text-slate-800">{eligibleCards.length} thẻ</strong>.
+                      <div className="text-xs text-sumi-muted">
+                        Đề kiểm tra gồm <strong className="text-sumi">{config.questionCount} câu hỏi</strong> được sinh ngẫu nhiên từ <strong className="text-sumi">{eligibleCards.length} thẻ</strong>.
                       </div>
                     )}
 
@@ -1101,13 +1410,16 @@ export const FlashcardTestView: React.FC = () => {
             {phase === 'testing' && (
               <div className="space-y-6">
                 {/* Question Navigator Pills */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                <div className="bg-paper-50 rounded-2xl border border-line p-4 shadow-2xs space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-extrabold text-sumi uppercase tracking-wider">
                       Danh sách câu hỏi ({answeredCount}/{questions.length} đã trả lời)
                     </span>
-                    <span className="text-[11px] text-slate-400">
-                      Nhấn vào số câu để di chuyển nhanh
+                    <span className="text-[11px] text-sumi-muted">
+                      ⌨️ Phím tắt: <kbd className="px-1.5 py-0.5 rounded bg-paper-200 border border-line font-mono text-[10px]">1-4</kbd> chọn đáp án •{' '}
+                      <kbd className="px-1.5 py-0.5 rounded bg-paper-200 border border-line font-mono text-[10px]">T/F</kbd> Đúng/Sai •{' '}
+                      <kbd className="px-1.5 py-0.5 rounded bg-paper-200 border border-line font-mono text-[10px]">R</kbd> nghe lại •{' '}
+                      <kbd className="px-1.5 py-0.5 rounded bg-paper-200 border border-line font-mono text-[10px]">↑↓</kbd> chuyển câu
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -1116,13 +1428,13 @@ export const FlashcardTestView: React.FC = () => {
                       const isAnswered = rec && (rec.userAnswer.trim() !== '' || rec.isSkipped);
                       const isCurrent = activeQuestionIdx === idx;
 
-                      let pillStyle = 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200';
+                      let pillStyle = 'bg-paper-100 text-sumi-muted border-line hover:bg-paper-200';
                       if (config.instantFeedback && rec?.isSubmitted) {
                         pillStyle = rec.isCorrect
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          : 'bg-red-100 text-red-800 border-red-300';
+                          ? 'bg-success-soft text-success border-success/30'
+                          : 'bg-danger-soft text-danger border-danger/30';
                       } else if (isAnswered) {
-                        pillStyle = 'bg-blue-600 text-white border-blue-600';
+                        pillStyle = 'bg-ai text-on-ai border-ai';
                       }
 
                       return (
@@ -1137,7 +1449,7 @@ export const FlashcardTestView: React.FC = () => {
                             });
                           }}
                           className={`w-8 h-8 rounded-xl text-xs font-extrabold border transition cursor-pointer flex items-center justify-center ${pillStyle} ${
-                            isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''
+                            isCurrent ? 'ring-2 ring-offset-1 ring-ai' : ''
                           }`}
                         >
                           {q.index}
@@ -1177,14 +1489,14 @@ export const FlashcardTestView: React.FC = () => {
                           questionRefs.current[idx] = el;
                         }}
                         onClick={() => setActiveQuestionIdx(idx)}
-                        className={`bg-white rounded-3xl border p-6 sm:p-8 shadow-2xs transition-all space-y-6 ${
+                        className={`bg-paper-50 rounded-3xl border p-6 sm:p-8 shadow-2xs transition-all space-y-6 ${
                           activeQuestionIdx === idx
                             ? 'border-blue-400 ring-2 ring-blue-500/10'
-                            : 'border-slate-200'
+                            : 'border-line'
                         }`}
                       >
                         {/* Card Top Header */}
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                        <div className="flex items-center justify-between gap-2 border-b border-line pb-4">
                           <div className="flex items-center gap-2">
                             <span className="w-7 h-7 rounded-lg bg-[#071A44] text-white text-xs font-black flex items-center justify-center">
                               {q.index}
@@ -1194,7 +1506,7 @@ export const FlashcardTestView: React.FC = () => {
                             >
                               {badge.icon} {badge.label}
                             </span>
-                            <span className="text-xs text-slate-400 font-semibold">
+                            <span className="text-xs text-sumi-faint font-semibold">
                               {q.direction === 'ja_to_vi' ? 'Nhật ➔ Việt' : 'Việt ➔ Nhật'}
                             </span>
                           </div>
@@ -1207,14 +1519,14 @@ export const FlashcardTestView: React.FC = () => {
                                   e.stopPropagation();
                                   playJapaneseAudio(q.card.frontText);
                                 }}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                                className="px-2.5 py-1 rounded-lg bg-paper-100 hover:bg-blue-50 text-sumi hover:text-blue-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
                                 title="Nghe phát âm tiếng Nhật"
                               >
                                 <span>🔊</span>
                                 <span>Nghe</span>
                               </button>
                             )}
-                            <span className="text-xs font-bold text-slate-400">
+                            <span className="text-xs font-bold text-sumi-faint">
                               Câu {q.index} / {questions.length}
                             </span>
                           </div>
@@ -1223,12 +1535,12 @@ export const FlashcardTestView: React.FC = () => {
                         {/* Question Body */}
                         {q.type === 'true_false' ? (
                           <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80">
-                              <div className="space-y-1 md:border-r md:border-slate-200 md:pr-4">
-                                <div className="text-[11px] font-bold text-slate-400 uppercase">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-paper-100/80 rounded-2xl p-5 border border-line">
+                              <div className="space-y-1 md:border-r md:border-line md:pr-4">
+                                <div className="text-[11px] font-bold text-sumi-faint uppercase">
                                   {q.direction === 'ja_to_vi' ? 'Thuật ngữ (Tiếng Nhật)' : 'Nghĩa (Tiếng Việt)'}
                                 </div>
-                                <div className="text-2xl font-black text-[#071A44] font-serif">
+                                <div className="text-2xl font-black text-sumi font-serif">
                                   {q.promptText}
                                 </div>
                                 {q.promptSub && (
@@ -1238,17 +1550,17 @@ export const FlashcardTestView: React.FC = () => {
                                 )}
                               </div>
                               <div className="space-y-1 md:pl-2">
-                                <div className="text-[11px] font-bold text-slate-400 uppercase">
+                                <div className="text-[11px] font-bold text-sumi-faint uppercase">
                                   {q.direction === 'ja_to_vi' ? 'Nghĩa được ghép' : 'Thuật ngữ được ghép'}
                                 </div>
-                                <div className="text-lg font-bold text-slate-800">
+                                <div className="text-lg font-bold text-sumi">
                                   {q.displayedPairing}
                                 </div>
                               </div>
                             </div>
 
                             <div className="space-y-2">
-                              <div className="text-xs font-bold text-slate-500">
+                              <div className="text-xs font-bold text-sumi-muted">
                                 Chọn câu trả lời của bạn:
                               </div>
                               <div className="grid grid-cols-2 gap-3">
@@ -1258,7 +1570,7 @@ export const FlashcardTestView: React.FC = () => {
                                 ].map((btn) => {
                                   const isSelected = rec?.userAnswer === btn.val;
                                   let btnStyle =
-                                    'bg-white hover:bg-slate-50 text-slate-700 border-slate-200';
+                                    'bg-paper-50 hover:bg-paper-100 text-sumi border-line';
                                   if (showFeedback) {
                                     if (btn.val === q.correctAnswer) {
                                       btnStyle =
@@ -1290,35 +1602,65 @@ export const FlashcardTestView: React.FC = () => {
                         ) : (
                           /* Prompt for Multiple Choice, Matching, Written */
                           <div className="space-y-6">
-                            <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/70 space-y-1.5">
-                              <div className="text-[11px] font-bold text-slate-400 uppercase">
+                            <div className="bg-paper-100/80 rounded-2xl p-5 border border-line space-y-2">
+                              <div className="text-[11px] font-bold text-sumi-faint uppercase">
                                 {q.direction === 'ja_to_vi'
-                                  ? isGrammar
+                                  ? config.listeningMode
+                                    ? '🎧 Nghe phát âm tiếng Nhật'
+                                    : isGrammar
                                     ? 'Mẫu ngữ pháp tiếng Nhật'
                                     : 'Từ vựng tiếng Nhật'
                                   : 'Nghĩa tiếng Việt'}
                               </div>
-                              <div className="text-2xl sm:text-3xl font-black text-[#071A44] font-serif">
-                                {q.promptText}
-                              </div>
-                              {q.promptSub && (
-                                <div className="text-xs font-semibold text-blue-600 font-mono">
-                                  {q.promptSub}
+                              {config.listeningMode && q.direction === 'ja_to_vi' && !revealedListeningIds[q.id] ? (
+                                <div className="flex flex-wrap items-center gap-3 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      playJapaneseAudio(q.card.frontText);
+                                    }}
+                                    className="px-5 py-3 rounded-2xl bg-ai hover:bg-ai-hover text-on-ai font-extrabold text-sm shadow-xs transition cursor-pointer flex items-center gap-2"
+                                  >
+                                    <span>🔊</span>
+                                    <span>Nghe câu hỏi (Phím R)</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRevealedListeningIds((prev) => ({ ...prev, [q.id]: true }));
+                                    }}
+                                    className="px-3.5 py-2.5 rounded-xl bg-paper-200 hover:bg-paper-50 text-sumi-muted hover:text-sumi border border-line text-xs font-bold transition cursor-pointer"
+                                  >
+                                    👁️ Hiện gợi ý mặt chữ
+                                  </button>
                                 </div>
+                              ) : (
+                                <>
+                                  <div className="text-2xl sm:text-3xl font-black text-sumi font-serif">
+                                    {q.promptText}
+                                  </div>
+                                  {q.promptSub && (
+                                    <div className="text-xs font-semibold text-ai font-mono">
+                                      {q.promptSub}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
 
                             {/* Multiple Choice Options */}
                             {q.type === 'multiple_choice' && q.options && (
                               <div className="space-y-2.5">
-                                <div className="text-xs font-bold text-slate-500">
+                                <div className="text-xs font-bold text-sumi-muted">
                                   Chọn đáp án đúng nhất:
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   {q.options.map((opt, optIdx) => {
                                     const isSelected = rec?.userAnswer === opt;
                                     let optStyle =
-                                      'bg-white hover:bg-slate-50 text-slate-800 border-slate-200';
+                                      'bg-paper-50 hover:bg-paper-100 text-sumi border-line';
                                     if (showFeedback) {
                                       if (opt === q.correctAnswer) {
                                         optStyle =
@@ -1342,7 +1684,7 @@ export const FlashcardTestView: React.FC = () => {
                                           className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 mt-0.5 ${
                                             isSelected
                                               ? 'bg-blue-600 text-white'
-                                              : 'bg-slate-100 text-slate-600'
+                                              : 'bg-paper-100 text-sumi-muted'
                                           }`}
                                         >
                                           {optIdx + 1}
@@ -1358,7 +1700,7 @@ export const FlashcardTestView: React.FC = () => {
                             {/* Matching Options */}
                             {q.type === 'matching' && q.matchingOptions && (
                               <div className="space-y-2.5">
-                                <div className="text-xs font-bold text-slate-500">
+                                <div className="text-xs font-bold text-sumi-muted">
                                   🔗 Chọn mảnh ghép tương ứng từ ngân hàng từ bên dưới:
                                 </div>
                                 <div className="flex flex-wrap gap-2.5">
@@ -1373,7 +1715,7 @@ export const FlashcardTestView: React.FC = () => {
                                     );
 
                                     let chipStyle =
-                                      'bg-white hover:bg-purple-50 text-slate-800 border-slate-200';
+                                      'bg-paper-50 hover:bg-purple-50 text-sumi border-line';
                                     if (showFeedback) {
                                       if (opt === q.correctAnswer) {
                                         chipStyle =
@@ -1386,7 +1728,7 @@ export const FlashcardTestView: React.FC = () => {
                                         'bg-purple-600 border-purple-600 text-white shadow-xs';
                                     } else if (usedElsewhere) {
                                       chipStyle =
-                                        'bg-slate-100 text-slate-400 border-slate-200 line-through opacity-75';
+                                        'bg-paper-100 text-sumi-faint border-line line-through opacity-75';
                                     }
 
                                     return (
@@ -1407,7 +1749,7 @@ export const FlashcardTestView: React.FC = () => {
                             {/* Written Input */}
                             {q.type === 'written' && (
                               <div className="space-y-3">
-                                <div className="text-xs font-bold text-slate-500">
+                                <div className="text-xs font-bold text-sumi-muted">
                                   {q.direction === 'vi_to_ja'
                                     ? '✍️ Nhập từ vựng / mẫu ngữ pháp tiếng Nhật (chấp nhận cả Kanji hoặc cách đọc Hiragana/Romaji):'
                                     : '✍️ Nhập nghĩa tiếng Việt của thẻ này:'}
@@ -1428,7 +1770,7 @@ export const FlashcardTestView: React.FC = () => {
                                         ? 'Gõ câu trả lời tiếng Nhật...'
                                         : 'Gõ nghĩa tiếng Việt...'
                                     }
-                                    className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-semibold text-slate-800"
+                                    className="flex-1 px-4 py-3 rounded-xl border border-line focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-semibold text-sumi"
                                   />
                                   <button
                                     type="button"
@@ -1440,7 +1782,7 @@ export const FlashcardTestView: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleSkipQuestion(q)}
-                                    className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition cursor-pointer shrink-0"
+                                    className="px-4 py-3 rounded-xl bg-paper-100 hover:bg-paper-200 text-sumi-muted font-bold text-xs transition cursor-pointer shrink-0"
                                   >
                                     Không nhớ
                                   </button>
@@ -1478,7 +1820,7 @@ export const FlashcardTestView: React.FC = () => {
                                 </div>
                               )}
                               {q.card.explanation && (
-                                <div className="text-slate-600 mt-1">{q.card.explanation}</div>
+                                <div className="text-sumi-muted mt-1">{q.card.explanation}</div>
                               )}
                             </div>
                           </div>
@@ -1489,12 +1831,12 @@ export const FlashcardTestView: React.FC = () => {
                 </div>
 
                 {/* Bottom Submit Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 text-center space-y-4 shadow-sm">
+                <div className="bg-paper-50 rounded-3xl border border-line p-6 sm:p-8 text-center space-y-4 shadow-sm">
                   <div className="text-2xl">🏁</div>
-                  <h3 className="text-lg font-black text-[#071A44]">
+                  <h3 className="text-lg font-black text-sumi">
                     Bạn đã hoàn thành {answeredCount} / {questions.length} câu hỏi
                   </h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  <p className="text-xs text-sumi-muted max-w-md mx-auto">
                     Kiểm tra lại các câu trả lời của bạn trước khi nộp bài để xem điểm số và phân tích chi tiết từng thẻ.
                   </p>
                   <button
@@ -1512,7 +1854,7 @@ export const FlashcardTestView: React.FC = () => {
             {phase === 'result' && (
               <div className="space-y-8">
                 {/* Hero Score Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+                <div className="bg-paper-50 rounded-3xl border border-line p-6 sm:p-8 shadow-sm">
                   <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                     {/* Left: Circular Score & Message */}
                     <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
@@ -1549,10 +1891,10 @@ export const FlashcardTestView: React.FC = () => {
                             ? '💪 Khá ổn! Hãy ôn lại các thẻ còn nhầm lẫn'
                             : '📖 Cần ôn tập thêm để nhớ mặt chữ và nghĩa'}
                         </span>
-                        <h2 className="text-2xl font-black text-[#071A44]">
+                        <h2 className="text-2xl font-black text-sumi">
                           Kết quả bài kiểm tra: {setTitle}
                         </h2>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-sumi-muted">
                           Thời gian hoàn thành: <strong>{formatTime(elapsedSeconds)}</strong> • Tổng số câu:{' '}
                           <strong>{resultStats.total} câu</strong>
                         </p>
@@ -1573,9 +1915,9 @@ export const FlashcardTestView: React.FC = () => {
                           {resultStats.wrong}
                         </div>
                       </div>
-                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-center min-w-[90px]">
-                        <div className="text-[11px] font-bold text-slate-500 uppercase">Bỏ qua</div>
-                        <div className="text-2xl font-black text-slate-700 mt-0.5">
+                      <div className="bg-paper-100 border border-line rounded-2xl p-3.5 text-center min-w-[90px]">
+                        <div className="text-[11px] font-bold text-sumi-muted uppercase">Bỏ qua</div>
+                        <div className="text-2xl font-black text-sumi mt-0.5">
                           {resultStats.skipped}
                         </div>
                       </div>
@@ -1583,7 +1925,7 @@ export const FlashcardTestView: React.FC = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-3 pt-6 mt-6 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-3 pt-6 mt-6 border-t border-line">
                     {resultStats.correct < resultStats.total && (
                       <button
                         type="button"
@@ -1593,6 +1935,22 @@ export const FlashcardTestView: React.FC = () => {
                         <span>🔥</span>
                         <span>
                           Kiểm tra lại {resultStats.total - resultStats.correct} câu chưa đúng
+                        </span>
+                      </button>
+                    )}
+
+                    {missedUnbookmarkedCount > 0 && (
+                      <button
+                        type="button"
+                        disabled={bulkBookmarking}
+                        onClick={() => void handleBookmarkAllMissed()}
+                        className="px-4 py-3 rounded-xl bg-warning-soft hover:bg-warning/20 text-warning border border-warning/30 font-bold text-xs transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <span>🔖</span>
+                        <span>
+                          {bulkBookmarking
+                            ? 'Đang lưu...'
+                            : `Bookmark tất cả câu sai (${missedUnbookmarkedCount})`}
                         </span>
                       </button>
                     )}
@@ -1609,11 +1967,19 @@ export const FlashcardTestView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setPhase('setup')}
-                      className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                      className="px-4 py-3 rounded-xl bg-paper-100 hover:bg-paper-200 text-sumi font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
                     >
                       <span>⚙️</span>
                       <span>Đổi cấu hình đề</span>
                     </button>
+
+                    <Link
+                      to="/flashcards/test/history"
+                      className="px-4 py-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span>🕒</span>
+                      <span>Lịch sử tự đánh giá</span>
+                    </Link>
 
                     <button
                       type="button"
@@ -1630,11 +1996,64 @@ export const FlashcardTestView: React.FC = () => {
                       <span>Học lại bằng thẻ lật SRS</span>
                     </button>
                   </div>
+
+                  {/* Save status banner */}
+                  <div className="mt-4 pt-4 border-t border-line space-y-2">
+                    {timedOut && (
+                      <div className="text-xs font-semibold text-warning bg-warning-soft border border-warning/30 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <span>⏳</span>
+                        <span>Đã hết thời gian làm bài — hệ thống tự động nộp bài cho bạn.</span>
+                      </div>
+                    )}
+                    {bulkBookmarkMessage && (
+                      <div className="text-xs font-semibold text-warning bg-warning-soft border border-warning/30 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <span>🔖</span>
+                        <span>{bulkBookmarkMessage}</span>
+                      </div>
+                    )}
+                    {isDemo ? (
+                      <div className="text-xs text-sumi-muted flex items-center gap-2">
+                        <span>🧪</span>
+                        <span>Chế độ Demo — kết quả tự đánh giá không lưu vào lịch sử tài khoản.</span>
+                      </div>
+                    ) : savingResult ? (
+                      <div className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin inline-block" />
+                        <span>Đang lưu kết quả tự đánh giá...</span>
+                      </div>
+                    ) : savedAttemptId ? (
+                      <div className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                        <span className="flex items-center gap-2">
+                          <span>✓</span>
+                          <span>
+                            Đã lưu kết quả tự đánh giá (#{savedAttemptId}) vào Lịch sử Tự đánh giá.
+                          </span>
+                        </span>
+                        <Link
+                          to="/flashcards/test/history"
+                          className="font-extrabold text-emerald-700 hover:underline shrink-0"
+                        >
+                          Xem lịch sử ➔
+                        </Link>
+                      </div>
+                    ) : saveResultError ? (
+                      <div className="text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                        <span>⚠️ {saveResultError}</span>
+                        <button
+                          type="button"
+                          onClick={() => void persistQuizAttempt(questions, answers, elapsedSeconds)}
+                          className="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer"
+                        >
+                          Thử lưu lại
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
 
                 {/* Detailed Answer Review */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-black text-[#071A44]">
+                  <h3 className="text-lg font-black text-sumi">
                     📋 Chi tiết đáp án từng câu ({questions.length} câu)
                   </h3>
 
@@ -1647,11 +2066,11 @@ export const FlashcardTestView: React.FC = () => {
                       return (
                         <div
                           key={q.id}
-                          className={`bg-white rounded-2xl border p-5 sm:p-6 space-y-4 ${
+                          className={`bg-paper-50 rounded-2xl border p-5 sm:p-6 space-y-4 ${
                             isCorrect ? 'border-emerald-200' : 'border-red-200'
                           }`}
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
                             <div className="flex items-center gap-2">
                               <span
                                 className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
@@ -1662,7 +2081,7 @@ export const FlashcardTestView: React.FC = () => {
                               >
                                 {isCorrect ? '✓ Đúng' : rec?.isSkipped ? '⚪ Bỏ qua' : '✕ Sai'}
                               </span>
-                              <span className="text-xs font-bold text-slate-500">
+                              <span className="text-xs font-bold text-sumi-muted">
                                 Câu {q.index}
                               </span>
                               <span
@@ -1677,7 +2096,7 @@ export const FlashcardTestView: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => playJapaneseAudio(q.card.frontText)}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 text-xs font-bold transition cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg bg-paper-100 hover:bg-blue-50 text-sumi text-xs font-bold transition cursor-pointer"
                               >
                                 🔊 Nghe
                               </button>
@@ -1687,7 +2106,7 @@ export const FlashcardTestView: React.FC = () => {
                                 className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer ${
                                   q.card.isBookmarked
                                     ? 'bg-amber-50 text-amber-800 border-amber-300'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                    : 'bg-paper-50 text-sumi-muted border-line hover:bg-paper-100'
                                 }`}
                               >
                                 {q.card.isBookmarked ? '🔖 Đã lưu' : '☆ Lưu thẻ'}
@@ -1697,11 +2116,11 @@ export const FlashcardTestView: React.FC = () => {
 
                           {/* Card Info & Answer comparison */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-slate-50 rounded-xl p-4 space-y-1">
-                              <div className="text-[11px] font-bold text-slate-400 uppercase">
+                            <div className="bg-paper-100 rounded-xl p-4 space-y-1">
+                              <div className="text-[11px] font-bold text-sumi-faint uppercase">
                                 Thẻ gốc ({q.card.jlptLevel})
                               </div>
-                              <div className="text-xl font-black text-[#071A44] font-serif">
+                              <div className="text-xl font-black text-sumi font-serif">
                                 {q.card.frontText}
                               </div>
                               {q.card.readingOrFormation && (
@@ -1709,11 +2128,11 @@ export const FlashcardTestView: React.FC = () => {
                                   {q.card.readingOrFormation}
                                 </div>
                               )}
-                              <div className="text-sm font-bold text-slate-800 pt-1">
+                              <div className="text-sm font-bold text-sumi pt-1">
                                 {q.card.meaning}
                               </div>
                               {q.card.exampleSentence && (
-                                <div className="text-xs text-slate-500 italic pt-1 border-t border-slate-200/70 mt-2">
+                                <div className="text-xs text-sumi-muted italic pt-1 border-t border-line mt-2">
                                   Ví dụ: {q.card.exampleSentence}
                                 </div>
                               )}
@@ -1721,7 +2140,7 @@ export const FlashcardTestView: React.FC = () => {
 
                             <div className="flex flex-col justify-center space-y-2.5 text-xs">
                               {q.type === 'true_false' && (
-                                <div className="text-slate-600">
+                                <div className="text-sumi-muted">
                                   Mệnh đề kiểm tra:{' '}
                                   <strong>
                                     {q.promptText} = {q.displayedPairing}
