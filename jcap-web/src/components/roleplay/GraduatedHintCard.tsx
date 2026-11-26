@@ -152,7 +152,7 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
     <div
       role="region"
       aria-label="Gợi ý hội thoại"
-      className="w-full washi-parchment bg-[#FAF6EE]/95 rounded-2xl border border-[#DFD2B8] shadow-xs p-3 sm:p-3.5 flex flex-col gap-2.5 animate-slide-up select-none transition-all duration-200"
+      className="w-full washi-parchment bg-[#FAF6EE] rounded-xl border border-[#DFD2B8] shadow-xs p-2.5 flex flex-col gap-1.5 animate-slide-up select-none transition-all duration-200"
     >
       {/* Hidden helper preserving exact test strings for regression checks */}
       <div className="hidden" aria-hidden="true">
@@ -270,13 +270,13 @@ export const GraduatedHintCard: React.FC<GraduatedHintCardProps> = ({
 
       {/* DÒNG CÂU TIẾNG VIỆT HOÀN CHỈNH */}
       <div className="pl-7 pr-2">
-        <p className="text-xs sm:text-sm font-extrabold text-[var(--sumi)] leading-relaxed break-words">
+        <p className="text-xs font-extrabold text-[var(--sumi)] leading-snug break-words">
           "{activeMeaning || missionTitle || 'Diễn đạt ý theo bối cảnh'}"
         </p>
       </div>
 
       {/* HÀNG 2: NỘI DUNG THEO TỪNG CẤP ĐỘ + HÀNH ĐỘNG ĐỒNG BỘ */}
-      <div className="bg-white/90 p-2.5 sm:p-3 rounded-xl border border-[#E6DAC2] shadow-2xs flex flex-col gap-2.5">
+      <div className="bg-white p-2 sm:p-2.5 rounded-lg border border-[#E6DAC2] shadow-2xs flex flex-col gap-1.5">
         {hintTier === 1 && (
           <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
             <div className="flex items-center gap-2 flex-wrap text-xs text-[var(--sumi)] min-w-0 flex-1">

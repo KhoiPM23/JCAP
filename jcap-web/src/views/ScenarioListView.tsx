@@ -519,7 +519,7 @@ const InventoryPropBadge: React.FC<{
         typeof document !== 'undefined' &&
         createPortal(
           <div
-            className="fixed z-[9999] w-64 max-h-[240px] overflow-y-auto rounded-xl border border-[var(--line-strong)] bg-white/98 backdrop-blur-xs p-3 text-left shadow-xl pointer-events-none transition-opacity duration-150 ease-out"
+            className="fixed z-[9999] w-64 max-h-[240px] overflow-y-auto rounded-xl border border-[var(--line-strong)] bg-white p-3 text-left shadow-xl pointer-events-none transition-opacity duration-150 ease-out"
             style={{
               top: popoverCoords.top,
               left: popoverCoords.left,

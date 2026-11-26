@@ -2552,6 +2552,15 @@ const RoleplayPracticeViewInternal: React.FC = () => {
   };
 
 
+  // Tự động cuộn khung chat để footer (Gợi ý / Banner) không che mất câu thoại cuối của AI
+  useEffect(() => {
+    if (hint || isLoadingHint) {
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      });
+    }
+  }, [hint, isLoadingHint]);
+
   // 3a. Instant Scaffolding Synthesis: Tổng hợp tức thì giàn giáo 3 cấp trong < 5ms từ kịch bản
   const synthesizeInstantHint = (currSession: RoleplaySessionDetailsDto): RoleplayHintDto => {
     const uncompletedMission = currSession.missions?.find((m) => !m.isCompleted);
@@ -3762,7 +3771,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
           <div
             ref={chatContainerRef}
             onScroll={handleDialogueScroll}
-            className="relative z-10 flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 md:p-6"
+            className="relative z-10 flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 sm:p-5 md:p-6"
           >
             <div className="mx-auto w-full max-w-[840px] space-y-4">
               {/* M3: Micro-Celebration Banner for Newly Completed Mission */}
@@ -4180,8 +4189,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
           {/* HINT BAR & INPUT BAR */}
-          <footer className="shrink-0 border-t border-[var(--line)] bg-[var(--paper-50)] p-3 md:p-4 z-10 shadow-sm">
-            <div className="mx-auto w-full max-w-[760px] space-y-2.5">
+          <footer className="shrink-0 border-t border-[var(--line)] bg-[var(--paper-50)] px-3 py-2 md:px-4 md:py-2.5 z-10 shadow-sm">
+            <div className="mx-auto w-full max-w-[760px] space-y-1.5">
               {/* Mic Permission / Error Warning */}
               {micError && (
                 <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 animate-fade-in shadow-xs">
@@ -4305,9 +4314,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
               {/* Input Row */}
-              {/* Applied Assistance Feedback Banner (Hint and/or Translation Peek) - Monotonic locked & real-time */}
-              {(turnPeekPenalty > 0 || turnTranslationPeekCount > 0 || (appliedHintTier !== null && !hint)) && (
-                <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-[#FAF6EE]/95 border border-[#DFD2B8] text-[11px] text-[var(--sumi)] shadow-2xs font-sans animate-fade-in">
+              {/* Applied Assistance Feedback Banner - Chỉ hiện gọn 1 dòng khi hộp Gợi ý đang đóng để không đẩy footer lên cao */}
+              {!hint && !isLoadingHint && (turnPeekPenalty > 0 || turnTranslationPeekCount > 0 || appliedHintTier !== null) && (
+                <div className="flex items-center justify-between gap-2 px-2.5 py-1 rounded-lg bg-[#FAF6EE] border border-[#DFD2B8] text-[11px] text-[var(--sumi)] shadow-2xs font-sans animate-fade-in">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {appliedHintTier !== null && (
                       <span className="font-bold text-[#6E4D1B] bg-[#EFE6D4] border border-[#DCCCB0] px-2 py-0.5 rounded-md">
