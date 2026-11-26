@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { shortName, spotAreas, stationState } from './spotAreas.ts';
+import { shortName, spotAreas } from './spotAreas.ts';
 
 const NARITA = [
   'Sân bay Narita · Quầy nhập cảnh',
@@ -30,12 +30,4 @@ test('spotAreas: cùng tiền tố nhưng không liền nhau thì không gom qua
 test('shortName: lấy phần sau dấu phân cách', () => {
   assert.equal(shortName('Khách sạn ở Narita · Quầy lễ tân'), 'Quầy lễ tân');
   assert.equal(shortName('Đền Fushimi Inari'), 'Đền Fushimi Inari');
-});
-
-test('stationState: tiến độ đã có được ưu tiên hơn "Tiếp theo"', () => {
-  assert.equal(stationState('none', true), 'next');
-  assert.equal(stationState('none', false), 'none');
-  assert.equal(stationState('understood', true), 'understood');
-  assert.equal(stationState('stamp', false), 'stamp');
-  assert.equal(stationState('red', false), 'red');
 });

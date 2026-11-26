@@ -84,7 +84,6 @@ interface Props {
   /** Màu đậm của vùng (tên Việt) */
   ink: string;
   mapLabelColor: string;
-  chip: { box: Box; text: string } | null;
   pins: PinLabelData[];
   cities?: CityLabelData[];
   districts?: DistrictLabelData[];
@@ -96,7 +95,7 @@ interface Props {
  * Lớp chữ HTML trên bản đồ tỉnh, vị trí theo pixel màn hình (đã xếp chống chồng ở provinceLabels.ts).
  * Dùng HTML thay vì SVG để có chữ sắc nét, nút bấm/focus đúng nghĩa và dễ canh hai dòng chữ.
  */
-export const ProvinceLabels = memo<Props>(({ furigana, ink, mapLabelColor, chip, pins, cities = [], districts = [], cluster, districtColor }) => (
+export const ProvinceLabels = memo<Props>(({ furigana, ink, mapLabelColor, pins, cities = [], districts = [], cluster, districtColor }) => (
   <div className="jm-labels pointer-events-none absolute inset-0 overflow-hidden">
     {districts.map((d) => (
       <div
@@ -145,20 +144,6 @@ export const ProvinceLabels = memo<Props>(({ furigana, ink, mapLabelColor, chip,
         ariaLabel={`Chọn địa điểm ${p.vi} (${p.jp})`}
       />
     ))}
-
-    {chip && (
-      <div
-        className="jm-next-chip"
-        aria-hidden="true"
-        style={{
-          transform: `translate(${chip.box.x0.toFixed(1)}px, ${chip.box.y0.toFixed(1)}px)`,
-          width: chip.box.x1 - chip.box.x0,
-          height: chip.box.y1 - chip.box.y0,
-        }}
-      >
-        {chip.text}
-      </div>
-    )}
 
     {cluster && (
       <div

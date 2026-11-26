@@ -1,5 +1,5 @@
 /**
- * Hàm thuần cho bản đồ tỉnh (design-handoff mục 9k): tên ngắn, gom khu vực, trạng thái ô mốc.
+ * Hàm thuần cho bản đồ tỉnh (design-handoff mục 9k): tên ngắn, gom khu vực, chữ đọc trạng thái mốc.
  * Khu vực không phải dữ liệu mới, chỉ tách từ tên mốc: "Sân bay Narita · Sảnh đón khách" thuộc "Sân bay Narita".
  */
 import type { SpotStamp } from './learnProgress';
@@ -45,14 +45,6 @@ export function spotAreas(names: readonly string[]): SpotArea[] {
   });
   flush();
   return areas;
-}
-
-/** Trạng thái của ô mốc: dùng chung cho ghim, danh sách và chú giải */
-export type StationState = SpotStamp | 'next';
-
-/** Tiến độ đã có (đã hiểu, con dấu, dấu son) được ưu tiên hơn dấu "Tiếp theo" (theo bản bấm thử) */
-export function stationState(stamp: SpotStamp, isNext: boolean): StationState {
-  return stamp === 'none' && isNext ? 'next' : stamp;
 }
 
 export const STAMP_TEXT: Record<SpotStamp, string> = {

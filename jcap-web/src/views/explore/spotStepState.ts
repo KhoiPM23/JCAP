@@ -26,16 +26,10 @@ export function currentStep({ stamp, hasLesson, hasShadowing, hasRoleplay }: Spo
   return null;
 }
 
-export type RowTone = 'next' | 'progress' | 'muted';
-
-/** Chữ phụ bên phải một dòng mốc, chỉ khi cần */
-export function rowMeta(input: SpotStepInput, isNext: boolean): { text: string; tone: RowTone } | null {
-  if (isNext) return { text: 'Tiếp theo', tone: 'next' };
-  if (isDone(input.stamp)) return null;
-  if (input.resume) return { text: `Câu ${input.resume.index + 1}/${input.resume.total}`, tone: 'progress' };
-  if (!input.hasShadowing) return { text: 'Chưa có Shadowing', tone: 'muted' };
-  if (input.stamp === 'understood') return { text: 'Còn Shadowing', tone: 'muted' };
-  return null;
+/** Chữ phụ bên phải một dòng mốc: chỉ khi mốc chưa có dấu và đang luyện Shadowing dở */
+export function rowMeta({ stamp, resume }: SpotStepInput): string | null {
+  if (isDone(stamp) || !resume) return null;
+  return `Câu ${resume.index + 1}/${resume.total}`;
 }
 
 /** Tên bước hiện tại cho dòng gợi ý dưới nút "Học tiếp" (rỗng nếu không còn bước nào) */

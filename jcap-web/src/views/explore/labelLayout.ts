@@ -1,9 +1,9 @@
-import { JP_FONT, LABEL_SPEC, labelSize, textWidth, type LabelContent } from './measureText';
+import { JP_FONT, labelSize, textWidth, type LabelContent } from './measureText';
 
 /**
  * Xếp nhãn của bản đồ tỉnh trên màn hình (px) sao cho không cái nào chồng lên ghim, nhóm ghim hay nhãn khác.
  * Thứ tự ưu tiên (cái trước được chỗ trước, cái sau bị ẩn nếu hết chỗ):
- *   chip "Tiếp theo" > nhãn ghim > tên thành phố (thủ phủ luôn hiện) > tên quận.
+ *   nhãn ghim > tên thành phố (thủ phủ luôn hiện) > tên quận.
  * Hàm thuần: không chạm DOM, chỉ nhận toạ độ và kích thước.
  */
 export interface Box {
@@ -44,9 +44,6 @@ export interface LabelInput {
   /** Ghim đã đặt (kể cả ghim xòe), theo thứ tự ưu tiên nhãn; ghim đang chọn không có nhãn nhưng vẫn là vật cản */
   pins: { index: number; x: number; y: number; label: LabelContent; active: boolean }[];
   bubbles: { x: number; y: number }[];
-  /** Ghim "Tiếp theo" (chip đặt gần ghim này), null nếu không có/đang được chọn */
-  next: { x: number; y: number } | null;
-  chip: { w: number; h: number };
   /** Bán kính vùng ghim tính là vật cản (px) và khoảng cách từ tâm ghim tới nhãn */
   pinRadius: number;
   pinLabelGap: number;
@@ -57,7 +54,6 @@ export interface LabelInput {
 }
 
 export interface LabelLayout {
-  chip: Placed | null;
   pins: Map<number, Placed>;
   cities: Map<string, Placed>;
   /** Thành phố được vẽ chấm: thành phố có nhãn, và thủ phủ (luôn có chấm dù hết chỗ cho nhãn) */
@@ -81,21 +77,7 @@ export function layoutLabels(input: LabelInput): LabelLayout {
   for (const p of input.pins) taken.push(around(p.x, p.y, pinRadius));
   for (const b of input.bubbles) taken.push(around(b.x, b.y, pinRadius));
 
-  // 1. Chip "Tiếp theo": trên, rồi trái, rồi phải
-  let chip: Placed | null = null;
-  if (input.next && visible(input.next.x, input.next.y)) {
-    const { x, y } = input.next;
-    for (const side of ['top', 'left', 'right'] as const) {
-      const box = beside(x, y, input.chip.w, input.chip.h, pinLabelGap - 1, side);
-      if (placeable(box)) {
-        chip = { box, side };
-        taken.push(box);
-        break;
-      }
-    }
-  }
-
-  // 2. Nhãn ghim: dưới (cách tâm 25px), phải, trái, trên
+  // 1. Nhãn ghim: dưới (cách tâm 25px), phải, trái, trên
   const pins = new Map<number, Placed>();
   for (const p of input.pins) {
     if (p.active || !visible(p.x, p.y)) continue;
@@ -110,7 +92,7 @@ export function layoutLabels(input: LabelInput): LabelLayout {
     }
   }
 
-  // 3. Thành phố: thủ phủ trước, rồi thành phố khác; hết chỗ thì ẩn nhãn (thủ phủ vẫn giữ chấm trên bản đồ)
+  // 2. Thành phố: thủ phủ trước, rồi thành phố khác; hết chỗ thì ẩn nhãn (thủ phủ vẫn giữ chấm trên bản đồ)
   const cities = new Map<string, Placed>();
   const cityDots = new Set<string>();
   const s = input.cityScale ?? 1;
@@ -135,7 +117,7 @@ export function layoutLabels(input: LabelInput): LabelLayout {
     taken.push(pick.box, around(c.x, c.y, 9 * s));
   }
 
-  // 4. Tên quận (ưu tiên thấp nhất): chỉ khi hộp bao của quận đủ chỗ cho nhãn, bỏ tên trùng thành phố đã có nhãn
+  // 3. Tên quận (ưu tiên thấp nhất): chỉ khi hộp bao của quận đủ chỗ cho nhãn, bỏ tên trùng thành phố đã có nhãn
   const cityNames = new Set((input.cities ?? []).filter((c) => cities.has(c.key)).map((c) => c.label.jp));
   const districts: LabelLayout['districts'] = [];
   for (const d of input.districts ?? []) {
@@ -148,10 +130,5 @@ export function layoutLabels(input: LabelInput): LabelLayout {
     districts.push({ key: d.key, name: d.name, box });
   }
 
-  return { chip, pins, cities, cityDots, districts };
-}
-
-/** Cỡ chip "Tiếp theo" (chữ 11.5px đậm + đệm hai bên) */
-export function chipSize(text: string): { w: number; h: number } {
-  return { w: textWidth(text, `700 ${LABEL_SPEC.viPx}px ${JP_FONT}`) + 18, h: 20 };
+  return { pins, cities, cityDots, districts };
 }

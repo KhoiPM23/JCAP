@@ -24,14 +24,13 @@ test('currentStep: mốc thiếu nội dung thì không có bước để làm',
   assert.equal(currentStep(spot({ stamp: 'understood', hasShadowing: false })), null);
 });
 
-test('rowMeta: ưu tiên "Tiếp theo", rồi phiên đang dở, rồi phần còn thiếu', () => {
+test('rowMeta: chỉ ghi câu đang dở của mốc chưa có dấu', () => {
   const resume = { index: 1, total: 8 };
-  assert.deepEqual(rowMeta(spot({ resume }), true), { text: 'Tiếp theo', tone: 'next' });
-  assert.deepEqual(rowMeta(spot({ resume }), false), { text: 'Câu 2/8', tone: 'progress' });
-  assert.deepEqual(rowMeta(spot({ stamp: 'understood' }), false), { text: 'Còn Shadowing', tone: 'muted' });
-  assert.deepEqual(rowMeta(spot({ hasShadowing: false }), false), { text: 'Chưa có Shadowing', tone: 'muted' });
-  assert.equal(rowMeta(spot(), false), null);
-  assert.equal(rowMeta(spot({ stamp: 'stamp', resume }), false), null);
+  assert.equal(rowMeta(spot({ resume })), 'Câu 2/8');
+  assert.equal(rowMeta(spot({ stamp: 'understood', resume })), 'Câu 2/8');
+  assert.equal(rowMeta(spot({ stamp: 'understood' })), null);
+  assert.equal(rowMeta(spot()), null);
+  assert.equal(rowMeta(spot({ stamp: 'stamp', resume })), null);
 });
 
 test('stepHint: tên bước hiện tại, kèm câu đang dở', () => {
