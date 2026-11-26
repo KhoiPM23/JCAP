@@ -14,14 +14,32 @@ export interface VoiceOption {
 // ----------------------------------------------------
 // TẦNG LƯU TRỮ INDEXEDDB: Cache audio WAV bền vững (Persistent Storage)
 // ----------------------------------------------------
-const DB_NAME = 'jcap_audio_cache_db';
+// Đổi tên khi file đã lưu không còn dùng được. v2 (26/11): bản cũ có thể chứa âm thanh sai câu,
+// do API từng trả Cache-Control public 1 năm cho POST /api/tts/synthesize nên lớp cache trung gian trả cùng một file.
+const DB_NAME = 'jcap_audio_cache_v2';
+const OLD_DB_NAMES = ['jcap_audio_cache_db'];
 const STORE_NAME = 'audio_cache';
 const DB_VERSION = 1;
+
+let oldDbsRemoved = false;
+/** Xoá bộ nhớ cũ một lần cho đỡ tốn chỗ; lỗi thì bỏ qua (không ảnh hưởng bộ nhớ mới) */
+function removeOldDbs() {
+  if (oldDbsRemoved) return;
+  oldDbsRemoved = true;
+  for (const name of OLD_DB_NAMES) {
+    try {
+      indexedDB.deleteDatabase(name);
+    } catch {
+      // ignore
+    }
+  }
+}
 
 function openAudioDb(): Promise<IDBDatabase | null> {
   if (typeof window === 'undefined' || !('indexedDB' in window)) {
     return Promise.resolve(null);
   }
+  removeOldDbs();
   return new Promise((resolve) => {
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
