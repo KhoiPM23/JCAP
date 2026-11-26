@@ -7,7 +7,7 @@ import { flashcardService } from '../../services/flashcardService';
 import { scenarioVoiceService } from '../../services/scenarioVoiceService';
 import { ukiyoSound } from '../../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../../utils/japaneseSanitizer';
-import { resolveMediaUrl } from '../../utils/apiBase';
+import { resolveMediaUrl, resolveApiUrl } from '../../utils/apiBase';
 import { TargetIcon, BarChartIcon, SparkIcon, BookmarkIcon, ArrowRightIcon, VolumeIcon, CompassIcon } from '../common/Icons';
 import type { LearnerIntelligenceProfileDto } from '../../types/roleplay';
 import type { ScenarioListItem } from '../../types/scenarioDetails';
@@ -97,7 +97,7 @@ const getMasteryRank = (score: number) => {
   if (score >= 80) return { title: 'Thành thạo', sub: 'Đối đáp trôi chảy', shortTag: 'Đạt' };
   if (score >= 70) return { title: 'Khá tốt', sub: 'Vững vàng thực chiến', shortTag: 'Đạt' };
   if (score >= 60) return { title: 'Đạt chuẩn', sub: 'Đang tiến bộ đều', shortTag: 'Đạt' };
-  return { title: 'Chưa đạt', sub: 'Cần luyện thêm nền tảng', shortTag: 'Rèn' };
+  return { title: 'Chưa đạt', sub: 'Cần luyện thêm nền tảng', shortTag: 'Cần ôn' };
 };
 
 export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCardProps> = ({
@@ -106,6 +106,13 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 }) => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<LearnerIntelligenceProfileDto | null>(null);
+  const [adaptiveContext, setAdaptiveContext] = useState<{
+    recommendedDifficulty?: string;
+    recentTrend?: string;
+    hotWeaknesses?: string[];
+    chronicWeaknesses?: string[];
+    recommendedScenarioIds?: number[];
+  } | null>(null);
   const [availableScenarios, setAvailableScenarios] = useState<ScenarioListItem[]>([]);
   const [completedScenarioIds, setCompletedScenarioIds] = useState<Set<number>>(new Set());
   const [completedScenarioTitles, setCompletedScenarioTitles] = useState<Set<string>>(new Set());
@@ -115,7 +122,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
   const [selectedAxisId, setSelectedAxisId] = useState<string | null>(null);
   const [deckFilter, setDeckFilter] = useState<'all' | 'due' | 'vocab' | 'grammar'>('all');
   const [deckPage, setDeckPage] = useState<number>(1);
-  const DECK_PAGE_SIZE = 6;
+  const DECK_PAGE_SIZE = 3;
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -160,6 +167,23 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
           setAvailableScenarios(cleanScenarios.length > 0 ? cleanScenarios : scnRes.data);
         }
       }).catch(() => {});
+
+      // Tải song song ngữ cảnh thích ứng chuẩn (ngắn hạn + dài hạn) từ Core Adaptive Engine
+      try {
+        const token = localStorage.getItem('jcap_token');
+        fetch(resolveApiUrl('/api/learner/adaptive-context'), {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((json) => {
+            if (isCurrent && json?.success && json?.data) {
+              setAdaptiveContext(json.data);
+            }
+          })
+          .catch(() => {});
+      } catch {
+        // ignore
+      }
 
       // Lấy lịch sử kết quả để biết kịch bản nào người học đã từng hoàn thành
       roleplayResultService.getHistory(1, 50).then((histRes) => {
@@ -424,67 +448,39 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     };
   }, [radarAxes]);
 
-  // Xây dựng Bộ 3 Kịch bản Đề xuất Thích ứng theo 3 cấp độ (Mức Dưới / Mức Giữa / Mức Trên)
+  // Xây dựng Bộ 3 Kịch bản Đề xuất Thích ứng từ Core Adaptive Engine (ưu tiên RecommendedScenarioIds thật từ Backend)
   const adaptiveRecommendations = useMemo(() => {
-    if (!profile) return [];
+    if (!profile || availableScenarios.length === 0) return [];
     const sortedWeakest = [...radarAxes].sort((a, b) => a.normalizedScore - b.normalizedScore);
     const primaryWeak = sortedWeakest[0];
     const secondaryWeak = sortedWeakest[1] || sortedWeakest[0];
     const strongest = sortedWeakest[sortedWeakest.length - 1] || sortedWeakest[0];
 
-    const fallbackList: ScenarioListItem[] = availableScenarios.length > 0
-      ? availableScenarios
-      : [
-          {
-            id: profile.nextRecommendedScenarioId || 1,
-            title: profile.nextRecommendedScenarioTitle || 'Gọi món tại Quán mì Ramen',
-            description: 'Thực hành gọi món, tùy chỉnh khẩu vị và thanh toán nhanh gọn cùng đầu bếp Nhật.',
-            supportedJLPTLevels: ['N5', 'N4'],
-            topicCode: 'DINING',
-            topicName: 'Ẩm thực',
-          } as ScenarioListItem,
-          {
-            id: 2,
-            title: 'Hỏi đường & Mua vé tàu tại Ga Shinjuku',
-            description: 'Rèn luyện cách hỏi sân ga, giờ tàu khởi hành và xác nhận tuyến đi chính xác.',
-            supportedJLPTLevels: ['N5', 'N4'],
-            topicCode: 'TRANSPORT',
-            topicName: 'Di chuyển',
-          } as ScenarioListItem,
-          {
-            id: 3,
-            title: 'Mua sắm & Thanh toán tại Cửa hàng tiện lợi 7-Eleven',
-            description: 'Phản xạ giao dịch tại quầy thu ngân, hâm nóng đồ ăn và thanh toán thẻ IC.',
-            supportedJLPTLevels: ['N4', 'N3'],
-            topicCode: 'SHOPPING',
-            topicName: 'Mua sắm',
-          } as ScenarioListItem,
-        ];
-
     const usedIds = new Set<number>();
     const pickScenario = (preferredId?: number, preferredTopic?: string): ScenarioListItem => {
       if (preferredId) {
-        const byId = fallbackList.find((s) => s.id === preferredId && !usedIds.has(s.id));
+        const byId = availableScenarios.find((s) => s.id === preferredId && !usedIds.has(s.id));
         if (byId) {
           usedIds.add(byId.id);
           return byId;
         }
       }
       if (preferredTopic) {
-        const byTopic = fallbackList.find((s) => s.topicCode === preferredTopic && !usedIds.has(s.id));
+        const byTopic = availableScenarios.find((s) => s.topicCode === preferredTopic && !usedIds.has(s.id));
         if (byTopic) {
           usedIds.add(byTopic.id);
           return byTopic;
         }
       }
-      const firstAvail = fallbackList.find((s) => !usedIds.has(s.id)) || fallbackList[0];
+      const firstAvail = availableScenarios.find((s) => !usedIds.has(s.id)) || availableScenarios[0];
       if (firstAvail) usedIds.add(firstAvail.id);
       return firstAvail;
     };
 
-    const firstScn = pickScenario(profile.nextRecommendedScenarioId, primaryWeak?.topicCode);
-    const secondScn = pickScenario(undefined, secondaryWeak?.topicCode);
-    const thirdScn = pickScenario(undefined, strongest?.topicCode);
+    const adaptiveIds = adaptiveContext?.recommendedScenarioIds ?? [];
+    const firstScn = pickScenario(adaptiveIds[0] ?? profile.nextRecommendedScenarioId, primaryWeak?.topicCode);
+    const secondScn = pickScenario(adaptiveIds[1], secondaryWeak?.topicCode);
+    const thirdScn = pickScenario(adaptiveIds[2], strongest?.topicCode);
 
     const rawPred = profile.predictedSuccessRateNextScenario;
     const basePred = rawPred != null && rawPred > 0
@@ -500,44 +496,52 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
       return clean.length > maxLen ? `${clean.slice(0, maxLen - 1).trimEnd()}…` : clean;
     };
 
+    const hotFocus = adaptiveContext?.hotWeaknesses?.[0];
+    const chronicFocus = adaptiveContext?.chronicWeaknesses?.[0];
+    const recDiff = adaptiveContext?.recommendedDifficulty || 'N5';
+
     const picks = [
       {
-        id: secondScn?.id || 2,
-        title: secondScn?.title || 'Hỏi đường & Chuyển tàu tại Nhà ga Tokyo',
-        description: shortCap(secondScn?.description || 'Luyện câu hỏi ngắn gọn và xác nhận thông tin cơ bản.', 90),
-        level: 'N5',
-        supportedJLPTLevels: ['N5'],
-        topicName: secondScn?.topicName || primaryWeak?.topicName || 'Nền tảng',
+        id: secondScn.id,
+        title: secondScn.title,
+        description: shortCap(secondScn.description || '', 90),
+        level: (secondScn.supportedJLPTLevels?.length ? secondScn.supportedJLPTLevels.join(' · ') : recDiff),
+        supportedJLPTLevels: secondScn.supportedJLPTLevels?.length ? secondScn.supportedJLPTLevels : [recDiff],
+        topicName: secondScn.topicName || primaryWeak?.topicName || 'Nền tảng',
         thumbnail: resolveMediaUrl((secondScn as any)?.thumbnailUrl || (secondScn as any)?.thumbnail),
         tag: 'Củng cố',
         matchScore: belowMatch,
-        actionReason: primaryWeak
-          ? `Rèn ${primaryWeak.shortLabel.toLowerCase()} (hiện ${primaryWeak.displayValue}${primaryWeak.unitLabel}) qua mẫu câu ngắn.`
+        actionReason: chronicFocus
+          ? `Củng cố điểm hay vướng (${chronicFocus}) ở mức ${recDiff}.`
+          : primaryWeak
+          ? `Cải thiện ${primaryWeak.shortLabel.toLowerCase()} (hiện ${primaryWeak.displayValue}${primaryWeak.unitLabel}) qua mẫu câu ngắn.`
           : 'Ôn lại mẫu câu cốt lõi ở mức vừa sức.',
         isTopPick: false,
       },
       {
-        id: firstScn?.id || 1,
-        title: profile.nextRecommendedScenarioTitle || firstScn?.title || 'Thực hành hội thoại thích ứng',
-        description: shortCap(firstScn?.description || 'Tình huống phù hợp trực tiếp với phong độ hiện tại của bạn.', 90),
-        level: (firstScn?.supportedJLPTLevels && firstScn.supportedJLPTLevels.length > 0) ? firstScn.supportedJLPTLevels.join(' · ') : 'N5 · N4',
-        supportedJLPTLevels: (firstScn?.supportedJLPTLevels && firstScn.supportedJLPTLevels.length > 0) ? firstScn.supportedJLPTLevels : ['N5', 'N4'],
-        topicName: firstScn?.topicName || secondaryWeak?.topicName || 'Thực chiến',
+        id: firstScn.id,
+        title: firstScn.title,
+        description: shortCap(firstScn.description || '', 90),
+        level: (firstScn.supportedJLPTLevels?.length ? firstScn.supportedJLPTLevels.join(' · ') : recDiff),
+        supportedJLPTLevels: firstScn.supportedJLPTLevels?.length ? firstScn.supportedJLPTLevels : [recDiff],
+        topicName: firstScn.topicName || secondaryWeak?.topicName || 'Thực chiến',
         thumbnail: resolveMediaUrl((firstScn as any)?.thumbnailUrl || (firstScn as any)?.thumbnail),
         tag: 'Đề xuất',
         matchScore: sameMatch,
-        actionReason: secondaryWeak
+        actionReason: hotFocus
+          ? `Ưu tiên luyện lại lỗi gần đây (${hotFocus}) đúng trình độ ${recDiff}.`
+          : secondaryWeak
           ? `Cân bằng ${secondaryWeak.shortLabel.toLowerCase()} (${secondaryWeak.displayValue}${secondaryWeak.unitLabel}) theo đúng nhịp độ.`
           : 'Duy trì phản xạ đối đáp tự nhiên ở cấp độ hiện tại.',
         isTopPick: true,
       },
       {
-        id: thirdScn?.id || 3,
-        title: thirdScn?.title || 'Giao tiếp thường nhật & Xử lý tình huống',
-        description: shortCap(thirdScn?.description || 'Thử thách hội thoại linh hoạt hơn và ít dùng gợi ý.', 90),
-        level: (thirdScn?.supportedJLPTLevels && thirdScn.supportedJLPTLevels.length > 0) ? thirdScn.supportedJLPTLevels.join(' · ') : 'N4 · N3',
-        supportedJLPTLevels: (thirdScn?.supportedJLPTLevels && thirdScn.supportedJLPTLevels.length > 0) ? thirdScn.supportedJLPTLevels : ['N4', 'N3'],
-        topicName: thirdScn?.topicName || strongest?.topicName || 'Nâng cao',
+        id: thirdScn.id,
+        title: thirdScn.title,
+        description: shortCap(thirdScn.description || '', 90),
+        level: (thirdScn.supportedJLPTLevels?.length ? thirdScn.supportedJLPTLevels.join(' · ') : 'N4 · N3'),
+        supportedJLPTLevels: thirdScn.supportedJLPTLevels?.length ? thirdScn.supportedJLPTLevels : ['N4', 'N3'],
+        topicName: thirdScn.topicName || strongest?.topicName || 'Nâng cao',
         thumbnail: resolveMediaUrl((thirdScn as any)?.thumbnailUrl || (thirdScn as any)?.thumbnail),
         tag: 'Nâng cao',
         matchScore: aboveMatch,
@@ -549,7 +553,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     ];
 
     return picks;
-  }, [profile, radarAxes, availableScenarios]);
+  }, [profile, radarAxes, availableScenarios, adaptiveContext]);
 
   // Danh sách từ vựng & ngữ pháp thực chiến: chỉ lấy từ DB FSRS thực tế và Bookmark người dùng
   const allDeckItems = useMemo(() => {
@@ -1274,12 +1278,6 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
                                 {axis.statusLabel}
                               </span>
                             </div>
-                            <span
-                              className="text-[11px] text-[var(--sumi-muted)] block leading-snug mt-0.5 truncate"
-                              title={drillTooltip}
-                            >
-                              {matchedScn ? `Gợi ý: ${matchedScn.title}` : axis.scopeBadge}
-                            </span>
                           </div>
 
                           <div className="flex items-center gap-3 shrink-0 ml-auto">

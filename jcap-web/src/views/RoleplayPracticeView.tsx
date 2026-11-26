@@ -4052,7 +4052,9 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                                     <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.3s] h-3.5" />
                                     <span className="w-1 bg-[var(--ai)] rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.1s] h-2.5" />
                                   </span>
-                                  <span className="text-[11px] font-bold">Đang phát...</span>
+                                  <span className="text-[11px] font-bold">
+                                    {isAiAudioActuallyPlaying ? 'Đang phát...' : 'Đang tạo giọng...'}
+                                  </span>
                                 </span>
                               ) : (
                                 <span>Nghe lại</span>

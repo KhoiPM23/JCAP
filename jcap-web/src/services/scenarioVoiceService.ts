@@ -246,7 +246,7 @@ class ScenarioVoiceService {
     }
 
     try {
-      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 25000);
+      const audioUrl = await voicevoxService.getAudioUrl(cleanText, resolvedVoiceId, 10000);
       // Kiểm tra request có bị hủy hoặc bị thay thế bởi request mới hơn trong lúc fetch mạng không
       if (this.isSpeechCancelled || playSessionId !== this.currentPlaySessionId) {
         return;

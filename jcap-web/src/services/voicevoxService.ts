@@ -311,6 +311,7 @@ class VoiceVoxService {
   public async prefetchCommonPhrases(speakerId: number = 2): Promise<void> {
     if (typeof window === 'undefined') return;
 
+    // Chỉ nạp từ IndexedDB lên RAM Cache (0ms, KHÔNG gửi 12 request mạng gây nghẽn hàng đợi CPU VOICEVOX)
     for (const phrase of VoiceVoxService.COMMON_PHRASES) {
       const key = `${speakerId}_${phrase}`;
       if (this.blobCache.has(key)) continue;
@@ -320,14 +321,9 @@ class VoiceVoxService {
         if (cachedBlob) {
           const url = URL.createObjectURL(cachedBlob);
           this.blobCache.set(key, url);
-          continue;
         }
-
-        // Tải tuần tự với khoảng nghỉ nhỏ để không làm nghẽn băng thông
-        await this.prefetchAudio(phrase, speakerId);
-        await new Promise((r) => setTimeout(r, 60));
       } catch {
-        // Bỏ qua lỗi mạng
+        // Bỏ qua lỗi đọc IndexedDB
       }
     }
   }
