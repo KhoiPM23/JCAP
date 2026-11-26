@@ -79,36 +79,13 @@ export interface CreateCommunityCommentPayload {
   authorAvatar?: string;
 }
 
-function getCurrentStoredUser(): {
-  id?: string;
-  email?: string;
-  fullName?: string;
-  role?: string;
-  level?: string;
-  avatarUrl?: string;
-} | null {
-  try {
-    const raw = localStorage.getItem('jcap_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('jcap_token');
-  const storedUser = getCurrentStoredUser();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (storedUser?.id) {
-    headers['X-User-Id'] = String(storedUser.id);
-  }
-  if (storedUser?.email) {
-    headers['X-User-Email'] = String(storedUser.email);
   }
   return headers;
 }
@@ -194,9 +171,6 @@ export const communityService = {
   async createPost(
     payload: CreateCommunityPostPayload
   ): Promise<ForumPost | null> {
-    const storedUser = getCurrentStoredUser();
-    const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
-
     try {
       const res = await fetch(resolveApiUrl('/api/community/posts'), {
         method: 'POST',
@@ -206,16 +180,6 @@ export const communityService = {
           title: payload.title,
           content: payload.content,
           isAnonymous: payload.isAnonymous,
-          authorId: payload.authorId || storedUser?.id,
-          authorEmail: payload.authorEmail || storedUser?.email,
-          authorName:
-            payload.authorName ||
-            storedUser?.fullName ||
-            storedUser?.email?.split('@')[0] ||
-            'Học viên JCAP',
-          authorLevel: payload.authorLevel || savedLevel,
-          authorRole: payload.authorRole || storedUser?.role || 'LEARNER',
-          authorAvatar: payload.authorAvatar || storedUser?.avatarUrl,
           attachments: payload.attachments.map((a) => ({
             id: a.id,
             name: a.fileName,
@@ -241,9 +205,6 @@ export const communityService = {
     postId: string,
     payload: CreateCommunityCommentPayload
   ): Promise<ForumPost | null> {
-    const storedUser = getCurrentStoredUser();
-    const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
-
     try {
       const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}/comments`), {
         method: 'POST',
@@ -252,16 +213,6 @@ export const communityService = {
           parentCommentId: payload.parentCommentId || null,
           content: payload.content,
           isAnonymous: payload.isAnonymous,
-          authorId: payload.authorId || storedUser?.id,
-          authorEmail: payload.authorEmail || storedUser?.email,
-          authorName:
-            payload.authorName ||
-            storedUser?.fullName ||
-            storedUser?.email?.split('@')[0] ||
-            'Học viên JCAP',
-          authorLevel: payload.authorLevel || savedLevel,
-          authorRole: payload.authorRole || storedUser?.role || 'LEARNER',
-          authorAvatar: payload.authorAvatar || storedUser?.avatarUrl,
           attachments: payload.attachments.map((a) => ({
             id: a.id,
             name: a.fileName,

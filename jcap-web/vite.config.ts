@@ -21,6 +21,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/uploads': {
+        target: 'http://localhost:5254',
+        changeOrigin: true,
+        secure: false,
+      },
       '/whisper': {
         target: devWhisperTarget,
         changeOrigin: true,
@@ -47,4 +52,3 @@ export default defineConfig({
     },
   },
 });
-
