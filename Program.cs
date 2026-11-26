@@ -186,6 +186,39 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+    options.AddPolicy("community-write", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("feedback-write", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("attachment-upload", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddControllers()

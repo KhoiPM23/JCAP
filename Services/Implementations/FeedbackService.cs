@@ -7,8 +7,10 @@ using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Feedback;
 using JCAP.Models;
+using JCAP.Services.Helpers;
 using JCAP.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace JCAP.Services.Implementations
 {
@@ -23,19 +25,13 @@ namespace JCAP.Services.Implementations
             "SUGGESTION"
         };
 
-        private static bool _schemaEnsured;
         private readonly AppDbContext _dbContext;
+        private readonly string? _cloudinaryCloudName;
 
-        public FeedbackService(AppDbContext dbContext)
+        public FeedbackService(AppDbContext dbContext, IConfiguration? configuration = null)
         {
             _dbContext = dbContext;
-        }
-
-        private async Task EnsureDatabaseReadyAsync()
-        {
-            if (_schemaEnsured) return;
-            await Data.Seeds.FeedbackSeeder.EnsureReadyAsync(_dbContext);
-            _schemaEnsured = true;
+            _cloudinaryCloudName = configuration?["Cloudinary:CloudName"];
         }
 
         public async Task<ApiResponse<List<FeedbackTicketDto>>> GetMyTicketsAsync(
@@ -46,8 +42,6 @@ namespace JCAP.Services.Implementations
             {
                 return ApiResponse<List<FeedbackTicketDto>>.Fail("Không xác định được tài khoản người dùng.");
             }
-
-            await EnsureDatabaseReadyAsync();
 
             var tickets = await _dbContext.FeedbackTickets
                 .AsNoTracking()
@@ -95,18 +89,43 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<FeedbackTicketDto>.Fail("Vui lòng nhập đầy đủ tiêu đề và nội dung góp ý.");
             }
 
+            var cleanTitle = dto.Title.Trim();
+            if (cleanTitle.Length > 300)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail("Tiêu đề bài góp ý không được vượt quá 300 ký tự.");
+            }
+
+            var cleanContent = dto.Content.Trim();
+            if (cleanContent.Length > AttachmentSecurityHelper.MaxFeedbackContentLength)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Nội dung góp ý không được vượt quá {AttachmentSecurityHelper.MaxFeedbackContentLength} ký tự.");
+            }
+
+            var rawAttachments = dto.Attachments ?? new List<CreateFeedbackAttachmentInputDto>();
+            if (rawAttachments.Count > AttachmentSecurityHelper.MaxAttachmentsPerItem)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Chỉ được đính kèm tối đa {AttachmentSecurityHelper.MaxAttachmentsPerItem} tệp mỗi lần gửi.");
+            }
+
+            if (rawAttachments.Any(a => !AttachmentSecurityHelper.IsAllowedAttachmentUrl(a.CloudinaryUrl, _cloudinaryCloudName)))
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail("Đường dẫn tệp đính kèm không hợp lệ.");
+            }
+
             var normalizedCategory = AllowedCategories.Contains(dto.Category?.Trim() ?? "")
                 ? dto.Category!.Trim().ToUpperInvariant()
                 : "SUGGESTION";
 
             var now = DateTime.UtcNow;
-            var randomCode = $"#ANON-{Random.Shared.Next(1000, 9999)}";
+            var randomCode = await GenerateUniqueAnonymousCodeAsync(cancellationToken);
 
             var ticket = new FeedbackTicket
             {
                 UserId = userId,
                 AnonymousCode = randomCode,
-                Title = dto.Title.Trim(),
+                Title = cleanTitle,
                 Category = normalizedCategory,
                 Status = "PENDING",
                 CreatedAt = now,
@@ -116,28 +135,11 @@ namespace JCAP.Services.Implementations
             var initialMessage = new FeedbackMessage
             {
                 SenderRole = "LEARNER",
-                Content = dto.Content.Trim(),
+                Content = cleanContent,
                 CreatedAt = now
             };
 
-            if (dto.Attachments != null && dto.Attachments.Count > 0)
-            {
-                foreach (var att in dto.Attachments)
-                {
-                    if (string.IsNullOrWhiteSpace(att.CloudinaryUrl)) continue;
-                    initialMessage.Attachments.Add(new FeedbackAttachment
-                    {
-                        FileName = string.IsNullOrWhiteSpace(att.FileName) ? "attachment" : att.FileName.Trim(),
-                        FileSize = att.FileSize,
-                        FileType = string.Equals(att.FileType, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
-                        MimeType = string.IsNullOrWhiteSpace(att.MimeType) ? "application/octet-stream" : att.MimeType.Trim(),
-                        CloudinaryUrl = att.CloudinaryUrl.Trim(),
-                        CloudinaryPublicId = string.IsNullOrWhiteSpace(att.CloudinaryPublicId) ? "issues/uploaded_file" : att.CloudinaryPublicId.Trim(),
-                        CreatedAt = now
-                    });
-                }
-            }
-
+            AddAttachmentsToMessage(initialMessage, rawAttachments, now);
             ticket.Messages.Add(initialMessage);
 
             _dbContext.FeedbackTickets.Add(ticket);
@@ -167,12 +169,29 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<FeedbackTicketDto>.Fail("Bài góp ý này đã được Admin đóng lại, không thể gửi thêm phản hồi.");
             }
 
-            var hasContent = !string.IsNullOrWhiteSpace(dto?.Content);
-            var hasAttachments = dto?.Attachments != null && dto.Attachments.Any(a => !string.IsNullOrWhiteSpace(a.CloudinaryUrl));
+            var rawAttachments = dto?.Attachments ?? new List<CreateFeedbackAttachmentInputDto>();
+            if (rawAttachments.Count > AttachmentSecurityHelper.MaxAttachmentsPerItem)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Chỉ được đính kèm tối đa {AttachmentSecurityHelper.MaxAttachmentsPerItem} tệp mỗi lần gửi.");
+            }
 
-            if (!hasContent && !hasAttachments)
+            if (rawAttachments.Any(a => !AttachmentSecurityHelper.IsAllowedAttachmentUrl(a.CloudinaryUrl, _cloudinaryCloudName)))
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail("Đường dẫn tệp đính kèm không hợp lệ.");
+            }
+
+            var hasContent = !string.IsNullOrWhiteSpace(dto?.Content);
+            if (!hasContent && rawAttachments.Count == 0)
             {
                 return ApiResponse<FeedbackTicketDto>.Fail("Vui lòng nhập nội dung phản hồi hoặc đính kèm ít nhất 1 tệp/ảnh.");
+            }
+
+            var cleanContent = hasContent ? dto!.Content.Trim() : "(Đính kèm tệp/ảnh)";
+            if (cleanContent.Length > AttachmentSecurityHelper.MaxFeedbackContentLength)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Nội dung phản hồi không được vượt quá {AttachmentSecurityHelper.MaxFeedbackContentLength} ký tự.");
             }
 
             var now = DateTime.UtcNow;
@@ -180,27 +199,11 @@ namespace JCAP.Services.Implementations
             {
                 FeedbackTicketId = ticket.Id,
                 SenderRole = "LEARNER",
-                Content = hasContent ? dto!.Content.Trim() : "(Đính kèm tệp/ảnh)",
+                Content = cleanContent,
                 CreatedAt = now
             };
 
-            if (dto?.Attachments != null)
-            {
-                foreach (var att in dto.Attachments)
-                {
-                    if (string.IsNullOrWhiteSpace(att.CloudinaryUrl)) continue;
-                    message.Attachments.Add(new FeedbackAttachment
-                    {
-                        FileName = string.IsNullOrWhiteSpace(att.FileName) ? "attachment" : att.FileName.Trim(),
-                        FileSize = att.FileSize,
-                        FileType = string.Equals(att.FileType, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
-                        MimeType = string.IsNullOrWhiteSpace(att.MimeType) ? "application/octet-stream" : att.MimeType.Trim(),
-                        CloudinaryUrl = att.CloudinaryUrl.Trim(),
-                        CloudinaryPublicId = string.IsNullOrWhiteSpace(att.CloudinaryPublicId) ? "issues/uploaded_file" : att.CloudinaryPublicId.Trim(),
-                        CreatedAt = now
-                    });
-                }
-            }
+            AddAttachmentsToMessage(message, rawAttachments, now);
 
             _dbContext.FeedbackMessages.Add(message);
             ticket.UpdatedAt = now;
@@ -213,7 +216,6 @@ namespace JCAP.Services.Implementations
         public async Task<ApiResponse<List<FeedbackTicketDto>>> GetAllTicketsForAdminAsync(
             CancellationToken cancellationToken = default)
         {
-            await EnsureDatabaseReadyAsync();
             var tickets = await _dbContext.FeedbackTickets
                 .AsNoTracking()
                 .Include(t => t.Messages.OrderBy(m => m.CreatedAt))
@@ -268,12 +270,29 @@ namespace JCAP.Services.Implementations
                 return ApiResponse<FeedbackTicketDto>.Fail("Bài góp ý đã đóng. Vui lòng mở lại bài trước khi phản hồi.");
             }
 
-            var hasContent = !string.IsNullOrWhiteSpace(dto?.Content);
-            var hasAttachments = dto?.Attachments != null && dto.Attachments.Any(a => !string.IsNullOrWhiteSpace(a.CloudinaryUrl));
+            var rawAttachments = dto?.Attachments ?? new List<CreateFeedbackAttachmentInputDto>();
+            if (rawAttachments.Count > AttachmentSecurityHelper.MaxAttachmentsPerItem)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Chỉ được đính kèm tối đa {AttachmentSecurityHelper.MaxAttachmentsPerItem} tệp mỗi lần gửi.");
+            }
 
-            if (!hasContent && !hasAttachments)
+            if (rawAttachments.Any(a => !AttachmentSecurityHelper.IsAllowedAttachmentUrl(a.CloudinaryUrl, _cloudinaryCloudName)))
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail("Đường dẫn tệp đính kèm không hợp lệ.");
+            }
+
+            var hasContent = !string.IsNullOrWhiteSpace(dto?.Content);
+            if (!hasContent && rawAttachments.Count == 0)
             {
                 return ApiResponse<FeedbackTicketDto>.Fail("Vui lòng nhập nội dung phản hồi hoặc đính kèm tệp/ảnh.");
+            }
+
+            var cleanContent = hasContent ? dto!.Content.Trim() : "(Đính kèm tệp/ảnh từ Admin)";
+            if (cleanContent.Length > AttachmentSecurityHelper.MaxFeedbackContentLength)
+            {
+                return ApiResponse<FeedbackTicketDto>.Fail(
+                    $"Nội dung phản hồi không được vượt quá {AttachmentSecurityHelper.MaxFeedbackContentLength} ký tự.");
             }
 
             var now = DateTime.UtcNow;
@@ -281,27 +300,11 @@ namespace JCAP.Services.Implementations
             {
                 FeedbackTicketId = ticket.Id,
                 SenderRole = "ADMIN",
-                Content = hasContent ? dto!.Content.Trim() : "(Đính kèm tệp/ảnh từ Admin)",
+                Content = cleanContent,
                 CreatedAt = now
             };
 
-            if (dto?.Attachments != null)
-            {
-                foreach (var att in dto.Attachments)
-                {
-                    if (string.IsNullOrWhiteSpace(att.CloudinaryUrl)) continue;
-                    message.Attachments.Add(new FeedbackAttachment
-                    {
-                        FileName = string.IsNullOrWhiteSpace(att.FileName) ? "attachment" : att.FileName.Trim(),
-                        FileSize = att.FileSize,
-                        FileType = string.Equals(att.FileType, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
-                        MimeType = string.IsNullOrWhiteSpace(att.MimeType) ? "application/octet-stream" : att.MimeType.Trim(),
-                        CloudinaryUrl = att.CloudinaryUrl.Trim(),
-                        CloudinaryPublicId = string.IsNullOrWhiteSpace(att.CloudinaryPublicId) ? "issues/uploaded_file" : att.CloudinaryPublicId.Trim(),
-                        CreatedAt = now
-                    });
-                }
-            }
+            AddAttachmentsToMessage(message, rawAttachments, now);
 
             _dbContext.FeedbackMessages.Add(message);
 
@@ -372,6 +375,65 @@ namespace JCAP.Services.Implementations
             return ApiResponse<FeedbackTicketDto>.Ok(MapToDto(ticket), "Đã mở lại bài góp ý để tiếp tục trao đổi.");
         }
 
+        private async Task<string> GenerateUniqueAnonymousCodeAsync(CancellationToken cancellationToken)
+        {
+            for (var attempt = 0; attempt < 8; attempt++)
+            {
+                var candidate = $"#ANON-{Random.Shared.Next(1000, 10000)}";
+                var exists = await _dbContext.FeedbackTickets
+                    .AsNoTracking()
+                    .AnyAsync(t => t.AnonymousCode == candidate, cancellationToken);
+                if (!exists)
+                {
+                    return candidate;
+                }
+            }
+            return $"#ANON-{Random.Shared.Next(10000, 99999)}";
+        }
+
+        private static void AddAttachmentsToMessage(
+            FeedbackMessage message,
+            IEnumerable<CreateFeedbackAttachmentInputDto> attachments,
+            DateTime now)
+        {
+            foreach (var att in attachments)
+            {
+                var fName = string.IsNullOrWhiteSpace(att.FileName) ? "attachment" : att.FileName.Trim();
+                if (fName.Length > 260) fName = fName[..260];
+
+                var mime = string.IsNullOrWhiteSpace(att.MimeType) ? "application/octet-stream" : att.MimeType.Trim();
+                if (mime.Length > 120) mime = mime[..120];
+
+                var pubId = string.IsNullOrWhiteSpace(att.CloudinaryPublicId)
+                    ? "issues/uploaded_file"
+                    : att.CloudinaryPublicId.Trim();
+                if (pubId.Length > 300) pubId = pubId[..300];
+
+                message.Attachments.Add(new FeedbackAttachment
+                {
+                    FileName = fName,
+                    FileSize = att.FileSize,
+                    FileType = string.Equals(att.FileType, "FILE", StringComparison.OrdinalIgnoreCase) ? "FILE" : "IMAGE",
+                    MimeType = mime,
+                    CloudinaryUrl = att.CloudinaryUrl.Trim(),
+                    CloudinaryPublicId = pubId,
+                    CreatedAt = now
+                });
+            }
+        }
+
+        private static DateTime SpecifyUtc(DateTime value)
+        {
+            return value.Kind == DateTimeKind.Local
+                ? value.ToUniversalTime()
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        }
+
+        private static DateTime? SpecifyUtc(DateTime? value)
+        {
+            return value.HasValue ? SpecifyUtc(value.Value) : null;
+        }
+
         private static FeedbackTicketDto MapToDto(FeedbackTicket ticket)
         {
             return new FeedbackTicketDto
@@ -381,10 +443,10 @@ namespace JCAP.Services.Implementations
                 Title = ticket.Title,
                 Category = ticket.Category,
                 Status = ticket.Status,
-                AdminSeenAt = ticket.AdminSeenAt,
-                CreatedAt = ticket.CreatedAt,
-                UpdatedAt = ticket.UpdatedAt,
-                ClosedAt = ticket.ClosedAt,
+                AdminSeenAt = SpecifyUtc(ticket.AdminSeenAt),
+                CreatedAt = SpecifyUtc(ticket.CreatedAt),
+                UpdatedAt = SpecifyUtc(ticket.UpdatedAt),
+                ClosedAt = SpecifyUtc(ticket.ClosedAt),
                 Messages = (ticket.Messages ?? Array.Empty<FeedbackMessage>())
                     .OrderBy(m => m.CreatedAt)
                     .ThenBy(m => m.Id)
@@ -394,7 +456,7 @@ namespace JCAP.Services.Implementations
                         TicketId = m.FeedbackTicketId,
                         SenderRole = m.SenderRole,
                         Content = m.Content,
-                        CreatedAt = m.CreatedAt,
+                        CreatedAt = SpecifyUtc(m.CreatedAt),
                         Attachments = (m.Attachments ?? Array.Empty<FeedbackAttachment>())
                             .OrderBy(a => a.Id)
                             .Select(a => new FeedbackAttachmentDto

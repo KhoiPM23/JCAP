@@ -6,11 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.Feedback;
+using JCAP.Services.Helpers;
 using JCAP.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
 
 namespace JCAP.Controllers
 {
@@ -27,21 +30,23 @@ namespace JCAP.Controllers
 
         private readonly IFeedbackService _feedbackService;
         private readonly ICloudStorageService _cloudStorageService;
+        private readonly ILogger<FeedbackController> _logger;
 
         public FeedbackController(
             IFeedbackService feedbackService,
-            ICloudStorageService cloudStorageService)
+            ICloudStorageService cloudStorageService,
+            ILogger<FeedbackController> logger)
         {
             _feedbackService = feedbackService;
             _cloudStorageService = cloudStorageService;
+            _logger = logger;
         }
 
         private string? GetCurrentUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)
                 ?? User.FindFirstValue("nameid")
-                ?? User.FindFirstValue("sub")
-                ?? Request.Headers["X-User-Id"].FirstOrDefault();
+                ?? User.FindFirstValue("sub");
         }
 
         [HttpGet("my")]
@@ -71,6 +76,7 @@ namespace JCAP.Controllers
         }
 
         [HttpPost]
+        [EnableRateLimiting("feedback-write")]
         public async Task<IActionResult> CreateTicket(
             [FromBody] CreateFeedbackTicketDto dto,
             CancellationToken cancellationToken)
@@ -86,6 +92,7 @@ namespace JCAP.Controllers
         }
 
         [HttpPost("{id:int}/reply")]
+        [EnableRateLimiting("feedback-write")]
         public async Task<IActionResult> ReplyTicket(
             int id,
             [FromBody] ReplyFeedbackTicketDto dto,
@@ -104,10 +111,10 @@ namespace JCAP.Controllers
         /// <summary>
         /// Tải tệp đính kèm (ảnh hoặc tệp dung lượng nhỏ <= 5MB) lên Cloudinary (folder: issues/)
         /// và trả về đường dẫn CloudinaryUrl để lưu vào Database khi gửi tin nhắn.
-        /// Dùng chung cho cả Learner và Admin.
+        /// Yêu cầu đăng nhập JWT và áp dụng giới hạn tần suất (Rate Limiting).
         /// </summary>
         [HttpPost("upload-attachment")]
-        [AllowAnonymous]
+        [EnableRateLimiting("attachment-upload")]
         public async Task<IActionResult> UploadAttachment(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -127,32 +134,44 @@ namespace JCAP.Controllers
                     "Định dạng tệp không hỗ trợ. Chỉ chấp nhận ảnh (PNG, JPG, WEBP, GIF) hoặc tệp nhỏ (PDF, TXT, LOG, JSON, ZIP, DOC, DOCX)."));
             }
 
+            if (!await AttachmentSecurityHelper.HasValidFileSignatureAsync(file, ext))
+            {
+                return BadRequest(ApiResponse<FeedbackAttachmentDto>.Fail(
+                    "Nội dung tệp không khớp với định dạng khai báo hoặc không hợp lệ."));
+            }
+
             try
             {
                 var cloudUrl = await _cloudStorageService.UploadFileAsync(file, "issues");
-                var isImage = file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
-                    || new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" }.Contains(ext);
+                var isImage = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" }.Contains(ext);
 
                 var publicId = ExtractPublicIdFromUrl(cloudUrl, file.FileName);
+                var safeFileName = string.IsNullOrWhiteSpace(file.FileName) ? "attachment" : Path.GetFileName(file.FileName).Trim();
+                if (safeFileName.Length > 260) safeFileName = safeFileName[..260];
+
+                var safeMimeType = string.IsNullOrWhiteSpace(file.ContentType)
+                    ? (isImage ? "image/png" : "application/octet-stream")
+                    : file.ContentType.Trim();
+                if (safeMimeType.Length > 120) safeMimeType = safeMimeType[..120];
+                if (publicId.Length > 300) publicId = publicId[..300];
 
                 var dto = new FeedbackAttachmentDto
                 {
                     Id = 0,
-                    FileName = file.FileName,
+                    FileName = safeFileName,
                     FileSize = file.Length,
                     FileType = isImage ? "IMAGE" : "FILE",
-                    MimeType = string.IsNullOrWhiteSpace(file.ContentType)
-                        ? (isImage ? "image/png" : "application/octet-stream")
-                        : file.ContentType,
+                    MimeType = safeMimeType,
                     CloudinaryUrl = cloudUrl,
                     CloudinaryPublicId = publicId
                 };
 
-                return Ok(ApiResponse<FeedbackAttachmentDto>.Ok(dto, "Tải tệp đính kèm lên Cloudinary thành công."));
+                return Ok(ApiResponse<FeedbackAttachmentDto>.Ok(dto, "Tải tệp đính kèm lên thành công."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<FeedbackAttachmentDto>.Fail($"Lỗi khi tải tệp lên Cloudinary: {ex.Message}"));
+                _logger.LogError(ex, "Lỗi khi tải tệp đính kèm {FileName} cho người dùng {UserId}", file.FileName, GetCurrentUserId());
+                return StatusCode(500, ApiResponse<FeedbackAttachmentDto>.Fail("Không thể tải tệp đính kèm lên lúc này. Vui lòng thử lại sau."));
             }
         }
 
