@@ -36,7 +36,7 @@ import { scenarioVoiceService } from "../services/scenarioVoiceService";
 import { ukiyoSound } from "../utils/ukiyoSoundEngine";
 
 import { sanitizeDisplayJapanese, alignFuriganaWithOriginal, cleanPedagogicMeaning } from "../utils/japaneseSanitizer";
-import { resolveMediaUrl } from "../utils/apiBase";
+import { resolveMediaUrl, resolveApiUrl } from "../utils/apiBase";
 import { parseGeneralFeedbackSections } from "../utils/feedbackParser";
 
 import { PREFECTURES } from "../data/japanMap";
@@ -786,9 +786,24 @@ const DEFAULT_SCENARIOS_CATALOG: Array<{
   },
 ];
 
+type AdaptiveContextSummary = {
+  recommendedDifficulty?: string;
+  recentTrend?: string;
+  recommendedScenarios?: Array<{
+    scenarioId: number;
+    recommendedLevel: string;
+    tier: 'Consolidate' | 'Core' | 'Stretch' | string;
+    matchScore: number;
+    predictedPassRate: number;
+    reasonVi: string;
+    isTopPick: boolean;
+  }>;
+};
+
 function buildAdaptiveRecommendations(
   result: RoleplayResultDetail,
   availableScenarios: ScenarioListItem[] = [],
+  adaptiveContext: AdaptiveContextSummary | null = null,
 ): { items: SmartRecommendationItem[]; weaknessSummary: string } {
   const currentId = result.scenarioId || 0;
   const currentLevel = (result.jlptLevel || 'N5').toUpperCase().trim();
@@ -848,6 +863,61 @@ function buildAdaptiveRecommendations(
 
   const weaknessSummary = `Bạn ${vocabDesc} (~${Math.max(1, avgUtteranceLen)} ký tự/lượt). Hệ thống gợi ý ưu tiên ${tierRecommendationLabel}.`;
 
+  const trimCardCopy = (text: string, maxLen = 88) => {
+    const c = text.replace(/\s+/g, ' ').trim();
+    return c.length > maxLen ? `${c.slice(0, maxLen - 1).trimEnd()}…` : c;
+  };
+
+  const backendRecs = adaptiveContext?.recommendedScenarios;
+  if (backendRecs && backendRecs.length > 0) {
+    const mapped = backendRecs
+      .map((rec): SmartRecommendationItem | null => {
+        const scn =
+          availableScenarios.find((s) => s.id === rec.scenarioId) ||
+          (availableScenarios.length === 0
+            ? DEFAULT_SCENARIOS_CATALOG.find((d) => d.id === rec.scenarioId)
+            : undefined);
+        if (!scn) return null;
+
+        const level = rec.recommendedLevel || sameLevel;
+        const supportedLevels = scn.supportedJLPTLevels?.length
+          ? scn.supportedJLPTLevels
+          : [level];
+        const tierLabel =
+          rec.tier === 'Core'
+            ? 'Đề xuất'
+            : rec.tier === 'Consolidate'
+            ? 'Củng cố'
+            : 'Nâng cao';
+
+        return {
+          id: scn.id,
+          title: scn.title,
+          level,
+          supportedJLPTLevels: supportedLevels,
+          topicName: scn.topicName,
+          thumbnail: (scn as any).thumbnailUrl || (scn as any).thumbnail,
+          description: trimCardCopy(
+            scn.description || 'Luyện tập tình huống thực chiến theo năng lực hiện tại.',
+          ),
+          matchScore: Math.round(rec.matchScore),
+          isTopPick: Boolean(rec.isTopPick || rec.tier === 'Core'),
+          tag: `${tierLabel} · ${level}`,
+          actionReason:
+            rec.reasonVi ||
+            `Phù hợp trình độ ${level} theo hồ sơ năng lực thực chiến.`,
+        };
+      })
+      .filter((item): item is SmartRecommendationItem => item !== null);
+
+    if (mapped.length > 0) {
+      return {
+        items: mapped,
+        weaknessSummary: `Bạn ${vocabDesc} (~${Math.max(1, avgUtteranceLen)} ký tự/lượt). Hệ thống đề xuất ưu tiên trình độ ${adaptiveContext?.recommendedDifficulty || sameLevel}.`,
+      };
+    }
+  }
+
   const cleanPool = (availableScenarios || []).filter(
     (s) =>
       s.id !== currentId &&
@@ -890,11 +960,6 @@ function buildAdaptiveRecommendations(
   const aboveMatch = recommendedTier === 'above'
     ? Math.min(97, Math.max(86, Math.round(75 + overall * 0.22)))
     : Math.min(88, Math.max(60, Math.round(overall * 0.9)));
-
-  const trimCardCopy = (text: string, maxLen = 88) => {
-    const c = text.replace(/\s+/g, ' ').trim();
-    return c.length > maxLen ? `${c.slice(0, maxLen - 1).trimEnd()}…` : c;
-  };
 
   const items: SmartRecommendationItem[] = [
     {
@@ -1032,6 +1097,7 @@ export const ConversationResultDetailView: React.FC = () => {
   const [isStartingBlind, setIsStartingBlind] = useState(false);
   const [availableScenarios, setAvailableScenarios] = useState<ScenarioListItem[]>([]);
   const [intelProfile, setIntelProfile] = useState<LearnerIntelligenceProfileDto | null>(null);
+  const [adaptiveContext, setAdaptiveContext] = useState<AdaptiveContextSummary | null>(null);
 
   const handleSaveAllToFlashcards = async () => {
     const vocabs = result?.targetVocabularies || [];
@@ -1699,6 +1765,22 @@ export const ConversationResultDetailView: React.FC = () => {
         void roleplayService.getIntelligenceProfile().then((pRes) => {
           if (isCurrent && pRes.success && pRes.data) setIntelProfile(pRes.data);
         }).catch(() => {});
+
+        try {
+          const token = localStorage.getItem('jcap_token');
+          void fetch(resolveApiUrl('/api/learner/adaptive-context'), {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((json) => {
+              if (isCurrent && json?.success && json?.data) {
+                setAdaptiveContext(json.data);
+              }
+            })
+            .catch(() => {});
+        } catch {
+          // ignore
+        }
 
         // Tải trước ngầm các câu thoại mẫu chuẩn Tokyo vào IndexedDB/RAM để bấm là phát ngay
 
@@ -4105,7 +4187,7 @@ export const ConversationResultDetailView: React.FC = () => {
         {/* KHỐI 3 KỊCH BẢN THÍCH ỨNG THÔNG MINH (TOP 3 SMART PICKS)     */}
         {/* ============================================================ */}
         {(() => {
-          const { items: recItems, weaknessSummary } = buildAdaptiveRecommendations(result, availableScenarios);
+          const { items: recItems, weaknessSummary } = buildAdaptiveRecommendations(result, availableScenarios, adaptiveContext);
           return (
             <section className="mt-8 rounded-3xl border border-[var(--line)] bg-[var(--paper-50)] p-6 sm:p-7 shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
