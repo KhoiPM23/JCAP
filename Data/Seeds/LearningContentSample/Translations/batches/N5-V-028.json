@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 39 câu theo bản Nhật. Dùng lại năm câu đã dịch.",
+    "Câu 219866 được dịch theo dạng trần thuật của bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "418493d941",
+      "Fields": {
+        "Meaning": "Muốn có, mong có",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "欲しい thường đi với vật ＋ が để nói muốn có vật đó. 欲しがる diễn tả mong muốn biểu hiện ra của người khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79360": "Bạn tôi muốn có một chiếc ô tô riêng.",
+        "193337": "Có ai muốn ăn thêm bánh pie không?"
+      },
+      "SourceHash": "6f8a683caffab63e6664edf4f30fe67596d3ae9a2cd60a217db087cb1c6aa7fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2dbe65ee1d",
+      "Fields": {
+        "Meaning": "Hộp thư, thùng thư",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ポスト trong hai câu chỉ thùng thư để gửi thư.",
+        "UsageNotes": "Câu thứ hai là câu trần thuật trong bản Nhật."
+      },
+      "Examples": {
+        "196278": "Thùng thư ở đâu?",
+        "219866": "Quanh đây không có thùng thư."
+      },
+      "SourceHash": "017fa73d26a34f50d21f9cb9272f7526f304e00d65ccf30c10c4ff1eb92aa29a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "785adc4f9d",
+      "Fields": {
+        "Meaning": "Mảnh, thon, nhỏ, yếu",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "細い tả vật có bề ngang nhỏ hoặc giọng mảnh, yếu. 細く長く có thể nói về điều duy trì nhẹ nhàng nhưng lâu dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102553": "Anh ấy to béo vậy mà giọng lại mảnh.",
+        "237482": "Hãy yêu tôi nhẹ nhàng và lâu dài."
+      },
+      "SourceHash": "c053915645ac2d879183f1ce0e3dac41d7e056a421d2df106544952e53312729"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "04ab635f4b",
+      "Fields": {
+        "Meaning": "Cúc áo, nút bấm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ボタン chỉ cúc áo hoặc nút bấm. ボタンが取れる và ボタンが外れる trong hai câu nói cúc áo bị bung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192366": "Một chiếc cúc áo mưa bị bung ra.",
+        "196251": "Một chiếc cúc đã bung khỏi áo khoác."
+      },
+      "SourceHash": "87dc13a7442adfe9e7a169339a3688c7ff1fe163c0a4c512cef21744a17c722c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "23ec5a0b3d",
+      "Fields": {
+        "Meaning": "Khách sạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ホテル là khách sạn. ホテルまで nghĩa là đến khách sạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197388": "Đi đến khách sạn Hilton hết bao nhiêu tiền?",
+        "232725": "Bạn đang ở khách sạn này phải không?"
+      },
+      "SourceHash": "4bc2735f58e05b8592a5f70514c40168d9416d91a8572da95382441df92791ac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0e8f798dbf",
+      "Fields": {
+        "Meaning": "Sách, quyển sách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "本（ほん）thường chỉ sách. Cũng dùng chữ 本 làm đơn vị đếm vật dài hoặc chai lọ, như 一本（いっぽん）.",
+        "UsageNotes": "Câu về whisky dùng 本 làm đơn vị đếm chai."
+      },
+      "Examples": {
+        "81634": "Xin đừng đặt sách lộn đầu.",
+        "228339": "Tôi có một chai whisky."
+      },
+      "SourceHash": "3f6642bd4018b4f1d1513576bf3322cdb5d5c53fa65583a828f9cde1b2da66aa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3839786bac",
+      "Fields": {
+        "Meaning": "Giá sách, kệ sách",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "本棚（ほんだな）là giá hoặc kệ để sách. 本棚の本 nghĩa là sách trên giá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152787": "Tôi chưa đọc hết sách trên giá.",
+        "215222": "John đã làm một cái giá sách."
+      },
+      "SourceHash": "a72b1ec92bacfac390a08ac62f0d4567d947f3baea2eda3315be644d2cf420d0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "849baaf2c3",
+      "Fields": {
+        "Meaning": "Sự thật, thật, thực sự",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ほんとう có thể viết 本当. 本当の ＋ danh từ chỉ thứ thực sự thuộc loại đó. 本当なら nghĩa là nếu đúng như vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81497": "Đó không phải là một căn hộ thực sự.",
+        "193838": "Nếu điều đó là thật thì bạn sẽ làm gì?"
+      },
+      "SourceHash": "8b13ba39340c186eb91c45b7b387e1eed2b961f3e46c2315d7e0624b42a37305"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a59ba12bc5",
+      "Fields": {
+        "Meaning": "Mỗi sáng",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎朝（まいあさ）chỉ việc lặp lại mỗi buổi sáng. Có thể đứng trước giờ cụ thể, như 毎朝８時.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81346": "Tôi quyết định chạy bộ mỗi sáng.",
+        "152747": "Mỗi sáng tôi đi học lúc tám giờ."
+      },
+      "SourceHash": "d38435c568669409273e66f54d59bdef855c91e9a5067cb0e13200c6b3f27742"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "771fbe6b4d",
+      "Fields": {
+        "Meaning": "Mỗi tháng, hằng tháng",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎月 đọc là まいげつ hoặc まいつき. 毎月のガス代 là tiền gas hằng tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81361": "Tiền gas mỗi tháng của bạn là bao nhiêu?",
+        "152788": "Mỗi tháng tôi được cho 1.000 yên để mua sách."
+      },
+      "SourceHash": "fc2b247ddce72f5de51f60160847a3019f3db7849cf07441c8fca781dac6e6cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "fd1c93832f",
+      "Fields": {
+        "Meaning": "Mỗi tuần, hằng tuần",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎週（まいしゅう）chỉ việc lặp lại mỗi tuần. 毎週日曜日 nghĩa là vào mỗi Chủ nhật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84360": "Bố tôi chơi quần vợt mỗi Chủ nhật.",
+        "84362": "Bố tôi chơi golf mỗi Chủ nhật."
+      },
+      "SourceHash": "7a532f0ca3fa86ac3acbc16d6b51fd7b0fe967d7ed49b24bb69060767f087538"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "039a696225",
+      "Fields": {
+        "Meaning": "Mỗi ngày, hằng ngày",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎日（まいにち）chỉ việc lặp lại mỗi ngày. 毎日どれぐらい có thể hỏi thời lượng mỗi ngày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81316": "Ngày nào cũng âm u, khó chịu thật nhỉ.",
+        "231557": "Mỗi ngày bạn chơi quần vợt bao lâu?"
+      },
+      "SourceHash": "7ad2b7fe0bc8cf94ba399d5b2a2b46485a43f4e00d50a0e25d903bea1cf3e41e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83700909d4",
+      "Fields": {
+        "Meaning": "Mỗi năm, hằng năm",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎年 có thể đọc là まいねん hoặc まいとし. Từ này chỉ việc lặp lại mỗi năm.",
+        "UsageNotes": "来なきゃ là cách nói rút gọn, mang nghĩa phải đến."
+      },
+      "Examples": {
+        "81243": "Năm nào tôi cũng đi.",
+        "81248": "Năm nào tôi cũng phải đến đây."
+      },
+      "SourceHash": "42b2d9c1a873521fca535d409a0e26257eae69d9317de65da934b2aae3c22a62"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2584943533",
+      "Fields": {
+        "Meaning": "Mỗi tối, hằng đêm",
+        "PartOfSpeech": "Danh từ chỉ thời gian, phó từ",
+        "Explanation": "毎晩（まいばん）chỉ việc lặp lại mỗi tối. ほとんど毎晩 nghĩa là gần như tối nào cũng vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152681": "Tối nào tôi cũng ở nhà.",
+        "195755": "Mike ăn ngoài gần như mỗi tối."
+      },
+      "SourceHash": "0d07829b6cc75be5923583538c62694ca9b00cc6304521b4c080c26094aeae67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "319e218950",
+      "Fields": {
+        "Meaning": "Trước, phía trước",
+        "PartOfSpeech": "Danh từ chỉ thời gian hoặc vị trí",
+        "Explanation": "前（まえ）chỉ thời điểm trước hoặc vị trí phía trước. Động từ dạng từ điển ＋ 前に nghĩa là trước khi làm việc đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "184856": "Hãy đánh bóng giày trước khi ra ngoài."
+      },
+      "SourceHash": "8ad24b8a2085deb8ade560cada24405ee68e8a5930d875f5dd01a76020ae40c9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ae3e0a705f",
+      "Fields": {
+        "Meaning": "Rẽ, cong, uốn",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "曲る（まがる）thường viết 曲がる. 左に曲がる hoặc 左へ曲がる nghĩa là rẽ trái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220472": "Đi dọc đường này hai dãy phố rồi rẽ trái.",
+        "235525": "Đi bộ thêm hai dãy phố rồi rẽ trái."
+      },
+      "SourceHash": "8b228c5940d208b4c2948ba727bf685d1a55b8b393ffa2264c3c00b277e0f9f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b19034ded1",
+      "Fields": {
+        "Meaning": "Dở, khó ăn, không ổn",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "まずい có thể tả đồ ăn dở hoặc tình huống không ổn. Thốt lên まずい！ khi nhận ra có rắc rối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197452": "Khi đói thì chẳng có món nào dở.",
+        "234772": "Ôi, không ổn rồi! Sắp hết xăng."
+      },
+      "SourceHash": "5eaeaf058f65effaac1abaf6b5c161d02000cbf0f68b76c8432f1c5c747ce6db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "162e00c6ef",
+      "Fields": {
+        "Meaning": "Lại, cũng, ngoài ra",
+        "PartOfSpeech": "Phó từ, liên từ",
+        "Explanation": "また có thể nói một việc xảy ra lại hoặc bổ sung ý. Trong もまた và でありまた〜でもある, nó mang nghĩa cũng hoặc đồng thời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215924": "Jim cũng sẽ đến dự tiệc.",
+        "230730": "Người đó vừa là bác sĩ vừa là giảng viên đại học."
+      },
+      "SourceHash": "cbb10a8a2dba481ca4babb8af9abf0ce9553432529f723041388beece6f13122"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a7163f5f7",
+      "Fields": {
+        "Meaning": "Vẫn, còn, chưa",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "まだ diễn tả trạng thái còn tiếp diễn hoặc lượng vẫn còn. Với phủ định, như まだ終わっていない, có nghĩa là chưa xong.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195488": "Vẫn còn nhiều thời gian mà.",
+        "199298": "Vẫn còn nhiều việc phải làm."
+      },
+      "SourceHash": "0b735b50aa821327b0d7cbf3305ac4f95b66933122441e3898b55f6dec22241c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4d76d06d84",
+      "Fields": {
+        "Meaning": "Thị trấn, phố, khu phố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "町（まち）chỉ thị trấn hoặc khu phố tùy ngữ cảnh. 町に来る nghĩa là đến thị trấn hoặc khu phố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "207801": "Thị trấn đó nằm ngay phía bắc London.",
+        "220531": "Đây là lần đầu bạn đến thị trấn này phải không?"
+      },
+      "SourceHash": "dd0ca86be4c3c1c6901cc466c2dc4c6171424661e8e353cfb363f50441c3720e"
+    }
+  ]
+}

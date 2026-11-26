@@ -1,0 +1,308 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 từ và 38 câu theo bản Nhật. フォーク không có câu nguồn.",
+    "Giữ nhất quán bốn câu đã dịch ở các lô trước."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ec5bd86b72",
+      "Fields": {
+        "Meaning": "Trái, bên trái",
+        "PartOfSpeech": "Danh từ chỉ phương hướng",
+        "Explanation": "左（ひだり）chỉ bên trái. 右から左へ nghĩa là từ phải sang trái.",
+        "UsageNotes": "Với tiền, 右から左へと出る gợi ý tiền vừa vào đã ra ngay."
+      },
+      "Examples": {
+        "122093": "Tiền vừa vào tay tôi đã tiêu hết ngay.",
+        "230059": "Tiếng Ả Rập được viết từ phải sang trái."
+      },
+      "SourceHash": "64f16ea664d31e03bb5d6d1ffed62d7154d10b355d73141e0fbf2fae0c3f4e94"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d91ee7a9ed",
+      "Fields": {
+        "Meaning": "Người, người khác",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人（ひと）chỉ người. Trong 人のせいにする, 人 chỉ người khác, còn cả cụm nghĩa là đổ lỗi cho người khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "199395": "Có ai đó vẫn hơn là chẳng có ai.",
+        "226941": "Cậu cứ có chuyện là đổ lỗi cho người khác."
+      },
+      "SourceHash": "da54582cc27ef08bcafc090f636d1c2a29556c5e7548cdfb264a5f650ef2634f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "537f8af3d6",
+      "Fields": {
+        "Meaning": "Một cái, một thứ",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "一つ（ひとつ）là cách đếm chung cho một vật hoặc một mục. Có thể viết １つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149093": "Một chiếc ô tô có một vô lăng.",
+        "215075": "Tôi không tìm thấy một chiếc va-li của mình."
+      },
+      "SourceHash": "e4648892d63d14a7b172c9fb27853225ebd98e7e5dd884e5d58f4215e5f08ba4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3554fb81b8",
+      "Fields": {
+        "Meaning": "Một tháng",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "一月 đọc là ひとつき khi chỉ khoảng thời gian một tháng. Cũng có thể viết ひと月.",
+        "UsageNotes": "一月 đọc là いちがつ khi chỉ tháng Một."
+      },
+      "Examples": {
+        "179773": "Đến lúc hết tiền thì vẫn còn một tháng nữa.",
+        "232929": "Một tháng bạn rửa xe khoảng mấy lần?"
+      },
+      "SourceHash": "a3596527f5502b0bccabae211fba1cc5ded5e9d102f8ca21fd46f43459a204f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fb1b70809",
+      "Fields": {
+        "Meaning": "Một người, một mình",
+        "PartOfSpeech": "Danh từ, số từ đếm người",
+        "Explanation": "一人（ひとり）dùng để đếm một người hoặc nói ai đó ở một mình. 一人になる nghĩa là còn lại một mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158458": "Tôi có một em trai.",
+        "201572": "Sao bạn lại ở một mình thế?"
+      },
+      "SourceHash": "39d064e131d2d9d90dc63abc888fa9311dde59d64e97eda438b9520b78bc540a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a9ce8e2df",
+      "Fields": {
+        "Meaning": "Thời gian rảnh, rảnh",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "暇（ひま）chỉ lúc rảnh hoặc trạng thái không bận. 暇がない nghĩa là không có thời gian, còn 暇です nghĩa là đang rảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215363": "John vội đến mức chẳng có thời gian nói chuyện.",
+        "234469": "Ngày mai tôi rảnh cả ngày."
+      },
+      "SourceHash": "a55f94c19345a74ed7d053627a71e89c486af3bf99e0862b009f73d69be63b3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13696bc9b5",
+      "Fields": {
+        "Meaning": "Một trăm, trăm",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "百（ひゃく）là số một trăm. 百年 là một trăm năm, còn 百歳 là một trăm tuổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85413": "Một trăm năm nữa thì mọi thứ cũng như nhau thôi.",
+        "85416": "Rất ít người sống đến một trăm tuổi."
+      },
+      "SourceHash": "394a4c2f9b40e1bc90b927a1cfe4f7147df17a46c782a58b908f07532339de7b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "734d275fd9",
+      "Fields": {
+        "Meaning": "Bệnh viện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "病院（びょういん）là cơ sở khám và chữa bệnh. 病院まで chỉ quãng đường đến bệnh viện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85328": "Đến bệnh viện xa tới 10 dặm.",
+        "222301": "Gần đây có bệnh viện nào không?"
+      },
+      "SourceHash": "defed109671788a4688e515ff7558cb007c2eb23311bc8d15462f51dbc95ef24"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c551bc3f7c",
+      "Fields": {
+        "Meaning": "Bệnh, bị ốm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "病気（びょうき）chỉ bệnh hoặc tình trạng bị ốm. 病気です có thể dịch là đang bị ốm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "196062": "Không biết Bob có bị ốm không nhỉ?",
+        "197091": "Lúc đó ông Brown bị ốm."
+      },
+      "SourceHash": "a41f304b9c25a90d41085b37aeec093b337fe4d246969e3911a1867dc01eaebc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5d7a8d133b",
+      "Fields": {
+        "Meaning": "Buổi trưa, ban ngày",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "昼（ひる）chỉ buổi trưa hoặc ban ngày. Khi nói về ăn uống, 昼 có thể chỉ bữa trưa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "155091": "Bữa trưa tôi ăn bánh mì kẹp xúc xích.",
+        "225117": "Chắc Ken sẽ ở nhà đến trưa."
+      },
+      "SourceHash": "ff25419956c169e67da04d5ccd607a2b55a29ae1feb6c89ed6dc9e706dffd317"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "230d5c7343",
+      "Fields": {
+        "Meaning": "Rộng, rộng rãi",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "広い（ひろい）tả nơi có nhiều không gian hoặc vật có bề ngang lớn. どのくらい広い hỏi rộng đến mức nào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200414": "Rộng cỡ nào?",
+        "220476": "Con đường này rộng nhưng không dài lắm."
+      },
+      "SourceHash": "e25fc057f3c59e0d85b449d51992f80423e616514a99a74dd08890dcb87daac8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef9babb012",
+      "Fields": {
+        "Meaning": "Phim chụp ảnh, cuộn phim",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "フィルム trong các câu nguồn chỉ phim dùng cho máy ảnh. カラーフィルム là phim màu. Có thể đếm cuộn phim bằng 本.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197224": "Tôi hết phim rồi.",
+        "226201": "Cho tôi một cuộn phim màu."
+      },
+      "SourceHash": "9baca5bbf68b7f9910ddbfdaa09803f82e5ccc441c295573472eca998c4ff6c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d156402900",
+      "Fields": {
+        "Meaning": "Phong bì",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "封筒（ふうとう）chỉ phong bì đựng thư hoặc giấy tờ. 封筒を開ける là mở phong bì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84069": "Cho tôi xin một cái phong bì.",
+        "203217": "Ai đã xé mở phong bì này?"
+      },
+      "SourceHash": "d8827b1a9d9df4b52e20b1aa1beed4e2740dc5c3bdf38ffd7846e740fbbd374a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55c1439239",
+      "Fields": {
+        "Meaning": "Hồ bơi, bể bơi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "プール thường chỉ hồ bơi. プールで泳ぐ là bơi trong hồ bơi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205516": "Hồ bơi đó trông thật hấp dẫn.",
+        "2301777": "Ở đó có phòng xông hơi và hồ bơi."
+      },
+      "SourceHash": "249061c437d10e545a4c1a580671e9dffdab29d6f100b82b2a1b34d147c11654"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "71e2aefb9d",
+      "Fields": {
+        "Meaning": "Nĩa, dĩa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "フォーク thường chỉ nĩa dùng để ăn. フォークで食べる nghĩa là ăn bằng nĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "d10f620967f05b924ec510fc54d8f0fcdec99230d984e6749ffb34f41202eb03"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "15f4136421",
+      "Fields": {
+        "Meaning": "Thổi, thổi nhạc cụ",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "吹く（ふく）dùng khi gió thổi hoặc khi ai đó thổi nhạc cụ. 風が吹く là gió thổi, còn トランペットを吹く là thổi kèn trumpet.",
+        "UsageNotes": "Thể て là 吹いて."
+      },
+      "Examples": {
+        "202226": "Ted thích thổi kèn trumpet.",
+        "230511": "Hôm đó gió thổi mạnh."
+      },
+      "SourceHash": "b2dbae44b00d5bdef737f029bb1bca57259a18b06f374b88c1eac4b54e5c6581"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "68571540e1",
+      "Fields": {
+        "Meaning": "Quần áo, trang phục",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "服（ふく）chỉ quần áo nói chung hoặc một bộ trang phục. 服を着る là mặc quần áo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215109": "Susan đã may quần áo cho Jill.",
+        "219956": "Bộ đồ này đẹp quá, tôi mặc thì phí."
+      },
+      "SourceHash": "15fe3cb13b00bf1fef327f0f321ea7240d60cc52fa1bf8a99797f61ec1bc9431"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c1dbd4838",
+      "Fields": {
+        "Meaning": "Hai cái, hai thứ",
+        "PartOfSpeech": "Số từ đếm",
+        "Explanation": "二つ（ふたつ）là cách đếm chung cho hai vật hoặc hai mục. 二つのうちで nghĩa là trong hai thứ.",
+        "UsageNotes": "二つ年上 nghĩa là lớn hơn hai tuổi."
+      },
+      "Examples": {
+        "123179": "Trong hai cái, cái nào đắt hơn?",
+        "216654": "Sally lớn hơn Ken hai tuổi."
+      },
+      "SourceHash": "c29de8ff6829d36c96aabb47f1b5f63b1ed570a4e3d84c152a3ccefb0d8dfc77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c518fb9116",
+      "Fields": {
+        "Meaning": "Thịt lợn, thịt heo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "豚肉（ぶたにく）chỉ thịt lợn. Với thực phẩm, 傷んでいる nghĩa là đã bắt đầu hỏng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220249": "Thịt lợn này hơi ôi rồi.",
+        "220250": "Thịt lợn này bao nhiêu tiền một ký?"
+      },
+      "SourceHash": "ce97f70726983690df7ebbb8754fdd8938127586dc49fbb60b1ceab4f5fcc5e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94c2076821",
+      "Fields": {
+        "Meaning": "Hai người",
+        "PartOfSpeech": "Danh từ, số từ đếm người",
+        "Explanation": "二人（ふたり）dùng để nói hai người. 二人だけで nghĩa là chỉ có hai người, có thể hàm ý nói chuyện riêng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123073": "Hai bạn đang làm gì vậy?",
+        "123125": "Tôi muốn nói chuyện riêng với anh/chị."
+      },
+      "SourceHash": "3149a08a20fab30df1d9e20712ccdbce5637507342b96d4b6dcabf7593f49c30"
+    }
+  ]
+}

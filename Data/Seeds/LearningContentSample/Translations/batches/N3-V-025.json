@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c9366999ee",
+      "Fields": {
+        "Meaning": "Cãi nhau, đánh nhau",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "喧嘩（けんか）có nghĩa là cãi nhau, đánh nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96708": "Họ cứ cãi nhau suốt.",
+        "225193": "Cậu cãi nhau với Ken à?"
+      },
+      "SourceHash": "a127ca7c89b9b9c71b75043def005ce6388a4534ba203b7d90507a50239da967"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e3d7c44ae",
+      "Fields": {
+        "Meaning": "Quan điểm, nhận định",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "見解（けんかい）có nghĩa là quan điểm, nhận định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "167008": "Có vẻ chúng ta có quan điểm khác nhau.",
+        "233353": "Quan điểm của bạn hoàn toàn trái ngược với tôi."
+      },
+      "SourceHash": "a2401ac63772589c260af6f23d3da9c96e93d2e784f97d649bda87bcaf421de4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fd0035449",
+      "Fields": {
+        "Meaning": "Giới hạn",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "限界（げんかい）có nghĩa là giới hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "205050": "Điều đó vượt quá giới hạn hiểu biết của con người.",
+        "230046": "Mọi thứ đều có giới hạn."
+      },
+      "SourceHash": "39bdf62b839c1834be01e38bf3fd3ebf90d47b596a72fe1ecc5aed657e74d4df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "128d1bd46f",
+      "Fields": {
+        "Meaning": "Tiền mặt, thực dụng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "現金 chỉ tiền mặt. Khi dùng như tính từ な để tả người, từ này có thể chỉ thái độ thực dụng vì lợi ích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "114558": "Anh ấy lúc nào cũng thiếu tiền mặt.",
+        "174936": "Bạn không cần trả bằng tiền mặt."
+      },
+      "SourceHash": "984866083352b4253ea82cfd4083cbb7dda626b6a2e4e28a41c542a71317c9c2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "eef783663f",
+      "Fields": {
+        "Meaning": "Ngôn ngữ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "言語（げんご）có nghĩa là ngôn ngữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174733": "Ngôn ngữ thay đổi cũng như con người.",
+        "201744": "Tiếng Đức không phải là một ngôn ngữ dễ học."
+      },
+      "SourceHash": "2575a21ef0c23b528b18d178cba22b5fa9972450722d45bcacd79f66b9f84e9d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "099583ae2f",
+      "Fields": {
+        "Meaning": "Sức khỏe, khỏe mạnh",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "健康（けんこう）có nghĩa là sức khỏe, khỏe mạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84598": "Bố tôi bỏ thuốc vì sức khỏe.",
+        "188743": "Hút thuốc có hại cho sức khỏe."
+      },
+      "SourceHash": "bb364662b9006d7ead8771a9b9bca7b9c43259af6ff84e4f2c713efcec152571"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8fb4973f14",
+      "Fields": {
+        "Meaning": "Kiểm tra, khám, xét nghiệm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "検査（けんさ）có nghĩa là kiểm tra, khám, xét nghiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152570": "Tôi định đi khám mắt.",
+        "175380": "Cuộc kiểm tra chỉ làm qua loa."
+      },
+      "SourceHash": "2b5bf95f6faea29eb2716c683e436df16e4920b8bddcd6fed1b615692b3322ad"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3030916eee",
+      "Fields": {
+        "Meaning": "Hiện tại, hiện nay",
+        "PartOfSpeech": "Danh từ, phó từ, bổ nghĩa với の",
+        "Explanation": "現在（げんざい）có nghĩa là hiện tại, hiện nay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107615": "Anh ấy không hài lòng với mức lương hiện tại.",
+        "157251": "Tôi hài lòng với vị trí hiện tại."
+      },
+      "SourceHash": "e02339bad10687d579b37efcbd93b58fb72f1bb84dfa2dfe1e0d7f7dff4b0fcc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30088243fb",
+      "Fields": {
+        "Meaning": "Hiện thực, thực tế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "現実（げんじつ）có nghĩa là hiện thực, thực tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "174871": "Không thể trốn tránh thực tế.",
+        "233005": "Ước mơ của bạn đã thành hiện thực."
+      },
+      "SourceHash": "f1450c47b5afbc2d7d5720d26fa84815a30d87bd42b9b350c4dfb56d5b64b9dd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e4e5715dc0",
+      "Fields": {
+        "Meaning": "Hiện tượng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "現象（げんしょう）có nghĩa là hiện tượng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123689": "Người ta đã quan sát được cùng một hiện tượng.",
+        "142694": "Nhà sinh học tập trung quan sát hiện tượng đó."
+      },
+      "SourceHash": "3835b28c84becea75bd486752b0a1888947b764414f7aaa7e1fc03f22683d600"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c5881c078f",
+      "Fields": {
+        "Meaning": "Hiện trạng, tình hình hiện tại",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "現状（げんじょう）có nghĩa là hiện trạng, tình hình hiện tại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107611": "Ông ấy rất buồn về tình hình hiện tại.",
+        "174854": "Với tình hình hiện nay, không thể tránh khỏi phá sản."
+      },
+      "SourceHash": "248b985b912cd85bc4d1bcf682f50c824610d689af9c08fe6cee4080476a9c8e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95f1defe2d",
+      "Fields": {
+        "Meaning": "Xây dựng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "建設（けんせつ）có nghĩa là xây dựng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145348": "Các con đường mới lần lượt được xây dựng.",
+        "211365": "Số tiền đó được dùng để xây nhà thi đấu."
+      },
+      "SourceHash": "46480373c45f976c2748c1d4bcc99c2e7fa565b39609105ed20e4a6c903ea5dc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d4d82c9ff4",
+      "Fields": {
+        "Meaning": "Thời hiện đại, đương đại",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "現代（げんだい）có nghĩa là thời hiện đại, đương đại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107599": "Ông ấy nghiên cứu văn học đương đại.",
+        "157249": "Tôi thừa nhận mình không thích nhạc đương đại lắm."
+      },
+      "SourceHash": "ac4c27984b339f8cf3dc07fa8fd9c00b5f507994377ee0c121d2158df2f830c5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20d3ebafd0",
+      "Fields": {
+        "Meaning": "Kiến trúc, xây dựng công trình",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "建築（けんちく）có nghĩa là kiến trúc, xây dựng công trình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97249": "Họ rất tiến bộ trong lĩnh vực kiến trúc.",
+        "97461": "Họ bắt tay vào xây nhà."
+      },
+      "SourceHash": "585dd050e3adea30e46ee8d63bf2b488d37b5c496079ddd10fc978c5a550091b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9eaa6e43ae",
+      "Fields": {
+        "Meaning": "Xem xét, cân nhắc",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "検討（けんとう）có nghĩa là xem xét, cân nhắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "172419": "Khi đi du lịch lần tới, xin cân nhắc sử dụng dịch vụ của công ty chúng tôi.",
+        "206358": "Hãy xem xét toàn bộ vấn đề đó."
+      },
+      "SourceHash": "a7b8625f757bd4e4c78b8d906274a0187ce7af1420fdc5115cfecd62e193364a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a99283c8e3",
+      "Fields": {
+        "Meaning": "Ước chừng, phỏng đoán, manh mối",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "見当（けんとう）có nghĩa là ước chừng, phỏng đoán, manh mối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "153243": "Tôi đoán cô ấy khoảng 40 tuổi.",
+        "205953": "Tôi đoán được đại khái nó ở đâu."
+      },
+      "SourceHash": "6f904ac9960e783c6fc60c6507be0afd219589b403f14be71556210b7538636b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6a886bb014",
+      "Fields": {
+        "Meaning": "Hiện trường, nơi làm việc thực tế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "現場（げんば）có nghĩa là hiện trường, nơi làm việc thực tế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166480": "Chúng tôi lập tức chạy đến hiện trường.",
+        "176214": "Cảnh sát sẽ sớm đến hiện trường."
+      },
+      "SourceHash": "f535fbbc50f752197612d469899616ec2e4e956ba0018f602302361e6f88bb46"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5df242e3b0",
+      "Fields": {
+        "Meaning": "Hiến pháp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "憲法（けんぽう）có nghĩa là hiến pháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83553": "Quyền bình đẳng được hiến pháp bảo vệ.",
+        "217738": "Các nguyên tắc này được thể hiện cụ thể trong hiến pháp."
+      },
+      "SourceHash": "35ccbba50d9a22142815cb0bd5f896603c8f0ba8657c7d142dcb9efdad248dbc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ffb1d0e3d2",
+      "Fields": {
+        "Meaning": "Quyền, quyền lợi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "権利（けんり）có nghĩa là quyền, quyền lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "178681": "Cậu không có quyền làm vậy.",
+        "233766": "Bạn không có quyền đến đó."
+      },
+      "SourceHash": "27dad14d0a9a555cf6659871e4e5c7e976ff95d1ee15769f63c1534c883f71e1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c5b127def2",
+      "Fields": {
+        "Meaning": "Từ, tiếng, ngôn ngữ",
+        "PartOfSpeech": "Danh từ, hậu tố, trợ số từ",
+        "Explanation": "語（ご）có nghĩa là từ, tiếng, ngôn ngữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194658": "Ở Mexico người ta nói tiếng gì?",
+        "235601": "Hãy tóm tắt bài viết trong không quá 200 từ."
+      },
+      "SourceHash": "e3377e440a669147b312ea737fefdefb98993b3cf0be2ae9d2cd810743d4b245"
+    }
+  ]
+}

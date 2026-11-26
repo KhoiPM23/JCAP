@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hotondo",
+      "Fields": {
+        "Meaning": "Hầu hết, gần như, hầu như không",
+        "Formation": "ほとんど ＋ vị ngữ／ほとんどの ＋ danh từ",
+        "Explanation": "Chỉ phần rất lớn hoặc mức gần hoàn tất. Với phủ định, chỉ mức rất thấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hotondo:example:1": "Tôi gần làm xong bài tập rồi.",
+        "hotondo:example:2": "Tôi hầu như không uống rượu."
+      },
+      "SourceHash": "9854fb2df2f7517a13126d0730f2c08d11e516fa17022f3065e00bf9306dd919"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mai-no-you-ni",
+      "Fields": {
+        "Meaning": "Gần như mỗi",
+        "Formation": "毎 ＋ đơn vị thời gian ＋ のように",
+        "Explanation": "Nêu tần suất rất gần mức mỗi ngày, mỗi tuần hoặc chu kỳ tương tự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mai-no-you-ni:example:1": "Anh ấy gần như ngày nào cũng ăn ngoài.",
+        "mai-no-you-ni:example:2": "Dạo này gần như tuần nào tôi cũng ra ngoài."
+      },
+      "SourceHash": "b33657db4a558a48139c594d3f0bdedcba8bb01b93a69ecac5f3936b30b159ec"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "matawa",
+      "Fields": {
+        "Meaning": "Hoặc",
+        "Formation": "A ＋ または ＋ B",
+        "Explanation": "Nêu các phương án lựa chọn, thường gặp trong văn viết hoặc hướng dẫn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "matawa:example:1": "Xin viết bằng bút mực hoặc bút chì.",
+        "matawa:example:2": "Xin liên hệ qua điện thoại hoặc email."
+      },
+      "SourceHash": "0b4c82b32241d1091d08ce1b327955ce0a2480cb7cf4b2bc786b8724a8aca007"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ma",
+      "Fields": {
+        "Meaning": "Hoàn toàn, đậm, ngay chính",
+        "Formation": "真っ ＋ từ chỉ màu sắc hoặc trạng thái",
+        "Explanation": "Tiền tố tăng mức độ trong những từ cố định như 真っ暗 và 真っ赤.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ma:example:1": "Phòng tối om, tôi chẳng nhìn thấy gì.",
+        "ma:example:2": "Bầu trời đỏ rực."
+      },
+      "SourceHash": "f7be4d83813e7aa0d611e115bcf0e81752be2a5327affd0bfa6355f6a047cfe0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "made-ni",
+      "Fields": {
+        "Meaning": "Chậm nhất vào, trước khi",
+        "Formation": "Mốc thời gian hoặc động từ thể từ điển ＋ までに",
+        "Explanation": "Nêu hạn mà một hành động cần được thực hiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "made-ni:example:1": "Xin nộp báo cáo chậm nhất vào thứ Sáu.",
+        "made-ni:example:2": "Mình về trước khi trời tối nhé."
+      },
+      "SourceHash": "3ea54e50970ed0eac198e0d6dedba76efb0811d07b375b003e6513703a3a2532"
+    }
+  ]
+}

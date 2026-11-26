@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl } from '../components/jcap';
 import { useAuth } from '../contexts/AuthContext';
+import { placementTestService } from '../services/placementTestService';
 import { profileService } from '../services/profileService';
 import { roleplayResultService } from '../services/roleplayResultService';
 import { shadowingService } from '../services/shadowingService';
-import { formatDateFull } from '../utils/dateUtils';
+import { formatDateFull, formatDateTime } from '../utils/dateUtils';
+import type { PlacementTestCompleteResponseDto, PlacementTestStatusDto } from '../types/placementTest';
 import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel, LearnerProfile } from '../types/profile';
 import { useExploreJourney } from './explore/exploreStore';
@@ -25,6 +27,7 @@ export const LearnerProfileView: React.FC = () => {
   const [levelError, setLevelError] = useState<string | null>(null);
   const [roleplayCount, setRoleplayCount] = useState<number | null>(null);
   const [shadowingCount, setShadowingCount] = useState<number | null>(null);
+  const [placementStatus, setPlacementStatus] = useState<PlacementTestStatusDto | null>(null);
 
   const fetchProfile = async () => {
     setIsLoading(true);
@@ -53,6 +56,10 @@ export const LearnerProfileView: React.FC = () => {
     shadowingService
       .getHistory()
       .then((r) => r.success && r.data && setShadowingCount(r.data.length))
+      .catch(() => {});
+    placementTestService
+      .getStatus()
+      .then((r) => r.success && r.data && setPlacementStatus(r.data))
       .catch(() => {});
 
     const handleProfileUpdated = (e: Event) => {
@@ -197,6 +204,119 @@ export const LearnerProfileView: React.FC = () => {
                 </Button>
               </div>
             </section>
+
+            {/* Đánh giá đầu vào (Placement Test) & Lịch sử xếp lớp riêng */}
+            {(() => {
+              const ptState = placementStatus?.placementTestStatus ?? profile.placementTestStatus ?? 'NotStarted';
+              const activeSessionId = placementStatus?.activeSessionId ?? null;
+              const allowRetake = placementStatus?.allowRetakeForTesting ?? false;
+              const canStartOrRetake = placementStatus?.canStartOrRetake ?? (ptState !== 'Completed' || allowRetake || activeSessionId !== null);
+              const estLevel = placementStatus?.initialEstimatedLevel ?? profile.initialEstimatedLevel;
+              const confTier = placementStatus?.initialConfidenceTier ?? profile.initialConfidenceTier;
+              const completedAt = placementStatus?.placementTestCompletedAtUtc ?? profile.placementTestCompletedAtUtc;
+              const snapshotJson = placementStatus?.initialProficiencySnapshotJson ?? profile.initialProficiencySnapshotJson;
+
+              let parsedSnapshot: PlacementTestCompleteResponseDto | null = null;
+              if (snapshotJson) {
+                try {
+                  parsedSnapshot = JSON.parse(snapshotJson) as PlacementTestCompleteResponseDto;
+                } catch {
+                  parsedSnapshot = null;
+                }
+              }
+
+              const statusBadge =
+                ptState === 'Completed'
+                  ? { tone: 'success' as const, label: 'Đã hoàn thành' }
+                  : activeSessionId
+                  ? { tone: 'info' as const, label: 'Đang làm dở' }
+                  : ptState === 'Skipped'
+                  ? { tone: 'neutral' as const, label: 'Đã bỏ qua' }
+                  : ptState === 'InsufficientEvidence'
+                  ? { tone: 'warning' as const, label: 'Chưa đủ dữ liệu' }
+                  : { tone: 'neutral' as const, label: 'Chưa thực hiện' };
+
+              return (
+                <section aria-labelledby="placement-h" className="flex flex-col gap-3.5 rounded-jc-lg border border-line bg-paper-50 px-6 py-[22px]">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 id="placement-h" className="m-0 text-[17px] font-semibold leading-6">
+                          Đánh giá đầu vào (Placement Test)
+                        </h2>
+                        <Badge tone={statusBadge.tone}>{statusBadge.label}</Badge>
+                        {allowRetake && (
+                          <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                            🧪 TEST MODE (Cho phép làm lại)
+                          </span>
+                        )}
+                      </div>
+                      <p className="m-0 text-sm leading-[22px] text-sumi-muted">
+                        Phỏng vấn tình huống Khách sạn Sakura (0 Credit) giúp ước lượng năng lực giao tiếp ban đầu từ N5 đến N3.
+                      </p>
+                    </div>
+                  </div>
+
+                  {estLevel && (
+                    <div className="grid grid-cols-1 gap-3 rounded-jc-md border border-line bg-paper-100/70 p-3.5 sm:grid-cols-3">
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Trình độ ước lượng</span>
+                        <span className="mt-0.5 inline-block text-xl font-black text-ai font-mono">{estLevel}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Độ tin cậy / Điểm</span>
+                        <span className="mt-0.5 block text-sm font-bold text-sumi">
+                          {confTier || '—'}
+                          {parsedSnapshot?.overallScore != null ? ` • ${parsedSnapshot.overallScore}/100` : ''}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-sumi-muted">Lần cập nhật gần nhất</span>
+                        <span className="mt-0.5 block text-xs font-medium text-sumi">
+                          {completedAt ? formatDateTime(completedAt) : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSessionId && (
+                    <div className="rounded-jc-md border border-blue-200 bg-blue-50/70 px-3.5 py-2.5 text-xs text-blue-900">
+                      Bạn đang có một phiên đánh giá chưa hoàn thành (#{activeSessionId}). Bạn có thể <strong>tiếp tục ngay tại điểm đang dừng</strong> hoặc <strong>huỷ bài đang dở để làm lại từ đầu</strong> (bài dở sẽ không lưu vào lịch sử).
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
+                    {activeSessionId ? (
+                      <>
+                        <Button variant="primary" size="sm" icon="play_arrow" onClick={() => navigate('/placement-test')}>
+                          Tiếp tục bài đang dở
+                        </Button>
+                        <Button variant="secondary" size="sm" icon="restart_alt" onClick={() => navigate('/placement-test?reset=1')}>
+                          Làm lại bài mới (Huỷ bài cũ)
+                        </Button>
+                      </>
+                    ) : canStartOrRetake ? (
+                      <Button
+                        variant={ptState === 'Completed' ? 'secondary' : 'primary'}
+                        size="sm"
+                        icon={ptState === 'Completed' ? 'restart_alt' : 'play_arrow'}
+                        onClick={() => navigate(ptState === 'Completed' ? '/placement-test?reset=1' : '/placement-test')}
+                      >
+                        {ptState === 'Completed' ? 'Làm lại để kiểm thử (Test)' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
+                      </Button>
+                    ) : null}
+
+                    <Button variant="ghost" size="sm" icon="history" onClick={() => navigate('/placement-test/history')}>
+                      Xem lịch sử xếp lớp
+                    </Button>
+                  </div>
+
+                  {parsedSnapshot?.disclaimer && (
+                    <p className="m-0 text-[11px] italic text-sumi-faint">{parsedSnapshot.disclaimer}</p>
+                  )}
+                </section>
+              );
+            })()}
 
             {/* Thông tin tài khoản */}
             <section aria-labelledby="info-h" className="flex flex-col rounded-jc-lg border border-line bg-paper-50 px-6 py-2">

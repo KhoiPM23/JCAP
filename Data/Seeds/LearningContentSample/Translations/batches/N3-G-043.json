@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hodo-nai",
+      "Fields": {
+        "Meaning": "Không… bằng, không… như",
+        "Formation": "Mốc so sánh ＋ ほど ＋ vị ngữ phủ định",
+        "Explanation": "Cho biết mức độ thực tế thấp hơn mốc được nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hodo-nai:example:1": "Mùa hè năm nay không nóng bằng năm ngoái.",
+        "hodo-nai:example:2": "Toán không khó như tôi tưởng."
+      },
+      "SourceHash": "9712761b8e293a98666e0963f95cc2ef52a3747b0efb7500ca8633fa3ef6706e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "masaka",
+      "Fields": {
+        "Meaning": "Không ngờ, không thể nào",
+        "Formation": "まさか ＋ mệnh đề (thường có とは／なんて)",
+        "Explanation": "Diễn tả sự ngạc nhiên trước điều rất khó tin hoặc ngoài dự đoán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "masaka:example:1": "Tôi chưa từng nghĩ thủ phạm lại là anh ấy.",
+        "masaka:example:2": "Không ngờ lại gặp bạn ở chỗ này, tôi bất ngờ thật."
+      },
+      "SourceHash": "3de2bb32bef72d45b64abfdc9e19a68db93ca9a5e306bad73d8c5809d8577d0c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mata-mo",
+      "Fields": {
+        "Meaning": "Ngoài ra còn, đồng thời cũng",
+        "Formation": "Ý trước ＋ また ＋ thành phần bổ sung ＋ も",
+        "Explanation": "Bổ sung vai trò, tính chất hoặc lợi ích song song với ý trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mata-mo:example:1": "Ông ấy là bác sĩ và cũng là nhà văn.",
+        "mata-mo:example:2": "Suối nước nóng này tốt cho cơ thể, lại còn giúp thư giãn."
+      },
+      "SourceHash": "faa0de8d7994837e7ac406ecc4f359683a7234a66da6c60840b4d1fd3f0f8d3a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mattaku-nai",
+      "Fields": {
+        "Meaning": "Hoàn toàn không, chẳng… chút nào",
+        "Formation": "全く ＋ vị ngữ phủ định",
+        "Explanation": "Nhấn mạnh sự phủ định ở mức hoàn toàn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mattaku-nai:example:1": "Tôi hoàn toàn không hiểu anh ấy đang nói gì.",
+        "mattaku-nai:example:2": "Tôi chẳng có đồng nào nên tháng này không đi du lịch được."
+      },
+      "SourceHash": "89f99a2587b453f2192a6eac83e2d76ef401dbb1c2f69d4944a0dbc68fb1fee5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "maru-de",
+      "Fields": {
+        "Meaning": "Cứ như, y như",
+        "Formation": "まるで ＋ mệnh đề hoặc danh từ ＋ ようだ／みたいだ (và các dạng bổ nghĩa)",
+        "Explanation": "So sánh cảm giác hay dáng vẻ với một hình ảnh để nhấn mạnh sự giống nhau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "maru-de:example:1": "Phòng cô ấy sạch đẹp như cửa hàng vậy.",
+        "maru-de:example:2": "Đứa bé đó nói năng cứ như người lớn."
+      },
+      "SourceHash": "46e90109e79cee1a26851f624d43cb5f6ca63e3305ca30ac00e2f957a9f1e33f"
+    }
+  ]
+}

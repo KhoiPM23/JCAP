@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "73a3e59782",
+      "Fields": {
+        "Meaning": "Nam giới, đàn ông",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "男性（だんせい）có nghĩa là nam giới, đàn ông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127151": "Quý ông vui lòng mặc áo khoác ngoài.",
+        "127159": "Những người đàn ông đang nướng đồ ăn."
+      },
+      "SourceHash": "0dad58dc5861fb07c3346fed2299251583c57603e497dff1e3624b8fbea2889d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aaac8221c9",
+      "Fields": {
+        "Meaning": "Sưởi ấm, hệ thống sưởi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "暖房（だんぼう）có nghĩa là sưởi ấm, hệ thống sưởi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127290": "Anh/chị đã tắt máy sưởi chưa?",
+        "226891": "Nhà anh/chị dùng cách gì để sưởi ấm?"
+      },
+      "SourceHash": "d33b038e6e3ebd5222c6dbd683b875d0619921385ad5e92eb4bf92b090181c4c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "56a36774ce",
+      "Fields": {
+        "Meaning": "Máu, huyết thống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "血（ち）có nghĩa là máu, huyết thống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "165880": "Chúng tôi có quan hệ huyết thống.",
+        "212861": "Con dao dính đầy máu."
+      },
+      "SourceHash": "bf07c51fa72b26b853d837cd6b7a789827db94e51818c567542366b1ad66ff3d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "83a456da88",
+      "Fields": {
+        "Meaning": "Kiểm tra, đánh dấu",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "チェックする（チェックする）có nghĩa là kiểm tra, đánh dấu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156620": "Mỗi khi xong một việc, tôi đánh dấu trên danh sách.",
+        "9238000": "Yanni quyết định xem Facebook."
+      },
+      "SourceHash": "d8c6962714fe69ca23b20f947e3e1824fea89ba7d3b5d53256d694506aad49df"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "43965bbba0",
+      "Fields": {
+        "Meaning": "Sức, sức mạnh, khả năng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "力（ちから）có nghĩa là sức, sức mạnh, khả năng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161485": "Tôi dốc hết sức để chạy.",
+        "231860": "Bạn đã mất khả năng tập trung."
+      },
+      "SourceHash": "5d698127ba5ccacd801684b234fc0138dd28972d88ea7f5992ed9651001dda75"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f527f52c5c",
+      "Fields": {
+        "Meaning": "Chẳng chút nào, hoàn toàn không",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ちっとも（ちっとも）có nghĩa là chẳng chút nào, hoàn toàn không.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "170722": "Dạo này tôi chẳng gặp Elizabeth lần nào.",
+        "202987": "Tôi chẳng bận tâm chút nào."
+      },
+      "SourceHash": "58e86cf6fa45254eaf3ae8c66e3068e6788a93447a085804ce52e3c952cc4391"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "18035049f8",
+      "Fields": {
+        "Meaning": "Hậu tố gọi thân mật",
+        "PartOfSpeech": "Hậu tố",
+        "Explanation": "Hậu tố thân mật, thường dùng với trẻ em hoặc người thân quen.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230080": "Ôi, bé Haru nhà anh/chị vui vẻ thật đấy.",
+        "519636": "Bé Nanako dễ thương thật nhỉ."
+      },
+      "SourceHash": "ca100eba86deb27880c67393944e13702efe72793f7c48d98ec021177acad82e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4e6d200127",
+      "Fields": {
+        "Meaning": "Chú ý, nhắc nhở",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "注意（ちゅうい）có nghĩa là chú ý, nhắc nhở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118533": "Tôi nhắc anh ấy đừng đến muộn.",
+        "172427": "Từ nay hãy chú ý hơn đến chuyện tiền bạc."
+      },
+      "SourceHash": "27c6bd87272f11200481172857f90afbf7da14d18734cd424ab7b13d62ad7c10"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4b99b4673b",
+      "Fields": {
+        "Meaning": "Trường trung học cơ sở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "中学校（ちゅうがっこう）có nghĩa là trường trung học cơ sở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102166": "Anh ấy đã vào trung học cơ sở.",
+        "222763": "Nghe bài hát này tôi lại nhớ thời học cấp hai."
+      },
+      "SourceHash": "76461a055f6cb4aad71703739e843baae92049db60291fbcc0ab3a4fa327da04"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f26d1cef7",
+      "Fields": {
+        "Meaning": "Tiêm, mũi tiêm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "注射（ちゅうしゃ）có nghĩa là tiêm, mũi tiêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125671": "Tôi sẽ tiêm thuốc giảm đau.",
+        "126332": "Tôi sẽ tiêm cho anh/chị nhé."
+      },
+      "SourceHash": "40abeff49767b44b3ea431225984a3e8791ff95a9050c7d44628cb021cc05f48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "36f583c207",
+      "Fields": {
+        "Meaning": "Bãi đỗ xe",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "駐車場（ちゅうしゃじょう）có nghĩa là bãi đỗ xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126299": "Không thấy một bóng người trong bãi đỗ xe.",
+        "207839": "Bãi đỗ xe đó miễn phí."
+      },
+      "SourceHash": "38d16302489032b5dd704615a304508a8dffd2e61e7bfcaeaa1a9fe2fd47a657"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16db6a0f53",
+      "Fields": {
+        "Meaning": "Địa lý, địa hình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "地理（ちり）có nghĩa là địa lý, địa hình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75642": "Bạn khá am hiểu địa lý đấy.",
+        "160821": "Tôi biết rõ địa thế của thị trấn này."
+      },
+      "SourceHash": "15d5fa18fabe14c4e371ed4041612660674797bbd3341887475508e485600d20"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ef537ea4a9",
+      "Fields": {
+        "Meaning": "Bắt, nắm lấy",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "捕まえる（つかまえる）có nghĩa là bắt, nắm lấy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208034": "Người đàn ông nắm lấy tay cậu bé.",
+        "224661": "Tôi có thể bắt taxi ở đây không?"
+      },
+      "SourceHash": "660bf26f15c24067ad2b6ffa12f06d90ea098a1992874664182fecb67f2b627e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ba74488833",
+      "Fields": {
+        "Meaning": "Mặt Trăng, tháng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "月 đọc つき khi chỉ Mặt Trăng hoặc tháng. Trong 月旅行, 月 chỉ Mặt Trăng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "195286": "Có lẽ chẳng bao lâu nữa người ta có thể du lịch lên Mặt Trăng.",
+        "196018": "Bob viết thư cho tôi mỗi tháng một lần."
+      },
+      "SourceHash": "92a5da3ebd6e6c9d30ed85c2206c19c3f2525c31a689573ace3f53accdbc473e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "356e03170b",
+      "Fields": {
+        "Meaning": "Gắn, có kèm, tăng thêm",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "付く（つく）có nghĩa là gắn, có kèm, tăng thêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193262": "Không ăn thêm thì bạn sẽ không tăng được thể lực đâu.",
+        "228192": "Xe nhà tôi có điều hòa."
+      },
+      "SourceHash": "c7b8a354d4f4c8e78443b1126b5223a402410dafe32f2f48beaf2c50517581a8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c206b05b9d",
+      "Fields": {
+        "Meaning": "Ngâm, nhúng, muối",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "漬ける（つける）có nghĩa là ngâm, nhúng, muối.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90990": "Cô ấy ngâm bát đĩa bẩn trong bồn rửa.",
+        "113349": "Anh ấy nhúng thìa vào súp."
+      },
+      "SourceHash": "3a0b85491546220ace55e4102290d1904688056224beafff07725f200d08b551"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d940762d2",
+      "Fields": {
+        "Meaning": "Hoàn cảnh, sự thuận tiện",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "都合（つごう）có nghĩa là hoàn cảnh, sự thuận tiện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "126374": "Sau bữa trưa có tiện cho anh/chị không?",
+        "187463": "Mấy giờ thì tiện cho anh/chị ạ?"
+      },
+      "SourceHash": "eece1dbd5f436593ffe758dbadd3a325f1f0c7dcaaf2b229e20c36a638730c13"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bbe4edb30f",
+      "Fields": {
+        "Meaning": "Truyền, chuyển lời",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "伝える（つたえる）có nghĩa là truyền, chuyển lời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206036": "Câu chuyện đó được truyền từ cha mẹ sang con cái.",
+        "217000": "Nếu anh/chị có việc, để tôi nhắn lại cho bố nhé?"
+      },
+      "SourceHash": "b8bf51eddb3b12edefdf4544028a5aac2d33c7814a51fc24e13988f60e62121b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1db204b87",
+      "Fields": {
+        "Meaning": "Tiếp diễn, kéo dài",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "続く（つづく）có nghĩa là tiếp diễn, kéo dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125199": "Mong thời tiết cứ tiếp tục như thế này.",
+        "199669": "Trời lạnh thế này sẽ còn kéo dài bao lâu?"
+      },
+      "SourceHash": "17fd12297e317d8fe4f7b4614e8fde8d1e53f3ce4efe30f1fa72927632f813ca"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d177796b00",
+      "Fields": {
+        "Meaning": "Tiếp tục",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "続ける（つづける）có nghĩa là tiếp tục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140284": "Cứ chạy tiếp thì tôi bắt đầu thấy ánh đèn.",
+        "225166": "Ken tiếp tục hát bài đó."
+      },
+      "SourceHash": "eabb1591a09dfb77eb918c374f91b24b3fc7968673d16a92ba3a0a30d23ae9ce"
+    }
+  ]
+}

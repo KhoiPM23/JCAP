@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e6b354697",
+      "Fields": {
+        "Meaning": "Ùn tắc, tắc nghẽn",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "渋滞（じゅうたい）có nghĩa là ùn tắc, tắc nghẽn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147991": "Tôi đến muộn vì tắc đường.",
+        "173191": "Hàng nghìn xe làm tắc nghẽn đường cao tốc."
+      },
+      "SourceHash": "68f2a40649c9812b96431634728927eff6f330f1b786ca9409b8e45f2d3ecd07"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4ac6ac022d",
+      "Fields": {
+        "Meaning": "Quan trọng, nghiêm trọng",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "重大（じゅうだい）có nghĩa là quan trọng, nghiêm trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104334": "Ông ấy có một phát hiện quan trọng.",
+        "204915": "Chuyện đó rất quan trọng đối với cô ấy."
+      },
+      "SourceHash": "4cf0ce02f18a4c22fd8f7c43054946e903f0d93c57ad6cd92e4d08c9bfa998cf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b1905d8e82",
+      "Fields": {
+        "Meaning": "Nhà ở",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "住宅（じゅうたく）có nghĩa là nhà ở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148084": "Tình hình nhà ở có vẻ không khả quan chút nào.",
+        "200816": "Nếu được chọn, tôi muốn sống trong nhà gỗ."
+      },
+      "SourceHash": "99fb038e6f5c2a4c11a741adcbbea85cdf706eee7c3c1703ef351acc9822bc82"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ff42db8965",
+      "Fields": {
+        "Meaning": "Tập thể, nhóm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "集団（しゅうだん）có nghĩa là tập thể, nhóm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122246": "Người Nhật thích đi du lịch theo đoàn.",
+        "177901": "Bây giờ bạn là thành viên của một nhóm ưu tú."
+      },
+      "SourceHash": "c518f9752d38314f07f58741b4cb1675c06a24f357afab0e9b135575bf04058f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f427f2ab2d",
+      "Fields": {
+        "Meaning": "Tập trung",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "集中（しゅうちゅう）có nghĩa là tập trung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "117246": "Phần lớn công việc của anh ấy tập trung ở đô thị.",
+        "154790": "Tôi đang chăm chú đọc sách."
+      },
+      "SourceHash": "1f0438014dd8d13451ac89e5da8486090260167b0acfe36ce9459504459f30bc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a1ee5baecb",
+      "Fields": {
+        "Meaning": "Thu nhập",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "収入（しゅうにゅう）có nghĩa là thu nhập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118899": "Ngoài lương, anh ấy còn có chút thu nhập khác.",
+        "148276": "Đừng sống vượt quá thu nhập."
+      },
+      "SourceHash": "bc46e1890857416d66fe2d06d4abca08efb2a9b2eed45ff66062ee9a56a9cb68"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7c391cdd2b",
+      "Fields": {
+        "Meaning": "Cư dân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "住民（じゅうみん）có nghĩa là cư dân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148076": "Cư dân quay lưng với những người trong cuộc.",
+        "148078": "Hơn nửa số cư dân phản đối kế hoạch đó."
+      },
+      "SourceHash": "3c7d4d819795272474498a1b33d1124175ccc8c54434f2385042b2d04c8968db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bc3d5a165c",
+      "Fields": {
+        "Meaning": "Quan trọng",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "重要（じゅうよう）có nghĩa là quan trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92742": "Điều quan trọng là cô ấy phải khởi hành ngay.",
+        "119373": "Anh ấy có đến hay không cũng không quan trọng."
+      },
+      "SourceHash": "65588d5f060cd9791b655fe599f2d7d693e716169847be60a305115b92e2eb81"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5c2888fc48",
+      "Fields": {
+        "Meaning": "Sửa chữa",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "修理（しゅうり）có nghĩa là sửa chữa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "149045": "Bạn đã xử lý chuyện sửa xe thế nào?",
+        "209561": "Chiếc xe đó không đáng sửa."
+      },
+      "SourceHash": "7fce4126c96f224074a62662d4af49ab2aa08f5c8eac5e7dd5c8d1f11cd234b9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0bbc9772e0",
+      "Fields": {
+        "Meaning": "Chủ nghĩa, nguyên tắc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "主義（しゅぎ）có nghĩa là chủ nghĩa, nguyên tắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104522": "Anh ấy không từ bỏ nguyên tắc của mình.",
+        "205124": "Điều đó trái với nguyên tắc của tôi."
+      },
+      "SourceHash": "ee70fba2a1ec89a93439c48683245022e26f60da1999021b62d4603a8ed5e130"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1cc7aa8d65",
+      "Fields": {
+        "Meaning": "Lưu trú, nghỉ qua đêm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "宿泊（しゅくはく）có nghĩa là lưu trú, nghỉ qua đêm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110940": "Anh ấy gọi điện đến khách sạn để đặt chỗ nghỉ.",
+        "235023": "Tôi muốn đặt chỗ nghỉ cho sáu người."
+      },
+      "SourceHash": "73e83d0d54a205a8cd49b4a175acb35f5d29fe84e15f0736acaabe42ef9e41fd"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2272beabcd",
+      "Fields": {
+        "Meaning": "Phẫu thuật",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "手術（しゅじゅつ）có nghĩa là phẫu thuật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84449": "Từ khi phẫu thuật, bố tôi thấy khỏe.",
+        "148539": "Cần phải phẫu thuật."
+      },
+      "SourceHash": "dec887e68089aca948d7d804a928ac15d7f955f1fe599a0fa9d3038ca7a87059"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4886c70b26",
+      "Fields": {
+        "Meaning": "Thủ tướng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "首相（しゅしょう）có nghĩa là thủ tướng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "104419": "Ông ấy buộc phải từ chức thủ tướng.",
+        "148416": "Khi thủ tướng vắng mặt, ngoại trưởng sẽ thay mặt ông."
+      },
+      "SourceHash": "a70205fcbd49431a76ff9abe1095fe9bf20750584b88def594a512e31183cf0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad063e9d9a",
+      "Fields": {
+        "Meaning": "Phương tiện, biện pháp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "手段（しゅだん）có nghĩa là phương tiện, biện pháp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "140864": "Vẫn còn biện pháp chưa được thử.",
+        "170798": "Máy bay là phương tiện đi lại nhanh nhất."
+      },
+      "SourceHash": "d5ad2302aafc770b13b0e130494761bb05894f653bad961906fe0e00275acd63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "21f9e28b1c",
+      "Fields": {
+        "Meaning": "Khẳng định, chủ trương, yêu sách",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "主張（しゅちょう）có nghĩa là khẳng định, chủ trương, yêu sách.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "112491": "Anh ấy khẳng định mình có quyền sở hữu mảnh đất đó.",
+        "166383": "Chúng tôi nhấn mạnh tầm quan trọng của việc đó."
+      },
+      "SourceHash": "fc2a767a8964511c4767b30f83879fbe330203f2aa5c2987d4974cd36df6cf15"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a12afe6e3d",
+      "Fields": {
+        "Meaning": "Quê quán, xuất thân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "出身（しゅっしん）có nghĩa là quê quán, xuất thân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88531": "Cô ấy tốt nghiệp Đại học Kobe.",
+        "154866": "Tôi quê ở Tokyo."
+      },
+      "SourceHash": "50173cba1ad5b1c95f8be56fb8d20499c4d0d1d73a2c99b68a44cff24dd74961"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7d156e99e7",
+      "Fields": {
+        "Meaning": "Xuất bản",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "出版（しゅっぱん）có nghĩa là xuất bản.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142387": "Ngày xưa không có tự do xuất bản.",
+        "202670": "Cuối cùng cuốn sách đó cũng được xuất bản."
+      },
+      "SourceHash": "e718d50505da5f1742641f56feec4fbd000e889b5f444d5d44b81a4046210d1a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "070d8af6f7",
+      "Fields": {
+        "Meaning": "Thủ đô",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "首都（しゅと）có nghĩa là thủ đô.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124196": "Tokyo là thủ đô của Nhật Bản.",
+        "196699": "Bạn có biết thủ đô của Bỉ không?"
+      },
+      "SourceHash": "bb3c3dca4dff3c13f457e6e384cd7cdea886ef5cd03aba8f7fec0b7f65c6caf5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d312849382",
+      "Fields": {
+        "Meaning": "Người nội trợ, bà nội trợ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "主婦（しゅふ）có nghĩa là người nội trợ, bà nội trợ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148686": "Người nội trợ nên cố gắng tiết kiệm.",
+        "148687": "Người nội trợ có rất nhiều việc nhà."
+      },
+      "SourceHash": "61aa6ac9536d4eaa9d2fecb9f5a739b7a0dc65eeb9b0893381cc0824fdb20f09"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "689b83786e",
+      "Fields": {
+        "Meaning": "Chính, chủ yếu",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "主要（しゅよう）có nghĩa là chính, chủ yếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85172": "Nghèo đói vẫn là một nguyên nhân chính dẫn đến tội phạm.",
+        "122595": "Lúa là cây trồng chính ở Nhật Bản."
+      },
+      "SourceHash": "3043c31a86eb463e3775d1b1562b033476acc66374a469217ea296f4459d4445"
+    }
+  ]
+}

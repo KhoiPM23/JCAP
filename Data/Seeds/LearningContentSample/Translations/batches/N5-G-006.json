@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kekkou",
+      "Fields": {
+        "Meaning": "Khá, tương đối",
+        "Formation": "けっこう ＋ tính từ hoặc động từ",
+        "Explanation": "Đặt けっこう trước từ cần bổ nghĩa để nói mức độ khá cao. Khi bổ nghĩa cho động từ, nó có thể chỉ lượng hoặc quãng đường đáng kể.",
+        "UsageNotes": "Ở đây けっこう là phó từ chỉ mức độ."
+      },
+      "Examples": {
+        "kekkou:example:1": "Bài này khá khó.",
+        "kekkou:example:2": "Tôi đã đi bộ một quãng khá xa từ ga về nhà."
+      },
+      "SourceHash": "7670e6520a58b5e687e9f03cbc5be0c123d17e082009200777da45e4507aa87e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kedo",
+      "Fields": {
+        "Meaning": "Nhưng, tuy",
+        "Formation": "Mệnh đề ＋ けど ＋ mệnh đề\nDanh từ hoặc gốc tính từ đuôi な ＋ だけど",
+        "Explanation": "Dùng けど để nối hai ý tương phản trong hội thoại. Có thể đặt sau mệnh đề ở thể thông thường hoặc lịch sự.",
+        "UsageNotes": "Sau danh từ hoặc gốc tính từ đuôi な ở thể khẳng định thông thường, dùng だけど."
+      },
+      "Examples": {
+        "kedo:example:1": "Quán này giá rẻ nhưng đồ ăn ngon.",
+        "kedo:example:2": "Tiếng Nhật khó nhưng học rất vui."
+      },
+      "SourceHash": "3e88439df17ee8370aa1d4a210d8627cbb1f9512ef510b273e441cecfe449da1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "keredomo",
+      "Fields": {
+        "Meaning": "Nhưng, mặc dù",
+        "Formation": "Mệnh đề thể thông thường hoặc lịch sự ＋ けれども ＋ mệnh đề",
+        "Explanation": "けれども nối một nhận xét với ý tương phản tiếp theo. Sắc thái thường trang trọng hơn けど.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "keredomo:example:1": "Trời đẹp nhưng hơi lạnh.",
+        "keredomo:example:2": "Tôi đã học rất nhiều nhưng bài kiểm tra vẫn khó."
+      },
+      "SourceHash": "d8cbc83464a5b0ab71203dfeaf53455eb96ee560a3aecf20429ccef1ae71b5d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shikashi",
+      "Fields": {
+        "Meaning": "Tuy nhiên, thế nhưng",
+        "Formation": "Câu trước。 ＋ しかし、 ＋ câu sau。",
+        "Explanation": "しかし đứng đầu câu sau để đưa ra ý tương phản với câu trước. Từ này thường dùng trong văn viết hoặc lời nói trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shikashi:example:1": "Hôm qua trời mưa. Tuy nhiên, hôm nay trời đẹp.",
+        "shikashi:example:2": "Chiếc xe này đắt. Tuy nhiên, nó rất được ưa chuộng."
+      },
+      "SourceHash": "89576d356994cf0a64ee3eb94330640274ed4ed6e42747ecc46fd6034e090050"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "janai",
+      "Fields": {
+        "Meaning": "Không phải, không…",
+        "Formation": "Danh từ hoặc gốc tính từ đuôi な ＋ じゃない／ではない",
+        "Explanation": "Dùng じゃない hoặc ではない để phủ định danh từ hoặc tính từ đuôi な ở vị ngữ. じゃない là dạng rút gọn thường gặp trong hội thoại.",
+        "UsageNotes": "Có thể thêm です sau じゃない để nói lịch sự."
+      },
+      "Examples": {
+        "janai:example:1": "Đây không phải là túi của tôi.",
+        "janai:example:2": "Người kia không phải là giáo viên."
+      },
+      "SourceHash": "c69b141be010d72c26acfd980091721d1c4012fe92303cc4244b069934bdd545"
+    }
+  ]
+}

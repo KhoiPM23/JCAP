@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sasete-morau",
+      "Fields": {
+        "Meaning": "Được cho phép làm",
+        "Formation": "Động từ thể sai khiến dạng て ＋ もらう",
+        "Explanation": "Chủ thể nhận sự cho phép hoặc sự đồng ý để làm việc gì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sasete-morau:example:1": "Vì không khỏe nên hôm nay tôi được cho về sớm.",
+        "sasete-morau:example:2": "Xin lỗi, tôi nghỉ một chút được không ạ?"
+      },
+      "SourceHash": "46afb923df8dc979e4d7de1113722a373eca901f5804c596c6ef597f796987d2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sate",
+      "Fields": {
+        "Meaning": "Nào, vậy thì",
+        "Formation": "さて ＋ chủ đề hoặc hành động mới",
+        "Explanation": "Dùng để chuyển sang việc tiếp theo hoặc bắt đầu một phần mới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sate:example:1": "Nào, đến lúc bắt đầu cuộc họp rồi.",
+        "sate:example:2": "Ăn xong rồi. Nào, bắt đầu dọn thôi."
+      },
+      "SourceHash": "8b0cd02cc69b943f21f5b53e2d9bcc128145931133d289b3c491e7e6d7e2f573"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sara-ni",
+      "Fields": {
+        "Meaning": "Hơn nữa, còn hơn",
+        "Formation": "さらに ＋ từ hoặc mệnh đề",
+        "Explanation": "Bổ sung thông tin, hoặc tăng mức độ so với mốc đã nêu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sara-ni:example:1": "Hôm nay trời mưa, gió lại còn mạnh dần.",
+        "sara-ni:example:2": "Bánh ở tiệm này còn ngon hơn năm ngoái."
+      },
+      "SourceHash": "41f8e083584764b237f55cab53cd6156be003969fcde309b94bb290292dafba8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shikanai-no-choice",
+      "Fields": {
+        "Meaning": "Chỉ còn cách, đành phải",
+        "Formation": "Động từ thể từ điển ＋ しかない",
+        "Explanation": "Diễn tả chỉ còn một phương án khả thi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shikanai-no-choice:example:1": "Hết chuyến tàu cuối rồi nên đành đi bộ về.",
+        "shikanai-no-choice:example:2": "Đã đến nước này thì chỉ còn cách làm đến cùng."
+      },
+      "SourceHash": "54986fa92446c369abf9d91db9a380aff8c05a01a19641d0d189e21815c603a2"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "shidai",
+      "Fields": {
+        "Meaning": "Ngay khi, tùy thuộc vào",
+        "Formation": "Gốc ます ＋ 次第／danh từ ＋ 次第だ",
+        "Explanation": "Sau động từ chỉ việc làm ngay khi xong bước trước. Sau danh từ chỉ yếu tố quyết định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "shidai:example:1": "Chuẩn bị xong là chúng tôi sẽ xuất phát ngay.",
+        "shidai:example:2": "Có tham gia hay không tùy bạn."
+      },
+      "SourceHash": "78d209c6f1edaefe73257d4dcd7e69076a52bd3dbc41e93e229ff452fde79eee"
+    }
+  ]
+}

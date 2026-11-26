@@ -41,6 +41,10 @@ export interface SpotFocusCardProps {
   onLearn: () => void;
   onShadowing: (dialogueId: number) => void;
   onRoleplay: (scenarioId: number) => void;
+  /** Đang luyện Shadowing của địa điểm này ở khung bên cạnh: nút đổi thành ô "Đang luyện ở khung bên cạnh" */
+  practicing?: boolean;
+  /** Nhãn nút Shadowing khi có phiên đang dở (vd. "Tiếp tục (câu 4/6)") */
+  shadowingLabel?: string;
 }
 
 /**
@@ -64,6 +68,8 @@ export const SpotFocusCard: React.FC<SpotFocusCardProps> = ({
   onLearn,
   onShadowing,
   onRoleplay,
+  practicing = false,
+  shadowingLabel,
 }) => {
   const activities = spot?.lesson?.activities ?? [];
   const shadowing = activities.find((a) => a.type === 'Shadowing');
@@ -87,7 +93,7 @@ export const SpotFocusCard: React.FC<SpotFocusCardProps> = ({
     current === 'understand'
       ? { label: 'Bắt đầu: hiểu câu mẫu', icon: null, run: onLearn }
       : current === 'shadowing' && shadowing?.referenceId
-        ? { label: 'Luyện Shadowing', icon: <MicIcon className="h-4 w-4" />, run: () => onShadowing(shadowing.referenceId!) }
+        ? { label: shadowingLabel ?? 'Luyện Shadowing', icon: <MicIcon className="h-4 w-4" />, run: () => onShadowing(shadowing.referenceId!) }
         : current === 'roleplay' && roleplay?.scenarioId
           ? {
               label: `Hội thoại AI · ${roleplay.creditCost ?? 0} Credit`,
@@ -162,15 +168,25 @@ export const SpotFocusCard: React.FC<SpotFocusCardProps> = ({
         ))}
       </ol>
 
-      <button
-        type="button"
-        onClick={cta.run}
-        className="jm-focus mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[8px] text-sm font-semibold text-white transition-[filter] hover:brightness-110"
-        style={{ background: STAMP_INK }}
-      >
-        {cta.icon}
-        {cta.label}
-      </button>
+      {practicing ? (
+        <p
+          className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[8px] text-sm font-semibold"
+          style={{ border: '1.5px dashed var(--ai)', color: 'var(--ai)' }}
+        >
+          <ChatIcon className="h-4 w-4" />
+          Đang luyện ở khung bên cạnh
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={cta.run}
+          className="jm-focus mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[8px] text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+          style={{ background: STAMP_INK }}
+        >
+          {cta.icon}
+          {cta.label}
+        </button>
+      )}
     </div>
   );
 };

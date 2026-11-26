@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-substitute",
+      "Fields": {
+        "Meaning": "Cái có đặc điểm đã nêu",
+        "Formation": "Tính từ đuôi い ＋ の\nGốc tính từ đuôi な ＋ なの",
+        "Explanation": "の thay cho danh từ đã rõ trong ngữ cảnh. 赤いの là cái màu đỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-substitute:example:1": "Cho tôi cái màu đỏ với ạ?",
+        "no-substitute:example:2": "Có cái nào lớn hơn không ạ?"
+      },
+      "SourceHash": "350a78f335ae04723f8a0ad3f6050d7648c4edac3a7b2c401e5e07cb9d90f91e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-ga-jouzu",
+      "Fields": {
+        "Meaning": "Giỏi làm gì",
+        "Formation": "Động từ dạng từ điển ＋ のが上手（です）",
+        "Explanation": "の biến hành động thành cụm danh từ. 上手 nhận xét ai đó làm việc ấy giỏi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-ga-jouzu:example:1": "Chị tôi nấu ăn giỏi.",
+        "no-ga-jouzu:example:2": "Anh/chị Tanaka dạy tiếng Nhật giỏi."
+      },
+      "SourceHash": "05b48873ec1c3e1ac8f1528cf1f0ccee07a9822854af10bc554e8e321fa7b1f1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-ga-suki",
+      "Fields": {
+        "Meaning": "Thích làm gì",
+        "Formation": "Động từ dạng từ điển ＋ のが好き（です）",
+        "Explanation": "のが好き dùng để nêu một hoạt động mình thích. の đứng sau động từ để danh từ hóa hoạt động đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-ga-suki:example:1": "Tôi thích đọc sách.",
+        "no-ga-suki:example:2": "Em trai tôi thích nghe nhạc."
+      },
+      "SourceHash": "14b9fa32160da3db20b9ade442905af0bfe877903fc520cae33e48a7bcbdc34a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-ga-heta",
+      "Fields": {
+        "Meaning": "Không giỏi làm gì",
+        "Formation": "Động từ dạng từ điển ＋ のが下手（です）",
+        "Explanation": "下手 nhận xét một kỹ năng còn kém. の biến hành động thành cụm danh từ để nêu kỹ năng được nhận xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-ga-heta:example:1": "Tôi bơi không giỏi.",
+        "no-ga-heta:example:2": "Bố tôi viết chữ không đẹp."
+      },
+      "SourceHash": "cbe78612c93d5b3d55f27533ab7348972531f7b6c22d774c6ad28f52bfb197a3"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "node",
+      "Fields": {
+        "Meaning": "Vì, bởi vì",
+        "Formation": "Động từ hoặc tính từ đuôi い thể thông thường ＋ ので\nDanh từ hoặc gốc tính từ đuôi な ＋ なので",
+        "Explanation": "ので nối lý do với kết quả hoặc quyết định. Mẫu này thường dùng để trình bày lý do nhẹ nhàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "node:example:1": "Vì tàu đến muộn nên tôi đến trễ.",
+        "node:example:2": "Hôm nay trời lạnh nên tôi sẽ mặc áo khoác."
+      },
+      "SourceHash": "65f86e14afca41a3730e23724613d887b45c87b04b0e37bd6d71460c58db213c"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 20 mục và 39 câu nguồn. しょうゆ có một câu.",
+    "Dùng lại bản dịch câu 172985 từ mục 黒."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5101640e7e",
+      "Fields": {
+        "Meaning": "Ảnh, bức ảnh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "写真（しゃしん）chỉ ảnh chụp. 写真を撮る là chụp ảnh, còn 写真を見せる là cho xem ảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198939": "Bức ảnh đẹp quá!",
+        "224510": "Tôi có một bức ảnh ở đây muốn cho bạn xem."
+      },
+      "SourceHash": "0771358b17d4375be58208050073f6692f4e87f7ed904987ede7295d7de62f81"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f71424e3ff",
+      "Fields": {
+        "Meaning": "Áo sơ mi, áo mặc thân trên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "シャツ chỉ áo mặc phần thân trên, thường là áo sơ mi trong ngữ cảnh thông thường. Ｔシャツ là áo thun.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215784": "Xin hãy ủi áo sơ mi.",
+        "223699": "Chiếc áo sơ mi này của ai?"
+      },
+      "SourceHash": "2f1718da5c3c06bf4e4fc28cdd129a9fe5c203c26f26413a9888cfd8818023e6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d9c88143a2",
+      "Fields": {
+        "Meaning": "Vòi sen, việc tắm vòi sen",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "シャワー chỉ vòi sen hoặc việc tắm bằng vòi sen. シャワーを浴びる nghĩa là tắm vòi sen.",
+        "UsageNotes": "シャワーにする diễn tả chọn tắm vòi sen."
+      },
+      "Examples": {
+        "215745": "Vòi sen không ra nước.",
+        "215746": "Tôi sẽ tắm vòi sen."
+      },
+      "SourceHash": "5840eae8be35470fc7b22ca09691d520709db4dec8d6261adb1b91420e4de603"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db9f5d4422",
+      "Fields": {
+        "Meaning": "Mười",
+        "PartOfSpeech": "Số từ",
+        "Explanation": "十（じゅう）là số mười. 十時 là mười giờ, còn 十年 là mười năm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122693": "Đã mười năm kể từ khi đến Nhật.",
+        "211902": "Buổi gặp mặt kết thúc lúc mười giờ."
+      },
+      "SourceHash": "e1922623da118e7b033e993c9b2e5fc137b73c65abd603c05b59d06770f8f4a4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5bae559507",
+      "Fields": {
+        "Meaning": "Tiết học, buổi học, giờ học",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "授業（じゅぎょう）chỉ giờ dạy và học. 授業の終わり là cuối buổi học, còn 授業をさぼる là trốn học.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204268": "Đừng trốn học nhiều như thế.",
+        "205089": "Đó là lúc buổi học kết thúc."
+      },
+      "SourceHash": "a0361cb85840a3743101b47a819e2ddadd06d4fee5a2b7465946dc12403588b3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4daa103d7d",
+      "Fields": {
+        "Meaning": "Bài tập về nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "宿題（しゅくだい）chỉ bài được giao làm ngoài giờ học. 宿題をやる nghĩa là làm bài tập về nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "147882": "Bạn làm xong bài tập về nhà chưa?",
+        "193016": "Tôi có nhiều bài tập về nhà phải làm."
+      },
+      "SourceHash": "a71107b4b3804a22ab4b6a79417f83c7c5632459f7228a5488a2daf14e9d031e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1763fc412a",
+      "Fields": {
+        "Meaning": "Giỏi, khéo",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "上手（じょうず）nói về khả năng làm tốt một việc. Động từ ＋ のが上手 diễn tả giỏi làm việc đó.",
+        "UsageNotes": "上手に đứng trước động từ để nói làm một việc khéo hoặc giỏi."
+      },
+      "Examples": {
+        "195731": "Mike nói tiếng Nhật giỏi.",
+        "231837": "Bạn chơi bóng rổ có giỏi không?"
+      },
+      "SourceHash": "bc0c2ff3f0c1afbde43da5b5bbff434e50fec2d906b584f74db3918de979618c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50525927ee",
+      "Fields": {
+        "Meaning": "Bền, chắc, khỏe mạnh",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "丈夫（じょうぶ）tả vật chắc bền hoặc người có thể chất khỏe mạnh. 丈夫なロープ là dây thừng chắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103983": "Nghe nói trước đây anh ấy rất khỏe mạnh.",
+        "222994": "Sợi dây thừng này rất chắc."
+      },
+      "SourceHash": "6adfe654f7602dd37752b30edb4aaf28189f554eb051d4d74aba80e0419462c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9476d7966d",
+      "Fields": {
+        "Meaning": "Nước tương, xì dầu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "しょうゆ thường viết là 醤油, chỉ nước tương dùng để nêm hoặc chấm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123656": "Công ty đó sản xuất nước tương và các thực phẩm khác."
+      },
+      "SourceHash": "0e95cca90a174cbe0ff5f2c507b86e13cb55cd89541f3243bef1f733a3ed2ffe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dcc87a37fb",
+      "Fields": {
+        "Meaning": "Nhà ăn, phòng ăn, quán ăn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "食堂（しょくどう）chỉ nơi ăn uống, chẳng hạn nhà ăn trường học, phòng ăn hoặc quán ăn bình dân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145790": "Nhà ăn mở cửa lúc mấy giờ?",
+        "145792": "Nhà ăn phục vụ theo hình thức tự phục vụ."
+      },
+      "SourceHash": "07fa4358587aebbf46baef70448d09c3052a6ca62ca9cc5342b296cde1a4f295"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1fcb2fece8",
+      "Fields": {
+        "Meaning": "Biết, biết đến",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "知る（しる）chỉ việc biết hoặc biết được thông tin. Trạng thái đã biết thường diễn đạt bằng 知っている. Khi nói không biết, dùng 知らない.",
+        "UsageNotes": "Thể て là 知って."
+      },
+      "Examples": {
+        "196304": "Tôi không biết và cũng chẳng quan tâm.",
+        "197075": "Bạn không biết ông Brown sao?"
+      },
+      "SourceHash": "5b8b67965baf6434f7ce5ba357fc674a7546848b4a2b07ba0d3e1067986c2738"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "98eace7008",
+      "Fields": {
+        "Meaning": "Màu trắng",
+        "PartOfSpeech": "Danh từ chỉ màu sắc",
+        "Explanation": "白（しろ）là tên màu trắng. 赤白（あかしろ）chỉ đỏ và trắng.",
+        "UsageNotes": "白い là dạng tính từ, như 白いタオル (khăn màu trắng)."
+      },
+      "Examples": {
+        "142119": "Cho tôi một chiếc khăn có đốm đỏ và trắng.",
+        "172985": "Thêm đen vào đen cũng chẳng thành trắng."
+      },
+      "SourceHash": "bdd0b52b18d4f394a54d2098abf7d7358db52eb0590d859a9a0b6bc8c16f5399"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8997f64f52",
+      "Fields": {
+        "Meaning": "Trắng, có màu trắng",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "白い（しろい）tả vật có màu trắng. 白いベルト là thắt lưng trắng. 白く見える nghĩa là trông có màu trắng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121433": "Tôi thích cái có thắt lưng trắng.",
+        "205517": "Nhìn từ đây thì nó trông có màu trắng."
+      },
+      "SourceHash": "fe7d2be270d341a83436d01790de483955e007d71fc6a80d5326a8ecf49272db"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b8317395af",
+      "Fields": {
+        "Meaning": "Báo, tờ báo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "新聞（しんぶん）chỉ báo. 新聞に出る nghĩa là xuất hiện hoặc được đăng trên báo.",
+        "UsageNotes": "おすみになりましたか là cách hỏi kính trọng xem người nghe đã xong việc chưa. Trong câu nguồn, việc được hỏi là đọc báo."
+      },
+      "Examples": {
+        "145135": "Anh/chị đọc báo xong chưa ạ?",
+        "215457": "Báo có nhắc đến John."
+      },
+      "SourceHash": "74c1ef4042afff251374a1962651e666175ccdb3f51c56804e88195bdd1b9d11"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44d9d70862",
+      "Fields": {
+        "Meaning": "Thứ Tư",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "水曜日（すいようび）là thứ Tư. 先週の水曜日 là thứ Tư tuần trước, còn 水曜日から là từ thứ Tư.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88253": "Cô ấy bị ốm từ thứ Tư tuần trước.",
+        "172151": "Thứ Tư tới thì được ạ."
+      },
+      "SourceHash": "fba3dea4f6f16ea0faa51c51caf2310b4e5037bb0fb478f12441a38a52c7a0f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e82727193e",
+      "Fields": {
+        "Meaning": "Hút, hít, thấm",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "吸う（すう）dùng khi hít không khí, hút thuốc hoặc khi vật liệu thấm chất lỏng. 紙がインクを吸う nghĩa là giấy thấm mực.",
+        "UsageNotes": "Thể て là 吸って."
+      },
+      "Examples": {
+        "137481": "Khi lớn lên, con có thể hút tẩu.",
+        "221731": "Giấy này không thấm mực."
+      },
+      "SourceHash": "da8076d431dc82480c78ffb332dc427d10bc01715441462c8fb22f5b8eb4a22a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0f5f6b29b",
+      "Fields": {
+        "Meaning": "Chân váy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "スカート chỉ chân váy. スカートをはく là mặc chân váy. きつすぎる nghĩa là quá chật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "215022": "Anh/chị có thể cho tôi xem chiếc chân váy được không ạ?",
+        "223642": "Chiếc chân váy này hơi chật quá."
+      },
+      "SourceHash": "73080d55a1b168d6265e44d2290ea13a3efc2c99cf20e5deea26d3a3c1a31c97"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "20cbecd474",
+      "Fields": {
+        "Meaning": "Thích, yêu thích",
+        "PartOfSpeech": "Tính từ đuôi な, danh từ",
+        "Explanation": "好き（すき）thường dùng trong mẫu 〜が好き để nói thích người, vật hoặc hoạt động. 好きなもの nghĩa là thứ mình thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161709": "Tôi thích điểm đó ở bạn.",
+        "232388": "Bạn có thích chó Maltese không?"
+      },
+      "SourceHash": "aaaec60c6bd0d137f41ff8ec14cdf60ce6e4852f33ac7b69073235c35481782f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce75057c4c",
+      "Fields": {
+        "Meaning": "Ngay, lập tức, chẳng bao lâu",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "すぐ chỉ việc xảy ra ngay hoặc sau một khoảng ngắn. すぐわかる nghĩa là nhận ra ngay, còn 雨がすぐあがる là mưa sắp tạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214924": "Nó ở chỗ nhìn là thấy ngay đấy.",
+        "236397": "“Mưa có sớm tạnh không nhỉ?” “Tôi nghĩ là không.”"
+      },
+      "SourceHash": "5094ec7ba6bce01aef4828641706e753a7c46e92ae84d3607642a487141898f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0d38b01113",
+      "Fields": {
+        "Meaning": "Ít, không nhiều",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "少ない（すくない）chỉ số lượng nhỏ. 時間が少ない nghĩa là có ít thời gian. ごく少ない nhấn mạnh số lượng rất ít.",
+        "UsageNotes": "少なくなる nghĩa là trở nên ít hơn. Từ trái nghĩa là 多い（おおい）."
+      },
+      "Examples": {
+        "123386": "Tôi ngày càng có ít thời gian đọc sách.",
+        "203555": "Nếu có những người như thế thì cũng rất ít."
+      },
+      "SourceHash": "20ccf97a75ae7ffb43f22e7d8c0b49d11853a8aef68d98c2fff2a4c20cc0d15b"
+    }
+  ]
+}

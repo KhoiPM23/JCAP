@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N4",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "no-you-ni-no-you-na",
+      "Fields": {
+        "Meaning": "Như, giống như",
+        "Formation": "Danh từ ＋ のように ＋ vị ngữ／のような ＋ danh từ",
+        "Explanation": "ように bổ nghĩa vị ngữ, còn ような bổ nghĩa danh từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "no-you-ni-no-you-na:example:1": "Cô ấy hát hay như ca sĩ.",
+        "no-you-ni-no-you-na:example:2": "Những bông hoa trắng như tuyết đã nở."
+      },
+      "SourceHash": "430537c46f808d4050de7db78b49809983c07e8b8d89c9c7ea0adce332ebc46a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ba",
+      "Fields": {
+        "Meaning": "Nếu… thì",
+        "Formation": "Động từ nhóm 1: hàng え ＋ ば／nhóm 2: bỏ る ＋ れば／tính từ い: bỏ い ＋ ければ",
+        "Explanation": "Nêu điều kiện để kết quả ở vế sau xảy ra. する thành すれば và 来る thành 来れば.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ba:example:1": "Nếu sang xuân thì hoa anh đào sẽ nở.",
+        "ba:example:2": "Nếu bấm nút thì đèn sẽ sáng."
+      },
+      "SourceHash": "3334fc3ba38e46bd8a8515308f165394eb58d942b3f7286ac37b61f8e79fefd5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "wa-ga-wa",
+      "Fields": {
+        "Meaning": "Còn… thì, A… nhưng B…",
+        "Formation": "A ＋ は ＋ vị ngữ ＋ が、B ＋ は ＋ vị ngữ",
+        "Explanation": "Hai trợ từ は đặt hai đối tượng hoặc thời điểm vào thế đối chiếu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "wa-ga-wa:example:1": "Tôi ăn thịt, còn cá thì không ăn.",
+        "wa-ga-wa:example:2": "Mùa hè nóng, còn mùa đông lạnh."
+      },
+      "SourceHash": "22bd50cda76065a431d2da85f842b8b7cd4c778c19c177293253752d4abd36d6"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "baai-wa",
+      "Fields": {
+        "Meaning": "Trong trường hợp",
+        "Formation": "Danh từ ＋ の場合は／mệnh đề bổ nghĩa ＋ 場合は",
+        "Explanation": "Nêu tình huống áp dụng một quy định, hướng dẫn hoặc cách xử lý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "baai-wa:example:1": "Nếu trời mưa, trận đấu sẽ bị hủy.",
+        "baai-wa:example:2": "Nếu không hiểu, hãy hỏi người phụ trách."
+      },
+      "SourceHash": "590ba8a3305ce04395ad36e958e6069e51bad22419fd9b958537c8a79be2b138"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "bakari",
+      "Fields": {
+        "Meaning": "Toàn, chỉ suốt ngày",
+        "Formation": "Danh từ ＋ ばかり／động từ thể て ＋ ばかりいる",
+        "Explanation": "Nhấn mạnh một thứ chiếm phần lớn hoặc một việc cứ lặp đi lặp lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "bakari:example:1": "Em trai tôi suốt ngày chơi game.",
+        "bakari:example:2": "Đừng chỉ ăn đồ ngọt."
+      },
+      "SourceHash": "efbd34502be7c2989c9dd4708e00b944afe53cf6fd8dd7110a5fb0312e42a305"
+    }
+  ]
+}

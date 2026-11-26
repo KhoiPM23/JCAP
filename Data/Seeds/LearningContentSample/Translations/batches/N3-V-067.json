@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1f3f6775d",
+      "Fields": {
+        "Meaning": "Đi dã ngoại, buổi dã ngoại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ピクニック（ピクニック）có nghĩa là đi dã ngoại, buổi dã ngoại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166227": "Chúng tôi rất thích đi dã ngoại.",
+        "228962": "Bạn đi dã ngoại cùng chúng tôi nhé?"
+      },
+      "SourceHash": "c3742ea1c6aae649ee1dfd29297c83da9bb68291b7190b79f5ae1f48a36df019"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "65f02872e4",
+      "Fields": {
+        "Meaning": "Bi kịch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "悲劇（ひげき）có nghĩa là bi kịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214378": "Mọi bi kịch đều kết thúc bằng cái chết.",
+        "220146": "Nguyên nhân thực sự của bi kịch này là gì?"
+      },
+      "SourceHash": "176abc4fddacddc4679b08123b7568e06b4c9229895a72262e0c8a40263d8df3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c62c71907b",
+      "Fields": {
+        "Meaning": "Bay, chuyến bay",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "飛行（ひこう）có nghĩa là bay, chuyến bay.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88740": "Cô ấy rất lo lắng về chuyến bay đầu tiên.",
+        "192423": "Lindbergh là người đầu tiên bay qua Đại Tây Dương."
+      },
+      "SourceHash": "2bbef1f83564ca320af9f79431f65ffd237e5d723da4324258e88dc994e365c0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "908a7a4f49",
+      "Fields": {
+        "Meaning": "Đầu gối, lòng khi ngồi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "膝（ひざ）có nghĩa là đầu gối, lòng khi ngồi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85500": "Hãy trải khăn ăn lên đùi.",
+        "153104": "Tôi thích váy dài tới đầu gối."
+      },
+      "SourceHash": "b6ba1c0d300ed7a0d671269e18fd6ce02875a68b816fcfc1371a83e153073924"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b0073ea226",
+      "Fields": {
+        "Meaning": "Khẩn cấp, bất thường",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "Trong 非常の場合 và 非常ボタン, từ này chỉ tình huống khẩn cấp. Dạng 非常に có nghĩa là rất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85759": "Trong trường hợp khẩn cấp, hãy gọi cảnh sát.",
+        "100689": "Anh ấy bấm nút khẩn cấp."
+      },
+      "SourceHash": "4ec021b49195fc0c8a06e04029ddac5927acefae439ee440cb7d2c9e79eb0a48"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b93a0f3b9",
+      "Fields": {
+        "Meaning": "Người phụ nữ đẹp, mỹ nhân",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "美人（びじん）có nghĩa là người phụ nữ đẹp, mỹ nhân.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87074": "Người ta nói cô ấy từng rất đẹp.",
+        "214215": "Bà Smith nổi tiếng xinh đẹp."
+      },
+      "SourceHash": "b7e5ef91218190f85c5e746cf7ee4e1429f6c2094c40409ff4451d7f38e2ec4f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "44862c8e57",
+      "Fields": {
+        "Meaning": "Giật mình, ngạc nhiên",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "びっくり（びっくり）có nghĩa là giật mình, ngạc nhiên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111168": "Anh ấy giật mình nhìn chằm chằm vào cô ấy.",
+        "119009": "Anh ấy lúc nào cũng làm tôi bất ngờ."
+      },
+      "SourceHash": "53c9fbefe93d0b0eb371f6650e13b4c4be27e3af8115b79a0e76549bec0ae1ac"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "91d73df989",
+      "Fields": {
+        "Meaning": "Ngày tháng, ngày ghi trên giấy tờ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "日付（ひづけ）có nghĩa là ngày tháng, ngày ghi trên giấy tờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122846": "Học thuộc ngày tháng không dễ.",
+        "209504": "Bức thư đó đề ngày nào?"
+      },
+      "SourceHash": "0db5e095360bc03acb2e7c3f26adf59bed7f8ec3a3a6f193dfe81b3527bfd751"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b52e17197f",
+      "Fields": {
+        "Meaning": "Hết sức, liều mình",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "必死（ひっし）có nghĩa là hết sức, liều mình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87056": "Cô ấy chạy hết sức.",
+        "99650": "Anh ấy cố hết sức để giữ danh tiếng."
+      },
+      "SourceHash": "cdee0366627f1962ffd268ce587c61740b7fea77cc91c9feb65767181c5a5d7c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1bd65d97c5",
+      "Fields": {
+        "Meaning": "Vừa khít, sát, đúng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ぴったり（ぴったり）có nghĩa là vừa khít, sát, đúng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86951": "Cô ấy nép sát bên chồng.",
+        "227555": "Tôi đến văn phòng đúng giờ."
+      },
+      "SourceHash": "0caf352fc989b85e1ab3e8be54471154416a73f3553707ddf27ebd231238b219"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b94c212dad",
+      "Fields": {
+        "Meaning": "Kéo, lôi",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "引っ張る（ひっぱる）có nghĩa là kéo, lôi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "82777": "Người mẹ kéo con trai đứng dậy.",
+        "220910": "Loại vải này kéo nhẹ là giãn."
+      },
+      "SourceHash": "c1af78d5667cc3f44b268db7d873f870430148aeab94e7570e37c8b3d437e97a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0422a82e00",
+      "Fields": {
+        "Meaning": "Phủ nhận, bác bỏ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "否定（ひてい）có nghĩa là phủ nhận, bác bỏ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101014": "Anh ấy phủ nhận đã gặp cô ấy.",
+        "114200": "Anh ấy phủ nhận đã lấy trộm tiền."
+      },
+      "SourceHash": "f85044ee6b886f4f0502c3aa9354e46bba92364dd55c975ee0ffc7d79e57ff9a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16c5e91008",
+      "Fields": {
+        "Meaning": "Video, đầu máy video",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ビデオ（ビデオ）có nghĩa là video, đầu máy video.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197566": "Tôi trả tiền đầu máy video thành năm đợt.",
+        "197567": "Tôi xem phim bằng video."
+      },
+      "SourceHash": "6e60a1d39e218c68ade54bc18fd076d7d7df39ad8a4f48cef6d06848c869954c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "df6f68109a",
+      "Fields": {
+        "Meaning": "Một lời, một câu",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "一言（ひとこと）có nghĩa là một lời, một câu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106023": "Anh ấy tốt bụng cho tôi một lời khuyên.",
+        "106152": "Anh ấy không đáp tôi một lời."
+      },
+      "SourceHash": "c9d1dcfe2afa002268709dbbf44e63684ad99f5813686b4dd02e9c359ed9c75f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ac7d3cf22",
+      "Fields": {
+        "Meaning": "Đám đông, chỗ đông người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "人込み（ひとごみ）có nghĩa là đám đông, chỗ đông người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "103559": "Anh ấy lạc mất bạn trong đám đông.",
+        "155659": "Tôi chen qua đám đông để tiến lên."
+      },
+      "SourceHash": "042941d888603f9235f6968f89db9eb334b5b8688d265c0db7ace44c0ba68e92"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "71f52e4f3e",
+      "Fields": {
+        "Meaning": "Bằng, tương đương",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "等しい（ひとしい）có nghĩa là bằng, tương đương.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143577": "Về toán, tôi không bằng anh ấy.",
+        "235819": "Một yard bằng ba feet."
+      },
+      "SourceHash": "9cc5bef9a0346143705042717704a7f39671ae7f6eac6b5f5df15bdd2e3e8c0c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5cc54de84b",
+      "Fields": {
+        "Meaning": "Một mình, một người",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "独り thường nhấn mạnh việc ở một mình. Câu thứ hai dùng 一人も với phủ định để nói không có một ai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "158458": "Tôi có một em trai.",
+        "175958": "Không có học sinh nào vắng mặt."
+      },
+      "SourceHash": "e5590cf2377dd321db3820a533698faca0a5440def3c789258b42726cb66522a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f675c4ff49",
+      "Fields": {
+        "Meaning": "Từng người, mỗi người",
+        "PartOfSpeech": "Phó từ, Danh từ",
+        "Explanation": "一人一人（ひとりひとり）có nghĩa là từng người, mỗi người.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102750": "Ông ấy cho mỗi người con trai một ít tiền.",
+        "194689": "Người hầu gái lớn tiếng tiếp từng vị khách."
+      },
+      "SourceHash": "1707dd321ba176759d223b32b6de6581c07a62b9fe8177fe00bdf83e1c0fac85"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d7032c88c5",
+      "Fields": {
+        "Meaning": "Chỉ trích, phê phán",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "批判（ひはん）có nghĩa là chỉ trích, phê phán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87156": "Cô ấy rất để tâm đến lời chỉ trích.",
+        "138469": "Không gì dễ bằng chỉ trích người khác."
+      },
+      "SourceHash": "54c97c590a832dd2778d4d851e0c6336f5b775f1a0c8212be6a1a64ab46e1777"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6997e916e3",
+      "Fields": {
+        "Meaning": "Phê bình, nhận xét",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "批評（ひひょう）có nghĩa là phê bình, nhận xét.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85930": "Đừng quá nhạy cảm với lời phê bình.",
+        "141652": "Giáo viên nhận xét bài văn của học sinh."
+      },
+      "SourceHash": "924fa76695017599197131096cde7da7029c465a616876a8e2813030478d9946"
+    }
+  ]
+}

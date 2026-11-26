@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ue-ni",
+      "Fields": {
+        "Meaning": "Thêm vào đó, lại còn",
+        "Formation": "Mệnh đề bổ nghĩa ＋ 上に",
+        "Explanation": "Bổ sung đặc điểm hoặc sự việc cùng chiều đánh giá với ý trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ue-ni:example:1": "Phòng này gần ga, lại còn có tiền thuê rẻ.",
+        "ue-ni:example:2": "Anh ấy đến muộn giờ hẹn, lại còn chẳng xin lỗi."
+      },
+      "SourceHash": "bf4c944acb08978c039f94ed9770d2bd67e41dd0b7517e89c687dec3c01ce141"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "uchi-ni",
+      "Fields": {
+        "Meaning": "Trong lúc còn, trước khi",
+        "Formation": "Mệnh đề bổ nghĩa ＋ うちに",
+        "Explanation": "Làm một việc trong lúc điều kiện vẫn còn hoặc trước khi trạng thái thay đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "uchi-ni:example:1": "Xin mời dùng khi còn nóng.",
+        "uchi-ni:example:2": "Tôi ghi lại trước khi quên."
+      },
+      "SourceHash": "bf696042e7f2cf90ef1b87eb4481f47f0e3c69ca63b93255e9c91e1cb0a24dc1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "okage-de",
+      "Fields": {
+        "Meaning": "Nhờ, nhờ có",
+        "Formation": "Danh từ ＋ のおかげで／mệnh đề bổ nghĩa ＋ おかげで",
+        "Explanation": "Nêu người, sự việc hay điều kiện góp phần tạo ra kết quả tốt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "okage-de:example:1": "Nhờ thầy cô, tôi đã thi đỗ.",
+        "okage-de:example:2": "Nhờ thời tiết đẹp, chuyến đi rất vui."
+      },
+      "SourceHash": "a952f57382e1894291a469b4623767908f7f087b636fbbd112944824e5f02f88"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kaette",
+      "Fields": {
+        "Meaning": "Trái lại, ngược lại còn",
+        "Formation": "かえって ＋ mệnh đề kết quả",
+        "Explanation": "Kết quả thực tế đi ngược với điều người nói dự kiến.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kaette:example:1": "Tôi đã uống thuốc mà lại thấy khó chịu hơn.",
+        "kaette:example:2": "Nhờ người giúp mà ngược lại còn tốn thời gian hơn."
+      },
+      "SourceHash": "dba8fc2a96c42ea9e854b2122a6a5ca810d53d7c59e3774ae18f4af424a9d54b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "kakeru",
+      "Fields": {
+        "Meaning": "Đang làm dở, vừa định làm",
+        "Formation": "Gốc ます ＋ かける／かけの ＋ danh từ",
+        "Explanation": "Chỉ việc mới bắt đầu, đang dở hoặc sắp thực hiện thì dừng lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "kakeru:example:1": "Trên bàn có miếng bánh đang ăn dở.",
+        "kakeru:example:2": "Anh ấy định nói gì đó rồi đột nhiên im lặng."
+      },
+      "SourceHash": "fe55999018078baf321c688dfec815b2c4019a0180acc938a660ea76b4cfc075"
+    }
+  ]
+}

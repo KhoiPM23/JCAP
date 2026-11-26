@@ -1,0 +1,307 @@
+{
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "264ec34f18",
+      "Fields": {
+        "Meaning": "Cho, trao, đem lại",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "与える（あたえる）có nghĩa là cho, trao, đem lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99676": "Ông ấy cho con gái rất nhiều tiền.",
+        "102589": "Anh ấy được trời phú cho nhiều tài năng."
+      },
+      "SourceHash": "40c57e96f9cdd528a95420d5d4a87c49148e9539888c902a904a44f1b9a89788"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a0ea038f9b",
+      "Fields": {
+        "Meaning": "Quanh, vùng lân cận",
+        "PartOfSpeech": "Danh từ, hậu tố, phó từ",
+        "Explanation": "辺り（あたり）có nghĩa là quanh, vùng lân cận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142435": "Ngày trước quanh đây có một khách sạn.",
+        "226945": "Đừng vứt đồ của cậu bừa bộn quanh đó."
+      },
+      "SourceHash": "f9fa322040fb8361a315c95217b3bcf8863c3b3e1e6fcdafceb1894f61512454"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0c74b17f50",
+      "Fields": {
+        "Meaning": "Chạm, trúng, tương ứng",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "当たる（あたる）có nghĩa là chạm, trúng, tương ứng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83879": "Tôi trúng một chiếc máy ảnh trong đợt bốc thăm.",
+        "157780": "Tôi cảm thấy gió lạnh tạt vào mặt."
+      },
+      "SourceHash": "adffe3f876b5c229429dfbb84666a3a53b533549abe33a2ee685cf6c49b1436d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "66c159592d",
+      "Fields": {
+        "Meaning": "Khắp nơi, chỗ này chỗ kia",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "あちこち（あちこち）có nghĩa là khắp nơi, chỗ này chỗ kia.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81665": "Sách vương vãi khắp phòng.",
+        "234325": "Tôi đi quanh hết chỗ này đến chỗ khác mà chẳng có đích đến."
+      },
+      "SourceHash": "433b209eac3332afbaac6941ed0352e4e92e1dabd99af03e4e2c25f18ddd0379"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e8c795d3e8",
+      "Fields": {
+        "Meaning": "Á, ồ, a",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "あっ（あっ）có nghĩa là á, ồ, a.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "1b643894e53f656552904ee9efe4c5eb1cee49d2228ad6665349f6201907742c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c0dfcb262d",
+      "Fields": {
+        "Meaning": "Xử lý, đề cập, đối xử",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "扱う（あつかう）có nghĩa là xử lý, đề cập, đối xử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "145520": "Tâm lý học nghiên cứu cảm xúc con người.",
+        "219378": "Tôi sẽ xử lý vấn đề này."
+      },
+      "SourceHash": "1501dd3c096aff2c32f52c8b175eddcf822845988702211e5c0b240d96021aab"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b22ceca000",
+      "Fields": {
+        "Meaning": "Buổi tụ họp, nhóm tụ họp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "集まり（あつまり）có nghĩa là buổi tụ họp, nhóm tụ họp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223384": "Bữa tiệc này là buổi tụ họp của những người thân quen.",
+        "224830": "Đây chỉ là buổi gặp mặt trong phạm vi thân thiết."
+      },
+      "SourceHash": "607729920760db1ec6bb593e19862be01ad754de056bce4bd97176e080f86ec1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bd36844c24",
+      "Fields": {
+        "Meaning": "Làm chạm, để tiếp xúc, đánh trúng",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "日光に当てる là để vật tiếp xúc ánh nắng. Câu đầu dùng dạng bị động để nói suýt bị xe tông.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "219236": "Đừng để hóa chất này tiếp xúc với ánh nắng.",
+        "226129": "Tôi suýt bị ô tô tông."
+      },
+      "SourceHash": "df5bf763165a0c3535c6d18cf2ed7b238bbdb712bfd7baddffbba84f9d43b2b0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "57c650defa",
+      "Fields": {
+        "Meaning": "Dấu vết, vết hằn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "あと（あと）có nghĩa là dấu vết, vết hằn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "138279": "Có thể sẽ còn lại một chút dấu vết.",
+        "209349": "Trên gương mặt người phụ nữ đó còn dấu vết của nỗi buồn."
+      },
+      "SourceHash": "02bc40f62cf9d375b7d45bb63f61fa5a74518d2adb49ea6db7808b47017504ee"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4f1b6b6e36",
+      "Fields": {
+        "Meaning": "Lỗ, hố",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "穴（あな）có nghĩa là lỗ, hố.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92520": "Cô ấy nhìn ra ngoài qua cái lỗ đó.",
+        "126362": "Cẩn thận! Trên đường có một cái hố đấy."
+      },
+      "SourceHash": "ddf4246a609a92cbb10515045ad2d31a4107d11e5adcbba883566c83946c90f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "064aac92d9",
+      "Fields": {
+        "Meaning": "Dầu, chất béo",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "油（あぶら）có nghĩa là dầu, chất béo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "162716": "Quần áo tôi bị dính dầu.",
+        "227468": "Có thể lấy dầu từ quả ô liu."
+      },
+      "SourceHash": "64a62f51c81eb4526087ddc9c271902d01e019b62b8ea1e47bec806a040dcaf1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8399cefa4f",
+      "Fields": {
+        "Meaning": "Sai sót, lỗi",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "誤り（あやまり）có nghĩa là sai sót, lỗi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "116661": "Hóa ra lời giải thích của anh ấy sai.",
+        "163667": "Sai sót của tôi khiến anh ấy nổi giận."
+      },
+      "SourceHash": "fb93e72e6d5ecac81a23d0dd2d5209c508f121ab5dce901b0e5cf91133cf4266"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c461dcc42b",
+      "Fields": {
+        "Meaning": "Khuyết điểm, chỗ sơ suất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Hai câu nguồn dùng thán từ あら (ồ), trùng cách đọc với 粗 nhưng diễn tả sự ngạc nhiên. 粗 chỉ khuyết điểm hoặc chỗ sơ suất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230078": "Ồ, trông bạn diện bảnh nhỉ.",
+        "230079": "Ồ, cứ gọi tôi là Angela."
+      },
+      "SourceHash": "050ed6e4f8a9ab7a5aa42eafdad82bb4fdf709c2a2f34c8ead69f63755f392e8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6c564bf1bd",
+      "Fields": {
+        "Meaning": "Bão, giông bão",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "嵐（あらし）có nghĩa là bão, giông bão.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77576": "Tàu phải dừng vì cơn bão.",
+        "219969": "Cơn gió này là dấu hiệu sắp có bão."
+      },
+      "SourceHash": "97da4b59db3ae2bc1a89e9600c04fdb460ff45f5793603f0b96d38b0640e6917"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "69209e023f",
+      "Fields": {
+        "Meaning": "Mới, mới mẻ",
+        "PartOfSpeech": "Tính từ đuôi な",
+        "Explanation": "新た（あらた）có nghĩa là mới, mới mẻ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80464": "Ngày mai lại là một ngày mới.",
+        "90566": "Cô ấy nhìn tấm ảnh để gợi lại ký ức."
+      },
+      "SourceHash": "8afc4cc60df5f188f2825f036671a26237685d109e4c404abb642ea8851f01f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50edc9f158",
+      "Fields": {
+        "Meaning": "Mọi, tất cả các",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "あらゆる（あらゆる）có nghĩa là mọi, tất cả các.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161489": "Tôi ủng hộ quyền tự do phát biểu dưới mọi hình thức.",
+        "166823": "Phía chúng tôi đã làm mọi việc có thể."
+      },
+      "SourceHash": "f4bd1538c7aa524b287e82bd866e3ddcfd81e19da62f2d1268f69293f8587d0f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94e6dfb59c",
+      "Fields": {
+        "Meaning": "Bộc lộ, làm lộ ra",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "現す thường dùng khi điều ẩn trở nên lộ rõ. Hai câu nguồn viết 表す, dùng khi biểu đạt hoặc biểu thị bằng dấu hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75956": "Trong biểu thức chính quy, khoảng trắng được biểu diễn như thế nào?",
+        "237581": "Ký hiệu & biểu thị từ “and”."
+      },
+      "SourceHash": "c36ba654de007b5f30b527d1d1316fdb5e343d8d61e45b97cc684e715baecf63"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "474e600ef2",
+      "Fields": {
+        "Meaning": "Biểu thị, diễn đạt",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "表す（あらわす）có nghĩa là biểu thị, diễn đạt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223677": "Dấu hiệu này biểu thị điều gì?",
+        "237581": "Ký hiệu & biểu thị từ “and”."
+      },
+      "SourceHash": "1a122a9dd4bbe18cdb666a273784f050cf68e4b5bc71b11fc926f22293a35ad5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "de64f6eb4a",
+      "Fields": {
+        "Meaning": "Biểu hiện, dấu hiệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Hai câu nguồn viết 表れ, chỉ biểu hiện cho thấy tính cách hoặc thái độ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122234": "Người Nhật không phải lúc nào cũng cúi chào để bày tỏ sự kính trọng.",
+        "204910": "Đó là biểu hiện tính cách của cô ấy."
+      },
+      "SourceHash": "6f565a306ad3c223682b9f155f0c5b811d4f72ed6112678183ac9b63d6c18b64"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0ca5c40581",
+      "Fields": {
+        "Meaning": "Xuất hiện, hiện ra",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "現れる（あらわれる）có nghĩa là xuất hiện, hiện ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190471": "Một người phụ nữ bước ra từ sau gốc cây.",
+        "235580": "Hai mươi cảnh sát đã xuất hiện tại hiện trường."
+      },
+      "SourceHash": "2d255700546a734060100817e3b00a51469e574b7a60e7a7c917453045c78c72"
+    }
+  ]
+}

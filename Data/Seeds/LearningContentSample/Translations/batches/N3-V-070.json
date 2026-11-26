@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f83598742",
+      "Fields": {
+        "Meaning": "Mép, vành",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Hai câu ví dụ dùng nghĩa mép hoặc vành, đọc ふち. Đọc えん khi chỉ mối duyên hoặc quan hệ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96758": "Họ đổ nước đầy đến miệng chum.",
+        "202418": "Xin đừng đặt ly ở mép bàn."
+      },
+      "SourceHash": "8772f249363ebdcf097d806766c02a92de33555d6538ddb206629acbf59370e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08fb4b13c1",
+      "Fields": {
+        "Meaning": "Đánh, đập, gõ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "Đồng hồ điểm giờ và chơi máy đánh bạc là hai cách dùng mở rộng của 打つ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "197169": "Tôi bị đánh đến ù tai.",
+        "210431": "Người đàn ông tàn nhẫn ấy dùng roi đánh con chó."
+      },
+      "SourceHash": "1b2849d73f49453cb8732e9a63e695263294ce3530a479915766925ff5f5303e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94b721726e",
+      "Fields": {
+        "Meaning": "Giá cả",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物価（ぶっか）có nghĩa là giá cả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83791": "Giá cả chắc sẽ sớm giảm.",
+        "83795": "Giá cả cứ tăng mãi."
+      },
+      "SourceHash": "6474b0dfa1544c2e9774de1c9703f8e86ac7ed359cd77cd3f6ec715a3f29fd29"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aee461222c",
+      "Fields": {
+        "Meaning": "Vật chất, chất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物質（ぶっしつ）có nghĩa là vật chất, chất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "206886": "Chất đó phải được xử lý bằng axit.",
+        "234447": "Aspirin gồm những chất gì?"
+      },
+      "SourceHash": "e8121adf34b08621b6a7b62b027a0f4725c20067e2f6a5881192a13ba28fbb3f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "97ccdb5cad",
+      "Fields": {
+        "Meaning": "Vật lý",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "物理（ぶつり）có nghĩa là vật lý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83736": "Vật lý là môn tôi thích.",
+        "152932": "Tôi thích cả vật lý lẫn hóa học."
+      },
+      "SourceHash": "26780f84062d7ad3e31eaea48500f6b8019b33edad3792d73a040a95efb0f68b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "68dbed6140",
+      "Fields": {
+        "Meaning": "Bút lông, nét bút",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "筆（ふで）có nghĩa là bút lông, nét bút.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "169013": "Thêm vài nét bút để hoàn thiện.",
+        "207084": "Vẻ đẹp đó không thể diễn tả bằng ngòi bút."
+      },
+      "SourceHash": "46b9aa28ffe4eaa249365753f7c7a053d0d06891861e402f3a2cbac22b86e3c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "347f2ce155",
+      "Fields": {
+        "Meaning": "Chợt, bất chợt",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "ふと（ふと）có nghĩa là chợt, bất chợt.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "159011": "Tôi chợt định hỏi ý kiến anh ấy.",
+        "216852": "Anh ấy chợt nhận ra ví đã biến mất."
+      },
+      "SourceHash": "b5cbaed1f1c1ba6f2f7952a19a707e8c5804096b64c60d0130b5574398951bff"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "144ace6a3f",
+      "Fields": {
+        "Meaning": "Tàu, thuyền",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "船（ふね）có nghĩa là tàu, thuyền.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96675": "Họ kéo thuyền lên bờ.",
+        "102018": "Anh ấy được một con tàu đi ngang qua cứu."
+      },
+      "SourceHash": "95dc7b59ce8c93b32f9d67766af8cb172826e758cba893b96d3466fc9fe33c16"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8e9d8bfa84",
+      "Fields": {
+        "Meaning": "Phần, bộ phận",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "部分（ぶぶん）có nghĩa là phần, bộ phận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198072": "Tôi chưa ghép xong phần này của bức hình.",
+        "229783": "Bạn có thể giao một phần việc cho cấp dưới làm."
+      },
+      "SourceHash": "29144422121897a84ad344b9e9fc2a31fd0e8cd2281179ba655887315ad9999f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f103ca6a0",
+      "Fields": {
+        "Meaning": "Lời phàn nàn, sự bất bình",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の, tính từ đuôi な",
+        "Explanation": "不平（ふへい）có nghĩa là lời phàn nàn, sự bất bình.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118758": "Anh ấy chẳng có gì để phàn nàn.",
+        "177913": "Bạn lúc nào cũng phàn nàn."
+      },
+      "SourceHash": "030be29c6325135f2c981adce65988e7717ed81be2119b1cadfa163d1547fff8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a612acbee",
+      "Fields": {
+        "Meaning": "Bất mãn, không hài lòng",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "不満（ふまん）có nghĩa là bất mãn, không hài lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86974": "Cô ấy liếc tôi với vẻ không hài lòng.",
+        "188091": "Bạn không hài lòng điều gì đến thế?"
+      },
+      "SourceHash": "41913cce6feb3ae9e352c413cd5f4e5f07d6b1780ee55a06598bbcc980594368"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fecda87cd",
+      "Fields": {
+        "Meaning": "Dấu cộng, lợi ích, điểm cộng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "プラス（プラス）có nghĩa là dấu cộng, lợi ích, điểm cộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "204386": "Làm thế chẳng mang lại lợi ích gì.",
+        "225015": "Làm vậy sẽ có lợi cho bạn."
+      },
+      "SourceHash": "e2cd61713bfb666b41db5ec41f9b4115677dfb0e0a6f38641f58de5000fa9af9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e351a6f3de",
+      "Fields": {
+        "Meaning": "Kế hoạch",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "プラン（プラン）có nghĩa là kế hoạch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223234": "Kế hoạch này khó thực hiện.",
+        "223235": "Kế hoạch này làm mọi người hài lòng."
+      },
+      "SourceHash": "84e9b76f9532e71876047c6d2a94e2a179dff12550af127dd71233c7e1171705"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "133caaa87a",
+      "Fields": {
+        "Meaning": "Bất lợi, không có lợi",
+        "PartOfSpeech": "Danh từ, tính từ đuôi な",
+        "Explanation": "不利（ふり）có nghĩa là bất lợi, không có lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121272": "Phán quyết bất lợi cho anh ấy.",
+        "121566": "Không cao không phải là một bất lợi."
+      },
+      "SourceHash": "cf8eaec6aadda0c8d510d9675486bec993117ce64638903ee31ef253665fc1da"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f63274b0b2",
+      "Fields": {
+        "Meaning": "Lắc, vẫy",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "振る（ふる）có nghĩa là lắc, vẫy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154837": "Tôi lắc đầu vài lần.",
+        "192766": "Lắc kỹ trước khi sử dụng."
+      },
+      "SourceHash": "df0b9dd2e09edd1febece765985d83f84b14fd7046b7d085e9c4333009235fb2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "29031b2ba5",
+      "Fields": {
+        "Meaning": "Run, rung",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "震える（ふるえる）có nghĩa là run, rung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146521": "Cậu bé run lên khi nghe tiếng động.",
+        "208184": "Người đàn ông ấy, Oedipus, run lên."
+      },
+      "SourceHash": "1964e0cb1606de2eff901c601a798ae045fedc5c42a7915fa2574d9321049609"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "24fa33d1a4",
+      "Fields": {
+        "Meaning": "Phanh, thắng xe",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ブレーキ（ブレーキ）có nghĩa là phanh, thắng xe.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108468": "Anh ấy đột ngột đặt chân lên bàn đạp phanh.",
+        "196926": "Chức năng của phanh là dừng xe."
+      },
+      "SourceHash": "f113217a02dcc78fde2aef1604e6979254fe6d8bbfc2b18d9becef512d28e643"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42ce4a629d",
+      "Fields": {
+        "Meaning": "Chạm vào, đề cập",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "触れる（ふれる）có nghĩa là chạm vào, đề cập.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83060": "Mẹ tôi không nhắc đến chuyện đó.",
+        "188117": "Tôi cảm thấy có gì đó chạm vào chân."
+      },
+      "SourceHash": "4d011ece4e565bdf32bf26a3429a5c95d8a473b49fa6a8885e58156f663f5d98"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9cb4c24f0c",
+      "Fields": {
+        "Meaning": "Người chuyên nghiệp, chuyên nghiệp",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "プロ（プロ）có nghĩa là người chuyên nghiệp, chuyên nghiệp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123725": "Điều tương tự cũng đúng với bóng chày chuyên nghiệp.",
+        "232404": "Bạn là dân chuyên nghiệp, còn tôi là dân nghiệp dư."
+      },
+      "SourceHash": "2c1e34d02acccaa56cb7d14cf4e19f001dd4ff6a311ea1f4b7020e24ddb0f5fc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3c5ff54bea",
+      "Fields": {
+        "Meaning": "Phần, suất",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "分（ぶん）có nghĩa là phần, suất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "218933": "Đây là phần bánh của bạn.",
+        "223288": "Bia này có nồng độ cồn 5%."
+      },
+      "SourceHash": "78569675a6d3868a3d1662af454d82a62d71c2d901b262c5a00d565333b5ad08"
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ebafd320d0",
+      "Fields": {
+        "Meaning": "Cách cư xử, phép tắc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "行儀（ぎょうぎ）có nghĩa là cách cư xử, phép tắc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "90104": "Cô ấy cư xử rất nhã nhặn.",
+        "169495": "Trong ba người, Bill cư xử lễ phép nhất."
+      },
+      "SourceHash": "1aa159e134428249776cb87b6fcbdb81f64a9eeae2aa955e1964756ab53cfde6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3a3b1e3490",
+      "Fields": {
+        "Meaning": "Cung cấp, nguồn cung",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "供給（きょうきゅう）có nghĩa là cung cấp, nguồn cung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143769": "Nước được cấp từ bên ngoài.",
+        "168387": "Thành phố cung cấp thức ăn cho trẻ em."
+      },
+      "SourceHash": "e13fd50148a8e26a75aad956fec32df923b1a1576bd84b9b2b5aa304085059f9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d6f9223c83",
+      "Fields": {
+        "Meaning": "Giáo viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "教師（きょうし）có nghĩa là giáo viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108324": "Anh ấy kiếm sống bằng nghề dạy học.",
+        "163801": "Anh tôi là giáo viên."
+      },
+      "SourceHash": "dd40a8dea687ada930dc29b3fd64f8eeafe2f844c1d87771211b119bdbefcef5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9453cb20ca",
+      "Fields": {
+        "Meaning": "Giáo sư, sự giảng dạy",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "教授（きょうじゅ）có nghĩa là giáo sư, sự giảng dạy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110344": "Ông ấy là giáo sư tiếng Anh tại Đại học Leeds.",
+        "190473": "Một vị giáo sư thì thầm."
+      },
+      "SourceHash": "f6ee9729985056ad8bfaae0fe12a006360f62026cf2f69bf6b3c7430b6c30f7f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d3ee1eb490",
+      "Fields": {
+        "Meaning": "Nhấn mạnh",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "強調（きょうちょう）có nghĩa là nhấn mạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113723": "Ông ấy đặc biệt nhấn mạnh điểm này.",
+        "141500": "Giáo viên nhấn mạnh tầm quan trọng của việc luyện tập mỗi ngày."
+      },
+      "SourceHash": "4a6eec9484e0b6ad3958f56f39e0d672df641329a9ed58133e79a783ba440a3c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d207be5049",
+      "Fields": {
+        "Meaning": "Chung, điểm chung",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "共通（きょうつう）có nghĩa là chung, điểm chung.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97335": "Họ không có điểm gì chung.",
+        "164869": "Tôi và anh ấy có nhiều điểm chung."
+      },
+      "SourceHash": "6e2db168ea938ef87df271a2aac6ad7add9ea48b138774a3170639d06a4cbe0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6285f625ab",
+      "Fields": {
+        "Meaning": "Chung, cùng làm",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "共同（きょうどう）có nghĩa là chung, cùng làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "152777": "Tôi dùng chung phòng với em gái.",
+        "166360": "Chúng tôi cùng điều hành cửa hàng đó."
+      },
+      "SourceHash": "1c23d97e1d287092252961e5ec109203d87ec9f8bbe6b9f667c13be8fa46db44"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0791e13d7b",
+      "Fields": {
+        "Meaning": "Nỗi sợ, sự kinh hãi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "恐怖（きょうふ）có nghĩa là nỗi sợ, sự kinh hãi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157615": "Tôi sợ đến gần như phát điên.",
+        "210237": "Đứa trẻ không hề tỏ ra sợ hãi."
+      },
+      "SourceHash": "9e8b5c96c726f09cc94b043e7ef8f517368272d752fbed74a0eccafad48e996b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "21b3678651",
+      "Fields": {
+        "Meaning": "Mạnh, hùng mạnh",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "強力（きょうりょく）có nghĩa là mạnh, hùng mạnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108370": "Anh ấy đánh bại một đối thủ mạnh.",
+        "122629": "Quân đội Nhật Bản từng rất hùng mạnh."
+      },
+      "SourceHash": "081d1f4ecf18422b5840bb2170dba966e8e017fa5cd3748dd66c5ed0e106148a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9fe814581c",
+      "Fields": {
+        "Meaning": "Cho phép, sự cho phép",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "許可（きょか）có nghĩa là cho phép, sự cho phép.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113031": "Anh ấy được phép nhập học ở trường đó.",
+        "224646": "Ở đây không được phép hút thuốc."
+      },
+      "SourceHash": "7b21dc32a28627b7d885814070d6c469b7c6b9cd6ce465b4f1e8196e23d37b97"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ab46c02abb",
+      "Fields": {
+        "Meaning": "Cục, đài, trạm",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "局（きょく）có nghĩa là cục, đài, trạm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "188962": "Theo báo cáo của cơ quan kiểm soát dịch bệnh, tỷ lệ mắc bệnh là 10%.",
+        "220593": "Khu vực này thu được tín hiệu của ba đài."
+      },
+      "SourceHash": "5cb2e8c9230bb353e5c33193c59100d0fa504874ad77287a3d395e733c6f8746"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db79e0b5b4",
+      "Fields": {
+        "Meaning": "Khổng lồ, đồ sộ",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "巨大（きょだい）có nghĩa là khổng lồ, đồ sộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "230480": "Chiếc khí cầu kia to thật!",
+        "4585667": "Chiếc tàu chở dầu khổng lồ cuối cùng cũng vừa rời cảng."
+      },
+      "SourceHash": "ad0cebd646d606dfc6c987a9523f2a6e90fced5ab3ce61f5814f0d1b6da2da0b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "81706342c1",
+      "Fields": {
+        "Meaning": "Ghét, không thích",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "嫌う（きらう）có nghĩa là ghét, không thích.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88447": "Cô ấy không thích nói trước đám đông.",
+        "92648": "Cô ấy rất ghét những suy nghĩ kiểu đó."
+      },
+      "SourceHash": "d5f87d2902bc2ae8cad1d20bb95d62c04bacea50022f69f84c3de3b6f09eb427"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c83788ca8",
+      "Fields": {
+        "Meaning": "Sương mù",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "霧（きり）có nghĩa là sương mù.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121753": "Chuyến bay của chúng tôi bị trễ vì sương mù dày đặc.",
+        "192110": "London không còn là thành phố sương mù nữa."
+      },
+      "SourceHash": "5fb0ff7ddf8bf34e97c20da35f2cf8d8cc2bd1d504f94971a2f0b9f499af204d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "32bd2e24f7",
+      "Fields": {
+        "Meaning": "Miếng, lát, mảnh vải",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "切れ（きれ）có nghĩa là miếng, lát, mảnh vải.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122987": "Anh chị muốn mấy lát thịt?",
+        "142112": "Mảnh vải bị xé thành nhiều mảnh."
+      },
+      "SourceHash": "61c072c89600b7e91a86b4060d16ca73cd8a245831de5df8997c999b158f0338"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3dcb8b1eaf",
+      "Fields": {
+        "Meaning": "Sắc, đứt, hết",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "切れる（きれる）có nghĩa là sắc, đứt, hết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223375": "Cái kéo này cắt không bén.",
+        "226379": "Xăng sắp hết rồi."
+      },
+      "SourceHash": "1893e19b14d4b9fd63641a918ad24ffd83a5bfc312711750efabe40fd71a3ced"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3549d49781",
+      "Fields": {
+        "Meaning": "Ghi chép, bản ghi, kỷ lục",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "記録（きろく）có nghĩa là ghi chép, bản ghi, kỷ lục.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80936": "Chưa từng có trường hợp sự im lặng được ghi lại.",
+        "92673": "Cô ấy ghi lại mọi khoản mua sắm."
+      },
+      "SourceHash": "241dcf0704765bc153591ad5172b6ba1b247392d56e8b7c0b1e5eb2fa8715c68"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2abdb504c3",
+      "Fields": {
+        "Meaning": "Thảo luận, tranh luận",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "議論（ぎろん）có nghĩa là thảo luận, tranh luận.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "97360": "Họ quyết định ngừng tranh luận.",
+        "166424": "Chúng tôi tham gia cuộc thảo luận đó."
+      },
+      "SourceHash": "f9997ce9ebb86f99dbf89daa476a76b4d833ea57e566dfdbc3ff6f02d2d319d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "dedefd0d0c",
+      "Fields": {
+        "Meaning": "Bạc",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "銀（ぎん）có nghĩa là bạc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "157556": "Tôi sưu tầm thìa trà bằng bạc.",
+        "179712": "Tôi thích nhẫn bạc hơn nhẫn vàng."
+      },
+      "SourceHash": "33fe81adce38b7e328ed450f03592215ea6a3a4af89139b7145c14bb9fa5341f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "235bb74e62",
+      "Fields": {
+        "Meaning": "Cấm hút thuốc, bỏ thuốc lá",
+        "PartOfSpeech": "Cụm từ",
+        "Explanation": "禁煙（きんえん）có nghĩa là cấm hút thuốc, bỏ thuốc lá.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120463": "Anh ấy bỏ thuốc là đúng.",
+        "228670": "Không biết khi nào họ mới tắt biển cấm hút thuốc nhỉ."
+      },
+      "SourceHash": "2164bea05ab4f3418571e92b8634681ed526414dbe624d061b773ee42a68d683"
+    }
+  ]
+}

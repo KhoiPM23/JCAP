@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-wa-ga",
+      "Fields": {
+        "Meaning": "Đúng là… nhưng",
+        "Formation": "Vế nêu đặc điểm ＋ ことは ＋ lặp lại vị ngữ ＋ が",
+        "Explanation": "Thừa nhận một phần rồi nêu điều cần bổ sung hoặc giới hạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-wa-ga:example:1": "Nói tiếng Nhật thì tôi nói được, nhưng vẫn chưa giỏi.",
+        "koto-wa-ga:example:2": "Túi này đắt thì có đắt, nhưng bền và dùng được lâu."
+      },
+      "SourceHash": "fbcc37b3c300757cbc521d1d436f6bed3be5c197944c15fe3a146f2c60f3886b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "koto-wa-nai",
+      "Fields": {
+        "Meaning": "Không cần phải",
+        "Formation": "Động từ thể từ điển ＋ ことはない",
+        "Explanation": "Khuyên người nghe rằng hành động đó không cần thiết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "koto-wa-nai:example:1": "Không cần lo đến thế đâu. Chắc chắn sẽ ổn thôi.",
+        "koto-wa-nai:example:2": "Không cần bỏ cuộc chỉ vì một lần thất bại."
+      },
+      "SourceHash": "a1c6ea7aacb3536a01584bfbd540789d6198a49ded20e3d2202233009ab36f29"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "komu",
+      "Fields": {
+        "Meaning": "Vào trong, làm sâu hoặc kỹ",
+        "Formation": "Gốc ます ＋ 込む",
+        "Explanation": "Tùy động từ, chỉ chuyển động vào trong hoặc trạng thái kéo dài, đi sâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "komu:example:1": "Lũ trẻ lần lượt nhảy xuống hồ bơi.",
+        "komu:example:2": "Đứng trước bài khó, anh ấy chìm trong suy nghĩ một lúc."
+      },
+      "SourceHash": "b3cd3a7366891c01b3b0bf19159a3a05f6426c88e10cd074072f94893233564d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sa-interjection",
+      "Fields": {
+        "Meaning": "Nào, thôi nào",
+        "Formation": "さあ ＋ lời rủ hoặc thúc giục",
+        "Explanation": "Thán từ mở lời để khuyến khích bắt đầu hoặc chuyển sang hành động.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sa-interjection:example:1": "Nào, đến lúc bắt đầu rồi.",
+        "sa-interjection:example:2": "Nào, mọi người, đi thôi!"
+      },
+      "SourceHash": "315ab47c20e21f6f8d676b25acec268f448e0259b532354d19c3e1a2a140451a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "sa-filler",
+      "Fields": {
+        "Meaning": "Này, ấy mà",
+        "Formation": "Cụm dẫn hoặc chủ đề ＋ さ、＋ phần nói tiếp",
+        "Explanation": "Trợ từ đệm trong lời nói thân mật, dùng để thu hút sự chú ý hoặc ngắt nhịp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "sa-filler:example:1": "Này, mình có chút chuyện muốn hỏi.",
+        "sa-filler:example:2": "Hôm qua ấy, mình tình cờ gặp thầy ở ga."
+      },
+      "SourceHash": "43275d3d45ecc6f62b252264342a6477a7a3c483d5e5a3d571a322f65359a0aa"
+    }
+  ]
+}

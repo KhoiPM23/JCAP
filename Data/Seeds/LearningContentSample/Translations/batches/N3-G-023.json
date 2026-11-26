@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de-aru",
+      "Fields": {
+        "Meaning": "Là (văn viết trang trọng)",
+        "Formation": "Danh từ hoặc gốc tính từ な ＋ である",
+        "Explanation": "Dạng khẳng định thường gặp trong văn bản nghị luận, báo cáo và định nghĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "de-aru:example:1": "Ngôn ngữ là một phần của văn hóa.",
+        "de-aru:example:2": "Vấn đề này rất quan trọng."
+      },
+      "SourceHash": "03f156550dc9bfe811240e31af7db2d8149bc15b7ec482abc7df516d538465ea"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "de-iu-to",
+      "Fields": {
+        "Meaning": "Xét theo, nếu lấy làm mốc",
+        "Formation": "Danh từ ＋ で言うと",
+        "Explanation": "Nêu tiêu chí hoặc hệ quy chiếu để diễn đạt nhận định.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "de-iu-to:example:1": "Nếu lấy Tokyo làm mốc thì thị trấn này lớn cỡ Shibuya.",
+        "de-iu-to:example:2": "Xét về giá thì cái này đắt hơn một chút."
+      },
+      "SourceHash": "d1e6fff6a63ea11acdf0d5751feadff5ef9d755937caf055bdaf9df46f13a7f4"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "teiru-baai-janai",
+      "Fields": {
+        "Meaning": "Đây đâu phải lúc để",
+        "Formation": "Động từ thể ている ＋ 場合じゃない",
+        "Explanation": "Nhắc rằng tình huống đòi hỏi ưu tiên việc khác.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "teiru-baai-janai:example:1": "Mai thi rồi, đâu phải lúc xem ti vi.",
+        "teiru-baai-janai:example:2": "Giờ đâu phải lúc thong thả. Mau chuẩn bị thôi."
+      },
+      "SourceHash": "d83a216f8ea833ccf70998563964dc269d4a6b012d9b85aa5a4b608530197d34"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "te-kara-de-nai-to",
+      "Fields": {
+        "Meaning": "Phải làm trước rồi mới",
+        "Formation": "Động từ thể て ＋ からでないと ＋ vế phủ định",
+        "Explanation": "Nêu bước bắt buộc phải hoàn tất trước khi làm việc sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "te-kara-de-nai-to:example:1": "Phải rửa tay rồi mới được ăn.",
+        "te-kara-de-nai-to:example:2": "Tôi phải hỏi lại cấp trên rồi mới trả lời được."
+      },
+      "SourceHash": "bdb60a68f3aa497e66268208731914468a9582ae0254b57d009f0e5edf4779c5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "teki",
+      "Fields": {
+        "Meaning": "Mang tính, thuộc về",
+        "Formation": "Danh từ ＋ 的（てき）＋ な／に",
+        "Explanation": "Tạo từ mang nghĩa liên quan hoặc có tính chất nhất định. 的な bổ nghĩa danh từ, 的に bổ nghĩa vị ngữ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "teki:example:1": "Xin giải thích cụ thể hơn.",
+        "teki:example:2": "Anh ấy có tính chủ động và nhanh chóng kết bạn."
+      },
+      "SourceHash": "dd4959a11ecaa30f61bd619575d3fbd82b6263e34159fe9604838dca66870fcc"
+    }
+  ]
+}

@@ -34,6 +34,7 @@ namespace JCAP.Data
         public DbSet<LearningContentSource> LearningContentSources { get; set; } = null!;
         public DbSet<VocabularySource> VocabularySources { get; set; } = null!;
         public DbSet<GrammarSource> GrammarSources { get; set; } = null!;
+        public DbSet<LearningContentSeedState> LearningContentSeedStates { get; set; } = null!;
 
         // Shadowing related DbSets
         public DbSet<ShadowingDialogue> ShadowingDialogues { get; set; } = null!;

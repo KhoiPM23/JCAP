@@ -52,6 +52,70 @@ Dán lần lượt từng câu vào khung chat Claude Code. Gõ `@` để gắn 
 
 > Làm mục 9e trong @design-handoff/HANDOFF.md cho LoginView, RegisterView, EmailVerificationPendingView, ForgotPasswordView và AuthLayout, đối chiếu khối .auth trong @design-handoff/prototype/AppPrototype.dc.html. Giữ nguyên toàn bộ logic auth và AuthContext, chỉ đổi giao diện. Lập kế hoạch trước và chờ tôi duyệt.
 
+## Bước 12 · Trang Kết quả
+
+> Làm mục 9f (vòng 3) trong @design-handoff/HANDOFF.md, đối chiếu @design-handoff/prototype/KetQua.dc.html và @design-handoff/BRIEF-ket-qua.md. Sửa trang Kết quả (/roleplay/results, tab lưu ở ?tab=). Giữ nguyên API và cách lấy dữ liệu, chỉ đổi giao diện. Bỏ bộ lọc và hai cột "Giáo trình", "Bài học" của Shadowing, thay bằng lọc theo cấp JLPT. Thêm các màu tối trong mục 9f vào khối hoc-tap-dem. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 13 · Shadowing tại mốc (khung chat cạnh ngăn thông tin)
+
+Làm thành 3 lượt, mỗi lượt một prompt, xong lượt nào thì chạy thử và commit lượt đó.
+
+**13a · Tách logic và dựng vỏ**
+
+> Đọc mục 9g trong @design-handoff/HANDOFF.md và mở @design-handoff/prototype/ShadowingTaiMoc.dc.html để đối chiếu. Bước này: (1) tách phần thu âm, gửi chấm, lưu buổi trong @jcap-web/src/views/shadowing/LearnerShadowingPracticeView.tsx thành một hook dùng chung, trang luyện cũ vẫn chạy như trước; (2) trên trang bản đồ tỉnh, khi bấm "Luyện Shadowing" ở thẻ mốc thì mở khung chat bên trái ngăn thông tin, bản đồ trượt sang trái, đóng thì trượt về. Ngăn thông tin giữ nguyên. Không đổi API hay cách tính điểm. Lập kế hoạch trước và chờ tôi duyệt.
+
+**13b · Hội thoại, khung thu âm, tab ghi chú**
+
+> Tiếp mục 9g: dựng phần hội thoại, khung thu âm và 5 tab ghi chú kiểu sổ tay bên trái khung chat (thu gọn còn chữ Hán dọc, rê chuột thì trượt ra, tab đang mở nối với trang ghi chú). Trang Kết quả làm giống "Chi tiết từng câu" của modal tổng kết hiện có. Từ vựng và Ngữ pháp lấy từ dữ liệu dialogue, thiếu thì hiện EmptyState, không tự sinh. Đối chiếu prototype, lập kế hoạch trước và chờ tôi duyệt.
+
+**13c · Tổng kết và con dấu**
+
+> Tiếp mục 9g: thay modal tổng kết bằng thẻ tổng kết cuối khung chat, chỉ dùng số liệu backend như modal và SessionSummaryPanel hiện có, thêm dòng con dấu của mốc và hiệu ứng đóng dấu sau khi server xác nhận. Thêm kiểu thanh cuộn mảnh như mục 9g. Chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 14 · Diễn đàn
+
+Diễn đàn là code của AkaiZed. Trao đổi với bạn ấy trước, rồi mới dán các prompt dưới đây. Làm thành 3 lượt, xong lượt nào thì chạy thử và commit lượt đó.
+
+**14a · Khung trang, cột kênh, danh sách bài**
+
+> Đọc mục 9h trong @design-handoff/HANDOFF.md và @design-handoff/BRIEF-dien-dan.md, mở @design-handoff/prototype/DienDan.dc.html để đối chiếu (chỗ nào brief khác mục 9h thì theo 9h). Tìm CommunityForumView và communityService trong jcap-web. Bước này: đổi khu Diễn đàn sang theme kham-pha (tối dùng hoc-tap-dem, đặt lại --ai như mục 9h); dựng đầu trang, ChannelRail (màu kênh import từ WOODBLOCK trong views/explore/exploreTheme.ts, không thêm mã hex), QuickComposer, ForumToolbar (sắp xếp + kính lúp mở ô tìm), PostCard ở dạng thu gọn, nút "Có n bài thảo luận mới" cho lần tự làm mới 8 giây. Thay toàn bộ emoji bằng Material Symbols Rounded, bỏ màu cứng, bỏ dữ liệu mẫu lưu trong trình duyệt và thay bằng trạng thái lỗi có nút Thử lại. Không đổi API, DTO hay controller. Lập kế hoạch trước và chờ tôi duyệt.
+
+**14b · Bài mở rộng, bình luận, quyền**
+
+> Tiếp mục 9h: bài mở rộng tại chỗ (nội dung đủ, ảnh, tệp), ImageLightbox (Esc đóng, trả focus), CommentThread trả lời một cấp với dòng "Đang trả lời @tên", CommentComposer (đính kèm, công tắc ẩn danh, gửi lỗi giữ nội dung). Menu Tuỳ chọn bài: Ghim/Bỏ ghim cho admin, Xoá cho tác giả (isOwnPost) hoặc admin, có DeletePostDialog. "Đánh dấu đã giải đáp" chỉ ở kênh Hỏi đáp, cho tác giả hoặc admin. Không hiện lượt xem. Không sửa cách xoá ở backend (để AkaiZed xử lý SoftDelete). Lập kế hoạch trước và chờ tôi duyệt.
+
+**14c · Khung soạn bài, trạng thái, điện thoại**
+
+> Tiếp mục 9h: PostComposerModal (chọn kênh dạng thẻ có mô tả, đếm ký tự tiêu đề 290, danh sách tệp với trạng thái đang tải / đã tải / quá 5MB ngay tại tệp, bỏ alert(), công tắc Đăng ẩn danh không có với admin, dòng lý do khi nút Đăng bài khoá, Toast "Đã đăng bài thảo luận"). Các trạng thái tải, kênh rỗng, tìm không ra. Bản điện thoại ≤760px: thanh trên, chip kênh cuộn ngang, nút nổi Đăng bài, khung soạn phủ toàn màn. Kiểm tra sáng và tối. Chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 15 · Hỗ trợ & Góp ý
+
+Phần này cũng là code của AkaiZed. Trao đổi với bạn ấy trước. Làm thành 3 lượt, xong lượt nào thì chạy thử và commit lượt đó.
+
+**15a · Màn học viên: danh sách và nội dung phiếu**
+
+> Đọc mục 9i trong @design-handoff/HANDOFF.md và @design-handoff/BRIEF-ho-tro.md, mở @design-handoff/prototype/HoTro.dc.html để đối chiếu (chỗ nào brief khác mục 9i thì theo 9i). Sửa @jcap-web/src/views/LearnerFeedbackView.tsx: đổi sang theme kham-pha (tối hoc-tap-dem như Diễn đàn), dựng SupportHeader (tiêu đề + nút gạt Sự cố / Góp ý), TicketList (nút Báo sự cố mới viền đứt, lọc dạng chữ, dòng phiếu gọn), TicketThread (tin của mình bên phải, mốc Admin đã xem / đã đóng), TicketReplyBox (một khung chung, dòng "Bạn đang ẩn danh" có mã thật, AttachmentPicker báo lỗi ngay tại tệp, bỏ alert()). Tự tải lại 10 giây không làm mất chữ đang gõ. Thay emoji bằng Material Symbols Rounded, bỏ màu cứng. Không đổi API, DTO, controller. Lập kế hoạch trước và chờ tôi duyệt.
+
+**15b · Báo sự cố mới, Góp ý, trạng thái, điện thoại**
+
+> Tiếp mục 9i: NewTicketModal (4 loại có mô tả, dòng "Hỏi tại Diễn đàn", đếm ký tự 300, AttachmentPicker, dòng lý do khi nút khoá, gửi xong chọn phiếu mới và hiện Toast), phần Góp ý hai cột, các trạng thái tải / lỗi / chưa có phiếu / lọc không ra / chưa chọn phiếu / gửi lỗi, xem ảnh lớn. Bản điện thoại ≤760px: danh sách và nội dung phiếu là hai màn có nút quay lại. Kiểm tra sáng và tối. Lập kế hoạch trước và chờ tôi duyệt.
+
+**15c · Màn admin**
+
+> Tiếp mục 9i cho @jcap-web/src/views/admin/AdminFeedbackView.tsx: theme quan-tri với --ai pha đậm như mục 9i, dùng lại TicketList / TicketThread / TicketReplyBox ở chế độ admin (ô tìm mã hoặc tiêu đề, chấm "Chưa xem", người gửi chỉ hiện "Học viên #ANON-…", nút Đóng phiếu / Mở lại, phiếu đóng phải mở lại mới trả lời), tab Góp ý dạng lưới chỉ đọc, nút Tải lại và Quản lý Diễn đàn. Rà lại để chắc chắn không hiện tên, email, ảnh hay mã tài khoản học viên ở đâu. Chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
+
+## Bước 16 · Thư viện Shadowing (danh sách + kịch bản)
+
+Làm thành 2 lượt. Xong lượt nào thì chạy thử và commit lượt đó.
+
+**16a · Bố cục, cột mục, cột bài, dải Đang học dở**
+
+> Đọc mục 9j trong @design-handoff/HANDOFF.md, mở @design-handoff/prototype/ThuVienShadowing.dc.html để đối chiếu. Sửa @jcap-web/src/views/shadowing/LearnerShadowingListView.tsx: đổi sang theme kham-pha, trang cao 100vh với ba cột tự cuộn; dựng ShadowingContinueStrip (dùng getLatestInProgress và currentSentenceText), ShadowingSectionNav (Học tiếp, các chủ đề theo scenarioTitle có vòng tiến độ, Đã lưu), cột bài dạng listbox một dòng mỗi bài (không còn nút trong dòng), LevelMenu và ô tìm thu thành icon. Bỏ cột "Buổi luyện gần đây" và thẻ mẹo tai nghe, giữ liên kết "Lịch sử luyện · n buổi". Giữ nguyên shadowingService, shadowingStorageService và cách tính điểm cao nhất. Lập kế hoạch trước và chờ tôi duyệt.
+
+**16b · Cột kịch bản xem trước và điện thoại**
+
+> Tiếp mục 9j: dựng ShadowingLessonPreview. Gọi shadowingService.getDetail khi chọn bài (có khung chờ, lưu tạm kết quả), hiện kịch bản theo orderIndex với JpText, nghe nativeAudioUrl, bật tắt Furigana và Nghĩa, tô câu theo vai, đánh dấu câu đang dừng và câu đã nói. RoleSwitch thay cho RoleSelectionModal ở trang này, có cảnh báo khi đổi vai lúc đang dở. Nút chính theo bảng 4 trạng thái trong mục 9j, đường dẫn `/shadowing/practice/:id?role=…` kèm `resume` hoặc `restart` như hiện tại. Bản điện thoại ≤760px: chip mục cuộn ngang, cột xem trước phủ toàn màn có nút quay lại, dải tiếp tục dính đáy. Kiểm tra sáng và tối, chạy `npm run build` và `npm test`. Lập kế hoạch trước và chờ tôi duyệt.
+
 ## Mẹo khi làm
 
 - Thấy lệch so với thiết kế: chụp màn hình trang đang chạy và bản tương tác, dán cả hai vào chat, nói rõ chỗ lệch.

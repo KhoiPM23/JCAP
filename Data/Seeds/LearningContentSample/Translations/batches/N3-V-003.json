@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b7185fc1f0",
+      "Fields": {
+        "Meaning": "Một … nào đó",
+        "PartOfSpeech": "Từ bổ nghĩa trực tiếp cho danh từ",
+        "Explanation": "或（ある）có nghĩa là một … nào đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229774": "Một buổi chiều muộn, có một người đàn ông đến.",
+        "229895": "Tôi sắp gặp một sinh viên."
+      },
+      "SourceHash": "088a93ef2de6c7ea17feb9b9f3584a77d6c444f17ad1a9143d8ad5e19354dd81"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "61f7afccc0",
+      "Fields": {
+        "Meaning": "Hoặc, cũng có thể",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "あるいは（あるいは）có nghĩa là hoặc, cũng có thể.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "226408": "Bạn nấu bằng ga hay bằng điện?",
+        "229955": "Cũng có thể chuyện đó là thật."
+      },
+      "SourceHash": "61b0e9f7b009a6175cc0948acfd3c59839ffce5c0a7a6e4e7efbbe3b069ef9f4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "13fdb782fe",
+      "Fields": {
+        "Meaning": "Album",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "アルバム（アルバム）có nghĩa là album.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "106212": "Anh ấy cho tôi xem album.",
+        "233642": "Bạn cho tôi xem album được không?"
+      },
+      "SourceHash": "35a35bd44b2a0b50327066acaf8c9eadbaf2728c4a6dff60edc01843eaf969c3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f1869f9942",
+      "Fields": {
+        "Meaning": "Bọt, bong bóng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "泡（あわ）có nghĩa là bọt, bong bóng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144039": "Cuộc đời tựa như một chút bọt nước.",
+        "225679": "Sóng vỡ tung tạo thành bọt."
+      },
+      "SourceHash": "2b06ddaf9b84af4d574dfa23b5f0b47b2ab2ca8c5655077123ae0e6a852d64c8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "458adfb568",
+      "Fields": {
+        "Meaning": "Ghép, điều chỉnh cho khớp, gộp",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "合わせる（あわせる）có nghĩa là ghép, điều chỉnh cho khớp, gộp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "233367": "Hãy điều chỉnh kế hoạch của bạn cho phù hợp với tôi.",
+        "235281": "Ba người có tổng cộng 50 bảng."
+      },
+      "SourceHash": "4b4d6b52c8ad4b479d6f7d05bc72fc50ef824a2086f26a68ffbb69c1baf8b046"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e9d213fb20",
+      "Fields": {
+        "Meaning": "Đáng thương, lòng thương xót",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "哀れ（あわれ）có nghĩa là đáng thương, lòng thương xót.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74068": "Cảnh ngộ của cô ấy khiến người ta thương xót.",
+        "113507": "Anh ấy ủ rũ, trông thật tội nghiệp."
+      },
+      "SourceHash": "9db313738f1226d11c2a713f9024359c3c26f8ac15b10ee21abbaf86c5506346"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "55bea4f5f3",
+      "Fields": {
+        "Meaning": "Phương án, ý tưởng, bản dự thảo",
+        "PartOfSpeech": "Danh từ, hậu tố",
+        "Explanation": "案（あん）có nghĩa là phương án, ý tưởng, bản dự thảo.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164564": "Tôi hoàn toàn chưa có ý tưởng gì.",
+        "200764": "Bạn thấy phương án nào tốt hơn?"
+      },
+      "SourceHash": "8eaf8c45efeff235f7f8a5e25ba893d756bb8ff51a062f61227794045f82d24b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1e8e1ca3dc",
+      "Fields": {
+        "Meaning": "Học thuộc lòng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "暗記（あんき）có nghĩa là học thuộc lòng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "113050": "Anh ấy cố học thuộc đoạn hội thoại đó.",
+        "162000": "Tôi đã học thuộc 2.000 từ tiếng Anh."
+      },
+      "SourceHash": "1956c092e9fd1d7821ca9e2b1605dfca3f3e90044de178ab51f0f76e81fe3b89"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7a5bf31b8a",
+      "Fields": {
+        "Meaning": "Ổn định, thăng bằng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "安定（あんてい）có nghĩa là ổn định, thăng bằng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110189": "Anh ấy mất thăng bằng rồi ngã.",
+        "171867": "Tình hình chính trị hiện nay không ổn định lắm."
+      },
+      "SourceHash": "ae2fd08ac8c4c1ab732c021735b95763bb929f04530205dba51b861ff02617e5"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f735b886b",
+      "Fields": {
+        "Meaning": "Đến mức ấy, đến thế",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "あんなに（あんなに）có nghĩa là đến mức ấy, đến thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229563": "Nổi giận đến thế chẳng giống anh ấy chút nào.",
+        "2280872": "Lẽ ra tôi không nên dậy sớm đến thế."
+      },
+      "SourceHash": "5fb018998311f1bdf6eeefaf62ed63938052b48f991f91c449591388c76f7db1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3f1fbec85e",
+      "Fields": {
+        "Meaning": "Không… lắm, quá, hơn một chút",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "あんまり là cách nói thân mật của あまり. Sau số lượng, あまり chỉ phần dư, như １か月あまり là hơn một tháng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "4956": "Tôi từng ở Nagoya hơn một tháng.",
+        "221356": "Tôi không đọc loại sách này nhiều."
+      },
+      "SourceHash": "3ef6e20668a99ee4bc204e964597260720836d68bc61c51f012c04b6c9f1d2bb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0adf15ff3f",
+      "Fields": {
+        "Meaning": "Dạ dày",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "胃（い）có nghĩa là dạ dày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144889": "Có lẽ vì căng thẳng nên tôi đau dạ dày.",
+        "145782": "Thức ăn được tiêu hóa trong dạ dày."
+      },
+      "SourceHash": "3bb57dc97637d0a6434c64790efd521ceee73425b3560716aa55fe604996e11f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "52d4f9b548",
+      "Fields": {
+        "Meaning": "Thành viên ủy ban",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "委員（いいん）có nghĩa là thành viên ủy ban.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "191119": "Tất cả thành viên ủy ban đều có mặt.",
+        "191120": "Tất cả thành viên ủy ban đều tán thành kế hoạch đó."
+      },
+      "SourceHash": "ef1685c6e322614aab7287b05437d542f720de72ee4e57ba95143a05428364d3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "85d0866116",
+      "Fields": {
+        "Meaning": "Không, không phải vậy",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "いえ（いえ）có nghĩa là không, không phải vậy.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "c920e49bf1d4a8eee9e664ecf63ff5fcbc1063ea7ffb007ea15d2c6374dd3673"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a812d7a958",
+      "Fields": {
+        "Meaning": "Bất ngờ, ngoài dự đoán",
+        "PartOfSpeech": "Tính từ đuôi な, phó từ có thể đi với と, danh từ",
+        "Explanation": "意外（いがい）có nghĩa là bất ngờ, ngoài dự đoán.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79836": "Bài đó dễ hơn tôi tưởng đấy.",
+        "178712": "Tôi hoàn toàn bất ngờ khi gặp bạn ở đây."
+      },
+      "SourceHash": "f4e9121e96466234122cca7b23f597e3084fce74623680e2c071f7e80bcf7ff7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2c62d0aba0",
+      "Fields": {
+        "Meaning": "Việc đi, chuyến đi, đi đến",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Sau địa danh, 行き đọc là ゆき hoặc いき để chỉ hướng đến, như 小田原行き.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146908": "Tàu nào đi Odawara vậy?",
+        "156443": "Tôi phải hoãn việc đi nha sĩ."
+      },
+      "SourceHash": "d810eec71c10fc4c18aecce8be3e2e4775f3fe973eaa74d1d79f5ddfc8e1b5fe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5fef88ef1f",
+      "Fields": {
+        "Meaning": "Hơi thở, nhịp phối hợp",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "息 chỉ hơi thở. 息が合う là phối hợp ăn ý.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "96648": "Họ phối hợp với nhau rất ăn ý.",
+        "227550": "Người suýt đuối nước đã thở trở lại."
+      },
+      "SourceHash": "6fb2b98e131e47e3824814c1b089500a8447925684b86ba8e4145426cee92197"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6e68ac9baf",
+      "Fields": {
+        "Meaning": "Đà, sức mạnh, khí thế",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "勢い（いきおい）có nghĩa là đà, sức mạnh, khí thế.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "143307": "Bạn đang bị cuốn theo đà đấy.",
+        "230064": "Cơn bão đã yếu đi."
+      },
+      "SourceHash": "8b5ed6e342403781515800a9c047ece358db0c7aa815ca8831add705dcb86c1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "107846b167",
+      "Fields": {
+        "Meaning": "Sinh vật, vật sống",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "生き物（いきもの）có nghĩa là sinh vật, vật sống.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144318": "Có thể nói con người là sinh vật bị cảm xúc chi phối.",
+        "144530": "Con người là sinh vật có ý thức."
+      },
+      "SourceHash": "9e9d9560d0efa07a0c0c7cdb260e2e0227f45d05679f84940cba6722e8ca921c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "140d8ab306",
+      "Fields": {
+        "Meaning": "Không được, không ổn",
+        "PartOfSpeech": "Cụm từ, Tính từ đuôi い",
+        "Explanation": "Có thể chỉ điều không được phép. Sau なければ, mẫu なければいけない nghĩa là phải làm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79353": "Bạn bè phải giúp đỡ nhau.",
+        "83212": "Không được vừa đi bộ vừa đọc sách."
+      },
+      "SourceHash": "77d49be938e37cdb765bbfa81ceb5c2916e84c14f655ed13fad2dc732902d150"
+    }
+  ]
+}

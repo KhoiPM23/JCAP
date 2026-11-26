@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Badge, Button, CreditBadge, EmptyState, Icon, JlptBadge, SegmentedControl, TextField } from '../components/jcap';
 import { useLearnerAccount } from '../components/jcap/shell/useLearnerAccount';
@@ -8,7 +7,6 @@ import { roleplayService } from '../services/roleplayService';
 import { scenarioService } from '../services/scenarioService';
 import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
-import { resolveMediaUrl } from '../utils/apiBase';
 import type { ActiveRoleplaySessionDto } from '../types/roleplay';
 import type { ScenarioDetails, ScenarioListItem, ScenarioLevelConfiguration, ScenarioTopic } from '../types/scenarioDetails';
 
@@ -211,28 +209,11 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-[var(--ai)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[var(--ai)] uppercase tracking-wider font-mono">
-              Tình huống hội thoại
+              Bảng nhiệm vụ hội thoại · 任務板
             </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/roleplay/results')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ai)]/25 bg-[var(--ai-soft)] px-3 py-1 text-xs font-bold text-[var(--ai)] hover:bg-[var(--ai)] hover:text-white transition shadow-2xs cursor-pointer"
-              title="Xem lịch sử kết quả và phản hồi các phiên hội thoại đã hoàn thành"
-            >
-              <Icon name="history" size={14} />
-              <span>Lịch sử kết quả</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/placement-test')}
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs cursor-pointer"
-              title="Kiểm tra trình độ giao tiếp nhanh qua phòng đối thoại"
-            >
-              <Icon name="quiz" size={14} />
-              <span>Kiểm tra trình độ</span>
-            </button>
+            <span className="text-xs font-serif text-sumi-muted tracking-widest hidden sm:inline">
+              場面対話 · 実践演習
+            </span>
           </div>
         </div>
         <h1 className="m-0 text-[28px] font-bold leading-[38px] text-sumi font-serif">Hội thoại AI</h1>
@@ -321,12 +302,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
             </span>
           </button>
 
-          {topics
-            .filter((t) => {
-              const count = topicCounts[t.code] ?? t.scenarioCount ?? 0;
-              return scenarios.length === 0 || count > 0 || filterTopic === t.code;
-            })
-            .map((t) => {
+          {topics.map((t) => {
             const active = filterTopic === t.code;
             const count = topicCounts[t.code] ?? t.scenarioCount ?? 0;
             return (
@@ -378,9 +354,10 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
             <>
               <h2 className="m-0 flex items-center justify-between text-base font-semibold leading-6">
                 <span className="flex items-center gap-2">
-                  <span>Danh sách tình huống</span>
+                  <span>Bản đồ Nhiệm vụ</span>
                   <span className="text-[13px] font-medium text-sumi-muted">({filteredScenarios.length})</span>
                 </span>
+                <span className="text-xs font-serif text-sumi-muted">任務一覧</span>
               </h2>
               {filteredScenarios.map((s) => {
                 const selected = s.id === selectedId;
@@ -402,7 +379,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                   >
                     <span className="relative inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-xl bg-nami-soft text-nami shadow-2xs border border-line">
                       {s.thumbnail ? (
-                        <img src={resolveMediaUrl(s.thumbnail)} alt="" className="h-full w-full object-cover" />
+                        <img src={s.thumbnail} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <Icon name="forum" size={26} />
                       )}
@@ -427,6 +404,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
                             <span>{s.topicName}</span>
                           </span>
                         )}
+                        {s.scenarioCode && <span className="text-[12px] font-mono leading-5 text-sumi-faint">{s.scenarioCode}</span>}
                       </span>
                     </span>
                   </button>
@@ -452,7 +430,7 @@ export const ScenarioListView: React.FC<ScenarioListViewProps> = ({ onSelectScen
   );
 };
 
-/** Thẻ từ vựng & ngữ pháp với tooltip portal chống khuất ảnh bìa và chống phình khi ví dụ dài */
+/** Thẻ từ vựng & gợi ý ngữ cảnh với hover peek xem nghĩa nhanh */
 const InventoryPropBadge: React.FC<{
   type: 'vocab' | 'grammar';
   wordOrPattern: string;
@@ -461,41 +439,40 @@ const InventoryPropBadge: React.FC<{
   example?: string;
 }> = ({ type, wordOrPattern, reading, meaning, example }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [coords, setCoords] = useState<{ top?: number; bottom?: number; left: number }>({ left: 12, top: 12 });
+  const [popoverPos, setPopoverPos] = useState<'top' | 'bottom'>('top');
+  const [popoverAlign, setPopoverAlign] = useState<'center' | 'left' | 'right'>('center');
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const cleanMeaning = cleanPedagogicMeaning(meaning);
-  const cleanExample = useMemo(() => {
-    if (!example) return '';
-    const trimmed = example.replace(/\s+/g, ' ').trim();
-    return trimmed.length > 140 ? `${trimmed.slice(0, 137).trimEnd()}…` : trimmed;
-  }, [example]);
 
   const updatePopoverPos = () => {
-    if (!badgeRef.current || typeof window === 'undefined') return;
-    const rect = badgeRef.current.getBoundingClientRect();
-    const popoverWidth = Math.min(280, window.innerWidth - 24);
-    const left = Math.min(
-      Math.max(12, rect.left + rect.width / 2 - popoverWidth / 2),
-      Math.max(12, window.innerWidth - popoverWidth - 12),
-    );
-    if (rect.top >= 230) {
-      setCoords({ bottom: window.innerHeight - rect.top + 8, left });
-    } else {
-      setCoords({ top: Math.min(rect.bottom + 8, window.innerHeight - 180), left });
+    if (badgeRef.current) {
+      const rect = badgeRef.current.getBoundingClientRect();
+      if (rect.top < 200) setPopoverPos('bottom');
+      else setPopoverPos('top');
+
+      // Kiểm tra tràn mép ngang trong aside preview và cửa sổ
+      const asideEl = badgeRef.current.closest('aside');
+      if (asideEl) {
+        const asideRect = asideEl.getBoundingClientRect();
+        if (rect.right + 120 > asideRect.right) {
+          setPopoverAlign('right');
+        } else if (rect.left - 120 < asideRect.left) {
+          setPopoverAlign('left');
+        } else {
+          setPopoverAlign('center');
+        }
+      } else {
+        if (rect.right > window.innerWidth - 140) {
+          setPopoverAlign('right');
+        } else if (rect.left < 140) {
+          setPopoverAlign('left');
+        } else {
+          setPopoverAlign('center');
+        }
+      }
     }
   };
-
-  useEffect(() => {
-    if (!isHovered) return;
-    const handleClose = () => setIsHovered(false);
-    window.addEventListener('scroll', handleClose, true);
-    window.addEventListener('resize', handleClose);
-    return () => {
-      window.removeEventListener('scroll', handleClose, true);
-      window.removeEventListener('resize', handleClose);
-    };
-  }, [isHovered]);
 
   return (
     <div
@@ -528,11 +505,12 @@ const InventoryPropBadge: React.FC<{
         }`}
       >
         <span
-          className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-            type === 'vocab' ? 'bg-nami' : 'bg-ai'
+          className={`text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded ${
+            type === 'vocab' ? 'bg-nami/15 text-nami' : 'bg-ai/15 text-ai'
           }`}
-          aria-hidden="true"
-        />
+        >
+          {type === 'vocab' ? '語' : '文'}
+        </span>
         <span className="font-japanese font-semibold tracking-wide">
           {reading && reading !== wordOrPattern ? (
             <ruby>
@@ -545,40 +523,44 @@ const InventoryPropBadge: React.FC<{
         </span>
       </div>
 
-      {/* Portal Popover: Không bị khuất bởi overflow/ảnh bìa, giới hạn chiều cao chống phình */}
-      {isHovered && typeof document !== 'undefined' && createPortal(
+      {/* Hover Peek Popover */}
+      {isHovered && (
         <div
-          role="tooltip"
-          className="fixed z-[9999] w-[280px] max-w-[calc(100vw-24px)] max-h-[240px] overflow-hidden rounded-xl border border-[var(--line-strong)] bg-white p-3 text-left shadow-xl pointer-events-none animate-modal-pop"
-          style={{
-            left: coords.left,
-            top: coords.top,
-            bottom: coords.bottom,
-            boxShadow: '0 12px 28px rgba(23, 32, 48, 0.18)',
-          }}
+          className={`absolute z-50 w-64 rounded-xl border border-[var(--line-strong)] bg-white/95 backdrop-blur-xs p-3 text-left shadow-lg pointer-events-none transition-all duration-150 ease-out animate-modal-pop ${
+            popoverPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          } ${
+            popoverAlign === 'right'
+              ? 'right-0 translate-x-0'
+              : popoverAlign === 'left'
+              ? 'left-0 translate-x-0'
+              : 'left-1/2 -translate-x-1/2'
+          }`}
+          style={{ boxShadow: '0 8px 24px rgba(35, 33, 30, 0.16)' }}
         >
           <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-1.5 mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-sumi-muted">
+              {type === 'vocab' ? 'Từ vựng (単語)' : 'Ngữ pháp (文法)'}
+            </span>
             <span
-              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+              className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                 type === 'vocab' ? 'bg-nami-soft text-nami' : 'bg-ai-soft text-ai'
               }`}
             >
-              {type === 'vocab' ? 'Từ vựng' : 'Ngữ pháp'}
+              {type === 'vocab' ? 'VOCAB' : 'GRAMMAR'}
             </span>
           </div>
-          <div className="text-sm font-bold font-japanese text-slate-900 mb-1 break-words line-clamp-2">
+          <div className="text-sm font-bold font-japanese text-slate-900 mb-1">
             {reading && reading !== wordOrPattern ? `${wordOrPattern}（${reading}）` : wordOrPattern}
           </div>
-          <div className="text-xs text-slate-700 leading-snug font-sans break-words line-clamp-3">
+          <div className="text-xs text-slate-700 leading-snug font-sans">
             {cleanMeaning}
           </div>
-          {cleanExample && (
-            <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)] break-words line-clamp-3">
-              {cleanExample}
+          {example && (
+            <div className="mt-2 rounded-lg bg-[var(--paper-100)] p-2 text-[11px] text-slate-800 font-japanese border-l-2 border-[var(--ai)]">
+              {example}
             </div>
           )}
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );
@@ -655,12 +637,14 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
       aria-label="Xem trước tình huống"
       className="relative flex max-w-[420px] flex-[1_1_380px] flex-col max-h-[calc(100vh-140px)] rounded-jc-xl border border-line bg-paper-50 shadow-jc-md lg:sticky lg:top-[124px] z-20 washi-parchment overflow-hidden transition-all duration-200"
     >
+      {/* Watermark thư pháp chìm ở góc dưới */}
+      <div className="sb-wm text-5xl opacity-40 select-none pointer-events-none">臨戦</div>
 
       {/* Header Cover Banner Nghệ thuật - Chân ảnh mờ dần hòa mượt vào nền giấy Washi tới tiêu đề */}
       <div className="relative h-[136px] w-full shrink-0 overflow-hidden">
         {details?.thumbnail ? (
           <img
-            src={resolveMediaUrl(details.thumbnail)}
+            src={details.thumbnail}
             alt=""
             className="h-full w-full object-cover object-center"
             style={{
@@ -735,6 +719,7 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                     <Icon name="flag" size={12} />
                     <span>Mục tiêu nhiệm vụ ({cfg.missions.length})</span>
                   </span>
+                  <span className="text-[9px] font-serif text-sumi-muted">任務目標</span>
                 </div>
                 <div className="flex flex-col gap-1 relative">
                   {[...cfg.missions]
@@ -807,11 +792,9 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                         <Icon name="translate" size={12} />
                         <span>Từ vựng ({cfg.targetVocabularies.length})</span>
                       </span>
-                      <Icon
-                        name="expand_more"
-                        size={14}
-                        className={`transition-transform duration-200 ${isVocabOpen ? 'rotate-180' : ''}`}
-                      />
+                      <span className={`material-symbols-outlined text-xs transition-transform duration-200 ${isVocabOpen ? 'rotate-180' : ''}`}>
+                        expand_more
+                      </span>
                     </button>
                   )}
 
@@ -834,11 +817,9 @@ const ScenarioPreview: React.FC<{ scenarioId: number; credit: number; onOpenDeta
                         <Icon name="menu_book" size={12} />
                         <span>Ngữ pháp ({cfg.targetGrammars.length})</span>
                       </span>
-                      <Icon
-                        name="expand_more"
-                        size={14}
-                        className={`transition-transform duration-200 ${isGrammarOpen ? 'rotate-180' : ''}`}
-                      />
+                      <span className={`material-symbols-outlined text-xs transition-transform duration-200 ${isGrammarOpen ? 'rotate-180' : ''}`}>
+                        expand_more
+                      </span>
                     </button>
                   )}
                 </div>

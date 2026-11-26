@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nanika-nanimo",
+      "Fields": {
+        "Meaning": "Cái gì đó, không gì cả",
+        "Formation": "何か／何も ＋ vị ngữ phủ định (với 何も)",
+        "Explanation": "何か chỉ thứ chưa xác định. 何も đi với phủ định để nói không có hoặc không làm gì cả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nanika-nanimo:example:1": "Tôi muốn ăn gì đó.",
+        "nanika-nanimo:example:2": "Hôm nay tôi không làm gì cả."
+      },
+      "SourceHash": "813169a8b89102bd7f6c214d9100f80960a3fc6c895741f1fa9f4045cfd2def5"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nande",
+      "Fields": {
+        "Meaning": "Tại sao (thân mật)",
+        "Formation": "なんで ＋ câu hỏi",
+        "Explanation": "なんで dùng để hỏi lý do trong hội thoại thân mật. Đuôi の thường gặp trong câu hỏi này.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nande:example:1": "Sao bạn khóc vậy?",
+        "nande:example:2": "Sao bạn nghỉ học?"
+      },
+      "SourceHash": "f97d73647a20f4c7ad5bbf6a0267a49dde4f04f3ddbb9553416de8d4fdf394d7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni",
+      "Fields": {
+        "Meaning": "Vào, đến, ở",
+        "Formation": "Thời điểm ＋ に\nĐích đến ＋ に ＋ động từ di chuyển\nNơi chốn ＋ に ＋ ある／いる",
+        "Explanation": "に có thể đánh dấu thời điểm cụ thể, đích đến hoặc nơi có người hay vật.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni:example:1": "Tôi thức dậy lúc sáu giờ.",
+        "ni:example:2": "Có một cuốn sách trên bàn."
+      },
+      "SourceHash": "d8615e7e654543735c3cbe9ce85619094951d709eb53b71574d6ea6b7b821293"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-iku",
+      "Fields": {
+        "Meaning": "Đi để làm gì",
+        "Formation": "Động từ bỏ ます hoặc danh từ chỉ hoạt động ＋ に ＋ 行く",
+        "Explanation": "に nêu mục đích của chuyến đi. Có thể dùng 来る hoặc 帰る tùy hướng di chuyển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-iku:example:1": "Tôi đi gặp bạn.",
+        "ni-iku:example:2": "Tôi đã đến cửa hàng bách hóa để mua sắm."
+      },
+      "SourceHash": "9a11c941e7392b5be7577e1bb81b332e1a1603c4a2acd3e25e81c303d1a7c47d"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ni-suru",
+      "Fields": {
+        "Meaning": "Chọn, quyết định",
+        "Formation": "Danh từ ＋ にする",
+        "Explanation": "Dùng にする để chọn một món hoặc ấn định một phương án, chẳng hạn thời gian đi du lịch.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ni-suru:example:1": "Tôi chọn cà phê.",
+        "ni-suru:example:2": "Mình đi du lịch vào tháng sau nhé."
+      },
+      "SourceHash": "2753033067c00f1d15a7cd834ccc334829ecf6cd236e23672b6da35b71191039"
+    }
+  ]
+}

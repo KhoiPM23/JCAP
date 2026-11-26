@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "toori-ni",
+      "Fields": {
+        "Meaning": "Đúng như, làm theo",
+        "Formation": "Động từ thể thường ＋ とおりに／danh từ ＋ のとおりに／danh từ ＋ どおりに",
+        "Explanation": "Lấy hướng dẫn, dự đoán hoặc mẫu có sẵn làm chuẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "toori-ni:example:1": "Hãy lắp ráp đúng như ghi trong hướng dẫn.",
+        "toori-ni:example:2": "Đúng như anh ấy dự đoán, trận đấu diễn ra sít sao."
+      },
+      "SourceHash": "2be9886c42a516927767a6b0a434342ed59a62f433979edcbab91ab791461f3b"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tokoro-ga",
+      "Fields": {
+        "Meaning": "Thế nhưng, vậy mà",
+        "Formation": "Câu trước。ところが、câu sau",
+        "Explanation": "Dẫn vào kết quả trái với điều người nói kỳ vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tokoro-ga:example:1": "Tôi tưởng dễ. Thế nhưng làm thử mới thấy thật sự khó.",
+        "tokoro-ga:example:2": "Anh ấy hứa sẽ đến. Vậy mà hôm đó đến một lời báo cũng không có."
+      },
+      "SourceHash": "9d00c908b2a18801fa88f71433a8e69f73ce7bb708b02cbf8317ee376e932bc8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dokoro-ka",
+      "Fields": {
+        "Meaning": "Đừng nói đến, chẳng những không… mà còn",
+        "Formation": "A ＋ どころか、B",
+        "Explanation": "Đẩy mức độ xa hơn điều vừa nêu hoặc đưa ra kết quả hoàn toàn ngược lại.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dokoro-ka:example:1": "Đừng nói đến kanji, ngay cả hiragana anh ấy cũng không đọc được.",
+        "dokoro-ka:example:2": "Uống thuốc rồi mà chẳng những không đỡ, tôi còn sốt cao hơn."
+      },
+      "SourceHash": "c3f23a51d42b93ce50a95568db83207cfb81296d837053a740215cca8e587d4a"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tokoro-datta",
+      "Fields": {
+        "Meaning": "Suýt, chút nữa thì",
+        "Formation": "Động từ thể từ điển ＋ ところだった",
+        "Explanation": "Nói về việc gần xảy ra nhưng cuối cùng đã không xảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tokoro-datta:example:1": "Tôi suýt lỡ tàu.",
+        "tokoro-datta:example:2": "Tôi suýt quên một cuộc hẹn quan trọng."
+      },
+      "SourceHash": "cf85f8e9e22654f8795d180c4b5f190d72dcbdf32fdb4e742eb747f30c2e0775"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tokoro-de",
+      "Fields": {
+        "Meaning": "Nhân tiện, à mà",
+        "Formation": "ところで、chủ đề mới",
+        "Explanation": "Chuyển sang một câu hỏi hoặc đề tài khác trong cuộc trò chuyện.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "tokoro-de:example:1": "Hôm nay nóng thật nhỉ. À mà lịch ngày mai đã chốt chưa?",
+        "tokoro-de:example:2": "Phần báo cáo đến đây là hết. Nhân tiện, cuộc họp tuần sau bắt đầu lúc mấy giờ ạ?"
+      },
+      "SourceHash": "9bc4316a643d47a3be6e37d07215396934a1264f8e9275d7d1a4630974075b1a"
+    }
+  ]
+}

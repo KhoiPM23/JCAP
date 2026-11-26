@@ -1,0 +1,310 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Rà soát 20 mục và 39 câu ví dụ theo nguyên bản Nhật. Mục 一昨年 có một ví dụ trong nguồn.",
+    "Các câu lược chủ ngữ được dịch theo ngữ cảnh hội thoại thông dụng. Phân biệt cách gọi người nhà và cách giới thiệu người nhà với người ngoài."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "96845304fd",
+      "Fields": {
+        "Meaning": "Đặt, để",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "置く diễn tả đặt một vật ở một vị trí. Vật đi với を, vị trí đặt đi với に.",
+        "UsageNotes": "Thể て là 置いて."
+      },
+      "Examples": {
+        "197972": "Tôi nên để túi ở đâu?",
+        "204648": "Hãy đặt nó lên bàn."
+      },
+      "SourceHash": "603a3f71233e762ac05eb812002321ed6c61bbac87f5426f11d6e8a9f8023de9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6c4661d672",
+      "Fields": {
+        "Meaning": "Vợ của người khác (cách gọi lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "奥さん thường dùng để nói về hoặc gọi vợ của người khác trong giao tiếp.",
+        "UsageNotes": "Khi nói trang trọng về vợ của mình, thường dùng 妻（つま）."
+      },
+      "Examples": {
+        "188559": "Vì có vẻ vợ anh ấy đã đi đâu đó rồi.",
+        "188560": "Vợ anh đang giận sôi lên đấy."
+      },
+      "SourceHash": "ec99548f31a49741c05449a91cbf3928adddae8ba52fd35f66e1a771114cc6a1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "101d46a061",
+      "Fields": {
+        "Meaning": "Đĩa, dĩa",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お皿 chỉ đĩa đựng thức ăn. 皿（さら）là dạng không có tiền tố お. お皿を洗う nghĩa là rửa đĩa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "161235": "Tôi rửa đĩa xong rồi mới xem ti vi.",
+        "215024": "Bạn có đĩa sâu lòng để đựng súp không?"
+      },
+      "SourceHash": "e5cc018675412bee7dca4b113887a0f3be4f8721428986016ef30d717000fb1b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b89f0f993",
+      "Fields": {
+        "Meaning": "Ông, ông nội, ông ngoại",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お祖父さん thường dùng để gọi ông hoặc nói lịch sự về ông của người khác. Cách đọc thông dụng là おじいさん.",
+        "UsageNotes": "Khi chỉ một người đàn ông cao tuổi nói chung, thường viết お爺さん hoặc おじいさん."
+      },
+      "Examples": {
+        "227740": "Ông nói rất chậm.",
+        "227744": "Tôi chăm sóc ông."
+      },
+      "SourceHash": "9b12da094f183441b1d31e697bbb00c4479bfa0d35cb9e05ee5ed8ece9a694fc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f2fa049fdd",
+      "Fields": {
+        "Meaning": "Dạy, chỉ, cho biết",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "教える dùng khi dạy kiến thức, hướng dẫn hoặc cho người khác biết thông tin. Người tiếp nhận đi với に, nội dung được dạy hay thông báo đi với を.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142700": "Anh/chị có thể cho biết ngày tháng năm sinh không?",
+        "231121": "Trường đó có dạy tiếng Trung."
+      },
+      "SourceHash": "4a87c3b1605eb768d82a28151c4a68e03f9efc6c8afa209378ca3acc9f001b67"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ce8facdf69",
+      "Fields": {
+        "Meaning": "Đẩy, ấn, nhấn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "押す dùng khi đẩy một vật hoặc nhấn nút. ボタンを押す là nhấn nút, シャッターを押す là bấm nút chụp ảnh.",
+        "UsageNotes": "Thể て là 押して. 押す cũng dùng trong cụm 判を押す, nghĩa là đóng dấu."
+      },
+      "Examples": {
+        "215785": "Bạn bấm nút chụp ảnh giúp tôi được không?",
+        "223170": "Bạn chỉ cần nhấn nút này là được."
+      },
+      "SourceHash": "6322b13822442f5fe9533132001e7ad1e7ecb3713d800b668d3c21e60780a43d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a082687f7a",
+      "Fields": {
+        "Meaning": "Chậm, muộn, trễ",
+        "PartOfSpeech": "Tính từ đuôi い",
+        "Explanation": "遅い có thể chỉ tốc độ chậm hoặc thời điểm muộn. 遅くなる nghĩa là trở nên muộn, bị chậm trễ.",
+        "UsageNotes": "Dịch theo ngữ cảnh tốc độ hay thời gian."
+      },
+      "Examples": {
+        "126737": "Muộn còn hơn chẳng có gì.",
+        "213942": "Đó là lý do tôi đến muộn."
+      },
+      "SourceHash": "081519f8844d108c5e2ad71992c54b41cf20bbc88447479ab68d33c6a73e7b10"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "75a36b034c",
+      "Fields": {
+        "Meaning": "Nhà vệ sinh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お手洗い（おてあらい）là cách gọi lịch sự của nhà vệ sinh. Thường dùng khi hỏi đường đến nhà vệ sinh trong cửa hàng hoặc nơi công cộng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "227063": "Nhà vệ sinh ở đâu?",
+        "227064": "Anh/chị có thể chỉ cho tôi nhà vệ sinh ở đâu được không ạ?"
+      },
+      "SourceHash": "14fb323850297e3f7acd5dc04ded67bfd04769a057c3507d9ea692b1672d3a7a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "89807c7c22",
+      "Fields": {
+        "Meaning": "Bố, cha",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お父さん dùng khi gọi bố của mình hoặc nói lịch sự về bố của người khác. Cũng thường dùng khi nhắc đến bố trong gia đình.",
+        "UsageNotes": "Khi nói trang trọng về bố mình với người ngoài, thường dùng 父（ちち）."
+      },
+      "Examples": {
+        "161219": "Tôi đã chơi ném bắt bóng với bố.",
+        "226757": "Bố có lời nhắn cho bạn."
+      },
+      "SourceHash": "6d5ac5a3238f39d403b4097ff679fe5f8971f9f65bd8217534b0f7a8df79b026"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "db32745bbc",
+      "Fields": {
+        "Meaning": "Em trai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "弟（おとうと）chỉ em trai. Có thể nêu rõ quan hệ bằng 私の弟 (em trai tôi) hoặc 彼の弟 (em trai anh ấy).",
+        "UsageNotes": "Khi nói lịch sự về em trai người khác, có thể dùng 弟さん."
+      },
+      "Examples": {
+        "125460": "Cứ mặc kệ em trai đi.",
+        "195735": "Mike đã chơi một trò đùa tai quái với em trai mình."
+      },
+      "SourceHash": "bd6cd086240ff76fea7de944c36adbce04539b347f4da2221313769b47847c86"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2fd7d45c8d",
+      "Fields": {
+        "Meaning": "Đàn ông, người nam",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "男（おとこ）chỉ người nam hoặc đàn ông. 一人前の男 diễn tả người đàn ông trưởng thành, có thể tự đảm đương công việc.",
+        "UsageNotes": "Trong cách nói lịch sự, 男の人 thường tự nhiên hơn khi chỉ một người đàn ông."
+      },
+      "Examples": {
+        "208173": "Đừng qua lại với người đàn ông đó.",
+        "227512": "Tôi sẽ giúp cậu trở thành một người đàn ông thực thụ."
+      },
+      "SourceHash": "6c4f0f9a65bf408f21de14aa5aceca682e021b69b5401ac02804656206ce8f9d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f664d3ded",
+      "Fields": {
+        "Meaning": "Con trai, bé trai",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "男の子 chỉ một đứa trẻ hoặc người trẻ là nam. Thường dùng khi nói về giới tính của trẻ hoặc nhắc đến một cậu bé.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127249": "Con trai nghịch ngợm thì cũng đành chịu thôi.",
+        "231277": "Nhìn cậu con trai đẹp trai kia kìa."
+      },
+      "SourceHash": "38ac956abe640c4422739960b59823404632f6f63235075d46de1aa6bd3e6862"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f0f3826045",
+      "Fields": {
+        "Meaning": "Hôm kia",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "一昨日 chỉ ngày trước hôm qua. Cách đọc thông dụng trong hội thoại là おととい.",
+        "UsageNotes": "Cách đọc いっさくじつ thường gặp trong lời nói trang trọng."
+      },
+      "Examples": {
+        "190604": "Từ hôm kia đến giờ, trời cứ mưa rồi lại tạnh.",
+        "190607": "Có lẽ hôm kia anh ấy đã nghỉ học."
+      },
+      "SourceHash": "2161d3c69b37a17f4b9f6c2261804e04d847befe4fd105a0937dbd23ec2da78d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b75778f0ce",
+      "Fields": {
+        "Meaning": "Năm kia",
+        "PartOfSpeech": "Danh từ chỉ thời gian",
+        "Explanation": "一昨年 chỉ năm trước năm ngoái, tức hai năm trước năm hiện tại. Cách đọc thông dụng là おととし.",
+        "UsageNotes": "Cũng có cách đọc trang trọng là いっさくねん."
+      },
+      "Examples": {
+        "93768": "Cuộc sống của cô ấy khá giả hơn nhiều so với năm kia."
+      },
+      "SourceHash": "3dd98a632e88b88ab192e2e42627b2b91237f4a95d0b51b6670332bb114e3995"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "6f5049e2d4",
+      "Fields": {
+        "Meaning": "Người lớn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "大人（おとな）chỉ người đã trưởng thành. Cũng dùng để nói về cách cư xử chín chắn, như 大人の対応 (cách ứng xử trưởng thành).",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "137483": "Chỉ người lớn mới được xem bộ phim này.",
+        "219579": "Cuốn sách này được nhiều người lớn đọc."
+      },
+      "SourceHash": "4b492a190f6a0f05c8df87076a078e9cb26875f52a0b96274e3606933e9ac386"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3707072a6b",
+      "Fields": {
+        "Meaning": "Bụng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "おなか thường viết là お腹. おなかがすく nghĩa là đói bụng, おなかがいっぱい nghĩa là no.",
+        "UsageNotes": "何かおなかに入れる là cách nói ăn một chút gì đó."
+      },
+      "Examples": {
+        "188135": "Hãy ăn chút gì đó rồi hãy ra ngoài.",
+        "228315": "Thôi, đủ rồi. Tôi no rồi."
+      },
+      "SourceHash": "4009a2dacabec0a740753fc78865e51114c5534d70c94111c0d7513f68b2f933"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7c134ec812",
+      "Fields": {
+        "Meaning": "Giống nhau, cùng một",
+        "PartOfSpeech": "Danh từ, từ bổ nghĩa cho danh từ",
+        "Explanation": "同じ diễn tả hai thứ giống nhau hoặc cùng thuộc một thứ. Dùng Aと同じ để nói giống A, và 同じクラス để nói cùng lớp.",
+        "UsageNotes": "Trước danh từ thường dùng trực tiếp 同じ, như 同じ本."
+      },
+      "Examples": {
+        "195787": "Mike và Tom học cùng lớp.",
+        "219452": "Cây này cao gần bằng cây kia."
+      },
+      "SourceHash": "5b8da93e9521746faa7940f7fa07daa10bc9c20adf41c1802a1bb2592f00ee3a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c6f43a8cc3",
+      "Fields": {
+        "Meaning": "Anh trai (cách gọi lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お兄さん dùng để gọi anh trai hoặc nói lịch sự về anh trai của người khác. Cách đọc là おにいさん.",
+        "UsageNotes": "Khi giới thiệu anh trai mình với người ngoài, thường dùng 兄（あに）."
+      },
+      "Examples": {
+        "161718": "Tôi lớn tuổi hơn anh trai bạn.",
+        "231433": "Nhìn bạn, tôi lại nhớ đến anh trai bạn."
+      },
+      "SourceHash": "6c753c477403c55ae639925f084ae3a5e15704675309ca48880ab4e72ca39ef7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af378a4c86",
+      "Fields": {
+        "Meaning": "Chị gái (cách gọi lịch sự)",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "お姉さん dùng để gọi chị gái hoặc nói lịch sự về chị gái của người khác. Cách đọc là おねえさん.",
+        "UsageNotes": "Khi giới thiệu chị gái mình với người ngoài, thường dùng 姉（あね）."
+      },
+      "Examples": {
+        "168930": "Cho tôi gửi lời hỏi thăm chị gái bạn nhé.",
+        "233258": "Chị gái bạn đang làm gì vậy?"
+      },
+      "SourceHash": "c333ab62d7285a0c1443a7bce5577950dc1cdadfd803e38a63e11de854719d62"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4df6eda2a2",
+      "Fields": {
+        "Meaning": "Xin, làm ơn, nhờ anh/chị",
+        "PartOfSpeech": "Cụm từ lịch sự",
+        "Explanation": "お願いします dùng khi nhờ vả hoặc yêu cầu một việc. Trong mua hàng hay đặt chỗ, danh từ ＋ でお願いします diễn đạt lựa chọn mong muốn.",
+        "UsageNotes": "おねがいします là cách đọc. Nghĩa cụ thể phụ thuộc việc đang được yêu cầu."
+      },
+      "Examples": {
+        "197242": "Cho tôi hạng nhất nhé.",
+        "202278": "Nếu được thì cho tôi lúc sáu giờ rưỡi nhé."
+      },
+      "SourceHash": "bad72cef52803f16041645921f3f8501a8fd275672f0eb558f3c4bd9ec9d3124"
+    }
+  ]
+}

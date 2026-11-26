@@ -10,6 +10,13 @@ public static class LearningContentModelConfiguration
 
     public static void Configure(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<LearningContentSeedState>(entity =>
+        {
+            entity.HasKey(state => state.Key);
+            entity.Property(state => state.Key).HasMaxLength(100).IsUnicode(false);
+            entity.Property(state => state.Version).HasMaxLength(64).IsUnicode(false).IsRequired();
+        });
+
         modelBuilder.Entity<Vocabulary>().Property(v => v.Meaning).HasMaxLength(MeaningMaxLength);
         modelBuilder.Entity<Vocabulary>().Property(v => v.UsageNotes).HasColumnType("nvarchar(max)");
         modelBuilder.Entity<Grammar>().Property(g => g.Meaning).HasMaxLength(MeaningMaxLength);

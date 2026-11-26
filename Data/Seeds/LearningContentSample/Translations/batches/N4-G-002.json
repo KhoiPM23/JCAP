@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N4",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cấu trúc, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "naosu",
+      "Fields": {
+        "Meaning": "Làm lại, sửa lại",
+        "Formation": "Gốc ます ＋ 直す",
+        "Explanation": "Dùng khi làm lại hành động để sửa hoặc xem xét lại kết quả trước đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "naosu:example:1": "Tôi đã viết lại bài báo cáo từ đầu.",
+        "naosu:example:2": "Bạn nên suy nghĩ lại một lần nữa."
+      },
+      "SourceHash": "5820db6188e50c969fdbb10d2d876267a4e149de17444c6913958a80c2c0a95e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "nikui",
+      "Fields": {
+        "Meaning": "Khó làm, khó xảy ra",
+        "Formation": "Gốc ます ＋ にくい",
+        "Explanation": "Nêu một việc khó thực hiện hoặc khó xảy ra, thường do đặc điểm của đối tượng hay hoàn cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "nikui:example:1": "Cây bút này khó viết.",
+        "nikui:example:2": "Lời giải thích của giáo viên khó hiểu."
+      },
+      "SourceHash": "19106d3083a1166a30982dd75bafcdb44522fc791bf9aff0f43d9c7694baa73e"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hajimeru",
+      "Fields": {
+        "Meaning": "Bắt đầu làm gì",
+        "Formation": "Gốc ます ＋ 始める",
+        "Explanation": "Dùng để chỉ lúc một hành động hoặc hiện tượng bắt đầu. Có thể dùng cho cả thay đổi diễn ra dần dần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hajimeru:example:1": "Đứa trẻ bắt đầu nói tiếng Nhật.",
+        "hajimeru:example:2": "Sang tháng ba, hoa anh đào bắt đầu nở."
+      },
+      "SourceHash": "2344d618b10c253ee9646cbf73ffc3ff5ac62ec9e8ddd2c8a21cca808981bdae"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "yasui",
+      "Fields": {
+        "Meaning": "Dễ làm, dễ xảy ra",
+        "Formation": "Gốc ます ＋ やすい",
+        "Explanation": "Chỉ việc dễ thực hiện hoặc có xu hướng dễ xảy ra. 汚れやすい là dễ bị bẩn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "yasui:example:1": "Ứng dụng này rất dễ dùng.",
+        "yasui:example:2": "Áo sơ mi trắng dễ bị bẩn."
+      },
+      "SourceHash": "a1d0338a835c419acee2158365588d82d94b2159cf067cd0718c37888e8f8035"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ka-suru",
+      "Fields": {
+        "Meaning": "Hóa, trở thành, làm cho trở thành",
+        "Formation": "Danh từ hoặc gốc tính từ ＋ 化する",
+        "Explanation": "Chỉ sự biến đổi theo hướng đặc điểm được nêu. Có thể dùng với chủ thể tự thay đổi hoặc với đối tượng được thay đổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ka-suru:example:1": "Gần đây, khu vực này đang dần đô thị hóa.",
+        "ka-suru:example:2": "Tôi đã dùng máy tính để tự động hóa công việc của công ty."
+      },
+      "SourceHash": "d3bccef48aa670586c932569480dda148f9dd9b579811bb66dafafc233b5b67d"
+    }
+  ]
+}

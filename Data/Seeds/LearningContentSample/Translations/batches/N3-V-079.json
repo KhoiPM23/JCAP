@@ -1,0 +1,307 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ea7b6990d3",
+      "Fields": {
+        "Meaning": "Duy nhất",
+        "PartOfSpeech": "Bổ nghĩa với の, Danh từ, phó từ",
+        "Explanation": "唯一（ゆいいつ）có nghĩa là duy nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144304": "Con người là động vật duy nhất biết dùng lửa.",
+        "147531": "Bước đầu tiên là trở ngại duy nhất."
+      },
+      "SourceHash": "6f85a1480df4706bdef63a4fbe23aa3151abb1b19c8d6664749ba638daa4ecdc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "0f54df5fc1",
+      "Fields": {
+        "Meaning": "Nói, gọi là",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "言う（ゆう）có nghĩa là nói, gọi là.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "220315": "Con vật này gọi là gì trong tiếng Nhật?",
+        "236431": "John nói: “Mọi người nghỉ một lát nào.”"
+      },
+      "SourceHash": "faf18232515efe1f2312aafcceab40b5c11c389da8352a0a11e2faa4f5be3117"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1b04830825",
+      "Fields": {
+        "Meaning": "Can đảm, dũng khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "勇気（ゆうき）có nghĩa là can đảm, dũng khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "94785": "Bạn có đủ can đảm để gọi cho cô ấy không?",
+        "107832": "Anh ấy tuyệt nhiên không thiếu can đảm."
+      },
+      "SourceHash": "046e77686f42b07e5c2a790ce08b81f90706b106e5ce13a0a79f997a8b35a0f8"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8f41bba826",
+      "Fields": {
+        "Meaning": "Có hiệu lực, hữu hiệu",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "有効（ゆうこう）có nghĩa là có hiệu lực, hữu hiệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "208558": "Vé đó có hiệu lực một tuần.",
+        "223340": "Hộ chiếu này có hiệu lực năm năm."
+      },
+      "SourceHash": "f766d6b8b232d61c4ec762750c2f8d4f20ebb94982a41b63a73930247211538e"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9c2ecc46b9",
+      "Fields": {
+        "Meaning": "Xuất sắc, ưu tú",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "優秀（ゆうしゅう）có nghĩa là xuất sắc, ưu tú.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "89912": "Cô ấy viết văn rất giỏi.",
+        "113949": "Anh ấy xuất sắc vượt trội trong lớp."
+      },
+      "SourceHash": "99db41c74f03e1f47609d331e103d0b57a862bdebc042dcc6bd9f223518191b4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "03c4975c1c",
+      "Fields": {
+        "Meaning": "Vô địch, đoạt giải nhất",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "優勝（ゆうしょう）có nghĩa là vô địch, đoạt giải nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "92603": "Cô ấy đoạt giải nhất cuộc thi đó.",
+        "200199": "Tom vô địch phải không?"
+      },
+      "SourceHash": "15ea7b7445fd034d24f601d4b1d16fcc8e384684d88997478e6649859c11db55"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "1192e07fed",
+      "Fields": {
+        "Meaning": "Tình bạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "友情（ゆうじょう）có nghĩa là tình bạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118734": "Anh ấy không hiểu tình bạn quý giá thế nào.",
+        "214330": "Thể thao vun đắp tình bạn."
+      },
+      "SourceHash": "4eafb024990b7c29d29b1762cc492cded542bcf7c802aecac8aa1b74a001e015"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "95203a9427",
+      "Fields": {
+        "Meaning": "Bạn bè, người bạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "友人（ゆうじん）có nghĩa là bạn bè, người bạn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79353": "Bạn bè phải giúp đỡ nhau.",
+        "162507": "Một người bạn đến thăm tôi."
+      },
+      "SourceHash": "588ebd6cf77795c24802427602a0792842f85841032bf6edc37c4103c275745b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "568b987a90",
+      "Fields": {
+        "Meaning": "Có năng lực",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "有能（ゆうのう）có nghĩa là có năng lực.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "86418": "Cô ấy là một trợ lý có năng lực và đáng tin cậy.",
+        "99258": "Anh ấy trông không có vẻ là người có năng lực."
+      },
+      "SourceHash": "8d11117c596fc84db16d3bab5b0cfeba897d984bbce01df85b991735f292f528"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a61747e5d",
+      "Fields": {
+        "Meaning": "Bưu chính, thư từ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "郵便（ゆうびん）có nghĩa là bưu chính, thư từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81288": "Họ đến thu thư lúc ba giờ chiều mỗi ngày.",
+        "180482": "Bọn cướp phá tan đoàn tàu bưu chính."
+      },
+      "SourceHash": "ffa896bd438fc0adfee044785e29d4fb42ce4db88782fc4ecaf987bfabee5cbe"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "3fa9f114f2",
+      "Fields": {
+        "Meaning": "Buổi tối, tối qua",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夕べ（ゆうべ）có nghĩa là buổi tối, tối qua.",
+        "UsageNotes": null
+      },
+      "Examples": {},
+      "SourceHash": "22a0b024f72b9c678e5e613431d56f8e1b1879e2297871caa7f8659f2fbad9b1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "271078ced6",
+      "Fields": {
+        "Meaning": "Sự hài hước",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "ユーモア（ユーモア）có nghĩa là sự hài hước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118797": "Anh ấy có khiếu hài hước tuyệt vời.",
+        "210517": "Nhà văn đó rất dí dỏm."
+      },
+      "SourceHash": "7b42b6a109d09a356c78055387f6838d943406ef2f49438a07b63abc1f9b9e77"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "18a3f78106",
+      "Fields": {
+        "Meaning": "Có lợi, thuận lợi",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "有利（ゆうり）có nghĩa là có lợi, thuận lợi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "85225": "Khi hàng khan hiếm, bên bán có lợi thế.",
+        "217277": "Biết dùng máy tính là một lợi thế."
+      },
+      "SourceHash": "56c0dc1eb6c27eb80031d5d1496c071bb91545fa3f3f566972d77d492ff95bf2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5489cdb398",
+      "Fields": {
+        "Meaning": "Sàn nhà",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "床（ゆか）có nghĩa là sàn nhà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "79999": "Tỉnh dậy, tôi thấy mình đang nằm trên sàn.",
+        "146472": "Trên sàn có gì vậy?"
+      },
+      "SourceHash": "83603de5af91bf971dca3738014a8a6008ac759a315f8f6ce52dd5be58d8530b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "999ee69ee6",
+      "Fields": {
+        "Meaning": "Vui vẻ, thú vị",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "愉快（ゆかい）có nghĩa là vui vẻ, thú vị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "144685": "Càng đông càng vui.",
+        "232012": "Hôm qua bạn có vui không?"
+      },
+      "SourceHash": "3645320d76a5a12d04b06cd2a6bc7467d812000ca3f0050642f9d9dad7e4cf58"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "33f792ec39",
+      "Fields": {
+        "Meaning": "Nhường, nhượng bộ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "譲る（ゆずる）có nghĩa là nhường, nhượng bộ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "98868": "Anh ấy nhường chỗ cho một bà cụ.",
+        "160815": "Về điểm này tôi không thể nhượng bộ chút nào."
+      },
+      "SourceHash": "3660e2811b8ced646b4c412e524be3d11860848aca4cbaea87cb4b654f79a53a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "952c7983d6",
+      "Fields": {
+        "Meaning": "Phong phú, dồi dào",
+        "PartOfSpeech": "Tính từ đuôi な, hậu tố",
+        "Explanation": "豊か（ゆたか）có nghĩa là phong phú, dồi dào.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "148857": "Nên làm giàu đời sống tinh thần từ khi còn trẻ.",
+        "227792": "Úc giàu tài nguyên thiên nhiên."
+      },
+      "SourceHash": "56d6fcc1693cb36ca45890bfc48ba1dda35551e8c9d8a2088ae728dc983649fa"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ccd27b3d04",
+      "Fields": {
+        "Meaning": "Chậm rãi, thong thả",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ゆっくり（ゆっくり）có nghĩa là chậm rãi, thong thả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "192972": "Chậm mà chắc thì sẽ thắng.",
+        "192973": "Bạn ở lại thong thả uống chút trà nhé?"
+      },
+      "SourceHash": "623d300f7315770fa42a26bdc83bc739d15fce4b5cdd7bb522436dc25de21c02"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "50842f69c2",
+      "Fields": {
+        "Meaning": "Cho phép, tha thứ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "許す（ゆるす）có nghĩa là cho phép, tha thứ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123041": "Tôi sẽ không bỏ qua lỗi của bạn lần nữa.",
+        "126716": "Xin tha lỗi cho tôi vì đã đến muộn."
+      },
+      "SourceHash": "ae399d383565c8b60b7da1d0501c3bfcb96867618a5fa7c386eeea0899724072"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b434efd06b",
+      "Fields": {
+        "Meaning": "Rạng đông, bình minh",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "夜明け（よあけ）có nghĩa là rạng đông, bình minh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "124599": "Những người leo núi thức dậy trước bình minh.",
+        "162206": "Tôi đột nhiên bị đánh thức trước bình minh."
+      },
+      "SourceHash": "d9b8bc6f4cd1ef5d6dcb6d8c79cf66679e812af08202d7d62f810055955ccd1d"
+    }
+  ]
+}

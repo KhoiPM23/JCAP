@@ -13,6 +13,11 @@ import { resolveApiUrl } from '../utils/apiBase';
 const BASE_URL = resolveApiUrl('/api/placement-test');
 
 class PlacementTestService {
+  private inFlightStart: {
+    reset: boolean;
+    promise: Promise<ApiResponse<PlacementTestStartResponseDto>>;
+  } | null = null;
+
   private getHeaders(): HeadersInit {
     const token = localStorage.getItem('jcap_token');
     const headers: HeadersInit = {
@@ -24,6 +29,26 @@ class PlacementTestService {
     return headers;
   }
 
+  private async parseJsonSafe<T>(response: Response, fallbackData: T): Promise<ApiResponse<T>> {
+    const raw = await response.text();
+    if (!raw) {
+      return {
+        success: response.ok,
+        message: response.ok ? '' : `Máy chủ phản hồi lỗi (${response.status}).`,
+        data: fallbackData,
+      };
+    }
+    try {
+      return JSON.parse(raw) as ApiResponse<T>;
+    } catch {
+      return {
+        success: false,
+        message: `Máy chủ gặp sự cố khi xử lý yêu cầu (HTTP ${response.status}). Vui lòng thử lại.`,
+        data: fallbackData,
+      };
+    }
+  }
+
   /**
    * Lấy trạng thái Placement Test của người dùng
    */
@@ -33,7 +58,7 @@ class PlacementTestService {
         method: 'GET',
         headers: this.getHeaders(),
       });
-      return await response.json();
+      return await this.parseJsonSafe<PlacementTestStatusDto>(response, null as any);
     } catch (err: any) {
       return {
         success: false,
@@ -44,22 +69,38 @@ class PlacementTestService {
   }
 
   /**
-   * Khởi tạo hoặc tiếp tục phiên Placement Test (0 Credit)
+   * Khởi tạo hoặc tiếp tục phiên Placement Test (0 Credit).
+   * Gộp các lời gọi trùng thời điểm (VD: React StrictMode hoặc bấm đúp) để tránh race condition.
    * @param reset Nếu true, hủy bỏ phiên cũ để bắt đầu bài mới
    */
   public async startOrResume(reset: boolean = false): Promise<ApiResponse<PlacementTestStartResponseDto>> {
+    if (this.inFlightStart && this.inFlightStart.reset === reset) {
+      return this.inFlightStart.promise;
+    }
+
+    const reqPromise = (async (): Promise<ApiResponse<PlacementTestStartResponseDto>> => {
+      try {
+        const response = await fetch(`${BASE_URL}/start?reset=${reset}`, {
+          method: 'POST',
+          headers: this.getHeaders(),
+        });
+        return await this.parseJsonSafe<PlacementTestStartResponseDto>(response, null as any);
+      } catch (err: any) {
+        return {
+          success: false,
+          message: err.message || 'Không thể bắt đầu phiên kiểm tra xếp lớp.',
+          data: null as any,
+        };
+      }
+    })();
+
+    this.inFlightStart = { reset, promise: reqPromise };
     try {
-      const response = await fetch(`${BASE_URL}/start?reset=${reset}`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-      });
-      return await response.json();
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err.message || 'Không thể bắt đầu phiên kiểm tra xếp lớp.',
-        data: null as any,
-      };
+      return await reqPromise;
+    } finally {
+      if (this.inFlightStart?.promise === reqPromise) {
+        this.inFlightStart = null;
+      }
     }
   }
 

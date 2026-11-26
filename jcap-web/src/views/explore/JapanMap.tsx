@@ -290,6 +290,8 @@ export interface JapanMapProps {
   legend?: React.ReactNode;
   /** Ô tìm tỉnh (nằm trong cột nút, cạnh nút furigana) */
   search?: React.ReactNode;
+  /** Đang luyện Shadowing của địa điểm đang chọn ở khung bên cạnh: ẩn thẻ nổi và cụm nút, gắn nhãn "Đang luyện" trên ghim */
+  practicing?: boolean;
 }
 
 export const JapanMap: React.FC<JapanMapProps> = ({
@@ -303,6 +305,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   onInteract,
   legend,
   search,
+  practicing = false,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -724,6 +727,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       wheelFrameRef.current = requestAnimationFrame(slide);
     };
     const onWheel = (e: WheelEvent) => {
+      // Lăn trên cụm nút / bảng chú giải / bảng tìm tỉnh: để chính bảng đó cuộn, không phóng bản đồ
+      if ((e.target as Element | null)?.closest?.('[data-map-ui]')) return;
       e.preventDefault(); // luôn chặn cuộn trang; khi khoá zoom thì bỏ qua hẳn, không làm gián đoạn chuyến bay đang chạy
       if (zoomLocked) return;
       stopAnimation();
@@ -1411,12 +1416,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       <div ref={labelLayerRef} className="jm-plabel-layer" aria-hidden="true">
         {mountPrefLabels && (
           <div key="prefecture-labels" className={`jm-plabel-group${showPrefLabels ? ' jm-on' : ''}`}>
-            <PrefectureLabels items={prefLabelItems} scale={prefLabelScale} variant="main" iconColor={T.inkLine} />
+            <PrefectureLabels items={prefLabelItems} scale={prefLabelScale} variant="main" iconColor={T.inkLine} furigana={furigana} />
           </div>
         )}
         {showNeighborLabels && (
           <div key="neighbor-labels" className="jm-label-fade">
-            <PrefectureLabels items={prefLabelItems} scale={1} variant="neighbor" iconColor={T.muted} />
+            <PrefectureLabels items={prefLabelItems} scale={1} variant="neighbor" iconColor={T.muted} furigana={furigana} />
           </div>
         )}
       </div>
@@ -1673,7 +1678,13 @@ export const JapanMap: React.FC<JapanMapProps> = ({
       )}
 
       {/* Thẻ nổi của địa điểm đang chọn: đặt ở phía không che ghim nào, bám theo ghim khi kéo/phóng to */}
-      {showLabels && activePos && activeLandmark && activeSpot != null && selected && (
+      {practicing && activePos && activeSpot != null && selected && (
+        <span className="jm-practice-tag" style={{ left: activePos.x, top: activePos.y }}>
+          Đang luyện
+        </span>
+      )}
+
+      {!practicing && showLabels && activePos && activeLandmark && activeSpot != null && selected && (
         <SpotCard
           pin={activePos}
           obstacles={[
@@ -1706,41 +1717,93 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         />
       )}
 
-      {/* Góc dưới phải: Chú giải, rồi cột nút [ふ · tìm tỉnh] và [+ · − · về toàn quốc] (không đặt nút nào ở góc trên phải) */}
+      {/* Góc dưới phải: cột nút [ふ · chú giải · tìm tỉnh] và [+ · − · về khung] (không đặt nút nào ở góc trên phải).
+          Lúc đầu mỗi cụm chỉ còn nút cuối (tìm tỉnh, về khung); rê chuột (hoặc focus) vào cụm thì các nút còn lại trồi lên. */}
       <div
-        className="absolute z-30 flex items-end gap-2.5 transition-[right,bottom] duration-300"
-        style={{ right: reserveRight + 20, bottom: reserveBottom + 20 }}
+        className="absolute z-30 flex items-end gap-2.5 transition-[right,bottom,opacity] duration-300"
+        style={{
+          right: reserveRight + 20,
+          bottom: reserveBottom + 20,
+          ...(practicing ? { opacity: 0, pointerEvents: 'none' as const } : null),
+        }}
+        aria-hidden={practicing || undefined}
       >
-        {legend}
         <div className="flex flex-col gap-2">
-          <div data-map-ui className="jm-ctlgroup">
+          <div data-map-ui className="jm-ctlgroup jm-growgroup">
+            <div className="jm-grow">
+              <div className="jm-grow-in">
             <button
               type="button"
               aria-pressed={furigana}
               aria-label={furigana ? 'Tắt furigana trên bản đồ' : 'Hiện furigana trên bản đồ'}
-              title="Furigana"
+              data-tip="ふりがな"
               onClick={() => setFurigana(!furigana)}
               className={`jm-mapctl ${furigana ? 'on' : ''}`}
             >
               ふ
             </button>
+            {legend}
+              </div>
+            </div>
             {search}
           </div>
-          <div data-map-ui className="jm-ctlgroup">
-            <MapButton label="Phóng to" disabled={atMaxZoom || zoomLocked} onClick={() => zoomByButton(BUTTON_ZOOM_STEP)} icon="add" />
-            <MapButton label="Thu nhỏ" disabled={atMinZoom || zoomLocked} onClick={() => zoomByButton(1 / BUTTON_ZOOM_STEP)} icon="remove" />
+          <div data-map-ui className="jm-ctlgroup jm-growgroup">
+            <div className="jm-grow">
+              <div className="jm-grow-in">
+                <MapButton label="Phóng to" disabled={atMaxZoom || zoomLocked} onClick={() => zoomByButton(BUTTON_ZOOM_STEP)} icon="add" />
+                <MapButton label="Thu nhỏ" disabled={atMinZoom || zoomLocked} onClick={() => zoomByButton(1 / BUTTON_ZOOM_STEP)} icon="remove" />
+              </div>
+            </div>
             <MapButton label={selected ? 'Đưa về khung tỉnh' : 'Về toàn quốc'} onClick={recenter} icon="center_focus_strong" />
           </div>
         </div>
       </div>
 
       <style>{`
-        .jm-ctlgroup { display: flex; flex-direction: column; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50); overflow: hidden;
+        .jm-practice-tag { position: absolute; z-index: 19; transform: translate(-50%, calc(-100% - 30px)); height: 26px; padding: 0 12px; border-radius: 999px;
+          background: var(--shu); color: var(--on-shu); font-size: 13px; font-weight: 700; line-height: 26px; white-space: nowrap; pointer-events: none;
+          box-shadow: 0 0 0 2px var(--paper-50); animation: jm-reveal .2s ease-out both; }
+        .jm-ctlgroup { display: flex; flex-direction: column; gap: 2px; padding: 3px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper-50);
           box-shadow: 0 6px 18px rgba(8,26,56,.22); }
-        .jm-mapctl { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent;
+        .jm-mapctl { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: transparent;
           font-family: var(--font-jp); font-size: 16px; font-weight: 700; color: var(--sumi-muted); cursor: pointer; transition: background .12s, color .12s; }
         .jm-mapctl:hover { background: var(--paper-200); color: var(--sumi); }
         .jm-mapctl.on { color: var(--shu); }
+        .jm-mapctl.is-open { color: var(--shu); background: var(--shu-soft); }
+        /* Rê chuột vào nút có data-tip: ô tên tiếng Nhật kéo dài ra bên trái cột nút */
+        .jm-mapctl[data-tip] { position: relative; }
+        .jm-mapctl[data-tip]::after { content: attr(data-tip); position: absolute; right: calc(100% + 10px); top: 50%; height: 32px; padding: 0 14px;
+          display: flex; align-items: center; border-radius: 999px; background: var(--paper-50); border: 1px solid var(--line); box-shadow: 0 6px 16px rgba(8,26,56,.22);
+          font-family: var(--font-sans), var(--font-jp); font-size: 13px; font-weight: 700; color: var(--sumi); white-space: nowrap; pointer-events: none;
+          opacity: 0; transform: translate(8px, -50%); clip-path: inset(0 0 0 100% round 999px);
+          transition: clip-path .24s cubic-bezier(.2,.7,.2,1), transform .24s cubic-bezier(.2,.7,.2,1), opacity .12s linear; }
+        .jm-mapctl[data-tip]:hover::after, .jm-mapctl[data-tip]:focus-visible::after { opacity: 1; transform: translate(0, -50%); clip-path: inset(0 0 0 0 round 999px); }
+        .jm-mapctl[data-tip].is-open::after { display: none; }
+        @media (hover: none) { .jm-mapctl[data-tip]::after { display: none; } }
+        @media (prefers-reduced-motion: reduce) { .jm-mapctl[data-tip]::after { transition: opacity .12s linear; } }
+        /* Các nút phía trên nút cuối của cụm gập lại (0 dòng); rê chuột / focus vào cụm, hoặc đang mở chú giải, thì trồi lên.
+           Gập thì cắt phần thừa; mở xong (sau .28s) mới cho tràn để ô tên khi rê chuột và bảng chú giải hiện ra ngoài cụm. */
+        .jm-growgroup { gap: 0; }
+        .jm-grow { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s cubic-bezier(.2,.7,.2,1); }
+        .jm-grow-in { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
+        .jm-grow-in .jm-mapctl { opacity: 0; transform: translateY(10px); transition: opacity .18s ease, transform .28s cubic-bezier(.2,.7,.2,1), background .12s, color .12s; }
+        .jm-growgroup:hover .jm-grow, .jm-growgroup:has(:focus-visible) .jm-grow, .jm-growgroup:has(.is-open) .jm-grow { grid-template-rows: 1fr; }
+        .jm-growgroup:hover .jm-grow-in, .jm-growgroup:has(:focus-visible) .jm-grow-in, .jm-growgroup:has(.is-open) .jm-grow-in {
+          padding-bottom: 2px; animation: jm-unclip 0s linear .28s forwards; }
+        .jm-growgroup:has(.is-open) .jm-grow-in { animation-delay: 0s; }
+        .jm-growgroup:hover .jm-grow-in .jm-mapctl, .jm-growgroup:has(:focus-visible) .jm-grow-in .jm-mapctl, .jm-growgroup:has(.is-open) .jm-grow-in .jm-mapctl { opacity: 1; transform: none; }
+        .jm-growgroup:hover .jm-grow-in > :nth-child(1) .jm-mapctl, .jm-growgroup:hover .jm-grow-in > .jm-mapctl:nth-child(1) { transition-delay: .04s; }
+        @keyframes jm-unclip { to { overflow: visible; } }
+        /* Màn cảm ứng không rê chuột được: luôn hiện đủ nút */
+        @media (hover: none) {
+          .jm-grow { grid-template-rows: 1fr; }
+          .jm-grow-in { padding-bottom: 2px; overflow: visible; }
+          .jm-grow-in .jm-mapctl { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .jm-grow, .jm-grow-in .jm-mapctl { transition: none; }
+          .jm-growgroup:hover .jm-grow-in, .jm-growgroup:has(:focus-visible) .jm-grow-in { animation-delay: 0s; }
+        }
         .jm-mapctl:disabled { color: var(--sumi-faint); background: transparent; cursor: not-allowed; }
         .jm-mapctl:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
         .jm-fade-in { animation: jm-fade-in 0.35s ease-out 0.45s both; }
@@ -1775,6 +1838,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-plabel-icon { position: absolute; bottom: 100%; left: 50%; width: 22px; height: 22px; margin: 0 0 3.4px -11px; }
         .jm-plabel-main .jm-plabel-vi { font-size: 12px; line-height: 13px; font-weight: 650; color: ${T.mapLabel}; }
         .jm-plabel-main .jm-plabel-jp { font-size: 11px; line-height: 13px; font-weight: 500; color: ${T.ink2}; }
+        .jm-plabel-jp rt { font-size: 0.6em; line-height: 1; font-weight: 500; text-align: center; }
         .jm-plabel-neighbor { color: ${T.muted}; }
         .jm-plabel-neighbor .jm-plabel-vi { font-size: 12px; line-height: 12px; font-weight: 600; }
         .jm-plabel-neighbor .jm-plabel-jp { font-size: 10.5px; line-height: 12px; font-weight: 500; }

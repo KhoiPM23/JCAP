@@ -1,0 +1,104 @@
+{
+  "openjlpt:b974c316fc": {
+    "Fields": {
+      "Meaning": "Rồi sẽ, sớm muộn, cái nào",
+      "PartOfSpeech": "Đại từ",
+      "Explanation": "いずれ（いずれ）có nghĩa là rồi sẽ, sớm muộn, cái nào.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:f0070e59ed": {
+    "Fields": {
+      "Meaning": "Vì vậy, ở đó, lúc đó",
+      "PartOfSpeech": "Liên từ",
+      "Explanation": "Có thể nối nguyên nhân với hành động tiếp theo hoặc chỉ một nơi hay thời điểm đã nhắc đến.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:c2946190ea": {
+    "Fields": {
+      "Meaning": "Trợ từ で, chỉ phương tiện hoặc nguyên nhân",
+      "PartOfSpeech": "Danh từ, hậu tố",
+      "Explanation": "で（で）có nghĩa là trợ từ で, chỉ phương tiện hoặc nguyên nhân.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:1e1423597b": {
+    "Fields": {
+      "Meaning": "Hộ nông dân, nhà ở nông trại",
+      "PartOfSpeech": "Danh từ",
+      "Explanation": "農家（のうか）có nghĩa là hộ nông dân, nhà ở nông trại.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:05717efa73": {
+    "Fields": {
+      "Meaning": "Năng lực, khả năng",
+      "PartOfSpeech": "Thán từ",
+      "Explanation": "ノー（ノー）có nghĩa là năng lực, khả năng.",
+      "UsageNotes": null
+    },
+    "Examples": {
+      "228158": "Anh ấy có năng lực vượt trội.",
+      "229314": "Họ được đánh giá là có năng lực."
+    }
+  },
+  "openjlpt:ae29f467bd": {
+    "Fields": {
+      "Meaning": "Bảng, mặt trước",
+      "PartOfSpeech": "Danh từ, hậu tố",
+      "Explanation": "表（ひょう）có nghĩa là bảng, mặt trước.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:526233614e": {
+    "Fields": {
+      "Meaning": "Chuyến, phương tiện, sự thuận tiện",
+      "PartOfSpeech": "Danh từ, hậu tố",
+      "Explanation": "便（びん）có nghĩa là chuyến, phương tiện, sự thuận tiện.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:524a699a99": {
+    "Fields": {
+      "Meaning": "Không ngờ, không thể nào, lúc bất trắc",
+      "PartOfSpeech": "Thán từ",
+      "Explanation": "まさか（まさか）có nghĩa là không ngờ, không thể nào, lúc bất trắc.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:379b767ed6": {
+    "Fields": {
+      "Meaning": "Sắp tới, kể từ, suốt từ",
+      "PartOfSpeech": "Tiền tố",
+      "Explanation": "Trong 来年, tiền tố 来 chỉ năm tới. Sau một khoảng thời gian như 数ヶ月来, từ này nghĩa là suốt từ mấy tháng nay.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:074e70b529": {
+    "Fields": {
+      "Meaning": "Hơn nữa, ngoài ra, vào đó",
+      "PartOfSpeech": "Liên từ",
+      "Explanation": "Có thể là liên từ bổ sung ý hoặc それ đi với trợ từ に.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  },
+  "openjlpt:ced135c81e": {
+    "Fields": {
+      "Meaning": "Vì vậy, bởi vì",
+      "PartOfSpeech": "Liên từ",
+      "Explanation": "だから（だから）có nghĩa là vì vậy, bởi vì.",
+      "UsageNotes": null
+    },
+    "Examples": {}
+  }
+}

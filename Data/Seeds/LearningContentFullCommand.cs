@@ -11,20 +11,19 @@ public static class LearningContentFullCommand
         {
             var connection = LearningContentSampleCommand.RequireLocalConnection(db);
             await using var file = File.OpenRead(datasetPath);
-            var bundle = await JsonSerializer.DeserializeAsync<Bundle>(file)
-                ?? throw new InvalidOperationException("Learning dataset is empty.");
-            bundle.Dataset.Validate(full: true);
+            var dataset = await ReadDatasetAsync(file);
+            dataset.Validate(full: true);
 
             Console.WriteLine($"Local database: {connection.DataSource} / {connection.InitialCatalog}");
             foreach (var level in new[] { "N5", "N4", "N3" })
-                Console.WriteLine($"{level}: {bundle.Dataset.Vocabularies.Count(v => v.JLPTLevel == level)} vocabulary, "
-                    + $"{bundle.Dataset.Grammars.Count(g => g.JLPTLevel == level)} grammar.");
+                Console.WriteLine($"{level}: {dataset.Vocabularies.Count(v => v.JLPTLevel == level)} vocabulary, "
+                    + $"{dataset.Grammars.Count(g => g.JLPTLevel == level)} grammar.");
             var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
             Console.WriteLine("Pending migrations: " + JsonSerializer.Serialize(pending));
             if (dryRun) return 0;
             if (pending.Length > 0) await db.Database.MigrateAsync();
 
-            var result = await LearningContentSampleImporter.ImportAsync(db, bundle.Dataset, full: true);
+            var result = await LearningContentSampleImporter.ImportAsync(db, dataset, full: true);
             Console.WriteLine(JsonSerializer.Serialize(new
             {
                 result.AddedSources, result.AddedVocabularies, result.AddedGrammars,
@@ -43,6 +42,10 @@ public static class LearningContentFullCommand
             return 1;
         }
     }
+
+    internal static async Task<LearningContentSampleData> ReadDatasetAsync(Stream stream) =>
+        (await JsonSerializer.DeserializeAsync<Bundle>(stream))?.Dataset
+        ?? throw new InvalidOperationException("Learning dataset is empty.");
 
     private sealed record Bundle(LearningContentSampleData Dataset);
 }

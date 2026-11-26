@@ -17,7 +17,7 @@ namespace JCAP.Tests.Services
 {
     public class GeminiAiClientTests
     {
-        private static IConfiguration BuildConfig()
+        private static IConfiguration BuildConfig(Dictionary<string, string?>? overrides = null)
         {
             var dict = new Dictionary<string, string?>
             {
@@ -27,6 +27,13 @@ namespace JCAP.Tests.Services
                 ["AI:FallbackModels:1"] = "gemini-3.1-flash-lite",
                 ["AI:FallbackModels:2"] = "gemini-3-flash-preview"
             };
+            if (overrides != null)
+            {
+                foreach (var kv in overrides)
+                {
+                    dict[kv.Key] = kv.Value;
+                }
+            }
             return new ConfigurationBuilder().AddInMemoryCollection(dict).Build();
         }
 
@@ -49,15 +56,21 @@ namespace JCAP.Tests.Services
 
         private sealed class StubHttpMessageHandler : HttpMessageHandler
         {
-            private readonly Func<HttpRequestMessage, HttpResponseMessage> _responder;
+            private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _responder;
             public List<string> RequestedModels { get; } = [];
+            public List<string> RequestBodies { get; } = [];
 
             public StubHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responder)
+                : this((req, _) => Task.FromResult(responder(req)))
+            {
+            }
+
+            public StubHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responder)
             {
                 _responder = responder;
             }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var path = request.RequestUri?.AbsolutePath ?? string.Empty;
                 var marker = "/models/";
@@ -69,17 +82,29 @@ namespace JCAP.Tests.Services
                     RequestedModels.Add(colon >= 0 ? rest[..colon] : rest);
                 }
 
-                return Task.FromResult(_responder(request));
+                if (request.Content != null)
+                {
+                    RequestBodies.Add(await request.Content.ReadAsStringAsync(cancellationToken));
+                }
+
+                return await _responder(request, cancellationToken);
             }
         }
 
-        private static GeminiAiClient CreateClient(StubHttpMessageHandler handler)
+        private static GeminiAiClient CreateClient(
+            StubHttpMessageHandler handler,
+            IConfiguration? config = null,
+            GeminiModelCooldownTracker? cooldownTracker = null)
         {
             var httpClient = new HttpClient(handler);
             var factoryMock = new Mock<IHttpClientFactory>();
             factoryMock.Setup(f => f.CreateClient("GeminiAiClient")).Returns(httpClient);
 
-            return new GeminiAiClient(factoryMock.Object, BuildConfig(), NullLogger<GeminiAiClient>.Instance);
+            return new GeminiAiClient(
+                factoryMock.Object,
+                config ?? BuildConfig(),
+                NullLogger<GeminiAiClient>.Instance,
+                cooldownTracker);
         }
 
         [Fact]
@@ -176,6 +201,190 @@ namespace JCAP.Tests.Services
             Assert.True(res.IsSuccess);
             Assert.Equal("gemini-3.5-flash-lite", res.ModelUsed);
             Assert.Equal(new[] { "gemini-3-flash-preview", "gemini-3.5-flash-lite" }, handler.RequestedModels);
+        }
+
+        [Fact]
+        public async Task GenerateAsync_SkipsThoughtParts_AndStripsMarkdownJsonFence()
+        {
+            var thoughtAndJsonResponse = JsonSerializer.Serialize(new
+            {
+                candidates = new[]
+                {
+                    new
+                    {
+                        content = new
+                        {
+                            parts = new object[]
+                            {
+                                new { thought = true, text = "Internal chain of thought..." },
+                                new { text = "```json\n{\"reply\":\"こんにちは\"}\n```" }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(thoughtAndJsonResponse, Encoding.UTF8, "application/json")
+            });
+
+            var client = CreateClient(handler);
+            var res = await client.GenerateAsync(AiRequest.CreateJson("sys", "hi"));
+
+            Assert.True(res.IsSuccess);
+            Assert.Equal("{\"reply\":\"こんにちは\"}", res.Content);
+        }
+
+        [Fact]
+        public async Task GenerateAsync_WhenJsonResponseIsMalformed_FallsBackToNextModel()
+        {
+            var handler = new StubHttpMessageHandler(req =>
+            {
+                if (req.RequestUri!.AbsolutePath.Contains("gemini-3.5-flash-lite"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(GeminiSuccessJson("{\"truncated\": "), Encoding.UTF8, "application/json")
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(GeminiSuccessJson("{\"valid\":true}"), Encoding.UTF8, "application/json")
+                };
+            });
+
+            var client = CreateClient(handler);
+            var res = await client.GenerateAsync(AiRequest.CreateJson("sys", "hi"));
+
+            Assert.True(res.IsSuccess);
+            Assert.Equal("gemini-3.1-flash-lite", res.ModelUsed);
+            Assert.Equal("{\"valid\":true}", res.Content);
+        }
+
+        [Fact]
+        public async Task GenerateAsync_SetsAppropriateThinkingLevelPerModel()
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["AI:ApiKey"] = "test-api-key",
+                    ["AI:Model"] = "gemini-3.5-flash-lite",
+                    ["AI:FallbackModels:0"] = "gemini-3.5-flash-lite",
+                    ["AI:FallbackModels:1"] = "gemini-4-hydrogen",
+                    ["AI:FallbackModels:2"] = "gemini-3.8-flash"
+                })
+                .Build();
+
+            var handler = new StubHttpMessageHandler(req =>
+            {
+                if (req.RequestUri!.AbsolutePath.Contains("gemini-3.8-flash"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(GeminiSuccessJson("{\"ok\":true}"), Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+            });
+
+            var client = CreateClient(handler, config);
+            var res = await client.GenerateAsync(AiRequest.CreateJson("sys", "hi"));
+
+            Assert.True(res.IsSuccess);
+            Assert.Equal(3, handler.RequestBodies.Count);
+            Assert.Contains("\"thinkingLevel\":\"MINIMAL\"", handler.RequestBodies[0]); // 3.5-flash-lite
+            Assert.Contains("\"thinkingLevel\":\"LOW\"", handler.RequestBodies[1]);     // 4-hydrogen
+            Assert.Contains("\"thinkingLevel\":\"LOW\"", handler.RequestBodies[2]);     // 3.8-flash
+        }
+
+        [Fact]
+        public async Task GenerateAsync_WhenModelTimesOut_FallsBackImmediatelyToNextModel()
+        {
+            var config = BuildConfig(new Dictionary<string, string?>
+            {
+                ["AI:PerModelTimeoutSeconds"] = "1",
+                ["AI:TransientRetryCount"] = "0"
+            });
+
+            var handler = new StubHttpMessageHandler(async (req, ct) =>
+            {
+                if (req.RequestUri!.AbsolutePath.Contains("gemini-3.5-flash-lite"))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(GeminiSuccessJson("{\"fast\":true}"), Encoding.UTF8, "application/json")
+                };
+            });
+
+            var client = CreateClient(handler, config);
+            var res = await client.GenerateAsync(AiRequest.CreateJson("sys", "hi"));
+
+            Assert.True(res.IsSuccess);
+            Assert.Equal("gemini-3.1-flash-lite", res.ModelUsed);
+            Assert.Equal(new[] { "gemini-3.5-flash-lite", "gemini-3.1-flash-lite" }, handler.RequestedModels);
+        }
+
+        [Fact]
+        public async Task GenerateAsync_SharedCooldownTracker_DeprioritizesFailedModelAcrossRequests()
+        {
+            var tracker = new GeminiModelCooldownTracker();
+            var handler = new StubHttpMessageHandler(req =>
+            {
+                if (req.RequestUri!.AbsolutePath.Contains("gemini-3.5-flash-lite"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(GeminiSuccessJson("{\"ok\":true}"), Encoding.UTF8, "application/json")
+                };
+            });
+
+            var client1 = CreateClient(handler, cooldownTracker: tracker);
+            var res1 = await client1.GenerateAsync(AiRequest.CreateJson("sys", "turn 1"));
+            Assert.True(res1.IsSuccess);
+            Assert.Equal(new[] { "gemini-3.5-flash-lite", "gemini-3.1-flash-lite" }, handler.RequestedModels);
+
+            handler.RequestedModels.Clear();
+
+            // Request kế tiếp (dù không truyền PreferredModel) nhảy thẳng sang model khỏe, bỏ qua 3.5 đang cooldown
+            var client2 = CreateClient(handler, cooldownTracker: tracker);
+            var res2 = await client2.GenerateAsync(AiRequest.CreateJson("sys", "turn 2"));
+            Assert.True(res2.IsSuccess);
+            Assert.Equal("gemini-3.1-flash-lite", res2.ModelUsed);
+            Assert.Equal(new[] { "gemini-3.1-flash-lite" }, handler.RequestedModels);
+        }
+
+        [Fact]
+        public async Task GenerateAsync_WhenAllModelsTransiently503_RetriesAndRecovers()
+        {
+            var attempts = 0;
+            var handler = new StubHttpMessageHandler(req =>
+            {
+                attempts++;
+                if (attempts <= 3)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(GeminiSuccessJson("{\"recovered\":true}"), Encoding.UTF8, "application/json")
+                };
+            });
+
+            var client = CreateClient(handler);
+            var res = await client.GenerateAsync(AiRequest.CreateJson("sys", "hi"));
+
+            Assert.True(res.IsSuccess);
+            Assert.Equal("{\"recovered\":true}", res.Content);
+            Assert.Equal(4, attempts);
         }
     }
 }

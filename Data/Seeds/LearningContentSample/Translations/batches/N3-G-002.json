@@ -1,0 +1,85 @@
+{
+  "Kind": "Grammars",
+  "Level": "N3",
+  "Status": "reviewed-by-agent",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "amari-ni-mo",
+      "Fields": {
+        "Meaning": "Quá, đến mức",
+        "Formation": "あまりに／あまりにも ＋ từ chỉ mức độ, đặc điểm hoặc trạng thái",
+        "Explanation": "Nhấn mạnh mức độ vượt xa bình thường và có thể dẫn tới kết quả ở vế sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "amari-ni-mo:example:1": "Quần áo ở tiệm này đắt quá nên tôi chẳng mua được gì.",
+        "amari-ni-mo:example:2": "Tôi bận đến mức chẳng có cả thời gian ăn trưa."
+      },
+      "SourceHash": "1dfb0474484f7d82fdfadf3b6ab456c0b20c62a01241808362bf85bf1d7583a0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ari",
+      "Fields": {
+        "Meaning": "Có, có kèm",
+        "Formation": "Danh từ ＋ あり／ありで",
+        "Explanation": "Cho biết một thứ hoặc điều kiện có sẵn. わけあり là cách nói cố định chỉ hàng có lý do đặc biệt, chẳng hạn bị lỗi nhẹ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ari:example:1": "Căn hộ này có máy lạnh và có thể dọn vào ngay.",
+        "ari:example:2": "Hàng có lý do đặc biệt được bán rẻ hơn một chút."
+      },
+      "SourceHash": "f43242a9bb7760b039c72bc0cd72cdbdce24a8cedefc1524b2664f7c43615111"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "aruiwa",
+      "Fields": {
+        "Meaning": "Hoặc, hoặc cũng có thể",
+        "Formation": "A ＋ あるいは ＋ B",
+        "Explanation": "Nối các lựa chọn hoặc khả năng. Thường gặp trong cách nói hay văn viết trang trọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "aruiwa:example:1": "Xin liên hệ qua điện thoại hoặc email.",
+        "aruiwa:example:2": "Có thể anh ấy đã về đến nhà, hoặc vẫn còn trên tàu."
+      },
+      "SourceHash": "ad06908f0304f99ba54753c5931d83f37cde695ea6a2b2d03969db40c44b8e99"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "iu-made-mo-nai",
+      "Fields": {
+        "Meaning": "Không cần phải nói, hiển nhiên",
+        "Formation": "Mệnh đề ＋ のは言うまでもない／言うまでもなく ＋ mệnh đề",
+        "Explanation": "Nêu điều người nói cho là rõ ràng hoặc ai cũng hiểu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "iu-made-mo-nai:example:1": "Sức khỏe quan trọng hơn hết là điều hiển nhiên.",
+        "iu-made-mo-nai:example:2": "Chắc không cần nhắc, nhưng xin hãy tuân thủ hạn chót."
+      },
+      "SourceHash": "4eb83b2aa1e42eea70302174607d2f09a857416196730594edcd1ab4b8106aa0"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ikura-temo",
+      "Fields": {
+        "Meaning": "Dù… đến đâu",
+        "Formation": "いくら ＋ động từ thể て ＋ も／tính từ い dạng くても／danh từ hoặc tính từ な ＋ でも",
+        "Explanation": "Nhấn mạnh kết quả không thay đổi dù mức độ của điều kiện cao đến đâu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "ikura-temo:example:1": "Dù tôi nhờ đến mấy, anh ấy cũng không giúp.",
+        "ikura-temo:example:2": "Dù rẻ đến đâu, tôi cũng không mua thứ mình không cần."
+      },
+      "SourceHash": "df5aa660abc971f60d82c83a7b5a5aaf515f5620cd282de9435d3b2f6b7bb99b"
+    }
+  ]
+}

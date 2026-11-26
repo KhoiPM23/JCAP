@@ -23,7 +23,7 @@ function params(filters: LearningFilters) {
 export const adminLearningService = {
   topics: (filters: LearningFilters, signal?: AbortSignal) => request<LearningPage<TopicRow>>(`topics?${params(filters)}`, 'GET', undefined, signal),
   contents: (kind: ContentKind, filters: LearningFilters, signal?: AbortSignal) => request<LearningPage<ContentRow>>(`${kind}?${params(filters)}`, 'GET', undefined, signal),
-  options: (signal?: AbortSignal) => request<TopicOption[]>('topics/options', 'GET', undefined, signal),
+  options: (signal?: AbortSignal, kind?: ContentKind) => request<TopicOption[]>(`topics/options${kind ? `?kind=${kind}` : ''}`, 'GET', undefined, signal),
   topic: (id: number, signal?: AbortSignal) => request<TopicDetail>(`topics/${id}`, 'GET', undefined, signal),
   detail: (kind: ContentKind, id: number, signal?: AbortSignal) => request<ContentDetail>(`${kind}/${id}`, 'GET', undefined, signal),
   saveTopic: (id: number | null, data: SaveTopic) => request<TopicDetail>(id ? `topics/${id}` : 'topics', id ? 'PUT' : 'POST', data),

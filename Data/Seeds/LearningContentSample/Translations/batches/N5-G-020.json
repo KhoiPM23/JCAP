@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa, cách dùng và câu ví dụ theo bản Nhật. Dùng lại bản dịch khi trùng ID câu nguồn."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "e-iku",
+      "Fields": {
+        "Meaning": "Đi đến một nơi",
+        "Formation": "Địa điểm ＋ へ ＋ 行く",
+        "Explanation": "Đặt へ sau địa điểm để nêu nơi mình đi tới. Với 行く, nhiều ngữ cảnh cũng dùng được に.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "e-iku:example:1": "Tuần sau tôi sẽ đi Tokyo.",
+        "e-iku:example:2": "Chủ nhật tôi đã đi công viên."
+      },
+      "SourceHash": "0f86b2e257467b305d6a11d4951d3c5265ce6d0f991e3eea17dc89a5195c87e7"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "hou-ga-ii",
+      "Fields": {
+        "Meaning": "Nên làm gì, tốt hơn là làm gì",
+        "Formation": "Động từ thể た ＋ ほうがいい",
+        "Explanation": "Dùng mẫu này để khuyên ai đó nên làm một việc. Có thể nêu lý do trước lời khuyên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "hou-ga-ii:example:1": "Bạn đang mệt nên đi ngủ sớm nhé.",
+        "hou-ga-ii:example:2": "Có bài kiểm tra nên hôm nay bạn nên học bài."
+      },
+      "SourceHash": "c4b82cbba478e44207b7e57efdb275c842835a23be1d6127965e5cafc68d465c"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mae-ni",
+      "Fields": {
+        "Meaning": "Trước khi, trước",
+        "Formation": "Động từ dạng từ điển ＋ 前に\nDanh từ ＋ の前に",
+        "Explanation": "前に nói việc chính xảy ra trước hành động hoặc thời điểm được nêu. Với một địa điểm, の前に cũng có thể chỉ vị trí phía trước.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mae-ni:example:1": "Tôi đánh răng trước khi đi ngủ.",
+        "mae-ni:example:2": "Tôi rửa tay trước bữa ăn."
+      },
+      "SourceHash": "f8bf8fd5eec2590238720ce73c430084a0f6a9f50f16efc03212f2480dd716f8"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mashou",
+      "Fields": {
+        "Meaning": "Cùng làm nhé",
+        "Formation": "Động từ bỏ ます ＋ ましょう",
+        "Explanation": "ましょう dùng để đề nghị cùng thực hiện một việc một cách lịch sự.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mashou:example:1": "Mình ăn trưa cùng nhau nhé.",
+        "mashou:example:2": "Mình gặp nhau ở ga lúc ba giờ nhé."
+      },
+      "SourceHash": "956002505613926ea9edbfd43879f302dd43e537ae2b56c4f0d1e21097ffe6a1"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "mashou-ka",
+      "Fields": {
+        "Meaning": "Để tôi làm nhé, mình làm nhé",
+        "Formation": "Động từ bỏ ます ＋ ましょうか",
+        "Explanation": "ましょうか có thể dùng để ngỏ lời giúp hoặc hỏi xem có nên cùng làm gì. Chủ thể thường được hiểu từ ngữ cảnh.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "mashou-ka:example:1": "Để tôi xách hành lý giúp nhé?",
+        "mashou-ka:example:2": "Mình về thôi nhỉ?"
+      },
+      "SourceHash": "f6828b6c2dc8547daf75a876fa7cedb89647c41bdbffa7b424d4c9d72f23a0e4"
+    }
+  ]
+}

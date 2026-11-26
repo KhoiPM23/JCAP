@@ -42,7 +42,7 @@ import { AdminExploreView } from '../views/admin/AdminExploreView';
 import { AdminExplorePrefectureView } from '../views/admin/AdminExplorePrefectureView';
 import { AdminExploreSpotEditorView } from '../views/admin/AdminExploreSpotEditorView';
 import { ChangePasswordView } from '../views/ChangePasswordView';
-import { ConversationHistoryView } from '../views/ConversationHistoryView';
+import { ResultsView } from '../views/results/ResultsView';
 import { ConversationResultDetailView } from '../views/ConversationResultDetailView';
 import { SettingsView } from '../views/SettingsView';
 import { FlashcardSetsView } from '../views/self-study/FlashcardSetsView';
@@ -391,16 +391,7 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
-      {/* Placement Test History & Evidence Inspector */}
-      <Route
-        path="/placement-test/history"
-        element={
-          <PrivateRoute>
-            <PlacementTestHistoryView />
-          </PrivateRoute>
-        }
-      />
-      {/* Placement Test Interactive Practice Room */}
+      {/* Placement Test Interactive Practice Room (Fullscreen) */}
       <Route
         path="/placement-test"
         element={
@@ -481,8 +472,11 @@ export const AppRouter: React.FC = () => {
         <Route path="/shadowing/dialogues/:id" element={<LearnerShadowingDetailView />} />
         <Route path="/shadowing/:id" element={<LearnerShadowingDetailView />} />
         {/* UC20 & UC21: Lịch sử và chi tiết kết quả hội thoại */}
-        <Route path="/roleplay/results" element={<ConversationHistoryView />} />
+        {/* Kết quả: Hội thoại AI và Shadowing, chuyển bằng nút nhỏ trong trang */}
+        <Route path="/roleplay/results" element={<ResultsView />} />
         <Route path="/roleplay/results/:resultId" element={<ConversationResultDetailView />} />
+        {/* Lịch sử hoàn thành Placement Test (tách riêng, giữ thanh bên điều hướng) */}
+        <Route path="/placement-test/history" element={<PlacementTestHistoryView />} />
 
         {/* FE-05: Học thẻ ghi nhớ (Flashcard & SRS Review) */}
         <Route path="/flashcards" element={<FlashcardSetsView />} />

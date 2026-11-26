@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "31f735aed4",
+      "Fields": {
+        "Meaning": "Cho lên xe, chở",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "乗せる（のせる）có nghĩa là cho lên xe, chở.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108594": "Trên đường về, anh ấy cho tôi đi nhờ xe.",
+        "178230": "Cho tôi đi nhờ xe với."
+      },
+      "SourceHash": "b7b80e3f3600ff37ee4b9b33a48b7fe06c967b1041918fbedbca7ac4c578fd2c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "27fcc1be98",
+      "Fields": {
+        "Meaning": "Loại bỏ, ngoại trừ",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "除く（のぞく）có nghĩa là loại bỏ, ngoại trừ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121323": "Ngoại trừ phần phát âm, mọi người đều nói tiếng Pháp giỏi.",
+        "190768": "Bác sĩ giúp anh ấy hết đau."
+      },
+      "SourceHash": "f877dd186a046503c5842d82c649cb25422af2095454369140577bf29bc5418a"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8d2c6575c2",
+      "Fields": {
+        "Meaning": "Mong muốn, hy vọng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "望み（のぞみ）có nghĩa là mong muốn, hy vọng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "231309": "Đội đó hầu như chẳng có hy vọng vô địch.",
+        "233025": "Mong điều bạn muốn sẽ thành hiện thực."
+      },
+      "SourceHash": "3c112e762a2e5b3ed55f936e6b3050904fb32113fe65805de4318a555ef7fdc2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "767cb5e2e6",
+      "Fields": {
+        "Meaning": "Mong muốn",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "望む（のぞむ）có nghĩa là mong muốn.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "81371": "Em gái tôi không muốn giao du với họ.",
+        "140808": "Toàn dân mong muốn hòa bình."
+      },
+      "SourceHash": "a4724b7bb3c50bf938f23def57fede9626f921d9be7c6ca73ac3c19e419036ea"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "aeff3c4d96",
+      "Fields": {
+        "Meaning": "Sau, về sau",
+        "PartOfSpeech": "Danh từ, phó từ, bổ nghĩa với の",
+        "Explanation": "後（のち）có nghĩa là sau, về sau.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122897": "Nhật ký là nền tảng cho cuốn sách cô ấy viết sau này.",
+        "142999": "Trời nắng, sau đó chuyển nhiều mây."
+      },
+      "SourceHash": "d41cb3e013a8999ba2c814c431abd94a49403dfc900c247f4ae2a7bc20c9316c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4850008747",
+      "Fields": {
+        "Meaning": "Gõ cửa",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ノック（ノック）có nghĩa là gõ cửa.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122091": "Xin hãy gõ cửa trước khi vào.",
+        "137114": "Có ai đó gõ cửa."
+      },
+      "SourceHash": "30950d69a5adbc739c690d066380d5c232e9cce8351a9a784a45c7372bdd09c3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ad88f57a3e",
+      "Fields": {
+        "Meaning": "Duỗi, kéo dài",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "伸ばす（のばす）có nghĩa là duỗi, kéo dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "84709": "Bố duỗi chân trên ghế sofa.",
+        "189888": "Tôi không duỗi được tay phải."
+      },
+      "SourceHash": "0d916afc1833e2c65819d9a456855f6e59f71ed8625f6f113471f21a31016f54"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d5c6b153f1",
+      "Fields": {
+        "Meaning": "Dài ra, phát triển",
+        "PartOfSpeech": "Động từ nhóm 2, tự động từ",
+        "Explanation": "伸びる（のびる）có nghĩa là dài ra, phát triển.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146413": "Mức tiêu dùng có lẽ chỉ tăng nhẹ.",
+        "169528": "Cỏ dại mọc cao hơn hoa."
+      },
+      "SourceHash": "871f89f5a0b24e6c55d3aff7a7834601091d7e9c7944dde27bdb706018806cb4"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "703453c2a3",
+      "Fields": {
+        "Meaning": "Nêu, trình bày",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "述べる（のべる）có nghĩa là nêu, trình bày.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "88230": "Cô ấy nêu cảm nghĩ về chiến tranh.",
+        "157704": "Tôi nói lời từ biệt với khách."
+      },
+      "SourceHash": "93499edd57b9f833bf7743ec1ac4be1902fba1ef81a0c5f3e021a9f1f9974864"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9df259e377",
+      "Fields": {
+        "Meaning": "Lên, mọc",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "昇る（のぼる）có nghĩa là lên, mọc.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121929": "Mèo leo cây được, còn chó thì không.",
+        "212895": "Lúc ấy mặt trời vừa mọc."
+      },
+      "SourceHash": "701b8cbd64ed66be0fecd37ceb6047397d961d2f3297840294e68f5ec35f92d6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2af9a4e3e2",
+      "Fields": {
+        "Meaning": "Thảnh thơi, thong thả",
+        "PartOfSpeech": "Phó từ, phó từ có thể đi với と",
+        "Explanation": "のんびり（のんびり）có nghĩa là thảnh thơi, thong thả.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122138": "Chủ nhật tôi nghỉ ngơi thong thả.",
+        "137870": "Nghỉ hưu rồi nên tôi định sống thảnh thơi một thời gian."
+      },
+      "SourceHash": "97fa05071766d08a1fbbed90916b226060ebdf808b942b3a85b712e1a8ecdf89"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "ca4cbf878d",
+      "Fields": {
+        "Meaning": "Nơi, dịp, bầu không khí",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "場（ば）có nghĩa là nơi, dịp, bầu không khí.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "146091": "Bầu không khí chùng xuống.",
+        "223399": "Cà vạt này không hợp với dịp như thế."
+      },
+      "SourceHash": "5b1cf6d05ac5009e05e5308399c75e3e12879f8b7e7c52618b2e789cf5d86b28"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "08f58c3770",
+      "Fields": {
+        "Meaning": "À, ôi, hầy",
+        "PartOfSpeech": "Thán từ",
+        "Explanation": "はあ（はあ）có nghĩa là à, ôi, hầy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75572": "Hầy, không biết mình nên đón nhận tình hình này thế nào."
+      },
+      "SourceHash": "f3a4b5e6e2a08824e6ca43aee7fa9aad38887d3daf53bbb07c4c6ff9452ab0b3"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2add5a6bbc",
+      "Fields": {
+        "Meaning": "Phần trăm",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パーセント（パーセント）có nghĩa là phần trăm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83517": "Giá gạo tăng 3%.",
+        "174932": "Thanh toán bằng tiền mặt được giảm 10%."
+      },
+      "SourceHash": "c5c3d4c285a60a52bac6dbc9e6e3d3b149f596a8ce0248ab3ad340854a8e5bbf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9a9e81c6ea",
+      "Fields": {
+        "Meaning": "Tro",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "灰（はい）có nghĩa là tro.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "214381": "Mọi thứ cháy thành tro.",
+        "214598": "Hãy dọn tro khỏi lò sưởi."
+      },
+      "SourceHash": "a55a502242ddf0aa77feb8b4a4667e28aa540e5a4bc5659e668d5b31cff406e0"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f59cd43bb0",
+      "Fields": {
+        "Meaning": "Đàn violin",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "バイオリン（バイオリン）có nghĩa là đàn violin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "91768": "Cô ấy chơi violin rất giỏi.",
+        "198358": "Âm thanh của đàn vĩ cầm rất đẹp."
+      },
+      "SourceHash": "999fe82130001afa8c3aff7e21a5db87ce759a59fdfbb96d176cf64b8477c65b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "34eebaa289",
+      "Fields": {
+        "Meaning": "Đi bộ đường dài",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ハイキング（ハイキング）có nghĩa là đi bộ đường dài.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "198348": "Chắc nên hủy chuyến đi bộ đường dài nhỉ.",
+        "198350": "Chuyến đi bộ đường dài bị hủy vì mưa."
+      },
+      "SourceHash": "84e7d48242cf83a9acc4f27409ec8a57077d6cea05bf98cf77b4146cb6675a25"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c4a32b9e77",
+      "Fields": {
+        "Meaning": "Giao hàng",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "配達（はいたつ）có nghĩa là giao hàng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "122151": "Anh chị giao vào Chủ nhật được không?",
+        "199667": "Bao lâu thì giao được hàng ạ?"
+      },
+      "SourceHash": "08f80b06f384737e7167f2d65b8641be3ab1328da7f61bc1371518659dd041fc"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "f33e48aa94",
+      "Fields": {
+        "Meaning": "Ống, tẩu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "パイプ（パイプ）có nghĩa là ống, tẩu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "111317": "Anh ấy ngậm tẩu khi nói.",
+        "198328": "Khí rò ra từ vết nứt trên ống."
+      },
+      "SourceHash": "15997609027956476fb3cdb6de77d3ed4a243c5cbfb71032ab5fe75c77305510"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "66d7ecadb1",
+      "Fields": {
+        "Meaning": "Diễn viên",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "俳優（はいゆう）có nghĩa là diễn viên.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "101297": "Lẽ ra anh ấy nên làm diễn viên.",
+        "112456": "Anh ấy làm quen với diễn viên đó."
+      },
+      "SourceHash": "078e3bcda5b56ef5a711561e40c38091e4e859aa48091a4eaf0daedb20c6a02e"
+    }
+  ]
+}

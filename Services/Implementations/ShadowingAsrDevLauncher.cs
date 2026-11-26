@@ -92,7 +92,7 @@ namespace JCAP.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Không tự bật được dịch vụ nhận dạng Shadowing ({Message}). Cài Python rồi chạy .\\scripts\\setup-shadowing.ps1.", ex.Message);
+                _logger.LogWarning("Không tự bật được dịch vụ nhận dạng Shadowing ({Message}). Chạy một lần scripts\\setup-shadowing.cmd (tự cài Python nếu thiếu).", ex.Message);
                 return;
             }
             if (_process == null) return;
@@ -110,7 +110,7 @@ namespace JCAP.Services.Implementations
                     lock (_recentErrors)
                     {
                         _logger.LogWarning(
-                            "Dịch vụ nhận dạng Shadowing dừng ngay khi bật (mã {Code}). Chạy một lần .\\scripts\\setup-shadowing.ps1 để cài thư viện. Lỗi cuối:{NewLine}{Errors}",
+                            "Dịch vụ nhận dạng Shadowing dừng ngay khi bật (mã {Code}). Chạy một lần scripts\\setup-shadowing.cmd để cài thư viện. Lỗi cuối:{NewLine}{Errors}",
                             _process.ExitCode, Environment.NewLine, string.Join(Environment.NewLine, _recentErrors));
                     }
                     return;

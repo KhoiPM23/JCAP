@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4fa73fd5b1",
+      "Fields": {
+        "Meaning": "Thế nhưng, vậy mà",
+        "PartOfSpeech": "Liên từ",
+        "Explanation": "ところが（ところが）có nghĩa là thế nhưng, vậy mà.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "193645": "Nếu giàu thì tôi sẽ đi du học, nhưng thực tế tôi không thể.",
+        "200872": "Thế nhưng thật ra chẳng làm gì được."
+      },
+      "SourceHash": "95d68195100e8c9bd63381588640e53efda537b0df28f12ceda70be32087541d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "af617a11ed",
+      "Fields": {
+        "Meaning": "Nhân tiện, dù có làm cũng",
+        "PartOfSpeech": "Trợ từ, Liên từ",
+        "Explanation": "Đứng đầu câu để chuyển đề tài. Sau động từ thể た, mẫu たところで có nghĩa dù làm cũng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200850": "Nhân tiện, anh ấy bị sao vậy?",
+        "2315829": "Dù càu nhàu cũng chẳng ích gì."
+      },
+      "SourceHash": "22e0c53643eb42b4d60e198c5e233c55f86595f9ab7f781733eff59c68ca5522"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "adddc0dcc8",
+      "Fields": {
+        "Meaning": "Leo núi",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "登山（とざん）có nghĩa là leo núi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "190626": "Cả đoàn không leo được ngọn núi đó.",
+        "211334": "Đôi giày đó không hợp để leo núi đâu."
+      },
+      "SourceHash": "5284f6be8408761ee0bd9d25c6c3b6750b7727376ad202e89f7b27ea21a3abb9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "142b45f619",
+      "Fields": {
+        "Meaning": "Thành phố, đô thị",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "都市（とし）có nghĩa là thành phố, đô thị.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "154652": "Tôi đến thành phố đó mỗi năm một lần.",
+        "220369": "Thành phố này rộng bao nhiêu?"
+      },
+      "SourceHash": "d9ab6492cf17dd43836ff808ab86abb740bc275c297428962aa268c14921af6b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "54e840405e",
+      "Fields": {
+        "Meaning": "Năm tháng, khoảng thời gian",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "年月（としつき）có nghĩa là năm tháng, khoảng thời gian.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "229759": "Bạn mất bao lâu để sưu tầm ngần ấy đồng xu?",
+        "236018": "Mười năm là một quãng thời gian dài."
+      },
+      "SourceHash": "4379d3637d12a443f0b9d471de617962acbb8ab43cd04607e53763033303e2f2"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c660f5b541",
+      "Fields": {
+        "Meaning": "Sách, tài liệu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "図書（としょ）có nghĩa là sách, tài liệu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "164142": "Xin cứ tự nhiên sử dụng sách của tôi."
+      },
+      "SourceHash": "196599cb4a2bd6ccb77f98950c90e7256c652b6e1309d9aaf1ce8a37dc030591"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2af3aed135",
+      "Fields": {
+        "Meaning": "Người cao tuổi",
+        "PartOfSpeech": "Danh từ, bổ nghĩa với の",
+        "Explanation": "年寄（としより）có nghĩa là người cao tuổi.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "77294": "Không được trêu chọc người cao tuổi.",
+        "77304": "Người cao tuổi cần có niềm vui và mục đích sống."
+      },
+      "SourceHash": "78820a0adcd8a13b4ea0af8c90206e22d1e7736e79764a8d2a69a2b576b23542"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "e599741fb6",
+      "Fields": {
+        "Meaning": "Đóng, khép, nhắm",
+        "PartOfSpeech": "Động từ nhóm 2",
+        "Explanation": "閉じる（とじる）có nghĩa là đóng, khép, nhắm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "99502": "Anh ấy nhắm mắt và hôn cô ấy.",
+        "99509": "Anh ấy đứng đó, mắt nhắm lại."
+      },
+      "SourceHash": "689faa3d3783710b3886d6652244b52a02bf5b7a3c78f13e2a5a4a67c2eb282d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5b36334b8a",
+      "Fields": {
+        "Meaning": "Ngay khi, vừa… thì",
+        "PartOfSpeech": "Danh từ, phó từ",
+        "Explanation": "途端（とたん）có nghĩa là ngay khi, vừa… thì.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "83058": "Mẹ tái mặt ngay khi nghe tin đó.",
+        "217686": "Vừa nghe điều này, anh ấy tái mặt."
+      },
+      "SourceHash": "e6c870e2bba0d78ab3974da4af715ba238865c4b5ae24db55e35213725bdb735"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "30dc28fcf5",
+      "Fields": {
+        "Meaning": "Đất, mảnh đất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "土地（とち）có nghĩa là đất, mảnh đất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "100337": "Anh ấy thừa kế một mảnh đất lớn từ bố.",
+        "114962": "Anh ấy có quyền sở hữu mảnh đất đằng kia."
+      },
+      "SourceHash": "2974edc78d26f6cf0166a792c1400d899c054d2e2fb2c371228c8e1e6ca35714"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b0fe689407",
+      "Fields": {
+        "Meaning": "Đột nhiên, bất ngờ",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, phó từ",
+        "Explanation": "突然（とつぜん）có nghĩa là đột nhiên, bất ngờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "123274": "Tất cả đèn đột nhiên tắt hết.",
+        "214359": "Mọi chuyện xảy ra đột ngột."
+      },
+      "SourceHash": "938c2697db2aaf8236ae3e734bdaf51f36070f1f1c15720cc0fe22623eb7159b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7ea8d83553",
+      "Fields": {
+        "Meaning": "Đứng đầu, vị trí cao nhất",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "トップ（トップ）có nghĩa là đứng đầu, vị trí cao nhất.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110584": "Anh ấy suýt lọt vào nhóm dẫn đầu.",
+        "157956": "Tôi muốn đứng đầu công ty."
+      },
+      "SourceHash": "732ceb8acbfb3f0874cb6295a5b5489928f6a194ea74c42e552dc19f0d7f825b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "37b92c0329",
+      "Fields": {
+        "Meaning": "Đến nơi, tới được, với tới",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "届く（とどく）có nghĩa là đến nơi, tới được, với tới.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168098": "Thư gửi cho tôi đã đến chưa?",
+        "224786": "Từ đây nói thì bên kia cũng nghe được."
+      },
+      "SourceHash": "055971a813966c05361be0de51bf231da5e6b5bdb4e744ad6f813bc3c016c5ed"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5f300646e4",
+      "Fields": {
+        "Meaning": "Dù sao, trước hết",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "とにかく（とにかく）có nghĩa là dù sao, trước hết.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "200436": "Dù sao, anh chị đến được thì tôi rất vui.",
+        "200472": "Dù sao thì thi xong tôi cũng thấy nhẹ nhõm."
+      },
+      "SourceHash": "a8dde24393a2fb9d26b7b6657ef22bfbe25b101219f2099806fe77811a3e4279"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d07f542720",
+      "Fields": {
+        "Meaning": "Cho bay, phóng đi, bỏ qua",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "飛ばす（とばす）có nghĩa là cho bay, phóng đi, bỏ qua.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "166363": "Chúng tôi thả con chim bay đi.",
+        "236826": "Chúng tôi cố tình bỏ qua lượt của anh ấy."
+      },
+      "SourceHash": "39a9d0f32b1a3c8a6dfe3c4b800082611eb6bf2d8034771c8b981624326eca20"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b4d7ffd3f9",
+      "Fields": {
+        "Meaning": "Lao ra, nhảy ra",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "飛び出す（とびだす）có nghĩa là lao ra, nhảy ra.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "121988": "Con mèo lao ra khỏi phòng.",
+        "125641": "Tôi đã lao ra đường mất rồi."
+      },
+      "SourceHash": "13b5f291d592d7fcf231b31a000741754a376d1709eb3016762dcd84a5c58870"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "4591eb1d00",
+      "Fields": {
+        "Meaning": "Giữ lại, cố định, lưu tâm",
+        "PartOfSpeech": "Động từ nhóm 2, tha động từ",
+        "Explanation": "留める（とめる）có nghĩa là giữ lại, cố định, lưu tâm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80064": "Mảnh gỗ được cố định bằng một thanh chặn.",
+        "219902": "Xin chỉ mình anh chị xem tài liệu này."
+      },
+      "SourceHash": "c7ad6744cfdb02da63177ce62c5ad390c2c70a7ee61af9d4d71c6bb122d530a7"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "8b4138b415",
+      "Fields": {
+        "Meaning": "Bạn, bạn bè",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "友（とも）có nghĩa là bạn, bạn bè.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "118862": "Anh ấy không có bạn thân để tâm sự.",
+        "195675": "Bạn trong lúc hoạn nạn mới là bạn thật sự."
+      },
+      "SourceHash": "ffb6e5c33bb2410fbcd677fe1d6986bffb3ea1e93a7322ecb3abecb6be73b879"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "89564cdaf0",
+      "Fields": {
+        "Meaning": "Cùng, cùng nhau, cả hai",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "共に（ともに）có nghĩa là cùng, cùng nhau, cả hai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "107578": "Anh ấy tử tế cả trong lời nói lẫn hành động.",
+        "164886": "Bạn đi cùng tôi được không?"
+      },
+      "SourceHash": "d4f5d8388d24cf346e710cd99a7484bc8a184d25830f3f3cf23e921c77854adf"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "94cd75297e",
+      "Fields": {
+        "Meaning": "Thứ Bảy",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "土曜（どよう）có nghĩa là thứ Bảy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "110385": "Anh ấy thường ăn ngoài vào tối thứ Bảy.",
+        "124484": "Thứ Bảy có phải đi học không?"
+      },
+      "SourceHash": "490bff4d3a36bcd37e0072e67cc37411ba44549570eca5babbe91fbf5941f481"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Grammars",
+  "Level": "N5",
+  "ReviewNotes": [
+    "Đối chiếu 5 mẫu và 10 câu theo bản Nhật."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "da-desu",
+      "Fields": {
+        "Meaning": "Là, ở trạng thái được nêu",
+        "Formation": "Danh từ hoặc gốc tính từ đuôi な ＋ だ／です",
+        "Explanation": "Đặt だ hoặc です sau danh từ hay tính từ đuôi な để kết thúc vị ngữ khẳng định. だ thuộc thể thông thường, です thuộc thể lịch sự.",
+        "UsageNotes": "Với tính từ đuôi い, có thể thêm です để lịch sự mà không thêm だ."
+      },
+      "Examples": {
+        "da-desu:example:1": "Tôi là sinh viên.",
+        "da-desu:example:2": "Đây là thư viện."
+      },
+      "SourceHash": "d333db7fd194345442313e1deaa0d951c57cc14dc5d7ad801a1879bd508d67de"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "tai",
+      "Fields": {
+        "Meaning": "Muốn làm gì",
+        "Formation": "Động từ bỏ ます ＋ たい",
+        "Explanation": "Thêm たい vào gốc động từ trước ます để nói muốn làm gì. Với đối tượng của hành động, có thể gặp cả が và を.",
+        "UsageNotes": "たい chia như tính từ đuôi い. Để nói muốn có một vật, thường dùng ほしい."
+      },
+      "Examples": {
+        "tai:example:1": "Tôi muốn ăn đồ ngọt.",
+        "tai:example:2": "Tôi muốn mua giày mới."
+      },
+      "SourceHash": "eddd8d264f5c6cef817c767664e750fc35c8b432ad0292cda04a8b007cbca984"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "takusan",
+      "Fields": {
+        "Meaning": "Nhiều, rất nhiều",
+        "Formation": "たくさん ＋ động từ\nたくさんの ＋ danh từ",
+        "Explanation": "たくさん có thể bổ nghĩa cho động từ để chỉ số lượng nhiều hoặc đứng trước danh từ với の.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "takusan:example:1": "Có nhiều trẻ em trong công viên.",
+        "takusan:example:2": "Hôm qua tôi ăn rất nhiều."
+      },
+      "SourceHash": "55997bbefa71c7c3fb479e6173a40077a0ae2c1718895424697b1b32718c1936"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "dake",
+      "Fields": {
+        "Meaning": "Chỉ, chỉ có",
+        "Formation": "Danh từ, động từ dạng từ điển hoặc số lượng ＋ だけ",
+        "Explanation": "Đặt だけ sau thứ được giới hạn. 水だけ nghĩa là chỉ nước, còn 一つだけ nghĩa là chỉ một cái.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "dake:example:1": "Tôi chỉ uống nước.",
+        "dake:example:2": "Tôi chỉ ăn một quả táo."
+      },
+      "SourceHash": "2a12c4c057fc795256a5037aa3c760ce3ebebb8a966d170dd4b9f48d568bfefa"
+    },
+    {
+      "SourceKey": "nihongo-mono",
+      "ExternalId": "ta-koto-ga-aru",
+      "Fields": {
+        "Meaning": "Đã từng làm gì",
+        "Formation": "Động từ thể た ＋ ことがある／あります",
+        "Explanation": "Dùng mẫu này để nói từng có trải nghiệm làm việc gì. Dạng phủ định 〜たことがない nói chưa từng trải qua.",
+        "UsageNotes": "一度も đi với phủ định để nhấn mạnh chưa từng dù chỉ một lần."
+      },
+      "Examples": {
+        "ta-koto-ga-aru:example:1": "Tôi đã từng ăn sushi.",
+        "ta-koto-ga-aru:example:2": "Tôi chưa từng đến muộn lần nào."
+      },
+      "SourceHash": "c47a9d0de5d5842cbbf728fdd8f6998fbddd6575d97478b9dcbcbc91ca9c232b"
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "Status": "reviewed-by-agent",
+  "Kind": "Vocabularies",
+  "Level": "N3",
+  "ReviewNotes": [
+    "Đối chiếu nghĩa và câu ví dụ theo bản Nhật. Dùng lại bản dịch cho ID câu đã gặp."
+  ],
+  "Entries": [
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "07757ea0b3",
+      "Fields": {
+        "Meaning": "Chuyến đi, du hành",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "旅（たび）có nghĩa là chuyến đi, du hành.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "78201": "Đi đây đó là một cách học tốt.",
+        "191186": "Trước kia người ta thường đi bộ khi du hành."
+      },
+      "SourceHash": "25e7addbee7684b7e2c17f61fadf882581fbc87428b8870378adbc20193ab187"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "192b09d71f",
+      "Fields": {
+        "Meaning": "Thường xuyên, nhiều lần",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "たびたび（たびたび）có nghĩa là thường xuyên, nhiều lần.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120685": "Bạn có thường nhận được tin của anh ấy không?",
+        "159548": "Tôi thường nhận được thư của anh ấy."
+      },
+      "SourceHash": "7370b159e9ab801d0b480d68fb16bc683be9aac776e8ca35c64275e7715e0aec"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "5ac33a4880",
+      "Fields": {
+        "Meaning": "Viên, quả cầu, đồng xu",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "玉（たま）có nghĩa là viên, quả cầu, đồng xu.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "168794": "Bọn trẻ đang lăn một quả cầu tuyết lớn.",
+        "198775": "Đồng nickel là đồng xu năm xu."
+      },
+      "SourceHash": "c465e8375acd67caee510d1802f74971e06246dd2350fc53a5d8f27abbc7aafb"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9cac7f9475",
+      "Fields": {
+        "Meaning": "Hiếm khi, thỉnh thoảng",
+        "PartOfSpeech": "Bổ nghĩa với の, tính từ đuôi な, Danh từ",
+        "Explanation": "偶（たま）có nghĩa là hiếm khi, thỉnh thoảng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "75682": "Yuriko tận hưởng trọn vẹn cuộc hẹn hiếm hoi ấy."
+      },
+      "SourceHash": "592d37055dd43e3e6eb08454f824780d4b4e929d5c2cf02f2e47e544b2eab6f6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "42fbc7ed06",
+      "Fields": {
+        "Meaning": "Viên đạn",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "Đọc たま khi chỉ viên đạn. Câu thứ hai viết 玉, chỉ đồng xu trong ngữ cảnh đó.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127330": "Viên đạn sượt qua má anh ấy.",
+        "198775": "Đồng nickel là đồng xu năm xu."
+      },
+      "SourceHash": "a52c57ddaedbbf8aab46abb56917056a683c2a74a837a3b2d399d75fb82249c6"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "086ada9b06",
+      "Fields": {
+        "Meaning": "Tình cờ",
+        "PartOfSpeech": "Phó từ",
+        "Explanation": "たまたま（たまたま）có nghĩa là tình cờ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "125599": "Đang đi trên phố thì tôi tình cờ gặp bạn cũ.",
+        "159541": "Tôi tình cờ gặp giáo viên ở ga."
+      },
+      "SourceHash": "d22685127e8dc7dcb99e2ddb464ff211996fa58e73e9cc78ba972a43c9590860"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "2b5e5351b0",
+      "Fields": {
+        "Meaning": "Không chịu nổi, vô cùng",
+        "PartOfSpeech": "Cụm từ, Tính từ đuôi い",
+        "Explanation": "たまらない（たまらない）có nghĩa là không chịu nổi, vô cùng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "223415": "Tôi ghét mùi này đến mức không chịu nổi.",
+        "231351": "Tôi muốn có chiếc máy ảnh đó vô cùng."
+      },
+      "SourceHash": "f64d6c567292cd9f5853a268a78a741d9e24156c5bf7d204796076968a49b8c1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "bce12bb5a5",
+      "Fields": {
+        "Meaning": "Im lặng, nín",
+        "PartOfSpeech": "Động từ nhóm 1, tự động từ",
+        "Explanation": "黙る（だまる）có nghĩa là im lặng, nín.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "80033": "Im đi, nếu không sẽ mất mạng đấy.",
+        "194471": "Tôi không thể im lặng thêm nữa."
+      },
+      "SourceHash": "9f0ef317be15fc8a962e4088a1eb0a24f6898d2c6ddfe5a34a8205b517b8e339"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a913d4b1f6",
+      "Fields": {
+        "Meaning": "Sự thử, làm thử",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "試し（ためし）có nghĩa là sự thử, làm thử.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "156466": "Tôi thử leo ngọn núi đó xem sao.",
+        "203268": "Hãy thử giải bài đó xem."
+      },
+      "SourceHash": "0b9aca542fb7f5c43775f3470a751e80e1ac4ec83a220d36658ad084002ba762"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "9b1f1d7515",
+      "Fields": {
+        "Meaning": "Thử, thử nghiệm",
+        "PartOfSpeech": "Động từ nhóm 1, tha động từ",
+        "Explanation": "試す（ためす）có nghĩa là thử, thử nghiệm.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "194297": "Tôi thử lại lần nữa nhưng vẫn thất bại.",
+        "227838": "Ngon đấy. Bạn nên thử đi."
+      },
+      "SourceHash": "06cf69bcdf842b9c1119a5dea268ff3458c4d3f892dd0492c6a7abb4b9377b15"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a733c62080",
+      "Fields": {
+        "Meaning": "Tin tức, thư từ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "便り（たより）có nghĩa là tin tức, thư từ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120685": "Bạn có thường nhận được tin của anh ấy không?",
+        "204484": "Từ đó tôi không nhận được tin gì của anh ấy."
+      },
+      "SourceHash": "d74585db72d3e4145ede925226d6c5a29392ab417982e9225ca813106069368b"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "593919cd0f",
+      "Fields": {
+        "Meaning": "Dựa vào, trông cậy",
+        "PartOfSpeech": "Động từ nhóm 1",
+        "Explanation": "頼る（たよる）có nghĩa là dựa vào, trông cậy.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "102448": "Anh ấy nhờ bố mẹ chi trả học phí đại học.",
+        "230313": "Đừng dựa dẫm quá nhiều vào người khác."
+      },
+      "SourceHash": "edd6c20adb40ada65ca3506004f0787f46bc78e578d7aab3bf7cd749c81d7ed9"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "7f7ef4abe8",
+      "Fields": {
+        "Meaning": "Ai đó, có ai",
+        "PartOfSpeech": "Đại từ",
+        "Explanation": "誰か（だれか）có nghĩa là ai đó, có ai.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "87193": "Cô ấy nhầm anh ấy với một người khác.",
+        "236233": "“Có ai trong xe không?” “Có Tom.”"
+      },
+      "SourceHash": "29ef4a9b84875c21ab27880683a6b1954f123dd0952049a20cf7bec76f05838d"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "a22c0d6a0e",
+      "Fields": {
+        "Meaning": "Bậc, tầng, cấp",
+        "PartOfSpeech": "Danh từ, trợ số từ",
+        "Explanation": "段（だん）có nghĩa là bậc, tầng, cấp.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "108972": "Anh ấy chạy lên cầu thang, mỗi lần bước ba bậc.",
+        "158445": "Tôi chạy lên hai bậc một lúc."
+      },
+      "SourceHash": "dfff4a7c496ad7c6d0b2d391baa9b5a570c63e070142d939b60e1d048b2b862f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "938fc7e369",
+      "Fields": {
+        "Meaning": "Đơn vị, tín chỉ",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "単位（たんい）có nghĩa là đơn vị, tín chỉ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "222795": "Môn này có mấy tín chỉ?",
+        "224606": "Ở đây cá được bán theo pound."
+      },
+      "SourceHash": "1a04124acee9b40b2c696ac94dd553da3685a86e14b859274f420e9cf4a0d073"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "b91001d17a",
+      "Fields": {
+        "Meaning": "Từ, từ vựng",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "単語（たんご）có nghĩa là từ, từ vựng.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "127080": "Hãy tra từ chưa biết trong từ điển.",
+        "217827": "Hãy học thuộc từng từ trong số này."
+      },
+      "SourceHash": "02bdacc86a3a42d2439779151c2774e22a7fef74bb106354367e3cf59c84559c"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "16c16727fb",
+      "Fields": {
+        "Meaning": "Nam giới, học sinh nam",
+        "PartOfSpeech": "Danh từ",
+        "Explanation": "男子（だんし）có nghĩa là nam giới, học sinh nam.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "74986": "Chuyện đó thì nam và nữ khác nhau đấy.",
+        "223848": "Lớp này có nhiều nữ hơn nam."
+      },
+      "SourceHash": "305b8dd86641aa7c4418e23dd9fe2824fb23a43a8b6758c79e6324e4c3d2ddd1"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "c98a6b2988",
+      "Fields": {
+        "Meaning": "Đơn giản, cả tin",
+        "PartOfSpeech": "Tính từ đuôi な, Danh từ",
+        "Explanation": "単純（たんじゅん）có nghĩa là đơn giản, cả tin.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "115760": "Câu chuyện của anh ấy hết sức đơn giản.",
+        "204557": "Tin chuyện đó thì cậu cả tin thật đấy."
+      },
+      "SourceHash": "890b77bd5557b294f411b380259b58eb40b656082bac245d9b7c634d923c7926"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "d09ecbe5b0",
+      "Fields": {
+        "Meaning": "Ra đời, sự ra đời",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "誕生（たんじょう）có nghĩa là ra đời, sự ra đời.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "142688": "Sự sống xuất hiện từ khi nào?",
+        "143417": "Không biết thế giới ra đời từ khi nào."
+      },
+      "SourceHash": "e7a29cdef827f5528905f1227af27a5a50896bea08509a9520c0efecc41e0c1f"
+    },
+    {
+      "SourceKey": "openjlpt",
+      "ExternalId": "59dd72cefc",
+      "Fields": {
+        "Meaning": "Điệu nhảy, khiêu vũ",
+        "PartOfSpeech": "Danh từ, động từ với する",
+        "Explanation": "ダンス（ダンス）có nghĩa là điệu nhảy, khiêu vũ.",
+        "UsageNotes": null
+      },
+      "Examples": {
+        "120819": "Xem anh ấy nhảy thật đáng xem.",
+        "203075": "Nhảy múa giúp cải thiện vóc dáng."
+      },
+      "SourceHash": "22f0b99fe5b419fa863d17793c386830acf754f1e93d6c69f04635e8555069ef"
+    }
+  ]
+}
