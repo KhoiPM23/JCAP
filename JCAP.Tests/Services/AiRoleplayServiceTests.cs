@@ -515,7 +515,8 @@ public class AiRoleplayServiceTests
 
         Assert.NotNull(result);
         Assert.Contains("何名様", result.JapaneseReply);
-        Assert.Contains("先にお席へご案内", result.JapaneseReply);
+        Assert.DoesNotContain("ご案内いたします", result.JapaneseReply); // N5 không dùng kính ngữ nâng cao
+        Assert.DoesNotContain("いただけますでしょうか", result.JapaneseReply);
         Assert.Empty(result.CompletedMissionIds); // Did NOT falsely complete mission
         Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Warning", result.LinguisticFeedback.Status);
