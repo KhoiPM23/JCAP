@@ -517,42 +517,70 @@ Return strictly pure JSON matching:
 
                 if (isStationScenario)
                 {
-                    jaReply = "恐れ入ります、どの切符をひとつ（一枚）ご希望でしょうか？行き先の駅名をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、どこまで行きますか？駅の名前を教えてください。",
+                        "すみません、どの切符を一枚ですか？行き先の駅名を教えてください。",
+                        "恐れ入ります、どの切符をひとつ（一枚）ご希望でしょうか？行き先の駅名をお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn mua một vé đi đâu ạ? Xin cho {reg.AiSelf} biết ga đến nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ ga đến";
                     naturalAlt = "新宿駅までの切符を一枚お願いします。";
                 }
                 else if (isInterviewScenario)
                 {
-                    jaReply = "恐れ入ります、どの質問についてお答えでしょうか？具体的にお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、どの質問ですか？もう一度教えてください。",
+                        "すみません、どの質問についてですか？もう少し詳しく教えてください。",
+                        "恐れ入ります、どの質問についてお答えでしょうか？具体的にお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn trả lời về phần nào ạ? Xin cho {reg.AiSelf} biết cụ thể.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ nội dung";
-                    naturalAlt = "自己紹介についてお話しいたします。";
+                    naturalAlt = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "自己紹介をします。",
+                        "自己紹介について話します。",
+                        "自己紹介についてお話しいたします。");
                 }
                 else if (isKonbiniScenario)
                 {
-                    jaReply = "恐れ入ります、どの商品をおひとつご希望でしょうか？商品をお教えいただけますか？";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、どれを一つですか？名前を教えてください。",
+                        "すみません、どの商品を一つですか？商品名を教えてください。",
+                        "恐れ入ります、どの商品をおひとつご希望でしょうか？商品をお教えいただけますか？");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy sản phẩm nào ạ? Xin cho {reg.AiSelf} biết tên sản phẩm nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên sản phẩm";
                     naturalAlt = "お弁当をひとつお願いします。";
                 }
                 else if (isCafeScenario)
                 {
-                    jaReply = "恐れ入ります、どのお飲み物をおひとつご希望でしょうか？メニュー名をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、何の飲み物ですか？名前を教えてください。",
+                        "すみません、どの飲み物を一つですか？メニュー名を教えてください。",
+                        "恐れ入ります、どのお飲み物をおひとつご希望でしょうか？メニュー名をお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn dùng đồ uống nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên đồ uống";
                     naturalAlt = "アイスコーヒーをひとつお願いします。";
                 }
                 else if (isRamenScenario || scenarioContext.Contains("quán") || scenarioContext.Contains("nhà hàng") || scenarioContext.Contains("ẩm thực") || scenarioContext.Contains("ăn"))
                 {
-                    jaReply = "恐れ入ります、どの料理をひとつご希望でしょうか？メニュー名をお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、どの料理ですか？名前を教えてください。",
+                        "すみません、どの料理を一つですか？メニュー名を教えてください。",
+                        "恐れ入ります、どの料理をひとつご希望でしょうか？メニュー名をお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn lấy 1 phần món ăn nào ạ? Xin cho {reg.AiSelf} biết tên món nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nói rõ tên món";
                     naturalAlt = "豚骨ラーメンをひとつお願いします。";
                 }
                 else
                 {
-                    jaReply = "恐れ入ります、具体的にどちらをおひとつご希望でしょうか？詳しくお聞かせください。";
+                    jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、どれを一つですか？教えてください。",
+                        "すみません、どちらを一つですか？もう少し詳しく教えてください。",
+                        "恐れ入ります、具体的にどちらをおひとつご希望でしょうか？詳しくお聞かせください。");
                     viReply = $"Xin lỗi {reg.AiAddressLearner}, {reg.AiAddressLearner} muốn yêu cầu đối tượng hoặc nội dung nào ạ? Xin nói rõ giúp {reg.AiSelf} nhé.";
                     summary = "Yêu cầu chưa cụ thể • Cần nêu rõ đối tượng";
                     naturalAlt = "これをお願いします。";
@@ -661,7 +689,11 @@ Return strictly pure JSON matching:
                 // 5b. Khách trả lời thụ động (はい / そうです)
                 if (Regex.IsMatch(userMessage.Trim(), @"^(はい|ええ|そうです|うん)[\.!?。！？]*$"))
                 {
-                    var jaReply = "恐れ入ります、お席をご案内いたしますので、何名様でのご利用か教えていただけますでしょうか？";
+                    var jaReply = PickByJlpt(
+                        levelConfig.JLPTLevel,
+                        "すみません、何名様ですか？",
+                        "すみません、お席を用意しますので、何名様ですか？",
+                        "恐れ入ります、お席をご案内いたしますので、何名様でのご利用か教えていただけますでしょうか？");
                     return new AiTurnResult
                     {
                         JapaneseReply = jaReply,
@@ -697,7 +729,11 @@ Return strictly pure JSON matching:
             bool userSpecifiedFlavor = Regex.IsMatch(userMessage, @"(濃いめ|こいめ|薄め|うすめ|普通|ふつう|辛め|からめ)");
             if (targetRequiresFlavor && !userSpecifiedFlavor && Regex.IsMatch(userMessage, @"(ラーメン|らーめん)"))
             {
-                var jaReply = "かしこまりました。ラーメンのお味はいかがなさいますか？味の濃さや麺の硬さをお選びいただけます。";
+                var jaReply = PickByJlpt(
+                    levelConfig.JLPTLevel,
+                    "わかりました！味は濃いめですか？普通ですか？",
+                    "わかりました。ラーメンの味はどうしますか？濃いめや麺の硬さも選べますよ。",
+                    "かしこまりました。ラーメンのお味はいかがなさいますか？味の濃さや麺の硬さをお選びいただけます。");
                 return new AiTurnResult
                 {
                     JapaneseReply = jaReply,

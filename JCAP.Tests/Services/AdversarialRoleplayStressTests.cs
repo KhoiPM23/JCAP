@@ -44,8 +44,8 @@ public class AdversarialRoleplayStressTests
 
         Assert.NotNull(result);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
-        Assert.Contains("切符", result.JapaneseReply);
-        Assert.Contains("行き先", result.JapaneseReply);
+        Assert.Contains("駅", result.JapaneseReply);
+        Assert.DoesNotContain("ご希望でしょうか", result.JapaneseReply);
         Assert.Contains("ga đến", result.LinguisticFeedback.Summary);
         Assert.Empty(result.CompletedMissionIds); // Phải chặn không cho qua nhiệm vụ khi nói mơ hồ
     }
@@ -94,7 +94,8 @@ public class AdversarialRoleplayStressTests
 
         Assert.NotNull(result);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
-        Assert.Contains("商品をお教えいただけますか", result.JapaneseReply);
+        Assert.Contains("教えてください", result.JapaneseReply);
+        Assert.DoesNotContain("いただけますか", result.JapaneseReply);
         Assert.Contains("tên sản phẩm", result.LinguisticFeedback.Summary);
     }
 

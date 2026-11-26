@@ -368,16 +368,24 @@ public sealed record RoleplaySocialRegister
     public static AiOpeningMessageResult GenerateOpeningMessage(Scenario scenario, ScenarioLevelConfiguration levelConfig)
     {
         var reg = Deduce(scenario.Title, levelConfig.AiPersona, levelConfig.Description);
+        var jlpt = (levelConfig.JLPTLevel ?? "N5").Trim().ToUpperInvariant();
 
         switch (reg.RegisterType)
         {
             case SocialRegisterType.Elderly:
+            {
+                string ja = jlpt == "N5"
+                    ? "すみません。向こうまで渡りたいです。手伝ってください。"
+                    : jlpt == "N4"
+                        ? "あのう、すみません。足が悪くて渡りたいのですが、手伝ってくれませんか？"
+                        : "あのう、すみません。足が悪くて、向こう側まで渡りたいのですが、手伝っていただけないでしょうか。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "あのう、すみません。足が悪くて、向こう側まで渡りたいのですが、手伝っていただけないでしょうか。",
-                    FuriganaHtml = "あのう、すみません。<ruby>足<rt>あし</rt></ruby>が<ruby>悪<rt>わる</rt></ruby>くて、<ruby>向<rt>む</rt></ruby>こう<ruby>側<rt>がわ</rt></ruby>まで<ruby>渡<rt>わた</rt></ruby>りたいのですが、<ruby>手伝<rt>てつだ</rt></ruby>っていただけないでしょうか。",
-                    VietnameseMeaning = $"Xin lỗi, chân {reg.AiSelf} đau và {reg.AiSelf} muốn băng sang bên kia đường, {reg.AiAddressLearner} có thể giúp {reg.AiSelf} được không?"
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = $"Xin lỗi, {reg.AiSelf} muốn băng sang bên kia đường, {reg.AiAddressLearner} có thể giúp {reg.AiSelf} được không?"
                 };
+            }
 
             case SocialRegisterType.ServiceStaff:
                 return new AiOpeningMessageResult
@@ -388,20 +396,34 @@ public sealed record RoleplaySocialRegister
                 };
 
             case SocialRegisterType.Interviewer:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは。面接を始めます。どうぞ座ってください。"
+                    : jlpt == "N4"
+                        ? "今日はありがとうございます。面接を始めましょう。どうぞお座りください。"
+                        : "ご応募ありがとうございます。本日の面接を担当いたします。どうぞお座りください。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "ご応募ありがとうございます。本日の面接を担当いたします。どうぞお座りください。",
-                    FuriganaHtml = "ご<ruby>応募<rt>おうぼ</rt></ruby>ありがとうございます。<ruby>本日<rt>ほんじつ</rt></ruby>の<ruby>面接<rt>めんせつ</rt></ruby>を<ruby>担当<rt>たんとう</rt></ruby>いたします。どうぞお<ruby>座<rt>すわ</rt></ruby>りください。",
-                    VietnameseMeaning = $"Cảm ơn {reg.AiAddressLearner} đã ứng tuyển. {reg.AiSelf} phụ trách buổi phỏng vấn hôm nay. Xin mời {reg.AiAddressLearner} ngồi."
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = jlpt == "N5"
+                        ? $"Xin chào {reg.AiAddressLearner}. Chúng ta bắt đầu buổi phỏng vấn nhé. Mời {reg.AiAddressLearner} ngồi."
+                        : $"Cảm ơn {reg.AiAddressLearner} đã ứng tuyển. {reg.AiSelf} phụ trách buổi phỏng vấn hôm nay. Xin mời {reg.AiAddressLearner} ngồi."
                 };
+            }
 
             case SocialRegisterType.TeacherMentor:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは！今日のレッスンを始めましょう。"
+                    : "こんにちは。本日のレッスンを始めましょう。よろしくお願いします。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = "こんにちは。本日のレッスンを始めましょう。よろしくお願いします。",
-                    FuriganaHtml = "こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>のレッスンを<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
                     VietnameseMeaning = $"Chào {reg.AiAddressLearner}. Chúng ta cùng bắt đầu buổi học hôm nay nhé."
                 };
+            }
 
             case SocialRegisterType.PeerFriend:
                 return new AiOpeningMessageResult
@@ -412,12 +434,17 @@ public sealed record RoleplaySocialRegister
                 };
 
             default:
+            {
+                string ja = jlpt == "N5"
+                    ? "こんにちは！これから練習を始めましょう。"
+                    : $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。";
                 return new AiOpeningMessageResult
                 {
-                    JapaneseText = $"こんにちは。本日の{scenario.Title}を始めましょう。よろしくお願いします。",
-                    FuriganaHtml = $"こんにちは。<ruby>本日<rt>ほんじつ</rt></ruby>の{scenario.Title}を<ruby>始<rt>はじ</rt></ruby>めましょう。よろしくお<ruby>願<rt>ねが</rt></ruby>いします。",
-                    VietnameseMeaning = $"Xin chào {reg.AiAddressLearner}. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}. Rất mong được đồng hành cùng {reg.AiAddressLearner}."
+                    JapaneseText = ja,
+                    FuriganaHtml = GenerateFuriganaHtml(ja),
+                    VietnameseMeaning = $"Xin chào {reg.AiAddressLearner}. Chúng ta hãy bắt đầu bài luyện tập {scenario.Title}."
                 };
+            }
         }
     }
 

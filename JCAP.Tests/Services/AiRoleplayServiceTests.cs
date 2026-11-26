@@ -783,7 +783,8 @@ public class AiRoleplayServiceTests
             pendingMissions);
 
         Assert.NotNull(result);
-        Assert.Contains("お味はいかがなさいますか", result.JapaneseReply);
+        Assert.Contains("濃いめ", result.JapaneseReply);
+        Assert.DoesNotContain("いかがなさいますか", result.JapaneseReply);
         Assert.Empty(result.CompletedMissionIds);
         Assert.NotNull(result.LinguisticFeedback);
         Assert.Equal("Warning", result.LinguisticFeedback.Status);
@@ -1038,7 +1039,8 @@ public class AiRoleplayServiceTests
 
         Assert.NotNull(result);
         Assert.Equal("Guardrail", result.LinguisticFeedback.EvaluationSource);
-        Assert.Contains("どの料理をひとつご希望でしょうか", result.JapaneseReply);
+        Assert.Contains("どの料理", result.JapaneseReply);
+        Assert.DoesNotContain("ご希望でしょうか", result.JapaneseReply);
         Assert.Empty(result.CompletedMissionIds);
     }
 
