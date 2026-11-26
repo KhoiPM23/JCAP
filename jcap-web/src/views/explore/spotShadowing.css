@@ -6,7 +6,7 @@
 
 .ssc {
   --pw: 400px;
-  --inset: 12px;
+  --inset: 16px;
   --gap: 12px;
   --cw: clamp(420px, 37.5vw, 540px);
   --tw: 132px;

@@ -1,0 +1,132 @@
+/* Ngăn tỉnh (design-handoff mục 9k phần B). Màu chỉ từ token kham-pha và biến của trang Khám phá;
+   --jm-region-ink do ngăn đặt theo vùng của tỉnh. */
+
+.jm-pp {
+  position: absolute; z-index: 20; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--card); color: var(--sumi); font-family: var(--font-sans); box-shadow: 0 2px 4px rgba(11, 22, 46, .16), 0 20px 48px rgba(11, 22, 46, .3);
+}
+.jm-pp.is-wide { top: 16px; right: 16px; bottom: 16px; border-radius: 18px; }
+.jm-pp.is-sheet { left: 0; right: 0; bottom: 0; height: 70%; border-radius: 22px 22px 0 0; }
+.jm-pp-grab { display: block; flex: none; width: 40px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: var(--line-strong); opacity: .6; }
+.jm-pp :where(h2, h3, p, ol, ul) { margin: 0; padding: 0; }
+.jm-pp :where(ol, ul) { list-style: none; }
+.jm-pp-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 20px; }
+
+/* ---- đầu ngăn ---- */
+.jm-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 12px 0 24px; }
+.jm-pp-crumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sumi-muted); }
+.jm-pp-home {
+  height: 28px; margin-left: -8px; padding: 0 4px 0 8px; border: 0; border-radius: 999px; background: none;
+  font: inherit; font-weight: 600; color: var(--sumi-muted); cursor: pointer;
+}
+.jm-pp-home:hover { background: var(--paper-200); color: var(--sumi); }
+.jm-pp-region { font-weight: 600; color: var(--jm-region-ink); }
+.jm-pp-region span { margin-left: 2px; font-family: var(--font-jp); font-weight: 500; }
+.jm-pp-pref { display: flex; align-items: center; gap: 12px; padding: 2px 24px 0; }
+.jm-pp-names { min-width: 0; flex: 1; }
+.jm-pp-jp { font-family: var(--font-mincho); font-size: 44px; line-height: 52px; font-weight: 700; letter-spacing: .04em; outline: none; }
+.jm-pp-vi { display: flex; align-items: center; min-height: 36px; font-size: 15px; font-weight: 600; color: var(--sumi-muted); }
+.jm-pp-side { display: flex; flex: none; align-items: center; gap: 8px; }
+.jm-pp-oct { display: block; color: var(--jm-region-ink); opacity: .28; }
+.jm-pp-oct.is-stamp { color: var(--ai); opacity: 1; transform: rotate(-6deg); }
+.jm-pp-oct.is-red { color: var(--shu); opacity: 1; transform: rotate(-6deg); }
+
+/* ---- từ của tỉnh ---- */
+.jm-qw { position: relative; }
+.jm-qw-btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
+  background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--jm-region-ink); cursor: pointer; transition: background .15s, box-shadow .15s;
+}
+.jm-qw:hover .jm-qw-btn, .jm-qw:focus-within .jm-qw-btn, .jm-qw.on .jm-qw-btn { background: var(--paper-200); box-shadow: inset 0 0 0 1px var(--line-strong); }
+/* Đệm trên 8px nối nút với khung để rê chuột xuống không bị tắt */
+.jm-qw-pop {
+  position: absolute; right: -54px; top: 100%; z-index: 5; padding-top: 8px; opacity: 0; visibility: hidden;
+  transform: translateY(-4px); transition: opacity .16s, transform .16s, visibility 0s linear .16s;
+}
+.jm-qw:hover .jm-qw-pop, .jm-qw:focus-within .jm-qw-pop, .jm-qw.on .jm-qw-pop { opacity: 1; visibility: visible; transform: none; transition: opacity .16s, transform .16s; }
+.jm-qw-in { box-sizing: border-box; width: 248px; padding: 10px 8px 14px 16px; border-radius: 16px; background: var(--paper-50); box-shadow: 0 0 0 1px var(--line), var(--shadow-lg); }
+.jm-qw-head { display: flex; align-items: center; justify-content: space-between; min-height: 36px; font-size: 12px; font-weight: 600; color: var(--jm-region-ink); }
+.jm-pp .jm-qw-word { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; margin-top: 2px; }
+.jm-qw-word > span { font-family: var(--font-mincho); font-size: 30px; line-height: 48px; font-weight: 700; letter-spacing: .04em; }
+.jm-qw-word rt { font-family: var(--font-jp); font-size: 10px; font-weight: 400; letter-spacing: .1em; color: var(--sumi-muted); }
+.jm-qw-word b { font-size: 15px; font-weight: 700; }
+.jm-pp .jm-qw-note { margin: 6px 8px 0 0; font-size: 12.5px; line-height: 18px; color: var(--sumi-muted); }
+
+/* ---- tiến độ ---- */
+.jm-pp-prog { display: flex; gap: 3px; margin: 16px 24px 0; }
+.jm-pp-prog i { flex: 1; height: 6px; border-radius: 3px; background: var(--paper-300); }
+.jm-pp-prog i.is-understood { background: color-mix(in srgb, var(--ai) 40%, var(--card)); }
+.jm-pp-prog i.is-stamp { background: var(--ai); }
+.jm-pp-prog i.is-red { background: var(--shu); }
+.jm-pp .jm-pp-count { display: flex; align-items: baseline; gap: 4px; margin: 8px 24px 0; font-size: 13px; color: var(--sumi-muted); }
+.jm-pp-count b { font-size: 15px; color: var(--sumi); font-variant-numeric: tabular-nums; }
+.jm-pp-count span { margin-left: auto; font-weight: 600; color: var(--shu); }
+
+/* ---- lộ trình: đường ray chạy dọc qua tâm các ô mốc ---- */
+.jm-pp .jm-rail { position: relative; margin-top: 14px; padding: 0 12px; }
+.jm-rail::before { content: ""; position: absolute; left: 31.5px; top: 24px; bottom: 22px; width: 3px; border-radius: 2px; background: var(--paper-300); }
+.jm-rail.has-area::before { top: 54px; }
+.jm-rail-area { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px 4px 52px; font-size: 12px; line-height: 18px; font-weight: 600; color: var(--sumi-muted); }
+.jm-rail-area span:last-child { margin-left: auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+.jm-row {
+  position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 44px; padding: 4px 12px 4px 7px; border: 0; border-radius: 12px;
+  background: none; font: inherit; color: var(--sumi); text-align: left; cursor: pointer; transition: background .15s;
+}
+.jm-row:hover, .jm-row.is-hi { background: var(--paper-200); }
+.jm-row.is-next { background: var(--paper-50); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(11, 22, 46, .06); }
+.jm-row.is-next:hover, .jm-row.is-next.is-hi { background: var(--paper-200); }
+.jm-row-name { flex: 1; min-width: 0; font-size: 14.5px; line-height: 20px; font-weight: 500; }
+.jm-row.is-next .jm-row-name { font-weight: 700; }
+.jm-row-meta { flex: none; font-size: 12px; font-weight: 500; color: var(--sumi-muted); white-space: nowrap; }
+.jm-row-meta.is-next { font-weight: 700; color: var(--shu); }
+.jm-row-meta.is-progress { font-weight: 600; color: var(--ai); font-variant-numeric: tabular-nums; }
+
+/* ---- ô mốc: cùng 5 màu trạng thái với ghim trên bản đồ ---- */
+.jm-stn {
+  display: inline-flex; position: relative; z-index: 1; flex: none; align-items: center; justify-content: center; box-sizing: border-box;
+  width: 26px; height: 26px; border-radius: 8px; background: var(--card); color: var(--jm-region-ink);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--jm-region-ink) 45%, var(--card));
+}
+.jm-stn.s30 { width: 30px; height: 30px; border-radius: 9px; }
+.jm-stn.is-understood { background: var(--ai-soft); color: var(--ai); box-shadow: inset 0 0 0 2px var(--ai); }
+.jm-stn.is-stamp { background: var(--ai); color: var(--on-ai); box-shadow: none; }
+.jm-stn.is-red { background: var(--shu); color: var(--on-shu); box-shadow: none; }
+.jm-stn.is-next { color: var(--shu); box-shadow: inset 0 0 0 2px var(--shu), 0 0 0 4px color-mix(in srgb, var(--shu) 14%, transparent); }
+.jm-pict { display: block; width: 72%; height: 72%; background: currentColor; -webkit-mask: var(--pict) center / contain no-repeat; mask: var(--pict) center / contain no-repeat; }
+
+/* ---- ghi nguồn (điều khoản của bộ biểu tượng và dữ liệu ranh giới) ---- */
+.jm-pp .jm-pp-credit { margin: 18px 24px 0; font-size: 11.5px; line-height: 18px; color: var(--sumi-muted); }
+.jm-pp-credit a { color: inherit; text-underline-offset: 2px; }
+
+/* ---- trạng thái tải, lỗi, chưa có mốc ---- */
+.jm-pp-sk { display: flex; flex-direction: column; gap: 16px; padding: 18px 24px; }
+.jm-pp-sk .sk-bar { height: 6px; border-radius: 3px; }
+.jm-pp-sk .sk-row { display: flex; align-items: center; gap: 16px; }
+.jm-pp-sk .sk-n { flex: none; width: 26px; height: 26px; border-radius: 8px; }
+.jm-pp-sk .sk-t { height: 14px; border-radius: 7px; }
+.jm-pp-sk .sk-btn { height: 48px; border-radius: 999px; }
+.jm-pp-err {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 24px 24px 0; padding: 18px; border-radius: 16px;
+  background: var(--paper-50); box-shadow: 0 0 0 1px var(--line); font-size: 13.5px; color: var(--sumi-muted);
+}
+.jm-pp-err b { display: block; font-size: 15px; color: var(--sumi); }
+.jm-pp .jm-pp-empty { margin: 20px 24px 0; font-size: 14px; color: var(--sumi-muted); }
+
+/* ---- chân ngăn: một chỗ cho nút chính ở cả hai tầng ---- */
+.jm-pp-foot { display: flex; flex: none; flex-direction: column; gap: 6px; padding: 12px 16px 14px; border-top: 1px solid var(--line); background: var(--card); }
+.jm-pp-foot .jc-btn { height: 48px; border-radius: 999px; font-size: 15px; }
+.jm-pp-foot .jc-btn__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jm-pp .jm-pp-hint { font-size: 12px; text-align: center; color: var(--sumi-muted); }
+.jm-pp .jm-pp-done { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; font-weight: 700; color: var(--ai); text-align: center; }
+.jm-pp .jm-pp-practicing {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border: 1.5px dashed var(--ai); border-radius: 999px;
+  font-size: 14px; font-weight: 600; color: var(--ai);
+}
+
+.jm-pp :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.jm-pp .jm-pp-jp:focus-visible { outline: none; }
+.jm-pp .jm-row:focus-visible { outline: 2px solid var(--ai); outline-offset: -2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jm-qw-pop, .jm-qw-btn, .jm-row { transition: none; }
+}

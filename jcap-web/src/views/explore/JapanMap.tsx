@@ -270,6 +270,10 @@ export interface JapanMapProps {
   search?: React.ReactNode;
   /** Đang luyện Shadowing của địa điểm đang chọn ở khung bên cạnh: ẩn thẻ nổi và cụm nút, gắn nhãn "Đang luyện" trên ghim */
   practicing?: boolean;
+  /** Mốc đang được rê chuột ở ngăn tỉnh: ghim đó to lên */
+  highlightSpot?: number | null;
+  /** Rê chuột lên một ghim (null khi rời đi) */
+  onSpotHover?: (index: number | null) => void;
 }
 
 export const JapanMap: React.FC<JapanMapProps> = ({
@@ -284,6 +288,8 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   legend,
   search,
   practicing = false,
+  highlightSpot = null,
+  onSpotHover,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -1540,10 +1546,12 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                 return (
                   <g
                     key={lm.spotId}
-                    className="jm-pin"
+                    className={`jm-pin${highlightSpot === index ? ' is-hi' : ''}`}
                     style={{ cursor: 'pointer', outline: 'none' }}
                     role="button"
                     tabIndex={0}
+                    onPointerEnter={(e) => e.pointerType === 'mouse' && !draggingRef.current && onSpotHover?.(index)}
+                    onPointerLeave={() => onSpotHover?.(null)}
                     aria-label={`${lm.pictogram.nameVi} (${lm.pictogram.nameJp})${spotDone(index) ? ', đã có con dấu' : ''}`}
                     aria-pressed={active}
                     onClick={(e) => {
@@ -1765,6 +1773,7 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pin { animation: jm-fade-in 0.3s ease-out both; }
         .jm-pin-body { transform-box: fill-box; transform-origin: center; transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .jm-pin:hover .jm-pin-body { transform: scale(1.08); }
+        .jm-pin.is-hi .jm-pin-body { transform: scale(1.12); }
         .jm-ripple { transform-box: fill-box; transform-origin: center; animation: jm-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
         .jm-sq.is-none, .jm-sq.is-next { fill: var(--card); }
         .jm-sq.is-next { stroke: var(--shu); }
