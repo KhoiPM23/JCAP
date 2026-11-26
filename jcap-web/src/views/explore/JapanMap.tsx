@@ -9,13 +9,12 @@ import {
   type PrefectureShape,
   type RegionId,
 } from '../../data/japanMap';
-import { PREFECTURE_PICTOGRAMS, pictogramUrl, type PictogramKind } from '../../data/japanPictograms';
+import { PREFECTURE_PICTOGRAMS, pictogramUrl } from '../../data/japanPictograms';
 import { useExploreJourney, usePrefectureData } from './exploreStore';
 import { REGION_STYLE, SEIGAIHA, T, mix, paperGrainUrl } from './exploreTheme';
 import { setFurigana, useFurigana } from './furigana';
-import { isStamped, useSpotProgress } from './learnProgress';
+import { isStamped, useSpotProgress, type SpotStamp } from './learnProgress';
 import { nextSpotIndex, prefectureRoute } from './learnRoute';
-import { STAMP_INK } from './ExploreStamp';
 import { Icon } from '../../components/jcap';
 import { useFontVersion } from './measureText';
 import {
@@ -30,7 +29,6 @@ import { chipSize, layoutLabels, type Box, type LabelLayout } from './labelLayou
 import { RouteLayer } from './RouteLayer';
 import { SpotCard } from './SpotCard';
 import { useCanSpeakJa } from './speak';
-import { ZONE_ZOOM_STEP, ZoneCircles } from './ZoneCircles';
 
 export { REGION_STYLE };
 
@@ -142,8 +140,7 @@ const WHEEL_SMOOTH_MS = 90;
 const WHEEL_NOTCH_PX = 40;
 /** Bán kính vùng bấm của ghim (px): đường kính 44px, đủ cho ngón tay */
 const PIN_HIT_RADIUS_PX = 22;
-/** Bán kính ghim địa danh nhìn thấy (px) và cỡ biểu tượng bên trong */
-const PIN_RADIUS_PX = 19;
+/** Cỡ biểu tượng bên trong ghim (px) */
 const PIN_ICON_PX = 24;
 /** Khoảng cách từ tâm ghim tới nhãn tên bên cạnh (px) */
 const PIN_LABEL_GAP_PX = 25;
@@ -201,72 +198,53 @@ function centerViewBox(cx: number, cy: number, ppu: number, cw: number, ch: numb
   return [cx - (pad + availW / 2) / ppu, cy - (pad + availH / 2) / ppu, cw / ppu, ch / ppu];
 }
 
-/** Đa giác đều n cạnh quanh (cx, cy) bán kính r, góc xoay rot (khung ghim di sản) */
-const polygonPoints = (cx: number, cy: number, r: number, n: number, rot: number) =>
-  Array.from({ length: n }, (_, i) => {
-    const a = rot + (i * 2 * Math.PI) / n;
-    return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
-  }).join(' ');
+/** Trạng thái của ô ghim: tiến độ đã có được ưu tiên hơn dấu "Tiếp theo" */
+type PinLook = SpotStamp | 'next';
 
-/** Viền hoa 12 cánh trong ô 44×44 (khung ghim văn hóa) */
-const SCALLOP_44 = (() => {
-  const n = 12;
-  const r1 = 17.2;
-  const r2 = 22.4;
-  let d = '';
-  for (let i = 0; i <= n; i++) {
-    const a = (i * 2 * Math.PI) / n - Math.PI / 2;
-    const am = a - Math.PI / n;
-    const x = 22 + r1 * Math.cos(a);
-    const y = 22 + r1 * Math.sin(a);
-    d += i === 0 ? `M${x.toFixed(2)} ${y.toFixed(2)}` : `Q${(22 + r2 * Math.cos(am)).toFixed(2)} ${(22 + r2 * Math.sin(am)).toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)}`;
-  }
-  return d + 'Z';
-})();
+/** Bộ lọc tô màu biểu tượng theo trạng thái (khai báo trong <defs> của lớp ghim) */
+const PIN_ICON_FILTER: Record<PinLook, string> = {
+  none: 'url(#jm-ink-region)',
+  understood: 'url(#jm-ink-ai)',
+  stamp: 'url(#jm-ink-on)',
+  red: 'url(#jm-ink-on)',
+  next: 'url(#jm-ink-shu)',
+};
 
 /**
- * Khung ghim theo loại địa danh (ô 44×44, tâm 22,22): địa danh tròn, thiên nhiên vuông bo, di sản bát giác,
- * văn hóa viền hoa. Lớp ngoài tô giấy viền màu vùng, lớp trong là nét mảnh.
+ * Khung ghim: ô vuông bo góc 34px trong ô 44×44 (tâm 22,22). Chưa học viền màu vùng, đã hiểu nền chàm nhạt,
+ * có con dấu nền chàm, dấu son nền đỏ, mốc tiếp theo viền đỏ kèm quầng. Đang mở thì thêm vòng giấy và vòng mực.
  */
-const PinFrame: React.FC<{ kind: PictogramKind; fill: string; stroke: string; ring: string; ringOpacity: number }> = ({
-  kind,
-  fill,
-  stroke,
-  ring,
-  ringOpacity,
-}) => {
-  const outer = { fill, stroke, strokeWidth: 2 };
-  const inner = { fill: 'none', stroke: ring, strokeWidth: 1, opacity: ringOpacity };
-  switch (kind) {
-    case 'nature':
-      return (
+const PinFrame: React.FC<{ look: PinLook; ink: string; active: boolean }> = ({ look, ink, active }) => {
+  const filled = look === 'stamp' || look === 'red';
+  return (
+    <>
+      {active ? (
         <>
-          <rect x={3.5} y={3.5} width={37} height={37} rx={11} {...outer} />
-          <rect x={7} y={7} width={30} height={30} rx={8} {...inner} />
+          <rect x={0} y={0} width={44} height={44} rx={15} className="jm-sq-ring-ink" />
+          <rect x={2} y={2} width={40} height={40} rx={13} className="jm-sq-ring-paper" />
         </>
-      );
-    case 'heritage':
-      return (
-        <>
-          <polygon points={polygonPoints(22, 22, 21, 8, Math.PI / 8)} {...outer} />
-          <polygon points={polygonPoints(22, 22, 17, 8, Math.PI / 8)} {...inner} />
-        </>
-      );
-    case 'culture':
-      return (
-        <>
-          <path d={SCALLOP_44} {...outer} />
-          <circle cx={22} cy={22} r={14.5} {...inner} />
-        </>
-      );
-    default:
-      return (
-        <>
-          <circle cx={22} cy={22} r={19.5} {...outer} />
-          <circle cx={22} cy={22} r={16} {...inner} />
-        </>
-      );
-  }
+      ) : (
+        look === 'next' && <rect x={1} y={1} width={42} height={42} rx={14} className="jm-sq-halo" />
+      )}
+      <g className="jm-focus-ring" style={{ filter: 'drop-shadow(0 2px 3px rgba(7,26,68,0.22))' }}>
+        {filled ? (
+          <rect x={5} y={5} width={34} height={34} rx={10} className={`jm-sq is-${look}`} />
+        ) : (
+          // Viền 2.5px nằm gọn trong ô 34px
+          <rect
+            x={6.25}
+            y={6.25}
+            width={31.5}
+            height={31.5}
+            rx={8.75}
+            strokeWidth={2.5}
+            stroke={look === 'none' ? mix(ink, T.card, 0.55) : undefined}
+            className={`jm-sq is-${look}`}
+          />
+        )}
+      </g>
+    </>
+  );
 };
 
 const prefersReducedMotion = () =>
@@ -1008,8 +986,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
   const ink = selected ? REGION_STYLE[selected.region].ink : T.ink;
   // Màu nền đất của tỉnh đang xem: màu vùng pha 35% giấy, một màu cho mọi quận
   const landFill = selected ? mix(REGION_STYLE[selected.region].fill, T.paper, 0.35) : T.paper;
-  // Cỡ vòng khám phá tính theo độ phóng đã lượng tử hoá (chỉ đổi khi zoom đổi hơn 2%)
-  const zonePxQ = Math.pow(ZONE_ZOOM_STEP, -Math.round(Math.log(rPxPerUnit) / Math.log(ZONE_ZOOM_STEP)));
   // Khi xem một tỉnh: tỉnh có dữ liệu chi tiết vẽ bằng ranh giới thành phố thay cho hình thô
   const selectedDetail = selected ? details.get(selected.id) : undefined;
   const neighborDetails = useMemo(
@@ -1385,13 +1361,6 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               vectorEffect="non-scaling-stroke"
               pointerEvents="none"
             />
-            <ZoneCircles
-              zones={landmarks.map((lm, i) => ({ key: String(lm.spotId), x: lm.xy[0], y: lm.xy[1], done: spotDone(i) }))}
-              clipId={`jm-zone-${selected.id}`}
-              clipD={selectedDetail.allD}
-              color={REGION_STYLE[selected.region].hover}
-              pxQ={zonePxQ}
-            />
           </g>
         )}
 
@@ -1469,8 +1438,16 @@ export const JapanMap: React.FC<JapanMapProps> = ({
               <feFlood floodColor={ink} />
               <feComposite in2="SourceAlpha" operator="in" />
             </filter>
-            <filter id="jm-ink-paper" colorInterpolationFilters="sRGB">
-              <feFlood floodColor={T.paper} />
+            <filter id="jm-ink-ai" colorInterpolationFilters="sRGB">
+              <feFlood style={{ floodColor: 'var(--ai)' }} />
+              <feComposite in2="SourceAlpha" operator="in" />
+            </filter>
+            <filter id="jm-ink-on" colorInterpolationFilters="sRGB">
+              <feFlood style={{ floodColor: 'var(--on-ai)' }} />
+              <feComposite in2="SourceAlpha" operator="in" />
+            </filter>
+            <filter id="jm-ink-shu" colorInterpolationFilters="sRGB">
+              <feFlood style={{ floodColor: 'var(--shu)' }} />
               <feComposite in2="SourceAlpha" operator="in" />
             </filter>
           </defs>
@@ -1551,14 +1528,15 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                   );
                 })}
 
-              {/* Ghim địa danh (= địa điểm học): khung theo loại, nền giấy, biểu tượng màu vùng */}
+              {/* Ghim địa danh (= địa điểm học): ô vuông bo góc chứa biểu tượng, màu theo tiến độ */}
               {pinPlacements.map(({ index, at }) => {
                 const { x, y } = toScreen(...at)!;
                 const lm = landmarks[index];
                 const active = activeSpot === index;
                 const toggle = () => onSpotSelect(active ? null : index);
-                const stopN = route ? route.stop[index] : null;
                 const isNext = index === nextIdx && !active;
+                const stamp = spotState(index);
+                const look: PinLook = stamp === 'none' && index === nextIdx ? 'next' : stamp;
                 return (
                   <g
                     key={lm.spotId}
@@ -1583,47 +1561,23 @@ export const JapanMap: React.FC<JapanMapProps> = ({
                       {/* Vùng bấm trong suốt 44px */}
                       <circle cx={22} cy={22} r={PIN_HIT_RADIUS_PX} fill="transparent" />
                       {active && !reducedMotion && (
-                        <circle className="jm-ripple" cx={22} cy={22} r={21} fill="none" stroke={ink} strokeWidth={2} pointerEvents="none" />
+                        <rect className="jm-ripple" x={1} y={1} width={42} height={42} rx={14} fill="none" stroke={ink} strokeWidth={2} pointerEvents="none" />
                       )}
                       {isNext && !reducedMotion && (
-                        <circle className="jm-next-ring" cx={22} cy={22} r={20} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
+                        <rect className="jm-next-ring" x={2} y={2} width={40} height={40} rx={13} fill="none" stroke={T.shu} strokeWidth={2} pointerEvents="none" />
                       )}
-                      <g className="jm-pin-body" style={{ transform: active ? 'scale(1.14)' : undefined }}>
-                        <g className="jm-focus-ring" style={{ filter: 'drop-shadow(0 2px 3px rgba(7,26,68,0.22))' }}>
-                          <PinFrame
-                            kind={lm.pictogram.kind}
-                            fill={active ? ink : T.paper}
-                            stroke={ink}
-                            ring={active ? T.paper : ink}
-                            ringOpacity={active ? 0.6 : 0.45}
-                          />
-                        </g>
+                      <g className="jm-pin-body" style={{ transform: active ? 'scale(1.18)' : undefined }}>
+                        <PinFrame look={look} ink={ink} active={active} />
                         <image
                           href={pictogramUrl(lm.pictogram.id)}
                           x={10}
                           y={10}
                           width={PIN_ICON_PX}
                           height={PIN_ICON_PX}
-                          filter={active ? 'url(#jm-ink-paper)' : 'url(#jm-ink-region)'}
+                          filter={PIN_ICON_FILTER[look]}
                           preserveAspectRatio="xMidYMid meet"
                           pointerEvents="none"
                         />
-                        {/* Đã có con dấu: chấm mực chàm (dấu son: đỏ) có dấu tích ở góc trên phải */}
-                        {spotDone(index) && (
-                          <g aria-hidden="true" pointerEvents="none">
-                            <circle cx={37} cy={7} r={8} fill={spotState(index) === 'red' ? T.shu : STAMP_INK} stroke={T.paper} strokeWidth={1.5} />
-                            <path d="M33.4 7.2l2.5 2.5 4.6-5" fill="none" stroke={T.paper} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
-                          </g>
-                        )}
-                        {/* Số thứ tự trên lộ trình: huy hiệu 19px ở góc dưới trái */}
-                        {stopN != null && (
-                          <g aria-hidden="true" pointerEvents="none">
-                            <circle cx={8} cy={36} r={9.5} fill={T.inkLine} stroke={T.paper} strokeWidth={1.5} />
-                            <text x={8} y={40} textAnchor="middle" fontSize={11} fontWeight={700} fill={T.paper}>
-                              {stopN}
-                            </text>
-                          </g>
-                        )}
                       </g>
                     </g>
                   </g>
@@ -1812,6 +1766,14 @@ export const JapanMap: React.FC<JapanMapProps> = ({
         .jm-pin-body { transform-box: fill-box; transform-origin: center; transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .jm-pin:hover .jm-pin-body { transform: scale(1.08); }
         .jm-ripple { transform-box: fill-box; transform-origin: center; animation: jm-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+        .jm-sq.is-none, .jm-sq.is-next { fill: var(--card); }
+        .jm-sq.is-next { stroke: var(--shu); }
+        .jm-sq.is-understood { fill: var(--ai-soft); stroke: var(--ai); }
+        .jm-sq.is-stamp { fill: var(--ai); }
+        .jm-sq.is-red { fill: var(--shu); }
+        .jm-sq-halo { fill: var(--shu); fill-opacity: .18; }
+        .jm-sq-ring-ink { fill: var(--sumi); }
+        .jm-sq-ring-paper { fill: var(--card); }
         .jm-label-fade { animation: jm-fade-in 0.2s ease-out both; }
         .jm-open-top, .jm-open-side { transition: transform .26s cubic-bezier(0.4, 0, 0.2, 1); }
         .jm-open.is-up .jm-open-top { transform: translateY(var(--lift)); transition: transform .36s cubic-bezier(0.34, 1.45, 0.64, 1); }
