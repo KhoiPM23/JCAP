@@ -931,8 +931,10 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
               className={`flex h-14 w-14 items-center justify-center rounded-full border-2 p-1 select-none shrink-0 shadow-2xs ${washiSealClass}`}
               title={`Xếp loại hiện tại: ${masteryRank.title}`}
             >
-              <div className="w-full h-full rounded-full border border-current/50 flex flex-col items-center justify-center leading-none">
-                <span className="text-xs font-sans font-black uppercase tracking-tight">{masteryRank.shortTag}</span>
+              <div className="w-full h-full rounded-full border border-current/50 flex flex-col items-center justify-center px-1">
+                <span className={`font-sans font-black uppercase tracking-tight text-center ${masteryRank.shortTag.includes(' ') ? 'text-[10px] leading-[1.15]' : 'text-xs leading-none'}`}>
+                  {masteryRank.shortTag}
+                </span>
               </div>
             </div>
 
