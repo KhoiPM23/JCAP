@@ -20,8 +20,16 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         _dbContext = dbContext;
     }
 
+    public Task<AdaptiveContextDto> GetAdaptiveContextAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        return GetAdaptiveContextAsync(userId, null, cancellationToken);
+    }
+
     public async Task<AdaptiveContextDto> GetAdaptiveContextAsync(
         string userId,
+        AdaptiveContextQuery? query,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -128,6 +136,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             consecutiveFails,
             recommendedDifficulty,
             weakKeywords,
+            query,
             cancellationToken);
 
         double autonomy = profile != null
@@ -212,8 +221,14 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         int consecutiveFails,
         string recommendedDifficulty,
         List<string> weakKeywords,
+        AdaptiveContextQuery? query,
         CancellationToken cancellationToken)
     {
+        bool isTactical = query != null && (
+            query.ExcludeScenarioId.HasValue
+            || query.SessionPassed.HasValue
+            || !string.IsNullOrWhiteSpace(query.SessionLevel));
+
         var scenarioRows = await _dbContext.Scenarios
             .AsNoTracking()
             .Where(s => s.IsActive)
@@ -250,6 +265,15 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             scenarioRows = publishedOnly;
         }
 
+        if (query?.ExcludeScenarioId is int excludedId)
+        {
+            var withoutCurrent = scenarioRows.Where(s => s.Id != excludedId).ToList();
+            if (withoutCurrent.Count > 0)
+            {
+                scenarioRows = withoutCurrent;
+            }
+        }
+
         var historyRows = await (
             from r in _dbContext.RoleplayResults.AsNoTracking()
             join sess in _dbContext.RoleplaySessions.AsNoTracking() on r.RoleplaySessionId equals sess.Id
@@ -282,7 +306,28 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                 });
 
         double thetaEff = theta - (consecutiveFails >= 2 ? 0.45 : 0.0);
-        int recRank = GetLevelRank(recommendedDifficulty);
+        string effectiveTargetDifficulty = recommendedDifficulty;
+        if (isTactical)
+        {
+            if (query!.SessionPassed == false)
+            {
+                thetaEff -= 0.35;
+                if (!string.IsNullOrWhiteSpace(query.SessionLevel))
+                {
+                    effectiveTargetDifficulty = NormalizeJlptLevel(query.SessionLevel) switch
+                    {
+                        "N3" => "N4",
+                        _ => "N5"
+                    };
+                }
+            }
+            else if (query.SessionPassed == true)
+            {
+                thetaEff += 0.25;
+            }
+        }
+
+        int recRank = GetLevelRank(effectiveTargetDifficulty);
         int consolidateMaxRank = recRank >= 3 ? 2 : 1;
         DateTime nowUtc = DateTime.UtcNow;
 
@@ -290,13 +335,13 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         {
             var levelList = s.Levels.Count > 0
                 ? s.Levels.Select(l => NormalizeJlptLevel(l.JLPTLevel)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
-                : new List<string> { recommendedDifficulty };
+                : new List<string> { effectiveTargetDifficulty };
 
             var bestLevelEval = levelList
                 .Select(lv =>
                 {
                     double p = ComputeIrtPassProbability(thetaEff, lv);
-                    bool isRec = string.Equals(lv, recommendedDifficulty, StringComparison.OrdinalIgnoreCase);
+                    bool isRec = string.Equals(lv, effectiveTargetDifficulty, StringComparison.OrdinalIgnoreCase);
                     return (Level: lv, PPass: p, Dist: Math.Abs(p - 0.72), IsRec: isRec);
                 })
                 .OrderBy(x => x.Dist)
@@ -327,9 +372,10 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             bool isFailed = hasHistory && !hist.LastPassed;
             bool isUnattempted = !hasHistory;
             double freshnessScore;
+            double recentPassCooldownPenalty = 0.0;
             if (isUnattempted)
             {
-                freshnessScore = 86.0;
+                freshnessScore = (isTactical && query?.SessionPassed == true) ? 94.0 : 86.0;
             }
             else if (isFailed)
             {
@@ -338,14 +384,20 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             else
             {
                 double daysSince = (nowUtc - hist.LastCompletedAt).TotalDays;
-                freshnessScore = daysSince > 7.0 ? 65.0 : daysSince >= 3.0 ? 40.0 : 15.0;
+                freshnessScore = daysSince > 7.0 ? 65.0 : daysSince >= 3.0 ? 40.0 : 10.0;
+                if (daysSince < 3.0)
+                {
+                    recentPassCooldownPenalty = 18.0;
+                }
             }
 
-            double diffBonus = levelList.Any(l => string.Equals(l, recommendedDifficulty, StringComparison.OrdinalIgnoreCase))
+            double diffBonus = levelList.Any(l => string.Equals(l, effectiveTargetDifficulty, StringComparison.OrdinalIgnoreCase))
                 ? 100.0
                 : 55.0;
 
-            double rawScore = 0.35 * zpdScore + 0.35 * gapScore + 0.20 * freshnessScore + 0.10 * diffBonus;
+            double rawScore = Math.Max(
+                10.0,
+                0.35 * zpdScore + 0.35 * gapScore + 0.20 * freshnessScore + 0.10 * diffBonus - recentPassCooldownPenalty);
 
             return new ScoredScenarioCandidate
             {
@@ -382,7 +434,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
             usedIds.Add(core.Id);
 
             int coreMatch = (int)Math.Clamp(Math.Round(core.RawScore), 78, 97);
-            var coreDto = BuildRecommendationDto(core, "Core", core.BestLevel, thetaEff, coreMatch, isTopPick: true);
+            var coreDto = BuildRecommendationDto(core, "Core", core.BestLevel, thetaEff, coreMatch, isTopPick: true, query);
 
             ScoredScenarioCandidate? consolidate = scoredCandidates
                 .Where(c => !usedIds.Contains(c.Id))
@@ -401,7 +453,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                     .OrderByDescending(GetLevelRank)
                     .FirstOrDefault() ?? consolidate.BestLevel;
                 int consMatch = (int)Math.Clamp(Math.Round(consolidate.RawScore), 64, Math.Max(64, coreMatch - 3));
-                consolidateDto = BuildRecommendationDto(consolidate, "Consolidate", consLevel, thetaEff, consMatch, isTopPick: false);
+                consolidateDto = BuildRecommendationDto(consolidate, "Consolidate", consLevel, thetaEff, consMatch, isTopPick: false, query);
             }
 
             ScoredScenarioCandidate? stretch = scoredCandidates
@@ -421,7 +473,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                     .OrderBy(GetLevelRank)
                     .FirstOrDefault() ?? stretch.BestLevel;
                 int stretchMatch = (int)Math.Clamp(Math.Round(stretch.RawScore), 60, Math.Max(60, coreMatch - 5));
-                stretchDto = BuildRecommendationDto(stretch, "Stretch", stretchLevel, thetaEff, stretchMatch, isTopPick: false);
+                stretchDto = BuildRecommendationDto(stretch, "Stretch", stretchLevel, thetaEff, stretchMatch, isTopPick: false, query);
             }
 
             if (consolidateDto != null) recommendations.Add(consolidateDto);
@@ -450,7 +502,7 @@ public class AdaptiveProfileService : IAdaptiveProfileService
                     (d.Title?.Contains(kw, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (d.Description?.Contains(kw, StringComparison.OrdinalIgnoreCase) ?? false));
                 double gapScore = weakKeywords.Count == 0 ? 55.0 : Math.Min(100.0, 40.0 + matched * 25.0);
-                double diffBonus = string.Equals(level, recommendedDifficulty, StringComparison.OrdinalIgnoreCase) ? 100.0 : 50.0;
+                double diffBonus = string.Equals(level, effectiveTargetDifficulty, StringComparison.OrdinalIgnoreCase) ? 100.0 : 50.0;
                 double totalScore = 0.45 * zpdScore + 0.35 * gapScore + 0.20 * diffBonus;
                 return (d.Id, Score: totalScore);
             })
@@ -469,7 +521,8 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         string chosenLevel,
         double thetaEff,
         int matchScore,
-        bool isTopPick)
+        bool isTopPick,
+        AdaptiveContextQuery? query)
     {
         int predictedPassRate = (int)Math.Clamp(
             Math.Round(ComputeIrtPassProbability(thetaEff, chosenLevel) * 100.0),
@@ -484,6 +537,24 @@ public class AdaptiveProfileService : IAdaptiveProfileService
         else if (candidate.IsFailed)
         {
             reasonVi = $"Luyện lại tình huống chưa đạt gần đây để củng cố mức {chosenLevel}.";
+        }
+        else if (query?.SessionPassed == true)
+        {
+            string sessionLv = NormalizeJlptLevel(query.SessionLevel);
+            reasonVi = tier switch
+            {
+                "Core" => $"Tiếp nối đà đạt mức {sessionLv} với tình huống mới phù hợp ở mức {chosenLevel}.",
+                "Stretch" => $"Đang có phong độ tốt — thử thách lên mức {chosenLevel} để bứt phá.",
+                _ => $"Củng cố nền tảng giao tiếp chắc chắn ở mức {chosenLevel}."
+            };
+        }
+        else if (query?.SessionPassed == false)
+        {
+            reasonVi = tier switch
+            {
+                "Core" or "Consolidate" => $"Chuyển sang tình huống vừa sức hơn ở mức {chosenLevel} để lấy lại nhịp.",
+                _ => $"Thử thách tình huống mới ở mức {chosenLevel} khi bạn sẵn sàng."
+            };
         }
         else
         {

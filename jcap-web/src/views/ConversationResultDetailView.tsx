@@ -1768,7 +1768,21 @@ export const ConversationResultDetailView: React.FC = () => {
 
         try {
           const token = localStorage.getItem('jcap_token');
-          void fetch(resolveApiUrl('/api/learner/adaptive-context'), {
+          const params = new URLSearchParams();
+          if (response.data.scenarioId) {
+            params.set('excludeScenarioId', String(response.data.scenarioId));
+          }
+          if (typeof response.data.passStatus === 'boolean') {
+            params.set('sessionPassed', String(response.data.passStatus));
+          }
+          if (response.data.jlptLevel) {
+            params.set('sessionLevel', String(response.data.jlptLevel));
+          }
+          const qs = params.toString();
+          const adaptiveUrl = qs
+            ? `/api/learner/adaptive-context?${qs}`
+            : '/api/learner/adaptive-context';
+          void fetch(resolveApiUrl(adaptiveUrl), {
             headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           })
             .then((r) => (r.ok ? r.json() : null))

@@ -215,5 +215,21 @@ public class AdaptiveProfileServiceTests
         Assert.Equal(3, ctx.RecommendedScenarioIds[0]);
         Assert.True(core.MatchScore > consolidate.MatchScore);
         Assert.True(core.MatchScore > stretch.MatchScore);
+
+        // Tactical post-session mode: khi vừa hoàn thành xong kịch bản 3 (Pass N5),
+        // Trang Kết quả phải loại bỏ kịch bản 3 và đẩy tình huống tiếp theo thay vì lặp lại Trang Năng lực
+        var tacticalCtx = await service.GetAdaptiveContextAsync(
+            "learner-zpd-1",
+            new JCAP.DTOs.Roleplay.AdaptiveContextQuery
+            {
+                ExcludeScenarioId = 3,
+                SessionPassed = true,
+                SessionLevel = "N5"
+            });
+
+        Assert.DoesNotContain(3, tacticalCtx.RecommendedScenarioIds);
+        Assert.All(tacticalCtx.RecommendedScenarios, r => Assert.NotEqual(3, r.ScenarioId));
+        var tacticalCore = Assert.Single(tacticalCtx.RecommendedScenarios, r => r.IsTopPick);
+        Assert.Equal(2, tacticalCore.ScenarioId);
     }
 }

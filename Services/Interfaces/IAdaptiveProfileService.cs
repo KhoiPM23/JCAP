@@ -12,4 +12,9 @@ public interface IAdaptiveProfileService
     Task<AdaptiveContextDto> GetAdaptiveContextAsync(
         string userId,
         CancellationToken cancellationToken = default);
+
+    Task<AdaptiveContextDto> GetAdaptiveContextAsync(
+        string userId,
+        AdaptiveContextQuery? query,
+        CancellationToken cancellationToken = default);
 }

@@ -225,7 +225,11 @@ public class RoleplaySessionController : ControllerBase
     /// Ngữ cảnh thích ứng thống nhất (ngắn hạn + dài hạn) để Roadmap, Shadowing, Flashcard, Explore & Roleplay dùng chung.
     /// </summary>
     [HttpGet("/api/learner/adaptive-context")]
-    public async Task<IActionResult> GetAdaptiveContext(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAdaptiveContext(
+        [FromQuery] int? excludeScenarioId = null,
+        [FromQuery] bool? sessionPassed = null,
+        [FromQuery] string? sessionLevel = null,
+        CancellationToken cancellationToken = default)
     {
         var userId = GetCurrentUserId();
         if (string.IsNullOrEmpty(userId))
@@ -238,7 +242,16 @@ public class RoleplaySessionController : ControllerBase
             return Ok(ApiResponse<AdaptiveContextDto>.Ok(new AdaptiveContextDto { UserId = userId }, "Dữ liệu thích ứng mặc định."));
         }
 
-        var context = await _adaptiveProfileService.GetAdaptiveContextAsync(userId, cancellationToken);
+        AdaptiveContextQuery? query = (excludeScenarioId.HasValue || sessionPassed.HasValue || !string.IsNullOrWhiteSpace(sessionLevel))
+            ? new AdaptiveContextQuery
+            {
+                ExcludeScenarioId = excludeScenarioId,
+                SessionPassed = sessionPassed,
+                SessionLevel = sessionLevel
+            }
+            : null;
+
+        var context = await _adaptiveProfileService.GetAdaptiveContextAsync(userId, query, cancellationToken);
         return Ok(ApiResponse<AdaptiveContextDto>.Ok(context, "Lấy ngữ cảnh thích ứng thành công."));
     }
 

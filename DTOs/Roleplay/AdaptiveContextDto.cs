@@ -35,6 +35,13 @@ public sealed class AdaptiveContextDto
     public string? AiRuntimeDirective { get; set; }
 }
 
+public sealed class AdaptiveContextQuery
+{
+    public int? ExcludeScenarioId { get; set; }
+    public bool? SessionPassed { get; set; }
+    public string? SessionLevel { get; set; }
+}
+
 public sealed class AdaptiveScenarioRecommendationDto
 {
     public int ScenarioId { get; set; }
