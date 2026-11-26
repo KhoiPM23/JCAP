@@ -1092,7 +1092,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
               latestTranscriptRef.current = rawText;
               setIsVoiceDraftLocked(true);
               markLearnerUttering();
-            } else if (forImmediateSend && !latestTranscriptRef.current) {
+            } else if (forImmediateSend) {
+              // Luôn ưu tiên kết quả chính xác từ Faster-Whisper thay vì giữ chữ thô từ Web Speech
               latestTranscriptRef.current = rawText;
             }
             if (typeof whisperRes.confidence === 'number' && whisperRes.confidence > 0) {

@@ -1441,7 +1441,8 @@ public class RoleplaySessionService : IRoleplaySessionService
                 {
                     try
                     {
-                        var phonemeResult = await phonemeTask;
+                        var completedTask = await Task.WhenAny(phonemeTask, Task.Delay(1500, cancellationToken));
+                        var phonemeResult = completedTask == phonemeTask ? await phonemeTask : null;
                         if (phonemeResult != null)
                         {
                             pronunciationIssues = AlignPronunciationIssues(
