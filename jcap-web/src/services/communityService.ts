@@ -1,4 +1,5 @@
 import type { ApiResponse } from '../types/auth';
+import { resolveApiUrl } from '../utils/apiBase';
 import type { ForumAttachment, ForumChannel, ForumComment, ForumPost } from '../types/community';
 
 export interface BackendCommunityAttachmentDto {
@@ -176,7 +177,7 @@ export const communityService = {
   /** null = không tải được (máy chủ chưa phản hồi hoặc trả lỗi) */
   async fetchPosts(): Promise<ForumPost[] | null> {
     try {
-      const res = await fetch('/api/community/posts', {
+      const res = await fetch(resolveApiUrl('/api/community/posts'), {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -197,7 +198,7 @@ export const communityService = {
     const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
 
     try {
-      const res = await fetch('/api/community/posts', {
+      const res = await fetch(resolveApiUrl('/api/community/posts'), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -244,7 +245,7 @@ export const communityService = {
     const savedLevel = localStorage.getItem('jcap_level') || storedUser?.level || 'N5';
 
     try {
-      const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/comments`, {
+      const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}/comments`), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -284,7 +285,7 @@ export const communityService = {
 
   async toggleUpvote(postId: string): Promise<ForumPost | null> {
     try {
-      const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/upvote`, {
+      const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}/upvote`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -302,7 +303,7 @@ export const communityService = {
 
   async toggleSolved(postId: string): Promise<ForumPost | null> {
     try {
-      const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/toggle-solved`, {
+      const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}/toggle-solved`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -320,7 +321,7 @@ export const communityService = {
 
   async togglePin(postId: string): Promise<ForumPost | null> {
     try {
-      const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/toggle-pin`, {
+      const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}/toggle-pin`), {
         method: 'POST',
         headers: getAuthHeaders(),
       });
@@ -338,7 +339,7 @@ export const communityService = {
 
   async deletePost(postId: string): Promise<boolean> {
     try {
-      const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}`, {
+      const res = await fetch(resolveApiUrl(`/api/community/posts/${encodeURIComponent(postId)}`), {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
