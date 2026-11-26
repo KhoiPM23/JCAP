@@ -1179,6 +1179,8 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     voiceIdOverride?: number,
     rateOverride?: number
   ) => {
+    // #193 fix: Luôn strip thẻ <ruby>/<rt>/<rp> trước khi truyền sang TTS để tránh lệch giọng đọc vs hiển thị
+    const ttsText = stripRubyToPlainJapanese(text);
     if (playingMessageId === messageId && isPlayingAiSpeech) {
       scenarioVoiceService.stopAllAudio();
       isPlayingAiSpeechRef.current = false;
@@ -1194,7 +1196,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     setIsPlayingAiSpeech(true);
     setPlayingMessageId(messageId);
 
-    const voiceToUse = voiceIdOverride ?? getSpeakerVoiceId(text);
+    const voiceToUse = voiceIdOverride ?? getSpeakerVoiceId(ttsText);
     const effectiveRate = typeof rateOverride === 'number' && rateOverride > 0
       ? rateOverride
       : (typeof customSpeedScale === 'number' && customSpeedScale > 0
@@ -1204,7 +1206,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
     void (async () => {
       await stopSpeechRecognition({ discardAudio: true });
       await scenarioVoiceService.playAiSpeech(
-        text,
+        ttsText,
         voiceToUse,
         () => {
           isPlayingAiSpeechRef.current = false;
@@ -1373,7 +1375,7 @@ const RoleplayPracticeViewInternal: React.FC = () => {
 
 
     void scenarioVoiceService.playAiSpeech(
-      text,
+      stripRubyToPlainJapanese(text),
       learnerVoiceId,
       () => {
         setIsPlayingLearnerSample(false);
@@ -4826,9 +4828,10 @@ const RoleplayPracticeViewInternal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        const textToPlay =
+                        const textToPlay = stripRubyToPlainJapanese(
                           selectedMessage.linguisticFeedback?.naturalAlternative ||
-                          selectedMessage.japaneseText;
+                          selectedMessage.japaneseText
+                        );
                         setIsPlayingAlternativeAudio(true);
                         void scenarioVoiceService.playAiSpeech(
                           textToPlay,
