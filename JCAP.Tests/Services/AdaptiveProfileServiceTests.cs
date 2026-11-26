@@ -127,4 +127,93 @@ public class AdaptiveProfileServiceTests
         Assert.Equal(101, ctx.RecommendedShadowingIds[0]);
         Assert.False(string.IsNullOrWhiteSpace(ctx.AiRuntimeDirective));
     }
+
+    [Fact]
+    public async Task GetAdaptiveContextAsync_RanksByKnowledgeGapAndAntiRepetition_NotScenarioId()
+    {
+        using var db = CreateInMemoryDbContext();
+
+        db.LearnerIntelligenceProfiles.Add(new LearnerIntelligenceProfile
+        {
+            UserId = "learner-zpd-1",
+            ThetaEstimate = -0.35,
+            CommunicativeProficiencyIndex = 68.0,
+            SpeakingReflexIndex = 70.0,
+            KeigoCommandScore = 72.0,
+            ParticleAccuracyRate = 68.0,
+            AverageMoraRate = 4.0,
+            CommunicativeConfidenceScore = 74.0,
+            HintDependencyRate = 15.0
+        });
+
+        var s1 = new Scenario { Id = 1, Title = "Chào hỏi văn phòng", Description = "Công sở", IsActive = true };
+        var cfg1 = new ScenarioLevelConfiguration { Id = 21, ScenarioId = 1, JLPTLevel = "N5", Status = "Published" };
+        s1.LevelConfigurations.Add(cfg1);
+
+        var s2 = new Scenario { Id = 2, Title = "Phỏng vấn việc làm", Description = "Thử thách mới", IsActive = true };
+        var cfg2 = new ScenarioLevelConfiguration { Id = 22, ScenarioId = 2, JLPTLevel = "N4", Status = "Published" };
+        s2.LevelConfigurations.Add(cfg2);
+
+        var s3 = new Scenario { Id = 3, Title = "Gọi món tại quán mì", Description = "Ẩm thực", IsActive = true };
+        var cfg3 = new ScenarioLevelConfiguration { Id = 23, ScenarioId = 3, JLPTLevel = "N5", Status = "Published" };
+        cfg3.TargetVocabularies.Add(new TargetVocabulary
+        {
+            Id = 501,
+            ScenarioLevelConfigurationId = 23,
+            Word = "ラーメン",
+            Meaning = "Mì Ramen"
+        });
+        s3.LevelConfigurations.Add(cfg3);
+
+        db.Scenarios.AddRange(s1, s2, s3);
+
+        // Scenario 1 vừa mới đạt cách đây 2 giờ -> phải bị giảm điểm do anti-repetition cooldown
+        var sess1 = new RoleplaySession
+        {
+            Id = 401,
+            UserId = "learner-zpd-1",
+            ScenarioLevelConfigurationId = 21,
+            Status = "Completed",
+            CreatedAt = DateTime.UtcNow.AddHours(-3)
+        };
+        db.RoleplaySessions.Add(sess1);
+        db.RoleplayResults.Add(new RoleplayResult
+        {
+            Id = 501,
+            UserId = "learner-zpd-1",
+            RoleplaySessionId = 401,
+            ScenarioTitle = "Chào hỏi văn phòng",
+            JLPTLevel = "N5",
+            OverallScore = 88,
+            PassStatus = true,
+            CompletedAt = DateTime.UtcNow.AddHours(-2)
+        });
+
+        db.LearnerSkillMasteries.Add(new LearnerSkillMastery
+        {
+            UserId = "learner-zpd-1",
+            SkillCode = "VOCAB_RAMEN",
+            SkillName = "Từ vựng: ラーメン (Mì Ramen)",
+            Category = "Vocabulary",
+            Lapses = 3,
+            Stability = 1.2,
+            LastPracticedUtc = DateTime.UtcNow.AddDays(-1)
+        });
+
+        await db.SaveChangesAsync();
+
+        var service = new AdaptiveProfileService(db);
+        var ctx = await service.GetAdaptiveContextAsync("learner-zpd-1");
+
+        Assert.Equal(3, ctx.RecommendedScenarios.Count);
+        var core = Assert.Single(ctx.RecommendedScenarios, r => r.IsTopPick);
+        var consolidate = Assert.Single(ctx.RecommendedScenarios, r => r.Tier == "Consolidate");
+        var stretch = Assert.Single(ctx.RecommendedScenarios, r => r.Tier == "Stretch");
+
+        Assert.Equal(3, core.ScenarioId);
+        Assert.Equal("Core", core.Tier);
+        Assert.Equal(3, ctx.RecommendedScenarioIds[0]);
+        Assert.True(core.MatchScore > consolidate.MatchScore);
+        Assert.True(core.MatchScore > stretch.MatchScore);
+    }
 }

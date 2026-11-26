@@ -29,9 +29,21 @@ public sealed class AdaptiveContextDto
     public string RecommendedDifficulty { get; set; } = "N5";
     public List<string> FocusSkillTags { get; set; } = new();
     public List<int> RecommendedScenarioIds { get; set; } = new();
+    public List<AdaptiveScenarioRecommendationDto> RecommendedScenarios { get; set; } = new();
     public List<int> RecommendedShadowingIds { get; set; } = new();
     public List<string> RecommendedFlashcardKeywords { get; set; } = new();
     public string? AiRuntimeDirective { get; set; }
+}
+
+public sealed class AdaptiveScenarioRecommendationDto
+{
+    public int ScenarioId { get; set; }
+    public string RecommendedLevel { get; set; } = "N5";
+    public string Tier { get; set; } = "Core"; // Consolidate | Core | Stretch
+    public int MatchScore { get; set; }        // 0..98 real computed match %
+    public int PredictedPassRate { get; set; } // 0..100 IRT P(pass)
+    public string ReasonVi { get; set; } = string.Empty;
+    public bool IsTopPick { get; set; }
 }
 
 public sealed class AdaptiveSkillScoresDto

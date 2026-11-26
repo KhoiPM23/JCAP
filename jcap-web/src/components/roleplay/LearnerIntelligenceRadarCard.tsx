@@ -112,6 +112,15 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     hotWeaknesses?: string[];
     chronicWeaknesses?: string[];
     recommendedScenarioIds?: number[];
+    recommendedScenarios?: Array<{
+      scenarioId: number;
+      recommendedLevel: string;
+      tier: 'Consolidate' | 'Core' | 'Stretch' | string;
+      matchScore: number;
+      predictedPassRate: number;
+      reasonVi: string;
+      isTopPick: boolean;
+    }>;
   } | null>(null);
   const [availableScenarios, setAvailableScenarios] = useState<ScenarioListItem[]>([]);
   const [completedScenarioIds, setCompletedScenarioIds] = useState<Set<number>>(new Set());
@@ -448,9 +457,55 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     };
   }, [radarAxes]);
 
-  // Xây dựng Bộ 3 Kịch bản Đề xuất Thích ứng từ Core Adaptive Engine (ưu tiên RecommendedScenarioIds thật từ Backend)
+  // Xây dựng Bộ 3 Kịch bản Đề xuất Thích ứng từ Core Adaptive Engine (ưu tiên RecommendedScenarios với điểm IRT+ZPD+FSRS thật từ Backend)
   const adaptiveRecommendations = useMemo(() => {
     if (!profile || availableScenarios.length === 0) return [];
+
+    const shortCap = (text: string, maxLen = 68) => {
+      const clean = text.replace(/\s+/g, ' ').trim();
+      return clean.length > maxLen ? `${clean.slice(0, maxLen - 1).trimEnd()}…` : clean;
+    };
+
+    const backendRecs = adaptiveContext?.recommendedScenarios;
+    if (backendRecs && backendRecs.length > 0) {
+      const mapped = backendRecs
+        .map((rec) => {
+          const scn = availableScenarios.find((s) => s.id === rec.scenarioId);
+          if (!scn) return null;
+
+          const tierTag =
+            rec.tier === 'Core'
+              ? 'Đề xuất'
+              : rec.tier === 'Consolidate'
+              ? 'Củng cố'
+              : 'Nâng cao';
+
+          const fallbackLevel = rec.recommendedLevel || adaptiveContext?.recommendedDifficulty || 'N5';
+          const supportedLevels = scn.supportedJLPTLevels?.length
+            ? scn.supportedJLPTLevels
+            : [fallbackLevel];
+
+          return {
+            id: scn.id,
+            title: scn.title,
+            description: shortCap(scn.description || '', 90),
+            level: supportedLevels.join(' · '),
+            supportedJLPTLevels: supportedLevels,
+            topicName: scn.topicName || 'Thực chiến',
+            thumbnail: resolveMediaUrl((scn as any)?.thumbnailUrl || (scn as any)?.thumbnail),
+            tag: tierTag,
+            matchScore: Math.round(rec.matchScore),
+            actionReason: rec.reasonVi || `Phù hợp trình độ ${fallbackLevel}.`,
+            isTopPick: Boolean(rec.isTopPick || rec.tier === 'Core'),
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      if (mapped.length > 0) {
+        return mapped;
+      }
+    }
+
     const sortedWeakest = [...radarAxes].sort((a, b) => a.normalizedScore - b.normalizedScore);
     const primaryWeak = sortedWeakest[0];
     const secondaryWeak = sortedWeakest[1] || sortedWeakest[0];
@@ -482,19 +537,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     const secondScn = pickScenario(adaptiveIds[1], secondaryWeak?.topicCode);
     const thirdScn = pickScenario(adaptiveIds[2], strongest?.topicCode);
 
-    const rawPred = profile.predictedSuccessRateNextScenario;
-    const basePred = rawPred != null && rawPred > 0
-      ? Math.round(rawPred <= 1 ? rawPred * 100 : rawPred)
-      : Math.round(Math.min(95, Math.max(60, profile.communicativeConfidenceScore || 75)));
-
-    const belowMatch = Math.min(96, Math.max(68, Math.round(100 - (primaryWeak?.normalizedScore ?? 70) * 0.2)));
-    const sameMatch = Math.min(98, Math.max(65, basePred));
-    const aboveMatch = Math.min(95, Math.max(60, Math.round((strongest?.normalizedScore ?? basePred) * 0.92)));
-
-    const shortCap = (text: string, maxLen = 68) => {
-      const clean = text.replace(/\s+/g, ' ').trim();
-      return clean.length > maxLen ? `${clean.slice(0, maxLen - 1).trimEnd()}…` : clean;
-    };
+    const sameMatch = Math.min(96, Math.max(82, Math.round(80 + (profile.communicativeConfidenceScore || 75) * 0.16)));
+    const belowMatch = Math.min(sameMatch - 3, Math.max(68, Math.round(88 - (primaryWeak?.normalizedScore ?? 70) * 0.12)));
+    const aboveMatch = Math.min(sameMatch - 5, Math.max(64, Math.round((strongest?.normalizedScore ?? 75) * 0.88)));
 
     const hotFocus = adaptiveContext?.hotWeaknesses?.[0];
     const chronicFocus = adaptiveContext?.chronicWeaknesses?.[0];
