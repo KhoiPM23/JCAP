@@ -443,9 +443,13 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
 
         var user = await _userManager.FindByIdAsync(userId);
-        bool hasActiveSubscription = user != null
+        bool isAdmin = user != null && await IsAdminUserAsync(user);
+        bool hasActiveSubscription = !isAdmin && user != null
             && user.SubscriptionExpiresAt.HasValue
             && user.SubscriptionExpiresAt.Value > DateTime.UtcNow;
+
+        var (remainingQuota, isQuotaExhausted, creditWarningMessage) =
+            await EvaluateCreditAndQuotaStatusAsync(user, isAdmin, hasActiveSubscription, cancellationToken);
 
         int? completedResultId = null;
         if (string.Equals(session.Status, "Completed", StringComparison.OrdinalIgnoreCase))
@@ -479,6 +483,9 @@ public class RoleplaySessionService : IRoleplaySessionService
             CreditBalance = user?.CreditBalance ?? 0,
             IsNaturallyConcluded = session.IsNaturallyConcluded,
             HasActiveSubscription = hasActiveSubscription,
+            RemainingSubscriptionQuota = remainingQuota,
+            IsSubscriptionQuotaExhausted = isQuotaExhausted,
+            CreditWarningMessage = creditWarningMessage,
             ResultId = completedResultId,
             CreatedAt = session.CreatedAt,
             RecommendedAiVoiceId = voiceResolution.RecommendedAiVoiceId,
@@ -1582,6 +1589,8 @@ public class RoleplaySessionService : IRoleplaySessionService
         // 7. Tạo response trả về cho frontend
         // Lấy credit balance mới nhất (đã được cập nhật sau deduct)
         int latestCreditBalance = userForDeduct.CreditBalance;
+        var (postTurnRemainingQuota, postTurnQuotaExhausted, postTurnWarningMessage) =
+            await EvaluateCreditAndQuotaStatusAsync(userForDeduct, isAdmin, hasActiveSubscription, cancellationToken);
 
         var responseDto = new RoleplayTurnResponseDto
         {
@@ -1621,6 +1630,10 @@ public class RoleplaySessionService : IRoleplaySessionService
             SessionStatus = session.Status,
             CreditBalance = latestCreditBalance,
             CreditsSpentThisTurn = creditsSpentThisTurn,
+            HasActiveSubscription = hasActiveSubscription,
+            RemainingSubscriptionQuota = postTurnRemainingQuota,
+            IsSubscriptionQuotaExhausted = postTurnQuotaExhausted,
+            CreditWarningMessage = postTurnWarningMessage,
             DetectedIssues = detectedIssues.ToList(),
             SpeedScale = ddaDecision.SpeedScale,
             ShouldOfferEncouragement = ddaDecision.ShouldOfferEncouragement,
@@ -2028,6 +2041,97 @@ public class RoleplaySessionService : IRoleplaySessionService
         return (true, string.Empty);
     }
 
+    private const int LowCreditWarningThreshold = 5;
+    private const int LowSubscriptionQuotaWarningThreshold = 5;
+
+    /// <summary>
+    /// Tính toán hạn mức token gói tháng còn lại và thông báo cảnh báo số dư / hạn mức cho phòng hội thoại:
+    /// - Nếu có gói tháng và token gói tháng chưa hết (> 5 token): KHÔNG cảnh báo gì kể cả khi CreditBalance = 0 xu.
+    /// - Nếu có gói tháng và token gói tháng sắp hết (1..5 token): Cảnh báo gói tháng sắp hết token.
+    /// - Nếu không có gói tháng (hoặc gói tháng đã hết token) và CreditBalance còn 1..5 xu: Cảnh báo sắp hết xu.
+    /// - Nếu không có gói tháng (hoặc gói tháng đã hết token) và CreditBalance &lt;= 0: Thông báo không đủ tiền để trò chuyện.
+    /// </summary>
+    private async Task<(int? RemainingQuota, bool IsQuotaExhausted, string? WarningMessage)> EvaluateCreditAndQuotaStatusAsync(
+        ApplicationUser? user,
+        bool isAdmin,
+        bool hasActiveSubscription,
+        CancellationToken cancellationToken = default)
+    {
+        if (user == null || isAdmin)
+        {
+            return (null, false, null);
+        }
+
+        if (hasActiveSubscription)
+        {
+            var now = DateTime.UtcNow;
+            var fiveHoursAgo = now.AddHours(-5);
+            var sevenDaysAgo = now.AddDays(-7);
+            var plan = SubscriptionPlanCatalog.FindOrDefault(user.SubscriptionPlanId);
+
+            var subDeductQuery = _dbContext.CreditTransactions
+                .AsNoTracking()
+                .Where(t => t.UserId == user.Id
+                    && t.Type == "Deduct"
+                    && (t.CoveredBySubscription || (t.Description != null && t.Description.StartsWith("[Gói tháng]"))));
+
+            var used5h = await subDeductQuery
+                .Where(t => t.CreatedAt >= fiveHoursAgo)
+                .SumAsync(t => -t.Amount, cancellationToken);
+
+            var usedWeek = await subDeductQuery
+                .Where(t => t.CreatedAt >= sevenDaysAgo)
+                .SumAsync(t => -t.Amount, cancellationToken);
+
+            int rem5h = Math.Max(0, plan.FiveHourQuota - used5h);
+            int remWeek = Math.Max(0, plan.WeeklyQuota - usedWeek);
+            int remainingQuota = Math.Min(rem5h, remWeek);
+            bool isExhausted = remainingQuota <= 0;
+
+            if (!isExhausted)
+            {
+                // Khi token gói tháng vẫn còn (> 5), tuyệt đối không thông báo gì kể cả khi CreditBalance == 0 xu
+                if (remainingQuota <= LowSubscriptionQuotaWarningThreshold)
+                {
+                    return (remainingQuota, false,
+                        $"Gói tháng ({plan.Name}) của bạn sắp hết token trong chu kỳ này (còn {remainingQuota} token).");
+                }
+
+                return (remainingQuota, false, null);
+            }
+
+            // Gói tháng đã hết sạch token trong chu kỳ -> kiểm tra xu lẻ dự phòng (CreditBalance)
+            if (user.CreditBalance <= 0)
+            {
+                return (0, true,
+                    $"Bạn đã dùng hết hạn ngạch token của {plan.Name} và số dư xu dự phòng là 0 xu. Vui lòng chờ hạn ngạch hồi phục hoặc nạp thêm Credit để trò chuyện.");
+            }
+
+            if (user.CreditBalance <= LowCreditWarningThreshold)
+            {
+                return (0, true,
+                    $"Token gói tháng đã hết, hệ thống đang dùng xu dự phòng và bạn sắp hết xu (chỉ còn {user.CreditBalance} xu). Vui lòng nạp thêm Credit.");
+            }
+
+            return (0, true, null);
+        }
+
+        // Không có gói tháng -> chỉ dùng CreditBalance
+        if (user.CreditBalance <= 0)
+        {
+            return (null, false,
+                "Bạn chưa có đủ Credit (0 xu). Mặc dù bước khởi tạo kịch bản là miễn phí, việc trò chuyện với AI có tính phí — vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để bắt đầu hội thoại.");
+        }
+
+        if (user.CreditBalance <= LowCreditWarningThreshold)
+        {
+            return (null, false,
+                $"Số dư Credit của bạn sắp hết (chỉ còn {user.CreditBalance} xu). Vui lòng nạp thêm Credit hoặc đăng ký Gói tháng để cuộc trò chuyện không bị gián đoạn.");
+        }
+
+        return (null, false, null);
+    }
+
     internal static int ComputeMoraCount(string? japaneseText, string? furiganaHtml = null)
     {
         var source = !string.IsNullOrWhiteSpace(furiganaHtml)
@@ -2382,14 +2486,24 @@ public class RoleplaySessionService : IRoleplaySessionService
         }
         if (recurringMistakes.Count > 0)
         {
-            var skillDisplay = CleanSkillNameForDisplay(recurringMistakes[0].SkillName);
-            coachingAlerts.Add(new LearnerCoachingAlertDto
+            var concreteMistake = recurringMistakes
+                .Select(m => new
+                {
+                    Item = m,
+                    Display = ResolveRecurringSkillDisplay(m.SkillCode, m.SkillName)
+                })
+                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Display));
+
+            if (concreteMistake != null)
             {
-                Severity = "warning",
-                Title = $"Điểm cần lưu ý (lặp lại {recurringMistakes[0].Lapses} lần)",
-                Message = $"Bạn hay gặp vướng ở điểm '{skillDisplay}'. Hãy lưu ý điều này ở phiên luyện tập tới nhé.",
-                SuggestedAction = "Xem sổ tay ôn tập"
-            });
+                coachingAlerts.Add(new LearnerCoachingAlertDto
+                {
+                    Severity = "warning",
+                    Title = $"Lỗi hay gặp: {concreteMistake.Display} ({concreteMistake.Item.Lapses} lần)",
+                    Message = "Bạn thường vướng phần này ở các phiên gần đây — hãy để ý tránh lặp lại trong phiên tới.",
+                    SuggestedAction = "Xem sổ tay ôn tập"
+                });
+            }
         }
         if (coachingAlerts.Count < 3 && proficiencyTrend == "Declining")
         {
@@ -2481,12 +2595,37 @@ public class RoleplaySessionService : IRoleplaySessionService
         return ApiResponse<LearnerIntelligenceProfileDto>.Ok(dto);
     }
 
-    private static string CleanSkillNameForDisplay(string? rawName)
+    private static string? ResolveRecurringSkillDisplay(string? skillCode, string? rawName)
     {
-        if (string.IsNullOrWhiteSpace(rawName)) return "quy tắc giao tiếp";
+        if (!string.IsNullOrWhiteSpace(skillCode))
+        {
+            var (_, resolvedName, _) = TelemetryEvaluatorService.ResolveSkillInfo(skillCode.Trim().ToUpperInvariant());
+            if (!IsGenericSkillPlaceholder(resolvedName))
+                return resolvedName;
+        }
+
+        if (string.IsNullOrWhiteSpace(rawName)) return null;
+        var codeMatch = System.Text.RegularExpressions.Regex.Match(rawName, @"\(([A-Z]\d+(?:_[A-Z0-9_]+)?)\)");
+        if (codeMatch.Success)
+        {
+            var (_, resolvedFromParen, _) = TelemetryEvaluatorService.ResolveSkillInfo(codeMatch.Groups[1].Value.ToUpperInvariant());
+            if (!IsGenericSkillPlaceholder(resolvedFromParen))
+                return resolvedFromParen;
+        }
+
         var cleaned = System.Text.RegularExpressions.Regex.Replace(rawName, @"\s*\([A-Z0-9_]+\)\s*", " ").Trim();
-        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"^Quy tắc giao tiếp\s*", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
-        return string.IsNullOrWhiteSpace(cleaned) ? "quy tắc giao tiếp" : cleaned;
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"^Quy tắc giao tiếp\s*[:\-]?\s*", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"^(Từ vựng|Ngữ pháp)\s*:\s*", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
+        return IsGenericSkillPlaceholder(cleaned) ? null : cleaned;
+    }
+
+    private static bool IsGenericSkillPlaceholder(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return true;
+        var normalized = text.Trim();
+        return normalized.Equals("quy tắc giao tiếp", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("quy tắc ngữ pháp", StringComparison.OrdinalIgnoreCase)
+            || System.Text.RegularExpressions.Regex.IsMatch(normalized, @"^E\d+$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 }
 

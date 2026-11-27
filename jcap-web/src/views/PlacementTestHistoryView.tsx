@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { placementTestService } from '../services/placementTestService';
 import { formatDateTime } from '../utils/dateUtils';
 import type {
@@ -10,6 +12,9 @@ import type {
 
 export const PlacementTestHistoryView: React.FC = () => {
   const navigate = useNavigate();
+  const mobile = usePhoneViewport();
+  const detailRef = useRef<HTMLDivElement>(null);
+  const [confirmRetake, setConfirmRetake] = useState(false);
   const [sessions, setSessions] = useState<PlacementTestHistoryItemDto[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [detail, setDetail] = useState<PlacementTestHistoryDetailDto | null>(null);
@@ -94,7 +99,7 @@ export const PlacementTestHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1360px] flex-col gap-6 bg-transparent px-4 pb-16 pt-4">
+    <div className="jx-touch-page jx-placement-history mx-auto flex max-w-[1360px] flex-col gap-6 bg-transparent px-4 pb-16 pt-4">
       {/* Top Breadcrumb & Action Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
         <div>
@@ -112,13 +117,9 @@ export const PlacementTestHistoryView: React.FC = () => {
             <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-extrabold text-blue-800">
               {sessions.length} phiên đã lưu
             </span>
-            <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-0.5 text-xs font-extrabold text-amber-900">
-              🧪 MÔI TRƯỜNG KIỂM THỬ NỘI BỘ
-            </span>
           </div>
           <p className="mt-1 text-sm text-[var(--sumi-muted)]">
-            Xem lại chi tiết từng lượt nói, bằng chứng Can-do và căn cứ AI xếp hạng trình độ N5–N3.
-            <span className="ml-1 text-xs font-semibold text-amber-800">(Dữ liệu phục vụ kiểm thử đối soát kỹ thuật, không phải bản deploy chính thức cho học viên)</span>
+            Xem lại chi tiết từng lượt hội thoại, bằng chứng Can-do và nhận xét đánh giá trình độ N5–N3.
           </p>
         </div>
 
@@ -138,7 +139,7 @@ export const PlacementTestHistoryView: React.FC = () => {
           {(ptStatus?.canStartOrRetake ?? true) && (
             <button
               type="button"
-              onClick={handleRetake}
+              onClick={mobile ? () => setConfirmRetake(true) : handleRetake}
               disabled={retaking}
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-4 py-2.5 text-sm font-bold text-[var(--on-ai)] shadow-sm hover:bg-[var(--ai-hover)] transition cursor-pointer disabled:opacity-50"
               title={
@@ -153,7 +154,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                   ? 'Đang khởi tạo…'
                   : ptStatus?.activeSessionId
                   ? 'Làm lại bài mới (Huỷ bài cũ)'
-                  : 'Làm bài kiểm tra mới (Retake)'}
+                  : 'Làm lại bài đánh giá'}
               </span>
             </button>
           )}
@@ -179,7 +180,7 @@ export const PlacementTestHistoryView: React.FC = () => {
           </p>
           <button
             type="button"
-            onClick={handleRetake}
+            onClick={mobile ? () => navigate('/placement-test') : handleRetake}
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--ai)] px-5 py-2.5 text-sm font-bold text-[var(--on-ai)] hover:bg-[var(--ai-hover)] transition cursor-pointer"
           >
             Bắt đầu làm bài kiểm tra ngay
@@ -201,7 +202,14 @@ export const PlacementTestHistoryView: React.FC = () => {
                   <button
                     key={s.sessionId}
                     type="button"
-                    onClick={() => setSelectedSessionId(s.sessionId)}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setSelectedSessionId(s.sessionId);
+                      if (mobile) {
+                        detailRef.current?.focus({ preventScroll: true });
+                        detailRef.current?.scrollIntoView({ block: 'start' });
+                      }
+                    }}
                     className={`flex flex-col gap-2 rounded-2xl border p-4 text-left transition cursor-pointer ${
                       isSelected
                         ? 'border-[var(--ai)] bg-[var(--ai-soft)] shadow-md ring-2 ring-[var(--ai)]/30'
@@ -256,7 +264,7 @@ export const PlacementTestHistoryView: React.FC = () => {
           </div>
 
           {/* Right Column: Detailed Breakdown & Evidence Inspector (8 cols) */}
-          <div className="flex flex-col gap-6 lg:col-span-8">
+          <div ref={detailRef} tabIndex={mobile ? -1 : undefined} role="region" aria-label="Chi tiết bài kiểm tra" className="jx-placement-detail flex min-w-0 flex-col gap-6 lg:col-span-8">
             {loadingDetail ? (
               <div className="flex h-96 items-center justify-center rounded-3xl border border-[var(--line)] bg-[var(--paper-50)]">
                 <div className="text-center">
@@ -419,7 +427,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
                     <div>
                       <h3 className="text-base font-bold text-[var(--sumi)] flex items-center gap-2">
-                        <span>🔍</span> Thanh tra Bằng chứng & Nhận xét Từng Lượt nói (Turn Evidence Inspector)
+                        <span>🔍</span> Chi tiết Hội thoại &amp; Nhận xét Từng Lượt nói
                       </h3>
                       <p className="mt-0.5 text-xs text-[var(--sumi-muted)]">
                         Chi tiết từng phát ngôn, căn cứ xếp hạng N5/N4/N3 và nhận xét của AI.
@@ -452,7 +460,7 @@ export const PlacementTestHistoryView: React.FC = () => {
                           {/* Message Header */}
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-xs font-bold">
-                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn (Tanaka)'}</span>
+                              <span>{isAi ? '🏨 Lễ tân (Yamada)' : '👤 Bạn'}</span>
                               {evidence && (
                                 <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-black text-blue-800">
                                   {evidence.eventCode}
@@ -560,6 +568,19 @@ export const PlacementTestHistoryView: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+      {mobile && confirmRetake && (
+        <PracticeConfirmation
+          title="Làm bài kiểm tra mới?"
+          description="Bài mới sẽ bắt đầu từ câu đầu tiên. Các kết quả đã lưu vẫn có trong lịch sử."
+          cancelLabel="Xem tiếp lịch sử"
+          confirmLabel="Bắt đầu bài mới"
+          onCancel={() => setConfirmRetake(false)}
+          onConfirm={() => {
+            setConfirmRetake(false);
+            void handleRetake();
+          }}
+        />
       )}
     </div>
   );

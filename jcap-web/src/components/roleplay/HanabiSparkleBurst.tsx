@@ -48,6 +48,7 @@ export const HanabiSparkleBurst: React.FC<HanabiSparkleBurstProps> = ({
   }, [active, onComplete]);
 
   const particles = useMemo<Particle[]>(() => {
+    if (!active) return [];
     return Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * 2 * Math.PI + (Math.random() - 0.5) * 0.4;
       const distance = 40 + Math.random() * 90;
@@ -60,7 +61,9 @@ export const HanabiSparkleBurst: React.FC<HanabiSparkleBurstProps> = ({
 
       return { id: i, tx, ty, size, color, delay, shape };
     });
-  }, [count]);
+  }, [active, count]);
+
+  if (!active) return null;
 
   if (!active) return null;
 

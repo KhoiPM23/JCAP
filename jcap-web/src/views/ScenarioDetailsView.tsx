@@ -9,6 +9,7 @@ import { ukiyoSound } from '../utils/ukiyoSoundEngine';
 import { cleanPedagogicMeaning } from '../utils/japaneseSanitizer';
 import { resolveMediaUrl } from '../utils/apiBase';
 import { useAuth } from '../contexts/AuthContext';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 import { LivingAvatar } from '../components/roleplay/LivingAvatar';
 import { AlertCircleIcon, RefreshIcon, CompassIcon, VolumeIcon } from '../components/common/Icons';
 import type { ScenarioDetails, ScenarioLevelConfiguration } from '../types/scenarioDetails';
@@ -82,6 +83,7 @@ export const ScenarioDetailsView: React.FC = () => {
   const params = useParams<{ scenarioId?: string }>();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const mobile = usePhoneViewport() && !isAdmin;
 
   // Ưu tiên param trong URL > state > fallback 1
   const rawId = params.scenarioId || (location.state as { scenarioId?: number } | null)?.scenarioId;
@@ -92,6 +94,8 @@ export const ScenarioDetailsView: React.FC = () => {
   const returnUrl = rawReturnUrl && rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
     ? rawReturnUrl
     : ((location.state as any)?.returnUrl ?? null);
+  const scenarioListUrl = (location.state as { scenarioListUrl?: string } | null)?.scenarioListUrl;
+  const backToList = returnUrl || scenarioListUrl || '/scenarios';
 
   const [scenario, setScenario] = useState<ScenarioDetails | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveRoleplaySessionDto | null>(null);
@@ -248,7 +252,7 @@ export const ScenarioDetailsView: React.FC = () => {
             {error || 'Kịch bản yêu cầu không tồn tại hoặc đã được chuyển vào kho lưu trữ.'}
           </p>
           <div className="mt-6 flex justify-center gap-3">
-            <Button type="button" onClick={() => navigate(returnUrl || '/scenarios')} className="shadow-xs">
+            <Button type="button" onClick={() => navigate(backToList)} className="shadow-xs">
               ← {returnUrl ? 'Quay lại Bản đồ Khám phá' : 'Quay lại Thư viện kịch bản'}
             </Button>
           </div>
@@ -301,6 +305,86 @@ export const ScenarioDetailsView: React.FC = () => {
     }
   };
 
+  const practiceActions = (
+    <>
+      {startError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
+          <p className="font-bold flex items-center gap-1.5">
+            <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
+            <span>Không thể khởi tạo phòng:</span>
+          </p>
+          <p className="leading-relaxed">{startError}</p>
+          {startError.includes('credit') && !isAdmin && (
+            <Link
+              to="/credits"
+              className="inline-block pt-0.5 font-bold text-[var(--ai)] hover:underline"
+            >
+              Nạp thêm Credits tại đây →
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Primary CTA — dùng màu chàm chuẩn JCAP var(--ai) thay xanh chói rời rạc */}
+      <div className="space-y-1.5 pt-0.5">
+        <button
+          type="button"
+          className={`${mobile ? 'min-h-12 ' : ''}w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer`}
+          disabled={isStarting}
+          onClick={() => {
+            ukiyoSound.playTaikoThud();
+            if (isActiveSessionMissionsDone) {
+              void handleFinalizeCompletedActiveSession();
+            } else if (isSelectedLevelActive) {
+              const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
+              navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
+            } else if (hasActiveSession) {
+              handleStartPractice(true, selectedLevel.jlptLevel);
+            } else {
+              handleStartPractice(false, selectedLevel.jlptLevel);
+            }
+          }}
+        >
+          {isStarting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span>Đang thiết lập phòng thoại...</span>
+            </>
+          ) : isActiveSessionMissionsDone ? (
+            <span>Chốt & Xem kết quả (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : isSelectedLevelActive ? (
+            <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : hasActiveSession ? (
+            <span>Bắt đầu phiên mới (JLPT {selectedLevel.jlptLevel}) →</span>
+          ) : (
+            <span>Bắt đầu hội thoại (JLPT {selectedLevel.jlptLevel}) →</span>
+          )}
+        </button>
+
+        {isSelectedLevelActive && (
+          <button
+            type="button"
+            disabled={isStarting}
+            onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
+            className={`${mobile ? 'min-h-11 ' : ''}w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer`}
+          >
+            {isActiveSessionMissionsDone
+              ? `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
+              : `Làm lại từ đầu (JLPT ${selectedLevel.jlptLevel})`}
+          </button>
+        )}
+
+        <p className="text-center text-[11px] text-[var(--sumi-faint)] pt-0.5">
+          {isAdmin
+            ? 'Chế độ Quản trị · Không trừ credit'
+            : isSelectedLevelActive
+              ? 'Tiếp tục phiên không trừ thêm phí mở phòng'
+              : 'Tính credit tự động theo lượt thoại thực tế'}
+        </p>
+      </div>
+    </>
+  );
+
   return (
     <div className="relative mx-auto flex w-full max-w-[1160px] flex-col gap-4 bg-transparent pb-10 select-none text-[var(--sumi)]">
       {/* Top Breadcrumb Bar — tinh gọn, không vạch ngăn thừa */}
@@ -308,7 +392,7 @@ export const ScenarioDetailsView: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
-            onClick={() => navigate(returnUrl || '/scenarios')}
+            onClick={() => navigate(backToList)}
             className="group inline-flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--sumi-muted)] transition-all hover:border-[var(--ai)] hover:text-[var(--ai)] shadow-2xs active:scale-95 cursor-pointer"
           >
             <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">←</span>
@@ -423,6 +507,8 @@ export const ScenarioDetailsView: React.FC = () => {
                 })}
               </div>
             </div>
+
+            {mobile && <div className="space-y-2 border-t border-[var(--line)]/70 p-4">{practiceActions}</div>}
 
             {/* Phần 1C: Nhân vật & Bối cảnh chia ngăn mảnh trên cùng bề mặt (bỏ box lồng box) */}
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--line)]/70 border-t border-[var(--line)]/70">
@@ -592,81 +678,7 @@ export const ScenarioDetailsView: React.FC = () => {
               </span>
             </div>
 
-            {startError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <AlertCircleIcon className="w-4 h-4 text-red-600 shrink-0" />
-                  <span>Không thể khởi tạo phòng:</span>
-                </p>
-                <p className="leading-relaxed">{startError}</p>
-                {startError.includes('credit') && !isAdmin && (
-                  <Link
-                    to="/credits"
-                    className="inline-block pt-0.5 font-bold text-[var(--ai)] hover:underline"
-                  >
-                    Nạp thêm Credits tại đây →
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {/* Primary CTA — dùng màu chàm chuẩn JCAP var(--ai) thay xanh chói rời rạc */}
-            <div className="space-y-1.5 pt-0.5">
-              <button
-                type="button"
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--ai)] hover:bg-[var(--ai-hover)] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                disabled={isStarting}
-                onClick={() => {
-                  ukiyoSound.playTaikoThud();
-                  if (isActiveSessionMissionsDone) {
-                    void handleFinalizeCompletedActiveSession();
-                  } else if (isSelectedLevelActive) {
-                    const returnParam = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : '';
-                    navigate(`/scenarios/practice/${activeSessionId}${returnParam}`);
-                  } else if (hasActiveSession) {
-                    handleStartPractice(true, selectedLevel.jlptLevel);
-                  } else {
-                    handleStartPractice(false, selectedLevel.jlptLevel);
-                  }
-                }}
-              >
-                {isStarting ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    <span>Đang thiết lập phòng thoại...</span>
-                  </>
-                ) : isActiveSessionMissionsDone ? (
-                  <span>Chốt & Xem kết quả (JLPT {selectedLevel.jlptLevel}) →</span>
-                ) : isSelectedLevelActive ? (
-                  <span>Tiếp tục phiên này (JLPT {selectedLevel.jlptLevel}) →</span>
-                ) : hasActiveSession ? (
-                  <span>Bắt đầu phiên mới (JLPT {selectedLevel.jlptLevel}) →</span>
-                ) : (
-                  <span>Bắt đầu hội thoại (JLPT {selectedLevel.jlptLevel}) →</span>
-                )}
-              </button>
-
-              {isSelectedLevelActive && (
-                <button
-                  type="button"
-                  disabled={isStarting}
-                  onClick={() => handleStartPractice(true, selectedLevel.jlptLevel)}
-                  className="w-full text-center text-xs font-semibold text-[var(--sumi-faint)] hover:text-red-600 py-1 transition active:scale-95 cursor-pointer"
-                >
-                  {isActiveSessionMissionsDone
-                    ? `Bắt đầu phiên mới (JLPT ${selectedLevel.jlptLevel})`
-                    : `Làm lại từ đầu (JLPT ${selectedLevel.jlptLevel})`}
-                </button>
-              )}
-
-              <p className="text-center text-[11px] text-[var(--sumi-faint)] pt-0.5">
-                {isAdmin
-                  ? 'Chế độ Quản trị · Không trừ credit'
-                  : isSelectedLevelActive
-                    ? 'Tiếp tục phiên không trừ thêm phí mở phòng'
-                    : 'Tính credit tự động theo lượt thoại thực tế'}
-              </p>
-            </div>
+            {!mobile && practiceActions}
           </section>
 
           {/* Kiến thức trọng tâm — Gọn theo danh sách mảnh (list-divided), bỏ card lồng card */}

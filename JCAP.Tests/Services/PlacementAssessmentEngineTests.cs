@@ -487,5 +487,52 @@ namespace JCAP.Tests.Services
             Assert.Equal("gemini-3-flash-preview", seenPreferred[2]);
             Assert.Equal("gemini-3-flash-preview", state.PreferredAiModel);
         }
+
+        [Fact]
+        public async Task EvaluateTurnAsync_Evt01_AcceptsAnyGuestNameWithoutRequiringTanaka()
+        {
+            AiRequest? capturedRequest = null;
+            var aiMock = new Mock<IAiClient>();
+            aiMock.Setup(x => x.GenerateAsync(It.IsAny<AiRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AiRequest req, CancellationToken _) =>
+                {
+                    capturedRequest = req;
+                    return AiResponse.Ok(@"{
+                        ""userVietnameseMeaning"": ""Tôi là Minh."",
+                        ""userFuriganaHtml"": ""ミンです。"",
+                        ""turnAnalysis"": {
+                            ""inputCategory"": ""Valid"",
+                            ""detectedIntent"": ""ConfirmReservation"",
+                            ""demonstratedBand"": ""N5"",
+                            ""evidence"": {
+                                ""taskAchievement"": ""Fulfilled_Core"",
+                                ""sentenceStructure"": ""Simple_CompleteClause"",
+                                ""grammarErrorSeverity"": ""NoError"",
+                                ""grammarErrors"": [],
+                                ""lexicalUsage"": ""Adequate_StandardTopic"",
+                                ""politenessRegister"": ""Standard_Teineigo""
+                            },
+                            ""evidenceNote"": ""Khách nêu tên Minh rõ ràng và lịch sự.""
+                        },
+                        ""replyJapanese"": ""ミン様、ありがとうございます。スタンダードルームの512号室をご用意しておりますが、エレベーターの近くのため少し音が気になるかもしれません。こちらの部屋でよろしいでしょうか。"",
+                        ""replyVietnamese"": ""Cảm ơn quý khách Minh. Phòng 512 ở gần thang máy có thể hơi ồn, phòng này có ổn không ạ?""
+                    }");
+                });
+
+            var engine = CreateEngine(aiMock);
+            var state = new PlacementAssessmentState { CurrentEvent = "EVT-01", CurrentDifficultyBand = "N4" };
+
+            var (updatedState, outcome) = await engine.EvaluateTurnAsync(
+                state,
+                new PlacementTestMessageRequestDto { Message = "ミンです。" },
+                string.Empty);
+
+            Assert.True(updatedState.ReservationConfirmed);
+            Assert.Equal("EVT-02", updatedState.CurrentEvent);
+            Assert.Equal("Valid", outcome.InputClassification);
+            Assert.True(outcome.TaskFulfillmentScore >= 85);
+            Assert.NotNull(capturedRequest);
+            Assert.Contains("chấp nhận mọi tên hợp lệ", capturedRequest!.SystemInstruction, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

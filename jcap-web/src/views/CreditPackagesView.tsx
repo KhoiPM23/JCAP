@@ -365,10 +365,10 @@ export const CreditPackagesView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
+    <div className="jx-touch-page jx-credit-page max-w-6xl mx-auto py-8 px-4 sm:px-6 font-sans">
       {/* 1. Breadcrumb & Nút Thoát / Quay lại */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+      <div className="jx-mobile-wrap flex items-center justify-between gap-4 mb-6">
+        <div className="jx-mobile-wrap flex items-center gap-2 text-xs text-slate-500 font-medium">
           <Link to="/" className="hover:text-[#0878EE] transition">Trang chủ</Link>
           <span>/</span>
           <Link to="/subscription" className="hover:text-[#0878EE] transition">Gói Dịch Vụ & Hạn Mức</Link>
@@ -388,7 +388,7 @@ export const CreditPackagesView: React.FC = () => {
       </div>
 
       {/* 2. Header Banner */}
-      <div className="bg-gradient-to-r from-[#0878EE] to-[#044EB9] rounded-2xl p-8 mb-8 text-white shadow-lg relative overflow-hidden">
+      <div className="jx-mobile-card-padding bg-gradient-to-r from-[#0878EE] to-[#044EB9] rounded-2xl p-8 mb-8 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold mb-3">

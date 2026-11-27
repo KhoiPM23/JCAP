@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using JCAP.Data;
 using JCAP.DTOs.Common;
 using JCAP.DTOs.PlacementTest;
@@ -29,6 +30,63 @@ namespace JCAP.Services.Implementations
 
         // Speaker ID nữ lễ tân khách sạn lịch sự (VOICEVOX Meimei / Tsumugi / Kurita)
         private const int ReceptionistVoiceSpeakerId = 14;
+        private static readonly Regex JapaneseSentenceChunkRegex = new(@"[^。！？!?]+(?:[。！？!?]+[」』）\)]*)?", RegexOptions.Compiled);
+        private const int MinTtsSentenceChunkLength = 12;
+        private const int MaxMergedTtsSentenceChunkLength = 70;
+
+        /// <summary>
+        /// Tách câu tiếng Nhật thành các đoạn ngắn đồng bộ với Frontend (splitJapaneseSentencesForTts)
+        /// để pre-synthesize câu đầu tiên trước, giúp âm thanh phát sớm và tránh trùng hàng đợi CPU VOICEVOX.
+        /// </summary>
+        internal static IReadOnlyList<string> SplitJapaneseSentencesForTts(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return Array.Empty<string>();
+            }
+
+            var trimmed = text.Trim();
+            var raw = new List<string>();
+            foreach (Match match in JapaneseSentenceChunkRegex.Matches(trimmed))
+            {
+                var segment = match.Value.Trim();
+                if (!string.IsNullOrEmpty(segment))
+                {
+                    raw.Add(segment);
+                }
+            }
+
+            if (raw.Count == 0)
+            {
+                return new[] { trimmed };
+            }
+
+            var merged = new List<string>(raw.Count);
+            var i = 0;
+            while (i < raw.Count)
+            {
+                var current = raw[i];
+                while (current.Length < MinTtsSentenceChunkLength
+                    && i + 1 < raw.Count
+                    && current.Length + raw[i + 1].Length <= MaxMergedTtsSentenceChunkLength)
+                {
+                    i++;
+                    current += raw[i];
+                }
+                merged.Add(current);
+                i++;
+            }
+
+            if (merged.Count >= 2
+                && merged[^1].Length < MinTtsSentenceChunkLength
+                && merged[^2].Length + merged[^1].Length <= MaxMergedTtsSentenceChunkLength)
+            {
+                merged[^2] += merged[^1];
+                merged.RemoveAt(merged.Count - 1);
+            }
+
+            return merged;
+        }
 
         public PlacementTestService(
             AppDbContext dbContext,
@@ -80,7 +138,7 @@ namespace JCAP.Services.Implementations
                     : null,
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka",
+                    GuestName = string.Empty,
                     ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             };
@@ -210,7 +268,7 @@ namespace JCAP.Services.Implementations
                         MessageHistory = history,
                         ContextPackage = new HotelContextPackageDto
                         {
-                            GuestName = "Tanaka",
+                            GuestName = string.Empty,
                             ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                         },
                         EventSummaries = existingState.EventSummaries
@@ -264,20 +322,24 @@ namespace JCAP.Services.Implementations
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            // Pre-synthesis giọng đọc VOICEVOX mở đầu (0ms latency cho client)
+            // Pre-synthesis câu mở đầu đầu tiên của VOICEVOX để khớp với cơ chế phát cuốn chiếu phía Frontend
             if (_voiceVoxService != null)
             {
-                _ = Task.Run(async () =>
+                var firstOpeningChunk = SplitJapaneseSentencesForTts(openingJa).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(firstOpeningChunk))
                 {
-                    try
+                    _ = Task.Run(async () =>
                     {
-                        await _voiceVoxService.SynthesizeAsync(openingJa, ReceptionistVoiceSpeakerId, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug("Placement VoiceVox pre-synthesis failed: {Msg}", ex.Message);
-                    }
-                });
+                        try
+                        {
+                            await _voiceVoxService.SynthesizeAsync(firstOpeningChunk, ReceptionistVoiceSpeakerId, CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug("Placement VoiceVox pre-synthesis failed: {Msg}", ex.Message);
+                        }
+                    });
+                }
             }
 
             var openingDto = new PlacementTestTurnMessageDto
@@ -301,7 +363,7 @@ namespace JCAP.Services.Implementations
                 MessageHistory = [openingDto],
                 ContextPackage = new HotelContextPackageDto
                 {
-                    GuestName = "Tanaka",
+                    GuestName = string.Empty,
                     ReceptionistSpeakerId = ReceptionistVoiceSpeakerId
                 }
             }, "Bắt đầu bài kiểm tra xếp lớp thành công.");
@@ -350,7 +412,7 @@ namespace JCAP.Services.Implementations
             }
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-            const string guestName = "Tanaka (田中)";
+            const string guestName = "";
 
             var state = !string.IsNullOrWhiteSpace(session.AssessmentStateJson)
                 ? JsonSerializer.Deserialize<PlacementAssessmentState>(session.AssessmentStateJson, JsonOpts) ?? new PlacementAssessmentState()
@@ -426,20 +488,25 @@ namespace JCAP.Services.Implementations
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            // Pre-synthesize giọng đọc AI câu tiếp theo
+            // Pre-synthesize câu đầu tiên của phản hồi AI để khớp với sentence-streaming phía Frontend
+            // (không pre-synthesize cả đoạn dài để tránh nghẽn CPU VOICEVOX nếu người học ngắt giữa chừng)
             if (_voiceVoxService != null && !string.IsNullOrWhiteSpace(outcome.AiReplyJapanese))
             {
-                _ = Task.Run(async () =>
+                var firstChunk = SplitJapaneseSentencesForTts(outcome.AiReplyJapanese).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(firstChunk))
                 {
-                    try
+                    _ = Task.Run(async () =>
                     {
-                        await _voiceVoxService.SynthesizeAsync(outcome.AiReplyJapanese, ReceptionistVoiceSpeakerId, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug("Placement VoiceVox turn pre-synthesis failed: {Msg}", ex.Message);
-                    }
-                });
+                        try
+                        {
+                            await _voiceVoxService.SynthesizeAsync(firstChunk, ReceptionistVoiceSpeakerId, CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug("Placement VoiceVox turn pre-synthesis failed: {Msg}", ex.Message);
+                        }
+                    });
+                }
             }
 
             var responseDto = new PlacementTestMessageResponseDto

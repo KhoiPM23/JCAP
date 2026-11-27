@@ -19,6 +19,11 @@ public class RoleplayTurnResponseDto
     /// </summary>
     public int CreditsSpentThisTurn { get; set; }
 
+    public bool HasActiveSubscription { get; set; }
+    public int? RemainingSubscriptionQuota { get; set; }
+    public bool IsSubscriptionQuotaExhausted { get; set; }
+    public string? CreditWarningMessage { get; set; }
+
     /// <summary>
     /// Các lỗi ngữ pháp / trợ từ phát hiện tức thì bằng C# Rule Engine (E01-E10)
     /// </summary>

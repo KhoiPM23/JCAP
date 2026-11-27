@@ -84,7 +84,7 @@ namespace JCAP.DTOs.PlacementTest
     public sealed class HotelContextPackageDto
     {
         public string HotelName { get; set; } = "ホテルさくら (Hotel Sakura)";
-        public string GuestName { get; set; } = "Tanaka";
+        public string GuestName { get; set; } = string.Empty;
         public string BookingDates { get; set; } = "11月10日 ～ 11月13日 (3泊)";
         public string BookedRoomType { get; set; } = "Standard Room";
         public string SpecialRequest { get; set; } = "Ưu tiên phòng yên tĩnh";

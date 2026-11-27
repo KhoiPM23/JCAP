@@ -190,7 +190,7 @@ export const SubscriptionQuotaView: React.FC = () => {
 
   return (
     <div className="bg-transparent">
-      <div className="jx-um" style={{ paddingTop: 8, paddingBottom: 32 }}>
+      <div className="jx-um jx-touch-page" style={{ paddingTop: 8, paddingBottom: 32 }}>
         <div className="flex items-baseline gap-2.5 pb-2">
           <h1 className="m-0 text-2xl font-bold leading-8">Mức dùng của bạn</h1>
           <span className="text-sm text-sumi-muted">{planName}</span>
@@ -304,14 +304,14 @@ export const SubscriptionQuotaView: React.FC = () => {
           </p>
         </section>
 
-        <div className="flex items-center gap-4 border-t border-line pt-5 text-[13px] text-sumi-muted">
+        <div className="jx-mobile-wrap flex items-center gap-4 border-t border-line pt-5 text-[13px] text-sumi-muted">
           <span className="flex-auto">
             {`Mô hình AI: Gemini 3.1 Flash / Live AI · ${updatedAt ? `Cập nhật lúc ${updatedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'Chưa cập nhật'}`}
           </span>
           <button type="button" className="jx-um-link" onClick={() => void loadQuotaFromBackend()} disabled={isRefreshing}>
             {isRefreshing ? 'Đang làm mới…' : 'Làm mới'}
           </button>
-          <Link to="/credits/history" className="text-ai underline underline-offset-[3px]">
+          <Link to="/credits/history" className="jx-mobile-hit inline-flex items-center text-ai underline underline-offset-[3px]">
             Lịch sử giao dịch
           </Link>
         </div>

@@ -1,11 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../../components/jcap/Button';
 import { Icon } from '../../components/jcap/Icon';
 import { JlptBadge } from '../../components/jcap/Badge';
 import { getLearning, LearnerLearningError } from '../../services/learnerLearningService';
 import { pageNumbers } from './learningNavigation';
 import './learning.css';
+
+const listScrollPositions = new Map<string, number>();
 
 export function useLearningResource<T>(path: string, delay = 0) {
   const [retry, setRetry] = useState(0);
@@ -21,7 +23,28 @@ export function useLearningResource<T>(path: string, delay = 0) {
   }, [path, delay, retry]);
   return { ...(state.path === path ? state : { data: null, loading: true, error: null }), reload: () => setRetry(n => n + 1) };
 }
-export function LearningPage({ children }: { children: ReactNode }) { return <div className="lc-page"><div className="lc-container">{children}</div></div>; }
+export function LearningPage({ children, rememberScroll = false }: { children: ReactNode; rememberScroll?: boolean }) {
+  const { pathname, search } = useLocation();
+  const content = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const scroller = content.current?.closest<HTMLElement>('.jx-app.is-mobile .jx-page');
+    if (!scroller || !rememberScroll) return;
+
+    const filters = new URLSearchParams(search);
+    for (const [name, defaultValue] of [['kind', 'vocabularies'], ['tab', 'vocabularies'], ['page', '1']]) {
+      if (filters.get(name) === defaultValue) filters.delete(name);
+    }
+    filters.sort();
+    const key = `${pathname}?${filters}`;
+    scroller.scrollTop = listScrollPositions.get(key) ?? 0;
+    const recordScroll = () => listScrollPositions.set(key, scroller.scrollTop);
+    scroller.addEventListener('scroll', recordScroll, { passive: true });
+    return () => scroller.removeEventListener('scroll', recordScroll);
+  }, [pathname, search, rememberScroll]);
+
+  return <div ref={content} className="lc-page"><div className="lc-container">{children}</div></div>;
+}
 export function LevelBadge({ level }: { level: string }) {
   return level === 'N5' || level === 'N4' || level === 'N3' ? <JlptBadge level={level} /> : <span className="lc-level">{level}</span>;
 }

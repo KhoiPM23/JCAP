@@ -518,11 +518,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
             id: scn.id,
             title: scn.title,
             description: shortCap(scn.description || '', 90),
-            level: supportedLevels.join(' · '),
+            level: fallbackLevel,
+            recommendedLevel: fallbackLevel,
             supportedJLPTLevels: supportedLevels,
             topicName: scn.topicName || 'Thực chiến',
             thumbnail: resolveMediaUrl((scn as any)?.thumbnailUrl || (scn as any)?.thumbnail),
-            tag: tierTag,
+            tag: `${tierTag} · ${fallbackLevel}`,
             matchScore: Math.round(rec.matchScore),
             actionReason: rec.reasonVi || `Phù hợp trình độ ${fallbackLevel}.`,
             isTopPick: Boolean(rec.isTopPick || rec.tier === 'Core'),
@@ -573,17 +574,19 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
     const hotFocus = adaptiveContext?.hotWeaknesses?.[0];
     const chronicFocus = adaptiveContext?.chronicWeaknesses?.[0];
     const recDiff = adaptiveContext?.recommendedDifficulty || 'N5';
+    const nextDiff = recDiff === 'N5' ? 'N4' : 'N3';
 
     const picks = [
       {
         id: secondScn.id,
         title: secondScn.title,
         description: shortCap(secondScn.description || '', 90),
-        level: (secondScn.supportedJLPTLevels?.length ? secondScn.supportedJLPTLevels.join(' · ') : recDiff),
+        level: recDiff,
+        recommendedLevel: recDiff,
         supportedJLPTLevels: secondScn.supportedJLPTLevels?.length ? secondScn.supportedJLPTLevels : [recDiff],
         topicName: secondScn.topicName || primaryWeak?.topicName || 'Nền tảng',
         thumbnail: resolveMediaUrl((secondScn as any)?.thumbnailUrl || (secondScn as any)?.thumbnail),
-        tag: 'Củng cố',
+        tag: `Củng cố · ${recDiff}`,
         matchScore: belowMatch,
         actionReason: chronicFocus
           ? `Củng cố điểm hay vướng (${chronicFocus}) ở mức ${recDiff}.`
@@ -596,11 +599,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         id: firstScn.id,
         title: firstScn.title,
         description: shortCap(firstScn.description || '', 90),
-        level: (firstScn.supportedJLPTLevels?.length ? firstScn.supportedJLPTLevels.join(' · ') : recDiff),
+        level: recDiff,
+        recommendedLevel: recDiff,
         supportedJLPTLevels: firstScn.supportedJLPTLevels?.length ? firstScn.supportedJLPTLevels : [recDiff],
         topicName: firstScn.topicName || secondaryWeak?.topicName || 'Thực chiến',
         thumbnail: resolveMediaUrl((firstScn as any)?.thumbnailUrl || (firstScn as any)?.thumbnail),
-        tag: 'Đề xuất',
+        tag: `Đề xuất · ${recDiff}`,
         matchScore: sameMatch,
         actionReason: hotFocus
           ? `Ưu tiên luyện lại lỗi gần đây (${hotFocus}) đúng trình độ ${recDiff}.`
@@ -613,11 +617,12 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         id: thirdScn.id,
         title: thirdScn.title,
         description: shortCap(thirdScn.description || '', 90),
-        level: (thirdScn.supportedJLPTLevels?.length ? thirdScn.supportedJLPTLevels.join(' · ') : 'N4 · N3'),
-        supportedJLPTLevels: thirdScn.supportedJLPTLevels?.length ? thirdScn.supportedJLPTLevels : ['N4', 'N3'],
+        level: nextDiff,
+        recommendedLevel: nextDiff,
+        supportedJLPTLevels: thirdScn.supportedJLPTLevels?.length ? thirdScn.supportedJLPTLevels : [nextDiff],
         topicName: thirdScn.topicName || strongest?.topicName || 'Nâng cao',
         thumbnail: resolveMediaUrl((thirdScn as any)?.thumbnailUrl || (thirdScn as any)?.thumbnail),
-        tag: 'Nâng cao',
+        tag: `Nâng cao · ${nextDiff}`,
         matchScore: aboveMatch,
         actionReason: strongest
           ? `Phát huy ${strongest.shortLabel.toLowerCase()} (${strongest.displayValue}${strongest.unitLabel}) và hạn chế mở gợi ý.`
@@ -852,15 +857,23 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         : { text: 'Xu hướng: Ổn định', cls: 'bg-white/10 border-white/15 text-slate-200' };
 
   const cleanAlertSkill = (raw: string) => {
-    if (!raw) return 'điểm ngữ pháp này';
-    return raw
+    if (!raw) return '';
+    const cleaned = raw
       .replace(/\s*\([A-Z0-9_]+\)\s*/g, ' ')
-      .replace(/^Quy tắc giao tiếp\s*/i, '')
+      .replace(/^Quy tắc giao tiếp\s*[:\-]?\s*/i, '')
+      .replace(/^(Từ vựng|Ngữ pháp)\s*:\s*/i, '')
       .replace(/_/g, ' ')
-      .trim() || raw;
+      .trim();
+    if (!cleaned || /^quy tắc (giao tiếp|ngữ pháp)$/i.test(cleaned) || /^E\d+$/i.test(cleaned)) {
+      return '';
+    }
+    return cleaned;
   };
 
-  const fallbackRecurring = (profile.dueReviewItems || []).filter((it) => (it.lapses ?? 0) >= 2);
+  const fallbackRecurring = (profile.dueReviewItems || [])
+    .filter((it) => (it.lapses ?? 0) >= 2)
+    .map((it) => ({ item: it, label: cleanAlertSkill(parseSkillItem(it.skillName).japanese) }))
+    .filter((entry) => entry.label.length > 0);
   const coachingAlerts =
     profile.coachingAlerts && profile.coachingAlerts.length > 0
       ? profile.coachingAlerts.slice(0, 2)
@@ -868,8 +881,8 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
         ? [
             {
               severity: 'warning',
-              title: `Điểm cần lưu ý (lặp lại ${fallbackRecurring[0].lapses} lần)`,
-              message: `Bạn hay gặp vướng ở điểm "${cleanAlertSkill(parseSkillItem(fallbackRecurring[0].skillName).japanese)}". Hãy lưu ý điều này ở phiên tới nhé.`,
+              title: `Lỗi hay gặp: ${fallbackRecurring[0].label} (${fallbackRecurring[0].item.lapses} lần)`,
+              message: 'Bạn thường vướng phần này ở các phiên gần đây — hãy để ý tránh lặp lại trong phiên tới.',
             },
           ]
         : overallIndex < 50
@@ -1868,14 +1881,9 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          {item.supportedJLPTLevels.map((lv) => (
-                            <span
-                              key={lv}
-                              className="px-1.5 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 uppercase"
-                            >
-                              {lv}
-                            </span>
-                          ))}
+                          <span className="px-1.5 py-0.5 rounded-md bg-[var(--ai-soft)] text-[var(--ai)] text-[10px] font-extrabold font-mono border border-[var(--ai)]/20 uppercase">
+                            {item.recommendedLevel}
+                          </span>
                           {item.topicName && (
                             <span className="text-[11px] font-medium text-[var(--sumi-muted)] truncate">
                               · {item.topicName}
@@ -1902,7 +1910,7 @@ export const LearnerIntelligenceRadarCard: React.FC<LearnerIntelligenceRadarCard
 
                   <div className="pt-3 border-t border-[var(--line)]/80 mt-auto">
                     <Link
-                      to={`/scenarios/${item.id}`}
+                      to={`/scenarios/${item.id}?level=${encodeURIComponent(item.recommendedLevel)}`}
                       className={`w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition active:scale-95 shadow-sm ${
                         item.isTopPick
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white'

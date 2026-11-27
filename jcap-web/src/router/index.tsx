@@ -2,9 +2,12 @@ import React from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
 import { rememberRoleplaySession } from '../components/jcap/shell/recentRoleplay';
 import { useAuth } from '../contexts/AuthContext';
+import { shouldBypassPublicRouteRedirect } from '../utils/authSession';
 import { PrivateRoute } from '../components/PrivateRoute';
+import { AdminDesktopGate } from '../components/AdminDesktopGate';
 import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 
 // Core Auth Views (lightweight, kept eager for fast first paint)
 import { LoginView } from '../views/LoginView';
@@ -52,6 +55,7 @@ const FlashcardSetsView = React.lazy(() => import('../views/self-study/Flashcard
 const FlashcardSetDetailView = React.lazy(() => import('../views/self-study/FlashcardSetDetailView').then((m) => ({ default: m.FlashcardSetDetailView })));
 const FlashcardSessionView = React.lazy(() => import('../views/self-study/FlashcardSessionView').then((m) => ({ default: m.FlashcardSessionView })));
 const FlashcardTestView = React.lazy(() => import('../views/self-study/FlashcardTestView').then((m) => ({ default: m.FlashcardTestView })));
+const FlashcardQuizHistoryView = React.lazy(() => import('../views/self-study/FlashcardQuizHistoryView').then((m) => ({ default: m.FlashcardQuizHistoryView })));
 const FlashcardReviewHistoryView = React.lazy(() => import('../views/self-study/FlashcardReviewHistoryView').then((m) => ({ default: m.FlashcardReviewHistoryView })));
 const LearnerFeedbackView = React.lazy(() => import('../views/LearnerFeedbackView').then((m) => ({ default: m.LearnerFeedbackView })));
 const AdminFeedbackView = React.lazy(() => import('../views/admin/AdminFeedbackView').then((m) => ({ default: m.AdminFeedbackView })));
@@ -75,6 +79,13 @@ const LearningContentDetailView = React.lazy(() => import('../views/learning/Lea
 /** Redirects if already authenticated (Admin -> /admin/dashboard, Learner -> /scenarios) */
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
+
+  // Luôn cho phép mở /login?confirmed=..., /login?reset=true và /reset-password để hoàn tất luồng xác thực
+  if (shouldBypassPublicRouteRedirect(location.pathname, location.search)) {
+    return <>{children}</>;
+  }
+
   if (isAuthenticated) {
     let userRole = user?.role;
     if (!userRole) {
@@ -112,7 +123,7 @@ const AdminRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  return <>{children || <Outlet />}</>;
+  return <AdminDesktopGate>{children || <Outlet />}</AdminDesktopGate>;
 };
 
 /**
@@ -210,7 +221,12 @@ const ForgotPasswordRoute: React.FC = () => {
 
 const ResetPasswordRoute: React.FC = () => {
   const navigate = useNavigate();
-  return <ResetPasswordView onBackToLogin={() => navigate('/login')} />;
+  return (
+    <ResetPasswordView
+      onResetSuccess={() => navigate('/login?reset=true', { replace: true })}
+      onBackToLogin={() => navigate('/login', { replace: true })}
+    />
+  );
 };
 
 const RegisterRoute: React.FC = () => {
@@ -242,10 +258,12 @@ const EmailVerificationPendingRoute: React.FC = () => {
 
 const ScenarioRoute: React.FC = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const mobile = usePhoneViewport();
   const { user, userLevel, logout } = useAuth();
 
   const handleSelectScenario = (scenario: Scenario) => {
-    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id } });
+    navigate(`/scenarios/${scenario.id}`, { state: { scenarioId: scenario.id, scenarioListUrl: mobile ? `/scenarios${search}` : undefined } });
   };
 
   const handleLogout = async () => {
@@ -493,6 +511,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/flashcards/bookmarks" element={<FlashcardSetsView />} />
         <Route path="/flashcards/sets/:topicId/:contentType" element={<FlashcardSetDetailView />} />
         <Route path="/flashcards/history" element={<FlashcardReviewHistoryView />} />
+        <Route path="/flashcards/test/history" element={<FlashcardQuizHistoryView />} />
 
         {/* Kho học liệu (Learning Topics & Content) */}
         <Route path="/learning" element={<React.Suspense fallback={<div className="p-8 text-sumi-muted" role="status">Đang tải kho học liệu…</div>}><Outlet /></React.Suspense>}>

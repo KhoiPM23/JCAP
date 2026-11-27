@@ -11,6 +11,8 @@ import type { PlacementTestCompleteResponseDto, PlacementTestStatusDto } from '.
 import { resolveMediaUrl } from '../utils/apiBase';
 import type { JLPTLevel, LearnerProfile } from '../types/profile';
 import { useExploreJourney } from './explore/exploreStore';
+import { PracticeConfirmation } from '../components/jcap/PracticeConfirmation';
+import { usePhoneViewport } from '../hooks/usePhoneViewport';
 
 /**
  * Hồ sơ học viên (design-handoff mục 5): cột trái thẻ danh tính, cột phải mục tiêu JLPT + số liệu học, thông tin tài khoản,
@@ -19,6 +21,8 @@ import { useExploreJourney } from './explore/exploreStore';
 export const LearnerProfileView: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const mobile = usePhoneViewport();
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const journey = useExploreJourney();
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -133,7 +137,7 @@ export const LearnerProfileView: React.FC = () => {
   ];
 
   return (
-    <div className="relative bg-transparent">
+    <div className="jx-touch-page relative bg-transparent">
       {/* Nền sóng biển nan quạt Seigaiha thanh nhã */}
       <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl seigaiha-subtle opacity-35" />
       <div className="mx-auto flex max-w-[1040px] flex-col gap-6 pb-10">
@@ -245,11 +249,6 @@ export const LearnerProfileView: React.FC = () => {
                           Đánh giá đầu vào (Placement Test)
                         </h2>
                         <Badge tone={statusBadge.tone}>{statusBadge.label}</Badge>
-                        {allowRetake && (
-                          <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
-                            🧪 TEST MODE (Cho phép làm lại)
-                          </span>
-                        )}
                       </div>
                       <p className="m-0 text-sm leading-[22px] text-sumi-muted">
                         Phỏng vấn tình huống Khách sạn Sakura (0 Credit) giúp ước lượng năng lực giao tiếp ban đầu từ N5 đến N3.
@@ -302,7 +301,7 @@ export const LearnerProfileView: React.FC = () => {
                         icon={ptState === 'Completed' ? 'restart_alt' : 'play_arrow'}
                         onClick={() => navigate(ptState === 'Completed' ? '/placement-test?reset=1' : '/placement-test')}
                       >
-                        {ptState === 'Completed' ? 'Làm lại để kiểm thử (Test)' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
+                        {ptState === 'Completed' ? 'Làm lại bài đánh giá' : 'Bắt đầu đánh giá đầu vào (0 Credit)'}
                       </Button>
                     ) : null}
 
@@ -393,15 +392,28 @@ export const LearnerProfileView: React.FC = () => {
         </section>
 
         {/* Chân trang tài khoản & Đăng xuất */}
-        <div className="flex items-center justify-between border-t border-[var(--line)] pt-6 mt-4">
+        <div className="jx-mobile-wrap flex items-center justify-between border-t border-[var(--line)] pt-6 mt-4">
           <p className="text-xs text-[var(--sumi-muted)]">
             Phiên bản JCAP • Phản xạ đối thoại & Đánh giá năng lực tự động
           </p>
-          <Button variant="danger" icon="logout" onClick={() => logout()}>
+          <Button variant="danger" icon="logout" onClick={() => mobile ? setConfirmLogout(true) : void logout()}>
             Đăng xuất
           </Button>
         </div>
       </div>
+      {mobile && confirmLogout && (
+        <PracticeConfirmation
+          title="Đăng xuất khỏi JCAP?"
+          description="Bạn cần đăng nhập lại để tiếp tục học."
+          cancelLabel="Ở lại"
+          confirmLabel="Đăng xuất"
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => {
+            setConfirmLogout(false);
+            void logout();
+          }}
+        />
+      )}
     </div>
   );
 };

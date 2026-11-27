@@ -14,7 +14,9 @@ public static class HostingConfigurationExtensions
     {
         services.Configure<ForwardedHeadersOptions>(options =>
         {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                | ForwardedHeaders.XForwardedProto
+                | ForwardedHeaders.XForwardedHost;
             options.ForwardLimit = configuration.GetValue<int?>("Hosting:ForwardLimit");
 
             var configuredProxies = GetConfiguredValues(configuration, "Hosting:KnownProxies");

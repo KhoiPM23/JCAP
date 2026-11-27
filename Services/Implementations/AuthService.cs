@@ -1,9 +1,11 @@
 using JCAP.Data.Static;
 using JCAP.DTOs.Auth;
 using JCAP.DTOs.Common;
+using JCAP.Hosting;
 using JCAP.Models;
 using JCAP.Services.Helpers;
 using JCAP.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,19 +23,22 @@ namespace JCAP.Services.Implementations
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
-            IEmailService emailService)
+            IEmailService emailService,
+            IHttpContextAccessor? httpContextAccessor = null)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _emailService = emailService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ApiResponse<RegisterResponseDto>> RegisterAsync(RegisterDto dto)
@@ -78,7 +83,7 @@ namespace JCAP.Services.Implementations
             await _userManager.AddToRoleAsync(user, role);
 
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var backendUrl = _configuration["BackendUrl"] ?? "http://localhost:5254";
+            var backendUrl = PublicUrlResolver.ResolveBackendUrl(_configuration, _httpContextAccessor?.HttpContext);
             var confirmationUrl = $"{backendUrl.TrimEnd('/')}/api/auth/confirm-email" +
                 $"?userId={Uri.EscapeDataString(user.Id)}" +
                 $"&token={Uri.EscapeDataString(confirmationToken)}";
@@ -161,7 +166,7 @@ namespace JCAP.Services.Implementations
             }
 
             var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var backendUrl = _configuration["BackendUrl"] ?? "http://localhost:5254";
+            var backendUrl = PublicUrlResolver.ResolveBackendUrl(_configuration, _httpContextAccessor?.HttpContext);
             var confirmationUrl = $"{backendUrl.TrimEnd('/')}/api/auth/confirm-email" +
                 $"?userId={Uri.EscapeDataString(user.Id)}" +
                 $"&token={Uri.EscapeDataString(confirmationToken)}";
@@ -275,8 +280,8 @@ namespace JCAP.Services.Implementations
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
-            var resetUrl = $"{frontendUrl.TrimEnd('/')}/reset-password" +
+            var frontendUrl = PublicUrlResolver.ResolveFrontendUrl(_configuration, _httpContextAccessor?.HttpContext);
+            var resetUrl = $"{frontendUrl}/reset-password" +
                 $"?token={Uri.EscapeDataString(token)}" +
                 $"&email={Uri.EscapeDataString(user.Email!)}";
 
@@ -368,8 +373,7 @@ namespace JCAP.Services.Implementations
         {
             var clientId = _configuration["Authentication:Google:ClientId"]
                 ?? throw new InvalidOperationException("Google ClientId chưa được cấu hình.");
-            var redirectUri = _configuration["Authentication:Google:RedirectUri"]
-                ?? "http://localhost:5254/api/auth/google/callback";
+            var redirectUri = PublicUrlResolver.ResolveGoogleRedirectUri(_configuration, _httpContextAccessor?.HttpContext);
             var scope = Uri.EscapeDataString("openid email profile");
             var encodedRedirectUri = Uri.EscapeDataString(redirectUri);
 
@@ -385,8 +389,7 @@ namespace JCAP.Services.Implementations
                     ?? throw new InvalidOperationException("Google ClientId chưa được cấu hình.");
                 var clientSecret = _configuration["Authentication:Google:ClientSecret"]
                     ?? throw new InvalidOperationException("Google ClientSecret chưa được cấu hình.");
-                var redirectUri = _configuration["Authentication:Google:RedirectUri"]
-                    ?? "http://localhost:5254/api/auth/google/callback";
+                var redirectUri = PublicUrlResolver.ResolveGoogleRedirectUri(_configuration, _httpContextAccessor?.HttpContext);
 
                 var tokenParams = new Dictionary<string, string>
                 {

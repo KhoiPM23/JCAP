@@ -60,6 +60,7 @@ Prototype: phần `.mapfull`, `.natl`, `.zoomL`, `.ppanel` trong `AppPrototype.d
 - **Cụm điều khiển góc dưới phải**: nút "Chú giải" (mở bảng chú giải phía trên: Tỉnh đã mở, Tỉnh đang khoá, Con dấu son, Chấm đỏ = mốc đang học, Nhãn vùng, Lộ trình nét đứt), cạnh đó là cột nút: [ふ bật/tắt furigana · tìm tỉnh] rồi [+ · − · về toàn quốc]. Không đặt nút nào ở góc trên phải.
 - Bấm tỉnh đang khoá → popover nhỏ cạnh tỉnh: lý do khoá + nút gợi ý học tiếp ở tỉnh đang mở.
 - **Vào tỉnh** (bấm tỉnh đã mở): chuỗi chuyển động: thanh bên trượt ra (200ms) → camera phóng vào tỉnh (600ms) → lớp bản đồ chi tiết hiện (250ms) → panel tỉnh trượt vào từ phải (280ms) → nút "← Toàn quốc" hiện. Thoát thì ngược lại, nhanh hơn. `prefers-reduced-motion`: chỉ đổi mờ.
+- **Đã thay bằng mục 9k:** phần ghim, nhãn, panel tỉnh và đường về toàn quốc khi đang xem một tỉnh.
 - **Panel tỉnh** (phải, 360px): tên tỉnh có furigana, tiến độ x/5 mốc, từ đặc trưng, mốc đang học mở rộng (câu tiếng Nhật, Stepper 4 bước Hiểu → Shadowing → Kiểm tra → Hội thoại AI, nút tiếp tục), danh sách các mốc còn lại.
 
 ## 4. Gói & Credit (`/subscription`, `SubscriptionQuotaView`)
@@ -288,7 +289,7 @@ Cần kiểm tra: thứ tự đoán chữ Hán biểu trưng ("hỏi đường" 
 Prototype: `prototype/ShadowingTaiMoc.dc.html` (bấm Play, rồi "Luyện Shadowing" ở thẻ mốc 1). Nút "Tình huống demo" ở góc dưới trái chỉ có trong prototype, **không làm** trong app. Brief gốc: `BRIEF-shadowing-tai-moc.md`; chỗ nào brief khác mục này thì làm theo mục này (bố cục đã đổi sau góp ý).
 
 **Nguyên tắc**
-- Bản đồ tỉnh và ngăn thông tin bên phải **giữ nguyên như hiện tại**. Không thêm tab, không đổi nội dung ngăn.
+- Bản đồ tỉnh và ngăn thông tin bên phải **giữ nguyên như hiện tại**. Không thêm tab, không đổi nội dung ngăn. (Cập nhật: ngăn thông tin nay theo mục 9k; khung chat mở từ tầng 2 của ngăn.)
 - Không đổi API, cách chấm, cách tính điểm buổi, điều kiện nhận con dấu. Dùng lại `shadowingService`, logic thu âm, gửi chấm, lưu buổi đang có trong `views/shadowing/LearnerShadowingPracticeView.tsx` (nên tách thành hook dùng chung, ví dụ `useShadowingSession`, rồi cho cả trang cũ lẫn khung mới cùng dùng).
 - Chỉ dùng token. Màu bản đồ lấy từ `views/explore/exploreTheme.ts` (`T.sea`, `T.paper`, `T.card`, `REGION_STYLE.kanto`…), chữ và nút dùng token `kham-pha`.
 
@@ -730,6 +731,190 @@ Prototype: `prototype/ThuVienShadowing.dc.html`. Bấm Play để thử chọn m
 - Đổi cách tính điểm cao nhất.
 - Thay ước tính thời gian bằng tổng `audioDurationMs` (có thể làm sau).
 
+## 9k. Bản đồ tỉnh và ngăn tỉnh 2 tầng (`JapanMap.tsx`, `JapanMapView.tsx` › `PrefecturePanel`)
+
+Prototype: `prototype/BanDoTinh.dc.html` (bấm Play, bấm ghim hoặc dòng mốc để vào tầng 2, rê chuột lên dòng hoặc ghim, bật ふ, mở ⓘ). Các trạng thái khó tự bấm ra có file riêng: `BanDoTinh-NhomGhim.dc.html` (nhóm ghim), `BanDoTinh-DuDau.dc.html` (đủ 9 dấu), `BanDoTinh-DangTai.dc.html` (đang tải), `BanDoTinh-Loi.dc.html` (lỗi). Trên canvas UI_JCAP là 15 bảng "Bản đồ tỉnh + ngăn".
+
+Mục này **thay** phần "Vào tỉnh / Panel tỉnh" ở mục 3 và thay câu "ngăn thông tin giữ nguyên" ở mục 9g. Khung chat Shadowing tại mốc (9g) giữ nguyên, chỉ mở từ tầng 2 mới.
+
+**Vì sao làm lại (để Claude Code hiểu mục tiêu):** hiện một mốc xuất hiện ở 4 chỗ (dòng trong danh sách, `SpotFocusCard`, popover `SpotCard` trên bản đồ, modal `SpotLesson`). Danh sách đổi thứ tự khi chọn mốc, nhãn "4/4" khó hiểu, và nút "Tôi đã hiểu" chỉ có trong modal. Bản mới gom lại: **một danh sách cố định 1–9, bấm vào là xem đủ nội dung ngay trong ngăn, nút chính luôn ở cùng một chỗ.**
+
+**Nguyên tắc**
+- Không đổi API, service, store hay điều kiện cấp dấu. Dữ liệu: `useExploreJourney`, `usePrefectureData` (spots + lesson + progress), `stampOf`/`isStamped`, `prefectureRoute`, `nextSpotIndex` (**giữ luật cũ**: mốc đầu tiên chưa có con dấu), `resumeOf(dialogueId)`, `exploreService.markUnderstood` + `applySync`, `openPractice` (9g), điều hướng Hội thoại AI như `RoleplayStep` hiện có (`/scenarios/:id?return=…`).
+- **Giữ nguyên trên bản đồ:** nền đất, bóng in lệch, viền mực, ranh giới thành phố/quận (`districtD`, `cityDistrictD`), `ZoneCircles`, tỉnh lân cận, tên thành phố, nền sóng, cách camera bay, khoá zoom khi xem tỉnh, nhóm ghim và xoè ghim (logic).
+- Chỉ dùng token `kham-pha` và màu trong `exploreTheme.ts`. Không emoji, không màu cứng mới.
+- Câu chữ: câu ngắn, không viết HOA toàn bộ.
+
+### A. Bản đồ tỉnh
+
+**Ghim mốc = ô số kiểu biển số ga** (thay `PinFrame` + pictogram + dấu tích + huy hiệu số)
+- Ô 34×34px, bo 10px, số 14px 700 `tabular-nums`. Vùng bấm vẫn 44px (`PIN_HIT_RADIUS_PX`).
+- 5 trạng thái, dùng chung cho ghim, dòng trong ngăn, chú giải:
+
+| Trạng thái | Nền | Viền | Chữ |
+|---|---|---|---|
+| Chưa học (`none`) | `--card` | trong 2.5px `kanto-ink` 45% | `kanto-ink` |
+| Đã hiểu (`understood`) | `--ai-soft` | trong 2.5px `--ai` | `--ai` |
+| Có con dấu (`stamp`) | `--ai` | không | `--on-ai` |
+| Dấu son (`red`) | `--shu` | không | trắng |
+| Tiếp theo (`nextSpotIndex`) | `--card` | trong 2.5px `--shu` + quầng 4px `--shu` 18% | `--shu` |
+
+- Rê chuột: phóng 1.08. Mốc đang mở (`activeSpot`): phóng 1.22, vòng 3px `--card` + 5px `--sumi`. Focus bàn phím: outline 2px `--ai` cách 3px.
+- Bỏ: dấu tích góc ghim, chip "Tiếp theo" nổi, vòng nhấp nháy `jm-next-ring`, `jm-ripple`, nhãn tên dưới mọi ghim.
+- Tỉnh chỉ có 0–1 mốc (không có lộ trình): ô hiện pictogram (tô màu như cũ) thay cho số.
+
+**Thẻ tên** (thay nhãn "tên Nhật / tên Việt" dưới mọi ghim)
+- Chỉ hiện ở: mốc tiếp theo, mốc đang mở, ghim đang rê chuột hoặc focus, và mốc có dòng đang được rê chuột trong ngăn.
+- Thẻ: bo 14px, đệm 6/14/6/6, nền `--card`, viền 1px `--line` + bóng. Bên trái ô 32px bo 9px nền `kanto` 55% pha `card`, pictogram tô `kanto-ink`. Bên phải 2–4 dòng:
+  1. "Tiếp theo" (chỉ mốc tiếp theo): 11px 700 `--shu`.
+  2. Tên ngắn tiếng Việt (phần sau " · ", vd. "Khu nhận hành lý"): 13.5px 700.
+  3. `nameKana` 9.5px (chỉ khi bật ふ).
+  4. `nameJp` 11.5px `--sumi-muted`.
+- Mốc tiếp theo: viền trong 1.5px `--shu`, ô icon nền `--shu` 12%. Mốc đang mở: nền `--sumi`, chữ `--paper-50`.
+- Đặt thẻ sang trái, phải hoặc dưới ghim, không che ghim khác và không ra ngoài khung. Dùng lại `layoutLabels` để chọn phía.
+- Hiện và ẩn: mờ dần + trượt 4px, 150ms. `prefers-reduced-motion`: chỉ mờ dần.
+
+**Tên khu vực** (mới)
+- Các mốc liền nhau trên lộ trình có cùng tiền tố trước " · " trong `nameVi` (ít nhất 2 mốc) gom thành một khu vực. Ví dụ "Sân bay Narita" gồm mốc 1–4, "Ga sân bay Narita" gồm mốc 5–6.
+- Ghi một lần trên bản đồ, cạnh cụm mốc, ở chỗ trống (tránh ghim, thẻ, tên thành phố).
+- Chip cao 24px, bo 7px, nền `--card` 82%, viền 1px `kanto-ink` 18%, chữ nghiêng 12.5px 600 `kanto-ink`, kèm số "2/4" (số mốc có dấu / tổng).
+- Tên khu vực **không** phải dữ liệu mới, chỉ tách từ `nameVi`.
+
+**Lộ trình** (`RouteLayer`, giữ đường cong): nét chính màu `T.card` 3px, độ mờ .9. Đoạn mà cả hai đầu đã có dấu: `--ai` 3px, độ mờ .75 (thay cho màu son). Bỏ nét chấm mực.
+
+**Nhóm ghim** (khi các mốc gần nhau dưới `CLUSTER_PX`; logic giữ nguyên)
+- Ô 46×38px bo 11px nền `--sumi`, chữ `--paper-50` 13.5px 700. Ghi dải số "1–3" nếu liền nhau, không thì ghi số lượng.
+- Phía sau có 2 lớp giấy `--card`, viền 1.5px `--sumi`, lệch (5,−5) và (10,−10).
+- Nếu nhóm chứa mốc tiếp theo: chấm `--shu` 12px ở góc trên trái.
+- Rê chuột hoặc focus: thẻ danh sách 250px bên phải nhóm. Dòng đầu "3 mốc ở đây · bấm để phóng to". Mỗi mốc một dòng gồm ô số 22px, tên ngắn và "Tiếp theo" nếu có.
+- Bấm: `openCluster` như cũ.
+
+**Cụm nút góc dưới** (bên trái ngăn tỉnh, cách 20px)
+- Một cột trong viên thuốc nền `--card`: ふ (`aria-pressed`, bật thì nền `--sumi`) · ⓘ chú giải · tìm tỉnh · đường kẻ · về khung tỉnh.
+- Khi đang xem tỉnh, **ẩn hẳn** nút + và − (zoom đang bị khoá).
+
+**Chú giải khi đang xem tỉnh:** 5 ô trạng thái như bảng trên · đường lộ trình (đoạn chàm là đã đi qua) · vùng quanh mốc (pha son khi có dấu) · tên khu vực.
+
+**Bỏ** thanh `jm-backbar` ("← Toàn quốc" + đường dẫn). Đường về nằm ở đầu ngăn (xem B). Esc và bấm ra biển vẫn lùi một cấp như cũ.
+
+**Liên kết bản đồ và ngăn:** rê chuột lên một dòng trong ngăn thì ghim đó phóng 1.12 và hiện thẻ tên. Rê lên ghim thì dòng tương ứng nền `--paper-200`.
+
+### B. Ngăn tỉnh – tầng 1: Tổng quan (thay `PrefecturePanel` hiện tại)
+
+Vị trí giữ như cũ: phải 16px, trên/dưới 16px, rộng `PANEL_WIDTH_PX` (400), bo 18px, nền `--card`. Nội dung cuộn, chân ngăn dính đáy.
+
+1. **Đầu ngăn:** đường dẫn 13px "Nhật Bản / Kanto 関東". "Nhật Bản" là nút về toàn quốc, "Kanto 関東" màu `kanto-ink`. Bên phải là `IconButton close`.
+2. **Tên tỉnh:**
+   - 千葉 chữ Mincho 44/52px 700. Dưới là "Chiba" 15px 600 `--sumi-muted` + `IconButton volume_up` (nghe tên).
+   - Bên phải: nút tròn 32px (icon `menu_book`) cạnh con dấu tỉnh 46px.
+   - Con dấu tỉnh:
+     - Chưa đủ dấu: màu `kanto-ink`, độ mờ .28.
+     - Có con dấu tỉnh: màu `--ai`, rõ hẳn, xoay −6°.
+     - Có dấu son tỉnh: màu `--shu`.
+3. **Từ của tỉnh** (thay `ProvinceWordCard` lớn):
+   - Nút 32px có `aria-describedby`. Rê chuột, focus hoặc chạm thì hiện khung nổi 248px bên dưới.
+   - Trong khung: "Từ của tỉnh" + nút nghe, 落花生 kèm furigana (Mincho 30px), "đậu phộng", câu ghi chú 12.5px.
+   - Có khoảng đệm 8px giữa nút và khung để rê chuột xuống không bị tắt.
+4. **Tiến độ:**
+   - Vạch 9 đoạn, mỗi đoạn cao 6px, cách 3px, bo 3px. Màu: chưa học `--paper-300`, đã hiểu `--ai` 40% pha `card`, có dấu `--ai`, dấu son `--shu`.
+   - Dưới vạch: "**2/9** con dấu", bên phải "Dấu son 0/2" màu `--shu`.
+5. **Lộ trình:** danh sách cố định theo thứ tự lộ trình, **không đổi chỗ** khi chọn mốc.
+   - Một đường ray 3px `--paper-300` chạy dọc qua tâm các ô số.
+   - Tên khu vực là dòng nhóm 12px 600 `--sumi-muted`, số "2/4" bên phải.
+   - Mỗi mốc một `button` cao 44px, bo 12px, gồm:
+     - Ô số 26px bo 8px (5 trạng thái như bản đồ).
+     - Tên: tên ngắn nếu thuộc khu vực, không thì `nameVi` đầy đủ. 14.5px 500, mốc tiếp theo 700.
+     - Chữ phụ bên phải, chỉ khi cần:
+
+| Điều kiện | Chữ | Màu |
+|---|---|---|
+| Là mốc tiếp theo | Tiếp theo | `--shu` 700 |
+| Chưa có dấu và `resumeOf` có phiên dở | Câu x/y | `--ai` 600 |
+| Đã hiểu, có bài Shadowing | Còn Shadowing | `--sumi-muted` |
+| Chưa có dấu, mốc không có bài Shadowing | Chưa có Shadowing | `--sumi-muted` |
+
+   - Dòng tiếp theo: nền `--paper-50` + viền 1px `--line`. Rê chuột: `--paper-200`.
+   - `aria-label` đọc đủ: "Mốc 2: Sân bay Narita · Khu nhận hành lý, chưa học, Tiếp theo".
+6. **Chân ngăn:**
+   - `Button primary` rộng hết, cao 48px, bo tròn: "Học tiếp: {tên ngắn}" (icon `play_arrow`), mở tầng 2 của mốc tiếp theo.
+   - Dưới nút một dòng 12px: "Mốc 2 · Hiểu câu mẫu · khoảng 5 phút". Khi đang Shadowing dở: "Mốc 7 · Shadowing, câu 2/8 · khoảng 5 phút".
+   - Đủ dấu: "Đủ 9 con dấu của Chiba" (có đủ dấu son thì "Đủ 9 con dấu và 2 dấu son") + `Button secondary` "Xem sổ con dấu" (`/stamps`).
+7. **Trạng thái:**
+   - Đang tải: đầu ngăn hiện ngay, phần dưới là khung chờ `jc-skel` (vạch, 7 dòng, nút). Bản đồ chưa vẽ ghim, lộ trình, tên khu vực.
+   - Lỗi: khung `--paper-50` với icon `cloud_off`, "Chưa tải được các mốc của Chiba." / "Kiểm tra mạng rồi thử lại." và `Button secondary` "Thử lại".
+   - Tỉnh không có mốc: một câu "Chiba chưa có mốc học nào."
+
+### C. Ngăn tỉnh – tầng 2: Chi tiết mốc (thay `SpotFocusCard`, popover `SpotCard`, modal `SpotLesson`)
+
+Bấm dòng, bấm ghim hoặc nút "Học tiếp" thì ngăn chuyển sang tầng 2 của mốc đó, vẫn trong cùng ngăn. Không còn popover trên bản đồ, không còn modal. URL giữ `?tinh=…&dd=…`. `&hoc=1` cũ: mở tầng 2 với bước Hiểu mở sẵn. Esc: tầng 2 → tầng 1 → toàn quốc.
+
+1. **Thanh trên:** nút "← Chiba" (cao 36px, bo tròn, về tầng 1). Bên phải `IconButton chevron_left` · "2/9" · `IconButton chevron_right` để sang mốc trước hoặc sau. `aria-label` có tên mốc đích.
+2. **Đầu mốc:**
+   - Tên khu vực 12.5px 600 `kanto-ink`, nếu có.
+   - Ô số 30px + tên ngắn 22/30px 700.
+   - `nameJp` 13.5px `--sumi-muted`, có `title` là `nameKana`.
+   - `JlptBadge sm` + "khoảng {estimatedMinutes} phút".
+3. **Câu mẫu, luôn hiện** (người học thấy nội dung ngay, không phải mở thêm):
+   - Thẻ `--paper-50` bo 14px viền 1px `--line`: câu Nhật 20/38px bằng `JpText` có furigana + `IconButton volume_up` (`speakJa`).
+   - Dưới thẻ là `meaning` 14.5px 600. Không có `meaning` thì bỏ dòng.
+   - Sau đó một đường kẻ.
+4. **Các bước:** danh sách dọc, các nút nối bằng một đường 2px `--line`. Mỗi lần mở một bước. Mặc định mở bước hiện tại.
+   - Bước hiện tại: chưa hiểu → Hiểu. Đã hiểu mà chưa có dấu và có bài Shadowing → Shadowing. Có dấu, có roleplay mà chưa có dấu son → Hội thoại AI.
+   - Nút tròn 28px:
+     - Xong: nền `--ai` + dấu `check`. Riêng bước Hội thoại AI xong thì nền `--shu`.
+     - Bước hiện tại: viền 2px `--ai` + quầng 4px `--ai-soft`.
+     - Mốc không có bài Shadowing: nền `--paper-100`, chữ mờ.
+
+| Bước | Chữ phụ bên phải | Nội dung khi mở |
+|---|---|---|
+| 1 Hiểu câu mẫu | "Đã hiểu" (`--ai`) | `situation` 13.5px `--sumi-muted`. Bảng 2 cột: "Ngữ pháp" (`grammarNote`, bỏ dòng nếu trống) và "Dùng khi" (`realUse`). |
+| 2 Shadowing | "Đã đạt" / "Câu x/y" / "Chưa có bài" | Tên bài (icon `graphic_eq`). Nếu dở: vạch tiến độ 4px `--ai`. Câu ghi chú (xem dưới). Nếu không phải bước hiện tại: nút viền tròn "Luyện ngay" / "Tiếp tục câu n" / "Luyện lại" → `openPractice`. Không có bài: "Mốc này chưa có bài Shadowing nên chưa nhận được con dấu." |
+| 3 Hội thoại AI (chỉ khi có activity Roleplay) | "Có dấu son" / "Tuỳ chọn" | Tên kịch bản (icon `forum`). Có dấu son: "Bạn đã có dấu son ở mốc này." Có dấu: "Tốn {creditCost} Credit. Hoàn thành hội thoại để có dấu son." Chưa có dấu: "Dấu son chỉ được cấp khi mốc đã có con dấu." |
+
+   - Câu ghi chú Shadowing, theo `passThreshold ?? 60`:
+     - Ngưỡng bằng 0: "Nói theo hết cả bài là đạt."
+     - Ngưỡng lớn hơn 0: "Nói hết cả bài, đạt từ {p} điểm."
+     - Đang dở: thêm "Bạn dừng ở câu x/y." ở đầu.
+     - Đã đạt: "Bạn đã đạt bài này. Luyện lại không mất con dấu."
+   - Bước "Kiểm tra" chưa có thì **không hiện**.
+   - Khi mốc chưa có dấu và có bài Shadowing, dưới các bước có một dòng 12px kèm icon `approval`: "Xong Hiểu và Shadowing là có con dấu. Làm bước nào trước cũng được." (đúng với `ExploreService.SyncAsync`).
+5. **Chân ngăn** (cùng chỗ nút "Học tiếp" ở tầng 1):
+
+| Tình trạng mốc | Nút |
+|---|---|
+| Chưa hiểu | `primary` "Tôi đã hiểu câu này" (icon `check`). Bấm: `loading` "Đang lưu…" → `markUnderstood` → `applySync` → Toast "Đã lưu: bạn đã hiểu câu mẫu". Lỗi: Toast lỗi, giữ nút. |
+| Đã hiểu, có bài Shadowing, chưa đạt | `primary` "Luyện Shadowing", hoặc "Tiếp tục Shadowing · câu x/y" khi đang dở (icon `mic`) → `openPractice` |
+| Đã hiểu, không có bài Shadowing | `primary` "Sang mốc {n+1}" |
+| Có dấu, còn dấu son | Hai nút ngang: `secondary` "Hội thoại AI · {creditCost} Credit" và `primary` "Sang mốc {n+1}" |
+| Đã xong | `primary` "Sang mốc {n+1}". Mốc cuối thì "Về Chiba". |
+
+   Đang luyện ở khung chat (9g): chân ngăn thành ô viền đứt "Đang luyện ở khung bên cạnh", ghim có nhãn "Đang luyện" như 9g.
+
+### D. Điện thoại (≤760px)
+- Ngăn là bottom sheet: bo trên 22px, thanh kéo 40×4px, cao 70%. `reserveBottom` theo chiều cao này (thay `SHEET_HEIGHT_PX` 320).
+- Bản đồ chỉ hiện ô số, đường lộ trình, tên khu vực (11px). **Không hiện thẻ tên**, vì không có rê chuột và tên đã có trong ngăn.
+- Tầng 1 và tầng 2 giống bản rộng. Chân ngăn dính đáy sheet.
+
+### E. Component gợi ý (`jcap-web/src/views/explore/`)
+- `StationBadge` (ô số 5 trạng thái, 3 cỡ 22/26/30/34), dùng cho ghim, danh sách, chú giải.
+- `PrefectureOverview` (tầng 1), `SpotDetail` (tầng 2), `SpotSteps` (danh sách bước dạng accordion), `PanelFooter`.
+- `ProvinceWordButton` (thay `ProvinceWordCard` trong ngăn).
+- `SpotNameCard` (thẻ tên trên bản đồ), `AreaLabel`, `ClusterStack`.
+- Hàm thuần `spotAreas(spots)` (gom khu vực theo tiền tố " · ") và `spotStepState(spot)` (bước hiện tại, chữ phụ), có unit test.
+- Xoá hoặc ngừng dùng ở trang này: `SpotFocusCard`, `SpotCard`, `SpotLesson`, `jm-backbar`, các nhãn ghim trong `ProvinceLabels`. Nơi khác còn dùng thì giữ.
+
+### F. Dữ liệu cần báo (không sửa trong bước này)
+- `explore-content.json`: `nameKana` của spot-27 đang là cách đọc của spot-28 (きっぷうりば), spot-28 đang là của spot-29 (なりたのほてる ふろんと). Cần sửa dữ liệu. Prototype hiển thị cách đọc đúng.
+- spot-24 (Khu nhận hành lý) và spot-28 (Mua vé tàu tốc hành) không có bài Shadowing. Theo `SyncAsync` thì hai mốc này không bao giờ có con dấu, nên Chiba không thể có con dấu tỉnh, và "Tiếp theo" sẽ dừng ở mốc 2 (luật giữ như cũ theo quyết định). Cần bổ sung nội dung.
+- spot-30 (Chùa Naritasan) trống `meaning`.
+- Mọi `passThreshold` của Chiba là 0.
+
+**Không làm:**
+- Đổi API, cách cấp dấu, luật `nextSpotIndex`.
+- Bỏ `ZoneCircles` hay ranh giới thành phố/quận.
+- Đổi bản đồ toàn quốc.
+- Bước "Kiểm tra".
+
 ## 10. Thứ tự làm và cách nghiệm thu
 
 | Bước | Nội dung | Xong khi |
@@ -750,6 +935,7 @@ Prototype: `prototype/ThuVienShadowing.dc.html`. Bấm Play để thử chọn m
 | 14 | Diễn đàn (9h) | Đã trao đổi với AkaiZed; lọc kênh, tìm, sắp xếp, thích, mở bài, bình luận và trả lời, đăng bài kèm tệp, xoá (cả tác giả), ghim (admin); đủ trạng thái tải/lỗi/rỗng/tìm không ra/gửi lỗi; không còn emoji, màu cứng, dữ liệu mẫu trong trình duyệt; ổn ở sáng, tối và 390px |
 | 15 | Hỗ trợ & Góp ý (9i) | Đã trao đổi với AkaiZed; học viên gửi phiếu kèm tệp, trao đổi, gửi góp ý; admin tìm, tự đánh dấu đã xem, trả lời, đóng và mở lại; không lộ danh tính ở màn admin; tin mới không làm mất chữ đang gõ; đủ trạng thái tải/lỗi/rỗng/lọc không ra/gửi lỗi/tệp lỗi; không còn emoji, màu cứng, `alert()`; ổn ở sáng, tối và 390px |
 | 16 | Thư viện Shadowing (9j) | Ba cột: mục / bài / kịch bản xem trước; dải Đang học dở; chọn vai trong cột xem trước, đổi vai khi đang dở có cảnh báo; nút chính đúng 4 trạng thái và đúng tham số `role`, `resume`, `restart`; kịch bản tải từ `getDetail`, nghe được giọng mẫu, bật tắt furigana và nghĩa; tìm thu thành icon; ổn ở sáng, tối và 390px |
+| 17 | Bản đồ tỉnh + ngăn 2 tầng (9k) | Ghim là ô số 5 trạng thái, thẻ tên chỉ hiện ở mốc tiếp theo / đang mở / đang rê chuột, tên khu vực, nhóm ghim mới; ngăn tầng 1 danh sách cố định 1–9 + nút Học tiếp; tầng 2 trong cùng ngăn (câu mẫu luôn hiện, các bước accordion, nút chính đổi theo tình trạng), không còn SpotCard / SpotFocusCard / modal SpotLesson; Tôi đã hiểu gọi markUnderstood + applySync; Shadowing mở khung chat 9g; giữ luật nextSpotIndex, ZoneCircles và ranh giới quận; đủ trạng thái tải/lỗi/đủ dấu; ổn ở 1280 và 390px |
 
 Mỗi bước: chạy `npm run build` (typecheck) và `npm test`, chụp màn hình so với prototype, commit riêng.
 

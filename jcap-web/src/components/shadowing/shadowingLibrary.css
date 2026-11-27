@@ -219,7 +219,7 @@
   .shl-pv .alt { min-height: 28px; }
 }
 /* điện thoại: danh sách chiếm hết, xem trước phủ toàn màn, dải đang học dở dính đáy */
-@media (max-width: 760px) {
+@media (max-width: 767px), (max-width: 1023px) and (max-height: 500px) and (pointer: coarse) {
   .shl-wrap, .shl.in-admin .shl-wrap { height: auto; min-height: 0; gap: 12px; padding-bottom: 96px; }
   .shl.in-admin { padding: 12px; }
   .shl-head h1 { font-size: 22px; line-height: 30px; }

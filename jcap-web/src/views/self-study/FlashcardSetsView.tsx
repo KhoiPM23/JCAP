@@ -365,7 +365,7 @@ export const FlashcardSetsView: React.FC = () => {
   }, [quota, safeSets]);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== 1. PAGE HEADER ==================== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -379,7 +379,7 @@ export const FlashcardSetsView: React.FC = () => {
           </div>
 
           {/* Công cụ giả lập kiểm thử SRS */}
-          <div className="flex items-center flex-wrap gap-2 bg-paper-50 p-1.5 rounded-2xl border border-line shadow-xs self-start sm:self-auto">
+          <div className="jx-flash-simulation flex items-center flex-wrap gap-2 bg-paper-50 p-1.5 rounded-2xl border border-line shadow-xs self-start sm:self-auto">
             <span className="text-xs font-bold text-sumi-muted px-2 flex items-center gap-1">
               <span>🧪</span>
               <span className="hidden md:inline">Test SRS:</span>
@@ -432,7 +432,7 @@ export const FlashcardSetsView: React.FC = () => {
         )}
 
         {/* ==================== 2. SUB-NAVIGATION TABS ==================== */}
-        <div className="flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
+        <div className="jx-flash-tabs flex items-center gap-2 border-b border-line pb-2 overflow-x-auto">
           {/* Tab 1: Bộ thẻ theo chủ đề */}
           <Link
             to="/flashcards"

@@ -633,7 +633,7 @@ namespace JCAP.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        private static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
+        internal static (string Code, string Name, string Category) ResolveSkillInfo(string rawCode)
         {
             return rawCode switch
             {

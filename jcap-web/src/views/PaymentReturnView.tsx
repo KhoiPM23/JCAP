@@ -135,7 +135,7 @@ export const PaymentReturnView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-16 px-4">
+    <div className="jx-touch-page jx-payment-return max-w-xl mx-auto py-16 px-4">
       {isSuccess ? (
         <div className="bg-white rounded-2xl border border-[#E6EDF5] p-8 sm:p-10 text-center shadow-md">
           {/* Success Icon */}

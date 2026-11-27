@@ -143,7 +143,7 @@ export const ShadowingHistoryPanel: React.FC = () => {
         Đang tải lịch sử…
       </p>
     ) : (
-    <div className="flex flex-col gap-6">
+    <div className="jx-touch-page flex flex-col gap-6">
       {/* Summary Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Metric 1: Điểm trung bình tích lũy */}
@@ -238,7 +238,7 @@ export const ShadowingHistoryPanel: React.FC = () => {
       ) : (
         <div className="rounded-xl bg-paper-50 border border-line shadow-xs overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table role="table" aria-label="Các buổi luyện Shadowing" className="jx-mobile-records jx-shadow-records w-full text-left border-collapse">
               <thead>
                 <tr className="bg-paper-100 text-sumi-muted text-[11px] uppercase tracking-wider border-b border-line">
                   <th className="py-3 px-5 font-bold w-24" scope="col">Ngày hoàn thành</th>
@@ -251,7 +251,7 @@ export const ShadowingHistoryPanel: React.FC = () => {
                   <th className="py-3 px-5 text-right font-bold" scope="col">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="text-xs text-sumi">
+              <tbody role="rowgroup" className="text-xs text-sumi">
                 {pagedHistory.map((session) => {
                   const isExpanded = expandedHistoryId === session.id;
                   const dateObj = new Date(session.completedAt || session.startedAt);
@@ -270,8 +270,8 @@ export const ShadowingHistoryPanel: React.FC = () => {
 
                   return (
                     <React.Fragment key={session.id}>
-                      <tr className="border-b border-line hover:bg-paper-100 transition-colors">
-                        <td
+                      <tr role="row" className="jx-record-row border-b border-line hover:bg-paper-100 transition-colors">
+                        <td role="cell"
                           className={`py-3.5 px-5 whitespace-nowrap ${
                             isExpanded ? 'shadow-[inset_3px_0_0_var(--ai)]' : ''
                           }`}
@@ -281,17 +281,17 @@ export const ShadowingHistoryPanel: React.FC = () => {
                             <span className="text-[11px] text-sumi-faint">{formattedTime}</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 whitespace-nowrap">
+                        <td role="cell" className="py-3.5 px-3 whitespace-nowrap">
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-paper-200 text-sumi border border-line">
                             {session.textbookTitle || '—'}
                           </span>
                         </td>
-                        <td className="py-3.5 px-3 whitespace-nowrap">
+                        <td role="cell" className="py-3.5 px-3 whitespace-nowrap">
                           <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-ai-soft text-ai border border-line">
                             {session.chapterTitle || '—'}
                           </span>
                         </td>
-                        <td className="py-3.5 px-3">
+                        <td role="cell" className="py-3.5 px-3">
                           <div className="flex flex-col max-w-xs">
                             <span className="font-bold text-sumi truncate">
                               {session.dialogueTitle}
@@ -303,12 +303,12 @@ export const ShadowingHistoryPanel: React.FC = () => {
                             )}
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 whitespace-nowrap">
+                        <td role="cell" className="py-3.5 px-3 whitespace-nowrap">
                           <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-paper-200 text-sumi border border-line">
                             Vai {session.role}
                           </span>
                         </td>
-                        <td className="py-3.5 px-3 whitespace-nowrap">
+                        <td role="cell" className="py-3.5 px-3 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${scorePillClass(
                               session.averageScore
@@ -317,14 +317,15 @@ export const ShadowingHistoryPanel: React.FC = () => {
                             {session.averageScore} / 100
                           </span>
                         </td>
-                        <td className="py-3.5 px-3 whitespace-nowrap text-sumi-muted">
+                        <td role="cell" className="py-3.5 px-3 whitespace-nowrap text-sumi-muted">
                           {hasDuration ? `${minutes}m ${seconds.toString().padStart(2, '0')}s` : '—'}
                         </td>
-                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                        <td role="cell" className="py-3.5 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => handleToggleHistoryDetail(session)}
+                              aria-expanded={isExpanded}
                               className="px-3 py-1.5 rounded-lg bg-ai hover:bg-ai-hover text-on-ai text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                             >
                               <span>{isExpanded ? 'Đóng' : 'Chi tiết'}</span>
@@ -347,8 +348,8 @@ export const ShadowingHistoryPanel: React.FC = () => {
 
                       {/* Expanded: Đánh giá đa chiều + chi tiết điểm từng câu */}
                       {isExpanded && (
-                        <tr className="bg-paper-100 border-b border-line">
-                          <td colSpan={8} className="p-5">
+                        <tr role="row" className="jx-record-detail bg-paper-100 border-b border-line">
+                          <td role="cell" colSpan={8} className="p-5">
                             <div className="bg-paper-50 rounded-xl border border-line p-5 flex flex-col gap-4">
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 text-xs">

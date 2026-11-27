@@ -1558,12 +1558,12 @@ export const ConversationResultDetailView: React.FC = () => {
   }
 
   return (
-    <div data-theme="phong-luyen" style={{ background: 'transparent' }} className="relative py-2 px-1 sm:px-2">
+    <div data-theme="phong-luyen" style={{ background: 'transparent' }} className="jx-touch-page relative py-2 px-1 sm:px-2">
       <section className="mx-auto w-full max-w-5xl pb-10">
       {/* Toast Notification */}
 
       {typeof document !== 'undefined' && (copyToast || toastMessage) && createPortal(
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 rounded-2xl border border-emerald-400/90 bg-[#071A44]/95 backdrop-blur-md px-5 py-3 text-xs font-bold text-white shadow-2xl animate-fade-in pointer-events-auto">
+        <div className="jx-result-toast fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 rounded-2xl border border-emerald-400/90 bg-[#071A44]/95 backdrop-blur-md px-5 py-3 text-xs font-bold text-white shadow-2xl animate-fade-in pointer-events-auto">
           <span className="text-emerald-400 text-sm">{toastMessage ? "●" : "✓"}</span>
           <span>{toastMessage || "Đã sao chép báo cáo kết quả vào bộ nhớ tạm!"}</span>
           {toastMessage && (toastMessage.includes("Flashcard") || toastMessage.includes("Kho Thẻ") || toastMessage.includes("lưu") || toastMessage.includes("Bookmark")) && (

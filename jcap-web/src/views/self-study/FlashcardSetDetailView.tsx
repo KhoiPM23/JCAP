@@ -210,13 +210,13 @@ export const FlashcardSetDetailView: React.FC = () => {
   }, [filteredCards, currentPage, pageSize]);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
+    <div className="jx-flash-library mx-auto flex max-w-[1180px] flex-col gap-6 bg-transparent pb-12 font-sans">
 
         {/* ==================== BREADCRUMB ==================== */}
         <div>
           <Link
             to="/flashcards"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-ai hover:text-ai-hover transition-colors"
+            className="jx-flash-back inline-flex items-center gap-1.5 text-xs font-bold text-ai hover:text-ai-hover transition-colors"
           >
             <span>←</span>
             <span>Quay lại danh sách bộ thẻ</span>
@@ -407,6 +407,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                 <span className="absolute left-3 top-2 text-sumi-faint text-xs">🔍</span>
                 <input
                   type="text"
+                  aria-label="Tìm thẻ trong bộ"
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   placeholder={isGrammar ? 'Tìm mẫu câu, công thức, nghĩa...' : 'Tìm từ vựng, hiragana, nghĩa...'}
@@ -418,7 +419,7 @@ export const FlashcardSetDetailView: React.FC = () => {
             {/* ==================== CARD LIST TABLE ==================== */}
             <div className="bg-paper-50 rounded-2xl border border-line shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="jx-flash-card-list w-full text-left border-collapse" role="table" aria-label="Các thẻ trong bộ">
                   <thead>
                     <tr className="bg-paper-100 border-b border-line text-[11px] font-bold text-sumi-muted uppercase tracking-wider">
                       <th className="py-3 px-4 w-12 text-center">STT</th>
@@ -435,10 +436,10 @@ export const FlashcardSetDetailView: React.FC = () => {
                       <th className="py-3 px-4 w-24 text-right">THAO TÁC</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-line text-xs text-sumi">
+                  <tbody role="rowgroup" className="divide-y divide-line text-xs text-sumi">
                     {paginatedCards.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="py-12 text-center text-sumi-muted">
+                      <tr role="row">
+                        <td role="cell" colSpan={6} className="jx-flash-card-empty py-12 text-center text-sumi-muted">
                           Không có thẻ nào phù hợp với bộ lọc hiện tại.
                         </td>
                       </tr>
@@ -448,14 +449,14 @@ export const FlashcardSetDetailView: React.FC = () => {
                         const formattedIndex = globalIndex < 10 ? `0${globalIndex}` : globalIndex;
 
                         return (
-                          <tr key={card.itemId} className="hover:bg-paper-100/60 transition-colors">
+                          <tr key={card.itemId} role="row" className="jx-flash-card-row hover:bg-paper-100/60 transition-colors">
                             {/* STT */}
-                            <td className="py-4 px-4 text-center font-bold text-sumi-faint">
+                            <td role="cell" className="py-4 px-4 text-center font-bold text-sumi-faint">
                               {formattedIndex}
                             </td>
 
                             {/* Cột 1: Từ vựng / Mẫu câu */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <span className="font-extrabold text-purple-600 dark:text-purple-400 text-sm">
                                   {card.frontText}
@@ -475,7 +476,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 2: Cách kết hợp / Từ loại */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <span className="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[11px] font-bold border border-purple-500/20 inline-block">
                                   {card.readingOrFormation || '—'}
@@ -488,7 +489,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 3: Ý nghĩa / Ví dụ */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {isGrammar ? (
                                 <div className="space-y-1">
                                   <div className="font-bold text-sumi">{card.meaning}</div>
@@ -511,7 +512,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 4: Trạng thái SRS */}
-                            <td className="py-4 px-4">
+                            <td role="cell" className="py-4 px-4">
                               {card.srsState === 'Due' ? (
                                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-warning-soft text-warning border border-warning/30">
                                   🔥 Đến hạn hôm nay
@@ -528,13 +529,14 @@ export const FlashcardSetDetailView: React.FC = () => {
                             </td>
 
                             {/* Cột 5: Thao tác */}
-                            <td className="py-4 px-4 text-right">
+                            <td role="cell" className="py-4 px-4 text-right">
                               <div className="inline-flex items-center gap-2">
                                 {/* Phát âm */}
                                 <button
                                   onClick={() => handlePlayAudio(card.frontText)}
                                   className="w-7 h-7 rounded-lg bg-paper-100 hover:bg-paper-200 text-sumi flex items-center justify-center transition-colors text-xs border border-line cursor-pointer"
                                   title="Nghe phát âm"
+                                  aria-label={`Nghe phát âm ${card.frontText}`}
                                 >
                                   🔊
                                 </button>
@@ -547,6 +549,7 @@ export const FlashcardSetDetailView: React.FC = () => {
                                       : 'bg-paper-100 hover:bg-paper-200 text-sumi-faint border border-line'
                                   }`}
                                   title={card.isBookmarked ? 'Bỏ lưu' : 'Đánh dấu lưu thẻ'}
+                                  aria-label={`${card.isBookmarked ? 'Bỏ lưu' : 'Đánh dấu lưu'} ${card.frontText}`}
                                 >
                                   🔖
                                 </button>
